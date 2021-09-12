@@ -75,6 +75,7 @@ def get_fips_to_state():
     return {x.fips: x.abbr for x in us.states.STATES_AND_TERRITORIES + [us.states.DC]}
 
 
+@permacache("population_density/get_fips_to_counties")
 def get_fips_to_counties():
     fips_to_state = get_fips_to_state()
     fips_to_counties = {
@@ -83,10 +84,12 @@ def get_fips_to_counties():
         for b, c in bcs.items()
         if a in fips_to_state
     }
-    fips_to_counties["02AL"] = "Alaska"
+    fips_to_counties["02063"] = "Chugach, AK"
+    # fips_to_counties["02AL"] = "Alaska"
     return fips_to_counties
 
 
+@permacache("population_density/get_subfips_to_subcounty_name")
 def get_subfips_to_subcounty_name():
     subcounties_geojson = load_subcounties_geojson()
     fips_to_counties = get_fips_to_counties()
