@@ -25,15 +25,15 @@
      inkscape:pageopacity="0.0"
      inkscape:pagecheckerboard="0"
      showgrid="false"
-     inkscape:zoom="7.192"
-     inkscape:cx="457.52225"
-     inkscape:cy="289.4188"
+     inkscape:zoom="2.542756"
+     inkscape:cx="219.64357"
+     inkscape:cy="201.55296"
      inkscape:window-width="3768"
      inkscape:window-height="2096"
      inkscape:window-x="72"
      inkscape:window-y="27"
      inkscape:window-maximized="1"
-     inkscape:current-layer="svg6528" />
+     inkscape:current-layer="g169767" />
   <defs
      id="defs-f32905">
     <g
@@ -600,12 +600,12 @@
        x="330.47781"
        y="64.92942"
        id="text10564-3"
-       transform="translate(-299.17948)"><tspan
+       transform="translate(-298.57536)"><tspan
          x="330.47781"
          y="64.92942"
-         id="tspan3278"><tspan
+         id="tspan3469"><tspan
            style="font-family:Cantarell;-inkscape-font-specification:Cantarell;text-align:center;text-anchor:middle"
-           id="tspan3276">Mean density of a $size neighborhood around a person</tspan></tspan></text>
+           id="tspan3467">Average over all people in the area of the density within $size of the person</tspan></tspan></text>
   </g>
   <defs
      id="topdefs-f32905">
@@ -664,36 +664,36 @@
      transform="translate(-57.122644,-5.332285)"><tspan
        x="455.82266"
        y="289.16394"
-       id="tspan3282"><tspan
+       id="tspan3473"><tspan
          style="font-family:Cantarell;-inkscape-font-specification:Cantarell;fill:#ffffff"
-         id="tspan3280">This metric, unlike standard population density, is not </tspan></tspan><tspan
+         id="tspan3471">This metric, unlike standard population density, is not </tspan></tspan><tspan
        x="455.82266"
        y="299.54003"
-       id="tspan3286"><tspan
+       id="tspan3477"><tspan
          style="font-family:Cantarell;-inkscape-font-specification:Cantarell;fill:#ffffff"
-         id="tspan3284">sensitive to adding large unpopulated areas to a given </tspan></tspan><tspan
+         id="tspan3475">sensitive to adding large unpopulated areas to a given </tspan></tspan><tspan
        x="455.82266"
        y="309.91613"
-       id="tspan3290"><tspan
+       id="tspan3481"><tspan
          style="font-family:Cantarell;-inkscape-font-specification:Cantarell;fill:#ffffff"
-         id="tspan3288">region: it measures population density as experienced by </tspan></tspan><tspan
+         id="tspan3479">region: it measures population density as experienced by </tspan></tspan><tspan
        x="455.82266"
        y="320.29222"
-       id="tspan3294"><tspan
+       id="tspan3485"><tspan
          style="font-family:Cantarell;-inkscape-font-specification:Cantarell;fill:#ffffff"
-         id="tspan3292">people.
+         id="tspan3483">people.
 </tspan></tspan><tspan
        x="455.82266"
        y="330.66832"
-       id="tspan3298"><tspan
+       id="tspan3489"><tspan
          style="font-family:Cantarell;-inkscape-font-specification:Cantarell;fill:#ffffff"
-         id="tspan3296">
+         id="tspan3487">
 </tspan></tspan><tspan
        x="455.82266"
        y="341.04442"
-       id="tspan3302"><tspan
+       id="tspan3493"><tspan
          style="font-family:Cantarell;-inkscape-font-specification:Cantarell;fill:#ffffff"
-         id="tspan3300">Full spreadsheet: bit.ly/alt_pop. Data from 2020 US Census</tspan></tspan></text>
+         id="tspan3491">Full spreadsheet: bit.ly/alt-pop. Data from 2020 US Census</tspan></tspan></text>
   <image
      preserveAspectRatio="none"
      inkscape:svg-dpi="960"

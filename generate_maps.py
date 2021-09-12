@@ -1,44 +1,71 @@
 from load_data import (
     get_fips_to_counties,
     get_subfips_to_subcounty_name,
-    load_county_geojson,
 )
-from process import load_and_process_data, groupby
-from mapper import produce_image
+from process import grouped_data
+from mapper import produce_full_image
 
-blocks = load_and_process_data()
-by_subcounty = groupby(blocks, "FIPS_SUB")
-by_county = groupby(blocks, "FIPS")
-by_state = groupby(blocks, "STUSAB")
+import pandas as pd
+import gspread
+
+
+def tolist(df):
+    columns = [df.index.name] + [i for i in df.columns]
+    rows = [[i for i in row] for row in df.itertuples()]
+    return [columns] + rows
+
+
+display = {0.25: "250m", 0.5: "500m", 1: "1km", 2: "2km", 4: "4km"}
+name_by_attr = {
+    "by_subcounty": "Sub-county regions",
+    "by_county": "Counties",
+    "by_state": "States",
+}
 
 fips_to_counties = get_fips_to_counties()
 subfips_to_subcounty_name = get_subfips_to_subcounty_name()
 
-produce_image(
-    by_state,
-    by_state.mean_within_1km,
-    0,
-    15_000,
-    "states_pop.svg",
-    locationmode="USA-states",
-)
-# run(by_state, 1 - by_state.homogenity_within_1km, 0, 1, "states_diverse.svg", locationmode="USA-states",)
-produce_image(
-    by_county,
-    by_county.mean_within_1km,
-    0,
-    15_000,
-    "counties_pop.svg",
-    geojson=load_county_geojson(),
-)
-# run(by_county, 1 - by_county.homogenity_within_1km, 0, 1, "counties_diverse.svg", geojson=counties_geojson)
-by_county["Name"] = [fips_to_counties[x] for x in by_county.index]
-by_subcounty["name"] = [
-    subfips_to_subcounty_name.get(x, "NONE") for x in by_subcounty.index
-]
+process_by_attr = {
+    "by_subcounty": lambda x: subfips_to_subcounty_name.get(x, "NONE"),
+    "by_county": lambda x: fips_to_counties[x],
+    "by_state": lambda x: x,
+}
 
-by_state.sort_values("mean_within_1km").mean_within_1km.to_csv("states.csv")
-by_county.to_csv("counties.csv")
-by_subcounty[by_subcounty.name != "NONE"][["mean_within_1km", "name"]].to_csv(
-    "subcounties.csv"
-)
+
+def create_csv(dbs, attribute):
+    csv = pd.concat(
+        [
+            getattr(dbs[i], attribute).mean_density_weighted.rename(
+                f"Mean within {display[i]}"
+            )
+            for i in sorted(display)
+        ],
+        axis=1,
+    )
+    csv["NAMES"] = [process_by_attr[attribute](x) for x in csv.index]
+    csv = csv[csv["NAMES"] != "NONE"]
+    csv = csv.set_index("NAMES").rename_axis(name_by_attr[attribute])
+    return csv
+
+
+def update_gspread(dbs, attribute):
+    csv = create_csv(dbs, attribute)
+    gc = gspread.service_account()
+    sh = gc.open("Alternate Population Density Metric v2")
+    w = sh.worksheet(name_by_attr[attribute])
+    w.clear()
+    w.append_rows(tolist(csv))
+
+
+dbs = {i: grouped_data(radius=i) for i in display}
+for i in display:
+    disp = display[i]
+    produce_full_image(
+        by_state=dbs[i].by_state,
+        by_county=dbs[i].by_county,
+        out_path=f"images/{disp}.png",
+        radius_display=disp,
+    )
+
+for attribute in name_by_attr:
+    update_gspread(dbs, attribute)
