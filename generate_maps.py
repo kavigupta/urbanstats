@@ -5,6 +5,7 @@ from load_data import (
 from process import grouped_data
 from mapper import produce_full_image
 
+import addfips
 import pandas as pd
 import gspread
 
@@ -31,6 +32,12 @@ process_by_attr = {
     "by_state": lambda x: x,
 }
 
+fips_by_attr = {
+    "by_subcounty": lambda x: x,
+    "by_county": lambda x: x,
+    "by_state": lambda x: addfips.AddFIPS().get_state_fips(x)
+}
+
 
 def create_csv(dbs, attribute):
     csv = pd.concat(
@@ -43,12 +50,14 @@ def create_csv(dbs, attribute):
         axis=1,
     )
     csv["NAMES"] = [process_by_attr[attribute](x) for x in csv.index]
+    csv["Fips Code"] = [fips_by_attr[attribute](x) for x in csv.index]
     csv = csv[csv["NAMES"] != "NONE"]
     csv = csv.set_index("NAMES").rename_axis(name_by_attr[attribute])
     return csv
 
 
 def update_gspread(dbs, attribute):
+    print("Updating sheet for", attribute)
     csv = create_csv(dbs, attribute)
     gc = gspread.service_account()
     sh = gc.open("Alternate Population Density Metric v2")
