@@ -9,6 +9,7 @@ import geopandas
 import pandas as pd
 import requests
 import tempfile
+import zipfile
 
 import tqdm.auto as tqdm
 
@@ -18,17 +19,25 @@ from permacache import permacache
 from py_essentials import hashing
 
 
+def block_to_zcta():
+    with zipfile.ZipFile("../census_downloader/outputs/block_to_zcta_2020.zip") as zf:
+        with zf.open("block_to_zcta_2020.json") as f:
+            return json.load(f)
+
+
 @permacache(
-    "population_density/load_blocks",
+    "population_density/load_blocks_2",
     key_function=dict(path=lambda path: hashing.fileChecksum(path, "sha256")),
 )
 def load_blocks(path):
     result = pd.read_csv(path)
-    blocks = result[(result.BLOCK == result.BLOCK) & (result.POP100 > 0)]
+    blocks = result[(result.BLOCK == result.BLOCK) & (result.POP100 > 0)].copy()
     blocks.COUNTY = blocks.COUNTY.apply(lambda x: f"{int(x):03d}")
     blocks["FIPS"] = (
         blocks.STUSAB.apply(lambda x: us.states.lookup(x).fips) + blocks.COUNTY
     )
+    btz = block_to_zcta()
+    blocks["ZCTA"] = blocks["GEOID"].apply(lambda x: btz.get(x, "NOZIP"))
     return blocks
 
 
