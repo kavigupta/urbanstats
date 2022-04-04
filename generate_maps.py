@@ -35,7 +35,7 @@ process_by_attr = {
 fips_by_attr = {
     "by_subcounty": lambda x: x,
     "by_county": lambda x: x,
-    "by_state": lambda x: addfips.AddFIPS().get_state_fips(x)
+    "by_state": lambda x: addfips.AddFIPS().get_state_fips(x),
 }
 
 
