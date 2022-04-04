@@ -71,27 +71,35 @@ def update_gspread(dbs, attribute):
     w.append_rows(tolist(csv))
 
 
-def do_zctas():
+def do_zctas(dbs):
     zctas = geopandas.read_file(ZCTAS_PATH)
     for i in dbs:
         zip_map = dict(zip(dbs[i].by_zcta.index, dbs[i].by_zcta.mean_density_weighted))
         zctas[f"dens{i}"] = zctas.ZCTA5CE20.map(lambda x: zip_map.get(x, np.nan))
     zctas.to_file("output-shapefiles/zip.shp")
 
+
 ZCTAS_PATH = "/home/kavi/Downloads/zctas/tl_2021_us_zcta520.shp"
 
-year = 2020
-dbs = {i: grouped_data(radius=i, year=year) for i in display}
 
-do_zctas()
-for i in display:
-    disp = display[i]
-    produce_full_image(
-        by_state=dbs[i].by_state,
-        by_county=dbs[i].by_county,
-        out_path=f"images/{disp}.png",
-        radius_display=disp,
-    )
+def main():
+    year = 2020
+    dbs = {i: grouped_data(radius=i, year=year) for i in display}
 
-for attribute in name_by_attr:
-    update_gspread(dbs, attribute)
+    do_zctas(dbs)
+
+    for i in display:
+        disp = display[i]
+        produce_full_image(
+            by_state=dbs[i].by_state,
+            by_county=dbs[i].by_county,
+            out_path=f"images/{disp}.png",
+            radius_display=disp,
+        )
+
+    for attribute in name_by_attr:
+        update_gspread(dbs, attribute)
+
+
+if __name__ == "__main__":
+    main()
