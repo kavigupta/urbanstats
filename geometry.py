@@ -72,6 +72,7 @@ def categorize(coordinates):
         coordinates=stable_hash,
         population=stable_hash,
     ),
+    multiprocess_safe=True,
 )
 def locate_blocks(*, coordinates, population, radius=1):
     categories = categorize(coordinates)

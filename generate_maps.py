@@ -86,7 +86,7 @@ def main():
     year = 2020
     dbs = {i: grouped_data(radius=i, year=year) for i in display}
 
-    do_zctas(dbs)
+    # do_zctas(dbs)
 
     for i in display:
         disp = display[i]
