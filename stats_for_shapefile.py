@@ -16,7 +16,11 @@ class Shapefile:
     meta = attr.ib()
 
     def load_file(self):
-        s = gpd.read_file(self.path)
+        if isinstance(self.path, list):
+            s = gpd.GeoDataFrame(pd.concat([gpd.read_file(p) for p in self.path]))
+            s = s.reset_index(drop=True)
+        else:
+            s = gpd.read_file(self.path)
         s = s[s.apply(self.filter, axis=1)]
         s = gpd.GeoDataFrame(
             dict(
