@@ -80,11 +80,11 @@ def format_population(x):
 
 def format_density(x):
     if x > 10:
-        return f"{x:.0f}/km²"
+        return f"{x:.0f}/km<sup>2</sup>"
     elif x > 1:
-        return f"{x:.1f}/km²"
+        return f"{x:.1f}/km<sup>2</sup>"
     else:
-        return f"{x:.2f}/km²"
+        return f"{x:.2f}/km<sup>2</sup>"
 
 
 def format_statistic(name, x):
