@@ -19,13 +19,16 @@ row_template = """
 """
 
 
-def create_page(row):
-    statistic_names = {
+def get_statistic_names():
+    return {
         "population": "Population",
         "sd": "AW Density",
         **{f"ad_{k}": f"PW Density (r={format_radius(k)})" for k in RADII},
     }
 
+
+def create_page(folder, row):
+    statistic_names = get_statistic_names()
     with open("html_templates/named_region_page.html") as f:
         html = f.read()
     html = html.replace("$shortname", row.shortname)
@@ -46,13 +49,19 @@ def create_page(row):
         table_rows.append(row_text)
     html = html.replace("$rows", "\n".join(table_rows))
 
-    name = f"{row.longname}.html"
-    with open(f"outputs/webpages/{name}", "w") as f:
+    name = create_filename(row.longname)
+    with open(f"{folder}/{name}", "w") as f:
         f.write(html)
     return name
 
 
-def add_ordinals(frame, keys):
+def create_filename(x):
+    x = x.replace("/", " slash ")
+    return f"{x}.html"
+
+
+def add_ordinals(frame):
+    keys = get_statistic_names()
     frame = frame.copy()
     for k in keys:
         frame[k, "ordinal"] = frame[k].rank(ascending=False)
