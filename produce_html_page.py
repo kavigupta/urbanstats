@@ -43,7 +43,7 @@ def create_page(folder, row, relationships, long_to_short, long_to_population):
         row_text = row_template
         row_text = row_text.replace("$statname", statistic_names[stat])
         row_text = row_text.replace("$statval", format_statistic(stat, row[stat]))
-        row_text = row_text.replace("$types", row["type"] + "s")
+        row_text = row_text.replace("$types", pluralize(row["type"]))
         row_text = row_text.replace("$ordinal", f'{row[stat, "ordinal"]:.0f}')
         row_text = row_text.replace("$total", f'{row[stat, "total"]:.0f}')
         row_text = row_text.replace(
@@ -133,3 +133,9 @@ def render_percentile(pct):
     else:
         suffix = "th"
     return f"{pct}{suffix} percentile"
+
+def pluralize(x):
+    if x.endswith("y"):
+        return x[:-1] + "ies"
+    else:
+        return x + "s"
