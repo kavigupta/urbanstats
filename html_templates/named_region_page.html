@@ -2,14 +2,16 @@
 
 <head>
     <meta charset="utf-8">
+    <title>$shortname</title>
+    <link rel="icon" type="image/x-icon" href="/thumbnail.png">
 </head>
 
 <body>
 
     <link rel="stylesheet" href="/styles/style.css">
 
-    <link rel="stylesheet" href="http://leaflet.github.io/Leaflet.draw/docs/examples/libs/leaflet.css" />
-    <script src="http://leaflet.github.io/Leaflet.draw/docs/examples/libs/leaflet-src.js"></script>
+    <link rel="stylesheet" href="https://leaflet.github.io/Leaflet.draw/docs/examples/libs/leaflet.css" />
+    <script src="https://leaflet.github.io/Leaflet.draw/docs/examples/libs/leaflet-src.js"></script>
 
     <div class="text shortname">$shortname</div>
     <div class="text longname">$longname</div>
@@ -22,13 +24,6 @@
 
 
     <script src="/scripts/map.js"></script>
-
-    <div class="text description">Source for $shortname's shape is $source. AW (area weighted) density is the standard
-        Population/Area density.
-        PW (population weighted) density with a radius of X is the population-weighted density within
-        X miles of each census block's interior point, as defined by the census. For more information,
-        see <a href="https://kavigupta.org/2021/09/26/Youre-calculating-population-density-incorrectly/">this page</a>
-    </div>
 
     <div class="centered_table">
         <ul class="linklist">
@@ -47,6 +42,15 @@
             <li class="linklistelfirst">Borders/Overlaps</li>
             $borders
         </ul>
+    </div>
+
+    <div class="text description">Source for $shortname's shape is $source. AW (area weighted) density is the standard
+        Population/Area density.
+        PW (population weighted) density with a radius of X is the population-weighted density within
+        X miles of each census block's interior point, as defined by the census. For more information,
+        see <a href="https://kavigupta.org/2021/09/26/Youre-calculating-population-density-incorrectly/">this page</a>.
+
+        Website by Kavi Gupta
     </div>
 
 </body>

@@ -1,5 +1,5 @@
-var osmUrl = 'http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-    osmAttrib = '&copy; <a href="http://openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+var osmUrl = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+    osmAttrib = '&copy; <a href="https://openstreetmap.org/copyright">OpenStreetMap</a> contributors',
     osm = L.tileLayer(osmUrl, { maxZoom: 20, attribution: osmAttrib });
 map = new L.Map('map', { layers: [osm], center: new L.LatLng(0, 0), zoom: 0 });
 // get the current name of the url and replace with dat
