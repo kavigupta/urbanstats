@@ -84,15 +84,9 @@ def full_relationships():
         contained_by,
         containment,
         "cities",
-        ["neighborhoods"],
+        ["neighborhoods", "counties"],
         ["zctas"],
     )
-
-    edges = create_relationships(
-        shapefiles["counties"], shapefiles["cousub"], "contains"
-    )
-    add(contains, edges)
-    add(contained_by, reverse(edges))
 
     for k1 in shapefiles:
         for k2 in shapefiles:
@@ -106,7 +100,11 @@ def full_relationships():
             edges = create_relationships(shapefiles[k1], shapefiles[k2], "intersects")
             add(borders, edges)
             add(borders, reverse(edges))
-    return dict(contains=contains, contained_by=contained_by, borders=borders)
+    results = dict(contains=contains, contained_by=contained_by, borders=borders)
+    return {
+        k: {k2: sorted(list(v2 - {k2})) for k2, v2 in v.items()}
+        for k, v in results.items()
+    }
 
 
 def containment_relationships(
@@ -115,12 +113,12 @@ def containment_relationships(
     for sub in symmetrics:
         print(top, sub)
         containment.add((top, sub))
-        edges = create_relationships(shapefiles[top], shapefiles[sub], "contains")
+        edges = create_relationships(shapefiles[top], shapefiles[sub], "intersects")
         add(contains, edges)
         add(contained_by, reverse(edges))
 
     for sub in only_up:
         print(top, sub)
         containment.add((top, sub))
-        edges = create_relationships(shapefiles[top], shapefiles[sub], "contains")
+        edges = create_relationships(shapefiles[top], shapefiles[sub], "intersects")
         add(contained_by, reverse(edges))
