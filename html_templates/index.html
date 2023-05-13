@@ -1,0 +1,71 @@
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <link rel="stylesheet" href="/styles/style.css">
+    <script src="http://code.jquery.com/jquery-1.9.1.js"></script>
+    <script src="http://code.jquery.com/ui/1.10.3/jquery-ui.js"></script>
+</head>
+
+<body>
+    <div class="text shortname">Search</div>
+
+    <form autocomplete="off" onsubmit="go(); return false">
+        <input type="text" class="searchbox text" name="q" id="q" onKeyUp="showResults(this.value)" />
+        <div id="result"></div>
+    </form>
+
+    <script>
+        var values = $regions;
+        var search_terms = [];
+        for (var i = 0; i < values.length; i++) {
+            search_terms.push(values[i].toLowerCase());
+        }
+
+        function autocompleteMatch(input) {
+            input = input.toLowerCase();
+            if (input == '') {
+                return [];
+            }
+            var reg = new RegExp(input)
+            let matches = [];
+            for (let i = 0; i < search_terms.length; i++) {
+                if (search_terms[i].match(reg)) {
+                    matches.push(i);
+                }
+                if (matches.length >= 10) {
+                    break;
+                }
+            }
+            return matches;
+        }
+
+        function showResults(val) {
+            res = document.getElementById("result");
+            res.innerHTML = '';
+            let list = '';
+            let terms = autocompleteMatch(val);
+            for (i = 0; i < terms.length; i++) {
+                list += '<li class="searchresult text"><a href="w/' + values[terms[i]] + '.html">' + values[terms[i]] + '</a></li>';
+            }
+            res.innerHTML = '<ul class="searchresults">' + list + '</ul>';
+        }
+
+        function go() {
+            console.log("HI")
+            val = document.getElementById("q").value;
+            let terms = autocompleteMatch(val);
+            console.log(terms);
+            if (terms.length > 0) {
+                window.location.href = 'w/' + values[terms[0]] + '.html';
+            }
+            return false;
+        }
+
+        const form = document.getElementById("q");
+        form.addEventListener("submit", go);
+
+
+    </script>
+
+</body>
