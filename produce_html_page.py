@@ -18,6 +18,10 @@ row_template = """
 </tr>
 """
 
+link_template = """
+<li class="linklistel"><a class="button" href="$path">$shortname</a></li>
+"""
+
 
 def get_statistic_names():
     return {
@@ -27,7 +31,7 @@ def get_statistic_names():
     }
 
 
-def create_page(folder, row):
+def create_page(folder, row, relationships, long_to_short, long_to_population):
     statistic_names = get_statistic_names()
     with open("html_templates/named_region_page.html") as f:
         html = f.read()
@@ -48,6 +52,19 @@ def create_page(folder, row):
         )
         table_rows.append(row_text)
     html = html.replace("$rows", "\n".join(table_rows))
+
+    for relationship_type in relationships:
+        rows = []
+        to_add = relationships[relationship_type][row.longname]
+        to_add = [x for x in to_add if x in long_to_population]
+        to_add = sorted(to_add, key=lambda x: long_to_population[x], reverse=True)
+        for longname in to_add:
+            rows.append(
+                link_template.replace("$shortname", long_to_short[longname]).replace(
+                    "$path", create_filename(longname)
+                )
+            )
+        html = html.replace(f"${relationship_type}", "\n".join(rows))
 
     name = create_filename(row.longname)
     with open(f"{folder}/{name}", "w") as f:

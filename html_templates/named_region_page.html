@@ -72,6 +72,37 @@
             position: relative;
             left: calc(-25vw + 50%);
         }
+
+        .linklist {
+            display: inline-block;
+            /* display: flex; */
+            margin: 20px 0;
+            list-style-type: none;
+        }
+
+        .linklistel {
+            float: left;
+            padding-left: 0.3em;
+            padding-right: 0.3em;
+        }
+
+        .linklistelfirst {
+            padding-right: 0.3em;
+            font-weight: bold;
+        }
+
+        .button {
+            font: bold 11px Arial;
+            text-decoration: none;
+            background-color: #f8f8ff;
+            color: #222;
+            padding: 2px 6px 2px 6px;
+            border-radius: 5px;
+            border-top: 1px solid #CCCCCC;
+            border-right: 1px solid #333333;
+            border-bottom: 1px solid #333333;
+            border-left: 1px solid #CCCCCC;
+        }
     </style>
 
     <link rel="stylesheet" href="http://leaflet.github.io/Leaflet.draw/docs/examples/libs/leaflet.css" />
@@ -95,18 +126,20 @@
         // get the current name of the url and replace with dat
         let url = window.location.href;
         // url = url[:-4] + 'dat';
-        url = url.substring(0, url.length - 4) + 'dat';
-        fetch(url).then(res => res.arrayBuffer()).then(points => {
-            points = new Float32Array(points);
-            let polygon = [];
-            for (let i = 0; i < points.length / 2; i++) {
-                polygon.push([points[i * 2], points[i * 2 + 1]]);
-            }
-            console.log(polygon);
-            polygon = new L.Polygon(polygon);
-            map.fitBounds(polygon.getBounds(), { "animate": false });
-            map.addLayer(polygon);
-        });
+        url = url.substring(0, url.length - 4) + 'json';
+        // https://stackoverflow.com/a/35970894/1549476
+        fetch(url)
+            .then(res => res.json())
+            .then(polygons => {
+                let group = new L.featureGroup();
+                for (let i = 0; i < polygons.length; i++) {
+                    let polygon = polygons[i];
+                    polygon = new L.Polygon(polygon);
+                    map.addLayer(polygon);
+                    group.addLayer(polygon);
+                }
+                map.fitBounds(group.getBounds(), { "animate": false });
+            })
     </script>
 
     <div class="text description">Source for $shortname's shape is $source. AW (area weighted) density is the standard
@@ -114,6 +147,25 @@
         PW (population weighted) density with a radius of X is the population-weighted density within
         X miles of each census block's interior point, as defined by the census. For more information,
         see <a href="https://kavigupta.org/2021/09/26/Youre-calculating-population-density-incorrectly/">this page</a>
+    </div>
+
+    <div class="centered_table">
+        <ul class="linklist">
+            <li class="linklistelfirst">Contains</li>
+            $contains
+        </ul>
+    </div>
+    <div class="centered_table">
+        <ul class="linklist">
+            <li class="linklistelfirst">Contained By</li>
+            $contained_by
+        </ul>
+    </div>
+    <div class="centered_table">
+        <ul class="linklist">
+            <li class="linklistelfirst">Borders/Overlaps</li>
+            $borders
+        </ul>
     </div>
 
 </body>
