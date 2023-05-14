@@ -1,11 +1,17 @@
+import json
+import shutil
 import pandas as pd
 from shapefiles import shapefiles
+
+import tqdm.auto as tqdm
+
 from output_geometry import produce_all_geometry_json
 from stats_for_shapefile import compute_statistics_for_shapefile
-from produce_html_page import add_ordinals, get_statistic_names
+from produce_html_page import add_ordinals, create_page, get_statistic_names
+from relationship import full_relationships
 
 
-folder = "/home/kavi/temp/webpages"
+folder = "/home/kavi/temp/site/"
 
 
 def full_shapefile():
@@ -44,9 +50,45 @@ def next_prev_within_type(full):
 
 def main():
     full = full_shapefile()
+    print(list(full))
     long_to_short = dict(zip(full.longname, full.shortname))
 
-    produce_all_geometry_json(folder, set(long_to_short))
+    produce_all_geometry_json(f"{folder}/w", set(long_to_short))
+
+    ptrs_overall = next_prev(full)
+    ptrs_within_type = next_prev_within_type(full)
+    long_to_short = dict(zip(full.longname, full.shortname))
+    long_to_pop = dict(zip(full.longname, full.population))
+    long_to_type = dict(zip(full.longname, full.type))
+    relationships = full_relationships()
+
+    path = f"{folder}/w"
+
+    filt = full
+    # filt = full[full.longname.apply(lambda x: "Rhode Island" in x)]
+    # result_wo = add_ordinals(full, statistics)
+    for i in tqdm.trange(filt.shape[0]):
+        row = filt.iloc[i]
+        create_page(
+            path,
+            row,
+            relationships,
+            long_to_short,
+            long_to_pop,
+            long_to_type,
+            ptrs_overall,
+            ptrs_within_type,
+        )
+
+    shutil.copy("html_templates/style.css", f"{folder}/styles/")
+    shutil.copy("html_templates/map.js", f"{folder}/scripts/")
+    shutil.copy("thumbnail.png", f"{folder}/")
+
+    with open("html_templates/index.html", "r") as f:
+        html = f.read()
+    html = html.replace("$regions", json.dumps(list(full.longname)))
+    with open("/home/kavi/temp/site/index.html", "w") as f:
+        f.write(html)
 
 
 if __name__ == "__main__":
