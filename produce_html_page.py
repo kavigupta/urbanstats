@@ -3,7 +3,7 @@ from stats_for_shapefile import racial_statistics, housing_stats
 
 row_template = """
 <tr $class>
-    <td style="width: 27%;">
+    <td style="width: 31%;">
         <span class="text value">$statname:</span>
     </td>
     <td style="width: 15%;">
@@ -15,10 +15,10 @@ row_template = """
     <td style="width: 17%;">
         <span class="text ordinal">$percentile</span>
     </td>
-    <td style="width: 10%;">
+    <td style="width: 8%;">
         <span class="text ordinal">$ba_within_type</span>
     </td>
-    <td style="width: 10%;">
+    <td style="width: 8%;">
         <span class="text ordinal">$ba_overall</span>
     </td>
 </tr>
@@ -30,12 +30,14 @@ link_template = """
 
 
 def get_statistic_names():
+    ad = {f"ad_{k}": f"PW Density (r={format_radius(k)})" for k in RADII}
     return {
         "population": "Population",
+        **{"ad_1" : ad["ad_1"]},
         "sd": "AW Density",
-        **{f"ad_{k}": f"PW Density (r={format_radius(k)})" for k in RADII},
         **racial_statistics,
         **housing_stats,
+        **{k : ad[k] for k in ad if k != "ad_1"},
     }
 
 

@@ -53,8 +53,6 @@
     font-style: italic;
     color: #444;
     margin-top: 24px;
-    margin-left: 25%;
-    margin-right: 25%;
     padding: 0;
 }
 
@@ -81,13 +79,12 @@
 .linklist {
     display: inline-block;
     /* display: flex; */
-    margin: 20px 0;
+    /* margin: 20px 0; */
     list-style-type: none;
 }
 
 .linklistel {
     float: left;
-    padding-left: 0.3em;
     padding-right: 0.3em;
 }
 
