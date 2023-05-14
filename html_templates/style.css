@@ -20,28 +20,28 @@
 }
 
 .shortname {
-    font-size: 5vw;
+    font-size: 60px;
     font-weight: bold;
     margin: 0;
     padding: 0;
 }
 
 .longname {
-    font-size: 2vw;
+    font-size: 40px;
     font-style: italic;
     margin: 0;
     padding: 0;
 }
 
 .value {
-    font-size: 1.2vw;
+    font-size: 18px;
     font-weight: bold;
     margin: 0;
     padding: 0;
 }
 
 .ordinal {
-    font-size: 1.2vw;
+    font-size: 14px;
     font-style: italic;
     color: #444;
     margin: 0;
@@ -49,19 +49,33 @@
 }
 
 .description {
-    font-size: 0.9vw;
+    font-size: 18px;
     font-style: italic;
     color: #444;
-    margin-top: 1.2vw;
+    margin-top: 24px;
     margin-left: 25%;
     margin-right: 25%;
     padding: 0;
 }
 
 .centered_table {
-    width: 50vw;
+    width: calc(min(80vw, 800px));
     position: relative;
-    left: calc(-25vw + 50%);
+    left: calc((100vw - min(80vw, 800px)) / 2);
+    border-collapse: collapse;
+}
+
+.map {
+    width: calc(min(70vw, 700px));
+    position: relative;
+    left: calc((100vw - min(70vw, 700px)) / 2);
+    height: calc(min(60vw, 600px));
+    border: 1px solid #ccc;
+}
+
+.tableheader {
+    border-bottom: 1pt solid black;
+    font-weight: bold;
 }
 
 .linklist {
@@ -96,33 +110,44 @@
 }
 
 .searchbox {
-    width: 50%; /* Full-width */
     position: relative;
-    left: calc(-25vw + 50%);
-    font-size: 16px; /* Increase font-size */
-    padding: 12px 20px 12px 40px; /* Add some padding */
-    border: 1px solid #444; /* Add a grey border */
-    margin-bottom: 12px; /* Add some space below the input */
-  }
-  
-  .searchresults {
+    font-size: 16px;
+    /* Increase font-size */
+    padding: 12px 20px 12px 40px;
+    /* Add some padding */
+    border: 1px solid #444;
+    /* Add a grey border */
+    margin-bottom: 12px;
+    /* Add some space below the input */
+}
+
+.searchresults {
     /* Remove default list styling */
     list-style-type: none;
     padding: 0;
     margin: 0;
-  }
-  
-  .searchresults li a {
-    border: 1px solid #ddd; /* Add a border to all links */
-    margin-top: -1px; /* Prevent double borders */
-    background-color: #f6f6f6; /* Grey background color */
-    padding: 12px; /* Add some padding */
-    text-decoration: none; /* Remove default text underline */
-    font-size: 18px; /* Increase the font-size */
-    color: black; /* Add a black text color */
-    display: block; /* Make it into a block element to fill the whole list */
-  }
-  
-  .searchresults li a:hover:not(.header) {
-    background-color: #eee; /* Add a hover effect to all links, except for headers */
-  }
+}
+
+.searchresults li a {
+    border: 1px solid #ddd;
+    /* Add a border to all links */
+    margin-top: -1px;
+    /* Prevent double borders */
+    background-color: #f6f6f6;
+    /* Grey background color */
+    padding: 12px;
+    /* Add some padding */
+    text-decoration: none;
+    /* Remove default text underline */
+    font-size: 18px;
+    /* Increase the font-size */
+    color: black;
+    /* Add a black text color */
+    display: block;
+    /* Make it into a block element to fill the whole list */
+}
+
+.searchresults li a:hover:not(.header) {
+    background-color: #eee;
+    /* Add a hover effect to all links, except for headers */
+}

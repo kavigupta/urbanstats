@@ -2,18 +2,24 @@ from census_blocks import RADII
 
 
 row_template = """
-<tr>
-    <td style="width: 30%;">
+<tr $class>
+    <td style="width: 27%;">
         <span class="text value">$statname:</span>
     </td>
-    <td style="width: 20%;">
+    <td style="width: 15%;">
         <span class="text value">$statval</span>
     </td>
-    <td style="width: 30%;">
-        <span class="text ordinal">$ordinal of $total $types</span>
+    <td style="width: 25%;">
+        <span class="text ordinal">$ordinal</span>
     </td>
-    <td style="width: 20%;">
+    <td style="width: 17%;">
         <span class="text ordinal">$percentile</span>
+    </td>
+    <td style="width: 10%;">
+        <span class="text ordinal">$ba_within_type</span>
+    </td>
+    <td style="width: 10%;">
+        <span class="text ordinal">$ba_overall</span>
     </td>
 </tr>
 """
@@ -31,7 +37,26 @@ def get_statistic_names():
     }
 
 
-def create_page(folder, row, relationships, long_to_short, long_to_population):
+def pointer_link(label, name):
+    if name is None:
+        return f'<span class="button">&nbsp;&nbsp;</span>'
+    return f'<a class="button" href="{create_filename(name)}">{label}</a>'
+
+
+def display_pointers_as_links(current, ptrs):
+    prev, next = ptrs[current]
+    return pointer_link("<", prev) + " " + pointer_link(">", next)
+
+
+def create_page(
+    folder,
+    row,
+    relationships,
+    long_to_short,
+    long_to_population,
+    ptrs_overall,
+    ptrs_within_type,
+):
     statistic_names = get_statistic_names()
     with open("html_templates/named_region_page.html") as f:
         html = f.read()
@@ -39,16 +64,34 @@ def create_page(folder, row, relationships, long_to_short, long_to_population):
     html = html.replace("$longname", row.longname)
     html = html.replace("$source", row.source)
     table_rows = []
+    table_rows.append(
+        row_template.replace("$statname", "Statistic")
+        .replace("$statval", "Value")
+        .replace("$ordinal", "Ordinal")
+        .replace("$percentile", "Percentile")
+        .replace("$class", 'class="tableheader"')
+        .replace("$ba_within_type", "Within Type")
+        .replace("$ba_overall", "Overall")
+    )
     for stat in statistic_names:
         row_text = row_template
+        row_text = row_text.replace("$class", "")
         row_text = row_text.replace("$statname", statistic_names[stat])
         row_text = row_text.replace("$statval", format_statistic(stat, row[stat]))
-        row_text = row_text.replace("$types", pluralize(row["type"]))
-        row_text = row_text.replace("$ordinal", f'{row[stat, "ordinal"]:.0f}')
-        row_text = row_text.replace("$total", f'{row[stat, "total"]:.0f}')
+        ordinal = row[stat, "ordinal"]
+        total = row[stat, "total"]
+        types = pluralize(row["type"])
+        row_text = row_text.replace("$ordinal", f"{ordinal:.0f} of {total:.0f} {types}")
         row_text = row_text.replace(
             "$percentile",
             render_percentile(100 * (1 - row[stat, "ordinal"] / row[stat, "total"])),
+        )
+        row_text = row_text.replace(
+            "$ba_within_type",
+            display_pointers_as_links(row.longname, ptrs_within_type[stat]),
+        )
+        row_text = row_text.replace(
+            "$ba_overall", display_pointers_as_links(row.longname, ptrs_overall[stat])
         )
         table_rows.append(row_text)
     html = html.replace("$rows", "\n".join(table_rows))
@@ -133,6 +176,7 @@ def render_percentile(pct):
     else:
         suffix = "th"
     return f"{pct}{suffix} percentile"
+
 
 def pluralize(x):
     if x.endswith("y"):
