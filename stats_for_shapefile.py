@@ -1,9 +1,24 @@
 import attr
 import pandas as pd
-from census_blocks import RADII, all_densities_gpd
+from census_blocks import RADII, all_densities_gpd, racial_demographics, housing_units
 import geopandas as gpd
 
 from permacache import permacache
+
+racial_statistics = {
+    "white": "White %",
+    "hispanic": "Hispanic %",
+    "black": "Black %",
+    "asian": "Asian %",
+    "native": "Native %",
+    "hawaiian_pi": "Hawaiian / PI %",
+    "other / mixed": "Other / Mixed %",
+}
+
+housing_stats = {
+    "housing_per_pop": "Housing Units per Adult",
+    "vacancy": "Vacancy %",
+}
 
 
 @attr.s
@@ -34,7 +49,7 @@ class Shapefile:
 
 
 @permacache(
-    "population_density/stats_for_shapefile/compute_statistics_for_shapefile",
+    "population_density/stats_for_shapefile/compute_statistics_for_shapefile_4",
     key_function=dict(sf=lambda x: x.hash_key),
 )
 def compute_statistics_for_shapefile(sf):
@@ -42,7 +57,13 @@ def compute_statistics_for_shapefile(sf):
     s = sf.load_file()
     area = s["geometry"].to_crs({"proj": "cea"}).area / 1e6
     density_metrics = [f"ad_{k}" for k in RADII]
-    sum_keys = ["population", *density_metrics]
+    sum_keys = [
+        "population",
+        "population_18",
+        *racial_demographics,
+        *housing_units,
+        *density_metrics,
+    ]
     joined = s.sjoin(blocks_gdf, how="inner", predicate="intersects")
     grouped_stats = pd.DataFrame(joined[sum_keys]).groupby(joined.index).sum()
     for k in density_metrics:
@@ -55,4 +76,15 @@ def compute_statistics_for_shapefile(sf):
     del result["area"]
     for k in sf.meta:
         result[k] = sf.meta[k]
+    for k in racial_demographics:
+        result[k] /= result["population"]
+    result["other / mixed"] = result["other"] + result["mixed"]
+    del result["other"]
+    del result["mixed"]
+    result["housing_per_pop"] = result["total"] / result["population_18"]
+    result["vacancy"] = result["vacant"] / result["total"]
+    del result["vacant"]
+    del result["total"]
+    del result["occupied"]
+    del result["population_18"]
     return result

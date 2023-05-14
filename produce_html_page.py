@@ -1,5 +1,5 @@
 from census_blocks import RADII
-
+from stats_for_shapefile import racial_statistics, housing_stats
 
 row_template = """
 <tr $class>
@@ -34,6 +34,8 @@ def get_statistic_names():
         "population": "Population",
         "sd": "AW Density",
         **{f"ad_{k}": f"PW Density (r={format_radius(k)})" for k in RADII},
+        **racial_statistics,
+        **housing_stats,
     }
 
 
@@ -98,7 +100,7 @@ def create_page(
 
     to_add = set()
     for relationship_type in relationships:
-        to_add.update(relationships[relationship_type][row.longname])
+        to_add.update(relationships[relationship_type].get(row.longname, set()))
     rows = []
     to_add = [x for x in to_add if x in long_to_population]
     to_add = sorted(to_add, key=lambda x: long_to_population[x], reverse=True)
@@ -151,6 +153,10 @@ def format_density(x):
 def format_statistic(name, x):
     if name == "population":
         return format_population(x)
+    if "%" in get_statistic_names()[name]:
+        return f"{x:.2%}"
+    if name == "housing_per_pop":
+        return f"{x:.3f}"
     return format_density(x)
 
 
@@ -166,6 +172,8 @@ def render_percentile(pct):
     """
     Take a percentile value like 33.2 and return "33rd percentile".
     """
+    if pct != pct:
+        return "N/A"
     pct = round(pct)
     if pct % 10 == 1:
         suffix = "st"
