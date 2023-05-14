@@ -25,7 +25,7 @@ row_template = """
 """
 
 link_template = """
-<li class="linklistel"><a class="button" href="$path">$shortname</a></li>
+<li class="linklistel"><a class="button $class" href="$path">$shortname</a></li>
 """
 
 
@@ -56,6 +56,7 @@ def create_page(
     relationships,
     long_to_short,
     long_to_population,
+    long_to_type,
     ptrs_overall,
     ptrs_within_type,
 ):
@@ -106,9 +107,9 @@ def create_page(
     to_add = sorted(to_add, key=lambda x: long_to_population[x], reverse=True)
     for longname in to_add:
         rows.append(
-            link_template.replace("$shortname", long_to_short[longname]).replace(
-                "$path", create_filename(longname)
-            )
+            link_template.replace("$shortname", long_to_short[longname])
+            .replace("$path", create_filename(longname))
+            .replace("$class", f"b_{long_to_type[longname].lower()}")
         )
     html = html.replace(f"$related", "\n".join(rows))
 

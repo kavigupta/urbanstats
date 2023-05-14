@@ -99,7 +99,6 @@
 .button {
     font: bold 11px Arial;
     text-decoration: none;
-    background-color: #f8f8ff;
     color: #222;
     padding: 2px 6px 2px 6px;
     border-radius: 5px;
@@ -107,6 +106,38 @@
     border-right: 1px solid #333333;
     border-bottom: 1px solid #333333;
     border-left: 1px solid #CCCCCC;
+}
+
+.b_state {
+    background-color: #ddd;
+}
+
+.b_county {
+    background-color: #fcf;
+}
+
+.b_ccd {
+    background-color: #dcf;
+}
+
+.b_csa {
+    background-color: #cef;
+}
+
+.b_msa {
+    background-color: #dff;
+}
+
+.b_city {
+    background-color: #ffc;
+}
+
+.b_neighborhood {
+    background-color: #fec;
+}
+
+.b_zip {
+    background-color: #cfc;
 }
 
 .searchbox {
