@@ -7,6 +7,8 @@ from mapper import produce_full_image
 
 import addfips
 import pandas as pd
+import numpy as np
+import geopandas
 import gspread
 
 
@@ -18,6 +20,7 @@ def tolist(df):
 
 display = {0.25: "250m", 0.5: "500m", 1: "1km", 2: "2km", 4: "4km"}
 name_by_attr = {
+    "by_zcta": "Zip Code",
     "by_subcounty": "Sub-county regions",
     "by_county": "Counties",
     "by_state": "States",
@@ -27,15 +30,17 @@ fips_to_counties = get_fips_to_counties()
 subfips_to_subcounty_name = get_subfips_to_subcounty_name()
 
 process_by_attr = {
+    "by_zcta": lambda x: x,
     "by_subcounty": lambda x: subfips_to_subcounty_name.get(x, "NONE"),
     "by_county": lambda x: fips_to_counties[x],
     "by_state": lambda x: x,
 }
 
 fips_by_attr = {
+    "by_zcta": lambda x: "-",
     "by_subcounty": lambda x: x,
     "by_county": lambda x: x,
-    "by_state": lambda x: addfips.AddFIPS().get_state_fips(x)
+    "by_state": lambda x: addfips.AddFIPS().get_state_fips(x),
 }
 
 
@@ -66,15 +71,27 @@ def update_gspread(dbs, attribute):
     w.append_rows(tolist(csv))
 
 
-dbs = {i: grouped_data(radius=i) for i in display}
-for i in display:
-    disp = display[i]
-    produce_full_image(
-        by_state=dbs[i].by_state,
-        by_county=dbs[i].by_county,
-        out_path=f"images/{disp}.png",
-        radius_display=disp,
-    )
+def do_zctas():
+    zctas = geopandas.read_file(ZCTAS_PATH)
+    for i in dbs:
+        zip_map = dict(zip(dbs[i].by_zcta.index, dbs[i].by_zcta.mean_density_weighted))
+        zctas[f"dens{i}"] = zctas.ZCTA5CE20.map(lambda x: zip_map.get(x, np.nan))
+    zctas.to_file("output-shapefiles/zip.shp")
+
+ZCTAS_PATH = "/home/kavi/Downloads/zctas/tl_2021_us_zcta520.shp"
+
+year = 2020
+dbs = {i: grouped_data(radius=i, year=year) for i in display}
+
+do_zctas()
+# for i in display:
+#     disp = display[i]
+#     produce_full_image(
+#         by_state=dbs[i].by_state,
+#         by_county=dbs[i].by_county,
+#         out_path=f"images/{disp}.png",
+#         radius_display=disp,
+#     )
 
 for attribute in name_by_attr:
     update_gspread(dbs, attribute)
