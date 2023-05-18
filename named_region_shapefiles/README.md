@@ -25,3 +25,8 @@ Source: https://catalog.data.gov/dataset/neighborhoods-us-2017-zillow-segs
  ```
  gpd.read_file("named_region_shapefiles/Zillow_Neighborhoods/ZillowNeighborhoods.gdb/", driver='FileGDB', layer=0).to_file("named_region_shapefiles/Zillow_Neighborhoods/zillow.shp")
  ```
+
+# From FCC
+
+Source: https://transition.fcc.gov/oet/info/maps/census/fips/fips.txt
+  - county_map.txt

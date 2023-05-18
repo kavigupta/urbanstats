@@ -3,6 +3,7 @@ import json
 import shutil
 import pandas as pd
 from shapefiles import shapefiles
+from collections import Counter
 
 import tqdm.auto as tqdm
 
@@ -18,7 +19,13 @@ folder = "/home/kavi/temp/site/"
 def full_shapefile():
     full = [compute_statistics_for_shapefile(shapefiles[k]) for k in shapefiles]
     full = pd.concat(full)
+    # Simply abolish local government tbh. How is this a thing.
+    # https://www.openstreetmap.org/user/Minh%20Nguyen/diary/398893#:~:text=An%20administrative%20area%E2%80%99s%20name%20is%20unique%20within%20its%20immediate%20containing%20area%20%E2%80%93%20false
+    # Ban both of these from the database
+    full = full[full.longname != "Washington township [CCD], Union County, Ohio, USA"]
     full = full[full.population > 0].copy()
+    duplicates = {k : v for k, v in Counter(full.longname).items() if v > 1}
+    assert not duplicates, str(duplicates)
     full = pd.concat(
         [add_ordinals(full[full.type == x]) for x in sorted(set(full.type))]
     )
@@ -50,6 +57,19 @@ def next_prev_within_type(full):
 
 
 def main():
+    try:
+        os.makedirs(f"{folder}/index")
+    except FileExistsError:
+        pass
+    try:
+        os.makedirs(f"{folder}/r")
+    except FileExistsError:
+        pass
+    try:
+        os.makedirs(f"{folder}/w")
+    except FileExistsError:
+        pass
+
     full = full_shapefile()
     print(list(full))
     long_to_short = dict(zip(full.longname, full.shortname))
@@ -62,13 +82,11 @@ def main():
     long_to_pop = dict(zip(full.longname, full.population))
     long_to_type = dict(zip(full.longname, full.type))
 
-    path = f"{folder}/w"
-
     relationships = full_relationships()
     for i in tqdm.trange(full.shape[0]):
         row = full.iloc[i]
         create_page(
-            path,
+            f"{folder}/w",
             row,
             relationships,
             long_to_short,
@@ -77,15 +95,6 @@ def main():
             ptrs_overall,
             ptrs_within_type,
         )
-
-    try:
-        os.makedirs(f"{folder}/index")
-    except FileExistsError:
-        pass
-    try:
-        os.makedirs(f"{folder}/r")
-    except FileExistsError:
-        pass
 
     shutil.copy("html_templates/style.css", f"{folder}/styles/")
     shutil.copy("html_templates/map.js", f"{folder}/scripts/")

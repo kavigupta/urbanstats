@@ -1,3 +1,5 @@
+from collections import Counter
+
 import attr
 import pandas as pd
 from census_blocks import RADII, all_densities_gpd, racial_demographics, housing_units
@@ -29,6 +31,7 @@ class Shapefile:
     longname_extractor = attr.ib()
     filter = attr.ib()
     meta = attr.ib()
+    drop_dup = attr.ib(default=False)
 
     def load_file(self):
         if isinstance(self.path, list):
@@ -44,6 +47,10 @@ class Shapefile:
             ),
             geometry=s.geometry,
         )
+        if self.drop_dup:
+            duplicates = {k : v for k, v in Counter(s.longname).items() if v > 1}
+            s = s[s.longname.apply(lambda x: x not in duplicates)]
+
         s = s.to_crs("EPSG:4326")
         return s
 
