@@ -86,11 +86,16 @@ def main():
     shutil.copy("html_templates/search.js", f"{folder}/scripts/")
     shutil.copy("html_templates/load_json.js", f"{folder}/scripts/")
     shutil.copy("html_templates/index.html", f"{folder}/")
+    shutil.copy("html_templates/uniform.html", f"{folder}/r")
+    shutil.copy("html_templates/by-population.html", f"{folder}/r")
     shutil.copy("thumbnail.png", f"{folder}/")
     shutil.copy("banner.png", f"{folder}/")
 
     with open(f"{folder}/index/pages.json", "w") as f:
         json.dump(list(full.longname), f)
+
+    with open(f"{folder}/index/population.json", "w") as f:
+        json.dump(list(full.population), f)
 
 
 if __name__ == "__main__":

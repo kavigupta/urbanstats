@@ -2,7 +2,7 @@ export { go, showResults };
 
 import { loadJSON } from './load_json.js';
 
-let values = loadJSON("index/pages.json");
+let values = loadJSON("/index/pages.json");
 
 var search_terms = [];
 for (var i = 0; i < values.length; i++) {
