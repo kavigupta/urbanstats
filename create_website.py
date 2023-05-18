@@ -83,6 +83,7 @@ def main():
     shutil.copy("html_templates/style.css", f"{folder}/styles/")
     shutil.copy("html_templates/map.js", f"{folder}/scripts/")
     shutil.copy("thumbnail.png", f"{folder}/")
+    shutil.copy("banner.png", f"{folder}/")
 
     with open("html_templates/index.html", "r") as f:
         html = f.read()

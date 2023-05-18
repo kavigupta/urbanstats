@@ -9,12 +9,65 @@
 </head>
 
 <body>
-    <div class="text shortname">Search</div>
+    <div class="centered_table">
+        <a href="/index.html"><img src="/banner.png" class="logo" alt="Density Database Logo" width="100%" /></a>
+    </div>
 
-    <form autocomplete="off" onsubmit="go(); return false">
-        <input type="text" class="searchbox text centered_table" name="q" id="q" onKeyUp="showResults(this.value)" />
-        <div id="result"></div>
-    </form>
+    <div class="text centered_table" style="text-align: left;">
+        <p>The Density Database is a database of various statistics related to density, housing, and race
+        in the United States for a variety of regions. It is intended to be a resource for journalists,
+        researchers, and anyone else who is interested in these topics. The data is collected from the
+        US Census Bureau's 2020 census; and shapefiles for each region of interest are obtained from
+        the US Census Bureau's TIGER/Line database; except for the shapefiles for neighborhoods, which
+        are obtained from <a href="https://catalog.data.gov/dataset/neighborhoods-us-2017-zillow-segs">Zillow</a>.</p>
+        <p>Website by Kavi Gupta (<a href="https://kavigupta.org">kavigupta.org</a>, <a href="https://twitter.com/notkavi">@notkavi</a>)</p>
+    </div>
+
+    <p></p>
+
+    <!-- place two divs next to each other horizontally -->
+    <table class="centered_table">
+        <!-- <tr>
+            <td style="width: 20%;">
+                <div class="text main_page_header" style="vertical-align: middle; margin-right: 0.2em;">Random</div>
+            </td>
+            <td style="width: 80%;">
+                <table>
+                    <tr>
+                        <td>
+                            <button class="text button_random"
+                                onclick="window.location.href = 'r/uniform.html';">Uniform</button>
+                        </td>
+                        <td>
+                            <button class="text button_random"
+                                onclick="window.location.href = 'r/by-population.html';">Weighted by Population</button>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr> -->
+        <tr>
+            <td style="width: 20%;">
+                <div class="text main_page_header" style="">Search</div>
+            </td>
+            <td style="width: 80%;">
+                <form autocomplete="off" onsubmit="go(); return false" style="height: 100%; margin-block-end: 0em;">
+                    <input type="text" class="searchbox text shortname" name="q" id="q"
+                        onKeyUp="showResults(this.value)" />
+                </form>
+            </td>
+        </tr>
+        <tr>
+            <td style="width: 20%;">
+            </td>
+            <td style="width: 80%;">
+                <div id="result"></div>
+            </td>
+
+        </tr>
+    </table>
+
+
 
     <script>
         var values = $regions;
