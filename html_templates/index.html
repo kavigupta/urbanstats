@@ -6,6 +6,13 @@
     <link rel="stylesheet" href="/styles/style.css">
     <script src="https://code.jquery.com/jquery-1.9.1.js"></script>
     <script src="https://code.jquery.com/ui/1.10.3/jquery-ui.js"></script>
+    <script type='module'>
+        import { go, showResults } from "./scripts/search.js"
+        document.getElementById("main-form").onsubmit = go;
+        const form = document.getElementById("q");
+        form.addEventListener("submit", go);
+        form.onkeyup = function () { showResults(this.value) };
+    </script>
     <title>Density Database</title>
 </head>
 
@@ -16,12 +23,14 @@
 
     <div class="text centered_table" style="text-align: left;">
         <p>The Density Database is a database of various statistics related to density, housing, and race
-        in the United States for a variety of regions. It is intended to be a resource for journalists,
-        researchers, and anyone else who is interested in these topics. The data is collected from the
-        US Census Bureau's 2020 census; and shapefiles for each region of interest are obtained from
-        the US Census Bureau's TIGER/Line database; except for the shapefiles for neighborhoods, which
-        are obtained from <a href="https://catalog.data.gov/dataset/neighborhoods-us-2017-zillow-segs">Zillow</a>.</p>
-        <p>Website by Kavi Gupta (<a href="https://kavigupta.org">kavigupta.org</a>, <a href="https://twitter.com/notkavi">@notkavi</a>)</p>
+            in the United States for a variety of regions. It is intended to be a resource for journalists,
+            researchers, and anyone else who is interested in these topics. The data is collected from the
+            US Census Bureau's 2020 census; and shapefiles for each region of interest are obtained from
+            the US Census Bureau's TIGER/Line database; except for the shapefiles for neighborhoods, which
+            are obtained from <a href="https://catalog.data.gov/dataset/neighborhoods-us-2017-zillow-segs">Zillow</a>.
+        </p>
+        <p>Website by Kavi Gupta (<a href="https://kavigupta.org">kavigupta.org</a>, <a
+                href="https://twitter.com/notkavi">@notkavi</a>)</p>
     </div>
 
     <p></p>
@@ -49,12 +58,11 @@
         </tr> -->
         <tr>
             <td style="width: 20%;">
-                <div class="text main_page_header" style="">Search</div>
+                <div class="text main_page_header">Search</div>
             </td>
             <td style="width: 80%;">
-                <form autocomplete="off" onsubmit="go(); return false" style="height: 100%; margin-block-end: 0em;">
-                    <input type="text" class="searchbox text shortname" name="q" id="q"
-                        onKeyUp="showResults(this.value)" />
+                <form autocomplete="off" id="main-form" style="height: 100%; margin-block-end: 0em;">
+                    <input type="text" class="searchbox text shortname" name="q" id="q" />
                 </form>
             </td>
         </tr>
@@ -67,60 +75,5 @@
 
         </tr>
     </table>
-
-
-
-    <script>
-        var values = $regions;
-        var search_terms = [];
-        for (var i = 0; i < values.length; i++) {
-            search_terms.push(values[i].toLowerCase());
-        }
-
-        function autocompleteMatch(input) {
-            input = input.toLowerCase();
-            if (input == '') {
-                return [];
-            }
-            var reg = new RegExp(input)
-            let matches = [];
-            for (let i = 0; i < search_terms.length; i++) {
-                if (search_terms[i].match(reg)) {
-                    matches.push(i);
-                }
-                if (matches.length >= 10) {
-                    break;
-                }
-            }
-            return matches;
-        }
-
-        function showResults(val) {
-            res = document.getElementById("result");
-            res.innerHTML = '';
-            let list = '';
-            let terms = autocompleteMatch(val);
-            for (i = 0; i < terms.length; i++) {
-                list += '<li class="searchresult text"><a href="w/' + values[terms[i]] + '.html">' + values[terms[i]] + '</a></li>';
-            }
-            res.innerHTML = '<ul class="searchresults">' + list + '</ul>';
-        }
-
-        function go() {
-            console.log("HI")
-            val = document.getElementById("q").value;
-            let terms = autocompleteMatch(val);
-            console.log(terms);
-            if (terms.length > 0) {
-                window.location.href = 'w/' + values[terms[0]] + '.html';
-            }
-            return false;
-        }
-
-        const form = document.getElementById("q");
-        form.addEventListener("submit", go);
-
-
-    </script>
 
 </body>

@@ -1,3 +1,4 @@
+import os
 import json
 import shutil
 import pandas as pd
@@ -82,14 +83,14 @@ def main():
 
     shutil.copy("html_templates/style.css", f"{folder}/styles/")
     shutil.copy("html_templates/map.js", f"{folder}/scripts/")
+    shutil.copy("html_templates/search.js", f"{folder}/scripts/")
+    shutil.copy("html_templates/load_json.js", f"{folder}/scripts/")
+    shutil.copy("html_templates/index.html", f"{folder}/")
     shutil.copy("thumbnail.png", f"{folder}/")
     shutil.copy("banner.png", f"{folder}/")
 
-    with open("html_templates/index.html", "r") as f:
-        html = f.read()
-    html = html.replace("$regions", json.dumps(list(full.longname)))
-    with open("/home/kavi/temp/site/index.html", "w") as f:
-        f.write(html)
+    with open(f"{folder}/index/pages.json", "w") as f:
+        json.dump(list(full.longname), f)
 
 
 if __name__ == "__main__":
