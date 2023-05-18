@@ -61,15 +61,12 @@ def main():
     long_to_short = dict(zip(full.longname, full.shortname))
     long_to_pop = dict(zip(full.longname, full.population))
     long_to_type = dict(zip(full.longname, full.type))
-    relationships = full_relationships()
 
     path = f"{folder}/w"
 
-    filt = full
-    # filt = full[full.longname.apply(lambda x: "Rhode Island" in x)]
-    # result_wo = add_ordinals(full, statistics)
-    for i in tqdm.trange(filt.shape[0]):
-        row = filt.iloc[i]
+    relationships = full_relationships()
+    for i in tqdm.trange(full.shape[0]):
+        row = full.iloc[i]
         create_page(
             path,
             row,
@@ -80,6 +77,15 @@ def main():
             ptrs_overall,
             ptrs_within_type,
         )
+
+    try:
+        os.makedirs(f"{folder}/index")
+    except FileExistsError:
+        pass
+    try:
+        os.makedirs(f"{folder}/r")
+    except FileExistsError:
+        pass
 
     shutil.copy("html_templates/style.css", f"{folder}/styles/")
     shutil.copy("html_templates/map.js", f"{folder}/scripts/")

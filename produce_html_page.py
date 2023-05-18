@@ -106,7 +106,7 @@ def create_page(
         to_add.update(relationships[relationship_type].get(row.longname, set()))
     rows = []
     to_add = [x for x in to_add if x in long_to_population]
-    to_add = sorted(to_add, key=lambda x: long_to_population[x], reverse=True)
+    to_add = sorted(to_add, key=lambda x: (-long_to_population[x], x))
     for longname in to_add:
         rows.append(
             link_template.replace("$shortname", long_to_short[longname])
