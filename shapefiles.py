@@ -72,7 +72,7 @@ shapefiles = dict(
         meta=dict(type="County", source="Census"),
     ),
     msas=Shapefile(
-        hash_key="census_msas_2",
+        hash_key="census_msas_3",
         path="named_region_shapefiles/cb_2018_us_cbsa_500k.zip",
         shortname_extractor=lambda x: name_components("MSA", x)[0],
         longname_extractor=lambda x: ", ".join(name_components("MSA", x, abbreviate=True)),
@@ -80,7 +80,7 @@ shapefiles = dict(
         meta=dict(type="MSA", source="Census"),
     ),
     csas=Shapefile(
-        hash_key="census_csas_2",
+        hash_key="census_csas_3",
         path="named_region_shapefiles/cb_2018_us_csa_500k.zip",
         shortname_extractor=lambda x: name_components("CSA", x)[0],
         longname_extractor=lambda x: ", ".join(name_components("CSA", x, abbreviate=True)),
