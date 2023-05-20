@@ -69,6 +69,10 @@ def main():
         os.makedirs(f"{folder}/shape")
     except FileExistsError:
         pass
+    try:
+        os.makedirs(f"{folder}/data")
+    except FileExistsError:
+        pass
 
     full = full_shapefile()
     print(list(full))
