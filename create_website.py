@@ -1,6 +1,8 @@
 import os
 import json
 import shutil
+import fire
+
 import pandas as pd
 from shapefiles import shapefiles
 from collections import Counter
@@ -55,31 +57,7 @@ def next_prev_within_type(full):
 
     return by_statistic
 
-
-def main():
-    try:
-        os.makedirs(f"{folder}/index")
-    except FileExistsError:
-        pass
-    try:
-        os.makedirs(f"{folder}/r")
-    except FileExistsError:
-        pass
-    try:
-        os.makedirs(f"{folder}/shape")
-    except FileExistsError:
-        pass
-    try:
-        os.makedirs(f"{folder}/data")
-    except FileExistsError:
-        pass
-
-    full = full_shapefile()
-    print(list(full))
-    long_to_short = dict(zip(full.longname, full.shortname))
-
-    produce_all_geometry_json(f"{folder}/shape", set(long_to_short))
-
+def create_page_jsons(full):
     ptrs_overall = next_prev(full)
     ptrs_within_type = next_prev_within_type(full)
     long_to_short = dict(zip(full.longname, full.shortname))
@@ -100,8 +78,22 @@ def main():
             ptrs_within_type,
         )
 
+def main(no_geo=False, no_data=False):
+    for sub in ["index", "r", "shape", "data", "styles", "scripts"]:
+        try:
+            os.makedirs(f"{folder}/{sub}")
+        except FileExistsError:
+            pass
+
+    full = full_shapefile()
+
+    if not no_geo:
+        produce_all_geometry_json(f"{folder}/shape", set(full.longname))
+
+    if not no_data:
+        create_page_jsons(full)
+
     shutil.copy("html_templates/style.css", f"{folder}/styles/")
-    shutil.copy("html_templates/map.js", f"{folder}/scripts/")
     shutil.copy("html_templates/search.js", f"{folder}/scripts/")
     shutil.copy("html_templates/load_json.js", f"{folder}/scripts/")
     shutil.copy("html_templates/index.html", f"{folder}/")
@@ -121,4 +113,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    fire.Fire(main)

@@ -4,56 +4,48 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import "../../html_templates/style.css";
 
-const window_info = new URLSearchParams(window.location.search);
-
 class MainPanel extends React.Component {
     constructor(props) {
         super(props);
-        this.state = {
-            longname: null,
-            shortname: null,
-            source: null,
-            rows: [],
-            related: [],
-        };
+        // this.state = {
+        //     longname: null,
+        //     shortname: null,
+        //     source: null,
+        //     rows: [],
+        //     related: [],
+        // };
+        // console.log(props);
+        // this.setState(props);
     }
-
-    async componentDidMount() {
-        const longname = window_info.get("longname");
-        const data = await fetch(`/data/${longname}.json`).then(res => res.json());
-        this.setState({ longname: longname, ...data })
-        document.title = data.shortname;
-    }
-
 
     render() {
         return (
             <div>
-                <div className="text shortname">{this.state.shortname}</div>
-                <div className="text longname">{this.state.longname}</div>
+                <div className="text shortname">{this.props.shortname}</div>
+                <div className="text longname">{this.props.longname}</div>
 
                 <table className="centered_table">
                     <tbody>
                         <StatisticRowRaw is_header={true} />
-                        {this.state.rows.map((row, i) => <StatisticRowRaw key={i} {...row} />)}
+                        {this.props.rows.map((row, i) => <StatisticRowRaw key={i} {...row} />)}
                     </tbody>
                 </table>
 
                 <p></p>
 
-                <div id="map" className="centered_table map"></div>
+                <Map id="map" longname={this.props.longname}/>
 
                 <script src="/scripts/map.js"></script>
 
                 <div className="centered_table">
                     <ul className="linklist">
                         <li className="linklistelfirst">Related</li>
-                        {this.state.related.map((row, i) => <RelatedButton key={i} {...row} />)}
+                        {this.props.related.map((row, i) => <RelatedButton key={i} {...row} />)}
                     </ul>
                 </div>
 
-                <div className="text description centered_table">Source for {this.state.shortname}'s shape
-                    is {this.state.source}. AW (area weighted) density is the standard Population/Area density.
+                <div className="text description centered_table">Source for {this.props.shortname}'s shape
+                    is {this.props.source}. AW (area weighted) density is the standard Population/Area density.
                     PW (population weighted) density with a radius of X is the population-weighted density within
                     X miles of each census block's interior point, as defined by the census. For more information,
                     see <a href="https://kavigupta.org/2021/09/26/Youre-calculating-population-density-incorrectly/">this page</a>.
@@ -240,10 +232,50 @@ class RelatedButton extends React.Component {
     }
 }
 
+class Map extends React.Component {
+    constructor(props) {
+        super(props);
+    }
+
+    render() {
+        return (
+            <div id={this.props.id} className="centered_table map"></div>
+        );
+    }
+
+    async componentDidMount() {
+        var osmUrl = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+            osmAttrib = '&copy; <a href="https://openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+            osm = L.tileLayer(osmUrl, { maxZoom: 20, attribution: osmAttrib });
+        const map = new L.Map(this.props.id, { layers: [osm], center: new L.LatLng(0, 0), zoom: 0 });
+        // get the current name of the url and replace with dat
+        const url = "/shape/" + this.props.longname + '.json';
+        // https://stackoverflow.com/a/35970894/1549476
+        const polygons = await fetch(url)
+            .then(res => res.json());
+        let group = new L.featureGroup();
+        for (let i = 0; i < polygons.length; i++) {
+            let polygon = polygons[i];
+            polygon = new L.Polygon(polygon);
+            map.addLayer(polygon);
+            group.addLayer(polygon);
+        }
+        map.fitBounds(group.getBounds(), { "animate": false });
+    }
+}
+
 function link(longname) {
     return "/article.html?longname=" + longname;
 }
 
+async function loadPage() {
+    const window_info = new URLSearchParams(window.location.search);
 
-const root = ReactDOM.createRoot(document.getElementById("root"));
-root.render(<MainPanel />);
+    const longname = window_info.get("longname");
+    const data = await fetch(`/data/${longname}.json`).then(res => res.json());
+    document.title = data.shortname;
+    const root = ReactDOM.createRoot(document.getElementById("root"));
+    root.render(<MainPanel longname={longname} {...data} />);
+}
+
+loadPage();
