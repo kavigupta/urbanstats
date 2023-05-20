@@ -9,7 +9,7 @@
         let values = loadJSON("/index/pages.json");
         var randomIndex = Math.floor(Math.random() * values.length);
         let x = values[randomIndex];
-        document.location = "/w/" + x + ".html";
+        document.location = "/article.html?longname=" + x;
     </script>
 </head>
 

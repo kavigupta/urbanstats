@@ -9,7 +9,7 @@ import tqdm.auto as tqdm
 
 from output_geometry import produce_all_geometry_json
 from stats_for_shapefile import compute_statistics_for_shapefile
-from produce_html_page import add_ordinals, create_page, get_statistic_names
+from produce_html_page import add_ordinals, create_page_json, get_statistic_names
 from relationship import full_relationships
 
 
@@ -66,7 +66,7 @@ def main():
     except FileExistsError:
         pass
     try:
-        os.makedirs(f"{folder}/w")
+        os.makedirs(f"{folder}/shape")
     except FileExistsError:
         pass
 
@@ -74,7 +74,7 @@ def main():
     print(list(full))
     long_to_short = dict(zip(full.longname, full.shortname))
 
-    produce_all_geometry_json(f"{folder}/w", set(long_to_short))
+    produce_all_geometry_json(f"{folder}/shape", set(long_to_short))
 
     ptrs_overall = next_prev(full)
     ptrs_within_type = next_prev_within_type(full)
@@ -85,8 +85,8 @@ def main():
     relationships = full_relationships()
     for i in tqdm.trange(full.shape[0]):
         row = full.iloc[i]
-        create_page(
-            f"{folder}/w",
+        create_page_json(
+            f"{folder}/data",
             row,
             relationships,
             long_to_short,
@@ -103,8 +103,11 @@ def main():
     shutil.copy("html_templates/index.html", f"{folder}/")
     shutil.copy("html_templates/uniform.html", f"{folder}/r")
     shutil.copy("html_templates/by-population.html", f"{folder}/r")
+    shutil.copy("html_templates/article.html", f"{folder}")
     shutil.copy("thumbnail.png", f"{folder}/")
     shutil.copy("banner.png", f"{folder}/")
+    os.system("cd react; npm run dev")
+    shutil.copy("dist/article.js", f"{folder}/scripts/")
 
     with open(f"{folder}/index/pages.json", "w") as f:
         json.dump(list(full.longname), f)

@@ -15,7 +15,7 @@ function showResults(val) {
     let list = '';
     let terms = autocompleteMatch(val);
     for (i = 0; i < terms.length; i++) {
-        list += '<li class="searchresult text"><a href="w/' + values[terms[i]] + '.html">' + values[terms[i]] + '</a></li>';
+        list += '<li class="searchresult text"><a href="/article.html?longname=' + values[terms[i]] + '">' + values[terms[i]] + '</a></li>';
     }
     res.innerHTML = '<ul class="searchresults">' + list + '</ul>';
 }
@@ -24,7 +24,7 @@ function go() {
     let val = document.getElementById("q").value;
     let terms = autocompleteMatch(val);
     if (terms.length > 0) {
-        window.location.href = 'w/' + values[terms[0]] + '.html';
+        window.location.href = '/article.html?longname=' + values[terms[0]];
     }
     return false;
 }
