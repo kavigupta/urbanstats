@@ -48,7 +48,7 @@ class Shapefile:
             geometry=s.geometry,
         )
         if self.drop_dup:
-            duplicates = {k : v for k, v in Counter(s.longname).items() if v > 1}
+            duplicates = {k: v for k, v in Counter(s.longname).items() if v > 1}
             s = s[s.longname.apply(lambda x: x not in duplicates)]
 
         s = s.to_crs("EPSG:4326")

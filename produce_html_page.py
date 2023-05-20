@@ -33,11 +33,11 @@ def get_statistic_names():
     ad = {f"ad_{k}": f"PW Density (r={format_radius(k)})" for k in RADII}
     return {
         "population": "Population",
-        **{"ad_1" : ad["ad_1"]},
+        **{"ad_1": ad["ad_1"]},
         "sd": "AW Density",
         **racial_statistics,
         **housing_stats,
-        **{k : ad[k] for k in ad if k != "ad_1"},
+        **{k: ad[k] for k in ad if k != "ad_1"},
     }
 
 

@@ -24,7 +24,7 @@ def full_shapefile():
     # Ban both of these from the database
     full = full[full.longname != "Washington township [CCD], Union County, Ohio, USA"]
     full = full[full.population > 0].copy()
-    duplicates = {k : v for k, v in Counter(full.longname).items() if v > 1}
+    duplicates = {k: v for k, v in Counter(full.longname).items() if v > 1}
     assert not duplicates, str(duplicates)
     full = pd.concat(
         [add_ordinals(full[full.type == x]) for x in sorted(set(full.type))]
