@@ -50,7 +50,7 @@ class MainPanel extends React.Component {
                     X miles of each census block's interior point, as defined by the census. For more information,
                     see <a href="https://kavigupta.org/2021/09/26/Youre-calculating-population-density-incorrectly/">this page</a>.
 
-                    Website by Kavi Gupta
+                    Website by Kavi Gupta. Density Database Version 1.2.0. Last updated 2023-05-21.
                 </div>
             </div>
         );
