@@ -57,6 +57,7 @@ def next_prev_within_type(full):
 
     return by_statistic
 
+
 def create_page_jsons(full):
     ptrs_overall = next_prev(full)
     ptrs_within_type = next_prev_within_type(full)
@@ -77,6 +78,7 @@ def create_page_jsons(full):
             ptrs_overall,
             ptrs_within_type,
         )
+
 
 def main(no_geo=False, no_data=False):
     for sub in ["index", "r", "shape", "data", "styles", "scripts"]:
