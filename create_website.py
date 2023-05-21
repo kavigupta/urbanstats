@@ -100,17 +100,14 @@ def main(no_geo=False, no_data=False):
     if not no_data:
         create_page_jsons(full)
 
-    shutil.copy("html_templates/style.css", f"{folder}/styles/")
-    shutil.copy("html_templates/search.js", f"{folder}/scripts/")
-    shutil.copy("html_templates/load_json.js", f"{folder}/scripts/")
     shutil.copy("html_templates/index.html", f"{folder}/")
-    shutil.copy("html_templates/uniform.html", f"{folder}/r")
-    shutil.copy("html_templates/by-population.html", f"{folder}/r")
     shutil.copy("html_templates/article.html", f"{folder}")
     shutil.copy("thumbnail.png", f"{folder}/")
     shutil.copy("banner.png", f"{folder}/")
+
     os.system("cd react; npm run dev")
     shutil.copy("dist/article.js", f"{folder}/scripts/")
+    shutil.copy("dist/index.js", f"{folder}/scripts/")
 
     with open(f"{folder}/index/pages.json", "w") as f:
         json.dump(list(full.longname), f)
