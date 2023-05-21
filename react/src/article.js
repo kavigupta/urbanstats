@@ -57,7 +57,7 @@ class MainPanel extends React.Component {
                     and then aggregated to the geography of interest based on the centroid. Results might not
                     match official results. Data is from the 2016 and 2020 US Presidential general elections.
 
-                    <p />Website by Kavi Gupta
+                    <p />Website by Kavi Gupta. Density Database Version 1.2.0. Last updated 2023-05-21.
                 </div>
             </div>
         );
