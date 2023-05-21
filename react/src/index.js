@@ -48,11 +48,11 @@ class IndexPanel extends React.Component {
                                         <tr>
                                             <td>
                                                 <button className="text button_random"
-                                                    onClick={by_population}>Uniform</button>
+                                                    onClick={uniform}>Uniform</button>
                                             </td>
                                             <td>
                                                 <button className="text button_random"
-                                                    onClick={uniform}>Weighted by Population</button>
+                                                    onClick={by_population}>Weighted by Population</button>
                                             </td>
                                         </tr>
                                     </tbody>
