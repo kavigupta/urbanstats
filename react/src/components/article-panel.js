@@ -2,8 +2,6 @@ export { ArticlePanel };
 
 import React from 'react';
 
-import "../../../html_templates/style.css";
-
 import { StatisticRowRaw } from "./table.js";
 import { Map } from "./map.js";
 import { RelatedButton } from "./related-button.js";

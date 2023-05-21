@@ -1,7 +1,7 @@
 import React from 'react';
 
 import ReactDOM from 'react-dom/client';
-import "../../html_templates/style.css";
+import "./style.css";
 import { data_link } from "./navigation/links.js";
 
 import { ArticlePanel } from './components/article-panel';
