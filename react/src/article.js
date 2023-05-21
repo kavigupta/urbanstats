@@ -209,7 +209,7 @@ class PointerButton extends React.Component {
         if (this.props.longname == null) {
             return <span className="button">&nbsp;&nbsp;</span>
         } else {
-            return <a className="button" href={link(this.props.longname)}>{this.props.text}</a>
+            return <a className="button" href={article_link(this.props.longname)}>{this.props.text}</a>
         }
     }
 }
@@ -225,7 +225,7 @@ class RelatedButton extends React.Component {
             <li className="linklistel">
                 <a
                     className={classes}
-                    href={link(this.props.longname)}>{this.props.shortname}
+                    href={article_link(this.props.longname)}>{this.props.shortname}
                 </a>
             </li>
         );
@@ -249,7 +249,7 @@ class Map extends React.Component {
             osm = L.tileLayer(osmUrl, { maxZoom: 20, attribution: osmAttrib });
         const map = new L.Map(this.props.id, { layers: [osm], center: new L.LatLng(0, 0), zoom: 0 });
         // get the current name of the url and replace with dat
-        const url = "/shape/" + sanitize(this.props.longname) + '.json';
+        const url = shape_link(this.props.longname);
         // https://stackoverflow.com/a/35970894/1549476
         const polygons = await fetch(url)
             .then(res => res.json());
@@ -264,8 +264,18 @@ class Map extends React.Component {
     }
 }
 
-function link(longname) {
-    return "/article.html?longname=" + sanitize(longname);
+function article_link(longname) {
+    const params = new URLSearchParams()
+    params.set('longname', sanitize(longname));
+    return "/article.html?" + params.toString();
+}
+
+function shape_link(longname) {
+    return "/shape/" + sanitize(longname) + '.json'
+}
+
+function data_link(longname) {
+    return `/data/${sanitize(longname)}.json`
 }
 
 function sanitize(longname) {
@@ -278,7 +288,7 @@ async function loadPage() {
     const window_info = new URLSearchParams(window.location.search);
 
     const longname = window_info.get("longname");
-    const data = await fetch(`/data/${sanitize(longname)}.json`).then(res => res.json());
+    const data = await fetch(data_link(longname)).then(res => res.json());
     document.title = data.shortname;
     const root = ReactDOM.createRoot(document.getElementById("root"));
     root.render(<MainPanel longname={longname} {...data} />);
