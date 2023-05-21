@@ -173,13 +173,13 @@ class Percentile extends React.Component {
         // percentile as an integer
         const percentile = Math.floor(100 - 100 * ordinal / total);
         // something like Xth percentile
-        let text = ordinal + "th percentile";
-        if (ordinal % 10 == 1 && ordinal % 100 != 11) {
-            text = ordinal + "st percentile";
-        } else if (ordinal % 10 == 2 && ordinal % 100 != 12) {
-            text = ordinal + "nd percentile";
-        } else if (ordinal % 10 == 3 && ordinal % 100 != 13) {
-            text = ordinal + "rd percentile";
+        let text = percentile + "th percentile";
+        if (percentile % 10 == 1 && percentile % 100 != 11) {
+            text = percentile + "st percentile";
+        } else if (percentile % 10 == 2 && percentile % 100 != 12) {
+            text = percentile + "nd percentile";
+        } else if (percentile % 10 == 3 && percentile % 100 != 13) {
+            text = percentile + "rd percentile";
         }
         return <span>{text}</span>;
     }
