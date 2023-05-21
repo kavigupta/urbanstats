@@ -50,7 +50,14 @@ class MainPanel extends React.Component {
                     X miles of each census block's interior point, as defined by the census. For more information,
                     see <a href="https://kavigupta.org/2021/09/26/Youre-calculating-population-density-incorrectly/">this page</a>.
 
-                    Website by Kavi Gupta
+                    <p />Shapes from Census and Zillow, Demographic and Housing Data from Census, Election Data
+                    from the US Elections Project's Voting and Elections Science Team
+                    (<a href="https://twitter.com/VEST_Team">VEST</a>). Election Data is approximate and uses
+                    VTD estimates when available. Data is precinct-level, disaggregated to the census block level
+                    and then aggregated to the geography of interest based on the centroid. Results might not
+                    match official results. Data is from the 2016 and 2020 US Presidential general elections.
+
+                    <p />Website by Kavi Gupta
                 </div>
             </div>
         );
