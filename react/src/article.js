@@ -33,7 +33,7 @@ class MainPanel extends React.Component {
 
                 <p></p>
 
-                <Map id="map" longname={this.props.longname}/>
+                <Map id="map" longname={this.props.longname} />
 
                 <script src="/scripts/map.js"></script>
 
@@ -138,7 +138,7 @@ class Statistic extends React.Component {
         } else if (name.includes("%")) {
             return <span>{(value * 100).toFixed(2)}%</span>;
         } else if (name.includes("Election")) {
-            return <ElectionResult value={value}/>;
+            return <ElectionResult value={value} />;
         }
         return <span>{value.toFixed(3)}</span>;
     }
@@ -154,7 +154,7 @@ class ElectionResult extends React.Component {
         const places = value > 10 ? 1 : value > 1 ? 2 : value > 0.1 ? 3 : 4;
         const text = value.toFixed(places);
         const party = this.props.value > 0 ? "D" : "R";
-        return <span>{party}+{text}</span>;
+        return <span class={"party_result_" + party}>{party}+{text}</span>;
     }
 }
 
