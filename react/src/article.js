@@ -54,10 +54,13 @@ class MainPanel extends React.Component {
                     from the US Elections Project's Voting and Elections Science Team
                     (<a href="https://twitter.com/VEST_Team">VEST</a>). Election Data is approximate and uses
                     VTD estimates when available. Data is precinct-level, disaggregated to the census block level
-                    and then aggregated to the geography of interest based on the centroid. Results might not
-                    match official results. Data is from the 2016 and 2020 US Presidential general elections.
+                    and then aggregated to the geography of interest based oqjn the centroid. Results might not
+                    match official results. Data is from the 2016 and 2020 US Presidential general elections. N/A
+                    indicates that the statistic is not available for the given geography, possibly because the
+                    precinct boundaries in the dataset are slightly inaccurate, or there are no results for
+                    the precincts overlapping the geography.
 
-                    <p />Website by Kavi Gupta. Density Database Version 1.3.0. Last updated 2023-05-21.
+                    <p />Website by Kavi Gupta. Density Database Version 1.3.2. Last updated 2023-05-21.
                 </div>
             </div>
         );
@@ -157,11 +160,15 @@ class ElectionResult extends React.Component {
     }
 
     render() {
+        // check if value is NaN
+        if (this.props.value != this.props.value) {
+            return <span>N/A</span>;
+        }
         const value = Math.abs(this.props.value) * 100;
         const places = value > 10 ? 1 : value > 1 ? 2 : value > 0.1 ? 3 : 4;
         const text = value.toFixed(places);
         const party = this.props.value > 0 ? "D" : "R";
-        return <span class={"party_result_" + party}>{party}+{text}</span>;
+        return <span className={"party_result_" + party}>{party}+{text}</span>;
     }
 }
 
@@ -272,7 +279,7 @@ class Map extends React.Component {
             osm = L.tileLayer(osmUrl, { maxZoom: 20, attribution: osmAttrib });
         const map = new L.Map(this.props.id, { layers: [osm], center: new L.LatLng(0, 0), zoom: 0 });
         // get the current name of the url and replace with dat
-        const url = "/shape/" + this.props.longname + '.json';
+        const url = "/shape/" + sanitize(this.props.longname) + '.json';
         // https://stackoverflow.com/a/35970894/1549476
         const polygons = await fetch(url)
             .then(res => res.json());
@@ -288,14 +295,22 @@ class Map extends React.Component {
 }
 
 function link(longname) {
-    return "/article.html?longname=" + longname;
+    return "/article.html?longname=" + sanitize(longname);
+}
+
+function sanitize(longname) {
+    let x = longname;
+    x = x.replace("/", " slash ");
+    return x;
 }
 
 async function loadPage() {
     const window_info = new URLSearchParams(window.location.search);
 
     const longname = window_info.get("longname");
-    const data = await fetch(`/data/${longname}.json`).then(res => res.json());
+    const JSON5 = require("json5");
+    const text = await fetch(`/data/${sanitize(longname)}.json`).then(res => res.text());
+    const data = JSON5.parse(text);
     document.title = data.shortname;
     const root = ReactDOM.createRoot(document.getElementById("root"));
     root.render(<MainPanel longname={longname} {...data} />);
