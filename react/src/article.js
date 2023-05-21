@@ -33,7 +33,7 @@ class MainPanel extends React.Component {
 
                 <p></p>
 
-                <Map id="map" longname={this.props.longname}/>
+                <Map id="map" longname={this.props.longname} />
 
                 <script src="/scripts/map.js"></script>
 
@@ -249,7 +249,7 @@ class Map extends React.Component {
             osm = L.tileLayer(osmUrl, { maxZoom: 20, attribution: osmAttrib });
         const map = new L.Map(this.props.id, { layers: [osm], center: new L.LatLng(0, 0), zoom: 0 });
         // get the current name of the url and replace with dat
-        const url = "/shape/" + this.props.longname + '.json';
+        const url = "/shape/" + sanitize(this.props.longname) + '.json';
         // https://stackoverflow.com/a/35970894/1549476
         const polygons = await fetch(url)
             .then(res => res.json());
@@ -265,14 +265,20 @@ class Map extends React.Component {
 }
 
 function link(longname) {
-    return "/article.html?longname=" + longname;
+    return "/article.html?longname=" + sanitize(longname);
+}
+
+function sanitize(longname) {
+    let x = longname;
+    x = x.replace("/", " slash ");
+    return x;
 }
 
 async function loadPage() {
     const window_info = new URLSearchParams(window.location.search);
 
     const longname = window_info.get("longname");
-    const data = await fetch(`/data/${longname}.json`).then(res => res.json());
+    const data = await fetch(`/data/${sanitize(longname)}.json`).then(res => res.json());
     document.title = data.shortname;
     const root = ReactDOM.createRoot(document.getElementById("root"));
     root.render(<MainPanel longname={longname} {...data} />);
