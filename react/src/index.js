@@ -43,7 +43,7 @@ class IndexPanel extends React.Component {
                     <tbody>
                         <tr>
                             <td style={{ width: "20%" }}>
-                                <div className="text main_page_header" style="vertical-align: middle; margin-right: 0.2em;">Random</div>
+                                <div className="text main_page_header" style={{ verticalAlign: "middle", marginRight: "0.2em" }}>Random</div>
                             </td>
                             <td style={{ width: "80%" }}>
                                 <table>
@@ -67,7 +67,7 @@ class IndexPanel extends React.Component {
                                 <div className="text main_page_header">Search</div>
                             </td>
                             <td style={{ width: "80%" }}>
-                                <form autocomplete="off" id="main-form" style="height: 100%; margin-block-end: 0em;">
+                                <form autoComplete="off" id="main-form" style={{ height: "100%", marginBlockEnd: "0em" }}>
                                     <input type="text" className="searchbox text shortname" name="q" id="q" />
                                 </form>
                             </td>
