@@ -4,8 +4,8 @@ import ReactDOM from 'react-dom/client';
 import "./style.css";
 import { article_link } from './navigation/links';
 
-import { go, showResults } from "./search.js"
 import { loadJSON } from './load_json.js';
+import { SearchBox } from './components/search.js';
 
 
 
@@ -67,30 +67,13 @@ class IndexPanel extends React.Component {
                                 <div className="text main_page_header">Search</div>
                             </td>
                             <td style={{ width: "80%" }}>
-                                <form autoComplete="off" id="main-form" style={{ height: "100%", marginBlockEnd: "0em" }}>
-                                    <input type="text" className="searchbox text shortname" name="q" id="q" />
-                                </form>
+                                <SearchBox id="q" />
                             </td>
-                        </tr>
-                        <tr>
-                            <td style={{ width: "20%" }}>
-                            </td>
-                            <td style={{ width: "80%" }}>
-                                <div id="result"></div>
-                            </td>
-
                         </tr>
                     </tbody>
                 </table>
             </div>
         );
-    }
-
-    componentDidMount() {
-        document.getElementById("main-form").onsubmit = go;
-        const form = document.getElementById("q");
-        form.addEventListener("submit", go);
-        form.onkeyup = function () { showResults(this.value) };
     }
 }
 

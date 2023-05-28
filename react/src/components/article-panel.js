@@ -53,7 +53,7 @@ class ArticlePanel extends React.Component {
                     precinct boundaries in the dataset are slightly inaccurate, or there are no results for
                     the precincts overlapping the geography.
 
-                    <p />Website by Kavi Gupta. Density Database Version 1.3.3. Last updated 2023-05-21.
+                    <p />Website by Kavi Gupta. Density Database Version 1.3.4. Last updated 2023-05-28.
                 </div>
             </div>
         );
