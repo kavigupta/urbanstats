@@ -84,8 +84,28 @@ class Statistic extends React.Component {
             }
         } else if (name.includes("%")) {
             return <span>{(value * 100).toFixed(2)}%</span>;
+        } else if (name.includes("Election")) {
+            return <ElectionResult value={value} />;
         }
         return <span>{value.toFixed(3)}</span>;
+    }
+}
+
+class ElectionResult extends React.Component {
+    constructor(props) {
+        super(props);
+    }
+
+    render() {
+        // check if value is NaN
+        if (this.props.value != this.props.value) {
+            return <span>N/A</span>;
+        }
+        const value = Math.abs(this.props.value) * 100;
+        const places = value > 10 ? 1 : value > 1 ? 2 : value > 0.1 ? 3 : 4;
+        const text = value.toFixed(places);
+        const party = this.props.value > 0 ? "D" : "R";
+        return <span className={"party_result_" + party}>{party}+{text}</span>;
     }
 }
 

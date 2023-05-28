@@ -13,6 +13,7 @@ from output_geometry import produce_all_geometry_json
 from stats_for_shapefile import compute_statistics_for_shapefile
 from produce_html_page import add_ordinals, create_page_json, get_statistic_names
 from relationship import full_relationships
+from election_data import vest_elections
 
 
 folder = "/home/kavi/temp/site/"
@@ -21,6 +22,10 @@ folder = "/home/kavi/temp/site/"
 def full_shapefile():
     full = [compute_statistics_for_shapefile(shapefiles[k]) for k in shapefiles]
     full = pd.concat(full)
+    for elect in vest_elections:
+        full[elect.name, "margin"] = (
+            full[elect.name, "dem"] - full[elect.name, "gop"]
+        ) / full[elect.name, "total"]
     # Simply abolish local government tbh. How is this a thing.
     # https://www.openstreetmap.org/user/Minh%20Nguyen/diary/398893#:~:text=An%20administrative%20area%E2%80%99s%20name%20is%20unique%20within%20its%20immediate%20containing%20area%20%E2%80%93%20false
     # Ban both of these from the database

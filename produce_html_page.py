@@ -4,6 +4,7 @@ import numpy as np
 
 from census_blocks import RADII
 from stats_for_shapefile import racial_statistics, housing_stats
+from election_data import vest_elections
 
 row_template = """
 <tr $class>
@@ -41,6 +42,7 @@ def get_statistic_names():
         "sd": "AW Density",
         **racial_statistics,
         **housing_stats,
+        **{(elect.name, "margin"): elect.name for elect in vest_elections},
         **{k: ad[k] for k in ad if k != "ad_1"},
     }
 

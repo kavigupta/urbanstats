@@ -28,6 +28,10 @@ class IndexPanel extends React.Component {
                         US Census Bureau's 2020 census; and shapefiles for each region of interest are obtained from
                         the US Census Bureau's TIGER/Line database; except for the shapefiles for neighborhoods, which
                         are obtained from <a href="https://catalog.data.gov/dataset/neighborhoods-us-2017-zillow-segs">Zillow</a>.
+
+                        Election Data is from the <a href="https://www.electproject.org/home">US Elections Project's</a>
+                        Voting and Elections Science Team
+                        (<a href="https://twitter.com/VEST_Team">VEST</a>).
                     </p>
                     <p>Website by Kavi Gupta (<a href="https://kavigupta.org">kavigupta.org</a>, <a
                         href="https://twitter.com/notkavi">@notkavi</a>)</p>
@@ -39,8 +43,7 @@ class IndexPanel extends React.Component {
                     <tbody>
                         <tr>
                             <td style={{ width: "20%" }}>
-                                <div className="text main_page_header"
-                                    style={{ verticleAlign: "middle", marginRight: "0.2em" }}>Random</div>
+                                <div className="text main_page_header" style={{ verticalAlign: "middle", marginRight: "0.2em" }}>Random</div>
                             </td>
                             <td style={{ width: "80%" }}>
                                 <table>

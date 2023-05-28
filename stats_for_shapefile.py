@@ -2,7 +2,9 @@ from collections import Counter
 
 import attr
 import pandas as pd
-from census_blocks import RADII, all_densities_gpd, racial_demographics, housing_units
+from census_blocks import RADII, racial_demographics, housing_units
+from election_data import with_election_results, election_column_names
+
 import geopandas as gpd
 
 from permacache import permacache
@@ -56,11 +58,11 @@ class Shapefile:
 
 
 @permacache(
-    "population_density/stats_for_shapefile/compute_statistics_for_shapefile_4",
+    "population_density/stats_for_shapefile/compute_statistics_for_shapefile_6",
     key_function=dict(sf=lambda x: x.hash_key),
 )
 def compute_statistics_for_shapefile(sf):
-    blocks_gdf = all_densities_gpd()
+    blocks_gdf = with_election_results()
     s = sf.load_file()
     area = s["geometry"].to_crs({"proj": "cea"}).area / 1e6
     density_metrics = [f"ad_{k}" for k in RADII]
@@ -70,6 +72,7 @@ def compute_statistics_for_shapefile(sf):
         *racial_demographics,
         *housing_units,
         *density_metrics,
+        *election_column_names,
     ]
     joined = s.sjoin(blocks_gdf, how="inner", predicate="intersects")
     grouped_stats = pd.DataFrame(joined[sum_keys]).groupby(joined.index).sum()
