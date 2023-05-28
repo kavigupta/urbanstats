@@ -1,4 +1,4 @@
-export {loadJSON};
+export { loadJSON };
 
 // from https://stackoverflow.com/a/4117299/1549476
 

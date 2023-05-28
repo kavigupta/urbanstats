@@ -1,3 +1,7 @@
+import json
+
+import numpy as np
+
 from census_blocks import RADII
 from stats_for_shapefile import racial_statistics, housing_stats
 
@@ -52,7 +56,7 @@ def display_pointers_as_links(current, ptrs):
     return pointer_link("<", prev) + " " + pointer_link(">", next)
 
 
-def create_page(
+def create_page_json(
     folder,
     row,
     relationships,
@@ -63,61 +67,37 @@ def create_page(
     ptrs_within_type,
 ):
     statistic_names = get_statistic_names()
-    with open("html_templates/named_region_page.html") as f:
-        html = f.read()
-    html = html.replace("$shortname", row.shortname)
-    html = html.replace("$longname", row.longname)
-    html = html.replace("$source", row.source)
-    table_rows = []
-    table_rows.append(
-        row_template.replace("$statname", "Statistic")
-        .replace("$statval", "Value")
-        .replace("$ordinal", "Ordinal")
-        .replace("$percentile", "Percentile")
-        .replace("$class", 'class="tableheader"')
-        .replace("$ba_within_type", "Within Type")
-        .replace("$ba_overall", "Overall")
+    data = dict(
+        shortname=row.shortname,
+        longname=row.longname,
+        source=row.source,
+        rows=[],
     )
-    for stat in statistic_names:
-        row_text = row_template
-        row_text = row_text.replace("$class", "")
-        row_text = row_text.replace("$statname", statistic_names[stat])
-        row_text = row_text.replace("$statval", format_statistic(stat, row[stat]))
-        ordinal = row[stat, "ordinal"]
-        total = row[stat, "total"]
-        types = pluralize(row["type"])
-        row_text = row_text.replace("$ordinal", f"{ordinal:.0f} of {total:.0f} {types}")
-        row_text = row_text.replace(
-            "$percentile",
-            render_percentile(100 * (1 - row[stat, "ordinal"] / row[stat, "total"])),
-        )
-        row_text = row_text.replace(
-            "$ba_within_type",
-            display_pointers_as_links(row.longname, ptrs_within_type[stat]),
-        )
-        row_text = row_text.replace(
-            "$ba_overall", display_pointers_as_links(row.longname, ptrs_overall[stat])
-        )
-        table_rows.append(row_text)
-    html = html.replace("$rows", "\n".join(table_rows))
 
+    for stat in statistic_names:
+        row_text = dict(
+            statname=statistic_names[stat],
+            statval=float(row[stat]),
+            ordinal=0 if np.isnan(row[stat, "ordinal"]) else int(row[stat, "ordinal"]),
+            total_in_class=int(row[stat, "total"]),
+            row_type=row["type"],
+            ba_within_type=ptrs_within_type[stat][row.longname],
+            ba_overall=ptrs_overall[stat][row.longname],
+        )
+        data["rows"].append(row_text)
     to_add = set()
     for relationship_type in relationships:
         to_add.update(relationships[relationship_type].get(row.longname, set()))
-    rows = []
     to_add = [x for x in to_add if x in long_to_population]
     to_add = sorted(to_add, key=lambda x: (-long_to_population[x], x))
-    for longname in to_add:
-        rows.append(
-            link_template.replace("$shortname", long_to_short[longname])
-            .replace("$path", create_filename(longname))
-            .replace("$class", f"b_{long_to_type[longname].lower()}")
-        )
-    html = html.replace(f"$related", "\n".join(rows))
+    data["related"] = [
+        dict(longname=x, shortname=long_to_short[x], row_type=long_to_type[x])
+        for x in to_add
+    ]
 
-    name = create_filename(row.longname)
+    name = create_filename(row.longname)[0:-5] + ".json"
     with open(f"{folder}/{name}", "w") as f:
-        f.write(html)
+        json.dump(data, f, indent=2)
     return name
 
 
