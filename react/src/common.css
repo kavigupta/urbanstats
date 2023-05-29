@@ -1,3 +1,8 @@
 .serif {
     font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
 }
+
+.centered_text {
+    font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
+    text-align: center;
+}

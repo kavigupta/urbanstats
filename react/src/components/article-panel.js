@@ -14,8 +14,8 @@ class ArticlePanel extends React.Component {
     render() {
         return (
             <div>
-                <div className="text shortname">{this.props.shortname}</div>
-                <div className="text longname">{this.props.longname}</div>
+                <div className="centered_text shortname">{this.props.shortname}</div>
+                <div className="centered_text longname">{this.props.longname}</div>
 
                 <table className="centered_table">
                     <tbody>
@@ -37,7 +37,7 @@ class ArticlePanel extends React.Component {
                     </ul>
                 </div>
 
-                <div className="text description centered_table">Source for {this.props.shortname}'s shape
+                <div className="centered_text description centered_table">Source for {this.props.shortname}'s shape
                     is {this.props.source}. AW (area weighted) density is the standard Population/Area density.
                     PW (population weighted) density with a radius of X is the population-weighted density within
                     X miles of each census block's interior point, as defined by the census. For more information,
