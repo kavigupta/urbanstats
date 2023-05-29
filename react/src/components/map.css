@@ -1,6 +1,6 @@
 .map {
     width: 100%;
     position: relative;
-    height: 60%;
+    height: calc(min(60%, 50em));
     border: 1px solid #ccc;
 }
