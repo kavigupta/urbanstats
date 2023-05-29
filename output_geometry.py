@@ -18,7 +18,6 @@ def convert(geo):
 
 def produce_geometry_json(folder, r):
     fname = create_filename(r.longname)
-    fname = fname[:-5] + ".json"
     with open(f"{folder}/{fname}", "w") as f:
         json.dump(convert(r.geometry), f)
 
