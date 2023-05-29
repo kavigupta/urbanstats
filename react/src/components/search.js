@@ -4,6 +4,7 @@ export { SearchBox };
 
 import { loadJSON } from '../load_json.js';
 import { article_link } from '../navigation/links';
+import "../common.css";
 
 class SearchBox extends React.Component {
     constructor(props) {
