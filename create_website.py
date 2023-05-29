@@ -100,8 +100,9 @@ def main(no_geo=False, no_data=False):
     if not no_data:
         create_page_jsons(full)
 
-    shutil.copy("html_templates/index.html", f"{folder}/")
     shutil.copy("html_templates/article.html", f"{folder}")
+    shutil.copy("html_templates/index.html", f"{folder}/")
+
     shutil.copy("thumbnail.png", f"{folder}/")
     shutil.copy("banner.png", f"{folder}/")
 
