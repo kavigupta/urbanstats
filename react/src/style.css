@@ -152,16 +152,10 @@
 }
 
 .searchbox {
-    position: relative;
-    font-size: 16px;
-    /* Increase font-size */
-    padding: 12px 20px 12px 20px;
-    /* Add some padding */
+    font-size: 30px;
     border: 1px solid #444;
-    /* Add a grey border */
-    /* Add some space below the input */
+    padding-left: 1em;
     width: 100%;
-    height: 100%;
     vertical-align: middle;
 }
 

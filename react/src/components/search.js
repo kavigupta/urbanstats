@@ -4,6 +4,7 @@ export { SearchBox };
 
 import { loadJSON } from '../load_json.js';
 import { article_link } from '../navigation/links';
+import "../common.css";
 
 class SearchBox extends React.Component {
     constructor(props) {
@@ -16,8 +17,13 @@ class SearchBox extends React.Component {
     }
 
     render() {
-        return (<form autoComplete="off" ref={this.form} style={{ height: "100%", marginBlockEnd: "0em" }}>
-            <input ref={this.textbox} type="text" className="searchbox text shortname" list="search-result" />
+        return (<form autoComplete="off" ref={this.form} style={{ marginBlockEnd: "0em" }}>
+            <input
+                ref={this.textbox}
+                type="text"
+                className="searchbox serif"
+                list="search-result"
+                placeholder="Search Density Database" />
             <datalist id="search-result">
                 {this.state.matches.map((i) => <option key={i} value={this.values[i]} />)}
             </datalist>
