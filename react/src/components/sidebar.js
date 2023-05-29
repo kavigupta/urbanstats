@@ -5,6 +5,8 @@ import React from 'react';
 import "../style.css";
 import "./sidebar.css";
 
+import { uniform, by_population } from "../navigation/random.js";
+
 class Sidebar extends React.Component {
     constructor(props) {
         super(props);
@@ -24,6 +26,17 @@ class Sidebar extends React.Component {
                         </li>
                         <li>
                             <a href="/data-credit.html">Data Credit</a>
+                        </li>
+                    </ul>
+                </div>
+                <div className="sidebar-section">
+                    <div className="sidebar-section-title">Random</div>
+                    <ul className="sidebar-section-content">
+                        <li>
+                            <a href="#" onClick={uniform}>Unweighted</a>
+                        </li>
+                        <li>
+                            <a href="#" onClick={by_population}>Weighted by Population</a>
                         </li>
                     </ul>
                 </div>
