@@ -1,0 +1,38 @@
+.main_panel {
+    position: relative;
+    max-width: 80em;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.left_panel {
+    width: 20%;
+    float: left;
+}
+
+.right_panel {
+    width: 80%;
+    padding-left: 2em;
+}
+
+.top_panel {
+    position: relative;
+    width: 100%;
+    height: 3em;
+    display: flex;
+    align-items: center;
+}
+
+.body_panel {
+    position: relative;
+    width: 100%;
+    display: flex;
+}
+
+.gap {
+    margin-block-end: 2em;
+}
+
+.serif {
+    font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
+}
