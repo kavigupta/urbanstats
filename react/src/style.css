@@ -57,18 +57,10 @@
 }
 
 .centered_table {
-    width: calc(min(80vw, 800px));
+    width: calc(min(80%, 800px));
     position: relative;
-    left: calc((100vw - min(80vw, 800px)) / 2);
+    left: calc((100% - min(80%, 800px)) / 2);
     border-collapse: collapse;
-}
-
-.map {
-    width: calc(min(70vw, 700px));
-    position: relative;
-    left: calc((100vw - min(70vw, 700px)) / 2);
-    height: calc(min(60vw, 600px));
-    border: 1px solid #ccc;
 }
 
 .tableheader {
@@ -78,8 +70,7 @@
 
 .linklist {
     display: inline-block;
-    /* display: flex; */
-    /* margin: 20px 0; */
+    padding-inline-start: 0px;
     list-style-type: none;
 }
 

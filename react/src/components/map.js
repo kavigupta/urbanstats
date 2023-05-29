@@ -3,6 +3,7 @@ import React from 'react';
 export { Map };
 
 import { shape_link } from "../navigation/links.js";
+import "./map.css";
 
 class Map extends React.Component {
     constructor(props) {
@@ -11,7 +12,7 @@ class Map extends React.Component {
 
     render() {
         return (
-            <div id={this.props.id} className="centered_table map"></div>
+            <div id={this.props.id} className="map"></div>
         );
     }
 
