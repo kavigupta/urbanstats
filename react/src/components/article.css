@@ -3,10 +3,3 @@
     position: relative;
     border-collapse: collapse;
 }
-
-.map {
-    width: 100%;
-    position: relative;
-    height: 60%;
-    border: 1px solid #ccc;
-}

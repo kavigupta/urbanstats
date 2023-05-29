@@ -3,6 +3,7 @@ import React from 'react';
 export { Map };
 
 import { shape_link } from "../navigation/links.js";
+import "./map.css";
 
 class Map extends React.Component {
     constructor(props) {
