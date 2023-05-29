@@ -13,18 +13,18 @@ class StatisticRowRaw extends React.Component {
         return (
             <tr className={this.props.is_header ? "tableheader" : ""}>
                 <td style={{ width: "31%" }}>
-                    <span className="text value">{
+                    <span className="serif value">{
                         this.props.is_header ? "Statistic" : this.props.statname}
                     </span>
                 </td>
                 <td style={{ width: "15%" }}>
-                    <span className="text value">{
+                    <span className="serif value">{
                         this.props.is_header
                             ? "Value"
                             : <Statistic statname={this.props.statname} value={this.props.statval} />}</span>
                 </td>
                 <td style={{ width: "25%" }}>
-                    <span className="text ordinal">{
+                    <span className="serif ordinal">{
                         this.props.is_header
                             ? "Ordinal"
                             : <Ordinal ordinal={this.props.ordinal}
@@ -33,7 +33,7 @@ class StatisticRowRaw extends React.Component {
                     }</span>
                 </td>
                 <td style={{ width: "17%" }}>
-                    <span className="text ordinal">{
+                    <span className="serif ordinal">{
                         this.props.is_header
                             ? "Percentile"
                             : <Percentile ordinal={this.props.ordinal}
@@ -41,13 +41,13 @@ class StatisticRowRaw extends React.Component {
                     }</span>
                 </td>
                 <td style={{ width: "8%" }}>
-                    <span className="text ordinal">{
+                    <span className="serif ordinal">{
                         this.props.is_header
                             ? "Within Type"
                             : <PointerButtons pointers={this.props.ba_within_type} />}</span>
                 </td>
                 <td style={{ width: "8%" }}>
-                    <span className="text ordinal">{
+                    <span className="serif ordinal">{
                         this.props.is_header
                             ? "Overall"
                             : <PointerButtons pointers={this.props.ba_overall} />}</span>

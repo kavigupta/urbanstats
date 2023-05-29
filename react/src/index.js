@@ -20,7 +20,7 @@ class IndexPanel extends React.Component {
                     <a href="/index.html"><img src="/banner.png" className="logo" alt="Density Database Logo" width="100%" /></a>
                 </div>
 
-                <div className="text centered_table" style={{ textAlign: "left" }}>
+                <div className="centered_text centered_table" style={{ textAlign: "left" }}>
                     <p>The Density Database is a database of various statistics related to density, housing, and race
                         in the United States for a variety of regions. It is intended to be a resource for journalists,
                         researchers, and anyone else who is interested in these topics. The data is collected from the
@@ -42,18 +42,18 @@ class IndexPanel extends React.Component {
                     <tbody>
                         <tr>
                             <td style={{ width: "20%" }}>
-                                <div className="text main_page_header" style={{ verticalAlign: "middle", marginRight: "0.2em" }}>Random</div>
+                                <div className="serif main_page_header" style={{ verticalAlign: "middle", marginRight: "0.2em" }}>Random</div>
                             </td>
                             <td style={{ width: "80%" }}>
                                 <table>
                                     <tbody>
                                         <tr>
                                             <td>
-                                                <button className="text button_random"
+                                                <button className="serif button_random"
                                                     onClick={uniform}>Uniform</button>
                                             </td>
                                             <td>
-                                                <button className="text button_random"
+                                                <button className="serif button_random"
                                                     onClick={by_population}>Weighted by Population</button>
                                             </td>
                                         </tr>
@@ -63,7 +63,7 @@ class IndexPanel extends React.Component {
                         </tr>
                         <tr>
                             <td style={{ width: "20%" }}>
-                                <div className="text main_page_header">Search</div>
+                                <div className="serif main_page_header">Search</div>
                             </td>
                             <td style={{ width: "80%" }}>
                                 <SearchBox id="q" />

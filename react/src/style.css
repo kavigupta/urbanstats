@@ -14,11 +14,6 @@
     min-height: 100%
 }
 
-.text {
-    font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
-    text-align: center;
-}
-
 .shortname {
     font-size: 60px;
     font-weight: bold;

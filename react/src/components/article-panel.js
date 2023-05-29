@@ -17,8 +17,8 @@ class ArticlePanel extends React.Component {
     render() {
         const main_content = (
             <div>
-                <div className="text shortname">{this.props.shortname}</div>
-                <div className="text longname">{this.props.longname}</div>
+                <div className="centered_text shortname">{this.props.shortname}</div>
+                <div className="centered_text longname">{this.props.longname}</div>
 
                 <table className="stats_table">
                     <tbody>

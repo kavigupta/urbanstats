@@ -6,33 +6,6 @@ from census_blocks import RADII
 from stats_for_shapefile import racial_statistics, housing_stats
 from election_data import vest_elections
 
-row_template = """
-<tr $class>
-    <td style="width: 31%;">
-        <span class="text value">$statname:</span>
-    </td>
-    <td style="width: 15%;">
-        <span class="text value">$statval</span>
-    </td>
-    <td style="width: 25%;">
-        <span class="text ordinal">$ordinal</span>
-    </td>
-    <td style="width: 17%;">
-        <span class="text ordinal">$percentile</span>
-    </td>
-    <td style="width: 8%;">
-        <span class="text ordinal">$ba_within_type</span>
-    </td>
-    <td style="width: 8%;">
-        <span class="text ordinal">$ba_overall</span>
-    </td>
-</tr>
-"""
-
-link_template = """
-<li class="linklistel"><a class="button $class" href="$path">$shortname</a></li>
-"""
-
 
 def get_statistic_names():
     ad = {f"ad_{k}": f"PW Density (r={format_radius(k)})" for k in RADII}
@@ -45,17 +18,6 @@ def get_statistic_names():
         **{(elect.name, "margin"): elect.name for elect in vest_elections},
         **{k: ad[k] for k in ad if k != "ad_1"},
     }
-
-
-def pointer_link(label, name):
-    if name is None:
-        return f'<span class="button">&nbsp;&nbsp;</span>'
-    return f'<a class="button" href="{create_filename(name)}">{label}</a>'
-
-
-def display_pointers_as_links(current, ptrs):
-    prev, next = ptrs[current]
-    return pointer_link("<", prev) + " " + pointer_link(">", next)
 
 
 def create_page_json(
@@ -97,7 +59,7 @@ def create_page_json(
         for x in to_add
     ]
 
-    name = create_filename(row.longname)[0:-5] + ".json"
+    name = create_filename(row.longname)
     with open(f"{folder}/{name}", "w") as f:
         json.dump(data, f, indent=2)
     return name
@@ -105,7 +67,7 @@ def create_page_json(
 
 def create_filename(x):
     x = x.replace("/", " slash ")
-    return f"{x}.html"
+    return f"{x}.json"
 
 
 def add_ordinals(frame):
@@ -117,62 +79,9 @@ def add_ordinals(frame):
     return frame
 
 
-def format_population(x):
-    if x > 1e6:
-        return f"{x / 1e6:.1f}m"
-    elif x > 1e3:
-        return f"{x / 1e3:.1f}k"
-    else:
-        return f"{x:.0f}"
-
-
-def format_density(x):
-    if x > 10:
-        return f"{x:.0f}/km<sup>2</sup>"
-    elif x > 1:
-        return f"{x:.1f}/km<sup>2</sup>"
-    else:
-        return f"{x:.2f}/km<sup>2</sup>"
-
-
-def format_statistic(name, x):
-    if name == "population":
-        return format_population(x)
-    if "%" in get_statistic_names()[name]:
-        return f"{x:.2%}"
-    if name == "housing_per_pop":
-        return f"{x:.3f}"
-    return format_density(x)
-
-
 def format_radius(x):
     if x < 1:
         return f"{x * 1000:.0f}m"
     else:
         assert x == int(x)
         return f"{x:.0f}km"
-
-
-def render_percentile(pct):
-    """
-    Take a percentile value like 33.2 and return "33rd percentile".
-    """
-    if pct != pct:
-        return "N/A"
-    pct = round(pct)
-    if pct % 10 == 1:
-        suffix = "st"
-    elif pct % 10 == 2:
-        suffix = "nd"
-    elif pct % 10 == 3:
-        suffix = "rd"
-    else:
-        suffix = "th"
-    return f"{pct}{suffix} percentile"
-
-
-def pluralize(x):
-    if x.endswith("y"):
-        return x[:-1] + "ies"
-    else:
-        return x + "s"
