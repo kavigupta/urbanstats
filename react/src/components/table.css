@@ -1,0 +1,14 @@
+
+
+.value_numeric {
+    text-align: right;
+}
+
+.value_unit {
+    text-align: left;
+    padding-right: 1em;
+}
+
+.oddrow {
+    background-color: #f8f8f8;
+}

@@ -1,0 +1,29 @@
+
+.sidebar {
+    /*add some space to the left*/
+    background-color: #f8f8f8;
+    padding: 2rem;
+    font-size: 12pt;
+}
+
+.sidebar-section-title {
+    margin-bottom: 0.5rem;
+    border-bottom: 1px solid #ccc;
+    color: #444;
+}
+
+.sidebar-section-content {
+   margin-left: 1rem;
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+}
+
+.sidebar-section-content a {
+    color: #22f;
+    text-decoration: none;
+}
+
+.sidebar-section-content li {
+    margin-bottom: 0.5rem;
+}

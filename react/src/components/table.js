@@ -2,6 +2,7 @@ import React from 'react';
 
 export { StatisticRowRaw };
 import { article_link } from "../navigation/links.js";
+import "./table.css";
 
 
 class StatisticRowRaw extends React.Component {
@@ -11,17 +12,23 @@ class StatisticRowRaw extends React.Component {
 
     render() {
         return (
-            <tr className={this.props.is_header ? "tableheader" : ""}>
+            <tr className={this.props.is_header ? "tableheader" : this.props.index % 2 == 1 ? "oddrow" : ""}>
                 <td style={{ width: "31%" }}>
                     <span className="serif value">{
                         this.props.is_header ? "Statistic" : this.props.statname}
                     </span>
                 </td>
-                <td style={{ width: "15%" }}>
+                <td className="value_numeric" style={{ width: "10%" }}>
                     <span className="serif value">{
                         this.props.is_header
                             ? "Value"
-                            : <Statistic statname={this.props.statname} value={this.props.statval} />}</span>
+                            : <Statistic statname={this.props.statname} value={this.props.statval} is_unit={false} />}</span>
+                </td>
+                <td className="value_unit" style={{ width: "5%" }}>
+                    <span className="serif value">{
+                        this.props.is_header
+                            ? ""
+                            : <Statistic statname={this.props.statname} value={this.props.statval} is_unit={true} />}</span>
                 </td>
                 <td style={{ width: "25%" }}>
                     <span className="serif ordinal">{
@@ -66,6 +73,7 @@ class Statistic extends React.Component {
     render() {
         const name = this.props.statname;
         const value = this.props.value;
+        const is_unit = this.props.is_unit;
         if (name.includes("Density")) {
             let places = 2;
             if (value > 10) {
@@ -73,19 +81,37 @@ class Statistic extends React.Component {
             } else if (value > 1) {
                 places = 1;
             }
-            return <span>{value.toFixed(places)}/km< sup>2</sup></span>;
+            if (is_unit) {
+                return <span>/&nbsp;km<sup>2</sup></span>;
+            }
+            return <span>{value.toFixed(places)}</span>;
         } else if (name == "Population") {
             if (value > 1e6) {
-                return <span>{(value / 1e6).toFixed(1)}m</span>;
+                if (is_unit) {
+                    return <span>m</span>;
+                }
+                return <span>{(value / 1e6).toFixed(1)}</span>;
             } else if (value > 1e3) {
-                return <span>{(value / 1e3).toFixed(1)}k</span>;
+                if (is_unit) {
+                    return <span>k</span>;
+                }
+                return <span>{(value / 1e3).toFixed(1)}</span>;
             } else {
                 return <span>{value.toFixed(0)}</span>;
             }
         } else if (name.includes("%")) {
-            return <span>{(value * 100).toFixed(2)}%</span>;
+            if (is_unit) {
+                return <span>%</span>;
+            }
+            return <span>{(value * 100).toFixed(2)}</span>;
         } else if (name.includes("Election")) {
+            if (is_unit) {
+                return <span>%</span>;
+            }
             return <ElectionResult value={value} />;
+        }
+        if (is_unit) {
+            return <span></span>;
         }
         return <span>{value.toFixed(3)}</span>;
     }

@@ -1,8 +1,6 @@
 .map {
     width: 100%;
-    width: calc(min(70%, 700px));
     position: relative;
-    left: calc((100% - min(70%, 700px)) / 2);
-    height: 60%;
+    height: calc(min(60%, 50em));
     border: 1px solid #ccc;
 }

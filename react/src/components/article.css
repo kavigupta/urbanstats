@@ -1,0 +1,5 @@
+.stats_table {
+    width: 100%;
+    position: relative;
+    border-collapse: collapse;
+}

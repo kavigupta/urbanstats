@@ -105,8 +105,8 @@ shapefiles = dict(
         meta=dict(type="ZIP", source="Census"),
     ),
     cousub=Shapefile(
-        hash_key="census_cousub_5",
-        path="named_region_shapefiles/cb_2022_us_cousub_500k.zip",
+        hash_key="census_cousub_6",
+        path="named_region_shapefiles/cb_2020_us_cousub_500k.zip",
         shortname_extractor=lambda x: f"{x.NAMELSAD}",
         longname_extractor=lambda x: f"{x.NAMELSAD} [CCD], {x.NAMELSADCO}, {x.STATE_NAME}, USA",
         filter=lambda x: current_state(x["STUSPS"]),

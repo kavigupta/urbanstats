@@ -1,0 +1,25 @@
+.related_areas {
+    display: flex;
+    flex-direction: row;
+    align-items: start;
+    flex-grow: 1;
+    flex-basis: 0;
+}
+
+.linklist {
+    display: inline-block;
+    padding-inline-start: 0px;
+    list-style-type: none;
+    flex-grow: 1;
+    width: 25%;
+}
+
+.linklistel {
+    float: left;
+    padding-right: 0.3em;
+}
+
+.linklistelfirst {
+    padding-right: 0.3em;
+    font-weight: bold;
+}
