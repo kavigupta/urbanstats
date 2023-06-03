@@ -19,7 +19,7 @@ function create_page(props, main_content) {
                 <div className="right_panel">
                     {main_content}
                     <div className="gap"></div>
-                    <div className="centered_text">Density Database Version 1.3.4 by Kavi Gupta. Last updated 2023-05-28.</div>
+                    <div className="centered_text">Density Database Version 2.0.0 by Kavi Gupta. Last updated 2023-06-03.</div>
                 </div>
             </div>
         </div>
