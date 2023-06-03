@@ -73,15 +73,24 @@ function autocompleteMatch(values, input) {
     if (input == '') {
         return [];
     }
-    var reg = new RegExp(input)
     let matches = [];
     for (let i = 0; i < values.length; i++) {
-        if (values[i].toLowerCase().match(reg)) {
+        if (is_a_match(input, values[i].toLowerCase())) {
             matches.push(i);
         }
         if (matches.length >= 10) {
             break;
         }
     }
+    console.log(input);
+    console.log(matches);
     return matches;
+}
+
+/*
+    Check whether a is a substring of b.
+
+*/
+function is_a_match(a, b) {
+    return b.includes(a);
 }
