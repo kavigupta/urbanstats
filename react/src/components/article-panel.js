@@ -4,7 +4,7 @@ import React from 'react';
 
 import { StatisticRowRaw } from "./table.js";
 import { Map } from "./map.js";
-import { RelatedButton } from "./related-button.js";
+import { Related } from "./related-button.js";
 import { create_page } from "../page_template/template.js";
 import "../common.css";
 import "./article.css";
@@ -23,7 +23,7 @@ class ArticlePanel extends React.Component {
                 <table className="stats_table">
                     <tbody>
                         <StatisticRowRaw is_header={true} />
-                        {this.props.rows.map((row, i) => <StatisticRowRaw key={i} {...row} />)}
+                        {this.props.rows.map((row, i) => <StatisticRowRaw key={i} index={i} {...row} />)}
                     </tbody>
                 </table>
 
@@ -33,12 +33,7 @@ class ArticlePanel extends React.Component {
 
                 <script src="/scripts/map.js"></script>
 
-                <div className="stats_table">
-                    <ul className="linklist">
-                        <li className="linklistelfirst">Related</li>
-                        {this.props.related.map((row, i) => <RelatedButton key={i} {...row} />)}
-                    </ul>
-                </div>
+                <Related {...this.props.related} />
             </div>
         );
         return create_page(this.props, main_content);

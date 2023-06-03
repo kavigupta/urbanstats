@@ -63,22 +63,6 @@
     font-weight: bold;
 }
 
-.linklist {
-    display: inline-block;
-    padding-inline-start: 0px;
-    list-style-type: none;
-}
-
-.linklistel {
-    float: left;
-    padding-right: 0.3em;
-}
-
-.linklistelfirst {
-    padding-right: 0.3em;
-    font-weight: bold;
-}
-
 .button {
     font: bold 11px Arial;
     text-decoration: none;

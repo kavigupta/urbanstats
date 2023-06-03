@@ -5,6 +5,7 @@ import numpy as np
 from census_blocks import RADII
 from stats_for_shapefile import racial_statistics, housing_stats
 from election_data import vest_elections
+from relationship import ordering_idx
 
 
 def get_statistic_names():
@@ -49,15 +50,17 @@ def create_page_json(
             ba_overall=ptrs_overall[stat][row.longname],
         )
         data["rows"].append(row_text)
-    to_add = set()
+    to_add = {}
     for relationship_type in relationships:
-        to_add.update(relationships[relationship_type].get(row.longname, set()))
-    to_add = [x for x in to_add if x in long_to_population]
-    to_add = sorted(to_add, key=lambda x: (-long_to_population[x], x))
-    data["related"] = [
-        dict(longname=x, shortname=long_to_short[x], row_type=long_to_type[x])
-        for x in to_add
-    ]
+        for_this = relationships[relationship_type].get(row.longname, set())
+        for_this = [x for x in for_this if x in long_to_population]
+        for_this = sorted(for_this, key=lambda x: (ordering_idx[long_to_type[x]], x))
+        for_this = [
+            dict(longname=x, shortname=long_to_short[x], row_type=long_to_type[x])
+            for x in for_this
+        ]
+        to_add[relationship_type] = for_this
+    data["related"] = to_add
 
     name = create_filename(row.longname)
     with open(f"{folder}/{name}", "w") as f:
