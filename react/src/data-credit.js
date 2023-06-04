@@ -3,16 +3,16 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import "./style.css";
 import "./common.css";
-import { create_page } from "./page_template/template.js";
+import { PageTemplate } from "./page_template/template.js";
 
 
-class DataCreditPanel extends React.Component {
+class DataCreditPanel extends PageTemplate {
     constructor(props) {
         super(props);
     }
 
-    render() {
-        const main_content = (
+    main_content() {
+        return (
             <div className="serif">
                 <div className="text shortname">Data Credit</div>
 
@@ -24,7 +24,6 @@ class DataCreditPanel extends React.Component {
 
             </div>
         );
-        return create_page(this.props, main_content);
     }
 }
 

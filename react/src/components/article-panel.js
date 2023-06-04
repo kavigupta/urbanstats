@@ -5,17 +5,17 @@ import React from 'react';
 import { StatisticRowRaw } from "./table.js";
 import { Map } from "./map.js";
 import { Related } from "./related-button.js";
-import { create_page } from "../page_template/template.js";
+import { PageTemplate } from "../page_template/template.js";
 import "../common.css";
 import "./article.css";
 
-class ArticlePanel extends React.Component {
+class ArticlePanel extends PageTemplate {
     constructor(props) {
         super(props);
     }
 
-    render() {
-        const main_content = (
+    main_content() {
+        return (
             <div>
                 <div className="centered_text shortname">{this.props.shortname}</div>
                 <div className="centered_text longname">{this.props.longname}</div>
@@ -36,6 +36,6 @@ class ArticlePanel extends React.Component {
                 <Related {...this.props.related} />
             </div>
         );
-        return create_page(this.props, main_content);
     }
 }
+

@@ -3,16 +3,16 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import "./style.css";
 import "./common.css";
-import { create_page } from "./page_template/template.js";
+import { PageTemplate } from "./page_template/template.js";
 
 
-class AboutPanel extends React.Component {
+class AboutPanel extends PageTemplate {
     constructor(props) {
         super(props);
     }
 
-    render() {
-        const main_content = (
+    main_content() {
+        return (
             <div className="serif">
                 <div className="text shortname">About</div>
 
@@ -34,7 +34,6 @@ class AboutPanel extends React.Component {
                 </p>
             </div>
         );
-        return create_page(this.props, main_content);
     }
 }
 
