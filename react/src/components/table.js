@@ -22,13 +22,13 @@ class StatisticRowRaw extends React.Component {
                     <span className="serif value">{
                         this.props.is_header
                             ? "Value"
-                            : <Statistic statname={this.props.statname} value={this.props.statval} is_unit={false} />}</span>
+                            : <Statistic statname={this.props.statname} value={this.props.statval} is_unit={false} settings={this.props.settings} />}</span>
                 </td>
                 <td className="value_unit" style={{ width: "5%" }}>
                     <span className="serif value">{
                         this.props.is_header
                             ? ""
-                            : <Statistic statname={this.props.statname} value={this.props.statval} is_unit={true} />}</span>
+                            : <Statistic statname={this.props.statname} value={this.props.statval} is_unit={true} settings={this.props.settings}/>}</span>
                 </td>
                 <td style={{ width: "25%" }}>
                     <span className="serif ordinal">{
@@ -72,9 +72,15 @@ class Statistic extends React.Component {
 
     render() {
         const name = this.props.statname;
-        const value = this.props.value;
+        let value = this.props.value;
         const is_unit = this.props.is_unit;
         if (name.includes("Density")) {
+            const is_imperial = this.props.settings.use_imperial;
+            let unit_name = "km";
+            if (is_imperial) {
+                unit_name = "mi";
+                value *= 1.60934 * 1.60934;
+            }
             let places = 2;
             if (value > 10) {
                 places = 0;
@@ -82,7 +88,7 @@ class Statistic extends React.Component {
                 places = 1;
             }
             if (is_unit) {
-                return <span>/&nbsp;km<sup>2</sup></span>;
+                return <span>/&nbsp;{unit_name}<sup>2</sup></span>;
             }
             return <span>{value.toFixed(places)}</span>;
         } else if (name == "Population") {

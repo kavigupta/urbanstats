@@ -23,7 +23,7 @@ class ArticlePanel extends PageTemplate {
                 <table className="stats_table">
                     <tbody>
                         <StatisticRowRaw is_header={true} />
-                        {this.props.rows.map((row, i) => <StatisticRowRaw key={i} index={i} {...row} />)}
+                        {this.props.rows.map((row, i) => <StatisticRowRaw key={i} index={i} {...row} settings={this.state.settings}/>)}
                     </tbody>
                 </table>
 

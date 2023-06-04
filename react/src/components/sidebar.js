@@ -40,7 +40,34 @@ class Sidebar extends React.Component {
                         </li>
                     </ul>
                 </div>
+                <div className="sidebar-section">
+                    <div className="sidebar-section-title">Settings</div>
+                    <ul className="sidebar-section-content">
+                        <li>
+                            <CheckboxSetting
+                                name="Use Imperial Units"
+                                setting_key="use_imperial"
+                                settings={this.props.settings}
+                                set_setting={this.props.set_setting}
+                            />
+                        </li>
+                    </ul>
+                </div>
             </div>
         );
     }
 }
+
+const CheckboxSetting = props => {
+
+    return (
+        <div>
+            <input
+                type="checkbox"
+                checked={props.settings[props.setting_key]}
+                onChange={e => { props.set_setting(props.setting_key, e.target.checked) }}
+            />
+            <label>{props.name}</label>
+        </div>
+    );
+};
