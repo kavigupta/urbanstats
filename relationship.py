@@ -100,11 +100,27 @@ def full_relationships():
                 add(intersects, a_intersects_b)
                 add(borders, a_borders_b)
 
+    same_geography = defaultdict(set)
+    for k in contained_by:
+        for v in contained_by[k]:
+            if k in contains and v in contains[k]:
+                if k != v:
+                    same_geography[k].add(v)
+
+    contains = {
+        k: {v for v in vs if v not in same_geography[k]} for k, vs in contains.items()
+    }
+    contained_by = {
+        k: {v for v in vs if v not in same_geography[k]}
+        for k, vs in contained_by.items()
+    }
+
     results = dict(
-        contains=contains,
+        same_geography=same_geography,
         contained_by=contained_by,
-        intersects=intersects,
+        contains=contains,
         borders=borders,
+        intersects=intersects,
     )
     return {
         k: {k2: sorted(list(v2 - {k2})) for k2, v2 in v.items()}

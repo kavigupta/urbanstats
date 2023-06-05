@@ -35,7 +35,7 @@ class PageTemplate extends React.Component {
                     <div className="right_panel">
                         {this.main_content()}
                         <div className="gap"></div>
-                        <div className="centered_text">Density Database Version 2.0.1 by Kavi Gupta. Last updated 2023-06-03.</div>
+                        <div className="centered_text">Density Database Version 2.0.2 by Kavi Gupta. Last updated 2023-06-04.</div>
                     </div>
                 </div>
             </div>
