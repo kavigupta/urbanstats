@@ -86,6 +86,8 @@ def full_relationships():
     for k1 in shapefiles:
         for k2 in shapefiles:
             print(k1, k2)
+            if k1 < k2:
+                continue
             if abs(tier_idx[k1] - tier_idx[k2]) > 1:
                 continue
             (
@@ -95,10 +97,14 @@ def full_relationships():
                 a_borders_b,
             ) = create_relationships(shapefiles[k1], shapefiles[k2])
             add(contains, a_contains_b)
+            add(contains, [(big, small) for small, big in b_contains_a])
             add(contained_by, b_contains_a)
+            add(contained_by, [(big, small) for small, big in a_contains_b])
             if tier_idx[k1] == tier_idx[k2]:
                 add(intersects, a_intersects_b)
+                add(intersects, [(big, small) for small, big in a_intersects_b])
                 add(borders, a_borders_b)
+                add(borders, [(big, small) for small, big in a_borders_b])
 
     same_geography = defaultdict(set)
     for k in contained_by:
