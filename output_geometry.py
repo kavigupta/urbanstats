@@ -13,7 +13,7 @@ def convert(geo):
         coords = np.array([y, x]).T.tolist()
         return [coords]
     assert isinstance(geo, shapely.geometry.multipolygon.MultiPolygon)
-    return [x for g in geo for x in convert(g)]
+    return [x for g in geo.geoms for x in convert(g)]
 
 
 def produce_geometry_json(folder, r):
