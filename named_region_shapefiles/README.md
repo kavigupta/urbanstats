@@ -30,3 +30,20 @@ Source: https://catalog.data.gov/dataset/neighborhoods-us-2017-zillow-segs
 
 Source: https://transition.fcc.gov/oet/info/maps/census/fips/fips.txt
   - county_map.txt
+
+# From UCLA
+
+Source: https://cdmaps.polisci.ucla.edu/; Version 1.5 (April 22, 2020)
+  - 1-114th Congressional Districts, 115th-117th for districts that were not changed
+
+# From Data Catalog
+
+Source: https://catalog.data.gov/dataset/tiger-line-shapefile-2016-nation-u-s-115th-congressional-district-national
+  - 115th Congressional Districts for 115th Congress in VA, FL, NC
+Source: https://catalog.data.gov/dataset/tiger-line-shapefile-2019-nation-u-s-116th-congressional-district-national
+  - 116th Congressional Districts for 116th Congress in PA
+
+# From NC Legislature
+
+Source: https://www.ncleg.gov/Redistricting/C2022C
+  - 117th Congressional Districts for 117th Congress in NC
