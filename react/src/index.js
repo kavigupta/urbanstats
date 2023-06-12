@@ -6,14 +6,15 @@ import "./common.css";
 
 import { SearchBox } from './components/search.js';
 import { uniform, by_population } from './navigation/random.js';
+import { PageTemplate } from './page_template/template';
 
 
-class IndexPanel extends React.Component {
+class IndexPanel extends PageTemplate {
     constructor(props) {
         super(props);
     }
 
-    render() {
+    main_content() {
         return (
             <div>
                 <div className="centered_table">
@@ -35,42 +36,6 @@ class IndexPanel extends React.Component {
                     <p>Website by Kavi Gupta (<a href="https://kavigupta.org">kavigupta.org</a>, <a
                         href="https://twitter.com/notkavi">@notkavi</a>)</p>
                 </div>
-
-                <p></p>
-
-                <table className="centered_table">
-                    <tbody>
-                        <tr>
-                            <td style={{ width: "20%" }}>
-                                <div className="serif main_page_header" style={{ verticalAlign: "middle", marginRight: "0.2em" }}>Random</div>
-                            </td>
-                            <td style={{ width: "80%" }}>
-                                <table>
-                                    <tbody>
-                                        <tr>
-                                            <td>
-                                                <button className="serif button_random"
-                                                    onClick={uniform}>Uniform</button>
-                                            </td>
-                                            <td>
-                                                <button className="serif button_random"
-                                                    onClick={by_population}>Weighted by Population</button>
-                                            </td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td style={{ width: "20%" }}>
-                                <div className="serif main_page_header">Search</div>
-                            </td>
-                            <td style={{ width: "80%" }}>
-                                <SearchBox id="q" />
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
             </div>
         );
     }
