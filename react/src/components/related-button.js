@@ -59,7 +59,6 @@ class Related extends React.Component {
 
         let elements = [];
         for (const [key, value] of Object.entries(this.props)) {
-            console.log(key, value);
             if (value.length > 0) {
                 elements.push(
                     <RelatedList key={key} name={key} regions={value} />

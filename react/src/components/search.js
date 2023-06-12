@@ -82,8 +82,6 @@ function autocompleteMatch(values, input) {
             break;
         }
     }
-    console.log(input);
-    console.log(matches);
     return matches;
 }
 
