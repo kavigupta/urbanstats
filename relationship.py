@@ -1,12 +1,40 @@
 from collections import defaultdict
+import pandas as pd
 from permacache import permacache
 import geopandas as gpd
 
 from shapefiles import shapefiles
 
 
+def overlays(a, b, a_size, b_size):
+    """
+    Get the overlays between the two shapefiles a and b
+    """
+    if a_size is None and b_size is None:
+        return overlay(a, b)
+    
+    total_frac = 1
+    if a_size is not None:
+        total_frac *= a_size / a.shape[0]
+    if b_size is not None:
+        total_frac *= b_size / b.shape[0]
+    size = max(5, int(total_frac * a.shape[0]))
+    results = []
+    for i in tqdm.trange(0, a.shape[0], size):
+        x, y = a.iloc[i : i + size], b
+        for_chunk = overlay(x, y)
+        results.append(for_chunk)
+    return pd.concat(results).reset_index(drop=True)
+
+def overlay(x, y):
+    for_chunk = gpd.overlay(x, y, how="intersection", keep_geom_type=False)
+    for_chunk["area"] = for_chunk.geometry.to_crs("EPSG:2163").area
+    del for_chunk["geometry"]
+    return for_chunk
+
+
 @permacache(
-    "population_density/relationship/create_relationships_4",
+    "population_density/relationship/create_relationships_5",
     key_function=dict(x=lambda x: x.hash_key, y=lambda y: y.hash_key),
 )
 def create_relationships(x, y):
@@ -15,10 +43,10 @@ def create_relationships(x, y):
     """
     a = x.load_file()
     b = y.load_file()
-    over = gpd.overlay(a, b, how="intersection", keep_geom_type=False)
+    over = overlays(a, b, x.chunk_size, y.chunk_size)
     a_area = dict(zip(a.longname, a.geometry.to_crs("EPSG:2163").area))
     b_area = dict(zip(b.longname, b.geometry.to_crs("EPSG:2163").area))
-    over_area = over.geometry.to_crs("EPSG:2163").area
+    over_area = over["area"]
 
     a_contains_b = set()
     b_contains_a = set()
