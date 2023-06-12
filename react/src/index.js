@@ -4,8 +4,6 @@ import ReactDOM from 'react-dom/client';
 import "./style.css";
 import "./common.css";
 
-import { SearchBox } from './components/search.js';
-import { uniform, by_population } from './navigation/random.js';
 import { PageTemplate } from './page_template/template';
 
 
