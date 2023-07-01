@@ -120,6 +120,9 @@ def main(no_geo=False, no_data=False):
     with open(f"{folder}/index/population.json", "w") as f:
         json.dump(list(full.population), f)
 
+    with open(f"{folder}/CNAME", "w") as f:
+        f.write("densitydb.org")
+
 
 if __name__ == "__main__":
     fire.Fire(main)
