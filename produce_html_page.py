@@ -1,4 +1,5 @@
 import json
+import re
 
 import numpy as np
 
@@ -54,7 +55,9 @@ def create_page_json(
     for relationship_type in relationships:
         for_this = relationships[relationship_type].get(row.longname, set())
         for_this = [x for x in for_this if x in long_to_population]
-        for_this = sorted(for_this, key=lambda x: (ordering_idx[long_to_type[x]], x))
+        for_this = sorted(
+            for_this, key=lambda x: order_key_for_relatioships(x, long_to_type[x])
+        )
         for_this = [
             dict(longname=x, shortname=long_to_short[x], row_type=long_to_type[x])
             for x in for_this
@@ -66,6 +69,15 @@ def create_page_json(
     with open(f"{folder}/{name}", "w") as f:
         json.dump(data, f, indent=2)
     return name
+
+
+def order_key_for_relatioships(longname, typ):
+    processed_longname = longname
+    if typ == "Historical Congressional District":
+        parsed = re.match(r".*[^\d](\d+)[^\d]*Congress", longname)
+        end_congress = int(parsed.group(1))
+        processed_longname = -end_congress, longname
+    return ordering_idx[typ], processed_longname
 
 
 def create_filename(x):
