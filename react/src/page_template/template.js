@@ -14,6 +14,7 @@ class PageTemplate extends React.Component {
         this.state = {
             settings: {
                 use_imperial: JSON.parse(localStorage.getItem("use_imperial")) || false,
+                show_historical_cds: JSON.parse(localStorage.getItem("show_historical_cds")) || false,
             }
         }
     }
@@ -22,7 +23,7 @@ class PageTemplate extends React.Component {
         const self = this;
         return (
             <div className="main_panel">
-                <Header />
+                <Header settings={this.state.settings}/>
                 <div className="gap"></div>
                 <div className="body_panel">
                     <div className="left_panel">

@@ -13,6 +13,7 @@ class Sidebar extends React.Component {
     }
 
     render() {
+        let settings = this.props.settings;
         return (
             <div className="serif sidebar">
                 <div className="sidebar-section">
@@ -33,10 +34,10 @@ class Sidebar extends React.Component {
                     <div className="sidebar-section-title">Random</div>
                     <ul className="sidebar-section-content">
                         <li>
-                            <a href="#" onClick={uniform}>Unweighted</a>
+                            <a href="#" onClick={() => uniform(settings)}>Unweighted</a>
                         </li>
                         <li>
-                            <a href="#" onClick={by_population}>Weighted by Population</a>
+                            <a href="#" onClick={() => by_population(settings)}>Weighted by Population</a>
                         </li>
                     </ul>
                 </div>
@@ -44,9 +45,15 @@ class Sidebar extends React.Component {
                     <div className="sidebar-section-title">Settings</div>
                     <ul className="sidebar-section-content">
                         <li>
-                            <CheckboxSetting
+                        <CheckboxSetting
                                 name="Use Imperial Units"
                                 setting_key="use_imperial"
+                                settings={this.props.settings}
+                                set_setting={this.props.set_setting}
+                            />
+                            <CheckboxSetting
+                                name="Include Historical Districts"
+                                setting_key="show_historical_cds"
                                 settings={this.props.settings}
                                 set_setting={this.props.set_setting}
                             />

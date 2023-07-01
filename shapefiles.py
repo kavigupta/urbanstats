@@ -56,6 +56,44 @@ def county_name(row):
     return f
 
 
+def render_ordinal(x):
+    if x % 100 in {11, 12, 13}:
+        return f"{x}th"
+    if x % 10 == 1:
+        return f"{x}st"
+    if x % 10 == 2:
+        return f"{x}nd"
+    if x % 10 == 3:
+        return f"{x}rd"
+    return f"{x}th"
+
+
+def render_start_and_end(row):
+    start, end = row.start, row.end
+    if start == end:
+        return f"{render_ordinal(start)}"
+    else:
+        return f"{render_ordinal(start)}-{render_ordinal(end)}"
+
+
+def districts(file_name, district_type, district_abbrev):
+    return Shapefile(
+        hash_key=f"current_districts_{file_name}",
+        path=f"named_region_shapefiles/current_district_shapefiles/shapefiles/{file_name}.pkl",
+        shortname_extractor=lambda x: x["state"]
+        + "-"
+        + district_abbrev
+        + x["district"],
+        longname_extractor=lambda x: x["state"]
+        + "-"
+        + district_abbrev
+        + x["district"]
+        + ", USA",
+        meta=dict(type=district_type, source="Census"),
+        filter=lambda x: True,
+    )
+
+
 shapefiles = dict(
     states=Shapefile(
         hash_key="census_states",
@@ -134,5 +172,18 @@ shapefiles = dict(
         filter=lambda x: current_state(x["State"]),
         meta=dict(type="Neighborhood", source="Zillow"),
         drop_dup=True,
+    ),
+    congress=districts("cd118", "Congressional District", ""),
+    state_house=districts("sldl", "State House District", "HD"),
+    state_senate=districts("sldu", "State Senate District", "SD"),
+    historical_congressional=Shapefile(
+        hash_key="historical_congressional_4",
+        path="named_region_shapefiles/congressional_districts/combo/historical.pkl",
+        shortname_extractor=lambda x: f'{x["state"]}-{int(x["district"]):02d} [{render_start_and_end(x)} Congress]',
+        longname_extractor=lambda x: f"Historical Congressional District"
+        + f" {x['state']}-{x['district']}, {render_start_and_end(x)} Congress, USA",
+        filter=lambda x: current_state(x["state"]),
+        meta=dict(type="Historical Congressional District", source="Census"),
+        chunk_size=100,
     ),
 )

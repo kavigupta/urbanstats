@@ -81,35 +81,63 @@
 }
 
 .b_state {
+    /* grey */
     background-color: #ddd;
 }
 
 .b_county {
-    background-color: #fcf;
+    /* red */
+    background-color: #fcc;
 }
 
 .b_ccd {
+    /* purple */
     background-color: #dcf;
 }
 
 .b_csa {
+    /* cyan-blue */
     background-color: #cef;
 }
 
 .b_msa {
+    /* cyan */
     background-color: #dff;
 }
 
 .b_city {
+    /* yellow */
     background-color: #ffc;
 }
 
 .b_neighborhood {
+    /* orange */
     background-color: #fec;
 }
 
 .b_zip {
+    /* green */
     background-color: #cfc;
+}
+
+.b_congressional_district {
+    /* magenta */
+    background-color: #fcf;
+}
+
+.b_state_house_district {
+    /* purple */
+    background-color: #ecf;
+}
+
+.b_state_senate_district {
+    /* anti-purple */
+    background-color: #fce;
+}
+
+.b_historical_congressional_district {
+    /* light magenta */
+    background-color: #fef;
 }
 
 .main_page_header {

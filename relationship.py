@@ -1,7 +1,9 @@
+import re
 from collections import defaultdict
 import pandas as pd
 from permacache import permacache
 import geopandas as gpd
+import tqdm
 
 from shapefiles import shapefiles
 
@@ -12,7 +14,7 @@ def overlays(a, b, a_size, b_size):
     """
     if a_size is None and b_size is None:
         return overlay(a, b)
-    
+
     total_frac = 1
     if a_size is not None:
         total_frac *= a_size / a.shape[0]
@@ -26,6 +28,7 @@ def overlays(a, b, a_size, b_size):
         results.append(for_chunk)
     return pd.concat(results).reset_index(drop=True)
 
+
 def overlay(x, y):
     for_chunk = gpd.overlay(x, y, how="intersection", keep_geom_type=False)
     for_chunk["area"] = for_chunk.geometry.to_crs("EPSG:2163").area
@@ -34,7 +37,7 @@ def overlay(x, y):
 
 
 @permacache(
-    "population_density/relationship/create_relationships_5",
+    "population_density/relationship/create_relationships_6",
     key_function=dict(x=lambda x: x.hash_key, y=lambda y: y.hash_key),
 )
 def create_relationships(x, y):
@@ -59,15 +62,15 @@ def create_relationships(x, y):
         area_over = over_area[i]
         # print(row.longname_1, row.longname_2, area_over / area_1, area_over / area_2)
         contains = False
-        if area_over >= area_2 * 0.9:
+        if area_over >= area_2 * 0.999:
             contains = True
             a_contains_b.add((row.longname_1, row.longname_2))
-        if area_over >= area_1 * 0.9:
+        if area_over >= area_1 * 0.999:
             contains = True
             b_contains_a.add((row.longname_1, row.longname_2))
         if contains:
             pass
-        elif area_over >= min(area_1, area_2) * 0.01:
+        elif area_over >= min(area_1, area_2) * 0.001:
             intersects.add((row.longname_1, row.longname_2))
         else:
             borders.add((row.longname_1, row.longname_2))
@@ -80,6 +83,27 @@ def create_relationships(x, y):
     return a_contains_b, b_contains_a, intersects, borders
 
 
+@permacache(
+    "population_density/relationship/create_relationships_historical_cd_3",
+    key_function=dict(x=lambda x: x.hash_key, y=lambda y: y.hash_key),
+)
+def create_relationships_historical_cd(x, y):
+    a = x.load_file()
+    b = y.load_file()
+    related = gpd.sjoin(a, b)
+    intersects = set()
+    borders = set()
+    for i in tqdm.trange(len(related)):
+        row = related.iloc[i]
+        left_cong = re.match(".*\[(.*)\]", row.shortname_left).group(1)
+        right_cong = re.match(".*\[(.*)\]", row.shortname_right).group(1)
+        if left_cong == right_cong:
+            borders.add((row.longname_left, row.longname_right))
+        else:
+            intersects.add((row.longname_left, row.longname_right))
+    return set(), set(), intersects, borders
+
+
 def add(d, edges):
     for x, y in edges:
         d[x].add(y)
@@ -87,7 +111,15 @@ def add(d, edges):
 
 tiers = [
     ["states"],
-    ["csas", "msas", "counties"],
+    [
+        "csas",
+        "msas",
+        "counties",
+        "historical_congressional",
+        "state_house",
+        "state_senate",
+        "congress",
+    ],
     ["cousub", "cities"],
     ["neighborhoods", "zctas"],
 ]
@@ -118,12 +150,19 @@ def full_relationships():
                 continue
             if abs(tier_idx[k1] - tier_idx[k2]) > 1:
                 continue
+
+            fn = {
+                (
+                    "historical_congressional",
+                    "historical_congressional",
+                ): create_relationships_historical_cd,
+            }.get((k1, k2), create_relationships)
             (
                 a_contains_b,
                 b_contains_a,
                 a_intersects_b,
                 a_borders_b,
-            ) = create_relationships(shapefiles[k1], shapefiles[k2])
+            ) = fn(shapefiles[k1], shapefiles[k2])
             add(contains, a_contains_b)
             add(contains, [(big, small) for small, big in b_contains_a])
             add(contained_by, b_contains_a)

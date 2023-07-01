@@ -14,7 +14,7 @@ class Header extends React.Component {
         return (
             <div className="top_panel">
                 <div className="left_panel"><HeaderImage /></div>
-                <div className="right_panel"><SearchBox /></div>
+                <div className="right_panel"><SearchBox settings={this.props.settings}/></div>
             </div>
         )
     }

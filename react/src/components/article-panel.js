@@ -33,7 +33,7 @@ class ArticlePanel extends PageTemplate {
 
                 <script src="/scripts/map.js"></script>
 
-                <Related {...this.props.related} />
+                <Related {...this.props.related} settings={this.state.settings}/>
             </div>
         );
     }

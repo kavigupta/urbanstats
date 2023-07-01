@@ -88,7 +88,9 @@ def compute_statistics_for_shapefile(sf):
         grouped_stats = []
         for i in tqdm.trange(0, s.shape[0], sf.chunk_size):
             grouped_stats.append(
-                compute_grouped_stats(blocks_gdf, s.iloc[i : i + sf.chunk_size], sum_keys)
+                compute_grouped_stats(
+                    blocks_gdf, s.iloc[i : i + sf.chunk_size], sum_keys
+                )
             )
         grouped_stats = pd.concat(grouped_stats)
     for k in density_metrics:

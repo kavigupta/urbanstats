@@ -4,6 +4,7 @@ export { SearchBox };
 
 import { loadJSON } from '../load_json.js';
 import { article_link } from '../navigation/links';
+import { is_historical_cd } from '../utils/is_historical';
 import "../common.css";
 
 class SearchBox extends React.Component {
@@ -36,10 +37,10 @@ class SearchBox extends React.Component {
         let self = this;
         this.form.current.onsubmit = function () { return self.go(self.values, self.textbox.current) };
         this.textbox.current.addEventListener("submit", function () {
-            return self.go(self.values, self.textbox.current)
+            return self.go(self.props.settings, self.values, self.textbox.current)
         });
         this.textbox.current.onkeyup = function () {
-            self.setState({ matches: autocompleteMatch(self.values, self.textbox.current.value) });
+            self.setState({ matches: autocompleteMatch(self.props.settings, self.values, self.textbox.current.value) });
         };
         this.textbox.current.addEventListener('input', function (e) {
             let input = e.target;
@@ -50,16 +51,16 @@ class SearchBox extends React.Component {
 
             for (var i = 0; i < options.length; i++) {
                 if (options[i].value === val) {
-                    self.go(self.values, self.textbox.current);
+                    self.go(self.props.settings, self.values, self.textbox.current);
                     break;
                 }
             }
         });
     }
 
-    go(values, textbox) {
+    go(settings, values, textbox) {
         let val = textbox.value;
-        let terms = autocompleteMatch(values, val);
+        let terms = autocompleteMatch(settings, values, val);
         if (terms.length > 0) {
             window.location.href = article_link(values[terms[0]]);
         }
@@ -68,16 +69,22 @@ class SearchBox extends React.Component {
 }
 
 
-function autocompleteMatch(values, input) {
+function autocompleteMatch(settings, values, input) {
     input = input.toLowerCase();
     if (input == '') {
         return [];
     }
     let matches = [];
     for (let i = 0; i < values.length; i++) {
-        if (is_a_match(input, values[i].toLowerCase())) {
-            matches.push(i);
+        if (!is_a_match(input, values[i].toLowerCase())) {
+            continue;
         }
+        if (!settings.show_historical_cds) {
+            if (is_historical_cd(values[i])) {
+                continue;
+            }
+        }
+        matches.push(i);
         if (matches.length >= 10) {
             break;
         }

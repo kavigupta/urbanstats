@@ -3,6 +3,7 @@ import React from 'react';
 
 export { Related };
 import { article_link } from "../navigation/links.js";
+import { is_historical_cd } from '../utils/is_historical.js';
 
 import "./related.css";
 
@@ -13,7 +14,7 @@ class RelatedButton extends React.Component {
     }
 
     render() {
-        const classes = `button b_${this.props.row_type.toLowerCase()}`
+        const classes = `button b_${this.props.row_type.toLowerCase().replaceAll(" ", "_")}`
         return (
             <li className="linklistel">
                 <a
@@ -58,7 +59,13 @@ class Related extends React.Component {
     render() {
 
         let elements = [];
-        for (const [key, value] of Object.entries(this.props)) {
+        for (var [key, value] of Object.entries(this.props)) {
+            if (key == "settings") {
+                continue;
+            }
+            if (!this.props.settings.show_historical_cds) {
+                value = value.filter((row) => !is_historical_cd(row.longname));
+            }
             if (value.length > 0) {
                 elements.push(
                     <RelatedList key={key} name={key} regions={value} />
