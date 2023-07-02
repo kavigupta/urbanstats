@@ -28,7 +28,7 @@ class HeaderImage extends React.Component {
 
     render() {
         return (
-            <a href="/index.html"><img src="/banner.png" className="logo" alt="Density Database Logo" width="100%" /></a>
+            <a href="/index.html"><img src="/banner.png" className="logo" alt="Urban Stats Logo" width="100%" /></a>
         )
     }
 }

@@ -24,7 +24,7 @@ class SearchBox extends React.Component {
                 type="text"
                 className="searchbox serif"
                 list="search-result"
-                placeholder="Search Density Database" />
+                placeholder="Search Urban Stats" />
             <datalist id="search-result">
                 {this.state.matches.map((i) => <option key={i} value={this.values[i]} />)}
             </datalist>

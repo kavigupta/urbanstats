@@ -23,7 +23,7 @@ class Sidebar extends React.Component {
                             <a href="/">Home</a>
                         </li>
                         <li>
-                            <a href="/about.html">About Density Database</a>
+                            <a href="/about.html">About Urban Stats</a>
                         </li>
                         <li>
                             <a href="/data-credit.html">Data Credit</a>

@@ -16,11 +16,11 @@ class IndexPanel extends PageTemplate {
         return (
             <div>
                 <div className="centered_table">
-                    <a href="/index.html"><img src="/banner.png" className="logo" alt="Density Database Logo" width="100%" /></a>
+                    <a href="/index.html"><img src="/banner.png" className="logo" alt="Urban Stats Logo" width="100%" /></a>
                 </div>
 
                 <div className="centered_text centered_table" style={{ textAlign: "left" }}>
-                    <p>The Density Database is a database of various statistics related to density, housing, and race
+                    <p>The Urban Stats is a database of various statistics related to density, housing, and race
                         in the United States for a variety of regions. It is intended to be a resource for journalists,
                         researchers, and anyone else who is interested in these topics. The data is collected from the
                         US Census Bureau's 2020 census; and shapefiles for each region of interest are obtained from
