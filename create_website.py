@@ -121,7 +121,7 @@ def main(no_geo=False, no_data=False):
         json.dump(list(full.population), f)
 
     with open(f"{folder}/CNAME", "w") as f:
-        f.write("densitydb.org")
+        f.write("urbanstats.org")
 
 
 if __name__ == "__main__":
