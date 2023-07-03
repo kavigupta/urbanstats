@@ -46,7 +46,7 @@ class Map extends React.Component {
             await this.add_polygon(map,
                 related[i].longname,
                 false,
-                { color: color, weight: 1, fillColor: color, fillOpacity: 0.05 },
+                { color: color, weight: 1, fillColor: color, fillOpacity: 0.2 / related.length },
                 true);
         }
     }
