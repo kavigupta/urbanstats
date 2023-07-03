@@ -103,6 +103,9 @@ class Statistic extends React.Component {
                 }
                 return <span>{(value / 1e3).toFixed(1)}</span>;
             } else {
+                if (is_unit) {
+                    return <span></span>;
+                }
                 return <span>{value.toFixed(0)}</span>;
             }
         } else if (name.includes("%")) {
