@@ -37,7 +37,7 @@ def overlay(x, y):
 
 
 @permacache(
-    "population_density/relationship/create_relationships_6",
+    "population_density/relationship/create_relationships_7",
     key_function=dict(x=lambda x: x.hash_key, y=lambda y: y.hash_key),
 )
 def create_relationships(x, y):
@@ -62,15 +62,16 @@ def create_relationships(x, y):
         area_over = over_area[i]
         # print(row.longname_1, row.longname_2, area_over / area_1, area_over / area_2)
         contains = False
-        if area_over >= area_2 * 0.999:
+        tolerance = 0.05
+        if area_over >= area_2 * (1 - tolerance):
             contains = True
             a_contains_b.add((row.longname_1, row.longname_2))
-        if area_over >= area_1 * 0.999:
+        if area_over >= area_1 * (1 - tolerance):
             contains = True
             b_contains_a.add((row.longname_1, row.longname_2))
         if contains:
             pass
-        elif area_over >= min(area_1, area_2) * 0.001:
+        elif area_over >= min(area_1, area_2) * tolerance:
             intersects.add((row.longname_1, row.longname_2))
         else:
             borders.add((row.longname_1, row.longname_2))
@@ -148,8 +149,6 @@ def full_relationships():
             print(k1, k2)
             if k1 < k2:
                 continue
-            if abs(tier_idx[k1] - tier_idx[k2]) > 1:
-                continue
 
             fn = {
                 (
@@ -163,15 +162,33 @@ def full_relationships():
                 a_intersects_b,
                 a_borders_b,
             ) = fn(shapefiles[k1], shapefiles[k2])
-            add(contains, a_contains_b)
-            add(contains, [(big, small) for small, big in b_contains_a])
-            add(contained_by, b_contains_a)
-            add(contained_by, [(big, small) for small, big in a_contains_b])
+
+            a_much_bigger = tier_idx[k1] <= tier_idx[k2] - 2
+            a_bigger = tier_idx[k1] <= tier_idx[k2] - 1
+            b_much_bigger = tier_idx[k2] <= tier_idx[k1] - 2
+            b_bigger = tier_idx[k2] <= tier_idx[k1] - 1
+
+            if not a_much_bigger:
+                add(contains, a_contains_b)
+                add(contains, [(big, small) for small, big in b_contains_a])
+            if not b_much_bigger:
+                add(contained_by, b_contains_a)
+                add(contained_by, [(big, small) for small, big in a_contains_b])
             if tier_idx[k1] == tier_idx[k2]:
                 add(intersects, a_intersects_b)
                 add(intersects, [(big, small) for small, big in a_intersects_b])
                 add(borders, a_borders_b)
                 add(borders, [(big, small) for small, big in a_borders_b])
+            else:
+                if not b_bigger:
+                    # a is bigger
+                    # if a and b intersect, don't say that a contains b
+                    # add(contains, a_intersects_b)
+                    # if a and b intersect, say that b is contained by a
+                    add(contained_by, [(big, small) for small, big in a_intersects_b])
+                if not a_bigger:
+                    # add(contains, [(big, small) for small, big in a_intersects_b])
+                    add(contained_by, a_intersects_b)
 
     same_geography = defaultdict(set)
     for k in contained_by:

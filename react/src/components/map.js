@@ -34,7 +34,7 @@ class Map extends React.Component {
     }
 
     async add_related_polygons(map, related) {
-        for (let i = 0; i < related.length; i++) {
+        for (let i = related.length - 1; i >= 0; i--) {
             if (!this.props.settings.show_historical_cds) {
                 if (is_historical_cd(related[i].longname)) {
                     continue;
