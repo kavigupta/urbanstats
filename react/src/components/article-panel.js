@@ -23,17 +23,18 @@ class ArticlePanel extends PageTemplate {
                 <table className="stats_table">
                     <tbody>
                         <StatisticRowRaw is_header={true} />
-                        {this.props.rows.map((row, i) => <StatisticRowRaw key={i} index={i} {...row} settings={this.state.settings}/>)}
+                        {this.props.rows.map((row, i) => <StatisticRowRaw key={i} index={i} {...row} settings={this.state.settings} />)}
                     </tbody>
                 </table>
 
                 <p></p>
 
-                <Map id="map" longname={this.props.longname} />
+                <Map id="map"
+                    longname={this.props.longname} related={this.props.related} settings={this.state.settings} />
 
                 <script src="/scripts/map.js"></script>
 
-                <Related {...this.props.related} settings={this.state.settings}/>
+                <Related {...this.props.related} settings={this.state.settings} />
             </div>
         );
     }
