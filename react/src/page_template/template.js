@@ -36,7 +36,7 @@ class PageTemplate extends React.Component {
                     <div className="right_panel">
                         {this.main_content()}
                         <div className="gap"></div>
-                        <div className="centered_text">Urban Stats Version 2.1.0 by Kavi Gupta. Last updated 2023-06-04.</div>
+                        <div className="centered_text">Urban Stats Version 2.2.0 by Kavi Gupta. Last updated 2023-07-07.</div>
                     </div>
                 </div>
             </div>
