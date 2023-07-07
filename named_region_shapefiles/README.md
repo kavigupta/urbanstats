@@ -3,19 +3,21 @@
 
 Source: https://www.census.gov/geographies/mapping-files/time-series/geo/carto-boundary-file.html
 
- - cb_2018_us_state_500k.zip
- - cb_2018_us_county_500k.zip
  - cb_2018_us_cbsa_500k.zip
  - cb_2018_us_csa_500k.zip
  - cb_2018_us_zcta510_500k.zip
 
 Source: https://www.census.gov/geographies/mapping-files/time-series/geo/cartographic-boundary.html
 
+ - cb_2022_us_state_500k.zip
+ - cb_2022_us_county_500k.zip
  - cb_2022_us_cousub_500k.zip
-
-Source: https://www.census.gov/cgi-bin/geo/shapefiles/index.php
-
- - place/*
+ - cb_2022_us_place_500k.zip
+ - cb_2022_us_aiannh_500k.zip
+ - cb_2022_us_aitsn_500k.zip
+ - cb_2022_us_elsd_500k.zip
+ - cb_2022_us_scsd_500k.zip
+ - cb_2022_us_unsd_500k.zip
 
 # From Zillow
 

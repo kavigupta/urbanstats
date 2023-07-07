@@ -140,6 +140,26 @@
     background-color: #fef;
 }
 
+.b_native_area {
+    /* lime */
+    background-color: rgb(243, 255, 204);
+}
+
+.b_native_statistical_area {
+    /* lime */
+    background-color: rgb(243, 255, 204);
+}
+
+.b_native_subdivision {
+    /* dark lime */
+    background-color: rgb(234, 255, 164);
+}
+
+.b_school_district {
+    /* light blue */
+    background-color: rgb(202, 225, 230);
+}
+
 .main_page_header {
     font-size: 35px;
     font-weight: bold;

@@ -70,7 +70,7 @@ def create_page_jsons(full):
     long_to_pop = dict(zip(full.longname, full.population))
     long_to_type = dict(zip(full.longname, full.type))
 
-    relationships = full_relationships()
+    relationships = full_relationships(long_to_type)
     for i in tqdm.trange(full.shape[0]):
         row = full.iloc[i]
         create_page_json(

@@ -111,7 +111,7 @@ def add(d, edges):
 
 
 tiers = [
-    ["states"],
+    ["states", "native_areas", "native_statistical_areas"],
     [
         "csas",
         "msas",
@@ -120,11 +120,13 @@ tiers = [
         "state_house",
         "state_senate",
         "congress",
+        "native_subdivisions",
     ],
-    ["cousub", "cities"],
+    ["cousub", "cities", "school_districts"],
     ["neighborhoods", "zctas"],
 ]
-tier_idx = {x: i for i, tier in enumerate(tiers) for x in tier}
+tier_idx = {x: -i for i, tier in enumerate(tiers) for x in tier}
+tier_index_by_type = {shapefiles[x].meta["type"]: tier_idx[x] for x in shapefiles}
 ordering_idx = {
     shapefiles[x].meta["type"]: (i, j)
     for i, tier in enumerate(tiers)
@@ -132,7 +134,10 @@ ordering_idx = {
 }
 
 
-def full_relationships():
+def full_relationships(long_to_type):
+    def tier(x):
+        return tier_index_by_type[long_to_type[x]]
+
     contains, contained_by, intersects, borders = (
         defaultdict(set),
         defaultdict(set),
@@ -142,6 +147,8 @@ def full_relationships():
 
     def add(d, edges):
         for x, y in edges:
+            if x not in long_to_type or y not in long_to_type:
+                continue
             d[x].add(y)
 
     for k1 in shapefiles:
@@ -163,32 +170,22 @@ def full_relationships():
                 a_borders_b,
             ) = fn(shapefiles[k1], shapefiles[k2])
 
-            a_much_bigger = tier_idx[k1] <= tier_idx[k2] - 2
-            a_bigger = tier_idx[k1] <= tier_idx[k2] - 1
-            b_much_bigger = tier_idx[k2] <= tier_idx[k1] - 2
-            b_bigger = tier_idx[k2] <= tier_idx[k1] - 1
-
-            if not a_much_bigger:
-                add(contains, a_contains_b)
-                add(contains, [(big, small) for small, big in b_contains_a])
-            if not b_much_bigger:
-                add(contained_by, b_contains_a)
-                add(contained_by, [(big, small) for small, big in a_contains_b])
+            add(contains, a_contains_b)
+            add(contains, [(big, small) for small, big in b_contains_a])
+            add(contained_by, b_contains_a)
+            add(contained_by, [(big, small) for small, big in a_contains_b])
+            add(intersects, a_intersects_b)
+            add(intersects, [(big, small) for small, big in a_intersects_b])
             if tier_idx[k1] == tier_idx[k2]:
-                add(intersects, a_intersects_b)
-                add(intersects, [(big, small) for small, big in a_intersects_b])
                 add(borders, a_borders_b)
                 add(borders, [(big, small) for small, big in a_borders_b])
-            else:
-                if not b_bigger:
-                    # a is bigger
-                    # if a and b intersect, don't say that a contains b
-                    # add(contains, a_intersects_b)
-                    # if a and b intersect, say that b is contained by a
-                    add(contained_by, [(big, small) for small, big in a_intersects_b])
-                if not a_bigger:
-                    # add(contains, [(big, small) for small, big in a_intersects_b])
-                    add(contained_by, a_intersects_b)
+
+    # for contains, go one down at most
+    for k in contains:
+        contains[k] = {v for v in contains[k] if tier(v) >= tier(k) - 1}
+    # for intersects, do not go down
+    for k in intersects:
+        intersects[k] = {v for v in intersects[k] if tier(v) >= tier(k)}
 
     same_geography = defaultdict(set)
     for k in contained_by:

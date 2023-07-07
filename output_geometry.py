@@ -29,5 +29,3 @@ def produce_all_geometry_json(path, valid_names):
         for i in tqdm.trange(table.shape[0]):
             if table.iloc[i].longname in valid_names:
                 produce_geometry_json(path, table.iloc[i])
-            else:
-                print("skipping", table.iloc[i].longname)

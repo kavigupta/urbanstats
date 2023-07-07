@@ -1,7 +1,12 @@
+from collections import Counter
 import glob
+import pandas as pd
 import us
 
 from functools import lru_cache
+
+import geopandas as gpd
+from permacache import permacache
 
 from stats_for_shapefile import Shapefile
 
@@ -26,31 +31,8 @@ def name_components(x, row, abbreviate=False):
     return (name + " " + x, (state if abbreviate else abbr_to_state(state)), "USA")
 
 
-@lru_cache(None)
-def county_fips_map():
-    with open("named_region_shapefiles/county_map.txt") as f:
-        contents = [x.strip() for x in list(f)]
-    contents = [[t.strip() for t in x.split("     ")][:2] for x in contents if x]
-    assert all(len(x) == 2 for x in contents)
-    fs, cs = zip(*contents)
-    result = dict(zip(fs, cs))
-    result["02105"] = "Hoonah-Angoon Census Area"
-    result["02158"] = "Kusilvak Census Area"
-    result["02195"] = "Petersburg Census Area"
-    result["02198"] = "Prince of Wales-Hyder Census Area"
-    result["02230"] = "Skagway Municipality"
-    result["02275"] = "Wrangell City and Borough"
-
-    result["08014"] = "Broomfield County"
-    result["12086"] = "Miami-Dade County"
-    result["46102"] = "Oglala Lakota"
-    return result
-
-
 def county_name(row):
-    m = county_fips_map()
-    f = row.STATEFP + row.COUNTYFP
-    f = m[f]
+    f = row["NAMELSAD"]
     if f.lower().endswith("city"):
         f = f + "-County"
     return f
@@ -94,18 +76,56 @@ def districts(file_name, district_type, district_abbrev):
     )
 
 
+@permacache("population_density/ce_to_name")
+def ce_to_name():
+    table = gpd.read_file("named_region_shapefiles/cb_2022_us_aiannh_500k.zip")
+    return dict(zip(table.AIANNHCE, table.NAMELSAD))
+
+
+def is_native_statistical_area(row):
+    x = ce_to_name()[row.AIANNHCE]
+    return "OTSA" in x or "SDTSA" in x or "ANVSA" in x or "TDSA" in x
+
+
+@permacache("population_density/shapefiles/school_district_shapefiles")
+def school_district_shapefiles():
+    paths = [
+        f"named_region_shapefiles/cb_2022_us_{ident}_500k.zip"
+        for ident in ["elsd", "scsd", "unsd"]
+    ]
+    frame = gpd.GeoDataFrame(
+        pd.concat([gpd.read_file(path) for path in paths]).reset_index(drop=True)
+    )
+    full_names = frame.NAME + ", " + frame.STATE_NAME
+    u = Counter(full_names)
+    duplicated = {x for x in u if u[x] > 1}
+    duplicated_mask = full_names.apply(lambda x: x in duplicated)
+    duplicated_districts = frame[duplicated_mask]
+    counties = shapefiles["counties"].load_file()
+    joined = gpd.overlay(counties, duplicated_districts.to_crs("epsg:4326"))
+    areas = joined.area
+    geoid_to_county = {}
+    for geoid in set(joined.GEOID):
+        filt = joined[joined.GEOID == geoid]
+        geoid_to_county[geoid] = filt.iloc[areas[filt.index].argmax()].shortname
+    frame["suffix"] = frame.GEOID.apply(
+        lambda x: "" if x not in geoid_to_county else f" ({geoid_to_county[x]})"
+    )
+    return frame
+
+
 shapefiles = dict(
     states=Shapefile(
-        hash_key="census_states",
-        path="named_region_shapefiles/cb_2018_us_state_500k.zip",
+        hash_key="census_states_2",
+        path="named_region_shapefiles/cb_2022_us_state_500k.zip",
         shortname_extractor=lambda x: x["NAME"],
         longname_extractor=lambda x: x["NAME"] + ", USA",
         filter=lambda x: current_state(x["NAME"]),
         meta=dict(type="State", source="Census"),
     ),
     counties=Shapefile(
-        hash_key="census_counties_5",
-        path="named_region_shapefiles/cb_2018_us_county_500k.zip",
+        hash_key="census_counties_6",
+        path="named_region_shapefiles/cb_2022_us_county_500k.zip",
         shortname_extractor=lambda x: county_name(x),
         longname_extractor=lambda x: county_name(x)
         + ", "
@@ -143,16 +163,16 @@ shapefiles = dict(
         meta=dict(type="ZIP", source="Census"),
     ),
     cousub=Shapefile(
-        hash_key="census_cousub_6",
-        path="named_region_shapefiles/cb_2020_us_cousub_500k.zip",
+        hash_key="census_cousub_7",
+        path="named_region_shapefiles/cb_2022_us_cousub_500k.zip",
         shortname_extractor=lambda x: f"{x.NAMELSAD}",
         longname_extractor=lambda x: f"{x.NAMELSAD} [CCD], {x.NAMELSADCO}, {x.STATE_NAME}, USA",
         filter=lambda x: current_state(x["STUSPS"]),
         meta=dict(type="CCD", source="Census"),
     ),
     cities=Shapefile(
-        hash_key="census_places_2",
-        path=sorted(glob.glob("named_region_shapefiles/place/*.zip")),
+        hash_key="census_places_3",
+        path="named_region_shapefiles/cb_2022_us_place_500k.zip",
         shortname_extractor=lambda x: x.NAMELSAD,
         longname_extractor=lambda x: f"{x.NAMELSAD}, {us.states.lookup(x.STATEFP).name}, USA",
         filter=lambda x: current_state(x.STATEFP),
@@ -185,5 +205,37 @@ shapefiles = dict(
         filter=lambda x: current_state(x["state"]),
         meta=dict(type="Historical Congressional District", source="Census"),
         chunk_size=100,
+    ),
+    native_areas=Shapefile(
+        hash_key="native_areas_2",
+        path="named_region_shapefiles/cb_2022_us_aiannh_500k.zip",
+        shortname_extractor=lambda x: f"{x.NAMELSAD}",
+        longname_extractor=lambda x: f"{x.NAMELSAD}, USA",
+        filter=lambda x: not is_native_statistical_area(x),
+        meta=dict(type="Native Area", source="Census"),
+    ),
+    native_statistical_areas=Shapefile(
+        hash_key="native_statistical_areas",
+        path="named_region_shapefiles/cb_2022_us_aiannh_500k.zip",
+        shortname_extractor=lambda x: f"{x.NAMELSAD}",
+        longname_extractor=lambda x: f"{x.NAMELSAD}, USA",
+        filter=lambda x: is_native_statistical_area(x),
+        meta=dict(type="Native Statistical Area", source="Census"),
+    ),
+    native_subdivisions=Shapefile(
+        hash_key="native_subdivisions_2",
+        path="named_region_shapefiles/cb_2022_us_aitsn_500k.zip",
+        shortname_extractor=lambda x: f"{x.NAMELSAD}",
+        longname_extractor=lambda x: f"{x.NAMELSAD}, {ce_to_name()[x.AIANNHCE]}, USA",
+        filter=lambda x: True,
+        meta=dict(type="Native Subdivision", source="Census"),
+    ),
+    school_districts=Shapefile(
+        hash_key="school_districts_2",
+        path=school_district_shapefiles,
+        shortname_extractor=lambda x: x["NAME"],
+        longname_extractor=lambda x: f"{x['NAME']}{x['suffix']}, {x['STATE_NAME']}, USA",
+        filter=lambda x: True,
+        meta=dict(type="School District", source="Census"),
     ),
 )

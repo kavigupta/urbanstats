@@ -42,12 +42,14 @@ class Shapefile:
         if isinstance(self.path, list):
             s = gpd.GeoDataFrame(pd.concat([gpd.read_file(p) for p in self.path]))
             s = s.reset_index(drop=True)
-        else:
+        elif isinstance(self.path, str):
             if self.path.endswith(".pkl"):
                 with open(self.path, "rb") as f:
                     s = pickle.load(f).reset_index(drop=True)
             else:
                 s = gpd.read_file(self.path)
+        else:
+            s = self.path()
         s = s[s.apply(self.filter, axis=1)]
         s = gpd.GeoDataFrame(
             dict(
