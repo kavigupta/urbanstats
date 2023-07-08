@@ -125,6 +125,25 @@ tiers = [
     ["cousub", "cities", "school_districts"],
     ["neighborhoods", "zctas"],
 ]
+
+key_to_type = {x: shapefiles[x].meta["type"] for x in shapefiles}
+
+map_relationships = [
+    ("states", "counties"),
+    ("native_areas", "native_subdivisions"),
+    ("native_statistical_areas", "native_subdivisions"),
+    ("csas", "msas"),
+    ("msas", "counties"),
+    ("counties", "cities"),
+    ("cousub", "cities"),
+    ("cities", "neighborhoods"),
+    ("school_districts", "neighborhoods"),
+    ("zctas", "neighborhoods"),
+]
+map_relationships += [[x, x] for x in shapefiles]
+
+map_relationships_by_type = [[key_to_type[x] for x in y] for y in map_relationships]
+
 tier_idx = {x: -i for i, tier in enumerate(tiers) for x in tier}
 tier_index_by_type = {shapefiles[x].meta["type"]: tier_idx[x] for x in shapefiles}
 ordering_idx = {

@@ -12,7 +12,7 @@ import tqdm.auto as tqdm
 from output_geometry import produce_all_geometry_json
 from stats_for_shapefile import compute_statistics_for_shapefile
 from produce_html_page import add_ordinals, create_page_json, get_statistic_names
-from relationship import full_relationships
+from relationship import full_relationships, map_relationships_by_type
 from election_data import vest_elections
 
 
@@ -113,6 +113,9 @@ def main(no_geo=False, no_data=False):
     shutil.copy("dist/index.js", f"{folder}/scripts/")
     shutil.copy("dist/about.js", f"{folder}/scripts/")
     shutil.copy("dist/data-credit.js", f"{folder}/scripts/")
+
+    with open(f"{folder}/index/map_relationship.json", "w") as f:
+        json.dump(map_relationships_by_type, f)
 
     with open(f"{folder}/index/pages.json", "w") as f:
         json.dump(list(full.longname), f)
