@@ -11,15 +11,6 @@ from permacache import permacache
 from stats_for_shapefile import Shapefile
 
 
-def current_state(x):
-    if "-" in x:
-        return all(current_state(t) for t in x.split("-"))
-    x = us.states.lookup(x)
-    if x is None:
-        return False
-    return not x.is_territory
-
-
 def abbr_to_state(x):
     if "-" in x:
         return "-".join(abbr_to_state(t) for t in x.split("-"))
@@ -116,42 +107,42 @@ def school_district_shapefiles():
 
 shapefiles = dict(
     states=Shapefile(
-        hash_key="census_states_2",
+        hash_key="census_states_3",
         path="named_region_shapefiles/cb_2022_us_state_500k.zip",
         shortname_extractor=lambda x: x["NAME"],
         longname_extractor=lambda x: x["NAME"] + ", USA",
-        filter=lambda x: current_state(x["NAME"]),
+        filter=lambda x: True,
         meta=dict(type="State", source="Census"),
     ),
     counties=Shapefile(
-        hash_key="census_counties_6",
+        hash_key="census_counties_7",
         path="named_region_shapefiles/cb_2022_us_county_500k.zip",
         shortname_extractor=lambda x: county_name(x),
         longname_extractor=lambda x: county_name(x)
         + ", "
         + us.states.lookup(x["STATEFP"]).name
         + ", USA",
-        filter=lambda x: current_state(x["STATEFP"]),
+        filter=lambda x: True,
         meta=dict(type="County", source="Census"),
     ),
     msas=Shapefile(
-        hash_key="census_msas_3",
+        hash_key="census_msas_4",
         path="named_region_shapefiles/cb_2018_us_cbsa_500k.zip",
         shortname_extractor=lambda x: name_components("MSA", x)[0],
         longname_extractor=lambda x: ", ".join(
             name_components("MSA", x, abbreviate=True)
         ),
-        filter=lambda x: current_state(x["NAME"].split(", ")[-1]),
+        filter=lambda x: True,
         meta=dict(type="MSA", source="Census"),
     ),
     csas=Shapefile(
-        hash_key="census_csas_3",
+        hash_key="census_csas_4",
         path="named_region_shapefiles/cb_2018_us_csa_500k.zip",
         shortname_extractor=lambda x: name_components("CSA", x)[0],
         longname_extractor=lambda x: ", ".join(
             name_components("CSA", x, abbreviate=True)
         ),
-        filter=lambda x: current_state(x["NAME"].split(", ")[-1]),
+        filter=lambda x: True,
         meta=dict(type="CSA", source="Census"),
     ),
     zctas=Shapefile(
@@ -163,24 +154,24 @@ shapefiles = dict(
         meta=dict(type="ZIP", source="Census"),
     ),
     cousub=Shapefile(
-        hash_key="census_cousub_7",
+        hash_key="census_cousub_8",
         path="named_region_shapefiles/cb_2022_us_cousub_500k.zip",
         shortname_extractor=lambda x: f"{x.NAMELSAD}",
         longname_extractor=lambda x: f"{x.NAMELSAD} [CCD], {x.NAMELSADCO}, {x.STATE_NAME}, USA",
-        filter=lambda x: current_state(x["STUSPS"]),
+        filter=lambda x: True,
         meta=dict(type="CCD", source="Census"),
     ),
     cities=Shapefile(
-        hash_key="census_places_3",
+        hash_key="census_places_4",
         path="named_region_shapefiles/cb_2022_us_place_500k.zip",
         shortname_extractor=lambda x: x.NAMELSAD,
         longname_extractor=lambda x: f"{x.NAMELSAD}, {us.states.lookup(x.STATEFP).name}, USA",
-        filter=lambda x: current_state(x.STATEFP),
+        filter=lambda x: True,
         meta=dict(type="City", source="Census"),
         drop_dup=True,
     ),
     neighborhoods=Shapefile(
-        hash_key="zillow_neighborhoods_2",
+        hash_key="zillow_neighborhoods_3",
         path="named_region_shapefiles/Zillow_Neighborhoods/zillow.shp",
         shortname_extractor=lambda x: x["Name"] + ", " + x["City"],
         longname_extractor=lambda x: x["Name"]
@@ -189,7 +180,7 @@ shapefiles = dict(
         + " City, "
         + us.states.lookup(x["State"]).name
         + ", USA",
-        filter=lambda x: current_state(x["State"]),
+        filter=lambda x: True,
         meta=dict(type="Neighborhood", source="Zillow"),
         drop_dup=True,
     ),
@@ -202,7 +193,7 @@ shapefiles = dict(
         shortname_extractor=lambda x: f'{x["state"]}-{int(x["district"]):02d} [{render_start_and_end(x)} Congress]',
         longname_extractor=lambda x: f"Historical Congressional District"
         + f" {x['state']}-{x['district']}, {render_start_and_end(x)} Congress, USA",
-        filter=lambda x: current_state(x["state"]),
+        filter=lambda x: True,
         meta=dict(type="Historical Congressional District", source="Census"),
         chunk_size=100,
     ),
