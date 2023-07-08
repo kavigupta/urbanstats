@@ -7,6 +7,19 @@
     margin: 1em;
 }
 
+.list_of_lists {
+    /* display: inline-block; */
+    padding-inline-start: 0px;
+    list-style-type: none;
+    flex-grow: 1;
+    margin: 0;
+}
+
+.linkbox {
+    padding-inline-start: 0px;
+    margin: 0.25em;
+}
+
 .linklist {
     display: inline-block;
     padding-inline-start: 0px;

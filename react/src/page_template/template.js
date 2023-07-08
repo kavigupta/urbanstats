@@ -6,13 +6,23 @@ import { Header } from "../components/header.js";
 import { Sidebar } from "../components/sidebar.js";
 import "../common.css";
 import "../components/article.css";
+import { loadJSON } from '../load_json.js';
+import { relationship_key } from '../components/related-button.js';
 
 class PageTemplate extends React.Component {
     constructor(props) {
         super(props);
         // backed by local storage
+        let settings = JSON.parse(localStorage.getItem("settings")) || {};
+        const map_relationship = loadJSON("/index/map_relationship.json");
+        for (let i in map_relationship) {
+            const key = relationship_key(map_relationship[i][0], map_relationship[i][1]);
+            if (!(key in settings)) {
+                settings[key] = true;
+            }
+        }
         this.state = {
-            settings: JSON.parse(localStorage.getItem("settings")) || {}
+            settings: settings
         }
     }
 
