@@ -1,4 +1,4 @@
-export { Sidebar };
+export { Sidebar, CheckboxSetting };
 
 import React from 'react';
 
@@ -71,7 +71,7 @@ const CheckboxSetting = props => {
         <div>
             <input
                 type="checkbox"
-                checked={props.settings[props.setting_key]}
+                checked={props.settings[props.setting_key] || false}
                 onChange={e => { props.set_setting(props.setting_key, e.target.checked) }}
             />
             <label>{props.name}</label>
