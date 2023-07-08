@@ -81,15 +81,15 @@ class CheckableRelatedList extends React.Component {
         let key = this.key_for_setting();
         return (
             <li className="list_of_lists">
-                <div>
+                <div style={{ display: "flex" }}>
+                    <div className="linkbox">
+                        <CheckboxSetting
+                            name=""
+                            setting_key={key}
+                            settings={this.props.settings}
+                            set_setting={this.props.set_setting} />
+                    </div>
                     <ul className="linklist">
-                        <div className="linklistel">
-                            <CheckboxSetting
-                                name=""
-                                setting_key={key}
-                                settings={this.props.settings}
-                                set_setting={this.props.set_setting} />
-                        </div>
                         {this.props.regions.map((row, i) => <RelatedButton key={i} {...row} />)}
                     </ul>
                 </div>
