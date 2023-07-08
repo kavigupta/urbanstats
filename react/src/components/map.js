@@ -4,6 +4,7 @@ export { Map };
 
 import { shape_link, article_link } from "../navigation/links.js";
 import { is_historical_cd } from '../utils/is_historical.js';
+import { random_color } from "../utils/color.js";
 
 import "./map.css";
 
@@ -40,9 +41,8 @@ class Map extends React.Component {
                     continue;
                 }
             }
-            // randomly choose a color hex code where H is between 0 and 360,
-            // S is between 50 and 100, and L is between 20 and 50
-            const color = `hsl(${Math.random() * 360}, ${50 + Math.random() * 50}%, ${20 + Math.random() * 30}%)`;
+
+            const color = random_color(related[i].longname);
             await this.add_polygon(map,
                 related[i].longname,
                 false,
