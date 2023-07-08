@@ -180,19 +180,20 @@ def full_relationships(long_to_type):
                 add(borders, a_borders_b)
                 add(borders, [(big, small) for small, big in a_borders_b])
 
-    # for contains, go one down at most
-    for k in contains:
-        contains[k] = {v for v in contains[k] if tier(v) >= tier(k) - 1}
-    # for intersects, do not go down
-    for k in intersects:
-        intersects[k] = {v for v in intersects[k] if tier(v) >= tier(k)}
-
     same_geography = defaultdict(set)
     for k in contained_by:
         for v in contained_by[k]:
             if k in contains and v in contains[k]:
                 if k != v:
                     same_geography[k].add(v)
+                    same_geography[v].add(k)
+
+    # for contains, go one down at most
+    for k in contains:
+        contains[k] = {v for v in contains[k] if tier(v) >= tier(k) - 1}
+    # for intersects, do not go down
+    for k in intersects:
+        intersects[k] = {v for v in intersects[k] if tier(v) >= tier(k)}
 
     contains = {
         k: {v for v in vs if v not in same_geography[k]} for k, vs in contains.items()
