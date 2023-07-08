@@ -12,10 +12,7 @@ class PageTemplate extends React.Component {
         super(props);
         // backed by local storage
         this.state = {
-            settings: {
-                use_imperial: JSON.parse(localStorage.getItem("use_imperial")) || false,
-                show_historical_cds: JSON.parse(localStorage.getItem("show_historical_cds")) || false,
-            }
+            settings: JSON.parse(localStorage.getItem("settings")) || {}
         }
     }
 
@@ -23,7 +20,7 @@ class PageTemplate extends React.Component {
         const self = this;
         return (
             <div className="main_panel">
-                <Header settings={this.state.settings}/>
+                <Header settings={this.state.settings} />
                 <div className="gap"></div>
                 <div className="body_panel">
                     <div className="left_panel">
@@ -47,7 +44,7 @@ class PageTemplate extends React.Component {
         let settings = this.state.settings;
         settings[key] = value;
         this.setState({ settings: settings });
-        localStorage.setItem(key, value);
+        localStorage.setItem("settings", JSON.stringify(settings));
     }
 
     main_content() {
