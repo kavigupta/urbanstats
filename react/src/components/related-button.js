@@ -48,17 +48,20 @@ class RelatedList extends React.Component {
             by_type_key[by_type_key.length - 1].regions.push(row);
         }
         return (
-            <ul className="list_of_lists">
-                <li className="linklistelfirst">{this.display_name()}</li>
-                {by_type_key.map((row, i) =>
-                    <CheckableRelatedList
-                        key={i}
-                        {...row}
-                        article_type={this.props.article_type}
-                        settings={this.props.settings}
-                        set_setting={this.props.set_setting}
-                    />)}
-            </ul>
+            <div>
+                <ul className="list_of_lists">
+                    <li className="linklistelfirst">{this.display_name()}</li>
+                    {by_type_key.map((row, i) =>
+                        <CheckableRelatedList
+                            key={i}
+                            {...row}
+                            article_type={this.props.article_type}
+                            settings={this.props.settings}
+                            set_setting={this.props.set_setting}
+                        />)}
+                </ul>
+                <div className="gap_small"></div>
+            </div>
         );
     }
 
@@ -78,15 +81,15 @@ class CheckableRelatedList extends React.Component {
         let key = this.key_for_setting();
         return (
             <li className="list_of_lists">
-                <div style={{ display: "flex" }}>
-                    <div className="linkbox">
-                        <CheckboxSetting
-                            name=""
-                            setting_key={key}
-                            settings={this.props.settings}
-                            set_setting={this.props.set_setting} />
-                    </div>
+                <div>
                     <ul className="linklist">
+                        <div className="linklistel">
+                            <CheckboxSetting
+                                name=""
+                                setting_key={key}
+                                settings={this.props.settings}
+                                set_setting={this.props.set_setting} />
+                        </div>
                         {this.props.regions.map((row, i) => <RelatedButton key={i} {...row} />)}
                     </ul>
                 </div>

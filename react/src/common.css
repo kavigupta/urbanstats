@@ -33,6 +33,10 @@
     margin-block-end: 2em;
 }
 
+.gap_small {
+    margin-block-end: 0.7em;
+}
+
 .serif {
     font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
 }

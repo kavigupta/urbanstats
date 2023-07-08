@@ -15,22 +15,18 @@
     margin: 0;
 }
 
-.linkbox {
-    padding-inline-start: 0px;
-    margin: 0.25em;
-}
-
 .linklist {
     display: inline-block;
     padding-inline-start: 0px;
     list-style-type: none;
     flex-grow: 1;
-    margin: 0.25em;
+    margin: 0.1em;
 }
 
 .linklistel {
     float: left;
     padding-right: 0.3em;
+    vertical-align: middle;
 }
 
 .linklistelfirst {
