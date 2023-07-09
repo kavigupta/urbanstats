@@ -22,13 +22,25 @@ class StatisticRowRaw extends React.Component {
                     <span className="serif value">{
                         this.props.is_header
                             ? "Value"
-                            : <Statistic statname={this.props.statname} value={this.props.statval} is_unit={false} settings={this.props.settings} />}</span>
+                            : <Statistic
+                                statname={this.props.statname}
+                                value={this.props.statval}
+                                is_unit={false}
+                                settings={this.props.settings}
+                            />}
+                    </span>
                 </td>
                 <td className="value_unit" style={{ width: "5%" }}>
                     <span className="serif value">{
                         this.props.is_header
                             ? ""
-                            : <Statistic statname={this.props.statname} value={this.props.statval} is_unit={true} settings={this.props.settings}/>}</span>
+                            : <Statistic
+                                statname={this.props.statname}
+                                value={this.props.statval}
+                                is_unit={true}
+                                settings={this.props.settings}
+                            />}
+                    </span>
                 </td>
                 <td style={{ width: "25%" }}>
                     <span className="serif ordinal">{
