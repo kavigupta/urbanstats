@@ -152,6 +152,15 @@ ordering_idx = {
     for j, x in enumerate(tier)
 }
 
+ordering_idx["Native Area"] = (
+    ordering_idx["Native Subdivision"][0],
+    ordering_idx["Native Subdivision"][1] - 0.2,
+)
+ordering_idx["Native Statistical Area"] = (
+    ordering_idx["Native Subdivision"][0],
+    ordering_idx["Native Subdivision"][1] - 0.1,
+)
+
 
 def full_relationships(long_to_type):
     def tier(x):
