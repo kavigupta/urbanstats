@@ -1,3 +1,4 @@
+from functools import lru_cache
 import os
 import json
 import shutil
@@ -19,6 +20,7 @@ from election_data import vest_elections
 folder = "/home/kavi/temp/site/"
 
 
+@lru_cache(maxsize=None)
 def full_shapefile():
     full = [compute_statistics_for_shapefile(shapefiles[k]) for k in shapefiles]
     full = pd.concat(full)
@@ -92,13 +94,18 @@ def main(no_geo=False, no_data=False):
         except FileExistsError:
             pass
 
-    full = full_shapefile()
-
     if not no_geo:
+        full = full_shapefile()
         produce_all_geometry_json(f"{folder}/shape", set(full.longname))
 
     if not no_data:
+        full = full_shapefile()
         create_page_jsons(full)
+        with open(f"{folder}/index/pages.json", "w") as f:
+            json.dump(list(full.longname), f)
+
+        with open(f"{folder}/index/population.json", "w") as f:
+            json.dump(list(full.population), f)
 
     shutil.copy("html_templates/article.html", f"{folder}")
     shutil.copy("html_templates/index.html", f"{folder}/")
@@ -116,12 +123,6 @@ def main(no_geo=False, no_data=False):
 
     with open(f"{folder}/index/map_relationship.json", "w") as f:
         json.dump(map_relationships_by_type, f)
-
-    with open(f"{folder}/index/pages.json", "w") as f:
-        json.dump(list(full.longname), f)
-
-    with open(f"{folder}/index/population.json", "w") as f:
-        json.dump(list(full.population), f)
 
     with open(f"{folder}/CNAME", "w") as f:
         f.write("urbanstats.org")
