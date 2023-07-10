@@ -95,9 +95,11 @@ def compute_ordinals_and_percentiles(
     # ordering: ordinal - 1 -> index
     ordering = sorted(
         frame.index,
-        key=lambda i: (-key_column[i], stable_sort_column[i]),
+        key=lambda i: (
+            float("inf") if np.isnan(key_column[i]) else -key_column[i],
+            stable_sort_column[i],
+        ),
     )
-    # import IPython; IPython.embed()
     # ordinals: index -> ordinal
     ordinals = {ind: i + 1 for i, ind in enumerate(ordering)}
     total_pop = population_column.sum()
@@ -114,7 +116,9 @@ def compute_ordinals_and_percentiles(
 
 def add_ordinals(frame):
     keys = get_statistic_names()
+    assert len(set(keys)) == len(keys)
     frame = frame.copy()
+    frame = frame.reset_index(drop=True)
     for k in keys:
         ordinals, percentiles_by_population = compute_ordinals_and_percentiles(
             frame, k, "population", "longname"

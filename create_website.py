@@ -3,6 +3,7 @@ import os
 import json
 import shutil
 import fire
+import numpy as np
 
 import pandas as pd
 from shapefiles import shapefiles
@@ -20,10 +21,10 @@ from election_data import vest_elections
 folder = "/home/kavi/temp/site/"
 
 
-@lru_cache(maxsize=None)
-def full_shapefile():
+def shapefile_without_ordinals():
     full = [compute_statistics_for_shapefile(shapefiles[k]) for k in shapefiles]
     full = pd.concat(full)
+    full = full.reset_index(drop=True)
     for elect in vest_elections:
         full[elect.name, "margin"] = (
             full[elect.name, "dem"] - full[elect.name, "gop"]
@@ -35,6 +36,12 @@ def full_shapefile():
     full = full[full.population > 0].copy()
     duplicates = {k: v for k, v in Counter(full.longname).items() if v > 1}
     assert not duplicates, str(duplicates)
+    return full
+
+
+@lru_cache(maxsize=None)
+def full_shapefile():
+    full = shapefile_without_ordinals()
     full = pd.concat(
         [add_ordinals(full[full.type == x]) for x in sorted(set(full.type))]
     )
@@ -46,7 +53,17 @@ def next_prev(full):
     statistic_names = get_statistic_names()
     by_statistic = {k: {} for k in statistic_names}
     for statistic in statistic_names:
-        s_full = full.sort_values((statistic, "ordinal"))
+        stat_column = np.array(full[statistic])
+        longname_column = np.array(full.longname)
+        s_full = full.iloc[
+            sorted(
+                range(full.shape[0]),
+                key=lambda x: (
+                    float("inf") if np.isnan(stat_column[x]) else -stat_column[x],
+                    longname_column[x],
+                ),
+            )
+        ]
         names = list(s_full.longname)
         for prev, current, next in zip([None, *names[:-1]], names, [*names[1:], None]):
             by_statistic[statistic][current] = prev, next
