@@ -56,7 +56,10 @@ class StatisticRowRaw extends React.Component {
                         this.props.is_header
                             ? "Percentile"
                             : <Percentile ordinal={this.props.ordinal}
-                                total={this.props.total_in_class} />
+                                total={this.props.total_in_class}
+                                percentile_by_population={this.props.percentile_by_population}
+                                settings={this.props.settings}
+                            />
                     }</span>
                 </td>
                 <td style={{ width: "8%" }}>
@@ -185,7 +188,11 @@ class Percentile extends React.Component {
         const ordinal = this.props.ordinal;
         const total = this.props.total;
         // percentile as an integer
-        const percentile = Math.floor(100 - 100 * ordinal / total);
+        const quantile =
+            this.props.settings.use_population_percentiles ?
+                this.props.percentile_by_population
+                : 1 - ordinal / total;
+        const percentile = Math.floor(100 * quantile);
         // something like Xth percentile
         let text = percentile + "th percentile";
         if (percentile % 10 == 1 && percentile % 100 != 11) {

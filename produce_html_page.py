@@ -46,6 +46,7 @@ def create_page_json(
             statval=float(row[stat]),
             ordinal=0 if np.isnan(row[stat, "ordinal"]) else int(row[stat, "ordinal"]),
             total_in_class=int(row[stat, "total"]),
+            percentile_by_population=float(row[stat, "percentile_by_population"]),
             row_type=row["type"],
             ba_within_type=ptrs_within_type[stat][row.longname],
             ba_overall=ptrs_overall[stat][row.longname],
@@ -85,12 +86,44 @@ def create_filename(x):
     return f"{x}.json"
 
 
+def compute_ordinals_and_percentiles(
+    frame, key_column, population_column, stable_sort_column
+):
+    key_column = frame[key_column]
+    population_column = frame[population_column]
+    stable_sort_column = frame[stable_sort_column]
+    # ordering: ordinal - 1 -> index
+    ordering = sorted(
+        frame.index,
+        key=lambda i: (-key_column[i], stable_sort_column[i]),
+    )
+    # import IPython; IPython.embed()
+    # ordinals: index -> ordinal
+    ordinals = {ind: i + 1 for i, ind in enumerate(ordering)}
+    total_pop = population_column.sum()
+    # arranged_pop: ordinal - 1 -> population
+    arranged_pop = np.array(population_column[ordering])
+    # cum_pop: ordinal - 1 -> population of all prior
+    cum_pop = np.cumsum(arranged_pop)
+    # percentiles_by_population: index -> percentile
+    percentiles_by_population = {
+        i: 1 - cum_pop[ordinals[i] - 1] / total_pop for i in frame.index
+    }
+    return ordinals, percentiles_by_population
+
+
 def add_ordinals(frame):
     keys = get_statistic_names()
     frame = frame.copy()
     for k in keys:
-        frame[k, "ordinal"] = frame[k].rank(ascending=False)
+        ordinals, percentiles_by_population = compute_ordinals_and_percentiles(
+            frame, k, "population", "longname"
+        )
+        frame[k, "ordinal"] = [ordinals[i] for i in frame.index]
         frame[k, "total"] = frame[k].shape[0]
+        frame[k, "percentile_by_population"] = [
+            percentiles_by_population[i] for i in frame.index
+        ]
     return frame
 
 

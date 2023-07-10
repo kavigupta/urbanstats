@@ -21,6 +21,9 @@ class PageTemplate extends React.Component {
                 settings[key] = true;
             }
         }
+        if (!("use_population_percentiles" in settings)) {
+            settings["use_population_percentiles"] = true;
+        }
         this.state = {
             settings: settings
         }

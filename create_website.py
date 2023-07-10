@@ -46,7 +46,7 @@ def next_prev(full):
     statistic_names = get_statistic_names()
     by_statistic = {k: {} for k in statistic_names}
     for statistic in statistic_names:
-        s_full = full.sort_values(statistic)[::-1]
+        s_full = full.sort_values((statistic, "ordinal"))
         names = list(s_full.longname)
         for prev, current, next in zip([None, *names[:-1]], names, [*names[1:], None]):
             by_statistic[statistic][current] = prev, next

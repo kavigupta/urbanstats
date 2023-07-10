@@ -57,6 +57,12 @@ class Sidebar extends React.Component {
                                 settings={this.props.settings}
                                 set_setting={this.props.set_setting}
                             />
+                            <CheckboxSetting
+                                name="Use Population Percentiles"
+                                setting_key="use_population_percentiles"
+                                settings={this.props.settings}
+                                set_setting={this.props.set_setting}
+                            />
                         </li>
                     </ul>
                 </div>
