@@ -58,11 +58,12 @@ def load_raw_census():
     stats.update({k: np.array(raw_census[v]) for k, v in housing_units.items()})
     coordinates = np.array([raw_census.INTPTLAT, raw_census.INTPTLON]).T
     pop_18 = np.array(raw_census["P0030001"])
-    return population, pop_18, stats, coordinates
+    geoid = np.array(raw_census["GEOID"])
+    return geoid, population, pop_18, stats, coordinates
 
 
 def density_in_radius(radius):
-    population, _, _, coordinates = load_raw_census()
+    _, population, _, _, coordinates = load_raw_census()
     return locate_blocks(
         coordinates=coordinates, population=population, radius=radius
     ) / (np.pi * radius**2)
@@ -74,11 +75,12 @@ def all_densities():
 
 @lru_cache(None)
 def all_densities_gpd():
-    population, pop_18, stats, coordinates = load_raw_census()
+    geoid, population, pop_18, stats, coordinates = load_raw_census()
     densities = all_densities()
     density_metrics = {f"ad_{k}": densities[k] * population[:, 0] for k in densities}
     return gpd.GeoDataFrame(
         dict(
+            geoid=geoid,
             **density_metrics,
             population=population[:, 0],
             population_18=pop_18,

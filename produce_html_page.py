@@ -4,7 +4,14 @@ import re
 import numpy as np
 
 from census_blocks import RADII
-from stats_for_shapefile import racial_statistics, housing_stats
+from stats_for_shapefile import (
+    racial_statistics,
+    housing_stats,
+    education_stats,
+    generation_stats,
+    income_stats,
+    transportation_stats,
+)
 from election_data import vest_elections
 from relationship import ordering_idx
 
@@ -134,7 +141,11 @@ def get_statistic_names():
         **{"ad_1": ad["ad_1"]},
         "sd": "AW Density",
         **racial_statistics,
+        **education_stats,
+        **generation_stats,
+        **income_stats,
         **housing_stats,
+        **transportation_stats,
         **{(elect.name, "margin"): elect.name for elect in vest_elections},
         **{k: ad[k] for k in ad if k != "ad_1"},
     }
@@ -147,7 +158,11 @@ def get_statistic_categories():
         **{"ad_1": "main"},
         "sd": "main",
         **{k: "race" for k in racial_statistics},
+        **{k: "education" for k in education_stats},
+        **{k: "generation" for k in generation_stats},
+        **{k: "income" for k in income_stats},
         **{k: "housing" for k in housing_stats},
+        **{k: "transportation" for k in transportation_stats},
         **{(elect.name, "margin"): "election" for elect in vest_elections},
         **{k: ad[k] for k in ad if k != "ad_1"},
     }
@@ -157,7 +172,11 @@ def get_statistic_categories():
 category_metadata = {
     "main": dict(name="Main", show_checkbox=False, default=True),
     "race": dict(name="Race", show_checkbox=True, default=True),
-    "housing": dict(name="Housing", show_checkbox=True, default=True),
+    "education": dict(name="Education", show_checkbox=True, default=False),
+    "generation": dict(name="Generation", show_checkbox=True, default=False),
+    "income": dict(name="Income", show_checkbox=True, default=False),
+    "housing": dict(name="Housing", show_checkbox=True, default=False),
+    "transportation": dict(name="Transportation", show_checkbox=True, default=False),
     "election": dict(name="Election", show_checkbox=True, default=True),
     "other_densities": dict(
         name="Other Density Metrics", show_checkbox=True, default=False

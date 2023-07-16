@@ -28,7 +28,10 @@ folder = "/home/kavi/temp/site/"
 
 
 def shapefile_without_ordinals():
-    full = [compute_statistics_for_shapefile(shapefiles[k]) for k in shapefiles]
+    full = [
+        compute_statistics_for_shapefile(shapefiles[k])
+        for k in tqdm.tqdm(shapefiles, desc="computing statistics")
+    ]
     full = pd.concat(full)
     full = full.reset_index(drop=True)
     for elect in vest_elections:
@@ -49,7 +52,10 @@ def shapefile_without_ordinals():
 def full_shapefile():
     full = shapefile_without_ordinals()
     full = pd.concat(
-        [add_ordinals(full[full.type == x]) for x in sorted(set(full.type))]
+        [
+            add_ordinals(full[full.type == x])
+            for x in tqdm.tqdm(sorted(set(full.type)), desc="adding ordinals")
+        ]
     )
     full = full.sort_values("population")[::-1]
     return full
@@ -58,7 +64,7 @@ def full_shapefile():
 def next_prev(full):
     statistic_names = get_statistic_names()
     by_statistic = {k: {} for k in statistic_names}
-    for statistic in statistic_names:
+    for statistic in tqdm.tqdm(statistic_names, desc="next_prev"):
         stat_column = np.array(full[statistic])
         longname_column = np.array(full.longname)
         s_full = full.iloc[
@@ -96,7 +102,7 @@ def create_page_jsons(full):
     long_to_type = dict(zip(full.longname, full.type))
 
     relationships = full_relationships(long_to_type)
-    for i in tqdm.trange(full.shape[0]):
+    for i in tqdm.trange(full.shape[0], desc="creating pages"):
         row = full.iloc[i]
         create_page_json(
             f"{folder}/data",

@@ -5,11 +5,14 @@ import attr
 import pandas as pd
 import tqdm
 from census_blocks import RADII, racial_demographics, housing_units
-from election_data import with_election_results, election_column_names
+from election_data import election_column_names
 
 import geopandas as gpd
 
-from permacache import permacache
+from permacache import permacache, stable_hash
+
+from urbanstats.acs.attach import with_acs_data
+from urbanstats.acs.entities import acs_columns
 
 racial_statistics = {
     "white": "White %",
@@ -24,6 +27,51 @@ racial_statistics = {
 housing_stats = {
     "housing_per_pop": "Housing Units per Adult",
     "vacancy": "Vacancy %",
+    "rent_1br_under_750": "1BR Rent < $750 %",
+    "rent_1br_750_to_1500": "1BR Rent $750 - $1500 %",
+    "rent_1br_over_1500": "1BR Rent > $1500 %",
+    "rent_2br_under_750": "2BR Rent < $750 %",
+    "rent_2br_750_to_1500": "2BR Rent $750 - $1500 %",
+    "rent_2br_over_1500": "2BR Rent > $1500 %",
+}
+
+education_stats = {
+    "education_high_school": "High School %",
+    "education_ugrad": "Undergrad %",
+    "education_grad": "Grad %",
+    "education_field_stem": "Undergrad STEM %",
+    "education_field_humanities": "Undergrad Humanities %",
+    "education_field_business": "Undergrad Business %",
+}
+
+generation_stats = {
+    "generation_silent": "Silent %",
+    "generation_boomer": "Boomer %",
+    "generation_genx": "Gen X %",
+    "generation_millenial": "Millennial %",
+    "generation_genz": "Gen Z %",
+    "generation_genalpha": "Gen Alpha %",
+}
+
+income_stats = {
+    "household_income_under_50k": "Household Income < $50k %",
+    "household_income_50k_to_100k": "Household Income $50k - $100k %",
+    "household_income_over_100k": "Household Income > $100k %",
+    "individual_income_under_50k": "Individual Income < $50k %",
+    "individual_income_50k_to_100k": "Individual Income $50k - $100k %",
+    "individual_income_over_100k": "Individual Income > $100k %",
+}
+
+transportation_stats = {
+    "transportation_means_car": "Commute Car %",
+    "transportation_means_bike": "Commute Bike %",
+    "transportation_means_walk": "Commute Walk %",
+    "transportation_means_transit": "Commute Transit %",
+    "transportation_means_worked_at_home": "Commute Work From Home %",
+    "transportation_commute_time_under_15": "Commute Time < 15 min %",
+    "transportation_commute_time_15_to_29": "Commute Time 15 - 29 min %",
+    "transportation_commute_time_30_to_59": "Commute Time 30 - 59 min %",
+    "transportation_commute_time_over_60": "Commute Time > 60 min %",
 }
 
 
@@ -68,22 +116,14 @@ class Shapefile:
 
 
 @permacache(
-    "population_density/stats_for_shapefile/compute_statistics_for_shapefile_6",
-    key_function=dict(sf=lambda x: x.hash_key),
+    "population_density/stats_for_shapefile/compute_summed_shapefile_3",
+    key_function=dict(sf=lambda x: x.hash_key, sum_keys=stable_hash),
 )
-def compute_statistics_for_shapefile(sf):
-    blocks_gdf = with_election_results()
+def compute_summed_shapefile(sf, sum_keys):
+    print(sf)
+    blocks_gdf = with_acs_data()
     s = sf.load_file()
     area = s["geometry"].to_crs({"proj": "cea"}).area / 1e6
-    density_metrics = [f"ad_{k}" for k in RADII]
-    sum_keys = [
-        "population",
-        "population_18",
-        *racial_demographics,
-        *housing_units,
-        *density_metrics,
-        *election_column_names,
-    ]
     if sf.chunk_size is None:
         grouped_stats = compute_grouped_stats(blocks_gdf, s, sum_keys)
     else:
@@ -95,12 +135,32 @@ def compute_statistics_for_shapefile(sf):
                 )
             )
         grouped_stats = pd.concat(grouped_stats)
-    for k in density_metrics:
-        grouped_stats[k] /= grouped_stats["population"]
     result = pd.concat(
         [s[["longname", "shortname"]], grouped_stats, pd.DataFrame(dict(area=area))],
         axis=1,
     )
+    return result
+
+
+@permacache(
+    "population_density/stats_for_shapefile/compute_statistics_for_shapefile_10",
+    key_function=dict(sf=lambda x: x.hash_key),
+)
+def compute_statistics_for_shapefile(sf):
+    print(sf)
+    density_metrics = [f"ad_{k}" for k in RADII]
+    sum_keys = [
+        "population",
+        "population_18",
+        *racial_demographics,
+        *housing_units,
+        *density_metrics,
+        *election_column_names,
+        *acs_columns,
+    ]
+    result = compute_summed_shapefile(sf, sum_keys).copy()
+    for k in density_metrics:
+        result[k] /= result["population"]
     result["sd"] = result["population"] / result["area"]
     del result["area"]
     for k in sf.meta:
@@ -116,10 +176,86 @@ def compute_statistics_for_shapefile(sf):
     del result["total"]
     del result["occupied"]
     del result["population_18"]
+
+    education_denominator = (
+        result.education_no
+        + result.education_high_school
+        + result.education_ugrad
+        + result.education_grad
+    )
+    result["education_high_school"] = (
+        result.education_high_school + result.education_ugrad + result.education_grad
+    ) / education_denominator
+    result["education_ugrad"] = (
+        result.education_ugrad + result.education_grad
+    ) / education_denominator
+    result["education_grad"] = result.education_grad / education_denominator
+    del result["education_no"]
+
+    def fractionalize(*columns):
+        denominator = sum(result[c] for c in columns)
+        for c in columns:
+            result[c] = result[c] / denominator
+
+    fractionalize(
+        "education_field_stem", "education_field_humanities", "education_field_business"
+    )
+    fractionalize(
+        "generation_silent",
+        "generation_boomer",
+        "generation_genx",
+        "generation_millenial",
+        "generation_genz",
+        "generation_genalpha",
+    )
+    fractionalize(
+        "household_income_under_50k",
+        "household_income_50k_to_100k",
+        "household_income_over_100k",
+    )
+    fractionalize(
+        "individual_income_under_50k",
+        "individual_income_50k_to_100k",
+        "individual_income_over_100k",
+    )
+
+    fractionalize(
+        "transportation_means_car",
+        "transportation_means_bike",
+        "transportation_means_walk",
+        "transportation_means_transit",
+        "transportation_means_worked_at_home",
+        "transportation_means_other",
+    )
+
+    fractionalize(
+        "transportation_commute_time_under_15",
+        "transportation_commute_time_15_to_29",
+        "transportation_commute_time_30_to_59",
+        "transportation_commute_time_over_60",
+    )
+
+    fractionalize(
+        "rent_1br_under_750",
+        "rent_1br_750_to_1500",
+        "rent_1br_over_1500",
+    )
+    fractionalize(
+        "rent_2br_under_750",
+        "rent_2br_750_to_1500",
+        "rent_2br_over_1500",
+    )
+
+    del result["transportation_means_other"]
+
     return result
 
 
 def compute_grouped_stats(blocks_gdf, s, sum_keys):
-    joined = s.sjoin(blocks_gdf, how="inner", predicate="intersects")
+    joined = s.sjoin(
+        blocks_gdf[[*sum_keys, "geometry"]].fillna(0),
+        how="inner",
+        predicate="intersects",
+    )
     grouped_stats = pd.DataFrame(joined[sum_keys]).groupby(joined.index).sum()
     return grouped_stats
