@@ -14,6 +14,7 @@ class Sidebar extends React.Component {
 
     render() {
         let settings = this.props.settings;
+        let statistic_category_metadata_checkboxes = this.props.statistic_category_metadata_checkboxes;
         return (
             <div className="serif sidebar">
                 <div className="sidebar-section">
@@ -45,7 +46,7 @@ class Sidebar extends React.Component {
                     <div className="sidebar-section-title">Settings</div>
                     <ul className="sidebar-section-content">
                         <li>
-                        <CheckboxSetting
+                            <CheckboxSetting
                                 name="Use Imperial Units"
                                 setting_key="use_imperial"
                                 settings={this.props.settings}
@@ -63,6 +64,22 @@ class Sidebar extends React.Component {
                                 settings={this.props.settings}
                                 set_setting={this.props.set_setting}
                             />
+                        </li>
+                    </ul>
+                </div>
+                <div className="sidebar-section">
+                    <div className="sidebar-section-title">Statistic Categories</div>
+                    <ul className="sidebar-section-content">
+                        <li>
+                            {statistic_category_metadata_checkboxes.map((checkbox, i) =>
+                                <CheckboxSetting
+                                    key={i}
+                                    name={checkbox.name}
+                                    setting_key={checkbox.setting_key}
+                                    settings={this.props.settings}
+                                    set_setting={this.props.set_setting}
+                                />
+                            )}
                         </li>
                     </ul>
                 </div>

@@ -13,7 +13,13 @@ import tqdm.auto as tqdm
 
 from output_geometry import produce_all_geometry_json
 from stats_for_shapefile import compute_statistics_for_shapefile
-from produce_html_page import add_ordinals, create_page_json, get_statistic_names
+from produce_html_page import (
+    add_ordinals,
+    create_page_json,
+    get_statistic_categories,
+    get_statistic_names,
+    category_metadata,
+)
 from relationship import full_relationships, map_relationships_by_type
 from election_data import vest_elections
 
@@ -104,6 +110,12 @@ def create_page_jsons(full):
         )
 
 
+def output_categories():
+    assert set(get_statistic_names()) == set(get_statistic_categories())
+    assert set(get_statistic_categories().values()) == set(category_metadata)
+    return [dict(key=k, **v) for k, v in category_metadata.items()]
+
+
 def main(no_geo=False, no_data=False):
     for sub in ["index", "r", "shape", "data", "styles", "scripts"]:
         try:
@@ -140,6 +152,9 @@ def main(no_geo=False, no_data=False):
 
     with open(f"{folder}/index/map_relationship.json", "w") as f:
         json.dump(map_relationships_by_type, f)
+
+    with open(f"{folder}/index/statistic_category_metadata.json", "w") as f:
+        json.dump(output_categories(), f)
 
     with open(f"{folder}/CNAME", "w") as f:
         f.write("urbanstats.org")

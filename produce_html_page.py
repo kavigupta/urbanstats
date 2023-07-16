@@ -9,19 +9,6 @@ from election_data import vest_elections
 from relationship import ordering_idx
 
 
-def get_statistic_names():
-    ad = {f"ad_{k}": f"PW Density (r={format_radius(k)})" for k in RADII}
-    return {
-        "population": "Population",
-        **{"ad_1": ad["ad_1"]},
-        "sd": "AW Density",
-        **racial_statistics,
-        **housing_stats,
-        **{(elect.name, "margin"): elect.name for elect in vest_elections},
-        **{k: ad[k] for k in ad if k != "ad_1"},
-    }
-
-
 def create_page_json(
     folder,
     row,
@@ -43,6 +30,7 @@ def create_page_json(
     for stat in statistic_names:
         row_text = dict(
             statname=statistic_names[stat],
+            statcategory=get_statistic_categories()[stat],
             statval=float(row[stat]),
             ordinal=0 if np.isnan(row[stat, "ordinal"]) else int(row[stat, "ordinal"]),
             total_in_class=int(row[stat, "total"]),
@@ -137,3 +125,41 @@ def format_radius(x):
     else:
         assert x == int(x)
         return f"{x:.0f}km"
+
+
+def get_statistic_names():
+    ad = {f"ad_{k}": f"PW Density (r={format_radius(k)})" for k in RADII}
+    return {
+        "population": "Population",
+        **{"ad_1": ad["ad_1"]},
+        "sd": "AW Density",
+        **racial_statistics,
+        **housing_stats,
+        **{(elect.name, "margin"): elect.name for elect in vest_elections},
+        **{k: ad[k] for k in ad if k != "ad_1"},
+    }
+
+
+def get_statistic_categories():
+    ad = {f"ad_{k}": f"other_densities" for k in RADII}
+    result = {
+        "population": "main",
+        **{"ad_1": "main"},
+        "sd": "main",
+        **{k: "race" for k in racial_statistics},
+        **{k: "housing" for k in housing_stats},
+        **{(elect.name, "margin"): "election" for elect in vest_elections},
+        **{k: ad[k] for k in ad if k != "ad_1"},
+    }
+    return result
+
+
+category_metadata = {
+    "main": dict(name="Main", show_checkbox=False, default=True),
+    "race": dict(name="Race", show_checkbox=True, default=True),
+    "housing": dict(name="Housing", show_checkbox=True, default=True),
+    "election": dict(name="Election", show_checkbox=True, default=True),
+    "other_densities": dict(
+        name="Other Density Metrics", show_checkbox=True, default=False
+    ),
+}

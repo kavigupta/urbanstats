@@ -18,6 +18,11 @@ class ArticlePanel extends PageTemplate {
         const self = this;
         // TODO this is a hack, just include it in the props
         let article_type = this.props.rows[0].row_type;
+
+        const filtered_rows = this.props.rows.filter((row) => {
+            const key = "show_statistic_" + row.statcategory;
+            return self.state.settings[key];
+        });
         return (
             <div>
                 <div className="centered_text shortname">{this.props.shortname}</div>
@@ -26,7 +31,7 @@ class ArticlePanel extends PageTemplate {
                 <table className="stats_table">
                     <tbody>
                         <StatisticRowRaw is_header={true} />
-                        {this.props.rows.map((row, i) =>
+                        {filtered_rows.map((row, i) =>
                             <StatisticRowRaw key={i} index={i} {...row} settings={this.state.settings} />)}
                     </tbody>
                 </table>
