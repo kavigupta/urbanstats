@@ -165,6 +165,9 @@ def main(no_geo=False, no_data=False):
     with open(f"{folder}/CNAME", "w") as f:
         f.write("urbanstats.org")
 
+    with open(f"{folder}/.nojekyll", "w") as f:
+        f.write("")
+
 
 if __name__ == "__main__":
     fire.Fire(main)

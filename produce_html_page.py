@@ -63,7 +63,7 @@ def create_page_json(
 
     name = create_filename(row.longname)
     with open(f"{folder}/{name}", "w") as f:
-        json.dump(data, f, indent=2)
+        json.dump(data, f)
     return name
 
 
