@@ -88,7 +88,7 @@ def next_prev_within_type(full):
 
 
 def create_page_jsons(full):
-    ptrs_overall = next_prev(full)
+    # ptrs_overall = next_prev(full)
     # ptrs_within_type = next_prev_within_type(full)
     long_to_short = dict(zip(full.longname, full.shortname))
     long_to_pop = dict(zip(full.longname, full.population))
@@ -104,7 +104,6 @@ def create_page_jsons(full):
             long_to_short,
             long_to_pop,
             long_to_type,
-            ptrs_overall,
         )
 
 
@@ -115,6 +114,7 @@ def output_categories():
 
 
 def output_ordering(full):
+    counts = {}
     for statistic_column in get_statistic_names():
         print(statistic_column)
         full_by_name = full[
@@ -131,11 +131,16 @@ def output_ordering(full):
         path = f"{folder}/order/{statistic_name}__overall.json"
         with open(path, "w") as f:
             json.dump(list(full_sorted.longname), f)
+        counts["overall"] = len(full_sorted)
         for typ in sorted(set(full_sorted.type)):
             path = f"{folder}/order/{statistic_name}__{typ}.json"
             with open(path, "w") as f:
-                json.dump(list(full_sorted[full_sorted.type == typ].longname), f)
+                names = full_sorted[full_sorted.type == typ].longname
+                counts[typ] = len(names)
+                json.dump(list(names), f)
 
+    with open(f"{folder}/index/counts_by_article_type.json", "w") as f:
+        json.dump(list(counts.items()), f)
 
 def main(no_geo=False, no_data=False, no_data_jsons=False):
     for sub in ["index", "r", "shape", "data", "styles", "scripts", "order"]:

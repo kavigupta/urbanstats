@@ -20,6 +20,9 @@ class ArticlePanel extends PageTemplate {
         let article_type = this.props.article_type;
 
         let categories = loadJSON("/index/statistic_category_list.json");
+        let counts_by_article_type = loadJSON("/index/counts_by_article_type.json");
+        let count_articles = counts_by_article_type.filter((x) => x[0] == article_type)[0][1];
+        let count_articles_overall = counts_by_article_type.filter((x) => x[0] == "overall")[0][1];
 
         let modified_rows = [];
         for (let i in this.props.rows) {
@@ -28,6 +31,8 @@ class ArticlePanel extends PageTemplate {
             row = Object.assign({}, row);
             row.statistic_category = categories[i];
             row.article_type = article_type;
+            row.total_count_in_class = count_articles;
+            row.total_count_overall = count_articles_overall;
             modified_rows.push(row);
         }
         const filtered_rows = modified_rows.filter((row) => {

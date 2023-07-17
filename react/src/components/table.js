@@ -48,7 +48,7 @@ class StatisticRowRaw extends React.Component {
                         this.props.is_header
                             ? "Ordinal"
                             : <Ordinal ordinal={this.props.ordinal}
-                                total={this.props.total_in_class}
+                                total={this.props.total_count_in_class}
                                 type={this.props.article_type} />
                     }</span>
                 </td>
@@ -57,7 +57,7 @@ class StatisticRowRaw extends React.Component {
                         this.props.is_header
                             ? "Percentile"
                             : <Percentile ordinal={this.props.ordinal}
-                                total={this.props.total_in_class}
+                                total={this.props.total_count_in_class}
                                 percentile_by_population={this.props.percentile_by_population}
                                 settings={this.props.settings}
                             />
@@ -71,14 +71,19 @@ class StatisticRowRaw extends React.Component {
                                 ordinal={this.props.ordinal}
                                 statname={this.props.statname}
                                 type={this.props.article_type}
-                                total={this.props.total_in_class}
+                                total={this.props.total_count_in_class}
                             />}</span>
                 </td>
                 <td style={{ width: "8%" }}>
                     <span className="serif ordinal">{
                         this.props.is_header
                             ? "Overall"
-                            : <PointerButtons pointers={this.props.ba_overall} />}</span>
+                            : <PointerButtonsIndex
+                                ordinal={this.props.overall_ordinal}
+                                statname={this.props.statname}
+                                type="overall"
+                                total={this.props.total_count_overall}
+                            />}</span>
                 </td>
             </tr>
         );

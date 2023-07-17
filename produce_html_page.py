@@ -24,7 +24,6 @@ def create_page_json(
     long_to_short,
     long_to_population,
     long_to_type,
-    ptrs_overall,
 ):
     statistic_names = get_statistic_names()
     data = dict(
@@ -40,9 +39,8 @@ def create_page_json(
             statname=statistic_names[stat],
             statval=float(row[stat]),
             ordinal=0 if np.isnan(row[stat, "ordinal"]) else int(row[stat, "ordinal"]),
-            total_in_class=int(row[stat, "total"]),
+            overall_ordinal=0 if np.isnan(row[stat, "overall_ordinal"]) else int(row[stat, "overall_ordinal"]),
             percentile_by_population=float(row[stat, "percentile_by_population"]),
-            ba_overall=ptrs_overall[stat][row.longname],
         )
         data["rows"].append(row_text)
     to_add = {}
