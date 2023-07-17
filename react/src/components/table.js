@@ -267,7 +267,7 @@ class PointerButtonIndex extends React.Component {
     }
 
     render() {
-        const pos = this.props.total - this.props.pos;
+        const pos = this.props.pos - 1;
         if (pos < 0 || pos >= this.props.total) {
             return <span className="button">&nbsp;&nbsp;</span>
         } else {

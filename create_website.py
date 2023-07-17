@@ -53,10 +53,11 @@ def full_shapefile():
     full = shapefile_without_ordinals()
     full = pd.concat(
         [
-            add_ordinals(full[full.type == x])
+            add_ordinals(full[full.type == x], overall_ordinal=False)
             for x in tqdm.tqdm(sorted(set(full.type)), desc="adding ordinals")
         ]
     )
+    full = add_ordinals(full, overall_ordinal=True)
     full = full.sort_values("population")[::-1]
     return full
 
@@ -65,17 +66,9 @@ def next_prev(full):
     statistic_names = get_statistic_names()
     by_statistic = {k: {} for k in statistic_names}
     for statistic in tqdm.tqdm(statistic_names, desc="next_prev"):
-        stat_column = np.array(full[statistic])
-        longname_column = np.array(full.longname)
-        s_full = full.iloc[
-            sorted(
-                range(full.shape[0]),
-                key=lambda x: (
-                    float("inf") if np.isnan(stat_column[x]) else -stat_column[x],
-                    longname_column[x],
-                ),
-            )
-        ]
+        s_full = full.sort_values("longname").sort_values(
+            statistic, ascending=False, kind="stable"
+        )
         names = list(s_full.longname)
         for prev, current, next in zip([None, *names[:-1]], names, [*names[1:], None]):
             by_statistic[statistic][current] = prev, next
@@ -124,14 +117,18 @@ def output_categories():
 def output_ordering(full):
     for statistic_column in get_statistic_names():
         print(statistic_column)
-        full_by_name = full[["longname", "type", statistic_column]].sort_values("longname")
-        full_by_name = full_by_name.fillna(-np.inf)
-        full_sorted = full_by_name.sort_values(statistic_column, kind="stable")
+        full_by_name = full[
+            ["longname", "type", (statistic_column, "overall_ordinal")]
+        ].sort_values("longname")
+        full_sorted = full_by_name.sort_values(
+            (statistic_column, "overall_ordinal"), kind="stable"
+        )
 
-        statistic_name = get_statistic_names()[statistic_column].replace("/", "slash")
+        statistic_name = get_statistic_names()[
+            statistic_column
+        ].replace("/", "slash")
 
         path = f"{folder}/order/{statistic_name}__overall.json"
-        print(path)
         with open(path, "w") as f:
             json.dump(list(full_sorted.longname), f)
         for typ in sorted(set(full_sorted.type)):
@@ -140,7 +137,7 @@ def output_ordering(full):
                 json.dump(list(full_sorted[full_sorted.type == typ].longname), f)
 
 
-def main(no_geo=False, no_data=False):
+def main(no_geo=False, no_data=False, no_data_jsons=False):
     for sub in ["index", "r", "shape", "data", "styles", "scripts", "order"]:
         try:
             os.makedirs(f"{folder}/{sub}")
@@ -153,7 +150,8 @@ def main(no_geo=False, no_data=False):
 
     if not no_data:
         full = full_shapefile()
-        create_page_jsons(full)
+        if not no_data_jsons:
+            create_page_jsons(full)
         with open(f"{folder}/index/pages.json", "w") as f:
             json.dump(list(full.longname), f)
 
