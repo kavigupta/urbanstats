@@ -2,6 +2,7 @@ import json
 import re
 
 import numpy as np
+import pandas as pd
 
 from census_blocks import RADII
 from stats_for_shapefile import (
@@ -24,26 +25,23 @@ def create_page_json(
     long_to_population,
     long_to_type,
     ptrs_overall,
-    ptrs_within_type,
 ):
     statistic_names = get_statistic_names()
     data = dict(
         shortname=row.shortname,
         longname=row.longname,
         source=row.source,
+        article_type=row.type,
         rows=[],
     )
 
     for stat in statistic_names:
         row_text = dict(
             statname=statistic_names[stat],
-            statcategory=get_statistic_categories()[stat],
             statval=float(row[stat]),
             ordinal=0 if np.isnan(row[stat, "ordinal"]) else int(row[stat, "ordinal"]),
             total_in_class=int(row[stat, "total"]),
             percentile_by_population=float(row[stat, "percentile_by_population"]),
-            row_type=row["type"],
-            ba_within_type=ptrs_within_type[stat][row.longname],
             ba_overall=ptrs_overall[stat][row.longname],
         )
         data["rows"].append(row_text)

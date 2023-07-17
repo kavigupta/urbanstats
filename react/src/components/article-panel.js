@@ -6,6 +6,7 @@ import { StatisticRowRaw } from "./table.js";
 import { Map } from "./map.js";
 import { Related } from "./related-button.js";
 import { PageTemplate } from "../page_template/template.js";
+import { loadJSON } from '../load_json.js';
 import "../common.css";
 import "./article.css";
 
@@ -16,13 +17,24 @@ class ArticlePanel extends PageTemplate {
 
     main_content() {
         const self = this;
-        // TODO this is a hack, just include it in the props
-        let article_type = this.props.rows[0].row_type;
+        let article_type = this.props.article_type;
 
-        const filtered_rows = this.props.rows.filter((row) => {
-            const key = "show_statistic_" + row.statcategory;
+        let categories = loadJSON("/index/statistic_category_list.json");
+
+        let modified_rows = [];
+        for (let i in this.props.rows) {
+            let row = this.props.rows[i];
+            // copy row
+            row = Object.assign({}, row);
+            row.statistic_category = categories[i];
+            row.article_type = article_type;
+            modified_rows.push(row);
+        }
+        const filtered_rows = modified_rows.filter((row) => {
+            const key = "show_statistic_" + row.statistic_category;
             return self.state.settings[key];
         });
+
         return (
             <div>
                 <div className="centered_text shortname">{this.props.shortname}</div>

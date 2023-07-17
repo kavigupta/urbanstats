@@ -96,7 +96,7 @@ def next_prev_within_type(full):
 
 def create_page_jsons(full):
     ptrs_overall = next_prev(full)
-    ptrs_within_type = next_prev_within_type(full)
+    # ptrs_within_type = next_prev_within_type(full)
     long_to_short = dict(zip(full.longname, full.shortname))
     long_to_pop = dict(zip(full.longname, full.population))
     long_to_type = dict(zip(full.longname, full.type))
@@ -112,7 +112,6 @@ def create_page_jsons(full):
             long_to_pop,
             long_to_type,
             ptrs_overall,
-            ptrs_within_type,
         )
 
 
@@ -120,6 +119,24 @@ def output_categories():
     assert set(get_statistic_names()) == set(get_statistic_categories())
     assert set(get_statistic_categories().values()) == set(category_metadata)
     return [dict(key=k, **v) for k, v in category_metadata.items()]
+
+
+def output_ordering(full):
+    for statistic_column in get_statistic_names():
+        print(statistic_column)
+        full_by_name = full.sort_values("longname")
+        full_sorted = full_by_name.sort_values(statistic_column, kind="stable")
+
+        statistic_name = get_statistic_names()[statistic_column].replace("/", "slash")
+
+        path = f"{folder}/order/{statistic_name}__overall.json"
+        print(path)
+        with open(path, "w") as f:
+            json.dump(list(full_sorted.longname), f)
+        for typ in sorted(set(full_sorted.type)):
+            path = f"{folder}/order/{statistic_name}__{typ}.json"
+            with open(path, "w") as f:
+                json.dump(list(full_sorted[full_sorted.type == typ].longname), f)
 
 
 def main(no_geo=False, no_data=False):
@@ -141,6 +158,7 @@ def main(no_geo=False, no_data=False):
 
         with open(f"{folder}/index/population.json", "w") as f:
             json.dump(list(full.population), f)
+        output_ordering(full)
 
     shutil.copy("html_templates/article.html", f"{folder}")
     shutil.copy("html_templates/index.html", f"{folder}/")
@@ -161,6 +179,8 @@ def main(no_geo=False, no_data=False):
 
     with open(f"{folder}/index/statistic_category_metadata.json", "w") as f:
         json.dump(output_categories(), f)
+    with open(f"{folder}/index/statistic_category_list.json", "w") as f:
+        json.dump(list(get_statistic_categories().values()), f)
 
     with open(f"{folder}/CNAME", "w") as f:
         f.write("urbanstats.org")

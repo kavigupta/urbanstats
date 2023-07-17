@@ -2,6 +2,7 @@ import React from 'react';
 
 export { StatisticRowRaw };
 import { article_link } from "../navigation/links.js";
+import { loadJSON } from '../load_json.js';
 import "./table.css";
 
 
@@ -48,7 +49,7 @@ class StatisticRowRaw extends React.Component {
                             ? "Ordinal"
                             : <Ordinal ordinal={this.props.ordinal}
                                 total={this.props.total_in_class}
-                                type={this.props.row_type} />
+                                type={this.props.article_type} />
                     }</span>
                 </td>
                 <td style={{ width: "17%" }}>
@@ -66,7 +67,12 @@ class StatisticRowRaw extends React.Component {
                     <span className="serif ordinal">{
                         this.props.is_header
                             ? "Within Type"
-                            : <PointerButtons pointers={this.props.ba_within_type} />}</span>
+                            : <PointerButtonsIndex
+                                ordinal={this.props.ordinal}
+                                statname={this.props.statname}
+                                type={this.props.article_type}
+                                total={this.props.total_in_class}
+                            />}</span>
                 </td>
                 <td style={{ width: "8%" }}>
                     <span className="serif ordinal">{
@@ -230,7 +236,49 @@ class PointerButton extends React.Component {
         if (this.props.longname == null) {
             return <span className="button">&nbsp;&nbsp;</span>
         } else {
-            return <a className="button" href={article_link(this.props.longname)}>{this.props.text}</a>
+            return (
+                <a href="#" className="button" onClick={() => {
+                    document.location = article_link(this.props.longname);
+                }}>{this.props.text}</a>
+            );
+        }
+    }
+}
+
+class PointerButtonsIndex extends React.Component {
+    constructor(props) {
+        super(props);
+    }
+
+    render() {
+        const link = "/order/" + this.props.statname + "__" + this.props.type + ".json";
+        return (
+            <span>
+                <PointerButtonIndex text="<" link={link} pos={this.props.ordinal - 1} total={this.props.total} />
+                <PointerButtonIndex text=">" link={link} pos={this.props.ordinal + 1} total={this.props.total} />
+            </span>
+        );
+    }
+}
+
+class PointerButtonIndex extends React.Component {
+    constructor(props) {
+        super(props);
+    }
+
+    render() {
+        const pos = this.props.total - this.props.pos;
+        if (pos < 0 || pos >= this.props.total) {
+            return <span className="button">&nbsp;&nbsp;</span>
+        } else {
+            return (
+                <a href="#" className="button" onClick={() => {
+                    console.log(this.props.link);
+                    console.log(pos);
+                    const data = loadJSON(this.props.link);
+                    document.location = article_link(data[pos]);
+                }}>{this.props.text}</a>
+            );
         }
     }
 }
