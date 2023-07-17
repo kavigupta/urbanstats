@@ -1,5 +1,5 @@
 
-export { article_link, shape_link, data_link };
+export { article_link, shape_link, data_link, ordering_link };
 
 function article_link(longname) {
     const params = new URLSearchParams()
@@ -15,9 +15,17 @@ function data_link(longname) {
     return `/data/${sanitize(longname)}.json`
 }
 
-function sanitize(longname) {
+function ordering_link(statname, type) {
+    return `/order/${sanitize(statname, false)}__${sanitize(type, false)}.json`
+}
+
+function sanitize(longname, spaces_around_slash=true) {
     let x = longname;
-    x = x.replace("/", " slash ");
+    if (spaces_around_slash) {
+        x = x.replace("/", " slash ");
+    } else {
+        x = x.replace("/", "slash");
+    }
     x = x.replace("%", "%25");
     return x;
 }

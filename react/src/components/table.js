@@ -1,7 +1,7 @@
 import React from 'react';
 
 export { StatisticRowRaw };
-import { article_link } from "../navigation/links.js";
+import { article_link, ordering_link } from "../navigation/links.js";
 import { loadJSON } from '../load_json.js';
 import "./table.css";
 
@@ -256,7 +256,7 @@ class PointerButtonsIndex extends React.Component {
     }
 
     render() {
-        const link = "/order/" + this.props.statname + "__" + this.props.type + ".json";
+        const link = ordering_link(this.props.statname, this.props.type);
         return (
             <span>
                 <PointerButtonIndex text="<" link={link} pos={this.props.ordinal - 1} total={this.props.total} />
@@ -278,9 +278,10 @@ class PointerButtonIndex extends React.Component {
         } else {
             return (
                 <a href="#" className="button" onClick={() => {
-                    console.log(this.props.link);
+                    const link = this.props.link;
+                    console.log(link);
                     console.log(pos);
-                    const data = loadJSON(this.props.link);
+                    const data = loadJSON(link);
                     document.location = article_link(data[pos]);
                 }}>{this.props.text}</a>
             );
