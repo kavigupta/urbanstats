@@ -124,7 +124,8 @@ def output_categories():
 def output_ordering(full):
     for statistic_column in get_statistic_names():
         print(statistic_column)
-        full_by_name = full.sort_values("longname")
+        full_by_name = full[["longname", "type", statistic_column]].sort_values("longname")
+        full_by_name = full_by_name.fillna(-np.inf)
         full_sorted = full_by_name.sort_values(statistic_column, kind="stable")
 
         statistic_name = get_statistic_names()[statistic_column].replace("/", "slash")
@@ -140,7 +141,7 @@ def output_ordering(full):
 
 
 def main(no_geo=False, no_data=False):
-    for sub in ["index", "r", "shape", "data", "styles", "scripts"]:
+    for sub in ["index", "r", "shape", "data", "styles", "scripts", "order"]:
         try:
             os.makedirs(f"{folder}/{sub}")
         except FileExistsError:
