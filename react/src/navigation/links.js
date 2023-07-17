@@ -18,5 +18,6 @@ function data_link(longname) {
 function sanitize(longname) {
     let x = longname;
     x = x.replace("/", " slash ");
+    x = x.replace("%", "%25");
     return x;
 }
