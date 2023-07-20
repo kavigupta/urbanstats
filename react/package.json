@@ -33,6 +33,7 @@
     "style-loader": "^3.3.1",
     "ts-loader": "^9.4.2",
     "websocket": "^1.0.34",
-    "json5": "^2.2.0"
+    "json5": "^2.2.0",
+    "react-contenteditable": "^3.3.7"
   }
 }

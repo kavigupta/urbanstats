@@ -1,5 +1,3 @@
-
-
 .value_numeric {
     text-align: right;
 }
@@ -11,4 +9,8 @@
 
 .oddrow {
     background-color: #f8f8f8;
+}
+
+.editable_number {
+    min-width: 2em;
 }

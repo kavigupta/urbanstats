@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import ContentEditable from 'react-contenteditable'
 
 export { StatisticRowRaw };
 import { article_link, ordering_link } from "../navigation/links.js";
@@ -49,7 +50,9 @@ class StatisticRowRaw extends React.Component {
                             ? "Ordinal"
                             : <Ordinal ordinal={this.props.ordinal}
                                 total={this.props.total_count_in_class}
-                                type={this.props.article_type} />
+                                type={this.props.article_type}
+                                statname={this.props.statname}
+                            />
                     }</span>
                 </td>
                 <td style={{ width: "17%" }}>
@@ -179,7 +182,13 @@ class Ordinal extends React.Component {
         const ordinal = this.props.ordinal;
         const total = this.props.total;
         const type = this.props.type;
-        return <span>{ordinal} of {total} {this.pluralize(type)}</span>;
+        const self = this;
+        return <span>
+            <EditableNumber
+                number={ordinal}
+                onNewNumber={num => self.onNewNumber(num)}
+            /> of {total} {this.pluralize(type)}
+        </span>;
     }
 
     pluralize(type) {
@@ -188,7 +197,59 @@ class Ordinal extends React.Component {
         }
         return type + "s";
     }
+
+    onNewNumber(number) {
+        let num = number;
+        const link = ordering_link(this.props.statname, this.props.type);
+        if (num < 0) {
+            // -1 -> this.props.total, -2 -> this.props.total - 1, etc.
+            num = this.props.total + 1 + num;
+        }
+        if (num > this.props.total) {
+            num = this.props.total;
+        }
+        if (num <= 0) {
+            num = 1;
+        }
+        const data = loadJSON(link);
+        document.location = article_link(data[num - 1]);
+    }
 }
+
+class EditableNumber extends React.Component {
+    constructor(props) {
+        super(props);
+        this.contentEditable = React.createRef();
+        this.state = {
+            html: this.props.number.toString(),
+        };
+    }
+    handleChange = evt => {
+        this.setState({ html: evt.target.value });
+    };
+    render() {
+        const self = this;
+        return (
+            <ContentEditable
+                className="editable_number"
+                innerRef={this.contentEditable}
+                html={this.state.html} // innerHTML of the editable div
+                disabled={false}       // use true to disable editing
+                onChange={this.handleChange} // handle innerHTML change
+                onKeyDown={(e) => {
+                    if (e.key == "Enter") {
+                        const number = parseInt(self.state.html);
+                        if (number != NaN) {
+                            self.props.onNewNumber(number);
+                        }
+                        e.preventDefault();
+                    }
+                }}
+                tagName='span' // Use a custom HTML tag (uses a div by default)
+            />
+        )
+    }
+};
 
 class Percentile extends React.Component {
     constructor(props) {
