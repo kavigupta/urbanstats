@@ -7,19 +7,33 @@ from produce_html_page import create_filename
 from shapefiles import shapefiles
 
 
+def round_floats(obj):
+    if isinstance(obj, float):
+        return round(obj, 6)
+    elif isinstance(obj, dict):
+        return dict((k, round_floats(v)) for k, v in obj.items())
+    elif isinstance(obj, (list, tuple)):
+        return list(map(round_floats, obj))
+    return obj
+
+
 def convert(geo):
+    # convert to geojson
     if isinstance(geo, shapely.geometry.polygon.Polygon):
-        x, y = geo.exterior.coords.xy
-        coords = np.array([y, x]).T.tolist()
-        return [coords]
-    assert isinstance(geo, shapely.geometry.multipolygon.MultiPolygon)
-    return [x for g in geo.geoms for x in convert(g)]
+        geo = [geo]
+    if isinstance(geo, shapely.geometry.multipolygon.MultiPolygon):
+        geo = list(geo.geoms)
+    return [shapely.geometry.mapping(g) for g in geo]
 
 
 def produce_geometry_json(folder, r):
     fname = create_filename(r.longname)
+    res = convert(r.geometry)
+    res = round_floats(res)
+    res = json.dumps(res)
+    res = res.replace(", ", ",")
     with open(f"{folder}/{fname}", "w") as f:
-        json.dump(convert(r.geometry), f)
+        f.write(res)
 
 
 def produce_all_geometry_json(path, valid_names):

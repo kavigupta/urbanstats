@@ -74,20 +74,28 @@ class Map extends React.Component {
             return;
         }
         // https://stackoverflow.com/a/35970894/1549476
-        const polygons = await fetch(shape_link(name))
+        const polys = await fetch(shape_link(name))
             .then(res => res.json());
+        let geojson = {
+            "type": "FeatureCollection",
+            "features": polys.map((x) => {
+                return {
+                    "type": "Feature",
+                    "properties": {},
+                    "geometry": x,
+                };
+
+            }),
+        };
         let group = new L.featureGroup();
-        for (let i = 0; i < polygons.length; i++) {
-            let polygon = polygons[i];
-            polygon = new L.Polygon(polygon, style);
-            if (add_callback) {
-                polygon = polygon.on("click", function (e) {
-                    window.location.href = article_link(name);
-                });
-            }
-            // map.addLayer(polygon, add_to_bottom);
-            group.addLayer(polygon, add_to_bottom);
+        let polygon = L.geoJson(geojson, style);
+        if (add_callback) {
+            polygon = polygon.on("click", function (e) {
+                window.location.href = article_link(name);
+            });
         }
+
+        group.addLayer(polygon, add_to_bottom);
         if (fit_bounds) {
             map.fitBounds(group.getBounds(), { "animate": false });
         }
