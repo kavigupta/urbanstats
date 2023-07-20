@@ -39,7 +39,9 @@ def create_page_json(
             statname=statistic_names[stat],
             statval=float(row[stat]),
             ordinal=0 if np.isnan(row[stat, "ordinal"]) else int(row[stat, "ordinal"]),
-            overall_ordinal=0 if np.isnan(row[stat, "overall_ordinal"]) else int(row[stat, "overall_ordinal"]),
+            overall_ordinal=0
+            if np.isnan(row[stat, "overall_ordinal"])
+            else int(row[stat, "overall_ordinal"]),
             percentile_by_population=float(row[stat, "percentile_by_population"]),
         )
         data["rows"].append(row_text)

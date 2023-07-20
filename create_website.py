@@ -124,9 +124,7 @@ def output_ordering(full):
             (statistic_column, "overall_ordinal"), kind="stable"
         )
 
-        statistic_name = get_statistic_names()[
-            statistic_column
-        ].replace("/", "slash")
+        statistic_name = get_statistic_names()[statistic_column].replace("/", "slash")
 
         path = f"{folder}/order/{statistic_name}__overall.json"
         with open(path, "w") as f:
@@ -141,6 +139,7 @@ def output_ordering(full):
 
     with open(f"{folder}/index/counts_by_article_type.json", "w") as f:
         json.dump(list(counts.items()), f)
+
 
 def main(no_geo=False, no_data=False, no_data_jsons=False):
     for sub in ["index", "r", "shape", "data", "styles", "scripts", "order"]:
