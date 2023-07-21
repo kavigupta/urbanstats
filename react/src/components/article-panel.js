@@ -27,9 +27,13 @@ class ArticlePanel extends PageTemplate {
 
         let modified_rows = [];
         for (let i in this.props.rows) {
-            let row = this.props.rows[i];
-            // copy row
-            row = Object.assign({}, row);
+            let row_original = this.props.rows[i];
+            // fresh row object
+            let row = {};
+            row.statval = row_original.statval;
+            row.ordinal = row_original.ordinal;
+            row.overallOrdinal = row_original.overallOrdinal;
+            row.percentile_by_population = row_original.percentileByPopulation;
             row.statistic_category = categories[i];
             row.statname = names[i];
             row.article_type = article_type;

@@ -82,7 +82,7 @@ class StatisticRowRaw extends React.Component {
                         this.props.is_header
                             ? "Overall"
                             : <PointerButtonsIndex
-                                ordinal={this.props.overall_ordinal}
+                                ordinal={this.props.overallOrdinal}
                                 statname={this.props.statname}
                                 type="overall"
                                 total={this.props.total_count_overall}
