@@ -33,15 +33,14 @@ class Map extends React.Component {
     async componentDidUpdate() {
         const map = this.map;
         this.exist_this_time = [];
-        // await this.add_related_polygons(map, this.props.related.contained_by);
         await this.add_polygon(map, this.props.longname, !this.already_fit_bounds, { "interactive": false },
             true,
             false);
         this.already_fit_bounds = true;
-        await this.add_related_polygons(map, this.props.related.contained_by);
-        await this.add_related_polygons(map, this.props.related.intersects);
-        await this.add_related_polygons(map, this.props.related.borders);
-        await this.add_related_polygons(map, this.props.related.contains);
+        await this.add_related_polygons(map, this.get_related("contained_by"));
+        await this.add_related_polygons(map, this.get_related("intersects"));
+        await this.add_related_polygons(map, this.get_related("borders"));
+        await this.add_related_polygons(map, this.get_related("contains"));
 
         // Remove polygons that no longer exist
         for (let name in this.polygon_by_name) {
@@ -52,9 +51,16 @@ class Map extends React.Component {
         }
     }
 
+    get_related(key) {
+        const element = this.props.related.filter(
+            (x) => x.relationshipType == key)
+            .map((x) => x.buttons)[0];
+        return element;
+    }
+
     async add_related_polygons(map, related) {
         for (let i = related.length - 1; i >= 0; i--) {
-            let key = relationship_key(this.props.article_type, related[i].row_type);
+            let key = relationship_key(this.props.article_type, related[i].rowType);
             if (!this.props.settings[key]) {
                 continue;
             }

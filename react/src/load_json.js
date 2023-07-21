@@ -1,4 +1,4 @@
-export { loadJSON };
+export { loadJSON, loadProtobuf };
 
 // from https://stackoverflow.com/a/4117299/1549476
 
@@ -27,4 +27,18 @@ function loadTextFileAjaxSync(filePath, mimeType) {
         // TODO Throw exception
         return null;
     }
+}
+
+const protobuf = require("protobufjs");
+
+// Load a protobuf file from the server
+async function loadProtobuf(protoPath, filePath) {
+    const root = await protobuf.load(protoPath);
+    const response = await fetch(filePath);
+    const compressed_buffer = await response.arrayBuffer();
+    const zlib = require("zlib");
+    const buffer = zlib.gunzipSync(Buffer.from(compressed_buffer));
+    const message = root.lookupType("Article");
+    const article = message.decode(new Uint8Array(buffer));
+    return article;
 }

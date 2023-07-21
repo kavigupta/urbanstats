@@ -1,3 +1,4 @@
+import gzip
 import json
 import re
 
@@ -16,6 +17,8 @@ from stats_for_shapefile import (
 from election_data import vest_elections
 from relationship import ordering_idx
 
+from urbanstats.protobuf import data_files_pb2
+
 
 def create_page_json(
     folder,
@@ -26,42 +29,42 @@ def create_page_json(
     long_to_type,
 ):
     statistic_names = get_statistic_names()
-    data = dict(
-        shortname=row.shortname,
-        longname=row.longname,
-        source=row.source,
-        article_type=row.type,
-        rows=[],
-    )
+    data = data_files_pb2.Article()
+    data.shortname = row.shortname
+    data.longname = row.longname
+    data.source = row.source
+    data.article_type = row.type
 
     for stat in statistic_names:
-        row_text = dict(
-            statname=statistic_names[stat],
-            statval=float(row[stat]),
-            ordinal=0 if np.isnan(row[stat, "ordinal"]) else int(row[stat, "ordinal"]),
-            overall_ordinal=0
-            if np.isnan(row[stat, "overall_ordinal"])
-            else int(row[stat, "overall_ordinal"]),
-            percentile_by_population=float(row[stat, "percentile_by_population"]),
+        statrow = data.rows.add()
+        statrow.statval = float(row[stat])
+        statrow.ordinal = (
+            0 if np.isnan(row[stat, "ordinal"]) else int(row[stat, "ordinal"])
         )
-        data["rows"].append(row_text)
-    to_add = {}
+        statrow.overall_ordinal = (
+            0
+            if np.isnan(row[stat, "overall_ordinal"])
+            else int(row[stat, "overall_ordinal"])
+        )
+        statrow.percentile_by_population = float(row[stat, "percentile_by_population"])
     for relationship_type in relationships:
         for_this = relationships[relationship_type].get(row.longname, set())
         for_this = [x for x in for_this if x in long_to_population]
         for_this = sorted(
             for_this, key=lambda x: order_key_for_relatioships(x, long_to_type[x])
         )
-        for_this = [
-            dict(longname=x, shortname=long_to_short[x], row_type=long_to_type[x])
-            for x in for_this
-        ]
-        to_add[relationship_type] = for_this
-    data["related"] = to_add
+        # add to map with key relationship_type
+        related_buttons = data.related.add()
+        related_buttons.relationship_type = relationship_type
+        for x in for_this:
+            related_button = related_buttons.buttons.add()
+            related_button.longname = x
+            related_button.shortname = long_to_short[x]
+            related_button.row_type = long_to_type[x]
 
-    name = create_filename(row.longname)
-    with open(f"{folder}/{name}", "w") as f:
-        json.dump(data, f)
+    name = create_filename(row.longname, "gz")
+    with gzip.open(f"{folder}/{name}", "wb") as f:
+        f.write(data.SerializeToString())
     return name
 
 
@@ -74,9 +77,9 @@ def order_key_for_relatioships(longname, typ):
     return ordering_idx[typ], processed_longname
 
 
-def create_filename(x):
+def create_filename(x, ext):
     x = x.replace("/", " slash ")
-    return f"{x}.json"
+    return f"{x}." + ext
 
 
 def compute_ordinals_and_percentiles(

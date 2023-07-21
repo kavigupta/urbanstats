@@ -12,7 +12,7 @@ function shape_link(longname) {
 }
 
 function data_link(longname) {
-    return `/data/${sanitize(longname)}.json`
+    return `/data/${sanitize(longname)}.gz`
 }
 
 function ordering_link(statname, type) {

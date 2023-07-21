@@ -27,7 +27,7 @@ def convert(geo):
 
 
 def produce_geometry_json(folder, r):
-    fname = create_filename(r.longname)
+    fname = create_filename(r.longname, "json")
     res = convert(r.geometry)
     res = round_floats(res)
     res = json.dumps(res)

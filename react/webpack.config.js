@@ -3,6 +3,8 @@ const path = require('path');
 const webpack = require('webpack');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 
+const NodePolyfillPlugin = require('node-polyfill-webpack-plugin')
+
 module.exports = {
     entry: {
         "article": ['./src/article.js'],
@@ -31,4 +33,8 @@ module.exports = {
         ],
     },
     devtool: 'inline-source-map',
+    plugins: [
+        new NodePolyfillPlugin()
+    ]
+
 };

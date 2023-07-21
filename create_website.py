@@ -170,6 +170,7 @@ def main(no_geo=False, no_data=False, no_data_jsons=False):
 
     shutil.copy("thumbnail.png", f"{folder}/")
     shutil.copy("banner.png", f"{folder}/")
+    shutil.copy("data_files.proto", f"{folder}/")
 
     os.system("cd react; npm run dev")
     shutil.copy("dist/article.js", f"{folder}/scripts/")
@@ -184,6 +185,8 @@ def main(no_geo=False, no_data=False, no_data_jsons=False):
         json.dump(output_categories(), f)
     with open(f"{folder}/index/statistic_category_list.json", "w") as f:
         json.dump(list(get_statistic_categories().values()), f)
+    with open(f"{folder}/index/statistic_name_list.json", "w") as f:
+        json.dump(list(get_statistic_names().values()), f)
 
     with open(f"{folder}/CNAME", "w") as f:
         f.write("urbanstats.org")

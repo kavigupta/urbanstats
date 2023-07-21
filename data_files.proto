@@ -1,0 +1,28 @@
+syntax = "proto3";
+
+message StatisticRow {
+    float statval = 1;
+    int32 ordinal = 2;
+    int32 overall_ordinal = 3;
+    float percentile_by_population = 4;
+}
+
+message RelatedButton {
+    string longname = 1;
+    string shortname = 2;
+    string row_type = 3;
+}
+
+message RelatedButtons {
+    string relationship_type = 1;
+    repeated RelatedButton buttons = 2;
+}
+
+message Article {
+    string shortname = 1;
+    string longname = 2;
+    string source = 3;
+    string article_type = 4;
+    repeated StatisticRow rows = 5;
+    repeated RelatedButtons related = 6;
+}

@@ -21,7 +21,7 @@ class RelatedButton extends React.Component {
     }
 
     render() {
-        const classes = `button b_${to_name(this.props.row_type)}`
+        const classes = `button b_${to_name(this.props.rowType)}`
         return (
             <li className="linklistel">
                 <a
@@ -42,8 +42,8 @@ class RelatedList extends React.Component {
         let by_type_key = [];
         for (let i = 0; i < this.props.regions.length; i++) {
             let row = this.props.regions[i];
-            if (by_type_key.length == 0 || by_type_key[by_type_key.length - 1].type != row.row_type) {
-                by_type_key.push({ type: row.row_type, regions: [] });
+            if (by_type_key.length == 0 || by_type_key[by_type_key.length - 1].type != row.rowType) {
+                by_type_key.push({ type: row.rowType, regions: [] });
             }
             by_type_key[by_type_key.length - 1].regions.push(row);
         }
@@ -110,7 +110,9 @@ class Related extends React.Component {
     render() {
 
         let elements = [];
-        for (var [key, value] of Object.entries(this.props.related)) {
+        for (var relateds of this.props.related) {
+            let key = relateds.relationshipType;
+            let value = relateds.buttons;
             if (!this.props.settings.show_historical_cds) {
                 value = value.filter((row) => !is_historical_cd(row.longname));
             }

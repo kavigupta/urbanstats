@@ -17,9 +17,10 @@ class ArticlePanel extends PageTemplate {
 
     main_content() {
         const self = this;
-        let article_type = this.props.article_type;
+        let article_type = this.props.articleType;
 
         let categories = loadJSON("/index/statistic_category_list.json");
+        let names = loadJSON("/index/statistic_name_list.json");
         let counts_by_article_type = loadJSON("/index/counts_by_article_type.json");
         let count_articles = counts_by_article_type.filter((x) => x[0] == article_type)[0][1];
         let count_articles_overall = counts_by_article_type.filter((x) => x[0] == "overall")[0][1];
@@ -30,6 +31,7 @@ class ArticlePanel extends PageTemplate {
             // copy row
             row = Object.assign({}, row);
             row.statistic_category = categories[i];
+            row.statname = names[i];
             row.article_type = article_type;
             row.total_count_in_class = count_articles;
             row.total_count_overall = count_articles_overall;
