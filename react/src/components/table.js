@@ -5,6 +5,7 @@ export { StatisticRowRaw };
 import { article_link, ordering_link } from "../navigation/links.js";
 import { loadJSON } from '../load_json.js';
 import "./table.css";
+import { is_historical_cd } from '../utils/is_historical.js';
 
 
 class StatisticRowRaw extends React.Component {
@@ -75,6 +76,7 @@ class StatisticRowRaw extends React.Component {
                                 statname={this.props.statname}
                                 type={this.props.article_type}
                                 total={this.props.total_count_in_class}
+                                settings={this.props.settings}
                             />}</span>
                 </td>
                 <td style={{ width: "8%" }}>
@@ -86,6 +88,7 @@ class StatisticRowRaw extends React.Component {
                                 statname={this.props.statname}
                                 type="overall"
                                 total={this.props.total_count_overall}
+                                settings={this.props.settings}
                             />}</span>
                 </td>
             </tr>
@@ -278,39 +281,6 @@ class Percentile extends React.Component {
     }
 }
 
-class PointerButtons extends React.Component {
-    constructor(props) {
-        super(props);
-    }
-
-    render() {
-        return (
-            <span>
-                <PointerButton text="<" longname={this.props.pointers[0]} />
-                <PointerButton text=">" longname={this.props.pointers[1]} />
-            </span>
-        );
-    }
-}
-
-class PointerButton extends React.Component {
-    constructor(props) {
-        super(props);
-    }
-
-    render() {
-        if (this.props.longname == null) {
-            return <span className="button">&nbsp;&nbsp;</span>
-        } else {
-            return (
-                <a href="#" className="button" onClick={() => {
-                    document.location = article_link(this.props.longname);
-                }}>{this.props.text}</a>
-            );
-        }
-    }
-}
-
 class PointerButtonsIndex extends React.Component {
     constructor(props) {
         super(props);
@@ -318,10 +288,25 @@ class PointerButtonsIndex extends React.Component {
 
     render() {
         const link = ordering_link(this.props.statname, this.props.type);
+        const show_historical_cds = this.props.settings.show_historical_cds || is_historical_cd(this.props.type);
         return (
             <span>
-                <PointerButtonIndex text="<" link={link} pos={this.props.ordinal - 1} total={this.props.total} />
-                <PointerButtonIndex text=">" link={link} pos={this.props.ordinal + 1} total={this.props.total} />
+                <PointerButtonIndex
+                    text="<"
+                    link={link}
+                    original_pos={this.props.ordinal}
+                    direction={-1}
+                    total={this.props.total}
+                    show_historical_cds={show_historical_cds}
+                />
+                <PointerButtonIndex
+                    text=">"
+                    link={link}
+                    original_pos={this.props.ordinal}
+                    direction={+1}
+                    total={this.props.total}
+                    show_historical_cds={show_historical_cds}
+                />
             </span>
         );
     }
@@ -332,18 +317,29 @@ class PointerButtonIndex extends React.Component {
         super(props);
     }
 
+    out_of_bounds(pos) {
+        return pos < 0 || pos >= this.props.total
+    }
+
     render() {
-        const pos = this.props.pos - 1;
-        if (pos < 0 || pos >= this.props.total) {
+        let pos = this.props.original_pos - 1 + + this.props.direction;
+        const self = this;
+        if (self.out_of_bounds(pos < 0 || pos >= this.props.total)) {
             return <span className="button">&nbsp;&nbsp;</span>
         } else {
             return (
                 <a href="#" className="button" onClick={() => {
                     const link = this.props.link;
-                    console.log(link);
-                    console.log(pos);
                     const data = loadJSON(link);
-                    document.location = article_link(data[pos]);
+                    while (!self.out_of_bounds(pos)) {
+                        const name = data[pos];
+                        if (!self.props.show_historical_cds && is_historical_cd(name)) {
+                            pos += self.props.direction;
+                            continue;
+                        }
+                        document.location = article_link(name);
+                        return;
+                    }
                 }}>{this.props.text}</a>
             );
         }
