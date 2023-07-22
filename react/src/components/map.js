@@ -7,6 +7,7 @@ import { relationship_key } from "./related-button.js";
 import { random_color } from "../utils/color.js";
 
 import "./map.css";
+import { is_historical_cd } from '../utils/is_historical.js';
 
 class Map extends React.Component {
     constructor(props) {
@@ -60,6 +61,9 @@ class Map extends React.Component {
 
     async add_related_polygons(map, related) {
         for (let i = related.length - 1; i >= 0; i--) {
+            if (!this.props.settings.show_historical_cds && is_historical_cd(related[i].rowType)) {
+                continue;
+            }
             let key = relationship_key(this.props.article_type, related[i].rowType);
             if (!this.props.settings[key]) {
                 continue;
