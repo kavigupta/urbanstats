@@ -29,16 +29,17 @@ function loadTextFileAjaxSync(filePath, mimeType) {
     }
 }
 
+const protoPath = "/data_files.proto";
 const protobuf = require("protobufjs");
 
 // Load a protobuf file from the server
-async function loadProtobuf(protoPath, filePath) {
+async function loadProtobuf(filePath, name) {
     const root = await protobuf.load(protoPath);
     const response = await fetch(filePath);
     const compressed_buffer = await response.arrayBuffer();
     const zlib = require("zlib");
     const buffer = zlib.gunzipSync(Buffer.from(compressed_buffer));
-    const message = root.lookupType("Article");
+    const message = root.lookupType(name);
     const article = message.decode(new Uint8Array(buffer));
     return article;
 }
