@@ -8,6 +8,7 @@ import { random_color } from "../utils/color.js";
 
 import "./map.css";
 import { is_historical_cd } from '../utils/is_historical.js';
+import { loadProtobuf } from '../load_json.js';
 
 class Map extends React.Component {
     constructor(props) {
@@ -84,8 +85,18 @@ class Map extends React.Component {
             return;
         }
         // https://stackoverflow.com/a/35970894/1549476
-        const polys = await fetch(shape_link(name))
-            .then(res => res.json());
+        let polys = await loadProtobuf(shape_link(name), "FeatureCollection");
+        polys = polys.features.map(
+            poly => {
+                return {
+                    "type": poly.type, "coordinates": poly.rings.map(
+                        ring => ring.coords.map(
+                            coordinate => [coordinate.lon, coordinate.lat]
+                        )
+                    )
+                };
+            }
+        );
         let geojson = {
             "type": "FeatureCollection",
             "features": polys.map((x) => {

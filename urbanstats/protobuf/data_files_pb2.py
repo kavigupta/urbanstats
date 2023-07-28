@@ -17,7 +17,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
     package="",
     syntax="proto3",
     serialized_options=None,
-    serialized_pb=b'\n\x10\x64\x61ta_files.proto"k\n\x0cStatisticRow\x12\x0f\n\x07statval\x18\x01 \x01(\x02\x12\x0f\n\x07ordinal\x18\x02 \x01(\x05\x12\x17\n\x0foverall_ordinal\x18\x03 \x01(\x05\x12 \n\x18percentile_by_population\x18\x04 \x01(\x02"F\n\rRelatedButton\x12\x10\n\x08longname\x18\x01 \x01(\t\x12\x11\n\tshortname\x18\x02 \x01(\t\x12\x10\n\x08row_type\x18\x03 \x01(\t"L\n\x0eRelatedButtons\x12\x19\n\x11relationship_type\x18\x01 \x01(\t\x12\x1f\n\x07\x62uttons\x18\x02 \x03(\x0b\x32\x0e.RelatedButton"\x93\x01\n\x07\x41rticle\x12\x11\n\tshortname\x18\x01 \x01(\t\x12\x10\n\x08longname\x18\x02 \x01(\t\x12\x0e\n\x06source\x18\x03 \x01(\t\x12\x14\n\x0c\x61rticle_type\x18\x04 \x01(\t\x12\x1b\n\x04rows\x18\x05 \x03(\x0b\x32\r.StatisticRow\x12 \n\x07related\x18\x06 \x03(\x0b\x32\x0f.RelatedButtonsb\x06proto3',
+    serialized_pb=b'\n\x10\x64\x61ta_files.proto"k\n\x0cStatisticRow\x12\x0f\n\x07statval\x18\x01 \x01(\x02\x12\x0f\n\x07ordinal\x18\x02 \x01(\x05\x12\x17\n\x0foverall_ordinal\x18\x03 \x01(\x05\x12 \n\x18percentile_by_population\x18\x04 \x01(\x02"F\n\rRelatedButton\x12\x10\n\x08longname\x18\x01 \x01(\t\x12\x11\n\tshortname\x18\x02 \x01(\t\x12\x10\n\x08row_type\x18\x03 \x01(\t"L\n\x0eRelatedButtons\x12\x19\n\x11relationship_type\x18\x01 \x01(\t\x12\x1f\n\x07\x62uttons\x18\x02 \x03(\x0b\x32\x0e.RelatedButton"\x93\x01\n\x07\x41rticle\x12\x11\n\tshortname\x18\x01 \x01(\t\x12\x10\n\x08longname\x18\x02 \x01(\t\x12\x0e\n\x06source\x18\x03 \x01(\t\x12\x14\n\x0c\x61rticle_type\x18\x04 \x01(\t\x12\x1b\n\x04rows\x18\x05 \x03(\x0b\x32\r.StatisticRow\x12 \n\x07related\x18\x06 \x03(\x0b\x32\x0f.RelatedButtons"&\n\nCoordinate\x12\x0b\n\x03lon\x18\x01 \x01(\x02\x12\x0b\n\x03lat\x18\x02 \x01(\x02"#\n\x04Ring\x12\x1b\n\x06\x63oords\x18\x01 \x03(\x0b\x32\x0b.Coordinate"-\n\x07\x46\x65\x61ture\x12\x0c\n\x04type\x18\x01 \x01(\t\x12\x14\n\x05rings\x18\x02 \x03(\x0b\x32\x05.Ring"/\n\x11\x46\x65\x61tureCollection\x12\x1a\n\x08\x66\x65\x61tures\x18\x01 \x03(\x0b\x32\x08.Featureb\x06proto3',
 )
 
 
@@ -374,13 +374,212 @@ _ARTICLE = _descriptor.Descriptor(
     serialized_end=427,
 )
 
+
+_COORDINATE = _descriptor.Descriptor(
+    name="Coordinate",
+    full_name="Coordinate",
+    filename=None,
+    file=DESCRIPTOR,
+    containing_type=None,
+    fields=[
+        _descriptor.FieldDescriptor(
+            name="lon",
+            full_name="Coordinate.lon",
+            index=0,
+            number=1,
+            type=2,
+            cpp_type=6,
+            label=1,
+            has_default_value=False,
+            default_value=float(0),
+            message_type=None,
+            enum_type=None,
+            containing_type=None,
+            is_extension=False,
+            extension_scope=None,
+            serialized_options=None,
+            file=DESCRIPTOR,
+        ),
+        _descriptor.FieldDescriptor(
+            name="lat",
+            full_name="Coordinate.lat",
+            index=1,
+            number=2,
+            type=2,
+            cpp_type=6,
+            label=1,
+            has_default_value=False,
+            default_value=float(0),
+            message_type=None,
+            enum_type=None,
+            containing_type=None,
+            is_extension=False,
+            extension_scope=None,
+            serialized_options=None,
+            file=DESCRIPTOR,
+        ),
+    ],
+    extensions=[],
+    nested_types=[],
+    enum_types=[],
+    serialized_options=None,
+    is_extendable=False,
+    syntax="proto3",
+    extension_ranges=[],
+    oneofs=[],
+    serialized_start=429,
+    serialized_end=467,
+)
+
+
+_RING = _descriptor.Descriptor(
+    name="Ring",
+    full_name="Ring",
+    filename=None,
+    file=DESCRIPTOR,
+    containing_type=None,
+    fields=[
+        _descriptor.FieldDescriptor(
+            name="coords",
+            full_name="Ring.coords",
+            index=0,
+            number=1,
+            type=11,
+            cpp_type=10,
+            label=3,
+            has_default_value=False,
+            default_value=[],
+            message_type=None,
+            enum_type=None,
+            containing_type=None,
+            is_extension=False,
+            extension_scope=None,
+            serialized_options=None,
+            file=DESCRIPTOR,
+        ),
+    ],
+    extensions=[],
+    nested_types=[],
+    enum_types=[],
+    serialized_options=None,
+    is_extendable=False,
+    syntax="proto3",
+    extension_ranges=[],
+    oneofs=[],
+    serialized_start=469,
+    serialized_end=504,
+)
+
+
+_FEATURE = _descriptor.Descriptor(
+    name="Feature",
+    full_name="Feature",
+    filename=None,
+    file=DESCRIPTOR,
+    containing_type=None,
+    fields=[
+        _descriptor.FieldDescriptor(
+            name="type",
+            full_name="Feature.type",
+            index=0,
+            number=1,
+            type=9,
+            cpp_type=9,
+            label=1,
+            has_default_value=False,
+            default_value=b"".decode("utf-8"),
+            message_type=None,
+            enum_type=None,
+            containing_type=None,
+            is_extension=False,
+            extension_scope=None,
+            serialized_options=None,
+            file=DESCRIPTOR,
+        ),
+        _descriptor.FieldDescriptor(
+            name="rings",
+            full_name="Feature.rings",
+            index=1,
+            number=2,
+            type=11,
+            cpp_type=10,
+            label=3,
+            has_default_value=False,
+            default_value=[],
+            message_type=None,
+            enum_type=None,
+            containing_type=None,
+            is_extension=False,
+            extension_scope=None,
+            serialized_options=None,
+            file=DESCRIPTOR,
+        ),
+    ],
+    extensions=[],
+    nested_types=[],
+    enum_types=[],
+    serialized_options=None,
+    is_extendable=False,
+    syntax="proto3",
+    extension_ranges=[],
+    oneofs=[],
+    serialized_start=506,
+    serialized_end=551,
+)
+
+
+_FEATURECOLLECTION = _descriptor.Descriptor(
+    name="FeatureCollection",
+    full_name="FeatureCollection",
+    filename=None,
+    file=DESCRIPTOR,
+    containing_type=None,
+    fields=[
+        _descriptor.FieldDescriptor(
+            name="features",
+            full_name="FeatureCollection.features",
+            index=0,
+            number=1,
+            type=11,
+            cpp_type=10,
+            label=3,
+            has_default_value=False,
+            default_value=[],
+            message_type=None,
+            enum_type=None,
+            containing_type=None,
+            is_extension=False,
+            extension_scope=None,
+            serialized_options=None,
+            file=DESCRIPTOR,
+        ),
+    ],
+    extensions=[],
+    nested_types=[],
+    enum_types=[],
+    serialized_options=None,
+    is_extendable=False,
+    syntax="proto3",
+    extension_ranges=[],
+    oneofs=[],
+    serialized_start=553,
+    serialized_end=600,
+)
+
 _RELATEDBUTTONS.fields_by_name["buttons"].message_type = _RELATEDBUTTON
 _ARTICLE.fields_by_name["rows"].message_type = _STATISTICROW
 _ARTICLE.fields_by_name["related"].message_type = _RELATEDBUTTONS
+_RING.fields_by_name["coords"].message_type = _COORDINATE
+_FEATURE.fields_by_name["rings"].message_type = _RING
+_FEATURECOLLECTION.fields_by_name["features"].message_type = _FEATURE
 DESCRIPTOR.message_types_by_name["StatisticRow"] = _STATISTICROW
 DESCRIPTOR.message_types_by_name["RelatedButton"] = _RELATEDBUTTON
 DESCRIPTOR.message_types_by_name["RelatedButtons"] = _RELATEDBUTTONS
 DESCRIPTOR.message_types_by_name["Article"] = _ARTICLE
+DESCRIPTOR.message_types_by_name["Coordinate"] = _COORDINATE
+DESCRIPTOR.message_types_by_name["Ring"] = _RING
+DESCRIPTOR.message_types_by_name["Feature"] = _FEATURE
+DESCRIPTOR.message_types_by_name["FeatureCollection"] = _FEATURECOLLECTION
 _sym_db.RegisterFileDescriptor(DESCRIPTOR)
 
 StatisticRow = _reflection.GeneratedProtocolMessageType(
@@ -426,6 +625,50 @@ Article = _reflection.GeneratedProtocolMessageType(
     },
 )
 _sym_db.RegisterMessage(Article)
+
+Coordinate = _reflection.GeneratedProtocolMessageType(
+    "Coordinate",
+    (_message.Message,),
+    {
+        "DESCRIPTOR": _COORDINATE,
+        "__module__": "data_files_pb2"
+        # @@protoc_insertion_point(class_scope:Coordinate)
+    },
+)
+_sym_db.RegisterMessage(Coordinate)
+
+Ring = _reflection.GeneratedProtocolMessageType(
+    "Ring",
+    (_message.Message,),
+    {
+        "DESCRIPTOR": _RING,
+        "__module__": "data_files_pb2"
+        # @@protoc_insertion_point(class_scope:Ring)
+    },
+)
+_sym_db.RegisterMessage(Ring)
+
+Feature = _reflection.GeneratedProtocolMessageType(
+    "Feature",
+    (_message.Message,),
+    {
+        "DESCRIPTOR": _FEATURE,
+        "__module__": "data_files_pb2"
+        # @@protoc_insertion_point(class_scope:Feature)
+    },
+)
+_sym_db.RegisterMessage(Feature)
+
+FeatureCollection = _reflection.GeneratedProtocolMessageType(
+    "FeatureCollection",
+    (_message.Message,),
+    {
+        "DESCRIPTOR": _FEATURECOLLECTION,
+        "__module__": "data_files_pb2"
+        # @@protoc_insertion_point(class_scope:FeatureCollection)
+    },
+)
+_sym_db.RegisterMessage(FeatureCollection)
 
 
 # @@protoc_insertion_point(module_scope)

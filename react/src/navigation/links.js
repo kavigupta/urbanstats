@@ -8,7 +8,7 @@ function article_link(longname) {
 }
 
 function shape_link(longname) {
-    return "/shape/" + sanitize(longname) + '.json'
+    return "/shape/" + sanitize(longname) + '.gz'
 }
 
 function data_link(longname) {
