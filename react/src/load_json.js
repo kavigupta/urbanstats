@@ -30,11 +30,11 @@ function loadTextFileAjaxSync(filePath, mimeType) {
 }
 
 const protoPath = "/data_files.proto";
-const protobuf = require("protobufjs");
+const protobuf = require("protobufjs").load(protoPath);
 
 // Load a protobuf file from the server
 async function loadProtobuf(filePath, name) {
-    const root = await protobuf.load(protoPath);
+    const root = await protobuf;
     const response = await fetch(filePath);
     const compressed_buffer = await response.arrayBuffer();
     const zlib = require("zlib");
