@@ -3,7 +3,7 @@ import ContentEditable from 'react-contenteditable'
 
 export { StatisticRowRaw };
 import { article_link, ordering_link } from "../navigation/links.js";
-import { loadJSON } from '../load_json.js';
+import { loadJSON, loadProtobuf } from '../load_json.js';
 import "./table.css";
 import { is_historical_cd } from '../utils/is_historical.js';
 
@@ -201,7 +201,7 @@ class Ordinal extends React.Component {
         return type + "s";
     }
 
-    onNewNumber(number) {
+    async onNewNumber(number) {
         let num = number;
         const link = ordering_link(this.props.statname, this.props.type);
         if (num < 0) {
@@ -214,7 +214,7 @@ class Ordinal extends React.Component {
         if (num <= 0) {
             num = 1;
         }
-        const data = loadJSON(link);
+        const data = (await loadProtobuf(link, "StringList")).elements;
         document.location = article_link(data[num - 1]);
     }
 }
@@ -328,20 +328,23 @@ class PointerButtonIndex extends React.Component {
             return <span className="button">&nbsp;&nbsp;</span>
         } else {
             return (
-                <a href="#" className="button" onClick={() => {
-                    const link = this.props.link;
-                    const data = loadJSON(link);
-                    while (!self.out_of_bounds(pos)) {
-                        const name = data[pos];
-                        if (!self.props.show_historical_cds && is_historical_cd(name)) {
-                            pos += self.props.direction;
-                            continue;
-                        }
-                        document.location = article_link(name);
-                        return;
-                    }
-                }}>{this.props.text}</a>
+                <a href="#" className="button" onClick={() => self.onClick(pos)}>{this.props.text}</a>
             );
+        }
+    }
+    async onClick(pos) {
+        {
+            const link = this.props.link;
+            const data = (await loadProtobuf(link, "StringList")).elements;
+            while (!this.out_of_bounds(pos)) {
+                const name = data[pos];
+                if (!this.props.show_historical_cds && is_historical_cd(name)) {
+                    pos += this.props.direction;
+                    continue;
+                }
+                document.location = article_link(name);
+                return;
+            }
         }
     }
 }

@@ -127,16 +127,14 @@ def output_ordering(full):
 
         statistic_name = get_statistic_names()[statistic_column].replace("/", "slash")
 
-        path = f"{folder}/order/{statistic_name}__overall.json"
-        with open(path, "w") as f:
-            json.dump(list(full_sorted.longname), f)
+        path = f"{folder}/order/{statistic_name}__overall.gz"
+        save_string_list(list(full_sorted.longname), path)
         counts["overall"] = len(full_sorted)
         for typ in sorted(set(full_sorted.type)):
-            path = f"{folder}/order/{statistic_name}__{typ}.json"
-            with open(path, "w") as f:
-                names = full_sorted[full_sorted.type == typ].longname
-                counts[typ] = len(names)
-                json.dump(list(names), f)
+            path = f"{folder}/order/{statistic_name}__{typ}.gz"
+            names = full_sorted[full_sorted.type == typ].longname
+            counts[typ] = len(names)
+            save_string_list(list(names), path)
 
     with open(f"{folder}/index/counts_by_article_type.json", "w") as f:
         json.dump(list(counts.items()), f)

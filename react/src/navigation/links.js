@@ -16,7 +16,7 @@ function data_link(longname) {
 }
 
 function ordering_link(statname, type) {
-    return `/order/${sanitize(statname, false)}__${sanitize(type, false)}.json`
+    return `/order/${sanitize(statname, false)}__${sanitize(type, false)}.gz`
 }
 
 function sanitize(longname, spaces_around_slash=true) {
