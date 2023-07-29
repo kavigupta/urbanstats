@@ -1,7 +1,7 @@
 export { loadJSON, loadProtobuf };
 
-import {gunzipSync} from 'zlib';
-import {Article, FeatureCollection} from "./utils/protos.js";
+import { gunzipSync } from 'zlib';
+import { Article, FeatureCollection, StringList } from "./utils/protos.js";
 
 // from https://stackoverflow.com/a/4117299/1549476
 
@@ -43,7 +43,9 @@ async function loadProtobuf(filePath, name) {
         return Article.decode(arr);
     } else if (name == "FeatureCollection") {
         return FeatureCollection.decode(arr);
+    } else if (name == "StringList") {
+        return StringList.decode(arr);
     } else {
-        throw "not recognized";
+        throw "protobuf type not recognized (see load_json.js)";
     }
 }

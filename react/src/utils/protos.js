@@ -2066,4 +2066,223 @@ $root.FeatureCollection = (function() {
     return FeatureCollection;
 })();
 
+$root.StringList = (function() {
+
+    /**
+     * Properties of a StringList.
+     * @exports IStringList
+     * @interface IStringList
+     * @property {Array.<string>|null} [elements] StringList elements
+     */
+
+    /**
+     * Constructs a new StringList.
+     * @exports StringList
+     * @classdesc Represents a StringList.
+     * @implements IStringList
+     * @constructor
+     * @param {IStringList=} [properties] Properties to set
+     */
+    function StringList(properties) {
+        this.elements = [];
+        if (properties)
+            for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                if (properties[keys[i]] != null)
+                    this[keys[i]] = properties[keys[i]];
+    }
+
+    /**
+     * StringList elements.
+     * @member {Array.<string>} elements
+     * @memberof StringList
+     * @instance
+     */
+    StringList.prototype.elements = $util.emptyArray;
+
+    /**
+     * Creates a new StringList instance using the specified properties.
+     * @function create
+     * @memberof StringList
+     * @static
+     * @param {IStringList=} [properties] Properties to set
+     * @returns {StringList} StringList instance
+     */
+    StringList.create = function create(properties) {
+        return new StringList(properties);
+    };
+
+    /**
+     * Encodes the specified StringList message. Does not implicitly {@link StringList.verify|verify} messages.
+     * @function encode
+     * @memberof StringList
+     * @static
+     * @param {IStringList} message StringList message or plain object to encode
+     * @param {$protobuf.Writer} [writer] Writer to encode to
+     * @returns {$protobuf.Writer} Writer
+     */
+    StringList.encode = function encode(message, writer) {
+        if (!writer)
+            writer = $Writer.create();
+        if (message.elements != null && message.elements.length)
+            for (var i = 0; i < message.elements.length; ++i)
+                writer.uint32(/* id 1, wireType 2 =*/10).string(message.elements[i]);
+        return writer;
+    };
+
+    /**
+     * Encodes the specified StringList message, length delimited. Does not implicitly {@link StringList.verify|verify} messages.
+     * @function encodeDelimited
+     * @memberof StringList
+     * @static
+     * @param {IStringList} message StringList message or plain object to encode
+     * @param {$protobuf.Writer} [writer] Writer to encode to
+     * @returns {$protobuf.Writer} Writer
+     */
+    StringList.encodeDelimited = function encodeDelimited(message, writer) {
+        return this.encode(message, writer).ldelim();
+    };
+
+    /**
+     * Decodes a StringList message from the specified reader or buffer.
+     * @function decode
+     * @memberof StringList
+     * @static
+     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+     * @param {number} [length] Message length if known beforehand
+     * @returns {StringList} StringList
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    StringList.decode = function decode(reader, length) {
+        if (!(reader instanceof $Reader))
+            reader = $Reader.create(reader);
+        var end = length === undefined ? reader.len : reader.pos + length, message = new $root.StringList();
+        while (reader.pos < end) {
+            var tag = reader.uint32();
+            switch (tag >>> 3) {
+            case 1: {
+                    if (!(message.elements && message.elements.length))
+                        message.elements = [];
+                    message.elements.push(reader.string());
+                    break;
+                }
+            default:
+                reader.skipType(tag & 7);
+                break;
+            }
+        }
+        return message;
+    };
+
+    /**
+     * Decodes a StringList message from the specified reader or buffer, length delimited.
+     * @function decodeDelimited
+     * @memberof StringList
+     * @static
+     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+     * @returns {StringList} StringList
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    StringList.decodeDelimited = function decodeDelimited(reader) {
+        if (!(reader instanceof $Reader))
+            reader = new $Reader(reader);
+        return this.decode(reader, reader.uint32());
+    };
+
+    /**
+     * Verifies a StringList message.
+     * @function verify
+     * @memberof StringList
+     * @static
+     * @param {Object.<string,*>} message Plain object to verify
+     * @returns {string|null} `null` if valid, otherwise the reason why it is not
+     */
+    StringList.verify = function verify(message) {
+        if (typeof message !== "object" || message === null)
+            return "object expected";
+        if (message.elements != null && message.hasOwnProperty("elements")) {
+            if (!Array.isArray(message.elements))
+                return "elements: array expected";
+            for (var i = 0; i < message.elements.length; ++i)
+                if (!$util.isString(message.elements[i]))
+                    return "elements: string[] expected";
+        }
+        return null;
+    };
+
+    /**
+     * Creates a StringList message from a plain object. Also converts values to their respective internal types.
+     * @function fromObject
+     * @memberof StringList
+     * @static
+     * @param {Object.<string,*>} object Plain object
+     * @returns {StringList} StringList
+     */
+    StringList.fromObject = function fromObject(object) {
+        if (object instanceof $root.StringList)
+            return object;
+        var message = new $root.StringList();
+        if (object.elements) {
+            if (!Array.isArray(object.elements))
+                throw TypeError(".StringList.elements: array expected");
+            message.elements = [];
+            for (var i = 0; i < object.elements.length; ++i)
+                message.elements[i] = String(object.elements[i]);
+        }
+        return message;
+    };
+
+    /**
+     * Creates a plain object from a StringList message. Also converts values to other types if specified.
+     * @function toObject
+     * @memberof StringList
+     * @static
+     * @param {StringList} message StringList
+     * @param {$protobuf.IConversionOptions} [options] Conversion options
+     * @returns {Object.<string,*>} Plain object
+     */
+    StringList.toObject = function toObject(message, options) {
+        if (!options)
+            options = {};
+        var object = {};
+        if (options.arrays || options.defaults)
+            object.elements = [];
+        if (message.elements && message.elements.length) {
+            object.elements = [];
+            for (var j = 0; j < message.elements.length; ++j)
+                object.elements[j] = message.elements[j];
+        }
+        return object;
+    };
+
+    /**
+     * Converts this StringList to JSON.
+     * @function toJSON
+     * @memberof StringList
+     * @instance
+     * @returns {Object.<string,*>} JSON object
+     */
+    StringList.prototype.toJSON = function toJSON() {
+        return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+    };
+
+    /**
+     * Gets the default type url for StringList
+     * @function getTypeUrl
+     * @memberof StringList
+     * @static
+     * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns {string} The default type url
+     */
+    StringList.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+        if (typeUrlPrefix === undefined) {
+            typeUrlPrefix = "type.googleapis.com";
+        }
+        return typeUrlPrefix + "/StringList";
+    };
+
+    return StringList;
+})();
+
 module.exports = $root;

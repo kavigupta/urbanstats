@@ -2,7 +2,7 @@ import React from 'react';
 
 export { SearchBox };
 
-import { loadJSON } from '../load_json.js';
+import { loadProtobuf } from '../load_json.js';
 import { article_link } from '../navigation/links';
 import { is_historical_cd } from '../utils/is_historical';
 import "../common.css";
@@ -10,11 +10,11 @@ import "../common.css";
 class SearchBox extends React.Component {
     constructor(props) {
         super(props);
-        this.state = { matches: [] };
+        this.state = { matches: [], is_loaded: false };
         this.form = React.createRef();
         this.textbox = React.createRef();
         this.dropdown = React.createRef();
-        this.values = loadJSON("/index/pages.json");
+        this.values = loadProtobuf("/index/pages.gz", "StringList");
     }
 
     render() {
@@ -26,21 +26,23 @@ class SearchBox extends React.Component {
                 list="search-result"
                 placeholder="Search Urban Stats" />
             <datalist id="search-result">
-                {this.state.matches.map((i) => <option key={i} value={this.values[i]} />)}
+                {this.state.matches.map((i) => <option key={i} value={this._values[i]} />)}
             </datalist>
         </form>);
 
     }
 
 
-    componentDidMount() {
+    async componentDidMount() {
+        this._values = (await this.values).elements;
+        this.setState({ is_loaded: true });
         let self = this;
-        this.form.current.onsubmit = function () { return self.go(self.values, self.textbox.current) };
+        this.form.current.onsubmit = function () { return self.go(self._values, self.textbox.current) };
         this.textbox.current.addEventListener("submit", function () {
-            return self.go(self.props.settings, self.values, self.textbox.current)
+            return self.go(self.props.settings, self._values, self.textbox.current)
         });
         this.textbox.current.onkeyup = function () {
-            self.setState({ matches: autocompleteMatch(self.props.settings, self.values, self.textbox.current.value) });
+            self.setState({ matches: autocompleteMatch(self.props.settings, self._values, self.textbox.current.value) });
         };
         this.textbox.current.addEventListener('input', function (e) {
             let input = e.target;
@@ -51,7 +53,7 @@ class SearchBox extends React.Component {
 
             for (var i = 0; i < options.length; i++) {
                 if (options[i].value === val) {
-                    self.go(self.props.settings, self.values, self.textbox.current);
+                    self.go(self.props.settings, self._values, self.textbox.current);
                     break;
                 }
             }

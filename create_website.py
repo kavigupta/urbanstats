@@ -23,6 +23,7 @@ from produce_html_page import (
 from relationship import full_relationships, map_relationships_by_type
 from election_data import vest_elections
 
+from urbanstats.protobuf.utils import save_string_list
 
 folder = "/home/kavi/temp/site/"
 
@@ -156,8 +157,7 @@ def main(no_geo=False, no_data=False, no_data_jsons=False):
         full = full_shapefile()
         if not no_data_jsons:
             create_page_jsons(full)
-        with open(f"{folder}/index/pages.json", "w") as f:
-            json.dump(list(full.longname), f)
+        save_string_list(list(full.longname), f"{folder}/index/pages.gz")
 
         with open(f"{folder}/index/population.json", "w") as f:
             json.dump(list(full.population), f)

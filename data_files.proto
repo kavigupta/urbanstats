@@ -49,3 +49,9 @@ message Feature {
 message FeatureCollection {
     repeated Feature features = 1;
 }
+
+// string lists
+
+message StringList {
+    repeated string elements = 1;
+}

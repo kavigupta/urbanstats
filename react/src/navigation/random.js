@@ -3,12 +3,12 @@ import "../style.css";
 import "../common.css";
 import { article_link } from '../navigation/links';
 
-import { loadJSON } from '../load_json.js';
+import { loadJSON, loadProtobuf } from '../load_json.js';
 import { is_historical_cd } from "../utils/is_historical";
 
 
-function by_population(settings) {
-    let values = loadJSON("/index/pages.json");
+async function by_population(settings) {
+    let values = (await loadProtobuf("/index/pages.gz", "StringList")).elements;
     let populations = loadJSON("/index/population.json");
     var totalWeight = populations.reduce(function (sum, x) {
         return sum + x;
@@ -40,8 +40,8 @@ function by_population(settings) {
     }
 }
 
-function uniform(settings) {
-    let values = loadJSON("/index/pages.json");
+async function uniform(settings) {
+    let values = (await loadProtobuf("/index/pages.gz", "StringList")).elements;
     while (true) {
         var randomIndex = Math.floor(Math.random() * values.length);
         let x = values[randomIndex];
