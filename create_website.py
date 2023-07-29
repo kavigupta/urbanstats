@@ -170,9 +170,8 @@ def main(no_geo=False, no_data=False, no_data_jsons=False):
 
     shutil.copy("thumbnail.png", f"{folder}/")
     shutil.copy("banner.png", f"{folder}/")
-    shutil.copy("data_files.proto", f"{folder}/")
 
-    os.system("cd react; npm run dev")
+    os.system("cd react; npm run prod")
     shutil.copy("dist/article.js", f"{folder}/scripts/")
     shutil.copy("dist/index.js", f"{folder}/scripts/")
     shutil.copy("dist/about.js", f"{folder}/scripts/")

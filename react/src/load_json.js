@@ -1,5 +1,8 @@
 export { loadJSON, loadProtobuf };
 
+import {gunzipSync} from 'zlib';
+import {Article, FeatureCollection} from "./utils/protos.js";
+
 // from https://stackoverflow.com/a/4117299/1549476
 
 // Load JSON text from server hosted file and return JSON parsed object
@@ -29,17 +32,18 @@ function loadTextFileAjaxSync(filePath, mimeType) {
     }
 }
 
-const protoPath = "/data_files.proto";
-const protobuf = require("protobufjs").load(protoPath);
 
 // Load a protobuf file from the server
 async function loadProtobuf(filePath, name) {
-    const root = await protobuf;
     const response = await fetch(filePath);
     const compressed_buffer = await response.arrayBuffer();
-    const zlib = require("zlib");
-    const buffer = zlib.gunzipSync(Buffer.from(compressed_buffer));
-    const message = root.lookupType(name);
-    const article = message.decode(new Uint8Array(buffer));
-    return article;
+    const buffer = gunzipSync(Buffer.from(compressed_buffer));
+    const arr = new Uint8Array(buffer);
+    if (name == "Article") {
+        return Article.decode(arr);
+    } else if (name == "FeatureCollection") {
+        return FeatureCollection.decode(arr);
+    } else {
+        throw "not recognized";
+    }
 }
