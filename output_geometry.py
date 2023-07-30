@@ -10,6 +10,7 @@ from shapefiles import shapefiles
 
 from urbanstats.protobuf import data_files_pb2
 
+
 def round_floats(obj):
     if isinstance(obj, float):
         return round(obj, 6)
@@ -36,6 +37,7 @@ def produce_geometry_json(folder, r):
     with gzip.open(f"{folder}/{fname}", "wb") as f:
         f.write(res.SerializeToString())
 
+
 def produce_all_geometry_json(path, valid_names):
     for k in shapefiles:
         print(k)
@@ -43,6 +45,7 @@ def produce_all_geometry_json(path, valid_names):
         for i in tqdm.trange(table.shape[0]):
             if table.iloc[i].longname in valid_names:
                 produce_geometry_json(path, table.iloc[i])
+
 
 def convert_to_protobuf(fc_python):
     assert isinstance(fc_python, list)
@@ -58,6 +61,8 @@ def convert_to_protobuf(fc_python):
             ring = f.rings.add()
             for coord_python in ring_python:
                 coord = ring.coords.add()
-                assert isinstance(coord_python, (list, tuple)) and len(coord_python) == 2
+                assert (
+                    isinstance(coord_python, (list, tuple)) and len(coord_python) == 2
+                )
                 coord.lon, coord.lat = coord_python
     return fc
