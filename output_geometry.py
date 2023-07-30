@@ -1,5 +1,4 @@
 import json
-import gzip
 
 import numpy as np
 import shapely
@@ -9,6 +8,8 @@ from produce_html_page import create_filename
 from shapefiles import shapefiles
 
 from urbanstats.protobuf import data_files_pb2
+from urbanstats.protobuf.utils import write_gzip
+
 
 
 def round_floats(obj):
@@ -34,8 +35,8 @@ def produce_geometry_json(folder, r):
     fname = create_filename(r.longname, "gz")
     res = convert(r.geometry)
     res = convert_to_protobuf(res)
-    with gzip.open(f"{folder}/{fname}", "wb") as f:
-        f.write(res.SerializeToString())
+    write_gzip(res, f"{folder}/{fname}")
+
 
 
 def produce_all_geometry_json(path, valid_names):

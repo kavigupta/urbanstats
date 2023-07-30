@@ -1,4 +1,3 @@
-import gzip
 import json
 import re
 
@@ -20,6 +19,7 @@ from election_data import vest_elections
 from relationship import ordering_idx
 
 from urbanstats.protobuf import data_files_pb2
+from urbanstats.protobuf.utils import write_gzip
 
 
 def create_page_json(
@@ -65,8 +65,7 @@ def create_page_json(
             related_button.row_type = long_to_type[x]
 
     name = create_filename(row.longname, "gz")
-    with gzip.open(f"{folder}/{name}", "wb") as f:
-        f.write(data.SerializeToString())
+    write_gzip(data, f"{folder}/{name}")
     return name
 
 
