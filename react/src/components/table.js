@@ -3,7 +3,7 @@ import ContentEditable from 'react-contenteditable'
 
 export { StatisticRowRaw };
 import { article_link, ordering_link } from "../navigation/links.js";
-import { loadJSON, loadProtobuf } from '../load_json.js';
+import { loadProtobuf } from '../load_json.js';
 import "./table.css";
 import { is_historical_cd } from '../utils/is_historical.js';
 

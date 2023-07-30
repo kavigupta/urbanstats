@@ -6,7 +6,6 @@ import { Header } from "../components/header.js";
 import { Sidebar } from "../components/sidebar.js";
 import "../common.css";
 import "../components/article.css";
-import { loadJSON } from '../load_json.js';
 import { relationship_key } from '../components/related-button.js';
 
 class PageTemplate extends React.Component {
@@ -14,7 +13,7 @@ class PageTemplate extends React.Component {
         super(props);
         // backed by local storage
         let settings = JSON.parse(localStorage.getItem("settings")) || {};
-        const map_relationship = loadJSON("/index/map_relationship.json");
+        const map_relationship = require("../data/map_relationship.json");
         for (let i in map_relationship) {
             const key = relationship_key(map_relationship[i][0], map_relationship[i][1]);
             if (!(key in settings)) {
@@ -24,7 +23,7 @@ class PageTemplate extends React.Component {
         if (!("use_population_percentiles" in settings)) {
             settings["use_population_percentiles"] = true;
         }
-        const statistic_category_metadata = loadJSON("/index/statistic_category_metadata.json");
+        const statistic_category_metadata = require("../data/statistic_category_metadata.json");
         // list of {key, name, show_checkbox, default}
         this.statistic_category_metadata_checkboxes = [];
         for (let i in statistic_category_metadata) {

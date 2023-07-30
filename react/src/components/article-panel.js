@@ -6,7 +6,6 @@ import { StatisticRowRaw } from "./table.js";
 import { Map } from "./map.js";
 import { Related } from "./related-button.js";
 import { PageTemplate } from "../page_template/template.js";
-import { loadJSON } from '../load_json.js';
 import "../common.css";
 import "./article.css";
 
@@ -19,9 +18,9 @@ class ArticlePanel extends PageTemplate {
         const self = this;
         let article_type = this.props.articleType;
 
-        let categories = loadJSON("/index/statistic_category_list.json");
-        let names = loadJSON("/index/statistic_name_list.json");
-        let counts_by_article_type = loadJSON("/index/counts_by_article_type.json");
+        const categories = require("../data/statistic_category_list.json");
+        const names = require("../data/statistic_name_list.json");
+        const counts_by_article_type = require("../data/counts_by_article_type.json");
         let count_articles = counts_by_article_type.filter((x) => x[0] == article_type)[0][1];
         let count_articles_overall = counts_by_article_type.filter((x) => x[0] == "overall")[0][1];
 

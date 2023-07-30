@@ -136,7 +136,7 @@ def output_ordering(full):
             counts[typ] = len(names)
             save_string_list(list(names), path)
 
-    with open(f"{folder}/index/counts_by_article_type.json", "w") as f:
+    with open(f"react/src/data/counts_by_article_type.json", "w") as f:
         json.dump(list(counts.items()), f)
 
 
@@ -169,20 +169,14 @@ def main(no_geo=False, no_data=False, no_data_jsons=False):
     shutil.copy("thumbnail.png", f"{folder}/")
     shutil.copy("banner.png", f"{folder}/")
 
-    os.system("cd react; npm run prod")
-    shutil.copy("dist/article.js", f"{folder}/scripts/")
-    shutil.copy("dist/index.js", f"{folder}/scripts/")
-    shutil.copy("dist/about.js", f"{folder}/scripts/")
-    shutil.copy("dist/data-credit.js", f"{folder}/scripts/")
-
-    with open(f"{folder}/index/map_relationship.json", "w") as f:
+    with open("react/src/data/map_relationship.json", "w") as f:
         json.dump(map_relationships_by_type, f)
 
-    with open(f"{folder}/index/statistic_category_metadata.json", "w") as f:
+    with open(f"react/src/data/statistic_category_metadata.json", "w") as f:
         json.dump(output_categories(), f)
-    with open(f"{folder}/index/statistic_category_list.json", "w") as f:
+    with open(f"react/src/data/statistic_category_list.json", "w") as f:
         json.dump(list(get_statistic_categories().values()), f)
-    with open(f"{folder}/index/statistic_name_list.json", "w") as f:
+    with open(f"react/src/data/statistic_name_list.json", "w") as f:
         json.dump(list(get_statistic_names().values()), f)
 
     with open(f"{folder}/CNAME", "w") as f:
@@ -190,6 +184,12 @@ def main(no_geo=False, no_data=False, no_data_jsons=False):
 
     with open(f"{folder}/.nojekyll", "w") as f:
         f.write("")
+
+    os.system("cd react; npm run prod")
+    shutil.copy("dist/article.js", f"{folder}/scripts/")
+    shutil.copy("dist/index.js", f"{folder}/scripts/")
+    shutil.copy("dist/about.js", f"{folder}/scripts/")
+    shutil.copy("dist/data-credit.js", f"{folder}/scripts/")
 
 
 if __name__ == "__main__":
