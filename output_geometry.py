@@ -11,7 +11,6 @@ from urbanstats.protobuf import data_files_pb2
 from urbanstats.protobuf.utils import write_gzip
 
 
-
 def round_floats(obj):
     if isinstance(obj, float):
         return round(obj, 6)
@@ -36,7 +35,6 @@ def produce_geometry_json(folder, r):
     res = convert(r.geometry)
     res = convert_to_protobuf(res)
     write_gzip(res, f"{folder}/{fname}")
-
 
 
 def produce_all_geometry_json(path, valid_names):
