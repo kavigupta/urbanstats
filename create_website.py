@@ -119,7 +119,12 @@ def output_ordering(full):
     for statistic_column in get_statistic_names():
         print(statistic_column)
         full_by_name = full[
-            ["longname", "type", (statistic_column, "overall_ordinal")]
+            [
+                "longname",
+                "type",
+                (statistic_column, "overall_ordinal"),
+                statistic_column,
+            ]
         ].sort_values("longname")
         full_sorted = full_by_name.sort_values(
             (statistic_column, "overall_ordinal"), kind="stable"
@@ -129,11 +134,16 @@ def output_ordering(full):
 
         path = f"{folder}/order/{statistic_name}__overall.gz"
         save_string_list(list(full_sorted.longname), path)
-        counts["overall"] = len(full_sorted)
+        counts[get_statistic_names()[statistic_column], "overall"] = int(
+            (~np.isnan(full_sorted[statistic_column])).sum()
+        )
         for typ in sorted(set(full_sorted.type)):
             path = f"{folder}/order/{statistic_name}__{typ}.gz"
-            names = full_sorted[full_sorted.type == typ].longname
-            counts[typ] = len(names)
+            for_typ = full_sorted[full_sorted.type == typ]
+            names = for_typ.longname
+            counts[get_statistic_names()[statistic_column], typ] = int(
+                (~np.isnan(for_typ[statistic_column])).sum()
+            )
             save_string_list(list(names), path)
 
     with open(f"react/src/data/counts_by_article_type.json", "w") as f:

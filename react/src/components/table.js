@@ -186,6 +186,9 @@ class Ordinal extends React.Component {
         const total = this.props.total;
         const type = this.props.type;
         const self = this;
+        if (ordinal > total) {
+            return <span></span>
+        }
         return <span>
             <EditableNumber
                 number={ordinal}
@@ -262,6 +265,9 @@ class Percentile extends React.Component {
     render() {
         const ordinal = this.props.ordinal;
         const total = this.props.total;
+        if (ordinal > total) {
+            return <span></span>
+        }
         // percentile as an integer
         const quantile =
             this.props.settings.use_population_percentiles ?
@@ -324,7 +330,7 @@ class PointerButtonIndex extends React.Component {
     render() {
         let pos = this.props.original_pos - 1 + + this.props.direction;
         const self = this;
-        if (self.out_of_bounds(pos < 0 || pos >= this.props.total)) {
+        if (self.out_of_bounds(pos) || this.props.original_pos > this.props.total) {
             return <span className="button">&nbsp;&nbsp;</span>
         } else {
             return (

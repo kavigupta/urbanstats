@@ -21,8 +21,6 @@ class ArticlePanel extends PageTemplate {
         const categories = require("../data/statistic_category_list.json");
         const names = require("../data/statistic_name_list.json");
         const counts_by_article_type = require("../data/counts_by_article_type.json");
-        let count_articles = counts_by_article_type.filter((x) => x[0] == article_type)[0][1];
-        let count_articles_overall = counts_by_article_type.filter((x) => x[0] == "overall")[0][1];
 
         let modified_rows = [];
         for (let i in this.props.rows) {
@@ -36,6 +34,14 @@ class ArticlePanel extends PageTemplate {
             row.statistic_category = categories[i];
             row.statname = names[i];
             row.article_type = article_type;
+
+            function for_type(typ) {
+                return counts_by_article_type.filter((x) => x[0][1] == typ && x[0][0] == row.statname)[0][1];
+            }
+
+            let count_articles = for_type(article_type);
+            let count_articles_overall = for_type("overall");
+
             row.total_count_in_class = count_articles;
             row.total_count_overall = count_articles_overall;
             modified_rows.push(row);
