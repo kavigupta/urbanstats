@@ -45,3 +45,23 @@
     font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
     text-align: center;
 }
+
+.searchbox-dropdown {
+    position: absolute;
+    width: 100%;
+    max-height: 20em;
+    overflow-y: auto;
+    background-color: #ebebff;
+    border: 1px solid #bbb;
+    border-radius: 0.25em;
+    z-index: 1;
+}
+
+.searchbox-dropdown-item {
+    padding: 0.5em;
+    cursor: pointer;
+}
+
+.searchbox-dropdown-item-focused {
+    background-color: #dadaff;
+}

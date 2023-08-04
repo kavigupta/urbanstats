@@ -10,7 +10,7 @@ import "../common.css";
 class SearchBox extends React.Component {
     constructor(props) {
         super(props);
-        this.state = { matches: [], is_loaded: false };
+        this.state = { matches: [], is_loaded: false, focused: 0 };
         this.form = React.createRef();
         this.textbox = React.createRef();
         this.dropdown = React.createRef();
@@ -21,13 +21,23 @@ class SearchBox extends React.Component {
         return (<form autoComplete="off" ref={this.form} style={{ marginBlockEnd: "0em" }}>
             <input
                 ref={this.textbox}
+                id="searchbox"
                 type="text"
                 className="searchbox serif"
-                list="search-result"
                 placeholder="Search Urban Stats" />
-            <datalist id="search-result">
-                {this.state.matches.map((i) => <option key={i} value={this._values[i]} />)}
-            </datalist>
+
+            <div className="searchbox-dropdown" ref={this.dropdown}>
+                {
+                    this.state.matches.map((i, idx) =>
+                        <div
+                            key={i}
+                            className={
+                                "searchbox-dropdown-item"
+                                + (this.state.focused == idx ? " searchbox-dropdown-item-focused" : "")}
+                        >{this._values[i]}</div>
+                    )
+                }
+            </div>
         </form>);
 
     }
@@ -37,34 +47,46 @@ class SearchBox extends React.Component {
         this._values = (await this.values).elements;
         this.setState({ is_loaded: true });
         let self = this;
-        this.form.current.onsubmit = function () { return self.go(self._values, self.textbox.current) };
-        this.textbox.current.addEventListener("submit", function () {
-            return self.go(self.props.settings, self._values, self.textbox.current)
-        });
-        this.textbox.current.onkeyup = function () {
-            self.setState({ matches: autocompleteMatch(self.props.settings, self._values, self.textbox.current.value) });
+        this.form.current.onsubmit = function () {
+            return self.go(self.props.settings, self._values, self.textbox.current.value, self.state.focused)
         };
-        this.textbox.current.addEventListener('input', function (e) {
-            let input = e.target;
-            let val = input.value;
-            let list = input.getAttribute('list');
-
-            let options = document.getElementById(list).childNodes;
-
-            for (var i = 0; i < options.length; i++) {
-                if (options[i].value === val) {
-                    self.go(self.props.settings, self._values, self.textbox.current);
-                    break;
+        this.textbox.current.addEventListener("submit", function () {
+            return self.go(self.props.settings, self._values, self.textbox.current, self.state.focused)
+        });
+        this.textbox.current.onkeyup = function (event) {
+            self.setState({ matches: autocompleteMatch(self.props.settings, self._values, self.textbox.current.value) });
+            // if down arrow, then go to the next one
+            let dropdowns = document.getElementsByClassName("searchbox-dropdown-item");
+            if (dropdowns.length > 0) {
+                if (event.key == "ArrowDown") {
+                    self.setState({ focused: (self.state.focused + 1) % dropdowns.length });
+                }
+                if (event.key == "ArrowUp") {
+                    self.setState({ focused: (self.state.focused - 1 + dropdowns.length) % dropdowns.length });
                 }
             }
-        });
+        };
+        this.componentDidUpdate();
     }
 
-    go(settings, values, textbox) {
-        let val = textbox.value;
+    componentDidUpdate() {
+        let self = this;
+        let dropdowns = document.getElementsByClassName("searchbox-dropdown-item");
+        for (let i = 0; i < dropdowns.length; i++) {
+            dropdowns[i].onclick = function (e) {
+                window.location.href = article_link(self._values[self.state.matches[i]]);
+            }
+            dropdowns[i].onmouseover = function (e) {
+                self.setState({ focused: i });
+            }
+        }
+    }
+
+
+    go(settings, values, val, focused) {
         let terms = autocompleteMatch(settings, values, val);
         if (terms.length > 0) {
-            window.location.href = article_link(values[terms[0]]);
+            window.location.href = article_link(values[terms[focused]]);
         }
         return false;
     }
@@ -78,7 +100,8 @@ function autocompleteMatch(settings, values, input) {
     }
     let matches = [];
     for (let i = 0; i < values.length; i++) {
-        if (!is_a_match(input, values[i].toLowerCase())) {
+        let match_count = is_a_match(input, values[i].toLowerCase());
+        if (match_count == 0) {
             continue;
         }
         if (!settings.show_historical_cds) {
@@ -86,18 +109,42 @@ function autocompleteMatch(settings, values, input) {
                 continue;
             }
         }
-        matches.push(i);
-        if (matches.length >= 10) {
-            break;
-        }
+        matches.push([match_count, i]);
     }
-    return matches;
+    matches.sort(function (a, b) {
+        if (a[0] != b[0]) {
+            return b[0] - a[0];
+        }
+        return a[1] - b[1];
+    });
+    let overall_matches = [];
+    for (let i = 0; i < Math.min(10, matches.length); i++) {
+        overall_matches.push(matches[i][1]);
+    }
+    return overall_matches;
 }
 
 /*
-    Check whether a is a substring of b.
+    Check whether a is a substring of b (does not have to be contiguous)
 
 */
 function is_a_match(a, b) {
-    return b.includes(a);
+    let i = 0;
+    let match_count = 0;
+    let prev_match = true;
+    for (let j = 0; j < b.length; j++) {
+        if (a[i] == b[j]) {
+            i++;
+            if (prev_match) {
+                match_count++;
+            }
+            prev_match = true;
+        } else {
+            prev_match = false;
+        }
+        if (i == a.length) {
+            return match_count + 1;
+        }
+    }
+    return 0;
 }
