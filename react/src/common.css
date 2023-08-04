@@ -48,7 +48,7 @@
 
 .searchbox-dropdown {
     position: absolute;
-    width: 100%;
+    width: 80%;
     max-height: 20em;
     overflow-y: auto;
     background-color: #ebebff;
