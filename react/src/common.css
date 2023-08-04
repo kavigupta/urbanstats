@@ -48,7 +48,7 @@
 
 .searchbox-dropdown {
     position: absolute;
-    width: 80%;
+    width: 75%;
     max-height: 20em;
     overflow-y: auto;
     background-color: #ebebff;
@@ -64,4 +64,8 @@
 
 .searchbox-dropdown-item-focused {
     background-color: #dadaff;
+}
+
+.logo {
+    height: 60px;
 }

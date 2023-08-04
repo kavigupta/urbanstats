@@ -15,11 +15,11 @@ class IndexPanel extends PageTemplate {
     main_content() {
         return (
             <div>
-                <div className="centered_table">
-                    <a href="/index.html"><img src="/banner.png" className="logo" alt="Urban Stats Logo" width="100%" /></a>
+                <div>
+                    <a href="/index.html"><img src="/banner.png" alt="Urban Stats Logo" width="100%" /></a>
                 </div>
 
-                <div className="centered_text centered_table" style={{ textAlign: "left" }}>
+                <div className="centered_text" style={{ textAlign: "left" }}>
                     <p>The Urban Stats is a database of various statistics related to density, housing, and race
                         in the United States for a variety of regions. It is intended to be a resource for journalists,
                         researchers, and anyone else who is interested in these topics. The data is collected from the

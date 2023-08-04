@@ -51,13 +51,6 @@
     padding: 0;
 }
 
-.centered_table {
-    width: calc(min(80%, 800px));
-    position: relative;
-    left: calc((100% - min(80%, 800px)) / 2);
-    border-collapse: collapse;
-}
-
 .tableheader {
     border-bottom: 1pt solid black;
     font-weight: bold;
@@ -175,6 +168,7 @@
     padding-left: 1em;
     width: 100%;
     vertical-align: middle;
+    height: 50px;
 }
 
 .searchresults {
