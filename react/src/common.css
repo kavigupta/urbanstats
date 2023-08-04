@@ -15,6 +15,16 @@
     padding-left: 2em;
 }
 
+.left_panel_top {
+    display: flex;
+    min-width: 20%;
+}
+
+.right_panel_top {
+    flex-grow: 1;
+    padding-left: 2em;
+}
+
 .top_panel {
     position: relative;
     width: 100%;
