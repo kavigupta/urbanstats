@@ -52,14 +52,7 @@ class PageTemplate extends React.Component {
                 <Header settings={this.state.settings} />
                 <div className="gap"></div>
                 <div className="body_panel">
-                    <div className="left_panel">
-                        <Sidebar
-                            shortname={this.props.shortname}
-                            source={this.props.source}
-                            settings={this.state.settings}
-                            set_setting={(key, value) => self.set_setting(key, value)}
-                            statistic_category_metadata_checkboxes={this.statistic_category_metadata_checkboxes} />
-                    </div>
+                    {this.leftPanel()}
                     <div className="right_panel">
                         {this.main_content()}
                         <div className="gap"></div>
@@ -68,6 +61,20 @@ class PageTemplate extends React.Component {
                 </div>
             </div>
         );
+    }
+
+    leftPanel() {
+        const self = this;
+        return (
+            <div className="left_panel">
+                <Sidebar
+                    shortname={this.props.shortname}
+                    source={this.props.source}
+                    settings={this.state.settings}
+                    set_setting={(key, value) => self.set_setting(key, value)}
+                    statistic_category_metadata_checkboxes={this.statistic_category_metadata_checkboxes} />
+            </div>
+        )
     }
 
     set_setting(key, value) {
