@@ -1,6 +1,7 @@
 export { PageTemplate };
 
 import React from 'react';
+import { isMobile } from 'react-device-detect';
 
 import { Header } from "../components/header.js";
 import { Sidebar } from "../components/sidebar.js";
@@ -48,12 +49,12 @@ class PageTemplate extends React.Component {
     render() {
         const self = this;
         return (
-            <div className="main_panel">
-                <Header settings={this.state.settings} />
+            <div className={isMobile ? "main_panel_mobile" : "main_panel"}>
+                <Header settings={this.state.settings} leftPanel={() => self.leftPanel()} />
                 <div className="gap"></div>
                 <div className="body_panel">
-                    {this.leftPanel()}
-                    <div className="right_panel">
+                    {isMobile ? undefined : self.leftPanel()}
+                    <div className={isMobile ? "content_panel_mobile" : "right_panel"}>
                         {this.main_content()}
                         <div className="gap"></div>
                         <div className="centered_text">Urban Stats Version 4.1.0 by Kavi Gupta. Last updated 2023-08-04.</div>
@@ -66,7 +67,7 @@ class PageTemplate extends React.Component {
     leftPanel() {
         const self = this;
         return (
-            <div className="left_panel">
+            <div className={isMobile ? "left_panel_mobile" : "left_panel"}>
                 <Sidebar
                     shortname={this.props.shortname}
                     source={this.props.source}
