@@ -48,8 +48,9 @@ class HeaderImage extends React.Component {
     }
 
     render() {
+        const path = isMobile ? "/thumbnail.png" : "/banner.png";
         return (
-            <a href="/index.html"><img src="/banner.png" className="logo" alt="Urban Stats Logo" /></a>
+            <a href="/index.html"><img src={path} className="logo" alt="Urban Stats Logo" /></a>
         )
     }
 }

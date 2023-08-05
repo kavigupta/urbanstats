@@ -1,6 +1,6 @@
 export { PageTemplate };
 
-import React from 'react';
+import React, { Fragment } from 'react';
 import { isMobile } from 'react-device-detect';
 
 import { Header } from "../components/header.js";
@@ -49,18 +49,21 @@ class PageTemplate extends React.Component {
     render() {
         const self = this;
         return (
-            <div className={isMobile ? "main_panel_mobile" : "main_panel"}>
-                <Header settings={this.state.settings} leftPanel={() => self.leftPanel()} />
-                <div className="gap"></div>
-                <div className="body_panel">
-                    {isMobile ? undefined : self.leftPanel()}
-                    <div className={isMobile ? "content_panel_mobile" : "right_panel"}>
-                        {this.main_content()}
-                        <div className="gap"></div>
-                        <div className="centered_text">Urban Stats Version 4.1.0 by Kavi Gupta. Last updated 2023-08-04.</div>
+            <Fragment>
+                <meta name="viewport" content="width=600" />
+                <div className={isMobile ? "main_panel_mobile" : "main_panel"}>
+                    <Header settings={this.state.settings} leftPanel={() => self.leftPanel()} />
+                    <div className="gap"></div>
+                    <div className="body_panel">
+                        {isMobile ? undefined : self.leftPanel()}
+                        <div className={isMobile ? "content_panel_mobile" : "right_panel"}>
+                            {this.main_content()}
+                            <div className="gap"></div>
+                            <div className="centered_text">Urban Stats Version 4.1.0 by Kavi Gupta. Last updated 2023-08-04.</div>
+                        </div>
                     </div>
                 </div>
-            </div>
+            </Fragment>
         );
     }
 
