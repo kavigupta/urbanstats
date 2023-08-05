@@ -4,6 +4,7 @@ import ReactDOM from 'react-dom/client';
 import "./style.css";
 import "./common.css";
 import { PageTemplate } from "./page_template/template.js";
+import { isMobile } from 'react-device-detect';
 
 
 class DataCreditPanel extends PageTemplate {
@@ -14,7 +15,7 @@ class DataCreditPanel extends PageTemplate {
     main_content() {
         return (
             <div className="serif">
-                <div className="text shortname">Data Credit</div>
+                <div className={"centered_text " + (isMobile ? "headertext_mobile" : "headertext")}>Data Credit</div>
 
                 <p>
                     Shapes from Census and Zillow, Density, Race, and Vacancy Data from Census.

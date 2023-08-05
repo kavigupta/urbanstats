@@ -6,6 +6,7 @@ import "../style.css";
 import "./sidebar.css";
 
 import { uniform, by_population } from "../navigation/random.js";
+import { isMobile } from 'react-device-detect';
 
 class Sidebar extends React.Component {
     constructor(props) {
@@ -16,7 +17,7 @@ class Sidebar extends React.Component {
         let settings = this.props.settings;
         let statistic_category_metadata_checkboxes = this.props.statistic_category_metadata_checkboxes;
         return (
-            <div className="serif sidebar">
+            <div className={"serif sidebar" + (isMobile ? "_mobile": "")}>
                 <div className="sidebar-section">
                     <div className="sidebar-section-title">Main Menu</div>
                     <ul className="sidebar-section-content">

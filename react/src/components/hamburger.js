@@ -102,7 +102,7 @@ function Nav({ left_panel }) {
                 
                 .navigation-entry {
                     display: ${hamburgerOpen ? 'inline' : 'none'};
-                    background-color: #f9f9f9;
+                    background-color: #eee;
                     height: 100vh;
                     width: 50vw;
                     margin-top: 50px;

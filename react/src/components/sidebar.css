@@ -6,6 +6,13 @@
     font-size: 12pt;
 }
 
+.sidebar_mobile {
+    /*add some space to the left*/
+    background-color: #eee;
+    padding: 2rem;
+    font-size: 18pt;
+}
+
 .sidebar-section-title {
     margin-bottom: 0.5rem;
     border-bottom: 1px solid #ccc;

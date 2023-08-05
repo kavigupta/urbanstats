@@ -14,15 +14,29 @@
     min-height: 100%
 }
 
-.shortname {
+.headertext {
     font-size: 60px;
     font-weight: bold;
     margin: 0;
     padding: 0;
 }
 
-.longname {
+.headertext_mobile {
+    font-size: 45px;
+    font-weight: bold;
+    margin: 0;
+    padding: 0;
+}
+
+.subheadertext {
     font-size: 40px;
+    font-style: italic;
+    margin: 0;
+    padding: 0;
+}
+
+.subheadertext_mobile {
+    font-size: 30px;
     font-style: italic;
     margin: 0;
     padding: 0;

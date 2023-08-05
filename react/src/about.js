@@ -4,6 +4,7 @@ import ReactDOM from 'react-dom/client';
 import "./style.css";
 import "./common.css";
 import { PageTemplate } from "./page_template/template.js";
+import { isMobile } from 'react-device-detect';
 
 
 class AboutPanel extends PageTemplate {
@@ -14,7 +15,7 @@ class AboutPanel extends PageTemplate {
     main_content() {
         return (
             <div className="serif">
-                <div className="text shortname">About</div>
+                <div className={"centered_text " + (isMobile ? "headertext_mobile" : "headertext")}>About</div>
 
                 <p>
                     AW (area weighted) density is the standard Population/Area density.
