@@ -10,7 +10,7 @@
     /*add some space to the left*/
     background-color: #eee;
     padding: 2rem;
-    font-size: 18pt;
+    font-size: 20pt;
 }
 
 .sidebar-section-title {
@@ -33,4 +33,20 @@
 
 .sidebar-section-content li {
     margin-bottom: 0.5rem;
+}
+
+.sidebar-section-content_mobile li {
+    margin-bottom: 0.75rem;
+}
+
+.sidebar-section-title_mobile {
+    margin-bottom: 0.75rem;
+}
+
+.sidebar_mobile input {
+    transform: scale(1.6);
+}
+
+.sidebar_mobile label {
+    padding-left: 0.5em;
 }

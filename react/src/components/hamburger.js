@@ -77,7 +77,7 @@ function Nav({ left_panel }) {
 
                 .navigation{
                     width: 100%;
-                    height: 50px;
+                    // height: 60px;
                 }
                 
                 
@@ -103,8 +103,8 @@ function Nav({ left_panel }) {
                 .navigation-entry {
                     display: ${hamburgerOpen ? 'inline' : 'none'};
                     background-color: #eee;
-                    height: 100vh;
-                    width: 50vw;
+                    min-height: 100vh;
+                    width: 75vw;
                     margin-top: 50px;
                     position: fixed;
                     z-index: 10000;                    

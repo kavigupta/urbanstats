@@ -16,11 +16,17 @@ class Sidebar extends React.Component {
     render() {
         let settings = this.props.settings;
         let statistic_category_metadata_checkboxes = this.props.statistic_category_metadata_checkboxes;
+        let sidebar_section_content = "sidebar-section-content";
+        let sidebar_section_title = "sidebar-section-title";
+        if (isMobile) {
+            sidebar_section_content += " sidebar-section-content_mobile";
+            sidebar_section_title += " sidebar-section-title_mobile";
+        }
         return (
-            <div className={"serif sidebar" + (isMobile ? "_mobile": "")}>
+            <div className={"serif sidebar" + (isMobile ? "_mobile" : "")}>
                 <div className="sidebar-section">
-                    <div className="sidebar-section-title">Main Menu</div>
-                    <ul className="sidebar-section-content">
+                    <div className={sidebar_section_title}>Main Menu</div>
+                    <ul className={sidebar_section_content}>
                         <li>
                             <a href="/">Home</a>
                         </li>
@@ -33,8 +39,8 @@ class Sidebar extends React.Component {
                     </ul>
                 </div>
                 <div className="sidebar-section">
-                    <div className="sidebar-section-title">Random</div>
-                    <ul className="sidebar-section-content">
+                    <div className={sidebar_section_title}>Random</div>
+                    <ul className={sidebar_section_content}>
                         <li>
                             <a href="#" onClick={() => uniform(settings)}>Unweighted</a>
                         </li>
@@ -44,8 +50,8 @@ class Sidebar extends React.Component {
                     </ul>
                 </div>
                 <div className="sidebar-section">
-                    <div className="sidebar-section-title">Settings</div>
-                    <ul className="sidebar-section-content">
+                    <div className={sidebar_section_title}>Settings</div>
+                    <ul className={sidebar_section_content}>
                         <li>
                             <CheckboxSetting
                                 name="Use Imperial Units"
@@ -53,12 +59,16 @@ class Sidebar extends React.Component {
                                 settings={this.props.settings}
                                 set_setting={this.props.set_setting}
                             />
+                        </li>
+                        <li>
                             <CheckboxSetting
                                 name="Include Historical Districts"
                                 setting_key="show_historical_cds"
                                 settings={this.props.settings}
                                 set_setting={this.props.set_setting}
                             />
+                        </li>
+                        <li>
                             <CheckboxSetting
                                 name="Use Population Percentiles"
                                 setting_key="use_population_percentiles"
@@ -69,10 +79,10 @@ class Sidebar extends React.Component {
                     </ul>
                 </div>
                 <div className="sidebar-section">
-                    <div className="sidebar-section-title">Statistic Categories</div>
-                    <ul className="sidebar-section-content">
-                        <li>
-                            {statistic_category_metadata_checkboxes.map((checkbox, i) =>
+                    <div className={sidebar_section_title}>Statistic Categories</div>
+                    <ul className={sidebar_section_content}>
+                        {statistic_category_metadata_checkboxes.map((checkbox, i) =>
+                            <li>
                                 <CheckboxSetting
                                     key={i}
                                     name={checkbox.name}
@@ -80,8 +90,8 @@ class Sidebar extends React.Component {
                                     settings={this.props.settings}
                                     set_setting={this.props.set_setting}
                                 />
-                            )}
-                        </li>
+                            </li>
+                        )}
                     </ul>
                 </div>
             </div>
