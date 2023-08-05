@@ -6,6 +6,8 @@ import { article_link } from "../navigation/links.js";
 import { is_historical_cd } from '../utils/is_historical.js';
 import { CheckboxSetting } from "./sidebar.js";
 
+import { isMobile } from 'react-device-detect';
+
 import "./related.css";
 
 function relationship_key(article_type, other_type) {
@@ -21,9 +23,12 @@ class RelatedButton extends React.Component {
     }
 
     render() {
-        const classes = `button b_${to_name(this.props.rowType)}`
+        let classes = `button b_${to_name(this.props.rowType)}`
+        if (isMobile) {
+            classes += " button_mobile";
+        }
         return (
-            <li className="linklistel">
+            <li className={"linklistel" + (isMobile ? " linklistel_mobile" : "")}>
                 <a
                     className={classes}
                     href={article_link(this.props.longname)}>{this.props.shortname}
@@ -50,7 +55,7 @@ class RelatedList extends React.Component {
         return (
             <div>
                 <ul className="list_of_lists">
-                    <li className="linklistelfirst">{this.display_name()}</li>
+                    <li className={"linklistelfirst" + (isMobile ? " linklistelfirst_mobile" : "")}>{this.display_name()}</li>
                     {by_type_key.map((row, i) =>
                         <CheckableRelatedList
                             key={i}

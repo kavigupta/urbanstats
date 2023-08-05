@@ -24,12 +24,22 @@
 }
 
 .linklistel {
+    min-height: 13pt;
     float: left;
     padding-right: 0.3em;
     vertical-align: middle;
 }
 
+.linklistel_mobile {
+    min-height: 20pt;
+}
+
 .linklistelfirst {
+    font-size: 12pt;
     padding-right: 0.3em;
     font-weight: bold;
+}
+
+.linklistelfirst_mobile {
+    font-size: 18pt;
 }

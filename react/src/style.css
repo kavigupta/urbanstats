@@ -71,7 +71,7 @@
 }
 
 .button {
-    font: bold 11px Arial;
+    font: bold 8pt Arial;
     text-decoration: none;
     color: #222;
     padding: 2px 6px 2px 6px;
@@ -80,6 +80,10 @@
     border-right: 1px solid #333333;
     border-bottom: 1px solid #333333;
     border-left: 1px solid #CCCCCC;
+}
+
+.button_mobile {
+    font: bold 12pt Arial;
 }
 
 .button_random {
