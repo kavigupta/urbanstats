@@ -64,6 +64,17 @@ def districts(file_name, district_type, district_abbrev):
     )
 
 
+def urban_area(name, *, is_shortname):
+    name = name.replace("--", "-")
+    assert name.endswith("Urban Area")
+    name = name[:-len(" Urban Area")]
+    *name, state = name.split(",")
+    name = ", ".join(name)
+    if is_shortname:
+        return name + " Urban Area"
+    name = name + " [Urban Area]," + state + ", USA"
+    return name
+
 @permacache("population_density/ce_to_name")
 def ce_to_name():
     table = gpd.read_file("named_region_shapefiles/cb_2022_us_aiannh_500k.zip")
@@ -101,6 +112,29 @@ def school_district_shapefiles():
     )
     return frame
 
+def judicial_districts():
+    data = gpd.read_file("named_region_shapefiles/US_District_Court_Jurisdictions.zip")
+    data = data[
+        data.STATE.apply(lambda x: us.states.lookup(x) is not None)
+    ]
+    return data
+
+def judicial_circuits():
+    data = judicial_districts().dissolve(by="DISTRICT_N")
+    def ordinalize(district_n):
+        if district_n == "DC":
+            return "DC Circuit"
+        district_n = int(district_n)
+        suffix = "th"
+        if district_n == 1:
+            suffix = "st"
+        elif district_n == 2:
+            suffix = "nd"
+        elif district_n == 3:
+            suffix = "rd"
+        return f"{district_n}{suffix} Circuit"
+    data["shortname"] = data.index.map(ordinalize)
+    return data
 
 shapefiles = dict(
     states=Shapefile(
@@ -141,6 +175,14 @@ shapefiles = dict(
         ),
         filter=lambda x: True,
         meta=dict(type="CSA", source="Census"),
+    ),
+    urban_areas=Shapefile(
+        hash_key="urban_areas",
+        path="named_region_shapefiles/tl_rd22_us_uac20.zip",
+        shortname_extractor=lambda x: urban_area(x.NAMELSAD20, is_shortname=True),
+        longname_extractor=lambda x: urban_area(x.NAMELSAD20, is_shortname=False),
+        filter=lambda x: True,
+        meta=dict(type="Urban Area", source="Census"),
     ),
     zctas=Shapefile(
         hash_key="census_zctas",
@@ -225,5 +267,29 @@ shapefiles = dict(
         longname_extractor=lambda x: f"{x['NAME']}{x['suffix']}, {x['STATE_NAME']}, USA",
         filter=lambda x: True,
         meta=dict(type="School District", source="Census"),
+    ),
+    judicial_districts=Shapefile(
+        hash_key="judicial_districts",
+        path=judicial_districts,
+        shortname_extractor=lambda x: x["NAME"] + ", " + us.states.lookup(x["STATE"]).abbr,
+        longname_extractor=lambda x: x["NAME"] + ", " + us.states.lookup(x["STATE"]).abbr + ", USA",
+        filter=lambda x: True,
+        meta=dict(type="Judicial District", source="HIFLD"),
+    ),
+    judicial_circuits=Shapefile(
+        hash_key="judicial_circuits_2",
+        path=judicial_circuits,
+        shortname_extractor=lambda x: x["shortname"],
+        longname_extractor=lambda x: x["shortname"] + ", USA",
+        filter=lambda x: True,
+        meta=dict(type="Judicial Circuit", source="HIFLD"),
+    ),
+    media_markets=Shapefile(
+        hash_key="media_markets_2",
+        path="named_region_shapefiles/NatDMA.zip",
+        shortname_extractor=lambda x: x["NAME"] + " Media Market",
+        longname_extractor=lambda x: x["NAME"] + " Media Market, USA",
+        filter=lambda x: x.NAME != "National",
+        meta=dict(type="Media Market", source="Nielsen via Kenneth C Black"),
     ),
 )

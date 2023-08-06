@@ -18,7 +18,21 @@ class DataCreditPanel extends PageTemplate {
                 <div className={"centered_text " + (isMobile ? "headertext_mobile" : "headertext")}>Data Credit</div>
 
                 <p>
-                    Shapes from Census and Zillow, Density, Race, and Vacancy Data from Census.
+                    Shapefiles on States, MSAs, CSAs, Counties, County subdivisions, Cities (CDPs),
+                        Zip Codes (ZCTAs), Native Reservations, Native Reservation Subdivisions,
+                        School Districts, Congressional Districts, and State Legislative Districts
+                        are from the 2020 Census.
+                </p>
+                <p>
+                    Shapefiles on Judicial Districts are from the HIFLD Open Data Portal.
+                    Neighborhood shapefiles are from the 2017 Zillow Neighborhood Boundaries.
+                    Shapefiles on Census Tracts, Census Block Groups, and Census Blocks are from the 2010 Census.
+                    Shapefiles on historical congressional districts are mostly from UCLA with some
+                    additions from thee Data Gov portal and the NC legislature. Media market
+                    shapefiles are from <a href="https://datablends.us/2021/01/14/a-useful-dma-shapefile-for-tableau-and-alteryx/">Kenneth C Black</a>.
+                </p>
+                <p>
+                    Density, Race, and Vacancy Data from Census.
                     Election Data is from the US Elections Project's Voting and Elections Science Team
                     (<a href="https://twitter.com/VEST_Team">VEST</a>).
                 </p>

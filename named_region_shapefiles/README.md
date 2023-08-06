@@ -19,6 +19,12 @@ Source: https://www.census.gov/geographies/mapping-files/time-series/geo/cartogr
  - cb_2022_us_scsd_500k.zip
  - cb_2022_us_unsd_500k.zip
 
+# From HIFLD
+
+Source https://hifld-geoplatform.opendata.arcgis.com/datasets/geoplatform::us-district-court-jurisdictions/explore?location=31.251558%2C-88.409995%2C4.92&showTable=true
+
+  - US_District_Court_Jurisdictions.zip
+
 # From Zillow
 
 Source: https://catalog.data.gov/dataset/neighborhoods-us-2017-zillow-segs
@@ -49,3 +55,9 @@ Source: https://catalog.data.gov/dataset/tiger-line-shapefile-2019-nation-u-s-11
 
 Source: https://www.ncleg.gov/Redistricting/C2022C
   - 117th Congressional Districts for 117th Congress in NC
+
+# From Kenneth C Black
+
+Source: https://datablends.us/2021/01/14/a-useful-dma-shapefile-for-tableau-and-alteryx/
+
+  - NatDMA.zip

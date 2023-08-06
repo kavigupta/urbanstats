@@ -111,7 +111,7 @@ def add(d, edges):
 
 
 tiers = [
-    ["states", "native_areas", "native_statistical_areas"],
+    ["states", "native_areas", "native_statistical_areas", "judicial_circuits", "media_markets"],
     [
         "csas",
         "msas",
@@ -121,6 +121,8 @@ tiers = [
         "state_senate",
         "congress",
         "native_subdivisions",
+        "urban_areas",
+        "judicial_districts",
     ],
     ["cousub", "cities", "school_districts"],
     ["neighborhoods", "zctas"],
@@ -139,6 +141,8 @@ map_relationships = [
     ("cities", "neighborhoods"),
     ("school_districts", "neighborhoods"),
     ("zctas", "neighborhoods"),
+    ("urban_areas", "cities"),
+    ("judicial_circuits", "judicial_districts"),
 ]
 map_relationships += [[x, x] for x in shapefiles]
 

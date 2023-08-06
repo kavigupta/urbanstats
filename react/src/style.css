@@ -171,6 +171,26 @@
     background-color: rgb(202, 225, 230);
 }
 
+.b_judicial_district {
+    /* light purple */
+    background-color: rgb(240, 224, 255);
+}
+
+.b_judicial_circuit {
+    /* light purple */
+    background-color: rgb(230, 204, 255);
+}
+
+.b_media_market {
+    /*light orange*/
+    background-color: rgb(255, 223, 204);
+}
+
+.b_urban_area {
+    /* light yellow */
+    background-color: rgb(255, 255, 204);
+}
+
 .main_page_header {
     font-size: 35px;
     font-weight: bold;
