@@ -111,7 +111,13 @@ def add(d, edges):
 
 
 tiers = [
-    ["states", "native_areas", "native_statistical_areas", "judicial_circuits", "media_markets"],
+    [
+        "states",
+        "native_areas",
+        "native_statistical_areas",
+        "judicial_circuits",
+        "media_markets",
+    ],
     [
         "csas",
         "msas",

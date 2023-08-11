@@ -67,13 +67,14 @@ def districts(file_name, district_type, district_abbrev):
 def urban_area(name, *, is_shortname):
     name = name.replace("--", "-")
     assert name.endswith("Urban Area")
-    name = name[:-len(" Urban Area")]
+    name = name[: -len(" Urban Area")]
     *name, state = name.split(",")
     name = ", ".join(name)
     if is_shortname:
         return name + " Urban Area"
     name = name + " [Urban Area]," + state + ", USA"
     return name
+
 
 @permacache("population_density/ce_to_name")
 def ce_to_name():
@@ -112,15 +113,16 @@ def school_district_shapefiles():
     )
     return frame
 
+
 def judicial_districts():
     data = gpd.read_file("named_region_shapefiles/US_District_Court_Jurisdictions.zip")
-    data = data[
-        data.STATE.apply(lambda x: us.states.lookup(x) is not None)
-    ]
+    data = data[data.STATE.apply(lambda x: us.states.lookup(x) is not None)]
     return data
+
 
 def judicial_circuits():
     data = judicial_districts().dissolve(by="DISTRICT_N")
+
     def ordinalize(district_n):
         if district_n == "DC":
             return "DC Circuit"
@@ -133,8 +135,10 @@ def judicial_circuits():
         elif district_n == 3:
             suffix = "rd"
         return f"{district_n}{suffix} Circuit"
+
     data["shortname"] = data.index.map(ordinalize)
     return data
+
 
 shapefiles = dict(
     states=Shapefile(
@@ -271,8 +275,13 @@ shapefiles = dict(
     judicial_districts=Shapefile(
         hash_key="judicial_districts",
         path=judicial_districts,
-        shortname_extractor=lambda x: x["NAME"] + ", " + us.states.lookup(x["STATE"]).abbr,
-        longname_extractor=lambda x: x["NAME"] + ", " + us.states.lookup(x["STATE"]).abbr + ", USA",
+        shortname_extractor=lambda x: x["NAME"]
+        + ", "
+        + us.states.lookup(x["STATE"]).abbr,
+        longname_extractor=lambda x: x["NAME"]
+        + ", "
+        + us.states.lookup(x["STATE"]).abbr
+        + ", USA",
         filter=lambda x: True,
         meta=dict(type="Judicial District", source="HIFLD"),
     ),
