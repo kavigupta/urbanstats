@@ -1,5 +1,43 @@
 from urbanstats.acs.load import ACSDataEntity
 
+ancestries = [
+    "honduran",
+    "ukrainian",
+    "haiti",
+    "jamaican",
+    "danish",
+    "greek",
+    "czech",
+    "colombian",
+    "hungarian",
+    "portuguese",
+    "korean",
+    "guatemalan",
+    "welsh",
+    "viethamese",
+    "dominican",
+    "salvadoran",
+    "cuban",
+    "russian",
+    "scotch_irish",
+    "filipino",
+    "dutch",
+    "swedish",
+    "chinese",
+    "norwegian",
+    "asian_indian",
+    "scottish",
+    "polish",
+    "french",
+    "puerto_rican",
+    "italian",
+    "american",
+    "english",
+    "irish",
+    "mexican",
+    "german",
+]
+
 
 entities = dict(
     education=ACSDataEntity(
@@ -790,6 +828,294 @@ entities = dict(
             "marriage_divorced": [
                 "Estimate!!Total:!!Female:!!Divorced",
                 "Estimate!!Total:!!Male:!!Divorced",
+            ],
+        },
+    ),
+    ancestry=ACSDataEntity(
+        "PEOPLE REPORTING ANCESTRY",
+        "population",
+        "tract",
+        {
+            None: [
+                "Estimate!!Total:",
+                "Estimate!!Total:!!Unclassified or not reported",
+                "Estimate!!Total:!!Other groups",
+                "Estimate!!Total:!!European",
+                "Estimate!!Total:!!Subsaharan African:",
+                "Estimate!!Total:!!West Indian (except Hispanic groups):",
+                "Estimate!!Total:!!Arab:",
+                "Estimate!!Total:!!Subsaharan African:!!African",
+                "Estimate!!Total:!!Eastern European",
+                "Estimate!!Total:!!Scandinavian",
+                # too small population
+            ],
+            **{
+                k.split("!!")[-1]: [k]
+                for k in [
+                    "Estimate!!Total:!!Afghan",
+                    "Estimate!!Total:!!Albanian",
+                    "Estimate!!Total:!!Alsatian",
+                    "Estimate!!Total:!!Arab:!!Arab",
+                    "Estimate!!Total:!!Arab:!!Egyptian",
+                    "Estimate!!Total:!!Arab:!!Iraqi",
+                    "Estimate!!Total:!!Arab:!!Jordanian",
+                    "Estimate!!Total:!!Arab:!!Lebanese",
+                    "Estimate!!Total:!!Arab:!!Moroccan",
+                    "Estimate!!Total:!!Arab:!!Other Arab",
+                    "Estimate!!Total:!!Arab:!!Palestinian",
+                    "Estimate!!Total:!!Arab:!!Syrian",
+                    "Estimate!!Total:!!Assyrian/Chaldean/Syriac",
+                    "Estimate!!Total:!!Australian",
+                    "Estimate!!Total:!!Austrian",
+                    "Estimate!!Total:!!Basque",
+                    "Estimate!!Total:!!Belgian",
+                    "Estimate!!Total:!!Brazilian",
+                    "Estimate!!Total:!!Bulgarian",
+                    "Estimate!!Total:!!Cajun",
+                    "Estimate!!Total:!!Canadian",
+                    "Estimate!!Total:!!Carpatho Rusyn",
+                    "Estimate!!Total:!!Celtic",
+                    "Estimate!!Total:!!Croatian",
+                    "Estimate!!Total:!!Cypriot",
+                    "Estimate!!Total:!!Czechoslovakian",
+                    "Estimate!!Total:!!Guyanese",
+                    "Estimate!!Total:!!Icelander",
+                    "Estimate!!Total:!!Iranian",
+                    "Estimate!!Total:!!Israeli",
+                    "Estimate!!Total:!!Luxembourger",
+                    "Estimate!!Total:!!Macedonian",
+                    "Estimate!!Total:!!Maltese",
+                    "Estimate!!Total:!!New Zealander",
+                    "Estimate!!Total:!!Northern European",
+                    "Estimate!!Total:!!Pennsylvania German",
+                    "Estimate!!Total:!!Romanian",
+                    "Estimate!!Total:!!Serbian",
+                    "Estimate!!Total:!!Slavic",
+                    "Estimate!!Total:!!Slovak",
+                    "Estimate!!Total:!!Slovene",
+                    "Estimate!!Total:!!Soviet Union",
+                    "Estimate!!Total:!!Subsaharan African:!!Cape Verdean",
+                    "Estimate!!Total:!!Subsaharan African:!!Ethiopian",
+                    "Estimate!!Total:!!Subsaharan African:!!Ghanaian",
+                    "Estimate!!Total:!!Subsaharan African:!!Kenyan",
+                    "Estimate!!Total:!!Subsaharan African:!!Liberian",
+                    "Estimate!!Total:!!Subsaharan African:!!Nigerian",
+                    "Estimate!!Total:!!Subsaharan African:!!Other Subsaharan African",
+                    "Estimate!!Total:!!Subsaharan African:!!Senegalese",
+                    "Estimate!!Total:!!Subsaharan African:!!Sierra Leonean",
+                    "Estimate!!Total:!!Subsaharan African:!!Somali",
+                    "Estimate!!Total:!!Subsaharan African:!!South African",
+                    "Estimate!!Total:!!Subsaharan African:!!Sudanese",
+                    "Estimate!!Total:!!Subsaharan African:!!Ugandan",
+                    "Estimate!!Total:!!Subsaharan African:!!Zimbabwean",
+                    "Estimate!!Total:!!Swiss",
+                    "Estimate!!Total:!!Turkish",
+                    "Estimate!!Total:!!West Indian (except Hispanic groups):!!Bahamian",
+                    "Estimate!!Total:!!West Indian (except Hispanic groups):!!Barbadian",
+                    "Estimate!!Total:!!West Indian (except Hispanic groups):!!Belizean",
+                    "Estimate!!Total:!!West Indian (except Hispanic groups):!!Bermudan",
+                    "Estimate!!Total:!!West Indian (except Hispanic groups):!!British West Indian",
+                    "Estimate!!Total:!!West Indian (except Hispanic groups):!!Dutch West Indian",
+                    "Estimate!!Total:!!West Indian (except Hispanic groups):!!Other West Indian",
+                    "Estimate!!Total:!!West Indian (except Hispanic groups):!!Trinidadian and Tobagonian",
+                    "Estimate!!Total:!!West Indian (except Hispanic groups):!!U.S. Virgin Islander",
+                    "Estimate!!Total:!!West Indian (except Hispanic groups):!!West Indian",
+                    "Estimate!!Total:!!Yugoslavian",
+                ]
+            },
+            "ancestry_armenian": [
+                "Estimate!!Total:!!Armenian",
+            ],
+            "ancestry_german": [
+                "Estimate!!Total:!!German",
+                "Estimate!!Total:!!German Russian",
+            ],
+            "ancestry_irish": [
+                "Estimate!!Total:!!Irish",
+            ],
+            "ancestry_italian": [
+                "Estimate!!Total:!!Italian",
+            ],
+            "ancestry_english": [
+                "Estimate!!Total:!!English",
+                "Estimate!!Total:!!British",
+            ],
+            "ancestry_american": [
+                "Estimate!!Total:!!American",
+            ],
+            "ancestry_polish": [
+                "Estimate!!Total:!!Polish",
+            ],
+            "ancestry_french": [
+                "Estimate!!Total:!!French (except Basque)",
+                "Estimate!!Total:!!French Canadian",
+            ],
+            "ancestry_scottish": [
+                "Estimate!!Total:!!Scottish",
+            ],
+            "ancestry_dutch": [
+                "Estimate!!Total:!!Dutch",
+            ],
+            "ancestry_norwegian": [
+                "Estimate!!Total:!!Norwegian",
+            ],
+            "ancestry_swedish": [
+                "Estimate!!Total:!!Swedish",
+            ],
+            "ancestry_russian": [
+                "Estimate!!Total:!!Russian",
+            ],
+            "ancestry_scotch_irish": [
+                "Estimate!!Total:!!Scotch-Irish",
+            ],
+            "ancestry_welsh": [
+                "Estimate!!Total:!!Welsh",
+            ],
+            "ancestry_hungarian": [
+                "Estimate!!Total:!!Hungarian",
+            ],
+            "ancestry_czech": [
+                "Estimate!!Total:!!Czech",
+            ],
+            "ancestry_greek": [
+                "Estimate!!Total:!!Greek",
+            ],
+            "ancestry_portuguese": [
+                "Estimate!!Total:!!Portuguese",
+            ],
+            "ancestry_danish": [
+                "Estimate!!Total:!!Danish",
+            ],
+            "ancestry_haiti": [
+                "Estimate!!Total:!!West Indian (except Hispanic groups):!!Haitian",
+            ],
+            "ancestry_jamaican": [
+                "Estimate!!Total:!!West Indian (except Hispanic groups):!!Jamaican",
+            ],
+            "ancestry_ukrainian": [
+                "Estimate!!Total:!!Ukrainian",
+            ],
+            "ancestry_baltic": [
+                "Estimate!!Total:!!Estonian",
+                "Estimate!!Total:!!Latvian",
+                "Estimate!!Total:!!Lithuanian",
+            ],
+            "ancestry_finnish": [
+                "Estimate!!Total:!!Finnish",
+            ],
+        },
+    ),
+    ancestry_asian=ACSDataEntity(
+        "ASIAN ALONE BY SELECTED GROUPS",
+        "population",
+        "tract",
+        {
+            None: [
+                "Estimate!!Total:",
+                "Estimate!!Total:!!Other Asian, not specified",
+                "Estimate!!Total:!!Other Asian, specified",
+                "Estimate!!Total:!!Two or more Asian",
+                # too small population
+            ],
+            **{
+                k.split("!!")[-1]: [k]
+                for k in [
+                    "Estimate!!Total:!!Bangladeshi",
+                    "Estimate!!Total:!!Bhutanese",
+                    "Estimate!!Total:!!Burmese",
+                    "Estimate!!Total:!!Cambodian",
+                    "Estimate!!Total:!!Hmong",
+                    "Estimate!!Total:!!Indonesian",
+                    "Estimate!!Total:!!Japanese",
+                    "Estimate!!Total:!!Laotian",
+                    "Estimate!!Total:!!Malaysian",
+                    "Estimate!!Total:!!Mongolian",
+                    "Estimate!!Total:!!Nepalese",
+                    "Estimate!!Total:!!Okinawan",
+                    "Estimate!!Total:!!Pakistani",
+                    "Estimate!!Total:!!Sri Lankan",
+                    "Estimate!!Total:!!Taiwanese",
+                    "Estimate!!Total:!!Thai",
+                ]
+            },
+            "ancestry_asian_indian": [
+                "Estimate!!Total:!!Asian Indian",
+            ],
+            "ancestry_chinese": [
+                "Estimate!!Total:!!Chinese, except Taiwanese",
+            ],
+            "ancestry_filipino": [
+                "Estimate!!Total:!!Filipino",
+            ],
+            "ancestry_viethamese": [
+                "Estimate!!Total:!!Vietnamese",
+            ],
+            "ancestry_korean": [
+                "Estimate!!Total:!!Korean",
+            ],
+        },
+    ),
+    ancestry_hispanic=ACSDataEntity(
+        "HISPANIC OR LATINO ORIGIN BY SPECIFIC ORIGIN",
+        "population",
+        "tract",
+        {
+            None: [
+                "Estimate!!Total:",
+                "Estimate!!Total:!!Hispanic or Latino:",
+                "Estimate!!Total:!!Not Hispanic or Latino",
+                "Estimate!!Total:!!Hispanic or Latino:!!Central American:",
+                "Estimate!!Total:!!Hispanic or Latino:!!Other Hispanic or Latino:",
+                "Estimate!!Total:!!Hispanic or Latino:!!South American:",
+                "Estimate!!Total:!!Hispanic or Latino:!!Other Hispanic or Latino:!!All other Hispanic or Latino",
+                # too small population
+            ],
+            **{
+                k.split("!!")[-1]: [k]
+                for k in [
+                    "Estimate!!Total:!!Hispanic or Latino:!!Other Hispanic or Latino:!!Spaniard",
+                    "Estimate!!Total:!!Hispanic or Latino:!!Other Hispanic or Latino:!!Spanish",
+                    "Estimate!!Total:!!Hispanic or Latino:!!Other Hispanic or Latino:!!Spanish American",
+                    "Estimate!!Total:!!Hispanic or Latino:!!South American:!!Argentinean",
+                    "Estimate!!Total:!!Hispanic or Latino:!!South American:!!Bolivian",
+                    "Estimate!!Total:!!Hispanic or Latino:!!South American:!!Chilean",
+                    "Estimate!!Total:!!Hispanic or Latino:!!South American:!!Ecuadorian",
+                    "Estimate!!Total:!!Hispanic or Latino:!!South American:!!Other South American",
+                    "Estimate!!Total:!!Hispanic or Latino:!!South American:!!Paraguayan",
+                    "Estimate!!Total:!!Hispanic or Latino:!!South American:!!Peruvian",
+                    "Estimate!!Total:!!Hispanic or Latino:!!South American:!!Uruguayan",
+                    "Estimate!!Total:!!Hispanic or Latino:!!South American:!!Venezuelan",
+                ]
+            },
+            "ancestry_mexican": [
+                "Estimate!!Total:!!Hispanic or Latino:!!Mexican",
+            ],
+            "ancestry_puerto_rican": [
+                "Estimate!!Total:!!Hispanic or Latino:!!Puerto Rican",
+            ],
+            "ancestry_cuban": [
+                "Estimate!!Total:!!Hispanic or Latino:!!Cuban",
+            ],
+            "ancestry_dominican": [
+                "Estimate!!Total:!!Hispanic or Latino:!!Dominican (Dominican Republic)",
+            ],
+            "ancestry_salvadoran": [
+                "Estimate!!Total:!!Hispanic or Latino:!!Central American:!!Salvadoran",
+            ],
+            "ancestry_colombian": [
+                "Estimate!!Total:!!Hispanic or Latino:!!South American:!!Colombian",
+            ],
+            "ancestry_honduran": [
+                "Estimate!!Total:!!Hispanic or Latino:!!Central American:!!Honduran",
+            ],
+            "ancestry_guatemalan": [
+                "Estimate!!Total:!!Hispanic or Latino:!!Central American:!!Guatemalan",
+            ],
+            "ancestry_other_central_american": [
+                "Estimate!!Total:!!Hispanic or Latino:!!Central American:!!Costa Rican",
+                "Estimate!!Total:!!Hispanic or Latino:!!Central American:!!Nicaraguan",
+                "Estimate!!Total:!!Hispanic or Latino:!!Central American:!!Other Central American",
+                "Estimate!!Total:!!Hispanic or Latino:!!Central American:!!Panamanian",
             ],
         },
     ),
