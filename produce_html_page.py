@@ -13,6 +13,7 @@ from stats_for_shapefile import (
     income_stats,
     transportation_stats,
     national_origin_stats,
+    ancestry_stats,
     misc_stats,
 )
 from election_data import vest_elections
@@ -143,6 +144,7 @@ def get_statistic_names():
         "sd": "AW Density",
         **racial_statistics,
         **national_origin_stats,
+        **ancestry_stats,
         **education_stats,
         **generation_stats,
         **income_stats,
@@ -162,6 +164,7 @@ def get_statistic_categories():
         "sd": "main",
         **{k: "race" for k in racial_statistics},
         **{k: "national_origin" for k in national_origin_stats},
+        **{k: "ancestry" for k in ancestry_stats},
         **{k: "education" for k in education_stats},
         **{k: "generation" for k in generation_stats},
         **{k: "income" for k in income_stats},
@@ -178,6 +181,7 @@ category_metadata = {
     "main": dict(name="Main", show_checkbox=False, default=True),
     "race": dict(name="Race", show_checkbox=True, default=True),
     "national_origin": dict(name="National Origin", show_checkbox=True, default=False),
+    "ancestry": dict(name="Ancestry", show_checkbox=True, default=False),
     "education": dict(name="Education", show_checkbox=True, default=False),
     "generation": dict(name="Generation", show_checkbox=True, default=False),
     "income": dict(name="Income", show_checkbox=True, default=False),

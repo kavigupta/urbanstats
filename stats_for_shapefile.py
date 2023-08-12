@@ -13,7 +13,7 @@ import geopandas as gpd
 from permacache import permacache, stable_hash
 
 from urbanstats.acs.attach import with_acs_data
-from urbanstats.acs.entities import acs_columns
+from urbanstats.acs.entities import acs_columns, ancestries
 
 racial_statistics = {
     "white": "White %",
@@ -97,6 +97,8 @@ national_origin_stats = {
     "language_spanish": "Spanish at Home %",
     "language_other": "Other at Home %",
 }
+
+ancestry_stats = {f"ancestry_{x}": x.replace("_", " ").title() for x in ancestries}
 
 misc_stats = {
     "internet_no_access": "No internet access %",
@@ -203,7 +205,7 @@ def compute_summed_shapefile_all_keys(sf, sum_keys=sum_keys):
 
 
 @permacache(
-    "population_density/stats_for_shapefile/compute_statistics_for_shapefile_12",
+    "population_density/stats_for_shapefile/compute_statistics_for_shapefile_13",
     key_function=dict(sf=lambda x: x.hash_key),
 )
 def compute_statistics_for_shapefile(sf):
@@ -359,6 +361,9 @@ def compute_statistics_for_shapefile(sf):
         "birthplace_us_not_state",
         "birthplace_us_state",
     )
+
+    for anc in ancestry_stats:
+        result[anc] = result[anc] / result.population
 
     return result
 
