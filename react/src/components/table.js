@@ -140,12 +140,44 @@ class Statistic extends React.Component {
                 }
                 return <span>{value.toFixed(0)}</span>;
             }
+        } else if (name == "Area") {
+            const is_imperial = this.props.settings.use_imperial;
+            let unit = "null";
+            if (is_imperial) {
+                value /= 1.60934 * 1.60934;
+                if (value < 1) {
+                    unit = <span>acres</span>
+                    value *= 640;
+                } else {
+                    unit = <span>mi<sup>2</sup></span>;
+                }
+            } else {
+                if (value < 0.01) {
+                    value *= 1000 * 1000;
+                    unit = <span>m<sup>2</sup></span>;
+                } else {
+                    unit = <span>km<sup>2</sup></span>;
+                }
+            }
+            if (is_unit) {
+                return unit;
+            } else {
+                if (value > 100) {
+                    return <span>{value.toFixed(0)}</span>
+                } else if (value > 10) {
+                    return <span>{value.toFixed(1)}</span>
+                } else if (value > 1) {
+                    return <span>{value.toFixed(2)}</span>
+                } else {
+                    return <span>{value.toFixed(3)}</span>
+                }
+            }
         } else if (name.includes("%")) {
             if (is_unit) {
                 return <span>%</span>;
             }
             return <span>{(value * 100).toFixed(2)}</span>;
-        } else if (name.includes("Election")) {
+        } else if (name.includes("Election") || name.includes("Swing")) {
             if (is_unit) {
                 return <span>%</span>;
             }

@@ -135,12 +135,20 @@ def format_radius(x):
         return f"{x:.0f}km"
 
 
+election_stats = {
+    **{(elect.name, "margin"): elect.name for elect in vest_elections},
+    ("2016-2020 Swing", "margin"): "2016-2020 Swing",
+}
+
+
 def get_statistic_names():
     ad = {f"ad_{k}": f"PW Density (r={format_radius(k)})" for k in RADII}
     return {
         "population": "Population",
         **{"ad_1": ad["ad_1"]},
         "sd": "AW Density",
+        "area": "Area",
+        "compactness": "Compactness",
         **racial_statistics,
         **national_origin_stats,
         **education_stats,
@@ -148,7 +156,7 @@ def get_statistic_names():
         **income_stats,
         **housing_stats,
         **transportation_stats,
-        **{(elect.name, "margin"): elect.name for elect in vest_elections},
+        **election_stats,
         **misc_stats,
         **{k: ad[k] for k in ad if k != "ad_1"},
     }
@@ -160,6 +168,8 @@ def get_statistic_categories():
         "population": "main",
         **{"ad_1": "main"},
         "sd": "main",
+        "area": "main",
+        "compactness": "main",
         **{k: "race" for k in racial_statistics},
         **{k: "national_origin" for k in national_origin_stats},
         **{k: "education" for k in education_stats},
@@ -167,7 +177,7 @@ def get_statistic_categories():
         **{k: "income" for k in income_stats},
         **{k: "housing" for k in housing_stats},
         **{k: "transportation" for k in transportation_stats},
-        **{(elect.name, "margin"): "election" for elect in vest_elections},
+        **{elect: "election" for elect in election_stats},
         **{k: "misc" for k in misc_stats},
         **{k: ad[k] for k in ad if k != "ad_1"},
     }

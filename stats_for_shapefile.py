@@ -3,6 +3,7 @@ import pickle
 
 import attr
 import pandas as pd
+import numpy as np
 import tqdm.auto as tqdm
 from more_itertools import chunked
 from census_blocks import RADII, racial_demographics, housing_units
@@ -189,7 +190,7 @@ def compute_summed_shapefile_few_keys(sf, sum_keys):
 
 
 @permacache(
-    "population_density/stats_for_shapefile/compute_summed_shapefile_3",
+    "population_density/stats_for_shapefile/compute_summed_shapefile_all_keys_4",
     key_function=dict(sf=lambda x: x.hash_key, sum_keys=stable_hash),
 )
 def compute_summed_shapefile_all_keys(sf, sum_keys=sum_keys):
@@ -203,16 +204,19 @@ def compute_summed_shapefile_all_keys(sf, sum_keys=sum_keys):
 
 
 @permacache(
-    "population_density/stats_for_shapefile/compute_statistics_for_shapefile_12",
+    "population_density/stats_for_shapefile/compute_statistics_for_shapefile_15",
     key_function=dict(sf=lambda x: x.hash_key),
 )
 def compute_statistics_for_shapefile(sf):
+    sf_fr = sf.load_file()
     print(sf)
     result = compute_summed_shapefile_all_keys(sf).copy()
+    assert (result.longname == sf_fr.longname).all()
+    result["perimiter"] = sf_fr.geometry.to_crs({"proj": "cea"}).length / 1e3
+    result["compactness"] = 4 * np.pi * result.area / result.perimiter**2
     for k in density_metrics:
         result[k] /= result["population"]
     result["sd"] = result["population"] / result["area"]
-    del result["area"]
     for k in sf.meta:
         result[k] = sf.meta[k]
     for k in racial_demographics:
