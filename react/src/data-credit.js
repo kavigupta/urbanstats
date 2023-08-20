@@ -53,6 +53,10 @@ class DataCreditPanel extends PageTemplate {
                     <b>Note that since these are 2021 estimates, there are some pandemic effects in Transportation etc.</b>
                 </p>
 
+                <p>
+                    Hospital data is from HIFLD via <a href="https://www.kaggle.com/datasets/carlosaguayo/usa-hospitals">Kaggle</a>
+                </p>
+
             </div>
         );
     }
