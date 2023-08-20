@@ -222,7 +222,7 @@ def compute_summed_shapefile_all_keys(sf, sum_keys=sum_keys):
 
 
 @permacache(
-    "population_density/stats_for_shapefile/compute_statistics_for_shapefile_15",
+    "population_density/stats_for_shapefile/compute_statistics_for_shapefile_16",
     key_function=dict(sf=lambda x: x.hash_key, sum_keys=stable_hash),
 )
 def compute_statistics_for_shapefile(sf, sum_keys=sum_keys):
@@ -269,9 +269,8 @@ def compute_statistics_for_shapefile(sf, sum_keys=sum_keys):
         for c in columns:
             result[c] = result[c] / denominator
 
-    fractionalize(
-        "education_field_stem", "education_field_humanities", "education_field_business"
-    )
+    for column in "education_field_stem", "education_field_humanities", "education_field_business":
+        result[column] = result[column] / education_denominator
     fractionalize(
         "generation_silent",
         "generation_boomer",
