@@ -7,6 +7,7 @@ from urbanstats.geometry.categorize_coordinates import categorize
 
 from urbanstats.geometry.ellipse import Ellipse
 
+
 @permacache(
     "population_density/geometry/locate_blocks_2",
     key_function=dict(

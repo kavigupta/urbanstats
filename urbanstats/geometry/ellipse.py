@@ -2,6 +2,7 @@ import numpy as np
 
 from urbanstats.geometry.categorize_coordinates import categorize
 
+
 class Ellipse:
     def __init__(self, radius_in_km, latitude, longitude):
         """
