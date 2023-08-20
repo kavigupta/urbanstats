@@ -61,3 +61,9 @@ Source: https://www.ncleg.gov/Redistricting/C2022C
 Source: https://datablends.us/2021/01/14/a-useful-dma-shapefile-for-tableau-and-alteryx/
 
   - NatDMA.zip
+
+# Hospital locations
+
+Source: https://www.kaggle.com/datasets/carlosaguayo/usa-hospitals
+
+  - features/hospitals.zip

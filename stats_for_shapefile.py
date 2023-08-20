@@ -1,4 +1,5 @@
 from collections import Counter
+from functools import lru_cache
 import pickle
 
 import attr
@@ -15,6 +16,8 @@ from permacache import permacache, stable_hash
 
 from urbanstats.acs.attach import with_acs_data
 from urbanstats.acs.entities import acs_columns
+from urbanstats.features.feature import feature_columns
+from urbanstats.features.extract_data import feature_data
 
 racial_statistics = {
     "white": "White %",
@@ -99,6 +102,8 @@ national_origin_stats = {
     "language_other": "Other at Home %",
 }
 
+feature_stats = {k: f"{k} %" for k in feature_columns}
+
 misc_stats = {
     "internet_no_access": "No internet access %",
     "insurance_coverage_none": "Uninsured %",
@@ -159,8 +164,20 @@ sum_keys = [
     *density_metrics,
     *election_column_names,
     *acs_columns,
+    *feature_columns,
 ]
 COLUMNS_PER_JOIN = 33
+
+
+@lru_cache(None)
+def block_level_data():
+    blocks_gdf = with_acs_data()
+    feats = feature_data()
+    [sh] = {x.shape for x in feats.values()}
+    assert sh == (blocks_gdf.shape[0],)
+    for k, v in feats.items():
+        blocks_gdf[k] = v
+    return blocks_gdf
 
 
 @permacache(
@@ -168,7 +185,8 @@ COLUMNS_PER_JOIN = 33
     key_function=dict(sf=lambda x: x.hash_key, sum_keys=stable_hash),
 )
 def compute_summed_shapefile_few_keys(sf, sum_keys):
-    blocks_gdf = with_acs_data()
+    print(sf, sum_keys)
+    blocks_gdf = block_level_data()
     s = sf.load_file()
     area = s["geometry"].to_crs({"proj": "cea"}).area / 1e6
     if sf.chunk_size is None:
@@ -205,12 +223,12 @@ def compute_summed_shapefile_all_keys(sf, sum_keys=sum_keys):
 
 @permacache(
     "population_density/stats_for_shapefile/compute_statistics_for_shapefile_15",
-    key_function=dict(sf=lambda x: x.hash_key),
+    key_function=dict(sf=lambda x: x.hash_key, sum_keys=stable_hash),
 )
-def compute_statistics_for_shapefile(sf):
+def compute_statistics_for_shapefile(sf, sum_keys=sum_keys):
     sf_fr = sf.load_file()
     print(sf)
-    result = compute_summed_shapefile_all_keys(sf).copy()
+    result = compute_summed_shapefile_all_keys(sf, sum_keys).copy()
     assert (result.longname == sf_fr.longname).all()
     result["perimiter"] = sf_fr.geometry.to_crs({"proj": "cea"}).length / 1e3
     result["compactness"] = 4 * np.pi * result.area / result.perimiter**2
@@ -363,6 +381,9 @@ def compute_statistics_for_shapefile(sf):
         "birthplace_us_not_state",
         "birthplace_us_state",
     )
+
+    for feat in feature_columns:
+        result[feat] = result[feat] / result["population"]
 
     return result
 

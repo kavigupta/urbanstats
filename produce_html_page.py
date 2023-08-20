@@ -13,6 +13,7 @@ from stats_for_shapefile import (
     income_stats,
     transportation_stats,
     national_origin_stats,
+    feature_stats,
     misc_stats,
 )
 from election_data import vest_elections
@@ -157,6 +158,7 @@ def get_statistic_names():
         **housing_stats,
         **transportation_stats,
         **election_stats,
+        **feature_stats,
         **misc_stats,
         **{k: ad[k] for k in ad if k != "ad_1"},
     }
@@ -178,6 +180,7 @@ def get_statistic_categories():
         **{k: "housing" for k in housing_stats},
         **{k: "transportation" for k in transportation_stats},
         **{elect: "election" for elect in election_stats},
+        **{k: "feature" for k in feature_stats},
         **{k: "misc" for k in misc_stats},
         **{k: ad[k] for k in ad if k != "ad_1"},
     }
@@ -194,6 +197,7 @@ category_metadata = {
     "housing": dict(name="Housing", show_checkbox=True, default=False),
     "transportation": dict(name="Transportation", show_checkbox=True, default=False),
     "election": dict(name="Election", show_checkbox=True, default=True),
+    "feature": dict(name="Proximity to Features", show_checkbox=True, default=False),
     "misc": dict(name="Miscellaneous", show_checkbox=True, default=False),
     "other_densities": dict(
         name="Other Density Metrics", show_checkbox=True, default=False
