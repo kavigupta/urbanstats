@@ -102,7 +102,7 @@ national_origin_stats = {
     "language_other": "Other at Home %",
 }
 
-feature_stats = {k: f"{k} %" for k in feature_columns}
+feature_stats = feature_columns
 
 misc_stats = {
     "internet_no_access": "No internet access %",
