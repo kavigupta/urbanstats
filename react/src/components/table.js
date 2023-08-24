@@ -172,6 +172,18 @@ class Statistic extends React.Component {
                     return <span>{value.toFixed(3)}</span>
                 }
             }
+        } else if (name.includes("Mean distance")) {
+            const is_imperial = this.props.settings.use_imperial;
+            let unit = <span>km</span>;
+            if (is_imperial) {
+                unit = <span>mi</span>
+                value /= 1.60934;
+            }
+            if (is_unit) {
+                return unit;
+            } else {
+                return <span>{value.toFixed(2)}</span>
+            }
         } else if (name.includes("%")) {
             if (is_unit) {
                 return <span>%</span>;
