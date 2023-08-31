@@ -14,7 +14,7 @@ class Map extends React.Component {
     constructor(props) {
         super(props);
         this.polygon_by_name = {};
-        this.already_fit_bounds = false;
+        this.already_fit_bounds_for = false;
     }
 
     render() {
@@ -35,10 +35,10 @@ class Map extends React.Component {
     async componentDidUpdate() {
         const map = this.map;
         this.exist_this_time = [];
-        await this.add_polygon(map, this.props.longname, !this.already_fit_bounds, { "interactive": false },
+        await this.add_polygon(map, this.props.longname, this.already_fit_bounds_for != this.props.longname, { "interactive": false },
             true,
             false);
-        this.already_fit_bounds = true;
+        this.already_fit_bounds = this.props.longname;
         await this.add_related_polygons(map, this.get_related("contained_by"));
         await this.add_related_polygons(map, this.get_related("intersects"));
         await this.add_related_polygons(map, this.get_related("borders"));
@@ -54,6 +54,9 @@ class Map extends React.Component {
     }
 
     get_related(key) {
+        if (this.props.related === undefined) {
+            return [];
+        }
         const element = this.props.related.filter(
             (x) => x.relationshipType == key)
             .map((x) => x.buttons)[0];
