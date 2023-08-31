@@ -18,6 +18,7 @@ from urbanstats.acs.attach import with_acs_data
 from urbanstats.acs.entities import acs_columns
 from urbanstats.features.feature import feature_columns
 from urbanstats.features.extract_data import feature_data
+from urbanstats.osm.parks import park_overlap_percentages_all
 
 racial_statistics = {
     "white": "White %",
@@ -112,6 +113,7 @@ misc_stats = {
     "marriage_never_married": "Never Married %",
     "marriage_married_not_divorced": "Married (not divorced) %",
     "marriage_divorced": "Divorced %",
+    "park_percent_1km": "Mean % of parkland within 1km",
 }
 
 
@@ -165,6 +167,7 @@ sum_keys = [
     *election_column_names,
     *acs_columns,
     *feature_columns,
+    "park_percent_1km",
 ]
 COLUMNS_PER_JOIN = 33
 
@@ -177,6 +180,7 @@ def block_level_data():
     assert sh == (blocks_gdf.shape[0],)
     for k, v in feats.items():
         blocks_gdf[k] = v
+    blocks_gdf["park_percent_1km"] = park_overlap_percentages_all(r=1) * blocks_gdf.population
     return blocks_gdf
 
 
@@ -383,6 +387,8 @@ def compute_statistics_for_shapefile(sf, sum_keys=sum_keys):
 
     for feat in feature_columns:
         result[feat] = result[feat] / result["population"]
+
+    result["park_percent_1km"] /= result["population"]
 
     return result
 
