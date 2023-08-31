@@ -1,4 +1,3 @@
-
 import fire
 import tqdm.auto as tqdm
 
@@ -19,6 +18,7 @@ def export_all_csvs(folder):
     for typ in tqdm.tqdm(sorted(set(full_shapefile().type))):
         for category in sorted(set(get_statistic_categories().values())):
             csv_for(typ, category).to_csv(f"{folder}/{typ}_{category}.csv")
+
 
 if __name__ == "__main__":
     fire.Fire(export_all_csvs)

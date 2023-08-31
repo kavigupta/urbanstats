@@ -16,7 +16,10 @@ class Feature:
         return shapefile_points_to_radius(self.radius_km, self.load_fn())
 
     def within_distance_column_name(self):
-        return f"within_{self.name}_{self.radius_km}", f"Within {self.radius_km}km of {self.name} %"
+        return (
+            f"within_{self.name}_{self.radius_km}",
+            f"Within {self.radius_km}km of {self.name} %",
+        )
 
     def shortest_distance_column_name(self):
         return f"mean_dist_{self.name}_updated", f"Mean distance to nearest {self.name}"
@@ -47,5 +50,7 @@ features = dict(
 )
 
 feature_columns = {
-    column_name : name for feature in features.values() for column_name, name in feature.column_names()
+    column_name: name
+    for feature in features.values()
+    for column_name, name in feature.column_names()
 }
