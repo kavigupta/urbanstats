@@ -135,15 +135,19 @@ class QuizQuestion extends PageTemplate {
                 <table>
                     <tbody>
                         <tr>
-                            <td className="quiz_option quiz_clickable" onClick={() => this.props.on_select("A")}>
-                                <div className={"centered_text " + (isMobile ? "subheadertext_mobile" : "subheadertext")}>
-                                    {this.props.longname_a}
-                                </div>
+                            <td className="quiz_option">
+                                <button className="quiz_clickable" onClick={() => this.props.on_select("A")}>
+                                    <div className={"centered_text " + (isMobile ? "subheadertext_mobile" : "subheadertext")}>
+                                        {this.props.longname_a}
+                                    </div>
+                                </button>
                             </td>
-                            <td className="quiz_option quiz_clickable" onClick={() => this.props.on_select("B")}>
-                                <div className={"centered_text " + (isMobile ? "subheadertext_mobile" : "subheadertext")}>
-                                    {this.props.longname_b}
-                                </div>
+                            <td className="quiz_option">
+                                <button className="quiz_clickable" onClick={() => this.props.on_select("B")}>
+                                    <div className={"centered_text " + (isMobile ? "subheadertext_mobile" : "subheadertext")}>
+                                        {this.props.longname_b}
+                                    </div>
+                                </button>
                             </td>
                         </tr>
                         <tr>

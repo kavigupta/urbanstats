@@ -4,10 +4,20 @@
 
 .quiz_option {
     width: 50%;
+    height: 100%;
+}
+
+.quiz_clickable {
+    border-radius: 1em;
+    background-color: #eef;
+    margin-left: 10%;
+    margin-right: 10%;
+    margin-bottom: 1em;
+    height: 100%;
 }
 
 .quiz_clickable:hover {
-    background-color: rgb(151, 189, 223);
+    background-color: rgb(184, 210, 233);
 }
 
 .quiz_results_table {
