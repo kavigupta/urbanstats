@@ -46,44 +46,44 @@ class QuizPanel extends PageTemplate {
     get_todays_quiz() {
         // TODO
         const result = [{
+            'question': 'higher % of people who are boomers',
+            'stat_column': 'Boomer %',
+            'longname_a': 'Canton [Urban Area], OH, USA',
+            'longname_b': 'Ogden-Layton [Urban Area], UT, USA',
+            'stat_a': 0.2568660249764331,
+            'stat_b': 0.16268518260446413
+        },
+        {
+            'question': 'higher % of people who are asian',
+            'stat_column': 'Asian %',
+            'longname_a': 'Durham city, North Carolina, USA',
+            'longname_b': 'Anaheim city, California, USA',
+            'stat_a': 0.05605239910321793,
+            'stat_b': 0.17483509386964344
+        },
+        {
+            'question': 'higher % of people who are black',
+            'stat_column': 'Black %',
+            'longname_a': 'Lynchburg MSA, VA, USA',
+            'longname_b': 'San Juan-Carolina-Caguas MSA, PR, USA',
+            'stat_a': 0.16084528255725497,
+            'stat_b': 0.0015971823473871606
+        },
+        {
             'question': 'higher % of people who are hawaiian / pi',
             'stat_column': 'Hawaiian / PI %',
-            'longname_a': 'Lexington-Fayette MSA, KY, USA',
-            'longname_b': 'Reno MSA, NV, USA',
-            'stat_a': 0.00040823117880138684,
-            'stat_b': 0.006640902086441797
+            'longname_a': 'Tucson city, Arizona, USA',
+            'longname_b': 'Minneapolis city, Minnesota, USA',
+            'stat_a': 0.002444803089258342,
+            'stat_b': 0.000397716965070682
         },
         {
-            'question': 'higher % of people who only speak english at home',
-            'stat_column': 'Only English at Home %',
-            'longname_a': 'Beaumont-Port Arthur MSA, TX, USA',
-            'longname_b': 'Bakersfield MSA, CA, USA',
-            'stat_a': 0.8399036567131073,
-            'stat_b': 0.5564976632710499
-        },
-        {
-            'question': 'higher area-weighted density',
-            'stat_column': 'AW Density',
-            'longname_a': 'Durham city, North Carolina, USA',
-            'longname_b': 'San Juan zona urbana, Puerto Rico, USA',
-            'stat_a': 943.706320123608,
-            'stat_b': 3018.1410081438416
-        },
-        {
-            'question': 'higher % of people who are non-citizens',
-            'stat_column': 'Non-citizen %',
-            'longname_a': 'Essex County, Massachusetts, USA',
-            'longname_b': 'Hamilton County, Ohio, USA',
-            'stat_a': 0.07936114432335212,
-            'stat_b': 0.032050460213597164
-        },
-        {
-            'question': 'higher % of people who have a high school diploma',
-            'stat_column': 'High School %',
-            'longname_a': 'Cumberland County, Maine, USA',
-            'longname_b': 'Pierce County, Washington, USA',
-            'stat_a': 0.957963954841063,
-            'stat_b': 0.9241018363910174
+            'question': 'higher % of people who are on public insurance',
+            'stat_column': 'Public Insurance %',
+            'longname_a': 'Allentown-Bethlehem [Urban Area], PA-NJ, USA',
+            'longname_b': 'Antioch [Urban Area], CA, USA',
+            'stat_a': 0.1858512397095249,
+            'stat_b': 0.2404909478581838
         }];
 
         return result;
@@ -91,7 +91,7 @@ class QuizPanel extends PageTemplate {
 
     get_today() {
         // TODO actually get the day
-        return 0;
+        return "D1";
     }
 
     get_todays_quiz_history() {
