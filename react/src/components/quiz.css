@@ -1,0 +1,54 @@
+.quiz_options {
+    display: flex;
+}
+
+.quiz_option {
+    width: 50%;
+}
+
+.quiz_clickable:hover {
+    background-color: rgb(151, 189, 223);
+}
+
+.quiz_results_table {
+    width: 80%;
+    margin-left: 10%;
+    margin-right: 10%;
+    border-collapse: separate;
+    border-spacing: 0.1em;
+    font-size: 1.25em;
+}
+
+.quiz_result_name_left {
+    width: 45%;
+    text-align: right;
+}
+
+.quiz_result_symbol {
+    width: 5%;
+    text-align: center;
+    font-weight: bold;
+}
+
+.quiz_result_name_right {
+    width: 45%;
+    text-align: left;
+}
+
+.quiz_selected {
+    background-color: rgb(205, 222, 238);
+}
+
+.quiz_summary {
+    text-align: center;
+    font-size: 2em;
+    display: table;
+    margin: 0 auto;
+}
+
+.quiz_copy_button {
+    text-align: center;
+    font-size: 2em;
+    display: table;
+    margin: 0 auto;
+}

@@ -8,6 +8,7 @@ const NodePolyfillPlugin = require('node-polyfill-webpack-plugin')
 module.exports = {
     entry: {
         "article": ['./src/article.js'],
+        "quiz": ['./src/quiz.js'],
         "index": ['./src/index.js'],
         "about": ['./src/about.js'],
         "data-credit": ['./src/data-credit.js']
