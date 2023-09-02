@@ -177,7 +177,7 @@ class QuizQuestion extends PageTemplate {
                     Which has a {this.props.question}?
                 </div>
                 <div className="gap"></div>
-                <table>
+                <table className="quiz_question_table">
                     <tbody>
                         <tr>
                             <td className="quiz_option">

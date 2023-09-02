@@ -36,6 +36,12 @@
     background-color: #faa;
 }
 
+.quiz_question_table {
+    width: 90%;
+    margin-left: 5%;
+    margin-right: 5%;
+}
+
 .quiz_results_table {
     width: 80%;
     margin-left: 10%;
