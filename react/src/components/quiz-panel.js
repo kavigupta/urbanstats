@@ -290,20 +290,19 @@ class QuizResult extends PageTemplate {
                 <div className="gap_small"></div>
                 <button class="serif quiz_copy_button" ref={this.button} onClick={() => {
                     const text = summary(today, correct_pattern, total_correct);
-                    if (isMobile) {
-                        try {
-                            shareOnMobile({
-                                text: text,
-                            })
-                        } catch (err) {
-                            console.log("caught");
-                            navigator.clipboard.writeText(text);
-                            this.button.current.textContent = "Copied!";
-                        }
-                    } else {
-                        navigator.clipboard.writeText(text)
-                        this.button.current.textContent = "Copied!";
-                    }
+                    // if (isMobile) {
+                    //     try {
+                    //         shareOnMobile({
+                    //             text: text,
+                    //         })
+                    //     } catch (err) {
+                    //         console.log("caught");
+                    //         navigator.clipboard.writeText(text);
+                    //         this.button.current.textContent = "Copied!";
+                    //     }
+                    // }
+                    navigator.clipboard.writeText(text)
+                    this.button.current.textContent = "Copied!";
                 }}>Copy to clipboard</button>
             </div>
         )
