@@ -42,6 +42,13 @@
     margin-right: 5%;
 }
 
+.quiz_results_question {
+    text-align: center;
+    display: table;
+    margin: 0 auto;
+    font-size: 1.25em;
+}
+
 .quiz_results_table {
     width: 80%;
     margin-left: 10%;
@@ -49,22 +56,40 @@
     border-collapse: separate;
     border-spacing: 0.1em;
     font-size: 1.25em;
+    background-color: rgb(238, 241, 243);
 }
 
 .quiz_result_name_left {
-    width: 45%;
+    width: 35%;
     text-align: right;
+    vertical-align: middle;
+}
+
+.quiz_result_value_left {
+    width: 10%;
+    text-align: right;
+    font-weight: bold;
+    vertical-align: middle;
 }
 
 .quiz_result_symbol {
     width: 5%;
     text-align: center;
     font-weight: bold;
+    vertical-align: middle;
+}
+
+.quiz_result_value_right {
+    width: 10%;
+    text-align: left;
+    font-weight: bold;
+    vertical-align: middle;
 }
 
 .quiz_result_name_right {
-    width: 45%;
+    width: 35%;
     text-align: left;
+    vertical-align: middle;
 }
 
 .quiz_selected {

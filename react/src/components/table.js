@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import ContentEditable from 'react-contenteditable'
 
-export { StatisticRowRaw };
+export { StatisticRowRaw, Statistic };
 import { article_link, ordering_link } from "../navigation/links.js";
 import { loadProtobuf } from '../load_json.js';
 import "./table.css";

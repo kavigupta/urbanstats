@@ -2,7 +2,7 @@ export { QuizPanel };
 
 import React from 'react';
 
-import { StatisticRowRaw } from "./table.js";
+import { Statistic } from "./table.js";
 import { Map } from "./map.js";
 import { Related } from "./related-button.js";
 import { PageTemplate } from "../page_template/template.js";
@@ -34,7 +34,7 @@ class QuizPanel extends PageTemplate {
 
         if (index == quiz.length) {
             return (
-                <QuizResult quiz={quiz} history={history} today={this.today} />
+                <QuizResult quiz={quiz} history={history} today={this.today} settings={this.state.settings} />
             )
         }
 
@@ -53,52 +53,54 @@ class QuizPanel extends PageTemplate {
     get_todays_quiz() {
         // TODO
         const result = [{
-            'question': 'higher % of people who have a graduate degree',
-            'stat_column': 'Grad %',
-            'longname_a': 'New Jersey, USA',
-            'longname_b': 'Oklahoma, USA',
-            'stat_a': 0.15965999170325224,
-            'stat_b': 0.08869466243023064
+            'question': 'higher % of people who are divorced',
+            'stat_column': 'Divorced %',
+            'longname_a': 'Provo-Orem [Urban Area], UT, USA',
+            'longname_b': 'Concord [Urban Area], NC, USA',
+            'stat_a': 0.05435239031170312,
+            'stat_b': 0.11191190106318953
         },
         {
-            'question': 'higher % of people who are born outside the us',
-            'stat_column': 'Born outside US %',
-            'longname_a': 'Honolulu [Urban Area], HI, USA',
-            'longname_b': 'Knoxville [Urban Area], TN, USA',
-            'stat_a': 0.2138420706524398,
-            'stat_b': 0.054303262244923545
+            'question': 'higher % of people who commute by bike',
+            'stat_column': 'Commute Bike %',
+            'longname_a': 'Rockford [Urban Area], IL, USA',
+            'longname_b': 'New Orleans [Urban Area], LA, USA',
+            'stat_a': 0.003609110205400939,
+            'stat_b': 0.013893420388505627
         },
         {
-            'question': 'higher % of units with 2br rent < $750',
-            'stat_column': '2BR Rent < $750 %',
-            'longname_a': 'Rhode Island, USA',
-            'longname_b': 'South Carolina, USA',
-            'stat_a': 0.14491238740041276,
-            'stat_b': 0.2860413033584326
+            'question': 'higher % of people who have an undergrad degree',
+            'stat_column': 'Undergrad %',
+            'longname_a': 'Loudoun County, Virginia, USA',
+            'longname_b': 'Washington County, Oregon, USA',
+            'stat_a': 0.6216541923083654,
+            'stat_b': 0.442956099443302
         },
         {
-            'question': 'higher % units built in 2010s+',
-            'stat_column': '% units built in 2010s+',
-            'longname_a': 'Louisville/Jefferson County [Urban Area], KY-IN, USA',
-            'longname_b': 'Lincoln [Urban Area], NE, USA',
-            'stat_a': 0.06178147244298866,
-            'stat_b': 0.10145396738223135
+            'question': 'higher % of people who are gen alpha',
+            'stat_column': 'Gen Alpha %',
+            'longname_a': 'Minnesota, USA',
+            'longname_b': 'Wisconsin, USA',
+            'stat_a': 0.12658791605234,
+            'stat_b': 0.11631048971458248
         },
         {
-            'question': 'higher % of people who are asian',
-            'stat_column': 'Asian %',
-            'longname_a': 'Atlanta city, Georgia, USA',
-            'longname_b': 'Henderson city, Nevada, USA',
-            'stat_a': 0.04455592448229954,
-            'stat_b': 0.09109140307961604
+            'question': 'higher % of people who are in poverty',
+            'stat_column': 'Poverty %',
+            'longname_a': 'Virginia Beach city, Virginia, USA',
+            'longname_b': 'Irvine city, California, USA',
+            'stat_a': 0.07817130662608489,
+            'stat_b': 0.12165189844044716
         }];
+
+
 
         return result;
     }
 
     get_today() {
         // TODO actually get the day
-        return "D2";
+        return "D3";
     }
 
     get_todays_quiz_history() {
@@ -271,21 +273,18 @@ class QuizResult extends PageTemplate {
                 <div className="gap"></div>
                 <Summary total_correct={total_correct} total={correct_pattern.length} />
                 <div className="gap_small"></div>
-                <table className="stats_table quiz_results_table">
-                    <tbody>
-                        {
-                            this.props.quiz.map(
-                                (quiz, index) => (
-                                    <QuizResultRow {...quiz}
-                                        index={index}
-                                        choice={this.props.history.choices[index]}
-                                        correct={correct_pattern[index]}
-                                    />
-                                )
-                            )
-                        }
-                    </tbody>
-                </table>
+                {
+                    this.props.quiz.map(
+                        (quiz, index) => (
+                            <QuizResultRow {...quiz}
+                                index={index}
+                                choice={this.props.history.choices[index]}
+                                correct={correct_pattern[index]}
+                                settings={this.props.settings}
+                            />
+                        )
+                    )
+                }
                 <div className="gap_small"></div>
                 <button class="serif quiz_copy_button" onClick={() => {
                     navigator.clipboard.writeText(summary(today, correct_pattern, total_correct))
@@ -363,20 +362,54 @@ class QuizResultRow extends PageTemplate {
         }
         const result = this.props.correct ? "🟩" : "🟥";
         return (
-            <tr key={this.props.index}>
-                <td className={first}>
-                    {this.props.longname_a}
-                </td>
-                <td className="serif quiz_result_symbol">
-                    {comparison}
-                </td>
-                <td className={second}>
-                    {this.props.longname_b}
-                </td>
-                <td className="serif quiz_result_symbol">
-                    {result}
-                </td>
-            </tr>
+            <div>
+                <span className="serif quiz_results_question">
+                    {this.props.stat_column}
+                </span>
+                <table className="stats_table quiz_results_table">
+                    <tbody>
+                        <tr key={this.props.index}>
+                            <td className={first}>
+                                {this.props.longname_a}
+                            </td>
+                            <td className="quiz_result_value_left">
+                                {this.create_value(this.props.stat_a)}
+                            </td>
+                            <td className="serif quiz_result_symbol">
+                                {comparison}
+                            </td>
+                            <td className="quiz_result_value_right">
+                                {this.create_value(this.props.stat_b)}
+                            </td>
+                            <td className={second}>
+                                {this.props.longname_b}
+                            </td>
+                            <td className="serif quiz_result_symbol">
+                                {result}
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div className="gap_small" />
+            </div>
+
         )
+    }
+
+    create_value(stat) {
+        return <div>
+            <Statistic
+                statname={this.props.stat_column}
+                value={stat}
+                is_unit={false}
+                settings={this.props.settings}
+            />
+            <Statistic
+                statname={this.props.stat_column}
+                value={stat}
+                is_unit={true}
+                settings={this.props.settings}
+            />
+        </div>
     }
 }
