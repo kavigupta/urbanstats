@@ -9,6 +9,7 @@ import { PageTemplate } from "../page_template/template.js";
 import "../common.css";
 import "./quiz.css";
 import { isMobile } from 'react-device-detect';
+import { shareOnMobile } from "react-mobile-share";
 
 class QuizPanel extends PageTemplate {
     constructor(props) {
@@ -261,6 +262,7 @@ class Help extends PageTemplate {
 class QuizResult extends PageTemplate {
     constructor(props) {
         super(props);
+        this.button = React.createRef();
     }
 
     render() {
@@ -286,8 +288,22 @@ class QuizResult extends PageTemplate {
                     )
                 }
                 <div className="gap_small"></div>
-                <button class="serif quiz_copy_button" onClick={() => {
-                    navigator.clipboard.writeText(summary(today, correct_pattern, total_correct))
+                <button class="serif quiz_copy_button" ref={this.button} onClick={() => {
+                    const text = summary(today, correct_pattern, total_correct);
+                    if (isMobile) {
+                        try {
+                            shareOnMobile({
+                                text: text,
+                            })
+                        } catch (err) {
+                            console.log("caught");
+                            navigator.clipboard.writeText(text);
+                            this.button.current.textContent = "Copied!";
+                        }
+                    } else {
+                        navigator.clipboard.writeText(text)
+                        this.button.current.textContent = "Copied!";
+                    }
                 }}>Copy to clipboard</button>
             </div>
         )
