@@ -10,6 +10,7 @@ import "../common.css";
 import "./quiz.css";
 import { isMobile } from 'react-device-detect';
 import { shareOnMobile } from "react-mobile-share";
+import { loadJSON } from '../load_json.js';
 
 class QuizPanel extends PageTemplate {
     constructor(props) {
@@ -19,8 +20,10 @@ class QuizPanel extends PageTemplate {
             quiz_history: JSON.parse(localStorage.getItem("quiz_history")) || {},
             waiting: false
         }
-        this.todays_quiz = this.get_todays_quiz();
-        this.today = this.get_today();
+        // fractional days since 2023-09-02
+        const offset = (new Date() - new Date(2023, 8, 2)) / (1000 * 60 * 60 * 24);
+        this.today = Math.floor(offset);
+        this.todays_quiz = loadJSON("/quiz/" + this.today);
     }
 
     main_content() {
@@ -50,60 +53,6 @@ class QuizPanel extends PageTemplate {
         );
     }
 
-
-    get_todays_quiz() {
-        // TODO
-        const result = [{
-            'question': 'higher % of people who are divorced',
-            'stat_column': 'Divorced %',
-            'longname_a': 'Provo-Orem [Urban Area], UT, USA',
-            'longname_b': 'Concord [Urban Area], NC, USA',
-            'stat_a': 0.05435239031170312,
-            'stat_b': 0.11191190106318953
-        },
-        {
-            'question': 'higher % of people who commute by bike',
-            'stat_column': 'Commute Bike %',
-            'longname_a': 'Rockford [Urban Area], IL, USA',
-            'longname_b': 'New Orleans [Urban Area], LA, USA',
-            'stat_a': 0.003609110205400939,
-            'stat_b': 0.013893420388505627
-        },
-        {
-            'question': 'higher % of people who have an undergrad degree',
-            'stat_column': 'Undergrad %',
-            'longname_a': 'Loudoun County, Virginia, USA',
-            'longname_b': 'Washington County, Oregon, USA',
-            'stat_a': 0.6216541923083654,
-            'stat_b': 0.442956099443302
-        },
-        {
-            'question': 'higher % of people who are gen alpha',
-            'stat_column': 'Gen Alpha %',
-            'longname_a': 'Minnesota, USA',
-            'longname_b': 'Wisconsin, USA',
-            'stat_a': 0.12658791605234,
-            'stat_b': 0.11631048971458248
-        },
-        {
-            'question': 'higher % of people who are in poverty',
-            'stat_column': 'Poverty %',
-            'longname_a': 'Virginia Beach city, Virginia, USA',
-            'longname_b': 'Irvine city, California, USA',
-            'stat_a': 0.07817130662608489,
-            'stat_b': 0.12165189844044716
-        }];
-
-
-
-        return result;
-    }
-
-    get_today() {
-        // TODO actually get the day
-        return "D3";
-    }
-
     get_todays_quiz_history() {
         return this.state.quiz_history[this.today] || { "choices": [], "correct_pattern": [] };
     }
@@ -121,7 +70,7 @@ class QuizPanel extends PageTemplate {
         }
         const history = this.get_todays_quiz_history();
         const idx = history.correct_pattern.length;
-        const quiz = this.todays_quiz[idx];
+        const quiz = (this.todays_quiz)[idx];
         history.choices.push(selected);
         history.correct_pattern.push((selected == "A") == (quiz.stat_a > quiz.stat_b));
         this.set_todays_quiz_history(history);

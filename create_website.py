@@ -155,7 +155,7 @@ def output_ordering(full):
 
 
 def main(no_geo=False, no_data=False, no_data_jsons=False):
-    for sub in ["index", "r", "shape", "data", "styles", "scripts", "order"]:
+    for sub in ["index", "r", "shape", "data", "styles", "scripts", "order", "quiz"]:
         try:
             os.makedirs(f"{folder}/{sub}")
         except FileExistsError:
@@ -206,6 +206,10 @@ def main(no_geo=False, no_data=False, no_data_jsons=False):
     shutil.copy("dist/about.js", f"{folder}/scripts/")
     shutil.copy("dist/data-credit.js", f"{folder}/scripts/")
     shutil.copy("dist/quiz.js", f"{folder}/scripts/")
+
+    from urbanstats.games.quiz import generate_quizzes
+
+    generate_quizzes(f"{folder}/quiz/")
 
 
 if __name__ == "__main__":
