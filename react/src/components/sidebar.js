@@ -50,6 +50,14 @@ class Sidebar extends React.Component {
                     </ul>
                 </div>
                 <div className="sidebar-section">
+                    <div className={sidebar_section_title}>Games</div>
+                    <ul className={sidebar_section_content}>
+                        <li>
+                            <a href="/quiz.html">Juxtastat</a>
+                        </li>
+                    </ul>
+                </div>
+                <div className="sidebar-section">
                     <div className={sidebar_section_title}>Settings</div>
                     <ul className={sidebar_section_content}>
                         <li>
