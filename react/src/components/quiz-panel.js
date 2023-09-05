@@ -38,7 +38,12 @@ class QuizPanel extends PageTemplate {
 
         if (index == quiz.length) {
             return (
-                <QuizResult quiz={quiz} history={history} today={this.today} settings={this.state.settings} />
+                <QuizResult
+                    quiz={quiz}
+                    whole_history={this.state.quiz_history}
+                    history={history}
+                    today={this.today}
+                    settings={this.state.settings} />
             )
         }
 
@@ -253,11 +258,81 @@ class QuizResult extends PageTemplate {
                     navigator.clipboard.writeText(text)
                     this.button.current.textContent = "Copied!";
                 }}>Copy to clipboard</button>
+                <div className="gap" />
+                <QuizStatistics whole_history={this.props.whole_history} today={this.props.today} />
             </div>
         )
     }
 }
 
+class QuizStatistics extends PageTemplate {
+    constructor(props) {
+        super(props);
+    }
+
+    render() {
+        const whole_history = this.props.whole_history;
+        const historical_correct = new Array(this.props.today + 1).fill(-1);
+        const frequencies = new Array(6).fill(0);
+        for (var i = 0; i <= this.props.today; i++) {
+            const hist_i = whole_history[i];
+            if (hist_i === undefined) {
+                continue;
+            } else {
+                const amount = whole_history[i + ""].correct_pattern.reduce((partialSum, a) => partialSum + a, 0);
+                historical_correct[i] = amount;
+                frequencies[amount] += 1;
+            }
+        }
+        const streaks = new Array(6).fill(0);
+        for (var val = 0; val < streaks.length; val++) {
+            for (var i = historical_correct.length - 1; i >= 0; i--) {
+                if (historical_correct[i] >= val) {
+                    streaks[val] += 1;
+                } else {
+                    break;
+                }
+            }
+        }
+        const total_freq = frequencies.reduce((partialSum, a) => partialSum + a, 0);
+        console.log(whole_history);
+        console.log(historical_correct);
+        console.log(frequencies);
+        return <div>
+            <div className="serif quiz_summary">Statistics</div>
+            <table className="quiz_barchart">
+                <tr>
+                    <td className="quiz_bar_td serif">
+                    </td>
+                    <td className="quiz_bar_td serif quiz_bar_td_header">
+                        Frequency
+                    </td>
+                    <td className="quiz_bar_td serif quiz_bar_td_header">
+                        Max Streak
+                    </td>
+                </tr>
+                {
+                    frequencies.map((amt, i) =>
+                        <tr>
+                            <td className="quiz_bar_td serif">
+                                {i}/5
+                            </td>
+                            <td className="quiz_bar_td serif">
+                                <span className="quiz_bar" style={{ width: (amt / total_freq * 20) + "em" }}>
+                                </span>
+                                {amt > 0 ? (<span className="quiz_stat">{amt} ({(amt / total_freq * 100).toFixed(1)}%)</span>) : undefined}
+                            </td>
+                            <td className="quiz_bar_td serif quiz_bar_centered">
+                                {streaks[i]}
+                            </td>
+                        </tr>
+                    )
+                }
+            </table>
+        </div>
+    }
+
+}
 
 function summary(today, correct_pattern, total_correct) {
     // wordle-style summary
