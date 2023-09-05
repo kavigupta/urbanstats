@@ -1,3 +1,4 @@
+import copy
 import os
 import json
 
@@ -49,24 +50,33 @@ def sample_quiz_question(rng, distance_pct_bot, distance_pct_top):
                 <= distance_pct_top
             ):
                 return dict(
-                    stat_column=stat_column,
-                    question=stats_to_display[stat_column],
+                    stat_column_original=stat_column_original,
                     longname_a=a,
                     longname_b=b,
                     stat_a=stat_a,
                     stat_b=stat_b,
                 )
 
-@permacache("urbanstats/games/quiz/generate_quiz")
+@permacache("urbanstats/games/quiz/generate_quiz_4")
 def generate_quiz(seed):
     rng = np.random.default_rng(int(stable_hash(seed), 16))
     return sample_quiz(rng)
 
 
 def generate_quizzes(folder):
-    for i in tqdm.trange(365 * 3):
+    # 0-3 fixed in stone
+    for i in tqdm.trange(4, 365 * 3):
         with open(os.path.join(folder, f"{i}"), "w") as f:
-            json.dump(generate_quiz(("daily", i)), f)
+            res = generate_quiz(("daily", i))
+            res = copy.deepcopy(res)
+            outs = []
+            for q in res:
+                out = {}
+                out["stat_column"] = get_statistic_names()[q.pop("stat_column_original")]
+                out["question"] = stats_to_display[out["stat_column"]]
+                out.update(q)
+                outs.append(out)
+            json.dump(outs, f)
 
 types = [
     "City",
@@ -81,11 +91,11 @@ stats_to_display = {
     "PW Density (r=1km)": "higher population-weighted density (r=1km)",
     "AW Density": "higher area-weighted density",
     "Area": "higher area",
-    "White %": "higher % of people who are white",
-    "Hispanic %": "higher % of people who are hispanic",
-    "Black %": "higher % of people who are black",
-    "Asian %": "higher % of people who are asian",
-    "Native %": "higher % of people who are native",
+    "White %": "higher % of people who are White",
+    "Hispanic %": "higher % of people who are Hispanic",
+    "Black %": "higher % of people who are Black",
+    "Asian %": "higher % of people who are Asian",
+    "Native %": "higher % of people who are Native American",
     "Hawaiian / PI %": "higher % of people who are hawaiian / pi",
     "Citizen by Birth %": "higher % of people who are citizens by birth",
     "Citizen by Naturalization %": "higher % of people who are citizens by naturalization",
