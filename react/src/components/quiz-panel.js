@@ -227,20 +227,7 @@ class QuizResult extends PageTemplate {
             <div>
                 <Header />
                 <div className="gap"></div>
-                <Summary total_correct={total_correct} total={correct_pattern.length} />
-                <div className="gap_small"></div>
-                {
-                    this.props.quiz.map(
-                        (quiz, index) => (
-                            <QuizResultRow {...quiz}
-                                index={index}
-                                choice={this.props.history.choices[index]}
-                                correct={correct_pattern[index]}
-                                settings={this.props.settings}
-                            />
-                        )
-                    )
-                }
+                <Summary correct_pattern={correct_pattern} total_correct={total_correct} total={correct_pattern.length} />
                 <div className="gap_small"></div>
                 <button class="serif quiz_copy_button" ref={this.button} onClick={() => {
                     const text = summary(today, correct_pattern, total_correct);
@@ -260,6 +247,22 @@ class QuizResult extends PageTemplate {
                 }}>Copy to clipboard</button>
                 <div className="gap" />
                 <QuizStatistics whole_history={this.props.whole_history} today={this.props.today} />
+                <div className="gap"></div>
+                <div className="gap"></div>
+                <span className="serif quiz_summary">Details (spoilers, don't share!)</span>
+                <div className="gap_small"></div>
+                {
+                    this.props.quiz.map(
+                        (quiz, index) => (
+                            <QuizResultRow {...quiz}
+                                index={index}
+                                choice={this.props.history.choices[index]}
+                                correct={correct_pattern[index]}
+                                settings={this.props.settings}
+                            />
+                        )
+                    )
+                }
             </div>
         )
     }
@@ -334,6 +337,13 @@ class QuizStatistics extends PageTemplate {
 
 }
 
+function red_and_green_squares(correct_pattern) {
+    return correct_pattern.map(function (x) {
+        // red square emoji for wrong, green for right
+        return x ? "🟩" : "🟥";
+    }).join("");
+}
+
 function summary(today, correct_pattern, total_correct) {
     // wordle-style summary
     let text = "Juxtastat " + today + " " + total_correct + "/" + correct_pattern.length;
@@ -341,10 +351,7 @@ function summary(today, correct_pattern, total_correct) {
     text += "\n";
     text += "\n";
 
-    text += correct_pattern.map(function (x) {
-        // red square emoji for wrong, green for right
-        return x ? "🟩" : "🟥";
-    }).join("");
+    text += red_and_green_squares(correct_pattern);
 
     text += "\n";
     text += "\n";
@@ -378,7 +385,10 @@ class Summary extends PageTemplate {
             show = "Better luck next time! 🫤";
         }
         show = show + " " + correct + "/" + this.props.total;
-        return <span className="serif quiz_summary">{show}</span>;
+        return <div>
+            <span className="serif quiz_summary">{show}</span>
+            <span className="serif quiz_summary">{red_and_green_squares(this.props.correct_pattern)}</span>
+        </div>
     }
 
 }
