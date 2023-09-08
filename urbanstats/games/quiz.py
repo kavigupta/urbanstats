@@ -64,9 +64,13 @@ def generate_quiz(seed):
 
 
 def generate_quizzes(folder):
+    path = lambda day: os.path.join(folder, f"{day}")
     # 0-3 fixed in stone
+    for i in range(4):
+        import shutil
+        shutil.copy(f"quiz_old/{i}", path(i))
     for i in tqdm.trange(4, 365 * 3):
-        with open(os.path.join(folder, f"{i}"), "w") as f:
+        with open(path(i), "w") as f:
             res = generate_quiz(("daily", i))
             res = copy.deepcopy(res)
             outs = []
