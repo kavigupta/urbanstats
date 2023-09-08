@@ -6,7 +6,7 @@ import numpy as np
 from permacache import permacache, stable_hash
 import tqdm.auto as tqdm
 
-from create_website import full_shapefile, get_statistic_names
+from create_website import full_shapefile, statistic_internal_to_display_name
 
 min_pop = 250_000
 
@@ -30,7 +30,7 @@ def sample_quiz_question(rng, distance_pct_bot, distance_pct_top):
         stat_column = rng.choice(stats)
         filt = full[full.type == type]
         [stat_column_original] = [
-            k for k, v in get_statistic_names().items() if v == stat_column
+            k for k, v in statistic_internal_to_display_name().items() if v == stat_column
         ]
         percentiles = filt[stat_column_original, "percentile_by_population"]
         central_values = filt[stat_column_original][
@@ -72,7 +72,7 @@ def generate_quizzes(folder):
             outs = []
             for q in res:
                 out = {}
-                out["stat_column"] = get_statistic_names()[q.pop("stat_column_original")]
+                out["stat_column"] = statistic_internal_to_display_name()[q.pop("stat_column_original")]
                 out["question"] = stats_to_display[out["stat_column"]]
                 out.update(q)
                 outs.append(out)

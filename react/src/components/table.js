@@ -52,7 +52,7 @@ class StatisticRowRaw extends React.Component {
                             : <Ordinal ordinal={this.props.ordinal}
                                 total={this.props.total_count_in_class}
                                 type={this.props.article_type}
-                                statname={this.props.statname}
+                                statpath={this.props.statpath}
                             />
                     }</span>
                 </td>
@@ -73,7 +73,7 @@ class StatisticRowRaw extends React.Component {
                             ? "Within Type"
                             : <PointerButtonsIndex
                                 ordinal={this.props.ordinal}
-                                statname={this.props.statname}
+                                statpath={this.props.statpath}
                                 type={this.props.article_type}
                                 total={this.props.total_count_in_class}
                                 settings={this.props.settings}
@@ -85,7 +85,7 @@ class StatisticRowRaw extends React.Component {
                             ? "Overall"
                             : <PointerButtonsIndex
                                 ordinal={this.props.overallOrdinal}
-                                statname={this.props.statname}
+                                statpath={this.props.statpath}
                                 type="overall"
                                 total={this.props.total_count_overall}
                                 settings={this.props.settings}
@@ -250,7 +250,7 @@ class Ordinal extends React.Component {
 
     async onNewNumber(number) {
         let num = number;
-        const link = ordering_link(this.props.statname, this.props.type);
+        const link = ordering_link(this.props.statpath, this.props.type);
         if (num < 0) {
             // -1 -> this.props.total, -2 -> this.props.total - 1, etc.
             num = this.props.total + 1 + num;
@@ -337,7 +337,7 @@ class PointerButtonsIndex extends React.Component {
     }
 
     render() {
-        const link = ordering_link(this.props.statname, this.props.type);
+        const link = ordering_link(this.props.statpath, this.props.type);
         const show_historical_cds = this.props.settings.show_historical_cds || is_historical_cd(this.props.type);
         return (
             <span>

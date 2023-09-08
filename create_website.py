@@ -17,8 +17,9 @@ from produce_html_page import (
     add_ordinals,
     create_page_json,
     get_statistic_categories,
-    get_statistic_names,
+    internal_statistic_names,
     category_metadata,
+    statistic_internal_to_display_name,
 )
 from relationship import full_relationships, map_relationships_by_type
 from election_data import vest_elections
@@ -68,7 +69,7 @@ def full_shapefile():
 
 
 def next_prev(full):
-    statistic_names = get_statistic_names()
+    statistic_names = internal_statistic_names()
     by_statistic = {k: {} for k in statistic_names}
     for statistic in tqdm.tqdm(statistic_names, desc="next_prev"):
         s_full = full.sort_values("longname").sort_values(
@@ -82,7 +83,7 @@ def next_prev(full):
 
 
 def next_prev_within_type(full):
-    statistic_names = get_statistic_names()
+    statistic_names = internal_statistic_names()
     by_statistic = {k: {} for k in statistic_names}
     for type in sorted(set(full.type)):
         result = next_prev(full[full.type == type])
@@ -113,14 +114,18 @@ def create_page_jsons(full):
 
 
 def output_categories():
-    assert set(get_statistic_names()) == set(get_statistic_categories())
+    assert set(internal_statistic_names()) == set(get_statistic_categories())
     assert set(get_statistic_categories().values()) == set(category_metadata)
     return [dict(key=k, **v) for k, v in category_metadata.items()]
 
+def get_statistic_column_path(column):
+    if isinstance(column, tuple):
+        column = "-".join(str(x) for x in column)
+    return column.replace("/", " slash ")
 
 def output_ordering(full):
     counts = {}
-    for statistic_column in get_statistic_names():
+    for statistic_column in internal_statistic_names():
         print(statistic_column)
         full_by_name = full[
             [
@@ -133,19 +138,17 @@ def output_ordering(full):
         full_sorted = full_by_name.sort_values(
             (statistic_column, "overall_ordinal"), kind="stable"
         )
-
-        statistic_name = get_statistic_names()[statistic_column].replace("/", "slash")
-
-        path = f"{folder}/order/{statistic_name}__overall.gz"
+        statistic_column_path = get_statistic_column_path(statistic_column)
+        path = f"{folder}/order/{statistic_column_path}__overall.gz"
         save_string_list(list(full_sorted.longname), path)
-        counts[get_statistic_names()[statistic_column], "overall"] = int(
+        counts[statistic_column, "overall"] = int(
             (~np.isnan(full_sorted[statistic_column])).sum()
         )
         for typ in sorted(set(full_sorted.type)):
-            path = f"{folder}/order/{statistic_name}__{typ}.gz"
+            path = f"{folder}/order/{statistic_column_path}__{typ}.gz"
             for_typ = full_sorted[full_sorted.type == typ]
             names = for_typ.longname
-            counts[get_statistic_names()[statistic_column], typ] = int(
+            counts[statistic_column, typ] = int(
                 (~np.isnan(for_typ[statistic_column])).sum()
             )
             save_string_list(list(names), path)
@@ -192,7 +195,11 @@ def main(no_geo=False, no_data=False, no_data_jsons=False):
     with open(f"react/src/data/statistic_category_list.json", "w") as f:
         json.dump(list(get_statistic_categories().values()), f)
     with open(f"react/src/data/statistic_name_list.json", "w") as f:
-        json.dump(list(get_statistic_names().values()), f)
+        json.dump(list(statistic_internal_to_display_name().values()), f)
+    with open(f"react/src/data/statistic_path_list.json", "w") as f:
+        json.dump(list([get_statistic_column_path(name) for name in statistic_internal_to_display_name()]), f)
+    with open(f"react/src/data/statistic_list.json", "w") as f:
+        json.dump(list([name for name in statistic_internal_to_display_name()]), f)
 
     with open(f"{folder}/CNAME", "w") as f:
         f.write("urbanstats.org")

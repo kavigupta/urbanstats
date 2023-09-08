@@ -31,7 +31,7 @@ def create_page_json(
     long_to_population,
     long_to_type,
 ):
-    statistic_names = get_statistic_names()
+    statistic_names = internal_statistic_names()
     data = data_files_pb2.Article()
     data.shortname = row.shortname
     data.longname = row.longname
@@ -112,7 +112,7 @@ def compute_ordinals_and_percentiles(
 
 
 def add_ordinals(frame, *, overall_ordinal):
-    keys = get_statistic_names()
+    keys = internal_statistic_names()
     assert len(set(keys)) == len(keys)
     frame = frame.copy()
     frame = frame.reset_index(drop=True)
@@ -142,7 +142,7 @@ election_stats = {
 }
 
 
-def get_statistic_names():
+def statistic_internal_to_display_name():
     ad = {f"ad_{k}": f"PW Density (r={format_radius(k)})" for k in RADII}
     return {
         "population": "Population",
@@ -162,6 +162,9 @@ def get_statistic_names():
         **misc_stats,
         **{k: ad[k] for k in ad if k != "ad_1"},
     }
+
+def internal_statistic_names():
+    return list(statistic_internal_to_display_name())
 
 
 def get_statistic_categories():

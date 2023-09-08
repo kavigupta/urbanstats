@@ -2,7 +2,7 @@ import fire
 import tqdm.auto as tqdm
 
 from create_website import full_shapefile
-from produce_html_page import get_statistic_categories, get_statistic_names
+from produce_html_page import get_statistic_categories, statistic_internal_to_display_name
 
 
 def csv_for(typ, category):
@@ -10,7 +10,7 @@ def csv_for(typ, category):
     stats_to_use = [x for x, y in get_statistic_categories().items() if y == category]
     result_for_type = result[result.type == typ]
     return result_for_type[[x for x in stats_to_use]].rename(
-        columns={x: get_statistic_names()[x] for x in stats_to_use}
+        columns={x: statistic_internal_to_display_name()[x] for x in stats_to_use}
     )
 
 
