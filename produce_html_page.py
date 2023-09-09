@@ -163,6 +163,7 @@ def statistic_internal_to_display_name():
         **{k: ad[k] for k in ad if k != "ad_1"},
     }
 
+
 def internal_statistic_names():
     return list(statistic_internal_to_display_name())
 

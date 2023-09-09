@@ -118,10 +118,12 @@ def output_categories():
     assert set(get_statistic_categories().values()) == set(category_metadata)
     return [dict(key=k, **v) for k, v in category_metadata.items()]
 
+
 def get_statistic_column_path(column):
     if isinstance(column, tuple):
         column = "-".join(str(x) for x in column)
     return column.replace("/", " slash ")
+
 
 def output_ordering(full):
     counts = {}
@@ -197,7 +199,15 @@ def main(no_geo=False, no_data=False, no_data_jsons=False):
     with open(f"react/src/data/statistic_name_list.json", "w") as f:
         json.dump(list(statistic_internal_to_display_name().values()), f)
     with open(f"react/src/data/statistic_path_list.json", "w") as f:
-        json.dump(list([get_statistic_column_path(name) for name in statistic_internal_to_display_name()]), f)
+        json.dump(
+            list(
+                [
+                    get_statistic_column_path(name)
+                    for name in statistic_internal_to_display_name()
+                ]
+            ),
+            f,
+        )
     with open(f"react/src/data/statistic_list.json", "w") as f:
         json.dump(list([name for name in statistic_internal_to_display_name()]), f)
 

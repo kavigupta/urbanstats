@@ -4,7 +4,10 @@ import overpy
 from .to_geopandas import frame_for_result
 
 
-@permacache("urbanstats/osm/query/query_to_geopandas", key_function=dict(keep_tags=drop_if_equal(False)))
+@permacache(
+    "urbanstats/osm/query/query_to_geopandas",
+    key_function=dict(keep_tags=drop_if_equal(False)),
+)
 def query_to_geopandas(query, *, keep_tags=False):
     api = overpy.Overpass()
     result = api.query(query)

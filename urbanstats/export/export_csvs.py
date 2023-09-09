@@ -2,7 +2,10 @@ import fire
 import tqdm.auto as tqdm
 
 from create_website import full_shapefile
-from produce_html_page import get_statistic_categories, statistic_internal_to_display_name
+from produce_html_page import (
+    get_statistic_categories,
+    statistic_internal_to_display_name,
+)
 
 
 def csv_for(typ, category):

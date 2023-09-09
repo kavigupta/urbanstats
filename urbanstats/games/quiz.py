@@ -30,7 +30,9 @@ def sample_quiz_question(rng, distance_pct_bot, distance_pct_top):
         stat_column = rng.choice(stats)
         filt = full[full.type == type]
         [stat_column_original] = [
-            k for k, v in statistic_internal_to_display_name().items() if v == stat_column
+            k
+            for k, v in statistic_internal_to_display_name().items()
+            if v == stat_column
         ]
         percentiles = filt[stat_column_original, "percentile_by_population"]
         central_values = filt[stat_column_original][
@@ -57,6 +59,7 @@ def sample_quiz_question(rng, distance_pct_bot, distance_pct_top):
                     stat_b=stat_b,
                 )
 
+
 @permacache("urbanstats/games/quiz/generate_quiz_4")
 def generate_quiz(seed):
     rng = np.random.default_rng(int(stable_hash(seed), 16))
@@ -68,6 +71,7 @@ def generate_quizzes(folder):
     # 0-3 fixed in stone
     for i in range(4):
         import shutil
+
         shutil.copy(f"quiz_old/{i}", path(i))
     for i in tqdm.trange(4, 365 * 3):
         with open(path(i), "w") as f:
@@ -76,11 +80,14 @@ def generate_quizzes(folder):
             outs = []
             for q in res:
                 out = {}
-                out["stat_column"] = statistic_internal_to_display_name()[q.pop("stat_column_original")]
+                out["stat_column"] = statistic_internal_to_display_name()[
+                    q.pop("stat_column_original")
+                ]
                 out["question"] = stats_to_display[out["stat_column"]]
                 out.update(q)
                 outs.append(out)
             json.dump(outs, f)
+
 
 types = [
     "City",
