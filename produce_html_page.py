@@ -191,6 +191,40 @@ def get_statistic_categories():
     return result
 
 
+def get_explanation_page():
+    result = {
+        "population": "population",
+        "sd": "density",
+        **{f"ad_{k}": f"density" for k in RADII},
+        "area": "geography",
+        "compactness": "geography",
+        **{k: "race" for k in racial_statistics},
+        **{k: k.split("_")[0] for k in national_origin_stats},
+        **{k: "education" for k in education_stats},
+        **{k: "generation" for k in generation_stats},
+        **{k: "income" for k in income_stats},
+        **{
+            k: "housing-census"
+            if k in ["housing_per_pop", "vacancy"]
+            else "housing-acs"
+            for k in housing_stats
+        },
+        **{k: "transportation" for k in transportation_stats},
+        **{elect: "election" for elect in election_stats},
+        **{
+            k: {
+                "park_percent_1km_v2": "park",
+                "within_Hospital_10": "hospital",
+                "mean_dist_Hospital_updated": "hospital",
+            }[k]
+            for k in feature_stats
+        },
+        **{k: k.split("_")[0] for k in misc_stats},
+    }
+    result = {k: result[k] for k in get_statistic_categories()}
+    return result
+
+
 category_metadata = {
     "main": dict(name="Main", show_checkbox=False, default=True),
     "race": dict(name="Race", show_checkbox=True, default=True),

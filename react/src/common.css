@@ -88,9 +88,21 @@
 }
 
 .searchbox-dropdown-item-focused {
-    background-color: #dadaff;
+    background-color: #e9d2fd;
 }
 
 .logo {
     height: 60px;
+}
+
+.h1 {
+    font-size: 1.5em;
+}
+
+.h2 {
+    font-size: 1em;
+}
+
+.highlighted_header {
+    background-color: #d4b5e2;
 }

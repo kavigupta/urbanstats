@@ -24,6 +24,7 @@ class ArticlePanel extends PageTemplate {
         const paths = require("../data/statistic_path_list.json");
         const stats = require("../data/statistic_list.json");
         const counts_by_article_type = require("../data/counts_by_article_type.json");
+        const explanation_page = require("../data/explanation_page.json");
 
         let modified_rows = [];
         for (let i in this.props.rows) {
@@ -38,6 +39,7 @@ class ArticlePanel extends PageTemplate {
             row.statcol = stats[i];
             row.statname = names[i];
             row.statpath = paths[i];
+            row.explanation_page = explanation_page[i];
             row.article_type = article_type;
 
             function for_type(typ) {

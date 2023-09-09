@@ -18,20 +18,21 @@ class AboutPanel extends PageTemplate {
                 <div className={"centered_text " + (isMobile ? "headertext_mobile" : "headertext")}>About</div>
 
                 <p>
-                    AW (area weighted) density is the standard Population/Area density.
-                    PW (population weighted) density with a radius of X is the population-weighted density within
-                    X miles of each census block's interior point, as defined by the census. For more information,
-                    see <a href="https://kavigupta.org/2021/09/26/Youre-calculating-population-density-incorrectly/">this page</a>.
+                    Urban Stats is a database of various statistics, computed largely from Census Data but also other
+                    sources, for a variety of regions in the United States. The goal of this project is to provide a
+                    resource for people to learn about the places they live, and to provide a resource for journalists
+                    and researchers to find interesting statistics about places they are studying.
                 </p>
 
                 <p>
-                    Election Data is approximate and uses
-                    VTD estimates when available. Data is precinct-level, disaggregated to the census block level
-                    and then aggregated to the geography of interest based on the centroid. Results might not
-                    match official results. Data is from the 2016 and 2020 US Presidential general elections. N/A
-                    indicates that the statistic is not available for the given geography, possibly because the
-                    precinct boundaries in the dataset are slightly inaccurate, or there are no results for
-                    the precincts overlapping the geography.
+                    The project is open source, and the code is available on
+                    <a href="https://github.com/kavigupta/population-density-metric/">GitHub</a>.
+                    Feel free to file an issue or pull request if you have any suggestions or find any bugs.
+                </p>
+
+                <p>
+                    The project is developed by Kavi Gupta, a PhD student at MIT. You can contact them
+                    about the project at urbanstats at kavigupta dot org.
                 </p>
             </div>
         );

@@ -1,5 +1,5 @@
 
-export { article_link, shape_link, data_link, ordering_link };
+export { article_link, shape_link, data_link, ordering_link, explanation_page_link };
 
 function article_link(longname) {
     const params = new URLSearchParams()
@@ -17,6 +17,10 @@ function data_link(longname) {
 
 function ordering_link(statpath, type) {
     return `/order/${sanitize(statpath, false)}__${sanitize(type, false)}.gz`
+}
+
+function explanation_page_link(explanation) {
+    return `/data-credit.html#explanation_${sanitize(explanation)}`
 }
 
 function sanitize(longname, spaces_around_slash=true) {

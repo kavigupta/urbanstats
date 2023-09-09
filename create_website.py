@@ -16,6 +16,7 @@ from stats_for_shapefile import compute_statistics_for_shapefile
 from produce_html_page import (
     add_ordinals,
     create_page_json,
+    get_explanation_page,
     get_statistic_categories,
     internal_statistic_names,
     category_metadata,
@@ -210,6 +211,8 @@ def main(no_geo=False, no_data=False, no_data_jsons=False):
         )
     with open(f"react/src/data/statistic_list.json", "w") as f:
         json.dump(list([name for name in statistic_internal_to_display_name()]), f)
+    with open(f"react/src/data/explanation_page.json", "w") as f:
+        json.dump(list([name for name in get_explanation_page().values()]), f)
 
     with open(f"{folder}/CNAME", "w") as f:
         f.write("urbanstats.org")

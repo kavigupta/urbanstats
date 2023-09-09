@@ -18,3 +18,8 @@
 td {
     vertical-align: baseline;
 }
+
+.statname_no_link {
+    text-decoration: none;
+    color: black;
+}
