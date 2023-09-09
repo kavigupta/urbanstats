@@ -59,7 +59,7 @@ class PageTemplate extends React.Component {
                         <div className={isMobile ? "content_panel_mobile" : "right_panel"}>
                             {this.main_content()}
                             <div className="gap"></div>
-                            <div className="centered_text">Urban Stats Version 6.0.0 by Kavi Gupta. Last updated 2023-09-05.</div>
+                            <div className="centered_text">Urban Stats Version 6.1.0 by Kavi Gupta. Last updated 2023-09-05.</div>
                         </div>
                     </div>
                 </div>

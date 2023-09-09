@@ -22,17 +22,19 @@ def parks_for_state(state):
     way["leisure"="park"](area.searchArea);
     relation["leisure"="park"](area.searchArea);
 
-    node["leisure"="nature_reserve"](area.searchArea);
-    way["leisure"="nature_reserve"](area.searchArea);
-    relation["leisure"="nature_reserve"](area.searchArea);
-
     node["garden:type"="botanical"](area.searchArea);
     way["garden:type"="botanical"](area.searchArea);
     relation["garden:type"="botanical"](area.searchArea);
 
+    /*
+    node["leisure"="nature_reserve"](area.searchArea);
+    way["leisure"="nature_reserve"](area.searchArea);
+    relation["leisure"="nature_reserve"](area.searchArea);
+
     node["boundary"="national_park"](area.searchArea);
     way["boundary"="national_park"](area.searchArea);
     relation["boundary"="national_park"](area.searchArea);
+    */
     );
     out body;
     >;
@@ -43,7 +45,7 @@ def parks_for_state(state):
     return query_to_geopandas(query)
 
 
-@permacache("urbanstats/osm/query/parks")
+@permacache("urbanstats/osm/query/parks_2")
 def parks():
     return gpd.GeoDataFrame(
         pd.concat(
@@ -55,7 +57,7 @@ def parks():
     )
 
 
-@permacache("urbanstats/osm/query/parks_exploded")
+@permacache("urbanstats/osm/query/parks_exploded_2")
 def parks_exploded():
     from ..geometry.deduplicate import deduplicate_polygons
 
@@ -76,7 +78,7 @@ def park_overlaps(blocks, parks_df, r):
     return park_area
 
 
-@permacache("urbanstats/osm/query/park_overlap_percentages")
+@permacache("urbanstats/osm/query/park_overlap_percentages_2")
 def park_overlap_percentages(r):
     chunk_size = 10_000
     census_blocks = census_block_coordinates()
@@ -90,10 +92,10 @@ def park_overlap_percentages(r):
     return pd.concat(results)
 
 
-@permacache("urbanstats/osm/query/park_overlap_percentages_all")
+@permacache("urbanstats/osm/query/park_overlap_percentages_all_2")
 def park_overlap_percentages_all(r):
     census_blocks = census_block_coordinates()
-    pcts = park_overlap_percentages(r=1)
+    pcts = park_overlap_percentages(r=r)
     by_block = np.zeros(len(census_blocks))
     by_block[pcts.index] = pcts.area_park
     return by_block

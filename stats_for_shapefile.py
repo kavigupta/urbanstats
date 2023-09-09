@@ -103,7 +103,10 @@ national_origin_stats = {
     "language_other": "Other at Home %",
 }
 
-feature_stats = feature_columns
+feature_stats = {
+    "park_percent_1km_v2": "PW Mean % of parkland within 1km",
+    **feature_columns,
+}
 
 misc_stats = {
     "internet_no_access": "No internet access %",
@@ -113,7 +116,6 @@ misc_stats = {
     "marriage_never_married": "Never Married %",
     "marriage_married_not_divorced": "Married (not divorced) %",
     "marriage_divorced": "Divorced %",
-    "park_percent_1km": "Mean % of parkland within 1km",
 }
 
 
@@ -167,7 +169,7 @@ sum_keys = [
     *election_column_names,
     *acs_columns,
     *feature_columns,
-    "park_percent_1km",
+    "park_percent_1km_v2",
 ]
 COLUMNS_PER_JOIN = 33
 
@@ -180,7 +182,9 @@ def block_level_data():
     assert sh == (blocks_gdf.shape[0],)
     for k, v in feats.items():
         blocks_gdf[k] = v
-    blocks_gdf["park_percent_1km"] = park_overlap_percentages_all(r=1) * blocks_gdf.population
+    blocks_gdf["park_percent_1km_v2"] = (
+        park_overlap_percentages_all(r=1) * blocks_gdf.population
+    )
     return blocks_gdf
 
 
@@ -273,7 +277,11 @@ def compute_statistics_for_shapefile(sf, sum_keys=sum_keys):
         for c in columns:
             result[c] = result[c] / denominator
 
-    for column in "education_field_stem", "education_field_humanities", "education_field_business":
+    for column in (
+        "education_field_stem",
+        "education_field_humanities",
+        "education_field_business",
+    ):
         result[column] = result[column] / education_denominator
     fractionalize(
         "generation_silent",
@@ -388,7 +396,7 @@ def compute_statistics_for_shapefile(sf, sum_keys=sum_keys):
     for feat in feature_columns:
         result[feat] = result[feat] / result["population"]
 
-    result["park_percent_1km"] /= result["population"]
+    result["park_percent_1km_v2"] /= result["population"]
 
     return result
 
