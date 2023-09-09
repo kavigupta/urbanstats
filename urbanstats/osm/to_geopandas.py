@@ -112,7 +112,7 @@ def polygon_for_relation(relation):
     return difference(members["outer"], members["inner"])
 
 
-def frame_for_result(result):
+def frame_for_result(result, *, keep_tags):
     with_tags_nodes = [w for w in result.get_nodes() if "name" in w.tags]
     with_tags_ways = [
         w
@@ -124,13 +124,18 @@ def frame_for_result(result):
     polygoon_relations = [polygon_for_relation(x) for x in with_tags_relations]
 
     polygon_nodes = [polygon_for_node(x) for x in with_tags_nodes]
+    result = dict(
+        name=[
+            x.tags["name"]
+            for x in with_tags_nodes + with_tags_ways + with_tags_relations
+        ]
+    )
+    if keep_tags:
+        result["tags"] = [
+            x.tags for x in with_tags_nodes + with_tags_ways + with_tags_relations
+        ]
     result = gpd.GeoDataFrame(
-        dict(
-            name=[
-                x.tags["name"]
-                for x in with_tags_nodes + with_tags_ways + with_tags_relations
-            ]
-        ),
+        result,
         geometry=polygon_nodes + polygon_ways + polygoon_relations,
     )
     return result

@@ -1,11 +1,11 @@
-from permacache import permacache
+from permacache import permacache, drop_if_equal
 import overpy
 
 from .to_geopandas import frame_for_result
 
 
-@permacache("urbanstats/osm/query/query_to_geopandas")
-def query_to_geopandas(query):
+@permacache("urbanstats/osm/query/query_to_geopandas", key_function=dict(keep_tags=drop_if_equal(False)))
+def query_to_geopandas(query, *, keep_tags=False):
     api = overpy.Overpass()
     result = api.query(query)
-    return frame_for_result(result)
+    return frame_for_result(result, keep_tags=keep_tags)
