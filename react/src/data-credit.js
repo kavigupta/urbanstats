@@ -183,7 +183,7 @@ class DataCreditPanel extends PageTemplate {
                     <h2 ref={this.nref("transportation")}>Transportation</h2>
                     <div>
                         <p>
-                            All transportation data is computed using disaggregation from the block group level 
+                            All transportation data is computed using disaggregation from the block group level
                             to the block level, weighted by adult population. We consider taxi to be a form of
                             car transportation, and consider motorcycle to be a form of bike transportation.
                         </p>
@@ -267,9 +267,20 @@ class DataCreditPanel extends PageTemplate {
                     </div>
                     <h2 ref={this.nref("transit")}>Transit Stops</h2>
                     <div>
-                        Bus stop and Train stop data is from OSM. Special thanks to
-                        <a href="https://twitter.com/averyhatestwt">Avery</a> for helping process the train stop
+                        Train stop data is from OSM. Special thanks to <a href="https://twitter.com/averyhatestwt">Avery</a> for helping process the train stop
                         data.
+                    </div>
+                    <h2 ref={this.nref("superfund")}>Superfund Sites</h2>
+                    <div>
+                        Superfund site data is from the EPA via
+                        <a href="https://catalog.data.gov/dataset/u-s-epa-national-priorities-list-npl-sites-point-data-with-ciesin-modifications-version-2">
+                            Data Gov
+                        </a>
+                    </div>
+                    <h2 ref={this.nref("school")}>Schools</h2>
+                    <div>
+                        School data is from NCES via
+                        <a href="https://hifld-geoplatform.opendata.arcgis.com/datasets/geoplatform::public-schools/about">HIFLD</a>.
                     </div>
                 </div>
             </div>

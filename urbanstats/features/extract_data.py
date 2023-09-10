@@ -1,9 +1,6 @@
 from census_blocks import load_raw_census
 from .feature import features
-from .within_distance import (
-    features_within_distance_by_block,
-    minimum_distance_by_block,
-)
+from .within_distance import minimum_distance_by_block
 
 
 def feature_data():
@@ -13,7 +10,7 @@ def feature_data():
     result = {}
     for feature in features.values():
         result[feature.within_distance_column_name()[0]] = (
-            features_within_distance_by_block(feature) != 0
+            minimum_distance_by_block(feature) <= feature.radius_km
         ) * pop
         result[feature.shortest_distance_column_name()[0]] = (
             minimum_distance_by_block(feature)

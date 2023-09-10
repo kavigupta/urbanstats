@@ -3,6 +3,8 @@ from permacache import permacache
 import shapely
 import geopandas as gpd
 import numpy as np
+from scipy.spatial import cKDTree
+import tqdm
 
 from census_blocks import load_raw_census
 from urbanstats.geometry.ellipse import Ellipse
@@ -40,39 +42,53 @@ def census_block_coordinates():
 
 
 @permacache(
-    "urbanstats/features/within_distance_by_block",
-    key_function=dict(feature=lambda x: x.hash_key),
-)
-def features_within_distance_by_block(feature):
-    census_blocks = census_block_coordinates()
-    feature = feature.load_as_shapefile()
-    per_feature = census_blocks.sjoin(feature, how="left")
-    index = np.array(
-        per_feature[per_feature.index_right == per_feature.index_right].index
-    )
-    by_each = np.zeros(census_blocks.shape[0], dtype=np.int)
-    np.add.at(by_each, index, 1)
-    return by_each
-
-
-@permacache(
-    "urbanstats/features/minimum_distance_by_block",
+    "urbanstats/features/minimum_distance_by_block_3",
     key_function=dict(feature=lambda x: x.hash_key),
 )
 def minimum_distance_by_block(feature):
+    print("Computing minimum distance by block", feature.name)
     census_blocks = census_block_coordinates()
-    feature_pts = feature.load_fn()
-    distance = np.zeros(census_blocks.shape[0]) + np.nan
-    rad = feature.radius_km / 2
-    while True:
-        mask = np.isnan(distance)
-        print(mask.sum())
-        if not mask.any():
-            break
-        distance_within_k = nearest_haversine(census_blocks[mask], feature_pts, rad)
-        distance[distance_within_k.index] = distance_within_k
-        rad *= 2
-    return distance
+    feats = feature.load_fn()
+    x1 = census_blocks.geometry.x
+    y1 = census_blocks.geometry.y
+    x2 = feats.geometry.x
+    y2 = feats.geometry.y
+    x1, x2, y1, y2 = [np.array(u) for u in (x1, x2, y1, y2)]
+    xy1 = np.array([x1, y1]).T
+    xy2 = np.array([x2, y2]).T
+    tree = cKDTree(xy2)
+    _, est_feat_idx = tree.query(xy1, k=1)
+    est_feat_pos = xy2[est_feat_idx]
+    computed_dist = haversine(y1, x1, *est_feat_pos.T[::-1])
+    # maximum radius in degrees possible while covering less than x km
+    # clearly this is in the east-west direction
+    # x = r * cos(lat) * lon
+    # lon = (x / (r * cos(lat)))
+    radius_degrees = np.degrees(computed_dist / (rad_earth * np.cos(np.radians(y1))))
+    radius_degrees *= 1.1  # safety factor
+    bins = np.geomspace(radius_degrees.min(), radius_degrees.max(), 100)
+    bins[0] = 0
+    bins[-1] = float("inf")
+    out = np.zeros(xy1.shape[0]) + np.nan
+    pbar = tqdm.tqdm(total=out.shape[0])
+    for bin_idx in range(len(bins) - 1):
+        in_bin = (bins[bin_idx] <= radius_degrees) & (
+            radius_degrees < bins[bin_idx + 1]
+        )
+        neighbors = tree.query_ball_point(xy1[in_bin], bins[bin_idx + 1])
+
+        def nearest(idx, neighbors):
+            d = haversine(y1[idx], x1[idx], *xy2[neighbors].T[::-1])
+            return d.min()
+
+        for idx, neigh in zip(np.where(in_bin)[0], neighbors):
+            out[idx] = nearest(idx, neigh)
+            pbar.update()
+    pbar.close()
+    return out
+
+
+rad_earth = 6371
 
 
 def haversine(lat1, lon1, lat2, lon2):
@@ -90,7 +106,7 @@ def haversine(lat1, lon1, lat2, lon2):
         + np.cos(np.radians(lat1)) * np.cos(np.radians(lat2)) * np.sin(dlon / 2) ** 2
     )
     c = 2 * np.arcsin(np.sqrt(a))
-    km = 6371 * c
+    km = rad_earth * c
     return km
 
 

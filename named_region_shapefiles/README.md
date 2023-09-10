@@ -67,3 +67,21 @@ Source: https://datablends.us/2021/01/14/a-useful-dma-shapefile-for-tableau-and-
 Source: https://www.kaggle.com/datasets/carlosaguayo/usa-hospitals
 
   - features/hospitals.zip
+
+# Airport locations
+
+Source: https://hub.arcgis.com/datasets/esri-de-content::world-airports/about
+
+  - features/world-airports.zip
+
+# Superfund sites
+
+Source: https://catalog.data.gov/dataset/u-s-epa-national-priorities-list-npl-sites-point-data-with-ciesin-modifications-version-2
+
+  - features/epa-national-priorities-list-ciesin-mod-v2-2014.xls
+
+# Schools
+
+Source: https://hifld-geoplatform.opendata.arcgis.com/datasets/geoplatform::public-schools/about
+
+    - features/Public_Schools.zip

@@ -216,6 +216,12 @@ def get_explanation_page():
                 "park_percent_1km_v2": "park",
                 "within_Hospital_10": "hospital",
                 "mean_dist_Hospital_updated": "hospital",
+                "within_Public School_2": "school",
+                "mean_dist_Public School_updated": "school",
+                "within_Airport_30": "airport",
+                "mean_dist_Airport_updated": "airport",
+                "within_Active Superfund Site_10": "superfund",
+                "mean_dist_Active Superfund Site_updated": "superfund",
             }[k]
             for k in feature_stats
         },

@@ -9,8 +9,8 @@ class Ellipse:
         dy = r_earth * dtheta = r_earth * pi/180 dlat
         dlat = dy/r_earth * 180/pi
 
-        dx = r_earth * sin (lat * pi / 180) * dtheta
-        dlon = (dx / (r_earth sin (lat * pi/180))) * 180/pi
+        dx = r_earth * cos (lat * pi / 180) * dtheta
+        dlon = (dx / (r_earth cos (lat * pi/180))) * 180/pi
         """
         radius_earth_km = 6371
         self.lat_radius = radius_in_km / radius_earth_km * 180 / np.pi
