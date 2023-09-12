@@ -27,13 +27,8 @@ def sample_quiz_question(rng, distance_pct_bot, distance_pct_top):
     full = full_shapefile()
     while True:
         type = rng.choice(types)
-        stat_column = rng.choice(stats)
+        stat_column_original = rng.choice(stats)
         filt = full[full.type == type]
-        [stat_column_original] = [
-            k
-            for k, v in statistic_internal_to_display_name().items()
-            if v == stat_column
-        ]
         percentiles = filt[stat_column_original, "percentile_by_population"]
         central_values = filt[stat_column_original][
             (percentiles < 0.95) & (percentiles > 0.05)
@@ -60,7 +55,7 @@ def sample_quiz_question(rng, distance_pct_bot, distance_pct_top):
                 )
 
 
-@permacache("urbanstats/games/quiz/generate_quiz_4")
+@permacache("urbanstats/games/quiz/generate_quiz_5")
 def generate_quiz(seed):
     rng = np.random.default_rng(int(stable_hash(seed), 16))
     return sample_quiz(rng)
@@ -68,22 +63,25 @@ def generate_quiz(seed):
 
 def generate_quizzes(folder):
     path = lambda day: os.path.join(folder, f"{day}")
+
+    fixed_up_to = 10
     # 0-3 fixed in stone
-    for i in range(4):
+    for i in range(fixed_up_to + 1):
         import shutil
 
         shutil.copy(f"quiz_old/{i}", path(i))
-    for i in tqdm.trange(4, 365 * 3):
+    for i in tqdm.trange(fixed_up_to + 1, 365 * 3):
         with open(path(i), "w") as f:
             res = generate_quiz(("daily", i))
             res = copy.deepcopy(res)
             outs = []
             for q in res:
                 out = {}
+                stat_column_original = q.pop("stat_column_original")
                 out["stat_column"] = statistic_internal_to_display_name()[
-                    q.pop("stat_column_original")
+                    stat_column_original
                 ]
-                out["question"] = stats_to_display[out["stat_column"]]
+                out["question"] = stats_to_display[stat_column_original]
                 out.update(q)
                 outs.append(out)
             json.dump(outs, f)
@@ -98,69 +96,75 @@ types = [
 ]
 
 stats_to_display = {
-    "Population": "higher population",
-    "PW Density (r=1km)": "higher population-weighted density (r=1km)",
-    "AW Density": "higher area-weighted density",
-    "Area": "higher area",
-    "White %": "higher % of people who are White",
-    "Hispanic %": "higher % of people who are Hispanic",
-    "Black %": "higher % of people who are Black",
-    "Asian %": "higher % of people who are Asian",
-    "Native %": "higher % of people who are Native American",
-    "Hawaiian / PI %": "higher % of people who are hawaiian / pi",
-    "Citizen by Birth %": "higher % of people who are citizens by birth",
-    "Citizen by Naturalization %": "higher % of people who are citizens by naturalization",
-    "Non-citizen %": "higher % of people who are non-citizens",
-    "Born outside US %": "higher % of people who are born outside the us",
-    "Born in us outside state %": "higher % of people who are born in the us outside their state of residence",
-    "Born in state of residence %": "higher % of people who are born in their state of residence",
-    "Only English at Home %": "higher % of people who only speak english at home",
-    "Spanish at Home %": "higher % of people who speak spanish at home",
-    "High School %": "higher % of people who have a high school diploma",
-    "Undergrad %": "higher % of people who have an undergrad degree",
-    "Grad %": "higher % of people who have a graduate degree",
-    "Undergrad STEM %": "higher % of people who have a stem degree",
-    "Undergrad Humanities %": "higher % of people who have a humanities degree",
-    "Undergrad Business %": "higher % of people who have a business degree",
-    "Silent %": "higher % of people who are silent generation",
-    "Boomer %": "higher % of people who are boomers",
-    "Gen X %": "higher % of people who are gen x",
-    "Millennial %": "higher % of people who are millennials",
-    "Gen Z %": "higher % of people who are gen z",
-    "Gen Alpha %": "higher % of people who are gen alpha",
-    "Poverty %": "higher % of people who are in poverty",
-    "Household Income < $50k %": "higher % of people who have household income < $50k",
-    "Household Income > $100k %": "higher % of people who have household income > $100k",
-    "Individual Income < $50k %": "higher % of people who have individual income < $50k",
-    "Individual Income > $100k %": "higher % of people who have individual income > $100k",
-    "Housing Units per Adult": "higher housing units per adult",
-    "Vacancy %": "higher % of units that are vacant",
-    "Renter %": "higher % of people who are renters",
-    "Rent/Income < 20%": "higher % of people who have rent/income < 20%",
-    "Rent/Income > 40%": "higher % of people who have rent/income > 40%",
-    "1BR Rent < $750 %": "higher % of units with 1br rent < $750",
-    "1BR Rent > $1500 %": "higher % of units with 1br rent > $1500",
-    "2BR Rent < $750 %": "higher % of units with 2br rent < $750",
-    "2BR Rent > $1500 %": "higher % of units with 2br rent > $1500",
-    "% units built pre-1970": "higher % units built pre-1970",
-    "% units built in 2010s+": "higher % units built in 2010s+",
-    "Commute Car %": "higher % of people who commute by car",
-    "Commute Bike %": "higher % of people who commute by bike",
-    "Commute Walk %": "higher % of people who commute by walking",
-    "Commute Transit %": "higher % of people who commute by transit",
-    "Commute Work From Home %": "higher % of people who work from home",
-    "Commute Time < 15 min %": "higher % of people who have commute time < 15 min",
-    "Commute Time > 60 min %": "higher % of people who have commute time > 60 min",
-    "2020 Presidential Election": "more democratic in the 2020 presidential election",
-    "2016 Presidential Election": "more democratic in 2016 presidential election",
-    "2016-2020 Swing": "more democratic in 2016-2020 swing",
-    "Within 10km of Hospital %": "higher % of people who are within 10km of hospital",
-    "Mean distance to nearest Hospital": "higher mean distance to nearest hospital",
-    "No internet access %": "higher % of people who have no internet access",
-    "Uninsured %": "higher % of people who are uninsured",
-    "Public Insurance %": "higher % of people who are on public insurance",
-    "Private Insurance %": "higher % of people who are on private insurance",
-    "Divorced %": "higher % of people who are divorced",
+    "population": "higher population",
+    "ad_1": "higher population-weighted density (r=1km)",
+    "sd": "higher area-weighted density",
+    "area": "higher area",
+    "white": "higher % of people who are White",
+    "hispanic": "higher % of people who are Hispanic",
+    "black": "higher % of people who are Black",
+    "asian": "higher % of people who are Asian",
+    "native": "higher % of people who are Native American",
+    "hawaiian_pi": "higher % of people who are hawaiian / pi",
+    "citizenship_citizen_by_birth": "higher % of people who are citizens by birth",
+    "citizenship_citizen_by_naturalization": "higher % of people who are citizens by naturalization",
+    "citizenship_not_citizen": "higher % of people who are non-citizens",
+    "birthplace_non_us": "higher % of people who are born outside the us",
+    "birthplace_us_not_state": "higher % of people who are born in the us outside their state of residence",
+    "birthplace_us_state": "higher % of people who are born in their state of residence",
+    "language_english_only": "higher % of people who only speak english at home",
+    "language_spanish": "higher % of people who speak spanish at home",
+    "education_high_school": "higher % of people who have a high school diploma",
+    "education_ugrad": "higher % of people who have an undergrad degree",
+    "education_grad": "higher % of people who have a graduate degree",
+    "education_field_stem": "higher % of people who have a stem degree",
+    "education_field_humanities": "higher % of people who have a humanities degree",
+    "education_field_business": "higher % of people who have a business degree",
+    "generation_silent": "higher % of people who are silent generation",
+    "generation_boomer": "higher % of people who are boomers",
+    "generation_genx": "higher % of people who are gen x",
+    "generation_millenial": "higher % of people who are millennials",
+    "generation_genz": "higher % of people who are gen z",
+    "generation_genalpha": "higher % of people who are gen alpha",
+    "poverty_below_line": "higher % of people who are in poverty",
+    "household_income_under_50k": "higher % of people who have household income < $50k",
+    "household_income_over_100k": "higher % of people who have household income > $100k",
+    "individual_income_under_50k": "higher % of people who have individual income < $50k",
+    "individual_income_over_100k": "higher % of people who have individual income > $100k",
+    "housing_per_pop": "higher housing units per adult",
+    "vacancy": "higher % of units that are vacant",
+    "rent_or_own_rent": "higher % of people who are renters",
+    "rent_burden_under_20": "higher % of people who have rent/income < 20%",
+    "rent_burden_over_40": "higher % of people who have rent/income > 40%",
+    "rent_1br_under_750": "higher % of units with 1br rent < $750",
+    "rent_1br_over_1500": "higher % of units with 1br rent > $1500",
+    "rent_2br_under_750": "higher % of units with 2br rent < $750",
+    "rent_2br_over_1500": "higher % of units with 2br rent > $1500",
+    "year_built_1969_or_earlier": "higher % units built pre-1970",
+    "year_built_2010_or_later": "higher % units built in 2010s+",
+    "transportation_means_car": "higher % of people who commute by car",
+    "transportation_means_bike": "higher % of people who commute by bike",
+    "transportation_means_walk": "higher % of people who commute by walking",
+    "transportation_means_transit": "higher % of people who commute by transit",
+    "transportation_means_worked_at_home": "higher % of people who work from home",
+    "transportation_commute_time_under_15": "higher % of people who have commute time < 15 min",
+    "transportation_commute_time_over_60": "higher % of people who have commute time > 60 min",
+    (
+        "2020 Presidential Election",
+        "margin",
+    ): "more democratic in the 2020 presidential election",
+    (
+        "2016 Presidential Election",
+        "margin",
+    ): "more democratic in 2016 presidential election",
+    ("2016-2020 Swing", "margin"): "more democratic in 2016-2020 swing",
+    "within_Hospital_10": "higher % of people who are within 10km of hospital",
+    "mean_dist_Hospital_updated": "higher mean distance to nearest hospital",
+    "internet_no_access": "higher % of people who have no internet access",
+    "insurance_coverage_none": "higher % of people who are uninsured",
+    "insurance_coverage_govt": "higher % of people who are on public insurance",
+    "insurance_coverage_private": "higher % of people who are on private insurance",
+    "marriage_divorced": "higher % of people who are divorced",
 }
 
 
