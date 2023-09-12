@@ -55,7 +55,7 @@ def sample_quiz_question(rng, distance_pct_bot, distance_pct_top):
                 )
 
 
-@permacache("urbanstats/games/quiz/generate_quiz_5")
+@permacache("urbanstats/games/quiz/generate_quiz_6")
 def generate_quiz(seed):
     rng = np.random.default_rng(int(stable_hash(seed), 16))
     return sample_quiz(rng)
@@ -158,8 +158,11 @@ stats_to_display = {
         "margin",
     ): "more democratic in 2016 presidential election",
     ("2016-2020 Swing", "margin"): "more democratic in 2016-2020 swing",
-    "within_Hospital_10": "higher % of people who are within 10km of hospital",
+    "park_percent_1km_v2": "higher population-weighted mean % of parkland within 1km",
     "mean_dist_Hospital_updated": "higher mean distance to nearest hospital",
+    "mean_dist_Active Superfund Site_updated": "higher mean ditance to the nearest EPA superfund site",
+    "mean_dist_Airport_updated": "higher mean distance to the nearest airport",
+    "mean_dist_Public School_updated": "higher mean distance to the nearest public school",
     "internet_no_access": "higher % of people who have no internet access",
     "insurance_coverage_none": "higher % of people who are uninsured",
     "insurance_coverage_govt": "higher % of people who are on public insurance",
@@ -168,4 +171,44 @@ stats_to_display = {
 }
 
 
+not_included = {
+    # duplicate
+    "ad_0.25",
+    "ad_0.5",
+    "ad_2",
+    "ad_4",
+    # irrelevant
+    "compactness",
+    # middle / obscure
+    "household_income_50k_to_100k",
+    "individual_income_50k_to_100k",
+    "year_built_1970_to_1979",
+    "year_built_1980_to_1989",
+    "year_built_1990_to_1999",
+    "year_built_2000_to_2009",
+    "rent_1br_750_to_1500",
+    "rent_2br_750_to_1500",
+    "rent_burden_20_to_40",
+    "language_other",
+    "other / mixed",
+    "transportation_commute_time_15_to_29",
+    "transportation_commute_time_30_to_59",
+    # meh whatever
+    "marriage_married_not_divorced",
+    "marriage_never_married",
+    # duplicates
+    "within_Active Superfund Site_10",
+    "within_Airport_30",
+    "within_Public School_2",
+    "within_Hospital_10",
+}
+
 stats = list(stats_to_display)
+
+unrecognized = (set(stats) | set(not_included)) - set(
+    statistic_internal_to_display_name()
+)
+assert not unrecognized, unrecognized
+
+extras = set(statistic_internal_to_display_name()) - (set(stats) | set(not_included))
+assert not extras, extras
