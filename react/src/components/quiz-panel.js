@@ -352,6 +352,11 @@ function summary(today, correct_pattern, total_correct) {
     text += "\n";
 
     text += red_and_green_squares(correct_pattern);
+
+    text += "\n";
+    text += "\n";
+
+    text += "urbanstats.org/quiz.html";
     return text;
 }
 
