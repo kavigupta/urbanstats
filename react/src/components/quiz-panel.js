@@ -153,12 +153,18 @@ class QuizQuestion extends PageTemplate {
         }
         console.log(button_a);
         console.log(button_b);
+        let question = `Which has a ${this.props.question}?`;
+        // sometimes questions start with !FULL
+        if (this.props.question.startsWith("!FULL ")) {
+            question = this.props.question.slice(6);
+        }
+
         return (
             <div>
                 {/* {this.props.waiting ? <Overlay correct={pattern[pattern.length - 1]} /> : undefined} */}
                 <Header today={this.props.today} />
                 <div className={"centered_text " + (isMobile ? "subheadertext_mobile" : "subheadertext")}>
-                    Which has a {this.props.question}?
+                    {question}
                 </div>
                 <div className="gap"></div>
                 <table className="quiz_question_table">
