@@ -4,13 +4,12 @@ import React from 'react';
 
 import { Statistic } from "./table.js";
 import { Map } from "./map.js";
-import { Related } from "./related-button.js";
 import { PageTemplate } from "../page_template/template.js";
 import "../common.css";
 import "./quiz.css";
 import { isMobile } from 'react-device-detect';
-import { shareOnMobile } from "react-mobile-share";
 import { loadJSON } from '../load_json.js';
+import { gunzipSync } from 'zlib';
 
 class QuizPanel extends PageTemplate {
     constructor(props) {
@@ -22,8 +21,27 @@ class QuizPanel extends PageTemplate {
         }
         // fractional days since 2023-09-02
         const offset = (new Date() - new Date(2023, 8, 2)) / (1000 * 60 * 60 * 24);
-        this.today = Math.floor(offset);
-        this.todays_quiz = loadJSON("/quiz/" + this.today);
+        // if there's a query, parse it
+        const urlParams = new URLSearchParams(window.location.search);
+        const mode = urlParams.get('mode');
+        if (mode == "custom") {
+            // parse from query
+            const quiz_base64 = urlParams.get('quiz');
+            console.log(quiz_base64)
+            const quiz_json = gunzipSync(Buffer.from(quiz_base64, 'base64')).toString();
+            this.today = "Custom";
+            this.todays_quiz = JSON.parse(quiz_json);
+            // compute hash of today's quiz, take first 8 characters
+            const hash = quiz_base64.split("").reduce(
+                (a, b) => (((a << 5) - a) + b.charCodeAt(0)) | 0, 0
+            ).toString(16).slice(0, 8);
+            this.today_name = "Custom " + hash;
+        } else {
+            // daily quiz
+            this.today = Math.floor(offset);
+            this.todays_quiz = loadJSON("/quiz/" + this.today);
+            this.today_name = this.today;
+        }
     }
 
     main_content() {
@@ -43,6 +61,7 @@ class QuizPanel extends PageTemplate {
                     whole_history={this.state.quiz_history}
                     history={history}
                     today={this.today}
+                    today_name={this.today_name}
                     settings={this.state.settings} />
             )
         }
@@ -54,6 +73,7 @@ class QuizPanel extends PageTemplate {
                 length={quiz.length}
                 on_select={x => this.on_select(x)}
                 waiting={this.state.waiting}
+                today={this.today}
             />
         );
     }
@@ -66,7 +86,10 @@ class QuizPanel extends PageTemplate {
         const history = this.state.quiz_history;
         history[this.today] = history_today;
         this.setState({ history: history, waiting: true });
-        localStorage.setItem("quiz_history", JSON.stringify(history));
+        // if today is a number and not a string
+        if (typeof this.today == "number") {
+            localStorage.setItem("quiz_history", JSON.stringify(history));
+        }
     }
 
     on_select(selected) {
@@ -85,8 +108,12 @@ class QuizPanel extends PageTemplate {
     }
 }
 
-function Header() {
-    return (<div className={"centered_text " + (isMobile ? "headertext_mobile" : "headertext")}>Juxtastat</div>);
+function Header({ today }) {
+    let text = "Juxtastat";
+    if (typeof today != "number") {
+        text += " " + today;
+    }
+    return (<div className={"centered_text " + (isMobile ? "headertext_mobile" : "headertext")}>{text}</div>);
 }
 
 // function Overlay({ correct }) {
@@ -129,7 +156,7 @@ class QuizQuestion extends PageTemplate {
         return (
             <div>
                 {/* {this.props.waiting ? <Overlay correct={pattern[pattern.length - 1]} /> : undefined} */}
-                <Header />
+                <Header today={this.props.today} />
                 <div className={"centered_text " + (isMobile ? "subheadertext_mobile" : "subheadertext")}>
                     Which has a {this.props.question}?
                 </div>
@@ -221,16 +248,17 @@ class QuizResult extends PageTemplate {
 
     render() {
         const today = this.props.today;
+        const today_name = this.props.today_name;
         const correct_pattern = this.props.history.correct_pattern;
         const total_correct = correct_pattern.reduce((partialSum, a) => partialSum + a, 0);
         return (
             <div>
-                <Header />
+                <Header today={today} />
                 <div className="gap"></div>
                 <Summary correct_pattern={correct_pattern} total_correct={total_correct} total={correct_pattern.length} />
                 <div className="gap_small"></div>
                 <button class="serif quiz_copy_button" ref={this.button} onClick={() => {
-                    const text = summary(today, correct_pattern, total_correct);
+                    const text = summary(today_name, correct_pattern, total_correct);
                     // if (isMobile) {
                     //     try {
                     //         shareOnMobile({
@@ -356,7 +384,7 @@ function summary(today, correct_pattern, total_correct) {
     text += "\n";
     text += "\n";
 
-    text += "urbanstats.org/quiz.html";
+    text += "juxtastat.org";
     return text;
 }
 
