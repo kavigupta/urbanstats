@@ -29,13 +29,14 @@ class QuizPanel extends PageTemplate {
             const quiz_base64 = urlParams.get('quiz');
             console.log(quiz_base64)
             const quiz_json = gunzipSync(Buffer.from(quiz_base64, 'base64')).toString();
-            this.today = "Custom";
             this.todays_quiz = JSON.parse(quiz_json);
             // compute hash of today's quiz, take first 8 characters
             const hash = quiz_base64.split("").reduce(
                 (a, b) => (((a << 5) - a) + b.charCodeAt(0)) | 0, 0
-            ).toString(16).slice(0, 8);
-            this.today_name = "Custom " + hash;
+            ).toString(16).slice(1, 9);
+            // if has name parameter use that else hash
+            this.today_name = "Custom (" + (urlParams.get('name') || hash) + ")";
+            this.today = this.today_name;
         } else {
             // daily quiz
             this.today = Math.floor(offset);
