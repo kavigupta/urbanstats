@@ -8,8 +8,6 @@ import { PageTemplate } from "../page_template/template.js";
 import "../common.css";
 import "./quiz.css";
 import { isMobile } from 'react-device-detect';
-import { loadJSON } from '../load_json.js';
-import { gunzipSync } from 'zlib';
 
 class QuizPanel extends PageTemplate {
     constructor(props) {
@@ -19,30 +17,9 @@ class QuizPanel extends PageTemplate {
             quiz_history: JSON.parse(localStorage.getItem("quiz_history")) || {},
             waiting: false
         }
-        // fractional days since 2023-09-02
-        const offset = (new Date() - new Date(2023, 8, 2)) / (1000 * 60 * 60 * 24);
-        // if there's a query, parse it
-        const urlParams = new URLSearchParams(window.location.search);
-        const mode = urlParams.get('mode');
-        if (mode == "custom") {
-            // parse from query
-            const quiz_base64 = urlParams.get('quiz');
-            console.log(quiz_base64)
-            const quiz_json = gunzipSync(Buffer.from(quiz_base64, 'base64')).toString();
-            this.todays_quiz = JSON.parse(quiz_json);
-            // compute hash of today's quiz, take first 8 characters
-            const hash = quiz_base64.split("").reduce(
-                (a, b) => (((a << 5) - a) + b.charCodeAt(0)) | 0, 0
-            ).toString(16).slice(1, 9);
-            // if has name parameter use that else hash
-            this.today_name = "Custom (" + (urlParams.get('name') || hash) + ")";
-            this.today = this.today_name;
-        } else {
-            // daily quiz
-            this.today = Math.floor(offset);
-            this.todays_quiz = loadJSON("/quiz/" + this.today);
-            this.today_name = this.today;
-        }
+        this.today = this.props.today;
+        this.today_name = this.props.today_name;
+        this.todays_quiz = this.props.todays_quiz;
     }
 
     main_content() {
@@ -63,7 +40,8 @@ class QuizPanel extends PageTemplate {
                     history={history}
                     today={this.today}
                     today_name={this.today_name}
-                    settings={this.state.settings} />
+                    settings={this.state.settings}
+                    parameters={this.props.parameters}/>
             )
         }
 
@@ -265,7 +243,7 @@ class QuizResult extends PageTemplate {
                 <Summary correct_pattern={correct_pattern} total_correct={total_correct} total={correct_pattern.length} />
                 <div className="gap_small"></div>
                 <button class="serif quiz_copy_button" ref={this.button} onClick={() => {
-                    const text = summary(today_name, correct_pattern, total_correct);
+                    const text = summary(today_name, correct_pattern, total_correct, this.props.parameters);
                     // if (isMobile) {
                     //     try {
                     //         shareOnMobile({
@@ -379,7 +357,7 @@ function red_and_green_squares(correct_pattern) {
     }).join("");
 }
 
-function summary(today, correct_pattern, total_correct) {
+function summary(today, correct_pattern, total_correct, parameters) {
     // wordle-style summary
     let text = "Juxtastat " + today + " " + total_correct + "/" + correct_pattern.length;
 
@@ -392,6 +370,9 @@ function summary(today, correct_pattern, total_correct) {
     text += "\n";
 
     text += "juxtastat.org";
+    if (parameters != "") {
+        text += "#" + parameters;
+    }
     return text;
 }
 
