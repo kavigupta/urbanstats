@@ -214,6 +214,10 @@ def main(no_geo=False, no_data=False, no_data_jsons=False):
     with open(f"react/src/data/explanation_page.json", "w") as f:
         json.dump(list([name for name in get_explanation_page().values()]), f)
 
+    from urbanstats.games.quiz import generate_quizzes, generate_quiz_info_for_website
+
+    generate_quiz_info_for_website("/home/kavi/temp/site")
+
     with open(f"{folder}/CNAME", "w") as f:
         f.write("urbanstats.org")
 

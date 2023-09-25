@@ -5,9 +5,10 @@ import "./style.css";
 import "./common.css";
 
 import { loadJSON } from './load_json.js';
-import { gunzipSync } from 'zlib';
+import { gunzipSync, gzipSync } from 'zlib';
 
 import { QuizPanel } from './components/quiz-panel';
+import { sampleQuiz } from './quiz/sample';
 
 const ENDPOINT = "https://persistent.urbanstats.org";
 
@@ -43,7 +44,36 @@ async function loadPage() {
     var todays_quiz = null;
     var today_name = null;
     var today = null;
-    if (mode == "custom") {
+    if (mode == "random") {
+        const seed = urlParams.get('seed') || Math.floor(Math.random() * 1000000);
+        const quiz = sampleQuiz(5, seed);
+        // encode quiz as base64
+        const quiz_json = JSON.stringify(quiz);
+        // gzip quiz
+        const quiz_gzip = gzipSync(Buffer.from(quiz_json)).toString('base64');
+        const msg = {
+            mode: "custom",
+            quiz: quiz_gzip,
+            name: "random",
+        };
+        // encode as query string
+        const long = "?" + new URLSearchParams(msg).toString();
+
+        // POST to endpoint
+        var response = await fetch(ENDPOINT + "/shorten", {
+            method: "POST",
+            body: JSON.stringify({ full_text: long }),
+            headers: {
+                "Content-Type": "application/json",
+            },
+        }).then((response) => response.json());
+
+        // get short url
+        const short = response["shortened"];
+
+        window.location.href = window.location.href.split("?")[0] + "?short=" + short;
+
+    } else if (mode == "custom") {
         // parse from query
         const quiz_base64 = urlParams.get('quiz');
         console.log(quiz_base64)
