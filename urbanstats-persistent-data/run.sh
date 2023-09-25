@@ -1,7 +1,10 @@
 #!/bin/bash
 
+certificate='/etc/letsencrypt/live/persistent.urbanstats.org/fullchain.pem'
+key='/etc/letsencrypt/live/persistent.urbanstats.org/privkey.pem'
+
 rm -r venv
 virtualenv -p python3 venv
 source venv/bin/activate
 pip3 install -r requirements.txt
-gunicorn -b 0.0.0.0:5000 urbanstats_persistent_data:app
+gunicorn -b 0.0.0.0:443 --certfile $certificate --keyfile $key urbanstats_persistent_data:app

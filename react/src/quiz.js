@@ -9,7 +9,7 @@ import { gunzipSync } from 'zlib';
 
 import { QuizPanel } from './components/quiz-panel';
 
-const ENDPOINT = "http://168.235.81.104:5000";
+const ENDPOINT = "https://persistent.urbanstats.org";
 
 async function loadPage() {
     document.title = "Juxtastat";
@@ -17,7 +17,8 @@ async function loadPage() {
     // fractional days since 2023-09-02
     const offset = (new Date() - new Date(2023, 8, 2)) / (1000 * 60 * 60 * 24);
     // if there's a query, parse it
-    const params_string = window.location.search || window.location.hash.substring(1);
+    const params_string = window.location.search.substring(1) || window.location.hash.substring(1);
+    console.log(params_string)
     var urlParams = new URLSearchParams(
         params_string
     );
@@ -25,17 +26,6 @@ async function loadPage() {
         // look up short url
         const short = urlParams.get('short');
         // POST to endpoint
-        /*
-        response = requests.post(
-        #     "http://localhost:5000/lengthen",
-            "http://168.235.81.104:5000/lengthen",
-            data=dict(shortened="5ef76d021c8326f"),
-        )
-        with open("/home/kavi/temp.html", "wb") as f:
-            f.write(response.content)
-        print(response.content)
-        response.json()
-        */
         var response = await fetch(ENDPOINT + "/lengthen", {
             method: "POST",
             body: JSON.stringify({ shortened: short }),

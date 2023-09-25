@@ -1,6 +1,6 @@
 #!/bin/bash
 
-SERVER=root@168.235.81.104
+SERVER=root@persistent.urbanstats.org
 
 rsync -az run.sh requirements.txt urbanstats_persistent_data.py $SERVER:/root/urbanstats-persistent-data
 

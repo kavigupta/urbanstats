@@ -371,7 +371,7 @@ function summary(today, correct_pattern, total_correct, parameters) {
 
     text += "juxtastat.org";
     if (parameters != "") {
-        text += "#" + parameters;
+        text += "/#" + parameters;
     }
     return text;
 }
