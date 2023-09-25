@@ -58,19 +58,23 @@ def pct_diff(x, y):
 
 def sample_quiz(rng):
     banned_categories = []
+    banned_types = []
     result = []
     for range in ranges:
-        question = sample_quiz_question(rng, banned_categories, *range)
+        type, question = sample_quiz_question(rng, banned_categories, banned_types, *range)
         banned_categories.append(
             get_statistic_categories()[question["stat_column_original"]]
         )
+        banned_types.append(type)
         result.append(question)
     return result
 
 
-def sample_quiz_question(rng, banned_categories, distance_pct_bot, distance_pct_top):
+def sample_quiz_question(rng, banned_categories, banned_types, distance_pct_bot, distance_pct_top):
     while True:
         type = rng.choice(types)
+        if type in banned_types:
+            continue
         stat_column_original = rng.choice(stats)
         if get_statistic_categories()[stat_column_original] in banned_categories:
             continue
@@ -89,7 +93,7 @@ def sample_quiz_question(rng, banned_categories, distance_pct_bot, distance_pct_
                 / difficulties[get_statistic_categories()[stat_column_original]]
             )
             if distance_pct_bot <= diff <= distance_pct_top:
-                return dict(
+                return type, dict(
                     stat_column_original=stat_column_original,
                     longname_a=a,
                     longname_b=b,
@@ -107,7 +111,7 @@ def filter_for_pop(type):
     return at_pop
 
 
-@permacache("urbanstats/games/quiz/generate_quiz_8")
+@permacache("urbanstats/games/quiz/generate_quiz_9")
 def generate_quiz(seed):
     rng = np.random.default_rng(int(stable_hash(seed), 16))
     return sample_quiz(rng)
