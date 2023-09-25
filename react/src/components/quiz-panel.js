@@ -41,7 +41,7 @@ class QuizPanel extends PageTemplate {
                     today={this.today}
                     today_name={this.today_name}
                     settings={this.state.settings}
-                    parameters={this.props.parameters}/>
+                    parameters={this.props.parameters} />
             )
         }
 
