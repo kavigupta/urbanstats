@@ -59,19 +59,7 @@ async function loadPage() {
         // encode as query string
         const long = "?" + new URLSearchParams(msg).toString();
 
-        // POST to endpoint
-        var response = await fetch(ENDPOINT + "/shorten", {
-            method: "POST",
-            body: JSON.stringify({ full_text: long }),
-            headers: {
-                "Content-Type": "application/json",
-            },
-        }).then((response) => response.json());
-
-        // get short url
-        const short = response["shortened"];
-
-        window.location.href = window.location.href.split("?")[0] + "?short=" + short;
+        window.location.href = window.location.href.split("?")[0].split("#")[0] + long;
 
     } else if (mode == "custom") {
         // parse from query

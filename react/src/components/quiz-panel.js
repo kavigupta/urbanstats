@@ -9,6 +9,8 @@ import "../common.css";
 import "./quiz.css";
 import { isMobile } from 'react-device-detect';
 
+const ENDPOINT = "https://persistent.urbanstats.org";
+
 class QuizPanel extends PageTemplate {
     constructor(props) {
         super(props);
@@ -242,8 +244,8 @@ class QuizResult extends PageTemplate {
                 <div className="gap"></div>
                 <Summary correct_pattern={correct_pattern} total_correct={total_correct} total={correct_pattern.length} />
                 <div className="gap_small"></div>
-                <button class="serif quiz_copy_button" ref={this.button} onClick={() => {
-                    const text = summary(today_name, correct_pattern, total_correct, this.props.parameters);
+                <button class="serif quiz_copy_button" ref={this.button} onClick={async () => {
+                    const text = await summary(today_name, correct_pattern, total_correct, this.props.parameters);
                     // if (isMobile) {
                     //     try {
                     //         shareOnMobile({
@@ -357,7 +359,7 @@ function red_and_green_squares(correct_pattern) {
     }).join("");
 }
 
-function summary(today, correct_pattern, total_correct, parameters) {
+async function summary(today, correct_pattern, total_correct, parameters) {
     // wordle-style summary
     let text = "Juxtastat " + today + " " + total_correct + "/" + correct_pattern.length;
 
@@ -371,6 +373,22 @@ function summary(today, correct_pattern, total_correct, parameters) {
 
     text += "juxtastat.org";
     if (parameters != "") {
+        console.log(parameters);
+        if (parameters.length > 100) {
+            // POST to endpoint
+            var response = await fetch(ENDPOINT + "/shorten", {
+                method: "POST",
+                body: JSON.stringify({ full_text: parameters }),
+                headers: {
+                    "Content-Type": "application/json",
+                },
+            }).then((response) => response.json());
+
+            // get short url
+            const short = response["shortened"];
+            parameters = "short=" + short;
+
+        }
         text += "/#" + parameters;
     }
     return text;
