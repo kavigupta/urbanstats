@@ -103,7 +103,7 @@ def sample_quiz_question(rng, banned_categories, banned_types, distance_pct_bot,
         print("FAILED", type, stat_column_original, distance_pct_bot, distance_pct_top)
 
 
-@permacache("urbanstats/games/quiz/filter_for_pop")
+@permacache("urbanstats/games/quiz/filter_for_pop_2")
 def filter_for_pop(type):
     full = full_shapefile()
     filt = full[full.type == type]
@@ -111,7 +111,7 @@ def filter_for_pop(type):
     return at_pop
 
 
-@permacache("urbanstats/games/quiz/generate_quiz_9")
+@permacache("urbanstats/games/quiz/generate_quiz_10")
 def generate_quiz(seed):
     rng = np.random.default_rng(int(stable_hash(seed), 16))
     return sample_quiz(rng)
@@ -152,7 +152,7 @@ def custom_quiz_link(seed, name, *, localhost):
 def generate_quizzes(folder):
     path = lambda day: os.path.join(folder, f"{day}")
 
-    fixed_up_to = 23
+    fixed_up_to = 27
     for i in range(fixed_up_to + 1):
         import shutil
 
@@ -253,13 +253,11 @@ stats_to_display = {
     "hispanic": "higher % of people who are Hispanic",
     "black": "higher % of people who are Black",
     "asian": "higher % of people who are Asian",
-    "native": "higher % of people who are Native American",
-    "hawaiian_pi": "higher % of people who are hawaiian / pi",
     "citizenship_citizen_by_birth": "higher % of residents who are citizens by birth",
     "citizenship_citizen_by_naturalization": "higher % of residents who are citizens by naturalization",
     "citizenship_not_citizen": "higher % of residents who are non-citizens",
-    "birthplace_non_us": "higher % of people who were born outside the us",
-    "birthplace_us_not_state": "higher % of people who were born in the us and born outside their state of residence",
+    "birthplace_non_us": "higher % of people who were born outside the US",
+    "birthplace_us_not_state": "higher % of people who were born in the US and outside their state of residence",
     "birthplace_us_state": "higher % of people who were born in their state of residence",
     "language_english_only": "higher % of people who only speak english at home",
     "language_spanish": "higher % of people who speak spanish at home",
@@ -333,6 +331,8 @@ not_included = {
     "area",
     "compactness",
     # middle / obscure
+    "native",
+    "hawaiian_pi",
     "household_income_50k_to_100k",
     "individual_income_50k_to_100k",
     "year_built_1970_to_1979",
