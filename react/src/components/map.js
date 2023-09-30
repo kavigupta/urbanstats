@@ -75,6 +75,7 @@ class MapGeneric extends React.Component {
     async add_polygon(map, name, fit_bounds, style, add_callback = true, add_to_bottom = false) {
         this.exist_this_time.push(name);
         if (name in this.polygon_by_name) {
+            this.polygon_by_name[name].setStyle(style);
             return;
         }
         // https://stackoverflow.com/a/35970894/1549476
@@ -173,8 +174,7 @@ class Map extends MapGeneric {
                 continue;
             }
 
-            // const current_time_millis = new Date().getTime();
-            // console.log(related[i].longname + current_time_millis)
+
             const color = random_color(related[i].longname);
             const style = { color: color, weight: 1, fillColor: color, fillOpacity: 0.1 };
             names.push(related[i].longname);
