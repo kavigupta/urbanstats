@@ -10,6 +10,7 @@ function random_color(name) {
     for (var j = 0; j < name.length; j++) {
         seed += name.charCodeAt(j);
         seed *= 31;
+        seed %= 1000000007;
     }
     function random() {
         var x = Math.sin(seed++) * 10000;
