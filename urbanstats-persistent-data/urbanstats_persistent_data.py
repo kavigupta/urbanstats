@@ -39,8 +39,14 @@ cors = CORS(app)
 def shorten_request():
     conn, c = table()
 
-    if 'full_text' in flask.request.form:
-        full_text = flask.request.form['full_text']
+    form = flask.request.form
+    if not form:
+        form = json.loads(flask.request.data.decode('utf-8'))
+    print(form)
+
+
+    if 'full_text' in form:
+        full_text = form['full_text']
         shortened = shorten(full_text)
         # insert if it does not exist
         c.execute('INSERT OR IGNORE INTO ShortenedData VALUES (?, ?)', (shortened, full_text))
@@ -56,9 +62,7 @@ def lengthen_request():
     _, c = table()
 
     form = flask.request.form
-    print(form)
     if not form:
-        print(flask.request.data)
         form = json.loads(flask.request.data.decode('utf-8'))
     print(form)
 
