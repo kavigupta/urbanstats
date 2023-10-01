@@ -61,7 +61,9 @@ def sample_quiz(rng):
     banned_types = []
     result = []
     for range in ranges:
-        type, question = sample_quiz_question(rng, banned_categories, banned_types, *range)
+        type, question = sample_quiz_question(
+            rng, banned_categories, banned_types, *range
+        )
         banned_categories.append(
             get_statistic_categories()[question["stat_column_original"]]
         )
@@ -70,7 +72,9 @@ def sample_quiz(rng):
     return result
 
 
-def sample_quiz_question(rng, banned_categories, banned_types, distance_pct_bot, distance_pct_top):
+def sample_quiz_question(
+    rng, banned_categories, banned_types, distance_pct_bot, distance_pct_top
+):
     while True:
         type = rng.choice(types)
         if type in banned_types:
