@@ -21,6 +21,7 @@ from relationship import ordering_idx
 
 from urbanstats.protobuf import data_files_pb2
 from urbanstats.protobuf.utils import write_gzip
+from urbanstats.weather.to_blocks import weather_stat_names
 
 
 def create_page_json(
@@ -159,6 +160,7 @@ def statistic_internal_to_display_name():
         **transportation_stats,
         **election_stats,
         **feature_stats,
+        **weather_stat_names,
         **misc_stats,
         **{k: ad[k] for k in ad if k != "ad_1"},
     }
@@ -185,6 +187,7 @@ def get_statistic_categories():
         **{k: "transportation" for k in transportation_stats},
         **{elect: "election" for elect in election_stats},
         **{k: "feature" for k in feature_stats},
+        **{k: "weather" for k in weather_stat_names},
         **{k: "misc" for k in misc_stats},
         **{k: ad[k] for k in ad if k != "ad_1"},
     }
@@ -225,6 +228,7 @@ def get_explanation_page():
             }[k]
             for k in feature_stats
         },
+        **{k: "weather" for k in weather_stat_names},
         **{k: k.split("_")[0] for k in misc_stats},
     }
     result = {k: result[k] for k in get_statistic_categories()}
@@ -242,6 +246,7 @@ category_metadata = {
     "transportation": dict(name="Transportation", show_checkbox=True, default=False),
     "election": dict(name="Election", show_checkbox=True, default=True),
     "feature": dict(name="Proximity to Features", show_checkbox=True, default=False),
+    "weather": dict(name="Weather", show_checkbox=True, default=False),
     "misc": dict(name="Miscellaneous", show_checkbox=True, default=False),
     "other_densities": dict(
         name="Other Density Metrics", show_checkbox=True, default=False

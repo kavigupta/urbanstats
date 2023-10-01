@@ -2285,4 +2285,798 @@ $root.StringList = (function() {
     return StringList;
 })();
 
+$root.AllStats = (function() {
+
+    /**
+     * Properties of an AllStats.
+     * @exports IAllStats
+     * @interface IAllStats
+     * @property {Array.<number>|null} [stats] AllStats stats
+     */
+
+    /**
+     * Constructs a new AllStats.
+     * @exports AllStats
+     * @classdesc Represents an AllStats.
+     * @implements IAllStats
+     * @constructor
+     * @param {IAllStats=} [properties] Properties to set
+     */
+    function AllStats(properties) {
+        this.stats = [];
+        if (properties)
+            for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                if (properties[keys[i]] != null)
+                    this[keys[i]] = properties[keys[i]];
+    }
+
+    /**
+     * AllStats stats.
+     * @member {Array.<number>} stats
+     * @memberof AllStats
+     * @instance
+     */
+    AllStats.prototype.stats = $util.emptyArray;
+
+    /**
+     * Creates a new AllStats instance using the specified properties.
+     * @function create
+     * @memberof AllStats
+     * @static
+     * @param {IAllStats=} [properties] Properties to set
+     * @returns {AllStats} AllStats instance
+     */
+    AllStats.create = function create(properties) {
+        return new AllStats(properties);
+    };
+
+    /**
+     * Encodes the specified AllStats message. Does not implicitly {@link AllStats.verify|verify} messages.
+     * @function encode
+     * @memberof AllStats
+     * @static
+     * @param {IAllStats} message AllStats message or plain object to encode
+     * @param {$protobuf.Writer} [writer] Writer to encode to
+     * @returns {$protobuf.Writer} Writer
+     */
+    AllStats.encode = function encode(message, writer) {
+        if (!writer)
+            writer = $Writer.create();
+        if (message.stats != null && message.stats.length) {
+            writer.uint32(/* id 1, wireType 2 =*/10).fork();
+            for (var i = 0; i < message.stats.length; ++i)
+                writer.float(message.stats[i]);
+            writer.ldelim();
+        }
+        return writer;
+    };
+
+    /**
+     * Encodes the specified AllStats message, length delimited. Does not implicitly {@link AllStats.verify|verify} messages.
+     * @function encodeDelimited
+     * @memberof AllStats
+     * @static
+     * @param {IAllStats} message AllStats message or plain object to encode
+     * @param {$protobuf.Writer} [writer] Writer to encode to
+     * @returns {$protobuf.Writer} Writer
+     */
+    AllStats.encodeDelimited = function encodeDelimited(message, writer) {
+        return this.encode(message, writer).ldelim();
+    };
+
+    /**
+     * Decodes an AllStats message from the specified reader or buffer.
+     * @function decode
+     * @memberof AllStats
+     * @static
+     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+     * @param {number} [length] Message length if known beforehand
+     * @returns {AllStats} AllStats
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    AllStats.decode = function decode(reader, length) {
+        if (!(reader instanceof $Reader))
+            reader = $Reader.create(reader);
+        var end = length === undefined ? reader.len : reader.pos + length, message = new $root.AllStats();
+        while (reader.pos < end) {
+            var tag = reader.uint32();
+            switch (tag >>> 3) {
+            case 1: {
+                    if (!(message.stats && message.stats.length))
+                        message.stats = [];
+                    if ((tag & 7) === 2) {
+                        var end2 = reader.uint32() + reader.pos;
+                        while (reader.pos < end2)
+                            message.stats.push(reader.float());
+                    } else
+                        message.stats.push(reader.float());
+                    break;
+                }
+            default:
+                reader.skipType(tag & 7);
+                break;
+            }
+        }
+        return message;
+    };
+
+    /**
+     * Decodes an AllStats message from the specified reader or buffer, length delimited.
+     * @function decodeDelimited
+     * @memberof AllStats
+     * @static
+     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+     * @returns {AllStats} AllStats
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    AllStats.decodeDelimited = function decodeDelimited(reader) {
+        if (!(reader instanceof $Reader))
+            reader = new $Reader(reader);
+        return this.decode(reader, reader.uint32());
+    };
+
+    /**
+     * Verifies an AllStats message.
+     * @function verify
+     * @memberof AllStats
+     * @static
+     * @param {Object.<string,*>} message Plain object to verify
+     * @returns {string|null} `null` if valid, otherwise the reason why it is not
+     */
+    AllStats.verify = function verify(message) {
+        if (typeof message !== "object" || message === null)
+            return "object expected";
+        if (message.stats != null && message.hasOwnProperty("stats")) {
+            if (!Array.isArray(message.stats))
+                return "stats: array expected";
+            for (var i = 0; i < message.stats.length; ++i)
+                if (typeof message.stats[i] !== "number")
+                    return "stats: number[] expected";
+        }
+        return null;
+    };
+
+    /**
+     * Creates an AllStats message from a plain object. Also converts values to their respective internal types.
+     * @function fromObject
+     * @memberof AllStats
+     * @static
+     * @param {Object.<string,*>} object Plain object
+     * @returns {AllStats} AllStats
+     */
+    AllStats.fromObject = function fromObject(object) {
+        if (object instanceof $root.AllStats)
+            return object;
+        var message = new $root.AllStats();
+        if (object.stats) {
+            if (!Array.isArray(object.stats))
+                throw TypeError(".AllStats.stats: array expected");
+            message.stats = [];
+            for (var i = 0; i < object.stats.length; ++i)
+                message.stats[i] = Number(object.stats[i]);
+        }
+        return message;
+    };
+
+    /**
+     * Creates a plain object from an AllStats message. Also converts values to other types if specified.
+     * @function toObject
+     * @memberof AllStats
+     * @static
+     * @param {AllStats} message AllStats
+     * @param {$protobuf.IConversionOptions} [options] Conversion options
+     * @returns {Object.<string,*>} Plain object
+     */
+    AllStats.toObject = function toObject(message, options) {
+        if (!options)
+            options = {};
+        var object = {};
+        if (options.arrays || options.defaults)
+            object.stats = [];
+        if (message.stats && message.stats.length) {
+            object.stats = [];
+            for (var j = 0; j < message.stats.length; ++j)
+                object.stats[j] = options.json && !isFinite(message.stats[j]) ? String(message.stats[j]) : message.stats[j];
+        }
+        return object;
+    };
+
+    /**
+     * Converts this AllStats to JSON.
+     * @function toJSON
+     * @memberof AllStats
+     * @instance
+     * @returns {Object.<string,*>} JSON object
+     */
+    AllStats.prototype.toJSON = function toJSON() {
+        return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+    };
+
+    /**
+     * Gets the default type url for AllStats
+     * @function getTypeUrl
+     * @memberof AllStats
+     * @static
+     * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns {string} The default type url
+     */
+    AllStats.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+        if (typeUrlPrefix === undefined) {
+            typeUrlPrefix = "type.googleapis.com";
+        }
+        return typeUrlPrefix + "/AllStats";
+    };
+
+    return AllStats;
+})();
+
+$root.ConsolidatedShapes = (function() {
+
+    /**
+     * Properties of a ConsolidatedShapes.
+     * @exports IConsolidatedShapes
+     * @interface IConsolidatedShapes
+     * @property {Array.<string>|null} [longnames] ConsolidatedShapes longnames
+     * @property {Array.<IFeatureCollection>|null} [shapes] ConsolidatedShapes shapes
+     */
+
+    /**
+     * Constructs a new ConsolidatedShapes.
+     * @exports ConsolidatedShapes
+     * @classdesc Represents a ConsolidatedShapes.
+     * @implements IConsolidatedShapes
+     * @constructor
+     * @param {IConsolidatedShapes=} [properties] Properties to set
+     */
+    function ConsolidatedShapes(properties) {
+        this.longnames = [];
+        this.shapes = [];
+        if (properties)
+            for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                if (properties[keys[i]] != null)
+                    this[keys[i]] = properties[keys[i]];
+    }
+
+    /**
+     * ConsolidatedShapes longnames.
+     * @member {Array.<string>} longnames
+     * @memberof ConsolidatedShapes
+     * @instance
+     */
+    ConsolidatedShapes.prototype.longnames = $util.emptyArray;
+
+    /**
+     * ConsolidatedShapes shapes.
+     * @member {Array.<IFeatureCollection>} shapes
+     * @memberof ConsolidatedShapes
+     * @instance
+     */
+    ConsolidatedShapes.prototype.shapes = $util.emptyArray;
+
+    /**
+     * Creates a new ConsolidatedShapes instance using the specified properties.
+     * @function create
+     * @memberof ConsolidatedShapes
+     * @static
+     * @param {IConsolidatedShapes=} [properties] Properties to set
+     * @returns {ConsolidatedShapes} ConsolidatedShapes instance
+     */
+    ConsolidatedShapes.create = function create(properties) {
+        return new ConsolidatedShapes(properties);
+    };
+
+    /**
+     * Encodes the specified ConsolidatedShapes message. Does not implicitly {@link ConsolidatedShapes.verify|verify} messages.
+     * @function encode
+     * @memberof ConsolidatedShapes
+     * @static
+     * @param {IConsolidatedShapes} message ConsolidatedShapes message or plain object to encode
+     * @param {$protobuf.Writer} [writer] Writer to encode to
+     * @returns {$protobuf.Writer} Writer
+     */
+    ConsolidatedShapes.encode = function encode(message, writer) {
+        if (!writer)
+            writer = $Writer.create();
+        if (message.longnames != null && message.longnames.length)
+            for (var i = 0; i < message.longnames.length; ++i)
+                writer.uint32(/* id 1, wireType 2 =*/10).string(message.longnames[i]);
+        if (message.shapes != null && message.shapes.length)
+            for (var i = 0; i < message.shapes.length; ++i)
+                $root.FeatureCollection.encode(message.shapes[i], writer.uint32(/* id 2, wireType 2 =*/18).fork()).ldelim();
+        return writer;
+    };
+
+    /**
+     * Encodes the specified ConsolidatedShapes message, length delimited. Does not implicitly {@link ConsolidatedShapes.verify|verify} messages.
+     * @function encodeDelimited
+     * @memberof ConsolidatedShapes
+     * @static
+     * @param {IConsolidatedShapes} message ConsolidatedShapes message or plain object to encode
+     * @param {$protobuf.Writer} [writer] Writer to encode to
+     * @returns {$protobuf.Writer} Writer
+     */
+    ConsolidatedShapes.encodeDelimited = function encodeDelimited(message, writer) {
+        return this.encode(message, writer).ldelim();
+    };
+
+    /**
+     * Decodes a ConsolidatedShapes message from the specified reader or buffer.
+     * @function decode
+     * @memberof ConsolidatedShapes
+     * @static
+     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+     * @param {number} [length] Message length if known beforehand
+     * @returns {ConsolidatedShapes} ConsolidatedShapes
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    ConsolidatedShapes.decode = function decode(reader, length) {
+        if (!(reader instanceof $Reader))
+            reader = $Reader.create(reader);
+        var end = length === undefined ? reader.len : reader.pos + length, message = new $root.ConsolidatedShapes();
+        while (reader.pos < end) {
+            var tag = reader.uint32();
+            switch (tag >>> 3) {
+            case 1: {
+                    if (!(message.longnames && message.longnames.length))
+                        message.longnames = [];
+                    message.longnames.push(reader.string());
+                    break;
+                }
+            case 2: {
+                    if (!(message.shapes && message.shapes.length))
+                        message.shapes = [];
+                    message.shapes.push($root.FeatureCollection.decode(reader, reader.uint32()));
+                    break;
+                }
+            default:
+                reader.skipType(tag & 7);
+                break;
+            }
+        }
+        return message;
+    };
+
+    /**
+     * Decodes a ConsolidatedShapes message from the specified reader or buffer, length delimited.
+     * @function decodeDelimited
+     * @memberof ConsolidatedShapes
+     * @static
+     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+     * @returns {ConsolidatedShapes} ConsolidatedShapes
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    ConsolidatedShapes.decodeDelimited = function decodeDelimited(reader) {
+        if (!(reader instanceof $Reader))
+            reader = new $Reader(reader);
+        return this.decode(reader, reader.uint32());
+    };
+
+    /**
+     * Verifies a ConsolidatedShapes message.
+     * @function verify
+     * @memberof ConsolidatedShapes
+     * @static
+     * @param {Object.<string,*>} message Plain object to verify
+     * @returns {string|null} `null` if valid, otherwise the reason why it is not
+     */
+    ConsolidatedShapes.verify = function verify(message) {
+        if (typeof message !== "object" || message === null)
+            return "object expected";
+        if (message.longnames != null && message.hasOwnProperty("longnames")) {
+            if (!Array.isArray(message.longnames))
+                return "longnames: array expected";
+            for (var i = 0; i < message.longnames.length; ++i)
+                if (!$util.isString(message.longnames[i]))
+                    return "longnames: string[] expected";
+        }
+        if (message.shapes != null && message.hasOwnProperty("shapes")) {
+            if (!Array.isArray(message.shapes))
+                return "shapes: array expected";
+            for (var i = 0; i < message.shapes.length; ++i) {
+                var error = $root.FeatureCollection.verify(message.shapes[i]);
+                if (error)
+                    return "shapes." + error;
+            }
+        }
+        return null;
+    };
+
+    /**
+     * Creates a ConsolidatedShapes message from a plain object. Also converts values to their respective internal types.
+     * @function fromObject
+     * @memberof ConsolidatedShapes
+     * @static
+     * @param {Object.<string,*>} object Plain object
+     * @returns {ConsolidatedShapes} ConsolidatedShapes
+     */
+    ConsolidatedShapes.fromObject = function fromObject(object) {
+        if (object instanceof $root.ConsolidatedShapes)
+            return object;
+        var message = new $root.ConsolidatedShapes();
+        if (object.longnames) {
+            if (!Array.isArray(object.longnames))
+                throw TypeError(".ConsolidatedShapes.longnames: array expected");
+            message.longnames = [];
+            for (var i = 0; i < object.longnames.length; ++i)
+                message.longnames[i] = String(object.longnames[i]);
+        }
+        if (object.shapes) {
+            if (!Array.isArray(object.shapes))
+                throw TypeError(".ConsolidatedShapes.shapes: array expected");
+            message.shapes = [];
+            for (var i = 0; i < object.shapes.length; ++i) {
+                if (typeof object.shapes[i] !== "object")
+                    throw TypeError(".ConsolidatedShapes.shapes: object expected");
+                message.shapes[i] = $root.FeatureCollection.fromObject(object.shapes[i]);
+            }
+        }
+        return message;
+    };
+
+    /**
+     * Creates a plain object from a ConsolidatedShapes message. Also converts values to other types if specified.
+     * @function toObject
+     * @memberof ConsolidatedShapes
+     * @static
+     * @param {ConsolidatedShapes} message ConsolidatedShapes
+     * @param {$protobuf.IConversionOptions} [options] Conversion options
+     * @returns {Object.<string,*>} Plain object
+     */
+    ConsolidatedShapes.toObject = function toObject(message, options) {
+        if (!options)
+            options = {};
+        var object = {};
+        if (options.arrays || options.defaults) {
+            object.longnames = [];
+            object.shapes = [];
+        }
+        if (message.longnames && message.longnames.length) {
+            object.longnames = [];
+            for (var j = 0; j < message.longnames.length; ++j)
+                object.longnames[j] = message.longnames[j];
+        }
+        if (message.shapes && message.shapes.length) {
+            object.shapes = [];
+            for (var j = 0; j < message.shapes.length; ++j)
+                object.shapes[j] = $root.FeatureCollection.toObject(message.shapes[j], options);
+        }
+        return object;
+    };
+
+    /**
+     * Converts this ConsolidatedShapes to JSON.
+     * @function toJSON
+     * @memberof ConsolidatedShapes
+     * @instance
+     * @returns {Object.<string,*>} JSON object
+     */
+    ConsolidatedShapes.prototype.toJSON = function toJSON() {
+        return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+    };
+
+    /**
+     * Gets the default type url for ConsolidatedShapes
+     * @function getTypeUrl
+     * @memberof ConsolidatedShapes
+     * @static
+     * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns {string} The default type url
+     */
+    ConsolidatedShapes.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+        if (typeUrlPrefix === undefined) {
+            typeUrlPrefix = "type.googleapis.com";
+        }
+        return typeUrlPrefix + "/ConsolidatedShapes";
+    };
+
+    return ConsolidatedShapes;
+})();
+
+$root.ConsolidatedStatistics = (function() {
+
+    /**
+     * Properties of a ConsolidatedStatistics.
+     * @exports IConsolidatedStatistics
+     * @interface IConsolidatedStatistics
+     * @property {Array.<string>|null} [longnames] ConsolidatedStatistics longnames
+     * @property {Array.<string>|null} [shortnames] ConsolidatedStatistics shortnames
+     * @property {Array.<IAllStats>|null} [stats] ConsolidatedStatistics stats
+     */
+
+    /**
+     * Constructs a new ConsolidatedStatistics.
+     * @exports ConsolidatedStatistics
+     * @classdesc Represents a ConsolidatedStatistics.
+     * @implements IConsolidatedStatistics
+     * @constructor
+     * @param {IConsolidatedStatistics=} [properties] Properties to set
+     */
+    function ConsolidatedStatistics(properties) {
+        this.longnames = [];
+        this.shortnames = [];
+        this.stats = [];
+        if (properties)
+            for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                if (properties[keys[i]] != null)
+                    this[keys[i]] = properties[keys[i]];
+    }
+
+    /**
+     * ConsolidatedStatistics longnames.
+     * @member {Array.<string>} longnames
+     * @memberof ConsolidatedStatistics
+     * @instance
+     */
+    ConsolidatedStatistics.prototype.longnames = $util.emptyArray;
+
+    /**
+     * ConsolidatedStatistics shortnames.
+     * @member {Array.<string>} shortnames
+     * @memberof ConsolidatedStatistics
+     * @instance
+     */
+    ConsolidatedStatistics.prototype.shortnames = $util.emptyArray;
+
+    /**
+     * ConsolidatedStatistics stats.
+     * @member {Array.<IAllStats>} stats
+     * @memberof ConsolidatedStatistics
+     * @instance
+     */
+    ConsolidatedStatistics.prototype.stats = $util.emptyArray;
+
+    /**
+     * Creates a new ConsolidatedStatistics instance using the specified properties.
+     * @function create
+     * @memberof ConsolidatedStatistics
+     * @static
+     * @param {IConsolidatedStatistics=} [properties] Properties to set
+     * @returns {ConsolidatedStatistics} ConsolidatedStatistics instance
+     */
+    ConsolidatedStatistics.create = function create(properties) {
+        return new ConsolidatedStatistics(properties);
+    };
+
+    /**
+     * Encodes the specified ConsolidatedStatistics message. Does not implicitly {@link ConsolidatedStatistics.verify|verify} messages.
+     * @function encode
+     * @memberof ConsolidatedStatistics
+     * @static
+     * @param {IConsolidatedStatistics} message ConsolidatedStatistics message or plain object to encode
+     * @param {$protobuf.Writer} [writer] Writer to encode to
+     * @returns {$protobuf.Writer} Writer
+     */
+    ConsolidatedStatistics.encode = function encode(message, writer) {
+        if (!writer)
+            writer = $Writer.create();
+        if (message.longnames != null && message.longnames.length)
+            for (var i = 0; i < message.longnames.length; ++i)
+                writer.uint32(/* id 1, wireType 2 =*/10).string(message.longnames[i]);
+        if (message.shortnames != null && message.shortnames.length)
+            for (var i = 0; i < message.shortnames.length; ++i)
+                writer.uint32(/* id 2, wireType 2 =*/18).string(message.shortnames[i]);
+        if (message.stats != null && message.stats.length)
+            for (var i = 0; i < message.stats.length; ++i)
+                $root.AllStats.encode(message.stats[i], writer.uint32(/* id 3, wireType 2 =*/26).fork()).ldelim();
+        return writer;
+    };
+
+    /**
+     * Encodes the specified ConsolidatedStatistics message, length delimited. Does not implicitly {@link ConsolidatedStatistics.verify|verify} messages.
+     * @function encodeDelimited
+     * @memberof ConsolidatedStatistics
+     * @static
+     * @param {IConsolidatedStatistics} message ConsolidatedStatistics message or plain object to encode
+     * @param {$protobuf.Writer} [writer] Writer to encode to
+     * @returns {$protobuf.Writer} Writer
+     */
+    ConsolidatedStatistics.encodeDelimited = function encodeDelimited(message, writer) {
+        return this.encode(message, writer).ldelim();
+    };
+
+    /**
+     * Decodes a ConsolidatedStatistics message from the specified reader or buffer.
+     * @function decode
+     * @memberof ConsolidatedStatistics
+     * @static
+     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+     * @param {number} [length] Message length if known beforehand
+     * @returns {ConsolidatedStatistics} ConsolidatedStatistics
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    ConsolidatedStatistics.decode = function decode(reader, length) {
+        if (!(reader instanceof $Reader))
+            reader = $Reader.create(reader);
+        var end = length === undefined ? reader.len : reader.pos + length, message = new $root.ConsolidatedStatistics();
+        while (reader.pos < end) {
+            var tag = reader.uint32();
+            switch (tag >>> 3) {
+            case 1: {
+                    if (!(message.longnames && message.longnames.length))
+                        message.longnames = [];
+                    message.longnames.push(reader.string());
+                    break;
+                }
+            case 2: {
+                    if (!(message.shortnames && message.shortnames.length))
+                        message.shortnames = [];
+                    message.shortnames.push(reader.string());
+                    break;
+                }
+            case 3: {
+                    if (!(message.stats && message.stats.length))
+                        message.stats = [];
+                    message.stats.push($root.AllStats.decode(reader, reader.uint32()));
+                    break;
+                }
+            default:
+                reader.skipType(tag & 7);
+                break;
+            }
+        }
+        return message;
+    };
+
+    /**
+     * Decodes a ConsolidatedStatistics message from the specified reader or buffer, length delimited.
+     * @function decodeDelimited
+     * @memberof ConsolidatedStatistics
+     * @static
+     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+     * @returns {ConsolidatedStatistics} ConsolidatedStatistics
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    ConsolidatedStatistics.decodeDelimited = function decodeDelimited(reader) {
+        if (!(reader instanceof $Reader))
+            reader = new $Reader(reader);
+        return this.decode(reader, reader.uint32());
+    };
+
+    /**
+     * Verifies a ConsolidatedStatistics message.
+     * @function verify
+     * @memberof ConsolidatedStatistics
+     * @static
+     * @param {Object.<string,*>} message Plain object to verify
+     * @returns {string|null} `null` if valid, otherwise the reason why it is not
+     */
+    ConsolidatedStatistics.verify = function verify(message) {
+        if (typeof message !== "object" || message === null)
+            return "object expected";
+        if (message.longnames != null && message.hasOwnProperty("longnames")) {
+            if (!Array.isArray(message.longnames))
+                return "longnames: array expected";
+            for (var i = 0; i < message.longnames.length; ++i)
+                if (!$util.isString(message.longnames[i]))
+                    return "longnames: string[] expected";
+        }
+        if (message.shortnames != null && message.hasOwnProperty("shortnames")) {
+            if (!Array.isArray(message.shortnames))
+                return "shortnames: array expected";
+            for (var i = 0; i < message.shortnames.length; ++i)
+                if (!$util.isString(message.shortnames[i]))
+                    return "shortnames: string[] expected";
+        }
+        if (message.stats != null && message.hasOwnProperty("stats")) {
+            if (!Array.isArray(message.stats))
+                return "stats: array expected";
+            for (var i = 0; i < message.stats.length; ++i) {
+                var error = $root.AllStats.verify(message.stats[i]);
+                if (error)
+                    return "stats." + error;
+            }
+        }
+        return null;
+    };
+
+    /**
+     * Creates a ConsolidatedStatistics message from a plain object. Also converts values to their respective internal types.
+     * @function fromObject
+     * @memberof ConsolidatedStatistics
+     * @static
+     * @param {Object.<string,*>} object Plain object
+     * @returns {ConsolidatedStatistics} ConsolidatedStatistics
+     */
+    ConsolidatedStatistics.fromObject = function fromObject(object) {
+        if (object instanceof $root.ConsolidatedStatistics)
+            return object;
+        var message = new $root.ConsolidatedStatistics();
+        if (object.longnames) {
+            if (!Array.isArray(object.longnames))
+                throw TypeError(".ConsolidatedStatistics.longnames: array expected");
+            message.longnames = [];
+            for (var i = 0; i < object.longnames.length; ++i)
+                message.longnames[i] = String(object.longnames[i]);
+        }
+        if (object.shortnames) {
+            if (!Array.isArray(object.shortnames))
+                throw TypeError(".ConsolidatedStatistics.shortnames: array expected");
+            message.shortnames = [];
+            for (var i = 0; i < object.shortnames.length; ++i)
+                message.shortnames[i] = String(object.shortnames[i]);
+        }
+        if (object.stats) {
+            if (!Array.isArray(object.stats))
+                throw TypeError(".ConsolidatedStatistics.stats: array expected");
+            message.stats = [];
+            for (var i = 0; i < object.stats.length; ++i) {
+                if (typeof object.stats[i] !== "object")
+                    throw TypeError(".ConsolidatedStatistics.stats: object expected");
+                message.stats[i] = $root.AllStats.fromObject(object.stats[i]);
+            }
+        }
+        return message;
+    };
+
+    /**
+     * Creates a plain object from a ConsolidatedStatistics message. Also converts values to other types if specified.
+     * @function toObject
+     * @memberof ConsolidatedStatistics
+     * @static
+     * @param {ConsolidatedStatistics} message ConsolidatedStatistics
+     * @param {$protobuf.IConversionOptions} [options] Conversion options
+     * @returns {Object.<string,*>} Plain object
+     */
+    ConsolidatedStatistics.toObject = function toObject(message, options) {
+        if (!options)
+            options = {};
+        var object = {};
+        if (options.arrays || options.defaults) {
+            object.longnames = [];
+            object.shortnames = [];
+            object.stats = [];
+        }
+        if (message.longnames && message.longnames.length) {
+            object.longnames = [];
+            for (var j = 0; j < message.longnames.length; ++j)
+                object.longnames[j] = message.longnames[j];
+        }
+        if (message.shortnames && message.shortnames.length) {
+            object.shortnames = [];
+            for (var j = 0; j < message.shortnames.length; ++j)
+                object.shortnames[j] = message.shortnames[j];
+        }
+        if (message.stats && message.stats.length) {
+            object.stats = [];
+            for (var j = 0; j < message.stats.length; ++j)
+                object.stats[j] = $root.AllStats.toObject(message.stats[j], options);
+        }
+        return object;
+    };
+
+    /**
+     * Converts this ConsolidatedStatistics to JSON.
+     * @function toJSON
+     * @memberof ConsolidatedStatistics
+     * @instance
+     * @returns {Object.<string,*>} JSON object
+     */
+    ConsolidatedStatistics.prototype.toJSON = function toJSON() {
+        return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+    };
+
+    /**
+     * Gets the default type url for ConsolidatedStatistics
+     * @function getTypeUrl
+     * @memberof ConsolidatedStatistics
+     * @static
+     * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns {string} The default type url
+     */
+    ConsolidatedStatistics.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+        if (typeUrlPrefix === undefined) {
+            typeUrlPrefix = "type.googleapis.com";
+        }
+        return typeUrlPrefix + "/ConsolidatedStatistics";
+    };
+
+    return ConsolidatedStatistics;
+})();
+
 module.exports = $root;

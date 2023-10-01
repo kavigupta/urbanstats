@@ -24,6 +24,7 @@ from produce_html_page import (
 )
 from relationship import full_relationships, map_relationships_by_type
 from election_data import vest_elections
+from urbanstats.consolidated_data.produce_consolidated_data import full_consolidated_data
 
 from urbanstats.protobuf.utils import save_string_list
 
@@ -181,10 +182,13 @@ def main(no_geo=False, no_data=False, no_data_jsons=False):
             json.dump(list(full.population), f)
         output_ordering(full)
 
+        full_consolidated_data("/home/kavi/temp/site")
+
     shutil.copy("html_templates/article.html", f"{folder}")
     shutil.copy("html_templates/index.html", f"{folder}/")
     shutil.copy("html_templates/about.html", f"{folder}/")
     shutil.copy("html_templates/data-credit.html", f"{folder}/")
+    shutil.copy("html_templates/mapper.html", f"{folder}/")
     shutil.copy("html_templates/quiz.html", f"{folder}")
 
     shutil.copy("thumbnail.png", f"{folder}/")
@@ -224,11 +228,12 @@ def main(no_geo=False, no_data=False, no_data_jsons=False):
     with open(f"{folder}/.nojekyll", "w") as f:
         f.write("")
 
-    os.system("cd react; npm run prod")
+    os.system("cd react; npm run dev")
     shutil.copy("dist/article.js", f"{folder}/scripts/")
     shutil.copy("dist/index.js", f"{folder}/scripts/")
     shutil.copy("dist/about.js", f"{folder}/scripts/")
     shutil.copy("dist/data-credit.js", f"{folder}/scripts/")
+    shutil.copy("dist/mapper.js", f"{folder}/scripts/")
     shutil.copy("dist/quiz.js", f"{folder}/scripts/")
 
     from urbanstats.games.quiz import generate_quizzes

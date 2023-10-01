@@ -38,6 +38,10 @@ class MapGeneric extends React.Component {
          */
     }
 
+    async loadShape(name) {
+        return await loadProtobuf(shape_link(name), "FeatureCollection")
+    }
+
     async componentDidMount() {
         var osmUrl = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
             osmAttrib = '&copy; <a href="https://openstreetmap.org/copyright">OpenStreetMap</a> contributors',
@@ -79,7 +83,7 @@ class MapGeneric extends React.Component {
             return;
         }
         // https://stackoverflow.com/a/35970894/1549476
-        let polys = await loadProtobuf(shape_link(name), "FeatureCollection");
+        let polys = await this.loadShape(name);
         polys = polys.features.map(
             poly => {
                 return {

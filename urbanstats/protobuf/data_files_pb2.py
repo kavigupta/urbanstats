@@ -17,7 +17,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
     package="",
     syntax="proto3",
     serialized_options=None,
-    serialized_pb=b'\n\x10\x64\x61ta_files.proto"k\n\x0cStatisticRow\x12\x0f\n\x07statval\x18\x01 \x01(\x02\x12\x0f\n\x07ordinal\x18\x02 \x01(\x05\x12\x17\n\x0foverall_ordinal\x18\x03 \x01(\x05\x12 \n\x18percentile_by_population\x18\x04 \x01(\x02"F\n\rRelatedButton\x12\x10\n\x08longname\x18\x01 \x01(\t\x12\x11\n\tshortname\x18\x02 \x01(\t\x12\x10\n\x08row_type\x18\x03 \x01(\t"L\n\x0eRelatedButtons\x12\x19\n\x11relationship_type\x18\x01 \x01(\t\x12\x1f\n\x07\x62uttons\x18\x02 \x03(\x0b\x32\x0e.RelatedButton"\x93\x01\n\x07\x41rticle\x12\x11\n\tshortname\x18\x01 \x01(\t\x12\x10\n\x08longname\x18\x02 \x01(\t\x12\x0e\n\x06source\x18\x03 \x01(\t\x12\x14\n\x0c\x61rticle_type\x18\x04 \x01(\t\x12\x1b\n\x04rows\x18\x05 \x03(\x0b\x32\r.StatisticRow\x12 \n\x07related\x18\x06 \x03(\x0b\x32\x0f.RelatedButtons"&\n\nCoordinate\x12\x0b\n\x03lon\x18\x01 \x01(\x02\x12\x0b\n\x03lat\x18\x02 \x01(\x02"#\n\x04Ring\x12\x1b\n\x06\x63oords\x18\x01 \x03(\x0b\x32\x0b.Coordinate"-\n\x07\x46\x65\x61ture\x12\x0c\n\x04type\x18\x01 \x01(\t\x12\x14\n\x05rings\x18\x02 \x03(\x0b\x32\x05.Ring"/\n\x11\x46\x65\x61tureCollection\x12\x1a\n\x08\x66\x65\x61tures\x18\x01 \x03(\x0b\x32\x08.Feature"\x1e\n\nStringList\x12\x10\n\x08\x65lements\x18\x01 \x03(\tb\x06proto3',
+    serialized_pb=b'\n\x10\x64\x61ta_files.proto"k\n\x0cStatisticRow\x12\x0f\n\x07statval\x18\x01 \x01(\x02\x12\x0f\n\x07ordinal\x18\x02 \x01(\x05\x12\x17\n\x0foverall_ordinal\x18\x03 \x01(\x05\x12 \n\x18percentile_by_population\x18\x04 \x01(\x02"F\n\rRelatedButton\x12\x10\n\x08longname\x18\x01 \x01(\t\x12\x11\n\tshortname\x18\x02 \x01(\t\x12\x10\n\x08row_type\x18\x03 \x01(\t"L\n\x0eRelatedButtons\x12\x19\n\x11relationship_type\x18\x01 \x01(\t\x12\x1f\n\x07\x62uttons\x18\x02 \x03(\x0b\x32\x0e.RelatedButton"\x93\x01\n\x07\x41rticle\x12\x11\n\tshortname\x18\x01 \x01(\t\x12\x10\n\x08longname\x18\x02 \x01(\t\x12\x0e\n\x06source\x18\x03 \x01(\t\x12\x14\n\x0c\x61rticle_type\x18\x04 \x01(\t\x12\x1b\n\x04rows\x18\x05 \x03(\x0b\x32\r.StatisticRow\x12 \n\x07related\x18\x06 \x03(\x0b\x32\x0f.RelatedButtons"&\n\nCoordinate\x12\x0b\n\x03lon\x18\x01 \x01(\x02\x12\x0b\n\x03lat\x18\x02 \x01(\x02"#\n\x04Ring\x12\x1b\n\x06\x63oords\x18\x01 \x03(\x0b\x32\x0b.Coordinate"-\n\x07\x46\x65\x61ture\x12\x0c\n\x04type\x18\x01 \x01(\t\x12\x14\n\x05rings\x18\x02 \x03(\x0b\x32\x05.Ring"/\n\x11\x46\x65\x61tureCollection\x12\x1a\n\x08\x66\x65\x61tures\x18\x01 \x03(\x0b\x32\x08.Feature"\x1e\n\nStringList\x12\x10\n\x08\x65lements\x18\x01 \x03(\t"\x19\n\x08\x41llStats\x12\r\n\x05stats\x18\x01 \x03(\x02"K\n\x12\x43onsolidatedShapes\x12\x11\n\tlongnames\x18\x01 \x03(\t\x12"\n\x06shapes\x18\x02 \x03(\x0b\x32\x12.FeatureCollection"Y\n\x16\x43onsolidatedStatistics\x12\x11\n\tlongnames\x18\x01 \x03(\t\x12\x12\n\nshortnames\x18\x02 \x03(\t\x12\x18\n\x05stats\x18\x03 \x03(\x0b\x32\t.AllStatsb\x06proto3',
 )
 
 
@@ -605,12 +605,185 @@ _STRINGLIST = _descriptor.Descriptor(
     serialized_end=632,
 )
 
+
+_ALLSTATS = _descriptor.Descriptor(
+    name="AllStats",
+    full_name="AllStats",
+    filename=None,
+    file=DESCRIPTOR,
+    containing_type=None,
+    fields=[
+        _descriptor.FieldDescriptor(
+            name="stats",
+            full_name="AllStats.stats",
+            index=0,
+            number=1,
+            type=2,
+            cpp_type=6,
+            label=3,
+            has_default_value=False,
+            default_value=[],
+            message_type=None,
+            enum_type=None,
+            containing_type=None,
+            is_extension=False,
+            extension_scope=None,
+            serialized_options=None,
+            file=DESCRIPTOR,
+        ),
+    ],
+    extensions=[],
+    nested_types=[],
+    enum_types=[],
+    serialized_options=None,
+    is_extendable=False,
+    syntax="proto3",
+    extension_ranges=[],
+    oneofs=[],
+    serialized_start=634,
+    serialized_end=659,
+)
+
+
+_CONSOLIDATEDSHAPES = _descriptor.Descriptor(
+    name="ConsolidatedShapes",
+    full_name="ConsolidatedShapes",
+    filename=None,
+    file=DESCRIPTOR,
+    containing_type=None,
+    fields=[
+        _descriptor.FieldDescriptor(
+            name="longnames",
+            full_name="ConsolidatedShapes.longnames",
+            index=0,
+            number=1,
+            type=9,
+            cpp_type=9,
+            label=3,
+            has_default_value=False,
+            default_value=[],
+            message_type=None,
+            enum_type=None,
+            containing_type=None,
+            is_extension=False,
+            extension_scope=None,
+            serialized_options=None,
+            file=DESCRIPTOR,
+        ),
+        _descriptor.FieldDescriptor(
+            name="shapes",
+            full_name="ConsolidatedShapes.shapes",
+            index=1,
+            number=2,
+            type=11,
+            cpp_type=10,
+            label=3,
+            has_default_value=False,
+            default_value=[],
+            message_type=None,
+            enum_type=None,
+            containing_type=None,
+            is_extension=False,
+            extension_scope=None,
+            serialized_options=None,
+            file=DESCRIPTOR,
+        ),
+    ],
+    extensions=[],
+    nested_types=[],
+    enum_types=[],
+    serialized_options=None,
+    is_extendable=False,
+    syntax="proto3",
+    extension_ranges=[],
+    oneofs=[],
+    serialized_start=661,
+    serialized_end=736,
+)
+
+
+_CONSOLIDATEDSTATISTICS = _descriptor.Descriptor(
+    name="ConsolidatedStatistics",
+    full_name="ConsolidatedStatistics",
+    filename=None,
+    file=DESCRIPTOR,
+    containing_type=None,
+    fields=[
+        _descriptor.FieldDescriptor(
+            name="longnames",
+            full_name="ConsolidatedStatistics.longnames",
+            index=0,
+            number=1,
+            type=9,
+            cpp_type=9,
+            label=3,
+            has_default_value=False,
+            default_value=[],
+            message_type=None,
+            enum_type=None,
+            containing_type=None,
+            is_extension=False,
+            extension_scope=None,
+            serialized_options=None,
+            file=DESCRIPTOR,
+        ),
+        _descriptor.FieldDescriptor(
+            name="shortnames",
+            full_name="ConsolidatedStatistics.shortnames",
+            index=1,
+            number=2,
+            type=9,
+            cpp_type=9,
+            label=3,
+            has_default_value=False,
+            default_value=[],
+            message_type=None,
+            enum_type=None,
+            containing_type=None,
+            is_extension=False,
+            extension_scope=None,
+            serialized_options=None,
+            file=DESCRIPTOR,
+        ),
+        _descriptor.FieldDescriptor(
+            name="stats",
+            full_name="ConsolidatedStatistics.stats",
+            index=2,
+            number=3,
+            type=11,
+            cpp_type=10,
+            label=3,
+            has_default_value=False,
+            default_value=[],
+            message_type=None,
+            enum_type=None,
+            containing_type=None,
+            is_extension=False,
+            extension_scope=None,
+            serialized_options=None,
+            file=DESCRIPTOR,
+        ),
+    ],
+    extensions=[],
+    nested_types=[],
+    enum_types=[],
+    serialized_options=None,
+    is_extendable=False,
+    syntax="proto3",
+    extension_ranges=[],
+    oneofs=[],
+    serialized_start=738,
+    serialized_end=827,
+)
+
 _RELATEDBUTTONS.fields_by_name["buttons"].message_type = _RELATEDBUTTON
 _ARTICLE.fields_by_name["rows"].message_type = _STATISTICROW
 _ARTICLE.fields_by_name["related"].message_type = _RELATEDBUTTONS
 _RING.fields_by_name["coords"].message_type = _COORDINATE
 _FEATURE.fields_by_name["rings"].message_type = _RING
 _FEATURECOLLECTION.fields_by_name["features"].message_type = _FEATURE
+_CONSOLIDATEDSHAPES.fields_by_name["shapes"].message_type = _FEATURECOLLECTION
+_CONSOLIDATEDSTATISTICS.fields_by_name["stats"].message_type = _ALLSTATS
 DESCRIPTOR.message_types_by_name["StatisticRow"] = _STATISTICROW
 DESCRIPTOR.message_types_by_name["RelatedButton"] = _RELATEDBUTTON
 DESCRIPTOR.message_types_by_name["RelatedButtons"] = _RELATEDBUTTONS
@@ -620,6 +793,9 @@ DESCRIPTOR.message_types_by_name["Ring"] = _RING
 DESCRIPTOR.message_types_by_name["Feature"] = _FEATURE
 DESCRIPTOR.message_types_by_name["FeatureCollection"] = _FEATURECOLLECTION
 DESCRIPTOR.message_types_by_name["StringList"] = _STRINGLIST
+DESCRIPTOR.message_types_by_name["AllStats"] = _ALLSTATS
+DESCRIPTOR.message_types_by_name["ConsolidatedShapes"] = _CONSOLIDATEDSHAPES
+DESCRIPTOR.message_types_by_name["ConsolidatedStatistics"] = _CONSOLIDATEDSTATISTICS
 _sym_db.RegisterFileDescriptor(DESCRIPTOR)
 
 StatisticRow = _reflection.GeneratedProtocolMessageType(
@@ -720,6 +896,39 @@ StringList = _reflection.GeneratedProtocolMessageType(
     },
 )
 _sym_db.RegisterMessage(StringList)
+
+AllStats = _reflection.GeneratedProtocolMessageType(
+    "AllStats",
+    (_message.Message,),
+    {
+        "DESCRIPTOR": _ALLSTATS,
+        "__module__": "data_files_pb2"
+        # @@protoc_insertion_point(class_scope:AllStats)
+    },
+)
+_sym_db.RegisterMessage(AllStats)
+
+ConsolidatedShapes = _reflection.GeneratedProtocolMessageType(
+    "ConsolidatedShapes",
+    (_message.Message,),
+    {
+        "DESCRIPTOR": _CONSOLIDATEDSHAPES,
+        "__module__": "data_files_pb2"
+        # @@protoc_insertion_point(class_scope:ConsolidatedShapes)
+    },
+)
+_sym_db.RegisterMessage(ConsolidatedShapes)
+
+ConsolidatedStatistics = _reflection.GeneratedProtocolMessageType(
+    "ConsolidatedStatistics",
+    (_message.Message,),
+    {
+        "DESCRIPTOR": _CONSOLIDATEDSTATISTICS,
+        "__module__": "data_files_pb2"
+        # @@protoc_insertion_point(class_scope:ConsolidatedStatistics)
+    },
+)
+_sym_db.RegisterMessage(ConsolidatedStatistics)
 
 
 # @@protoc_insertion_point(module_scope)

@@ -11,7 +11,8 @@ module.exports = {
         "quiz": ['./src/quiz.js'],
         "index": ['./src/index.js'],
         "about": ['./src/about.js'],
-        "data-credit": ['./src/data-credit.js']
+        "data-credit": ['./src/data-credit.js'],
+        "mapper": ['./src/mapper.js']
     },
     output: {
         filename: '[name].js',
