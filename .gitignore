@@ -1,5 +1,7 @@
 *.pyc
-Untitled.ipynb
+Untitled*.ipynb
+quiz*.ipynb
 *.ipynb_checkpoints
 output-shapefiles
 dist
+.vscode
