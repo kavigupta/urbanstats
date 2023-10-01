@@ -225,6 +225,36 @@ class DataCreditPanel extends PageTemplate {
                             as a weight.
                         </p>
                     </div>
+                    <h2 ref={this.nref("weather")}>Weather</h2>
+                    <div>
+                        <p>
+                            Special thanks to CREDIT for helping understand meterological data and help me
+                            provide a list of statistics to present.
+                        </p>
+                        <p>
+                            We collected weather data from
+                            <a href="https://cds.climate.copernicus.eu/cdsapp#!/dataset/reanalysis-era5-single-levels?tab=overview">ERA5</a>,
+                            a reanalysis dataset from the European Centre for
+                            Medium-Range Weather Forecasts. We collect data over the time period 1991-2021 and
+                            over the 0.25 degree grid.
+                        </p>
+                        <p>
+                            For each grid point, we compute each of our weather statistics.
+
+                            We compute mean high temperatures by aggregating the daily high temperature for each day
+                            in the time period, and then taking the mean of these values. We perform a similar
+                            computation for mean high dew point. Using these values, we compute the mean high heat index.
+
+                            We compute mean rainfall and snowfall by aggregating the hourly rainfall and snowfall.
+                            Codes 1 (rain) and 2 (freezing rain) are coded as rain, and codes 5 (snow), 6 (wet snow),
+                            and 8 (ice pellets) are coded as snow. Code 7 (mixed) is coded as 50/50 rain/snow.
+                        </p>
+                        <p>
+                            These estimates are then interpolated to the block level using the census block centroid
+                            using bilinear interpolation. We then compute the population weighted average of these
+                            statistics for each geography.
+                        </p>
+                    </div>
                 </div>
 
                 <h1 ref={this.nref("election")}>Voting and Elections Science Team Data</h1>
