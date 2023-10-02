@@ -78,14 +78,14 @@ era5_statistics += [
 
 era5_statistics += [
     ERA5WeatherStatistic(
-        "rainfall", "Rainfall", lambda dates, weather: weather["rain"].sum(0)
+        "rainfall", "Rainfall", lambda dates, weather: weather["rain"].mean(0) * 365
     )
 ]
 era5_statistics += [
     ERA5WeatherStatistic(
         "snowfall",
         "Snowfall [rain-equivalent]",
-        lambda dates, weather: weather["snow"].sum(0),
+        lambda dates, weather: weather["snow"].mean(0) * 365,
     )
 ]
 

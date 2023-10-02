@@ -12,7 +12,7 @@ class ERA5WeatherStatistic:
     _internal_name = attr.ib()
     display_name = attr.ib()
     compute = attr.ib()
-    version = attr.ib(default=2)
+    version = attr.ib(default=4)
 
     @property
     def internal_name(self):
@@ -32,7 +32,6 @@ def for_season_mask(dates, season):
 )
 def compute_statistics(stats_dict, earliest_year):
     dates, res = all_results(earliest_year=earliest_year)
-    print(res["continental_us"].shape)
     return {
         region: {k: v.compute(dates, res[region]) for k, v in stats_dict.items()}
         for region in res
