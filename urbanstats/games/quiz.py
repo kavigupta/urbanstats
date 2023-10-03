@@ -61,7 +61,9 @@ def sample_quiz(rng):
     banned_types = []
     result = []
     for range in ranges:
-        type, question = sample_quiz_question(rng, banned_categories, banned_types, *range)
+        type, question = sample_quiz_question(
+            rng, banned_categories, banned_types, *range
+        )
         banned_categories.append(
             get_statistic_categories()[question["stat_column_original"]]
         )
@@ -70,7 +72,9 @@ def sample_quiz(rng):
     return result
 
 
-def sample_quiz_question(rng, banned_categories, banned_types, distance_pct_bot, distance_pct_top):
+def sample_quiz_question(
+    rng, banned_categories, banned_types, distance_pct_bot, distance_pct_top
+):
     while True:
         type = rng.choice(types)
         if type in banned_types:
@@ -354,6 +358,24 @@ not_included = {
     "within_Airport_30",
     "within_Public School_2",
     "within_Hospital_10",
+    # For now, will move up earlier
+    "days_dewpoint_70_inf_4",
+    "days_dewpoint_50_70_4",
+    "mean_high_temp_winter_4",
+    "days_dewpoint_-inf_50_4",
+    "wind_speed_over_10mph_4",
+    "days_between_40_and_90_4",
+    "snowfall_4",
+    "mean_high_temp_spring_4",
+    "rainfall_4",
+    "mean_high_temp_4",
+    "mean_high_temp_fall_4",
+    "hours_sunny_4",
+    "days_below_40_4",
+    "days_above_90_4",
+    "mean_high_heat_index_4",
+    "mean_high_temp_summer_4",
+    "mean_high_dewpoint_4",
 }
 
 stats = list(stats_to_display)

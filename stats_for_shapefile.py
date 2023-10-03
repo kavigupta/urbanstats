@@ -19,6 +19,7 @@ from urbanstats.acs.entities import acs_columns
 from urbanstats.features.feature import feature_columns
 from urbanstats.features.extract_data import feature_data
 from urbanstats.osm.parks import park_overlap_percentages_all
+from urbanstats.weather.to_blocks import weather_stat_names, weather_block_statistics
 
 racial_statistics = {
     "white": "White %",
@@ -170,6 +171,7 @@ sum_keys = [
     *acs_columns,
     *feature_columns,
     "park_percent_1km_v2",
+    *weather_stat_names,
 ]
 COLUMNS_PER_JOIN = 33
 
@@ -185,6 +187,11 @@ def block_level_data():
     blocks_gdf["park_percent_1km_v2"] = (
         park_overlap_percentages_all(r=1) * blocks_gdf.population
     )
+    weather_block = weather_block_statistics()
+    for k in weather_block:
+        assert k not in blocks_gdf
+        assert blocks_gdf.shape[0] == weather_block[k].shape[0]
+        blocks_gdf[k] = weather_block[k] * blocks_gdf.population
     return blocks_gdf
 
 
@@ -232,6 +239,7 @@ def compute_summed_shapefile_all_keys(sf, sum_keys=sum_keys):
 @permacache(
     "population_density/stats_for_shapefile/compute_statistics_for_shapefile_16",
     key_function=dict(sf=lambda x: x.hash_key, sum_keys=stable_hash),
+    multiprocess_safe=True,
 )
 def compute_statistics_for_shapefile(sf, sum_keys=sum_keys):
     sf_fr = sf.load_file()
@@ -397,6 +405,9 @@ def compute_statistics_for_shapefile(sf, sum_keys=sum_keys):
         result[feat] = result[feat] / result["population"]
 
     result["park_percent_1km_v2"] /= result["population"]
+
+    for weather_stat in weather_stat_names:
+        result[weather_stat] = result[weather_stat] / result["population"]
 
     return result
 
