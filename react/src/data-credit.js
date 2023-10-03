@@ -228,12 +228,11 @@ class DataCreditPanel extends PageTemplate {
                     <h2 ref={this.nref("weather")}>Weather</h2>
                     <div>
                         <p>
-                            Special thanks to CREDIT for helping understand meterological data and help me
+                            Special thanks to <a href="https://twitter.com/OklahomaPerson">OklahomaPerson</a> for helping understand meterological data and help me
                             provide a list of statistics to present.
                         </p>
                         <p>
-                            We collected weather data from
-                            <a href="https://cds.climate.copernicus.eu/cdsapp#!/dataset/reanalysis-era5-single-levels?tab=overview">ERA5</a>,
+                            We collected weather data from <a href="https://cds.climate.copernicus.eu/cdsapp#!/dataset/reanalysis-era5-single-levels?tab=overview">ERA5</a>,
                             a reanalysis dataset from the European Centre for
                             Medium-Range Weather Forecasts. We collect data over the time period 1991-2021 and
                             over the 0.25 degree grid.
