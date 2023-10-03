@@ -24,7 +24,9 @@ from produce_html_page import (
 )
 from relationship import full_relationships, map_relationships_by_type
 from election_data import vest_elections
-from urbanstats.consolidated_data.produce_consolidated_data import full_consolidated_data
+from urbanstats.consolidated_data.produce_consolidated_data import (
+    full_consolidated_data,
+)
 
 from urbanstats.protobuf.utils import save_string_list
 

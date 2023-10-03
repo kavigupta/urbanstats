@@ -8,7 +8,7 @@ from urbanstats.weather.era5 import bounding_boxes
 from urbanstats.weather.weather_statistic import compute_statistics
 from urbanstats.weather.stats import era5_statistics
 
-weather_stat_names = {k : stat.display_name for k, stat in era5_statistics.items()}
+weather_stat_names = {k: stat.display_name for k, stat in era5_statistics.items()}
 
 
 def classify_which_box(bounding_box_l, coordinates):
@@ -118,7 +118,10 @@ def compute_all_weather_by_block(bounding_box_list, coordinates, data):
     return result
 
 
-@permacache("urbanstats/weather/era5/block_statistics", key_function=dict(era5_statistics=stable_hash))
+@permacache(
+    "urbanstats/weather/era5/block_statistics",
+    key_function=dict(era5_statistics=stable_hash),
+)
 def weather_block_statistics(era5_statistics=era5_statistics):
     cstats = compute_statistics(era5_statistics, 1991)
     *_, coordinates = load_raw_census()

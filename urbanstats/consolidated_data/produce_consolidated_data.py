@@ -10,6 +10,7 @@ from urbanstats.protobuf.utils import write_gzip
 def produce_results(row_geo, row):
     from create_website import full_shapefile
     from produce_html_page import internal_statistic_names
+
     geo = convert(row_geo.geometry.simplify(0.01))
     geo = convert_to_protobuf(geo)
     results = data_files_pb2.AllStats()

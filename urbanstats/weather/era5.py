@@ -38,8 +38,12 @@ all_times = [
     "23:00",
 ]
 
+
 def month_counts(year):
-    return np.array([calendar.monthrange(int(year), int(month))[1] for month in range(1, 1 + 12)])
+    return np.array(
+        [calendar.monthrange(int(year), int(month))[1] for month in range(1, 1 + 12)]
+    )
+
 
 def query(bounds, *, time=None, day=None, month=None, year, variables, path):
     if time is None:
@@ -210,7 +214,7 @@ def precipitation_statistics(bounding_box, year, month):
         precipitation_type = np.array(ds.ptype)
 
         valid_time = np.array(ds.valid_time)
-        month_each = valid_time.astype('datetime64[M]').astype(np.int) % 12 + 1
+        month_each = valid_time.astype("datetime64[M]").astype(np.int) % 12 + 1
         time_mask = month_each == int(month)
 
     total_precip = total_precip[time_mask]
