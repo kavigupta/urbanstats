@@ -228,12 +228,11 @@ class DataCreditPanel extends PageTemplate {
                     <h2 ref={this.nref("weather")}>Weather</h2>
                     <div>
                         <p>
-                            Special thanks to CREDIT for helping understand meterological data and help me
+                            Special thanks to <a href="https://twitter.com/OklahomaPerson">OklahomaPerson</a> for helping understand meterological data and help me
                             provide a list of statistics to present.
                         </p>
                         <p>
-                            We collected weather data from
-                            <a href="https://cds.climate.copernicus.eu/cdsapp#!/dataset/reanalysis-era5-single-levels?tab=overview">ERA5</a>,
+                            We collected weather data from <a href="https://cds.climate.copernicus.eu/cdsapp#!/dataset/reanalysis-era5-single-levels?tab=overview">ERA5</a>,
                             a reanalysis dataset from the European Centre for
                             Medium-Range Weather Forecasts. We collect data over the time period 1991-2021 and
                             over the 0.25 degree grid.
@@ -245,7 +244,9 @@ class DataCreditPanel extends PageTemplate {
                             in the time period, and then taking the mean of these values. We perform a similar
                             computation for mean high dew point. Using these values, we compute the mean high heat index.
 
-                            We compute mean rainfall and snowfall by aggregating the daily rainfall and snowfall.
+                            We compute mean rainfall and snowfall by aggregating the hourly rainfall and snowfall.
+                            Codes 1 (rain) and 2 (freezing rain) are coded as rain, and codes 5 (snow), 6 (wet snow),
+                            and 8 (ice pellets) are coded as snow. Code 7 (mixed) is coded as 50/50 rain/snow.
                         </p>
                         <p>
                             These estimates are then interpolated to the block level using the census block centroid

@@ -8,7 +8,7 @@ era5_statistics = []
 era5_statistics += [
     ERA5WeatherStatistic(
         "mean_high_temp",
-        "Mean high temperature",
+        "Mean high temp",
         lambda dates, weather: k_to_f(weather["t2m_max"].mean(0)),
     )
 ]
@@ -26,7 +26,7 @@ era5_statistics += [
 era5_statistics += [
     ERA5WeatherStatistic(
         "mean_high_dewpoint",
-        "Mean high dewpoint",
+        "Mean high dewpt",
         lambda dates, weather: k_to_f(weather["d2m_max"].mean(0)),
     )
 ]
@@ -51,9 +51,9 @@ for low, high, display_name in temperature_bands:
     ]
 
 dewpoint_bands = [
-    (70, float("inf"), "Humid Days (dewpoint > 70°F) %"),
-    (50, 70, "Neither Humid nor Dry Days (50°F < dewpoint < 70°F) %"),
-    (-float("inf"), 50, "Dry Days (dewpoint < 50°F) %"),
+    (70, float("inf"), "Humid days (dewpt > 70°F) %"),
+    (50, 70, "Non-humid days (50°F < dewpt < 70°F) %"),
+    (-float("inf"), 50, "Dry days (dewpt < 50°F) %"),
 ]
 
 for low, high, display_name in dewpoint_bands:
@@ -78,14 +78,14 @@ era5_statistics += [
 
 era5_statistics += [
     ERA5WeatherStatistic(
-        "rainfall", "Rainfall", lambda dates, weather: weather["rain"].sum(0)
+        "rainfall", "Rainfall", lambda dates, weather: weather["rain"].mean(0) * 365
     )
 ]
 era5_statistics += [
     ERA5WeatherStatistic(
         "snowfall",
         "Snowfall [rain-equivalent]",
-        lambda dates, weather: weather["snow"].sum(0),
+        lambda dates, weather: weather["snow"].mean(0) * 365,
     )
 ]
 

@@ -196,6 +196,31 @@ class Statistic extends React.Component {
                 return <span>%</span>;
             }
             return <ElectionResult value={value} />;
+        } else if (name.includes("high temp") || name.includes("high heat index") || name.includes("dewpt")) {
+            if (is_unit) {
+                return <span>&deg;F</span>;
+            }
+            return <span>{value.toFixed(1)}</span>;
+        } else if (name == "Mean sunny hours") {
+            if (is_unit) {
+                return <span></span>;
+            }
+            const hours = Math.floor(value);
+            const minutes = Math.floor((value - hours) * 60);
+            // e.g., 3:05
+            return <span>{hours}:{minutes.toString().padStart(2, "0")}</span>;
+        } else if (name == "Rainfall" || name == "Snowfall [rain-equivalent]") {
+            const is_imperial = this.props.settings.use_imperial;
+            value *= 100;
+            let unit = "cm";
+            if (is_imperial) {
+                unit = "in";
+                value /= 2.54;
+            }
+            if (is_unit) {
+                return <span>{unit}/yr</span>;
+            }
+            return <span>{value.toFixed(1)}</span>;
         }
         if (is_unit) {
             return <span></span>;
