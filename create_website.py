@@ -184,7 +184,7 @@ def main(no_geo=False, no_data=False, no_data_jsons=False):
             json.dump(list(full.population), f)
         output_ordering(full)
 
-        full_consolidated_data("/home/kavi/temp/site")
+        full_consolidated_data(folder)
 
     shutil.copy("html_templates/article.html", f"{folder}")
     shutil.copy("html_templates/index.html", f"{folder}/")

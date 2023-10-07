@@ -8,7 +8,6 @@ from urbanstats.protobuf.utils import write_gzip
 
 
 def produce_results(row_geo, row):
-    from create_website import full_shapefile
     from produce_html_page import internal_statistic_names
 
     geo = convert(row_geo.geometry.simplify(0.01))
@@ -35,6 +34,7 @@ def produce_all_results_from_tables(geo_table, data_table):
 
 
 def produce_results_for_type(folder, typ):
+    from create_website import full_shapefile
     print(typ)
     folder = f"{folder}/consolidated/"
     try:
