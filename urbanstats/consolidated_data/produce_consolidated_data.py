@@ -1,3 +1,4 @@
+import json
 import os
 import tqdm.auto as tqdm
 
@@ -5,6 +6,31 @@ from output_geometry import convert, convert_to_protobuf
 from shapefiles import shapefiles
 from urbanstats.protobuf import data_files_pb2
 from urbanstats.protobuf.utils import write_gzip
+
+use = [
+    "State",
+    "County",
+    "MSA",
+    "CSA",
+    "Urban Area",
+    "Congressional District",
+    "Media Market",
+]
+dont_use = [
+    "ZIP",
+    "CCD",
+    "City",
+    "Neighborhood",
+    "State House District",
+    "State Senate District",
+    "Historical Congressional District",
+    "Native Area",
+    "Native Statistical Area",
+    "Native Subdivision",
+    "School District",
+    "Judicial District",
+    "Judicial Circuit",
+]
 
 
 def produce_results(row_geo, row):
@@ -35,6 +61,7 @@ def produce_all_results_from_tables(geo_table, data_table):
 
 def produce_results_for_type(folder, typ):
     from create_website import full_shapefile
+
     print(typ)
     folder = f"{folder}/consolidated/"
     try:
@@ -53,30 +80,6 @@ def produce_results_for_type(folder, typ):
 
 
 def full_consolidated_data(folder):
-    use = [
-        "State",
-        "County",
-        "MSA",
-        "CSA",
-        "Urban Area",
-        "Congressional District",
-        "Media Market",
-    ]
-    dont_use = [
-        "ZIP",
-        "CCD",
-        "City",
-        "Neighborhood",
-        "State House District",
-        "State Senate District",
-        "Historical Congressional District",
-        "Native Area",
-        "Native Statistical Area",
-        "Native Subdivision",
-        "School District",
-        "Judicial District",
-        "Judicial Circuit",
-    ]
     assert set(use) & set(dont_use) == set()
     for sh in shapefiles.values():
         typ = sh.meta["type"]
@@ -84,3 +87,13 @@ def full_consolidated_data(folder):
             produce_results_for_type(folder, typ)
         else:
             assert typ in dont_use
+
+
+def output_names():
+    mapper_folder = "react/src/data/mapper"
+    try:
+        os.makedirs(mapper_folder)
+    except FileExistsError:
+        pass
+    with open(f"{mapper_folder}/used_geographies.json", "w") as f:
+        json.dump(use, f)

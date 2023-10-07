@@ -13,23 +13,20 @@ import { loadProtobuf } from '../load_json.js';
 import { consolidated_shape_link, consolidated_stats_link } from '../navigation/links.js';
 import { interpolate_color } from '../utils/color.js';
 
+import { RAMPS, parse_ramp } from "../mapper/ramps.js";
+import { MapperSettings, default_settings, parse_color_stat } from "../mapper/settings.js";
+
+import { gunzipSync, gzipSync } from "zlib";
+
 class DisplayedMap extends MapGeneric {
     constructor(props) {
         super(props);
-        this.underlying_shapes = loadProtobuf(
-            consolidated_shape_link(this.props.geography_kind),
-            "ConsolidatedShapes"
-        );
-        this.underlying_stats = loadProtobuf(
-            consolidated_stats_link(this.props.geography_kind),
-            "ConsolidatedStatistics"
-        );
         this.name_to_index = undefined;
     }
 
     async guarantee_name_to_index() {
         if (this.name_to_index === undefined) {
-            const result = (await this.underlying_stats).longnames;
+            const result = (await this.props.underlying_shapes).longnames;
             this.name_to_index = {};
             for (let i in result) {
                 this.name_to_index[result[i]] = i;
@@ -40,16 +37,20 @@ class DisplayedMap extends MapGeneric {
     async loadShape(name) {
         await this.guarantee_name_to_index();
         const index = this.name_to_index[name];
-        const data = (await this.underlying_shapes).shapes[index];
+        const data = (await this.props.underlying_shapes).shapes[index];
         return data;
     }
 
 
     async compute_polygons() {
-        const stats = (await this.underlying_stats);
+        // reset index
+        this.name_to_index = undefined;
+        await this.guarantee_name_to_index();
+
+        const stats = (await this.props.underlying_stats);
         // TODO correct this!
         const names = stats.longnames;
-        const stat_vals = stats.stats.map(x => x.stats[this.props.color_stat]);
+        const stat_vals = stats.stats.map(x => this.props.color_stat.compute(x));
         const [ramp, interpolations] = this.props.ramp.create_ramp(stat_vals);
         this.props.ramp_callback({ ramp: ramp, interpolations: interpolations });
         const colors = stat_vals.map(
@@ -78,51 +79,6 @@ class DisplayedMap extends MapGeneric {
     }
 }
 
-class Ramp {
-    create_ramp(values) {
-        throw "create_ramp not implemented";
-    }
-}
-
-class ConstantRamp extends Ramp {
-    constructor(kepoints) {
-        super();
-        this.values = kepoints;
-    }
-
-    create_ramp(values) {
-        return [this.values, linear_values(this.values[0][0], this.values[this.values.length - 1][0])];
-    }
-}
-
-class LinearRamp extends Ramp {
-    constructor(keypoints) {
-        super();
-        this.values = keypoints;
-    }
-
-    create_ramp(values) {
-        values = values.filter(x => !isNaN(x));
-        const minimum = Math.min(...values);
-        const maximum = Math.max(...values);
-        const range = maximum - minimum;
-        const ramp_min = Math.min(...this.values.map(([value, color]) => value));
-        const ramp_max = Math.max(...this.values.map(([value, color]) => value));
-        const ramp_range = ramp_max - ramp_min;
-        const ramp = this.values.map(x => [x[0], x[1]]);
-        for (let i in ramp) {
-            ramp[i][0] = (ramp[i][0] - ramp_min) / ramp_range * range + minimum;
-        }
-        return [ramp, linear_values(minimum, maximum)];
-    }
-}
-
-function linear_values(minimum, maximum) {
-    const steps = 10;
-    const range = maximum - minimum;
-    const values = Array(steps).fill(0).map((_, i) => minimum + range * i / (steps - 1));
-    return values;
-}
 
 class Colorbar extends React.Component {
     constructor(props) {
@@ -150,8 +106,8 @@ class Colorbar extends React.Component {
                     <tbody>
                         <tr>
                             {
-                                values.map(x => (
-                                    <td key={x} style={
+                                values.map((x, i) => (
+                                    <td key={i} style={
                                         {
                                             width: "10%", height: "1em",
                                             backgroundColor: interpolate_color(self.props.ramp.ramp, x)
@@ -163,8 +119,8 @@ class Colorbar extends React.Component {
                         </tr>
                         <tr>
                             {
-                                values.map(x => (
-                                    <td key={x} style={{ width: "10%", height: "1em" }}>
+                                values.map((x, i) => (
+                                    <td key={i} style={{ width: "10%", height: "1em" }}>
                                         {self.create_value(x)}
                                     </td>
                                 ))
@@ -196,49 +152,153 @@ class Colorbar extends React.Component {
     }
 }
 
+class MapComponent extends React.Component {
+    constructor(props) {
+        super(props);
+    }
+
+    render() {
+
+        const color_stat = parse_color_stat(this.props.name_to_index, this.props.color_stat);
+
+        return (
+            <div style={{
+                display: "flex",
+                flexDirection: "column",
+            }}>
+                <div style={{ height: "90%", width: "100%" }}>
+                    <DisplayedMap
+                        id="mapper"
+                        color_stat={color_stat}
+                        geography_kind={this.props.geography_kind}
+                        underlying_shapes={this.props.underlying_shapes}
+                        underlying_stats={this.props.underlying_stats}
+                        ramp={this.props.ramp}
+                        ramp_callback={(ramp) => this.props.set_empirical_ramp(ramp)}
+                    />
+                </div>
+                <div style={{ height: "10%", width: "100%" }}>
+                    <Colorbar
+                        name={color_stat.name()}
+                        ramp={this.props.get_empirical_ramp()}
+                        settings={this.props.get_settings()}
+                    />
+                </div>
+            </div>
+        )
+    }
+}
+
 class MapperPanel extends PageTemplate {
     constructor(props) {
         super(props);
         this.names = require("../data/statistic_name_list.json");
+        this.valid_geographies = require("../data/mapper/used_geographies.json");
         this.name_to_index = {};
         for (let i in this.names) {
             this.name_to_index[this.names[i]] = i;
         }
+
+        const params = new URLSearchParams(window.location.search);
+        const encoded_settings = params.get("settings");
+        var settings = default_settings();
+        if (encoded_settings !== null) {
+            console.log("encoded_settings", encoded_settings)
+            const jsoned_settings = gunzipSync(Buffer.from(encoded_settings, 'base64')).toString();
+            settings = JSON.parse(jsoned_settings);
+        }
+
+        this.state = {
+            ...this.state,
+            map_settings: settings
+        };
+        this.geography_kind = undefined;
+        this.underlying_shapes = undefined;
+        this.underlying_stats = undefined;
+    }
+
+    update_geography_kind() {
+        const geography_kind = this.state.map_settings.geography_kind;
+        console.log("update_geography_kind", geography_kind);
+        if (this.geography_kind !== geography_kind) {
+            this.geography_kind = geography_kind;
+
+            if (this.valid_geographies.includes(geography_kind)) {
+                console.log("loading")
+                this.underlying_shapes = loadProtobuf(
+                    consolidated_shape_link(this.geography_kind),
+                    "ConsolidatedShapes"
+                );
+                this.underlying_stats = loadProtobuf(
+                    consolidated_stats_link(this.geography_kind),
+                    "ConsolidatedStatistics"
+                );
+
+            }
+            console.log(geography_kind);
+        }
+    }
+
+    set_colorstat_name(name) {
+        if (name !== this.state.map_settings.color_stat) {
+
+        }
+    }
+
+    set_map_settings(settings) {
+        this.setState({
+            map_settings: settings
+        });
+
+        const jsoned_settings = JSON.stringify(settings);
+        // gzip then base64 encode
+        const encoded_settings = gzipSync(jsoned_settings).toString("base64");
+        // convert to parameters like ?settings=...
+        const params = new URLSearchParams(window.location.search);
+        params.set("settings", encoded_settings);
+        window.history.replaceState(null, null, "?" + params.toString());
+    }
+
+    get_map_settings() {
+        return this.state.map_settings;
     }
 
     main_content() {
         const self = this;
-        const ramp = new ConstantRamp([
-            [-0.25, "#ff0000"], [-0.0001, "#ffdddd"], [0.0001, "#ddddff"], [0.25, "#0000ff"]
-        ]);
-        const stat_name = "2020 Presidential Election";
-        const geography_kind = "Media Market";
+        // const ramp = new ConstantRamp([
+        //     [-0.25, "#ff0000"], [-0.0001, "#ffdddd"], [0.0001, "#ddddff"], [0.25, "#0000ff"]
+        // ]);
+        // virids
+        const ramp = parse_ramp(this.state.map_settings.ramp);
+        console.log(ramp);
+        this.update_geography_kind();
+        const geography_kind = this.state.map_settings.geography_kind;
+        const color_stat = this.state.map_settings.color_stat;
+        const valid = this.valid_geographies.includes(geography_kind);
         return (
             <div>
                 <div className={"centered_text " + (isMobile ? "headertext_mobile" : "headertext")}>Urban Stats Mapper</div>
+                <MapperSettings
+                    names={this.names}
+                    valid_geographies={this.valid_geographies}
+                    get_map_settings={() => this.get_map_settings()}
+                    set_map_settings={(settings) => this.set_map_settings(settings)}
+                />
+                {
+                    !valid ? <div>Invalid geography kind</div> :
 
-                {/* 90% vert space on first div, 10% on second */}
-                <div style={{
-                    display: "flex",
-                    flexDirection: "column",
-                }}>
-                    <div style={{ height: "90%", width: "100%" }}>
-                        <DisplayedMap
-                            id="mapper"
-                            color_stat={this.name_to_index[stat_name]}
+                        <MapComponent
+                            name_to_index={this.name_to_index}
+                            underlying_shapes={this.underlying_shapes}
+                            underlying_stats={this.underlying_stats}
                             geography_kind={geography_kind}
+                            get_settings={() => this.state.settings}
                             ramp={ramp}
-                            ramp_callback={(ramp) => self.set_empirical_ramp(ramp)}
+                            get_empirical_ramp={() => this.state.empirical_ramp}
+                            set_empirical_ramp={(ramp) => this.set_empirical_ramp(ramp)}
+                            color_stat={color_stat}
                         />
-                    </div>
-                    <div style={{ height: "10%", width: "100%" }}>
-                        <Colorbar name={stat_name} ramp={this.state.empirical_ramp} settings={this.state.settings} />
-                    </div>
-                </div>
-
-
-                <script src="/scripts/map.js"></script>
-
+                }
             </div>
         );
     }
