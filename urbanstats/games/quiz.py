@@ -16,6 +16,8 @@ from produce_html_page import get_statistic_categories
 from urbanstats.shortener import shorten
 
 min_pop = 250_000
+version = 12
+fixed_up_to = 36
 
 # ranges = [
 #     (0.7, 1),
@@ -45,6 +47,7 @@ difficulties = {
     "national_origin": 0.75,
     "race": 0.75,
     "transportation": 1.5,
+    "weather": 1,
 }
 
 
@@ -107,7 +110,7 @@ def sample_quiz_question(
         print("FAILED", type, stat_column_original, distance_pct_bot, distance_pct_top)
 
 
-@permacache("urbanstats/games/quiz/filter_for_pop_2")
+@permacache(f"urbanstats/games/quiz/filter_for_pop_{version}")
 def filter_for_pop(type):
     full = full_shapefile()
     filt = full[full.type == type]
@@ -115,7 +118,7 @@ def filter_for_pop(type):
     return at_pop
 
 
-@permacache("urbanstats/games/quiz/generate_quiz_10")
+@permacache(f"urbanstats/games/quiz/generate_quiz_{version}")
 def generate_quiz(seed):
     rng = np.random.default_rng(int(stable_hash(seed), 16))
     return sample_quiz(rng)
@@ -156,7 +159,6 @@ def custom_quiz_link(seed, name, *, localhost):
 def generate_quizzes(folder):
     path = lambda day: os.path.join(folder, f"{day}")
 
-    fixed_up_to = 27
     for i in range(fixed_up_to + 1):
         import shutil
 
@@ -247,6 +249,8 @@ types = [
     "MSA",
     "State",
     "Urban Area",
+    "Congressional District",
+    "Media Market",
 ]
 
 stats_to_display = {
@@ -322,6 +326,21 @@ stats_to_display = {
     "insurance_coverage_govt": "higher % of people who are on public insurance",
     "insurance_coverage_private": "higher % of people who are on private insurance",
     "marriage_divorced": "higher % of people who are divorced",
+    "mean_high_temp_4": "higher mean daily high temperature",
+    "mean_high_temp_winter_4": "higher mean daily high temperature in winter",
+    "mean_high_temp_spring_4": "higher mean daily high temperature in spring",
+    "mean_high_temp_summer_4": "higher mean daily high temperature in summer",
+    "mean_high_temp_fall_4": "higher mean daily high temperature in fall",
+    "mean_high_heat_index_4": "higher mean daily high heat index",
+    "mean_high_dewpoint_4": "higher mean daily high dewpoint",
+    "days_dewpoint_70_inf_4": "higher % of days with dewpoint < 70",
+    "days_dewpoint_-inf_50_4": "higher % of days with dewpoint < 50",
+    "days_above_90_4": "higher % of days with high temp > 90",
+    "days_below_40_4": "higher % of days with high temp < 40",
+    "wind_speed_over_10mph_4": "higher % of days with wind speed > 10mph",
+    "snowfall_4": "higher snowfall",
+    "rainfall_4": "higher rainfall",
+    "hours_sunny_4": "!FULL Which has more hours of sun per day on average?",
 }
 
 
@@ -350,6 +369,8 @@ not_included = {
     "other / mixed",
     "transportation_commute_time_15_to_29",
     "transportation_commute_time_30_to_59",
+    "days_dewpoint_50_70_4",
+    "days_between_40_and_90_4",
     # meh whatever
     "marriage_married_not_divorced",
     "marriage_never_married",
@@ -358,24 +379,6 @@ not_included = {
     "within_Airport_30",
     "within_Public School_2",
     "within_Hospital_10",
-    # For now, will move up earlier
-    "days_dewpoint_70_inf_4",
-    "days_dewpoint_50_70_4",
-    "mean_high_temp_winter_4",
-    "days_dewpoint_-inf_50_4",
-    "wind_speed_over_10mph_4",
-    "days_between_40_and_90_4",
-    "snowfall_4",
-    "mean_high_temp_spring_4",
-    "rainfall_4",
-    "mean_high_temp_4",
-    "mean_high_temp_fall_4",
-    "hours_sunny_4",
-    "days_below_40_4",
-    "days_above_90_4",
-    "mean_high_heat_index_4",
-    "mean_high_temp_summer_4",
-    "mean_high_dewpoint_4",
 }
 
 stats = list(stats_to_display)
