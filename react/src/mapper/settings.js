@@ -10,12 +10,19 @@ const setting_name_style = {
     marginBottom: "0.125em",
 }
 
+const setting_sub_name_style = {
+    fontWeight: "bold",
+    fontSize: "1em",
+    marginBottom: "0.125em",
+    color: "#444",
+}
+
 function default_settings() {
     return {
         geography_kind: undefined,
         color_stat: undefined,
         ramp: {
-            type: "constant",
+            type: "linear",
             colormap: {
                 type: "none",
             }
@@ -85,13 +92,13 @@ class InvalidColorStat {
 //     }
 // })();
 
-function DataListSelector({ overall_name, initial_value, names, onChange }) {
-    const names_full = ["", ...names]
+function DataListSelector({ overall_name, initial_value, names, onChange, no_neutral, header_style }) {
+    const names_full = header_style ? names : ["", ...names]
     const set_initial = names_full.includes(initial_value);
     return (
         <div>
             <div>
-                <div style={setting_name_style}>
+                <div style={header_style || setting_name_style}>
                     {overall_name}
                 </div>
                 <select
@@ -157,7 +164,7 @@ class RampColormapSelector extends React.Component {
         ];
         return (
             <div>
-                <div style={setting_name_style}>
+                <div style={setting_sub_name_style}>
                     {this.props.name}
                 </div>
                 <select
@@ -179,18 +186,48 @@ class RampColormapSelector extends React.Component {
                     }
                 </select>
                 {
-                    this.get_colormap().type == "custom" ? <div>
+                    this.get_colormap().type == "custom" ? <span>
                         <input
                             type="text"
-                            value={this.props.custom_ramp}
+                            style={{ width: "100%" }}
+                            placeholder='Custom map, e.g., [[0, "#ff0000"], [1, "#0000ff"]]'
+                            value={this.props.get_ramp().colormap.custom_colormap}
                             onChange={e =>
-                                self.set_custom_ramp(e.target.value)
+                                self.set_custom_colormap(e.target.value)
                             }
                         />
-                    </div> : <div></div>
+                    </span> : <div></div>
                 }
             </div>
         );
+    }
+}
+
+class RampSelector extends React.Component {
+    render() {
+        return (
+            <div>
+                <div style={setting_name_style}>
+                    Ramp:
+                </div>
+                <RampColormapSelector
+                    name="Colormap:"
+                    get_ramp={this.props.get_ramp}
+                    set_ramp={this.props.set_ramp}
+                />
+                <DataListSelector
+                    overall_name="Ramp Type:"
+                    names={["linear", "constant"]}
+                    no_neutral={true}
+                    header_style={setting_sub_name_style}
+                    initial_value={this.props.get_ramp().type}
+                    onChange={name => this.props.set_ramp({
+                        ...this.props.get_ramp(),
+                        type: name,
+                    })}
+                />
+            </div>
+        )
     }
 }
 
@@ -227,8 +264,7 @@ class MapperSettings extends React.Component {
                         })
                     }
                 />
-                <RampColormapSelector
-                    name="Colormap:"
+                <RampSelector
                     get_ramp={() => this.props.get_map_settings().ramp}
                     set_ramp={ramp => this.props.set_map_settings({
                         ...this.props.get_map_settings(),

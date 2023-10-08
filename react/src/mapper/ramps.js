@@ -29,12 +29,31 @@ class Ramp {
 }
 
 function parse_colormap(cmap) {
+    console.log("C", cmap)
     if (cmap.type === "none") {
         // default
-        return RAMPS.viridis;
+        return RAMPS.gray;
     } else if (cmap.type === "custom") {
-        return JSON.parse(cmap.value);
+        try {
+            console.log("V", cmap.custom_colormap)
+            const result = JSON.parse(cmap.custom_colormap);
+            console.log(result);
+            if (result instanceof Array
+                && result.every(x => x instanceof Array
+                    && x.length === 2
+                    && typeof x[0] === "number"
+                    && typeof x[1] === "string"
+                    && x[1].match(/^#[0-9a-f]{6}$/i) !== null
+                )) {
+                return result;
+            }
+        } catch (e) {
+        }
+        return RAMPS.gray;
     } else if (cmap.type === "preset") {
+        if (cmap.name == "") {
+            return RAMPS.gray;
+        }
         return RAMPS[cmap.name];
     }
     throw new Error("Invalid colormap type");
