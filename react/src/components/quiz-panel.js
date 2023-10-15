@@ -8,6 +8,7 @@ import { PageTemplate } from "../page_template/template.js";
 import "../common.css";
 import "./quiz.css";
 import { isMobile } from 'react-device-detect';
+import { article_link } from '../navigation/links.js';
 
 const ENDPOINT = "https://persistent.urbanstats.org";
 
@@ -440,6 +441,18 @@ class Summary extends PageTemplate {
 
 }
 
+function Clickable({ longname }) {
+    // return <a href={article_link(longname)}>{longname}</a>
+    // same without any link formatting
+    return <a
+        href={article_link(longname)}
+        style={{ textDecoration: "none", color: "inherit" }}
+    >
+        {longname}
+    </a>
+}
+
+
 class QuizResultRow extends PageTemplate {
     constructor(props) {
         super(props);
@@ -466,7 +479,7 @@ class QuizResultRow extends PageTemplate {
                     <tbody>
                         <tr key={this.props.index}>
                             <td className={first}>
-                                {this.props.longname_a}
+                                <Clickable longname={this.props.longname_a} />
                             </td>
                             <td className="quiz_result_value_left">
                                 {this.create_value(this.props.stat_a)}
@@ -478,7 +491,7 @@ class QuizResultRow extends PageTemplate {
                                 {this.create_value(this.props.stat_b)}
                             </td>
                             <td className={second}>
-                                {this.props.longname_b}
+                                <Clickable longname={this.props.longname_b} />
                             </td>
                             <td className="serif quiz_result_symbol">
                                 {result}
