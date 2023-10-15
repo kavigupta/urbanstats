@@ -16,8 +16,8 @@ from produce_html_page import get_statistic_categories
 from urbanstats.shortener import shorten
 
 min_pop = 250_000
-version = 13
-fixed_up_to = 36
+version = 15
+fixed_up_to = 43
 
 # ranges = [
 #     (0.7, 1),
@@ -47,7 +47,7 @@ difficulties = {
     "national_origin": 0.75,
     "race": 0.75,
     "transportation": 1.5,
-    "weather": 1,
+    "weather": 0.5,
 }
 
 
@@ -272,9 +272,9 @@ stats_to_display = {
     "education_high_school": "higher % of people who have at least a high school diploma",
     "education_ugrad": "higher % of people who have at least an undergrad degree",
     "education_grad": "higher % of people who have a graduate degree",
-    "education_field_stem": "higher % of all people with a stem degree (as a percentage of the overall population)",
-    "education_field_humanities": "higher % of all people with a humanities degree (as a percentage of the overall population)",
-    "education_field_business": "higher % of all people with a business degree (as a percentage of the overall population)",
+    "education_field_stem": "!FULL Which has more people with a STEM degree, as a percentage of the overall population?",
+    "education_field_humanities": "!FULL Which has more people with a humanities degree, as a percentage of the overall population?",
+    "education_field_business": "!FULL Which has more people with a business degree, as a percentage of the overall population?",
     "generation_silent": "higher % of people who are silent generation",
     "generation_boomer": "higher % of people who are boomers",
     "generation_genx": "higher % of people who are gen x",
@@ -282,19 +282,19 @@ stats_to_display = {
     "generation_genz": "higher % of people who are gen z",
     "generation_genalpha": "higher % of people who are gen alpha",
     "poverty_below_line": "higher % of people who are in poverty",
-    "household_income_under_50k": "higher % of households who have household income < $50k",
-    "household_income_over_100k": "higher % of households who have household income > $100k",
-    "individual_income_under_50k": "higher % of people who have individual income < $50k",
-    "individual_income_over_100k": "higher % of people who have individual income > $100k",
+    "household_income_under_50k": "higher % of households who have household income under $50k",
+    "household_income_over_100k": "higher % of households who have household income over $100k",
+    "individual_income_under_50k": "higher % of people who have individual income under $50k",
+    "individual_income_over_100k": "higher % of people who have individual income over $100k",
     "housing_per_pop": "higher number of housing units per adult",
     "vacancy": "higher % of units that are vacant",
     "rent_or_own_rent": "higher % of people who are renters",
     "rent_burden_under_20": "higher % of people whose rent is less than 20% of their income",
     "rent_burden_over_40": "higher % of people whose rent is greater than 40% of their income",
-    "rent_1br_under_750": "higher % of units with 1br rent < $750",
-    "rent_1br_over_1500": "higher % of units with 1br rent > $1500",
-    "rent_2br_under_750": "higher % of units with 2br rent < $750",
-    "rent_2br_over_1500": "higher % of units with 2br rent > $1500",
+    "rent_1br_under_750": "higher % of units with 1br rent under $750",
+    "rent_1br_over_1500": "higher % of units with 1br rent over $1500",
+    "rent_2br_under_750": "higher % of units with 2br rent under $750",
+    "rent_2br_over_1500": "higher % of units with 2br rent over $1500",
     "year_built_1969_or_earlier": "higher % units built pre-1970",
     "year_built_2010_or_later": "higher % units built in 2010s+",
     "transportation_means_car": "higher % of people who commute by car",
@@ -302,8 +302,8 @@ stats_to_display = {
     "transportation_means_walk": "higher % of people who commute by walking",
     "transportation_means_transit": "higher % of people who commute by transit",
     "transportation_means_worked_at_home": "higher % of people who work from home",
-    "transportation_commute_time_under_15": "higher % of people who have commute time < 15 min",
-    "transportation_commute_time_over_60": "higher % of people who have commute time > 60 min",
+    "transportation_commute_time_under_15": "higher % of people who have commute time under 15 min",
+    "transportation_commute_time_over_60": "higher % of people who have commute time over 60 min",
     (
         "2020 Presidential Election",
         "margin",
@@ -316,7 +316,7 @@ stats_to_display = {
         "2016-2020 Swing",
         "margin",
     ): "!FULL Which swung towards Democrats more from 2016 to 2020?",
-    "park_percent_1km_v2": "higher population-weighted mean % of parkland within 1km",
+    "park_percent_1km_v2": "!FULL Which has more access to parks (higher % of area within 1km of a park, population weighted)?",
     "mean_dist_Hospital_updated": "!FULL Which has less access to hospitals (higher population-weighted mean distance)?",
     "mean_dist_Active Superfund Site_updated": "!FULL Which has less exposure to EPA superfund sites (higher population-weighted mean distance)?",
     "mean_dist_Airport_updated": "!FULL Which has less access to airports (higher population-weighted mean distance)?",
@@ -326,21 +326,21 @@ stats_to_display = {
     "insurance_coverage_govt": "higher % of people who are on public insurance",
     "insurance_coverage_private": "higher % of people who are on private insurance",
     "marriage_divorced": "higher % of people who are divorced",
-    "mean_high_temp_4": "higher mean daily high temperature",
-    "mean_high_temp_winter_4": "higher mean daily high temperature in winter",
-    "mean_high_temp_spring_4": "higher mean daily high temperature in spring",
-    "mean_high_temp_summer_4": "higher mean daily high temperature in summer",
-    "mean_high_temp_fall_4": "higher mean daily high temperature in fall",
-    "mean_high_heat_index_4": "higher mean daily high heat index",
-    "mean_high_dewpoint_4": "higher mean daily high dewpoint",
-    "days_dewpoint_70_inf_4": "higher % of days with dewpoint > 70",
-    "days_dewpoint_-inf_50_4": "higher % of days with dewpoint < 50",
-    "days_above_90_4": "higher % of days with high temp > 90",
-    "days_below_40_4": "higher % of days with high temp < 40",
-    "wind_speed_over_10mph_4": "higher % of days with wind speed > 10mph",
-    "snowfall_4": "higher snowfall",
-    "rainfall_4": "higher rainfall",
-    "hours_sunny_4": "!FULL Which has more hours of sun per day on average?",
+    "mean_high_temp_4": "higher mean daily high temperature (population weighted)",
+    "mean_high_temp_winter_4": "higher mean daily high temperature in winter (population weighted)",
+    "mean_high_temp_spring_4": "higher mean daily high temperature in spring (population weighted)",
+    "mean_high_temp_summer_4": "higher mean daily high temperature in summer (population weighted)",
+    "mean_high_temp_fall_4": "higher mean daily high temperature in fall (population weighted)",
+    "mean_high_heat_index_4": "higher mean daily high heat index (population weighted)",
+    "mean_high_dewpoint_4": "higher mean daily high dewpoint (population weighted)",
+    "days_dewpoint_70_inf_4": "higher % of days with dewpoint over 70°F (population weighted)",
+    "days_dewpoint_-inf_50_4": "higher % of days with dewpoint under 50°F (population weighted)",
+    "days_above_90_4": "higher % of days with high temp over 90°F (population weighted)",
+    "days_below_40_4": "higher % of days with high temp under 40°F (population weighted)",
+    "wind_speed_over_10mph_4": "higher % of days with wind speed over 10mph (population weighted)",
+    "snowfall_4": "higher snowfall (population weighted)",
+    "rainfall_4": "higher rainfall (population weighted)",
+    "hours_sunny_4": "!FULL Which has more hours of sun per day on average? (population weighted)",
 }
 
 
