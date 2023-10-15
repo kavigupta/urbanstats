@@ -16,7 +16,7 @@ from produce_html_page import get_statistic_categories
 from urbanstats.shortener import shorten
 
 min_pop = 250_000
-version = 12
+version = 13
 fixed_up_to = 36
 
 # ranges = [
@@ -333,7 +333,7 @@ stats_to_display = {
     "mean_high_temp_fall_4": "higher mean daily high temperature in fall",
     "mean_high_heat_index_4": "higher mean daily high heat index",
     "mean_high_dewpoint_4": "higher mean daily high dewpoint",
-    "days_dewpoint_70_inf_4": "higher % of days with dewpoint < 70",
+    "days_dewpoint_70_inf_4": "higher % of days with dewpoint > 70",
     "days_dewpoint_-inf_50_4": "higher % of days with dewpoint < 50",
     "days_above_90_4": "higher % of days with high temp > 90",
     "days_below_40_4": "higher % of days with high temp < 40",

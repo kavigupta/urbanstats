@@ -38,7 +38,7 @@ class QuizPanel extends PageTemplate {
             return (
                 <QuizResult
                     quiz={quiz}
-                    whole_history={this.state.quiz_history}
+                    whole_history={this.get_whole_history()}
                     history={history}
                     today={this.today}
                     today_name={this.today_name}
@@ -59,12 +59,25 @@ class QuizPanel extends PageTemplate {
         );
     }
 
+    get_whole_history() {
+        const history = this.state.quiz_history;
+        // set 42's correct_pattern's 0th element to true
+        if ("42" in history) {
+            if ("correct_pattern" in history["42"]) {
+                if (history["42"]["correct_pattern"].length > 0) {
+                    history["42"]["correct_pattern"][0] = true;
+                }
+            }
+        }
+        return history;
+    }
+
     get_todays_quiz_history() {
-        return this.state.quiz_history[this.today] || { "choices": [], "correct_pattern": [] };
+        return this.get_whole_history()[this.today] || { "choices": [], "correct_pattern": [] };
     }
 
     set_todays_quiz_history(history_today) {
-        const history = this.state.quiz_history;
+        const history = this.get_whole_history();
         history[this.today] = history_today;
         this.setState({ history: history, waiting: true });
         // if today is a number and not a string
