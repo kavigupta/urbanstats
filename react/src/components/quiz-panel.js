@@ -8,6 +8,7 @@ import { PageTemplate } from "../page_template/template.js";
 import "../common.css";
 import "./quiz.css";
 import { isMobile } from 'react-device-detect';
+import { article_link } from '../navigation/links.js';
 
 const ENDPOINT = "https://persistent.urbanstats.org";
 
@@ -38,7 +39,7 @@ class QuizPanel extends PageTemplate {
             return (
                 <QuizResult
                     quiz={quiz}
-                    whole_history={this.state.quiz_history}
+                    whole_history={this.get_whole_history()}
                     history={history}
                     today={this.today}
                     today_name={this.today_name}
@@ -59,12 +60,25 @@ class QuizPanel extends PageTemplate {
         );
     }
 
+    get_whole_history() {
+        const history = this.state.quiz_history;
+        // set 42's correct_pattern's 0th element to true
+        if ("42" in history) {
+            if ("correct_pattern" in history["42"]) {
+                if (history["42"]["correct_pattern"].length > 0) {
+                    history["42"]["correct_pattern"][0] = true;
+                }
+            }
+        }
+        return history;
+    }
+
     get_todays_quiz_history() {
-        return this.state.quiz_history[this.today] || { "choices": [], "correct_pattern": [] };
+        return this.get_whole_history()[this.today] || { "choices": [], "correct_pattern": [] };
     }
 
     set_todays_quiz_history(history_today) {
-        const history = this.state.quiz_history;
+        const history = this.get_whole_history();
         history[this.today] = history_today;
         this.setState({ history: history, waiting: true });
         // if today is a number and not a string
@@ -427,6 +441,18 @@ class Summary extends PageTemplate {
 
 }
 
+function Clickable({ longname }) {
+    // return <a href={article_link(longname)}>{longname}</a>
+    // same without any link formatting
+    return <a
+        href={article_link(longname)}
+        style={{ textDecoration: "none", color: "inherit" }}
+    >
+        {longname}
+    </a>
+}
+
+
 class QuizResultRow extends PageTemplate {
     constructor(props) {
         super(props);
@@ -453,7 +479,7 @@ class QuizResultRow extends PageTemplate {
                     <tbody>
                         <tr key={this.props.index}>
                             <td className={first}>
-                                {this.props.longname_a}
+                                <Clickable longname={this.props.longname_a} />
                             </td>
                             <td className="quiz_result_value_left">
                                 {this.create_value(this.props.stat_a)}
@@ -465,7 +491,7 @@ class QuizResultRow extends PageTemplate {
                                 {this.create_value(this.props.stat_b)}
                             </td>
                             <td className={second}>
-                                {this.props.longname_b}
+                                <Clickable longname={this.props.longname_b} />
                             </td>
                             <td className="serif quiz_result_symbol">
                                 {result}
