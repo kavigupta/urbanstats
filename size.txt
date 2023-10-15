@@ -1,0 +1,93 @@
+get rid of forward and backward buttons
+1	r/
+1	styles/
+8	index/
+16	scripts/
+609	order/
+2884	data/
+3770	shape/
+7285	total
+
+clean up shapefiles
+1	r/
+1	styles/
+8	index/
+16	scripts/
+609	order/
+2641	shape/
+2884	data/
+6156	total
+
+remove name from data
+8       index
+16      scripts
+609     order
+2628    data
+2641    shape
+5901    total
+
+use gzipped protobufs for data
+8       index
+28      scripts
+609     order
+643     data
+2648    shape
+3933    total
+
+add a bunch of acs rows
+8       index
+28      scripts
+648     data
+932     order
+2648    shape
+4261    total
+
+use gzipped protobufs for shape
+8       index
+28      scripts
+648     data
+932     order
+949     shape
+2562    total
+
+use gzipped protobufs for order
+2       scripts
+3       index
+193     order
+648     data
+949     shape
+1793    total
+
+add in shapefiles for media markets, urban areas, judicial districts
+2       scripts
+3       index
+198     order
+664     data
+1006    shape
+1872    total
+
+add in area/compactness/swing stats
+2       scripts
+3       index
+205     order
+665     data
+1006    shape
+1880    total
+
+add in hospital data
+
+3       index
+208     order
+665     data
+1006    shape
+1883    total
+
+add in parkland data
+
+3       index
+213     order
+666     data
+1006    shape
+1888    total
+
+
