@@ -1,27 +1,7 @@
 
 export { parse_ramp, RAMPS }
 
-const RAMPS = {
-    viridis: [
-        [0, "#440154"], [0.1, "#482878"], [0.2, "#3e4989"], [0.3, "#31688e"],
-        [0.4, "#26828e"], [0.5, "#1f9e89"], [0.6, "#35b779"], [0.7, "#6ece58"],
-        [0.8, "#b5de2b"], [0.9, "#fde725"]
-    ],
-    magma: [
-        [0, "#000004"], [0.1, "#140e36"], [0.2, "#3b0f70"], [0.3, "#641a80"],
-        [0.4, "#8c2981"], [0.5, "#b73779"], [0.6, "#de4968"], [0.7, "#f7705c"],
-        [0.8, "#fe9f6d"], [0.9, "#fecf92"]
-    ],
-    inferno: [
-        [0, "#000004"], [0.1, "#160b39"], [0.2, "#420a68"], [0.3, "#6a176e"],
-        [0.4, "#932667"], [0.5, "#bc3754"], [0.6, "#dd513a"], [0.7, "#f37819"],
-        [0.8, "#fca50a"], [0.9, "#f6d746"]
-    ],
-    gray: [
-        [0, "#000000"], [1, "#ffffff"]
-    ],
-}
-
+const RAMPS = require("../data/mapper/ramps.json");
 class Ramp {
     create_ramp(values) {
         throw "create_ramp not implemented";
@@ -32,7 +12,7 @@ function parse_colormap(cmap) {
     console.log("C", cmap)
     if (cmap.type === "none") {
         // default
-        return RAMPS.gray;
+        return RAMPS.Gray;
     } else if (cmap.type === "custom") {
         try {
             console.log("V", cmap.custom_colormap)
@@ -49,10 +29,10 @@ function parse_colormap(cmap) {
             }
         } catch (e) {
         }
-        return RAMPS.gray;
+        return RAMPS.Gray;
     } else if (cmap.type === "preset") {
         if (cmap.name == "") {
-            return RAMPS.gray;
+            return RAMPS.Gray;
         }
         return RAMPS[cmap.name];
     }
@@ -62,7 +42,10 @@ function parse_colormap(cmap) {
 function parse_ramp(ramp) {
     const cmap = parse_colormap(ramp.colormap);
     if (ramp.type === "constant") {
-        return new ConstantRamp(cmap);
+        return new ConstantRamp(cmap,
+            ramp.lower_bound === undefined || ramp.lower_bound === "" ? 0 : parseFloat(ramp.lower_bound),
+            ramp.upper_bound === undefined || ramp.upper_bound === "" ? 1 : parseFloat(ramp.upper_bound),
+        );
     } else if (ramp.type === "linear") {
         return new LinearRamp(cmap);
     }
@@ -70,9 +53,17 @@ function parse_ramp(ramp) {
 }
 
 class ConstantRamp extends Ramp {
-    constructor(kepoints) {
+    constructor(kepoints, a, b) {
         super();
-        this.values = kepoints;
+        console.log(a, b);
+        console.log(kepoints);
+        const a0 = kepoints[0][0];
+        const b0 = kepoints[kepoints.length - 1][0];
+        this.values = kepoints.map(([value, color]) => {
+            const new_value = (value - a0) / (b0 - a0) * (b - a) + a;
+            return [new_value, color];
+        });
+        console.log(this.values)
     }
 
     create_ramp(values) {

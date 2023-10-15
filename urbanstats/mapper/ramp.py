@@ -1,11 +1,13 @@
+import json
+import os
 import matplotlib.pyplot as plt
 import matplotlib as mpl
 
 import numpy as np
 
 
-def get_all_ramps():
-    all_ramps = {}
+def get_pyplot_ramps():
+    pyplot_ramps = {}
     for ramp_name in plt.colormaps():
         if ramp_name.endswith("_r"):
             continue
@@ -17,8 +19,17 @@ def get_all_ramps():
             continue
         assert isinstance(ramp_obj, mpl.colors.LinearSegmentedColormap)
         ramp_name = ramp_name[0].upper() + ramp_name[1:]
-        all_ramps[ramp_name] = ramp_obj_to_list(ramp_obj)
+        pyplot_ramps[ramp_name] = ramp_obj_to_list(ramp_obj)
 
+    pyplot_ramps = {
+        k: v for k, v in sorted(pyplot_ramps.items(), key=lambda x: x[0].lower())
+    }
+    return pyplot_ramps
+
+
+def get_all_ramps():
+    all_ramps = {}
+    all_ramps.update(get_pyplot_ramps())
     return all_ramps
 
 
@@ -59,7 +70,9 @@ def interpolate_ramp(ramp, relative_pos):
         [[int(y[1:][a:b], 16) for a, b in [(0, 2), (2, 4), (4, 6)]] for y in [y1, y2]]
     )
     return "#%02x%02x%02x" % tuple(
-        ((y1 * (x2 - relative_pos) + y2 * (relative_pos - x1)) / (x2 - x1)).astype(np.int)
+        ((y1 * (x2 - relative_pos) + y2 * (relative_pos - x1)) / (x2 - x1)).astype(
+            np.int
+        )
     )
 
 
@@ -67,3 +80,13 @@ def plot_ramp(y, ramp, segments=101):
     xs = np.linspace(0, 1, segments)
     colors = [interpolate_ramp(ramp, x) for x in xs]
     plt.scatter(xs, [y for _ in colors], c=colors, s=100)
+
+
+def output_ramps():
+    mapper_folder = "react/src/data/mapper"
+    try:
+        os.makedirs(mapper_folder)
+    except FileExistsError:
+        pass
+    with open(f"{mapper_folder}/ramps.json", "w") as f:
+        json.dump(get_all_ramps(), f)

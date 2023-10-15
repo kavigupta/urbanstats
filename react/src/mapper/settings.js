@@ -203,6 +203,41 @@ class RampColormapSelector extends React.Component {
     }
 }
 
+function ConstantParametersSelector({ get_ramp, set_ramp }) {
+    const ramp = get_ramp();
+    return (
+        <div style={{ display: "flex" }}>
+            <div style={setting_sub_name_style}>
+                Lower Bound:
+            </div>
+            <input
+                type="number"
+                style={{ width: "5em" }}
+                value={ramp.lower_bound}
+                onChange={e => set_ramp({
+                    ...ramp,
+                    lower_bound: e.target.value,
+                })}
+            />
+            <div style={{ width: "0.5em" }} />
+            <div style={setting_sub_name_style}>
+                Upper Bound:
+            </div>
+            <input
+                type="number"
+                style={{ width: "5em" }}
+                value={ramp.upper_bound}
+                onChange={e => set_ramp({
+                    ...ramp,
+                    upper_bound: e.target.value,
+                })}
+            />
+        </div>
+    );
+}
+
+
+
 class RampSelector extends React.Component {
     render() {
         return (
@@ -226,6 +261,12 @@ class RampSelector extends React.Component {
                         type: name,
                     })}
                 />
+                {
+                    this.props.get_ramp().type === "constant" ? <ConstantParametersSelector
+                        get_ramp={this.props.get_ramp}
+                        set_ramp={this.props.set_ramp}
+                    /> : <div></div>
+                }
             </div>
         )
     }
