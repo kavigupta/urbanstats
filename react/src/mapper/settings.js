@@ -33,6 +33,9 @@ function default_settings() {
 function parse_color_stat(name_to_index, color_stat) {
     console.log(color_stat);
     console.log(name_to_index);
+    if (color_stat === undefined) {
+        return new InvalidColorStat();
+    }
     const type = color_stat.type;
     if (type === "single") {
         color_stat = color_stat.value;
