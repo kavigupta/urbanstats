@@ -3,6 +3,7 @@ export { MapperSettings, default_settings, parse_color_stat };
 
 import React from "react";
 import { RAMPS } from "./ramps.js";
+import { FunctionSelector, FunctionColorStat } from "./function.js";
 
 const setting_name_style = {
     fontWeight: "bold",
@@ -43,6 +44,15 @@ function parse_color_stat(name_to_index, color_stat) {
             return new SingleColorStat(name_to_index[color_stat], color_stat);
         }
         return new InvalidColorStat();
+    }
+    if (type == "function") {
+        const variables = color_stat.variables.map(variable => {
+            return {
+                name: variable.name,
+                expr: parse_color_stat(name_to_index, variable.expr),
+            }
+        });
+        return new FunctionColorStat(color_stat.name, variables, color_stat.expression);
     }
     return new InvalidColorStat();
 }
@@ -279,6 +289,9 @@ class MapperSettings extends React.Component {
 
 
     render() {
+        const self = this;
+        console.log("rendering MapperSettings")
+        console.log("Setting", this.props.get_map_settings())
         return (
             <div>
                 <DataListSelector
@@ -296,18 +309,39 @@ class MapperSettings extends React.Component {
                 />
                 <DataListSelector
                     overall_name="Statistic for Color:"
-                    names={this.props.names}
+                    names={["Function", ...this.props.names]}
                     initial_value={this.props.get_map_settings().color_stat?.value}
                     onChange={name =>
-                        this.props.set_map_settings({
-                            ...this.props.get_map_settings(),
-                            color_stat: {
+                        self.props.set_map_settings({
+                            ...self.props.get_map_settings(),
+                            color_stat: name != "Function" ? {
+                                ...self.props.get_map_settings().color_stat,
                                 type: "single",
                                 value: name,
+                            } : {
+                                ...self.props.get_map_settings().color_stat,
+                                type: "function",
+                                value: "Function",
+                                variables: [],
+                                expression: "",
+                                name: "",
                             }
                         })
                     }
                 />
+                {
+                    this.props.get_map_settings().color_stat?.type == "function" ?
+                        <FunctionSelector
+                            get_function={() => this.props.get_map_settings().color_stat}
+                            set_function={f => this.props.set_map_settings({
+                                ...this.props.get_map_settings(),
+                                color_stat: f,
+                            })}
+                            names={this.props.names}
+                        />
+                        :
+                        <div></div>
+                }
                 <RampSelector
                     get_ramp={() => this.props.get_map_settings().ramp}
                     set_ramp={ramp => this.props.set_map_settings({
