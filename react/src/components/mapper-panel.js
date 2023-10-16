@@ -199,6 +199,18 @@ class MapperPanel extends PageTemplate {
             this.name_to_index[this.names[i]] = i;
         }
 
+        const map_settings = this.get_settings();
+
+        this.state = {
+            ...this.state,
+            map_settings: map_settings
+        };
+        this.geography_kind = undefined;
+        this.underlying_shapes = undefined;
+        this.underlying_stats = undefined;
+    }
+
+    get_settings() {
         const params = new URLSearchParams(window.location.search);
         const encoded_settings = params.get("settings");
         var settings = default_settings();
@@ -207,14 +219,7 @@ class MapperPanel extends PageTemplate {
             const jsoned_settings = gunzipSync(Buffer.from(encoded_settings, 'base64')).toString();
             settings = JSON.parse(jsoned_settings);
         }
-
-        this.state = {
-            ...this.state,
-            map_settings: settings
-        };
-        this.geography_kind = undefined;
-        this.underlying_shapes = undefined;
-        this.underlying_stats = undefined;
+        return settings;
     }
 
     update_geography_kind() {
@@ -256,7 +261,9 @@ class MapperPanel extends PageTemplate {
         // convert to parameters like ?settings=...
         const params = new URLSearchParams(window.location.search);
         params.set("settings", encoded_settings);
-        window.history.replaceState(null, null, "?" + params.toString());
+        // window.history.replaceState(null, null, "?" + params.toString());
+        // back button should work
+        window.history.pushState(null, null, "?" + params.toString());
     }
 
     get_map_settings() {
@@ -301,6 +308,15 @@ class MapperPanel extends PageTemplate {
                 }
             </div>
         );
+    }
+
+    componentDidUpdate() {
+        const self = this;
+        window.onpopstate = e => {
+            self.setState({
+                map_settings: self.get_settings()
+            });
+        }
     }
 
     set_empirical_ramp(ramp) {
