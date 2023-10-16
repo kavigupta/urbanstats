@@ -61,9 +61,9 @@ class DisplayedMap extends MapGeneric {
             color => ({
                 fillColor: color,
                 fillOpacity: 1,
-                color: color,
+                color: "black",
                 opacity: 1,
-                weight: 0
+                weight: 1
             })
         );
         return [names, styles, -1];
