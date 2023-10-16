@@ -15,7 +15,7 @@ async function loadPage() {
     // const data = await loadProtobuf(data_link(longname), "Article");
     // document.title = data.shortname;
     const root = ReactDOM.createRoot(document.getElementById("root"));
-    root.render(<MapperPanel/>);
+    root.render(<MapperPanel key={window.location.pathname}/>);
 }
 
 loadPage();
