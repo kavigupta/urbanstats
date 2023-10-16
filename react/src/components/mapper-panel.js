@@ -244,12 +244,6 @@ class MapperPanel extends PageTemplate {
         }
     }
 
-    set_colorstat_name(name) {
-        if (name !== this.state.map_settings.color_stat) {
-
-        }
-    }
-
     set_map_settings(settings) {
         this.setState({
             map_settings: settings
