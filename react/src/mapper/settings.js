@@ -3,7 +3,7 @@ export { MapperSettings, default_settings, parse_color_stat };
 
 import React from "react";
 import { RAMPS } from "./ramps.js";
-import { FunctionSelector, FunctionColorStat } from "./function.js";
+import { FunctionSelector, FunctionColorStat, FilterSelector } from "./function.js";
 
 const setting_name_style = {
     fontWeight: "bold",
@@ -21,6 +21,12 @@ const setting_sub_name_style = {
 function default_settings() {
     return {
         geography_kind: undefined,
+        filter: {
+            enabled: false,
+            function: {
+                type: "function"
+            },
+        },
         color_stat: undefined,
         ramp: {
             type: "linear",
@@ -306,6 +312,15 @@ class MapperSettings extends React.Component {
                             geography_kind: name
                         })
                     }
+                />
+                <div style={setting_name_style}>Filter</div>
+                <FilterSelector
+                    get_filter={() => this.props.get_map_settings().filter}
+                    set_filter={filter => this.props.set_map_settings({
+                        ...this.props.get_map_settings(),
+                        filter: filter,
+                    })}
+                    names={this.props.names}
                 />
                 <DataListSelector
                     overall_name="Statistic for Color:"

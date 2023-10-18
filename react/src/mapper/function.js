@@ -1,4 +1,4 @@
-export { FunctionSelector, FunctionColorStat };
+export { FilterSelector, FunctionSelector, FunctionColorStat };
 
 import React from "react";
 
@@ -90,18 +90,23 @@ class FunctionSelector extends React.Component {
     render() {
         const self = this;
         const func = this.props.get_function();
+        if (func.variables === undefined) {
+            func.variables = [];
+        }
         return (
-            <div>
-                <input
-                    type="text"
-                    style={{ width: "100%" }}
-                    placeholder='Name for this function'
-                    value={func.name}
-                    onChange={e => self.props.set_function({
-                        ...func,
-                        name: e.target.value,
-                    })}
-                />
+            <div style={{ paddingLeft: "1em" }}>
+                {
+                    this.props.no_name_field ? <div /> : <input
+                        type="text"
+                        style={{ width: "100%" }}
+                        placeholder='Name for this function'
+                        value={func.name}
+                        onChange={e => self.props.set_function({
+                            ...func,
+                            name: e.target.value,
+                        })}
+                    />
+                }
                 {
                     func.variables.map((variable, i) => (
                         <VariableSelector
@@ -137,7 +142,7 @@ class FunctionSelector extends React.Component {
                 <input
                     type="text"
                     style={{ width: "100%" }}
-                    placeholder='Expression, e.g., "a + b"'
+                    placeholder={self.props.placeholder || 'Expression, e.g., "a + b"'}
                     value={func.expression}
                     onChange={e => self.props.set_function({
                         ...func,
@@ -149,3 +154,40 @@ class FunctionSelector extends React.Component {
     }
 }
 
+class FilterSelector extends React.Component {
+    constructor(props) {
+        super(props);
+    }
+
+    render() {
+        const self = this;
+        const filter = this.props.get_filter();
+        // like FunctionSelector, but has a checkmark for whether the filter is enabled
+        return (
+            <div>
+                <span>
+                    <input
+                        type="checkbox"
+                        checked={filter.enabled}
+                        onChange={e => self.props.set_filter({
+                            ...filter,
+                            enabled: e.target.checked,
+                        })}
+                    /> Enable Filter?
+                </span>
+                {
+                    filter.enabled ? <FunctionSelector
+                        no_name_field={true}
+                        get_function={() => filter.function}
+                        set_function={f => self.props.set_filter({
+                            ...filter,
+                            function: f,
+                        })}
+                        names={self.props.names}
+                        placeholder={'Filter expression, e.g., "(a > 0 and b < 0) or b > 10"'}
+                    /> : <div />
+                }
+            </div>
+        );
+    }
+}

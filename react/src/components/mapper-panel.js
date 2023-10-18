@@ -47,10 +47,18 @@ class DisplayedMap extends MapGeneric {
         this.name_to_index = undefined;
         await this.guarantee_name_to_index();
 
-        const stats = (await this.props.underlying_stats);
+        var stats = (await this.props.underlying_stats);
         // TODO correct this!
-        const names = stats.longnames;
+        if (this.props.filter !== undefined) {
+
+            const filter_vals = stats.stats.map(x => this.props.filter.compute(x));
+            stats = {
+                stats: stats.stats.filter((x, i) => filter_vals[i]),
+                longnames: stats.longnames.filter((x, i) => filter_vals[i]),
+            }
+        }
         const stat_vals = stats.stats.map(x => this.props.color_stat.compute(x));
+        const names = stats.longnames;
         const [ramp, interpolations] = this.props.ramp.create_ramp(stat_vals);
         this.props.ramp_callback({ ramp: ramp, interpolations: interpolations });
         const colors = stat_vals.map(
@@ -160,6 +168,10 @@ class MapComponent extends React.Component {
     render() {
 
         const color_stat = parse_color_stat(this.props.name_to_index, this.props.color_stat);
+        console.log(this.props.filter.function)
+        const filter = this.props.filter.enabled ? parse_color_stat(this.props.name_to_index, this.props.filter.function) : undefined;
+
+        console.log("FILTER", filter)
 
         return (
             <div style={{
@@ -170,6 +182,7 @@ class MapComponent extends React.Component {
                     <DisplayedMap
                         id="mapper"
                         color_stat={color_stat}
+                        filter={filter}
                         geography_kind={this.props.geography_kind}
                         underlying_shapes={this.props.underlying_shapes}
                         underlying_stats={this.props.underlying_stats}
@@ -275,6 +288,7 @@ class MapperPanel extends PageTemplate {
         this.update_geography_kind();
         const geography_kind = this.state.map_settings.geography_kind;
         const color_stat = this.state.map_settings.color_stat;
+        const filter = this.state.map_settings.filter;
         const valid = this.valid_geographies.includes(geography_kind);
         return (
             <div>
@@ -298,6 +312,7 @@ class MapperPanel extends PageTemplate {
                             get_empirical_ramp={() => this.state.empirical_ramp}
                             set_empirical_ramp={(ramp) => this.set_empirical_ramp(ramp)}
                             color_stat={color_stat}
+                            filter={filter}
                         />
                 }
             </div>
