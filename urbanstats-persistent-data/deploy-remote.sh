@@ -2,7 +2,7 @@
 
 SERVER=root@persistent.urbanstats.org
 
-rsync -az run.sh requirements.txt urbanstats_persistent_data.py $SERVER:/root/urbanstats-persistent-data
+rsync -az run.sh requirements.txt urbanstats_persistent_data $SERVER:/root/urbanstats-persistent-data
 
 ssh $SERVER << EOF
     cd urbanstats-persistent-data
