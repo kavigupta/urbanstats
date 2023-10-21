@@ -292,6 +292,15 @@ class QuizResult extends PageTemplate {
     }
 }
 
+function DisplayedStat({ number, name }) {
+    // large font for numbers, small for names. Center-aligned using flexbox
+    return <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
+        <div className="serif" style={{ fontSize: "1.5em" }}>{number}</div>
+        <div className="serif" style={{ fontSize: "0.75em" }}>{name}</div>
+    </div>
+
+}
+
 class QuizStatistics extends PageTemplate {
     constructor(props) {
         super(props);
@@ -301,6 +310,7 @@ class QuizStatistics extends PageTemplate {
         const whole_history = this.props.whole_history;
         const historical_correct = new Array(this.props.today + 1).fill(-1);
         const frequencies = new Array(6).fill(0);
+        const played_games = [];
         for (var i = 0; i <= this.props.today; i++) {
             const hist_i = whole_history[i];
             if (hist_i === undefined) {
@@ -309,6 +319,7 @@ class QuizStatistics extends PageTemplate {
                 const amount = whole_history[i + ""].correct_pattern.reduce((partialSum, a) => partialSum + a, 0);
                 historical_correct[i] = amount;
                 frequencies[amount] += 1;
+                played_games.push(amount);
             }
         }
         const streaks = new Array(6).fill(0);
@@ -322,23 +333,48 @@ class QuizStatistics extends PageTemplate {
             }
         }
         const total_freq = frequencies.reduce((partialSum, a) => partialSum + a, 0);
-        console.log(whole_history);
-        console.log(historical_correct);
-        console.log(frequencies);
+        const today_score = historical_correct[this.props.today];
+        const statistics = [
+            {
+                name: "Played",
+                value: played_games.length,
+            },
+            {
+                name: "Mean score",
+                value: (
+                    played_games.reduce((partialSum, a) => partialSum + a, 0)
+                    / played_games.length
+                ).toFixed(2),
+            },
+            {
+                name: "3+ %",
+                value: (
+                    played_games.filter((x) => x >= 3).length
+                    / played_games.length * 100
+                ).toFixed(0) + "%",
+            },
+            {
+                name: "Current Streak (3+)",
+                value: streaks[today_score],
+            },
+        ]
         return <div>
-            <div className="serif quiz_summary">Statistics</div>
+            <div className="serif quiz_summary">Your Statistics</div>
+            <div className="serif" style={
+                {
+                    textAlign: "center", width: "50%", margin: "auto", fontSize: "1.5em",
+                    display: "flex", justifyContent: "space-between"
+                }
+            }>
+                {
+                    statistics.map((stat, i) =>
+                        <DisplayedStat key={i} number={stat.value} name={stat.name} />
+                    )
+                }
+            </div>
+            <div className="gap_small" />
             <table className="quiz_barchart">
                 <tbody>
-                    <tr>
-                        <td className="quiz_bar_td serif">
-                        </td>
-                        <td className="quiz_bar_td serif quiz_bar_td_header">
-                            Frequency
-                        </td>
-                        <td className="quiz_bar_td serif quiz_bar_td_header">
-                            Max Streak
-                        </td>
-                    </tr>
                     {
                         frequencies.map((amt, i) =>
                             <tr key={i}>
@@ -349,9 +385,6 @@ class QuizStatistics extends PageTemplate {
                                     <span className="quiz_bar" style={{ width: (amt / total_freq * 20) + "em" }}>
                                     </span>
                                     {amt > 0 ? (<span className="quiz_stat">{amt} ({(amt / total_freq * 100).toFixed(1)}%)</span>) : undefined}
-                                </td>
-                                <td className="quiz_bar_td serif quiz_bar_centered">
-                                    {streaks[i]}
                                 </td>
                             </tr>
                         )
