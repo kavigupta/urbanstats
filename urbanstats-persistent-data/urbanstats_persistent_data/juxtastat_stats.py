@@ -1,4 +1,5 @@
 import sqlite3
+import time
 from typing import List, Tuple
 
 
@@ -9,7 +10,8 @@ def table():
     # day is the challenge day number
     # corrects is an integer representing the correct answers as a bitmap
     c.execute(
-        """CREATE TABLE IF NOT EXISTS JuxtaStatIndividualStats (user integer, day integer, corrects integer, PRIMARY KEY (user, day))"""
+        """CREATE TABLE IF NOT EXISTS JuxtaStatIndividualStats
+        (user integer, day integer, corrects integer, time integer, PRIMARY KEY (user, day))"""
     )
     # user to domain name
     c.execute(
@@ -69,9 +71,13 @@ def store_user_stats(user, day_stats: List[Tuple[int, List[bool]]]):
     # ignore latest day here, it is up to the client to filter out old stats
     # we want to be able to update stats for old days
     print(day_stats)
+    time_unix_millis = round(time.time() * 1000)
     c.executemany(
-        "INSERT OR REPLACE INTO JuxtaStatIndividualStats VALUES (?, ?, ?)",
-        [(user, day, corrects_to_bitvector(corrects)) for day, corrects in day_stats],
+        "INSERT OR REPLACE INTO JuxtaStatIndividualStats VALUES (?, ?, ?, ?)",
+        [
+            (user, day, corrects_to_bitvector(corrects), time_unix_millis)
+            for day, corrects in day_stats
+        ],
     )
     conn.commit()
 
@@ -81,7 +87,7 @@ def get_full_database():
     # join the user domain table with the individual stats table and get all rows
     c.execute(
         """
-        SELECT JuxtaStatUserDomain.user, domain, day, corrects
+        SELECT JuxtaStatUserDomain.user, domain, day, corrects, time
         FROM JuxtaStatUserDomain, JuxtaStatIndividualStats
         WHERE JuxtaStatUserDomain.user = JuxtaStatIndividualStats.user
         """
