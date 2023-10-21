@@ -235,6 +235,33 @@ class Help extends PageTemplate {
     }
 }
 
+function AudienceStatistics({ total, per_question, scores }) {
+    // two flexboxes of the scores for each
+    return <div>
+        <div className="serif quiz_summary">Audience Statistics</div>
+        <DisplayedStats statistics={
+            per_question.map((x, i) => {
+                return {
+                    name: "Q" + (i + 1) + " Correct",
+                    value: (x / total * 100).toFixed(0) + "%",
+                    addtl_class: x / total > 0.5 ? "text_quiz_correct" : "text_quiz_incorrect",
+                }
+            }
+            )
+        } />
+        {/* <div className="gap_small" />
+        <DisplayedStats statistics={
+            scores.map((x, i) => {
+                return {
+                    name: "Score " + (i) + "/5",
+                    value: (x / total * 100).toFixed(0) + "%",
+                }
+            }
+            )
+        } /> */}
+    </div>
+}
+
 class QuizResult extends PageTemplate {
     constructor(props) {
         super(props);
@@ -272,6 +299,9 @@ class QuizResult extends PageTemplate {
                 <QuizStatistics whole_history={this.props.whole_history} today={this.props.today} />
                 <div className="gap"></div>
                 <div className="gap"></div>
+                {/* <AudienceStatistics total={78} per_question={[10, 20, 50, 23, 58]} scores={[0, 20, 35, 23, 34, 3]} /> */}
+                {/* <div className="gap"></div>
+                <div className="gap"></div> */}
                 <span className="serif quiz_summary">Details (spoilers, don't share!)</span>
                 <div className="gap_small"></div>
                 {
@@ -292,13 +322,31 @@ class QuizResult extends PageTemplate {
     }
 }
 
-function DisplayedStat({ number, name }) {
+function DisplayedStat({ number, name, addtl_class }) {
+    if (addtl_class == undefined) {
+        addtl_class = "";
+    }
     // large font for numbers, small for names. Center-aligned using flexbox
-    return <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
-        <div className="serif" style={{ fontSize: "1.5em" }}>{number}</div>
+    return <div style={{ display: "flex", flexDirection: "column", alignItems: "center", padding: "0.3em" }}>
+        <div className={"serif " + addtl_class} style={{ fontSize: "1.5em" }}>{number}</div>
         <div className="serif" style={{ fontSize: "0.75em" }}>{name}</div>
     </div>
 
+}
+
+function DisplayedStats({ statistics }) {
+    return <div className="serif" style={
+        {
+            textAlign: "center", width: "40%", margin: "auto", fontSize: "1.5em",
+            display: "flex", justifyContent: "space-between"
+        }
+    }>
+        {
+            statistics.map((stat, i) =>
+                <DisplayedStat key={i} number={stat.value} name={stat.name} addtl_class={stat.addtl_class} />
+            )
+        }
+    </div>
 }
 
 class QuizStatistics extends PageTemplate {
@@ -360,18 +408,7 @@ class QuizStatistics extends PageTemplate {
         ]
         return <div>
             <div className="serif quiz_summary">Your Statistics</div>
-            <div className="serif" style={
-                {
-                    textAlign: "center", width: "50%", margin: "auto", fontSize: "1.5em",
-                    display: "flex", justifyContent: "space-between"
-                }
-            }>
-                {
-                    statistics.map((stat, i) =>
-                        <DisplayedStat key={i} number={stat.value} name={stat.name} />
-                    )
-                }
-            </div>
+            <DisplayedStats statistics={statistics} />
             <div className="gap_small" />
             <table className="quiz_barchart">
                 <tbody>
