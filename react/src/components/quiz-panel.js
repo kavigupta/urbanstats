@@ -213,8 +213,8 @@ class Footer extends PageTemplate {
         return <table className="quiz_footer">
             <tbody>
                 <tr>
-                    {choices.map(x =>
-                        <td className={x}></td>
+                    {choices.map((x, i) =>
+                        <td key={i} className={x}></td>
                     )}
                 </tr>
             </tbody>
@@ -252,7 +252,7 @@ class QuizResult extends PageTemplate {
                 <div className="gap"></div>
                 <Summary correct_pattern={correct_pattern} total_correct={total_correct} total={correct_pattern.length} />
                 <div className="gap_small"></div>
-                <button class="serif quiz_copy_button" ref={this.button} onClick={async () => {
+                <button className="serif quiz_copy_button" ref={this.button} onClick={async () => {
                     const text = await summary(today_name, correct_pattern, total_correct, this.props.parameters);
                     // if (isMobile) {
                     //     try {
@@ -278,6 +278,7 @@ class QuizResult extends PageTemplate {
                     this.props.quiz.map(
                         (quiz, index) => (
                             <QuizResultRow {...quiz}
+                                key={index}
                                 index={index}
                                 choice={this.props.history.choices[index]}
                                 correct={correct_pattern[index]}
@@ -327,33 +328,35 @@ class QuizStatistics extends PageTemplate {
         return <div>
             <div className="serif quiz_summary">Statistics</div>
             <table className="quiz_barchart">
-                <tr>
-                    <td className="quiz_bar_td serif">
-                    </td>
-                    <td className="quiz_bar_td serif quiz_bar_td_header">
-                        Frequency
-                    </td>
-                    <td className="quiz_bar_td serif quiz_bar_td_header">
-                        Max Streak
-                    </td>
-                </tr>
-                {
-                    frequencies.map((amt, i) =>
-                        <tr>
-                            <td className="quiz_bar_td serif">
-                                {i}/5
-                            </td>
-                            <td className="quiz_bar_td serif">
-                                <span className="quiz_bar" style={{ width: (amt / total_freq * 20) + "em" }}>
-                                </span>
-                                {amt > 0 ? (<span className="quiz_stat">{amt} ({(amt / total_freq * 100).toFixed(1)}%)</span>) : undefined}
-                            </td>
-                            <td className="quiz_bar_td serif quiz_bar_centered">
-                                {streaks[i]}
-                            </td>
-                        </tr>
-                    )
-                }
+                <tbody>
+                    <tr>
+                        <td className="quiz_bar_td serif">
+                        </td>
+                        <td className="quiz_bar_td serif quiz_bar_td_header">
+                            Frequency
+                        </td>
+                        <td className="quiz_bar_td serif quiz_bar_td_header">
+                            Max Streak
+                        </td>
+                    </tr>
+                    {
+                        frequencies.map((amt, i) =>
+                            <tr key={i}>
+                                <td className="quiz_bar_td serif">
+                                    {i}/5
+                                </td>
+                                <td className="quiz_bar_td serif">
+                                    <span className="quiz_bar" style={{ width: (amt / total_freq * 20) + "em" }}>
+                                    </span>
+                                    {amt > 0 ? (<span className="quiz_stat">{amt} ({(amt / total_freq * 100).toFixed(1)}%)</span>) : undefined}
+                                </td>
+                                <td className="quiz_bar_td serif quiz_bar_centered">
+                                    {streaks[i]}
+                                </td>
+                            </tr>
+                        )
+                    }
+                </tbody>
             </table>
         </div>
     }
@@ -465,13 +468,13 @@ class QuizResultRow extends PageTemplate {
         }
         const result = this.props.correct ? "🟩" : "🟥";
         return (
-            <div>
+            <div key={this.props.index}>
                 <span className="serif quiz_results_question">
                     {this.props.stat_column}
                 </span>
                 <table className="stats_table quiz_results_table">
                     <tbody>
-                        <tr key={this.props.index}>
+                        <tr>
                             <td className={first}>
                                 <Clickable longname={this.props.longname_a} />
                             </td>
