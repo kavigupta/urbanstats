@@ -24,7 +24,17 @@ def get_full_statistics(*, after_problem, debug=False):
     for i, q in enumerate(questions):
         result[q] = result.pattern.apply(lambda x: x[i])
     result["score"] = result.pattern.apply(sum)
-    result.time = pd.to_datetime(result.time, unit="ms")
+    # time in ms to datetime in Eastern time
+    result.time = (
+        pd.to_datetime(result.time, unit="ms")
+        .dt.tz_localize("UTC")
+        .dt.tz_convert("US/Eastern")
+    )
+    # subtract off day. day 49 is 2023-10-21
+    result["date_challenge"] = result.problem.apply(
+        lambda x: pd.Timedelta(x - 49, "d") + pd.Timestamp("2023-10-21", tz="US/Eastern")
+    )
+    result["offset"] = (result.time - result.date_challenge).dt.total_seconds() / 3600
     result = result[result.problem >= after_problem]
     if debug:
         result = result[result.host == "localhost"]
