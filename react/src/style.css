@@ -42,6 +42,18 @@
     padding: 0;
 }
 
+.quiztext {
+    font-size: 40px;
+    margin: 0;
+    padding: 0;
+}
+
+.quiztext_mobile {
+    font-size: 30px;
+    margin: 0;
+    padding: 0;
+}
+
 .value {
     font-size: 18px;
     font-weight: bold;

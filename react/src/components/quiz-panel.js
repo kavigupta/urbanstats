@@ -152,7 +152,7 @@ class QuizQuestion extends PageTemplate {
             <div>
                 {/* {this.props.waiting ? <Overlay correct={pattern[pattern.length - 1]} /> : undefined} */}
                 <Header today={this.props.today} />
-                <div className={"centered_text " + (isMobile ? "subheadertext_mobile" : "subheadertext")}>
+                <div className={"centered_text " + (isMobile ? "quiztext_mobile" : "quiztext")}>
                     {question}
                 </div>
                 <div className="gap"></div>
@@ -160,18 +160,18 @@ class QuizQuestion extends PageTemplate {
                     <tbody>
                         <tr>
                             <td className="quiz_option">
-                                <button className={button_a} onClick={() => this.props.on_select("A")}>
-                                    <div className={"centered_text " + (isMobile ? "subheadertext_mobile" : "subheadertext")}>
+                                <div role='button' className={button_a} onClick={() => this.props.on_select("A")}>
+                                    <div className={"centered_text " + (isMobile ? "quiztext_mobile" : "quiztext")}>
                                         {this.props.longname_a}
                                     </div>
-                                </button>
+                                </div>
                             </td>
                             <td className="quiz_option">
-                                <button className={button_b} onClick={() => this.props.on_select("B")}>
-                                    <div className={"centered_text " + (isMobile ? "subheadertext_mobile" : "subheadertext")}>
+                                <div role='button' className={button_b} onClick={() => this.props.on_select("B")}>
+                                    <div className={"centered_text " + (isMobile ? "quiztext_mobile" : "quiztext")}>
                                         {this.props.longname_b}
                                     </div>
-                                </button>
+                                </div>
                             </td>
                         </tr>
                         <tr>
