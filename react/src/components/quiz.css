@@ -152,19 +152,6 @@
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  /* font-weight: bold; */
-}
-
-.quiz_overlay_correct {
-  color: #000;
-  background-color: rgba(0, 255, 0, 0.1);
-  z-index: 10001;
-}
-
-.quiz_overlay_incorrect {
-  color: #000;
-  background-color: rgba(255, 0, 0, 0.1);
-  z-index: 10001;
 }
 
 .quiz_barchart {

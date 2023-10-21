@@ -120,21 +120,6 @@ function Header({ today }) {
     return (<div className={"centered_text " + (isMobile ? "headertext_mobile" : "headertext")}>{text}</div>);
 }
 
-// function Overlay({ correct }) {
-//     let cn = "quiz_overlay_text serif";
-//     const text = correct ? "Correct" : "Incorrect";
-//     if (correct) {
-//         cn += " quiz_overlay_correct";
-//     } else {
-//         cn += " quiz_overlay_incorrect";
-//     }
-//     return (<div className={cn}>
-//         <div className="quiz_overlay_text_content">
-//             {text}!
-//         </div>
-//     </div>)
-// }
-
 class QuizQuestion extends PageTemplate {
     constructor(props) {
         super(props);
