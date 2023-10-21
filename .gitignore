@@ -1,6 +1,6 @@
 *.pyc
 Untitled*.ipynb
-quiz*.ipynb
+quiz.ipynb
 *.ipynb_checkpoints
 output-shapefiles
 dist
