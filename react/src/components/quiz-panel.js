@@ -9,6 +9,7 @@ import "../common.css";
 import "./quiz.css";
 import { isMobile } from 'react-device-detect';
 import { article_link } from '../navigation/links.js';
+import { reportToServer } from '../quiz/statistics.js';
 
 const ENDPOINT = "https://persistent.urbanstats.org";
 
@@ -36,6 +37,10 @@ class QuizPanel extends PageTemplate {
         }
 
         if (index == quiz.length) {
+
+            if (this.is_daily()) {
+                reportToServer(this.get_whole_history());
+            }
             return (
                 <QuizResult
                     quiz={quiz}
@@ -77,12 +82,16 @@ class QuizPanel extends PageTemplate {
         return this.get_whole_history()[this.today] || { "choices": [], "correct_pattern": [] };
     }
 
+    is_daily() {
+        return typeof this.today == "number";
+    }
+
     set_todays_quiz_history(history_today) {
         const history = this.get_whole_history();
         history[this.today] = history_today;
         this.setState({ history: history, waiting: true });
         // if today is a number and not a string
-        if (typeof this.today == "number") {
+        if (this.is_daily()) {
             localStorage.setItem("quiz_history", JSON.stringify(history));
         }
     }
