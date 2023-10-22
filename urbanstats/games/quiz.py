@@ -16,8 +16,8 @@ from produce_html_page import get_statistic_categories
 from urbanstats.shortener import shorten
 
 min_pop = 250_000
-version = 15
-fixed_up_to = 43
+version = 17
+fixed_up_to = 51
 
 # ranges = [
 #     (0.7, 1),
@@ -332,11 +332,11 @@ stats_to_display = {
     "mean_high_temp_summer_4": "higher mean daily high temperature in summer (population weighted)",
     "mean_high_temp_fall_4": "higher mean daily high temperature in fall (population weighted)",
     "mean_high_heat_index_4": "higher mean daily high heat index (population weighted)",
-    "mean_high_dewpoint_4": "higher mean daily high dewpoint (population weighted)",
-    "days_dewpoint_70_inf_4": "higher % of days with dewpoint over 70°F (population weighted)",
-    "days_dewpoint_-inf_50_4": "higher % of days with dewpoint under 50°F (population weighted)",
-    "days_above_90_4": "higher % of days with high temp over 90°F (population weighted)",
-    "days_below_40_4": "higher % of days with high temp under 40°F (population weighted)",
+    # "mean_high_dewpoint_4": "more humid (higher mean daily high dewpoint, population weighted)",
+    # "days_dewpoint_70_inf_4": "higher % of humid days (days with dewpoint over 70°F, population weighted)",
+    # "days_dewpoint_-inf_50_4": "higher % of dry days (days with dewpoint under 50°F, population weighted)",
+    "days_above_90_4": "higher % of hot days (days with high temp over 90°F, population weighted)",
+    "days_below_40_4": "higher % of cold days (days with high temp under 40°F, population weighted)",
     "wind_speed_over_10mph_4": "higher % of days with wind speed over 10mph (population weighted)",
     "snowfall_4": "higher snowfall (population weighted)",
     "rainfall_4": "higher rainfall (population weighted)",
@@ -371,6 +371,9 @@ not_included = {
     "transportation_commute_time_30_to_59",
     "days_dewpoint_50_70_4",
     "days_between_40_and_90_4",
+    "mean_high_dewpoint_4",
+    "days_dewpoint_70_inf_4",
+    "days_dewpoint_-inf_50_4",
     # meh whatever
     "marriage_married_not_divorced",
     "marriage_never_married",
