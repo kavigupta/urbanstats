@@ -3,7 +3,7 @@ export { QuizPanel };
 import React from 'react';
 
 import { Statistic } from "./table.js";
-import { Map } from "./map.js";
+import { MapGeneric } from "./map.js";
 import { PageTemplate } from "../page_template/template.js";
 import "../common.css";
 import "./quiz.css";
@@ -12,6 +12,20 @@ import { article_link } from '../navigation/links.js';
 import { reportToServer } from '../quiz/statistics.js';
 
 const ENDPOINT = "https://persistent.urbanstats.org";
+
+class Map extends MapGeneric {
+    constructor(props) {
+        super(props);
+    }
+
+    async compute_polygons() {
+        const style = { "interactive": false, "fillOpacity": 0.5, "weight": 1, "color": "#5a7dc3", "fillColor": "#5a7dc3" };
+        return [[this.props.longname], [style], 0];
+    }
+
+    async mapDidRender() {
+    }
+}
 
 class QuizPanel extends PageTemplate {
     constructor(props) {
@@ -159,6 +173,16 @@ class QuizQuestion extends PageTemplate {
             question = this.props.question.slice(6);
         }
 
+        const button_style = {
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            flexDirection: "column",
+        }
+
+        const row_style = { display: "flex", justifyContent: "center", width: "90%", margin: "auto" };
+
+
         return (
             <div>
                 {/* {this.props.waiting ? <Overlay correct={pattern[pattern.length - 1]} /> : undefined} */}
@@ -167,40 +191,40 @@ class QuizQuestion extends PageTemplate {
                     {question}
                 </div>
                 <div className="gap"></div>
-                <table className="quiz_question_table">
-                    <tbody>
-                        <tr>
-                            <td className="quiz_option">
-                                <div role='button' className={button_a} onClick={() => this.props.on_select("A")}>
-                                    <div className={"centered_text " + (isMobile ? "quiztext_mobile" : "quiztext")}>
-                                        {this.props.longname_a}
-                                    </div>
+                <div style={row_style}>
+                    <div style={{ width: "50%" }}>
+                        <div role='button' className={button_a} onClick={() => this.props.on_select("A")} style={button_style}>
+                            <span style={{ margin: "auto" }}>
+                                <div className={"centered_text " + (isMobile ? "quiztext_mobile" : "quiztext")}>
+                                    {this.props.longname_a}
                                 </div>
-                            </td>
-                            <td className="quiz_option">
-                                <div role='button' className={button_b} onClick={() => this.props.on_select("B")}>
-                                    <div className={"centered_text " + (isMobile ? "quiztext_mobile" : "quiztext")}>
-                                        {this.props.longname_b}
-                                    </div>
+                            </span>
+                        </div>
+                    </div>
+                    <div style={{ width: "50%" }}>
+                        <div role='button' className={button_b} onClick={() => this.props.on_select("B")} style={button_style}>
+                            <span style={{ margin: "auto" }}>
+                                <div className={"centered_text " + (isMobile ? "quiztext_mobile" : "quiztext")}>
+                                    {this.props.longname_b}
                                 </div>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td className="quiz_option">
-                                <Map id="map_a"
-                                    longname={this.props.longname_a}
-                                    settings={this.state.settings}
-                                    article_type={undefined} />
-                            </td>
-                            <td className="quiz_option">
-                                <Map id="map_b"
-                                    longname={this.props.longname_b}
-                                    settings={this.state.settings}
-                                    article_type={undefined} />
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                <div style={row_style}>
+                    <div style={{ width: "50%", padding: "0.5em" }}>
+                        <Map id="map_a"
+                            longname={this.props.longname_a}
+                            settings={this.state.settings}
+                            article_type={undefined} />
+                    </div>
+                    <div style={{ width: "50%", padding: "0.5em" }}>
+                        <Map id="map_b"
+                            longname={this.props.longname_b}
+                            settings={this.state.settings}
+                            article_type={undefined} />
+                    </div>
+                </div>
                 <Footer history={this.props.history} length={this.props.length} />
                 <Help />
             </div>

@@ -14,17 +14,6 @@
   color: var(--quiz-incorrect);
 }
 
-.quiz_options {
-  display: flex;
-}
-
-.quiz_option {
-  width: 50%;
-  height: 1px;
-  padding: 0.5em;
-}
-
-
 .quiz_clickable {
   display: block;
   border-radius: 1em;
