@@ -18,6 +18,8 @@ def get_full_statistics(*, after_problem, debug=False):
     result = pd.DataFrame(
         result, columns=["user_id", "host", "problem", "pattern", "time"]
     )
+    result["last_in_batch"] = 0
+    result.loc[result.groupby("time").idxmax().problem, "last_in_batch"] = 1
     result.pattern = result.pattern.apply(
         lambda x: np.array([x // 2**i % 2 for i in range(5)])
     )
@@ -32,7 +34,8 @@ def get_full_statistics(*, after_problem, debug=False):
     )
     # subtract off day. day 49 is 2023-10-21
     result["date_challenge"] = result.problem.apply(
-        lambda x: pd.Timedelta(x - 49, "d") + pd.Timestamp("2023-10-21", tz="US/Eastern")
+        lambda x: pd.Timedelta(x - 49, "d")
+        + pd.Timestamp("2023-10-21", tz="US/Eastern")
     )
     result["offset"] = (result.time - result.date_challenge).dt.total_seconds() / 3600
     result = result[result.problem >= after_problem]
