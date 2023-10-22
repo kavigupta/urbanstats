@@ -65,6 +65,10 @@ def corrects_to_bitvector(corrects: List[bool]) -> int:
     return sum(2**i for i, correct in enumerate(corrects) if correct)
 
 
+def bitvector_to_corrects(bitvector: int) -> List[bool]:
+    return [bool(bitvector & (2**i)) for i in range(5)]
+
+
 def store_user_stats(user, day_stats: List[Tuple[int, List[bool]]]):
     user = int(user, 16)
     conn, c = table()
@@ -80,6 +84,30 @@ def store_user_stats(user, day_stats: List[Tuple[int, List[bool]]]):
         ],
     )
     conn.commit()
+
+
+def get_per_question_stats(day):
+    day = int(day)
+    _, c = table()
+    c.execute(
+        """
+        SELECT corrects
+        FROM JuxtastatIndividualStats
+        INNER JOIN JuxtastatUserDomain
+        ON JuxtastatIndividualStats.user = JuxtastatUserDomain.user
+        WHERE day = ?
+        AND domain = 'urbanstats.org'
+        """,
+        (day,),
+    )
+    corrects = c.fetchall()
+    corrects = [x[0] for x in corrects]
+    corrects = [bitvector_to_corrects(x) for x in corrects]
+    corrects = list(zip(*corrects))
+    return dict(
+        total=len(corrects[0]),
+        per_question=[sum(x) for x in corrects],
+    )
 
 
 def get_full_database():

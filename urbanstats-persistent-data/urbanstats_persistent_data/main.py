@@ -5,6 +5,7 @@ import hashlib
 from flask_cors import CORS
 
 from .juxtastat_stats import (
+    get_per_question_stats,
     latest_day,
     register_user,
     store_user_stats,
@@ -96,6 +97,15 @@ def juxtastat_get_full_database_request():
             200,
         )
     return flask.jsonify(get_full_database())
+
+
+@app.route("/juxtastat/get_per_question_stats", methods=["POST"])
+def juxtastat_get_per_question_stats_request():
+    form = flask_form()
+
+    if "day" in form:
+        return flask.jsonify(get_per_question_stats(form["day"]))
+    return flask.jsonify({"error": "Needs parameter day!"}), 200
 
 
 import logging
