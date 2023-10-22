@@ -178,6 +178,7 @@ class QuizQuestion extends PageTemplate {
             justifyContent: "center",
             alignItems: "center",
             flexDirection: "column",
+            padding: "0.5em",
         }
 
         const row_style = { display: "flex", justifyContent: "center", width: "90%", margin: "auto" };
@@ -192,7 +193,7 @@ class QuizQuestion extends PageTemplate {
                 </div>
                 <div className="gap"></div>
                 <div style={row_style}>
-                    <div style={{ width: "50%" }}>
+                    <div style={{ width: "50%", padding: "0.5em" }}>
                         <div role='button' className={button_a} onClick={() => this.props.on_select("A")} style={button_style}>
                             <span style={{ margin: "auto" }}>
                                 <div className={"centered_text " + (isMobile ? "quiztext_mobile" : "quiztext")}>
@@ -201,7 +202,7 @@ class QuizQuestion extends PageTemplate {
                             </span>
                         </div>
                     </div>
-                    <div style={{ width: "50%" }}>
+                    <div style={{ width: "50%", padding: "0.5em" }}>
                         <div role='button' className={button_b} onClick={() => this.props.on_select("B")} style={button_style}>
                             <span style={{ margin: "auto" }}>
                                 <div className={"centered_text " + (isMobile ? "quiztext_mobile" : "quiztext")}>
