@@ -38,8 +38,17 @@ class QuizPanel extends PageTemplate {
 
         if (index == quiz.length) {
 
+            var get_per_question = null;
             if (this.is_daily()) {
                 reportToServer(this.get_whole_history());
+                // POST to endpoint /juxtastat/get_per_question_stats with the current day
+                get_per_question = fetch(ENDPOINT + "/juxtastat/get_per_question_stats", {
+                    method: "POST",
+                    body: JSON.stringify({ day: this.today }),
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                });
             }
             return (
                 <QuizResult
@@ -49,7 +58,9 @@ class QuizPanel extends PageTemplate {
                     today={this.today}
                     today_name={this.today_name}
                     settings={this.state.settings}
-                    parameters={this.props.parameters} />
+                    parameters={this.props.parameters}
+                    get_per_question={get_per_question}
+                />
             )
         }
 
@@ -266,6 +277,7 @@ class QuizResult extends PageTemplate {
     constructor(props) {
         super(props);
         this.button = React.createRef();
+        this.state = { total: 0, per_question: [0, 0, 0, 0, 0] };
     }
 
     render() {
@@ -273,6 +285,7 @@ class QuizResult extends PageTemplate {
         const today_name = this.props.today_name;
         const correct_pattern = this.props.history.correct_pattern;
         const total_correct = correct_pattern.reduce((partialSum, a) => partialSum + a, 0);
+
         return (
             <div>
                 <Header today={today} />
@@ -299,9 +312,13 @@ class QuizResult extends PageTemplate {
                 <QuizStatistics whole_history={this.props.whole_history} today={this.props.today} />
                 <div className="gap"></div>
                 <div className="gap"></div>
-                {/* <AudienceStatistics total={78} per_question={[10, 20, 50, 23, 58]} scores={[0, 20, 35, 23, 34, 3]} /> */}
-                {/* <div className="gap"></div>
-                <div className="gap"></div> */}
+                {
+                    this.state.total > 30 ? <div>
+                        <AudienceStatistics total={this.state.total} per_question={this.state.per_question} />
+                        <div className="gap"></div>
+                        <div className="gap"></div>
+                    </div> : undefined
+                }
                 <span className="serif quiz_summary">Details (spoilers, don't share!)</span>
                 <div className="gap_small"></div>
                 {
@@ -320,6 +337,13 @@ class QuizResult extends PageTemplate {
             </div>
         )
     }
+    async componentDidMount() {
+        if (this.props.get_per_question != null) {
+            const response = await this.props.get_per_question.then((response) => response.json());
+            console.log(response);
+            this.setState({ total: response["total"], per_question: response["per_question"] });
+        }
+    }
 }
 
 function DisplayedStat({ number, name, addtl_class }) {
@@ -329,7 +353,7 @@ function DisplayedStat({ number, name, addtl_class }) {
     // large font for numbers, small for names. Center-aligned using flexbox
     return <div style={{ display: "flex", flexDirection: "column", alignItems: "center", padding: "0.3em" }}>
         <div className={"serif " + addtl_class} style={{ fontSize: "1.5em" }}>{number}</div>
-        <div className="serif" style={{ fontSize: "0.75em" }}>{name}</div>
+        <div className="serif" style={{ fontSize: "0.5em" }}>{name}</div>
     </div>
 
 }
@@ -337,8 +361,8 @@ function DisplayedStat({ number, name, addtl_class }) {
 function DisplayedStats({ statistics }) {
     return <div className="serif" style={
         {
-            textAlign: "center", width: "40%", margin: "auto", fontSize: "1.5em",
-            display: "flex", justifyContent: "space-between"
+            textAlign: "center", width: "100%", margin: "auto", fontSize: "1.5em",
+            display: "flex", flexWrap: "wrap", justifyContent: "center"
         }
     }>
         {
@@ -395,7 +419,7 @@ class QuizStatistics extends PageTemplate {
                 ).toFixed(2),
             },
             {
-                name: "3+ %",
+                name: "Win Rate (3+)",
                 value: (
                     played_games.filter((x) => x >= 3).length
                     / played_games.length * 100
