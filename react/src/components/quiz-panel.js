@@ -2,6 +2,8 @@ export { QuizPanel };
 
 import React from 'react';
 
+import { shareOnMobile } from "react-mobile-share";
+
 import { Statistic } from "./table.js";
 import { MapGeneric } from "./map.js";
 import { PageTemplate } from "../page_template/template.js";
@@ -310,6 +312,9 @@ class QuizResult extends PageTemplate {
         const today_name = this.props.today_name;
         const correct_pattern = this.props.history.correct_pattern;
         const total_correct = correct_pattern.reduce((partialSum, a) => partialSum + a, 0);
+        const self = this;
+
+        console.log("UPDATE");
 
         return (
             <div>
@@ -318,21 +323,36 @@ class QuizResult extends PageTemplate {
                 <Summary correct_pattern={correct_pattern} total_correct={total_correct} total={correct_pattern.length} />
                 <div className="gap_small"></div>
                 <button className="serif quiz_copy_button" ref={this.button} onClick={async () => {
-                    const text = await summary(today_name, correct_pattern, total_correct, this.props.parameters);
-                    // if (isMobile) {
-                    //     try {
-                    //         shareOnMobile({
-                    //             text: text,
-                    //         })
-                    //     } catch (err) {
-                    //         console.log("caught");
-                    //         navigator.clipboard.writeText(text);
-                    //         this.button.current.textContent = "Copied!";
-                    //     }
-                    // }
-                    navigator.clipboard.writeText(text)
-                    this.button.current.textContent = "Copied!";
-                }}>Copy to clipboard</button>
+                    const [text, url] = await summary(today_name, correct_pattern, total_correct, this.props.parameters);
+
+                    async function copy_to_clipboard() {
+                        navigator.clipboard.writeText(text + "\n" + url);
+                        self.button.current.textContent = "Copied!";
+                    }
+
+                    console.log("is mobile: " + isMobile);
+                    if (isMobile) {
+                        try {
+                            console.log(text);
+                            console.log(url);
+                            shareOnMobile({
+                                text: "Hey checkout our package react-mobile-share",
+                                url: url,
+                                title: text + "\n",
+                            })
+                        } catch (err) {
+                            console.log("caught");
+                            console.log(err);
+                            await copy_to_clipboard();
+                        }
+                    } else {
+                        await copy_to_clipboard();
+                    }
+                }}>
+                    <div>Share</div>
+                    <div style={{ marginInline: "0.25em" }}></div>
+                    <img src="/share.png" className="icon" style={{ width: "1em", height: "1em" }} />
+                </button>
                 <div className="gap" />
                 <div className="gap"></div>
                 {
@@ -489,7 +509,7 @@ function red_and_green_squares(correct_pattern) {
     }).join("");
 }
 
-async function summary(today, correct_pattern, total_correct, parameters) {
+async function summary(today, correct_pattern, total_correct, parameters, no_url) {
     // wordle-style summary
     let text = "Juxtastat " + today + " " + total_correct + "/" + correct_pattern.length;
 
@@ -499,9 +519,9 @@ async function summary(today, correct_pattern, total_correct, parameters) {
     text += red_and_green_squares(correct_pattern);
 
     text += "\n";
-    text += "\n";
 
-    text += "juxtastat.org";
+
+    var url = "https://juxtastat.org";
     if (parameters != "") {
         console.log(parameters);
         if (parameters.length > 100) {
@@ -519,9 +539,9 @@ async function summary(today, correct_pattern, total_correct, parameters) {
             parameters = "short=" + short;
 
         }
-        text += "/#" + parameters;
+        url += "/#" + parameters;
     }
-    return text;
+    return [text, url];
 }
 
 class Summary extends PageTemplate {

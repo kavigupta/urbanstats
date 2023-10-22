@@ -129,8 +129,18 @@
 .quiz_copy_button {
   text-align: center;
   font-size: 2em;
-  display: table;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: row;
   margin: 0 auto;
+  padding: 0.25em 1em;
+  background-color: var(--quiz-correct);
+  border-radius: 0.25em;
+  border: none;
+  color: #fff;
+
+  /* font-weight: bold; */
 }
 
 .quiz_footer {
