@@ -249,7 +249,7 @@ class Help extends PageTemplate {
 function AudienceStatistics({ total, per_question, scores }) {
     // two flexboxes of the scores for each
     return <div>
-        <div className="serif quiz_summary">Audience Statistics</div>
+        <div className="serif quiz_summary">Question Difficulty</div>
         <DisplayedStats statistics={
             per_question.map((x, i) => {
                 return {
@@ -309,8 +309,6 @@ class QuizResult extends PageTemplate {
                     this.button.current.textContent = "Copied!";
                 }}>Copy to clipboard</button>
                 <div className="gap" />
-                <QuizStatistics whole_history={this.props.whole_history} today={this.props.today} />
-                <div className="gap"></div>
                 <div className="gap"></div>
                 {
                     this.state.total > 30 ? <div>
@@ -319,6 +317,8 @@ class QuizResult extends PageTemplate {
                         <div className="gap"></div>
                     </div> : undefined
                 }
+                <QuizStatistics whole_history={this.props.whole_history} today={this.props.today} />
+                <div className="gap"></div>
                 <span className="serif quiz_summary">Details (spoilers, don't share!)</span>
                 <div className="gap_small"></div>
                 {
