@@ -314,6 +314,8 @@ class QuizResult extends PageTemplate {
 
         console.log("UPDATE");
 
+        const is_share = isMobile && navigator.canShare && !isFirefox;
+
         return (
             <div>
                 <Header today={today} />
@@ -329,7 +331,7 @@ class QuizResult extends PageTemplate {
                     }
 
                     console.log("is mobile: " + isMobile);
-                    if (navigator.canShare && !isFirefox) {
+                    if (is_share) {
                         try {
                             console.log(text);
                             console.log(url);
@@ -346,7 +348,7 @@ class QuizResult extends PageTemplate {
                         await copy_to_clipboard();
                     }
                 }}>
-                    <div>Share</div>
+                    <div>{is_share ? "Share" : "Copy"}</div>
                     <div style={{ marginInline: "0.25em" }}></div>
                     <img src="/share.png" className="icon" style={{ width: "1em", height: "1em" }} />
                 </button>
