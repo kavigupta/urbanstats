@@ -2,8 +2,6 @@ export { QuizPanel };
 
 import React from 'react';
 
-import { shareOnMobile } from "react-mobile-share";
-
 import { Statistic } from "./table.js";
 import { MapGeneric } from "./map.js";
 import { PageTemplate } from "../page_template/template.js";
@@ -331,14 +329,13 @@ class QuizResult extends PageTemplate {
                     }
 
                     console.log("is mobile: " + isMobile);
-                    if (isMobile) {
+                    if (navigator.canShare) {
                         try {
                             console.log(text);
                             console.log(url);
-                            shareOnMobile({
-                                text: "Hey checkout our package react-mobile-share",
+                            await navigator.share({
                                 url: url,
-                                title: text + "\n",
+                                text: text + "\n",
                             })
                         } catch (err) {
                             console.log("caught");
