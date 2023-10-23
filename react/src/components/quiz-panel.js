@@ -7,7 +7,7 @@ import { MapGeneric } from "./map.js";
 import { PageTemplate } from "../page_template/template.js";
 import "../common.css";
 import "./quiz.css";
-import { isMobile } from 'react-device-detect';
+import { isMobile, isFirefox } from 'react-device-detect';
 import { article_link } from '../navigation/links.js';
 import { reportToServer } from '../quiz/statistics.js';
 
@@ -329,7 +329,7 @@ class QuizResult extends PageTemplate {
                     }
 
                     console.log("is mobile: " + isMobile);
-                    if (navigator.canShare) {
+                    if (navigator.canShare && !isFirefox) {
                         try {
                             console.log(text);
                             console.log(url);
