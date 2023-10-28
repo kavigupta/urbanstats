@@ -3,14 +3,29 @@ export { QuizPanel };
 import React from 'react';
 
 import { Statistic } from "./table.js";
-import { Map } from "./map.js";
+import { MapGeneric } from "./map.js";
 import { PageTemplate } from "../page_template/template.js";
 import "../common.css";
 import "./quiz.css";
-import { isMobile } from 'react-device-detect';
+import { isMobile, isFirefox } from 'react-device-detect';
 import { article_link } from '../navigation/links.js';
+import { reportToServer } from '../quiz/statistics.js';
 
 const ENDPOINT = "https://persistent.urbanstats.org";
+
+class Map extends MapGeneric {
+    constructor(props) {
+        super(props);
+    }
+
+    async compute_polygons() {
+        const style = { "interactive": false, "fillOpacity": 0.5, "weight": 1, "color": "#5a7dc3", "fillColor": "#5a7dc3" };
+        return [[this.props.longname], [style], 0];
+    }
+
+    async mapDidRender() {
+    }
+}
 
 class QuizPanel extends PageTemplate {
     constructor(props) {
@@ -36,6 +51,19 @@ class QuizPanel extends PageTemplate {
         }
 
         if (index == quiz.length) {
+
+            var get_per_question = null;
+            if (this.is_daily()) {
+                reportToServer(this.get_whole_history());
+                // POST to endpoint /juxtastat/get_per_question_stats with the current day
+                get_per_question = fetch(ENDPOINT + "/juxtastat/get_per_question_stats", {
+                    method: "POST",
+                    body: JSON.stringify({ day: this.today }),
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                });
+            }
             return (
                 <QuizResult
                     quiz={quiz}
@@ -44,7 +72,9 @@ class QuizPanel extends PageTemplate {
                     today={this.today}
                     today_name={this.today_name}
                     settings={this.state.settings}
-                    parameters={this.props.parameters} />
+                    parameters={this.props.parameters}
+                    get_per_question={get_per_question}
+                />
             )
         }
 
@@ -77,12 +107,16 @@ class QuizPanel extends PageTemplate {
         return this.get_whole_history()[this.today] || { "choices": [], "correct_pattern": [] };
     }
 
+    is_daily() {
+        return typeof this.today == "number";
+    }
+
     set_todays_quiz_history(history_today) {
         const history = this.get_whole_history();
         history[this.today] = history_today;
         this.setState({ history: history, waiting: true });
         // if today is a number and not a string
-        if (typeof this.today == "number") {
+        if (this.is_daily()) {
             localStorage.setItem("quiz_history", JSON.stringify(history));
         }
     }
@@ -110,21 +144,6 @@ function Header({ today }) {
     }
     return (<div className={"centered_text " + (isMobile ? "headertext_mobile" : "headertext")}>{text}</div>);
 }
-
-// function Overlay({ correct }) {
-//     let cn = "quiz_overlay_text serif";
-//     const text = correct ? "Correct" : "Incorrect";
-//     if (correct) {
-//         cn += " quiz_overlay_correct";
-//     } else {
-//         cn += " quiz_overlay_incorrect";
-//     }
-//     return (<div className={cn}>
-//         <div className="quiz_overlay_text_content">
-//             {text}!
-//         </div>
-//     </div>)
-// }
 
 class QuizQuestion extends PageTemplate {
     constructor(props) {
@@ -154,48 +173,59 @@ class QuizQuestion extends PageTemplate {
             question = this.props.question.slice(6);
         }
 
+        const button_style = {
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            flexDirection: "column",
+            padding: "0.5em",
+        }
+
+        const row_style = { display: "flex", justifyContent: "center", width: "90%", margin: "auto" };
+
+
         return (
             <div>
                 {/* {this.props.waiting ? <Overlay correct={pattern[pattern.length - 1]} /> : undefined} */}
                 <Header today={this.props.today} />
-                <div className={"centered_text " + (isMobile ? "subheadertext_mobile" : "subheadertext")}>
+                <div className={"centered_text " + (isMobile ? "quiztext_mobile" : "quiztext")}>
                     {question}
                 </div>
                 <div className="gap"></div>
-                <table className="quiz_question_table">
-                    <tbody>
-                        <tr>
-                            <td className="quiz_option">
-                                <button className={button_a} onClick={() => this.props.on_select("A")}>
-                                    <div className={"centered_text " + (isMobile ? "subheadertext_mobile" : "subheadertext")}>
-                                        {this.props.longname_a}
-                                    </div>
-                                </button>
-                            </td>
-                            <td className="quiz_option">
-                                <button className={button_b} onClick={() => this.props.on_select("B")}>
-                                    <div className={"centered_text " + (isMobile ? "subheadertext_mobile" : "subheadertext")}>
-                                        {this.props.longname_b}
-                                    </div>
-                                </button>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td className="quiz_option">
-                                <Map id="map_a"
-                                    longname={this.props.longname_a}
-                                    settings={this.state.settings}
-                                    article_type={undefined} />
-                            </td>
-                            <td className="quiz_option">
-                                <Map id="map_b"
-                                    longname={this.props.longname_b}
-                                    settings={this.state.settings}
-                                    article_type={undefined} />
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
+                <div style={row_style}>
+                    <div style={{ width: "50%", padding: "0.5em" }}>
+                        <div role='button' className={button_a} onClick={() => this.props.on_select("A")} style={button_style}>
+                            <span style={{ margin: "auto" }}>
+                                <div className={"centered_text " + (isMobile ? "quiztext_mobile" : "quiztext")}>
+                                    {this.props.longname_a}
+                                </div>
+                            </span>
+                        </div>
+                    </div>
+                    <div style={{ width: "50%", padding: "0.5em" }}>
+                        <div role='button' className={button_b} onClick={() => this.props.on_select("B")} style={button_style}>
+                            <span style={{ margin: "auto" }}>
+                                <div className={"centered_text " + (isMobile ? "quiztext_mobile" : "quiztext")}>
+                                    {this.props.longname_b}
+                                </div>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                <div style={row_style}>
+                    <div style={{ width: "50%", padding: "0.5em" }}>
+                        <Map id="map_a"
+                            longname={this.props.longname_a}
+                            settings={this.state.settings}
+                            article_type={undefined} />
+                    </div>
+                    <div style={{ width: "50%", padding: "0.5em" }}>
+                        <Map id="map_b"
+                            longname={this.props.longname_b}
+                            settings={this.state.settings}
+                            article_type={undefined} />
+                    </div>
+                </div>
                 <Footer history={this.props.history} length={this.props.length} />
                 <Help />
             </div>
@@ -219,8 +249,8 @@ class Footer extends PageTemplate {
         return <table className="quiz_footer">
             <tbody>
                 <tr>
-                    {choices.map(x =>
-                        <td className={x}></td>
+                    {choices.map((x, i) =>
+                        <td key={i} className={x}></td>
                     )}
                 </tr>
             </tbody>
@@ -241,10 +271,38 @@ class Help extends PageTemplate {
     }
 }
 
+function AudienceStatistics({ total, per_question, scores }) {
+    // two flexboxes of the scores for each
+    return <div>
+        <div className="serif quiz_summary">Question Difficulty</div>
+        <DisplayedStats statistics={
+            per_question.map((x, i) => {
+                return {
+                    name: "Q" + (i + 1) + " Correct",
+                    value: (x / total * 100).toFixed(0) + "%",
+                    addtl_class: x / total > 0.5 ? "text_quiz_correct" : "text_quiz_incorrect",
+                }
+            }
+            )
+        } />
+        {/* <div className="gap_small" />
+        <DisplayedStats statistics={
+            scores.map((x, i) => {
+                return {
+                    name: "Score " + (i) + "/5",
+                    value: (x / total * 100).toFixed(0) + "%",
+                }
+            }
+            )
+        } /> */}
+    </div>
+}
+
 class QuizResult extends PageTemplate {
     constructor(props) {
         super(props);
         this.button = React.createRef();
+        this.state = { total: 0, per_question: [0, 0, 0, 0, 0] };
     }
 
     render() {
@@ -252,31 +310,58 @@ class QuizResult extends PageTemplate {
         const today_name = this.props.today_name;
         const correct_pattern = this.props.history.correct_pattern;
         const total_correct = correct_pattern.reduce((partialSum, a) => partialSum + a, 0);
+        const self = this;
+
+        console.log("UPDATE");
+
+        const is_share = isMobile && navigator.canShare && !isFirefox;
+
         return (
             <div>
                 <Header today={today} />
                 <div className="gap"></div>
                 <Summary correct_pattern={correct_pattern} total_correct={total_correct} total={correct_pattern.length} />
                 <div className="gap_small"></div>
-                <button class="serif quiz_copy_button" ref={this.button} onClick={async () => {
-                    const text = await summary(today_name, correct_pattern, total_correct, this.props.parameters);
-                    // if (isMobile) {
-                    //     try {
-                    //         shareOnMobile({
-                    //             text: text,
-                    //         })
-                    //     } catch (err) {
-                    //         console.log("caught");
-                    //         navigator.clipboard.writeText(text);
-                    //         this.button.current.textContent = "Copied!";
-                    //     }
-                    // }
-                    navigator.clipboard.writeText(text)
-                    this.button.current.textContent = "Copied!";
-                }}>Copy to clipboard</button>
+                <button className="serif quiz_copy_button" ref={this.button} onClick={async () => {
+                    const [text, url] = await summary(today_name, correct_pattern, total_correct, this.props.parameters);
+
+                    async function copy_to_clipboard() {
+                        navigator.clipboard.writeText(text + "\n" + url);
+                        self.button.current.textContent = "Copied!";
+                    }
+
+                    console.log("is mobile: " + isMobile);
+                    if (is_share) {
+                        try {
+                            console.log(text);
+                            console.log(url);
+                            await navigator.share({
+                                url: url,
+                                text: text + "\n",
+                            })
+                        } catch (err) {
+                            console.log("caught");
+                            console.log(err);
+                            await copy_to_clipboard();
+                        }
+                    } else {
+                        await copy_to_clipboard();
+                    }
+                }}>
+                    <div>{is_share ? "Share" : "Copy"}</div>
+                    <div style={{ marginInline: "0.25em" }}></div>
+                    <img src="/share.png" className="icon" style={{ width: "1em", height: "1em" }} />
+                </button>
                 <div className="gap" />
-                <QuizStatistics whole_history={this.props.whole_history} today={this.props.today} />
                 <div className="gap"></div>
+                {
+                    this.state.total > 30 ? <div>
+                        <AudienceStatistics total={this.state.total} per_question={this.state.per_question} />
+                        <div className="gap"></div>
+                        <div className="gap"></div>
+                    </div> : undefined
+                }
+                <QuizStatistics whole_history={this.props.whole_history} today={this.props.today} />
                 <div className="gap"></div>
                 <span className="serif quiz_summary">Details (spoilers, don't share!)</span>
                 <div className="gap_small"></div>
@@ -284,6 +369,7 @@ class QuizResult extends PageTemplate {
                     this.props.quiz.map(
                         (quiz, index) => (
                             <QuizResultRow {...quiz}
+                                key={index}
                                 index={index}
                                 choice={this.props.history.choices[index]}
                                 correct={correct_pattern[index]}
@@ -295,6 +381,40 @@ class QuizResult extends PageTemplate {
             </div>
         )
     }
+    async componentDidMount() {
+        if (this.props.get_per_question != null) {
+            const response = await this.props.get_per_question.then((response) => response.json());
+            console.log(response);
+            this.setState({ total: response["total"], per_question: response["per_question"] });
+        }
+    }
+}
+
+function DisplayedStat({ number, name, addtl_class }) {
+    if (addtl_class == undefined) {
+        addtl_class = "";
+    }
+    // large font for numbers, small for names. Center-aligned using flexbox
+    return <div style={{ display: "flex", flexDirection: "column", alignItems: "center", padding: "0.3em" }}>
+        <div className={"serif " + addtl_class} style={{ fontSize: "1.5em" }}>{number}</div>
+        <div className="serif" style={{ fontSize: "0.5em" }}>{name}</div>
+    </div>
+
+}
+
+function DisplayedStats({ statistics }) {
+    return <div className="serif" style={
+        {
+            textAlign: "center", width: "100%", margin: "auto", fontSize: "1.5em",
+            display: "flex", flexWrap: "wrap", justifyContent: "center"
+        }
+    }>
+        {
+            statistics.map((stat, i) =>
+                <DisplayedStat key={i} number={stat.value} name={stat.name} addtl_class={stat.addtl_class} />
+            )
+        }
+    </div>
 }
 
 class QuizStatistics extends PageTemplate {
@@ -306,6 +426,7 @@ class QuizStatistics extends PageTemplate {
         const whole_history = this.props.whole_history;
         const historical_correct = new Array(this.props.today + 1).fill(-1);
         const frequencies = new Array(6).fill(0);
+        const played_games = [];
         for (var i = 0; i <= this.props.today; i++) {
             const hist_i = whole_history[i];
             if (hist_i === undefined) {
@@ -314,6 +435,7 @@ class QuizStatistics extends PageTemplate {
                 const amount = whole_history[i + ""].correct_pattern.reduce((partialSum, a) => partialSum + a, 0);
                 historical_correct[i] = amount;
                 frequencies[amount] += 1;
+                played_games.push(amount);
             }
         }
         const streaks = new Array(6).fill(0);
@@ -327,39 +449,52 @@ class QuizStatistics extends PageTemplate {
             }
         }
         const total_freq = frequencies.reduce((partialSum, a) => partialSum + a, 0);
-        console.log(whole_history);
-        console.log(historical_correct);
-        console.log(frequencies);
+        const today_score = historical_correct[this.props.today];
+        const statistics = [
+            {
+                name: "Played",
+                value: played_games.length,
+            },
+            {
+                name: "Mean score",
+                value: (
+                    played_games.reduce((partialSum, a) => partialSum + a, 0)
+                    / played_games.length
+                ).toFixed(2),
+            },
+            {
+                name: "Win Rate (3+)",
+                value: (
+                    played_games.filter((x) => x >= 3).length
+                    / played_games.length * 100
+                ).toFixed(0) + "%",
+            },
+            {
+                name: "Current Streak (3+)",
+                value: streaks[today_score],
+            },
+        ]
         return <div>
-            <div className="serif quiz_summary">Statistics</div>
+            <div className="serif quiz_summary">Your Statistics</div>
+            <DisplayedStats statistics={statistics} />
+            <div className="gap_small" />
             <table className="quiz_barchart">
-                <tr>
-                    <td className="quiz_bar_td serif">
-                    </td>
-                    <td className="quiz_bar_td serif quiz_bar_td_header">
-                        Frequency
-                    </td>
-                    <td className="quiz_bar_td serif quiz_bar_td_header">
-                        Max Streak
-                    </td>
-                </tr>
-                {
-                    frequencies.map((amt, i) =>
-                        <tr>
-                            <td className="quiz_bar_td serif">
-                                {i}/5
-                            </td>
-                            <td className="quiz_bar_td serif">
-                                <span className="quiz_bar" style={{ width: (amt / total_freq * 20) + "em" }}>
-                                </span>
-                                {amt > 0 ? (<span className="quiz_stat">{amt} ({(amt / total_freq * 100).toFixed(1)}%)</span>) : undefined}
-                            </td>
-                            <td className="quiz_bar_td serif quiz_bar_centered">
-                                {streaks[i]}
-                            </td>
-                        </tr>
-                    )
-                }
+                <tbody>
+                    {
+                        frequencies.map((amt, i) =>
+                            <tr key={i}>
+                                <td className="quiz_bar_td serif">
+                                    {i}/5
+                                </td>
+                                <td className="quiz_bar_td serif">
+                                    <span className="quiz_bar" style={{ width: (amt / total_freq * 20) + "em" }}>
+                                    </span>
+                                    {amt > 0 ? (<span className="quiz_stat">{amt} ({(amt / total_freq * 100).toFixed(1)}%)</span>) : undefined}
+                                </td>
+                            </tr>
+                        )
+                    }
+                </tbody>
             </table>
         </div>
     }
@@ -373,7 +508,7 @@ function red_and_green_squares(correct_pattern) {
     }).join("");
 }
 
-async function summary(today, correct_pattern, total_correct, parameters) {
+async function summary(today, correct_pattern, total_correct, parameters, no_url) {
     // wordle-style summary
     let text = "Juxtastat " + today + " " + total_correct + "/" + correct_pattern.length;
 
@@ -383,9 +518,9 @@ async function summary(today, correct_pattern, total_correct, parameters) {
     text += red_and_green_squares(correct_pattern);
 
     text += "\n";
-    text += "\n";
 
-    text += "juxtastat.org";
+
+    var url = "https://juxtastat.org";
     if (parameters != "") {
         console.log(parameters);
         if (parameters.length > 100) {
@@ -403,9 +538,9 @@ async function summary(today, correct_pattern, total_correct, parameters) {
             parameters = "short=" + short;
 
         }
-        text += "/#" + parameters;
+        url += "/#" + parameters;
     }
-    return text;
+    return [text, url];
 }
 
 class Summary extends PageTemplate {
@@ -471,13 +606,13 @@ class QuizResultRow extends PageTemplate {
         }
         const result = this.props.correct ? "🟩" : "🟥";
         return (
-            <div>
+            <div key={this.props.index}>
                 <span className="serif quiz_results_question">
                     {this.props.stat_column}
                 </span>
                 <table className="stats_table quiz_results_table">
                     <tbody>
-                        <tr key={this.props.index}>
+                        <tr>
                             <td className={first}>
                                 <Clickable longname={this.props.longname_a} />
                             </td>

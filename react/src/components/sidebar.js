@@ -90,9 +90,8 @@ class Sidebar extends React.Component {
                     <div className={sidebar_section_title}>Statistic Categories</div>
                     <ul className={sidebar_section_content}>
                         {statistic_category_metadata_checkboxes.map((checkbox, i) =>
-                            <li>
+                            <li key={i}>
                                 <CheckboxSetting
-                                    key={i}
                                     name={checkbox.name}
                                     setting_key={checkbox.setting_key}
                                     settings={this.props.settings}
