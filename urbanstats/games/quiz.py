@@ -1,5 +1,7 @@
 import base64
 import copy
+from datetime import datetime, timedelta
+import pytz
 from functools import lru_cache
 import gzip
 import os
@@ -16,8 +18,8 @@ from produce_html_page import get_statistic_categories
 from urbanstats.shortener import shorten
 
 min_pop = 250_000
-version = 17
-fixed_up_to = 51
+version = 18
+fixed_up_to = 57
 
 # ranges = [
 #     (0.7, 1),
@@ -156,6 +158,18 @@ def custom_quiz_link(seed, name, *, localhost):
     return f"https://urbanstats.org/quiz.html?{params}"
 
 
+def check_quiz_is_guaranteed_future(number):
+    now = datetime.now(pytz.timezone("Pacific/Kiritimati"))
+    beginning = pytz.timezone("Pacific/Kiritimati").localize(datetime(2023, 9, 2))
+    fractional_days = (now - beginning + timedelta(hours=4)).total_seconds() / (
+        24 * 60 * 60
+    )
+    if number <= fractional_days:
+        raise Exception(
+            f"Quiz {number} is in the past! It is currently {fractional_days} in Kiribati + 4 hours."
+        )
+
+
 def generate_quizzes(folder):
     path = lambda day: os.path.join(folder, f"{day}")
 
@@ -165,6 +179,8 @@ def generate_quizzes(folder):
         shutil.copy(f"quiz_old/{i}", path(i))
     for i in tqdm.trange(fixed_up_to + 1, 365 * 3):
         with open(path(i), "w") as f:
+            # in timezone UTC+14, using pytz
+            check_quiz_is_guaranteed_future(i)
             outs = full_quiz(("daily", i))
             json.dump(outs, f)
 
@@ -251,6 +267,7 @@ types = [
     "Urban Area",
     "Congressional District",
     "Media Market",
+    "Judicial Circuit",
 ]
 
 stats_to_display = {
