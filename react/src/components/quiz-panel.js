@@ -471,7 +471,7 @@ class QuizStatistics extends PageTemplate {
             },
             {
                 name: "Current Streak (3+)",
-                value: streaks[today_score],
+                value: streaks[3],
             },
         ]
         return <div>
