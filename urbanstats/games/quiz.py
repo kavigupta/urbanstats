@@ -122,6 +122,8 @@ def filter_for_pop(type):
 
 @permacache(f"urbanstats/games/quiz/generate_quiz_{version}")
 def generate_quiz(seed):
+    if isinstance(seed, tuple) and seed[0] == "daily":
+        check_quiz_is_guaranteed_future(seed[1])
     rng = np.random.default_rng(int(stable_hash(seed), 16))
     return sample_quiz(rng)
 
@@ -180,7 +182,6 @@ def generate_quizzes(folder):
     for i in tqdm.trange(fixed_up_to + 1, 365 * 3):
         with open(path(i), "w") as f:
             # in timezone UTC+14, using pytz
-            check_quiz_is_guaranteed_future(i)
             outs = full_quiz(("daily", i))
             json.dump(outs, f)
 
