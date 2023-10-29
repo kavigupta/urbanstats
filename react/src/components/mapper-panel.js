@@ -209,6 +209,7 @@ class Export extends React.Component {
     }
 
     render() {
+        const self = this;
         return <div>
             <button onClick={() => {
                 self.exportAsSvg()
