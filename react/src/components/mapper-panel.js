@@ -188,6 +188,7 @@ class MapComponent extends React.Component {
                         underlying_stats={this.props.underlying_stats}
                         ramp={this.props.ramp}
                         ramp_callback={(ramp) => this.props.set_empirical_ramp(ramp)}
+                        ref={this.props.map_ref}
                     />
                 </div>
                 <div style={{ height: "10%", width: "100%" }}>
@@ -199,6 +200,35 @@ class MapComponent extends React.Component {
                 </div>
             </div>
         )
+    }
+}
+
+class Export extends React.Component {
+    constructor(props) {
+        super(props);
+    }
+
+    render() {
+        return <div>
+            <button onClick={() => {
+                self.exportAsSvg()
+            }}>Export as SVG</button>
+        </div>
+    }
+
+    async exportAsSvg() {
+        if (this.props.map_ref.current === null) {
+            return;
+        }
+        const svg = await this.props.map_ref.current.exportAsSvg();
+        const blob = new Blob([svg], { type: 'image/svg+xml' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = 'map.svg';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
     }
 }
 
@@ -221,6 +251,7 @@ class MapperPanel extends PageTemplate {
         this.geography_kind = undefined;
         this.underlying_shapes = undefined;
         this.underlying_stats = undefined;
+        this.map_ref = React.createRef();
     }
 
     get_settings() {
@@ -299,6 +330,9 @@ class MapperPanel extends PageTemplate {
                     get_map_settings={() => this.get_map_settings()}
                     set_map_settings={(settings) => this.set_map_settings(settings)}
                 />
+                <Export
+                    map_ref={this.map_ref}
+                />
                 {
                     !valid ? <div>Invalid geography kind</div> :
 
@@ -313,6 +347,7 @@ class MapperPanel extends PageTemplate {
                             set_empirical_ramp={(ramp) => this.set_empirical_ramp(ramp)}
                             color_stat={color_stat}
                             filter={filter}
+                            map_ref={this.map_ref}
                         />
                 }
             </div>

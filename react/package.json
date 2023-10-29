@@ -30,6 +30,7 @@
     "babel-loader": "^9.1.0",
     "dnd-kit": "^0.0.0",
     "expr-eval": "^2.0.2",
+    "geojson2svg": "^2.0.1",
     "html-webpack-plugin": "^5.5.0",
     "json5": "^2.2.0",
     "node-polyfill-webpack-plugin": "^2.0.1",
