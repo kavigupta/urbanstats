@@ -38,6 +38,10 @@ class MapGeneric extends React.Component {
          */
     }
 
+    async loadShape(name) {
+        return await loadProtobuf(shape_link(name), "FeatureCollection")
+    }
+
     async componentDidMount() {
         var osmUrl = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
             osmAttrib = '&copy; <a href="https://openstreetmap.org/copyright">OpenStreetMap</a> contributors',
@@ -72,14 +76,9 @@ class MapGeneric extends React.Component {
         }
     }
 
-    async add_polygon(map, name, fit_bounds, style, add_callback = true, add_to_bottom = false) {
-        this.exist_this_time.push(name);
-        if (name in this.polygon_by_name) {
-            this.polygon_by_name[name].setStyle(style);
-            return;
-        }
+    async polygon_geojson(name) {
         // https://stackoverflow.com/a/35970894/1549476
-        let polys = await loadProtobuf(shape_link(name), "FeatureCollection");
+        let polys = await this.loadShape(name);
         polys = polys.features.map(
             poly => {
                 return {
@@ -102,6 +101,16 @@ class MapGeneric extends React.Component {
 
             }),
         };
+        return geojson;
+    }
+
+    async add_polygon(map, name, fit_bounds, style, add_callback = true, add_to_bottom = false) {
+        this.exist_this_time.push(name);
+        if (name in this.polygon_by_name) {
+            this.polygon_by_name[name].setStyle(style);
+            return;
+        }
+        let geojson = await this.polygon_geojson(name);
         let group = new L.featureGroup();
         let polygon = L.geoJson(geojson, style);
         if (add_callback) {
