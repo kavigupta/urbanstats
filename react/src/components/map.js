@@ -39,7 +39,7 @@ class MapGeneric extends React.Component {
     }
 
     async loadShape(name) {
-        return await loadProtobuf(shape_link(name), "FeatureCollection")
+        return await loadProtobuf(shape_link(name), "Feature")
     }
 
     async componentDidMount() {
@@ -78,29 +78,38 @@ class MapGeneric extends React.Component {
 
     async polygon_geojson(name) {
         // https://stackoverflow.com/a/35970894/1549476
-        let polys = await this.loadShape(name);
-        polys = polys.features.map(
-            poly => {
-                return {
-                    "type": poly.type, "coordinates": poly.rings.map(
-                        ring => ring.coords.map(
-                            coordinate => [coordinate.lon, coordinate.lat]
-                        )
+        let poly = await this.loadShape(name);
+        if (poly.geometry == "multipolygon") {
+            const polys = poly.multipolygon.polygons;
+            const coords = polys.map(
+                poly => poly.rings.map(
+                    ring => ring.coords.map(
+                        coordinate => [coordinate.lon, coordinate.lat]
                     )
-                };
+                )
+            );
+            poly = {
+                "type": "MultiPolygon",
+                "coordinates": coords,
             }
-        );
+        } else if (poly.geometry == "polygon") {
+            const coords = poly.polygon.rings.map(
+                ring => ring.coords.map(
+                    coordinate => [coordinate.lon, coordinate.lat]
+                )
+            );
+            poly = {
+                "type": "Polygon",
+                "coordinates": coords,
+            }
+        } else {
+            throw "unknown shape type";
+        }
         let geojson = {
-            "type": "FeatureCollection",
-            "features": polys.map((x) => {
-                return {
-                    "type": "Feature",
-                    "properties": {},
-                    "geometry": x,
-                };
-
-            }),
-        };
+            "type": "Feature",
+            "properties": {},
+            "geometry": poly,
+        }
         return geojson;
     }
 

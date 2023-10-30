@@ -17,7 +17,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
     package="",
     syntax="proto3",
     serialized_options=None,
-    serialized_pb=b'\n\x10\x64\x61ta_files.proto"k\n\x0cStatisticRow\x12\x0f\n\x07statval\x18\x01 \x01(\x02\x12\x0f\n\x07ordinal\x18\x02 \x01(\x05\x12\x17\n\x0foverall_ordinal\x18\x03 \x01(\x05\x12 \n\x18percentile_by_population\x18\x04 \x01(\x02"F\n\rRelatedButton\x12\x10\n\x08longname\x18\x01 \x01(\t\x12\x11\n\tshortname\x18\x02 \x01(\t\x12\x10\n\x08row_type\x18\x03 \x01(\t"L\n\x0eRelatedButtons\x12\x19\n\x11relationship_type\x18\x01 \x01(\t\x12\x1f\n\x07\x62uttons\x18\x02 \x03(\x0b\x32\x0e.RelatedButton"\x93\x01\n\x07\x41rticle\x12\x11\n\tshortname\x18\x01 \x01(\t\x12\x10\n\x08longname\x18\x02 \x01(\t\x12\x0e\n\x06source\x18\x03 \x01(\t\x12\x14\n\x0c\x61rticle_type\x18\x04 \x01(\t\x12\x1b\n\x04rows\x18\x05 \x03(\x0b\x32\r.StatisticRow\x12 \n\x07related\x18\x06 \x03(\x0b\x32\x0f.RelatedButtons"&\n\nCoordinate\x12\x0b\n\x03lon\x18\x01 \x01(\x02\x12\x0b\n\x03lat\x18\x02 \x01(\x02"#\n\x04Ring\x12\x1b\n\x06\x63oords\x18\x01 \x03(\x0b\x32\x0b.Coordinate"-\n\x07\x46\x65\x61ture\x12\x0c\n\x04type\x18\x01 \x01(\t\x12\x14\n\x05rings\x18\x02 \x03(\x0b\x32\x05.Ring"/\n\x11\x46\x65\x61tureCollection\x12\x1a\n\x08\x66\x65\x61tures\x18\x01 \x03(\x0b\x32\x08.Feature"\x1e\n\nStringList\x12\x10\n\x08\x65lements\x18\x01 \x03(\tb\x06proto3',
+    serialized_pb=b'\n\x10\x64\x61ta_files.proto"k\n\x0cStatisticRow\x12\x0f\n\x07statval\x18\x01 \x01(\x02\x12\x0f\n\x07ordinal\x18\x02 \x01(\x05\x12\x17\n\x0foverall_ordinal\x18\x03 \x01(\x05\x12 \n\x18percentile_by_population\x18\x04 \x01(\x02"F\n\rRelatedButton\x12\x10\n\x08longname\x18\x01 \x01(\t\x12\x11\n\tshortname\x18\x02 \x01(\t\x12\x10\n\x08row_type\x18\x03 \x01(\t"L\n\x0eRelatedButtons\x12\x19\n\x11relationship_type\x18\x01 \x01(\t\x12\x1f\n\x07\x62uttons\x18\x02 \x03(\x0b\x32\x0e.RelatedButton"\x93\x01\n\x07\x41rticle\x12\x11\n\tshortname\x18\x01 \x01(\t\x12\x10\n\x08longname\x18\x02 \x01(\t\x12\x0e\n\x06source\x18\x03 \x01(\t\x12\x14\n\x0c\x61rticle_type\x18\x04 \x01(\t\x12\x1b\n\x04rows\x18\x05 \x03(\x0b\x32\r.StatisticRow\x12 \n\x07related\x18\x06 \x03(\x0b\x32\x0f.RelatedButtons"&\n\nCoordinate\x12\x0b\n\x03lon\x18\x01 \x01(\x02\x12\x0b\n\x03lat\x18\x02 \x01(\x02"#\n\x04Ring\x12\x1b\n\x06\x63oords\x18\x01 \x03(\x0b\x32\x0b.Coordinate"\x1f\n\x07Polygon\x12\x14\n\x05rings\x18\x01 \x03(\x0b\x32\x05.Ring"*\n\x0cMultiPolygon\x12\x1a\n\x08polygons\x18\x01 \x03(\x0b\x32\x08.Polygon"Y\n\x07\x46\x65\x61ture\x12\x1b\n\x07polygon\x18\x01 \x01(\x0b\x32\x08.PolygonH\x00\x12%\n\x0cmultipolygon\x18\x02 \x01(\x0b\x32\r.MultiPolygonH\x00\x42\n\n\x08geometry"\x1e\n\nStringList\x12\x10\n\x08\x65lements\x18\x01 \x03(\tb\x06proto3',
 )
 
 
@@ -471,36 +471,18 @@ _RING = _descriptor.Descriptor(
 )
 
 
-_FEATURE = _descriptor.Descriptor(
-    name="Feature",
-    full_name="Feature",
+_POLYGON = _descriptor.Descriptor(
+    name="Polygon",
+    full_name="Polygon",
     filename=None,
     file=DESCRIPTOR,
     containing_type=None,
     fields=[
         _descriptor.FieldDescriptor(
-            name="type",
-            full_name="Feature.type",
+            name="rings",
+            full_name="Polygon.rings",
             index=0,
             number=1,
-            type=9,
-            cpp_type=9,
-            label=1,
-            has_default_value=False,
-            default_value=b"".decode("utf-8"),
-            message_type=None,
-            enum_type=None,
-            containing_type=None,
-            is_extension=False,
-            extension_scope=None,
-            serialized_options=None,
-            file=DESCRIPTOR,
-        ),
-        _descriptor.FieldDescriptor(
-            name="rings",
-            full_name="Feature.rings",
-            index=1,
-            number=2,
             type=11,
             cpp_type=10,
             label=3,
@@ -524,20 +506,20 @@ _FEATURE = _descriptor.Descriptor(
     extension_ranges=[],
     oneofs=[],
     serialized_start=506,
-    serialized_end=551,
+    serialized_end=537,
 )
 
 
-_FEATURECOLLECTION = _descriptor.Descriptor(
-    name="FeatureCollection",
-    full_name="FeatureCollection",
+_MULTIPOLYGON = _descriptor.Descriptor(
+    name="MultiPolygon",
+    full_name="MultiPolygon",
     filename=None,
     file=DESCRIPTOR,
     containing_type=None,
     fields=[
         _descriptor.FieldDescriptor(
-            name="features",
-            full_name="FeatureCollection.features",
+            name="polygons",
+            full_name="MultiPolygon.polygons",
             index=0,
             number=1,
             type=11,
@@ -562,8 +544,73 @@ _FEATURECOLLECTION = _descriptor.Descriptor(
     syntax="proto3",
     extension_ranges=[],
     oneofs=[],
-    serialized_start=553,
-    serialized_end=600,
+    serialized_start=539,
+    serialized_end=581,
+)
+
+
+_FEATURE = _descriptor.Descriptor(
+    name="Feature",
+    full_name="Feature",
+    filename=None,
+    file=DESCRIPTOR,
+    containing_type=None,
+    fields=[
+        _descriptor.FieldDescriptor(
+            name="polygon",
+            full_name="Feature.polygon",
+            index=0,
+            number=1,
+            type=11,
+            cpp_type=10,
+            label=1,
+            has_default_value=False,
+            default_value=None,
+            message_type=None,
+            enum_type=None,
+            containing_type=None,
+            is_extension=False,
+            extension_scope=None,
+            serialized_options=None,
+            file=DESCRIPTOR,
+        ),
+        _descriptor.FieldDescriptor(
+            name="multipolygon",
+            full_name="Feature.multipolygon",
+            index=1,
+            number=2,
+            type=11,
+            cpp_type=10,
+            label=1,
+            has_default_value=False,
+            default_value=None,
+            message_type=None,
+            enum_type=None,
+            containing_type=None,
+            is_extension=False,
+            extension_scope=None,
+            serialized_options=None,
+            file=DESCRIPTOR,
+        ),
+    ],
+    extensions=[],
+    nested_types=[],
+    enum_types=[],
+    serialized_options=None,
+    is_extendable=False,
+    syntax="proto3",
+    extension_ranges=[],
+    oneofs=[
+        _descriptor.OneofDescriptor(
+            name="geometry",
+            full_name="Feature.geometry",
+            index=0,
+            containing_type=None,
+            fields=[],
+        ),
+    ],
+    serialized_start=583,
+    serialized_end=672,
 )
 
 
@@ -601,24 +648,37 @@ _STRINGLIST = _descriptor.Descriptor(
     syntax="proto3",
     extension_ranges=[],
     oneofs=[],
-    serialized_start=602,
-    serialized_end=632,
+    serialized_start=674,
+    serialized_end=704,
 )
 
 _RELATEDBUTTONS.fields_by_name["buttons"].message_type = _RELATEDBUTTON
 _ARTICLE.fields_by_name["rows"].message_type = _STATISTICROW
 _ARTICLE.fields_by_name["related"].message_type = _RELATEDBUTTONS
 _RING.fields_by_name["coords"].message_type = _COORDINATE
-_FEATURE.fields_by_name["rings"].message_type = _RING
-_FEATURECOLLECTION.fields_by_name["features"].message_type = _FEATURE
+_POLYGON.fields_by_name["rings"].message_type = _RING
+_MULTIPOLYGON.fields_by_name["polygons"].message_type = _POLYGON
+_FEATURE.fields_by_name["polygon"].message_type = _POLYGON
+_FEATURE.fields_by_name["multipolygon"].message_type = _MULTIPOLYGON
+_FEATURE.oneofs_by_name["geometry"].fields.append(_FEATURE.fields_by_name["polygon"])
+_FEATURE.fields_by_name["polygon"].containing_oneof = _FEATURE.oneofs_by_name[
+    "geometry"
+]
+_FEATURE.oneofs_by_name["geometry"].fields.append(
+    _FEATURE.fields_by_name["multipolygon"]
+)
+_FEATURE.fields_by_name["multipolygon"].containing_oneof = _FEATURE.oneofs_by_name[
+    "geometry"
+]
 DESCRIPTOR.message_types_by_name["StatisticRow"] = _STATISTICROW
 DESCRIPTOR.message_types_by_name["RelatedButton"] = _RELATEDBUTTON
 DESCRIPTOR.message_types_by_name["RelatedButtons"] = _RELATEDBUTTONS
 DESCRIPTOR.message_types_by_name["Article"] = _ARTICLE
 DESCRIPTOR.message_types_by_name["Coordinate"] = _COORDINATE
 DESCRIPTOR.message_types_by_name["Ring"] = _RING
+DESCRIPTOR.message_types_by_name["Polygon"] = _POLYGON
+DESCRIPTOR.message_types_by_name["MultiPolygon"] = _MULTIPOLYGON
 DESCRIPTOR.message_types_by_name["Feature"] = _FEATURE
-DESCRIPTOR.message_types_by_name["FeatureCollection"] = _FEATURECOLLECTION
 DESCRIPTOR.message_types_by_name["StringList"] = _STRINGLIST
 _sym_db.RegisterFileDescriptor(DESCRIPTOR)
 
@@ -688,6 +748,28 @@ Ring = _reflection.GeneratedProtocolMessageType(
 )
 _sym_db.RegisterMessage(Ring)
 
+Polygon = _reflection.GeneratedProtocolMessageType(
+    "Polygon",
+    (_message.Message,),
+    {
+        "DESCRIPTOR": _POLYGON,
+        "__module__": "data_files_pb2"
+        # @@protoc_insertion_point(class_scope:Polygon)
+    },
+)
+_sym_db.RegisterMessage(Polygon)
+
+MultiPolygon = _reflection.GeneratedProtocolMessageType(
+    "MultiPolygon",
+    (_message.Message,),
+    {
+        "DESCRIPTOR": _MULTIPOLYGON,
+        "__module__": "data_files_pb2"
+        # @@protoc_insertion_point(class_scope:MultiPolygon)
+    },
+)
+_sym_db.RegisterMessage(MultiPolygon)
+
 Feature = _reflection.GeneratedProtocolMessageType(
     "Feature",
     (_message.Message,),
@@ -698,17 +780,6 @@ Feature = _reflection.GeneratedProtocolMessageType(
     },
 )
 _sym_db.RegisterMessage(Feature)
-
-FeatureCollection = _reflection.GeneratedProtocolMessageType(
-    "FeatureCollection",
-    (_message.Message,),
-    {
-        "DESCRIPTOR": _FEATURECOLLECTION,
-        "__module__": "data_files_pb2"
-        # @@protoc_insertion_point(class_scope:FeatureCollection)
-    },
-)
-_sym_db.RegisterMessage(FeatureCollection)
 
 StringList = _reflection.GeneratedProtocolMessageType(
     "StringList",

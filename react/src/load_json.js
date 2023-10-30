@@ -1,7 +1,7 @@
 export { loadJSON, loadProtobuf };
 
 import { gunzipSync } from 'zlib';
-import { Article, FeatureCollection, StringList } from "./utils/protos.js";
+import { Article, Feature, StringList } from "./utils/protos.js";
 
 // from https://stackoverflow.com/a/4117299/1549476
 
@@ -41,8 +41,8 @@ async function loadProtobuf(filePath, name) {
     const arr = new Uint8Array(buffer);
     if (name == "Article") {
         return Article.decode(arr);
-    } else if (name == "FeatureCollection") {
-        return FeatureCollection.decode(arr);
+    } else if (name == "Feature") {
+        return Feature.decode(arr);
     } else if (name == "StringList") {
         return StringList.decode(arr);
     } else {

@@ -41,13 +41,19 @@ message Ring {
     repeated Coordinate coords = 1;
 }
 
-message Feature {
-    string type = 1;
-    repeated Ring rings = 2;
+message Polygon {
+    repeated Ring rings = 1;
 }
 
-message FeatureCollection {
-    repeated Feature features = 1;
+message MultiPolygon {
+    repeated Polygon polygons = 1;
+}
+
+message Feature {
+    oneof geometry {
+        Polygon polygon = 1;
+        MultiPolygon multipolygon = 2;
+    }
 }
 
 // string lists
