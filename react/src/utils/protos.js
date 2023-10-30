@@ -1594,14 +1594,462 @@ $root.Ring = (function() {
     return Ring;
 })();
 
+$root.Polygon = (function() {
+
+    /**
+     * Properties of a Polygon.
+     * @exports IPolygon
+     * @interface IPolygon
+     * @property {Array.<IRing>|null} [rings] Polygon rings
+     */
+
+    /**
+     * Constructs a new Polygon.
+     * @exports Polygon
+     * @classdesc Represents a Polygon.
+     * @implements IPolygon
+     * @constructor
+     * @param {IPolygon=} [properties] Properties to set
+     */
+    function Polygon(properties) {
+        this.rings = [];
+        if (properties)
+            for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                if (properties[keys[i]] != null)
+                    this[keys[i]] = properties[keys[i]];
+    }
+
+    /**
+     * Polygon rings.
+     * @member {Array.<IRing>} rings
+     * @memberof Polygon
+     * @instance
+     */
+    Polygon.prototype.rings = $util.emptyArray;
+
+    /**
+     * Creates a new Polygon instance using the specified properties.
+     * @function create
+     * @memberof Polygon
+     * @static
+     * @param {IPolygon=} [properties] Properties to set
+     * @returns {Polygon} Polygon instance
+     */
+    Polygon.create = function create(properties) {
+        return new Polygon(properties);
+    };
+
+    /**
+     * Encodes the specified Polygon message. Does not implicitly {@link Polygon.verify|verify} messages.
+     * @function encode
+     * @memberof Polygon
+     * @static
+     * @param {IPolygon} message Polygon message or plain object to encode
+     * @param {$protobuf.Writer} [writer] Writer to encode to
+     * @returns {$protobuf.Writer} Writer
+     */
+    Polygon.encode = function encode(message, writer) {
+        if (!writer)
+            writer = $Writer.create();
+        if (message.rings != null && message.rings.length)
+            for (var i = 0; i < message.rings.length; ++i)
+                $root.Ring.encode(message.rings[i], writer.uint32(/* id 1, wireType 2 =*/10).fork()).ldelim();
+        return writer;
+    };
+
+    /**
+     * Encodes the specified Polygon message, length delimited. Does not implicitly {@link Polygon.verify|verify} messages.
+     * @function encodeDelimited
+     * @memberof Polygon
+     * @static
+     * @param {IPolygon} message Polygon message or plain object to encode
+     * @param {$protobuf.Writer} [writer] Writer to encode to
+     * @returns {$protobuf.Writer} Writer
+     */
+    Polygon.encodeDelimited = function encodeDelimited(message, writer) {
+        return this.encode(message, writer).ldelim();
+    };
+
+    /**
+     * Decodes a Polygon message from the specified reader or buffer.
+     * @function decode
+     * @memberof Polygon
+     * @static
+     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+     * @param {number} [length] Message length if known beforehand
+     * @returns {Polygon} Polygon
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    Polygon.decode = function decode(reader, length) {
+        if (!(reader instanceof $Reader))
+            reader = $Reader.create(reader);
+        var end = length === undefined ? reader.len : reader.pos + length, message = new $root.Polygon();
+        while (reader.pos < end) {
+            var tag = reader.uint32();
+            switch (tag >>> 3) {
+            case 1: {
+                    if (!(message.rings && message.rings.length))
+                        message.rings = [];
+                    message.rings.push($root.Ring.decode(reader, reader.uint32()));
+                    break;
+                }
+            default:
+                reader.skipType(tag & 7);
+                break;
+            }
+        }
+        return message;
+    };
+
+    /**
+     * Decodes a Polygon message from the specified reader or buffer, length delimited.
+     * @function decodeDelimited
+     * @memberof Polygon
+     * @static
+     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+     * @returns {Polygon} Polygon
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    Polygon.decodeDelimited = function decodeDelimited(reader) {
+        if (!(reader instanceof $Reader))
+            reader = new $Reader(reader);
+        return this.decode(reader, reader.uint32());
+    };
+
+    /**
+     * Verifies a Polygon message.
+     * @function verify
+     * @memberof Polygon
+     * @static
+     * @param {Object.<string,*>} message Plain object to verify
+     * @returns {string|null} `null` if valid, otherwise the reason why it is not
+     */
+    Polygon.verify = function verify(message) {
+        if (typeof message !== "object" || message === null)
+            return "object expected";
+        if (message.rings != null && message.hasOwnProperty("rings")) {
+            if (!Array.isArray(message.rings))
+                return "rings: array expected";
+            for (var i = 0; i < message.rings.length; ++i) {
+                var error = $root.Ring.verify(message.rings[i]);
+                if (error)
+                    return "rings." + error;
+            }
+        }
+        return null;
+    };
+
+    /**
+     * Creates a Polygon message from a plain object. Also converts values to their respective internal types.
+     * @function fromObject
+     * @memberof Polygon
+     * @static
+     * @param {Object.<string,*>} object Plain object
+     * @returns {Polygon} Polygon
+     */
+    Polygon.fromObject = function fromObject(object) {
+        if (object instanceof $root.Polygon)
+            return object;
+        var message = new $root.Polygon();
+        if (object.rings) {
+            if (!Array.isArray(object.rings))
+                throw TypeError(".Polygon.rings: array expected");
+            message.rings = [];
+            for (var i = 0; i < object.rings.length; ++i) {
+                if (typeof object.rings[i] !== "object")
+                    throw TypeError(".Polygon.rings: object expected");
+                message.rings[i] = $root.Ring.fromObject(object.rings[i]);
+            }
+        }
+        return message;
+    };
+
+    /**
+     * Creates a plain object from a Polygon message. Also converts values to other types if specified.
+     * @function toObject
+     * @memberof Polygon
+     * @static
+     * @param {Polygon} message Polygon
+     * @param {$protobuf.IConversionOptions} [options] Conversion options
+     * @returns {Object.<string,*>} Plain object
+     */
+    Polygon.toObject = function toObject(message, options) {
+        if (!options)
+            options = {};
+        var object = {};
+        if (options.arrays || options.defaults)
+            object.rings = [];
+        if (message.rings && message.rings.length) {
+            object.rings = [];
+            for (var j = 0; j < message.rings.length; ++j)
+                object.rings[j] = $root.Ring.toObject(message.rings[j], options);
+        }
+        return object;
+    };
+
+    /**
+     * Converts this Polygon to JSON.
+     * @function toJSON
+     * @memberof Polygon
+     * @instance
+     * @returns {Object.<string,*>} JSON object
+     */
+    Polygon.prototype.toJSON = function toJSON() {
+        return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+    };
+
+    /**
+     * Gets the default type url for Polygon
+     * @function getTypeUrl
+     * @memberof Polygon
+     * @static
+     * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns {string} The default type url
+     */
+    Polygon.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+        if (typeUrlPrefix === undefined) {
+            typeUrlPrefix = "type.googleapis.com";
+        }
+        return typeUrlPrefix + "/Polygon";
+    };
+
+    return Polygon;
+})();
+
+$root.MultiPolygon = (function() {
+
+    /**
+     * Properties of a MultiPolygon.
+     * @exports IMultiPolygon
+     * @interface IMultiPolygon
+     * @property {Array.<IPolygon>|null} [polygons] MultiPolygon polygons
+     */
+
+    /**
+     * Constructs a new MultiPolygon.
+     * @exports MultiPolygon
+     * @classdesc Represents a MultiPolygon.
+     * @implements IMultiPolygon
+     * @constructor
+     * @param {IMultiPolygon=} [properties] Properties to set
+     */
+    function MultiPolygon(properties) {
+        this.polygons = [];
+        if (properties)
+            for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                if (properties[keys[i]] != null)
+                    this[keys[i]] = properties[keys[i]];
+    }
+
+    /**
+     * MultiPolygon polygons.
+     * @member {Array.<IPolygon>} polygons
+     * @memberof MultiPolygon
+     * @instance
+     */
+    MultiPolygon.prototype.polygons = $util.emptyArray;
+
+    /**
+     * Creates a new MultiPolygon instance using the specified properties.
+     * @function create
+     * @memberof MultiPolygon
+     * @static
+     * @param {IMultiPolygon=} [properties] Properties to set
+     * @returns {MultiPolygon} MultiPolygon instance
+     */
+    MultiPolygon.create = function create(properties) {
+        return new MultiPolygon(properties);
+    };
+
+    /**
+     * Encodes the specified MultiPolygon message. Does not implicitly {@link MultiPolygon.verify|verify} messages.
+     * @function encode
+     * @memberof MultiPolygon
+     * @static
+     * @param {IMultiPolygon} message MultiPolygon message or plain object to encode
+     * @param {$protobuf.Writer} [writer] Writer to encode to
+     * @returns {$protobuf.Writer} Writer
+     */
+    MultiPolygon.encode = function encode(message, writer) {
+        if (!writer)
+            writer = $Writer.create();
+        if (message.polygons != null && message.polygons.length)
+            for (var i = 0; i < message.polygons.length; ++i)
+                $root.Polygon.encode(message.polygons[i], writer.uint32(/* id 1, wireType 2 =*/10).fork()).ldelim();
+        return writer;
+    };
+
+    /**
+     * Encodes the specified MultiPolygon message, length delimited. Does not implicitly {@link MultiPolygon.verify|verify} messages.
+     * @function encodeDelimited
+     * @memberof MultiPolygon
+     * @static
+     * @param {IMultiPolygon} message MultiPolygon message or plain object to encode
+     * @param {$protobuf.Writer} [writer] Writer to encode to
+     * @returns {$protobuf.Writer} Writer
+     */
+    MultiPolygon.encodeDelimited = function encodeDelimited(message, writer) {
+        return this.encode(message, writer).ldelim();
+    };
+
+    /**
+     * Decodes a MultiPolygon message from the specified reader or buffer.
+     * @function decode
+     * @memberof MultiPolygon
+     * @static
+     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+     * @param {number} [length] Message length if known beforehand
+     * @returns {MultiPolygon} MultiPolygon
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    MultiPolygon.decode = function decode(reader, length) {
+        if (!(reader instanceof $Reader))
+            reader = $Reader.create(reader);
+        var end = length === undefined ? reader.len : reader.pos + length, message = new $root.MultiPolygon();
+        while (reader.pos < end) {
+            var tag = reader.uint32();
+            switch (tag >>> 3) {
+            case 1: {
+                    if (!(message.polygons && message.polygons.length))
+                        message.polygons = [];
+                    message.polygons.push($root.Polygon.decode(reader, reader.uint32()));
+                    break;
+                }
+            default:
+                reader.skipType(tag & 7);
+                break;
+            }
+        }
+        return message;
+    };
+
+    /**
+     * Decodes a MultiPolygon message from the specified reader or buffer, length delimited.
+     * @function decodeDelimited
+     * @memberof MultiPolygon
+     * @static
+     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+     * @returns {MultiPolygon} MultiPolygon
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    MultiPolygon.decodeDelimited = function decodeDelimited(reader) {
+        if (!(reader instanceof $Reader))
+            reader = new $Reader(reader);
+        return this.decode(reader, reader.uint32());
+    };
+
+    /**
+     * Verifies a MultiPolygon message.
+     * @function verify
+     * @memberof MultiPolygon
+     * @static
+     * @param {Object.<string,*>} message Plain object to verify
+     * @returns {string|null} `null` if valid, otherwise the reason why it is not
+     */
+    MultiPolygon.verify = function verify(message) {
+        if (typeof message !== "object" || message === null)
+            return "object expected";
+        if (message.polygons != null && message.hasOwnProperty("polygons")) {
+            if (!Array.isArray(message.polygons))
+                return "polygons: array expected";
+            for (var i = 0; i < message.polygons.length; ++i) {
+                var error = $root.Polygon.verify(message.polygons[i]);
+                if (error)
+                    return "polygons." + error;
+            }
+        }
+        return null;
+    };
+
+    /**
+     * Creates a MultiPolygon message from a plain object. Also converts values to their respective internal types.
+     * @function fromObject
+     * @memberof MultiPolygon
+     * @static
+     * @param {Object.<string,*>} object Plain object
+     * @returns {MultiPolygon} MultiPolygon
+     */
+    MultiPolygon.fromObject = function fromObject(object) {
+        if (object instanceof $root.MultiPolygon)
+            return object;
+        var message = new $root.MultiPolygon();
+        if (object.polygons) {
+            if (!Array.isArray(object.polygons))
+                throw TypeError(".MultiPolygon.polygons: array expected");
+            message.polygons = [];
+            for (var i = 0; i < object.polygons.length; ++i) {
+                if (typeof object.polygons[i] !== "object")
+                    throw TypeError(".MultiPolygon.polygons: object expected");
+                message.polygons[i] = $root.Polygon.fromObject(object.polygons[i]);
+            }
+        }
+        return message;
+    };
+
+    /**
+     * Creates a plain object from a MultiPolygon message. Also converts values to other types if specified.
+     * @function toObject
+     * @memberof MultiPolygon
+     * @static
+     * @param {MultiPolygon} message MultiPolygon
+     * @param {$protobuf.IConversionOptions} [options] Conversion options
+     * @returns {Object.<string,*>} Plain object
+     */
+    MultiPolygon.toObject = function toObject(message, options) {
+        if (!options)
+            options = {};
+        var object = {};
+        if (options.arrays || options.defaults)
+            object.polygons = [];
+        if (message.polygons && message.polygons.length) {
+            object.polygons = [];
+            for (var j = 0; j < message.polygons.length; ++j)
+                object.polygons[j] = $root.Polygon.toObject(message.polygons[j], options);
+        }
+        return object;
+    };
+
+    /**
+     * Converts this MultiPolygon to JSON.
+     * @function toJSON
+     * @memberof MultiPolygon
+     * @instance
+     * @returns {Object.<string,*>} JSON object
+     */
+    MultiPolygon.prototype.toJSON = function toJSON() {
+        return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+    };
+
+    /**
+     * Gets the default type url for MultiPolygon
+     * @function getTypeUrl
+     * @memberof MultiPolygon
+     * @static
+     * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns {string} The default type url
+     */
+    MultiPolygon.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+        if (typeUrlPrefix === undefined) {
+            typeUrlPrefix = "type.googleapis.com";
+        }
+        return typeUrlPrefix + "/MultiPolygon";
+    };
+
+    return MultiPolygon;
+})();
+
 $root.Feature = (function() {
 
     /**
      * Properties of a Feature.
      * @exports IFeature
      * @interface IFeature
-     * @property {string|null} [type] Feature type
-     * @property {Array.<IRing>|null} [rings] Feature rings
+     * @property {IPolygon|null} [polygon] Feature polygon
+     * @property {IMultiPolygon|null} [multipolygon] Feature multipolygon
      */
 
     /**
@@ -1613,7 +2061,6 @@ $root.Feature = (function() {
      * @param {IFeature=} [properties] Properties to set
      */
     function Feature(properties) {
-        this.rings = [];
         if (properties)
             for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
                 if (properties[keys[i]] != null)
@@ -1621,20 +2068,34 @@ $root.Feature = (function() {
     }
 
     /**
-     * Feature type.
-     * @member {string} type
+     * Feature polygon.
+     * @member {IPolygon|null|undefined} polygon
      * @memberof Feature
      * @instance
      */
-    Feature.prototype.type = "";
+    Feature.prototype.polygon = null;
 
     /**
-     * Feature rings.
-     * @member {Array.<IRing>} rings
+     * Feature multipolygon.
+     * @member {IMultiPolygon|null|undefined} multipolygon
      * @memberof Feature
      * @instance
      */
-    Feature.prototype.rings = $util.emptyArray;
+    Feature.prototype.multipolygon = null;
+
+    // OneOf field names bound to virtual getters and setters
+    var $oneOfFields;
+
+    /**
+     * Feature geometry.
+     * @member {"polygon"|"multipolygon"|undefined} geometry
+     * @memberof Feature
+     * @instance
+     */
+    Object.defineProperty(Feature.prototype, "geometry", {
+        get: $util.oneOfGetter($oneOfFields = ["polygon", "multipolygon"]),
+        set: $util.oneOfSetter($oneOfFields)
+    });
 
     /**
      * Creates a new Feature instance using the specified properties.
@@ -1660,11 +2121,10 @@ $root.Feature = (function() {
     Feature.encode = function encode(message, writer) {
         if (!writer)
             writer = $Writer.create();
-        if (message.type != null && Object.hasOwnProperty.call(message, "type"))
-            writer.uint32(/* id 1, wireType 2 =*/10).string(message.type);
-        if (message.rings != null && message.rings.length)
-            for (var i = 0; i < message.rings.length; ++i)
-                $root.Ring.encode(message.rings[i], writer.uint32(/* id 2, wireType 2 =*/18).fork()).ldelim();
+        if (message.polygon != null && Object.hasOwnProperty.call(message, "polygon"))
+            $root.Polygon.encode(message.polygon, writer.uint32(/* id 1, wireType 2 =*/10).fork()).ldelim();
+        if (message.multipolygon != null && Object.hasOwnProperty.call(message, "multipolygon"))
+            $root.MultiPolygon.encode(message.multipolygon, writer.uint32(/* id 2, wireType 2 =*/18).fork()).ldelim();
         return writer;
     };
 
@@ -1700,13 +2160,11 @@ $root.Feature = (function() {
             var tag = reader.uint32();
             switch (tag >>> 3) {
             case 1: {
-                    message.type = reader.string();
+                    message.polygon = $root.Polygon.decode(reader, reader.uint32());
                     break;
                 }
             case 2: {
-                    if (!(message.rings && message.rings.length))
-                        message.rings = [];
-                    message.rings.push($root.Ring.decode(reader, reader.uint32()));
+                    message.multipolygon = $root.MultiPolygon.decode(reader, reader.uint32());
                     break;
                 }
             default:
@@ -1744,16 +2202,23 @@ $root.Feature = (function() {
     Feature.verify = function verify(message) {
         if (typeof message !== "object" || message === null)
             return "object expected";
-        if (message.type != null && message.hasOwnProperty("type"))
-            if (!$util.isString(message.type))
-                return "type: string expected";
-        if (message.rings != null && message.hasOwnProperty("rings")) {
-            if (!Array.isArray(message.rings))
-                return "rings: array expected";
-            for (var i = 0; i < message.rings.length; ++i) {
-                var error = $root.Ring.verify(message.rings[i]);
+        var properties = {};
+        if (message.polygon != null && message.hasOwnProperty("polygon")) {
+            properties.geometry = 1;
+            {
+                var error = $root.Polygon.verify(message.polygon);
                 if (error)
-                    return "rings." + error;
+                    return "polygon." + error;
+            }
+        }
+        if (message.multipolygon != null && message.hasOwnProperty("multipolygon")) {
+            if (properties.geometry === 1)
+                return "geometry: multiple values";
+            properties.geometry = 1;
+            {
+                var error = $root.MultiPolygon.verify(message.multipolygon);
+                if (error)
+                    return "multipolygon." + error;
             }
         }
         return null;
@@ -1771,17 +2236,15 @@ $root.Feature = (function() {
         if (object instanceof $root.Feature)
             return object;
         var message = new $root.Feature();
-        if (object.type != null)
-            message.type = String(object.type);
-        if (object.rings) {
-            if (!Array.isArray(object.rings))
-                throw TypeError(".Feature.rings: array expected");
-            message.rings = [];
-            for (var i = 0; i < object.rings.length; ++i) {
-                if (typeof object.rings[i] !== "object")
-                    throw TypeError(".Feature.rings: object expected");
-                message.rings[i] = $root.Ring.fromObject(object.rings[i]);
-            }
+        if (object.polygon != null) {
+            if (typeof object.polygon !== "object")
+                throw TypeError(".Feature.polygon: object expected");
+            message.polygon = $root.Polygon.fromObject(object.polygon);
+        }
+        if (object.multipolygon != null) {
+            if (typeof object.multipolygon !== "object")
+                throw TypeError(".Feature.multipolygon: object expected");
+            message.multipolygon = $root.MultiPolygon.fromObject(object.multipolygon);
         }
         return message;
     };
@@ -1799,16 +2262,15 @@ $root.Feature = (function() {
         if (!options)
             options = {};
         var object = {};
-        if (options.arrays || options.defaults)
-            object.rings = [];
-        if (options.defaults)
-            object.type = "";
-        if (message.type != null && message.hasOwnProperty("type"))
-            object.type = message.type;
-        if (message.rings && message.rings.length) {
-            object.rings = [];
-            for (var j = 0; j < message.rings.length; ++j)
-                object.rings[j] = $root.Ring.toObject(message.rings[j], options);
+        if (message.polygon != null && message.hasOwnProperty("polygon")) {
+            object.polygon = $root.Polygon.toObject(message.polygon, options);
+            if (options.oneofs)
+                object.geometry = "polygon";
+        }
+        if (message.multipolygon != null && message.hasOwnProperty("multipolygon")) {
+            object.multipolygon = $root.MultiPolygon.toObject(message.multipolygon, options);
+            if (options.oneofs)
+                object.geometry = "multipolygon";
         }
         return object;
     };
@@ -1840,230 +2302,6 @@ $root.Feature = (function() {
     };
 
     return Feature;
-})();
-
-$root.FeatureCollection = (function() {
-
-    /**
-     * Properties of a FeatureCollection.
-     * @exports IFeatureCollection
-     * @interface IFeatureCollection
-     * @property {Array.<IFeature>|null} [features] FeatureCollection features
-     */
-
-    /**
-     * Constructs a new FeatureCollection.
-     * @exports FeatureCollection
-     * @classdesc Represents a FeatureCollection.
-     * @implements IFeatureCollection
-     * @constructor
-     * @param {IFeatureCollection=} [properties] Properties to set
-     */
-    function FeatureCollection(properties) {
-        this.features = [];
-        if (properties)
-            for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
-                if (properties[keys[i]] != null)
-                    this[keys[i]] = properties[keys[i]];
-    }
-
-    /**
-     * FeatureCollection features.
-     * @member {Array.<IFeature>} features
-     * @memberof FeatureCollection
-     * @instance
-     */
-    FeatureCollection.prototype.features = $util.emptyArray;
-
-    /**
-     * Creates a new FeatureCollection instance using the specified properties.
-     * @function create
-     * @memberof FeatureCollection
-     * @static
-     * @param {IFeatureCollection=} [properties] Properties to set
-     * @returns {FeatureCollection} FeatureCollection instance
-     */
-    FeatureCollection.create = function create(properties) {
-        return new FeatureCollection(properties);
-    };
-
-    /**
-     * Encodes the specified FeatureCollection message. Does not implicitly {@link FeatureCollection.verify|verify} messages.
-     * @function encode
-     * @memberof FeatureCollection
-     * @static
-     * @param {IFeatureCollection} message FeatureCollection message or plain object to encode
-     * @param {$protobuf.Writer} [writer] Writer to encode to
-     * @returns {$protobuf.Writer} Writer
-     */
-    FeatureCollection.encode = function encode(message, writer) {
-        if (!writer)
-            writer = $Writer.create();
-        if (message.features != null && message.features.length)
-            for (var i = 0; i < message.features.length; ++i)
-                $root.Feature.encode(message.features[i], writer.uint32(/* id 1, wireType 2 =*/10).fork()).ldelim();
-        return writer;
-    };
-
-    /**
-     * Encodes the specified FeatureCollection message, length delimited. Does not implicitly {@link FeatureCollection.verify|verify} messages.
-     * @function encodeDelimited
-     * @memberof FeatureCollection
-     * @static
-     * @param {IFeatureCollection} message FeatureCollection message or plain object to encode
-     * @param {$protobuf.Writer} [writer] Writer to encode to
-     * @returns {$protobuf.Writer} Writer
-     */
-    FeatureCollection.encodeDelimited = function encodeDelimited(message, writer) {
-        return this.encode(message, writer).ldelim();
-    };
-
-    /**
-     * Decodes a FeatureCollection message from the specified reader or buffer.
-     * @function decode
-     * @memberof FeatureCollection
-     * @static
-     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-     * @param {number} [length] Message length if known beforehand
-     * @returns {FeatureCollection} FeatureCollection
-     * @throws {Error} If the payload is not a reader or valid buffer
-     * @throws {$protobuf.util.ProtocolError} If required fields are missing
-     */
-    FeatureCollection.decode = function decode(reader, length) {
-        if (!(reader instanceof $Reader))
-            reader = $Reader.create(reader);
-        var end = length === undefined ? reader.len : reader.pos + length, message = new $root.FeatureCollection();
-        while (reader.pos < end) {
-            var tag = reader.uint32();
-            switch (tag >>> 3) {
-            case 1: {
-                    if (!(message.features && message.features.length))
-                        message.features = [];
-                    message.features.push($root.Feature.decode(reader, reader.uint32()));
-                    break;
-                }
-            default:
-                reader.skipType(tag & 7);
-                break;
-            }
-        }
-        return message;
-    };
-
-    /**
-     * Decodes a FeatureCollection message from the specified reader or buffer, length delimited.
-     * @function decodeDelimited
-     * @memberof FeatureCollection
-     * @static
-     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-     * @returns {FeatureCollection} FeatureCollection
-     * @throws {Error} If the payload is not a reader or valid buffer
-     * @throws {$protobuf.util.ProtocolError} If required fields are missing
-     */
-    FeatureCollection.decodeDelimited = function decodeDelimited(reader) {
-        if (!(reader instanceof $Reader))
-            reader = new $Reader(reader);
-        return this.decode(reader, reader.uint32());
-    };
-
-    /**
-     * Verifies a FeatureCollection message.
-     * @function verify
-     * @memberof FeatureCollection
-     * @static
-     * @param {Object.<string,*>} message Plain object to verify
-     * @returns {string|null} `null` if valid, otherwise the reason why it is not
-     */
-    FeatureCollection.verify = function verify(message) {
-        if (typeof message !== "object" || message === null)
-            return "object expected";
-        if (message.features != null && message.hasOwnProperty("features")) {
-            if (!Array.isArray(message.features))
-                return "features: array expected";
-            for (var i = 0; i < message.features.length; ++i) {
-                var error = $root.Feature.verify(message.features[i]);
-                if (error)
-                    return "features." + error;
-            }
-        }
-        return null;
-    };
-
-    /**
-     * Creates a FeatureCollection message from a plain object. Also converts values to their respective internal types.
-     * @function fromObject
-     * @memberof FeatureCollection
-     * @static
-     * @param {Object.<string,*>} object Plain object
-     * @returns {FeatureCollection} FeatureCollection
-     */
-    FeatureCollection.fromObject = function fromObject(object) {
-        if (object instanceof $root.FeatureCollection)
-            return object;
-        var message = new $root.FeatureCollection();
-        if (object.features) {
-            if (!Array.isArray(object.features))
-                throw TypeError(".FeatureCollection.features: array expected");
-            message.features = [];
-            for (var i = 0; i < object.features.length; ++i) {
-                if (typeof object.features[i] !== "object")
-                    throw TypeError(".FeatureCollection.features: object expected");
-                message.features[i] = $root.Feature.fromObject(object.features[i]);
-            }
-        }
-        return message;
-    };
-
-    /**
-     * Creates a plain object from a FeatureCollection message. Also converts values to other types if specified.
-     * @function toObject
-     * @memberof FeatureCollection
-     * @static
-     * @param {FeatureCollection} message FeatureCollection
-     * @param {$protobuf.IConversionOptions} [options] Conversion options
-     * @returns {Object.<string,*>} Plain object
-     */
-    FeatureCollection.toObject = function toObject(message, options) {
-        if (!options)
-            options = {};
-        var object = {};
-        if (options.arrays || options.defaults)
-            object.features = [];
-        if (message.features && message.features.length) {
-            object.features = [];
-            for (var j = 0; j < message.features.length; ++j)
-                object.features[j] = $root.Feature.toObject(message.features[j], options);
-        }
-        return object;
-    };
-
-    /**
-     * Converts this FeatureCollection to JSON.
-     * @function toJSON
-     * @memberof FeatureCollection
-     * @instance
-     * @returns {Object.<string,*>} JSON object
-     */
-    FeatureCollection.prototype.toJSON = function toJSON() {
-        return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
-    };
-
-    /**
-     * Gets the default type url for FeatureCollection
-     * @function getTypeUrl
-     * @memberof FeatureCollection
-     * @static
-     * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
-     * @returns {string} The default type url
-     */
-    FeatureCollection.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
-        if (typeUrlPrefix === undefined) {
-            typeUrlPrefix = "type.googleapis.com";
-        }
-        return typeUrlPrefix + "/FeatureCollection";
-    };
-
-    return FeatureCollection;
 })();
 
 $root.StringList = (function() {
@@ -2519,7 +2757,7 @@ $root.ConsolidatedShapes = (function() {
      * @exports IConsolidatedShapes
      * @interface IConsolidatedShapes
      * @property {Array.<string>|null} [longnames] ConsolidatedShapes longnames
-     * @property {Array.<IFeatureCollection>|null} [shapes] ConsolidatedShapes shapes
+     * @property {Array.<IFeature>|null} [shapes] ConsolidatedShapes shapes
      */
 
     /**
@@ -2549,7 +2787,7 @@ $root.ConsolidatedShapes = (function() {
 
     /**
      * ConsolidatedShapes shapes.
-     * @member {Array.<IFeatureCollection>} shapes
+     * @member {Array.<IFeature>} shapes
      * @memberof ConsolidatedShapes
      * @instance
      */
@@ -2584,7 +2822,7 @@ $root.ConsolidatedShapes = (function() {
                 writer.uint32(/* id 1, wireType 2 =*/10).string(message.longnames[i]);
         if (message.shapes != null && message.shapes.length)
             for (var i = 0; i < message.shapes.length; ++i)
-                $root.FeatureCollection.encode(message.shapes[i], writer.uint32(/* id 2, wireType 2 =*/18).fork()).ldelim();
+                $root.Feature.encode(message.shapes[i], writer.uint32(/* id 2, wireType 2 =*/18).fork()).ldelim();
         return writer;
     };
 
@@ -2628,7 +2866,7 @@ $root.ConsolidatedShapes = (function() {
             case 2: {
                     if (!(message.shapes && message.shapes.length))
                         message.shapes = [];
-                    message.shapes.push($root.FeatureCollection.decode(reader, reader.uint32()));
+                    message.shapes.push($root.Feature.decode(reader, reader.uint32()));
                     break;
                 }
             default:
@@ -2677,7 +2915,7 @@ $root.ConsolidatedShapes = (function() {
             if (!Array.isArray(message.shapes))
                 return "shapes: array expected";
             for (var i = 0; i < message.shapes.length; ++i) {
-                var error = $root.FeatureCollection.verify(message.shapes[i]);
+                var error = $root.Feature.verify(message.shapes[i]);
                 if (error)
                     return "shapes." + error;
             }
@@ -2711,7 +2949,7 @@ $root.ConsolidatedShapes = (function() {
             for (var i = 0; i < object.shapes.length; ++i) {
                 if (typeof object.shapes[i] !== "object")
                     throw TypeError(".ConsolidatedShapes.shapes: object expected");
-                message.shapes[i] = $root.FeatureCollection.fromObject(object.shapes[i]);
+                message.shapes[i] = $root.Feature.fromObject(object.shapes[i]);
             }
         }
         return message;
@@ -2742,7 +2980,7 @@ $root.ConsolidatedShapes = (function() {
         if (message.shapes && message.shapes.length) {
             object.shapes = [];
             for (var j = 0; j < message.shapes.length; ++j)
-                object.shapes[j] = $root.FeatureCollection.toObject(message.shapes[j], options);
+                object.shapes[j] = $root.Feature.toObject(message.shapes[j], options);
         }
         return object;
     };
