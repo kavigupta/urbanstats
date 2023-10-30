@@ -74,7 +74,8 @@ class DisplayedMap extends MapGeneric {
                 weight: 1
             })
         );
-        return [names, styles, -1];
+        const metas = stat_vals.map((x) => { return { statistic: x } });
+        return [names, styles, metas, -1];
     }
 
     async mapDidRender() {

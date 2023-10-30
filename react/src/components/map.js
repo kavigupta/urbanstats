@@ -28,6 +28,7 @@ class MapGeneric extends React.Component {
          * Should return [names, styles, zoom_index]
          * names: list of names of polygons to draw
          * styles: list of styles for each polygon
+         * metas: list of metadata dictionaries for each polygon
          * zoom_index: index of polygon to zoom to, or -1 if none 
          */
         throw "compute_polygons not implemented";
@@ -59,7 +60,7 @@ class MapGeneric extends React.Component {
      */
     async exportAsSvg() {
         console.log("EXPORT AS SVG");
-        const [names, styles, _] = await this.compute_polygons();
+        const [names, styles, _1, _2] = await this.compute_polygons();
         const map_bounds = this.map.getBounds();
         const bounds = {
             left: map_bounds.getWest(),
@@ -131,7 +132,7 @@ class MapGeneric extends React.Component {
         const map = this.map;
         this.exist_this_time = [];
 
-        const [names, styles, zoom_index] = await this.compute_polygons();
+        const [names, styles, _, zoom_index] = await this.compute_polygons();
 
         await this.add_polygons(map, names, styles, zoom_index);
 
@@ -230,7 +231,9 @@ class Map extends MapGeneric {
 
         const zoom_index = this.already_fit_bounds != this.props.longname ? 0 : -1;
 
-        return [names, styles, zoom_index];
+        const metas = names.map((x) => { return {} });
+
+        return [names, styles, metas, zoom_index];
     }
 
     async mapDidRender() {
