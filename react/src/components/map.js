@@ -15,6 +15,7 @@ class MapGeneric extends React.Component {
     constructor(props) {
         super(props);
         this.polygon_by_name = {};
+        this.delta = 0.25;
     }
 
     render() {
@@ -48,7 +49,10 @@ class MapGeneric extends React.Component {
         var osmUrl = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
             osmAttrib = '&copy; <a href="https://openstreetmap.org/copyright">OpenStreetMap</a> contributors',
             osm = L.tileLayer(osmUrl, { maxZoom: 20, attribution: osmAttrib });
-        const map = new L.Map(this.props.id, { layers: [osm], center: new L.LatLng(0, 0), zoom: 0 });
+        const map = new L.Map(this.props.id, {
+            layers: [osm], center: new L.LatLng(0, 0), zoom: 0,
+            zoomSnap: this.delta, zoomDelta: this.delta, wheelPxPerZoomLevel: 60 / this.delta
+        });
         this.map = map;
         await this.componentDidUpdate();
     }
