@@ -137,10 +137,7 @@ class MapGeneric extends React.Component {
         };
         for (let i = 0; i < names.length; i++) {
             var feature = await this.polygon_geojson(names[i]);
-            // copy
             feature = JSON.parse(JSON.stringify(feature));
-            console.log("HI");
-            console.log(feature);
             for (let key in metas[i]) {
                 feature.properties[key] = metas[i][key];
             }
