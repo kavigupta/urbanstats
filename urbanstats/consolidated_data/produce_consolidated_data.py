@@ -2,6 +2,7 @@ import json
 import os
 import tqdm.auto as tqdm
 
+import shapely.geometry
 from output_geometry import convert_to_protobuf
 from shapefiles import shapefiles
 from urbanstats.protobuf import data_files_pb2
@@ -37,7 +38,7 @@ def produce_results(row_geo, row):
     from produce_html_page import internal_statistic_names
 
     res = shapely.geometry.mapping(row_geo.geometry.simplify(0.01))
-    geo = convert_to_protobuf(geo)
+    geo = convert_to_protobuf(res)
     results = data_files_pb2.AllStats()
     for stat in internal_statistic_names():
         results.stats.append(row[stat])

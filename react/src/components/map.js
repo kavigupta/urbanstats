@@ -128,18 +128,23 @@ class MapGeneric extends React.Component {
         return header + overall_svg.join("") + footer;
     }
 
-    async exportAsGeoJson() {
-        const [names, _1, _2, _3] = await this.compute_polygons();
+    async exportAsGeoJSON() {
+        console.log("EXPORT AS GEOJSON")
+        const [names, _1, metas, _3] = await this.compute_polygons();
         const geojson = {
             "type": "FeatureCollection",
             "features": [],
         };
         for (let i = 0; i < names.length; i++) {
-            const feature = await this.polygon_geojson(names[i]);
+            var feature = await this.polygon_geojson(names[i]);
+            // copy
+            feature = JSON.parse(JSON.stringify(feature));
             console.log("HI");
             console.log(feature);
-            break;
-            geojson.features.push(...feature.features);
+            for (let key in metas[i]) {
+                feature.properties[key] = metas[i][key];
+            }
+            geojson.features.push(feature);
         }
         return JSON.stringify(geojson);
     }

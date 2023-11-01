@@ -215,7 +215,21 @@ class Export extends React.Component {
             <button onClick={() => {
                 self.exportAsSvg()
             }}>Export as SVG</button>
+            <button onClick={() => {
+                self.exportAsGeoJSON()
+            }}>Export as GeoJSON</button>
         </div>
+    }
+
+    saveAsFile(filename, data, type) {
+        const blob = new Blob([data], { type: type });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = filename;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
     }
 
     async exportAsSvg() {
@@ -223,14 +237,15 @@ class Export extends React.Component {
             return;
         }
         const svg = await this.props.map_ref.current.exportAsSvg();
-        const blob = new Blob([svg], { type: 'image/svg+xml' });
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = 'map.svg';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+        this.saveAsFile("map.svg", svg, "image/svg+xml");
+    }
+
+    async exportAsGeoJSON() {
+        if (this.props.map_ref.current === null) {
+            return;
+        }
+        const geojson = await this.props.map_ref.current.exportAsGeoJSON();
+        this.saveAsFile("map.geojson", geojson, "application/geo+json");
     }
 }
 
