@@ -43,7 +43,7 @@ def ramp_obj_to_list(ramp_obj):
     """
     assert isinstance(ramp_obj, mpl.colors.LinearSegmentedColormap)
 
-    if callable(ramp_obj._segmentdata["red"]):
+    if callable(ramp_obj._segmentdata["red"]) or len(ramp_obj._segmentdata["red"]) < 10:
         xs = np.linspace(0, 1, 50).tolist()
     else:
         xs = sorted(
