@@ -15,9 +15,7 @@ function parse_colormap(cmap) {
         return RAMPS.Gray;
     } else if (cmap.type === "custom") {
         try {
-            console.log("V", cmap.custom_colormap)
             const result = JSON.parse(cmap.custom_colormap);
-            console.log(result);
             if (result instanceof Array
                 && result.every(x => x instanceof Array
                     && x.length === 2
@@ -55,15 +53,12 @@ function parse_ramp(ramp) {
 class ConstantRamp extends Ramp {
     constructor(kepoints, a, b) {
         super();
-        console.log(a, b);
-        console.log(kepoints);
         const a0 = kepoints[0][0];
         const b0 = kepoints[kepoints.length - 1][0];
         this.values = kepoints.map(([value, color]) => {
             const new_value = (value - a0) / (b0 - a0) * (b - a) + a;
             return [new_value, color];
         });
-        console.log(this.values)
     }
 
     create_ramp(values) {

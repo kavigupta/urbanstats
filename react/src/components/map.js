@@ -63,7 +63,6 @@ class MapGeneric extends React.Component {
      * @returns string svg
      */
     async exportAsSvg() {
-        console.log("EXPORT AS SVG");
         const [names, styles, _1, _2] = await this.compute_polygons();
         const map_bounds = this.map.getBounds();
         const bounds = {
@@ -72,7 +71,6 @@ class MapGeneric extends React.Component {
             top: map_bounds.getNorth(),
             bottom: map_bounds.getSouth(),
         }
-        console.log(bounds);
         const width = 1000;
         const height = width * (bounds.top - bounds.bottom) / (bounds.right - bounds.left);
         const converter = new GeoJSON2SVG({

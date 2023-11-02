@@ -102,7 +102,6 @@ class Colorbar extends React.Component {
         if (this.props.ramp === undefined) {
             return <div></div>;
         }
-        console.log("HI", this.props.ramp)
         const steps = 10;
         const min = this.props.ramp.ramp[0][0];
         const max = this.props.ramp.ramp[this.props.ramp.ramp.length - 1][0];
@@ -169,10 +168,7 @@ class MapComponent extends React.Component {
     render() {
 
         const color_stat = parse_color_stat(this.props.name_to_index, this.props.color_stat);
-        console.log(this.props.filter.function)
         const filter = this.props.filter.enabled ? parse_color_stat(this.props.name_to_index, this.props.filter.function) : undefined;
-
-        console.log("FILTER", filter)
 
         return (
             <div style={{
@@ -276,7 +272,6 @@ class MapperPanel extends PageTemplate {
         const encoded_settings = params.get("settings");
         var settings = default_settings();
         if (encoded_settings !== null) {
-            console.log("encoded_settings", encoded_settings)
             const jsoned_settings = gunzipSync(Buffer.from(encoded_settings, 'base64')).toString();
             settings = JSON.parse(jsoned_settings);
         }
@@ -285,12 +280,10 @@ class MapperPanel extends PageTemplate {
 
     update_geography_kind() {
         const geography_kind = this.state.map_settings.geography_kind;
-        console.log("update_geography_kind", geography_kind);
         if (this.geography_kind !== geography_kind) {
             this.geography_kind = geography_kind;
 
             if (this.valid_geographies.includes(geography_kind)) {
-                console.log("loading")
                 this.underlying_shapes = loadProtobuf(
                     consolidated_shape_link(this.geography_kind),
                     "ConsolidatedShapes"
@@ -301,7 +294,6 @@ class MapperPanel extends PageTemplate {
                 );
 
             }
-            console.log(geography_kind);
         }
     }
 
@@ -332,7 +324,7 @@ class MapperPanel extends PageTemplate {
         // ]);
         // virids
         const ramp = parse_ramp(this.state.map_settings.ramp);
-        console.log(ramp);
+        console.log("ramp", ramp);
         this.update_geography_kind();
         const geography_kind = this.state.map_settings.geography_kind;
         const color_stat = this.state.map_settings.color_stat;
