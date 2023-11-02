@@ -269,7 +269,7 @@ class RampSelector extends React.Component {
                 />
                 <DataListSelector
                     overall_name="Ramp Type:"
-                    names={["linear", "constant"]}
+                    names={["linear", "constant", "geometric"]}
                     no_neutral={true}
                     header_style={setting_sub_name_style}
                     initial_value={this.props.get_ramp().type}
@@ -284,6 +284,19 @@ class RampSelector extends React.Component {
                         set_ramp={this.props.set_ramp}
                     /> : <div></div>
                 }
+                <div style={{ display: "flex" }}>
+                    <div style={setting_sub_name_style}>
+                        Reversed:
+                    </div>
+                    <input
+                        type="checkbox"
+                        checked={this.props.get_ramp().reversed || false}
+                        onChange={e => this.props.set_ramp({
+                            ...this.props.get_ramp(),
+                            reversed: e.target.checked,
+                        })}
+                    />
+                </div>
             </div>
         )
     }

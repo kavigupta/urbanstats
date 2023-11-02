@@ -37,7 +37,7 @@ function parse_colormap(cmap) {
     throw new Error("Invalid colormap type");
 }
 
-function parse_ramp(ramp) {
+function parse_ramp_base(ramp) {
     const cmap = parse_colormap(ramp.colormap);
     if (ramp.type === "constant") {
         return new ConstantRamp(cmap,
@@ -46,8 +46,19 @@ function parse_ramp(ramp) {
         );
     } else if (ramp.type === "linear") {
         return new LinearRamp(cmap);
+    } else if (ramp.type === "geometric") {
+        return new GeometricRamp(cmap);
     }
     throw new Error("Invalid ramp type");
+}
+
+function parse_ramp(ramp) {
+    // handles modifiers like reversed
+    var base = parse_ramp_base(ramp);
+    if (ramp.reversed) {
+        base = new ReversedRamp(base);
+    }
+    return base;
 }
 
 class ConstantRamp extends Ramp {
@@ -93,4 +104,35 @@ function linear_values(minimum, maximum) {
     const range = maximum - minimum;
     const values = Array(steps).fill(0).map((_, i) => minimum + range * i / (steps - 1));
     return values;
+}
+
+class GeometricRamp extends Ramp {
+    constructor(keypoints) {
+        super();
+        this.values = keypoints;
+    }
+
+    create_ramp(values) {
+        const log_values = values.map(x => Math.log(x));
+        const [log_ramp, log_ramp_values] = new LinearRamp(this.values).create_ramp(log_values);
+        const ramp = log_ramp.map(x => [Math.exp(x[0]), x[1]]);
+        const ramp_values = log_ramp_values.map(x => Math.exp(x));
+        return [ramp, ramp_values];
+    }
+}
+
+
+class ReversedRamp extends Ramp {
+    constructor(base) {
+        super();
+        this.base = base;
+    }
+
+    create_ramp(values) {
+        const [ramp, ramp_values] = this.base.create_ramp(values);
+        console.log(ramp);
+        const reversed_colors = ramp.map(x => x[1]).reverse();
+        const ramp_reversed = reversed_colors.map((x, i) => [ramp[i][0], x]);
+        return [ramp_reversed, ramp_values];
+    }
 }
