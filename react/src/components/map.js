@@ -218,7 +218,7 @@ class MapGeneric extends React.Component {
         }
         let geojson = await this.polygon_geojson(name);
         let group = new L.featureGroup();
-        let polygon = L.geoJson(geojson, style);
+        let polygon = L.geoJson(geojson, { style: style, smoothFactor: 0.1});
         if (add_callback) {
             polygon = polygon.on("click", function (e) {
                 window.location.href = article_link(name);
