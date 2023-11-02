@@ -47,6 +47,8 @@ class DisplayedMap extends MapGeneric {
         this.name_to_index = undefined;
         await this.guarantee_name_to_index();
 
+        const line_style = this.props.line_style;
+
         var stats = (await this.props.underlying_stats);
         // TODO correct this!
         if (this.props.filter !== undefined) {
@@ -69,9 +71,9 @@ class DisplayedMap extends MapGeneric {
             color => ({
                 fillColor: color,
                 fillOpacity: 1,
-                color: "black",
+                color: line_style.color,
                 opacity: 1,
-                weight: 1
+                weight: line_style.weight,
             })
         );
         const metas = stat_vals.map((x) => { return { statistic: x } });
@@ -186,6 +188,7 @@ class MapComponent extends React.Component {
                         ramp={this.props.ramp}
                         ramp_callback={(ramp) => this.props.set_empirical_ramp(ramp)}
                         ref={this.props.map_ref}
+                        line_style={this.props.line_style}
                     />
                 </div>
                 <div style={{ height: "10%", width: "100%" }}>
@@ -270,11 +273,12 @@ class MapperPanel extends PageTemplate {
     get_settings() {
         const params = new URLSearchParams(window.location.search);
         const encoded_settings = params.get("settings");
-        var settings = default_settings();
+        var settings = {}
         if (encoded_settings !== null) {
             const jsoned_settings = gunzipSync(Buffer.from(encoded_settings, 'base64')).toString();
             settings = JSON.parse(jsoned_settings);
         }
+        default_settings(settings);
         return settings;
     }
 
@@ -357,6 +361,7 @@ class MapperPanel extends PageTemplate {
                             color_stat={color_stat}
                             filter={filter}
                             map_ref={this.map_ref}
+                            line_style={this.state.map_settings.line_style}
                         />
                 }
             </div>

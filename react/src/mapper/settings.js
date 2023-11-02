@@ -18,8 +18,8 @@ const setting_sub_name_style = {
     color: "#444",
 }
 
-function default_settings() {
-    return {
+function default_settings(add_to) {
+    const defaults = {
         geography_kind: undefined,
         filter: {
             enabled: false,
@@ -33,8 +33,24 @@ function default_settings() {
             colormap: {
                 type: "none",
             }
+        },
+        line_style: {
+            color: "#000000",
+            weight: 0.5,
         }
     }
+    return merge(add_to, defaults);
+}
+
+function merge(add_to, add_from) {
+    for (const key in add_from) {
+        if (add_to[key] === undefined) {
+            add_to[key] = add_from[key];
+        } else if (typeof add_to[key] === "object") {
+            merge(add_to[key], add_from[key]);
+        }
+    }
+    return add_to;
 }
 
 function parse_color_stat(name_to_index, color_stat) {
@@ -302,6 +318,45 @@ class RampSelector extends React.Component {
     }
 }
 
+class LineStyleSelector extends React.Component {
+    render() {
+        return (
+            <div>
+                <div style={setting_name_style}>
+                    Line Style:
+                </div>
+                <div style={{ display: "flex" }}>
+                    <div style={setting_sub_name_style}>
+                        Color:
+                    </div>
+                    <input
+                        type="color"
+                        value={this.props.get_line_style().color}
+                        onChange={e => this.props.set_line_style({
+                            ...this.props.get_line_style(),
+                            color: e.target.value,
+                        })}
+                    />
+                </div>
+                <div style={{ display: "flex" }}>
+                    <div style={setting_sub_name_style}>
+                        Weight:
+                    </div>
+                    <input
+                        type="number"
+                        style={{ width: "5em" }}
+                        value={this.props.get_line_style().weight}
+                        onChange={e => this.props.set_line_style({
+                            ...this.props.get_line_style(),
+                            weight: e.target.value,
+                        })}
+                    />
+                </div>
+            </div>
+        )
+    }
+}
+
 class MapperSettings extends React.Component {
 
 
@@ -373,6 +428,12 @@ class MapperSettings extends React.Component {
                     set_ramp={ramp => this.props.set_map_settings({
                         ...this.props.get_map_settings(),
                         ramp: ramp,
+                    })}
+                />
+                <LineStyleSelector get_line_style={() => this.props.get_map_settings().line_style}
+                    set_line_style={line_style => this.props.set_map_settings({
+                        ...this.props.get_map_settings(),
+                        line_style: line_style,
                     })}
                 />
             </div>
