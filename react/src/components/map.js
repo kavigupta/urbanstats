@@ -16,6 +16,8 @@ class MapGeneric extends React.Component {
         super(props);
         this.polygon_by_name = {};
         this.delta = 0.25;
+        this.version = 0;
+        this.last_modified = new Date(0);
     }
 
     render() {
@@ -149,6 +151,26 @@ class MapGeneric extends React.Component {
     }
 
     async componentDidUpdate() {
+        await this.updateToVersion(this.version + 1);
+    }
+
+    async updateToVersion(version) {
+        if (version <= this.version) {
+            return;
+        }
+        // check if at least 1s has passed since last update
+        const now = new Date();
+        const delta = now - this.last_modified;
+        if (delta < 1000) {
+            setTimeout(() => this.updateToVersion(version), 1000 - delta);
+            return;
+        }
+        this.version = version;
+        this.last_modified = now;
+        await this.updateFn();
+    }
+
+    async updateFn() {
         const map = this.map;
         this.exist_this_time = [];
 
@@ -218,7 +240,7 @@ class MapGeneric extends React.Component {
         }
         let geojson = await this.polygon_geojson(name);
         let group = new L.featureGroup();
-        let polygon = L.geoJson(geojson, { style: style, smoothFactor: 0.1});
+        let polygon = L.geoJson(geojson, { style: style, smoothFactor: 0.1 });
         if (add_callback) {
             polygon = polygon.on("click", function (e) {
                 window.location.href = article_link(name);
