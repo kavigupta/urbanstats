@@ -1,5 +1,5 @@
 
-export { parse_ramp, RAMPS }
+export { parse_ramp, RAMPS, parse_custom_colormap }
 
 const RAMPS = require("../data/mapper/ramps.json");
 class Ramp {
@@ -8,26 +8,31 @@ class Ramp {
     }
 }
 
+function parse_custom_colormap(custom_colormap) {
+    try {
+        const result = JSON.parse(custom_colormap);
+        if (result instanceof Array
+            && result.every(x => x instanceof Array
+                && x.length === 2
+                && typeof x[0] === "number"
+                && typeof x[1] === "string"
+                && x[1].match(/^#[0-9a-f]{6}$/i) !== null
+            )) {
+            return result;
+        }
+    } catch (e) {
+        console.log("error! in_parse_custom_colormap", e);
+    }
+    return undefined;
+}
+
 function parse_colormap(cmap) {
     console.log("C", cmap)
     if (cmap.type === "none") {
         // default
         return RAMPS.Gray;
     } else if (cmap.type === "custom") {
-        try {
-            const result = JSON.parse(cmap.custom_colormap);
-            if (result instanceof Array
-                && result.every(x => x instanceof Array
-                    && x.length === 2
-                    && typeof x[0] === "number"
-                    && typeof x[1] === "string"
-                    && x[1].match(/^#[0-9a-f]{6}$/i) !== null
-                )) {
-                return result;
-            }
-        } catch (e) {
-        }
-        return RAMPS.Gray;
+        return parse_custom_colormap(cmap.custom_colormap) || RAMPS.Gray;
     } else if (cmap.type === "preset") {
         if (cmap.name == "") {
             return RAMPS.Gray;
@@ -38,7 +43,9 @@ function parse_colormap(cmap) {
 }
 
 function parse_ramp_base(ramp) {
+    console.log("parse_ramp_base: ramp=", ramp)
     const cmap = parse_colormap(ramp.colormap);
+    console.log("parse_ramp_base: cmap=", cmap);
     if (ramp.type === "constant") {
         return new ConstantRamp(cmap,
             ramp.lower_bound === undefined || ramp.lower_bound === "" ? 0 : parseFloat(ramp.lower_bound),
@@ -130,7 +137,6 @@ class ReversedRamp extends Ramp {
 
     create_ramp(values) {
         const [ramp, ramp_values] = this.base.create_ramp(values);
-        console.log(ramp);
         const reversed_colors = ramp.map(x => x[1]).reverse();
         const ramp_reversed = reversed_colors.map((x, i) => [ramp[i][0], x]);
         return [ramp_reversed, ramp_values];

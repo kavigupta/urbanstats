@@ -2,21 +2,9 @@
 export { MapperSettings, default_settings, parse_color_stat };
 
 import React from "react";
-import { RAMPS } from "./ramps.js";
 import { FunctionSelector, FunctionColorStat, FilterSelector } from "./function.js";
-
-const setting_name_style = {
-    fontWeight: "bold",
-    fontSize: "1.2em",
-    marginBottom: "0.125em",
-}
-
-const setting_sub_name_style = {
-    fontWeight: "bold",
-    fontSize: "1em",
-    marginBottom: "0.125em",
-    color: "#444",
-}
+import { RampColormapSelector } from "./ramp-selector.js";
+import { setting_name_style, setting_sub_name_style } from "./style.js";
 
 function default_settings(add_to) {
     const defaults = {
@@ -154,91 +142,6 @@ function DataListSelector({ overall_name, initial_value, names, onChange, no_neu
     );
 }
 
-class RampColormapSelector extends React.Component {
-    // dropdown selector for either a custom ramp or a ramp from a list of presets
-    // if custom ramp, then add a text box for the ramp
-
-    constructor(props) {
-        super(props);
-    }
-
-    get_colormap() {
-        return this.props.get_ramp().colormap;
-    }
-
-    set_colormap(colormap) {
-        this.props.set_ramp({
-            ...this.props.get_ramp(),
-            colormap: colormap,
-        });
-    }
-
-    set_selected(name) {
-        const colormap = this.get_colormap();
-        if (name === "Custom") {
-            colormap.type = "custom";
-        } else {
-            colormap.type = "preset";
-            colormap.name = name;
-        }
-        this.set_colormap(colormap);
-    }
-
-    set_custom_colormap(custom_colormap) {
-        this.set_colormap({
-            ...this.get_colormap(),
-            custom_colormap: custom_colormap,
-        });
-    }
-
-    render() {
-        const self = this;
-        const options = [
-            "",
-            "Custom",
-            ...Object.keys(RAMPS),
-        ];
-        return (
-            <div>
-                <div style={setting_sub_name_style}>
-                    {this.props.name}
-                </div>
-                <select
-                    onChange={e =>
-                        self.set_selected(e.target.value)
-                    }
-                    style={{ width: "100%" }}
-                    value={
-                        this.get_colormap().type === "none" ?
-                            "" :
-                            this.get_colormap().type === "preset" ?
-                                this.get_colormap().name : "Custom"
-                    }
-                >
-                    {
-                        options.map((name, i) => (
-                            <option key={i} value={name}>{name}</option>
-                        ))
-                    }
-                </select>
-                {
-                    this.get_colormap().type == "custom" ? <span>
-                        <input
-                            type="text"
-                            style={{ width: "100%" }}
-                            placeholder='Custom map, e.g., [[0, "#ff0000"], [1, "#0000ff"]]'
-                            value={this.props.get_ramp().colormap.custom_colormap}
-                            onChange={e =>
-                                self.set_custom_colormap(e.target.value)
-                            }
-                        />
-                    </span> : <div></div>
-                }
-            </div>
-        );
-    }
-}
-
 function ConstantParametersSelector({ get_ramp, set_ramp }) {
     const ramp = get_ramp();
     return (
@@ -282,9 +185,8 @@ class RampSelector extends React.Component {
                     Ramp:
                 </div>
                 <RampColormapSelector
-                    name="Colormap:"
-                    get_ramp={this.props.get_ramp}
-                    set_ramp={this.props.set_ramp}
+                    get_ramp={() => this.props.get_ramp()}
+                    set_ramp={ramp => this.props.set_ramp(ramp)}
                 />
                 <DataListSelector
                     overall_name="Ramp Type:"
