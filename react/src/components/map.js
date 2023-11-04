@@ -24,7 +24,7 @@ class MapGeneric extends React.Component {
 
     render() {
         return (
-            <div id={this.props.id} className="map" style={{ background: "white" }}></div>
+            <div id={this.props.id} className="map" style={{ background: "white", height: this.props.height || 400 }}></div>
         );
     }
 

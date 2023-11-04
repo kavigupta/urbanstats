@@ -176,6 +176,7 @@ class MapComponent extends React.Component {
             <div style={{
                 display: "flex",
                 flexDirection: "column",
+                height: this.props.height,
             }}>
                 <div style={{ height: "90%", width: "100%" }}>
                     <DisplayedMap
@@ -190,9 +191,10 @@ class MapComponent extends React.Component {
                         ref={this.props.map_ref}
                         line_style={this.props.line_style}
                         basemap={this.props.basemap}
+                        height={this.props.height}
                     />
                 </div>
-                <div style={{ height: "10%", width: "100%" }}>
+                <div style={{ height: "8%", width: "100%" }}>
                     <Colorbar
                         name={color_stat.name()}
                         ramp={this.props.get_empirical_ramp()}
@@ -218,6 +220,13 @@ class Export extends React.Component {
             <button onClick={() => {
                 self.exportAsGeoJSON()
             }}>Export as GeoJSON</button>
+            <button onClick={() => {
+                const params = new URLSearchParams(window.location.search);
+                params.set("view", "true");
+                // navigate to the page in a new tab
+                window.open("?" + params.toString(), "_blank");
+            }
+            }>View as Zoomable Page</button>
         </div>
     }
 
@@ -322,12 +331,16 @@ class MapperPanel extends PageTemplate {
         return this.state.map_settings;
     }
 
-    main_content() {
-        const ramp = parse_ramp(this.state.map_settings.ramp);
+    render() {
         this.update_geography_kind();
+        if (new URLSearchParams(window.location.search).get("view") === "true") {
+            return this.mapper_panel("100%");
+        }
+        return super.render();
+    }
+
+    main_content() {
         const geography_kind = this.state.map_settings.geography_kind;
-        const color_stat = this.state.map_settings.color_stat;
-        const filter = this.state.map_settings.filter;
         const valid = this.valid_geographies.includes(geography_kind);
         return (
             <div>
@@ -343,25 +356,33 @@ class MapperPanel extends PageTemplate {
                 />
                 {
                     !valid ? <div>Invalid geography kind</div> :
-
-                        <MapComponent
-                            name_to_index={this.name_to_index}
-                            underlying_shapes={this.underlying_shapes}
-                            underlying_stats={this.underlying_stats}
-                            geography_kind={geography_kind}
-                            get_settings={() => this.state.settings}
-                            ramp={ramp}
-                            get_empirical_ramp={() => this.state.empirical_ramp}
-                            set_empirical_ramp={(ramp) => this.set_empirical_ramp(ramp)}
-                            color_stat={color_stat}
-                            filter={filter}
-                            map_ref={this.map_ref}
-                            line_style={this.state.map_settings.line_style}
-                            basemap={this.state.map_settings.basemap}
-                        />
+                        this.mapper_panel(undefined) // use default height
                 }
             </div>
         );
+    }
+
+    mapper_panel(height) {
+        const ramp = parse_ramp(this.state.map_settings.ramp);
+        const geography_kind = this.state.map_settings.geography_kind;
+        const color_stat = this.state.map_settings.color_stat;
+        const filter = this.state.map_settings.filter;
+        return <MapComponent
+            name_to_index={this.name_to_index}
+            underlying_shapes={this.underlying_shapes}
+            underlying_stats={this.underlying_stats}
+            geography_kind={geography_kind}
+            get_settings={() => this.state.settings}
+            ramp={ramp}
+            get_empirical_ramp={() => this.state.empirical_ramp}
+            set_empirical_ramp={(ramp) => this.set_empirical_ramp(ramp)}
+            color_stat={color_stat}
+            filter={filter}
+            map_ref={this.map_ref}
+            line_style={this.state.map_settings.line_style}
+            basemap={this.state.map_settings.basemap}
+            height={height}
+        />
     }
 
     componentDidUpdate() {
