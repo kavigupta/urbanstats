@@ -18,11 +18,13 @@ class MapGeneric extends React.Component {
         this.delta = 0.25;
         this.version = 0;
         this.last_modified = new Date(0);
+        this.basemap_layer = null;
+        this.basemap_props = null;
     }
 
     render() {
         return (
-            <div id={this.props.id} className="map"></div>
+            <div id={this.props.id} className="map" style={{ background: "white" }}></div>
         );
     }
 
@@ -48,11 +50,8 @@ class MapGeneric extends React.Component {
     }
 
     async componentDidMount() {
-        var osmUrl = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-            osmAttrib = '&copy; <a href="https://openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-            osm = L.tileLayer(osmUrl, { maxZoom: 20, attribution: osmAttrib });
         const map = new L.Map(this.props.id, {
-            layers: [osm], center: new L.LatLng(0, 0), zoom: 0,
+            layers: [], center: new L.LatLng(0, 0), zoom: 0,
             zoomSnap: this.delta, zoomDelta: this.delta, wheelPxPerZoomLevel: 60 / this.delta
         });
         this.map = map;
@@ -174,6 +173,8 @@ class MapGeneric extends React.Component {
         const map = this.map;
         this.exist_this_time = [];
 
+        this.attachBasemap();
+
         const [names, styles, _, zoom_index] = await this.compute_polygons();
 
         await this.add_polygons(map, names, styles, zoom_index);
@@ -187,6 +188,23 @@ class MapGeneric extends React.Component {
                 delete this.polygon_by_name[name];
             }
         }
+    }
+
+    attachBasemap() {
+        if (JSON.stringify(this.props.basemap) == JSON.stringify(this.basemap_props)) {
+            return;
+        }
+        if (this.basemap_layer != null) {
+            this.map.removeLayer(this.basemap_layer);
+            this.basemap_layer = null;
+        }
+        if (this.props.basemap.type == "none") {
+            return;
+        }
+        const osmUrl = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
+        const osmAttrib = '&copy; <a href="https://openstreetmap.org/copyright">OpenStreetMap</a> contributors';
+        this.basemap_layer = L.tileLayer(osmUrl, { maxZoom: 20, attribution: osmAttrib });
+        this.map.addLayer(this.basemap_layer);
     }
 
     async add_polygons(map, names, styles, zoom_to) {

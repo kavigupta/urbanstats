@@ -217,13 +217,17 @@ class QuizQuestion extends PageTemplate {
                         <Map id="map_a"
                             longname={this.props.longname_a}
                             settings={this.state.settings}
-                            article_type={undefined} />
+                            article_type={undefined}
+                            basemap={{ type: "osm" }}
+                        />
                     </div>
                     <div style={{ width: "50%", padding: "0.5em" }}>
                         <Map id="map_b"
                             longname={this.props.longname_b}
                             settings={this.state.settings}
-                            article_type={undefined} />
+                            article_type={undefined}
+                            basemap={{ type: "osm" }}
+                        />
                     </div>
                 </div>
                 <Footer history={this.props.history} length={this.props.length} />

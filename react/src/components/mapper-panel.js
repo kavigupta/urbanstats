@@ -189,6 +189,7 @@ class MapComponent extends React.Component {
                         ramp_callback={(ramp) => this.props.set_empirical_ramp(ramp)}
                         ref={this.props.map_ref}
                         line_style={this.props.line_style}
+                        basemap={this.props.basemap}
                     />
                 </div>
                 <div style={{ height: "10%", width: "100%" }}>
@@ -362,6 +363,7 @@ class MapperPanel extends PageTemplate {
                             filter={filter}
                             map_ref={this.map_ref}
                             line_style={this.state.map_settings.line_style}
+                            basemap={this.state.map_settings.basemap}
                         />
                 }
             </div>

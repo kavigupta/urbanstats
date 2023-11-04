@@ -37,6 +37,9 @@ function default_settings(add_to) {
         line_style: {
             color: "#000000",
             weight: 0.5,
+        },
+        basemap: {
+            type: "osm",
         }
     }
     return merge(add_to, defaults);
