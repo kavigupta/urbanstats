@@ -360,6 +360,29 @@ class LineStyleSelector extends React.Component {
     }
 }
 
+function BaseMapSelector({ get_basemap, set_basemap }) {
+    // just a checkbox for now
+    return (
+        <div>
+            <div style={setting_name_style}>
+                Basemap:
+            </div>
+            <div style={{ display: "flex" }}>
+                <div style={setting_sub_name_style}>
+                    OSM:
+                </div>
+                <input
+                    type="checkbox"
+                    checked={get_basemap().type !== "none"}
+                    onChange={e => set_basemap({
+                        type: e.target.checked ? "osm" : "none",
+                    })}
+                />
+            </div>
+        </div>
+    );
+}
+
 class MapperSettings extends React.Component {
 
 
@@ -437,6 +460,13 @@ class MapperSettings extends React.Component {
                     set_line_style={line_style => this.props.set_map_settings({
                         ...this.props.get_map_settings(),
                         line_style: line_style,
+                    })}
+                />
+                <BaseMapSelector
+                    get_basemap={() => this.props.get_map_settings().basemap}
+                    set_basemap={basemap => this.props.set_map_settings({
+                        ...this.props.get_map_settings(),
+                        basemap: basemap,
                     })}
                 />
             </div>
