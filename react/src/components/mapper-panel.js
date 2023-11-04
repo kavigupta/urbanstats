@@ -323,13 +323,7 @@ class MapperPanel extends PageTemplate {
     }
 
     main_content() {
-        const self = this;
-        // const ramp = new ConstantRamp([
-        //     [-0.25, "#ff0000"], [-0.0001, "#ffdddd"], [0.0001, "#ddddff"], [0.25, "#0000ff"]
-        // ]);
-        // virids
         const ramp = parse_ramp(this.state.map_settings.ramp);
-        console.log("ramp", ramp);
         this.update_geography_kind();
         const geography_kind = this.state.map_settings.geography_kind;
         const color_stat = this.state.map_settings.color_stat;
