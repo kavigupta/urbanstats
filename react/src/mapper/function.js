@@ -20,10 +20,16 @@ class FunctionColorStat {
             variables[variable.name] = variable.expr.compute(statistics_for_geography);
         }
         if (this._expr === "") {
-            return 0;
+            return statistics_for_geography.map(statistics => 0);
         }
-        const expr = Parser.parse(this._expr);
-        return expr.evaluate(variables);
+        return statistics_for_geography.map((_, i) => {
+            const expr = Parser.parse(this._expr);
+            const vars = {};
+            for (const key in variables) {
+                vars[key] = variables[key][i];
+            }
+            return expr.evaluate(vars);
+        });
     }
 }
 

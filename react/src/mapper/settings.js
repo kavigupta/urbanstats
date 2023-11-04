@@ -79,7 +79,7 @@ class SingleColorStat {
     }
 
     compute(statistics_for_geography) {
-        return statistics_for_geography.stats[this._index];
+        return statistics_for_geography.map(statistics => statistics.stats[this._index]);
     }
 }
 
@@ -89,7 +89,7 @@ class InvalidColorStat {
     }
 
     compute(statistics_for_geography) {
-        return 0;
+        return statistics_for_geography.map(statistics => 0);
     }
 }
 

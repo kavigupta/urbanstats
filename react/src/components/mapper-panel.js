@@ -53,13 +53,13 @@ class DisplayedMap extends MapGeneric {
         // TODO correct this!
         if (this.props.filter !== undefined) {
 
-            const filter_vals = stats.stats.map(x => this.props.filter.compute(x));
+            const filter_vals = this.props.filter.compute(stats.stats);
             stats = {
                 stats: stats.stats.filter((x, i) => filter_vals[i]),
                 longnames: stats.longnames.filter((x, i) => filter_vals[i]),
             }
         }
-        const stat_vals = stats.stats.map(x => this.props.color_stat.compute(x));
+        const stat_vals = this.props.color_stat.compute(stats.stats);
         const names = stats.longnames;
         const [ramp, interpolations] = this.props.ramp.create_ramp(stat_vals);
         this.props.ramp_callback({ ramp: ramp, interpolations: interpolations });
