@@ -203,18 +203,18 @@ class FilterSelector extends React.Component {
     }
 }
 
-export function StatisticSelector({ get_color_stat, set_color_stat, names }) {
+export function StatisticSelector({ get_statistic, set_statistic, names }) {
     return <>
         <DataListSelector
             overall_name="Statistic for Color:"
             names={["Function", ...names]}
-            initial_value={get_color_stat()?.value}
-            onChange={name => set_color_stat(name != "Function" ? {
-                ...self.props.get_color_stat(),
+            initial_value={get_statistic()?.value}
+            onChange={name => set_statistic(name != "Function" ? {
+                ...get_statistic(),
                 type: "single",
                 value: name,
             } : {
-                ...self.props.get_color_stat(),
+                ...get_statistic(),
                 type: "function",
                 value: "Function",
                 variables: [],
@@ -222,10 +222,10 @@ export function StatisticSelector({ get_color_stat, set_color_stat, names }) {
                 name: "",
             }
             )} />
-        {get_color_stat()?.type == "function" ?
+        {get_statistic()?.type == "function" ?
             <FunctionSelector
-                get_function={() => get_color_stat()}
-                set_function={f => set_color_stat(f)}
+                get_function={() => get_statistic()}
+                set_function={f => set_statistic(f)}
                 names={names} />
             :
             <div></div>}

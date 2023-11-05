@@ -270,8 +270,8 @@ class MapperSettings extends React.Component {
                     names={this.props.names}
                 />
                 <StatisticSelector
-                    get_color_stat={() => this.props.get_map_settings().color_stat}
-                    set_color_stat={color_stat => this.props.set_map_settings({
+                    get_statistic={() => this.props.get_map_settings().color_stat}
+                    set_statistic={color_stat => this.props.set_map_settings({
                         ...this.props.get_map_settings(),
                         color_stat: color_stat,
                     })}
