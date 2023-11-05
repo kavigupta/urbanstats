@@ -138,7 +138,7 @@ class FunctionSelector extends React.Component {
     }
 }
 
-function VariablesSelector({get_variables, set_variables, names}) {
+function VariablesSelector({ get_variables, set_variables, names }) {
     return <>
         {
             get_variables().map((variable, i) => (
@@ -203,34 +203,29 @@ class FilterSelector extends React.Component {
     }
 }
 
-export function StatisticSelector({ get_map_settings, set_map_settings, names }) {
+export function StatisticSelector({ get_color_stat, set_color_stat, names }) {
     return <>
         <DataListSelector
             overall_name="Statistic for Color:"
             names={["Function", ...names]}
-            initial_value={get_map_settings().color_stat?.value}
-            onChange={name => self.props.set_map_settings({
-                ...self.props.get_map_settings(),
-                color_stat: name != "Function" ? {
-                    ...self.props.get_map_settings().color_stat,
-                    type: "single",
-                    value: name,
-                } : {
-                    ...self.props.get_map_settings().color_stat,
-                    type: "function",
-                    value: "Function",
-                    variables: [],
-                    expression: "",
-                    name: "",
-                }
-            })} />
-        {get_map_settings().color_stat?.type == "function" ?
+            initial_value={get_color_stat()?.value}
+            onChange={name => set_color_stat(name != "Function" ? {
+                ...self.props.get_color_stat(),
+                type: "single",
+                value: name,
+            } : {
+                ...self.props.get_color_stat(),
+                type: "function",
+                value: "Function",
+                variables: [],
+                expression: "",
+                name: "",
+            }
+            )} />
+        {get_color_stat()?.type == "function" ?
             <FunctionSelector
-                get_function={() => get_map_settings().color_stat}
-                set_function={f => set_map_settings({
-                    ...get_map_settings(),
-                    color_stat: f,
-                })}
+                get_function={() => get_color_stat()}
+                set_function={f => set_color_stat(f)}
                 names={names} />
             :
             <div></div>}
