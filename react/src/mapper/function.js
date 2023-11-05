@@ -204,7 +204,7 @@ class FilterSelector extends React.Component {
 }
 
 export function StatisticSelector({ get_statistic, set_statistic, names, overall_name }) {
-    return <>
+    return <div style={{ width: "100%" }}>
         <DataListSelector
             overall_name={overall_name}
             names={["Function", ...names]}
@@ -229,5 +229,5 @@ export function StatisticSelector({ get_statistic, set_statistic, names, overall
                 names={names} />
             :
             <div></div>}
-    </>;
+    </div>;
 }
