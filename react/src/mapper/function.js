@@ -3,6 +3,7 @@ export { FilterSelector, FunctionSelector, FunctionColorStat };
 import React from "react";
 
 import { Parser } from 'expr-eval';
+import { DataListSelector } from "./DataListSelector.js";
 
 class FunctionColorStat {
     constructor(name, variables, expr) {
@@ -196,4 +197,38 @@ class FilterSelector extends React.Component {
             </div>
         );
     }
+}
+
+export function StatisticSelector({ get_map_settings, set_map_settings, names }) {
+    return <>
+        <DataListSelector
+            overall_name="Statistic for Color:"
+            names={["Function", ...names]}
+            initial_value={get_map_settings().color_stat?.value}
+            onChange={name => self.props.set_map_settings({
+                ...self.props.get_map_settings(),
+                color_stat: name != "Function" ? {
+                    ...self.props.get_map_settings().color_stat,
+                    type: "single",
+                    value: name,
+                } : {
+                    ...self.props.get_map_settings().color_stat,
+                    type: "function",
+                    value: "Function",
+                    variables: [],
+                    expression: "",
+                    name: "",
+                }
+            })} />
+        {get_map_settings().color_stat?.type == "function" ?
+            <FunctionSelector
+                get_function={() => get_map_settings().color_stat}
+                set_function={f => set_map_settings({
+                    ...get_map_settings(),
+                    color_stat: f,
+                })}
+                names={names} />
+            :
+            <div></div>}
+    </>;
 }
