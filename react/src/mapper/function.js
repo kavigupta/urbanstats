@@ -203,10 +203,10 @@ class FilterSelector extends React.Component {
     }
 }
 
-export function StatisticSelector({ get_statistic, set_statistic, names }) {
+export function StatisticSelector({ get_statistic, set_statistic, names, overall_name }) {
     return <>
         <DataListSelector
-            overall_name="Statistic for Color:"
+            overall_name={overall_name}
             names={["Function", ...names]}
             initial_value={get_statistic()?.value}
             onChange={name => set_statistic(name != "Function" ? {
