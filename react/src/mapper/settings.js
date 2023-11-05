@@ -94,7 +94,7 @@ class InvalidColorStat {
 }
 
 function DataListSelector({ overall_name, initial_value, names, onChange, no_neutral, header_style }) {
-    const names_full = header_style ? names : ["", ...names]
+    const names_full = no_neutral ? names : ["", ...names]
     const set_initial = names_full.includes(initial_value);
     return (
         <div>
