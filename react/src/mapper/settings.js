@@ -93,29 +93,6 @@ class InvalidColorStat {
     }
 }
 
-// ColorStat = (function() {
-//     function name_to_index(name_to_index, name) {
-//         return name in name_to_index ? name_to_index[name] : -1;
-//     }
-
-//     function compute_statistic(stats_for_geography, name_to_index, color_stat) {
-
-//     }
-
-//     function valid_color_stat(name_to_index, color_stat) {
-//         return name_to_index(color_stat) !== -1;
-//     }
-
-//     function color_stat_name(name_to_index, color_stat) {
-//         const index = name_to_index(color_stat);
-//         return index === -1 ? undefined : color_stat;
-//     }
-
-//     return {
-//         compute_statistic: compute_statistic,
-//     }
-// })();
-
 function DataListSelector({ overall_name, initial_value, names, onChange, no_neutral, header_style }) {
     const names_full = header_style ? names : ["", ...names]
     const set_initial = names_full.includes(initial_value);
