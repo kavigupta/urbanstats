@@ -114,37 +114,14 @@ class FunctionSelector extends React.Component {
                         })}
                     />
                 }
-                {
-                    func.variables.map((variable, i) => (
-                        <VariableSelector
-                            key={i}
-                            get_variable={() => variable}
-                            set_variable={v => self.props.set_function({
-                                ...func,
-                                variables: func.variables.map((v2, j) => i == j ? v : v2),
-                            })}
-                            delete_variable={() => self.props.set_function({
-                                ...func,
-                                variables: func.variables.filter((v2, j) => i != j),
-                            })}
-                            names={self.props.names}
-                        />
-                    ))
-                }
-                {/*Add a variable button */}
-                <div style={{ width: "100%" }}>
-                    <button
-                        onClick={() => self.props.set_function({
-                            ...func,
-                            variables: [...func.variables, {
-                                name: "",
-                                expr: "",
-                            }]
-                        })}
-                    >
-                        Add Variable
-                    </button>
-                </div>
+                <VariablesSelector
+                    get_variables={() => func.variables}
+                    set_variables={variables => self.props.set_function({
+                        ...func,
+                        variables: variables,
+                    })}
+                    names={self.props.names}
+                />
                 <div style={{ marginBottom: "0.25em" }} />
                 <input
                     type="text"
@@ -159,6 +136,33 @@ class FunctionSelector extends React.Component {
             </div>
         );
     }
+}
+
+function VariablesSelector({get_variables, set_variables, names}) {
+    return <>
+        {
+            get_variables().map((variable, i) => (
+                <VariableSelector
+                    key={i}
+                    get_variable={() => variable}
+                    set_variable={v => set_variables(get_variables().map((v2, j) => i == j ? v : v2))}
+                    delete_variable={() => set_variables(get_variables().filter((v2, j) => i != j))}
+                    names={names}
+                />
+            ))
+        }
+        {/*Add a variable button */}
+        <div style={{ width: "100%" }}>
+            <button
+                onClick={() => set_variables([...get_variables(), {
+                    name: "",
+                    expr: "",
+                }])}
+            >
+                Add Variable
+            </button>
+        </div>
+    </>
 }
 
 class FilterSelector extends React.Component {
