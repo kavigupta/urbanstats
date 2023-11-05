@@ -5,6 +5,7 @@ import React from "react";
 import { FunctionSelector, FunctionColorStat, FilterSelector } from "./function.js";
 import { RampColormapSelector } from "./ramp-selector.js";
 import { setting_name_style, setting_sub_name_style } from "./style.js";
+import { DataListSelector } from "./DataListSelector.js";
 
 function default_settings(add_to) {
     const defaults = {
@@ -91,32 +92,6 @@ class InvalidColorStat {
     compute(statistics_for_geography) {
         return statistics_for_geography.map(statistics => 0);
     }
-}
-
-function DataListSelector({ overall_name, initial_value, names, onChange, no_neutral, header_style }) {
-    const names_full = no_neutral ? names : ["", ...names]
-    const set_initial = names_full.includes(initial_value);
-    return (
-        <div>
-            <div>
-                <div style={header_style || setting_name_style}>
-                    {overall_name}
-                </div>
-                <select
-                    onChange={e => onChange(e.target.value)}
-                    style={{ width: "100%" }}
-                    value={set_initial ? initial_value : ""}
-                >
-                    {
-                        names_full.map((name, i) => (
-                            <option key={i} value={name}>{name}</option>
-                        ))
-                    }
-                </select>
-                <div style={{ marginBottom: "0.25em" }} />
-            </div>
-        </div>
-    );
 }
 
 function ConstantParametersSelector({ get_ramp, set_ramp }) {
