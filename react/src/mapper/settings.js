@@ -7,6 +7,7 @@ import { RampColormapSelector } from "./ramp-selector.js";
 import { setting_name_style, setting_sub_name_style } from "./style.js";
 import { DataListSelector } from "./DataListSelector.js";
 import { StatisticSelector } from "./function.js";
+import { Regression } from "./regression.js";
 
 function default_settings(add_to) {
     const defaults = {
@@ -46,6 +47,23 @@ function merge(add_to, add_from) {
     return add_to;
 }
 
+function parse_regression(name_to_index, regr) {
+    console.log(regr);
+    const independent_fn = parse_color_stat(name_to_index, regr.independent);
+    const dependent_fns = regr.dependents.map(dependent => parse_color_stat(name_to_index, dependent));
+    const dependent_names = regr.var_coefficients;
+    const intercept_name = regr.var_intercept;
+    const residual_name = regr.var_residue;
+
+    return new Regression(
+        independent_fn,
+        dependent_fns,
+        dependent_names,
+        intercept_name,
+        residual_name
+    );
+}
+
 function parse_color_stat(name_to_index, color_stat) {
     if (color_stat === undefined) {
         return new InvalidColorStat();
@@ -65,7 +83,13 @@ function parse_color_stat(name_to_index, color_stat) {
                 expr: parse_color_stat(name_to_index, variable.expr),
             }
         });
-        return new FunctionColorStat(color_stat.name, variables, color_stat.expression);
+        var regressions = color_stat.regressions;
+        if (regressions === undefined) {
+            regressions = [];
+        }
+        regressions = regressions.map(regr => parse_regression(name_to_index, regr));
+        console.log("regressions", regressions);
+        return new FunctionColorStat(color_stat.name, variables, regressions, color_stat.expression);
     }
     return new InvalidColorStat();
 }
