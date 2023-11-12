@@ -17,9 +17,11 @@ from create_website import full_shapefile, statistic_internal_to_display_name
 from produce_html_page import get_statistic_categories
 from urbanstats.shortener import shorten
 
+from relationship import states_for_all
+
 min_pop = 250_000
-version = 18
-fixed_up_to = 57
+version = 19
+fixed_up_to = 71
 
 # ranges = [
 #     (0.7, 1),
@@ -74,12 +76,18 @@ def sample_quiz(rng):
         result.append(question)
     return result
 
+
 def compute_difficulty(stat_a, stat_b, stat_column_original):
     diff = pct_diff(stat_a, stat_b)
     diff = diff / difficulties[get_statistic_categories()[stat_column_original]]
     if "mean_high_temp" in stat_column_original:
         diff = diff / 0.25
     return diff
+
+
+def same_state(a, b):
+    sfa = states_for_all()
+    return set(sfa[a]) & set(sfa[b]) != set()
 
 
 def sample_quiz_question(
@@ -98,6 +106,8 @@ def sample_quiz_question(
             if type == "State":
                 if "District of Columbia, USA" in (a, b):
                     continue
+            if same_state(a, b):
+                continue
             stat_a, stat_b = (
                 at_pop.loc[a][stat_column_original],
                 at_pop.loc[b][stat_column_original],
