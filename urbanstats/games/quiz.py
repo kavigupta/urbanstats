@@ -30,35 +30,33 @@ fixed_up_to = 57
 # ]
 
 ranges = [
-    (200, 400),
-    (100, 200),
-    (50, 100),
-    (25, 50),
-    (5, 25),
+    (200, 500),
+    (125, 200),
+    (75, 125),
+    (40, 75),
+    (5, 40),
 ]
 
 difficulties = {
-    "education": 1,
-    "election": 0.5,
+    "education": 0.5,
+    "election": 3,
     "feature": 1.5,
     "generation": 2,
     "housing": 1.5,
-    "income": 1.5,
-    "main": 1,
+    "income": 0.6,
+    "main": 0.25,
     "misc": 2,
-    "national_origin": 0.75,
+    "national_origin": 1.5,
     "race": 0.75,
-    "transportation": 1.5,
-    "weather": 0.5,
+    "transportation": 3,
+    "weather": 0.3,
 }
 
 
 def pct_diff(x, y):
     if np.isnan(x) or np.isnan(y):
         return 0
-    if x >= y:
-        return (x - y) / y * 100
-    return pct_diff(y, x)
+    return abs(x - y) / min(abs(y), abs(y)) * 100
 
 
 def sample_quiz(rng):
@@ -75,6 +73,13 @@ def sample_quiz(rng):
         banned_types.append(type)
         result.append(question)
     return result
+
+def compute_difficulty(stat_a, stat_b, stat_column_original):
+    diff = pct_diff(stat_a, stat_b)
+    diff = diff / difficulties[get_statistic_categories()[stat_column_original]]
+    if "mean_high_temp" in stat_column_original:
+        diff = diff / 0.25
+    return diff
 
 
 def sample_quiz_question(
@@ -97,10 +102,7 @@ def sample_quiz_question(
                 at_pop.loc[a][stat_column_original],
                 at_pop.loc[b][stat_column_original],
             )
-            diff = (
-                pct_diff(stat_a, stat_b)
-                / difficulties[get_statistic_categories()[stat_column_original]]
-            )
+            diff = compute_difficulty(stat_a, stat_b, stat_column_original)
             if distance_pct_bot <= diff <= distance_pct_top:
                 return type, dict(
                     stat_column_original=stat_column_original,
@@ -361,6 +363,67 @@ stats_to_display = {
     "hours_sunny_4": "!FULL Which has more hours of sun per day on average? (population weighted)",
 }
 
+renamed = {
+    "higher housing units per adult": "housing_per_pop",
+    "higher % of people who are born in the us outside their state of residence": "birthplace_us_not_state",
+    "higher % of people who have commute time < 15 min": "transportation_commute_time_under_15",
+    "higher % of people who have commute time > 60 min": "transportation_commute_time_over_60",
+    "higher % of people who have household income > $100k": "household_income_over_100k",
+    "higher % of people who have individual income > $100k": "individual_income_over_100k",
+    "higher % of people who have household income < $50k": "household_income_under_50k",
+    "higher % of people who have individual income < $50k": "individual_income_under_50k",
+    "higher % of people who are non-citizens": "citizenship_not_citizen",
+    "higher % of people who are citizens by birth": "citizenship_citizen_by_birth",
+    "higher % of people who are citizens by naturalization": "citizenship_citizen_by_naturalization",
+    "higher % of units with 2br rent < $750": "rent_2br_under_750",
+    "higher % of units with 2br rent > $1500": "rent_2br_over_1500",
+    "higher % of units with 1br rent < $750": "rent_1br_under_750",
+    "higher % of units with 1br rent > $1500": "rent_1br_over_1500",
+    "higher % of people who have a humanities degree": "education_field_humanities",
+    "higher % of all people with a humanities degree (as a percentage of the overall population)": "education_field_humanities",
+    "higher % of people who have a business degree": "education_field_business",
+    "higher % of all people with a business degree (as a percentage of the overall population)": "education_field_business",
+    "higher % of people who have a stem degree": "education_field_stem",
+    "higher % of all people with a stem degree (as a percentage of the overall population)": "education_field_stem",
+    "higher mean ditance to the nearest EPA superfund site": "mean_dist_Active Superfund Site_updated",
+    "higher mean distance to the nearest EPA superfund site": "mean_dist_Active Superfund Site_updated",
+    "more democratic in the 2020 presidential election": (
+        "2020 Presidential Election",
+        "margin",
+    ),
+    "more democratic in the 2016 presidential election": (
+        "2016 Presidential Election",
+        "margin",
+    ),
+    "more democratic in 2016 presidential election": (
+        "2016 Presidential Election",
+        "margin",
+    ),
+    "more democratic in 2016-2020 swing": ("2016-2020 Swing", "margin"),
+    "higher % of people who have a high school diploma": "education_high_school",
+    "higher % of people who have an undergrad degree": "education_ugrad",
+    "higher % of people who have a graduate degree": "education_grad",
+    "higher % of people who have rent/income > 40%": "rent_burden_over_40",
+    "higher % of people who have rent/income < 20%": "rent_burden_under_20",
+    "higher mean distance to the nearest airport": "mean_dist_Airport_updated",
+    "higher mean distance to nearest hospital": "mean_dist_Hospital_updated",
+    "higher mean distance to the nearest hospital": "mean_dist_Hospital_updated",
+    "higher mean distance to the nearest superfund site": "mean_dist_Active Superfund Site_updated",
+    "higher mean distance to the nearest public school": "mean_dist_Public School_updated",
+    "higher % of people who are born outside the us": "birthplace_non_us",
+    "higher % of people who are born in the us": "birthplace_us_state",
+    "higher % of people who are born in the us in their state of residence": "birthplace_us_state",
+    "higher % of households who have household income > $100k": "household_income_over_100k",
+    "higher % of households who have household income < $50k": "household_income_under_50k",
+    "higher population-weighted mean % of parkland within 1km": "park_percent_1km_v2",
+    "!FULL Which has more hours of sun per day on average?": "hours_sunny_4",
+    "higher rainfall": "rainfall_4",
+    "higher mean daily high temperature": "mean_high_temp_4",
+    "!FULL Which has more hours of sun per day on average?": "hours_sunny_4",
+    "higher % of days with high temp < 40": "days_below_40_4",
+    "higher % of days with high temp under 40°F (population weighted)": "days_below_40_4",
+    "higher % of people who were born in the us and born outside their state of residence": "birthplace_us_not_state",
+}
 
 not_included = {
     # duplicate
