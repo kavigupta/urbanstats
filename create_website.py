@@ -225,7 +225,7 @@ def main(no_geo=False, no_data=False, no_data_jsons=False):
     with open(f"{folder}/.nojekyll", "w") as f:
         f.write("")
 
-    os.system("cd react; npm run prod")
+    os.system("cd react; npm run dev")
     shutil.copy("dist/article.js", f"{folder}/scripts/")
     shutil.copy("dist/index.js", f"{folder}/scripts/")
     shutil.copy("dist/about.js", f"{folder}/scripts/")

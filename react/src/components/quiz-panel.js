@@ -3,29 +3,16 @@ export { QuizPanel };
 import React from 'react';
 
 import { Statistic } from "./table.js";
-import { MapGeneric } from "./map.js";
 import { PageTemplate } from "../page_template/template.js";
 import "../common.css";
 import "./quiz.css";
 import { isMobile, isFirefox } from 'react-device-detect';
 import { article_link } from '../navigation/links.js';
 import { reportToServer } from '../quiz/statistics.js';
+import { Header } from '../quiz/quiz-components.js';
+import { QuizQuestionDispatch } from '../quiz/quiz-question.js';
 
 const ENDPOINT = "https://persistent.urbanstats.org";
-
-class Map extends MapGeneric {
-    constructor(props) {
-        super(props);
-    }
-
-    async compute_polygons() {
-        const style = { "interactive": false, "fillOpacity": 0.5, "weight": 1, "color": "#5a7dc3", "fillColor": "#5a7dc3" };
-        return [[this.props.longname], [style], 0];
-    }
-
-    async mapDidRender() {
-    }
-}
 
 class QuizPanel extends PageTemplate {
     constructor(props) {
@@ -54,6 +41,7 @@ class QuizPanel extends PageTemplate {
 
             var get_per_question = null;
             if (this.is_daily()) {
+                // TODO: report to server if weekly too
                 reportToServer(this.get_whole_history());
                 // POST to endpoint /juxtastat/get_per_question_stats with the current day
                 get_per_question = fetch(ENDPOINT + "/juxtastat/get_per_question_stats", {
@@ -77,9 +65,10 @@ class QuizPanel extends PageTemplate {
                 />
             )
         }
-
+        console.log(history);
         return (
-            <QuizQuestion
+            <QuizQuestionDispatch
+                quiz_kind={this.props.quiz_kind}
                 {...quiz[index]}
                 history={history}
                 length={quiz.length}
@@ -111,12 +100,18 @@ class QuizPanel extends PageTemplate {
         return typeof this.today == "number";
     }
 
+    is_weekly() {
+        console.log("today: " + this.today);
+        // matches W followed by a number
+        return typeof this.today == "string" && this.today.match(/^W-?\d+$/);
+    }
+
     set_todays_quiz_history(history_today) {
         const history = this.get_whole_history();
         history[this.today] = history_today;
         this.setState({ history: history, waiting: true });
         // if today is a number and not a string
-        if (this.is_daily()) {
+        if (this.is_daily() || this.is_weekly()) {
             localStorage.setItem("quiz_history", JSON.stringify(history));
         }
     }
@@ -137,139 +132,6 @@ class QuizPanel extends PageTemplate {
     }
 }
 
-function Header({ today }) {
-    let text = "Juxtastat";
-    if (typeof today != "number") {
-        text += " " + today;
-    }
-    return (<div className={"centered_text " + (isMobile ? "headertext_mobile" : "headertext")}>{text}</div>);
-}
-
-class QuizQuestion extends PageTemplate {
-    constructor(props) {
-        super(props);
-    }
-
-    render() {
-        let button_a = "quiz_clickable";
-        let button_b = "quiz_clickable";
-        if (this.props.waiting) {
-            const choices = this.props.history.choices;
-            const pattern = this.props.history.correct_pattern;
-            const choice = choices[choices.length - 1];
-            const correct = pattern[pattern.length - 1];
-            const css_class = correct ? " quiz_correct" : " quiz_incorrect";
-            if (choice == "A") {
-                button_a += css_class;
-            } else {
-                button_b += css_class;
-            }
-        }
-        console.log(button_a);
-        console.log(button_b);
-        let question = `Which has a ${this.props.question}?`;
-        // sometimes questions start with !FULL
-        if (this.props.question.startsWith("!FULL ")) {
-            question = this.props.question.slice(6);
-        }
-
-        const button_style = {
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            flexDirection: "column",
-            padding: "0.5em",
-        }
-
-        const row_style = { display: "flex", justifyContent: "center", width: "90%", margin: "auto" };
-
-
-        return (
-            <div>
-                {/* {this.props.waiting ? <Overlay correct={pattern[pattern.length - 1]} /> : undefined} */}
-                <Header today={this.props.today} />
-                <div className={"centered_text " + (isMobile ? "quiztext_mobile" : "quiztext")}>
-                    {question}
-                </div>
-                <div className="gap"></div>
-                <div style={row_style}>
-                    <div style={{ width: "50%", padding: "0.5em" }}>
-                        <div role='button' className={button_a} onClick={() => this.props.on_select("A")} style={button_style}>
-                            <span style={{ margin: "auto" }}>
-                                <div className={"centered_text " + (isMobile ? "quiztext_mobile" : "quiztext")}>
-                                    {this.props.longname_a}
-                                </div>
-                            </span>
-                        </div>
-                    </div>
-                    <div style={{ width: "50%", padding: "0.5em" }}>
-                        <div role='button' className={button_b} onClick={() => this.props.on_select("B")} style={button_style}>
-                            <span style={{ margin: "auto" }}>
-                                <div className={"centered_text " + (isMobile ? "quiztext_mobile" : "quiztext")}>
-                                    {this.props.longname_b}
-                                </div>
-                            </span>
-                        </div>
-                    </div>
-                </div>
-                <div style={row_style}>
-                    <div style={{ width: "50%", padding: "0.5em" }}>
-                        <Map id="map_a"
-                            longname={this.props.longname_a}
-                            settings={this.state.settings}
-                            article_type={undefined} />
-                    </div>
-                    <div style={{ width: "50%", padding: "0.5em" }}>
-                        <Map id="map_b"
-                            longname={this.props.longname_b}
-                            settings={this.state.settings}
-                            article_type={undefined} />
-                    </div>
-                </div>
-                <Footer history={this.props.history} length={this.props.length} />
-                <Help />
-            </div>
-        )
-    }
-}
-
-class Footer extends PageTemplate {
-    constructor(props) {
-        super(props);
-    }
-
-    render() {
-        console.log(this.props.history);
-        const choices = this.props.history.correct_pattern.map(
-            (correct, _) => correct ? "quiz_green" : "quiz_red"
-        );
-        while (choices.length < this.props.length) {
-            choices.push("quiz_blank");
-        }
-        return <table className="quiz_footer">
-            <tbody>
-                <tr>
-                    {choices.map((x, i) =>
-                        <td key={i} className={x}></td>
-                    )}
-                </tr>
-            </tbody>
-        </table >
-    }
-}
-
-class Help extends PageTemplate {
-    constructor(props) {
-        super(props);
-    }
-
-    render() {
-        return <div className="centered_text serif">
-            Select the geographical region answering the question. The questions
-            get harder as you go on.
-        </div>
-    }
-}
 
 function AudienceStatistics({ total, per_question, scores }) {
     // two flexboxes of the scores for each
