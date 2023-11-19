@@ -58,6 +58,7 @@ async function loadPage() {
     var todays_quiz = null;
     var today_name = null;
     var today = null;
+    var quiz_kind = "juxtastat";
     if (mode == "random") {
         const seed = urlParams.get('seed') || Math.floor(Math.random() * 1000000);
         const quiz = sampleQuiz(5, seed);
@@ -99,6 +100,7 @@ async function loadPage() {
         today_name={today_name}
         todays_quiz={todays_quiz}
         parameters={params_string}
+        quiz_kind={quiz_kind}
     />);
 }
 
