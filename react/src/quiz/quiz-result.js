@@ -25,44 +25,19 @@ export class QuizResult extends React.Component {
 
         console.log("UPDATE");
 
-        const is_share = isMobile && navigator.canShare && !isFirefox;
-
         return (
             <div>
                 <Header today={today} />
                 <div className="gap"></div>
                 <Summary correct_pattern={correct_pattern} total_correct={total_correct} total={correct_pattern.length} />
                 <div className="gap_small"></div>
-                <button className="serif quiz_copy_button" ref={this.button} onClick={async () => {
-                    const [text, url] = await summary(today_name, correct_pattern, total_correct, this.props.parameters);
-
-                    async function copy_to_clipboard() {
-                        navigator.clipboard.writeText(text + "\n" + url);
-                        self.button.current.textContent = "Copied!";
-                    }
-
-                    console.log("is mobile: " + isMobile);
-                    if (is_share) {
-                        try {
-                            console.log(text);
-                            console.log(url);
-                            await navigator.share({
-                                url: url,
-                                text: text + "\n",
-                            });
-                        } catch (err) {
-                            console.log("caught");
-                            console.log(err);
-                            await copy_to_clipboard();
-                        }
-                    } else {
-                        await copy_to_clipboard();
-                    }
-                }}>
-                    <div>{is_share ? "Share" : "Copy"}</div>
-                    <div style={{ marginInline: "0.25em" }}></div>
-                    <img src="/share.png" className="icon" style={{ width: "1em", height: "1em" }} />
-                </button>
+                <ShareButton
+                    button_ref={this.button}
+                    parameters={this.props.parameters}
+                    today_name={today_name}
+                    correct_pattern={correct_pattern}
+                    total_correct={total_correct}
+                />
                 <div className="gap" />
                 <div className="gap"></div>
                 {this.state.total > 30 ? <div>
@@ -95,6 +70,42 @@ export class QuizResult extends React.Component {
         }
     }
 }
+
+function ShareButton({ button_ref, parameters, today_name, correct_pattern, total_correct}) {
+    const is_share = isMobile && navigator.canShare && !isFirefox;
+
+    return <button className="serif quiz_copy_button" ref={button_ref} onClick={async () => {
+        const [text, url] = await summary(today_name, correct_pattern, total_correct, parameters);
+
+        async function copy_to_clipboard() {
+            navigator.clipboard.writeText(text + "\n" + url);
+            button_ref.current.textContent = "Copied!";
+        }
+
+        console.log("is mobile: " + isMobile);
+        if (is_share) {
+            try {
+                console.log(text);
+                console.log(url);
+                await navigator.share({
+                    url: url,
+                    text: text + "\n",
+                });
+            } catch (err) {
+                console.log("caught");
+                console.log(err);
+                await copy_to_clipboard();
+            }
+        } else {
+            await copy_to_clipboard();
+        }
+    }}>
+        <div>{is_share ? "Share" : "Copy"}</div>
+        <div style={{ marginInline: "0.25em" }}></div>
+        <img src="/share.png" className="icon" style={{ width: "1em", height: "1em" }} />
+    </button>;
+}
+
 export class Summary extends React.Component {
     constructor(props) {
         super(props);
