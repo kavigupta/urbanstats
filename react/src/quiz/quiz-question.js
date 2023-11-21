@@ -175,12 +175,7 @@ class RetroQuizQuestion extends QuizQuestion {
 class JuxtastatQuizQuestion extends QuizQuestion {
 
     get_question() {
-        let question = `Which has a ${this.props.question}?`;
-        // sometimes questions start with !FULL
-        if (this.props.question.startsWith("!FULL ")) {
-            question = this.props.question.slice(6);
-        }
-        return question;
+        return render_question(this.props.question);
     }
 
     get_option_a() {
@@ -202,4 +197,11 @@ class JuxtastatQuizQuestion extends QuizQuestion {
             longname={this.props.longname_b}
             article_type={undefined} />
     }
+}
+
+export function render_question(question) {
+    if (question.startsWith("!FULL ")) {
+        return question.slice(6);
+    }
+    return `Which has a ${question}?`
 }

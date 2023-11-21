@@ -8,6 +8,7 @@ import { article_link } from "../navigation/links.js";
 import { Header } from './quiz-components.js';
 import { AudienceStatistics, QuizStatistics } from './quiz-statistics.js';
 import { ENDPOINT } from '../components/quiz-panel.js';
+import { render_question } from './quiz-question.js';
 
 export class QuizResult extends React.Component {
     constructor(props) {
@@ -56,7 +57,9 @@ export class QuizResult extends React.Component {
                             index={index}
                             choice={this.props.history.choices[index]}
                             correct={correct_pattern[index]}
-                            settings={this.props.settings} />
+                            settings={this.props.settings}
+                            quiz_kind={this.props.quiz_kind}
+                        />
                     )
                 )}
             </div>
@@ -71,7 +74,7 @@ export class QuizResult extends React.Component {
     }
 }
 
-function ShareButton({ button_ref, parameters, today_name, correct_pattern, total_correct}) {
+function ShareButton({ button_ref, parameters, today_name, correct_pattern, total_correct }) {
     const is_share = isMobile && navigator.canShare && !isFirefox;
 
     return <button className="serif quiz_copy_button" ref={button_ref} onClick={async () => {
@@ -173,7 +176,18 @@ export async function summary(today, correct_pattern, total_correct, parameters,
     }
     return [text, url];
 }
-export class QuizResultRow extends React.Component {
+
+function QuizResultRow(props) {
+    if (props.quiz_kind == "juxtastat") {
+        return <JuxtastatQuizResultRow {...props} />;
+    }
+    if (props.quiz_kind == "retrostat") {
+        return <RetrostatQuizResultRow {...props} />;
+    }
+    throw new Error("unknown quiz kind: " + props.quiz_kind);
+}
+
+export class GenericQuizResultRow extends React.Component {
     constructor(props) {
         super(props);
     }
@@ -192,26 +206,24 @@ export class QuizResultRow extends React.Component {
         const result = this.props.correct ? "🟩" : "🟥";
         return (
             <div key={this.props.index}>
-                <span className="serif quiz_results_question">
-                    {this.props.stat_column}
-                </span>
+                {this.get_label()}
                 <table className="stats_table quiz_results_table">
                     <tbody>
                         <tr>
                             <td className={first}>
-                                <Clickable longname={this.props.longname_a} />
+                                {this.get_option("a")}
                             </td>
                             <td className="quiz_result_value_left">
-                                {this.create_value(this.props.stat_a)}
+                                {this.get_stat("a")}
                             </td>
                             <td className="serif quiz_result_symbol">
                                 {comparison}
                             </td>
                             <td className="quiz_result_value_right">
-                                {this.create_value(this.props.stat_b)}
+                                {this.get_stat("b")}
                             </td>
                             <td className={second}>
-                                <Clickable longname={this.props.longname_b} />
+                                {this.get_option("b")}
                             </td>
                             <td className="serif quiz_result_symbol">
                                 {result}
@@ -225,19 +237,77 @@ export class QuizResultRow extends React.Component {
         );
     }
 
-    create_value(stat) {
-        return <div>
+    get_label() {
+        return <></>
+    }
+    get_option(letter) {
+        throw new Error("not implemented");
+    }
+    get_stat(stat) {
+        throw new Error("not implemented");
+    }
+
+    create_value(stat, stat_column) {
+        return <span>
             <Statistic
-                statname={this.props.stat_column}
+                statname={stat_column}
                 value={stat}
                 is_unit={false}
                 settings={this.props.settings} />
             <Statistic
-                statname={this.props.stat_column}
+                statname={stat_column}
                 value={stat}
                 is_unit={true}
                 settings={this.props.settings} />
-        </div>;
+        </span>;
+    }
+}
+
+class JuxtastatQuizResultRow extends GenericQuizResultRow {
+    constructor(props) {
+        super(props);
+    }
+
+    get_label() {
+        return <span className="serif quiz_results_question">
+            {this.props.stat_column}
+        </span>
+    }
+
+    get_option(letter) {
+        return <Clickable longname={this.props["longname_" + letter]} />;
+    }
+
+    get_stat(stat) {
+        return this.create_value(this.props["stat_" + stat], this.props.stat_column);
+    }
+}
+
+class RetrostatQuizResultRow extends GenericQuizResultRow {
+    constructor(props) {
+        super(props);
+    }
+
+    get_label() {
+        return <span className="serif quiz_results_question">
+            Juxtastat Users Who Got This Question Right %
+        </span>
+    }
+
+    get_option(letter) {
+        const style = letter == "a" ? { marginLeft: "20%" } : { marginRight: "20%" };
+        let q = this.props[letter];
+        return <div style={{zoom:0.5}}>
+            <div>{render_question(q.question)}</div>
+            <div style={style}>
+                <div><Clickable longname={q.longname_a} /> ({this.create_value(q.stat_a, q.stat_column)})</div>
+                <div><Clickable longname={q.longname_b} /> ({this.create_value(q.stat_b, q.stat_column)})</div>
+            </div>
+        </div>
+    }
+
+    get_stat(stat) {
+        return this.create_value(this.props[stat + "_ease"], "%");
     }
 }
 
