@@ -47,8 +47,7 @@ async function loadPage() {
     var quiz_kind = "juxtastat";
     if (mode == "retro") {
         document.title = "Retrostat";
-        // const retro = get_retrostat_offset_number();
-        const retro = 0;
+        const retro = get_retrostat_offset_number();
         today = "W" + retro;
         today_name = "Week " + retro;
         todays_quiz = loadJSON("/retrostat/" + retro);

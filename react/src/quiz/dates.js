@@ -19,6 +19,6 @@ function get_daily_offset_number() {
 
 function get_retrostat_offset_number() {
     const daily = get_daily_offset_number();
-    // equivalent to python (x - 1) // 7 + 1 - 7
-    return Math.floor((daily - 1) / 7) + 1 - 7;
+    // 78 through 84 --> 0
+    return Math.floor((daily - 1) / 7) - 11;
 }
