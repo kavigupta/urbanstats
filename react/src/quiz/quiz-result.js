@@ -75,11 +75,19 @@ export class QuizResult extends React.Component {
     }
 }
 
+<<<<<<< HEAD
 function ShareButton({ button_ref, parameters, today_name, correct_pattern, total_correct, quiz_kind }) {
     const is_share = isMobile && navigator.canShare && !isFirefox;
 
     return <button className="serif quiz_copy_button" ref={button_ref} onClick={async () => {
         const [text, url] = await summary(today_name, correct_pattern, total_correct, parameters, false, quiz_kind);
+=======
+function ShareButton({ button_ref, parameters, today_name, correct_pattern, total_correct}) {
+    const is_share = isMobile && navigator.canShare && !isFirefox;
+
+    return <button className="serif quiz_copy_button" ref={button_ref} onClick={async () => {
+        const [text, url] = await summary(today_name, correct_pattern, total_correct, parameters);
+>>>>>>> master
 
         async function copy_to_clipboard() {
             navigator.clipboard.writeText(text + "\n" + url);
