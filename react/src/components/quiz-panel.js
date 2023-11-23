@@ -38,7 +38,6 @@ class QuizPanel extends PageTemplate {
 
             var get_per_question = null;
             if (this.is_daily()) {
-                // TODO: report to server if weekly too
                 reportToServer(this.get_whole_history());
                 // POST to endpoint /juxtastat/get_per_question_stats with the current day
                 get_per_question = fetch(ENDPOINT + "/juxtastat/get_per_question_stats", {
@@ -50,9 +49,7 @@ class QuizPanel extends PageTemplate {
                 });
             }
             if (this.is_weekly()) {
-                // TODO: report to server if weekly too
                 reportToServerRetro(this.get_whole_history());
-                // POST to endpoint /juxtastat/get_per_question_stats with the current day
                 get_per_question = fetch(ENDPOINT + "/retrostat/get_per_question_stats", {
                     method: "POST",
                     body: JSON.stringify({ week: parseInt(this.today.substring(1)) }),
