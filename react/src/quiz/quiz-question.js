@@ -125,7 +125,7 @@ class QuizQuestion extends React.Component {
                 </div>
                 {this.props.no_footer ? undefined : <>
                     <Footer history={this.props.history} length={this.props.length} />
-                    <Help />
+                    <Help quiz_kind={this.props.quiz_kind}/>
                 </>}
             </div>
         )
