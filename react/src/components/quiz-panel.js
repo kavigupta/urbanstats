@@ -72,7 +72,7 @@ class QuizPanel extends PageTemplate {
                 />
             )
         }
-        console.log(history);
+
         return (
             <QuizQuestionDispatch
                 quiz_kind={this.props.quiz_kind}
