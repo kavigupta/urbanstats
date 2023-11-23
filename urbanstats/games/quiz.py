@@ -203,7 +203,6 @@ def generate_quizzes(folder):
         shutil.copy(f"quiz_old/{i}", path(i))
     for i in tqdm.trange(fixed_up_to + 1, 365 * 3):
         with open(path(i), "w") as f:
-            # in timezone UTC+14, using pytz
             outs = full_quiz(("daily", i))
             json.dump(outs, f)
 

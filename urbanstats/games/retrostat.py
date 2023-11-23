@@ -5,6 +5,8 @@ from permacache import permacache, stable_hash
 from urbanstats.games.quiz import check_quiz_is_guaranteed_past
 from urbanstats.games.quiz_analysis import get_full_statistics, questions
 
+generate_until = 4
+
 
 def week_for_day(day):
     # 1-7 -> 1
@@ -49,9 +51,14 @@ def get_quiz_data_for_retroweek(retrostat_week):
 
 def get_question_pair(qdata):
     ease = [x["ease"] for x in qdata]
-    valid_pairs = [
-        (i, j) for i in range(len(qdata)) for j in range(i) if ease[i] - ease[j] > 0.4
-    ]
+    for min_ease_delta in 0.4, 0.3, 0.2, 0.1:
+        valid_pairs = [
+            (i, j) for i in range(len(qdata)) for j in range(i) if ease[i] - ease[j] > min_ease_delta
+        ]
+        if valid_pairs:
+            break
+    else:
+        raise ValueError("No valid pairs found")
 
     def cost(ij):
         i, j = ij
@@ -84,3 +91,10 @@ def generate_retrostat(retrostat_week):
         )
         qdata = [x for idx, x in enumerate(qdata) if idx != i and idx != j]
     return out
+
+
+def generate_retrostats(folder):
+    for retrostat_week in range(generate_until + 1):
+        print(retrostat_week)
+        with open(f"{folder}/retrostat_{retrostat_week}.json", "w") as f:
+            json.dump(generate_retrostat(retrostat_week), f, indent=2)
