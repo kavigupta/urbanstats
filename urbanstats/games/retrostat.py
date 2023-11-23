@@ -96,5 +96,5 @@ def generate_retrostat(retrostat_week):
 def generate_retrostats(folder):
     for retrostat_week in range(generate_until + 1):
         print(retrostat_week)
-        with open(f"{folder}/retrostat_{retrostat_week}.json", "w") as f:
+        with open(f"{folder}/{retrostat_week}", "w") as f:
             json.dump(generate_retrostat(retrostat_week), f, indent=2)
