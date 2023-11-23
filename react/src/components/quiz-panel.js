@@ -58,6 +58,7 @@ class QuizPanel extends PageTemplate {
                     settings={this.state.settings}
                     parameters={this.props.parameters}
                     get_per_question={get_per_question}
+                    quiz_kind={this.props.quiz_kind}
                 />
             )
         }
@@ -114,10 +115,18 @@ class QuizPanel extends PageTemplate {
         const idx = history.correct_pattern.length;
         const quiz = (this.todays_quiz)[idx];
         history.choices.push(selected);
-        history.correct_pattern.push((selected == "A") == (quiz.stat_a > quiz.stat_b));
+        history.correct_pattern.push((selected == "A") == this.a_correct(quiz));
         this.set_todays_quiz_history(history);
         setTimeout(function () { //Start the timer
             this.setState({ waiting: false }) //After 1 second, set render to true
         }.bind(this), 500)
+    }
+
+    a_correct(quiz) {
+        console.log(quiz);
+        if (this.props.quiz_kind == "juxtastat") {
+            return quiz.stat_a > quiz.stat_b;
+        }
+        throw new Error("Unknown quiz kind: " + this.props.quiz_kind);
     }
 }
