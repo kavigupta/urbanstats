@@ -1,5 +1,5 @@
 
-export { reportToServer };
+export { reportToServer, parse_time_identifier };
 
 const ENDPOINT = "https://persistent.urbanstats.org";
 
@@ -57,6 +57,13 @@ async function reportToServerGeneric(whole_history, endpoint_latest, endpoint_st
             "Content-Type": "application/json",
         },
     });
+}
+
+function parse_time_identifier(quiz_kind, today) {
+    if (quiz_kind == "juxtastat") {
+        return parse_juxtastat_day(today);
+    }
+    throw new Error("Unknown quiz kind " + quiz_kind);
 }
 
 function parse_juxtastat_day(day) {
