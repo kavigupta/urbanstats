@@ -56,7 +56,9 @@ export class QuizResult extends React.Component {
                             index={index}
                             choice={this.props.history.choices[index]}
                             correct={correct_pattern[index]}
-                            settings={this.props.settings} />
+                            settings={this.props.settings}
+                            quiz_kind={this.props.quiz_kind}
+                        />
                     )
                 )}
             </div>
@@ -173,7 +175,15 @@ export async function summary(today, correct_pattern, total_correct, parameters,
     }
     return [text, url];
 }
-export class QuizResultRow extends React.Component {
+
+function QuizResultRow(props) {
+    if (props.quiz_kind == "juxtastat") {
+        return <JuxtastatQuizResultRow {...props} />;
+    }
+    throw new Error("unknown quiz kind: " + props.quiz_kind);
+}
+
+export class GenericQuizResultRow extends React.Component {
     constructor(props) {
         super(props);
     }
@@ -192,26 +202,24 @@ export class QuizResultRow extends React.Component {
         const result = this.props.correct ? "🟩" : "🟥";
         return (
             <div key={this.props.index}>
-                <span className="serif quiz_results_question">
-                    {this.props.stat_column}
-                </span>
+                {this.get_label()}
                 <table className="stats_table quiz_results_table">
                     <tbody>
                         <tr>
                             <td className={first}>
-                                <Clickable longname={this.props.longname_a} />
+                                {this.get_option("a")}
                             </td>
                             <td className="quiz_result_value_left">
-                                {this.create_value(this.props.stat_a)}
+                                {this.get_stat("a")}
                             </td>
                             <td className="serif quiz_result_symbol">
                                 {comparison}
                             </td>
                             <td className="quiz_result_value_right">
-                                {this.create_value(this.props.stat_b)}
+                                {this.get_stat("b")}
                             </td>
                             <td className={second}>
-                                <Clickable longname={this.props.longname_b} />
+                                {this.get_option("b")}
                             </td>
                             <td className="serif quiz_result_symbol">
                                 {result}
@@ -225,19 +233,49 @@ export class QuizResultRow extends React.Component {
         );
     }
 
-    create_value(stat) {
-        return <div>
+    get_label() {
+        return <></>
+    }
+    get_option(letter) {
+        throw new Error("not implemented");
+    }
+    get_stat(stat) {
+        throw new Error("not implemented");
+    }
+
+    create_value(stat, stat_column) {
+        return <span>
             <Statistic
-                statname={this.props.stat_column}
+                statname={stat_column}
                 value={stat}
                 is_unit={false}
                 settings={this.props.settings} />
             <Statistic
-                statname={this.props.stat_column}
+                statname={stat_column}
                 value={stat}
                 is_unit={true}
                 settings={this.props.settings} />
-        </div>;
+        </span>;
+    }
+}
+
+class JuxtastatQuizResultRow extends GenericQuizResultRow {
+    constructor(props) {
+        super(props);
+    }
+
+    get_label() {
+        return <span className="serif quiz_results_question">
+            {this.props.stat_column}
+        </span>
+    }
+
+    get_option(letter) {
+        return <Clickable longname={this.props["longname_" + letter]} />;
+    }
+
+    get_stat(stat) {
+        return this.create_value(this.props["stat_" + stat], this.props.stat_column);
     }
 }
 
