@@ -90,7 +90,7 @@ class QuizQuestion extends React.Component {
         return (
             <div>
                 {/* {this.props.waiting ? <Overlay correct={pattern[pattern.length - 1]} /> : undefined} */}
-                {this.props.no_header ? undefined : <Header today={this.props.today} />}
+                {this.props.no_header ? undefined : <Header today={this.props.today} quiz_kind={this.props.quiz_kind} />}
                 <div className={"centered_text " + (isMobile ? "quiztext_mobile" : "quiztext")}>
                     {question}
                 </div>

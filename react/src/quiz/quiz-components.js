@@ -1,5 +1,5 @@
 
-export { Header, Footer, Help };
+export { Header, Footer, Help, nameOfQuizKind };
 
 import React from 'react';
 
@@ -9,8 +9,18 @@ import "../components/quiz.css";
 import { isMobile } from 'react-device-detect';
 
 
-function Header({ today }) {
-    let text = "Juxtastat";
+function nameOfQuizKind(quiz_kind) {
+    return quiz_kind.replace(
+        /\w\S*/g,
+        function (txt) {
+            return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
+        }
+    );
+}
+
+
+function Header({ today, quiz_kind }) {
+    let text = nameOfQuizKind(quiz_kind);
     if (typeof today != "number") {
         text += " " + today;
     }

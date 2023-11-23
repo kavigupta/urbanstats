@@ -5,7 +5,7 @@ import React from 'react';
 import { PageTemplate } from "../page_template/template.js";
 import "../common.css";
 import "./quiz.css";
-import { reportToServer } from '../quiz/statistics.js';
+import { reportToServer, reportToServerRetro } from '../quiz/statistics.js';
 import { QuizQuestionDispatch } from '../quiz/quiz-question.js';
 import { QuizResult } from '../quiz/quiz-result.js';
 
@@ -44,6 +44,18 @@ class QuizPanel extends PageTemplate {
                 get_per_question = fetch(ENDPOINT + "/juxtastat/get_per_question_stats", {
                     method: "POST",
                     body: JSON.stringify({ day: this.today }),
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                });
+            }
+            if (this.is_weekly()) {
+                // TODO: report to server if weekly too
+                reportToServerRetro(this.get_whole_history());
+                // POST to endpoint /juxtastat/get_per_question_stats with the current day
+                get_per_question = fetch(ENDPOINT + "/retrostat/get_per_question_stats", {
+                    method: "POST",
+                    body: JSON.stringify({ week: parseInt(this.today.substring(1)) }),
                     headers: {
                         "Content-Type": "application/json",
                     },

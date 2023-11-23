@@ -1,21 +1,42 @@
 import React from 'react';
+import { parse_juxtastat_day, parse_retrostat_week } from './statistics';
 
 export class QuizStatistics extends React.Component {
     constructor(props) {
         super(props);
     }
 
+    history(i) {
+        if (this.props.quiz_kind == "juxtastat") {
+            return this.props.whole_history[i];
+        }
+        if (this.props.quiz_kind == "retrostat") {
+            return this.props.whole_history["W" + i];
+        }
+        throw new Error("Unknown quiz kind " + this.props.quiz_kind);
+    }
+
+    day() {
+        if (this.props.quiz_kind == "juxtastat") {
+            return parse_juxtastat_day(this.props.today);
+        }
+        if (this.props.quiz_kind == "retrostat") {
+            return parse_retrostat_week(this.props.today);
+        }
+        throw new Error("Unknown quiz kind " + this.props.quiz_kind);
+    }
+
     render() {
-        const whole_history = this.props.whole_history;
-        const historical_correct = new Array(this.props.today + 1).fill(-1);
+        const today = this.day();
+        const historical_correct = new Array(today + 1).fill(-1);
         const frequencies = new Array(6).fill(0);
         const played_games = [];
-        for (var i = 0; i <= this.props.today; i++) {
-            const hist_i = whole_history[i];
+        for (var i = 0; i <= today; i++) {
+            const hist_i = this.history(i);
             if (hist_i === undefined) {
                 continue;
             } else {
-                const amount = whole_history[i + ""].correct_pattern.reduce((partialSum, a) => partialSum + a, 0);
+                const amount = hist_i.correct_pattern.reduce((partialSum, a) => partialSum + a, 0);
                 historical_correct[i] = amount;
                 frequencies[amount] += 1;
                 played_games.push(amount);
@@ -32,7 +53,7 @@ export class QuizStatistics extends React.Component {
             }
         }
         const total_freq = frequencies.reduce((partialSum, a) => partialSum + a, 0);
-        const today_score = historical_correct[this.props.today];
+        const today_score = historical_correct[today];
         const statistics = [
             {
                 name: "Played",

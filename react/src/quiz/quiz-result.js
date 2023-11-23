@@ -5,7 +5,7 @@ import { Statistic } from "../components/table.js";
 import { article_link } from "../navigation/links.js";
 
 
-import { Header } from './quiz-components.js';
+import { Header, nameOfQuizKind } from './quiz-components.js';
 import { AudienceStatistics, QuizStatistics } from './quiz-statistics.js';
 import { ENDPOINT } from '../components/quiz-panel.js';
 import { render_question } from './quiz-question.js';
@@ -28,7 +28,7 @@ export class QuizResult extends React.Component {
 
         return (
             <div>
-                <Header today={today} />
+                <Header today={today} quiz_kind={this.props.quiz_kind} />
                 <div className="gap"></div>
                 <Summary correct_pattern={correct_pattern} total_correct={total_correct} total={correct_pattern.length} />
                 <div className="gap_small"></div>
@@ -38,6 +38,7 @@ export class QuizResult extends React.Component {
                     today_name={today_name}
                     correct_pattern={correct_pattern}
                     total_correct={total_correct}
+                    quiz_kind={this.props.quiz_kind}
                 />
                 <div className="gap" />
                 <div className="gap"></div>
@@ -46,7 +47,7 @@ export class QuizResult extends React.Component {
                     <div className="gap"></div>
                     <div className="gap"></div>
                 </div> : undefined}
-                <QuizStatistics whole_history={this.props.whole_history} today={this.props.today} />
+                <QuizStatistics whole_history={this.props.whole_history} today={this.props.today} quiz_kind={this.props.quiz_kind}/>
                 <div className="gap"></div>
                 <span className="serif quiz_summary">Details (spoilers, don't share!)</span>
                 <div className="gap_small"></div>
@@ -74,11 +75,11 @@ export class QuizResult extends React.Component {
     }
 }
 
-function ShareButton({ button_ref, parameters, today_name, correct_pattern, total_correct }) {
+function ShareButton({ button_ref, parameters, today_name, correct_pattern, total_correct, quiz_kind }) {
     const is_share = isMobile && navigator.canShare && !isFirefox;
 
     return <button className="serif quiz_copy_button" ref={button_ref} onClick={async () => {
-        const [text, url] = await summary(today_name, correct_pattern, total_correct, parameters);
+        const [text, url] = await summary(today_name, correct_pattern, total_correct, parameters, false, quiz_kind);
 
         async function copy_to_clipboard() {
             navigator.clipboard.writeText(text + "\n" + url);
@@ -142,9 +143,9 @@ export class Summary extends React.Component {
 
 }
 
-export async function summary(today, correct_pattern, total_correct, parameters, no_url) {
+export async function summary(today, correct_pattern, total_correct, parameters, no_url, quiz_kind) {
     // wordle-style summary
-    let text = "Juxtastat " + today + " " + total_correct + "/" + correct_pattern.length;
+    let text = nameOfQuizKind(quiz_kind) + " " + today + " " + total_correct + "/" + correct_pattern.length;
 
     text += "\n";
     text += "\n";

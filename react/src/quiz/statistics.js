@@ -1,5 +1,5 @@
 
-export { reportToServer };
+export { reportToServer, reportToServerRetro, parse_juxtastat_day, parse_retrostat_week };
 
 const ENDPOINT = "https://persistent.urbanstats.org";
 
@@ -26,12 +26,12 @@ async function unique_persistent_id() {
     return localStorage.getItem("persistent_id");
 }
 
-async function reportToServer(whole_history) {
+async function reportToServerGeneric(whole_history, endpoint_latest, endpoint_store, parse_day) {
     const user = await unique_persistent_id();
-    console.log(user);
-    console.log(whole_history);
+    console.log("USER", user);
+    console.log("whole history", whole_history);
     // fetch from latest_day endpoint
-    const latest_day_response = await fetch(ENDPOINT + "/juxtastat/latest_day", {
+    const latest_day_response = await fetch(ENDPOINT + endpoint_latest, {
         method: "POST",
         body: JSON.stringify({ user: user }),
         headers: {
@@ -39,22 +39,48 @@ async function reportToServer(whole_history) {
         },
     });
     const latest_day_json = await latest_day_response.json();
-    console.log(latest_day_json);
+    console.log("latest day", latest_day_json);
     const latest_day = latest_day_json["latest_day"];
-    const filtered_days = Object.keys(whole_history).filter((day) => parseInt(day) > latest_day);
+    const filtered_days = Object.keys(whole_history).filter((day) => parse_day(day) > latest_day);
     const update = filtered_days.map((day) => {
         return [
-            parseInt(day),
+            parse_day(day),
             whole_history[day]["correct_pattern"],
         ]
     });
     console.log(update);
     // store user stats
-    await fetch(ENDPOINT + "/juxtastat/store_user_stats", {
+    await fetch(ENDPOINT + endpoint_store, {
         method: "POST",
         body: JSON.stringify({ user: user, day_stats: JSON.stringify(update) }),
         headers: {
             "Content-Type": "application/json",
         },
     });
+}
+
+function parse_juxtastat_day(day) {
+    // return -10000 if day doesn't match -?[0-9]+
+    if (/^-?[0-9]+$/.test(day) == false) {
+        return -10000;
+    }
+    return parseInt(day);
+}
+
+function parse_retrostat_week(day) {
+    // return -10000 if day doesn't match W-?[0-9]+
+    if (/^W-?[0-9]+$/.test(day) == false) {
+        return -10000;
+    }
+    return parseInt(day.substring(1));
+}
+
+
+
+async function reportToServer(whole_history) {
+    await reportToServerGeneric(whole_history, "/juxtastat/latest_day", "/juxtastat/store_user_stats", parse_juxtastat_day);
+}
+
+async function reportToServerRetro(whole_history) {
+    await reportToServerGeneric(whole_history, "/retrostat/latest_week", "/retrostat/store_user_stats", parse_retrostat_week);
 }

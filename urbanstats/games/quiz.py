@@ -187,13 +187,12 @@ def check_quiz_is_guaranteed_future(number):
 def check_quiz_is_guaranteed_past(number):
     now = datetime.now(pytz.timezone("US/Samoa"))
     beginning = pytz.timezone("US/Samoa").localize(datetime(2023, 9, 2))
-    fractional_days = (now - beginning).total_seconds() / (
-        24 * 60 * 60
-    )
+    fractional_days = (now - beginning).total_seconds() / (24 * 60 * 60)
     if number >= fractional_days - 1:
         raise Exception(
             f"Quiz {number} is not necessarily yet done! It is currently {fractional_days} in Samoa"
         )
+
 
 def generate_quizzes(folder):
     path = lambda day: os.path.join(folder, f"{day}")
