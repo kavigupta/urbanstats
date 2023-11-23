@@ -27,7 +27,7 @@ export class QuizResult extends React.Component {
 
         return (
             <div>
-                <Header today={today} />
+                <Header today={today} quiz_kind={this.props.quiz_kind} />
                 <div className="gap"></div>
                 <Summary correct_pattern={correct_pattern} total_correct={total_correct} total={correct_pattern.length} />
                 <div className="gap_small"></div>
