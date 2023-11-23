@@ -63,6 +63,9 @@ function parse_time_identifier(quiz_kind, today) {
     if (quiz_kind == "juxtastat") {
         return parse_juxtastat_day(today);
     }
+    if (quiz_kind == "retrostat") {
+        return parse_retrostat_week(today);
+    }
     throw new Error("Unknown quiz kind " + quiz_kind);
 }
 
