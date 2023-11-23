@@ -1,5 +1,5 @@
 import React from 'react';
-import { parse_juxtastat_day, parse_retrostat_week } from './statistics';
+import { parse_time_identifier } from './statistics';
 
 export class QuizStatistics extends React.Component {
     constructor(props) {
@@ -17,13 +17,7 @@ export class QuizStatistics extends React.Component {
     }
 
     day() {
-        if (this.props.quiz_kind == "juxtastat") {
-            return parse_juxtastat_day(this.props.today);
-        }
-        if (this.props.quiz_kind == "retrostat") {
-            return parse_retrostat_week(this.props.today);
-        }
-        throw new Error("Unknown quiz kind " + this.props.quiz_kind);
+        return parse_time_identifier(this.props.quiz_kind, this.props.today);
     }
 
     render() {
