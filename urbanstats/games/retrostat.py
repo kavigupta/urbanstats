@@ -61,7 +61,7 @@ def get_question_pair(qdata):
     return i, j
 
 
-@permacache("urbanstats/games/retrostat/generate_retrostat_2")
+@permacache("urbanstats/games/retrostat/generate_retrostat_3")
 def generate_retrostat(retrostat_week):
     rng = np.random.RandomState(
         int(stable_hash(("retrostat_weekly", retrostat_week)), 16) % 2**32
