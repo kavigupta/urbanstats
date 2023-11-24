@@ -5,7 +5,7 @@ import React from "react";
 import "../common.css";
 import "../components/quiz.css";
 
-import { isMobile} from 'react-device-detect';
+import { isFirefox, isMobile} from 'react-device-detect';
 import { Header, Footer, Help } from './quiz-components.js';
 import { MapGeneric } from '../components/map.js';
 
@@ -24,6 +24,9 @@ class Map extends MapGeneric {
 }
 
 function QuizQuestionDispatch(props) {
+    if (props.quiz_kind == "retrostat") {
+        return <RetroQuizQuestion {...props} />;
+    }
     if (props.quiz_kind == "juxtastat") {
         return <JuxtastatQuizQuestion {...props} />;
     }
@@ -84,11 +87,16 @@ class QuizQuestion extends React.Component {
 
         const row_style = { display: "flex", justifyContent: "center", width: "90%", margin: "auto" };
 
+        var quiztext_css = isMobile ? "quiztext_mobile" : "quiztext";
+        if (this.props.nested) {
+            quiztext_css += "_nested";
+        }
+
         return (
             <div>
                 {/* {this.props.waiting ? <Overlay correct={pattern[pattern.length - 1]} /> : undefined} */}
                 {this.props.no_header ? undefined : <Header today={this.props.today} quiz_kind={this.props.quiz_kind} />}
-                <div className={"centered_text " + (isMobile ? "quiztext_mobile" : "quiztext")}>
+                <div className={"centered_text " + quiztext_css}>
                     {question}
                 </div>
                 <div className="gap"></div>
@@ -96,7 +104,7 @@ class QuizQuestion extends React.Component {
                     <div style={{ width: "50%", padding: "0.5em" }}>
                         <div role='button' className={button_a} onClick={() => this.props.on_select("A")} style={button_style}>
                             <span style={{ margin: "auto" }}>
-                                <div className={"centered_text " + (isMobile ? "quiztext_mobile" : "quiztext")}>
+                                <div className={"centered_text " + quiztext_css}>
                                     {this.get_option_a()}
                                 </div>
                             </span>
@@ -105,7 +113,7 @@ class QuizQuestion extends React.Component {
                     <div style={{ width: "50%", padding: "0.5em" }}>
                         <div role='button' className={button_b} onClick={() => this.props.on_select("B")} style={button_style}>
                             <span style={{ margin: "auto" }}>
-                                <div className={"centered_text " + (isMobile ? "quiztext_mobile" : "quiztext")}>
+                                <div className={"centered_text " + quiztext_css}>
                                     {this.get_option_b()}
                                 </div>
                             </span>
@@ -122,7 +130,7 @@ class QuizQuestion extends React.Component {
                 </div>
                 {this.props.no_footer ? undefined : <>
                     <Footer history={this.props.history} length={this.props.length} />
-                    <Help />
+                    <Help quiz_kind={this.props.quiz_kind}/>
                 </>}
             </div>
         )
@@ -156,6 +164,7 @@ class RetroQuizQuestion extends QuizQuestion {
                 ident={key}
                 no_header={true}
                 no_footer={true}
+                nested={isFirefox} // Firefox doesn't support zoom so we use special CSS for nested questions
             />
         </div>
     }

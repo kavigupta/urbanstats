@@ -10,6 +10,9 @@ export class QuizStatistics extends React.Component {
         if (this.props.quiz_kind == "juxtastat") {
             return this.props.whole_history[i];
         }
+        if (this.props.quiz_kind == "retrostat") {
+            return this.props.whole_history["W" + i];
+        }
         throw new Error("Unknown quiz kind " + this.props.quiz_kind);
     }
 

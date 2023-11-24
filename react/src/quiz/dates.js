@@ -1,5 +1,5 @@
 
-export { get_daily_offset_number };
+export { get_daily_offset_number, get_retrostat_offset_number };
 
 function get_daily_offset_number() {
     // fractional days since 2023-09-02
@@ -15,4 +15,10 @@ function get_daily_offset_number() {
     //      which rounded to the nearest day is 70 days, which is correct.
     offset = Math.round(offset);
     return offset;
+}
+
+function get_retrostat_offset_number() {
+    const daily = get_daily_offset_number();
+    // 78 through 84 --> 0
+    return Math.floor((daily - 1) / 7) - 11;
 }

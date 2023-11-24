@@ -22,9 +22,11 @@
   height: 100%;
 }
 
-.quiz_clickable:hover {
-  background-color: var(--quiz-selected-bg);
-  color: #fff;
+@media (hover: hover) and (pointer: fine) {
+  .quiz_clickable:hover {
+    background-color: var(--quiz-selected-bg);
+    color: #fff;
+  }
 }
 
 .quiz_correct {

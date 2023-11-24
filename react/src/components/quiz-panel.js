@@ -5,7 +5,7 @@ import React from 'react';
 import { PageTemplate } from "../page_template/template.js";
 import "../common.css";
 import "./quiz.css";
-import { reportToServer } from '../quiz/statistics.js';
+import { reportToServer, reportToServerRetro } from '../quiz/statistics.js';
 import { QuizQuestionDispatch } from '../quiz/quiz-question.js';
 import { QuizResult } from '../quiz/quiz-result.js';
 
@@ -43,6 +43,16 @@ class QuizPanel extends PageTemplate {
                 get_per_question = fetch(ENDPOINT + "/juxtastat/get_per_question_stats", {
                     method: "POST",
                     body: JSON.stringify({ day: this.today }),
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                });
+            }
+            if (this.is_weekly()) {
+                reportToServerRetro(this.get_whole_history());
+                get_per_question = fetch(ENDPOINT + "/retrostat/get_per_question_stats", {
+                    method: "POST",
+                    body: JSON.stringify({ week: parseInt(this.today.substring(1)) }),
                     headers: {
                         "Content-Type": "application/json",
                     },
@@ -97,12 +107,18 @@ class QuizPanel extends PageTemplate {
         return typeof this.today == "number";
     }
 
+    is_weekly() {
+        console.log("today: " + this.today);
+        // matches W followed by a number
+        return typeof this.today == "string" && this.today.match(/^W-?\d+$/);
+    }
+
     set_todays_quiz_history(history_today) {
         const history = this.get_whole_history();
         history[this.today] = history_today;
         this.setState({ history: history, waiting: true });
         // if today is a number and not a string
-        if (this.is_daily()) {
+        if (this.is_daily() || this.is_weekly()) {
             localStorage.setItem("quiz_history", JSON.stringify(history));
         }
     }
@@ -126,6 +142,8 @@ class QuizPanel extends PageTemplate {
         console.log(quiz);
         if (this.props.quiz_kind == "juxtastat") {
             return quiz.stat_a > quiz.stat_b;
+        } else if (this.props.quiz_kind == "retrostat") {
+            return quiz.a_ease > quiz.b_ease;
         }
         throw new Error("Unknown quiz kind: " + this.props.quiz_kind);
     }

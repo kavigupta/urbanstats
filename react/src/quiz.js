@@ -10,7 +10,7 @@ import { gunzipSync, gzipSync } from 'zlib';
 import { QuizPanel } from './components/quiz-panel';
 import { sampleQuiz } from './quiz/sample';
 
-import { get_daily_offset_number } from './quiz/dates.js';
+import { get_daily_offset_number, get_retrostat_offset_number } from './quiz/dates.js';
 
 const ENDPOINT = "https://persistent.urbanstats.org";
 
@@ -45,7 +45,14 @@ async function loadPage() {
     var today_name = null;
     var today = null;
     var quiz_kind = "juxtastat";
-    if (mode == "random") {
+    if (mode == "retro") {
+        document.title = "Retrostat";
+        const retro = get_retrostat_offset_number();
+        today = "W" + retro;
+        today_name = "Week " + retro;
+        todays_quiz = loadJSON("/retrostat/" + retro);
+        quiz_kind = "retrostat";
+    } else if (mode == "random") {
         const seed = urlParams.get('seed') || Math.floor(Math.random() * 1000000);
         const quiz = sampleQuiz(5, seed);
         // encode quiz as base64

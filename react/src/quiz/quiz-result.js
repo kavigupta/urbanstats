@@ -8,6 +8,7 @@ import { article_link } from "../navigation/links.js";
 import { Header, nameOfQuizKind } from './quiz-components.js';
 import { AudienceStatistics, QuizStatistics } from './quiz-statistics.js';
 import { ENDPOINT } from '../components/quiz-panel.js';
+import { render_question } from './quiz-question.js';
 
 export class QuizResult extends React.Component {
     constructor(props) {
@@ -181,6 +182,9 @@ function QuizResultRow(props) {
     if (props.quiz_kind == "juxtastat") {
         return <JuxtastatQuizResultRow {...props} />;
     }
+    if (props.quiz_kind == "retrostat") {
+        return <RetrostatQuizResultRow {...props} />;
+    }
     throw new Error("unknown quiz kind: " + props.quiz_kind);
 }
 
@@ -277,6 +281,34 @@ class JuxtastatQuizResultRow extends GenericQuizResultRow {
 
     get_stat(stat) {
         return this.create_value(this.props["stat_" + stat], this.props.stat_column);
+    }
+}
+
+class RetrostatQuizResultRow extends GenericQuizResultRow {
+    constructor(props) {
+        super(props);
+    }
+
+    get_label() {
+        return <span className="serif quiz_results_question">
+            Juxtastat Users Who Got This Question Right %
+        </span>
+    }
+
+    get_option(letter) {
+        const style = letter == "a" ? { marginLeft: "20%" } : { marginRight: "20%" };
+        let q = this.props[letter];
+        return <div style={{zoom:0.5}}>
+            <div>{render_question(q.question)}</div>
+            <div style={style}>
+                <div><Clickable longname={q.longname_a} /> ({this.create_value(q.stat_a, q.stat_column)})</div>
+                <div><Clickable longname={q.longname_b} /> ({this.create_value(q.stat_b, q.stat_column)})</div>
+            </div>
+        </div>
+    }
+
+    get_stat(stat) {
+        return this.create_value(this.props[stat + "_ease"], "%");
     }
 }
 

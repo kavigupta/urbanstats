@@ -57,10 +57,18 @@ class Help extends PageTemplate {
         super(props);
     }
 
+    text() {
+        if (this.props.quiz_kind == "juxtastat") {
+            return "Select the geographical region answering the question. The questions get harder as you go on."
+        } else if (this.props.quiz_kind == "retrostat") {
+            return "Select the easier question. A question is considered easier if more people got it right."
+        }
+        throw new Error("Unknown quiz kind " + this.props.quiz_kind);
+    }
+
     render() {
         return <div className="centered_text serif">
-            Select the geographical region answering the question. The questions
-            get harder as you go on.
+            {this.text()}
         </div>
     }
 }
