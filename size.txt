@@ -90,4 +90,13 @@ add in parkland data
 1006    shape
 1888    total
 
+add weather, get rid of FeatureCollection for shape
 
+3       index
+3       scripts
+5       quiz
+6       quiz_sample_info
+264     order
+672     data
+1005    shape
+1956    total

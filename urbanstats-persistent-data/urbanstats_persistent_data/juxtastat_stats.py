@@ -13,6 +13,11 @@ def table():
         """CREATE TABLE IF NOT EXISTS JuxtaStatIndividualStats
         (user integer, day integer, corrects integer, time integer, PRIMARY KEY (user, day))"""
     )
+    # retrostat
+    c.execute(
+        """CREATE TABLE IF NOT EXISTS JuxtaStatIndividualStatsRetrostat
+        (user integer, week integer, corrects integer, time integer, PRIMARY KEY (user, week))"""
+    )
     # user to domain name
     c.execute(
         """
@@ -51,14 +56,22 @@ def register_user(user, domain):
     conn.commit()
 
 
-def latest_day(user):
+def latest_day_from_table(user, table_name, column):
     user = int(user, 16)
     _, c = table()
     c.execute(
-        "SELECT COALESCE(MAX(day), 0) FROM JuxtaStatIndividualStats WHERE user=?",
+        f"SELECT COALESCE(MAX({column}), -100) FROM {table_name} WHERE user=?",
         (user,),
     )
     return c.fetchone()[0]
+
+
+def latest_day(user):
+    return latest_day_from_table(user, "JuxtaStatIndividualStats", "day")
+
+
+def latest_week_retrostat(user):
+    return latest_day_from_table(user, "JuxtaStatIndividualStatsRetrostat", "week")
 
 
 def corrects_to_bitvector(corrects: List[bool]) -> int:
@@ -69,7 +82,7 @@ def bitvector_to_corrects(bitvector: int) -> List[bool]:
     return [bool(bitvector & (2**i)) for i in range(5)]
 
 
-def store_user_stats(user, day_stats: List[Tuple[int, List[bool]]]):
+def store_user_stats_into_table(user, day_stats: List[Tuple[int, List[bool]]], table_name):
     user = int(user, 16)
     conn, c = table()
     # ignore latest day here, it is up to the client to filter out old stats
@@ -77,7 +90,7 @@ def store_user_stats(user, day_stats: List[Tuple[int, List[bool]]]):
     print(day_stats)
     time_unix_millis = round(time.time() * 1000)
     c.executemany(
-        "INSERT OR REPLACE INTO JuxtaStatIndividualStats VALUES (?, ?, ?, ?)",
+        f"INSERT OR REPLACE INTO {table_name} VALUES (?, ?, ?, ?)",
         [
             (user, day, corrects_to_bitvector(corrects), time_unix_millis)
             for day, corrects in day_stats
@@ -85,17 +98,22 @@ def store_user_stats(user, day_stats: List[Tuple[int, List[bool]]]):
     )
     conn.commit()
 
+def store_user_stats(user, day_stats: List[Tuple[int, List[bool]]]):
+    store_user_stats_into_table(user, day_stats, "JuxtaStatIndividualStats")
 
-def get_per_question_stats(day):
+def store_user_stats_retrostat(user, week_stats: List[Tuple[int, List[bool]]]):
+    store_user_stats_into_table(user, week_stats, "JuxtaStatIndividualStatsRetrostat")
+
+def get_per_question_stats_from_table(day, table_name, column):
     day = int(day)
     _, c = table()
     c.execute(
-        """
+        f"""
         SELECT corrects
-        FROM JuxtastatIndividualStats
+        FROM {table_name}
         INNER JOIN JuxtastatUserDomain
-        ON JuxtastatIndividualStats.user = JuxtastatUserDomain.user
-        WHERE day = ?
+        ON {table_name}.user = JuxtastatUserDomain.user
+        WHERE {column} = ?
         AND domain = 'urbanstats.org'
         """,
         (day,),
@@ -105,8 +123,18 @@ def get_per_question_stats(day):
     corrects = [bitvector_to_corrects(x) for x in corrects]
     corrects = list(zip(*corrects))
     return dict(
-        total=len(corrects[0]),
+        total=len(corrects[0]) if corrects else 0,
         per_question=[sum(x) for x in corrects],
+    )
+
+
+def get_per_question_stats(day):
+    return get_per_question_stats_from_table(day, "JuxtaStatIndividualStats", "day")
+
+
+def get_per_question_stats_retrostat(week):
+    return get_per_question_stats_from_table(
+        week, "JuxtaStatIndividualStatsRetrostat", "week"
     )
 
 

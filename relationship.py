@@ -1,5 +1,7 @@
 import re
+from functools import lru_cache
 from collections import defaultdict
+import numpy as np
 import pandas as pd
 from permacache import permacache
 import geopandas as gpd
@@ -8,12 +10,67 @@ import tqdm
 from shapefiles import shapefiles
 
 
-def overlays(a, b, a_size, b_size):
+@lru_cache(maxsize=1)
+def states_for_all():
+    systematics = {
+        k: v for u in shapefiles for k, v in states_for(shapefiles[u]).items()
+    }
+    one_offs = {
+        "Freeman Island Neighborhood, Long Beach City, California, USA": "California, USA",
+        "Island Chaffee Neighborhood, Long Beach City, California, USA": "California, USA",
+        "Island White Neighborhood, Long Beach City, California, USA": "California, USA",
+        "Bay Islands Neighborhood, San Rafael City, California, USA": "California, USA",
+        "Fair Isle Neighborhood, Miami City, Florida, USA": "Florida, USA",
+        "House Island Neighborhood, Portland City, Maine, USA": "Maine, USA",
+        "HI-HD051, USA": "Hawaii, USA",
+        "HI-SD025, USA": "Hawaii, USA",
+        "OH-HD013, USA": "Ohio, USA",
+        "PA-HD001, USA": "Pennsylvania, USA",
+        "RI-HD075, USA": "Rhode Island, USA",
+    }
+    for k, v in one_offs.items():
+        assert not systematics[k]
+        systematics[k] = [v]
+    del systematics[
+        "Historical Congressional District DC-98, 103rd-117th Congress, USA"
+    ]  # no clue what this is
+    assert all(len(v) >= 1 for v in systematics.values())
+    return systematics
+
+
+@permacache(
+    "population_density/relationship/states_for_4",
+    key_function=dict(sh=lambda a: a.hash_key),
+)
+def states_for(sh):
+    print("states_for", sh.hash_key)
+    elem = sh.load_file()
+    elem["idx"] = np.arange(elem.shape[0])
+    over = overlays(
+        shapefiles["states"].load_file(),
+        elem,
+        shapefiles["states"].chunk_size,
+        sh.chunk_size,
+        keep_geom_type=True,
+    )
+    area = over.area
+    area_elem = elem.set_index("idx").geometry.to_crs("EPSG:2163").area
+    pct = area / np.array(area_elem[over.idx])
+    over = over[pct > 0.05]
+    state = over.longname_1
+    region = over.longname_2
+    result = {k: [] for k in elem.longname}
+    for st, reg in zip(state, region):
+        result[reg].append(st)
+    return result
+
+
+def overlays(a, b, a_size, b_size, **kwargs):
     """
     Get the overlays between the two shapefiles a and b
     """
     if a_size is None and b_size is None:
-        return overlay(a, b)
+        return overlay(a, b, **kwargs)
 
     total_frac = 1
     if a_size is not None:
@@ -24,13 +81,13 @@ def overlays(a, b, a_size, b_size):
     results = []
     for i in tqdm.trange(0, a.shape[0], size):
         x, y = a.iloc[i : i + size], b
-        for_chunk = overlay(x, y)
+        for_chunk = overlay(x, y, **kwargs)
         results.append(for_chunk)
     return pd.concat(results).reset_index(drop=True)
 
 
-def overlay(x, y):
-    for_chunk = gpd.overlay(x, y, how="intersection", keep_geom_type=False)
+def overlay(x, y, keep_geom_type=False):
+    for_chunk = gpd.overlay(x, y, how="intersection", keep_geom_type=keep_geom_type)
     for_chunk["area"] = for_chunk.geometry.to_crs("EPSG:2163").area
     del for_chunk["geometry"]
     return for_chunk

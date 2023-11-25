@@ -6,10 +6,13 @@ from flask_cors import CORS
 
 from .juxtastat_stats import (
     get_per_question_stats,
+    get_per_question_stats_retrostat,
     latest_day,
+    latest_week_retrostat,
     register_user,
     store_user_stats,
     get_full_database,
+    store_user_stats_retrostat,
 )
 from .shorten import shorten_and_save, retreive_and_lengthen
 
@@ -76,12 +79,32 @@ def juxtastat_latest_day_request():
     return flask.jsonify({"error": "Needs parameter user!"}), 200
 
 
+@app.route("/retrostat/latest_week", methods=["POST"])
+def retrostat_latest_week_request():
+    form = flask_form()
+
+    if "user" in form:
+        ld = latest_week_retrostat(form["user"])
+        return flask.jsonify(dict(latest_day=ld))
+    return flask.jsonify({"error": "Needs parameter user!"}), 200
+
+
 @app.route("/juxtastat/store_user_stats", methods=["POST"])
 def juxtastat_store_user_stats_request():
     form = flask_form()
 
     if "user" in form and "day_stats" in form:
         store_user_stats(form["user"], json.loads(form["day_stats"]))
+        return flask.jsonify(dict(success=True))
+    return flask.jsonify({"error": "Needs parameters user and day_stats!"}), 200
+
+
+@app.route("/retrostat/store_user_stats", methods=["POST"])
+def retrostat_store_user_stats_request():
+    form = flask_form()
+
+    if "user" in form and "day_stats" in form:
+        store_user_stats_retrostat(form["user"], json.loads(form["day_stats"]))
         return flask.jsonify(dict(success=True))
     return flask.jsonify({"error": "Needs parameters user and day_stats!"}), 200
 
@@ -106,6 +129,15 @@ def juxtastat_get_per_question_stats_request():
     if "day" in form:
         return flask.jsonify(get_per_question_stats(form["day"]))
     return flask.jsonify({"error": "Needs parameter day!"}), 200
+
+
+@app.route("/retrostat/get_per_question_stats", methods=["POST"])
+def retrostat_get_per_question_stats_request():
+    form = flask_form()
+
+    if "week" in form:
+        return flask.jsonify(get_per_question_stats_retrostat(form["week"]))
+    return flask.jsonify({"error": "Needs parameter week!"}), 200
 
 
 import logging

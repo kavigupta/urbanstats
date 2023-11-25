@@ -166,7 +166,17 @@ def output_ordering(full):
 
 
 def main(no_geo=False, no_data=False, no_data_jsons=False):
-    for sub in ["index", "r", "shape", "data", "styles", "scripts", "order", "quiz"]:
+    for sub in [
+        "index",
+        "r",
+        "shape",
+        "data",
+        "styles",
+        "scripts",
+        "order",
+        "quiz",
+        "retrostat",
+    ]:
         try:
             os.makedirs(f"{folder}/{sub}")
         except FileExistsError:
@@ -226,7 +236,7 @@ def main(no_geo=False, no_data=False, no_data_jsons=False):
     output_names()
     output_ramps()
 
-    from urbanstats.games.quiz import generate_quizzes, generate_quiz_info_for_website
+    from urbanstats.games.quiz import generate_quiz_info_for_website
 
     generate_quiz_info_for_website("/home/kavi/temp/site")
 
@@ -245,8 +255,10 @@ def main(no_geo=False, no_data=False, no_data_jsons=False):
     shutil.copy("dist/quiz.js", f"{folder}/scripts/")
 
     from urbanstats.games.quiz import generate_quizzes
+    from urbanstats.games.retrostat import generate_retrostats
 
     generate_quizzes(f"{folder}/quiz/")
+    generate_retrostats(f"{folder}/retrostat")
 
 
 if __name__ == "__main__":
