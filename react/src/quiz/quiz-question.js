@@ -195,13 +195,17 @@ class JuxtastatQuizQuestion extends QuizQuestion {
     get_demo_a() {
         return <Map id={"map_a" + this.props.ident}
             longname={this.props.longname_a}
-            article_type={undefined} />
+            article_type={undefined}
+            basemap={{ type: "osm" }}
+        />
     }
 
     get_demo_b() {
         return <Map id={"map_b" + this.props.ident}
             longname={this.props.longname_b}
-            article_type={undefined} />
+            article_type={undefined}
+            basemap={{ type: "osm" }}
+        />
     }
 }
 

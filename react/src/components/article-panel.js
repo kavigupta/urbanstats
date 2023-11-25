@@ -81,7 +81,8 @@ class ArticlePanel extends PageTemplate {
                     longname={this.props.longname}
                     related={this.props.related}
                     settings={this.state.settings}
-                    article_type={article_type} />
+                    article_type={article_type}
+                    basemap={{type: "osm"}} />
 
                 <script src="/scripts/map.js"></script>
 

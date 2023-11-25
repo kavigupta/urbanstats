@@ -14,11 +14,16 @@ class MapGeneric extends React.Component {
     constructor(props) {
         super(props);
         this.polygon_by_name = {};
+        this.delta = 0.25;
+        this.version = 0;
+        this.last_modified = new Date(0);
+        this.basemap_layer = null;
+        this.basemap_props = null;
     }
 
     render() {
         return (
-            <div id={this.props.id} className="map"></div>
+            <div id={this.props.id} className="map" style={{ background: "white", height: this.props.height || 400 }}></div>
         );
     }
 
@@ -43,17 +48,39 @@ class MapGeneric extends React.Component {
     }
 
     async componentDidMount() {
-        var osmUrl = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-            osmAttrib = '&copy; <a href="https://openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-            osm = L.tileLayer(osmUrl, { maxZoom: 20, attribution: osmAttrib });
-        const map = new L.Map(this.props.id, { layers: [osm], center: new L.LatLng(0, 0), zoom: 0 });
+        const map = new L.Map(this.props.id, {
+            layers: [], center: new L.LatLng(0, 0), zoom: 0,
+            zoomSnap: this.delta, zoomDelta: this.delta, wheelPxPerZoomLevel: 60 / this.delta
+        });
         this.map = map;
         await this.componentDidUpdate();
     }
 
     async componentDidUpdate() {
+        await this.updateToVersion(this.version + 1);
+    }
+
+    async updateToVersion(version) {
+        if (version <= this.version) {
+            return;
+        }
+        // check if at least 1s has passed since last update
+        const now = new Date();
+        const delta = now - this.last_modified;
+        if (delta < 1000) {
+            setTimeout(() => this.updateToVersion(version), 1000 - delta);
+            return;
+        }
+        this.version = version;
+        this.last_modified = now;
+        await this.updateFn();
+    }
+
+    async updateFn() {
         const map = this.map;
         this.exist_this_time = [];
+
+        this.attachBasemap();
 
         const [names, styles, zoom_index] = await this.compute_polygons();
 
@@ -68,6 +95,24 @@ class MapGeneric extends React.Component {
                 delete this.polygon_by_name[name];
             }
         }
+    }
+
+    attachBasemap() {
+        if (JSON.stringify(this.props.basemap) == JSON.stringify(this.basemap_props)) {
+            return;
+        }
+        this.basemap_props = this.props.basemap;
+        if (this.basemap_layer != null) {
+            this.map.removeLayer(this.basemap_layer);
+            this.basemap_layer = null;
+        }
+        if (this.props.basemap.type == "none") {
+            return;
+        }
+        const osmUrl = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
+        const osmAttrib = '&copy; <a href="https://openstreetmap.org/copyright">OpenStreetMap</a> contributors';
+        this.basemap_layer = L.tileLayer(osmUrl, { maxZoom: 20, attribution: osmAttrib });
+        this.map.addLayer(this.basemap_layer);
     }
 
     async add_polygons(map, names, styles, zoom_to) {
@@ -121,7 +166,7 @@ class MapGeneric extends React.Component {
         }
         let geojson = await this.polygon_geojson(name);
         let group = new L.featureGroup();
-        let polygon = L.geoJson(geojson, style);
+        let polygon = L.geoJson(geojson, { style: style, smoothFactor: 0.1 });
         if (add_callback) {
             polygon = polygon.on("click", function (e) {
                 window.location.href = article_link(name);
