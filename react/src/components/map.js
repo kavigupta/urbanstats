@@ -194,6 +194,7 @@ class MapGeneric extends React.Component {
         if (JSON.stringify(this.props.basemap) == JSON.stringify(this.basemap_props)) {
             return;
         }
+        this.basemap_props = this.props.basemap;
         if (this.basemap_layer != null) {
             this.map.removeLayer(this.basemap_layer);
             this.basemap_layer = null;
