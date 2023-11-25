@@ -1,4 +1,4 @@
-export { QuizPanel, ENDPOINT };
+export { QuizPanel };
 
 import React from 'react';
 
@@ -9,7 +9,7 @@ import { reportToServer, reportToServerRetro } from '../quiz/statistics.js';
 import { QuizQuestionDispatch } from '../quiz/quiz-question.js';
 import { QuizResult } from '../quiz/quiz-result.js';
 
-const ENDPOINT = "https://persistent.urbanstats.org";
+export const ENDPOINT = "https://persistent.urbanstats.org";
 
 class QuizPanel extends PageTemplate {
     constructor(props) {
