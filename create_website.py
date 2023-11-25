@@ -29,14 +29,7 @@ from urbanstats.protobuf.utils import save_string_list
 
 folder = "/home/kavi/temp/site/"
 
-
-def shapefile_without_ordinals():
-    full = [
-        compute_statistics_for_shapefile(shapefiles[k])
-        for k in tqdm.tqdm(shapefiles, desc="computing statistics")
-    ]
-    full = pd.concat(full)
-    full = full.reset_index(drop=True)
+def add_margins(full):
     for elect in vest_elections:
         full[elect.name, "margin"] = (
             full[elect.name, "dem"] - full[elect.name, "gop"]
@@ -45,6 +38,15 @@ def shapefile_without_ordinals():
         full[("2020 Presidential Election", "margin")]
         - full[("2016 Presidential Election", "margin")]
     )
+
+def shapefile_without_ordinals():
+    full = [
+        compute_statistics_for_shapefile(shapefiles[k])
+        for k in tqdm.tqdm(shapefiles, desc="computing statistics")
+    ]
+    full = pd.concat(full)
+    full = full.reset_index(drop=True)
+    add_margins(full)
     # Simply abolish local government tbh. How is this a thing.
     # https://www.openstreetmap.org/user/Minh%20Nguyen/diary/398893#:~:text=An%20administrative%20area%E2%80%99s%20name%20is%20unique%20within%20its%20immediate%20containing%20area%20%E2%80%93%20false
     # Ban both of these from the database

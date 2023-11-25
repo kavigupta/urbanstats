@@ -246,13 +246,22 @@ def compute_statistics_for_shapefile(sf, sum_keys=sum_keys):
     print(sf)
     result = compute_summed_shapefile_all_keys(sf, sum_keys).copy()
     assert (result.longname == sf_fr.longname).all()
-    result["perimiter"] = sf_fr.geometry.to_crs({"proj": "cea"}).length / 1e3
-    result["compactness"] = 4 * np.pi * result.area / result.perimiter**2
+    return process_summed_statistics(result)
+
+
+def process_summed_statistics(result, for_geo=None):
+    """
+    If for_geo is None, then we do not compute geography-based statistics.
+    """
+    if for_geo is not None:
+        result["perimiter"] = for_geo.geometry.to_crs({"proj": "cea"}).length / 1e3
+        result["compactness"] = 4 * np.pi * result.area / result.perimiter**2
     for k in density_metrics:
         result[k] /= result["population"]
-    result["sd"] = result["population"] / result["area"]
-    for k in sf.meta:
-        result[k] = sf.meta[k]
+    if for_geo is not None:
+        result["sd"] = result["population"] / result["area"]
+        for k in for_geo.meta:
+            result[k] = for_geo.meta[k]
     for k in racial_demographics:
         result[k] /= result["population"]
     result["other / mixed"] = result["other"] + result["mixed"]
