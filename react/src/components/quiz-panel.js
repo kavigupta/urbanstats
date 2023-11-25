@@ -1,4 +1,4 @@
-export { QuizPanel };
+export { QuizPanel, ENDPOINT };
 
 import React from 'react';
 
