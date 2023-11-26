@@ -1,5 +1,8 @@
 
-export { article_link, shape_link, data_link, ordering_link, explanation_page_link };
+export {
+    article_link, shape_link, data_link, ordering_link, explanation_page_link,
+    consolidated_shape_link, consolidated_stats_link
+};
 
 function article_link(longname) {
     const params = new URLSearchParams()
@@ -23,7 +26,15 @@ function explanation_page_link(explanation) {
     return `/data-credit.html#explanation_${sanitize(explanation)}`
 }
 
-function sanitize(longname, spaces_around_slash=true) {
+function consolidated_shape_link(typ) {
+    return `/consolidated/shapes__${sanitize(typ)}.gz`
+}
+
+function consolidated_stats_link(typ) {
+    return `/consolidated/stats__${sanitize(typ)}.gz`
+}
+
+function sanitize(longname, spaces_around_slash = true) {
     let x = longname;
     if (spaces_around_slash) {
         x = x.replace("/", " slash ");

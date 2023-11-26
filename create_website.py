@@ -24,6 +24,10 @@ from produce_html_page import (
 )
 from relationship import full_relationships, map_relationships_by_type
 from election_data import vest_elections
+from urbanstats.consolidated_data.produce_consolidated_data import (
+    full_consolidated_data,
+    output_names,
+)
 
 from urbanstats.protobuf.utils import save_string_list
 
@@ -191,6 +195,8 @@ def main(no_geo=False, no_data=False, no_data_jsons=False):
             json.dump(list(full.population), f)
         output_ordering(full)
 
+        full_consolidated_data(folder)
+
     shutil.copy("html_templates/article.html", f"{folder}")
     shutil.copy("html_templates/index.html", f"{folder}/")
     shutil.copy("html_templates/about.html", f"{folder}/")
@@ -224,6 +230,8 @@ def main(no_geo=False, no_data=False, no_data_jsons=False):
         json.dump(list([name for name in statistic_internal_to_display_name()]), f)
     with open(f"react/src/data/explanation_page.json", "w") as f:
         json.dump(list([name for name in get_explanation_page().values()]), f)
+
+    output_names()
 
     from urbanstats.games.quiz import generate_quiz_info_for_website
 
