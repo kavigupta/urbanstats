@@ -7,7 +7,7 @@ import { article_link } from "../navigation/links.js";
 
 import { Header, nameOfQuizKind } from './quiz-components.js';
 import { AudienceStatistics, QuizStatistics } from './quiz-statistics.js';
-import { ENDPOINT } from '../components/quiz-panel.js';
+import { ENDPOINT, a_correct } from '../components/quiz-panel.js';
 import { render_question } from './quiz-question.js';
 
 export class QuizResult extends React.Component {
@@ -47,7 +47,7 @@ export class QuizResult extends React.Component {
                     <div className="gap"></div>
                     <div className="gap"></div>
                 </div> : undefined}
-                <QuizStatistics whole_history={this.props.whole_history} today={this.props.today} quiz_kind={this.props.quiz_kind}/>
+                <QuizStatistics whole_history={this.props.whole_history} today={this.props.today} quiz_kind={this.props.quiz_kind} />
                 <div className="gap"></div>
                 <span className="serif quiz_summary">Details (spoilers, don't share!)</span>
                 <div className="gap_small"></div>
@@ -194,7 +194,7 @@ export class GenericQuizResultRow extends React.Component {
     }
 
     render() {
-        const comparison = this.props.stat_a > this.props.stat_b ?
+        const comparison = a_correct(this.props.quiz_kind, this.props) ?
             (<span>&gt;</span>) : (<span>&lt;</span>);
         let first = "serif quiz_result_name_left";
         let second = "serif quiz_result_name_right";
@@ -298,7 +298,7 @@ class RetrostatQuizResultRow extends GenericQuizResultRow {
     get_option(letter) {
         const style = letter == "a" ? { marginLeft: "20%" } : { marginRight: "20%" };
         let q = this.props[letter];
-        return <div style={{zoom:0.5}}>
+        return <div style={{ zoom: 0.5 }}>
             <div>{render_question(q.question)}</div>
             <div style={style}>
                 <div><Clickable longname={q.longname_a} /> ({this.create_value(q.stat_a, q.stat_column)})</div>
