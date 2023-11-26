@@ -8,6 +8,7 @@ import "../components/quiz.css";
 import { isFirefox, isMobile} from 'react-device-detect';
 import { Header, Footer, Help } from './quiz-components.js';
 import { MapGeneric } from '../components/map.js';
+import { a_correct } from "../components/quiz-panel.js";
 
 class Map extends MapGeneric {
     constructor(props) {
@@ -152,7 +153,8 @@ class RetroQuizQuestion extends QuizQuestion {
     }
 
     get_demo(key) {
-        const key_upper = key.toUpperCase();
+        const key_upper = a_correct("juxtastat", this.props[key]) ? "A" : "B";
+        console.log(key_upper);
         return <div style={{ zoom: 0.5 }}>
             <JuxtastatQuizQuestion
                 {...this.props[key]}
