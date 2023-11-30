@@ -9,6 +9,7 @@ import { Header, nameOfQuizKind } from './quiz-components.js';
 import { AudienceStatistics, QuizStatistics } from './quiz-statistics.js';
 import { ENDPOINT, a_correct } from '../components/quiz-panel.js';
 import { render_question } from './quiz-question.js';
+import { render_time_remaining } from './dates.js';
 
 export class QuizResult extends React.Component {
     constructor(props) {
@@ -47,6 +48,8 @@ export class QuizResult extends React.Component {
                     <div className="gap"></div>
                     <div className="gap"></div>
                 </div> : undefined}
+                <TimeToNextQuiz today={today} quiz_kind={this.props.quiz_kind} />
+                <div className="gap"></div>
                 <QuizStatistics whole_history={this.props.whole_history} today={this.props.today} quiz_kind={this.props.quiz_kind} />
                 <div className="gap"></div>
                 <span className="serif quiz_summary">Details (spoilers, don't share!)</span>
@@ -108,6 +111,38 @@ function ShareButton({ button_ref, parameters, today_name, correct_pattern, tota
         <div style={{ marginInline: "0.25em" }}></div>
         <img src="/share.png" className="icon" style={{ width: "1em", height: "1em" }} />
     </button>;
+}
+
+class Timer extends React.Component {
+    constructor(props) {
+        super(props);
+        this.state = { time: 0 };
+        this.interval = setInterval(() => this.setState({ time: this.state.time + 1 }), 1000);
+    }
+    render() {
+        const w = this.props.quiz_kind == "juxtastat" ? "5em" : "6.5em";
+        return <div className="serif quiz_next" style={{ width: w, margin: 0 }}>
+            <span>{render_time_remaining(this.props.quiz_kind, this.props.today)}</span>
+        </div>
+    }
+}
+
+function TimeToNextQuiz({ today, quiz_kind }) {
+    return (
+        <div style={{margin: "auto"}}>
+            <div style={{
+                display: "flex",
+                flexDirection: "row",
+                justifyContent: "center",
+                alignItems: "flex-center",
+                flexWrap: "wrap",
+                gap: "1em",
+            }}>
+                <div className="serif quiz_summary" style={{margin: "auto 0"}}>Next quiz in </div>
+                <Timer today={today} quiz_kind={quiz_kind} />
+            </div>
+        </div>
+    );
 }
 
 export class Summary extends React.Component {
