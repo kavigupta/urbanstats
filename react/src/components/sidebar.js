@@ -55,6 +55,9 @@ class Sidebar extends React.Component {
                         <li>
                             <a href="/quiz.html">Juxtastat</a>
                         </li>
+                        <li>
+                            <a href="/quiz.html?mode=retro">Retrostat</a>
+                        </li>
                     </ul>
                 </div>
                 <div className="sidebar-section">
