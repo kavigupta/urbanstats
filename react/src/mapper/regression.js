@@ -2,13 +2,21 @@ export { Regression };
 
 import MLR from 'ml-regression-multivariate-linear';
 
+import { dotMultiply, lusolve, multiply, transpose } from "mathjs";
+
 class Regression {
-    constructor(independent_fn, dependent_fns, dependent_names, intercept_name, residual_name) {
+    constructor(
+        independent_fn, dependent_fns, dependent_names,
+        intercept_name, residual_name,
+        weight_by_population, population_idx
+    ) {
         this.independent_fn = independent_fn;
         this.dependent_fns = dependent_fns;
         this.dependent_names = dependent_names;
         this.intercept_name = intercept_name;
         this.residual_name = residual_name;
+        this.weight_by_population = weight_by_population;
+        this.population_idx = population_idx;
     }
 
     compute(statistics_for_geography, variables) {
@@ -17,8 +25,6 @@ class Regression {
 
         // independent: (N,)
         // dependent: (K, N)
-        console.log(independent);
-        console.log(dependent);
 
         const y = independent.map(x => [x]);
         // transpose dependent
@@ -34,35 +40,39 @@ class Regression {
 
         const xfilt = x.filter((_, i) => !is_nan[i]);
         const yfilt = y.filter((_, i) => !is_nan[i]);
+        const sfg_filt = statistics_for_geography.filter((_, i) => !is_nan[i]);
 
-        var nj = require('numjs');
 
-        const A = nj.array(xfilt.map(row => [1, ...row]));
+        const Awofilt = x.map(row => [1, ...row]);
+        const A = xfilt.map(row => [1, ...row]);
+        var ATW = transpose(A);
 
-        const ata = nj.dot(A.T, A);
+        if (this.weight_by_population) {
+            const self = this;
+            const W = sfg_filt.map(sfg => sfg.stats[self.population_idx]);
+            ATW = dotMultiply(ATW, W);
+        }
 
-        console.log("ata=", ata);
+        const ata = multiply(ATW, A);
 
-        const atb = nj.dot(A.T, yfilt);
+        const atb = multiply(ATW, yfilt);
 
-        console.log("atb=", atb);
+        // solve for weights. weights = (ata)^-1 atb
 
-        const ws = nj.solve(ata, atb);
+        const ws_col = lusolve(ata, atb);
+        const ws = ws_col.map(x => x[0]);
 
-        console.log("weights=", ws);
+        const weights = ws.slice(1);
+        const intercept = ws[0];
 
-        const mlr = new MLR(xfilt, yfilt);
-
-        const weights = mlr.weights.slice(0, -1).map(x => x[0]);
-        const intercept = mlr.weights[mlr.weights.length - 1][0];
-        const preds = mlr.predict(x).map(x => x[0]);
+        const preds = multiply(Awofilt, ws_col).map(x => x[0]);
 
         const result = {};
         for (let i = 0; i < this.dependent_names.length; i++) {
             if (this.dependent_names[i] == "") {
                 continue;
             }
-            result[this.dependent_names[i]] = preds.map(_ => ws[i]);
+            result[this.dependent_names[i]] = preds.map(_ => weights[i]);
         }
         if (this.intercept_name != "") {
             result[this.intercept_name] = preds.map(_ => intercept);
@@ -71,8 +81,6 @@ class Regression {
         if (this.residual_name != "") {
             result[this.residual_name] = preds.map((pred, i) => y[i][0] - pred);
         }
-
-        console.log(result);
 
         return result;
     }

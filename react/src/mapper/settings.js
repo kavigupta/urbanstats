@@ -54,13 +54,18 @@ function parse_regression(name_to_index, regr) {
     const dependent_names = regr.var_coefficients;
     const intercept_name = regr.var_intercept;
     const residual_name = regr.var_residue;
+    const weight_by_population = regr.weight_by_population;
+
+    console.log(name_to_index);
 
     return new Regression(
         independent_fn,
         dependent_fns,
         dependent_names,
         intercept_name,
-        residual_name
+        residual_name,
+        weight_by_population,
+        name_to_index["Population"],
     );
 }
 

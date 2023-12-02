@@ -33,6 +33,7 @@
     "geojson2svg": "^2.0.1",
     "html-webpack-plugin": "^5.5.0",
     "json5": "^2.2.0",
+    "mathjs": "^12.1.0",
     "ml-regression-multivariate-linear": "^2.0.4",
     "node-polyfill-webpack-plugin": "^2.0.1",
     "numjs": "^0.16.1",

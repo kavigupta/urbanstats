@@ -4,6 +4,7 @@ import React from "react";
 
 import { Parser } from 'expr-eval';
 import { DataListSelector } from "./DataListSelector.js";
+import { CheckboxSetting } from "../components/sidebar.js";
 
 class FunctionColorStat {
     constructor(name, variables, regressions, expr) {
@@ -17,7 +18,7 @@ class FunctionColorStat {
     }
 
     compute(statistics_for_geography, vars) {
-        var variables = {...vars};
+        var variables = { ...vars };
         for (const variable of this._variables) {
             variables[variable.name] = variable.expr.compute(statistics_for_geography);
         }
@@ -150,6 +151,7 @@ class RegressionSelector extends React.Component {
                                 get_statistic={param.get_dependent}
                                 set_statistic={param.set_dependent}
                                 names={self.props.names}
+                                simple={true}
                             />
                             <button onClick={() => remove_dependent_expr(i)}>
                                 -
@@ -188,6 +190,7 @@ class RegressionSelector extends React.Component {
                 independent: stat,
             })}
             names={self.props.names}
+            simple={true}
         />;
 
         const main = <div style={{ display: "flex" }}>
@@ -196,6 +199,17 @@ class RegressionSelector extends React.Component {
             </div>
             <div style={{ width: "70%" }}>
                 {rhs_stack}
+                <CheckboxSetting
+                    name="Weighted by Population"
+                    setting_key="weight_by_population"
+                    settings={self.props.get_regression()}
+                    set_setting={
+                        (key, value) => self.props.set_regression({
+                            ...self.props.get_regression(),
+                            [key]: value,
+                        })
+                    }
+                />
             </div>
         </div>;
 
@@ -278,6 +292,21 @@ class FunctionSelector extends React.Component {
         if (func.variables === undefined) {
             func.variables = [];
         }
+        const expression = <input
+            type="text"
+            style={{ width: "100%" }}
+            placeholder={self.props.placeholder || 'Expression, e.g., "a + b"'}
+            value={func.expression}
+            onChange={e => self.props.set_function({
+                ...func,
+                expression: e.target.value,
+            })}
+        />;
+
+        if (this.props.simple) {
+            return expression;
+        }
+
         return (
             <div style={{ paddingLeft: "1em" }}>
                 {
@@ -310,16 +339,7 @@ class FunctionSelector extends React.Component {
                     names={self.props.names}
                 />
                 <div style={{ marginBottom: "0.25em" }} />
-                <input
-                    type="text"
-                    style={{ width: "100%" }}
-                    placeholder={self.props.placeholder || 'Expression, e.g., "a + b"'}
-                    value={func.expression}
-                    onChange={e => self.props.set_function({
-                        ...func,
-                        expression: e.target.value,
-                    })}
-                />
+                {expression}
             </div>
         );
     }
@@ -376,6 +396,7 @@ function RegressionsSelector({ get_regressions, set_regressions, names }) {
                 onClick={() => set_regressions([...gr(), {
                     independent: undefined, dependents: [undefined],
                     var_residue: "", var_intercept: "", var_coefficients: [""],
+                    weight_by_population: false,
                 }])}
             >
                 Add Regression
@@ -422,7 +443,7 @@ class FilterSelector extends React.Component {
     }
 }
 
-export function StatisticSelector({ get_statistic, set_statistic, names, overall_name }) {
+export function StatisticSelector({ get_statistic, set_statistic, names, overall_name, simple }) {
     return <div style={{ width: "100%" }}>
         <DataListSelector
             overall_name={overall_name}
@@ -445,7 +466,9 @@ export function StatisticSelector({ get_statistic, set_statistic, names, overall
             <FunctionSelector
                 get_function={() => get_statistic()}
                 set_function={f => set_statistic(f)}
-                names={names} />
+                names={names}
+                simple={simple}
+                />
             :
             <div></div>}
     </div>;
