@@ -33,6 +33,7 @@
     "geojson2svg": "^2.0.1",
     "html-webpack-plugin": "^5.5.0",
     "json5": "^2.2.0",
+    "mathjs": "^12.1.0",
     "node-polyfill-webpack-plugin": "^2.0.1",
     "prng": "^0.0.1",
     "protobufjs": "^7.2.4",
