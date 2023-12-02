@@ -54,6 +54,18 @@
     padding: 0;
 }
 
+.quiztext_nested {
+    font-size: 20px;
+    margin: 0;
+    padding: 0;
+}
+
+.quiztext_mobile_nested {
+    font-size: 15px;
+    margin: 0;
+    padding: 0;
+}
+
 .value {
     font-size: 18px;
     font-weight: bold;

@@ -10,13 +10,13 @@ import { gunzipSync, gzipSync } from 'zlib';
 import { QuizPanel } from './components/quiz-panel';
 import { sampleQuiz } from './quiz/sample';
 
+import { get_daily_offset_number, get_retrostat_offset_number } from './quiz/dates.js';
+
 const ENDPOINT = "https://persistent.urbanstats.org";
 
 async function loadPage() {
     document.title = "Juxtastat";
     const root = ReactDOM.createRoot(document.getElementById("root"));
-    // fractional days since 2023-09-02
-    const offset = (new Date() - new Date(2023, 8, 2)) / (1000 * 60 * 60 * 24);
     // if there's a query, parse it
     const params_string = window.location.search.substring(1) || window.location.hash.substring(1);
     console.log(params_string)
@@ -44,7 +44,15 @@ async function loadPage() {
     var todays_quiz = null;
     var today_name = null;
     var today = null;
-    if (mode == "random") {
+    var quiz_kind = "juxtastat";
+    if (mode == "retro") {
+        document.title = "Retrostat";
+        const retro = get_retrostat_offset_number();
+        today = "W" + retro;
+        today_name = "Week " + retro;
+        todays_quiz = loadJSON("/retrostat/" + retro);
+        quiz_kind = "retrostat";
+    } else if (mode == "random") {
         const seed = urlParams.get('seed') || Math.floor(Math.random() * 1000000);
         const quiz = sampleQuiz(5, seed);
         // encode quiz as base64
@@ -76,7 +84,7 @@ async function loadPage() {
         today = today_name;
     } else {
         // daily quiz
-        today = Math.floor(offset);
+        today = get_daily_offset_number();
         todays_quiz = loadJSON("/quiz/" + today);
         today_name = today;
     }
@@ -85,6 +93,7 @@ async function loadPage() {
         today_name={today_name}
         todays_quiz={todays_quiz}
         parameters={params_string}
+        quiz_kind={quiz_kind}
     />);
 }
 
