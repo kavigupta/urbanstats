@@ -9,6 +9,7 @@ import { random_color } from "../utils/color.js";
 import "./map.css";
 import { is_historical_cd } from '../utils/is_historical.js';
 import { loadProtobuf } from '../load_json.js';
+import { GeoJSON2SVG } from 'geojson2svg';
 
 class MapGeneric extends React.Component {
     constructor(props) {
@@ -55,6 +56,97 @@ class MapGeneric extends React.Component {
         });
         this.map = map;
         await this.componentDidUpdate();
+    }
+
+    /**
+     * Export the map as an svg, without the background
+     *
+     * @returns string svg
+     */
+    async exportAsSvg() {
+        const [names, styles, _1, _2] = await this.compute_polygons();
+        const map_bounds = this.map.getBounds();
+        const bounds = {
+            left: map_bounds.getWest(),
+            right: map_bounds.getEast(),
+            top: map_bounds.getNorth(),
+            bottom: map_bounds.getSouth(),
+        }
+        const width = 1000;
+        const height = width * (bounds.top - bounds.bottom) / (bounds.right - bounds.left);
+        const converter = new GeoJSON2SVG({
+            mapExtent: bounds, attributes: [{
+                property: 'style',
+                type: 'dynamic',
+                key: 'style'
+            }],
+            viewportSize: {
+                width: width,
+                height: height,
+            },
+        });
+
+        function toSvgStyle(style) {
+            let svg_style = "";
+            for (var key in style) {
+                if (key == "fillColor") {
+                    svg_style += `fill:${style[key]};`;
+                    continue;
+                } else if (key == "fillOpacity") {
+                    svg_style += `fill-opacity:${style[key]};`;
+                    continue;
+                } else if (key == "color") {
+                    svg_style += `stroke:${style[key]};`;
+                    continue;
+                } else if (key == "weight") {
+                    svg_style += `stroke-width:${style[key] / 10};`;
+                    continue;
+                }
+                svg_style += `${key}:${style[key]};`;
+            }
+            return svg_style;
+        }
+
+        const overall_svg = [];
+
+        for (let i = 0; i < names.length; i++) {
+            const geojson = await this.polygon_geojson(names[i]);
+            const svg = converter.convert(geojson, { attributes: { style: toSvgStyle(styles[i]) } });
+            for (let j = 0; j < svg.length; j++) {
+                overall_svg.push(svg[j]);
+            }
+        }
+        const header = `<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+         <!-- Created with urban stats mapper (http://www.urbanstats.org/) -->
+            <svg
+            width="${width}mm"
+            height="${height}mm"
+            viewBox="0 0 ${width} ${height}"
+            version="1.1"
+            id="svg1"
+            xml:space="preserve"
+            xmlns="http://www.w3.org/2000/svg"
+            xmlns:svg="http://www.w3.org/2000/svg">`;
+        const footer = "</svg>";
+        return header + overall_svg.join("") + footer;
+    }
+
+    async exportAsGeoJSON() {
+        console.log("EXPORT AS GEOJSON")
+        const [names, _1, metas, _3] = await this.compute_polygons();
+        const geojson = {
+            "type": "FeatureCollection",
+            "features": [],
+        };
+        for (let i = 0; i < names.length; i++) {
+            var feature = await this.polygon_geojson(names[i]);
+            feature = JSON.parse(JSON.stringify(feature));
+            for (let key in metas[i]) {
+                feature.properties[key] = metas[i][key];
+            }
+            geojson.features.push(feature);
+        }
+        return JSON.stringify(geojson);
     }
 
     async componentDidUpdate() {

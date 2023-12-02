@@ -202,6 +202,7 @@ def main(no_geo=False, no_data=False, no_data_jsons=False):
     shutil.copy("html_templates/index.html", f"{folder}/")
     shutil.copy("html_templates/about.html", f"{folder}/")
     shutil.copy("html_templates/data-credit.html", f"{folder}/")
+    shutil.copy("html_templates/mapper.html", f"{folder}/")
     shutil.copy("html_templates/quiz.html", f"{folder}")
 
     shutil.copy("thumbnail.png", f"{folder}/")
@@ -250,6 +251,7 @@ def main(no_geo=False, no_data=False, no_data_jsons=False):
     shutil.copy("dist/index.js", f"{folder}/scripts/")
     shutil.copy("dist/about.js", f"{folder}/scripts/")
     shutil.copy("dist/data-credit.js", f"{folder}/scripts/")
+    shutil.copy("dist/mapper.js", f"{folder}/scripts/")
     shutil.copy("dist/quiz.js", f"{folder}/scripts/")
 
     from urbanstats.games.quiz import generate_quizzes
