@@ -5,7 +5,7 @@ import React from "react";
 import "../common.css";
 import "../components/quiz.css";
 
-import { isFirefox, isMobile} from 'react-device-detect';
+import { isFirefox, isMobile } from 'react-device-detect';
 import { Header, Footer, Help } from './quiz-components.js';
 import { MapGeneric } from '../components/map.js';
 import { a_correct } from "../components/quiz-panel.js";
@@ -131,7 +131,7 @@ class QuizQuestion extends React.Component {
                 </div>
                 {this.props.no_footer ? undefined : <>
                     <Footer history={this.props.history} length={this.props.length} />
-                    <Help quiz_kind={this.props.quiz_kind}/>
+                    <Help quiz_kind={this.props.quiz_kind} />
                 </>}
             </div>
         )
