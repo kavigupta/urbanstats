@@ -1,7 +1,5 @@
 export { Regression };
 
-import MLR from 'ml-regression-multivariate-linear';
-
 import { dotMultiply, lusolve, multiply, transpose } from "mathjs";
 
 class Regression {
