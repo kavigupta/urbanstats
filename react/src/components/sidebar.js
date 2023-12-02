@@ -36,6 +36,9 @@ class Sidebar extends React.Component {
                         <li>
                             <a href="/data-credit.html">Data Credit</a>
                         </li>
+                        <li>
+                            <a href="/mapper.html">Mapper (beta)</a>
+                        </li>
                     </ul>
                 </div>
                 <div className="sidebar-section">
