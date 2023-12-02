@@ -28,6 +28,7 @@ from urbanstats.consolidated_data.produce_consolidated_data import (
     full_consolidated_data,
     output_names,
 )
+from urbanstats.mapper.ramp import output_ramps
 
 from urbanstats.protobuf.utils import save_string_list
 
@@ -232,6 +233,7 @@ def main(no_geo=False, no_data=False, no_data_jsons=False):
         json.dump(list([name for name in get_explanation_page().values()]), f)
 
     output_names()
+    output_ramps()
 
     from urbanstats.games.quiz import generate_quiz_info_for_website
 
