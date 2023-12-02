@@ -344,7 +344,7 @@ class MapperPanel extends PageTemplate {
         const valid = this.valid_geographies.includes(geography_kind);
         return (
             <div>
-                <div className={"centered_text " + (isMobile ? "headertext_mobile" : "headertext")}>Urban Stats Mapper</div>
+                <div className={"centered_text " + (isMobile ? "headertext_mobile" : "headertext")}>Urban Stats Mapper (beta)</div>
                 <MapperSettings
                     names={this.names}
                     valid_geographies={this.valid_geographies}
