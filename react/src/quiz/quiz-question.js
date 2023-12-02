@@ -17,7 +17,7 @@ class Map extends MapGeneric {
 
     async compute_polygons() {
         const style = { "interactive": false, "fillOpacity": 0.5, "weight": 1, "color": "#5a7dc3", "fillColor": "#5a7dc3" };
-        return [[this.props.longname], [style], 0];
+        return [[this.props.longname], [style], [{}], 0];
     }
 
     async mapDidRender() {
