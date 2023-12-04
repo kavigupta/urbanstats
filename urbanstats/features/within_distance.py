@@ -9,6 +9,8 @@ import tqdm
 from census_blocks import load_raw_census
 from urbanstats.geometry.ellipse import Ellipse
 
+def xy_to_radius(r, x, y):
+    return point_to_radius(r, shapely.geometry.Point(x, y))
 
 def point_to_radius(r, p):
     """
