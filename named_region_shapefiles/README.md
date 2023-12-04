@@ -85,3 +85,15 @@ Source: https://catalog.data.gov/dataset/u-s-epa-national-priorities-list-npl-si
 Source: https://hifld-geoplatform.opendata.arcgis.com/datasets/geoplatform::public-schools/about
 
     - features/Public_Schools.zip
+  
+# Countries
+
+Source: https://public.opendatasoft.com/explore/dataset/world-administrative-boundaries/export/?flg=en-us&location=2,38.87069,0.00845&basemap=jawg.light
+
+     - World_Countries_Generalized.zip
+
+# Subnational regions
+
+Source: https://hub.arcgis.com/datasets/esri::world-administrative-divisions/explore?location=41.502196%2C25.823236%2C6.69
+
+      - World_Administrative_Divisions.zip

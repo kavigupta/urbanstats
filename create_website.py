@@ -39,7 +39,9 @@ def shapefile_without_ordinals():
     full = [
         compute_statistics_for_shapefile(shapefiles[k])
         for k in tqdm.tqdm(shapefiles, desc="computing statistics")
+        if shapefiles[k].american
     ]
+    # TODO include GPW data
     full = pd.concat(full)
     full = full.reset_index(drop=True)
     for elect in vest_elections:

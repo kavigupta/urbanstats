@@ -148,6 +148,7 @@ shapefiles = dict(
         longname_extractor=lambda x: x["NAME"] + ", USA",
         filter=lambda x: True,
         meta=dict(type="State", source="Census"),
+        include_in_gpw=True,
     ),
     counties=Shapefile(
         hash_key="census_counties_7",
@@ -300,5 +301,25 @@ shapefiles = dict(
         longname_extractor=lambda x: x["NAME"] + " Media Market, USA",
         filter=lambda x: x.NAME != "National",
         meta=dict(type="Media Market", source="Nielsen via Kenneth C Black"),
+    ),
+    countries=Shapefile(
+        hash_key="countries",
+        path="named_region_shapefiles/World_Countries_Generalized.zip",
+        shortname_extractor=lambda x: x["name"],
+        longname_extractor=lambda x: x["name"],
+        filter=lambda x: True,
+        meta=dict(type="Country", source="OpenDataSoft"),
+        american=False,
+        include_in_gpw=True,
+    ),
+    subnational_regions=Shapefile(
+        hash_key="subnational_regions",
+        path="named_region_shapefiles/World_Administrative_Divisions.zip",
+        shortname_extractor=lambda x: x["NAME"] + ", " + str(x["COUNTRY"]),
+        longname_extractor=lambda x: x["NAME"],
+        filter=lambda x: x.COUNTRY is not None,
+        meta=dict(type="Subnational Region", source="ESRI"),
+        american=False,
+        include_in_gpw=True,
     ),
 )

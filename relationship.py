@@ -168,8 +168,10 @@ def add(d, edges):
 
 
 tiers = [
+    ["countries"],
     [
         "states",
+        "subnational_regions",
         "native_areas",
         "native_statistical_areas",
         "judicial_circuits",
