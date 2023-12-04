@@ -29,7 +29,7 @@ class Ellipse:
                 self.latitude - self.lat_radius,
                 self.latitude + self.lat_radius,
                 self.longitude - self.lon_radius,
-                self.llat_radiusongitude + self.lon_radius,
+                self.longitude + self.lon_radius,
             ]
         )
         bounding_box = categorize(bounding_box)
