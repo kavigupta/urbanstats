@@ -179,9 +179,10 @@ def lattice_cells_contained(polygon):
 
     # check containment
     intersect = polygon.intersection(points)
+    pts = list(intersect.geoms) if isinstance(intersect, shapely.geometry.MultiPoint) else [intersect]
 
-    lon_selected = np.array([p.x for p in intersect.geoms])
-    lat_selected = np.array([p.y for p in intersect.geoms])
+    lon_selected = np.array([p.x for p in pts])
+    lat_selected = np.array([p.y for p in pts])
 
     # convert back to row/col indices
     row_selected = row_idx_from_lat(lat_selected) - 0.5
