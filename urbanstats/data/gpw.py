@@ -5,7 +5,7 @@ import zipfile
 import pandas as pd
 import tqdm.auto as tqdm
 
-from permacache import permacache
+from permacache import permacache, stable_hash
 import numpy as np
 
 import shapely
@@ -193,36 +193,60 @@ def lattice_cells_contained(polygon):
 
     return row_selected, col_selected
 
+@permacache("urbanstats/data/gpw/compute_gpw_for_shape", key_function=dict(shape=lambda x: stable_hash(shapely.to_geojson(x))))
+def compute_gpw_for_shape(shape):
+    glo = load_full()
+    dens_1 = compute_circle_density_per_cell(1)
+    dens_2 = compute_circle_density_per_cell(2)
+    dens_4 = compute_circle_density_per_cell(4)
+    row_selected, col_selected = lattice_cells_contained(shape)
+    pop = glo[row_selected, col_selected]
+
+    pop_sum = np.nansum(pop)
+    dens_1_sum = np.nansum(pop * dens_1[row_selected, col_selected])
+    dens_2_sum = np.nansum(pop * dens_2[row_selected, col_selected])
+    dens_4_sum = np.nansum(pop * dens_4[row_selected, col_selected])
+
+    return dict(
+        gpw_population=pop_sum,
+        gpw_pw_density_1=dens_1_sum / pop_sum,
+        gpw_pw_density_2=dens_2_sum / pop_sum,
+        gpw_pw_density_4=dens_4_sum / pop_sum,
+    )
+
 @permacache("urbanstats/data/gpw/compute_gpw_data_for_shapefile", key_function=dict(shapefile=lambda x: x.hash_key))
 def compute_gpw_data_for_shapefile(shapefile):
     """
     Compute the GPW data for a shapefile.
     """
-    glo = load_full()
-    dens_2 = compute_circle_density_per_cell(2)
-    dens_4 = compute_circle_density_per_cell(4)
 
     shapes = shapefile.load_file()
 
     result = {
         "gpw_population": [],
+        "gpw_pw_density_1": [],
         "gpw_pw_density_2": [],
         "gpw_pw_density_4": [],
     }
 
     for longname, shape in tqdm.tqdm(zip(shapes.longname, shapes.geometry), desc=f"gpw for {shapefile.hash_key}"):
         print(longname)
-        row_selected, col_selected = lattice_cells_contained(shape)
-        pop = glo[row_selected, col_selected]
-        result["gpw_population"].append(np.nansum(pop))
-        result["gpw_pw_density_2"].append(np.nansum(pop * dens_2[row_selected, col_selected]))
-        result["gpw_pw_density_4"].append(np.nansum(pop * dens_4[row_selected, col_selected]))
+        res = compute_gpw_for_shape(shape)
+        print(res)
+        for k, v in res.items():
+            result[k].append(v)
     
+    return result
+
+@permacache("urbanstats/data/gpw/compute_gpw_data_for_shapefile_table", key_function=dict(shapefile=lambda x: x.hash_key))
+def compute_gpw_data_for_shapefile_table(shapefile):
+    shapes = shapefile.load_file()
+    result = compute_gpw_data_for_shapefile(shapefile)
     result = pd.DataFrame(result)
     result.index = shapes.index
     result["area"] = shapes.to_crs({"proj": "cea"}).area / 1e6
     result["perimeter"] = shapes.to_crs({"proj": "cea"}).length / 1e3
-    result["compactness"] = 4 * np.pi * result.area / result.perimiter**2
+    result["compactness"] = 4 * np.pi * result.area / result.perimeter**2
     result["gpw_aw_density"] = result["gpw_population"] / result["area"]
     result["gpw_pw_density_2"] = result["gpw_pw_density_2"] / result["gpw_population"]
     result["gpw_pw_density_4"] = result["gpw_pw_density_4"] / result["gpw_population"]
