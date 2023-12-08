@@ -163,32 +163,7 @@ def compute_circle_density_per_cell(
     return out
 
 
-def lattice_cells_contained(polygon):
-    """
-    Return a list of (row, col) tuples of lattice cells that are contained in the polygon.
-    """
-
-    lon_min, lat_min, lon_max, lat_max = polygon.bounds
-    # pad by 1/120 to make sure we get all cells that are even slightly contained
-    lon_min -= 1 / 120
-    lat_min -= 1 / 120
-    lon_max += 1 / 120
-    lat_max += 1 / 120
-    row_min = row_idx_from_lat(lat_max)
-    row_max = row_idx_from_lat(lat_min)
-
-    col_min = col_idx_from_lon(lon_min)
-    col_max = col_idx_from_lon(lon_max)
-
-    # produce full arrays of row and col indices
-    row_idxs = np.arange(int(row_min), int(row_max) + 1)
-    col_idxs = np.arange(int(col_min), int(col_max) + 1)
-    # product
-    row_idxs, col_idxs = np.meshgrid(row_idxs, col_idxs)
-    # flatten
-    row_idxs = row_idxs.flatten()
-    col_idxs = col_idxs.flatten()
-
+def filter_lat_lon_direct(polygon, row_idxs, col_idxs):
     # convert back to lat/lon
     lats = lat_from_row_idx(row_idxs + 0.5)
     lons = lon_from_col_idx(col_idxs + 0.5)
@@ -198,6 +173,11 @@ def lattice_cells_contained(polygon):
 
     # check containment
     intersect = polygon.intersection(points)
+
+    # check if empty point
+    if intersect.is_empty:
+        return np.array([], dtype=np.int32), np.array([], dtype=np.int32)
+
     pts = (
         list(intersect.geoms)
         if isinstance(intersect, shapely.geometry.MultiPoint)
@@ -217,6 +197,68 @@ def lattice_cells_contained(polygon):
     return row_selected, col_selected
 
 
+def filter_lat_lon(polygon, row_idxs, col_idxs, chunk_size=10**5):
+    """
+    Filter a list of row/col indices to only those that are contained in the polygon.
+    """
+
+    if len(row_idxs) < chunk_size:
+        # just to avoid the progress bar
+        return filter_lat_lon_direct(polygon, row_idxs, col_idxs)
+
+    row_selected = []
+    col_selected = []
+
+    for i in tqdm.tqdm(range(0, len(row_idxs), chunk_size)):
+        sl = slice(i, i + chunk_size)
+        row_selected_chunk, col_selected_chunk = filter_lat_lon_direct(
+            polygon, row_idxs[sl], col_idxs[sl]
+        )
+        row_selected.append(row_selected_chunk)
+        col_selected.append(col_selected_chunk)
+
+    row_selected = np.concatenate(row_selected)
+    col_selected = np.concatenate(col_selected)
+
+    return row_selected, col_selected
+
+
+def lattice_cells_contained(glo, polygon):
+    """
+    Return a list of (row, col) tuples of lattice cells that are contained in the polygon.
+    """
+
+    lon_min, lat_min, lon_max, lat_max = polygon.bounds
+    # pad by 1/120 to make sure we get all cells that are even slightly contained
+    lon_min -= 1 / 120
+    lat_min -= 1 / 120
+    lon_max += 1 / 120
+    lat_max += 1 / 120
+    row_min = row_idx_from_lat(lat_max)
+    row_max = row_idx_from_lat(lat_min)
+
+    col_min = col_idx_from_lon(lon_min)
+    col_max = col_idx_from_lon(lon_max)
+
+    # produce full arrays of row and col indices
+    row_idxs = np.arange(max(0, int(row_min)), min(int(row_max) + 1, glo.shape[0]))
+    col_idxs = np.arange(max(0, int(col_min)), min(int(col_max) + 1, glo.shape[1]))
+    # product
+    row_idxs, col_idxs = np.meshgrid(row_idxs, col_idxs)
+    # filter
+    glo_vals = glo[row_idxs, col_idxs]
+    mask = ~np.isnan(glo_vals)
+    row_idxs = row_idxs[mask]
+    col_idxs = col_idxs[mask]
+    # flatten
+    row_idxs = row_idxs.flatten()
+    col_idxs = col_idxs.flatten()
+
+    row_selected, col_selected = filter_lat_lon(polygon, row_idxs, col_idxs)
+
+    return row_selected, col_selected
+
+
 @permacache(
     "urbanstats/data/gpw/compute_gpw_for_shape",
     key_function=dict(shape=lambda x: stable_hash(shapely.to_geojson(x))),
@@ -226,7 +268,7 @@ def compute_gpw_for_shape(shape):
     dens_1 = compute_circle_density_per_cell(1)
     dens_2 = compute_circle_density_per_cell(2)
     dens_4 = compute_circle_density_per_cell(4)
-    row_selected, col_selected = lattice_cells_contained(shape)
+    row_selected, col_selected = lattice_cells_contained(glo, shape)
     pop = glo[row_selected, col_selected]
 
     pop_sum = np.nansum(pop)
@@ -261,7 +303,9 @@ def compute_gpw_data_for_shapefile(shapefile):
     }
 
     for longname, shape in tqdm.tqdm(
-        zip(shapes.longname, shapes.geometry), desc=f"gpw for {shapefile.hash_key}"
+        zip(shapes.longname, shapes.geometry),
+        desc=f"gpw for {shapefile.hash_key}",
+        total=len(shapes),
     ):
         print(longname)
         res = compute_gpw_for_shape(shape)
