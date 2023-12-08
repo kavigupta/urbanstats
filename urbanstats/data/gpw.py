@@ -1,4 +1,3 @@
-
 from collections import defaultdict
 from functools import lru_cache
 import zipfile
@@ -13,16 +12,23 @@ import shapely
 from urbanstats.features.within_distance import xy_to_radius
 
 
-GPW_PATH = "named_region_shapefiles/gpw/gpw-v4-population-count-rev11_2020_30_sec_asc.zip"
+GPW_PATH = (
+    "named_region_shapefiles/gpw/gpw-v4-population-count-rev11_2020_30_sec_asc.zip"
+)
+
 
 @lru_cache(maxsize=None)
 def load_file(tag):
     with zipfile.ZipFile(GPW_PATH) as f:
-        x = f.open(f"gpw_v4_population_count_rev11_2020_30_sec_{tag}.asc").read().decode("utf-8")
+        x = (
+            f.open(f"gpw_v4_population_count_rev11_2020_30_sec_{tag}.asc")
+            .read()
+            .decode("utf-8")
+        )
         x = x.split("\r\n")
 
     assert x.pop(-1) == ""
-    
+
     ncols = int(x[0].split(" ")[-1])
     nrows = int(x[1].split(" ")[-1])
     xllcorner = float(x[2].split(" ")[-1])
@@ -35,7 +41,6 @@ def load_file(tag):
     data_rows = [row[:-1] for row in data_rows]
     assert len(data_rows) == nrows, (len(data_rows), nrows)
     assert len(data_rows[0].split(" ")) == ncols, (len(data_rows[0].split(" ")), ncols)
-
 
     data = np.zeros((nrows, ncols), dtype=np.float32)
     for i, row in enumerate(tqdm.tqdm(data_rows)):
@@ -52,6 +57,7 @@ def load_file(tag):
         data=data,
     )
 
+
 def load():
     tag = 1
     result = []
@@ -66,8 +72,9 @@ def load():
 
             result[-1].append(f["data"])
             tag += 1
-    
+
     return result
+
 
 @permacache("urbanstats/data/gpw/load_full")
 def load_full():
@@ -77,23 +84,28 @@ def load_full():
     assert result.shape == (21600, 43200)
     return result
 
+
 def lat_from_row_idx(row_idx):
-    return 90 - row_idx * 1/120
+    return 90 - row_idx * 1 / 120
+
 
 def lon_from_col_idx(col_idx):
-    return -180 + col_idx * 1/120
+    return -180 + col_idx * 1 / 120
+
 
 def col_idx_from_lon(lon):
     return (lon + 180) * 120
 
+
 def row_idx_from_lat(lat):
     return (90 - lat) * 120
+
 
 def cell_overlaps(shape):
     """
     Take a shape (in lat/lon coordinates) and return a dictionary from (row, col) to the fraction of the cell that overlaps the shape.
     """
-    
+
     lon_min, lat_min, lon_max, lat_max = shape.bounds
     row_min = row_idx_from_lat(lat_max)
     row_max = row_idx_from_lat(lat_min)
@@ -110,13 +122,16 @@ def cell_overlaps(shape):
             cell_lon_min = lon_from_col_idx(col_idx)
             cell_lon_max = lon_from_col_idx(col_idx + 1)
 
-            cell = shapely.geometry.box(cell_lon_min, cell_lat_min, cell_lon_max, cell_lat_max)
+            cell = shapely.geometry.box(
+                cell_lon_min, cell_lat_min, cell_lon_max, cell_lat_max
+            )
             intersection = cell.intersection(shape)
             if intersection.is_empty or cell.area == 0:
                 continue
             result[(row_idx, col_idx)] = intersection.area / cell.area
-    
+
     return result
+
 
 def compute_full_cell_overlaps_with_circle(radius, row_idx, num_grid=10):
     result = defaultdict(float)
@@ -126,11 +141,14 @@ def compute_full_cell_overlaps_with_circle(radius, row_idx, num_grid=10):
             lon = lon_from_col_idx(offx)
             circle = xy_to_radius(radius, lon, lat)
             for (r, c), frac in cell_overlaps(circle).items():
-                result[(r, c)] += frac / (num_grid ** 2)
+                result[(r, c)] += frac / (num_grid**2)
     return result
 
+
 @permacache("urbanstats/data/gpw/compute_circle_density_per_cell")
-def compute_circle_density_per_cell(radius, longitude_start=0, longitude_end=None, latitude_start=0, latitude_end=None):
+def compute_circle_density_per_cell(
+    radius, longitude_start=0, longitude_end=None, latitude_start=0, latitude_end=None
+):
     glo = load_full()
     glo = glo[:, longitude_start:longitude_end]
     glo_zero = np.nan_to_num(glo, 0)
@@ -141,8 +159,9 @@ def compute_circle_density_per_cell(radius, longitude_start=0, longitude_end=Non
         overlaps = compute_full_cell_overlaps_with_circle(radius, row_idx)
         for (source_row, off), weight in overlaps.items():
             out[row_idx] += np.roll(glo_zero[source_row], -off) * weight
-    out = out / (np.pi * radius ** 2)
+    out = out / (np.pi * radius**2)
     return out
+
 
 def lattice_cells_contained(polygon):
     """
@@ -151,10 +170,10 @@ def lattice_cells_contained(polygon):
 
     lon_min, lat_min, lon_max, lat_max = polygon.bounds
     # pad by 1/120 to make sure we get all cells that are even slightly contained
-    lon_min -= 1/120
-    lat_min -= 1/120
-    lon_max += 1/120
-    lat_max += 1/120
+    lon_min -= 1 / 120
+    lat_min -= 1 / 120
+    lon_max += 1 / 120
+    lat_max += 1 / 120
     row_min = row_idx_from_lat(lat_max)
     row_max = row_idx_from_lat(lat_min)
 
@@ -179,7 +198,11 @@ def lattice_cells_contained(polygon):
 
     # check containment
     intersect = polygon.intersection(points)
-    pts = list(intersect.geoms) if isinstance(intersect, shapely.geometry.MultiPoint) else [intersect]
+    pts = (
+        list(intersect.geoms)
+        if isinstance(intersect, shapely.geometry.MultiPoint)
+        else [intersect]
+    )
 
     lon_selected = np.array([p.x for p in pts])
     lat_selected = np.array([p.y for p in pts])
@@ -193,7 +216,11 @@ def lattice_cells_contained(polygon):
 
     return row_selected, col_selected
 
-@permacache("urbanstats/data/gpw/compute_gpw_for_shape", key_function=dict(shape=lambda x: stable_hash(shapely.to_geojson(x))))
+
+@permacache(
+    "urbanstats/data/gpw/compute_gpw_for_shape",
+    key_function=dict(shape=lambda x: stable_hash(shapely.to_geojson(x))),
+)
 def compute_gpw_for_shape(shape):
     glo = load_full()
     dens_1 = compute_circle_density_per_cell(1)
@@ -214,7 +241,11 @@ def compute_gpw_for_shape(shape):
         gpw_pw_density_4=dens_4_sum / pop_sum,
     )
 
-@permacache("urbanstats/data/gpw/compute_gpw_data_for_shapefile", key_function=dict(shapefile=lambda x: x.hash_key))
+
+@permacache(
+    "urbanstats/data/gpw/compute_gpw_data_for_shapefile",
+    key_function=dict(shapefile=lambda x: x.hash_key),
+)
 def compute_gpw_data_for_shapefile(shapefile):
     """
     Compute the GPW data for a shapefile.
@@ -229,16 +260,22 @@ def compute_gpw_data_for_shapefile(shapefile):
         "gpw_pw_density_4": [],
     }
 
-    for longname, shape in tqdm.tqdm(zip(shapes.longname, shapes.geometry), desc=f"gpw for {shapefile.hash_key}"):
+    for longname, shape in tqdm.tqdm(
+        zip(shapes.longname, shapes.geometry), desc=f"gpw for {shapefile.hash_key}"
+    ):
         print(longname)
         res = compute_gpw_for_shape(shape)
         print(res)
         for k, v in res.items():
             result[k].append(v)
-    
+
     return result
 
-@permacache("urbanstats/data/gpw/compute_gpw_data_for_shapefile_table", key_function=dict(shapefile=lambda x: x.hash_key))
+
+@permacache(
+    "urbanstats/data/gpw/compute_gpw_data_for_shapefile_table",
+    key_function=dict(shapefile=lambda x: x.hash_key),
+)
 def compute_gpw_data_for_shapefile_table(shapefile):
     shapes = shapefile.load_file()
     result = compute_gpw_data_for_shapefile(shapefile)

@@ -53,7 +53,10 @@ def get_question_pair(qdata):
     ease = [x["ease"] for x in qdata]
     for min_ease_delta in 0.4, 0.3, 0.2, 0.1:
         valid_pairs = [
-            (i, j) for i in range(len(qdata)) for j in range(i) if ease[i] - ease[j] > min_ease_delta
+            (i, j)
+            for i in range(len(qdata))
+            for j in range(i)
+            if ease[i] - ease[j] > min_ease_delta
         ]
         if valid_pairs:
             break

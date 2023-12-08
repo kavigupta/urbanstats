@@ -1,4 +1,3 @@
-
 from shapefiles import shapefiles
 from urbanstats.data.gpw import compute_gpw_data_for_shapefile
 
