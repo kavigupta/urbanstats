@@ -110,6 +110,9 @@ function autocompleteMatch(settings, values, input) {
                 continue;
             }
         }
+        if (is_international_duplicate(values[i])) {
+            continue;
+        }
         matches.push([match_count, i]);
     }
     matches.sort(function (a, b) {
@@ -152,4 +155,9 @@ function is_a_match(a, b) {
 
 function normalize(a) {
     return a.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+}
+
+function is_international_duplicate(x) {
+    // ends with [SN], USA
+    return x.endsWith(" [SN], USA");
 }
