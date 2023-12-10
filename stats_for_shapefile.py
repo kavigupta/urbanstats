@@ -119,6 +119,12 @@ misc_stats = {
     "marriage_divorced": "Divorced %",
 }
 
+gpw_stats = {
+    "gpw_population": "Population [GPW]",
+    **{f"gpw_pw_density_{k}": f"PW Density (r={k}km) [GPW]" for k in (1, 2, 4)},
+    "gpw_aw_density": "AW Density [GPW]",
+}
+
 
 @attr.s
 class Shapefile:

@@ -31,6 +31,8 @@ dont_use = [
     "School District",
     "Judicial District",
     "Judicial Circuit",
+    "Country",
+    "Subnational Region",
 ]
 
 

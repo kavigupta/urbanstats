@@ -28,6 +28,7 @@ from urbanstats.consolidated_data.produce_consolidated_data import (
     full_consolidated_data,
     output_names,
 )
+from urbanstats.data.gpw import compute_gpw_data_for_shapefile_table
 from urbanstats.mapper.ramp import output_ramps
 
 from urbanstats.protobuf.utils import save_string_list
@@ -35,13 +36,12 @@ from urbanstats.protobuf.utils import save_string_list
 folder = "/home/kavi/temp/site/"
 
 
-def shapefile_without_ordinals():
+def american_shapefile():
     full = [
         compute_statistics_for_shapefile(shapefiles[k])
         for k in tqdm.tqdm(shapefiles, desc="computing statistics")
         if shapefiles[k].american
     ]
-    # TODO include GPW data
     full = pd.concat(full)
     full = full.reset_index(drop=True)
     for elect in vest_elections:
@@ -62,6 +62,34 @@ def shapefile_without_ordinals():
     return full
 
 
+def international_shapefile():
+    ts = []
+    for s in shapefiles.values():
+        if s.include_in_gpw:
+            t = compute_gpw_data_for_shapefile_table(s)
+            for k in s.meta:
+                t[k] = s.meta[k]
+            ts.append(t)
+    intl = pd.concat(ts)
+    intl = intl[intl.area > 10].copy()
+    intl = intl.reset_index(drop=True)
+    intl.loc[
+        intl.longname.apply(lambda x: ", USA" in x), "longname"
+    ] = intl.longname.apply(lambda x: x.replace(", USA", " [SN], USA"))
+    intl["gpw_aw_density"] = intl.gpw_population / intl.area
+    return intl
+
+
+def shapefile_without_ordinals():
+    usa = american_shapefile()
+    intl = international_shapefile()
+    full = pd.concat([usa, intl])
+    popu = np.array(full.population)
+    popu[np.isnan(popu)] = full.gpw_population[np.isnan(popu)]
+    full["best_population_estimate"] = popu
+    return full
+
+
 @lru_cache(maxsize=None)
 def full_shapefile():
     full = shapefile_without_ordinals()
@@ -72,7 +100,7 @@ def full_shapefile():
         ]
     )
     full = add_ordinals(full, overall_ordinal=True)
-    full = full.sort_values("population")[::-1]
+    full = full.sort_values("best_population_estimate")[::-1]
     return full
 
 
@@ -167,6 +195,25 @@ def output_ordering(full):
         json.dump(list(counts.items()), f)
 
 
+def get_idxs_by_type():
+    from stats_for_shapefile import gpw_stats
+
+    real_names = internal_statistic_names()
+    gpw_names = [x for x in real_names if x in gpw_stats] + ["area", "compactness"]
+    other_names = [x for x in real_names if x not in gpw_stats]
+    gpw_idxs = [internal_statistic_names().index(x) for x in gpw_names]
+    other_idxs = [internal_statistic_names().index(x) for x in other_names]
+    idxs_by_type = {}
+    for s in shapefiles.values():
+        typ = s.meta["type"]
+        if s.include_in_gpw:
+            assert not s.american
+            idxs_by_type[typ] = gpw_idxs
+        else:
+            idxs_by_type[typ] = other_idxs
+    return idxs_by_type
+
+
 def main(no_geo=False, no_data=False, no_data_jsons=False):
     for sub in [
         "index",
@@ -193,6 +240,9 @@ def main(no_geo=False, no_data=False, no_data_jsons=False):
         if not no_data_jsons:
             create_page_jsons(full)
         save_string_list(list(full.longname), f"{folder}/index/pages.gz")
+
+        with open(f"{folder}/index/best_population_estimate.json", "w") as f:
+            json.dump(list(full.best_population_estimate), f)
 
         output_ordering(full)
 
@@ -245,6 +295,9 @@ def main(no_geo=False, no_data=False, no_data_jsons=False):
 
     with open(f"{folder}/.nojekyll", "w") as f:
         f.write("")
+
+    with open(f"react/src/data/indices_by_type.json", "w") as f:
+        json.dump(get_idxs_by_type(), f)
 
     os.system("cd react; npm run prod")
     shutil.copy("dist/article.js", f"{folder}/scripts/")

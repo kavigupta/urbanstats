@@ -6,6 +6,7 @@ import pandas as pd
 
 from census_blocks import RADII
 from stats_for_shapefile import (
+    gpw_stats,
     racial_statistics,
     housing_stats,
     education_stats,
@@ -32,14 +33,18 @@ def create_page_json(
     long_to_population,
     long_to_type,
 ):
+    from create_website import get_idxs_by_type
+
     statistic_names = internal_statistic_names()
+    idxs_by_type = get_idxs_by_type()[row.type]
     data = data_files_pb2.Article()
     data.shortname = row.shortname
     data.longname = row.longname
     data.source = row.source
     data.article_type = row.type
 
-    for stat in statistic_names:
+    for idx in idxs_by_type:
+        stat = statistic_names[idx]
         statrow = data.rows.add()
         statrow.statval = float(row[stat])
         statrow.ordinal = (
@@ -118,8 +123,9 @@ def add_ordinals(frame, *, overall_ordinal):
     frame = frame.copy()
     frame = frame.reset_index(drop=True)
     for k in keys:
+        population_column = "best_population_estimate"
         ordinals, percentiles_by_population = compute_ordinals_and_percentiles(
-            frame, k, "population", "longname", just_ordinal=overall_ordinal
+            frame, k, population_column, "longname", just_ordinal=overall_ordinal
         )
         frame[k, "overall_ordinal" if overall_ordinal else "ordinal"] = ordinals
         if overall_ordinal:
@@ -149,6 +155,7 @@ def statistic_internal_to_display_name():
         "population": "Population",
         **{"ad_1": ad["ad_1"]},
         "sd": "AW Density",
+        **gpw_stats,
         "area": "Area",
         "compactness": "Compactness",
         **racial_statistics,
@@ -176,6 +183,12 @@ def get_statistic_categories():
         "population": "main",
         **{"ad_1": "main"},
         "sd": "main",
+        **{
+            k: "other_densities"
+            if k in ("gpw_pw_density_2", "gpw_pw_density_4")
+            else "main"
+            for k in gpw_stats
+        },
         "area": "main",
         "compactness": "main",
         **{k: "race" for k in racial_statistics},
@@ -199,6 +212,7 @@ def get_explanation_page():
         "population": "population",
         "sd": "density",
         **{f"ad_{k}": f"density" for k in RADII},
+        **{k: "gpw" for k in gpw_stats},
         "area": "geography",
         "compactness": "geography",
         **{k: "race" for k in racial_statistics},

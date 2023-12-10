@@ -482,6 +482,11 @@ not_included = {
     "within_Airport_30",
     "within_Public School_2",
     "within_Hospital_10",
+    "gpw_aw_density",
+    "gpw_population",
+    "gpw_pw_density_2",
+    "gpw_pw_density_1",
+    "gpw_pw_density_4",
 }
 
 stats = list(stats_to_display)

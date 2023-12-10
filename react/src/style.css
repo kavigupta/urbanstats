@@ -215,6 +215,15 @@
     background-color: rgb(255, 255, 204);
 }
 
+.b_country {
+    /* light red */
+    background-color: rgb(255, 204, 204);
+}
+
+.b_subnational_region {
+    background-color: #ddd;
+}
+
 .main_page_header {
     font-size: 35px;
     font-weight: bold;

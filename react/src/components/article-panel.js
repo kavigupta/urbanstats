@@ -26,9 +26,12 @@ class ArticlePanel extends PageTemplate {
         const counts_by_article_type = require("../data/counts_by_article_type.json");
         const explanation_page = require("../data/explanation_page.json");
 
+        const indices = require("../data/indices_by_type.json")[article_type];
+
         let modified_rows = [];
         for (let i in this.props.rows) {
             let row_original = this.props.rows[i];
+            i = indices[i];
             // fresh row object
             let row = {};
             row.statval = row_original.statval;

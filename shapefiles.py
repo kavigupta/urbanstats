@@ -2,6 +2,7 @@ from collections import Counter
 import pandas as pd
 import us
 
+import pycountry
 import geopandas as gpd
 from permacache import permacache
 
@@ -140,6 +141,31 @@ def judicial_circuits():
     return data
 
 
+def iso3_to_country(iso):
+    if iso == "USA":
+        return "USA"
+    c = pycountry.countries.get(alpha_3=iso)
+    if c is None:
+        return None
+    return c.name
+
+
+def iso_to_country(iso):
+    if iso == "US":
+        return "USA"
+    return pycountry.countries.get(alpha_2=iso).name
+
+
+def subnational_regions():
+    path = "named_region_shapefiles/World_Administrative_Divisions.zip"
+    data = gpd.read_file(path)
+    data = data[data.COUNTRY.apply(lambda x: x is not None)]
+    data["fullname"] = data.NAME + ", " + data.ISO_CC.apply(iso_to_country)
+    data["dissolveby"] = data["fullname"]
+    data = data.dissolve(by="dissolveby")
+    return data.reset_index(drop=True)
+
+
 shapefiles = dict(
     states=Shapefile(
         hash_key="census_states_3",
@@ -148,7 +174,6 @@ shapefiles = dict(
         longname_extractor=lambda x: x["NAME"] + ", USA",
         filter=lambda x: True,
         meta=dict(type="State", source="Census"),
-        include_in_gpw=True,
     ),
     counties=Shapefile(
         hash_key="census_counties_7",
@@ -303,20 +328,20 @@ shapefiles = dict(
         meta=dict(type="Media Market", source="Nielsen via Kenneth C Black"),
     ),
     countries=Shapefile(
-        hash_key="countries",
+        hash_key="countries_2",
         path="named_region_shapefiles/World_Countries_Generalized.zip",
-        shortname_extractor=lambda x: x["name"],
-        longname_extractor=lambda x: x["name"],
-        filter=lambda x: True,
+        shortname_extractor=lambda x: iso3_to_country(str(x["iso3"])),
+        longname_extractor=lambda x: iso3_to_country(str(x["iso3"])),
+        filter=lambda x: iso3_to_country(str(x["iso3"])) is not None,
         meta=dict(type="Country", source="OpenDataSoft"),
         american=False,
         include_in_gpw=True,
     ),
     subnational_regions=Shapefile(
-        hash_key="subnational_regions",
-        path="named_region_shapefiles/World_Administrative_Divisions.zip",
-        shortname_extractor=lambda x: x["NAME"] + ", " + str(x["COUNTRY"]),
-        longname_extractor=lambda x: x["NAME"],
+        hash_key="subnational_regions_3",
+        path=subnational_regions,
+        shortname_extractor=lambda x: x["NAME"],
+        longname_extractor=lambda x: x["fullname"],
         filter=lambda x: x.COUNTRY is not None,
         meta=dict(type="Subnational Region", source="ESRI"),
         american=False,

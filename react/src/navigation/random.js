@@ -9,7 +9,7 @@ import { is_historical_cd } from "../utils/is_historical";
 
 async function by_population(settings) {
     let values = (await loadProtobuf("/index/pages.gz", "StringList")).elements;
-    let populations = loadJSON("/index/population.json");
+    let populations = loadJSON("/index/best_population_estimate.json");
     var totalWeight = populations.reduce(function (sum, x) {
         return sum + x;
     }, 0);

@@ -51,6 +51,11 @@ class DataCreditPanel extends PageTemplate {
                             additions from thee Data Gov portal and the NC legislature. Media market
                             shapefiles are from <a href="https://datablends.us/2021/01/14/a-useful-dma-shapefile-for-tableau-and-alteryx/">Kenneth C Black</a>.
                         </p>
+                        <p>
+                            National shapefiles are from <a href="https://public.opendatasoft.com/explore/dataset/world-administrative-boundaries/export/?flg=en-us&location=2,38.87069,0.00845&basemap=jawg.light">OpenDataSoft</a>
+                                and subnational shapefiles are from <a href=" https://hub.arcgis.com/datasets/esri::world-administrative-divisions/explore?location=41.502196%2C25.823236%2C6.69">ESRI</a>.
+                                We filter subnational regions for those with area above 10 km<sup>2</sup>.
+                        </p>
                     </div>
                     <h2 ref={this.nref("geography")}>Geography Metrics</h2>
                     <div>
@@ -311,6 +316,15 @@ class DataCreditPanel extends PageTemplate {
                         School data is from NCES via
                         <a href="https://hifld-geoplatform.opendata.arcgis.com/datasets/geoplatform::public-schools/about">HIFLD</a>.
                     </div>
+                </div>
+                <h1 ref={this.nref("gpw")}>Gridded Population</h1>
+                <div>
+                    Gridded population data is from <a href="https://sedac.ciesin.columbia.edu/data/collection/gpw-v4/documentation">SEDAC</a>,
+                        a project of NASA and Columbia University. We use the 2020 population estimates, which are
+                        not perfectly accurate in all cases, but should be the best match to the 2020 Census numbers
+                        we are using for the US data. To compute PW density, we treat each cell as effectively homogenous,
+                        but since the cells are all smaller than 1 square kilometer, this should not be a major issue for
+                        radii above 1km (which is the smallest radius we use for GPW data).
                 </div>
             </div>
         );
