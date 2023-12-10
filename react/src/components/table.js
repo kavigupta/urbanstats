@@ -125,7 +125,7 @@ class Statistic extends React.Component {
                 return <span>/&nbsp;{unit_name}<sup>2</sup></span>;
             }
             return <span>{value.toFixed(places)}</span>;
-        } else if (name == "Population") {
+        } else if (name == "Population" || name == "Population [GPW]") {
             if (value > 1e6) {
                 if (is_unit) {
                     return <span>m</span>;
