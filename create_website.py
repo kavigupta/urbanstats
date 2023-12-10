@@ -194,8 +194,6 @@ def main(no_geo=False, no_data=False, no_data_jsons=False):
             create_page_jsons(full)
         save_string_list(list(full.longname), f"{folder}/index/pages.gz")
 
-        with open(f"{folder}/index/population.json", "w") as f:
-            json.dump(list(full.population), f)
         output_ordering(full)
 
         full_consolidated_data(folder)
