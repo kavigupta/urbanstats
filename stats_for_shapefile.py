@@ -133,7 +133,6 @@ class Shapefile:
     american = attr.ib(default=True)
     include_in_gpw = attr.ib(default=False)
 
-
     def load_file(self):
         if isinstance(self.path, list):
             s = gpd.GeoDataFrame(pd.concat([gpd.read_file(p) for p in self.path]))
