@@ -285,7 +285,7 @@ def compute_gpw_for_shape(shape):
 
 
 @permacache(
-    "urbanstats/data/gpw/compute_gpw_data_for_shapefile",
+    "urbanstats/data/gpw/compute_gpw_data_for_shapefile_2",
     key_function=dict(shapefile=lambda x: x.hash_key),
 )
 def compute_gpw_data_for_shapefile(shapefile):
@@ -317,19 +317,22 @@ def compute_gpw_data_for_shapefile(shapefile):
 
 
 @permacache(
-    "urbanstats/data/gpw/compute_gpw_data_for_shapefile_table",
+    "urbanstats/data/gpw/compute_gpw_data_for_shapefile_table_3",
     key_function=dict(shapefile=lambda x: x.hash_key),
 )
 def compute_gpw_data_for_shapefile_table(shapefile):
     shapes = shapefile.load_file()
     result = compute_gpw_data_for_shapefile(shapefile)
     result = pd.DataFrame(result)
+    print(len(result), len(shapes))
     result.index = shapes.index
     result["area"] = shapes.to_crs({"proj": "cea"}).area / 1e6
     result["perimeter"] = shapes.to_crs({"proj": "cea"}).length / 1e3
     result["compactness"] = 4 * np.pi * result.area / result.perimeter**2
     result["gpw_aw_density"] = result["gpw_population"] / result["area"]
-    result["gpw_pw_density_2"] = result["gpw_pw_density_2"] / result["gpw_population"]
-    result["gpw_pw_density_4"] = result["gpw_pw_density_4"] / result["gpw_population"]
+    result["gpw_pw_density_2"] = result["gpw_pw_density_2"]
+    result["gpw_pw_density_4"] = result["gpw_pw_density_4"]
+    result["longname"] = shapes.longname
+    result["shortname"] = shapes.shortname
 
     return result
