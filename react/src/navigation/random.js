@@ -7,7 +7,7 @@ import { loadJSON, loadProtobuf } from '../load_json.js';
 import { is_historical_cd } from "../utils/is_historical";
 
 
-async function by_population(settings) {
+async function by_population(settings, domestic_only=false) {
     let values = (await loadProtobuf("/index/pages.gz", "StringList")).elements;
     let populations = loadJSON("/index/best_population_estimate.json");
     var totalWeight = populations.reduce(function (sum, x) {
@@ -32,6 +32,10 @@ async function by_population(settings) {
         }
 
         if (!settings.show_historical_cds && is_historical_cd(x)) {
+            continue;
+        }
+
+        if (domestic_only && !x.endsWith(", USA")) {
             continue;
         }
 

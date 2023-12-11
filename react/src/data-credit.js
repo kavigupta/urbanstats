@@ -52,9 +52,9 @@ class DataCreditPanel extends PageTemplate {
                             shapefiles are from <a href="https://datablends.us/2021/01/14/a-useful-dma-shapefile-for-tableau-and-alteryx/">Kenneth C Black</a>.
                         </p>
                         <p>
-                            National shapefiles are from <a href="https://public.opendatasoft.com/explore/dataset/world-administrative-boundaries/export/?flg=en-us&location=2,38.87069,0.00845&basemap=jawg.light">OpenDataSoft</a>
-                                and subnational shapefiles are from <a href=" https://hub.arcgis.com/datasets/esri::world-administrative-divisions/explore?location=41.502196%2C25.823236%2C6.69">ESRI</a>.
-                                We filter subnational regions for those with area above 10 km<sup>2</sup>.
+                            Subnational shapefiles are from <a href=" https://hub.arcgis.com/datasets/esri::world-administrative-divisions/explore?location=41.502196%2C25.823236%2C6.69">ESRI</a>.
+                            National shapefiles are aggregated from subnational shapefiles.
+                            We filter international regions for those with area above 10 km<sup>2</sup>.
                         </p>
                     </div>
                     <h2 ref={this.nref("geography")}>Geography Metrics</h2>

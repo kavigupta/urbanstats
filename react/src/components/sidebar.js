@@ -50,6 +50,9 @@ class Sidebar extends React.Component {
                         <li>
                             <a href="#" onClick={() => by_population(settings)}>Weighted by Population</a>
                         </li>
+                        <li>
+                            <a href="#" onClick={() => by_population(settings, true)}>Weighted by Population (US only)</a>
+                        </li>
                     </ul>
                 </div>
                 <div className="sidebar-section">
