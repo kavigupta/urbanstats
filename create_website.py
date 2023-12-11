@@ -32,6 +32,7 @@ from urbanstats.data.gpw import compute_gpw_data_for_shapefile_table
 from urbanstats.mapper.ramp import output_ramps
 
 from urbanstats.protobuf.utils import save_string_list
+from urbanstats.special_cases.simplified_country import all_simplified_countries
 
 folder = "/home/kavi/temp/site/"
 
@@ -248,6 +249,8 @@ def main(no_geo=False, no_data=False, no_data_jsons=False):
         output_ordering(full)
 
         full_consolidated_data(folder)
+
+        all_simplified_countries(full, f"{folder}/shape")
 
     shutil.copy("html_templates/article.html", f"{folder}")
     shutil.copy("html_templates/index.html", f"{folder}/")
