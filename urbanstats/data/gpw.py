@@ -13,18 +13,20 @@ from urbanstats.features.within_distance import xy_to_radius
 
 
 GPW_PATH = (
-    "named_region_shapefiles/gpw/gpw-v4-population-count-rev11_2020_30_sec_asc.zip"
+    "gpw_v4_population_count_rev11_2020_30_sec_",
+    "named_region_shapefiles/gpw/gpw-v4-population-count-rev11_2020_30_sec_asc.zip",
+)
+
+GPW_LAND_PATH = (
+    "gpw_v4_land_water_area_rev11_landareakm_30_sec_",
+    "named_region_shapefiles/gpw/gpw-v4-land-water-area-rev11_landareakm_30_sec_asc.zip",
 )
 
 
 @lru_cache(maxsize=None)
-def load_file(tag):
-    with zipfile.ZipFile(GPW_PATH) as f:
-        x = (
-            f.open(f"gpw_v4_population_count_rev11_2020_30_sec_{tag}.asc")
-            .read()
-            .decode("utf-8")
-        )
+def load_file(prefix, path, tag):
+    with zipfile.ZipFile(path) as f:
+        x = f.open(f"{prefix}{tag}.asc").read().decode("utf-8")
         x = x.split("\r\n")
 
     assert x.pop(-1) == ""
@@ -58,13 +60,13 @@ def load_file(tag):
     )
 
 
-def load():
+def load(prefix, path):
     tag = 1
     result = []
     for row in 0, -90:
         result.append([])
         for col in -180, -90, 0, 90:
-            f = load_file(tag)
+            f = load_file(prefix, path, tag)
             print(f["xllcorner"], col)
             print(f["yllcorner"], row)
             assert abs(f["xllcorner"] - col) < 0.1
@@ -76,13 +78,22 @@ def load():
     return result
 
 
-@permacache("urbanstats/data/gpw/load_full")
-def load_full():
-    result = load()
+def load_concatenated(prefix, path):
+    result = load(prefix, path)
     result = np.concatenate(result, axis=1)
     result = np.concatenate(result, axis=1)
     assert result.shape == (21600, 43200)
     return result
+
+
+@permacache("urbanstats/data/gpw/load_full")
+def load_full():
+    return load_concatenated(*GPW_PATH)
+
+
+@permacache("urbanstats/data/gpw/load_full_landarea")
+def load_full_landarea():
+    return load_concatenated(*GPW_LAND_PATH)
 
 
 def lat_from_row_idx(row_idx):
@@ -99,6 +110,10 @@ def col_idx_from_lon(lon):
 
 def row_idx_from_lat(lat):
     return (90 - lat) * 120
+
+
+def grid_area_km(lat):
+    return 1 / 120 * 1 / 120 * 111**2 * np.cos(lat * np.pi / 180)
 
 
 def cell_overlaps(shape):
