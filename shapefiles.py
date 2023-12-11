@@ -1,6 +1,7 @@
 from collections import Counter
 import pandas as pd
 import us
+import tqdm.auto as tqdm
 
 import pycountry
 import geopandas as gpd
@@ -159,11 +160,36 @@ def iso_to_country(iso):
 def subnational_regions():
     path = "named_region_shapefiles/World_Administrative_Divisions.zip"
     data = gpd.read_file(path)
+    print("read subnational regions")
     data = data[data.COUNTRY.apply(lambda x: x is not None)]
     data["fullname"] = data.NAME + ", " + data.ISO_CC.apply(iso_to_country)
     data["dissolveby"] = data["fullname"]
     data = data.dissolve(by="dissolveby")
+    print("dissolved subnationals")
     return data.reset_index(drop=True)
+
+
+@permacache("population_density/shapefiles/unbuffered_countries")
+def unbuffered_countries():
+    data = subnational_regions()
+    print("read countries")
+    data["dissolveby"] = data.ISO_CC
+    data = data.dissolve(by="dissolveby")
+    print("dissolved countries")
+    data = data.reset_index(drop=True)
+    return data
+
+
+@permacache("population_density/shapefiles/countries_3")
+def countries():
+    data = unbuffered_countries()
+    new_geos = []
+    for i, row in tqdm.tqdm(list(data.iterrows())):
+        print(row.COUNTRY, " ", i, " of ", data.shape[0])
+        # 0.1 of a cell
+        new_geos.append(row.geometry.buffer(1 / 120 * 0.1))
+    data.geometry = new_geos
+    return data
 
 
 shapefiles = dict(
@@ -328,14 +354,15 @@ shapefiles = dict(
         meta=dict(type="Media Market", source="Nielsen via Kenneth C Black"),
     ),
     countries=Shapefile(
-        hash_key="countries_2",
-        path="named_region_shapefiles/World_Countries_Generalized.zip",
-        shortname_extractor=lambda x: iso3_to_country(str(x["iso3"])),
-        longname_extractor=lambda x: iso3_to_country(str(x["iso3"])),
-        filter=lambda x: iso3_to_country(str(x["iso3"])) is not None,
+        hash_key="countries_3",
+        path=countries,
+        shortname_extractor=lambda x: iso_to_country(x.ISO_CC),
+        longname_extractor=lambda x: iso_to_country(x.ISO_CC),
+        filter=lambda x: iso_to_country(x.ISO_CC) is not None,
         meta=dict(type="Country", source="OpenDataSoft"),
         american=False,
         include_in_gpw=True,
+        chunk_size=1,
     ),
     subnational_regions=Shapefile(
         hash_key="subnational_regions_3",
