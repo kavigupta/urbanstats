@@ -142,6 +142,59 @@ def create_relationships(x, y):
 
 
 @permacache(
+    "population_density/relationship/create_overlays_only_borders_2",
+    key_function=dict(a=lambda x: x.hash_key, b=lambda y: y.hash_key),
+)
+def create_overlays_only_borders(a, b):
+    """
+    Get the relationships between the two shapefiles x and y
+
+    Since we only care about borders, we can just use sjoin
+    """
+
+    a = a.load_file()
+    b = b.load_file()
+    related = gpd.sjoin(a, b)
+    borders = set()
+    for i in tqdm.trange(len(related)):
+        row = related.iloc[i]
+        left = row.longname_left
+        right = row.longname_right
+        if left != right:
+            borders.add((left, right))
+    return set(), set(), set(), borders
+
+
+@permacache(
+    "population_density/relationship/create_relationships_countries_subnationals_2",
+    key_function=dict(a=lambda x: x.hash_key, b=lambda y: y.hash_key),
+)
+def create_relationships_countries_subnationals(a, b):
+    """
+    Get the relationships between the two shapefiles x and y
+
+    Since we only care about borders, we can just use sjoin
+    """
+
+    assert a.meta["type"] == "Country"
+    assert b.meta["type"] == "Subnational Region"
+
+    a = a.load_file()
+    b = b.load_file()
+
+    long_a = list(a.longname)
+    long_b = list(b.longname)
+
+    a_contains_b = set()
+    for i in tqdm.trange(len(a)):
+        for j in range(len(b)):
+            la, lb = long_a[i], long_b[j]
+            if lb.endswith(", " + la):
+                a_contains_b.add((la, lb))
+    return a_contains_b, set(), set(), set()
+
+
+@permacache(
     "population_density/relationship/create_relationships_historical_cd_3",
     key_function=dict(x=lambda x: x.hash_key, y=lambda y: y.hash_key),
 )
@@ -192,6 +245,8 @@ tiers = [
     ["cousub", "cities", "school_districts"],
     ["neighborhoods", "zctas"],
 ]
+
+is_american = {k: v.american for k, v in shapefiles.items()}
 
 key_to_type = {x: shapefiles[x].meta["type"] for x in shapefiles}
 
@@ -254,11 +309,23 @@ def full_relationships(long_to_type):
             if k1 < k2:
                 continue
 
+            if is_american[k1] != is_american[k2]:
+                continue
+
             fn = {
                 (
                     "historical_congressional",
                     "historical_congressional",
                 ): create_relationships_historical_cd,
+                ("countries", "countries"): create_overlays_only_borders,
+                (
+                    "countries",
+                    "subnational_regions",
+                ): create_relationships_countries_subnationals,
+                (
+                    "subnational_regions",
+                    "countries",
+                ): lambda x, y: create_relationships_countries_subnationals(y, x),
             }.get((k1, k2), create_relationships)
             (
                 a_contains_b,
