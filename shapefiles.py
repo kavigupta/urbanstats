@@ -365,10 +365,10 @@ shapefiles = dict(
         chunk_size=1,
     ),
     subnational_regions=Shapefile(
-        hash_key="subnational_regions_3",
+        hash_key="subnational_regions_4",
         path=subnational_regions,
-        shortname_extractor=lambda x: x["NAME"],
-        longname_extractor=lambda x: x["fullname"],
+        shortname_extractor=lambda x: x["NAME"].replace(", USA", " [SN], USA"),
+        longname_extractor=lambda x: x["fullname"].replace(", USA", " [SN], USA"),
         filter=lambda x: x.COUNTRY is not None,
         meta=dict(type="Subnational Region", source="ESRI"),
         american=False,

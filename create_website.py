@@ -75,9 +75,6 @@ def international_shapefile():
     intl = intl[intl.area > 10].copy()
     intl = intl[intl.gpw_population > 0].copy()
     intl = intl.reset_index(drop=True)
-    intl.loc[
-        intl.longname.apply(lambda x: ", USA" in x), "longname"
-    ] = intl.longname.apply(lambda x: x.replace(", USA", " [SN], USA"))
     intl["gpw_aw_density"] = intl.gpw_population / intl.area
     return intl
 
