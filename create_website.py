@@ -213,7 +213,7 @@ def get_idxs_by_type():
     return idxs_by_type
 
 
-def main(no_geo=False, no_data=False, no_data_jsons=False):
+def main(no_geo=False, no_data=False, no_juxta=False, no_data_jsons=False):
     for sub in [
         "index",
         "r",
@@ -289,7 +289,8 @@ def main(no_geo=False, no_data=False, no_data_jsons=False):
 
     from urbanstats.games.quiz import generate_quiz_info_for_website
 
-    generate_quiz_info_for_website("/home/kavi/temp/site")
+    if not no_juxta:
+        generate_quiz_info_for_website("/home/kavi/temp/site")
 
     with open(f"{folder}/CNAME", "w") as f:
         f.write("urbanstats.org")
@@ -311,8 +312,9 @@ def main(no_geo=False, no_data=False, no_data_jsons=False):
     from urbanstats.games.quiz import generate_quizzes
     from urbanstats.games.retrostat import generate_retrostats
 
-    generate_quizzes(f"{folder}/quiz/")
-    generate_retrostats(f"{folder}/retrostat")
+    if not no_juxta:
+        generate_quizzes(f"{folder}/quiz/")
+        generate_retrostats(f"{folder}/retrostat")
 
 
 if __name__ == "__main__":

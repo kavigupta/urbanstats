@@ -8,4 +8,12 @@ Very incomplete, I started documenting this halfway through
 
 ```
 conda install -c conda-forge cfgrib
+pip install -r requirements.txt
+cd react; npm i; cd ..
+```
+
+To just build the site javascript files, run
+
+```
+python create_website.py --no-data --no-geo --no-juxta
 ```
