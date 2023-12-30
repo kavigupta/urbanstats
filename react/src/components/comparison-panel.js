@@ -1,4 +1,4 @@
-export { ArticlePanel };
+export { ComparisonPanel };
 
 import React from 'react';
 
@@ -11,24 +11,28 @@ import "./article.css";
 import { isMobile } from 'react-device-detect';
 import { load_article } from './load-article.js';
 
-class ArticlePanel extends PageTemplate {
+class ComparisonPanel extends PageTemplate {
     constructor(props) {
         super(props);
     }
 
     main_content() {
         const self = this;
-        const [filtered_rows, _] = load_article(this.props, this.state.settings);
+        const [rows_1, idxs_1] = load_article(this.props.data_1, this.state.settings);
+        const [rows_2, idxs_2] = load_article(this.props.data_2, this.state.settings);
 
         return (
             <div>
-                <div className={"centered_text " + (isMobile ? "headertext_mobile" : "headertext")}>{this.props.shortname}</div>
-                <div className={"centered_text " + (isMobile ? "subheadertext_mobile" : "subheadertext")}>{this.props.longname}</div>
+                {/* <div style={{display:"flex"}}>
+                    <div style={{width: }}
+                </div> */}
+                <div className={"centered_text " + (isMobile ? "headertext_mobile" : "headertext")}>{this.props.data_1.shortname}</div>
+                <div className={"centered_text " + (isMobile ? "subheadertext_mobile" : "subheadertext")}>{this.props.data_1.longname}</div>
 
                 <table className="stats_table">
                     <tbody>
                         <StatisticRowRaw is_header={true} />
-                        {filtered_rows.map((row, i) =>
+                        {rows_1.map((row, i) =>
                             <StatisticRowRaw key={i} index={i} {...row} settings={this.state.settings} />)}
                     </tbody>
                 </table>
@@ -36,19 +40,19 @@ class ArticlePanel extends PageTemplate {
                 <p></p>
 
                 <Map id="map"
-                    longname={this.props.longname}
-                    related={this.props.related}
+                    longname={this.props.data_1.longname}
+                    related={this.props.data_1.related}
                     settings={this.state.settings}
-                    article_type={this.props.article_type}
-                    basemap={{type: "osm"}} />
+                    article_type={this.props.data_1.article_type}
+                    basemap={{ type: "osm" }} />
 
                 <script src="/scripts/map.js"></script>
 
                 <Related
-                    related={this.props.related}
+                    related={this.props.data_1.related}
                     settings={this.state.settings}
                     set_setting={(key, value) => self.set_setting(key, value)}
-                    article_type={this.props.article_type} />
+                    article_type={this.props.data_1.article_type} />
             </div>
         );
     }
