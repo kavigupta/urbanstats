@@ -7,39 +7,16 @@ import { Header } from "../components/header.js";
 import { Sidebar } from "../components/sidebar.js";
 import "../common.css";
 import "../components/article.css";
-import { relationship_key } from '../components/related-button.js';
+import { load_settings } from './settings.js';
+
 
 class PageTemplate extends React.Component {
     constructor(props) {
         super(props);
-        // backed by local storage
-        let settings = JSON.parse(localStorage.getItem("settings")) || {};
-        const map_relationship = require("../data/map_relationship.json");
-        for (let i in map_relationship) {
-            const key = relationship_key(map_relationship[i][0], map_relationship[i][1]);
-            if (!(key in settings)) {
-                settings[key] = true;
-            }
-        }
-        if (!("use_population_percentiles" in settings)) {
-            settings["use_population_percentiles"] = true;
-        }
-        const statistic_category_metadata = require("../data/statistic_category_metadata.json");
-        // list of {key, name, show_checkbox, default}
-        this.statistic_category_metadata_checkboxes = [];
-        for (let i in statistic_category_metadata) {
-            const key = statistic_category_metadata[i]["key"];
-            const setting_key = "show_statistic_" + key;
-            if (!(setting_key in settings)) {
-                settings[setting_key] = statistic_category_metadata[i]["default"];
-            }
-            if (statistic_category_metadata[i]["show_checkbox"]) {
-                this.statistic_category_metadata_checkboxes.push({
-                    setting_key: setting_key,
-                    name: statistic_category_metadata[i]["name"],
-                });
-            }
-        }
+
+        const [settings, statistic_category_metadata_checkboxes] = load_settings();
+
+        this.statistic_category_metadata_checkboxes = statistic_category_metadata_checkboxes;
 
         this.state = {
             settings: settings

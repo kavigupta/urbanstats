@@ -10,6 +10,7 @@ module.exports = {
         "article": ['./src/article.js'],
         "quiz": ['./src/quiz.js'],
         "index": ['./src/index.js'],
+        "random": ["./src/random.js"],
         "about": ['./src/about.js'],
         "data-credit": ['./src/data-credit.js'],
         "mapper": ['./src/mapper.js']

@@ -35,7 +35,7 @@ async function by_population(settings, domestic_only=false) {
             continue;
         }
 
-        if (domestic_only && !x.endsWith(", USA")) {
+        if (domestic_only && (!x.endsWith(", USA") || x.endsWith(" [SN], USA"))) {
             continue;
         }
 

@@ -5,7 +5,6 @@ import React from 'react';
 import "../style.css";
 import "./sidebar.css";
 
-import { uniform, by_population } from "../navigation/random.js";
 import { isMobile } from 'react-device-detect';
 
 class Sidebar extends React.Component {
@@ -45,13 +44,13 @@ class Sidebar extends React.Component {
                     <div className={sidebar_section_title}>Random</div>
                     <ul className={sidebar_section_content}>
                         <li>
-                            <a href="#" onClick={() => uniform(settings)}>Unweighted</a>
+                            <a href="/random.html">Unweighted</a>
                         </li>
                         <li>
-                            <a href="#" onClick={() => by_population(settings)}>Weighted by Population</a>
+                            <a href="/random.html?sampleby=population&us_only=false">Weighted by Population</a>
                         </li>
                         <li>
-                            <a href="#" onClick={() => by_population(settings, true)}>Weighted by Population (US only)</a>
+                            <a href="/random.html?sampleby=population&us_only=true">Weighted by Population (US only)</a>
                         </li>
                     </ul>
                 </div>
