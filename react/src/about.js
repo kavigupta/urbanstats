@@ -4,7 +4,7 @@ import ReactDOM from 'react-dom/client';
 import "./style.css";
 import "./common.css";
 import { PageTemplate } from "./page_template/template.js";
-import { isMobile } from 'react-device-detect';
+import { headerTextClass } from './utils/responsive.js';
 
 
 class AboutPanel extends PageTemplate {
@@ -15,7 +15,7 @@ class AboutPanel extends PageTemplate {
     main_content() {
         return (
             <div className="serif">
-                <div className={"centered_text " + (isMobile ? "headertext_mobile" : "headertext")}>About</div>
+                <div className={headerTextClass()}>About</div>
 
                 <p>
                     Urban Stats is a database of various statistics, computed largely from Census Data but also other

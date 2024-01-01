@@ -8,8 +8,8 @@ import { Related } from "./related-button.js";
 import { PageTemplate } from "../page_template/template.js";
 import "../common.css";
 import "./article.css";
-import { isMobile } from 'react-device-detect';
 import { load_article } from './load-article.js';
+import { headerTextClass, subHeaderTextClass } from '../utils/responsive.js';
 
 class ArticlePanel extends PageTemplate {
     constructor(props) {
@@ -26,8 +26,8 @@ class ArticlePanel extends PageTemplate {
 
         return (
             <div>
-                <div className={"centered_text " + (isMobile ? "headertext_mobile" : "headertext")}>{this.props.shortname}</div>
-                <div className={"centered_text " + (isMobile ? "subheadertext_mobile" : "subheadertext")}>{this.props.longname}</div>
+                <div className={headerTextClass()}>{this.props.shortname}</div>
+                <div className={subHeaderTextClass()}>{this.props.longname}</div>
 
                 <table className="stats_table">
                     <tbody>

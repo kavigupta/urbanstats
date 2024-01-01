@@ -5,10 +5,11 @@ import React from "react";
 import "../common.css";
 import "../components/quiz.css";
 
-import { isFirefox, isMobile } from 'react-device-detect';
+import { isFirefox } from 'react-device-detect';
 import { Header, Footer, Help } from './quiz-components.js';
 import { MapGeneric } from '../components/map.js';
 import { a_correct } from "../components/quiz-panel.js";
+import { mobileLayout } from "../utils/responsive.js";
 
 class Map extends MapGeneric {
     constructor(props) {
@@ -88,7 +89,7 @@ class QuizQuestion extends React.Component {
 
         const row_style = { display: "flex", justifyContent: "center", width: "90%", margin: "auto" };
 
-        var quiztext_css = isMobile ? "quiztext_mobile" : "quiztext";
+        var quiztext_css = mobileLayout() ? "quiztext_mobile" : "quiztext";
         if (this.props.nested) {
             quiztext_css += "_nested";
         }

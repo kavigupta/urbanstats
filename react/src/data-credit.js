@@ -4,7 +4,7 @@ import ReactDOM from 'react-dom/client';
 import "./style.css";
 import "./common.css";
 import { PageTemplate } from "./page_template/template.js";
-import { isMobile } from 'react-device-detect';
+import { headerTextClass } from './utils/responsive.js';
 
 function ScrollHereOnceLoaded(props) {
     const ref = React.useRef(null);
@@ -31,7 +31,7 @@ class DataCreditPanel extends PageTemplate {
     main_content() {
         return (
             <div className="serif">
-                <div className={"centered_text " + (isMobile ? "headertext_mobile" : "headertext")}>Data Credit</div>
+                <div className={headerTextClass()}>Data Credit</div>
 
                 <h1>Geography</h1>
                 <div>

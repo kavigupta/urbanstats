@@ -53,22 +53,20 @@ function Hamburger({ isOpen }) {
     )
 }
 
-function Nav({ left_panel }) {
-
-    const [hamburgerOpen, setHamburgerOpen] = useState(false);
+function Nav({ hamburger_open, set_hamburger_open }) {
 
     const toggleHamburger = () => {
-        setHamburgerOpen(!hamburgerOpen)
+        set_hamburger_open(!hamburger_open)
     }
 
     return (
         <div>
             <div className="navigation">
-                <div className="navigation-entry">
+                {/* <div className="navigation-entry">
                     {left_panel()}
-                </div>
+                </div> */}
                 <div className="hamburgermenu" onClick={toggleHamburger}>
-                    <Hamburger isOpen={hamburgerOpen} />
+                    <Hamburger isOpen={hamburger_open} />
                 </div>
             </div>
 
@@ -101,7 +99,7 @@ function Nav({ left_panel }) {
             
                 
                 .navigation-entry {
-                    display: ${hamburgerOpen ? 'inline' : 'none'};
+                    display: ${hamburger_open ? 'inline' : 'none'};
                     background-color: #eee;
                     min-height: 100vh;
                     width: 75vw;
