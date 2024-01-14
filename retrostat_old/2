@@ -1,0 +1,107 @@
+[
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Spanish at Home %",
+      "question": "higher % of people who speak spanish at home",
+      "longname_a": "Atlanta city, Georgia, USA",
+      "longname_b": "Milwaukee city, Wisconsin, USA",
+      "stat_a": 0.038141435762423036,
+      "stat_b": 0.15157515272796912
+    },
+    "b": {
+      "stat_column": "High School %",
+      "question": "higher % of people who have at least a high school diploma",
+      "longname_a": "TN-06, USA",
+      "longname_b": "SC-01, USA",
+      "stat_a": 0.8817387002283226,
+      "stat_b": 0.9293237935395194
+    },
+    "a_ease": 0.2937062937062937,
+    "b_ease": 0.7184170471841704
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Public Insurance %",
+      "question": "higher % of people who are on public insurance",
+      "longname_a": "KS-02, USA",
+      "longname_b": "MI-09, USA",
+      "stat_a": 0.1486002619913691,
+      "stat_b": 0.17916455424736397
+    },
+    "b": {
+      "stat_column": "Hispanic %",
+      "question": "higher % of people who are Hispanic",
+      "longname_a": "Greeley MSA, CO, USA",
+      "longname_b": "Denver-Aurora-Lakewood MSA, CO, USA",
+      "stat_a": 0.29929050849930694,
+      "stat_b": 0.2333855404857357
+    },
+    "a_ease": 0.6418152350081038,
+    "b_ease": 0.23137876386687797
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "PW Mean % of parkland within 1km",
+      "question": "!FULL Which has more access to parks (higher % of area within 1km of a park, population weighted)?",
+      "longname_a": "SC-03, USA",
+      "longname_b": "SC-01, USA",
+      "stat_a": 0.004656498296546365,
+      "stat_b": 0.005731003144390497
+    },
+    "b": {
+      "stat_column": "High windspeed (>10mph) days %",
+      "question": "higher % of days with wind speed over 10mph (population weighted)",
+      "longname_a": "Portland city, Oregon, USA",
+      "longname_b": "Durham city, North Carolina, USA",
+      "stat_a": 0.03484182210909304,
+      "stat_b": 0.06923739025739006
+    },
+    "a_ease": 0.7473363774733638,
+    "b_ease": 0.2907153729071537
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Vacancy %",
+      "question": "higher % of units that are vacant",
+      "longname_a": "Corpus Christi city, Texas, USA",
+      "longname_b": "Louisville/Jefferson County metro government (balance), Kentucky, USA",
+      "stat_a": 0.11588800345245802,
+      "stat_b": 0.057941954436304684
+    },
+    "b": {
+      "stat_column": "% units built in 2010s+",
+      "question": "higher % units built in 2010s+",
+      "longname_a": "NY-09, USA",
+      "longname_b": "GA-11, USA",
+      "stat_a": 0.02324380753471998,
+      "stat_b": 0.11147827498746024
+    },
+    "a_ease": 0.39384116693679094,
+    "b_ease": 0.7955625990491284
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Only English at Home %",
+      "question": "higher % of people who only speak english at home",
+      "longname_a": "McAllen-Edinburg-Mission MSA, TX, USA",
+      "longname_b": "Las Vegas-Henderson-Paradise MSA, NV, USA",
+      "stat_a": 0.17954523630225258,
+      "stat_b": 0.6627979130206574
+    },
+    "b": {
+      "stat_column": "Commute Time < 15 min %",
+      "question": "higher % of people who have commute time under 15 min",
+      "longname_a": "Amarillo TX Media Market, USA",
+      "longname_b": "Tri-Cities TN-VA Media Market, USA",
+      "stat_a": 0.4556094907310541,
+      "stat_b": 0.2965421872125102
+    },
+    "a_ease": 0.7894736842105263,
+    "b_ease": 0.365296803652968
+  }
+]

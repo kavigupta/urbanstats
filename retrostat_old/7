@@ -1,0 +1,107 @@
+[
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "2016-2020 Swing",
+      "question": "!FULL Which swung towards Democrats more from 2016 to 2020?",
+      "longname_a": "Flint MSA, MI, USA",
+      "longname_b": "Shreveport-Bossier City MSA, LA, USA",
+      "stat_a": -0.001198616555541085,
+      "stat_b": 0.013738829423865728
+    },
+    "b": {
+      "stat_column": "Poverty %",
+      "question": "higher % of people who are in poverty",
+      "longname_a": "Topeka KS Media Market, USA",
+      "longname_b": "Minneapolis-St. Paul MN Media Market, USA",
+      "stat_a": 0.13440175523263087,
+      "stat_b": 0.0877560353621914
+    },
+    "a_ease": 0.3064312736443884,
+    "b_ease": 0.7120418848167539
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Grad %",
+      "question": "higher % of people who have a graduate degree",
+      "longname_a": "Lancaster MSA, PA, USA",
+      "longname_b": "Tulsa MSA, OK, USA",
+      "stat_a": 0.10276208830071859,
+      "stat_b": 0.09101770546393202
+    },
+    "b": {
+      "stat_column": "Black %",
+      "question": "higher % of people who are Black",
+      "longname_a": "Albany-Schenectady-Troy MSA, NY, USA",
+      "longname_b": "Asheville MSA, NC, USA",
+      "stat_a": 0.08055320488085323,
+      "stat_b": 0.040870848204957635
+    },
+    "a_ease": 0.7388167388167388,
+    "b_ease": 0.3188585607940447
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Born in us outside state %",
+      "question": "higher % of people who were born in the US and outside their state of residence",
+      "longname_a": "Knox County, Tennessee, USA",
+      "longname_b": "Fresno County, California, USA",
+      "stat_a": 0.36684760857091836,
+      "stat_b": 0.11152170662413398
+    },
+    "b": {
+      "stat_column": "Born outside US %",
+      "question": "higher % of people who were born outside the US",
+      "longname_a": "Palmdale-Lancaster [Urban Area], CA, USA",
+      "longname_b": "Cleveland [Urban Area], OH, USA",
+      "stat_a": 0.1770880457841611,
+      "stat_b": 0.06950475478586325
+    },
+    "a_ease": 0.3769633507853403,
+    "b_ease": 0.78562421185372
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "AW Density",
+      "question": "higher area-weighted density",
+      "longname_a": "FL-26, USA",
+      "longname_b": "NC-13, USA",
+      "stat_a": 121.71431191168972,
+      "stat_b": 155.63182905429397
+    },
+    "b": {
+      "stat_column": "Undergrad %",
+      "question": "higher % of people who have at least an undergrad degree",
+      "longname_a": "Plano city, Texas, USA",
+      "longname_b": "Durham city, North Carolina, USA",
+      "stat_a": 0.5716656888595362,
+      "stat_b": 0.5052712027863201
+    },
+    "a_ease": 0.6358974358974359,
+    "b_ease": 0.2153846153846154
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "High windspeed (>10mph) days %",
+      "question": "higher % of days with wind speed over 10mph (population weighted)",
+      "longname_a": "Los Angeles County, California, USA",
+      "longname_b": "Providence County, Rhode Island, USA",
+      "stat_a": 0.011226339813429605,
+      "stat_b": 0.16847192908978573
+    },
+    "b": {
+      "stat_column": "Vacancy %",
+      "question": "higher % of units that are vacant",
+      "longname_a": "Colorado, USA",
+      "longname_b": "Ohio, USA",
+      "stat_a": 0.09268119373750924,
+      "stat_b": 0.08241887098881102
+    },
+    "a_ease": 0.6068376068376068,
+    "b_ease": 0.20418848167539266
+  }
+]

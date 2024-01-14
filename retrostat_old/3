@@ -1,0 +1,107 @@
+[
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "% units built in 2010s+",
+      "question": "higher % units built in 2010s+",
+      "longname_a": "Las Vegas city, Nevada, USA",
+      "longname_b": "Colorado Springs city, Colorado, USA",
+      "stat_a": 0.07337490232674035,
+      "stat_b": 0.09493852594698543
+    },
+    "b": {
+      "stat_column": "High temperature Below 40\u00b0F %",
+      "question": "higher % of cold days (days with high temp under 40\u00b0F, population weighted)",
+      "longname_a": "Camden County, New Jersey, USA",
+      "longname_b": "Somerset County, New Jersey, USA",
+      "stat_a": 0.09979883285429969,
+      "stat_b": 0.13225679911723745
+    },
+    "a_ease": 0.36142625607779577,
+    "b_ease": 0.7697715289982425
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Spanish at Home %",
+      "question": "higher % of people who speak spanish at home",
+      "longname_a": "Loudoun County, Virginia, USA",
+      "longname_b": "Marion County, Oregon, USA",
+      "stat_a": 0.10590293907815754,
+      "stat_b": 0.20375407545412202
+    },
+    "b": {
+      "stat_column": "Asian %",
+      "question": "higher % of people who are Asian",
+      "longname_a": "Florida, USA",
+      "longname_b": "Indiana, USA",
+      "stat_a": 0.029234403044202256,
+      "stat_b": 0.024559768967131225
+    },
+    "a_ease": 0.4100486223662885,
+    "b_ease": 0.8225469728601252
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Only English at Home %",
+      "question": "higher % of people who only speak english at home",
+      "longname_a": "Bangor ME Media Market, USA",
+      "longname_b": "Seattle-Tacoma WA Media Market, USA",
+      "stat_a": 0.9591370945225297,
+      "stat_b": 0.7906578693067875
+    },
+    "b": {
+      "stat_column": "Mean distance to nearest Active Superfund Site",
+      "question": "!FULL Which has less exposure to EPA superfund sites (higher population-weighted mean distance)?",
+      "longname_a": "Joplin MO-Pittsburg KS Media Market, USA",
+      "longname_b": "Bakersfield CA Media Market, USA",
+      "stat_a": 24.795595027131128,
+      "stat_b": 30.50043125617539
+    },
+    "a_ease": 0.8440207972270364,
+    "b_ease": 0.4363256784968685
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Undergrad Business %",
+      "question": "!FULL Which has more people with a business degree, as a percentage of the overall population?",
+      "longname_a": "Sacramento city, California, USA",
+      "longname_b": "Atlanta city, Georgia, USA",
+      "stat_a": 0.05659436555761187,
+      "stat_b": 0.1247523850931162
+    },
+    "b": {
+      "stat_column": "Grad %",
+      "question": "higher % of people who have a graduate degree",
+      "longname_a": "7th Circuit, USA",
+      "longname_b": "1st Circuit, USA",
+      "stat_a": 0.11945748598722408,
+      "stat_b": 0.1515001356494271
+    },
+    "a_ease": 0.4610051993067591,
+    "b_ease": 0.8630705394190872
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Mean distance to nearest Public School",
+      "question": "!FULL Which has less access to public schools (higher population-weighted mean distance)?",
+      "longname_a": "Kings County, New York, USA",
+      "longname_b": "Erie County, Pennsylvania, USA",
+      "stat_a": 0.28389087864579415,
+      "stat_b": 1.6514701123951785
+    },
+    "b": {
+      "stat_column": "Private Insurance %",
+      "question": "higher % of people who are on private insurance",
+      "longname_a": "TX-27, USA",
+      "longname_b": "MO-06, USA",
+      "stat_a": 0.6216928779889557,
+      "stat_b": 0.7533862094930706
+    },
+    "a_ease": 0.8533886583679114,
+    "b_ease": 0.4287690179806362
+  }
+]

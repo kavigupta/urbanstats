@@ -1,0 +1,107 @@
+[
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Commute Time > 60 min %",
+      "question": "higher % of people who have commute time over 60 min",
+      "longname_a": "Baton Rouge MSA, LA, USA",
+      "longname_b": "Salt Lake City MSA, UT, USA",
+      "stat_a": 0.09315644364370923,
+      "stat_b": 0.04151976116007961
+    },
+    "b": {
+      "stat_column": "1BR Rent > $1500 %",
+      "question": "higher % of units with 1br rent over $1500",
+      "longname_a": "Maricopa County, Arizona, USA",
+      "longname_b": "Wayne County, Michigan, USA",
+      "stat_a": 0.12553109867759144,
+      "stat_b": 0.0491130232478574
+    },
+    "a_ease": 0.3505917159763314,
+    "b_ease": 0.7559171597633136
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Commute Transit %",
+      "question": "higher % of people who commute by transit",
+      "longname_a": "VA-03, USA",
+      "longname_b": "GA-10, USA",
+      "stat_a": 0.02470143776722764,
+      "stat_b": 0.009183634113568687
+    },
+    "b": {
+      "stat_column": "Mean high temperature in fall",
+      "question": "higher mean daily high temperature in fall (population weighted)",
+      "longname_a": "1st Circuit, USA",
+      "longname_b": "7th Circuit, USA",
+      "stat_a": 59.830536013816115,
+      "stat_b": 53.0508412398934
+    },
+    "a_ease": 0.8037135278514589,
+    "b_ease": 0.38461538461538464
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Uninsured %",
+      "question": "higher % of people who are uninsured",
+      "longname_a": "Oklahoma, USA",
+      "longname_b": "Hawaii, USA",
+      "stat_a": 0.19838586181357806,
+      "stat_b": 0.05501827331576457
+    },
+    "b": {
+      "stat_column": "Born in us outside state %",
+      "question": "higher % of people who were born in the US and outside their state of residence",
+      "longname_a": "Alaska, USA",
+      "longname_b": "California, USA",
+      "stat_a": 0.49267681501038874,
+      "stat_b": 0.17103767854180607
+    },
+    "a_ease": 0.8298816568047337,
+    "b_ease": 0.3674418604651163
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "White %",
+      "question": "higher % of people who are White",
+      "longname_a": "6th Circuit, USA",
+      "longname_b": "DC Circuit, USA",
+      "stat_a": 0.7453310023450755,
+      "stat_b": 0.3796400776234913
+    },
+    "b": {
+      "stat_column": "Asian %",
+      "question": "higher % of people who are Asian",
+      "longname_a": "Hamilton County, Indiana, USA",
+      "longname_b": "Ottawa County, Michigan, USA",
+      "stat_a": 0.06751432510137653,
+      "stat_b": 0.026654287643484133
+    },
+    "a_ease": 0.9225908372827805,
+    "b_ease": 0.5097323600973236
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Citizen by Birth %",
+      "question": "higher % of residents who are citizens by birth",
+      "longname_a": "IL-17, USA",
+      "longname_b": "FL-26, USA",
+      "stat_a": 0.9371519137969786,
+      "stat_b": 0.43587229926381804
+    },
+    "b": {
+      "stat_column": "1BR Rent < $750 %",
+      "question": "higher % of units with 1br rent under $750",
+      "longname_a": "Fresno-Visalia CA Media Market, USA",
+      "longname_b": "Portland OR Media Market, USA",
+      "stat_a": 0.43883678125457487,
+      "stat_b": 0.18822876754550985
+    },
+    "a_ease": 0.9318734793187348,
+    "b_ease": 0.5308056872037915
+  }
+]

@@ -1,0 +1,107 @@
+[
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Commute Transit %",
+      "question": "higher % of people who commute by transit",
+      "longname_a": "Nebraska, USA",
+      "longname_b": "Maine, USA",
+      "stat_a": 0.0058580685670978315,
+      "stat_b": 0.004918968264779236
+    },
+    "b": {
+      "stat_column": "Rent/Income < 20%",
+      "question": "higher % of people whose rent is less than 20% of their income",
+      "longname_a": "Oklahoma City city, Oklahoma, USA",
+      "longname_b": "Aurora city, Colorado, USA",
+      "stat_a": 0.2924361199153957,
+      "stat_b": 0.16277689864176778
+    },
+    "a_ease": 0.3333333333333333,
+    "b_ease": 0.7443365695792881
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "PW Density (r=1km)",
+      "question": "higher population-weighted density (r=1km)",
+      "longname_a": "ProvidenceRi-New Bedford MA Media Market, USA",
+      "longname_b": "Honolulu HI Media Market, USA",
+      "stat_a": 1867.872503600402,
+      "stat_b": 2660.5297080294654
+    },
+    "b": {
+      "stat_column": "Born in state of residence %",
+      "question": "higher % of people who were born in their state of residence",
+      "longname_a": "Detroit city, Michigan, USA",
+      "longname_b": "Chandler city, Arizona, USA",
+      "stat_a": 0.7663216483850778,
+      "stat_b": 0.365341209864184
+    },
+    "a_ease": 0.35689455388180763,
+    "b_ease": 0.7717791411042945
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Mean distance to nearest Airport",
+      "question": "!FULL Which has less access to airports (higher population-weighted mean distance)?",
+      "longname_a": "Monterey-Salinas CA Media Market, USA",
+      "longname_b": "Laredo TX Media Market, USA",
+      "stat_a": 31.643063087393855,
+      "stat_b": 9.49410250448531
+    },
+    "b": {
+      "stat_column": "Housing Units per Adult",
+      "question": "higher number of housing units per adult",
+      "longname_a": "Mecklenburg County, North Carolina, USA",
+      "longname_b": "Davis County, Utah, USA",
+      "stat_a": 0.5569070666550391,
+      "stat_b": 0.4676277680368855
+    },
+    "a_ease": 0.23671497584541062,
+    "b_ease": 0.6980942828485457
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Commute Walk %",
+      "question": "higher % of people who commute by walking",
+      "longname_a": "Alaska, USA",
+      "longname_b": "Alabama, USA",
+      "stat_a": 0.0732667425284247,
+      "stat_b": 0.010754839655266465
+    },
+    "b": {
+      "stat_column": "Undergrad Humanities %",
+      "question": "!FULL Which has more people with a humanities degree, as a percentage of the overall population?",
+      "longname_a": "6th Circuit, USA",
+      "longname_b": "2nd Circuit, USA",
+      "stat_a": 0.10059899089742001,
+      "stat_b": 0.13817499623949325
+    },
+    "a_ease": 0.5016181229773463,
+    "b_ease": 0.9057971014492754
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Mean distance to nearest Active Superfund Site",
+      "question": "!FULL Which has less exposure to EPA superfund sites (higher population-weighted mean distance)?",
+      "longname_a": "Minneapolis-St. Paul-Bloomington MSA, MN-WI, USA",
+      "longname_b": "North Port-Sarasota-Bradenton MSA, FL, USA",
+      "stat_a": 12.6585512741449,
+      "stat_b": 39.90591357563012
+    },
+    "b": {
+      "stat_column": "High temperature Below 40\u00b0F %",
+      "question": "higher % of cold days (days with high temp under 40\u00b0F, population weighted)",
+      "longname_a": "Cobb County, Georgia, USA",
+      "longname_b": "Atlantic County, New Jersey, USA",
+      "stat_a": 0.01816940520137981,
+      "stat_b": 0.08706197110311603
+    },
+    "a_ease": 0.5267639902676399,
+    "b_ease": 0.9294403892944039
+  }
+]
