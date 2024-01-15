@@ -12,13 +12,13 @@ import { ComparisonPanel } from './components/comparison-panel.js';
 async function loadPage() {
     const window_info = new URLSearchParams(window.location.search);
 
-    const name_1 = window_info.get("longname_1");
-    const data_1 = await loadProtobuf(data_link(name_1), "Article");
-    const name_2 = window_info.get("longname_2");
-    const data_2 = await loadProtobuf(data_link(name_2), "Article");
-    document.title = data_1.shortname + " vs. " + data_2.shortname;
+    const names = JSON.parse(window_info.get("longnames"));
+    const datas = await Promise.all(names.map(name => loadProtobuf(data_link(name), "Article")));
+
+    const joined_string = datas.map(x => x.shortname).join(" vs ");
+    document.title = joined_string;
     const root = ReactDOM.createRoot(document.getElementById("root"));
-    root.render(<ComparisonPanel data_1={{ longname: name_1, ...data_1 }} data_2={{ longname: name_2, ...data_2 }} />);
+    root.render(<ComparisonPanel datas={datas} joined_string={joined_string} />);
 }
 
 loadPage();

@@ -13,17 +13,17 @@ class StatisticRowRaw extends React.Component {
         super(props);
     }
 
-    render() {
-        return (
-            <tr className={this.props.is_header ? "tableheader" : this.props.index % 2 == 1 ? "oddrow" : ""}>
-                <td style={{ width: "31%" }}>
-                    <span className="serif value">{
-                        this.props.is_header ? "Statistic" :
-                            <a className="statname_no_link" href={explanation_page_link(this.props.explanation_page)}>{this.props.statname}</a>
-                    }
-                    </span>
-                </td>
-                <td className="value_numeric" style={{ width: "10%" }}>
+    cells() {
+        return [
+            [31,
+                <span className="serif value">{
+                    this.props.is_header ? "Statistic" :
+                        <a className="statname_no_link" href={explanation_page_link(this.props.explanation_page)}>{this.props.statname}</a>
+                }
+                </span>
+            ],
+            [10,
+                <div className="value_numeric">
                     <span className="serif value">{
                         this.props.is_header
                             ? "Value"
@@ -34,8 +34,10 @@ class StatisticRowRaw extends React.Component {
                                 settings={this.props.settings}
                             />}
                     </span>
-                </td>
-                <td className="value_unit" style={{ width: "5%" }}>
+                </div>
+            ],
+            [5,
+                <div className="value_unit">
                     <span className="serif value">{
                         this.props.is_header
                             ? ""
@@ -46,53 +48,79 @@ class StatisticRowRaw extends React.Component {
                                 settings={this.props.settings}
                             />}
                     </span>
-                </td>
-                <td style={{ width: "25%" }}>
-                    <span className="serif ordinal">{
-                        this.props.is_header
-                            ? "Ordinal"
-                            : <Ordinal ordinal={this.props.ordinal}
-                                total={this.props.total_count_in_class}
-                                type={this.props.article_type}
-                                statpath={this.props.statpath}
-                            />
-                    }</span>
-                </td>
-                <td style={{ width: "17%" }}>
-                    <span className="serif ordinal">{
-                        this.props.is_header
-                            ? "Percentile"
-                            : <Percentile ordinal={this.props.ordinal}
-                                total={this.props.total_count_in_class}
-                                percentile_by_population={this.props.percentile_by_population}
-                                settings={this.props.settings}
-                            />
-                    }</span>
-                </td>
-                <td style={{ width: "8%" }}>
-                    <span className="serif ordinal">{
-                        this.props.is_header
-                            ? "Within Type"
-                            : <PointerButtonsIndex
-                                ordinal={this.props.ordinal}
-                                statpath={this.props.statpath}
-                                type={this.props.article_type}
-                                total={this.props.total_count_in_class}
-                                settings={this.props.settings}
-                            />}</span>
-                </td>
-                <td style={{ width: "8%" }}>
-                    <span className="serif ordinal">{
-                        this.props.is_header
-                            ? "Overall"
-                            : <PointerButtonsIndex
-                                ordinal={this.props.overallOrdinal}
-                                statpath={this.props.statpath}
-                                type="overall"
-                                total={this.props.total_count_overall}
-                                settings={this.props.settings}
-                            />}</span>
-                </td>
+                </div>
+            ],
+            [25,
+                <span className="serif ordinal">{
+                    this.props.is_header
+                        ? "Ordinal"
+                        : <Ordinal ordinal={this.props.ordinal}
+                            total={this.props.total_count_in_class}
+                            type={this.props.article_type}
+                            statpath={this.props.statpath}
+                        />
+                }</span>
+            ],
+            [17,
+                <span className="serif ordinal">{
+                    this.props.is_header
+                        ? "Percentile"
+                        : <Percentile ordinal={this.props.ordinal}
+                            total={this.props.total_count_in_class}
+                            percentile_by_population={this.props.percentile_by_population}
+                            settings={this.props.settings}
+                        />
+                }</span>
+            ],
+            [8,
+                <span className="serif ordinal">{
+                    this.props.is_header
+                        ? "Within Type"
+                        : <PointerButtonsIndex
+                            ordinal={this.props.ordinal}
+                            statpath={this.props.statpath}
+                            type={this.props.article_type}
+                            total={this.props.total_count_in_class}
+                            settings={this.props.settings}
+                        />}</span>
+            ],
+            [8,
+                <span className="serif ordinal">{
+                    this.props.is_header
+                        ? "Overall"
+                        : <PointerButtonsIndex
+                            ordinal={this.props.overallOrdinal}
+                            statpath={this.props.statpath}
+                            type="overall"
+                            total={this.props.total_count_overall}
+                            settings={this.props.settings}
+                        />}</span>
+            ]
+        ]
+    }
+
+    render() {
+        var cell_percentages = [];
+        var cell_contents = [];
+        const cells = this.cells();
+        for (let i in cells) {
+            cell_percentages.push(cells[i][0]);
+            cell_contents.push(cells[i][1]);
+        }
+        // normalize cell percentages
+        const sum = cell_percentages.reduce((a, b) => a + b, 0);
+        console.log(cell_percentages);
+        console.log(sum);
+        for (let i in cell_percentages) {
+            cell_percentages[i] = 100 * cell_percentages[i] / sum;
+        }
+        return (
+            <tr className={this.props.is_header ? "tableheader" : this.props.index % 2 == 1 ? "oddrow" : ""}>
+                {cell_contents.map((content, i) =>
+                    <td key={i} style={{ width: cell_percentages[i] + "%" }}>
+                        {content}
+                    </td>
+                )}
             </tr>
         );
     }
