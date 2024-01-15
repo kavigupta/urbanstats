@@ -318,7 +318,7 @@ def main(no_geo=False, no_data=False, no_juxta=False, no_data_jsons=False):
 
     if not no_juxta:
         generate_quizzes(f"{folder}/quiz/")
-        generate_retrostats(f"{folder}/retrostat")
+    generate_retrostats(f"{folder}/retrostat")
 
 
 if __name__ == "__main__":

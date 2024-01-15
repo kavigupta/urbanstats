@@ -6,7 +6,7 @@ import React from 'react';
 import { PageTemplate } from "../page_template/template.js";
 import "../common.css";
 import "../components/quiz.css";
-import { isMobile } from 'react-device-detect';
+import { headerTextClass } from '../utils/responsive.js';
 
 
 function nameOfQuizKind(quiz_kind) {
@@ -24,7 +24,7 @@ function Header({ today, quiz_kind }) {
     if (typeof today != "number") {
         text += " " + today;
     }
-    return (<div className={"centered_text " + (isMobile ? "headertext_mobile" : "headertext")}>{text}</div>);
+    return (<div className={headerTextClass()}>{text}</div>);
 }
 
 class Footer extends PageTemplate {

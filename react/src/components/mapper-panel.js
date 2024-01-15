@@ -8,7 +8,6 @@ import { Related } from "./related-button.js";
 import { PageTemplate } from "../page_template/template.js";
 import "../common.css";
 import "./article.css";
-import { isMobile } from 'react-device-detect';
 import { loadProtobuf } from '../load_json.js';
 import { consolidated_shape_link, consolidated_stats_link } from '../navigation/links.js';
 import { interpolate_color } from '../utils/color.js';
@@ -17,6 +16,7 @@ import { RAMPS, parse_ramp } from "../mapper/ramps.js";
 import { MapperSettings, default_settings, parse_color_stat } from "../mapper/settings.js";
 
 import { gunzipSync, gzipSync } from "zlib";
+import { headerTextClass } from '../utils/responsive.js';
 
 class DisplayedMap extends MapGeneric {
     constructor(props) {
@@ -344,7 +344,7 @@ class MapperPanel extends PageTemplate {
         const valid = this.valid_geographies.includes(geography_kind);
         return (
             <div>
-                <div className={"centered_text " + (isMobile ? "headertext_mobile" : "headertext")}>Urban Stats Mapper (beta)</div>
+                <div className={headerTextClass()}>Urban Stats Mapper (beta)</div>
                 <MapperSettings
                     names={this.names}
                     valid_geographies={this.valid_geographies}

@@ -5,7 +5,8 @@ from permacache import permacache, stable_hash
 from urbanstats.games.quiz import check_quiz_is_guaranteed_past
 from urbanstats.games.quiz_analysis import get_full_statistics, questions
 
-generate_until = 4
+fixed_up_to = 7
+generate_until = 12
 
 
 def week_for_day(day):
@@ -97,7 +98,17 @@ def generate_retrostat(retrostat_week):
 
 
 def generate_retrostats(folder):
-    for retrostat_week in range(generate_until + 1):
+    for retrostat_week in range(0, fixed_up_to + 1):
         print(retrostat_week)
-        with open(f"{folder}/{retrostat_week}", "w") as f:
-            json.dump(generate_retrostat(retrostat_week), f, indent=2)
+        with open(f"retrostat_old/{retrostat_week}", "r") as f:
+            out = json.load(f)
+        output_retrostat(folder, retrostat_week, out)
+    for retrostat_week in range(fixed_up_to + 1, generate_until + 1):
+        print(retrostat_week)
+        out = generate_retrostat(retrostat_week)
+        output_retrostat(folder, retrostat_week, out)
+
+
+def output_retrostat(folder, retrostat_week, out):
+    with open(f"{folder}/{retrostat_week}", "w") as f:
+        json.dump(out, f, indent=2)

@@ -1,0 +1,107 @@
+[
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Commute Walk %",
+      "question": "higher % of people who commute by walking",
+      "longname_a": "Greensboro city, North Carolina, USA",
+      "longname_b": "Long Beach city, California, USA",
+      "stat_a": 0.02245418991306414,
+      "stat_b": 0.025173302050045487
+    },
+    "b": {
+      "stat_column": "Uninsured %",
+      "question": "higher % of people who are uninsured",
+      "longname_a": "Erie PA Media Market, USA",
+      "longname_b": "Palm Springs CA Media Market, USA",
+      "stat_a": 0.06801269537295754,
+      "stat_b": 0.11519502316236044
+    },
+    "a_ease": 0.6816816816816816,
+    "b_ease": 0.28165374677002586
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Public Insurance %",
+      "question": "higher % of people who are on public insurance",
+      "longname_a": "Myrtle Beach-Florence SC Media Market, USA",
+      "longname_b": "Flint-Saginaw-Bay City MI Media Market, USA",
+      "stat_a": 0.22487519515424997,
+      "stat_b": 0.28445702584526733
+    },
+    "b": {
+      "stat_column": "High temperature Below 40\u00b0F %",
+      "question": "higher % of days with high temp under 40\u00b0F (population weighted)",
+      "longname_a": "Jersey City city, New Jersey, USA",
+      "longname_b": "Aurora city, Colorado, USA",
+      "stat_a": 0.13427636576826404,
+      "stat_b": 0.11162993145809953
+    },
+    "a_ease": 0.7824858757062146,
+    "b_ease": 0.3756906077348066
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Boomer %",
+      "question": "higher % of people who are boomers",
+      "longname_a": "McKinney-Frisco [Urban Area], TX, USA",
+      "longname_b": "Atlantic City-Ocean City-Villas [Urban Area], NJ, USA",
+      "stat_a": 0.1453687198341265,
+      "stat_b": 0.28350048212443707
+    },
+    "b": {
+      "stat_column": "Mean distance to nearest Airport",
+      "question": "!FULL Which has less access to airports (higher population-weighted mean distance)?",
+      "longname_a": "Davis County, Utah, USA",
+      "longname_b": "Wake County, North Carolina, USA",
+      "stat_a": 13.826614570829054,
+      "stat_b": 19.217834161067866
+    },
+    "a_ease": 0.7712609970674487,
+    "b_ease": 0.33612040133779264
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Commute Time > 60 min %",
+      "question": "higher % of people who have commute time over 60 min",
+      "longname_a": "Stockton city, California, USA",
+      "longname_b": "Los Angeles city, California, USA",
+      "stat_a": 0.18417920271374405,
+      "stat_b": 0.13671162187517744
+    },
+    "b": {
+      "stat_column": "Mean distance to nearest Public School",
+      "question": "!FULL Which has less access to public schools (higher population-weighted mean distance)?",
+      "longname_a": "Tuscaloosa MSA, AL, USA",
+      "longname_b": "Visalia-Porterville MSA, CA, USA",
+      "stat_a": 2.730327382128786,
+      "stat_b": 1.0824708185824121
+    },
+    "a_ease": 0.19801980198019803,
+    "b_ease": 0.6113861386138614
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Non-citizen %",
+      "question": "higher % of residents who are non-citizens",
+      "longname_a": "MA-03, USA",
+      "longname_b": "FL-15, USA",
+      "stat_a": 0.08730245432809071,
+      "stat_b": 0.07672051159258983
+    },
+    "b": {
+      "stat_column": "Born outside US %",
+      "question": "higher % of people who were born outside the US",
+      "longname_a": "Alabama, USA",
+      "longname_b": "New Hampshire, USA",
+      "stat_a": 0.0347025066461548,
+      "stat_b": 0.06041786145222018
+    },
+    "a_ease": 0.1937984496124031,
+    "b_ease": 0.6354515050167224
+  }
+]

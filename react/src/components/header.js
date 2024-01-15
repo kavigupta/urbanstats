@@ -1,11 +1,11 @@
 export { Header };
 
 import React from 'react';
-import { isMobile } from 'react-device-detect';
 
 import "../common.css";
 import { SearchBox } from './search';
 import { Nav } from './hamburger';
+import { mobileLayout } from '../utils/responsive';
 
 class Header extends React.Component {
     constructor(props) {
@@ -23,10 +23,10 @@ class Header extends React.Component {
 
     topLeft() {
         const self = this;
-        if (isMobile) {
+        if (mobileLayout()) {
             return (
                 <div className="left_panel_top">
-                    <Nav left_panel={() => self.props.leftPanel()} />
+                    <Nav hamburger_open={this.props.hamburger_open} set_hamburger_open={this.props.set_hamburger_open} />
                     <div className="hgap"></div>
                     <HeaderImage />
                 </div>
@@ -48,7 +48,7 @@ class HeaderImage extends React.Component {
     }
 
     render() {
-        const path = isMobile ? "/thumbnail.png" : "/banner.png";
+        const path = mobileLayout() ? "/thumbnail.png" : "/banner.png";
         return (
             <a href="/index.html"><img src={path} className="logo" alt="Urban Stats Logo" /></a>
         )

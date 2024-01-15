@@ -4,8 +4,7 @@ import React from 'react';
 
 import "../style.css";
 import "./sidebar.css";
-
-import { isMobile } from 'react-device-detect';
+import { mobileLayout } from '../utils/responsive';
 
 class Sidebar extends React.Component {
     constructor(props) {
@@ -17,12 +16,12 @@ class Sidebar extends React.Component {
         let statistic_category_metadata_checkboxes = this.props.statistic_category_metadata_checkboxes;
         let sidebar_section_content = "sidebar-section-content";
         let sidebar_section_title = "sidebar-section-title";
-        if (isMobile) {
+        if (mobileLayout()) {
             sidebar_section_content += " sidebar-section-content_mobile";
             sidebar_section_title += " sidebar-section-title_mobile";
         }
         return (
-            <div className={"serif sidebar" + (isMobile ? "_mobile" : "")}>
+            <div className={"serif sidebar" + (mobileLayout() ? "_mobile" : "")}>
                 <div className="sidebar-section">
                     <div className={sidebar_section_title}>Main Menu</div>
                     <ul className={sidebar_section_content}>

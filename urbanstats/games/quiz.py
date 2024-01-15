@@ -20,7 +20,7 @@ from urbanstats.shortener import shorten
 from relationship import states_for_all
 
 min_pop = 250_000
-version = 19
+version = 20
 fixed_up_to = 71
 
 # ranges = [
@@ -61,6 +61,18 @@ def pct_diff(x, y):
     return abs(x - y) / min(abs(y), abs(y)) * 100
 
 
+def randomize_q(rng, q):
+    q = copy.deepcopy(q)
+    if rng.choice(2):
+        q["longname_a"], q["longname_b"] = q["longname_b"], q["longname_a"]
+        q["stat_a"], q["stat_b"] = q["stat_b"], q["stat_a"]
+    return q
+
+
+def randomize_quiz(rng, quiz):
+    return [randomize_q(rng, q) for q in quiz]
+
+
 def sample_quiz(rng):
     banned_categories = []
     banned_types = []
@@ -74,6 +86,7 @@ def sample_quiz(rng):
         )
         banned_types.append(type)
         result.append(question)
+    result = randomize_quiz(rng, result)
     return result
 
 

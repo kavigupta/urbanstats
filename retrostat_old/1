@@ -1,0 +1,107 @@
+[
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Mean distance to nearest Airport",
+      "question": "!FULL Which has less access to airports (higher population-weighted mean distance)?",
+      "longname_a": "Iowa, USA",
+      "longname_b": "New York, USA",
+      "stat_a": 37.22558447712179,
+      "stat_b": 17.88158960563435
+    },
+    "b": {
+      "stat_column": "Non-citizen %",
+      "question": "higher % of residents who are non-citizens",
+      "longname_a": "Rutherford County, Tennessee, USA",
+      "longname_b": "Pulaski County, Arkansas, USA",
+      "stat_a": 0.0450096097975238,
+      "stat_b": 0.03157331296129228
+    },
+    "a_ease": 0.7636700648748842,
+    "b_ease": 0.36211340206185566
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Commute Bike %",
+      "question": "higher % of people who commute by bike",
+      "longname_a": "San Diego city, California, USA",
+      "longname_b": "Pittsburgh city, Pennsylvania, USA",
+      "stat_a": 0.011995125541521866,
+      "stat_b": 0.014750050015094203
+    },
+    "b": {
+      "stat_column": "Mean distance to nearest Hospital",
+      "question": "!FULL Which has less access to hospitals (higher population-weighted mean distance)?",
+      "longname_a": "Miami-Ft. Lauderdale FL Media Market, USA",
+      "longname_b": "Bangor ME Media Market, USA",
+      "stat_a": 3.0213237851954555,
+      "stat_b": 12.836122430392225
+    },
+    "a_ease": 0.4215779467680608,
+    "b_ease": 0.8424153166421208
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Commute Walk %",
+      "question": "higher % of people who commute by walking",
+      "longname_a": "York County, South Carolina, USA",
+      "longname_b": "St. Johns County, Florida, USA",
+      "stat_a": 0.01356258144303128,
+      "stat_b": 0.009577659819986152
+    },
+    "b": {
+      "stat_column": "Asian %",
+      "question": "higher % of people who are Asian",
+      "longname_a": "Iowa, USA",
+      "longname_b": "Wyoming, USA",
+      "stat_a": 0.023513581030908965,
+      "stat_b": 0.008731890904236969
+    },
+    "a_ease": 0.41755888650963596,
+    "b_ease": 0.8433121019108281
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "PW Density (r=1km)",
+      "question": "higher population-weighted density (r=1km)",
+      "longname_a": "Minnesota, USA",
+      "longname_b": "Rhode Island, USA",
+      "stat_a": 1107.7437732966916,
+      "stat_b": 2011.1912198467314
+    },
+    "b": {
+      "stat_column": "Mean high temperature in winter",
+      "question": "higher mean daily high temperature in winter (population weighted)",
+      "longname_a": "Connecticut, USA",
+      "longname_b": "Pennsylvania, USA",
+      "stat_a": 39.48503924745326,
+      "stat_b": 41.29530606280398
+    },
+    "a_ease": 0.9453422053231939,
+    "b_ease": 0.523598820058997
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "2016-2020 Swing",
+      "question": "!FULL Which swung towards Democrats more from 2016 to 2020?",
+      "longname_a": "Worcester [Urban Area], MA-CT, USA",
+      "longname_b": "Detroit [Urban Area], MI, USA",
+      "stat_a": 0.06609801507447349,
+      "stat_b": 0.028213151450208168
+    },
+    "b": {
+      "stat_column": "Mean high heat index",
+      "question": "higher mean daily high heat index (population weighted)",
+      "longname_a": "Nashville-Davidson--Murfreesboro--Franklin MSA, TN, USA",
+      "longname_b": "Denver-Aurora-Lakewood MSA, CO, USA",
+      "stat_a": 71.13232892665661,
+      "stat_b": 60.30154368529697
+    },
+    "a_ease": 0.5471976401179941,
+    "b_ease": 0.8544949026876738
+  }
+]

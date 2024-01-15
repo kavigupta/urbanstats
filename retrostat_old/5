@@ -1,0 +1,107 @@
+[
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Individual Income > $100k %",
+      "question": "higher % of people who have individual income over $100k",
+      "longname_a": "Providence County, Rhode Island, USA",
+      "longname_b": "San Diego County, California, USA",
+      "stat_a": 0.08790705555044506,
+      "stat_b": 0.1659701818723363
+    },
+    "b": {
+      "stat_column": "Undergrad STEM %",
+      "question": "!FULL Which has more people with a STEM degree, as a percentage of the overall population?",
+      "longname_a": "ND-00, USA",
+      "longname_b": "PA-08, USA",
+      "stat_a": 0.12642020800790377,
+      "stat_b": 0.10256515231637309
+    },
+    "a_ease": 0.6850393700787402,
+    "b_ease": 0.2766934557979334
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Mean high temp",
+      "question": "higher mean daily high temperature (population weighted)",
+      "longname_a": "Mobile AL-Pensacola (Ft. Walton Beach) FL Media Market, USA",
+      "longname_b": "Bakersfield CA Media Market, USA",
+      "stat_a": 75.8987586408855,
+      "stat_b": 76.46189604888305
+    },
+    "b": {
+      "stat_column": "Grad %",
+      "question": "higher % of people who have a graduate degree",
+      "longname_a": "Monroe LA-El Dorado AR Media Market, USA",
+      "longname_b": "Paducah KY-Cape Girardeau MO-Harrisburg IL Media Market, USA",
+      "stat_a": 0.06360765007181023,
+      "stat_b": 0.07321497678018576
+    },
+    "a_ease": 0.36890243902439024,
+    "b_ease": 0.7795275590551181
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Boomer %",
+      "question": "higher % of people who are boomers",
+      "longname_a": "Roanoke MSA, VA, USA",
+      "longname_b": "Laredo MSA, TX, USA",
+      "stat_a": 0.2645460586770789,
+      "stat_b": 0.14397875361005083
+    },
+    "b": {
+      "stat_column": "2016-2020 Swing",
+      "question": "!FULL Which swung towards Democrats more from 2016 to 2020?",
+      "longname_a": "Ogden-Clearfield MSA, UT, USA",
+      "longname_b": "Birmingham-Hoover MSA, AL, USA",
+      "stat_a": -0.038115260244885096,
+      "stat_b": 0.0482250366118363
+    },
+    "a_ease": 0.8160315374507228,
+    "b_ease": 0.4133489461358314
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "AW Density",
+      "question": "higher area-weighted density",
+      "longname_a": "Birmingham-Hoover MSA, AL, USA",
+      "longname_b": "Gainesville MSA, FL, USA",
+      "stat_a": 84.89179355737838,
+      "stat_b": 86.4145014743051
+    },
+    "b": {
+      "stat_column": "High temperature Below 40\u00b0F %",
+      "question": "higher % of cold days (days with high temp under 40\u00b0F, population weighted)",
+      "longname_a": "Round Lake Beach-McHenry-Grayslake [Urban Area], IL-WI, USA",
+      "longname_b": "Pittsburgh [Urban Area], PA, USA",
+      "stat_a": 0.2540257076656693,
+      "stat_b": 0.16638294646241053
+    },
+    "a_ease": 0.4041331802525832,
+    "b_ease": 0.8161592505854801
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Only English at Home %",
+      "question": "higher % of people who only speak english at home",
+      "longname_a": "Orange County, Florida, USA",
+      "longname_b": "Webb County, Texas, USA",
+      "stat_a": 0.6251449239309551,
+      "stat_b": 0.10204106806575496
+    },
+    "b": {
+      "stat_column": "Renter %",
+      "question": "higher % of people who are renters",
+      "longname_a": "Fayetteville-Springdale-Rogers [Urban Area], AR-MO, USA",
+      "longname_b": "Round Lake Beach-McHenry-Grayslake [Urban Area], IL-WI, USA",
+      "stat_a": 0.4586478197907664,
+      "stat_b": 0.20422029797054192
+    },
+    "a_ease": 0.8291721419185283,
+    "b_ease": 0.40341655716162944
+  }
+]
