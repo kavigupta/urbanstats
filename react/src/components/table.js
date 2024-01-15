@@ -16,6 +16,7 @@ class StatisticRowRaw extends React.Component {
     cells() {
         return [
             [31,
+                "statname",
                 <span className="serif value">{
                     this.props.is_header ? "Statistic" :
                         <a className="statname_no_link" href={explanation_page_link(this.props.explanation_page)}>{this.props.statname}</a>
@@ -23,6 +24,7 @@ class StatisticRowRaw extends React.Component {
                 </span>
             ],
             [10,
+                "statval",
                 <div className="value_numeric">
                     <span className="serif value">{
                         this.props.is_header
@@ -37,6 +39,7 @@ class StatisticRowRaw extends React.Component {
                 </div>
             ],
             [5,
+                "statval_unit",
                 <div className="value_unit">
                     <span className="serif value">{
                         this.props.is_header
@@ -51,6 +54,7 @@ class StatisticRowRaw extends React.Component {
                 </div>
             ],
             [25,
+                "statistic_ordinal",
                 <span className="serif ordinal">{
                     this.props.is_header
                         ? "Ordinal"
@@ -62,6 +66,7 @@ class StatisticRowRaw extends React.Component {
                 }</span>
             ],
             [17,
+                "statistic_percentile",
                 <span className="serif ordinal">{
                     this.props.is_header
                         ? "Percentile"
@@ -73,6 +78,7 @@ class StatisticRowRaw extends React.Component {
                 }</span>
             ],
             [8,
+                "pointer_in_class",
                 <span className="serif ordinal">{
                     this.props.is_header
                         ? "Within Type"
@@ -85,6 +91,7 @@ class StatisticRowRaw extends React.Component {
                         />}</span>
             ],
             [8,
+                "pointer_overall",
                 <span className="serif ordinal">{
                     this.props.is_header
                         ? "Overall"
@@ -105,7 +112,7 @@ class StatisticRowRaw extends React.Component {
         const cells = this.cells();
         for (let i in cells) {
             cell_percentages.push(cells[i][0]);
-            cell_contents.push(cells[i][1]);
+            cell_contents.push(cells[i][2]);
         }
         // normalize cell percentages
         const sum = cell_percentages.reduce((a, b) => a + b, 0);
