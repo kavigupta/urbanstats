@@ -1,5 +1,5 @@
 
-export {load_article};
+export { load_article };
 
 function load_article(data, settings) {
     let article_type = data.articleType;

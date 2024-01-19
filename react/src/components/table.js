@@ -106,26 +106,35 @@ class StatisticRowRaw extends React.Component {
         ]
     }
 
-    render() {
+    tr_contents(total_width) {
         var cell_percentages = [];
         var cell_contents = [];
         const cells = this.cells();
         for (let i in cells) {
+            if (this.props.only_columns && !this.props.only_columns.includes(cells[i][1])) {
+                continue;
+            }
             cell_percentages.push(cells[i][0]);
             cell_contents.push(cells[i][2]);
         }
         // normalize cell percentages
         const sum = cell_percentages.reduce((a, b) => a + b, 0);
         for (let i in cell_percentages) {
-            cell_percentages[i] = 100 * cell_percentages[i] / sum;
+            cell_percentages[i] = total_width * cell_percentages[i] / sum;
         }
+
+        return cell_contents.map((content, i) =>
+            <td key={i} style={{ width: cell_percentages[i] + "%" }}>
+                {content}
+            </td>
+        );
+
+    }
+
+    render() {
         return (
             <tr className={this.props.is_header ? "tableheader" : this.props.index % 2 == 1 ? "oddrow" : ""}>
-                {cell_contents.map((content, i) =>
-                    <td key={i} style={{ width: cell_percentages[i] + "%" }}>
-                        {content}
-                    </td>
-                )}
+                {this.tr_contents(100)}
             </tr>
         );
     }
