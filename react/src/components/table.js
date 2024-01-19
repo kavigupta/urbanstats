@@ -1,12 +1,17 @@
 import React, { useState, useEffect, useRef } from 'react';
 import ContentEditable from 'react-contenteditable'
 
-export { StatisticRowRaw, Statistic };
+export { StatisticRowRaw, Statistic, statistic_row };
 import { article_link, explanation_page_link, ordering_link } from "../navigation/links.js";
 import { loadProtobuf } from '../load_json.js';
 import "./table.css";
 import { is_historical_cd } from '../utils/is_historical.js';
 
+const table_row_style = {
+    display: "flex",
+    flexDirection: "row",
+    alignItems: "baseline",
+};
 
 class StatisticRowRaw extends React.Component {
     constructor(props) {
@@ -23,7 +28,7 @@ class StatisticRowRaw extends React.Component {
                 }
                 </span>
             ],
-            [10,
+            [15,
                 "statval",
                 <div className="value_numeric">
                     <span className="serif value">{
@@ -38,7 +43,7 @@ class StatisticRowRaw extends React.Component {
                     </span>
                 </div>
             ],
-            [5,
+            [10,
                 "statval_unit",
                 <div className="value_unit">
                     <span className="serif value">{
@@ -53,29 +58,31 @@ class StatisticRowRaw extends React.Component {
                     </span>
                 </div>
             ],
-            [25,
+            [this.props.simple ? 10 : 25,
                 "statistic_ordinal",
-                <span className="serif ordinal">{
-                    this.props.is_header
-                        ? "Ordinal"
-                        : <Ordinal ordinal={this.props.ordinal}
-                            total={this.props.total_count_in_class}
-                            type={this.props.article_type}
-                            statpath={this.props.statpath}
-                        />
-                }</span>
+            <span className="serif ordinal">{
+                this.props.is_header
+                    ? (this.props.simple ? "Ord" : "Ordinal")
+                    : <Ordinal ordinal={this.props.ordinal}
+                        total={this.props.total_count_in_class}
+                        type={this.props.article_type}
+                        statpath={this.props.statpath}
+                        simple={this.props.simple}
+                    />
+            }</span>
             ],
-            [17,
+            [this.props.simple ? 5 : 17,
                 "statistic_percentile",
-                <span className="serif ordinal">{
-                    this.props.is_header
-                        ? "Percentile"
-                        : <Percentile ordinal={this.props.ordinal}
-                            total={this.props.total_count_in_class}
-                            percentile_by_population={this.props.percentile_by_population}
-                            settings={this.props.settings}
-                        />
-                }</span>
+            <span className="serif ordinal">{
+                this.props.is_header
+                    ? (this.props.simple ? "%ile" : "Percentile")
+                    : <Percentile ordinal={this.props.ordinal}
+                        total={this.props.total_count_in_class}
+                        percentile_by_population={this.props.percentile_by_population}
+                        settings={this.props.settings}
+                        simple={this.props.simple}
+                    />
+            }</span>
             ],
             [8,
                 "pointer_in_class",
@@ -124,20 +131,26 @@ class StatisticRowRaw extends React.Component {
         }
 
         return cell_contents.map((content, i) =>
-            <td key={i} style={{ width: cell_percentages[i] + "%" }}>
+            <div key={100 * this.props._idx + i} style={{ width: cell_percentages[i] + "%" }}>
                 {content}
-            </td>
+            </div>
         );
 
     }
 
     render() {
         return (
-            <tr className={this.props.is_header ? "tableheader" : this.props.index % 2 == 1 ? "oddrow" : ""}>
-                {this.tr_contents(100)}
-            </tr>
+            statistic_row(this.props.is_header, this.props.index, this.tr_contents(100))
         );
     }
+}
+
+function statistic_row(is_header, index, contents) {
+    return (
+        <div key={index} className={is_header ? "tableheader" : index % 2 == 1 ? "oddrow" : ""} style={table_row_style}>
+            {contents}
+        </div>
+    );
 }
 
 
@@ -302,6 +315,9 @@ class Ordinal extends React.Component {
         if (ordinal > total) {
             return <span></span>
         }
+        if (this.props.simple) {
+            return <span>{ordinal.toString()}</span>;
+        }
         return <span>
             <EditableNumber
                 number={ordinal}
@@ -387,6 +403,9 @@ class Percentile extends React.Component {
                 this.props.percentile_by_population
                 : 1 - ordinal / total;
         const percentile = Math.floor(100 * quantile);
+        if (this.props.simple) {
+            return <span>{percentile.toString()}</span>;
+        }
         // something like Xth percentile
         let text = percentile + "th percentile";
         if (percentile % 10 == 1 && percentile % 100 != 11) {

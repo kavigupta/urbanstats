@@ -25,13 +25,11 @@ class ArticlePanel extends PageTemplate {
                 <div className={headerTextClass()}>{this.props.shortname}</div>
                 <div className={subHeaderTextClass()}>{this.props.longname}</div>
 
-                <table className="stats_table">
-                    <tbody>
-                        <StatisticRowRaw is_header={true} />
-                        {filtered_rows.map((row, i) =>
-                            <StatisticRowRaw key={i} index={i} {...row} settings={this.state.settings} />)}
-                    </tbody>
-                </table>
+                <div className="stats_table">
+                    <StatisticRowRaw _idx={-1} is_header={true} />
+                    {filtered_rows.map((row, i) =>
+                        <StatisticRowRaw _idx={i} key={i} index={i} {...row} settings={this.state.settings} />)}
+                </div>
 
                 <p></p>
 
@@ -40,7 +38,7 @@ class ArticlePanel extends PageTemplate {
                     related={this.props.related}
                     settings={this.state.settings}
                     article_type={this.props.article_type}
-                    basemap={{type: "osm"}} />
+                    basemap={{ type: "osm" }} />
 
                 <script src="/scripts/map.js"></script>
 

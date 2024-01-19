@@ -2,7 +2,7 @@ export { ComparisonPanel };
 
 import React from 'react';
 
-import { StatisticRowRaw } from "./table.js";
+import { StatisticRowRaw, statistic_row } from "./table.js";
 import { Map } from "./map.js";
 import { PageTemplate } from "../page_template/template.js";
 import "../common.css";
@@ -10,9 +10,16 @@ import "./article.css";
 import { load_article } from './load-article.js';
 import { headerTextClass, subHeaderTextClass } from '../utils/responsive.js';
 
+const main_columns = ["statval", "statval_unit", "statistic_ordinal", "statistic_percentile"];
+const left_margin = 20;
+
 class ComparisonPanel extends PageTemplate {
     constructor(props) {
         super(props);
+    }
+
+    each() {
+        return (100 - left_margin) / this.props.datas.length;
     }
 
     main_content() {
@@ -27,7 +34,14 @@ class ComparisonPanel extends PageTemplate {
 
         rows = insert_missing(rows, idxs);
 
-        const main_columns = ["statname", "statval", "statval_unit", "statistic_ordinal", "statistic_percentile"];
+        const header_row = this.produce_row(i => {return { is_header: true }});
+        const render_rows = rows[0].map((_, row_idx) =>
+            this.produce_row(data_idx => {
+                return {
+                    key: row_idx, index: row_idx, ...rows[data_idx][row_idx], settings: this.state.settings
+                }
+            })
+        );
 
         return (
             <div>
@@ -38,28 +52,27 @@ class ComparisonPanel extends PageTemplate {
                 <div className={subHeaderTextClass()}>{this.props.joined_string}</div>
 
                 <div style={{ display: "flex" }}>
-                    {this.cell(true, <div></div>)}
+                    {this.cell(true, 0, <div></div>)}
                     {this.props.datas.map(
-                        data => this.cell(false, <div className={subHeaderTextClass()}>
+                        (data, i) => this.cell(false, i, <div className={subHeaderTextClass()}>
                             {data.longname}
                         </div>)
                     )}
                 </div>
 
-                <div style={{ display: "flex" }}>
-                    {this.cell(true, <div></div>)}
-                    {rows.map(
-                        row => this.cell(false, <div className={subHeaderTextClass()}>
-                            {this.stats_table(row, main_columns)}
-                        </div>)
-                    )}
-                </div>
+                {statistic_row(true, 0, header_row)}
+
+                {
+                    render_rows.map((row, i) =>
+                        statistic_row(false, i, row)
+                    )
+                }
 
                 <div style={{ display: "flex" }}>
-                    {this.cell(true, <div></div>)}
+                    {this.cell(true, 0, <div></div>)}
                     {this.props.datas.map(
-                        data => this.cell(false, <div className={subHeaderTextClass()}>
-                            {this.map(data)}
+                        (data, i) => this.cell(false, i, <div>
+                            {this.map(i, data)}
                         </div>)
                     )}
                 </div>
@@ -68,43 +81,34 @@ class ComparisonPanel extends PageTemplate {
         );
     }
 
-    cell(is_left, contents) {
+    cell(is_left, i, contents) {
         if (is_left) {
-            return <div style={{ width: "20%" }}>
+            return <div key={i} style={{ width: "20%" }}>
                 {contents}
             </div>
         }
         const width = (80 / this.props.datas.length) + "%";
-        return <div style={{ width: width }}>
+        return <div key={i} style={{ width: width }}>
             {contents}
         </div>
     }
 
-    stats_table(rows, only_columns) {
-        return <table className="stats_table">
-            <tbody>
-                <StatisticRowRaw is_header={true} only_columns={only_columns} />
-                {rows.map((row, i) =>
-                    <StatisticRowRaw key={i} index={i} {...row} settings={this.state.settings} only_columns={only_columns} />)}
-            </tbody>
-        </table>
+    produce_row(params) {
+        const row_overall = [];
+        row_overall.push(...new StatisticRowRaw({ ...params(0), only_columns: ["statname"], _idx: -1, simple: true }).tr_contents(left_margin));
+        for (const i in this.props.datas) {
+            row_overall.push(...new StatisticRowRaw({ ...params(i), only_columns: main_columns, _idx: i, simple: true }).tr_contents(this.each()));
+        }
+        return row_overall;
     }
 
-    map(data) {
-        return <Map id={"map_" + data.shortname}
+    map(i, data) {
+        return <Map id={"map_" + i}
             longname={data.longname}
             related={data.related}
             settings={this.state.settings}
             article_type={data.article_type}
             basemap={{ type: "osm" }} />
-    }
-
-    content(data, rows, only_columns) {
-        return <>
-            {this.stats_table(rows, only_columns)}
-            <p></p>
-            {this.map(data)}
-        </>
     }
 
 }
