@@ -230,6 +230,7 @@ function HeadingDisplay({ longname, include_delete, on_click, on_change }) {
                         <ManipulationButton color="#e6e9ef" on_click={on_click} text="delete" />
                     </>
                 }
+                <div style={{ width: "5px" }} />
             </div>
         </div>
         <div style={{ height: "5px" }} />
