@@ -8,18 +8,15 @@ import { PageTemplate } from "../page_template/template.js";
 import "../common.css";
 import "./article.css";
 import { load_article } from './load-article.js';
-import { headerTextClass, subHeaderTextClass } from '../utils/responsive.js';
+import { comparisonHeadStyle, headerTextClass, subHeaderTextClass } from '../utils/responsive.js';
 
 const main_columns = ["statval", "statval_unit", "statistic_ordinal", "statistic_percentile"];
-const left_margin = 20;
+const main_columns_across_types = ["statval", "statval_unit"]
+const left_margin_pct = 0.2;
 
 class ComparisonPanel extends PageTemplate {
     constructor(props) {
         super(props);
-    }
-
-    each() {
-        return (100 - left_margin) / this.props.datas.length;
     }
 
     main_content() {
@@ -34,7 +31,7 @@ class ComparisonPanel extends PageTemplate {
 
         rows = insert_missing(rows, idxs);
 
-        const header_row = this.produce_row(i => {return { is_header: true }});
+        const header_row = this.produce_row(i => { return { is_header: true } });
         const render_rows = rows[0].map((_, row_idx) =>
             this.produce_row(data_idx => {
                 return {
@@ -42,6 +39,8 @@ class ComparisonPanel extends PageTemplate {
                 }
             })
         );
+
+        console.log(this.width_columns())
 
         return (
             <div>
@@ -51,53 +50,92 @@ class ComparisonPanel extends PageTemplate {
                 <div className={headerTextClass()}>Comparison</div>
                 <div className={subHeaderTextClass()}>{this.props.joined_string}</div>
 
-                <div style={{ display: "flex" }}>
-                    {this.cell(true, 0, <div></div>)}
-                    {this.props.datas.map(
-                        (data, i) => this.cell(false, i, <div className={subHeaderTextClass()}>
-                            {data.longname}
-                        </div>)
-                    )}
-                </div>
+                <div className="gap"></div>
 
-                {statistic_row(true, 0, header_row)}
+                {this.maybe_scroll(
+                    <>
+                        <div style={{ display: "flex" }}>
+                            {this.cell(true, 0, <div></div>)}
+                            {this.props.datas.map(
+                                (data, i) => this.cell(false, i, <div className="serif" style={comparisonHeadStyle()}>
+                                    {data.longname}
+                                </div>)
+                            )}
+                        </div>
 
-                {
-                    render_rows.map((row, i) =>
-                        statistic_row(false, i, row)
-                    )
-                }
+                        {statistic_row(true, 0, header_row)}
 
-                <div style={{ display: "flex" }}>
-                    {this.cell(true, 0, <div></div>)}
-                    {this.props.datas.map(
-                        (data, i) => this.cell(false, i, <div>
-                            {this.map(i, data)}
-                        </div>)
-                    )}
-                </div>
+                        {
+                            render_rows.map((row, i) =>
+                                statistic_row(false, i, row)
+                            )
+                        }
+
+                        <div className="gap"></div>
+
+                        <div style={{ display: "flex" }}>
+                            {this.cell(true, 0, <div></div>)}
+                            {this.props.datas.map(
+                                (data, i) => this.cell(false, i, <div>
+                                    {this.map(i, data)}
+                                </div>)
+                            )}
+                        </div>
+                    </>
+                )}
 
             </div>
         );
     }
 
+    maybe_scroll(contents) {
+        if (this.width_columns() > 4) {
+            // make this scrollable. Total scroll width should be 100% * (width_columns / 4)
+            return <div style={{ overflowX: "scroll" }}>
+                <div style={{ width: 100 * this.width_columns() / 4 + "%" }}>
+                    {contents}
+                </div>
+            </div>
+        }
+        return contents;
+    }
+
     cell(is_left, i, contents) {
         if (is_left) {
-            return <div key={i} style={{ width: "20%" }}>
+            return <div key={i} style={{ width: this.left_margin() + "%" }}>
                 {contents}
             </div>
         }
-        const width = (80 / this.props.datas.length) + "%";
+        const width = this.each() + "%";
         return <div key={i} style={{ width: width }}>
             {contents}
         </div>
     }
 
+    width_columns() {
+        // 1.5 columns each if all data types are the same, otherwise 1 column each
+        // + 1 for the left margin
+        return (this.all_data_types_same() ? 1.5 : 1) * this.props.datas.length + 1;
+    }
+
+    each() {
+        return 100 * (1 - left_margin_pct) / this.props.datas.length;
+    }
+
+    left_margin() {
+        return 100 * left_margin_pct;
+    }
+
+    all_data_types_same() {
+        return this.props.datas.every(x => x.articleType == this.props.datas[0].articleType)
+    }
+
     produce_row(params) {
         const row_overall = [];
-        row_overall.push(...new StatisticRowRaw({ ...params(0), only_columns: ["statname"], _idx: -1, simple: true }).tr_contents(left_margin));
+        row_overall.push(...new StatisticRowRaw({ ...params(0), only_columns: ["statname"], _idx: -1, simple: true }).tr_contents(this.left_margin()));
+        const only_columns = this.all_data_types_same() ? main_columns : main_columns_across_types;
         for (const i in this.props.datas) {
-            row_overall.push(...new StatisticRowRaw({ ...params(i), only_columns: main_columns, _idx: i, simple: true }).tr_contents(this.each()));
+            row_overall.push(...new StatisticRowRaw({ ...params(i), only_columns: only_columns, _idx: i, simple: true }).tr_contents(this.each()));
         }
         return row_overall;
     }
