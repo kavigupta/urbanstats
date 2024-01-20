@@ -1,6 +1,6 @@
 import React from 'react';
 
-export { SearchBox };
+export { SearchBox, LightweightSearchbox };
 
 import { loadProtobuf } from '../load_json.js';
 import { article_link } from '../navigation/links';
@@ -87,6 +87,82 @@ class SearchBox extends React.Component {
         let terms = autocompleteMatch(settings, values, val);
         if (terms.length > 0) {
             window.location.href = article_link(values[terms[focused]]);
+        }
+        return false;
+    }
+}
+
+class LightweightSearchbox extends React.Component {
+    // like SearchBox but is just a text box that uses a datalist for autocomplete
+    constructor(props) {
+        super(props);
+        this.state = { matches: [], is_loaded: false, focused: 0 };
+        this.textbox = React.createRef();
+        this.form = React.createRef();
+        this.values = loadProtobuf("/index/pages.gz", "StringList");
+        this.searchbox_datalist_id = "searchbox-datalist" + Math.random();
+    }
+
+    render() {
+        // if this.props.autoFocus, then autofocus
+        return (<form autoComplete="off" style={{ marginBlockEnd: "0em" }} ref={this.form}>
+            <input
+                autoFocus={this.props.autoFocus}
+                ref={this.textbox}
+                id="searchbox"
+                type="text"
+                placeholder={this.props.placeholder}
+                style={this.props.style}
+                className="serif"
+                list={this.searchbox_datalist_id} />
+
+            <datalist id={this.searchbox_datalist_id}>
+                {
+                    this.state.matches.map((i, idx) =>
+                        <option key={i} value={(this._values)[i]} />
+                    )
+                }
+            </datalist>
+        </form>);
+
+    }
+
+    async componentDidMount() {
+        this._values = (await this.values).elements;
+        this.setState({ is_loaded: true });
+        let self = this;
+        console.log(this.props.settings)
+        this.textbox.current.onkeyup = function (event) {
+            self.setState({ matches: autocompleteMatch(self.props.settings, self._values, self.textbox.current.value) });
+        };
+        this.textbox.current.onchange = function (event) {
+            for (let i = 0; i < self._values.length; i++) {
+                if (self._values[i] == self.textbox.current.value) {
+                    self.go(self.props.settings, self._values, self.textbox.current.value);
+                    return;
+                }
+            }
+        }
+        // submit
+        this.form.current.onsubmit = function () {
+            self.go(self.props.settings, self._values, self.textbox.current.value);
+            return false;
+        }
+        this.textbox.current.addEventListener("submit", function () {
+            self.go(self.props.settings, self._values, self.textbox.current.value);
+            return false;
+        });
+        // on click of dropdown
+    }
+
+    go(settings, values, val) {
+        try {
+            let terms = autocompleteMatch(settings, values, val);
+            if (terms.length > 0) {
+                this.props.on_change(values[terms[0]]);
+            }
+        } catch (e) {
+            console.log(e);
         }
         return false;
     }

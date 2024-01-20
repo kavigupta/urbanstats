@@ -18,7 +18,7 @@ async function loadPage() {
     const joined_string = datas.map(x => x.shortname).join(" vs ");
     document.title = joined_string;
     const root = ReactDOM.createRoot(document.getElementById("root"));
-    root.render(<ComparisonPanel datas={datas} joined_string={joined_string} />);
+    root.render(<ComparisonPanel names={names} datas={datas} joined_string={joined_string} />);
 }
 
 loadPage();

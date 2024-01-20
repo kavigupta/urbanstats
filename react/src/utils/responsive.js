@@ -13,14 +13,16 @@ function subHeaderTextClass() {
     return "centered_text " + (mobileLayout() ? "subheadertext_mobile" : "subheadertext");
 }
 
-function comparisonHeadStyle() {
+function comparisonHeadStyle(
+    align = "center"
+) {
     // bold
     return {
         fontSize: mobileLayout() ? "15px" : "20px",
         fontWeight: "bold",
         margin: "0",
         padding: "0",
-        textAlign: "center",
+        textAlign: align,
         verticalAlign: "bottom",
     }
 }

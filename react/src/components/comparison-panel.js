@@ -9,6 +9,7 @@ import "../common.css";
 import "./article.css";
 import { load_article } from './load-article.js';
 import { comparisonHeadStyle, headerTextClass, subHeaderTextClass } from '../utils/responsive.js';
+import { LightweightSearchbox } from './search.js';
 
 const main_columns = ["statval", "statval_unit", "statistic_ordinal", "statistic_percentile"];
 const main_columns_across_types = ["statval", "statval_unit"]
@@ -44,21 +45,42 @@ class ComparisonPanel extends PageTemplate {
 
         return (
             <div>
-                {/* <div style={{display:"flex"}}>
-                    <div style={{width: }}
-                </div> */}
                 <div className={headerTextClass()}>Comparison</div>
                 <div className={subHeaderTextClass()}>{this.props.joined_string}</div>
 
-                <div className="gap"></div>
+                <div style={{ marginBlockEnd: "1em" }}></div>
+
+                <div style={{ display: "flex" }}>
+                    <div style={{ width: (100 * left_margin_pct) + "%" }}>
+                    </div>
+                    <div style={{ width: (50 * (1 - left_margin_pct)) + "%", marginRight: "1em" }}>
+                        <div style={comparisonHeadStyle("right")}>Add another region:</div>
+                    </div>
+                    <div style={{ width: (50 * (1 - left_margin_pct)) + "%" }}>
+                        <LightweightSearchbox
+                            settings={this.state.settings}
+                            style={{ ...comparisonHeadStyle(), width: "100%" }}
+                            placeholder={"Name"}
+                            on_change={(x) => self.add_new(x)}
+                        />
+                    </div>
+                </div>
+
+
+                <div style={{ marginBlockEnd: "1em" }}></div>
 
                 {this.maybe_scroll(
                     <>
                         <div style={{ display: "flex" }}>
                             {this.cell(true, 0, <div></div>)}
                             {this.props.datas.map(
-                                (data, i) => this.cell(false, i, <div className="serif" style={comparisonHeadStyle()}>
-                                    {data.longname}
+                                (data, i) => this.cell(false, i, <div>
+                                    <HeadingDisplay
+                                        longname={data.longname}
+                                        include_delete={this.props.datas.length > 1}
+                                        on_click={() => self.on_delete(i)}
+                                        on_change={(x) => self.on_change(i, x)}
+                                    />
                                 </div>)
                             )}
                         </div>
@@ -88,11 +110,35 @@ class ComparisonPanel extends PageTemplate {
         );
     }
 
+    on_change(i, x) {
+        const new_names = [...this.props.names];
+        new_names[i] = x;
+        this.go(new_names);
+    }
+
+    on_delete(i) {
+        const new_names = [...this.props.names];
+        new_names.splice(i, 1);
+        this.go(new_names);
+    }
+
+    add_new(x) {
+        const new_names = [...this.props.names];
+        new_names.push(x);
+        this.go(new_names);
+    }
+
+    go(names) {
+        const window_info = new URLSearchParams(window.location.search);
+        window_info.set("longnames", JSON.stringify(names));
+        window.location.search = window_info.toString();
+    }
+
     maybe_scroll(contents) {
         if (this.width_columns() > 4) {
             // make this scrollable. Total scroll width should be 100% * (width_columns / 4)
             return <div style={{ overflowX: "scroll" }}>
-                <div style={{ width: 100 * this.width_columns() / 4 + "%" }}>
+                <div style={{ width: 100 * this.width_columns() / 4.5 + "%" }}>
                     {contents}
                 </div>
             </div>
@@ -149,6 +195,55 @@ class ComparisonPanel extends PageTemplate {
             basemap={{ type: "osm" }} />
     }
 
+}
+
+const manipulation_button_height = "24px";
+
+function ManipulationButton({ color, on_click, text }) {
+    return <div
+        style={{
+            height: manipulation_button_height,
+            lineHeight: manipulation_button_height,
+            cursor: "pointer",
+            paddingLeft: "0.5em", paddingRight: "0.5em",
+            borderRadius: "0.25em",
+            color: "black", verticalAlign: "middle",
+            backgroundColor: color,
+        }}
+        className="serif"
+        onClick={on_click}>
+        {text}
+    </div>
+}
+
+function HeadingDisplay({ longname, include_delete, on_click, on_change }) {
+
+    const [is_editing, set_is_editing] = React.useState(false);
+
+    return <div>
+        <div style={{ height: manipulation_button_height }}>
+            <div style={{ display: "flex", justifyContent: "flex-end", height: "100%" }}>
+                <ManipulationButton color="#e6e9ef" on_click={() => set_is_editing(!is_editing)} text="replace" />
+                {!include_delete ? null :
+                    <>
+                        <div style={{ width: "5px" }} />
+                        <ManipulationButton color="#e6e9ef" on_click={on_click} text="delete" />
+                    </>
+                }
+            </div>
+        </div>
+        <div style={{ height: "5px" }} />
+        <div style={comparisonHeadStyle()}>{longname}</div>
+        {is_editing ?
+            <LightweightSearchbox
+                autoFocus={true}
+                settings={{}}
+                style={{ ...comparisonHeadStyle(), width: "100%" }}
+                placeholder={"Replacement"}
+                on_change={on_change}
+            />
+            : null}
+    </div>
 }
 
 function insert_missing(rows, idxs) {
