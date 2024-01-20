@@ -207,7 +207,7 @@ function ManipulationButton({ color, on_click, text }) {
             cursor: "pointer",
             paddingLeft: "0.5em", paddingRight: "0.5em",
             borderRadius: "0.25em",
-            color: "black", verticalAlign: "middle",
+            verticalAlign: "middle",
             backgroundColor: color,
         }}
         className="serif"

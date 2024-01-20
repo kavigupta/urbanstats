@@ -131,7 +131,6 @@ class LightweightSearchbox extends React.Component {
         this._values = (await this.values).elements;
         this.setState({ is_loaded: true });
         let self = this;
-        console.log(this.props.settings)
         this.textbox.current.onkeyup = function (event) {
             self.setState({ matches: autocompleteMatch(self.props.settings, self._values, self.textbox.current.value) });
         };
