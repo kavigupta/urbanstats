@@ -178,10 +178,27 @@ class ComparisonPanel extends PageTemplate {
 
     produce_row(params) {
         const row_overall = [];
-        row_overall.push(...new StatisticRowRaw({ ...params(0), only_columns: ["statname"], _idx: -1, simple: true }).tr_contents(this.left_margin()));
+        const param_vals = Array.from(Array(this.props.datas.length).keys()).map(params);
+
+        // argmax
+        var highlight_idx = param_vals.map(x => x.statval).reduce((iMax, x, i, arr) => {
+            if (isNaN(x)) {
+                return iMax;
+            }
+            if (iMax == -1) {
+                return i;
+            }
+            return x > arr[iMax] ? i : iMax
+        }, -1);
+
+        row_overall.push(...new StatisticRowRaw({ ...param_vals[0], only_columns: ["statname"], _idx: -1, simple: true }).tr_contents(this.left_margin()));
         const only_columns = this.all_data_types_same() ? main_columns : main_columns_across_types;
+
+        console.log(highlight_idx)
         for (const i in this.props.datas) {
-            row_overall.push(...new StatisticRowRaw({ ...params(i), only_columns: only_columns, _idx: i, simple: true }).tr_contents(this.each()));
+            row_overall.push(...new StatisticRowRaw({
+                ...param_vals[i], only_columns: only_columns, _idx: i, simple: true, highlight: highlight_idx == i
+            }).tr_contents(this.each()));
         }
         return row_overall;
     }
