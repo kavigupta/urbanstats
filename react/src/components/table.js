@@ -73,6 +73,7 @@ class StatisticRowRaw extends React.Component {
                         type={this.props.article_type}
                         statpath={this.props.statpath}
                         simple={this.props.simple}
+                        onReplace={this.props.onReplace}
                     />
             }</span>
             ],
@@ -328,14 +329,17 @@ class Ordinal extends React.Component {
         if (ordinal > total) {
             return <span></span>
         }
+        const en = <EditableNumber
+            number={ordinal}
+            onNewNumber={num => self.onNewNumber(num)}
+        />;
         if (this.props.simple) {
-            return <span>{ordinal.toString()}</span>;
+            return <span
+                style={{ float: "right", marginRight: "5px" }}
+            >{en}</span>;
         }
         return <span>
-            <EditableNumber
-                number={ordinal}
-                onNewNumber={num => self.onNewNumber(num)}
-            /> of {total} {this.pluralize(type)}
+            {en} of {total} {this.pluralize(type)}
         </span>;
     }
 
@@ -360,7 +364,9 @@ class Ordinal extends React.Component {
             num = 1;
         }
         const data = (await loadProtobuf(link, "StringList")).elements;
-        document.location = article_link(data[num - 1]);
+
+        console.log(this.props.onReplace)
+        this.props.onReplace(data[num - 1])
     }
 }
 
@@ -417,7 +423,9 @@ class Percentile extends React.Component {
                 : 1 - ordinal / total;
         const percentile = Math.floor(100 * quantile);
         if (this.props.simple) {
-            return <span>{percentile.toString()}</span>;
+            return <span
+                style={{ float: "right", marginRight: "5px" }}
+            >{percentile.toString()}</span>;
         }
         // something like Xth percentile
         let text = percentile + "th percentile";

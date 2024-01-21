@@ -11,7 +11,7 @@ import "./article.css";
 import { load_article } from './load-article.js';
 import { comparisonHeadStyle, headerTextClass, subHeaderTextClass } from '../utils/responsive.js';
 import { LightweightSearchbox } from './search.js';
-import { comparison_link } from '../navigation/links.js';
+import { article_link, comparison_link } from '../navigation/links.js';
 
 class ArticlePanel extends PageTemplate {
     constructor(props) {
@@ -30,7 +30,9 @@ class ArticlePanel extends PageTemplate {
                 <div className="stats_table">
                     <StatisticRowRaw _idx={-1} is_header={true} />
                     {filtered_rows.map((row, i) =>
-                        <StatisticRowRaw _idx={i} key={i} index={i} {...row} settings={this.state.settings} />)}
+                        <StatisticRowRaw _idx={i} key={i} index={i} {...row} settings={this.state.settings}
+                            onReplace={x => { document.location = article_link(x) }}
+                        />)}
                 </div>
 
                 <p></p>

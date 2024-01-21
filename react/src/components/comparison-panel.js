@@ -14,7 +14,7 @@ import { LightweightSearchbox } from './search.js';
 const main_columns = ["statval", "statval_unit", "statistic_ordinal", "statistic_percentile"];
 const main_columns_across_types = ["statval", "statval_unit"]
 const left_bar_margin = 0.02;
-const left_margin_pct = 0.2;
+const left_margin_pct = 0.18;
 const bar_height = "5px";
 
 const COLOR_CYCLE = [
@@ -245,7 +245,8 @@ class ComparisonPanel extends PageTemplate {
         console.log(highlight_idx)
         for (const i in this.props.datas) {
             row_overall.push(...new StatisticRowRaw({
-                ...param_vals[i], only_columns: only_columns, _idx: i, simple: true, highlight: highlight_idx == i
+                ...param_vals[i], only_columns: only_columns, _idx: i, simple: true, highlight: highlight_idx == i,
+                onReplace: x => this.on_change(i, x)
             }).tr_contents(this.each()));
         }
         return row_overall;
