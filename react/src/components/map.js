@@ -24,8 +24,19 @@ class MapGeneric extends React.Component {
 
     render() {
         return (
-            <div id={this.props.id} className="map" style={{ background: "white", height: this.props.height || 400 }}></div>
+            <div id={this.props.id} className="map" style={{ background: "white", height: this.props.height || 400 }}>
+                {/* place this on the right of the map */}
+                <div style={
+                    {zIndex: 1000, position: "absolute", right: 0, top: 0, padding: "1em"}
+                }>
+                    {this.buttons()}
+                </div>
+            </div>
         );
+    }
+
+    buttons() {
+        return <></>
     }
 
     async compute_polygons() {
@@ -272,6 +283,23 @@ class MapGeneric extends React.Component {
         }
         map.addLayer(group);
         this.polygon_by_name[name] = group;
+    }
+
+    zoom_to_all() {
+        // zoom such that all polygons are visible
+        const map = this.map;
+        const bounds = new L.LatLngBounds();
+        for (let name in this.polygon_by_name) {
+            bounds.extend(this.polygon_by_name[name].getBounds());
+        }
+        map.fitBounds(bounds);
+    }
+
+    zoom_to(name) {
+        // zoom to a specific polygon
+        console.log("zoom to", name);
+        const map = this.map;
+        map.fitBounds(this.polygon_by_name[name].getBounds());
     }
 }
 

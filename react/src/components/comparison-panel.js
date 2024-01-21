@@ -3,7 +3,7 @@ export { ComparisonPanel };
 import React from 'react';
 
 import { StatisticRowRaw, statistic_row } from "./table.js";
-import { Map } from "./map.js";
+import { Map, MapGeneric } from "./map.js";
 import { PageTemplate } from "../page_template/template.js";
 import "../common.css";
 import "./article.css";
@@ -79,6 +79,7 @@ class ComparisonPanel extends PageTemplate {
 
                 {this.maybe_scroll(
                     <>
+                        {this.bars()}
                         <div style={{ display: "flex" }}>
                             {this.cell(true, 0, <div></div>)}
                             {this.props.datas.map(
@@ -88,11 +89,11 @@ class ComparisonPanel extends PageTemplate {
                                         include_delete={this.props.datas.length > 1}
                                         on_click={() => self.on_delete(i)}
                                         on_change={(x) => self.on_change(i, x)}
-                                        bar_color={this.color(i)}
                                     />
                                 </div>)
                             )}
                         </div>
+                        {this.bars()}
 
                         {statistic_row(true, 0, header_row)}
 
@@ -101,22 +102,33 @@ class ComparisonPanel extends PageTemplate {
                                 statistic_row(false, i, row)
                             )
                         }
-
-                        <div className="gap"></div>
-
-                        <div style={{ display: "flex" }}>
-                            {this.cell(true, 0, <div></div>)}
-                            {this.props.datas.map(
-                                (data, i) => this.cell(false, i, <div>
-                                    {this.map(i, data)}
-                                </div>)
-                            )}
-                        </div>
                     </>
                 )}
+                <div className="gap"></div>
+
+                <ComparisonMap
+                    longnames={this.props.datas.map(x => x.longname)}
+                    colors={this.props.datas.map((_, i) => this.color(i))}
+                    id="map_combined"
+                    article_type={undefined}
+                    basemap={{ type: "osm" }}
+                />
 
             </div>
         );
+    }
+
+    bars() {
+        return <div style={{ display: "flex" }}>
+            {this.cell(true, 0, <div></div>)}
+            {this.props.datas.map(
+                (data, i) => <div key={i} style={{
+                    width: this.each() + "%",
+                    height: bar_height,
+                    backgroundColor: this.color(i)
+                }} />
+            )}
+        </div>
     }
 
     on_change(i, x) {
@@ -231,15 +243,6 @@ class ComparisonPanel extends PageTemplate {
         return row_overall;
     }
 
-    map(i, data) {
-        return <Map id={"map_" + i}
-            longname={data.longname}
-            related={data.related}
-            settings={this.state.settings}
-            article_type={data.article_type}
-            basemap={{ type: "osm" }} />
-    }
-
     color(i) {
         return COLOR_CYCLE[i % COLOR_CYCLE.length];
     }
@@ -265,12 +268,11 @@ function ManipulationButton({ color, on_click, text }) {
     </div>
 }
 
-function HeadingDisplay({ longname, include_delete, on_click, on_change, bar_color }) {
+function HeadingDisplay({ longname, include_delete, on_click, on_change }) {
 
     const [is_editing, set_is_editing] = React.useState(false);
 
     return <div>
-        <div style={{ height: bar_height, backgroundColor: bar_color }} />
         <div style={{ height: manipulation_button_height }}>
             <div style={{ display: "flex", justifyContent: "flex-end", height: "100%" }}>
                 <ManipulationButton color="#e6e9ef" on_click={() => set_is_editing(!is_editing)} text="replace" />
@@ -294,7 +296,6 @@ function HeadingDisplay({ longname, include_delete, on_click, on_change, bar_col
                 on_change={on_change}
             />
             : null}
-        <div style={{ height: bar_height, backgroundColor: bar_color }} />
     </div>
 }
 
@@ -330,4 +331,61 @@ function insert_missing(rows, idxs) {
         new_rows_all.push(new_rows);
     }
     return new_rows_all;
+}
+
+class ComparisonMap extends MapGeneric {
+    constructor(props) {
+        super(props);
+
+        // this.already_fit_bounds = false;
+    }
+
+    buttons() {
+        // one button per longname. Should just be a circle with the color of the longname
+        return <div style={{
+            display: "flex", backgroundColor: "white", padding: "0.5em", borderRadius: "0.5em",
+            alignItems: "center"
+        }}>
+            <span className="serif" style={{ fontSize: "15px" }}><b>Zoom to:</b></span>
+            <div style={{ width: "0.25em" }} />
+            {this.zoom_button(-1, "black", () => this.zoom_to_all())}
+            {this.props.longnames.map((longname, i) => {
+                return this.zoom_button(i, this.props.colors[i], () => this.zoom_to(longname))
+            })}
+        </div>
+    }
+
+    zoom_button(i, color, onClick) {
+        return <div
+            key={i}
+            style={{
+                display: "inline-block", width: "2em", height: "2em",
+                backgroundColor: color, borderRadius: "50%", marginLeft: "5px", marginRight: "5px",
+                cursor: "pointer"
+            }}
+            onClick={onClick}
+        />
+    }
+
+    async compute_polygons() {
+        const names = [];
+        const styles = [];
+
+        for (const i in this.props.longnames) {
+            names.push(this.props.longnames[i]);
+            styles.push({ color: this.props.colors[i], fillColor: this.props.colors[i], "fillOpacity": 0.5, "weight": 1 });
+        }
+
+        const zoom_index = -1;
+
+        const metas = names.map((x) => { return {} });
+
+        return [names, styles, metas, zoom_index];
+    }
+
+    async mapDidRender() {
+        console.log("mapDidRender")
+        this.zoom_to_all();
+        // this.already_fit_bounds = this.props.longname;
+    }
 }
