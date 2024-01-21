@@ -19,8 +19,13 @@ const bar_height = "5px";
 
 const COLOR_CYCLE = [
     "#5a7dc3", // blue
+    "f7aa41", // orange
+    "#8e8e8e", // grey
+    "#f96d6d", // red
+    "#975ac3", // purple
+    "#c767b0", // pink
+    "#b8a32f", // yellow
     "#8ac35a", // green
-    "#f96d6d" // red
 ];
 
 class ComparisonPanel extends PageTemplate {
