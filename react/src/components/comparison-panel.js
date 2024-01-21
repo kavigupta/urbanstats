@@ -8,7 +8,7 @@ import { PageTemplate } from "../page_template/template.js";
 import "../common.css";
 import "./article.css";
 import { load_article } from './load-article.js';
-import { comparisonHeadStyle, headerTextClass, subHeaderTextClass } from '../utils/responsive.js';
+import { comparisonHeadStyle, headerTextClass, mobileLayout, subHeaderTextClass } from '../utils/responsive.js';
 import { LightweightSearchbox } from './search.js';
 
 const main_columns = ["statval", "statval_unit", "statistic_ordinal", "statistic_percentile"];
@@ -19,10 +19,10 @@ const bar_height = "5px";
 
 const COLOR_CYCLE = [
     "#5a7dc3", // blue
-    "f7aa41", // orange
-    "#8e8e8e", // grey
-    "#f96d6d", // red
+    "#f7aa41", // orange
     "#975ac3", // purple
+    "#f96d6d", // red
+    "#8e8e8e", // grey
     "#c767b0", // pink
     "#b8a32f", // yellow
     "#8ac35a", // green
@@ -160,11 +160,14 @@ class ComparisonPanel extends PageTemplate {
         window.location.search = window_info.toString();
     }
 
+    max_columns() {
+        return mobileLayout() ? 4 : 6;
+    }
+
     maybe_scroll(contents) {
-        if (this.width_columns() > 4) {
-            // make this scrollable. Total scroll width should be 100% * (width_columns / 4)
+        if (this.width_columns() > this.max_columns()) {
             return <div style={{ overflowX: "scroll" }}>
-                <div style={{ width: 100 * this.width_columns() / 4.5 + "%" }}>
+                <div style={{ width: 100 * this.width_columns() / (this.max_columns() + 0.3) + "%" }}>
                     {contents}
                 </div>
             </div>
