@@ -13,7 +13,15 @@ import { LightweightSearchbox } from './search.js';
 
 const main_columns = ["statval", "statval_unit", "statistic_ordinal", "statistic_percentile"];
 const main_columns_across_types = ["statval", "statval_unit"]
+const left_bar_margin = 0.02;
 const left_margin_pct = 0.2;
+const bar_height = "5px";
+
+const COLOR_CYCLE = [
+    "#5a7dc3", // blue
+    "#8ac35a", // green
+    "#f96d6d" // red
+];
 
 class ComparisonPanel extends PageTemplate {
     constructor(props) {
@@ -80,6 +88,7 @@ class ComparisonPanel extends PageTemplate {
                                         include_delete={this.props.datas.length > 1}
                                         on_click={() => self.on_delete(i)}
                                         on_change={(x) => self.on_change(i, x)}
+                                        bar_color={this.color(i)}
                                     />
                                 </div>)
                             )}
@@ -191,7 +200,26 @@ class ComparisonPanel extends PageTemplate {
             return x > arr[iMax] ? i : iMax
         }, -1);
 
-        row_overall.push(...new StatisticRowRaw({ ...param_vals[0], only_columns: ["statname"], _idx: -1, simple: true }).tr_contents(this.left_margin()));
+        // add a div with color highlighting the max value
+        // and width 100 * left_bar_margin
+
+        row_overall.push(
+            <div key={"color"} style={{
+                width: 100 * left_bar_margin + "%",
+                alignSelf: "stretch"
+            }}>
+                <div style={{
+                    backgroundColor: highlight_idx == -1 ? "white" : this.color(highlight_idx),
+                    height: "100%",
+                    width: "50%",
+                    margin: "auto"
+                }} />
+            </div>
+        )
+
+        row_overall.push(...new StatisticRowRaw(
+            { ...param_vals[0], only_columns: ["statname"], _idx: -1, simple: true }
+        ).tr_contents(100 * (left_margin_pct - left_bar_margin)));
         const only_columns = this.all_data_types_same() ? main_columns : main_columns_across_types;
 
         console.log(highlight_idx)
@@ -210,6 +238,10 @@ class ComparisonPanel extends PageTemplate {
             settings={this.state.settings}
             article_type={data.article_type}
             basemap={{ type: "osm" }} />
+    }
+
+    color(i) {
+        return COLOR_CYCLE[i % COLOR_CYCLE.length];
     }
 
 }
@@ -233,11 +265,12 @@ function ManipulationButton({ color, on_click, text }) {
     </div>
 }
 
-function HeadingDisplay({ longname, include_delete, on_click, on_change }) {
+function HeadingDisplay({ longname, include_delete, on_click, on_change, bar_color }) {
 
     const [is_editing, set_is_editing] = React.useState(false);
 
     return <div>
+        <div style={{ height: bar_height, backgroundColor: bar_color }} />
         <div style={{ height: manipulation_button_height }}>
             <div style={{ display: "flex", justifyContent: "flex-end", height: "100%" }}>
                 <ManipulationButton color="#e6e9ef" on_click={() => set_is_editing(!is_editing)} text="replace" />
@@ -261,6 +294,7 @@ function HeadingDisplay({ longname, include_delete, on_click, on_change }) {
                 on_change={on_change}
             />
             : null}
+        <div style={{ height: bar_height, backgroundColor: bar_color }} />
     </div>
 }
 
