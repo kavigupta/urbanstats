@@ -29,6 +29,7 @@
     "@dnd-kit/sortable": "^7.0.1",
     "babel-loader": "^9.1.0",
     "dnd-kit": "^0.0.0",
+    "dom-to-image": "^2.6.0",
     "expr-eval": "^2.0.2",
     "geojson2svg": "^2.0.1",
     "html-webpack-plugin": "^5.5.0",

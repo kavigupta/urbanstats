@@ -10,6 +10,8 @@ import "./article.css";
 import { load_article } from './load-article.js';
 import { comparisonHeadStyle, headerTextClass, mobileLayout, subHeaderTextClass } from '../utils/responsive.js';
 import { LightweightSearchbox } from './search.js';
+import domtoimage from 'dom-to-image';
+import { sanitize } from '../navigation/links.js';
 
 const main_columns = ["statval", "statval_unit", "statistic_ordinal", "statistic_percentile"];
 const main_columns_across_types = ["statval", "statval_unit"]
@@ -31,6 +33,8 @@ const COLOR_CYCLE = [
 class ComparisonPanel extends PageTemplate {
     constructor(props) {
         super(props);
+        this.table_ref = React.createRef();
+        this.map_ref = React.createRef();
     }
 
     main_content() {
@@ -65,6 +69,7 @@ class ComparisonPanel extends PageTemplate {
 
                 <div style={{ display: "flex" }}>
                     <div style={{ width: (100 * left_margin_pct) + "%" }}>
+                        <ScreencapButton do_screencap={() => this.screencap()} />
                     </div>
                     <div style={{ width: (50 * (1 - left_margin_pct)) + "%", marginRight: "1em" }}>
                         <div style={comparisonHeadStyle("right")}>Add another region:</div>
@@ -83,7 +88,7 @@ class ComparisonPanel extends PageTemplate {
                 <div style={{ marginBlockEnd: "1em" }}></div>
 
                 {this.maybe_scroll(
-                    <>
+                    <div ref={this.table_ref}>
                         {this.bars()}
                         <div style={{ display: "flex" }}>
                             {this.cell(true, 0, <div></div>)}
@@ -107,20 +112,97 @@ class ComparisonPanel extends PageTemplate {
                                 statistic_row(false, i, row)
                             )
                         }
-                    </>
+                    </div>
                 )}
                 <div className="gap"></div>
 
-                <ComparisonMap
-                    longnames={this.props.datas.map(x => x.longname)}
-                    colors={this.props.datas.map((_, i) => this.color(i))}
-                    id="map_combined"
-                    article_type={undefined}
-                    basemap={{ type: "osm" }}
-                />
-
+                <div ref={this.map_ref}>
+                    <ComparisonMap
+                        longnames={this.props.datas.map(x => x.longname)}
+                        colors={this.props.datas.map((_, i) => this.color(i))}
+                        id="map_combined"
+                        article_type={undefined}
+                        basemap={{ type: "osm" }}
+                    />
+                </div>
             </div>
         );
+    }
+
+    async screencap() {
+        console.log("Exporting");
+        const table = this.table_ref.current;
+        // remove the elements with class noscreencap. make sure we can add them back later
+        // const noscreencap = to_export.getElementsByClassName("noscreencap");
+        // const noscreencap_parents = Array.from(noscreencap).map(x => x.parentNode);
+        // for (const x of noscreencap) {
+        //     x.remove();
+        // }
+
+        const png_table = await domtoimage.toPng(table, {
+            bgcolor: "white",
+            // higher dpi
+            height: table.offsetHeight * 2,
+            width: table.offsetWidth * 2,
+            style: {
+                transform: "scale(" + 2 + ")",
+                transformOrigin: "top left"
+            }
+        })
+
+        // // add the elements back
+        // for (const i in noscreencap) {
+        //     noscreencap_parents[i].appendChild(noscreencap[i]);
+        // }
+
+        const map = this.map_ref.current;
+
+        const scale_factor = 2 * table.offsetWidth / map.offsetWidth;
+
+        const png_map = await domtoimage.toPng(map, {
+            bgcolor: "white",
+            // same width as table
+            height: map.offsetHeight * scale_factor,
+            width: map.offsetWidth * scale_factor,
+            style: {
+                transform: "scale(" + scale_factor + ")",
+                transformOrigin: "top left"
+            }
+        })
+
+        // stack the two images
+
+        const canvas = document.createElement("canvas");
+
+        const pad_around = 100;
+        const pad_between = 50;
+
+        canvas.width = table.offsetWidth * 2 + pad_around * 2;
+        canvas.height = table.offsetHeight * 2 + map.offsetHeight * scale_factor + pad_around * 2 + pad_between;
+        const ctx = canvas.getContext("2d");
+        const img_table = new Image();
+        img_table.src = png_table;
+        const img_map = new Image();
+        img_map.src = png_map;
+        // flood the canvas with white
+        ctx.fillStyle = "white";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        // draw the images, but wait for them to load
+        await new Promise((resolve, reject) => {
+            img_table.onload = () => resolve();
+        })
+        await new Promise((resolve, reject) => {
+            img_map.onload = () => resolve();
+        })
+        ctx.drawImage(img_table, pad_around, pad_around);
+        ctx.drawImage(img_map, pad_around, pad_around + table.offsetHeight * 2 + pad_between);
+
+
+        const a = document.createElement("a");
+        a.href = canvas.toDataURL("image/png");
+        a.download = sanitize(this.props.joined_string) + ".png";
+        a.click();
+
     }
 
     bars() {
@@ -256,6 +338,29 @@ class ComparisonPanel extends PageTemplate {
         return COLOR_CYCLE[i % COLOR_CYCLE.length];
     }
 
+}
+
+function ScreencapButton({ do_screencap }) {
+    const button_ref = React.useRef(null);
+    // isExporting state
+    const [is_exporting, set_is_exporting] = React.useState(false);
+    return <div style={{ display: "flex", justifyContent: "flex-end" }}>
+        <button
+            className="serif"
+            ref={button_ref}
+            disabled={is_exporting}
+            onClick={() => {
+                set_is_exporting(true);
+                // in another thread
+                setTimeout(async () => {
+                    await do_screencap();
+                    set_is_exporting(false);
+                }, 0);
+            }}
+        >
+            {is_exporting ? "Exporting..." : "Export as screenshot"}
+        </button>
+    </div>
 }
 
 const manipulation_button_height = "24px";
