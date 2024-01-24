@@ -2,8 +2,6 @@ export { PageTemplate };
 
 import React, { Fragment } from 'react';
 
-import domtoimage from 'dom-to-image';
-
 import { Header } from "../components/header.js";
 import { Sidebar } from "../components/sidebar.js";
 import "../common.css";
@@ -11,6 +9,7 @@ import "../components/article.css";
 import { load_settings } from './settings.js';
 import { mobileLayout } from '../utils/responsive.js';
 import { sanitize } from '../navigation/links.js';
+import { create_screenshot } from '../components/screenshot.js';
 
 
 class PageTemplate extends React.Component {
@@ -37,7 +36,7 @@ class PageTemplate extends React.Component {
                     <Header
                         settings={this.state.settings}
                         hamburger_open={this.state.hamburger_open}
-                        set_hamburger_open={x => this.setState({hamburger_open: x})}
+                        set_hamburger_open={x => this.setState({ hamburger_open: x })}
                         screenshot_mode={this.state.screenshot_mode}
                         initiate_screenshot={() => this.initiate_screenshot()}
                     />
@@ -90,67 +89,15 @@ class PageTemplate extends React.Component {
     screencap_elements() {
         return {
             path: sanitize(this.props.joined_string) + ".png",
+            overall_width: this.table_ref.current.offsetWidth * 2,
+            elements_to_render: [this.table_ref.current, this.map_ref.current],
         }
     }
 
     async screencap() {
         const config = this.screencap_elements();
 
-        console.log("Exporting");
-        const table = this.table_ref.current;
-
-        const overall_width = table.offsetWidth * 2;
-
-        async function screencap_element(ref) {
-            const scale_factor = overall_width / ref.offsetWidth;
-            const link = await domtoimage.toPng(ref, {
-                bgcolor: "white",
-                height: ref.offsetHeight * scale_factor,
-                width: ref.offsetWidth * scale_factor,
-                style: {
-                    transform: "scale(" + scale_factor + ")",
-                    transformOrigin: "top left"
-                }
-            });
-            return [link, scale_factor * ref.offsetHeight]
-        }
-
-        const [png_table, height_table] = await screencap_element(table);
-
-        const map = this.map_ref.current;
-
-        const [png_map, height_map] = await screencap_element(map);
-
-        const canvas = document.createElement("canvas");
-
-        const pad_around = 100;
-        const pad_between = 50;
-
-        canvas.width = overall_width + pad_around * 2;
-        canvas.height = height_table + height_map + pad_around * 2 + pad_between;
-        const ctx = canvas.getContext("2d");
-        const img_table = new Image();
-        img_table.src = png_table;
-        const img_map = new Image();
-        img_map.src = png_map;
-        // flood the canvas with white
-        ctx.fillStyle = "white";
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        // draw the images, but wait for them to load
-        await new Promise((resolve, reject) => {
-            img_table.onload = () => resolve();
-        })
-        await new Promise((resolve, reject) => {
-            img_map.onload = () => resolve();
-        })
-        ctx.drawImage(img_table, pad_around, pad_around);
-        ctx.drawImage(img_map, pad_around, pad_around + table.offsetHeight * 2 + pad_between);
-
-
-        const a = document.createElement("a");
-        a.href = canvas.toDataURL("image/png");
-        a.download = config.path;
-        a.click();
+        await create_screenshot(config);
     }
 
     async initiate_screenshot() {
