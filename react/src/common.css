@@ -92,7 +92,7 @@
 }
 
 .logo {
-    height: 60px;
+    height: 48px;
 }
 
 .h1 {
@@ -105,4 +105,14 @@
 
 .highlighted_header {
     background-color: #d4b5e2;
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
 }

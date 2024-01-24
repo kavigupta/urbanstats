@@ -37,6 +37,10 @@ class ComparisonPanel extends PageTemplate {
         this.map_ref = React.createRef();
     }
 
+    has_screenshot_button() {
+        return true;
+    }
+
     main_content() {
         const self = this;
         var rows = [];
@@ -127,82 +131,6 @@ class ComparisonPanel extends PageTemplate {
                 </div>
             </div>
         );
-    }
-
-    async screencap() {
-        console.log("Exporting");
-        const table = this.table_ref.current;
-        // remove the elements with class noscreencap. make sure we can add them back later
-        // const noscreencap = to_export.getElementsByClassName("noscreencap");
-        // const noscreencap_parents = Array.from(noscreencap).map(x => x.parentNode);
-        // for (const x of noscreencap) {
-        //     x.remove();
-        // }
-
-        const png_table = await domtoimage.toPng(table, {
-            bgcolor: "white",
-            // higher dpi
-            height: table.offsetHeight * 2,
-            width: table.offsetWidth * 2,
-            style: {
-                transform: "scale(" + 2 + ")",
-                transformOrigin: "top left"
-            }
-        })
-
-        // // add the elements back
-        // for (const i in noscreencap) {
-        //     noscreencap_parents[i].appendChild(noscreencap[i]);
-        // }
-
-        const map = this.map_ref.current;
-
-        const scale_factor = 2 * table.offsetWidth / map.offsetWidth;
-
-        const png_map = await domtoimage.toPng(map, {
-            bgcolor: "white",
-            // same width as table
-            height: map.offsetHeight * scale_factor,
-            width: map.offsetWidth * scale_factor,
-            style: {
-                transform: "scale(" + scale_factor + ")",
-                transformOrigin: "top left"
-            }
-        })
-
-        // stack the two images
-
-        const canvas = document.createElement("canvas");
-
-        const pad_around = 100;
-        const pad_between = 50;
-
-        canvas.width = table.offsetWidth * 2 + pad_around * 2;
-        canvas.height = table.offsetHeight * 2 + map.offsetHeight * scale_factor + pad_around * 2 + pad_between;
-        const ctx = canvas.getContext("2d");
-        const img_table = new Image();
-        img_table.src = png_table;
-        const img_map = new Image();
-        img_map.src = png_map;
-        // flood the canvas with white
-        ctx.fillStyle = "white";
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        // draw the images, but wait for them to load
-        await new Promise((resolve, reject) => {
-            img_table.onload = () => resolve();
-        })
-        await new Promise((resolve, reject) => {
-            img_map.onload = () => resolve();
-        })
-        ctx.drawImage(img_table, pad_around, pad_around);
-        ctx.drawImage(img_map, pad_around, pad_around + table.offsetHeight * 2 + pad_between);
-
-
-        const a = document.createElement("a");
-        a.href = canvas.toDataURL("image/png");
-        a.download = sanitize(this.props.joined_string) + ".png";
-        a.click();
-
     }
 
     bars() {
