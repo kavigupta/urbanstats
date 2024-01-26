@@ -1,5 +1,6 @@
 
 export {
+    sanitize,
     article_link, shape_link, data_link, ordering_link, explanation_page_link,
     consolidated_shape_link, consolidated_stats_link
 };

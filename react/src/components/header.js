@@ -6,6 +6,7 @@ import "../common.css";
 import { SearchBox } from './search';
 import { Nav } from './hamburger';
 import { mobileLayout } from '../utils/responsive';
+import { ScreenshotButton } from './screenshot';
 
 class Header extends React.Component {
     constructor(props) {
@@ -16,7 +17,22 @@ class Header extends React.Component {
         return (
             <div className="top_panel">
                 {this.topLeft()}
-                <div className="right_panel_top"><SearchBox settings={this.props.settings} /></div>
+                <div className="right_panel_top">
+                    {/* flex but stretch to fill */}
+                    <div style={{ display: "flex", flexDirection: "row", height: "100%" }}>
+                        {
+                            this.props.has_screenshot ?
+                                <ScreenshotButton
+                                    screenshot_mode={this.props.screenshot_mode}
+                                    onClick={this.props.initiate_screenshot}
+                                /> : undefined
+                        }
+                        <div className="hgap"></div>
+                        <div style={{ flexGrow: 1 }}>
+                            <SearchBox settings={this.props.settings} />
+                        </div>
+                    </div>
+                </div>
             </div>
         )
     }
