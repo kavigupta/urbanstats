@@ -233,15 +233,6 @@
     margin-right: 0.2em;
 }
 
-.searchbox {
-    font-size: 30px;
-    border: 1px solid #444;
-    padding-left: 1em;
-    width: 100%;
-    vertical-align: middle;
-    height: 50px;
-}
-
 .searchresults {
     /* Remove default list styling */
     list-style-type: none;

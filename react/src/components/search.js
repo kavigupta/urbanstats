@@ -18,22 +18,40 @@ class SearchBox extends React.Component {
     }
 
     render() {
-        return (<form autoComplete="off" ref={this.form} style={{ marginBlockEnd: "0em" }}>
+        return (<form autoComplete="off" ref={this.form} style={{ marginBlockEnd: "0em", position: "relative", width: "100%" }}>
             <input
                 ref={this.textbox}
                 id="searchbox"
                 type="text"
-                className="searchbox serif"
+                className="serif"
+                style={{
+                    fontSize: "30px",
+                    border: "1px solid #444",
+                    paddingLeft: "1em",
+                    width: "100%",
+                    verticalAlign: "middle",
+                    height: "50px"
+                }}
                 placeholder="Search Urban Stats" />
 
-            <div className="searchbox-dropdown" ref={this.dropdown}>
+            <div ref={this.dropdown} style={
+                {
+                    position: "absolute",
+                    width: "100%",
+                    maxHeight: "20em",
+                    overflowY: "auto",
+                    backgroundColor: "#ebebff",
+                    border: "1px solid #bbb",
+                    borderRadius: "0.25em",
+                    zIndex: "1"
+                }
+            }>
                 {
                     this.state.matches.map((i, idx) =>
                         <div
                             key={i}
-                            className={
-                                "searchbox-dropdown-item"
-                                + (this.state.focused == idx ? " searchbox-dropdown-item-focused" : "")}
+                            className="searchbox-dropdown-item"
+                            style={this.searchbox_dropdown_item_style(idx)}
                         >{this._values[i]}</div>
                     )
                 }
@@ -42,6 +60,18 @@ class SearchBox extends React.Component {
 
     }
 
+
+    searchbox_dropdown_item_style(idx) {
+        const searchbox_dropdown_item_style = {
+            padding: "0.5em",
+            cursor: "pointer"
+        };
+        if (this.state.focused == idx) {
+            searchbox_dropdown_item_style["background-color"] = "#e9d2fd";
+        }
+
+        return searchbox_dropdown_item_style;
+    }
 
     async componentDidMount() {
         this._values = (await this.values).elements;

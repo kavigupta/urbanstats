@@ -71,29 +71,6 @@
     text-align: center;
 }
 
-.searchbox-dropdown {
-    position: absolute;
-    width: 75%;
-    max-height: 20em;
-    overflow-y: auto;
-    background-color: #ebebff;
-    border: 1px solid #bbb;
-    border-radius: 0.25em;
-    z-index: 1;
-}
-
-.searchbox-dropdown-item {
-    padding: 0.5em;
-    cursor: pointer;
-}
-
-.searchbox-dropdown-item-focused {
-    background-color: #e9d2fd;
-}
-
-.logo {
-    height: 48px;
-}
 
 .h1 {
     font-size: 1.5em;

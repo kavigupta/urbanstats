@@ -7,23 +7,17 @@ import domtoimage from 'dom-to-image';
 class ScreenshotButton extends React.Component {
     constructor(props) {
         super(props);
-        // props contains
-        // screenshot_mode :: bool
-        // onClick :: () -> ()
     }
 
     render() {
-        // shadow around the image to make it look like a button
         const screencap_button = <div
             onClick={this.props.onClick}
             style={{
                 height: "100%",
-                aspectRatio: "1/1",
-                // boxShadow: "0px 0px 10px 0px rgba(0,0,0,0.75)",
                 cursor: "pointer",
             }}
         >
-            <img src="/screenshot.png" alt="Screenshot Button" style={{ height: "100%", aspectRatio: "1/1" }} />
+            <img src="/screenshot.png" alt="Screenshot Button" style={{ height: "100%" }} />
         </div>
         // if screenshot mode is on, put a loading circle over the image
         if (this.props.screenshot_mode) {
@@ -99,10 +93,6 @@ async function create_screenshot(config) {
     const banner_scale = overall_width / banner.width;
     const banner_height = banner.height * banner_scale;
 
-    console.log(banner.height, banner.width)
-    console.log("banner", banner_scale, banner_height);
-    console.log(banner);
-
     canvas.width = pad_around * 2 + overall_width;
     canvas.height = pad_around + pad_between * (png_links.length - 1) + heights.reduce((a, b) => a + b, 0) + banner_height;
 
@@ -113,7 +103,6 @@ async function create_screenshot(config) {
         img.src = png_link;
         imgs.push(img);
     }
-    // flood the canvas with white
     ctx.fillStyle = "white";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
@@ -130,7 +119,6 @@ async function create_screenshot(config) {
 
     start -= pad_between;
 
-    // draw the banner /banner.svg at the bottom
     ctx.drawImage(banner, pad_around, start, overall_width, banner_height);
 
     const a = document.createElement("a");
