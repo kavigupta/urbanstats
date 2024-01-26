@@ -93,15 +93,18 @@ async function create_screenshot(config) {
     const banner = new Image();
     await new Promise((resolve, reject) => {
         banner.onload = () => resolve();
-        banner.src = "/banner.svg";
+        banner.src = "/screenshot_footer.svg";
     })
 
     const banner_scale = overall_width / banner.width;
-    banner.width *= banner_scale;
-    banner.height *= banner_scale;
+    const banner_height = banner.height * banner_scale;
+
+    console.log(banner.height, banner.width)
+    console.log("banner", banner_scale, banner_height);
+    console.log(banner);
 
     canvas.width = pad_around * 2 + overall_width;
-    canvas.height = pad_around * 2 + pad_between * png_links.length + heights.reduce((a, b) => a + b, 0) + banner.height;
+    canvas.height = pad_around + pad_between * (png_links.length - 1) + heights.reduce((a, b) => a + b, 0) + banner_height;
 
     const ctx = canvas.getContext("2d");
     const imgs = [];
@@ -125,8 +128,10 @@ async function create_screenshot(config) {
         start += img.height + pad_between;
     }
 
+    start -= pad_between;
+
     // draw the banner /banner.svg at the bottom
-    ctx.drawImage(banner, pad_around, canvas.height - pad_around - banner.height);
+    ctx.drawImage(banner, pad_around, start, overall_width, banner_height);
 
     const a = document.createElement("a");
     a.href = canvas.toDataURL("image/png");
