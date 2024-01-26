@@ -19,7 +19,7 @@ class ScreenshotButton extends React.Component {
             style={{
                 height: "100%",
                 aspectRatio: "1/1",
-                boxShadow: "0px 0px 10px 0px rgba(0,0,0,0.75)",
+                // boxShadow: "0px 0px 10px 0px rgba(0,0,0,0.75)",
                 cursor: "pointer",
             }}
         >

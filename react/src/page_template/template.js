@@ -37,6 +37,7 @@ class PageTemplate extends React.Component {
                         settings={this.state.settings}
                         hamburger_open={this.state.hamburger_open}
                         set_hamburger_open={x => this.setState({ hamburger_open: x })}
+                        has_screenshot={this.has_screenshot_button()}
                         screenshot_mode={this.state.screenshot_mode}
                         initiate_screenshot={() => this.initiate_screenshot()}
                     />
@@ -87,10 +88,11 @@ class PageTemplate extends React.Component {
     }
 
     screencap_elements() {
+        // not implemented, should be overridden
         return {
-            path: sanitize(this.props.joined_string) + ".png",
-            overall_width: this.table_ref.current.offsetWidth * 2,
-            elements_to_render: [this.table_ref.current, this.map_ref.current],
+            path: undefined,
+            overall_width: undefined,
+            elements_to_render: undefined,
         }
     }
 

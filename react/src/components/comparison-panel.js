@@ -41,6 +41,15 @@ class ComparisonPanel extends PageTemplate {
         return true;
     }
 
+    screencap_elements() {
+        return {
+            path: sanitize(this.props.joined_string) + ".png",
+            overall_width: this.table_ref.current.offsetWidth * 2,
+            elements_to_render: [this.table_ref.current, this.map_ref.current],
+        }
+    }
+
+
     main_content() {
         const self = this;
         var rows = [];

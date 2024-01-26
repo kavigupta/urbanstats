@@ -20,10 +20,13 @@ class Header extends React.Component {
                 <div className="right_panel_top">
                     {/* flex but stretch to fill */}
                     <div style={{ display: "flex", flexDirection: "row", height: "100%" }}>
-                        <ScreenshotButton
-                            screenshot_mode={this.props.screenshot_mode}
-                            onClick={this.props.initiate_screenshot}
-                        />
+                        {
+                            this.props.has_screenshot ?
+                                <ScreenshotButton
+                                    screenshot_mode={this.props.screenshot_mode}
+                                    onClick={this.props.initiate_screenshot}
+                                /> : undefined
+                        }
                         <div className="hgap"></div>
                         <div style={{ flexGrow: 1 }}>
                             <SearchBox settings={this.props.settings} />
