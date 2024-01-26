@@ -6,6 +6,7 @@ import { loadProtobuf } from '../load_json.js';
 import { article_link } from '../navigation/links';
 import { is_historical_cd } from '../utils/is_historical';
 import "../common.css";
+import { HEADER_BAR_SIZE } from './header.js';
 
 class SearchBox extends React.Component {
     constructor(props) {
@@ -30,7 +31,7 @@ class SearchBox extends React.Component {
                     paddingLeft: "1em",
                     width: "100%",
                     verticalAlign: "middle",
-                    height: "50px"
+                    height: HEADER_BAR_SIZE,
                 }}
                 placeholder="Search Urban Stats" />
 
