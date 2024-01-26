@@ -23,11 +23,7 @@ class ArticlePanel extends PageTemplate {
 
     main_content() {
         const self = this;
-        const modified_rows = load_article(this.props);
-        const filtered_rows = modified_rows.filter((row) => {
-            const key = "show_statistic_" + row.statistic_category;
-            return self.state.settings[key];
-        });
+        const [filtered_rows, _] = load_article(this.props, this.state.settings);
 
         return (
             <div>

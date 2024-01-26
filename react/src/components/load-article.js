@@ -1,7 +1,7 @@
 
-export {load_article};
+export { load_article };
 
-function load_article(data) {
+function load_article(data, settings) {
     let article_type = data.articleType;
 
     const categories = require("../data/statistic_category_list.json");
@@ -43,7 +43,15 @@ function load_article(data) {
 
         row.total_count_in_class = count_articles;
         row.total_count_overall = count_articles_overall;
+        row._index = i;
         modified_rows.push(row);
     }
-    return modified_rows;
+    const filtered_rows = modified_rows.filter((row) => {
+        const key = "show_statistic_" + row.statistic_category;
+        return settings[key];
+    });
+
+    const filtered_indices = filtered_rows.map(x => x._index)
+
+    return [filtered_rows, filtered_indices];
 }
