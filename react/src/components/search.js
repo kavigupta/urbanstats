@@ -50,6 +50,7 @@ class SearchBox extends React.Component {
                     this.state.matches.map((i, idx) =>
                         <div
                             key={i}
+                            className="searchbox-dropdown-item"
                             style={this.searchbox_dropdown_item_style(idx)}
                         >{this._values[i]}</div>
                     )
