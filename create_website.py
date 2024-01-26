@@ -259,7 +259,9 @@ def main(no_geo=False, no_data=False, no_juxta=False, no_data_jsons=False):
 
     shutil.copy("thumbnail.png", f"{folder}/")
     shutil.copy("banner.png", f"{folder}/")
+    shutil.copy("screenshot_footer.svg", f"{folder}/")
     shutil.copy("share.png", f"{folder}/")
+    shutil.copy("screenshot.png", f"{folder}/")
 
     with open("react/src/data/map_relationship.json", "w") as f:
         json.dump(map_relationships_by_type, f)

@@ -8,6 +8,7 @@ import "../common.css";
 import "../components/article.css";
 import { load_settings } from './settings.js';
 import { mobileLayout } from '../utils/responsive.js';
+import { create_screenshot } from '../components/screenshot.js';
 
 
 class PageTemplate extends React.Component {
@@ -20,7 +21,8 @@ class PageTemplate extends React.Component {
 
         this.state = {
             settings: settings,
-            hamburger_open: false
+            hamburger_open: false,
+            screenshot_mode: false,
         }
     }
 
@@ -33,7 +35,10 @@ class PageTemplate extends React.Component {
                     <Header
                         settings={this.state.settings}
                         hamburger_open={this.state.hamburger_open}
-                        set_hamburger_open={x => this.setState({hamburger_open: x})}
+                        set_hamburger_open={x => this.setState({ hamburger_open: x })}
+                        has_screenshot={this.has_screenshot_button()}
+                        screenshot_mode={this.state.screenshot_mode}
+                        initiate_screenshot={() => this.initiate_screenshot()}
                     />
                     <div className="gap"></div>
                     {this.bodyPanel()}
@@ -51,7 +56,7 @@ class PageTemplate extends React.Component {
             <div className={mobileLayout() ? "content_panel_mobile" : "right_panel"}>
                 {this.main_content()}
                 <div className="gap"></div>
-                <div className="centered_text">Urban Stats Version 8.1.0 by Kavi Gupta. Last updated 2024-01-01. Significant help with weather data from <a href="https://twitter.com/OklahomaPerson">OklahomaPerson</a>. Not for commercial use.</div>
+                <div className="centered_text">Urban Stats Version 8.2.0 by Kavi Gupta. Last updated 2024-01-01. Significant help with weather data from <a href="https://twitter.com/OklahomaPerson">OklahomaPerson</a>. Not for commercial use.</div>
             </div>
         </div>
     }
@@ -75,6 +80,33 @@ class PageTemplate extends React.Component {
         settings[key] = value;
         this.setState({ settings: settings });
         localStorage.setItem("settings", JSON.stringify(settings));
+    }
+
+    has_screenshot_button() {
+        return false;
+    }
+
+    screencap_elements() {
+        // not implemented, should be overridden
+        return {
+            path: undefined,
+            overall_width: undefined,
+            elements_to_render: undefined,
+        }
+    }
+
+    async screencap() {
+        const config = this.screencap_elements();
+
+        await create_screenshot(config);
+    }
+
+    async initiate_screenshot() {
+        this.setState({ screenshot_mode: true });
+        setTimeout(async () => {
+            await this.screencap();
+            this.setState({ screenshot_mode: false });
+        })
     }
 
     main_content() {
