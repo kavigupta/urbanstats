@@ -8,7 +8,6 @@ import "../common.css";
 import "../components/article.css";
 import { load_settings } from './settings.js';
 import { mobileLayout } from '../utils/responsive.js';
-import { sanitize } from '../navigation/links.js';
 import { create_screenshot } from '../components/screenshot.js';
 
 
