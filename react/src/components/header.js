@@ -1,4 +1,4 @@
-export { Header };
+export { Header, HEADER_BAR_SIZE };
 
 import React from 'react';
 
@@ -7,6 +7,8 @@ import { SearchBox } from './search';
 import { Nav } from './hamburger';
 import { mobileLayout } from '../utils/responsive';
 import { ScreenshotButton } from './screenshot';
+
+const HEADER_BAR_SIZE = "48px";
 
 class Header extends React.Component {
     constructor(props) {
@@ -17,7 +19,7 @@ class Header extends React.Component {
         return (
             <div className="top_panel">
                 {this.topLeft()}
-                <div className="right_panel_top">
+                <div className="right_panel_top" style={{ height: HEADER_BAR_SIZE }}>
                     {/* flex but stretch to fill */}
                     <div style={{ display: "flex", flexDirection: "row", height: "100%" }}>
                         {
@@ -67,7 +69,7 @@ class HeaderImage extends React.Component {
         const path = mobileLayout() ? "/thumbnail.png" : "/banner.png";
         return (
             <a href="/index.html"><img src={path} style={{
-                height: mobileLayout() ? "48px" : "60px",
+                height: mobileLayout() ? HEADER_BAR_SIZE : "60px",
             }} alt="Urban Stats Logo" /></a>
         )
     }
