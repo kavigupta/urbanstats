@@ -67,7 +67,7 @@ test('editable-number', async t => {
     await t
         .click(editableNumber)
         // select all and delete
-        .pressKey('ctrl+a delete')
+        .pressKey('ctrl+a')
         .typeText(editableNumber, '3')
         .pressKey('enter');
     await t.expect(editableNumber.innerText).eql('3');
