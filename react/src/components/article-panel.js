@@ -33,10 +33,11 @@ class ArticlePanel extends PageTemplate {
                 </div>
 
                 <div className="stats_table" ref={this.table_ref}>
-                    <StatisticRowRaw _idx={-1} is_header={true} />
+                    <StatisticRowRaw _idx={-1} is_header={true} simple={this.state.settings.simple_ordinals}/>
                     {filtered_rows.map((row, i) =>
                         <StatisticRowRaw _idx={i} key={row.statname} index={i} {...row} settings={this.state.settings}
                             onReplace={x => { document.location = article_link(x) }}
+                            simple={this.state.settings.simple_ordinals}
                         />)}
                 </div>
 

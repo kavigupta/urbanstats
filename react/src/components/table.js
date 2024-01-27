@@ -53,27 +53,32 @@ class StatisticRowRaw extends React.Component {
                     </span>
                 </div>
             ],
-            [25,
+            [
+                this.props.simple ? 8 : 25,
                 "statistic_ordinal",
                 <span className="serif ordinal">{
                     this.props.is_header
-                        ? "Ordinal"
+                        ? (this.props.simple ? right_align("Ord") : "Ordinal")
                         : <Ordinal ordinal={this.props.ordinal}
                             total={this.props.total_count_in_class}
                             type={this.props.article_type}
                             statpath={this.props.statpath}
+                            simple={this.props.simple}
+                            onReplace={this.props.onReplace}
                         />
                 }</span>
             ],
-            [17,
+            [
+                this.props.simple ? 5 : 17,
                 "statistic_percentile",
                 <span className="serif ordinal">{
                     this.props.is_header
-                        ? "Percentile"
+                        ? (this.props.simple ? right_align("%ile") : "Percentile")
                         : <Percentile ordinal={this.props.ordinal}
                             total={this.props.total_count_in_class}
                             percentile_by_population={this.props.percentile_by_population}
                             settings={this.props.settings}
+                            simple={this.props.simple}
                         />
                 }</span>
             ],
@@ -116,11 +121,14 @@ class StatisticRowRaw extends React.Component {
         }
         // normalize cell percentages
         const sum = cell_percentages.reduce((a, b) => a + b, 0);
+        console.log(cell_percentages);
+        console.log(sum)
         for (let i in cell_percentages) {
             cell_percentages[i] = 100 * cell_percentages[i] / sum;
         }
+        console.log(cell_percentages);
         return (
-            <tr className={this.props.is_header ? "tableheader" : this.props.index % 2 == 1 ? "oddrow" : ""}>
+            <tr className={this.props.is_header ? "tableheader" : this.props.index % 2 == 1 ? "oddrow" : ""} style={{width: "100%"}}>
                 {cell_contents.map((content, i) =>
                     <td key={i} style={{ width: cell_percentages[i] + "%" }}>
                         {content}
@@ -293,11 +301,15 @@ class Ordinal extends React.Component {
         if (ordinal > total) {
             return <span></span>
         }
+        const en = <EditableNumber
+            number={ordinal}
+            onNewNumber={num => self.onNewNumber(num)}
+        />;
+        if (this.props.simple) {
+            return right_align(en);
+        }
         return <span>
-            <EditableNumber
-                number={ordinal}
-                onNewNumber={num => self.onNewNumber(num)}
-            /> of {total} {this.pluralize(type)}
+            {en} of {total} {this.pluralize(type)}
         </span>;
     }
 
@@ -378,6 +390,9 @@ class Percentile extends React.Component {
                 this.props.percentile_by_population
                 : 1 - ordinal / total;
         const percentile = Math.floor(100 * quantile);
+        if (this.props.simple) {
+            return right_align(percentile.toString() + "%");
+        }
         // something like Xth percentile
         let text = percentile + "th percentile";
         if (percentile % 10 == 1 && percentile % 100 != 11) {
@@ -457,4 +472,10 @@ class PointerButtonIndex extends React.Component {
             }
         }
     }
+}
+
+function right_align(value) {
+    return <span
+        style={{ float: "right", marginRight: "5px" }}
+    >{value}</span>;
 }
