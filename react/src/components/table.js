@@ -364,8 +364,6 @@ class Ordinal extends React.Component {
             num = 1;
         }
         const data = (await loadProtobuf(link, "StringList")).elements;
-
-        console.log(this.props.onReplace)
         this.props.onReplace(data[num - 1])
     }
 }
