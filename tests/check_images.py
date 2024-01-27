@@ -1,4 +1,5 @@
 import os
+import shutil
 
 import numpy as np
 from PIL import Image
@@ -30,6 +31,7 @@ def test_paths(reference, actual, delta_path):
         return True
 
 def test_all_same(reference="reference_test_screeshots", actual="react/screenshots"):
+    shutil.rmtree("react/delta", ignore_errors=True)
     errors = 0
     for root, dirs, files in os.walk(reference):
         for file in files:
