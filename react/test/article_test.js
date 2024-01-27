@@ -130,6 +130,10 @@ async function check_textbox(t) {
 test('uncheck-box-mobile', async t => {
     // Find div with class checkbox-setting containing a label with text "Race"
     // and a checkbox, then find the checkbox
+    await t.resizeWindow(400, 800);
+    // refresh
+    await t.eval(() => location.reload(true));
+    await t.wait(1000);
     await check_textbox(t);
 
     await screencap(t, "article/remove_race_initial_mobile");
