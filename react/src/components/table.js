@@ -23,7 +23,7 @@ class StatisticRowRaw extends React.Component {
                 }
                 </span>
             ],
-            [10,
+            [15,
                 "statval",
                 <div className="value_numeric">
                     <span className="serif value">{
@@ -38,7 +38,7 @@ class StatisticRowRaw extends React.Component {
                     </span>
                 </div>
             ],
-            [5,
+            [10,
                 "statval_unit",
                 <div className="value_unit">
                     <span className="serif value">{
