@@ -63,32 +63,34 @@ class StatisticRowRaw extends React.Component {
                     </span>
                 </div>
             ],
-            [this.props.simple ? 10 : 25,
+            [
+                this.props.simple ? 10 : 25,
                 "statistic_ordinal",
-            <span className="serif ordinal">{
-                this.props.is_header
-                    ? (this.props.simple ? "Ord" : "Ordinal")
-                    : <Ordinal ordinal={this.props.ordinal}
-                        total={this.props.total_count_in_class}
-                        type={this.props.article_type}
-                        statpath={this.props.statpath}
-                        simple={this.props.simple}
-                        onReplace={this.props.onReplace}
-                    />
-            }</span>
+                <span className="serif ordinal">{
+                    this.props.is_header
+                        ? (this.props.simple ? "Ord" : "Ordinal")
+                        : <Ordinal ordinal={this.props.ordinal}
+                            total={this.props.total_count_in_class}
+                            type={this.props.article_type}
+                            statpath={this.props.statpath}
+                            simple={this.props.simple}
+                            onReplace={this.props.onReplace}
+                        />
+                }</span>
             ],
-            [this.props.simple ? 5 : 17,
+            [
+                this.props.simple ? 5 : 17,
                 "statistic_percentile",
-            <span className="serif ordinal">{
-                this.props.is_header
-                    ? (this.props.simple ? "%ile" : "Percentile")
-                    : <Percentile ordinal={this.props.ordinal}
-                        total={this.props.total_count_in_class}
-                        percentile_by_population={this.props.percentile_by_population}
-                        settings={this.props.settings}
-                        simple={this.props.simple}
-                    />
-            }</span>
+                <span className="serif ordinal">{
+                    this.props.is_header
+                        ? (this.props.simple ? "%ile" : "Percentile")
+                        : <Percentile ordinal={this.props.ordinal}
+                            total={this.props.total_count_in_class}
+                            percentile_by_population={this.props.percentile_by_population}
+                            settings={this.props.settings}
+                            simple={this.props.simple}
+                        />
+                }</span>
             ],
             [8,
                 "pointer_in_class",
