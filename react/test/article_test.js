@@ -3,8 +3,14 @@ import { Selector, ClientFunction } from 'testcafe';
 const SEARCH_FIELD = Selector('input').withAttribute('placeholder', 'Search Urban Stats');
 const getLocation = ClientFunction(() => document.location.href);
 
-function screencap(t, name) {
-    return t.takeScreenshot({
+async function screencap(t, name) {
+    await t.eval(() => {
+        // disable the leaflet map
+        for (const x of document.getElementsByClassName("leaflet-tile-pane")) {
+            x.remove();
+        }
+    });
+    return await t.takeScreenshot({
         // include the browser name in the screenshot path
         path: name + '_' + t.browser.name + '.png',
         fullPage: true,
