@@ -3,14 +3,13 @@ export { ComparisonPanel };
 import React from 'react';
 
 import { StatisticRowRaw, statistic_row } from "./table.js";
-import { Map, MapGeneric } from "./map.js";
+import { MapGeneric } from "./map.js";
 import { PageTemplate } from "../page_template/template.js";
 import "../common.css";
 import "./article.css";
 import { load_article } from './load-article.js';
 import { comparisonHeadStyle, headerTextClass, mobileLayout, subHeaderTextClass } from '../utils/responsive.js';
 import { LightweightSearchbox } from './search.js';
-import domtoimage from 'dom-to-image';
 import { sanitize } from '../navigation/links.js';
 
 const main_columns = ["statval", "statval_unit", "statistic_ordinal", "statistic_percentile"];
@@ -71,8 +70,6 @@ class ComparisonPanel extends PageTemplate {
             })
         );
 
-        console.log(this.width_columns())
-
         return (
             <div>
                 <div className={headerTextClass()}>Comparison</div>
@@ -81,9 +78,7 @@ class ComparisonPanel extends PageTemplate {
                 <div style={{ marginBlockEnd: "1em" }}></div>
 
                 <div style={{ display: "flex" }}>
-                    <div style={{ width: (100 * left_margin_pct) + "%" }}>
-                        <ScreencapButton do_screencap={() => this.screencap()} />
-                    </div>
+                    <div style={{ width: (100 * left_margin_pct) + "%" }} />
                     <div style={{ width: (50 * (1 - left_margin_pct)) + "%", marginRight: "1em" }}>
                         <div style={comparisonHeadStyle("right")}>Add another region:</div>
                     </div>
@@ -228,7 +223,6 @@ class ComparisonPanel extends PageTemplate {
         const row_overall = [];
         const param_vals = Array.from(Array(this.props.datas.length).keys()).map(params);
 
-        // argmax
         var highlight_idx = param_vals.map(x => x.statval).reduce((iMax, x, i, arr) => {
             if (isNaN(x)) {
                 return iMax;
@@ -238,9 +232,6 @@ class ComparisonPanel extends PageTemplate {
             }
             return x > arr[iMax] ? i : iMax
         }, -1);
-
-        // add a div with color highlighting the max value
-        // and width 100 * left_bar_margin
 
         row_overall.push(
             <div key={"color"} style={{
@@ -261,7 +252,6 @@ class ComparisonPanel extends PageTemplate {
         ).tr_contents(100 * (left_margin_pct - left_bar_margin)));
         const only_columns = this.all_data_types_same() ? main_columns : main_columns_across_types;
 
-        console.log(highlight_idx)
         for (const i in this.props.datas) {
             row_overall.push(...new StatisticRowRaw({
                 ...param_vals[i], only_columns: only_columns, _idx: i, simple: true, highlight: highlight_idx == i,
@@ -275,29 +265,6 @@ class ComparisonPanel extends PageTemplate {
         return COLOR_CYCLE[i % COLOR_CYCLE.length];
     }
 
-}
-
-function ScreencapButton({ do_screencap }) {
-    const button_ref = React.useRef(null);
-    // isExporting state
-    const [is_exporting, set_is_exporting] = React.useState(false);
-    return <div style={{ display: "flex", justifyContent: "flex-end" }}>
-        <button
-            className="serif"
-            ref={button_ref}
-            disabled={is_exporting}
-            onClick={() => {
-                set_is_exporting(true);
-                // in another thread
-                setTimeout(async () => {
-                    await do_screencap();
-                    set_is_exporting(false);
-                }, 0);
-            }}
-        >
-            {is_exporting ? "Exporting..." : "Export as screenshot"}
-        </button>
-    </div>
 }
 
 const manipulation_button_height = "24px";
@@ -356,14 +323,12 @@ function insert_missing(rows, idxs) {
         for (const row_i in rows[data_i]) {
             const idx = idxs[data_i][row_i];
             empty_row_example[idx] = JSON.parse(JSON.stringify(rows[data_i][row_i]));
-            // set all numeric values to nan
             for (const key in empty_row_example[idx]) {
                 if (typeof empty_row_example[idx][key] == "number") {
                     empty_row_example[idx][key] = NaN;
                 }
             }
-            // TODO
-            empty_row_example[idx].article_type = "none";
+            empty_row_example[idx].article_type = "none"; // doesn't matter since we are using simple mode
         }
     }
 
@@ -387,12 +352,9 @@ function insert_missing(rows, idxs) {
 class ComparisonMap extends MapGeneric {
     constructor(props) {
         super(props);
-
-        // this.already_fit_bounds = false;
     }
 
     buttons() {
-        // one button per longname. Should just be a circle with the color of the longname
         return <div style={{
             display: "flex", backgroundColor: "white", padding: "0.5em", borderRadius: "0.5em",
             alignItems: "center"
@@ -437,6 +399,5 @@ class ComparisonMap extends MapGeneric {
     async mapDidRender() {
         console.log("mapDidRender")
         this.zoom_to_all();
-        // this.already_fit_bounds = this.props.longname;
     }
 }
