@@ -1,12 +1,10 @@
 import React from 'react';
 
-export { SearchBox, LightweightSearchbox };
+export { SearchBox };
 
 import { loadProtobuf } from '../load_json.js';
-import { article_link } from '../navigation/links';
 import { is_historical_cd } from '../utils/is_historical';
 import "../common.css";
-import { HEADER_BAR_SIZE } from './header.js';
 
 class SearchBox extends React.Component {
     constructor(props) {
@@ -21,19 +19,13 @@ class SearchBox extends React.Component {
     render() {
         return (<form autoComplete="off" ref={this.form} style={{ marginBlockEnd: "0em", position: "relative", width: "100%" }}>
             <input
+                autoFocus={this.props.autoFocus}
                 ref={this.textbox}
                 id="searchbox"
                 type="text"
                 className="serif"
-                style={{
-                    fontSize: "30px",
-                    border: "1px solid #444",
-                    paddingLeft: "1em",
-                    width: "100%",
-                    verticalAlign: "middle",
-                    height: HEADER_BAR_SIZE,
-                }}
-                placeholder="Search Urban Stats" />
+                style={this.props.style}
+                placeholder={this.props.placeholder} />
 
             <div ref={this.dropdown} style={
                 {
@@ -68,7 +60,7 @@ class SearchBox extends React.Component {
             cursor: "pointer"
         };
         if (this.state.focused == idx) {
-            searchbox_dropdown_item_style["background-color"] = "#e9d2fd";
+            searchbox_dropdown_item_style["backgroundColor"] = "#e9d2fd";
         }
 
         return searchbox_dropdown_item_style;
@@ -101,15 +93,10 @@ class SearchBox extends React.Component {
     }
 
     componentDidUpdate() {
-        let self = this;
         let dropdowns = document.getElementsByClassName("searchbox-dropdown-item");
         for (let i = 0; i < dropdowns.length; i++) {
-            dropdowns[i].onclick = function (e) {
-                window.location.href = article_link(self._values[self.state.matches[i]]);
-            }
-            dropdowns[i].onmouseover = function (e) {
-                self.setState({ focused: i });
-            }
+            dropdowns[i].onclick = () => this.props.on_change(this._values[this.state.matches[i]]);
+            dropdowns[i].onmouseover = () => this.setState({ focused: i });
         }
     }
 
@@ -117,87 +104,11 @@ class SearchBox extends React.Component {
     go(settings, values, val, focused) {
         let terms = autocompleteMatch(settings, values, val);
         if (terms.length > 0) {
-            window.location.href = article_link(values[terms[focused]]);
+            this.props.on_change(values[terms[focused]])
         }
         return false;
     }
 }
-
-class LightweightSearchbox extends React.Component {
-    // like SearchBox but is just a text box that uses a datalist for autocomplete
-    constructor(props) {
-        super(props);
-        this.state = { matches: [], is_loaded: false, focused: 0 };
-        this.textbox = React.createRef();
-        this.form = React.createRef();
-        this.values = loadProtobuf("/index/pages.gz", "StringList");
-        this.searchbox_datalist_id = "searchbox-datalist" + Math.random();
-    }
-
-    render() {
-        // if this.props.autoFocus, then autofocus
-        return (<form autoComplete="off" style={{ marginBlockEnd: "0em" }} ref={this.form}>
-            <input
-                autoFocus={this.props.autoFocus}
-                ref={this.textbox}
-                id="searchbox"
-                type="text"
-                placeholder={this.props.placeholder}
-                style={this.props.style}
-                className="serif"
-                list={this.searchbox_datalist_id} />
-
-            <datalist id={this.searchbox_datalist_id}>
-                {
-                    this.state.matches.map((i, idx) =>
-                        <option key={i} value={(this._values)[i]} />
-                    )
-                }
-            </datalist>
-        </form>);
-
-    }
-
-    async componentDidMount() {
-        this._values = (await this.values).elements;
-        this.setState({ is_loaded: true });
-        let self = this;
-        this.textbox.current.onkeyup = function (event) {
-            self.setState({ matches: autocompleteMatch(self.props.settings, self._values, self.textbox.current.value) });
-        };
-        this.textbox.current.onchange = function (event) {
-            for (let i = 0; i < self._values.length; i++) {
-                if (self._values[i] == self.textbox.current.value) {
-                    self.go(self.props.settings, self._values, self.textbox.current.value);
-                    return;
-                }
-            }
-        }
-        // submit
-        this.form.current.onsubmit = function () {
-            self.go(self.props.settings, self._values, self.textbox.current.value);
-            return false;
-        }
-        this.textbox.current.addEventListener("submit", function () {
-            self.go(self.props.settings, self._values, self.textbox.current.value);
-            return false;
-        });
-        // on click of dropdown
-    }
-
-    go(settings, values, val) {
-        try {
-            let terms = autocompleteMatch(settings, values, val);
-            if (terms.length > 0) {
-                this.props.on_change(values[terms[0]]);
-            }
-        } catch (e) {
-            console.log(e);
-        }
-        return false;
-    }
-}
-
 
 function autocompleteMatch(settings, values, input) {
     input = input.toLowerCase();

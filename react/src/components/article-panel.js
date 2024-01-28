@@ -10,7 +10,7 @@ import "../common.css";
 import "./article.css";
 import { load_article } from './load-article.js';
 import { comparisonHeadStyle, headerTextClass, subHeaderTextClass } from '../utils/responsive.js';
-import { LightweightSearchbox } from './search.js';
+import { SearchBox } from './search.js';
 import { article_link, comparison_link, sanitize } from '../navigation/links.js';
 
 class ArticlePanel extends PageTemplate {
@@ -60,7 +60,7 @@ class ArticlePanel extends PageTemplate {
                         <div style={comparisonHeadStyle("right")}>Compare to: </div>
                     </div>
                     <div style={{ width: "70%" }}>
-                        <LightweightSearchbox
+                        <SearchBox
                             settings={this.state.settings}
                             style={{ ...comparisonHeadStyle(), width: "100%" }}
                             placeholder={"Other region..."}

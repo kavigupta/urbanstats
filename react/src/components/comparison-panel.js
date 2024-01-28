@@ -9,7 +9,7 @@ import "../common.css";
 import "./article.css";
 import { load_article } from './load-article.js';
 import { comparisonHeadStyle, headerTextClass, mobileLayout, subHeaderTextClass } from '../utils/responsive.js';
-import { LightweightSearchbox } from './search.js';
+import { SearchBox } from './search.js';
 import { sanitize } from '../navigation/links.js';
 
 const main_columns = ["statval", "statval_unit", "statistic_ordinal", "statistic_percentile"];
@@ -83,7 +83,7 @@ class ComparisonPanel extends PageTemplate {
                         <div style={comparisonHeadStyle("right")}>Add another region:</div>
                     </div>
                     <div style={{ width: (50 * (1 - left_margin_pct)) + "%" }}>
-                        <LightweightSearchbox
+                        <SearchBox
                             settings={this.state.settings}
                             style={{ ...comparisonHeadStyle(), width: "100%" }}
                             placeholder={"Name"}
@@ -306,7 +306,7 @@ function HeadingDisplay({ longname, include_delete, on_click, on_change }) {
         <div style={{ height: "5px" }} />
         <div style={comparisonHeadStyle()}>{longname}</div>
         {is_editing ?
-            <LightweightSearchbox
+            <SearchBox
                 autoFocus={true}
                 settings={{}}
                 style={{ ...comparisonHeadStyle(), width: "100%" }}
