@@ -7,6 +7,11 @@ import { loadProtobuf } from '../load_json.js';
 import "./table.css";
 import { is_historical_cd } from '../utils/is_historical.js';
 
+const table_row_style = {
+    display: "flex",
+    flexDirection: "row",
+    alignItems: "baseline",
+};
 
 class StatisticRowRaw extends React.Component {
     constructor(props) {
@@ -128,13 +133,13 @@ class StatisticRowRaw extends React.Component {
         }
         console.log(cell_percentages);
         return (
-            <tr className={this.props.is_header ? "tableheader" : this.props.index % 2 == 1 ? "oddrow" : ""} style={{width: "100%"}}>
+            <div key={this.props.index} className={this.props.is_header ? "tableheader" : this.props.index % 2 == 1 ? "oddrow" : ""} style={table_row_style}>
                 {cell_contents.map((content, i) =>
-                    <td key={i} style={{ width: cell_percentages[i] + "%" }}>
+                    <div key={100 * this.props._idx + i} style={{ width: cell_percentages[i] + "%", padding: "1px" }}>
                         {content}
-                    </td>
+                    </div>
                 )}
-            </tr>
+            </div>
         );
     }
 }
