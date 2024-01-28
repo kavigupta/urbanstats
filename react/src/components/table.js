@@ -121,7 +121,7 @@ class StatisticRowRaw extends React.Component {
         ]
     }
 
-    tr_contents(total_width) {
+    cell_contents(total_width) {
         var cell_percentages = [];
         var cell_contents = [];
         const cells = this.cells();
@@ -138,12 +138,12 @@ class StatisticRowRaw extends React.Component {
             cell_percentages[i] = total_width * cell_percentages[i] / sum;
         }
 
-        return cell_contents.map((content, i) =>
+        const contents = cell_contents.map((content, i) =>
             <div key={100 * this.props._idx + i} style={{ width: cell_percentages[i] + "%", padding: "1px" }}>
                 {content}
             </div>
         );
-
+        return contents;
     }
 
     render() {
@@ -154,11 +154,9 @@ class StatisticRowRaw extends React.Component {
 }
 
 function statistic_row(is_header, index, contents) {
-    return (
-        <div key={index} className={is_header ? "tableheader" : index % 2 == 1 ? "oddrow" : ""} style={table_row_style}>
-            {contents}
-        </div>
-    );
+    return <div key={index} className={is_header ? "tableheader" : index % 2 == 1 ? "oddrow" : ""} style={table_row_style}>
+        {contents}
+    </div>;
 }
 
 
