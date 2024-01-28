@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import ContentEditable from 'react-contenteditable'
 
-export { StatisticRowRaw, Statistic };
+export { StatisticRowRaw, Statistic, statistic_row };
 import { article_link, explanation_page_link, ordering_link } from "../navigation/links.js";
 import { loadProtobuf } from '../load_json.js';
 import "./table.css";
@@ -116,29 +116,39 @@ class StatisticRowRaw extends React.Component {
         ]
     }
 
-    render() {
+    cell_contents(total_width) {
         var cell_percentages = [];
         var cell_contents = [];
         const cells = this.cells();
         for (let i in cells) {
+            if (this.props.only_columns && !this.props.only_columns.includes(cells[i][1])) {
+                continue;
+            }
             cell_percentages.push(cells[i][0]);
             cell_contents.push(cells[i][2]);
         }
         // normalize cell percentages
         const sum = cell_percentages.reduce((a, b) => a + b, 0);
         for (let i in cell_percentages) {
-            cell_percentages[i] = 100 * cell_percentages[i] / sum;
+            cell_percentages[i] = total_width * cell_percentages[i] / sum;
         }
-        return (
-            <div key={this.props.index} className={this.props.is_header ? "tableheader" : this.props.index % 2 == 1 ? "oddrow" : ""} style={table_row_style}>
-                {cell_contents.map((content, i) =>
-                    <div key={100 * this.props._idx + i} style={{ width: cell_percentages[i] + "%", padding: "1px" }}>
-                        {content}
-                    </div>
-                )}
+        const contents = cell_contents.map((content, i) =>
+            <div key={100 * this.props._idx + i} style={{ width: cell_percentages[i] + "%", padding: "1px" }}>
+                {content}
             </div>
         );
+        return contents;
     }
+
+    render() {
+        return statistic_row(this.props.is_header, this.props.index, this.cell_contents(100));
+    }
+}
+
+function statistic_row(is_header, index, contents) {
+    return <div key={index} className={is_header ? "tableheader" : index % 2 == 1 ? "oddrow" : ""} style={table_row_style}>
+        {contents}
+    </div>
 }
 
 
@@ -148,6 +158,14 @@ class Statistic extends React.Component {
     }
 
     render() {
+        const content = this.render_content();
+        if (this.props.style) {
+            return <span style={this.props.style}>{content}</span>;
+        }
+        return content;
+    }
+
+    render_content() {
         const name = this.props.statname;
         let value = this.props.value;
         const is_unit = this.props.is_unit;
@@ -336,7 +354,7 @@ class Ordinal extends React.Component {
             num = 1;
         }
         const data = (await loadProtobuf(link, "StringList")).elements;
-        document.location = article_link(data[num - 1]);
+        this.props.onReplace(data[num - 1])
     }
 }
 
