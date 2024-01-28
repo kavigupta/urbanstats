@@ -34,7 +34,6 @@ class SearchBox extends React.Component {
                     maxHeight: "20em",
                     overflowY: "auto",
                     backgroundColor: "#ebebff",
-                    border: "1px solid #bbb",
                     borderRadius: "0.25em",
                     zIndex: "1"
                 }
