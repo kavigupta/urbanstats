@@ -64,11 +64,11 @@ class StatisticRowRaw extends React.Component {
                 </div>
             ],
             [
-                this.props.simple ? 10 : 25,
+                this.props.simple ? 8 : 25,
                 "statistic_ordinal",
                 <span className="serif ordinal">{
                     this.props.is_header
-                        ? (this.props.simple ? "Ord" : "Ordinal")
+                        ? (this.props.simple ? right_align("Ord") : "Ordinal")
                         : <Ordinal ordinal={this.props.ordinal}
                             total={this.props.total_count_in_class}
                             type={this.props.article_type}
@@ -83,7 +83,7 @@ class StatisticRowRaw extends React.Component {
                 "statistic_percentile",
                 <span className="serif ordinal">{
                     this.props.is_header
-                        ? (this.props.simple ? "%ile" : "Percentile")
+                        ? (this.props.simple ? right_align("%ile") : "Percentile")
                         : <Percentile ordinal={this.props.ordinal}
                             total={this.props.total_count_in_class}
                             percentile_by_population={this.props.percentile_by_population}
@@ -134,6 +134,8 @@ class StatisticRowRaw extends React.Component {
         }
         // normalize cell percentages
         const sum = cell_percentages.reduce((a, b) => a + b, 0);
+        console.log(cell_percentages);
+        console.log(sum)
         for (let i in cell_percentages) {
             cell_percentages[i] = total_width * cell_percentages[i] / sum;
         }
@@ -336,9 +338,7 @@ class Ordinal extends React.Component {
             onNewNumber={num => self.onNewNumber(num)}
         />;
         if (this.props.simple) {
-            return <span
-                style={{ float: "right", marginRight: "5px" }}
-            >{en}</span>;
+            return right_align(en);
         }
         return <span>
             {en} of {total} {this.pluralize(type)}
@@ -423,9 +423,7 @@ class Percentile extends React.Component {
                 : 1 - ordinal / total;
         const percentile = Math.floor(100 * quantile);
         if (this.props.simple) {
-            return <span
-                style={{ float: "right", marginRight: "5px" }}
-            >{percentile.toString()}</span>;
+            return right_align(percentile.toString() + "%");
         }
         // something like Xth percentile
         let text = percentile + "th percentile";
@@ -506,4 +504,10 @@ class PointerButtonIndex extends React.Component {
             }
         }
     }
+}
+
+function right_align(value) {
+    return <span
+        style={{ float: "right", marginRight: "5px" }}
+    >{value}</span>;
 }
