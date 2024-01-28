@@ -91,6 +91,14 @@ class Sidebar extends React.Component {
                                 set_setting={this.props.set_setting}
                             />
                         </li>
+                        <li>
+                            <CheckboxSetting
+                                name="Simple Ordinals"
+                                setting_key="simple_ordinals"
+                                settings={this.props.settings}
+                                set_setting={this.props.set_setting}
+                            />
+                        </li>
                     </ul>
                 </div>
                 <div className="sidebar-section">
