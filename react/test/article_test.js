@@ -3,19 +3,45 @@ import { Selector, ClientFunction } from 'testcafe';
 const SEARCH_FIELD = Selector('input').withAttribute('placeholder', 'Search Urban Stats');
 const getLocation = ClientFunction(() => document.location.href);
 
-async function screencap(t, name) {
+async function prep_for_image(t) {
     await t.eval(() => {
         // disable the leaflet map
         for (const x of document.getElementsByClassName("leaflet-tile-pane")) {
             x.remove();
         }
     });
+}
+
+async function screencap(t, name) {
+    await prep_for_image(t)
     return await t.takeScreenshot({
         // include the browser name in the screenshot path
         path: name + '_' + t.browser.name + '.png',
         fullPage: true,
         thumbnails: false
     })
+}
+
+async function download_image(t, name) {
+    const download = Selector('img').withAttribute('src', '/screenshot.png');
+    await prep_for_image(t);
+    await t
+        .click(download);
+    await t.wait(3000);
+    await copy_most_recent_file(t, name);
+}
+
+async function copy_most_recent_file(t, name) {
+    // get the most recent file in the downloads folder
+    const fs = require('fs');
+    const path = require('path');
+    const downloadsFolder = require('downloads-folder');
+    const files = fs.readdirSync(downloadsFolder());
+    const sorted = files.map(x => path.join(downloadsFolder(), x)).sort((a, b) => fs.statSync(b).mtimeMs - fs.statSync(a).mtimeMs);
+    // copy the file to the screenshots folder
+    const screenshotsFolder = path.join(__dirname, '..', 'screenshots');
+    const copyFileSync = require('fs-copy-file-sync');
+    copyFileSync(sorted[0], path.join(screenshotsFolder, name + '_' + t.browser.name + '.png'));
 }
 
 fixture('longer article test')
@@ -168,4 +194,8 @@ test('simple', async t => {
     await check_textbox(t, 'Simple Ordinals');
 
     await screencap(t, "article/simple-ordinals");
+})
+
+test('download-article', async t => {
+    await download_image(t, "article/download-article");
 })
