@@ -148,7 +148,7 @@ class StatisticRowRaw extends React.Component {
 
     render() {
         return (
-            statistic_row(this.props.is_header, this.props.index, this.tr_contents(100))
+            statistic_row(this.props.is_header, this.props.index, this.cell_contents(100))
         );
     }
 }
