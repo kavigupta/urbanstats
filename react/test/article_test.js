@@ -3,19 +3,32 @@ import { Selector, ClientFunction } from 'testcafe';
 const SEARCH_FIELD = Selector('input').withAttribute('placeholder', 'Search Urban Stats');
 const getLocation = ClientFunction(() => document.location.href);
 
-async function screencap(t, name) {
+async function prep_for_image(t) {
     await t.eval(() => {
         // disable the leaflet map
         for (const x of document.getElementsByClassName("leaflet-tile-pane")) {
             x.remove();
         }
     });
+}
+
+async function screencap(t, name) {
+    await prep_for_image(t)
     return await t.takeScreenshot({
         // include the browser name in the screenshot path
         path: name + '_' + t.browser.name + '.png',
         fullPage: true,
         thumbnails: false
     })
+}
+
+async function download_image(t, name) {
+    const download = Selector('img').withAttribute('src', '/screenshot.png');
+    await prep_for_image(t);
+    await t
+        .click(download);
+    await t.wait(3000);
+    await copy_most_recent_file(t, name);
 }
 
 async function copy_most_recent_file(t, name) {
@@ -184,9 +197,5 @@ test('simple', async t => {
 })
 
 test('download-article', async t => {
-    const download = Selector('img').withAttribute('src', '/screenshot.png');
-    await t
-        .click(download);
-    await t.wait(3000);
-    await copy_most_recent_file(t, "article/download-article");  
+    await download_image(t, "article/download-article");
 })
