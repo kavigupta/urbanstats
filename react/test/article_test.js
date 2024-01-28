@@ -18,6 +18,19 @@ async function screencap(t, name) {
     })
 }
 
+async function copy_most_recent_file(t, name) {
+    // get the most recent file in the downloads folder
+    const fs = require('fs');
+    const path = require('path');
+    const downloadsFolder = require('downloads-folder');
+    const files = fs.readdirSync(downloadsFolder());
+    const sorted = files.map(x => path.join(downloadsFolder(), x)).sort((a, b) => fs.statSync(b).mtimeMs - fs.statSync(a).mtimeMs);
+    // copy the file to the screenshots folder
+    const screenshotsFolder = path.join(__dirname, '..', 'screenshots');
+    const copyFileSync = require('fs-copy-file-sync');
+    copyFileSync(sorted[0], path.join(screenshotsFolder, name + '_' + t.browser.name + '.png'));
+}
+
 fixture('longer article test')
     .page('http://localhost:8000/article.html?longname=California%2C+USA')
     // no local storage
@@ -168,4 +181,12 @@ test('simple', async t => {
     await check_textbox(t, 'Simple Ordinals');
 
     await screencap(t, "article/simple-ordinals");
+})
+
+test('download-article', async t => {
+    const download = Selector('img').withAttribute('src', '/screenshot.png');
+    await t
+        .click(download);
+    await t.wait(3000);
+    await copy_most_recent_file(t, "article/download-article");  
 })
