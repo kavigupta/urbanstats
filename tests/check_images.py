@@ -4,8 +4,19 @@ import shutil
 import numpy as np
 from PIL import Image
 
+def pad_images(ref, act):
+    if ref.shape[0] > act.shape[0]:
+        act = np.pad(act, ((0, ref.shape[0] - act.shape[0]), (0, 0), (0, 0)))
+    elif ref.shape[0] < act.shape[0]:
+        ref = np.pad(ref, ((0, act.shape[0] - ref.shape[0]), (0, 0), (0, 0)))
+    if ref.shape[1] > act.shape[1]:
+        act = np.pad(act, ((0, 0), (0, ref.shape[1] - act.shape[1]), (0, 0)))
+    elif ref.shape[1] < act.shape[1]:
+        ref = np.pad(ref, ((0, 0), (0, act.shape[1] - ref.shape[1]), (0, 0)))
+    return ref, act
 
 def compute_delta_image(ref, act):
+    ref, act = pad_images(ref, act)
     color = [255, 0, 255, 255]
     diff_mask = (act != ref).any(-1)
     ref[diff_mask] = color
