@@ -126,12 +126,9 @@ class StatisticRowRaw extends React.Component {
         }
         // normalize cell percentages
         const sum = cell_percentages.reduce((a, b) => a + b, 0);
-        console.log(cell_percentages);
-        console.log(sum)
         for (let i in cell_percentages) {
             cell_percentages[i] = 100 * cell_percentages[i] / sum;
         }
-        console.log(cell_percentages);
         return (
             <div key={this.props.index} className={this.props.is_header ? "tableheader" : this.props.index % 2 == 1 ? "oddrow" : ""} style={table_row_style}>
                 {cell_contents.map((content, i) =>
