@@ -139,7 +139,7 @@ class StatisticRowRaw extends React.Component {
         }
 
         return cell_contents.map((content, i) =>
-            <div key={100 * this.props._idx + i} style={{ width: cell_percentages[i] + "%" }}>
+            <div key={100 * this.props._idx + i} style={{ width: cell_percentages[i] + "%", padding: "1px" }}>
                 {content}
             </div>
         );
