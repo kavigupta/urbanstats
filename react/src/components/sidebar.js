@@ -124,7 +124,7 @@ class Sidebar extends React.Component {
 const CheckboxSetting = props => {
 
     return (
-        <div class="checkbox-setting">
+        <div className="checkbox-setting">
             <input
                 type="checkbox"
                 checked={props.settings[props.setting_key] || false}

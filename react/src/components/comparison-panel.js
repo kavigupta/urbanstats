@@ -249,14 +249,14 @@ class ComparisonPanel extends PageTemplate {
 
         row_overall.push(...new StatisticRowRaw(
             { ...param_vals[0], only_columns: ["statname"], _idx: -1, simple: true }
-        ).tr_contents(100 * (left_margin_pct - left_bar_margin)));
+        ).cell_contents(100 * (left_margin_pct - left_bar_margin)));
         const only_columns = this.all_data_types_same() ? main_columns : main_columns_across_types;
 
         for (const i in this.props.datas) {
             row_overall.push(...new StatisticRowRaw({
                 ...param_vals[i], only_columns: only_columns, _idx: i, simple: true, highlight: highlight_idx == i,
                 onReplace: x => this.on_change(i, x)
-            }).tr_contents(this.each()));
+            }).cell_contents(this.each()));
         }
         return row_overall;
     }
