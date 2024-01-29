@@ -7,6 +7,7 @@ import { SearchBox } from './search';
 import { Nav } from './hamburger';
 import { mobileLayout } from '../utils/responsive';
 import { ScreenshotButton } from './screenshot';
+import { article_link } from '../navigation/links';
 
 const HEADER_BAR_SIZE = "48px";
 
@@ -31,7 +32,21 @@ class Header extends React.Component {
                         }
                         <div className="hgap"></div>
                         <div style={{ flexGrow: 1 }}>
-                            <SearchBox settings={this.props.settings} />
+                            <SearchBox
+                                settings={this.props.settings}
+                                on_change={
+                                    new_location => { window.location.href = article_link(new_location) }
+                                }
+                                placeholder="Search Urban Stats"
+                                style={{
+                                    fontSize: "30px",
+                                    border: "1px solid #444",
+                                    paddingLeft: "1em",
+                                    width: "100%",
+                                    verticalAlign: "middle",
+                                    height: HEADER_BAR_SIZE,
+                                }}
+                            />
                         </div>
                     </div>
                 </div>

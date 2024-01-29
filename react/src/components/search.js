@@ -3,10 +3,8 @@ import React from 'react';
 export { SearchBox };
 
 import { loadProtobuf } from '../load_json.js';
-import { article_link } from '../navigation/links';
 import { is_historical_cd } from '../utils/is_historical';
 import "../common.css";
-import { HEADER_BAR_SIZE } from './header.js';
 
 class SearchBox extends React.Component {
     constructor(props) {
@@ -21,19 +19,13 @@ class SearchBox extends React.Component {
     render() {
         return (<form autoComplete="off" ref={this.form} style={{ marginBlockEnd: "0em", position: "relative", width: "100%" }}>
             <input
+                autoFocus={this.props.autoFocus}
                 ref={this.textbox}
                 id="searchbox"
                 type="text"
                 className="serif"
-                style={{
-                    fontSize: "30px",
-                    border: "1px solid #444",
-                    paddingLeft: "1em",
-                    width: "100%",
-                    verticalAlign: "middle",
-                    height: HEADER_BAR_SIZE,
-                }}
-                placeholder="Search Urban Stats" />
+                style={this.props.style}
+                placeholder={this.props.placeholder} />
 
             <div ref={this.dropdown} style={
                 {
@@ -101,15 +93,10 @@ class SearchBox extends React.Component {
     }
 
     componentDidUpdate() {
-        let self = this;
         let dropdowns = document.getElementsByClassName("searchbox-dropdown-item");
         for (let i = 0; i < dropdowns.length; i++) {
-            dropdowns[i].onclick = function (e) {
-                window.location.href = article_link(self._values[self.state.matches[i]]);
-            }
-            dropdowns[i].onmouseover = function (e) {
-                self.setState({ focused: i });
-            }
+            dropdowns[i].onclick = () => this.props.on_change(this._values[this.state.matches[i]]);
+            dropdowns[i].onmouseover = () => this.setState({ focused: i });
         }
     }
 
@@ -117,7 +104,7 @@ class SearchBox extends React.Component {
     go(settings, values, val, focused) {
         let terms = autocompleteMatch(settings, values, val);
         if (terms.length > 0) {
-            window.location.href = article_link(values[terms[focused]]);
+            this.props.on_change(values[terms[focused]])
         }
         return false;
     }
