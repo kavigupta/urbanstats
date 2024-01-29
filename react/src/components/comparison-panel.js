@@ -108,6 +108,7 @@ class ComparisonPanel extends PageTemplate {
                                         include_delete={this.props.datas.length > 1}
                                         on_click={() => self.on_delete(i)}
                                         on_change={(x) => self.on_change(i, x)}
+                                        screenshot_mode={this.state.screenshot_mode}
                                     />
                                 </div>)
                             )}
@@ -288,25 +289,29 @@ function ManipulationButton({ color, on_click, text }) {
     </div>
 }
 
-function HeadingDisplay({ longname, include_delete, on_click, on_change }) {
+function HeadingDisplay({ longname, include_delete, on_click, on_change, screenshot_mode }) {
+
+    console.log("SCREENSHOT MODE ", screenshot_mode)
 
     const [is_editing, set_is_editing] = React.useState(false);
 
-    return <div>
-        <div style={{ height: manipulation_button_height }}>
-            <div style={{ display: "flex", justifyContent: "flex-end", height: "100%" }}>
-                <ManipulationButton color="#e6e9ef" on_click={() => set_is_editing(!is_editing)} text="replace" />
-                {!include_delete ? null :
-                    <>
-                        <div style={{ width: "5px" }} />
-                        <ManipulationButton color="#e6e9ef" on_click={on_click} text="delete" />
-                    </>
-                }
-                <div style={{ width: "5px" }} />
-            </div>
+    const manipulation_buttons = <div style={{ height: manipulation_button_height }}>
+        <div style={{ display: "flex", justifyContent: "flex-end", height: "100%" }}>
+            <ManipulationButton color="#e6e9ef" on_click={() => set_is_editing(!is_editing)} text="replace" />
+            {!include_delete ? null :
+                <>
+                    <div style={{ width: "5px" }} />
+                    <ManipulationButton color="#e6e9ef" on_click={on_click} text="delete" />
+                </>
+            }
+            <div style={{ width: "5px" }} />
         </div>
+    </div>
+
+    return <div>
+        {screenshot_mode ? undefined : manipulation_buttons}
         <div style={{ height: "5px" }} />
-        <a href={article_link(longname)} style={{textDecoration: "none"}}><div style={comparisonHeadStyle()}>{longname}</div></a>
+        <a href={article_link(longname)} style={{ textDecoration: "none" }}><div style={comparisonHeadStyle()}>{longname}</div></a>
         {is_editing ?
             <SearchBox
                 autoFocus={true}
