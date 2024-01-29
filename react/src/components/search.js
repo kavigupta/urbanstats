@@ -34,7 +34,6 @@ class SearchBox extends React.Component {
                     maxHeight: "20em",
                     overflowY: "auto",
                     backgroundColor: "#ebebff",
-                    border: "1px solid #bbb",
                     borderRadius: "0.25em",
                     zIndex: "1"
                 }
@@ -60,7 +59,7 @@ class SearchBox extends React.Component {
             cursor: "pointer"
         };
         if (this.state.focused == idx) {
-            searchbox_dropdown_item_style["background-color"] = "#e9d2fd";
+            searchbox_dropdown_item_style["backgroundColor"] = "#e9d2fd";
         }
 
         return searchbox_dropdown_item_style;
@@ -109,7 +108,6 @@ class SearchBox extends React.Component {
         return false;
     }
 }
-
 
 function autocompleteMatch(settings, values, input) {
     input = input.toLowerCase();
