@@ -291,8 +291,6 @@ function ManipulationButton({ color, on_click, text }) {
 
 function HeadingDisplay({ longname, include_delete, on_click, on_change, screenshot_mode }) {
 
-    console.log("SCREENSHOT MODE ", screenshot_mode)
-
     const [is_editing, set_is_editing] = React.useState(false);
 
     const manipulation_buttons = <div style={{ height: manipulation_button_height }}>
