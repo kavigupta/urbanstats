@@ -254,7 +254,7 @@ test('comparison-3-desktop', async t => {
 })
 
 test('comparison-3-mobile', async t => {
-    await t.resizeWindow(400, 800);
+    await t.resizeWindow(600, 800);
     await t.eval(() => location.reload(true));
     await screencap(t, "comparison/basic-comparison-mobile");
 })
