@@ -19,10 +19,6 @@ class StatisticRowRaw extends React.Component {
     }
 
     cells() {
-        const hl_style = {};
-        if (this.props.highlight) {
-            hl_style.backgroundColor = "#ffc";
-        }
         return [
             [31,
                 "statname",
@@ -43,7 +39,7 @@ class StatisticRowRaw extends React.Component {
                                 value={this.props.statval}
                                 is_unit={false}
                                 settings={this.props.settings}
-                                style={hl_style}
+                                style={this.props.statistic_style || {}}
                             />}
                     </span>
                 </div>

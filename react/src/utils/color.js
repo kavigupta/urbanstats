@@ -1,5 +1,5 @@
 
-export { random_color, interpolate_color };
+export { random_color, interpolate_color, lighten };
 
 function random_color(name) {
     // randomly choose a color hex code where H is between 0 and 360,
@@ -57,4 +57,9 @@ function interpolate_color(ramp, item) {
     var g = Math.round(g1 + fraction * (g2 - g1));
     var b = Math.round(b1 + fraction * (b2 - b1));
     return "#" + r.toString(16).padStart(2, "0") + g.toString(16).padStart(2, "0") + b.toString(16).padStart(2, "0");
+}
+
+function lighten(color, fraction) {
+    const ramp = [[0, color], [1, "#ffffff"]];
+    return interpolate_color(ramp, fraction);
 }

@@ -10,7 +10,8 @@ import "./article.css";
 import { load_article } from './load-article.js';
 import { comparisonHeadStyle, headerTextClass, mobileLayout, subHeaderTextClass } from '../utils/responsive.js';
 import { SearchBox } from './search.js';
-import { sanitize } from '../navigation/links.js';
+import { article_link, sanitize } from '../navigation/links.js';
+import { lighten } from '../utils/color.js';
 
 const main_columns = ["statval", "statval_unit", "statistic_ordinal", "statistic_percentile"];
 const main_columns_across_types = ["statval", "statval_unit"]
@@ -254,7 +255,8 @@ class ComparisonPanel extends PageTemplate {
 
         for (const i in this.props.datas) {
             row_overall.push(...new StatisticRowRaw({
-                ...param_vals[i], only_columns: only_columns, _idx: i, simple: true, highlight: highlight_idx == i,
+                ...param_vals[i], only_columns: only_columns, _idx: i, simple: true,
+                statistic_style: highlight_idx == i ? { backgroundColor: lighten(this.color(i), 0.7) } : {},
                 onReplace: x => this.on_change(i, x)
             }).cell_contents(this.each()));
         }
@@ -304,7 +306,7 @@ function HeadingDisplay({ longname, include_delete, on_click, on_change }) {
             </div>
         </div>
         <div style={{ height: "5px" }} />
-        <div style={comparisonHeadStyle()}>{longname}</div>
+        <a href={article_link(longname)} style={{textDecoration: "none"}}><div style={comparisonHeadStyle()}>{longname}</div></a>
         {is_editing ?
             <SearchBox
                 autoFocus={true}

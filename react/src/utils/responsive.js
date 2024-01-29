@@ -24,5 +24,6 @@ function comparisonHeadStyle(
         padding: "0",
         textAlign: align,
         verticalAlign: "bottom",
+        color: "#000000",
     }
 }
