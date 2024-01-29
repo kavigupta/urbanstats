@@ -250,6 +250,7 @@ def main(no_geo=False, no_data=False, no_juxta=False, no_data_jsons=False):
         all_simplified_countries(full, f"{folder}/shape")
 
     shutil.copy("html_templates/article.html", f"{folder}")
+    shutil.copy("html_templates/comparison.html", f"{folder}")
     shutil.copy("html_templates/index.html", f"{folder}/")
     shutil.copy("html_templates/random.html", f"{folder}")
     shutil.copy("html_templates/about.html", f"{folder}/")
@@ -306,6 +307,7 @@ def main(no_geo=False, no_data=False, no_juxta=False, no_data_jsons=False):
 
     os.system("cd react; npm run prod")
     shutil.copy("dist/article.js", f"{folder}/scripts/")
+    shutil.copy("dist/comparison.js", f"{folder}/scripts/")
     shutil.copy("dist/index.js", f"{folder}/scripts/")
     shutil.copy("dist/random.js", f"{folder}/scripts/")
     shutil.copy("dist/about.js", f"{folder}/scripts/")

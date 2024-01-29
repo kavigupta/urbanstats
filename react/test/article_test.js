@@ -3,6 +3,12 @@ import { Selector, ClientFunction } from 'testcafe';
 const SEARCH_FIELD = Selector('input').withAttribute('placeholder', 'Search Urban Stats');
 const getLocation = ClientFunction(() => document.location.href);
 
+function comparison_page(locations) {
+    const params = new URLSearchParams();
+    params.set('longnames', JSON.stringify(locations));
+    return 'http://localhost:8000/comparison.html?' + params.toString();
+}
+
 async function prep_for_image(t) {
     await t.eval(() => {
         // disable the leaflet map
@@ -145,7 +151,7 @@ async function check_textbox(t, txt) {
     await t.eval(() => localStorage.clear());
     const checkbox = Selector('div').withAttribute('class', 'checkbox-setting')
         // filter for label
-        .filter(node => node.querySelector('label').innerText ===txt, {txt})
+        .filter(node => node.querySelector('label').innerText === txt, { txt })
         // find checkbox
         .find('input');
     const hamburgerMenu = Selector('div').withAttribute('class', 'hamburgermenu');
@@ -198,4 +204,115 @@ test('simple', async t => {
 
 test('download-article', async t => {
     await download_image(t, "article/download-article");
+})
+
+test('create-comparison-from-article', async t => {
+    const otherRegion = Selector('input').withAttribute('placeholder', 'Other region...');
+    await t
+        .click(otherRegion)
+        .typeText(otherRegion, "pasadena city california")
+        .pressKey('enter');
+    await t.expect(getLocation())
+        .eql(comparison_page(["San Marino city, California, USA", "Pasadena city, California, USA"]));
+})
+
+const upper_sgv = "Upper San Gabriel Valley CCD [CCD], Los Angeles County, California, USA"
+const pasadena = "Pasadena CCD [CCD], Los Angeles County, California, USA"
+const sw_sgv = "Southwest San Gabriel Valley CCD [CCD], Los Angeles County, California, USA"
+const east_sgv = "East San Gabriel Valley CCD [CCD], Los Angeles County, California, USA"
+const chicago = "Chicago city [CCD], Cook County, Illinois, USA"
+
+fixture('comparison test heterogenous')
+    .page(comparison_page(["San Marino city, California, USA", pasadena, sw_sgv]))
+    .beforeEach(async t => {
+        await t.eval(() => localStorage.clear());
+    });
+
+test('comparison-3-desktop-heterogenous', async t => {
+    await t.resizeWindow(1400, 800);
+    await t.eval(() => location.reload(true));
+    await screencap(t, "comparison/heterogenous-comparison-desktop");
+})
+
+test('comparison-3-mobile-heterogenous', async t => {
+    await t.resizeWindow(400, 800);
+    await t.eval(() => location.reload(true));
+    await screencap(t, "comparison/heterogenous-comparison-mobile");
+})
+
+fixture('comparison test homogenous')
+    .page(comparison_page([upper_sgv, pasadena, sw_sgv]))
+    .beforeEach(async t => {
+        await t.eval(() => localStorage.clear());
+    });
+
+
+test('comparison-3-desktop', async t => {
+    await t.resizeWindow(1400, 800);
+    await t.eval(() => location.reload(true));
+    await screencap(t, "comparison/basic-comparison-desktop");
+})
+
+test('comparison-3-mobile', async t => {
+    await t.resizeWindow(600, 800);
+    await t.eval(() => location.reload(true));
+    await screencap(t, "comparison/basic-comparison-mobile");
+})
+
+test('comparison-3-download', async t => {
+    await t.resizeWindow(1400, 800);
+    await t.eval(() => location.reload(true));
+    await download_image(t, "comparison/download-comparison");
+})
+
+test('comparison-3-add', async t => {
+    const otherRegion = Selector('input').withAttribute('placeholder', 'Name');
+    await t
+        .click(otherRegion)
+        .typeText(otherRegion, "san marino city california")
+        .pressKey('enter');
+    await t.expect(getLocation())
+        .eql(comparison_page([upper_sgv, pasadena, sw_sgv, "San Marino city, California, USA"]));
+})
+
+test('comparison-3-remove-first', async t => {
+    const remove = Selector('div').withAttribute('class', 'serif manipulation-button-delete').nth(0);
+    await t
+        .click(remove);
+    await t.expect(getLocation())
+        .eql(comparison_page([pasadena, sw_sgv]));
+})
+
+test('comparison-3-remove-second', async t => {
+    const remove = Selector('div').withAttribute('class', 'serif manipulation-button-delete').nth(1);
+    await t
+        .click(remove);
+    await t.expect(getLocation())
+        .eql(comparison_page([upper_sgv, sw_sgv]));
+})
+
+test('comparison-3-replace-second', async t => {
+    const replace = Selector('div').withAttribute('class', 'serif manipulation-button-replace').nth(1);
+    await t
+        .click(replace);
+    // already focused on the input
+    const otherRegion = Selector('input').withAttribute('placeholder', 'Replacement');
+    await t
+        .typeText(otherRegion, "East San Gabriel Valley")
+        .pressKey('enter');
+    await t.expect(getLocation())
+        .eql(comparison_page([upper_sgv, east_sgv, sw_sgv]));
+});
+
+test('comparison-3-editable-number-third', async t => {
+    const editableNumber = Selector('span').withAttribute('class', 'editable_number').nth(2);
+    await t
+        .click(editableNumber)
+        // select all and delete
+        .pressKey('ctrl+a')
+        .typeText(editableNumber, '3')
+        .pressKey('enter');
+    await t.expect(editableNumber.innerText).eql('3');
+    await t.expect(getLocation())
+        .eql(comparison_page([upper_sgv, pasadena, chicago]));
 })

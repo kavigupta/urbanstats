@@ -2,7 +2,7 @@
 export {
     sanitize,
     article_link, shape_link, data_link, ordering_link, explanation_page_link,
-    consolidated_shape_link, consolidated_stats_link
+    consolidated_shape_link, consolidated_stats_link, comparison_link
 };
 
 function article_link(longname) {
@@ -33,6 +33,12 @@ function consolidated_shape_link(typ) {
 
 function consolidated_stats_link(typ) {
     return `/consolidated/stats__${sanitize(typ)}.gz`
+}
+
+function comparison_link(names) {
+    const params = new URLSearchParams()
+    params.set('longnames', JSON.stringify(names.map(sanitize)));
+    return "/comparison.html?" + params.toString();
 }
 
 function sanitize(longname, spaces_around_slash = true) {

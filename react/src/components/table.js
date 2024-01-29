@@ -39,6 +39,7 @@ class StatisticRowRaw extends React.Component {
                                 value={this.props.statval}
                                 is_unit={false}
                                 settings={this.props.settings}
+                                style={this.props.statistic_style || {}}
                             />}
                     </span>
                 </div>

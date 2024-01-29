@@ -13,7 +13,8 @@ module.exports = {
         "random": ["./src/random.js"],
         "about": ['./src/about.js'],
         "data-credit": ['./src/data-credit.js'],
-        "mapper": ['./src/mapper.js']
+        "mapper": ['./src/mapper.js'],
+        "comparison": ['./src/comparison.js']
     },
     output: {
         filename: '[name].js',

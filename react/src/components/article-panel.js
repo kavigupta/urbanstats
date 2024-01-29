@@ -9,8 +9,9 @@ import { PageTemplate } from "../page_template/template.js";
 import "../common.css";
 import "./article.css";
 import { load_article } from './load-article.js';
-import { headerTextClass, subHeaderTextClass } from '../utils/responsive.js';
-import { article_link, sanitize } from '../navigation/links.js';
+import { comparisonHeadStyle, headerTextClass, subHeaderTextClass } from '../utils/responsive.js';
+import { SearchBox } from './search.js';
+import { article_link, comparison_link, sanitize } from '../navigation/links.js';
 
 class ArticlePanel extends PageTemplate {
     constructor(props) {
@@ -50,6 +51,24 @@ class ArticlePanel extends PageTemplate {
                         settings={this.state.settings}
                         article_type={this.props.article_type}
                         basemap={{ type: "osm" }} />
+                </div>
+
+                <div style={{ marginBlockEnd: "1em" }}></div>
+
+                <div style={{ display: "flex" }}>
+                    <div style={{ width: "30%", marginRight: "1em" }}>
+                        <div style={comparisonHeadStyle("right")}>Compare to: </div>
+                    </div>
+                    <div style={{ width: "70%" }}>
+                        <SearchBox
+                            settings={this.state.settings}
+                            style={{ ...comparisonHeadStyle(), width: "100%" }}
+                            placeholder={"Other region..."}
+                            on_change={(x) => {
+                                document.location.href = comparison_link([this.props.longname, x]);
+                            }}
+                        />
+                    </div>
                 </div>
 
                 <script src="/scripts/map.js"></script>
