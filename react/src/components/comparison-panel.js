@@ -181,7 +181,7 @@ class ComparisonPanel extends PageTemplate {
     maybe_scroll(contents) {
         if (this.width_columns() > this.max_columns()) {
             return <div style={{ overflowX: "scroll" }}>
-                <div style={{ width: 100 * this.width_columns() / (this.max_columns() + 0.3) + "%" }}>
+                <div style={{ width: 100 * this.width_columns() / (this.max_columns() - 0.7) + "%" }}>
                     {contents}
                 </div>
             </div>
@@ -280,7 +280,7 @@ function ManipulationButton({ color, on_click, text }) {
             verticalAlign: "middle",
             backgroundColor: color,
         }}
-        className="serif"
+        className={"serif manipulation-button-" + text}
         onClick={on_click}>
         {text}
     </div>
