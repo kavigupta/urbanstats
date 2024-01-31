@@ -319,12 +319,15 @@ class DataCreditPanel extends PageTemplate {
                 </div>
                 <h1 ref={this.nref("gpw")}>Gridded Population</h1>
                 <div>
-                    Gridded population data is from <a href="https://sedac.ciesin.columbia.edu/data/collection/gpw-v4/documentation">SEDAC</a>,
-                        a project of NASA and Columbia University. We use the 2020 population estimates, which are
+                    Gridded population data is from Schiavina M., Freire S., Carioli A., MacManus K. (2023): GHS-POP R2023A - GHS population grid multitemporal (1975-2030).European Commission, Joint Research Centre (JRC)
+                    {/* PID: http://data.europa.eu/89h/2ff68a52-5b5b-4a22-8f40-c41da8332cfe, doi:10.2905/2FF68A52-5B5B-4A22-8F40-C41DA8332CFE */}
+                    PID: <a href="http://data.europa.eu/89h/2ff68a52-5b5b-4a22-8f40-c41da8332cfe">http://data.europa.eu/89h/2ff68a52-5b5b-4a22-8f40-c41da8332cfe</a>,
+                        <a href="https://doi.org/10.2905/2FF68A52-5B5B-4A22-8F40-C41DA8332CFE">10.2905/2FF68A52-5B5B-4A22-8F40-C41DA8332CFE</a>
+                    We use the 2020 population estimates, which are
                         not perfectly accurate in all cases, but should be the best match to the 2020 Census numbers
                         we are using for the US data. To compute PW density, we treat each cell as effectively homogenous,
                         but since the cells are all smaller than 1 square kilometer, this should not be a major issue for
-                        radii above 1km (which is the smallest radius we use for GPW data).
+                        radii above 1km (which is the smallest radius we use for GHS-POP data).
                 </div>
             </div>
         );

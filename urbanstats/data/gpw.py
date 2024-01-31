@@ -318,7 +318,7 @@ def compute_gpw_for_shape(shape):
 )
 def compute_gpw_data_for_shapefile(shapefile):
     """
-    Compute the GPW data for a shapefile.
+    Compute the GHS-POP data for a shapefile.
     """
 
     shapes = shapefile.load_file()

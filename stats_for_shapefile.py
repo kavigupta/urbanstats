@@ -120,9 +120,9 @@ misc_stats = {
 }
 
 gpw_stats = {
-    "gpw_population": "Population [GPW]",
-    **{f"gpw_pw_density_{k}": f"PW Density (r={k}km) [GPW]" for k in (1, 2, 4)},
-    "gpw_aw_density": "AW Density [GPW]",
+    "gpw_population": "Population [GHS-POP]",
+    **{f"gpw_pw_density_{k}": f"PW Density (r={k}km) [GHS-POP]" for k in (1, 2, 4)},
+    "gpw_aw_density": "AW Density [GHS-POP]",
 }
 
 
