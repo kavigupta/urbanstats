@@ -240,7 +240,19 @@ test('comparison-3-mobile-heterogenous', async t => {
     await screencap(t, "comparison/heterogenous-comparison-mobile");
 })
 
-fixture('comparison test homogenous')
+fixture('comparison test homogenous (2)')
+    .page(comparison_page([upper_sgv, sw_sgv]))
+    .beforeEach(async t => {
+        await t.eval(() => localStorage.clear());
+    });
+
+test('comparison-2-mobile', async t => {
+    await t.resizeWindow(400, 800);
+    await t.eval(() => location.reload(true));
+    await screencap(t, "comparison/basic-comparison-2-mobile");
+})
+
+fixture('comparison test homogenous (3)')
     .page(comparison_page([upper_sgv, pasadena, sw_sgv]))
     .beforeEach(async t => {
         await t.eval(() => localStorage.clear());
@@ -254,7 +266,7 @@ test('comparison-3-desktop', async t => {
 })
 
 test('comparison-3-mobile', async t => {
-    await t.resizeWindow(600, 800);
+    await t.resizeWindow(400, 800);
     await t.eval(() => location.reload(true));
     await screencap(t, "comparison/basic-comparison-mobile");
 })

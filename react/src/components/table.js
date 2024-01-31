@@ -75,7 +75,7 @@ class StatisticRowRaw extends React.Component {
                 }</span>
             ],
             [
-                this.props.simple ? 5 : 17,
+                this.props.simple ? 7 : 17,
                 "statistic_percentile",
                 <span className="serif ordinal">{
                     this.props.is_header
