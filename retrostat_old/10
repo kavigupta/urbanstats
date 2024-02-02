@@ -1,0 +1,107 @@
+[
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Mean distance to nearest Hospital",
+      "question": "!FULL Which has less access to hospitals (higher population-weighted mean distance)?",
+      "longname_a": "Sacramento city, California, USA",
+      "longname_b": "Kansas City city, Missouri, USA",
+      "stat_a": 4.925412037850216,
+      "stat_b": 3.086879275897537
+    },
+    "b": {
+      "stat_column": "Born outside US %",
+      "question": "higher % of people who were born outside the US",
+      "longname_a": "Marion County, Indiana, USA",
+      "longname_b": "York County, Pennsylvania, USA",
+      "stat_a": 0.0989209338017332,
+      "stat_b": 0.04164934393594439
+    },
+    "a_ease": 0.24681528662420382,
+    "b_ease": 0.6833333333333333
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Private Insurance %",
+      "question": "higher % of people who are on private insurance",
+      "longname_a": "Medford-Klamath Falls OR Media Market, USA",
+      "longname_b": "Wausau-Rhinelander WI Media Market, USA",
+      "stat_a": 0.5777118787116179,
+      "stat_b": 0.749053603190761
+    },
+    "b": {
+      "stat_column": "Commute Work From Home %",
+      "question": "higher % of people who work from home",
+      "longname_a": "11th Circuit, USA",
+      "longname_b": "9th Circuit, USA",
+      "stat_a": 0.09400519559589765,
+      "stat_b": 0.11201151984260226
+    },
+    "a_ease": 0.4297658862876254,
+    "b_ease": 0.8366666666666667
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Commute Bike %",
+      "question": "higher % of people who commute by bike",
+      "longname_a": "1st Circuit, USA",
+      "longname_b": "10th Circuit, USA",
+      "stat_a": 0.005860545112722067,
+      "stat_b": 0.007624597220544276
+    },
+    "b": {
+      "stat_column": "AW Density",
+      "question": "higher area-weighted density",
+      "longname_a": "Thurston County, Washington, USA",
+      "longname_b": "Dauphin County, Pennsylvania, USA",
+      "stat_a": 149.8241268512862,
+      "stat_b": 198.1182679457305
+    },
+    "a_ease": 0.11441307578008915,
+    "b_ease": 0.519163763066202
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Hispanic %",
+      "question": "higher % of people who are Hispanic",
+      "longname_a": "Mississippi, USA",
+      "longname_b": "Nebraska, USA",
+      "stat_a": 0.03553279949423637,
+      "stat_b": 0.11966072972576146
+    },
+    "b": {
+      "stat_column": "Commute Work From Home %",
+      "question": "higher % of people who work from home",
+      "longname_a": "CO-01, USA",
+      "longname_b": "OH-05, USA",
+      "stat_a": 0.1719482469238771,
+      "stat_b": 0.05133324015882288
+    },
+    "a_ease": 0.46656050955414013,
+    "b_ease": 0.882943143812709
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "% units built in 2010s+",
+      "question": "higher % units built in 2010s+",
+      "longname_a": "Austin city, Texas, USA",
+      "longname_b": "Anaheim city, California, USA",
+      "stat_a": 0.17435459464456213,
+      "stat_b": 0.051922677573759235
+    },
+    "b": {
+      "stat_column": "Population",
+      "question": "higher population",
+      "longname_a": "Ann Arbor [Urban Area], MI, USA",
+      "longname_b": "Modesto [Urban Area], CA, USA",
+      "stat_a": 317689.0,
+      "stat_b": 357301.0
+    },
+    "a_ease": 0.8980797636632201,
+    "b_ease": 0.4941002949852507
+  }
+]

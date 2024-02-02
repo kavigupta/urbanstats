@@ -1,0 +1,107 @@
+[
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Black %",
+      "question": "higher % of people who are Black",
+      "longname_a": "MI-04, USA",
+      "longname_b": "TX-19, USA",
+      "stat_a": 0.08319132455460883,
+      "stat_b": 0.06257863562224653
+    },
+    "b": {
+      "stat_column": "High windspeed (>10mph) days %",
+      "question": "higher % of days with wind speed over 10mph (population weighted)",
+      "longname_a": "WA-01, USA",
+      "longname_b": "MA-03, USA",
+      "stat_a": 0.07487242986016629,
+      "stat_b": 0.1479451386052423
+    },
+    "a_ease": 0.6837708830548926,
+    "b_ease": 0.26953125
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Mean high heat index",
+      "question": "higher mean daily high heat index (population weighted)",
+      "longname_a": "Austin [Urban Area], TX, USA",
+      "longname_b": "Santa Clarita [Urban Area], CA, USA",
+      "stat_a": 82.47768326608576,
+      "stat_b": 72.81992706840283
+    },
+    "b": {
+      "stat_column": "AW Density",
+      "question": "higher area-weighted density",
+      "longname_a": "Providence [Urban Area], RI-MA, USA",
+      "longname_b": "Mission Viejo-Lake Forest-Laguna Niguel [Urban Area], CA, USA",
+      "stat_a": 859.575042731263,
+      "stat_b": 1520.3113883286094
+    },
+    "a_ease": 0.7388235294117647,
+    "b_ease": 0.3174971031286211
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "PW Density (r=1km)",
+      "question": "higher population-weighted density (r=1km)",
+      "longname_a": "4th Circuit, USA",
+      "longname_b": "5th Circuit, USA",
+      "stat_a": 986.1932347511931,
+      "stat_b": 1240.2748717424815
+    },
+    "b": {
+      "stat_column": "White %",
+      "question": "higher % of people who are White",
+      "longname_a": "CA-41, USA",
+      "longname_b": "TX-30, USA",
+      "stat_a": 0.4398591732334629,
+      "stat_b": 0.17727810249717402
+    },
+    "a_ease": 0.15764705882352942,
+    "b_ease": 0.5718194254445964
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "% units built in 2010s+",
+      "question": "higher % units built in 2010s+",
+      "longname_a": "Lake County, Indiana, USA",
+      "longname_b": "Erie County, New York, USA",
+      "stat_a": 0.045126438069624984,
+      "stat_b": 0.03832159382680452
+    },
+    "b": {
+      "stat_column": "Grad %",
+      "question": "higher % of people who have a graduate degree",
+      "longname_a": "Nashville TN Media Market, USA",
+      "longname_b": "Rapid City SD Media Market, USA",
+      "stat_a": 0.10795709101498623,
+      "stat_b": 0.0924759955926334
+    },
+    "a_ease": 0.47494033412887826,
+    "b_ease": 0.8853333333333333
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Commute Transit %",
+      "question": "higher % of people who commute by transit",
+      "longname_a": "Georgia, USA",
+      "longname_b": "Illinois, USA",
+      "stat_a": 0.01659904865234431,
+      "stat_b": 0.07855270740980948
+    },
+    "b": {
+      "stat_column": "Mean sunny hours",
+      "question": "!FULL Which has more hours of sun per day on average? (population weighted)",
+      "longname_a": "Bakersfield CA Media Market, USA",
+      "longname_b": "Corpus Christi TX Media Market, USA",
+      "stat_a": 8.431807618334565,
+      "stat_b": 5.976312371848458
+    },
+    "a_ease": 0.8980301274623407,
+    "b_ease": 0.4916467780429594
+  }
+]
