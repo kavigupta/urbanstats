@@ -16,7 +16,7 @@ class IndexPanel extends PageTemplate {
         return (
             <div>
                 <div>
-                    <a href="/index.html"><img src="/banner.png" alt="Urban Stats Logo" width="100%" /></a>
+                    <img src="/banner.png" alt="Urban Stats Logo" width="100%" />
                 </div>
 
                 <div className="centered_text" style={{ textAlign: "left" }}>
