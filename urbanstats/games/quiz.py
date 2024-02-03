@@ -20,7 +20,8 @@ from urbanstats.shortener import shorten
 from relationship import states_for_all
 
 min_pop = 250_000
-version = 20
+min_pop_international = 20_000_000
+version = 30
 fixed_up_to = 155
 
 # ranges = [
@@ -76,6 +77,12 @@ def randomize_quiz(rng, quiz):
 def sample_quiz(rng):
     banned_categories = []
     banned_types = []
+    if rng.uniform() < 0.75:
+        banned_types.append("Judicial Circuit")
+    if rng.uniform() < 0.35:
+        banned_types.append("Media Market")
+    if rng.uniform() < 0.75:
+        banned_types.append("international")
     result = []
     for range in ranges:
         type, question = sample_quiz_question(
@@ -84,15 +91,21 @@ def sample_quiz(rng):
         banned_categories.append(
             get_statistic_categories()[question["stat_column_original"]]
         )
-        banned_types.append(type)
+        banned_types.append(type_ban_categorize(type))
         result.append(question)
     result = randomize_quiz(rng, result)
     return result
 
+def difficulty_multiplier(stat_column_original, type):
+    if is_international(type):
+        return 4
+    return difficulties[get_statistic_categories()[stat_column_original]]
 
-def compute_difficulty(stat_a, stat_b, stat_column_original):
+def compute_difficulty(stat_a, stat_b, stat_column_original, type):
     diff = pct_diff(stat_a, stat_b)
-    diff = diff / difficulties[get_statistic_categories()[stat_column_original]]
+    if diff > ranges[0][1]:
+        return float("inf")
+    diff = diff / difficulty_multiplier(stat_column_original, type)
     if "mean_high_temp" in stat_column_original:
         diff = diff / 0.25
     return diff
@@ -102,18 +115,20 @@ def same_state(a, b):
     sfa = states_for_all()
     return set(sfa[a]) & set(sfa[b]) != set()
 
+def is_international(type):
+    return type in {"Country", "Subnational Region"}
 
 def sample_quiz_question(
-    rng, banned_categories, banned_types, distance_pct_bot, distance_pct_top
+    rng, banned_categories, banned_type_categories, distance_pct_bot, distance_pct_top
 ):
     while True:
         type = rng.choice(types)
-        if type in banned_types:
-            continue
-        stat_column_original = rng.choice(stats)
-        if get_statistic_categories()[stat_column_original] in banned_categories:
+        if type_ban_categorize(type) in banned_type_categories:
             continue
         at_pop = filter_for_pop(type)
+        stat_column_original = rng.choice(at_pop.columns)
+        if get_statistic_categories()[stat_column_original] in banned_categories:
+            continue
         for _ in range(1000):
             a, b = rng.choice(at_pop.index, size=2)
             if type == "State":
@@ -125,7 +140,10 @@ def sample_quiz_question(
                 at_pop.loc[a][stat_column_original],
                 at_pop.loc[b][stat_column_original],
             )
-            diff = compute_difficulty(stat_a, stat_b, stat_column_original)
+            stat_a, stat_b = float(stat_a), float(stat_b)
+            if np.isnan(stat_a) or np.isnan(stat_b) or stat_a == 0 or stat_b == 0:
+                continue
+            diff = compute_difficulty(stat_a, stat_b, stat_column_original, type)
             if distance_pct_bot <= diff <= distance_pct_top:
                 return type, dict(
                     stat_column_original=stat_column_original,
@@ -141,8 +159,18 @@ def sample_quiz_question(
 def filter_for_pop(type):
     full = full_shapefile()
     filt = full[full.type == type]
-    at_pop = filt[filt.population >= min_pop].set_index("longname")
+    at_pop = filt[filt.best_population_estimate >= minimum_population(type)].set_index(
+        "longname"
+    )
+    at_pop = at_pop[stats]
+    at_pop = at_pop.loc[:, ~at_pop.applymap(np.isnan).all()]
     return at_pop
+
+
+def minimum_population(type):
+    if is_international(type):
+        return min_pop_international
+    return min_pop
 
 
 @permacache(f"urbanstats/games/quiz/generate_quiz_{version}")
@@ -263,7 +291,7 @@ def generate_quiz_info_for_website(site_folder):
 
     table = pd.concat([filter_for_pop(type) for type in types])
     table = {
-        x: {get_statistic_column_path(col): table[col][x] for col in stats_to_display}
+        x: {get_statistic_column_path(col): float(table[col][x]) for col in stats_to_display}
         for x in table.index
     }
     for loc in table:
@@ -294,6 +322,12 @@ def discordify(quiz):
     return "\n\n".join(discordify_question(q) for q in quiz)
 
 
+def type_ban_categorize(type):
+    if is_international(type):
+        return "international"
+    return type
+
+
 types = [
     "City",
     "County",
@@ -303,6 +337,8 @@ types = [
     "Congressional District",
     "Media Market",
     "Judicial Circuit",
+    "Country",
+    "Subnational Region",
 ]
 
 stats_to_display = {
@@ -393,6 +429,9 @@ stats_to_display = {
     "snowfall_4": "higher snowfall (population weighted)",
     "rainfall_4": "higher rainfall (population weighted)",
     "hours_sunny_4": "!FULL Which has more hours of sun per day on average? (population weighted)",
+    "gpw_aw_density": "higher area-weighted population density",
+    "gpw_population": "higher population",
+    "gpw_pw_density_4": "higher population-weighted density (r=4km)",
 }
 
 renamed = {
@@ -495,11 +534,8 @@ not_included = {
     "within_Airport_30",
     "within_Public School_2",
     "within_Hospital_10",
-    "gpw_aw_density",
-    "gpw_population",
     "gpw_pw_density_2",
     "gpw_pw_density_1",
-    "gpw_pw_density_4",
 }
 
 stats = list(stats_to_display)
