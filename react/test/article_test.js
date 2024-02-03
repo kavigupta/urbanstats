@@ -1,12 +1,13 @@
 import { Selector, ClientFunction } from 'testcafe';
 
+const TARGET = "http://teroknor:8000"
 const SEARCH_FIELD = Selector('input').withAttribute('placeholder', 'Search Urban Stats');
 const getLocation = ClientFunction(() => document.location.href);
 
 function comparison_page(locations) {
     const params = new URLSearchParams();
     params.set('longnames', JSON.stringify(locations));
-    return 'http://localhost:8000/comparison.html?' + params.toString();
+    return TARGET + '/comparison.html?' + params.toString();
 }
 
 async function prep_for_image(t) {
@@ -51,7 +52,7 @@ async function copy_most_recent_file(t, name) {
 }
 
 fixture('longer article test')
-    .page('http://localhost:8000/article.html?longname=California%2C+USA')
+    .page(TARGET + '/article.html?longname=California%2C+USA')
     // no local storage
     .beforeEach(async t => {
         await t.eval(() => localStorage.clear());
@@ -63,7 +64,7 @@ test('california-article-test', async t => {
 });
 
 fixture('shorter article test')
-    .page('http://localhost:8000/article.html?longname=San+Marino+city%2C+California%2C+USA')
+    .page(TARGET + '/article.html?longname=San+Marino+city%2C+California%2C+USA')
     .beforeEach(async t => {
         await t.eval(() => localStorage.clear());
     });
@@ -81,7 +82,7 @@ test('search-test', async t => {
     await t
         .pressKey('enter');
     await t.expect(getLocation())
-        .eql('http://localhost:8000/article.html?longname=Pasadena+CCD+%5BCCD%5D%2C+Los+Angeles+County%2C+California%2C+USA');
+        .eql(TARGET + '/article.html?longname=Pasadena+CCD+%5BCCD%5D%2C+Los+Angeles+County%2C+California%2C+USA');
 });
 
 test('search-test-arrows', async t => {
@@ -96,7 +97,7 @@ test('search-test-arrows', async t => {
     await t
         .pressKey('enter');
     await t.expect(getLocation())
-        .eql('http://localhost:8000/article.html?longname=Pasadena+Unified+School+District%2C+California%2C+USA');
+        .eql(TARGET + '/article.html?longname=Pasadena+Unified+School+District%2C+California%2C+USA');
 })
 
 test('editable-number', async t => {
@@ -110,7 +111,7 @@ test('editable-number', async t => {
         .pressKey('enter');
     await t.expect(editableNumber.innerText).eql('3');
     await t.expect(getLocation())
-        .eql('http://localhost:8000/article.html?longname=Chicago+city%2C+Illinois%2C+USA');
+        .eql(TARGET + '/article.html?longname=Chicago+city%2C+Illinois%2C+USA');
 })
 
 test('lr-buttons', async t => {
@@ -122,29 +123,29 @@ test('lr-buttons', async t => {
     await t
         .click(prev);
     await t.expect(getLocation())
-        .eql('http://localhost:8000/article.html?longname=Fortuna+city%2C+California%2C+USA');
+        .eql(TARGET + '/article.html?longname=Fortuna+city%2C+California%2C+USA');
     await t
         .click(next);
     await t.expect(getLocation())
-        .eql('http://localhost:8000/article.html?longname=San+Marino+city%2C+California%2C+USA');
+        .eql(TARGET + '/article.html?longname=San+Marino+city%2C+California%2C+USA');
     await t
         .click(next);
     await t.expect(getLocation())
-        .eql('http://localhost:8000/article.html?longname=Lakewood+Park+CDP%2C+Florida%2C+USA');
+        .eql(TARGET + '/article.html?longname=Lakewood+Park+CDP%2C+Florida%2C+USA');
     await t
         .click(prev)
     await t.expect(getLocation())
-        .eql('http://localhost:8000/article.html?longname=San+Marino+city%2C+California%2C+USA');
+        .eql(TARGET + '/article.html?longname=San+Marino+city%2C+California%2C+USA');
 
     await t.click(prev_overall);
     await t.expect(getLocation())
-        .eql('http://localhost:8000/article.html?longname=Havre+High+School+District%2C+Montana%2C+USA');
+        .eql(TARGET + '/article.html?longname=Havre+High+School+District%2C+Montana%2C+USA');
     await t.click(next_overall);
     await t.expect(getLocation())
-        .eql('http://localhost:8000/article.html?longname=San+Marino+city%2C+California%2C+USA');
+        .eql(TARGET + '/article.html?longname=San+Marino+city%2C+California%2C+USA');
     await t.click(next_overall);
     await t.expect(getLocation())
-        .eql('http://localhost:8000/article.html?longname=78225%2C+USA');
+        .eql(TARGET + '/article.html?longname=78225%2C+USA');
 })
 
 async function check_textbox(t, txt) {
