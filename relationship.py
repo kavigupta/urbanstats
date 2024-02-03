@@ -12,9 +12,7 @@ from shapefiles import shapefiles
 
 @lru_cache(maxsize=1)
 def states_for_all():
-    systematics = {
-        k: v for u in shapefiles for k, v in states_for(shapefiles[u]).items()
-    }
+    systematics = {}
     one_offs = {
         "Freeman Island Neighborhood, Long Beach City, California, USA": "California, USA",
         "Island Chaffee Neighborhood, Long Beach City, California, USA": "California, USA",
@@ -28,13 +26,20 @@ def states_for_all():
         "PA-HD001, USA": "Pennsylvania, USA",
         "RI-HD075, USA": "Rhode Island, USA",
     }
-    for k, v in one_offs.items():
-        assert not systematics[k]
-        systematics[k] = [v]
-    del systematics[
-        "Historical Congressional District DC-98, 103rd-117th Congress, USA"
-    ]  # no clue what this is
-    assert all(len(v) >= 1 for v in systematics.values())
+    for u in shapefiles:
+        for k, v in states_for(shapefiles[u]).items():
+            if (
+                k
+                == "Historical Congressional District DC-98, 103rd-117th Congress, USA"
+            ):
+                # no clue what this is
+                continue
+            if k in one_offs:
+                systematics[k] = [one_offs[k]]
+            else:
+                systematics[k] = v
+            if shapefiles[u].american:
+                assert len(systematics[k]) >= 1, (u, k)
     return systematics
 
 
@@ -45,6 +50,8 @@ def states_for_all():
 def states_for(sh):
     print("states_for", sh.hash_key)
     elem = sh.load_file()
+    if not sh.american:
+        return {k: [] for k in elem.longname}
     elem["idx"] = np.arange(elem.shape[0])
     over = overlays(
         shapefiles["states"].load_file(),
