@@ -5,3 +5,5 @@ cdsapi
 xarray
 suncalc
 protobuf==3.20.0
+geotiff
+imagecodecs

@@ -1,6 +1,7 @@
 from collections import defaultdict
 from functools import lru_cache
 import zipfile
+from geotiff import GeoTiff
 import pandas as pd
 import tqdm.auto as tqdm
 
@@ -86,6 +87,18 @@ def load_concatenated(prefix, path):
     return result
 
 
+@permacache("urbanstats/data/gpw/load_full_ghs_2")
+def load_full_ghs():
+    gt = GeoTiff("named_region_shapefiles/gpw/GHS_POP_E2020_GLOBE_R2023A_4326_30ss_V1_0.tif")
+    ghs = np.array(gt.read())
+    popu = np.zeros((180 * 120, 360 * 120), dtype=np.float32)
+    min_lon, max_lat = gt.get_coords(0, 0)
+    j_off = round((min_lon - (-180)) * 120)
+    i_off = round((90 - max_lat) * 120)
+    assert j_off == -1
+    popu[i_off:i_off + ghs.shape[0]] = ghs[:,1:-1]
+    return popu
+
 @permacache("urbanstats/data/gpw/load_full")
 def load_full():
     return load_concatenated(*GPW_PATH)
@@ -160,11 +173,11 @@ def compute_full_cell_overlaps_with_circle(radius, row_idx, num_grid=10):
     return result
 
 
-@permacache("urbanstats/data/gpw/compute_circle_density_per_cell")
+@permacache("urbanstats/data/gpw/compute_circle_density_per_cell_2")
 def compute_circle_density_per_cell(
     radius, longitude_start=0, longitude_end=None, latitude_start=0, latitude_end=None
 ):
-    glo = load_full()
+    glo = load_full_ghs()
     glo = glo[:, longitude_start:longitude_end]
     glo_zero = np.nan_to_num(glo, 0)
     out = np.zeros_like(glo_zero)
@@ -275,11 +288,11 @@ def lattice_cells_contained(glo, polygon):
 
 
 @permacache(
-    "urbanstats/data/gpw/compute_gpw_for_shape",
+    "urbanstats/data/gpw/compute_gpw_for_shape_2",
     key_function=dict(shape=lambda x: stable_hash(shapely.to_geojson(x))),
 )
 def compute_gpw_for_shape(shape):
-    glo = load_full()
+    glo = load_full_ghs()
     dens_1 = compute_circle_density_per_cell(1)
     dens_2 = compute_circle_density_per_cell(2)
     dens_4 = compute_circle_density_per_cell(4)
@@ -300,12 +313,12 @@ def compute_gpw_for_shape(shape):
 
 
 @permacache(
-    "urbanstats/data/gpw/compute_gpw_data_for_shapefile_2",
+    "urbanstats/data/gpw/compute_gpw_data_for_shapefile_3",
     key_function=dict(shapefile=lambda x: x.hash_key),
 )
 def compute_gpw_data_for_shapefile(shapefile):
     """
-    Compute the GPW data for a shapefile.
+    Compute the GHS-POP data for a shapefile.
     """
 
     shapes = shapefile.load_file()
@@ -332,7 +345,7 @@ def compute_gpw_data_for_shapefile(shapefile):
 
 
 @permacache(
-    "urbanstats/data/gpw/compute_gpw_data_for_shapefile_table_3",
+    "urbanstats/data/gpw/compute_gpw_data_for_shapefile_table_4",
     key_function=dict(shapefile=lambda x: x.hash_key),
 )
 def compute_gpw_data_for_shapefile_table(shapefile):
