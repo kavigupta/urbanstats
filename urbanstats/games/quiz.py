@@ -21,7 +21,7 @@ from relationship import states_for_all
 
 min_pop = 250_000
 version = 20
-fixed_up_to = 155
+fixed_up_to = 71
 
 # ranges = [
 #     (0.7, 1),
