@@ -60,11 +60,7 @@ class ComparisonPanel extends PageTemplate {
             idxs.push(idx);
         }
 
-        console.log(rows);
-
         rows = insert_missing(rows, idxs);
-
-        console.log(rows);
 
         const header_row = this.produce_row(i => { return { is_header: true } });
         const render_rows = rows[0].map((_, row_idx) =>
@@ -344,7 +340,7 @@ function insert_missing(rows, idxs) {
     var all_idxs = idxs.flat().filter((x, i, a) => a.indexOf(x) == i);
     // sort all_idxs in ascending order numerically
     all_idxs.sort((a, b) => a - b);
-    console.log(all_idxs)
+
     const new_rows_all = [];
     for (const data_i in rows) {
         const new_rows = [];
