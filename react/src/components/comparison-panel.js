@@ -337,7 +337,10 @@ function insert_missing(rows, idxs) {
         }
     }
 
-    const all_idxs = idxs.flat().filter((x, i, a) => a.indexOf(x) == i).sort();
+    var all_idxs = idxs.flat().filter((x, i, a) => a.indexOf(x) == i);
+    // sort all_idxs in ascending order numerically
+    all_idxs.sort((a, b) => a - b);
+
     const new_rows_all = [];
     for (const data_i in rows) {
         const new_rows = [];
