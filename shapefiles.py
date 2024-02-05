@@ -66,6 +66,20 @@ def districts(file_name, district_type, district_abbrev):
     )
 
 
+COUNTIES = Shapefile(
+    hash_key="census_counties_7",
+    path="named_region_shapefiles/cb_2022_us_county_500k.zip",
+    shortname_extractor=lambda x: county_name(x),
+    longname_extractor=lambda x: county_name(x)
+    + ", "
+    + us.states.lookup(x["STATEFP"]).name
+    + ", USA",
+    filter=lambda x: True,
+    meta=dict(type="County", source="Census"),
+)
+CONGRESSIONAL_DISTRICTS = districts("cd118", "Congressional District", "")
+
+
 def urban_area(name, *, is_shortname):
     name = name.replace("--", "-")
     assert name.endswith("Urban Area")
@@ -201,17 +215,7 @@ shapefiles = dict(
         filter=lambda x: True,
         meta=dict(type="State", source="Census"),
     ),
-    counties=Shapefile(
-        hash_key="census_counties_7",
-        path="named_region_shapefiles/cb_2022_us_county_500k.zip",
-        shortname_extractor=lambda x: county_name(x),
-        longname_extractor=lambda x: county_name(x)
-        + ", "
-        + us.states.lookup(x["STATEFP"]).name
-        + ", USA",
-        filter=lambda x: True,
-        meta=dict(type="County", source="Census"),
-    ),
+    counties=COUNTIES,
     msas=Shapefile(
         hash_key="census_msas_4",
         path="named_region_shapefiles/cb_2018_us_cbsa_500k.zip",
@@ -279,7 +283,7 @@ shapefiles = dict(
         meta=dict(type="Neighborhood", source="Zillow"),
         drop_dup=True,
     ),
-    congress=districts("cd118", "Congressional District", ""),
+    congress=CONGRESSIONAL_DISTRICTS,
     state_house=districts("sldl", "State House District", "HD"),
     state_senate=districts("sldu", "State Senate District", "SD"),
     historical_congressional=Shapefile(
