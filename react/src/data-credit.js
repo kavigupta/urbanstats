@@ -52,8 +52,7 @@ class DataCreditPanel extends PageTemplate {
                             additions from thee Data Gov portal and the NC legislature. Media market
                             shapefiles are from <a href="https://datablends.us/2021/01/14/a-useful-dma-shapefile-for-tableau-and-alteryx/">Kenneth C Black</a>.
                         </p>
-                        <p>Shapefiles on Medicare regions (Hospital Referral Regions and Hospital Service Areas) come from
-                            <a href="https://data.dartmouthatlas.org/supplemental/#boundaries">the Dartmouth Atlas</a>.
+                        <p>Shapefiles on Medicare regions (Hospital Referral Regions and Hospital Service Areas) come from <a href="https://data.dartmouthatlas.org/supplemental/#boundaries">the Dartmouth Atlas</a>.
                         </p>
                         <p>
                             Subnational shapefiles are from <a href=" https://hub.arcgis.com/datasets/esri::world-administrative-divisions/explore?location=41.502196%2C25.823236%2C6.69">ESRI</a>.
