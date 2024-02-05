@@ -96,10 +96,12 @@ def sample_quiz(rng):
     result = randomize_quiz(rng, result)
     return result
 
+
 def difficulty_multiplier(stat_column_original, type):
     if is_international(type):
         return 4
     return difficulties[get_statistic_categories()[stat_column_original]]
+
 
 def compute_difficulty(stat_a, stat_b, stat_column_original, type):
     diff = pct_diff(stat_a, stat_b)
@@ -115,8 +117,10 @@ def same_state(a, b):
     sfa = states_for_all()
     return set(sfa[a]) & set(sfa[b]) != set()
 
+
 def is_international(type):
     return type in {"Country", "Subnational Region"}
+
 
 def sample_quiz_question(
     rng, banned_categories, banned_type_categories, distance_pct_bot, distance_pct_top
@@ -291,7 +295,10 @@ def generate_quiz_info_for_website(site_folder):
 
     table = pd.concat([filter_for_pop(type) for type in types])
     table = {
-        x: {get_statistic_column_path(col): float(table[col][x]) for col in stats_to_display}
+        x: {
+            get_statistic_column_path(col): float(table[col][x])
+            for col in stats_to_display
+        }
         for x in table.index
     }
     for loc in table:
