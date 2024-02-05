@@ -6,9 +6,11 @@ from output_geometry import produce_geometry_json
 
 from shapefiles import shapefiles
 
+
 @lru_cache(None)
 def counties():
     return shapefiles["countries"].load_file()
+
 
 @permacache("urbanstats/special_cases/simplified_country/row_for_country")
 def row_for_country(name):
@@ -23,24 +25,24 @@ def get_simplified_country(name):
     r = filter_small_islands(r)
     return r
 
+
 def filter_small_islands(r):
     r = copy.deepcopy(r)
-    g = gpd.GeoDataFrame([r]).simplify(1/120 * 3)
-    polys = gpd.GeoSeries(g.geometry.apply(lambda g: 
-                                           g.geoms if g.geom_type == "MultiPolygon" else [g]
-                                           ).explode())
+    g = gpd.GeoDataFrame([r]).simplify(1 / 120 * 3)
+    polys = gpd.GeoSeries(
+        g.geometry.apply(
+            lambda g: g.geoms if g.geom_type == "MultiPolygon" else [g]
+        ).explode()
+    )
     if len(polys) < 100:
         return r
     a = polys.set_crs("epsg:4326").to_crs({"proj": "cea"}).area
     min_area = 10 * 1000**2
     if a.max() < min_area:
         min_area = a.max() / 10
-    r.geometry = (
-        polys[a > min_area]
-        .buffer(0)
-        .unary_union
-    )
+    r.geometry = polys[a > min_area].buffer(0).unary_union
     return r
+
 
 def all_simplified_countries(full, path):
     names = set(full.longname)

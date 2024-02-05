@@ -236,6 +236,8 @@ tiers = [
         "native_statistical_areas",
         "judicial_circuits",
         "media_markets",
+        "usda_county_type",
+        "hospital_referral_regions",
     ],
     [
         "csas",
@@ -248,6 +250,8 @@ tiers = [
         "native_subdivisions",
         "urban_areas",
         "judicial_districts",
+        "county_cross_cd",
+        "hospital_service_areas",
     ],
     ["cousub", "cities", "school_districts"],
     ["neighborhoods", "zctas"],

@@ -40,7 +40,7 @@ def produce_all_geometry_json(path, valid_names):
 def to_protobuf_polygon(f_python):
     f = data_files_pb2.Polygon()
     assert isinstance(f_python, dict)
-    assert f_python.keys() == {"type", "coordinates"}
+    assert f_python.keys() == {"type", "coordinates"}, f_python.keys()
     assert f_python["type"] == "Polygon"
     assert isinstance(f_python["coordinates"], (list, tuple)), f_python
     for ring_python in f_python["coordinates"]:

@@ -16,6 +16,7 @@ use = [
     "Urban Area",
     "Congressional District",
     "Media Market",
+    "Hospital Referral Region",
 ]
 dont_use = [
     "ZIP",
@@ -33,6 +34,9 @@ dont_use = [
     "Judicial Circuit",
     "Country",
     "Subnational Region",
+    "County Cross CD",
+    "USDA County Type",
+    "Hospital Service Area",
 ]
 
 
