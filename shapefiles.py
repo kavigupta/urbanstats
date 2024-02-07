@@ -80,6 +80,34 @@ COUNTIES = Shapefile(
 CONGRESSIONAL_DISTRICTS = districts("cd118", "Congressional District", "")
 
 
+@permacache("population_density/shapefiles/county_cross_cd_3")
+def county_cross_cd():
+    cds = CONGRESSIONAL_DISTRICTS.load_file()
+    counties = COUNTIES.load_file()
+    county_areas = dict(zip(counties.longname, counties.to_crs({"proj": "cea"}).area))
+
+    db_all = []
+    for state in tqdm.tqdm(us.STATES, desc="cross county CD"):
+        cds_state = cds[cds.longname.apply(lambda x: x.startswith(state.abbr))]
+        counties_state = counties[
+            counties.longname.apply(lambda x: x.endswith(state.name + ", USA"))
+        ]
+        db_state = gpd.overlay(
+            cds_state, counties_state, keep_geom_type=True
+        ).reset_index(drop=True)
+        frac = db_state.to_crs({"proj": "cea"}).area / db_state.longname_2.apply(
+            lambda x: county_areas[x]
+        )
+        mask = frac >= 0.003
+        db_state = db_state[mask]
+        db_all.append(db_state)
+    db = pd.concat(db_all)
+    db = db.reset_index(drop=True)
+    db["shortname"] = db["shortname_1"] + " in " + db["shortname_2"]
+    db["longname"] = db["shortname"] + ", USA"
+    return db
+
+
 def urban_area(name, *, is_shortname):
     name = name.replace("--", "-")
     assert name.endswith("Urban Area")
@@ -156,6 +184,26 @@ def judicial_circuits():
     return data
 
 
+@permacache("population_density/shapefiles/usda_county_type")
+def usda_county_type():
+    counties = gpd.read_file("named_region_shapefiles/cb_2015_us_county_500k.zip")
+    counties = counties[
+        counties.apply(
+            lambda x: x.GEOID[:2] not in ["60", "69", "72", "78", "66"], axis=1
+        )
+    ]
+    typology_codes = pd.read_csv("named_region_shapefiles/2015CountyTypologyCodes.csv")
+    typology_codes = {
+        f"{k:05d}": v
+        for k, v in zip(typology_codes.FIPStxt, typology_codes.Economic_Type_Label)
+    }
+    typology_codes["46102"] = typology_codes["46113"]
+    typology_codes["02158"] = typology_codes["02270"]
+
+    regions = counties.dissolve(counties.GEOID.apply(lambda x: typology_codes[x]))
+    return regions
+
+
 def iso3_to_country(iso):
     if iso == "USA":
         return "USA"
@@ -204,6 +252,11 @@ def countries():
         new_geos.append(row.geometry.buffer(1 / 120 * 0.1))
     data.geometry = new_geos
     return data
+
+
+def hrr_shortname(x, suffix="HRR"):
+    state, city = [x.strip() for x in [x[: x.index("-")], x[x.index("-") + 1 :]]]
+    return f"{city.title()} {state} {suffix}"
 
 
 shapefiles = dict(
@@ -348,6 +401,42 @@ shapefiles = dict(
         longname_extractor=lambda x: x["shortname"] + ", USA",
         filter=lambda x: True,
         meta=dict(type="Judicial Circuit", source="HIFLD"),
+    ),
+    county_cross_cd=Shapefile(
+        hash_key="county_cross_cd_3",
+        path=county_cross_cd,
+        shortname_extractor=lambda x: x["shortname"],
+        longname_extractor=lambda x: x["longname"],
+        filter=lambda x: True,
+        meta=dict(type="County Cross CD", source="Census"),
+        chunk_size=100,
+    ),
+    usda_county_type=Shapefile(
+        hash_key="usda_county_type",
+        path=usda_county_type,
+        shortname_extractor=lambda x: x.name + " [USDA County Type]",
+        longname_extractor=lambda x: x.name + " [USDA County Type], USA",
+        filter=lambda x: True,
+        meta=dict(type="USDA County Type", source="Census"),
+    ),
+    hospital_referral_regions=Shapefile(
+        hash_key="hospital_referral_regions_3",
+        path="named_region_shapefiles/hrr.geojson",
+        shortname_extractor=lambda x: hrr_shortname(x.hrrcity),
+        longname_extractor=lambda x: hrr_shortname(x.hrrcity) + ", USA",
+        filter=lambda x: True,
+        meta=dict(type="Hospital Referral Region", source="Dartmouth Atlas"),
+    ),
+    hospital_service_areas=Shapefile(
+        hash_key="hospital_service_areas_2",
+        path="named_region_shapefiles/HsaBdry_AK_HI_unmodified.geojson",
+        shortname_extractor=lambda x: hrr_shortname(x.HSANAME, "HSA"),
+        longname_extractor=lambda x: hrr_shortname(x.HSANAME, "HSA")
+        + ", "
+        + hrr_shortname(x.HRR93_NAME)
+        + ", USA",
+        filter=lambda x: True,
+        meta=dict(type="Hospital Service Area", source="Dartmouth Atlas"),
     ),
     media_markets=Shapefile(
         hash_key="media_markets_2",

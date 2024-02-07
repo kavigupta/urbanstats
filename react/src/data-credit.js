@@ -41,7 +41,8 @@ class DataCreditPanel extends PageTemplate {
                             Shapefiles on States, MSAs, CSAs, Counties, County subdivisions, Cities (CDPs),
                             Zip Codes (ZCTAs), Native Reservations, Native Reservation Subdivisions,
                             School Districts, Congressional Districts, and State Legislative Districts
-                            are from the 2020 Census.
+                            are from the 2020 Census. USDA County Type shapefiles are aggregated from
+                            county shapefiles, using the definitions from <a href="https://www.ers.usda.gov/data-products/county-typology-codes/">the USDA</a>.
                         </p>
                         <p>
                             Shapefiles on Judicial Districts are from the HIFLD Open Data Portal.
@@ -50,6 +51,8 @@ class DataCreditPanel extends PageTemplate {
                             Shapefiles on historical congressional districts are mostly from UCLA with some
                             additions from thee Data Gov portal and the NC legislature. Media market
                             shapefiles are from <a href="https://datablends.us/2021/01/14/a-useful-dma-shapefile-for-tableau-and-alteryx/">Kenneth C Black</a>.
+                        </p>
+                        <p>Shapefiles on Medicare regions (Hospital Referral Regions and Hospital Service Areas) come from <a href="https://data.dartmouthatlas.org/supplemental/#boundaries">the Dartmouth Atlas</a>.
                         </p>
                         <p>
                             Subnational shapefiles are from <a href=" https://hub.arcgis.com/datasets/esri::world-administrative-divisions/explore?location=41.502196%2C25.823236%2C6.69">ESRI</a>.
@@ -322,12 +325,12 @@ class DataCreditPanel extends PageTemplate {
                     Gridded population data is from Schiavina M., Freire S., Carioli A., MacManus K. (2023): GHS-POP R2023A - GHS population grid multitemporal (1975-2030).European Commission, Joint Research Centre (JRC)
                     {/* PID: http://data.europa.eu/89h/2ff68a52-5b5b-4a22-8f40-c41da8332cfe, doi:10.2905/2FF68A52-5B5B-4A22-8F40-C41DA8332CFE */}
                     PID: <a href="http://data.europa.eu/89h/2ff68a52-5b5b-4a22-8f40-c41da8332cfe">http://data.europa.eu/89h/2ff68a52-5b5b-4a22-8f40-c41da8332cfe</a>,
-                        <a href="https://doi.org/10.2905/2FF68A52-5B5B-4A22-8F40-C41DA8332CFE">10.2905/2FF68A52-5B5B-4A22-8F40-C41DA8332CFE</a>
+                    <a href="https://doi.org/10.2905/2FF68A52-5B5B-4A22-8F40-C41DA8332CFE">10.2905/2FF68A52-5B5B-4A22-8F40-C41DA8332CFE</a>
                     We use the 2020 population estimates, which are
-                        not perfectly accurate in all cases, but should be the best match to the 2020 Census numbers
-                        we are using for the US data. To compute PW density, we treat each cell as effectively homogenous,
-                        but since the cells are all smaller than 1 square kilometer, this should not be a major issue for
-                        radii above 1km (which is the smallest radius we use for GHS-POP data).
+                    not perfectly accurate in all cases, but should be the best match to the 2020 Census numbers
+                    we are using for the US data. To compute PW density, we treat each cell as effectively homogenous,
+                    but since the cells are all smaller than 1 square kilometer, this should not be a major issue for
+                    radii above 1km (which is the smallest radius we use for GHS-POP data).
                 </div>
             </div>
         );

@@ -97,7 +97,7 @@ test('search-test-arrows', async t => {
     await t
         .pressKey('enter');
     await t.expect(getLocation())
-        .eql(TARGET + '/article.html?longname=Pasadena+Unified+School+District%2C+California%2C+USA');
+        .eql(TARGET + '/article.html?longname=Pasadena+TX+HSA%2C+Houston+TX+HRR%2C+USA');
 })
 
 test('editable-number', async t => {

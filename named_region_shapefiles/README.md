@@ -19,6 +19,16 @@ Source: https://www.census.gov/geographies/mapping-files/time-series/geo/cartogr
  - cb_2022_us_scsd_500k.zip
  - cb_2022_us_unsd_500k.zip
 
+Source: https://www.census.gov/geographies/mapping-files/time-series/geo/carto-boundary-file.2015.html#list-tab-1556094155
+
+ - cb_2015_us_county_500k.zip
+
+# USDA
+
+Source: https://www.ers.usda.gov/data-products/county-typology-codes/
+
+ - 2015CountyTypologyCodes.csv
+
 # From HIFLD
 
 Source https://hifld-geoplatform.opendata.arcgis.com/datasets/geoplatform::us-district-court-jurisdictions/explore?location=31.251558%2C-88.409995%2C4.92&showTable=true
@@ -97,3 +107,10 @@ Source: https://public.opendatasoft.com/explore/dataset/world-administrative-bou
 Source: https://hub.arcgis.com/datasets/esri::world-administrative-divisions/explore?location=41.502196%2C25.823236%2C6.69
 
       - World_Administrative_Divisions.zip
+
+# Dartmouth Atlas
+
+Source: https://data.dartmouthatlas.org/supplemental/#boundaries
+
+  - HRR_Bdry__AK_HI_unmodified_original.geojson [hrr.geojson is derived from this, some small errors fixed]
+  - HSA_Bdry__AK_HI_unmodified.geojson

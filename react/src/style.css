@@ -224,6 +224,24 @@
     background-color: #ddd;
 }
 
+.b_hospital_referral_region {
+    /* light red */
+    background-color: rgb(255, 204, 204);
+}
+
+.b_hospital_service_area {
+    /* light red */
+    background-color: rgb(255, 204, 204);
+}
+
+.b_usda_county_type  {
+    background-color: #ddd;
+}
+
+.b_county_cross_cd {
+    background-color: #ddd;
+}
+
 .main_page_header {
     font-size: 35px;
     font-weight: bold;
