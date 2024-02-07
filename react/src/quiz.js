@@ -87,7 +87,7 @@ async function loadPage() {
         console.log(urlParams);
         console.log(urlParams.get('date'));
         if (urlParams.has('date')) {
-            today = urlParams.get('date');
+            today = parseInt(urlParams.get('date'));
         } else {
             today = get_daily_offset_number();
         }

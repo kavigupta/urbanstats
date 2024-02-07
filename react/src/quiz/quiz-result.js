@@ -121,7 +121,7 @@ class Timer extends React.Component {
     }
     render() {
         const w = this.props.quiz_kind == "juxtastat" ? "5em" : "6.5em";
-        return <div className="serif quiz_next" style={{ width: w, margin: 0 }}>
+        return <div className="serif quiz_next" style={{ width: w, margin: 0 }} id="quiz-timer">
             <span>{render_time_remaining(this.props.quiz_kind, this.props.today)}</span>
         </div>
     }
