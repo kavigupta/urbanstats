@@ -69,6 +69,10 @@ export class QuizStatistics extends React.Component {
                 name: "Current Streak (3+)",
                 value: current_streak,
             },
+            {
+                name: "Max Streak (3+)",
+                value: max_streak,
+            },
         ];
         return <div>
             <div className="serif quiz_summary">Your Statistics</div>
