@@ -36,16 +36,14 @@ export class QuizStatistics extends React.Component {
                 played_games.push(amount);
             }
         }
-        const streaks = new Array(6).fill(0);
-        for (var val = 0; val < streaks.length; val++) {
-            for (var i = historical_correct.length - 1; i >= 0; i--) {
-                if (historical_correct[i] >= val) {
-                    streaks[val] += 1;
-                } else {
-                    break;
-                }
+        const max_streaks = new Array(historical_correct.length).fill(0);
+        for (var val = 0; val < max_streaks.length; val++) {
+            if (historical_correct[val] >= 3) {
+                max_streaks[val] = (val > 0 ? max_streaks[val - 1] : 0) + 1;
             }
         }
+        const max_streak = Math.max(...max_streaks);
+        const current_streak = max_streaks[today];
         const total_freq = frequencies.reduce((partialSum, a) => partialSum + a, 0);
         const today_score = historical_correct[today];
         const statistics = [
@@ -69,7 +67,7 @@ export class QuizStatistics extends React.Component {
             },
             {
                 name: "Current Streak (3+)",
-                value: streaks[3],
+                value: current_streak,
             },
         ];
         return <div>
