@@ -329,3 +329,16 @@ test('comparison-3-editable-number-third', async t => {
     await t.expect(getLocation())
         .eql(comparison_page([upper_sgv, pasadena, chicago]));
 })
+
+fixture('quiz result test')
+    .page(TARGET + '/quiz.html')
+    // no local storage
+    .beforeEach(async t => {
+        await t.eval(() => localStorage.clear());
+    });
+
+test('california-article-test', async t => {
+    // screenshot path: images/first_test.png
+    await screencap(t, "article/california");
+});
+
