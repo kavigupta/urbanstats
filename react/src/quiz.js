@@ -84,7 +84,13 @@ async function loadPage() {
         today = today_name;
     } else {
         // daily quiz
-        today = get_daily_offset_number();
+        console.log(urlParams);
+        console.log(urlParams.get('date'));
+        if (urlParams.has('date')) {
+            today = parseInt(urlParams.get('date'));
+        } else {
+            today = get_daily_offset_number();
+        }
         todays_quiz = loadJSON("/quiz/" + today);
         today_name = today;
     }
