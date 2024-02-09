@@ -321,7 +321,7 @@ class Map extends MapGeneric {
         const styles = [];
 
         names.push(this.props.longname);
-        styles.push({ "fillOpacity": 0.5, "weight": 1, "color": "#5a7dc3", "fillColor": "#5a7dc3" });
+        styles.push({ "interactive": false , "fillOpacity": 0.5, "weight": 1, "color": "#5a7dc3", "fillColor": "#5a7dc3" });
 
         const [related_names, related_styles] = this.related_polygons(relateds);
         names.push(...related_names);
