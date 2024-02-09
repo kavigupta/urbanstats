@@ -28,10 +28,14 @@
     float: left;
     padding-right: 0.3em;
     vertical-align: middle;
+    margin-top: 1px;
+    margin-bottom: 1px;
 }
 
 .linklistel_mobile {
     min-height: 20pt;
+    margin-top: 0px;
+    margin-bottom: 0px;
 }
 
 .linklistelfirst {
