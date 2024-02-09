@@ -22,9 +22,9 @@ class RelatedButton extends React.Component {
     }
 
     render() {
-        let classes = `button b_${to_name(this.props.rowType)}`
+        let classes = `serif button_related b_${to_name(this.props.rowType)}`
         if (mobileLayout()) {
-            classes += " button_mobile";
+            classes += " button_related_mobile";
         }
         return (
             <li className={"linklistel" + (mobileLayout() ? " linklistel_mobile" : "")}>

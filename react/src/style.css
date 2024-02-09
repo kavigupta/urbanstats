@@ -106,8 +106,16 @@
     border-left: 1px solid #CCCCCC;
 }
 
-.button_mobile {
-    font: bold 12pt Arial;
+.button_related {
+    font: bold 8pt;
+    text-decoration: none;
+    padding: 2px 6px 2px 6px;
+    border-radius: 5px;
+    font-weight: bold;
+}
+
+.button_related_mobile {
+    font-size: 12pt;
 }
 
 .button_random {
