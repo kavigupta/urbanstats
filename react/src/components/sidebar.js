@@ -129,6 +129,7 @@ const CheckboxSetting = props => {
                 type="checkbox"
                 checked={props.settings[props.setting_key] || false}
                 onChange={e => { props.set_setting(props.setting_key, e.target.checked) }}
+                style={{ accentColor: "#5a7dc3" }}
             />
             <label>{props.name}</label>
         </div>
