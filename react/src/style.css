@@ -107,11 +107,12 @@
 }
 
 .button_related {
-    font: bold 8pt;
     text-decoration: none;
     padding: 2px 6px 2px 6px;
     border-radius: 5px;
     font-weight: bold;
+    font-size: 8pt;
+    color: #000;
 }
 
 .button_related_mobile {
@@ -242,7 +243,7 @@
     background-color: rgb(255, 204, 204);
 }
 
-.b_usda_county_type  {
+.b_usda_county_type {
     background-color: #ddd;
 }
 
