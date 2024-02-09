@@ -60,6 +60,11 @@ function interpolate_color(ramp, item) {
 }
 
 function lighten(color, fraction) {
+    // assert color is a string
+
+    if (!(typeof color === "string")) {
+        throw new Error("color is not a string");
+    }
     const ramp = [[0, color], [1, "#ffffff"]];
     return interpolate_color(ramp, fraction);
 }

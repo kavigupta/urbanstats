@@ -8,6 +8,7 @@ import { CheckboxSetting } from "./sidebar.js";
 
 import "./related.css";
 import { mobileLayout } from '../utils/responsive.js';
+import { lighten } from '../utils/color.js';
 
 function relationship_key(article_type, other_type) {
     return "related__" + article_type + "__" + other_type;
@@ -22,14 +23,57 @@ class RelatedButton extends React.Component {
     }
 
     render() {
-        let classes = `button b_${to_name(this.props.rowType)}`
+        const DARK_GRAY = "#4e525a";
+        const BLUE = "#5a7dc3";
+        const ORANGE = "#af6707";
+        const PURPLE = "#975ac3";
+        const RED = "#f96d6d";
+        const PINK = "#c767b0";
+        const GREEN = "#8ac35a";
+        const YELLOW = "#b8a32f";
+
+        const colors_each = {
+            "Country": DARK_GRAY,
+            "Judicial Circuit": DARK_GRAY,
+            "USDA County Type": DARK_GRAY,
+            "State": BLUE,
+            "Subnational Region": BLUE,
+            "Native Area": BLUE,
+            "CSA": ORANGE,
+            "Native Statistical Area": ORANGE,
+            "Judicial District": ORANGE,
+            "Hospital Referral Region": ORANGE,
+            "MSA": PURPLE,
+            "Congressional District": PURPLE,
+            "Historical Congressional District": PURPLE,
+            "Native Subdivision": PURPLE,
+            "Media Market": PURPLE,
+            "Urban Area": PURPLE,
+            "Hospital Service Area": PURPLE,
+            "County": RED,
+            "State Senate District": RED,
+            "CCD": PINK,
+            "State House District": PINK,
+            "County Cross CD": PINK,
+            "City": GREEN,
+            "School District": GREEN,
+            "Neighborhood": YELLOW,
+            "ZIP": YELLOW,
+        }
+
+        let classes = `serif button_related`
         if (mobileLayout()) {
-            classes += " button_mobile";
+            classes += " button_related_mobile";
+        }
+        const color = colors_each[this.props.rowType];
+        if (color === undefined) {
+            throw new Error("color is undefined; rowType is " + this.props.rowType);
         }
         return (
             <li className={"linklistel" + (mobileLayout() ? " linklistel_mobile" : "")}>
                 <a
                     className={classes}
+                    style={{ color: "black", backgroundColor: lighten(color, 0.7)}}
                     href={article_link(this.props.longname)}>{this.props.shortname}
                 </a>
             </li>

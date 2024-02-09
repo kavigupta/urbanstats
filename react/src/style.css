@@ -106,140 +106,21 @@
     border-left: 1px solid #CCCCCC;
 }
 
-.button_mobile {
-    font: bold 12pt Arial;
+.button_related {
+    font: bold 8pt;
+    text-decoration: none;
+    padding: 2px 6px 2px 6px;
+    border-radius: 5px;
+    font-weight: bold;
+}
+
+.button_related_mobile {
+    font-size: 12pt;
 }
 
 .button_random {
     display: block;
     height: 100%;
-}
-
-.b_state {
-    /* grey */
-    background-color: #ddd;
-}
-
-.b_county {
-    /* red */
-    background-color: #fcc;
-}
-
-.b_ccd {
-    /* purple */
-    background-color: #dcf;
-}
-
-.b_csa {
-    /* cyan-blue */
-    background-color: #cef;
-}
-
-.b_msa {
-    /* cyan */
-    background-color: #dff;
-}
-
-.b_city {
-    /* yellow */
-    background-color: #ffc;
-}
-
-.b_neighborhood {
-    /* orange */
-    background-color: #fec;
-}
-
-.b_zip {
-    /* green */
-    background-color: #cfc;
-}
-
-.b_congressional_district {
-    /* magenta */
-    background-color: #fcf;
-}
-
-.b_state_house_district {
-    /* purple */
-    background-color: #ecf;
-}
-
-.b_state_senate_district {
-    /* anti-purple */
-    background-color: #fce;
-}
-
-.b_historical_congressional_district {
-    /* light magenta */
-    background-color: #fef;
-}
-
-.b_native_area {
-    /* lime */
-    background-color: rgb(243, 255, 204);
-}
-
-.b_native_statistical_area {
-    /* lime */
-    background-color: rgb(243, 255, 204);
-}
-
-.b_native_subdivision {
-    /* dark lime */
-    background-color: rgb(234, 255, 164);
-}
-
-.b_school_district {
-    /* light blue */
-    background-color: rgb(202, 225, 230);
-}
-
-.b_judicial_district {
-    /* light purple */
-    background-color: rgb(240, 224, 255);
-}
-
-.b_judicial_circuit {
-    /* light purple */
-    background-color: rgb(230, 204, 255);
-}
-
-.b_media_market {
-    /*light orange*/
-    background-color: rgb(255, 223, 204);
-}
-
-.b_urban_area {
-    /* light yellow */
-    background-color: rgb(255, 255, 204);
-}
-
-.b_country {
-    /* light red */
-    background-color: rgb(255, 204, 204);
-}
-
-.b_subnational_region {
-    background-color: #ddd;
-}
-
-.b_hospital_referral_region {
-    /* light red */
-    background-color: rgb(255, 204, 204);
-}
-
-.b_hospital_service_area {
-    /* light red */
-    background-color: rgb(255, 204, 204);
-}
-
-.b_usda_county_type  {
-    background-color: #ddd;
-}
-
-.b_county_cross_cd {
-    background-color: #ddd;
 }
 
 .main_page_header {
@@ -283,9 +164,9 @@
 }
 
 .party_result_D {
-    color: #44c;
+    color: #5a7dc3;
 }
 
 .party_result_R {
-    color: #c44;
+    color: #f96d6d;
 }
