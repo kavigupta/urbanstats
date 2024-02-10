@@ -27,7 +27,7 @@ class MapGeneric extends React.Component {
             <div id={this.props.id} className="map" style={{ background: "white", height: this.props.height || 400 }}>
                 {/* place this on the right of the map */}
                 <div style={
-                    {zIndex: 1000, position: "absolute", right: 0, top: 0, padding: "1em"}
+                    { zIndex: 1000, position: "absolute", right: 0, top: 0, padding: "1em" }
                 }>
                     {this.buttons()}
                 </div>
@@ -269,8 +269,12 @@ class MapGeneric extends React.Component {
             return;
         }
         let geojson = await this.polygon_geojson(name);
+        // geojson = fix_dateline(geojson);
         let group = new L.featureGroup();
         let polygon = L.geoJson(geojson, { style: style, smoothFactor: 0.1 });
+        // translate the polygon left by 360 degrees
+        polygon = polygon.transform(1, 0, 360);
+        console.log(polygon);
         if (add_callback) {
             polygon = polygon.on("click", function (e) {
                 window.location.href = article_link(name);
@@ -369,4 +373,149 @@ class Map extends MapGeneric {
         return [names, styles];
     }
 
+}
+
+function fix_dateline(geojson) {
+    if (has_point_in_center(-90, 0, geojson) && has_point_in_center(0, 90, geojson)) {
+        return geojson;
+    }
+    return east_to_west(geojson);
+}
+
+function has_point_in_center(a, b, geojson) {
+    // true iff the geojson has a point with longitude between a and b
+    if (geojson.type == "Point") {
+        return a <= geojson.coordinates[0] && geojson.coordinates[0] <= b;
+    }
+    if (geojson.type == "MultiPoint") {
+        for (let i = 0; i < geojson.coordinates.length; i++) {
+            if (a <= geojson.coordinates[i][0] && geojson.coordinates[i][0] <= b) {
+                return true;
+            }
+        }
+        return false;
+    }
+    if (geojson.type == "LineString") {
+        for (let i = 0; i < geojson.coordinates.length; i++) {
+            if (a <= geojson.coordinates[i][0] && geojson.coordinates[i][0] <= b) {
+                return true;
+            }
+        }
+        return false;
+    }
+    if (geojson.type == "MultiLineString") {
+        for (let i = 0; i < geojson.coordinates.length; i++) {
+            if (has_point_in_center(a, b, { type: "LineString", coordinates: geojson.coordinates[i] })) {
+                return true;
+            }
+        }
+        return false;
+    }
+    if (geojson.type == "Polygon") {
+        for (let i = 0; i < geojson.coordinates.length; i++) {
+            if (has_point_in_center(a, b, { type: "LineString", coordinates: geojson.coordinates[i] })) {
+                return true;
+            }
+        }
+        return false;
+    }
+    if (geojson.type == "MultiPolygon") {
+        for (let i = 0; i < geojson.coordinates.length; i++) {
+            if (has_point_in_center(a, b, { type: "Polygon", coordinates: geojson.coordinates[i] })) {
+                return true;
+            }
+        }
+        return false;
+    }
+    if (geojson.type == "Feature") {
+        return has_point_in_center(a, b, geojson.geometry);
+    }
+    if (geojson.type == "FeatureCollection") {
+        for (let i = 0; i < geojson.features.length; i++) {
+            if (has_point_in_center(a, b, geojson.features[i])) {
+                return true;
+            }
+        }
+        return false;
+    }
+    console.log(geojson);
+    throw "unknown type: " + geojson.type;
+}
+
+function east_to_west(geojson) {
+    // convert a geojson from -180 to 180 to -360 to 0
+    if (geojson.type == "Point") {
+        return {
+            type: "Point", coordinates: [
+                geojson.coordinates[0] > 0 ? geojson.coordinates[0] - 360 : geojson.coordinates[0],
+                geojson.coordinates[1]
+            ]
+        };
+    }
+    if (geojson.type == "MultiPoint") {
+        return {
+            type: "MultiPoint", coordinates: geojson.coordinates.map(
+                (x) => [
+                    x[0] > 0 ? x[0] - 360 : x[0],
+                    x[1]
+                ]
+            )
+        };
+    }
+    if (geojson.type == "LineString") {
+        return {
+            type: "LineString", coordinates: geojson.coordinates.map(
+                (x) => [
+                    x[0] > 0 ? x[0] - 360 : x[0],
+                    x[1]
+                ]
+            )
+        };
+    }
+    if (geojson.type == "MultiLineString") {
+        return {
+            type: "MultiLineString", coordinates: geojson.coordinates.map(
+                (x) => x.map(
+                    (y) => [
+                        y[0] > 0 ? y[0] - 360 : y[0],
+                        y[1]
+                    ]
+                )
+            )
+        };
+    }
+    if (geojson.type == "Polygon") {
+        return {
+            type: "Polygon", coordinates: geojson.coordinates.map(
+                (x) => x.map(
+                    (y) => [
+                        y[0] > 0 ? y[0] - 360 : y[0],
+                        y[1]
+                    ]
+                )
+            )
+        };
+    }
+    if (geojson.type == "MultiPolygon") {
+        return {
+            type: "MultiPolygon", coordinates: geojson.coordinates.map(
+                (x) => x.map(
+                    (y) => y.map(
+                        (z) => [
+                            z[0] > 0 ? z[0] - 360 : z[0],
+                            z[1]
+                        ]
+                    )
+                )
+            )
+        };
+    }
+    if (geojson.type == "Feature") {
+        return { type: "Feature", properties: geojson.properties, geometry: east_to_west(geojson.geometry) };
+    }
+    if (geojson.type == "FeatureCollection") {
+        return { type: "FeatureCollection", features: geojson.features.map(east_to_west) };
+    }
+    console.log(geojson);
+    throw "unknown type: " + geojson.type;
 }
