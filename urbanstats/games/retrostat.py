@@ -5,8 +5,9 @@ from permacache import permacache, stable_hash
 from urbanstats.games.quiz import check_quiz_is_guaranteed_past
 from urbanstats.games.quiz_analysis import get_full_statistics, questions
 
-fixed_up_to = 12
-generate_until = 12
+from .fixed import retrostat as fixed_up_to
+
+generate_until = 15
 
 
 def week_for_day(day):
