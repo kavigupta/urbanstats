@@ -1,0 +1,107 @@
+[
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Undergrad STEM %",
+      "question": "!FULL Which has more people with a STEM degree, as a percentage of the overall population?",
+      "longname_a": "Atlanta-Sandy Springs-Roswell MSA, GA, USA",
+      "longname_b": "Detroit-Warren-Dearborn MSA, MI, USA",
+      "stat_a": 0.16933077187216763,
+      "stat_b": 0.14804314612828232
+    },
+    "b": {
+      "stat_column": "Asian %",
+      "question": "higher % of people who are Asian",
+      "longname_a": "MA-03, USA",
+      "longname_b": "CA-48, USA",
+      "stat_a": 0.08109312228108492,
+      "stat_b": 0.06939865571164369
+    },
+    "a_ease": 0.7220670391061452,
+    "b_ease": 0.28296703296703296
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "High School %",
+      "question": "higher % of people who have at least a high school diploma",
+      "longname_a": "Lexington-Fayette urban county, Kentucky, USA",
+      "longname_b": "Buffalo city, New York, USA",
+      "stat_a": 0.9263871803023392,
+      "stat_b": 0.8676253420767285
+    },
+    "b": {
+      "stat_column": "% units built in 2010s+",
+      "question": "higher % units built in 2010s+",
+      "longname_a": "South Carolina, USA",
+      "longname_b": "Rhode Island, USA",
+      "stat_a": 0.11982202223388748,
+      "stat_b": 0.024861571965957698
+    },
+    "a_ease": 0.28165007112375534,
+    "b_ease": 0.7724039829302988
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "PW Density (r=1km)",
+      "question": "higher population-weighted density (r=1km)",
+      "longname_a": "Webb County, Texas, USA",
+      "longname_b": "Onondaga County, New York, USA",
+      "stat_a": 2017.2645651634687,
+      "stat_b": 1373.701114315829
+    },
+    "b": {
+      "stat_column": "Undergrad %",
+      "question": "higher % of people who have at least an undergrad degree",
+      "longname_a": "Victorville-Hesperia-Apple Valley [Urban Area], CA, USA",
+      "longname_b": "Greensboro [Urban Area], NC, USA",
+      "stat_a": 0.12233744868012125,
+      "stat_b": 0.3780250270227061
+    },
+    "a_ease": 0.12482269503546099,
+    "b_ease": 0.6607142857142857
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Uninsured %",
+      "question": "higher % of people who are uninsured",
+      "longname_a": "Tampa-St.Petersburg (Sarasota) FL Media Market, USA",
+      "longname_b": "Rochester NY Media Market, USA",
+      "stat_a": 0.17323011567228053,
+      "stat_b": 0.04758148183273413
+    },
+    "b": {
+      "stat_column": "Commute Transit %",
+      "question": "higher % of people who commute by transit",
+      "longname_a": "Connecticut, USA",
+      "longname_b": "Louisiana, USA",
+      "stat_a": 0.03848687798095902,
+      "stat_b": 0.010368317267181185
+    },
+    "a_ease": 0.6645367412140575,
+    "b_ease": 0.9664536741214057
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "2BR Rent > $1500 %",
+      "question": "higher % of units with 2br rent over $1500",
+      "longname_a": "Lincoln city, Nebraska, USA",
+      "longname_b": "Chicago city, Illinois, USA",
+      "stat_a": 0.05935453720374154,
+      "stat_b": 0.32648535391153066
+    },
+    "b": {
+      "stat_column": "2020 Presidential Election",
+      "question": "!FULL Which voted more for Biden in the 2020 presidential election?",
+      "longname_a": "CO-04, USA",
+      "longname_b": "NC-12, USA",
+      "stat_a": -0.18548847390999096,
+      "stat_b": 0.3010308093271861
+    },
+    "a_ease": 0.9760383386581469,
+    "b_ease": 0.6731843575418994
+  }
+]
