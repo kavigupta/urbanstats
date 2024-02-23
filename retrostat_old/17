@@ -1,0 +1,107 @@
+[
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Population",
+      "question": "higher population",
+      "longname_a": "Iowa, USA",
+      "longname_b": "Mississippi, USA",
+      "stat_a": 3190369.0,
+      "stat_b": 2961067.0
+    },
+    "b": {
+      "stat_column": "Mean high temperature in winter",
+      "question": "higher mean daily high temperature in winter (population weighted)",
+      "longname_a": "Las Vegas-Henderson-Paradise [Urban Area], NV, USA",
+      "longname_b": "Fayetteville [Urban Area], NC, USA",
+      "stat_a": 60.17820650326437,
+      "stat_b": 57.35829860493124
+    },
+    "a_ease": 0.42140921409214094,
+    "b_ease": 0.8318002628120894
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "AW Density [GHS-POP]",
+      "question": "higher area-weighted population density",
+      "longname_a": "Saudi Arabia",
+      "longname_b": "Turkey",
+      "stat_a": 18.68530446196451,
+      "stat_b": 107.11656996254047
+    },
+    "b": {
+      "stat_column": "Mean distance to nearest Active Superfund Site",
+      "question": "!FULL Which has less exposure to EPA superfund sites (higher population-weighted mean distance)?",
+      "longname_a": "Waco MSA, TX, USA",
+      "longname_b": "Yakima MSA, WA, USA",
+      "stat_a": 59.81033180089253,
+      "stat_b": 16.498655855210906
+    },
+    "a_ease": 0.8769716088328076,
+    "b_ease": 0.46600741656365885
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Poverty %",
+      "question": "higher % of people who are in poverty",
+      "longname_a": "1st Circuit, USA",
+      "longname_b": "9th Circuit, USA",
+      "stat_a": 0.177004824958265,
+      "stat_b": 0.12040958762220305
+    },
+    "b": {
+      "stat_column": "Millennial %",
+      "question": "higher % of people who are millennials",
+      "longname_a": "Baltimore County, Maryland, USA",
+      "longname_b": "Monmouth County, New Jersey, USA",
+      "stat_a": 0.20042472060011582,
+      "stat_b": 0.16590622019995666
+    },
+    "a_ease": 0.1508034610630408,
+    "b_ease": 0.6202090592334495
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Hispanic %",
+      "question": "higher % of people who are Hispanic",
+      "longname_a": "Wilmington MSA, NC, USA",
+      "longname_b": "Akron MSA, OH, USA",
+      "stat_a": 0.07811245472745314,
+      "stat_b": 0.023797419323601327
+    },
+    "b": {
+      "stat_column": "Rainfall",
+      "question": "higher rainfall (population weighted)",
+      "longname_a": "Miami city, Florida, USA",
+      "longname_b": "San Jose city, California, USA",
+      "stat_a": 1.1231869548256146,
+      "stat_b": 0.5741107408639304
+    },
+    "a_ease": 0.5111695137976346,
+    "b_ease": 0.9181184668989547
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "PW Density (r=1km)",
+      "question": "higher population-weighted density (r=1km)",
+      "longname_a": "Mesa city, Arizona, USA",
+      "longname_b": "Baltimore city, Maryland, USA",
+      "stat_a": 2076.1543787370742,
+      "stat_b": 3791.362172505243
+    },
+    "b": {
+      "stat_column": "High windspeed (>10mph) days %",
+      "question": "higher % of days with wind speed over 10mph (population weighted)",
+      "longname_a": "Albany-Schenectady [Urban Area], NY, USA",
+      "longname_b": "McAllen [Urban Area], TX, USA",
+      "stat_a": 0.08051996050972599,
+      "stat_b": 0.5089728599589863
+    },
+    "a_ease": 0.9329829172141918,
+    "b_ease": 0.5105067985166872
+  }
+]

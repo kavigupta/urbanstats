@@ -1,0 +1,107 @@
+[
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "2016 Presidential Election",
+      "question": "!FULL Which voted more for Clinton in the 2016 presidential election?",
+      "longname_a": "7th Circuit, USA",
+      "longname_b": "3rd Circuit, USA",
+      "stat_a": 0.03505039723132859,
+      "stat_b": 0.05293272720563378
+    },
+    "b": {
+      "stat_column": "Undergrad STEM %",
+      "question": "!FULL Which has more people with a STEM degree, as a percentage of the overall population?",
+      "longname_a": "Albuquerque MSA, NM, USA",
+      "longname_b": "Winston-Salem MSA, NC, USA",
+      "stat_a": 0.1583564944049324,
+      "stat_b": 0.10919271278931451
+    },
+    "a_ease": 0.7849462365591398,
+    "b_ease": 0.38402457757296465
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Mean high temperature in summer",
+      "question": "higher mean daily high temperature in summer (population weighted)",
+      "longname_a": "Providence [Urban Area], RI-MA, USA",
+      "longname_b": "Spokane [Urban Area], WA, USA",
+      "stat_a": 78.43066992962392,
+      "stat_b": 83.04896670280469
+    },
+    "b": {
+      "stat_column": "Boomer %",
+      "question": "higher % of people who are boomers",
+      "longname_a": "6th Circuit, USA",
+      "longname_b": "DC Circuit, USA",
+      "stat_a": 0.23870614621194697,
+      "stat_b": 0.17182016578757187
+    },
+    "a_ease": 0.4693333333333333,
+    "b_ease": 0.8769771528998243
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Household Income > $100k %",
+      "question": "higher % of households who have household income over $100k",
+      "longname_a": "Rochester NY Media Market, USA",
+      "longname_b": "Little Rock-Pine Bluff AR Media Market, USA",
+      "stat_a": 0.30807806202003224,
+      "stat_b": 0.2165251959764619
+    },
+    "b": {
+      "stat_column": "Gen X %",
+      "question": "higher % of people who are gen x",
+      "longname_a": "Fresno city, California, USA",
+      "longname_b": "Irving city, Texas, USA",
+      "stat_a": 0.16777289446455218,
+      "stat_b": 0.19887168350486262
+    },
+    "a_ease": 0.9389416553595658,
+    "b_ease": 0.5345997286295794
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Mean high temperature in summer",
+      "question": "higher mean daily high temperature in summer (population weighted)",
+      "longname_a": "Buffalo city, New York, USA",
+      "longname_b": "Chandler city, Arizona, USA",
+      "stat_a": 76.37086615485772,
+      "stat_b": 104.44405364311802
+    },
+    "b": {
+      "stat_column": "Population [GHS-POP]",
+      "question": "higher population",
+      "longname_a": "Liaoning Sheng, China",
+      "longname_b": "Bih\u0101r, India",
+      "stat_a": 45408436.0,
+      "stat_b": 125012552.0
+    },
+    "a_ease": 0.9953917050691244,
+    "b_ease": 0.5923984272608126
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "% units built pre-1970",
+      "question": "higher % units built pre-1970",
+      "longname_a": "Amarillo MSA, TX, USA",
+      "longname_b": "Port St. Lucie MSA, FL, USA",
+      "stat_a": 0.4354680325910985,
+      "stat_b": 0.10809347292050048
+    },
+    "b": {
+      "stat_column": "Population [GHS-POP]",
+      "question": "higher population",
+      "longname_a": "Bangladesh",
+      "longname_b": "Peru",
+      "stat_a": 168081936.0,
+      "stat_b": 33118234.0
+    },
+    "a_ease": 0.6590509666080844,
+    "b_ease": 0.9595782073813708
+  }
+]
