@@ -19,10 +19,11 @@ from urbanstats.shortener import shorten
 
 from relationship import states_for_all
 
+from .fixed import juxtastat as fixed_up_to
+
 min_pop = 250_000
 min_pop_international = 20_000_000
 version = 30
-fixed_up_to = 155
 
 # ranges = [
 #     (0.7, 1),
