@@ -1,16 +1,18 @@
-from collections import defaultdict
-import io
-import json
-import zipfile
 from permacache import permacache
-import requests
+import tqdm.auto as tqdm
 
+import numpy as np
 import pandas as pd
+import shapely
+import geopandas as gpd
+
+import us
 
 from .query import query_to_geopandas
+from ..features.within_distance import census_block_coordinates, point_to_radius
 
 
-def national_stations():
+def national_stations_raw():
     query = f"""
     [out:json][timeout:25];
     area(id:3600148838)->.searchArea;
@@ -25,115 +27,85 @@ def national_stations():
     """
     return query_to_geopandas(query, keep_tags=True)
 
-
-repo = "transitland/transitland-atlas"
-hash = "821069d1a80ee041e29d86ee093c5b71ddcf0da4"
-
-
-@permacache("urbanstats/osm/trains/gtfs_list", multiprocess_safe=True)
-def gtfs_list():
-    # github folder
-    url_api = f"https://api.github.com/repos/{repo}/git/trees/{hash}?recursive=1"
-    tree = requests.get(url_api).json()["tree"]
-    # filter for /feeds
-    feeds = [x["path"] for x in tree if x["path"].startswith("feeds/")]
-    return feeds
-
-
-@permacache("urbanstats/osm/trains/read_gtfs_spec", multiprocess_safe=True)
-def read_gtfs_spec(feed_path):
-    url = f"https://raw.githubusercontent.com/{repo}/{hash}/{feed_path}"
-    return json.loads(requests.get(url).content)
-
-
-@permacache("urbanstats/osm/trains/read_gtfs_from_url_raw", multiprocess_safe=True)
-def read_gtfs_from_url_raw(url):
-    try:
-        return requests.get(url, timeout=30).content
-    except requests.exceptions.Timeout:
-        return b""
-    except requests.exceptions.ConnectionError:
-        return b""
-    except requests.exceptions.ContentDecodingError:
-        return b""
-    except requests.exceptions.ChunkedEncodingError:
-        return b""
-
-
-def read_gtfs_from_url(url):
-    zip_buf = io.BytesIO(read_gtfs_from_url_raw(url))
-    try:
-        zip_file = zipfile.ZipFile(zip_buf)
-    except zipfile.BadZipFile:
-        return None
-    # pd.read_csv every file
-    return {
-        name: read_try_multiple_encodings(lambda: zip_file.open(name))
-        for name in zip_file.namelist()
+lookup = {
+        'los angeles county metropolitan transportation authority': 'lacmta',
+        'no operator': 'no_operator',
+        'new york city transit authority': 'nycta',
+        'long island rail road': 'lirr',
+        'san francisco bay area rapid transit district': 'bart',
+        'massachusetts bay transportation authority': 'mbta',
+        'new hope & ivyland rail road': 'new_hope_ivyland_rr',
+        'metropolitan transportation authority': 'mta',
+        'bi-state development agency': 'bi_state_development_agency',
+        'chicago transit authority': 'cta',
+        'peninsula corridor joint powers board': 'caltrain',
+        'long island railroad': 'lirr',
+        'port authority of new york and new jersey': 'path',
+        "port authority": "path",
+        'nj transit': 'nj_transit',
+        'new jersey transit': 'nj_transit',
+        'san francisco municipal railway': 'sfmuni',
+        'niagara frontier transportation authority': 'nfta',
+        "o'hare ats": 'ohare_ats',
+        'disney transport': 'disney_transport',
+        'metropolitan transit authority of harris county, houston, texas': 'houston_mta',
+        'wiscasset, waterville and farmington railway': 'wiscasset_waterville_farmington_railway',
+        'b&o': 'b_and_o',
+        'boone & scenic valley railroad': 'boone_and_scenic_valley_railroad',
+        'saratoga and north creek railroad': 'saratoga_and_north_creek_railroad',
+        'chehalis centralia railroad & museum': 'chehalis_centralia_railroad_and_museum',
+        'wales west rv resort & light railway': 'wales_west_rv_resort_and_light_railway',
+        'adrian and blissfield railroad': 'adrian_and_blissfield_railroad',
+        'saratoga and north creek railway': 'saratoga_and_north_creek_railway',
+        'cooperstown & charlotte valley railroad': 'cooperstown_and_charlotte_valley_railroad',
+        'delaware & ulster railroad': 'delaware_and_ulster_railroad',
+        'cumbres and toltec scenic railroad': 'cumbres_and_toltec_scenic_railroad',
+        'black river and western': 'black_river_and_western',
+        'waldemeer & water world': 'waldemeer_and_water_world',
+        'black river & western rr': 'black_river_and_western',
+        'city and county of honolulu': 'city_and_county_of_honolulu',
+        "utah transit athority": "uta",
+        "utah transit authority": "uta",
+        "utah transit authority (uta)": "uta",
+        "metro-north railroad": "metro_north",
+        "metro north railroad": "metro_north",
+        "detroit transportation corporation": "detroit_people_mover",
+        "detroit people mover co.": "detroit_people_mover",
+        "detroit people mover co": "detroit_people_mover",
+        "detroit people mover": "detroit_people_mover",
+        "cats": "charlotte_area_transit_system",
+        "charlotte area transit system": "charlotte_area_transit_system",
+        "bnsf railway": "bnsf",
+        'alaska railroad': 'alaska_railroad',
+        'alaska railroad corporation': 'alaska_railroad',
+#         'capital metro'
+# 'capital metropolitan transportation authority'
+        "capital metro": "capital_metropolitan_transportation_authority",
+        "capital metropolitan transportation authority": "capital_metropolitan_transportation_authority",
+        "csx transportation": "csx",
+        "dallas area rapid transit": "dart",
     }
 
 
-def read_try_multiple_encodings(file):
-    try:
-        return pd.read_csv(file())
-    except UnicodeDecodeError:
-        return pd.read_csv(file(), encoding="latin1")
+def national_stations():
+    stations = national_stations_raw()
+    stations["network"] = stations.tags.apply(lambda x: x.get("network", "NO NETWORK"))
+    stations["operator"] = stations.tags.apply(lambda x: x.get("operator", "NO OPERATOR").lower())
+    stations["operator"] = stations.operator.apply(split_up_operators)
+    # flatmap the operator column
+    stations = stations.explode("operator")
+    stations["operator"] = stations.operator.apply(lambda x: lookup.get(x, x))
+    return stations
 
-
-@permacache("urbanstats/osm/trains/gtfs_stops_5")
-def gtfs_stops(url):
-    print(url)
-    zip_buf = io.BytesIO(requests.get(url).content)
-    zip_file = zipfile.ZipFile(zip_buf)
-    if "agency.txt" in zip_file.namelist():
-        agency_table = pd.read_csv(zip_file.open("agency.txt"))
-    else:
-        agency_table = None
-    routes_table = pd.read_csv(zip_file.open("routes.txt"))
-    routes_table = routes_table[routes_table.route_type != 3].copy()
-    if "agency_id" not in routes_table.columns:
-        if agency_table is None:
-            routes_table["agency_id"] = None
-        else:
-            assert (
-                agency_table.shape[0] == 1
-            ), "Multiple agencies in GTFS; but no agency_id in routes.txt"
-            routes_table["agency_id"] = agency_table.agency_id.iloc[0]
-    route_to_type = dict(zip(routes_table.route_id, routes_table.route_type))
-    route_to_agency = dict(zip(routes_table.route_id, routes_table.agency_id))
-    stop_times = pd.read_csv(zip_file.open("stop_times.txt"))
-    trips = pd.read_csv(zip_file.open("trips.txt")).set_index("trip_id")
-
-    stop_route = set(zip(stop_times.stop_id, trips.loc[stop_times.trip_id].route_id))
-    stop_to_types = merge(route_to_type, stop_route)
-    stop_to_agency = merge(route_to_agency, stop_route)
-    stops = pd.read_csv(zip_file.open("stops.txt"))
-    stops.location_type = stops.location_type.fillna(0)
-    stops["types"] = stops.stop_id.apply(lambda x: stop_to_types.get(str(x), []))
-    stops["agency_id"] = stops.stop_id.apply(lambda x: stop_to_agency.get(str(x), []))
-    stops = stops.set_index("stop_id")
-    if "parent_station" in stops.columns:
-        with_parent_mask = stops.parent_station == stops.parent_station
-        stops_with_parent = stops[with_parent_mask]
-        for parent, ts, ais in zip(
-            stops_with_parent.parent_station,
-            stops_with_parent.types,
-            stops_with_parent.agency_id,
-        ):
-            stops.loc[parent].types.extend(ts)
-            stops.loc[parent].agency_id.extend(ais)
-        stops = stops[~with_parent_mask]
-    stops.types = stops.types.apply(lambda x: sorted(set(x)))
-    stops.agency_id = stops.agency_id.apply(lambda x: sorted(set(x)))
-    stops = stops[stops.types.apply(lambda x: len(x) > 0)]
-    return stops, agency_table
-
-
-def merge(route_to_x, stop_route):
-    stop_to_x = defaultdict(set)
-    for stop, route in stop_route:
-        if route not in route_to_x:
-            continue
-        stop_to_x[stop].add(route_to_x[route])
-    stop_to_x = {str(k): sorted(v) for k, v in stop_to_x.items()}
-    return stop_to_x
+def split_up_operators(operator):
+    if operator == "csx, b&o, amtrak":
+        return ["csx", "b&o", "amtrak"]
+    if operator == "amtrak, b&o":
+        return ["amtrak", "b&o"]
+    if operator == "b&o, amtrak":
+        return ["b&o", "amtrak"]
+    if operator == "amtrak & metra":
+        return ["amtrak", "metra"]
+    if operator == "amtrak and ctrail":
+        return ["amtrak", "ctrail"]
+    return operator.split(";")
