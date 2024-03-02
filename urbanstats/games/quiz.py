@@ -23,7 +23,7 @@ from .fixed import juxtastat as fixed_up_to
 
 min_pop = 250_000
 min_pop_international = 20_000_000
-version = 30
+version = 31
 
 # ranges = [
 #     (0.7, 1),
@@ -82,6 +82,8 @@ def sample_quiz(rng):
         banned_types.append("Judicial Circuit")
     if rng.uniform() < 0.35:
         banned_types.append("Media Market")
+    if rng.uniform() < 0.35:
+        banned_types.append("Hospital Referral Region")
     if rng.uniform() < 0.75:
         banned_types.append("international")
     result = []
@@ -345,6 +347,7 @@ types = [
     "Congressional District",
     "Media Market",
     "Judicial Circuit",
+    "Hospital Referral Region",
     "Country",
     "Subnational Region",
 ]
