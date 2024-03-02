@@ -114,9 +114,3 @@ Source: https://data.dartmouthatlas.org/supplemental/#boundaries
 
   - HRR_Bdry__AK_HI_unmodified_original.geojson [hrr.geojson is derived from this, some small errors fixed]
   - HSA_Bdry__AK_HI_unmodified.geojson
-
-# Mobility database
-
-Source: https://database.mobilitydata.org/ acessesed 2024-02-17
-  
-    - gtfs_sources.csv
