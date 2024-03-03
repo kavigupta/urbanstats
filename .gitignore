@@ -6,3 +6,4 @@ output-shapefiles
 dist
 .vscode
 *Copy1.ipynb*
+.DS_Store
