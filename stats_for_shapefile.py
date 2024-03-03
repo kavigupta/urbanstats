@@ -59,6 +59,9 @@ education_stats = {
     "education_field_stem": "Undergrad STEM %",
     "education_field_humanities": "Undergrad Humanities %",
     "education_field_business": "Undergrad Business %",
+    "female_hs_3": "% of high school educated people who are women",
+    "female_ugrad_3": "% of undergraduate educated people who are women",
+    "female_grad_3": "% of graduate educated people who are women",
 }
 
 generation_stats = {
@@ -90,6 +93,9 @@ transportation_stats = {
     "transportation_commute_time_15_to_29": "Commute Time 15 - 29 min %",
     "transportation_commute_time_30_to_59": "Commute Time 30 - 59 min %",
     "transportation_commute_time_over_60": "Commute Time > 60 min %",
+    "vehicle_ownership_none": "Households With no Vehicle %",
+    "vehicle_ownership_at_least_1": "Households With 1+ Vehicles %",
+    "vehicle_ownership_at_least_2": "Households With 2+ Vehicles %",
 }
 
 national_origin_stats = {
@@ -396,6 +402,40 @@ def compute_statistics_for_shapefile(sf, sum_keys=sum_keys):
         "marriage_married_not_divorced",
         "marriage_divorced",
     )
+
+    fractionalize(
+        "vehicle_ownership_none",
+        "vehicle_ownership_1",
+        "vehicle_ownership_at_least_2",
+    )
+
+    result["vehicle_ownership_at_least_1"] = (
+        result["vehicle_ownership_1"] + result["vehicle_ownership_at_least_2"]
+    )
+    del result["vehicle_ownership_1"]
+
+    result["female_ugrad_3"] += result["female_grad_3"]
+    result["male_ugrad_3"] += result["male_grad_3"]
+
+    result["female_hs_3"] += result["female_ugrad_3"]
+    result["male_hs_3"] += result["male_ugrad_3"]
+
+    fractionalize(
+        "female_grad_3",
+        "male_grad_3",
+    )
+
+    fractionalize(
+        "female_ugrad_3",
+        "male_ugrad_3",
+    )
+
+    fractionalize(
+        "female_hs_3",
+        "male_hs_3",
+    )
+
+    del result["male_grad_3"], result["male_ugrad_3"], result["male_hs_3"]
 
     fractionalize(
         "citizenship_citizen_by_birth",

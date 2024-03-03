@@ -544,6 +544,12 @@ not_included = {
     "within_Hospital_10",
     "gpw_pw_density_2",
     "gpw_pw_density_1",
+    "vehicle_ownership_none",
+    "vehicle_ownership_at_least_1",
+    "vehicle_ownership_at_least_2",
+    "female_hs_3",
+    "female_ugrad_3",
+    "female_grad_3",
 }
 
 stats = list(stats_to_display)
