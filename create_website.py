@@ -34,8 +34,6 @@ from urbanstats.mapper.ramp import output_ramps
 from urbanstats.protobuf.utils import save_string_list
 from urbanstats.special_cases.simplified_country import all_simplified_countries
 
-folder = "/home/kavi/temp/site/"
-
 
 def american_shapefile():
     full = [
@@ -213,7 +211,7 @@ def get_idxs_by_type():
     return idxs_by_type
 
 
-def main(no_geo=False, no_data=False, no_juxta=False, no_data_jsons=False):
+def main(site_folder, no_geo=False, no_data=False, no_juxta=False, no_data_jsons=False):
     for sub in [
         "index",
         "r",
@@ -226,43 +224,43 @@ def main(no_geo=False, no_data=False, no_juxta=False, no_data_jsons=False):
         "retrostat",
     ]:
         try:
-            os.makedirs(f"{folder}/{sub}")
+            os.makedirs(f"{site_folder}/{sub}")
         except FileExistsError:
             pass
 
     if not no_geo:
         full = full_shapefile()
-        produce_all_geometry_json(f"{folder}/shape", set(full.longname))
+        produce_all_geometry_json(f"{site_folder}/shape", set(full.longname))
 
     if not no_data:
         full = full_shapefile()
         if not no_data_jsons:
             create_page_jsons(full)
-        save_string_list(list(full.longname), f"{folder}/index/pages.gz")
+        save_string_list(list(full.longname), f"{site_folder}/index/pages.gz")
 
-        with open(f"{folder}/index/best_population_estimate.json", "w") as f:
+        with open(f"{site_folder}/index/best_population_estimate.json", "w") as f:
             json.dump(list(full.best_population_estimate), f)
 
         output_ordering(full)
 
-        full_consolidated_data(folder)
+        full_consolidated_data(site_folder)
 
-        all_simplified_countries(full, f"{folder}/shape")
+        all_simplified_countries(full, f"{site_folder}/shape")
 
-    shutil.copy("html_templates/article.html", f"{folder}")
-    shutil.copy("html_templates/comparison.html", f"{folder}")
-    shutil.copy("html_templates/index.html", f"{folder}/")
-    shutil.copy("html_templates/random.html", f"{folder}")
-    shutil.copy("html_templates/about.html", f"{folder}/")
-    shutil.copy("html_templates/data-credit.html", f"{folder}/")
-    shutil.copy("html_templates/mapper.html", f"{folder}/")
-    shutil.copy("html_templates/quiz.html", f"{folder}")
+    shutil.copy("html_templates/article.html", f"{site_folder}")
+    shutil.copy("html_templates/comparison.html", f"{site_folder}")
+    shutil.copy("html_templates/index.html", f"{site_folder}/")
+    shutil.copy("html_templates/random.html", f"{site_folder}")
+    shutil.copy("html_templates/about.html", f"{site_folder}/")
+    shutil.copy("html_templates/data-credit.html", f"{site_folder}/")
+    shutil.copy("html_templates/mapper.html", f"{site_folder}/")
+    shutil.copy("html_templates/quiz.html", f"{site_folder}")
 
-    shutil.copy("thumbnail.png", f"{folder}/")
-    shutil.copy("banner.png", f"{folder}/")
-    shutil.copy("screenshot_footer.svg", f"{folder}/")
-    shutil.copy("share.png", f"{folder}/")
-    shutil.copy("screenshot.png", f"{folder}/")
+    shutil.copy("thumbnail.png", f"{site_folder}/")
+    shutil.copy("banner.png", f"{site_folder}/")
+    shutil.copy("screenshot_footer.svg", f"{site_folder}/")
+    shutil.copy("share.png", f"{site_folder}/")
+    shutil.copy("screenshot.png", f"{site_folder}/")
 
     with open("react/src/data/map_relationship.json", "w") as f:
         json.dump(map_relationships_by_type, f)
@@ -296,31 +294,31 @@ def main(no_geo=False, no_data=False, no_juxta=False, no_data_jsons=False):
     if not no_juxta:
         generate_quiz_info_for_website("/home/kavi/temp/site")
 
-    with open(f"{folder}/CNAME", "w") as f:
+    with open(f"{site_folder}/CNAME", "w") as f:
         f.write("urbanstats.org")
 
-    with open(f"{folder}/.nojekyll", "w") as f:
+    with open(f"{site_folder}/.nojekyll", "w") as f:
         f.write("")
 
     with open(f"react/src/data/indices_by_type.json", "w") as f:
         json.dump(get_idxs_by_type(), f)
 
     os.system("cd react; npm run prod")
-    shutil.copy("dist/article.js", f"{folder}/scripts/")
-    shutil.copy("dist/comparison.js", f"{folder}/scripts/")
-    shutil.copy("dist/index.js", f"{folder}/scripts/")
-    shutil.copy("dist/random.js", f"{folder}/scripts/")
-    shutil.copy("dist/about.js", f"{folder}/scripts/")
-    shutil.copy("dist/data-credit.js", f"{folder}/scripts/")
-    shutil.copy("dist/mapper.js", f"{folder}/scripts/")
-    shutil.copy("dist/quiz.js", f"{folder}/scripts/")
+    shutil.copy("dist/article.js", f"{site_folder}/scripts/")
+    shutil.copy("dist/comparison.js", f"{site_folder}/scripts/")
+    shutil.copy("dist/index.js", f"{site_folder}/scripts/")
+    shutil.copy("dist/random.js", f"{site_folder}/scripts/")
+    shutil.copy("dist/about.js", f"{site_folder}/scripts/")
+    shutil.copy("dist/data-credit.js", f"{site_folder}/scripts/")
+    shutil.copy("dist/mapper.js", f"{site_folder}/scripts/")
+    shutil.copy("dist/quiz.js", f"{site_folder}/scripts/")
 
     from urbanstats.games.quiz import generate_quizzes
     from urbanstats.games.retrostat import generate_retrostats
 
     if not no_juxta:
-        generate_quizzes(f"{folder}/quiz/")
-    generate_retrostats(f"{folder}/retrostat")
+        generate_quizzes(f"{site_folder}/quiz/")
+    generate_retrostats(f"{site_folder}/retrostat")
 
 
 if __name__ == "__main__":
