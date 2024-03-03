@@ -1,6 +1,6 @@
 import { Selector, ClientFunction } from 'testcafe';
 
-const TARGET = "http://teroknor:8000"
+const TARGET = "http://localhost:8000"
 const SEARCH_FIELD = Selector('input').withAttribute('placeholder', 'Search Urban Stats');
 const getLocation = ClientFunction(() => document.location.href);
 
@@ -47,8 +47,7 @@ async function copy_most_recent_file(t, name) {
     const sorted = files.map(x => path.join(downloadsFolder(), x)).sort((a, b) => fs.statSync(b).mtimeMs - fs.statSync(a).mtimeMs);
     // copy the file to the screenshots folder
     const screenshotsFolder = path.join(__dirname, '..', 'screenshots');
-    const copyFileSync = require('fs-copy-file-sync');
-    copyFileSync(sorted[0], path.join(screenshotsFolder, name + '_' + t.browser.name + '.png'));
+    fs.copyFileSync(sorted[0], path.join(screenshotsFolder, name + '_' + t.browser.name + '.png'));
 }
 
 fixture('longer article test')
