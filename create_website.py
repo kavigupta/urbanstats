@@ -292,7 +292,7 @@ def main(site_folder, no_geo=False, no_data=False, no_juxta=False, no_data_jsons
     from urbanstats.games.quiz import generate_quiz_info_for_website
 
     if not no_juxta:
-        generate_quiz_info_for_website("/home/kavi/temp/site")
+        generate_quiz_info_for_website(site_folder)
 
     with open(f"{site_folder}/CNAME", "w") as f:
         f.write("urbanstats.org")
