@@ -59,9 +59,9 @@ education_stats = {
     "education_field_stem": "Undergrad STEM %",
     "education_field_humanities": "Undergrad Humanities %",
     "education_field_business": "Undergrad Business %",
-    "female_hs_3": "% of high school educated people who are women",
-    "female_ugrad_3": "% of undergraduate educated people who are women",
-    "female_grad_3": "% of graduate educated people who are women",
+    "female_hs_gap_4": "% of high school educated people who are women",
+    "female_ugrad_gap_4": "% of undergraduate educated people who are women",
+    "female_grad_gap_4": "% of graduate educated people who are women",
 }
 
 generation_stats = {
@@ -251,7 +251,7 @@ def compute_summed_shapefile_all_keys(sf, sum_keys=sum_keys):
 
 
 @permacache(
-    "population_density/stats_for_shapefile/compute_statistics_for_shapefile_16",
+    "population_density/stats_for_shapefile/compute_statistics_for_shapefile_17",
     key_function=dict(sf=lambda x: x.hash_key, sum_keys=stable_hash),
     multiprocess_safe=True,
 )
@@ -414,28 +414,40 @@ def compute_statistics_for_shapefile(sf, sum_keys=sum_keys):
     )
     del result["vehicle_ownership_1"]
 
-    result["female_ugrad_3"] += result["female_grad_3"]
-    result["male_ugrad_3"] += result["male_grad_3"]
-
-    result["female_hs_3"] += result["female_ugrad_3"]
-    result["male_hs_3"] += result["male_ugrad_3"]
-
     fractionalize(
-        "female_grad_3",
-        "male_grad_3",
+        "female_none_4",
+        "female_hs_4",
+        "female_ugrad_4",
+        "female_grad_4",
     )
 
     fractionalize(
-        "female_ugrad_3",
-        "male_ugrad_3",
+        "male_none_4",
+        "male_hs_4",
+        "male_ugrad_4",
+        "male_grad_4",
     )
 
-    fractionalize(
-        "female_hs_3",
-        "male_hs_3",
-    )
+    del result["female_none_4"], result["male_none_4"]
 
-    del result["male_grad_3"], result["male_ugrad_3"], result["male_hs_3"]
+    result["female_ugrad_4"] += result["female_grad_4"]
+    result["male_ugrad_4"] += result["male_grad_4"]
+
+    result["female_hs_4"] += result["female_ugrad_4"]
+    result["male_hs_4"] += result["male_ugrad_4"]
+
+    result["female_gap_hs_4"] = result["female_hs_4"] - result["male_hs_4"]
+    result["female_gap_ugrad_4"] = result["female_ugrad_4"] - result["male_ugrad_4"]
+    result["female_gap_grad_4"] = result["female_grad_4"] - result["male_grad_4"]
+
+    del (
+        result["male_hs_4"],
+        result["female_hs_4"],
+        result["female_ugrad_4"],
+        result["male_ugrad_4"],
+        result["female_grad_4"],
+        result["male_grad_4"],
+    )
 
     fractionalize(
         "citizenship_citizen_by_birth",

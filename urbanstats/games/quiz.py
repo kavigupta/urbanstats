@@ -547,9 +547,9 @@ not_included = {
     "vehicle_ownership_none",
     "vehicle_ownership_at_least_1",
     "vehicle_ownership_at_least_2",
-    "female_hs_3",
-    "female_ugrad_3",
-    "female_grad_3",
+    "female_gap_hs_4",
+    "female_gap_ugrad_4",
+    "female_gap_grad_4",
 }
 
 stats = list(stats_to_display)

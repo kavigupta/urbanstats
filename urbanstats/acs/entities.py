@@ -847,16 +847,8 @@ entities = dict(
                 "Estimate!!Total:",
                 "Estimate!!Total:!!Female:",
                 "Estimate!!Total:!!Male:",
-                #
-                "Estimate!!Total:!!Male:!!No schooling completed",
-                "Estimate!!Total:!!Male:!!Nursery to 4th grade",
-                "Estimate!!Total:!!Male:!!5th and 6th grade",
-                "Estimate!!Total:!!Male:!!7th and 8th grade",
-                "Estimate!!Total:!!Male:!!9th grade",
-                "Estimate!!Total:!!Male:!!10th grade",
-                "Estimate!!Total:!!Male:!!11th grade",
-                "Estimate!!Total:!!Male:!!12th grade, no diploma",
-                #
+            ],
+            "female_none_4": [
                 "Estimate!!Total:!!Female:!!No schooling completed",
                 "Estimate!!Total:!!Female:!!Nursery to 4th grade",
                 "Estimate!!Total:!!Female:!!5th and 6th grade",
@@ -866,30 +858,40 @@ entities = dict(
                 "Estimate!!Total:!!Female:!!11th grade",
                 "Estimate!!Total:!!Female:!!12th grade, no diploma",
             ],
-            "female_hs_3": [
+            "female_hs_4": [
                 "Estimate!!Total:!!Female:!!High school graduate (includes equivalency)",
                 "Estimate!!Total:!!Female:!!Associate's degree",
                 "Estimate!!Total:!!Female:!!Some college, 1 or more years, no degree",
                 "Estimate!!Total:!!Female:!!Some college, less than 1 year",
             ],
-            "female_ugrad_3": [
+            "female_ugrad_4": [
                 "Estimate!!Total:!!Female:!!Bachelor's degree",
             ],
-            "female_grad_3": [
+            "female_grad_4": [
                 "Estimate!!Total:!!Female:!!Doctorate degree",
                 "Estimate!!Total:!!Female:!!Master's degree",
                 "Estimate!!Total:!!Female:!!Professional school degree",
             ],
-            "male_hs_3": [
+            "male_none_4": [
+                "Estimate!!Total:!!Male:!!No schooling completed",
+                "Estimate!!Total:!!Male:!!Nursery to 4th grade",
+                "Estimate!!Total:!!Male:!!5th and 6th grade",
+                "Estimate!!Total:!!Male:!!7th and 8th grade",
+                "Estimate!!Total:!!Male:!!9th grade",
+                "Estimate!!Total:!!Male:!!10th grade",
+                "Estimate!!Total:!!Male:!!11th grade",
+                "Estimate!!Total:!!Male:!!12th grade, no diploma",
+            ],
+            "male_hs_4": [
                 "Estimate!!Total:!!Male:!!High school graduate (includes equivalency)",
                 "Estimate!!Total:!!Male:!!Some college, 1 or more years, no degree",
                 "Estimate!!Total:!!Male:!!Some college, less than 1 year",
                 "Estimate!!Total:!!Male:!!Associate's degree",
             ],
-            "male_ugrad_3": [
+            "male_ugrad_4": [
                 "Estimate!!Total:!!Male:!!Bachelor's degree",
             ],
-            "male_grad_3": [
+            "male_grad_4": [
                 "Estimate!!Total:!!Male:!!Doctorate degree",
                 "Estimate!!Total:!!Male:!!Master's degree",
                 "Estimate!!Total:!!Male:!!Professional school degree",
