@@ -1,6 +1,6 @@
 import { Selector, ClientFunction } from 'testcafe';
 
-const TARGET = "http://localhost:8000"
+const TARGET = process.env.URBANSTATS_TEST_TARGET ?? "http://localhost:8000"
 const SEARCH_FIELD = Selector('input').withAttribute('placeholder', 'Search Urban Stats');
 const getLocation = ClientFunction(() => document.location.href);
 
