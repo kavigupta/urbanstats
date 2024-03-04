@@ -7,3 +7,12 @@ suncalc
 protobuf==3.20.0
 geotiff
 imagecodecs
+fire
+us
+pycountry
+geopandas
+permacache
+more_itertools
+cached_property
+scipy
+matplotlib
