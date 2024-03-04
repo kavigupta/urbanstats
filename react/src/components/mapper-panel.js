@@ -16,7 +16,7 @@ import { RAMPS, parse_ramp } from "../mapper/ramps.js";
 import { MapperSettings, default_settings, parse_color_stat } from "../mapper/settings.js";
 
 import { gunzipSync, gzipSync } from "zlib";
-import { headerTextClass } from '../utils/responsive.js';
+import { useResponsive } from '../utils/responsive.js';
 
 class DisplayedMap extends MapGeneric {
     constructor(props) {
@@ -339,12 +339,12 @@ class MapperPanel extends PageTemplate {
         return super.render();
     }
 
-    main_content() {
+    main_content(responsive) {
         const geography_kind = this.state.map_settings.geography_kind;
         const valid = this.valid_geographies.includes(geography_kind);
         return (
             <div>
-                <div className={headerTextClass()}>Urban Stats Mapper (beta)</div>
+                <div className={responsive.headerTextClass}>Urban Stats Mapper (beta)</div>
                 <MapperSettings
                     names={this.names}
                     valid_geographies={this.valid_geographies}

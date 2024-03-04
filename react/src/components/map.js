@@ -3,7 +3,7 @@ import React from 'react';
 export { Map, MapGeneric };
 
 import { shape_link, article_link } from "../navigation/links.js";
-import { relationship_key } from "./related-button.js";
+import { relationship_key } from "./Related.js";
 import { random_color } from "../utils/color.js";
 
 import "./map.css";

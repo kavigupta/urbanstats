@@ -8,7 +8,7 @@ import { PageTemplate } from "../page_template/template.js";
 import "../common.css";
 import "./article.css";
 import { load_article } from './load-article.js';
-import { comparisonHeadStyle, headerTextClass, mobileLayout, subHeaderTextClass } from '../utils/responsive.js';
+import { useResponsive } from '../utils/responsive';
 import { SearchBox } from './search.js';
 import { article_link, sanitize } from '../navigation/links.js';
 import { lighten } from '../utils/color.js';
@@ -50,7 +50,7 @@ class ComparisonPanel extends PageTemplate {
     }
 
 
-    main_content() {
+    main_content(responsive) {
         const self = this;
         var rows = [];
         var idxs = [];
@@ -73,20 +73,20 @@ class ComparisonPanel extends PageTemplate {
 
         return (
             <div>
-                <div className={headerTextClass()}>Comparison</div>
-                <div className={subHeaderTextClass()}>{this.props.joined_string}</div>
+                <div className={responsive.headerTextClass}>Comparison</div>
+                <div className={responsive.subHeaderTextClass}>{this.props.joined_string}</div>
 
                 <div style={{ marginBlockEnd: "1em" }}></div>
 
                 <div style={{ display: "flex" }}>
                     <div style={{ width: (100 * left_margin_pct) + "%" }} />
                     <div style={{ width: (50 * (1 - left_margin_pct)) + "%", marginRight: "1em" }}>
-                        <div style={comparisonHeadStyle("right")}>Add another region:</div>
+                        <div style={responsive.comparisonHeadStyle("right")}>Add another region:</div>
                     </div>
                     <div style={{ width: (50 * (1 - left_margin_pct)) + "%" }}>
                         <SearchBox
                             settings={this.state.settings}
-                            style={{ ...comparisonHeadStyle(), width: "100%" }}
+                            style={{ ...responsive.comparisonHeadStyle(), width: "100%" }}
                             placeholder={"Name"}
                             on_change={(x) => self.add_new(x)}
                         />
@@ -97,6 +97,7 @@ class ComparisonPanel extends PageTemplate {
                 <div style={{ marginBlockEnd: "1em" }}></div>
 
                 {this.maybe_scroll(
+                    responsive,
                     <div ref={this.table_ref}>
                         {this.bars()}
                         <div style={{ display: "flex" }}>
@@ -176,14 +177,11 @@ class ComparisonPanel extends PageTemplate {
         window.location.search = window_info.toString();
     }
 
-    max_columns() {
-        return mobileLayout() ? 4 : 6;
-    }
-
-    maybe_scroll(contents) {
-        if (this.width_columns() > this.max_columns()) {
+    maybe_scroll(responsive, contents) {
+        const max_columns = responsive.mobileLayout ? 4 : 6;
+        if (this.width_columns() > max_columns) {
             return <div style={{ overflowX: "scroll" }}>
-                <div style={{ width: 100 * this.width_columns() / (this.max_columns() - 0.7) + "%" }}>
+                <div style={{ width: 100 * this.width_columns() / (max_columns - 0.7) + "%" }}>
                     {contents}
                 </div>
             </div>
@@ -306,15 +304,17 @@ function HeadingDisplay({ longname, include_delete, on_click, on_change, screens
         </div>
     </div>
 
+    const responsive = useResponsive()
+
     return <div>
         {screenshot_mode ? undefined : manipulation_buttons}
         <div style={{ height: "5px" }} />
-        <a href={article_link(longname)} style={{ textDecoration: "none" }}><div style={comparisonHeadStyle()}>{longname}</div></a>
+        <a href={article_link(longname)} style={{ textDecoration: "none" }}><div style={responsive.comparisonHeadStyle()}>{longname}</div></a>
         {is_editing ?
             <SearchBox
                 autoFocus={true}
                 settings={{}}
-                style={{ ...comparisonHeadStyle(), width: "100%" }}
+                style={{ ...responsive.comparisonHeadStyle(), width: "100%" }}
                 placeholder={"Replacement"}
                 on_change={on_change}
             />

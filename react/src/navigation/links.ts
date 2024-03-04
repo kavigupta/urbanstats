@@ -1,47 +1,40 @@
-
-export {
-    sanitize,
-    article_link, shape_link, data_link, ordering_link, explanation_page_link,
-    consolidated_shape_link, consolidated_stats_link, comparison_link
-};
-
-function article_link(longname) {
+export function article_link(longname: string) {
     const params = new URLSearchParams()
     params.set('longname', sanitize(longname));
     return "/article.html?" + params.toString();
 }
 
-function shape_link(longname) {
+export function shape_link(longname: string) {
     return "/shape/" + sanitize(longname) + '.gz'
 }
 
-function data_link(longname) {
+export function data_link(longname: string) {
     return `/data/${sanitize(longname)}.gz`
 }
 
-function ordering_link(statpath, type) {
+export function ordering_link(statpath: string, type: string) {
     return `/order/${sanitize(statpath, false)}__${sanitize(type, false)}.gz`
 }
 
-function explanation_page_link(explanation) {
+export function explanation_page_link(explanation: string) {
     return `/data-credit.html#explanation_${sanitize(explanation)}`
 }
 
-function consolidated_shape_link(typ) {
+export function consolidated_shape_link(typ: string) {
     return `/consolidated/shapes__${sanitize(typ)}.gz`
 }
 
-function consolidated_stats_link(typ) {
+export function consolidated_stats_link(typ: string) {
     return `/consolidated/stats__${sanitize(typ)}.gz`
 }
 
-function comparison_link(names) {
+export function comparison_link(names: string[]) {
     const params = new URLSearchParams()
-    params.set('longnames', JSON.stringify(names.map(sanitize)));
+    params.set('longnames', JSON.stringify(names.map(name => sanitize(name))));
     return "/comparison.html?" + params.toString();
 }
 
-function sanitize(longname, spaces_around_slash = true) {
+export function sanitize(longname: string, spaces_around_slash = true) {
     let x = longname;
     if (spaces_around_slash) {
         x = x.replace("/", " slash ");

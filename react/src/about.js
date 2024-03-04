@@ -1,10 +1,9 @@
-import React from 'react';
+import React, { useReducer } from 'react';
 
 import ReactDOM from 'react-dom/client';
 import "./style.css";
 import "./common.css";
 import { PageTemplate } from "./page_template/template.js";
-import { headerTextClass } from './utils/responsive.js';
 
 
 class AboutPanel extends PageTemplate {
@@ -12,10 +11,10 @@ class AboutPanel extends PageTemplate {
         super(props);
     }
 
-    main_content() {
+    main_content(responsive) {
         return (
             <div className="serif">
-                <div className={headerTextClass()}>About</div>
+                <div className={responsive.headerTextClass}>About</div>
 
                 <p>
                     Urban Stats is a database of various statistics, computed largely from Census Data but also other

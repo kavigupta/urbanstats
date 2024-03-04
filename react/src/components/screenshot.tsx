@@ -1,63 +1,60 @@
-export { ScreenshotButton, create_screenshot };
-
 import React from 'react';
 import domtoimage from 'dom-to-image';
 
-
-class ScreenshotButton extends React.Component {
-    constructor(props) {
-        super(props);
-    }
-
-    render() {
-        const screencap_button = <div
-            onClick={this.props.onClick}
-            style={{
-                height: "100%",
-                cursor: "pointer",
-            }}
-        >
-            <img src="/screenshot.png" alt="Screenshot Button" style={{ height: "100%" }} />
+export function ScreenshotButton(props: { screenshot_mode: boolean, onClick: () => void }) {
+    const screencap_button = <div
+        onClick={props.onClick}
+        style={{
+            height: "100%",
+            cursor: "pointer",
+        }}
+    >
+        <img src="/screenshot.png" alt="Screenshot Button" style={{ height: "100%" }} />
+    </div>
+    // if screenshot mode is on, put a loading circle over the image
+    if (props.screenshot_mode) {
+        const pad = 10; // pct
+        const loading_circle = <div style={{
+            position: "absolute",
+            height: (100 - 2 * pad) + "%",
+            width: (100 - 2 * pad) + "%",
+            top: pad + "%",
+            left: pad + "%",
+            borderRadius: "50%",
+            border: "5px solid #fff",
+            borderTop: "5px solid #000",
+            animation: "spin 2s linear infinite",
+            zIndex: 2,
+            animationPlayState: "running",
+        }}></div>
+        const dim_filter = <div style={{
+            position: "absolute",
+            height: "100%",
+            width: "100%",
+            top: 0,
+            left: 0,
+            backgroundColor: "rgba(0,0,0,0.5)",
+            zIndex: 1,
+        }}></div>
+        return <div style={{ position: "relative", height: "100%", aspectRatio: "1/1" }}>
+            {screencap_button}
+            {dim_filter}
+            {loading_circle}
         </div>
-        // if screenshot mode is on, put a loading circle over the image
-        if (this.props.screenshot_mode) {
-            const pad = 10; // pct
-            const loading_circle = <div style={{
-                position: "absolute",
-                height: (100 - 2 * pad) + "%",
-                width: (100 - 2 * pad) + "%",
-                top: pad + "%",
-                left: pad + "%",
-                borderRadius: "50%",
-                border: "5px solid #fff",
-                borderTop: "5px solid #000",
-                animation: "spin 2s linear infinite",
-                zIndex: 2,
-                animationPlayState: "running",
-            }}></div>
-            const dim_filter = <div style={{
-                position: "absolute",
-                height: "100%",
-                width: "100%",
-                top: 0,
-                left: 0,
-                backgroundColor: "rgba(0,0,0,0.5)",
-                zIndex: 1,
-            }}></div>
-            return <div style={{ position: "relative", height: "100%", aspectRatio: "1/1" }}>
-                {screencap_button}
-                {dim_filter}
-                {loading_circle}
-            </div>
-        }
-        return screencap_button;
     }
+    return screencap_button;
 }
 
-async function create_screenshot(config) {
+export interface ScreencapElements {
+    path: string,
+    overall_width: number,
+    elements_to_render: HTMLElement[]
+}
+
+export async function create_screenshot(config: ScreencapElements) {
     const overall_width = config.overall_width;
 
-    async function screencap_element(ref) {
+    async function screencap_element(ref: HTMLElement): Promise<[string, number]> {
         const scale_factor = overall_width / ref.offsetWidth;
         const link = await domtoimage.toPng(ref, {
             bgcolor: "white",
@@ -85,7 +82,7 @@ async function create_screenshot(config) {
     const pad_between = 50;
 
     const banner = new Image();
-    await new Promise((resolve, reject) => {
+    await new Promise<void>((resolve) => {
         banner.onload = () => resolve();
         banner.src = "/screenshot_footer.svg";
     })
@@ -96,7 +93,7 @@ async function create_screenshot(config) {
     canvas.width = pad_around * 2 + overall_width;
     canvas.height = pad_around + pad_between * (png_links.length - 1) + heights.reduce((a, b) => a + b, 0) + banner_height;
 
-    const ctx = canvas.getContext("2d");
+    const ctx = canvas.getContext("2d")!;
     const imgs = [];
     for (const png_link of png_links) {
         const img = new Image();
@@ -107,7 +104,7 @@ async function create_screenshot(config) {
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
     for (const img of imgs) {
-        await new Promise((resolve, reject) => {
+        await new Promise<void>((resolve) => {
             img.onload = () => resolve();
         })
     }
