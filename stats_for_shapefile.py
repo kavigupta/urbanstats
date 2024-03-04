@@ -59,9 +59,9 @@ education_stats = {
     "education_field_stem": "Undergrad STEM %",
     "education_field_humanities": "Undergrad Humanities %",
     "education_field_business": "Undergrad Business %",
-    "female_hs_gap_4": "% of high school educated people who are women",
-    "female_ugrad_gap_4": "% of undergraduate educated people who are women",
-    "female_grad_gap_4": "% of graduate educated people who are women",
+    "female_hs_gap_4": "% of women with high school education - % of men with high school education",
+    "female_ugrad_gap_4": "% of women with undergraduate education - % of men with undergraduate education",
+    "female_grad_gap_4": "% of women with graduate education - % of men with graduate education",
 }
 
 generation_stats = {
@@ -251,7 +251,7 @@ def compute_summed_shapefile_all_keys(sf, sum_keys=sum_keys):
 
 
 @permacache(
-    "population_density/stats_for_shapefile/compute_statistics_for_shapefile_17",
+    "population_density/stats_for_shapefile/compute_statistics_for_shapefile_18",
     key_function=dict(sf=lambda x: x.hash_key, sum_keys=stable_hash),
     multiprocess_safe=True,
 )
@@ -436,9 +436,9 @@ def compute_statistics_for_shapefile(sf, sum_keys=sum_keys):
     result["female_hs_4"] += result["female_ugrad_4"]
     result["male_hs_4"] += result["male_ugrad_4"]
 
-    result["female_gap_hs_4"] = result["female_hs_4"] - result["male_hs_4"]
-    result["female_gap_ugrad_4"] = result["female_ugrad_4"] - result["male_ugrad_4"]
-    result["female_gap_grad_4"] = result["female_grad_4"] - result["male_grad_4"]
+    result["female_hs_gap_4"] = result["female_hs_4"] - result["male_hs_4"]
+    result["female_ugrad_gap_4"] = result["female_ugrad_4"] - result["male_ugrad_4"]
+    result["female_grad_gap_4"] = result["female_grad_4"] - result["male_grad_4"]
 
     del (
         result["male_hs_4"],

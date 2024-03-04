@@ -534,6 +534,12 @@ not_included = {
     "mean_high_dewpoint_4",
     "days_dewpoint_70_inf_4",
     "days_dewpoint_-inf_50_4",
+    "female_hs_gap_4",
+    "female_ugrad_gap_4",
+    "female_grad_gap_4",
+    "vehicle_ownership_none",
+    "vehicle_ownership_at_least_1", # TODO include this stat
+    "vehicle_ownership_at_least_2",
     # meh whatever
     "marriage_married_not_divorced",
     "marriage_never_married",
@@ -544,12 +550,6 @@ not_included = {
     "within_Hospital_10",
     "gpw_pw_density_2",
     "gpw_pw_density_1",
-    "vehicle_ownership_none",
-    "vehicle_ownership_at_least_1",
-    "vehicle_ownership_at_least_2",
-    "female_gap_hs_4",
-    "female_gap_ugrad_4",
-    "female_gap_grad_4",
 }
 
 stats = list(stats_to_display)
