@@ -19,7 +19,7 @@ export function SearchBox(props: { on_change: (newValue: string) => void, autoFo
         })();
     }, []);
 
-    const show_historical_cds = useSetting('show_historical_cds');
+    const [show_historical_cds] = useSetting('show_historical_cds');
 
     const onFormSubmit = () => {
         let terms = autocompleteMatch(textBox.current!.value);

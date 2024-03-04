@@ -57,7 +57,7 @@ interface SettingsDictionary {
 
 export type BooleanSettings = { [K in keyof SettingsDictionary as SettingsDictionary[K] extends boolean ? K : never]: boolean }
 
-class Settings {
+export class Settings {
     private readonly settings: SettingsDictionary
     readonly statistic_category_metadata_checkboxes: StatisticCategoryMetadataCheckbox[]
 
@@ -83,6 +83,10 @@ class Settings {
     setSetting<K extends keyof SettingsDictionary>(key: K, newValue: SettingsDictionary[K]): void {
         this.settings[key] = newValue
         this.observers.get(key).forEach(observer => observer())
+    }
+
+    get<K extends keyof SettingsDictionary>(key: K): SettingsDictionary[K] {
+        return this.settings[key]
     }
 
     // Singular settings means we can use observers

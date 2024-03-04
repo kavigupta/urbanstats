@@ -140,7 +140,7 @@ export function Related(props: { article_type: string, related: {relationshipTyp
     for (var relateds of props.related) {
         let key = relateds.relationshipType;
         let value = relateds.buttons;
-        const show_historical_cds = useSetting('show_historical_cds')
+        const [show_historical_cds] = useSetting('show_historical_cds')
         if (!show_historical_cds) {
             value = value.filter((row) => !is_historical_cd(row.longname));
         }

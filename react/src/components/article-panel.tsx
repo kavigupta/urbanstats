@@ -1,6 +1,4 @@
-export { ArticlePanel };
-
-import React from 'react';
+import React, { useContext, useRef } from 'react';
 
 import { StatisticRowRaw } from "./table.js";
 import { Map } from "./map.js";
@@ -11,29 +9,32 @@ import "./article.css";
 import { load_article } from './load-article.js';
 import { SearchBox } from './search.js';
 import { article_link, comparison_link, sanitize } from '../navigation/links.js';
+import { Settings, useSetting } from "../page_template/settings.js";
+import { useResponsive } from "../utils/responsive.js";
+import { Article } from "../utils/protos.js";
 
-class ArticlePanel extends PageTemplate {
-    constructor(props) {
-        super(props);
+export function ArticlePanel({article}: { article: Article }) {
+        const headers_ref = useRef();
+        const table_ref = useRef();
+        const map_ref = useRef();
 
-        this.headers_ref = React.createRef();
-        this.table_ref = React.createRef();
-        this.map_ref = React.createRef();
-    }
+        const responsive = useResponsive();
 
-    main_content(responsive) {
-        const self = this;
-        const [filtered_rows, _] = load_article(this.props, this.state.settings);
+        const settings = useContext(Settings.Context);
 
-        return (
+        const [filtered_rows, _] = load_article(article, settings);
+
+        const [simple_ordinals] = useSetting('simple_ordinals')
+
+        const mainContent = (
             <div>
                 <div ref={this.headers_ref}>
-                    <div className={responsive.headerTextClass}>{this.props.shortname}</div>
-                    <div className={responsive.subHeaderTextClass}>{this.props.longname}</div>
+                    <div className={responsive.headerTextClass}>{article.shortname}</div>
+                    <div className={responsive.subHeaderTextClass}>{article.longname}</div>
                 </div>
 
                 <div className="stats_table" ref={this.table_ref}>
-                    <StatisticRowRaw _idx={-1} is_header={true} simple={this.state.settings.simple_ordinals}/>
+                    <StatisticRowRaw _idx={-1} is_header={true} simple={simple_ordinals}/>
                     {filtered_rows.map((row, i) =>
                         <StatisticRowRaw _idx={i} key={row.statname} index={i} {...row} settings={this.state.settings}
                             onReplace={x => { document.location = article_link(x) }}
@@ -79,18 +80,13 @@ class ArticlePanel extends PageTemplate {
                     article_type={this.props.article_type} />
             </div>
         );
+
+    const screencapElements = {
+        path: sanitize(this.props.longname) + ".png",
+        overall_width: this.table_ref.current.offsetWidth * 2,
+        elements_to_render: [this.headers_ref.current, this.table_ref.current, this.map_ref.current],
     }
 
-    has_screenshot_button() {
-        return true;
-    }
-
-    screencap_elements() {
-        return {
-            path: sanitize(this.props.longname) + ".png",
-            overall_width: this.table_ref.current.offsetWidth * 2,
-            elements_to_render: [this.headers_ref.current, this.table_ref.current, this.map_ref.current],
-        }
-    }
+    return <PageTemplate mainContent={mainContent} screencapElements={screencapElements} />
 }
 

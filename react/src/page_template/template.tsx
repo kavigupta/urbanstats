@@ -7,7 +7,7 @@ import "../components/article.css";
 import { useResponsive } from '../utils/responsive';
 import { ScreencapElements, create_screenshot } from '../components/screenshot';
 
-export function PageTemplate(props: { mainContent: React.ReactNode, hasScreenshotButton: boolean, screencapElements: ScreencapElements }) {
+export function PageTemplate(props: { mainContent: React.ReactNode, screencapElements?: ScreencapElements }) {
     const [hamburger_open, set_hamburger_open] = useState(false);
     const [screenshot_mode, set_screenshot_mode] = useState(false);
     
@@ -16,7 +16,7 @@ export function PageTemplate(props: { mainContent: React.ReactNode, hasScreensho
     const initiateScreenshot = () => {
         set_screenshot_mode(true)
         setTimeout(async () => {
-            await create_screenshot(props.screencapElements)
+            await create_screenshot(props.screencapElements!)
             set_screenshot_mode(false)
         })
     }
@@ -28,7 +28,7 @@ export function PageTemplate(props: { mainContent: React.ReactNode, hasScreensho
                 <Header
                     hamburger_open={hamburger_open}
                     set_hamburger_open={set_hamburger_open}
-                    has_screenshot={props.hasScreenshotButton}
+                    has_screenshot={props.screencapElements !== undefined}
                     screenshot_mode={screenshot_mode}
                     initiate_screenshot={initiateScreenshot}
                 />
