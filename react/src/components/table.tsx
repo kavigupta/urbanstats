@@ -14,16 +14,20 @@ const table_row_style = {
     alignItems: "baseline",
 };
 
-interface StatisticRowRawProps {
+type StatisticRowRawProps = {    
+    simple: boolean
+    only_columns?: string[]
+    _idx: number,
+    index: number
+} & ({
+    is_header: false
     row: ArticleRow
-    is_header: boolean
     statistic_style?: React.CSSProperties
     simple: boolean
     onReplace: (newValue: string) => void
-    index: number,
-    only_columns?: string[],
-    _idx: number
-}
+} | {
+    is_header: true
+})
 
 export function StatisticRowRaw(props: StatisticRowRawProps) {
     const cells: [number, string, React.ReactNode][] = [
@@ -294,7 +298,7 @@ function ElectionResult(props: { value: number }) {
     return <span className={"party_result_" + party}>{party}+{text}</span>;
 }
 
-function Ordinal(props: { ordinal: number, total: number, type: string, statpath: string, onReplace: (newValue: string) => void, simple: boolean }) {
+function Ordinal(props: { ordinal: number, total: number, type: string, statpath: string, onReplace?: (newValue: string) => void, simple: boolean }) {
     const pluralize = (type: string) => {
         if (type.endsWith("y")) {
             return type.slice(0, -1) + "ies";
@@ -316,7 +320,7 @@ function Ordinal(props: { ordinal: number, total: number, type: string, statpath
             num = 1;
         }
         const data = (await loadProtobuf(link, "StringList")).elements;
-        props.onReplace(data[num - 1])
+        props.onReplace?.(data[num - 1])
     }
 
     if (props.ordinal > props.total) {

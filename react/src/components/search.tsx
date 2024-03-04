@@ -68,15 +68,11 @@ export function SearchBox(props: { on_change: (newValue: string) => void, autoFo
     }
 
     const searchbox_dropdown_item_style = (idx: number) => {
-        const searchbox_dropdown_item_style: React.CSSProperties = {
+        return {
             padding: "0.5em",
-            cursor: "pointer"
+            cursor: "pointer",
+            backgroundColor: (focused === idx) ? "#e9d2fd" : undefined
         };
-        if (focused == idx) {
-            searchbox_dropdown_item_style["backgroundColor"] = "#e9d2fd";
-        }
-
-        return searchbox_dropdown_item_style;
     }
 
     const onTextBoxKeyUp: React.KeyboardEventHandler<HTMLInputElement> = (event) => {

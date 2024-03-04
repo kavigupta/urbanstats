@@ -9,12 +9,12 @@ import "./related.css";
 import { useResponsive } from '../utils/responsive';
 import { lighten } from '../utils/color';
 import { useSetting } from "../page_template/settings";
+import { NormalizeProto } from "../utils/types";
+import { IRelatedButtons, IRelatedButton as RelatedButtonProto } from "../utils/protos";
+
+type RelatedButtonModel = NormalizeProto<RelatedButtonProto>
 
 export type RelationshipKey = `related__${string}__${string}`
-
-type RowType = keyof typeof colorsEach
-
-interface Region { rowType: RowType, longname: string, shortname: string }
 
 const DARK_GRAY = "#4e525a";
 const BLUE = "#5a7dc3";
@@ -25,7 +25,7 @@ const PINK = "#c767b0";
 const GREEN = "#8ac35a";
 const YELLOW = "#b8a32f";
 
-const colorsEach = {
+const colorsEach: Record<string, string> = {
     "Country": DARK_GRAY,
     "Judicial Circuit": DARK_GRAY,
     "USDA County Type": DARK_GRAY,
@@ -58,7 +58,7 @@ export function relationship_key(article_type: string, other_type: string) {
     return `related__${article_type}__${other_type}` as const;
 }
 
-function RelatedButton(props: { rowType: RowType, longname: string, shortname: string }) {
+function RelatedButton(props: RelatedButtonModel) {
 
     const responsive = useResponsive()
 
@@ -81,7 +81,7 @@ function RelatedButton(props: { rowType: RowType, longname: string, shortname: s
     );
 }
 
-function RelatedList(props: { name: string, regions: Region[], articleType: string }) {
+function RelatedList(props: { name: string, regions: RelatedButtonModel[], articleType: string }) {
 
     let byTypeKey: { type: string, regions: typeof props.regions }[] = [];
     for (let i = 0; i < props.regions.length; i++) {
@@ -117,7 +117,7 @@ function RelatedList(props: { name: string, regions: Region[], articleType: stri
     );
 }
 
-function CheckableRelatedList(props: { article_type: string, type: string, regions: Region[] }) {
+function CheckableRelatedList(props: { article_type: string, type: string, regions: RelatedButtonModel[] }) {
     let key = relationship_key(props.article_type, props.type);
     return (
         <li className="list_of_lists">
@@ -135,7 +135,7 @@ function CheckableRelatedList(props: { article_type: string, type: string, regio
     )
 }
 
-export function Related(props: { article_type: string, related: {relationshipType: string, buttons: Region[]}[] }) {
+export function Related(props: { article_type: string, related: NormalizeProto<IRelatedButtons>[] }) {
     let elements = [];
     for (var relateds of props.related) {
         let key = relateds.relationshipType;

@@ -16,7 +16,7 @@ async function loadPage() {
     const data = await loadProtobuf(data_link(longname), "Article");
     document.title = data.shortname;
     const root = ReactDOM.createRoot(document.getElementById("root")!);
-    root.render(<ArticlePanel {...data} />);
+    root.render(<ArticlePanel article={data} />);
 }
 
 loadPage();
