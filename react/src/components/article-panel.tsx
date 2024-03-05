@@ -11,7 +11,7 @@ import { SearchBox } from './search.js';
 import { article_link, comparison_link, sanitize } from '../navigation/links.js';
 import { Settings, useSetting } from "../page_template/settings.js";
 import { useResponsive } from "../utils/responsive.js";
-import { Article, IRelatedButtons, RelatedButtons } from "../utils/protos.js";
+import { Article, IRelatedButtons } from "../utils/protos.js";
 import { NormalizeProto } from "../utils/types.js";
 
 export function ArticlePanel({article}: { article: Article }) {

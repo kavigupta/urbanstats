@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import ContentEditable from 'react-contenteditable'
+import ContentEditable, { ContentEditableEvent } from 'react-contenteditable'
 
 import { article_link, explanation_page_link, ordering_link } from "../navigation/links.js";
 import { loadProtobuf } from '../load_json.js';
@@ -8,7 +8,7 @@ import { is_historical_cd } from '../utils/is_historical.js';
 import { ArticleRow } from "./load-article.js";
 import { useSetting } from "../page_template/settings.js";
 
-const table_row_style = {
+const table_row_style: React.CSSProperties = {
     display: "flex",
     flexDirection: "row",
     alignItems: "baseline",
@@ -343,7 +343,7 @@ function EditableNumber(props: { number: number, onNewNumber: (newValue: number)
     const contentEditable = useRef(null);
     const [html, setHtml] = useState(props.number.toString())
 
-    const handleChange = (evt: React.ChangeEvent<ContentEditable>) => {
+    const handleChange = (evt: ContentEditableEvent) => {
         setHtml(evt.target.value)
     };
 

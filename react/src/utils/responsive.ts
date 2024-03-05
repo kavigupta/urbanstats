@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, CSSProperties } from "react";
 
 export function useResponsive() {
     const [innerWidth, setInnerWidth] = useState(window.innerWidth);
@@ -23,7 +23,7 @@ class Responsive {
         return "centered_text " + (this.mobileLayout ? "subheadertext_mobile" : "subheadertext")
     }
 
-    comparisonHeadStyle(align = "center") {
+    comparisonHeadStyle(align: CSSProperties['textAlign'] = "center"): CSSProperties {
         // bold
         return {
             fontSize: this.mobileLayout ? "15px" : "20px",

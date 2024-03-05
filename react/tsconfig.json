@@ -4,6 +4,7 @@
         "lib": ["ES2021", "DOM"],
         "jsx": "react",
         "esModuleInterop": true,
-        "target": "es2015"
+        "target": "es2015",
+        "moduleResolution": "NodeNext"
     }
 }
