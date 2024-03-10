@@ -20,7 +20,7 @@ interface BaseMap {
 }
 
 interface MapGenericProps {
-    height: number,
+    height?: number,
     id: string,
     basemap: BaseMap,
 }

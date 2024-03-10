@@ -14,138 +14,140 @@ const table_row_style: React.CSSProperties = {
     alignItems: "baseline",
 };
 
-type StatisticRowRawProps = {    
+export type StatisticRowRawProps = {    
     simple: boolean
     only_columns?: string[]
     _idx: number,
-    index: number
+    statistic_style?: React.CSSProperties
+    onReplace?: (newValue: string) => void
 } & ({
     is_header: false
     row: ArticleRow
-    statistic_style?: React.CSSProperties
     simple: boolean
-    onReplace: (newValue: string) => void
 } | {
     is_header: true
 })
 
-export function StatisticRowRaw(props: StatisticRowRawProps) {
+export function StatisticRowRaw(props: StatisticRowRawProps & { index: number }) {
+
+    const cell_contents = <StatisticRowRawCellContents {...props} total_width={100} />
+
+    return <StatisticRow is_header={props.is_header} index={props.index} contents={cell_contents} />;
+}
+
+export function StatisticRowRawCellContents(props: StatisticRowRawProps & { total_width: number }) {
     const cells: [number, string, React.ReactNode][] = [
-            [31,
-                "statname",
-                <span className="serif value">{
-                    props.is_header ? "Statistic" :
-                        <a className="statname_no_link" href={explanation_page_link(props.row.explanation_page)}>{props.row.statname}</a>
-                }
-                </span>
-            ],
-            [15,
-                "statval",
-                <div className="value_numeric">
-                    <span className="serif value">{
-                        props.is_header
-                            ? "Value"
-                            : <Statistic
-                                statname={props.row.statname}
-                                value={props.row.statval}
-                                is_unit={false}
-                                style={props.statistic_style}
-                            />}
-                    </span>
-                </div>
-            ],
-            [10,
-                "statval_unit",
-                <div className="value_unit">
-                    <span className="serif value">{
-                        props.is_header
-                            ? ""
-                            : <Statistic
-                                statname={props.row.statname}
-                                value={props.row.statval}
-                                is_unit={true}
-                            />}
-                    </span>
-                </div>
-            ],
-            [
-                props.simple ? 8 : 25,
-                "statistic_ordinal",
-                <span className="serif ordinal">{
-                    props.is_header
-                        ? (props.simple ? right_align("Ord") : "Ordinal")
-                        : <Ordinal ordinal={props.row.ordinal}
-                            total={props.row.total_count_in_class}
-                            type={props.row.article_type}
-                            statpath={props.row.statpath}
-                            simple={props.simple}
-                            onReplace={props.onReplace}
-                        />
-                }</span>
-            ],
-            [
-                props.simple ? 7 : 17,
-                "statistic_percentile",
-                <span className="serif ordinal">{
-                    props.is_header
-                        ? (props.simple ? right_align("%ile") : "Percentile")
-                        : <Percentile ordinal={props.row.ordinal}
-                            total={props.row.total_count_in_class}
-                            percentile_by_population={props.row.percentile_by_population}
-                            simple={props.simple}
-                        />
-                }</span>
-            ],
-            [8,
-                "pointer_in_class",
-                <span className="serif ordinal">{
-                    props.is_header
-                        ? "Within Type"
-                        : <PointerButtonsIndex
-                            ordinal={props.row.ordinal}
-                            statpath={props.row.statpath}
-                            type={props.row.article_type}
-                            total={props.row.total_count_in_class}
-                        />}</span>
-            ],
-            [8,
-                "pointer_overall",
-                <span className="serif ordinal">{
-                    props.is_header
-                        ? "Overall"
-                        : <PointerButtonsIndex
-                            ordinal={props.row.overallOrdinal}
-                            statpath={props.row.statpath}
-                            type="overall"
-                            total={props.row.total_count_overall}
-                        />}</span>
-            ]
-        ]
-
-    const cell_contents = (total_width: number) => {
-        const cell_percentages: number[] = [];
-        const cell_contents = [];
-        for (let i in cells) {
-            if (props.only_columns?.includes(cells[i][1])) {
-                continue;
+        [31,
+            "statname",
+            <span className="serif value">{
+                props.is_header ? "Statistic" :
+                    <a className="statname_no_link" href={explanation_page_link(props.row.explanation_page)}>{props.row.statname}</a>
             }
-            cell_percentages.push(cells[i][0]);
-            cell_contents.push(cells[i][2]);
-        }
-        // normalize cell percentages
-        const sum = cell_percentages.reduce((a, b) => a + b, 0);
-        for (let i in cell_percentages) {
-            cell_percentages[i] = total_width * cell_percentages[i] / sum;
-        }
-        const contents = cell_contents.map((content, i) =>
-            <div key={100 * props._idx + i} style={{ width: cell_percentages[i] + "%", padding: "1px" }}>
-                {content}
+            </span>
+        ],
+        [15,
+            "statval",
+            <div className="value_numeric">
+                <span className="serif value">{
+                    props.is_header
+                        ? "Value"
+                        : <Statistic
+                            statname={props.row.statname}
+                            value={props.row.statval}
+                            is_unit={false}
+                            style={props.statistic_style}
+                        />}
+                </span>
             </div>
-        );
-        return contents;
-    }
+        ],
+        [10,
+            "statval_unit",
+            <div className="value_unit">
+                <span className="serif value">{
+                    props.is_header
+                        ? ""
+                        : <Statistic
+                            statname={props.row.statname}
+                            value={props.row.statval}
+                            is_unit={true}
+                        />}
+                </span>
+            </div>
+        ],
+        [
+            props.simple ? 8 : 25,
+            "statistic_ordinal",
+            <span className="serif ordinal">{
+                props.is_header
+                    ? (props.simple ? right_align("Ord") : "Ordinal")
+                    : <Ordinal ordinal={props.row.ordinal}
+                        total={props.row.total_count_in_class}
+                        type={props.row.article_type}
+                        statpath={props.row.statpath}
+                        simple={props.simple}
+                        onReplace={props.onReplace}
+                    />
+            }</span>
+        ],
+        [
+            props.simple ? 7 : 17,
+            "statistic_percentile",
+            <span className="serif ordinal">{
+                props.is_header
+                    ? (props.simple ? right_align("%ile") : "Percentile")
+                    : <Percentile ordinal={props.row.ordinal}
+                        total={props.row.total_count_in_class}
+                        percentile_by_population={props.row.percentile_by_population}
+                        simple={props.simple}
+                    />
+            }</span>
+        ],
+        [8,
+            "pointer_in_class",
+            <span className="serif ordinal">{
+                props.is_header
+                    ? "Within Type"
+                    : <PointerButtonsIndex
+                        ordinal={props.row.ordinal}
+                        statpath={props.row.statpath}
+                        type={props.row.article_type}
+                        total={props.row.total_count_in_class}
+                    />}</span>
+        ],
+        [8,
+            "pointer_overall",
+            <span className="serif ordinal">{
+                props.is_header
+                    ? "Overall"
+                    : <PointerButtonsIndex
+                        ordinal={props.row.overallOrdinal}
+                        statpath={props.row.statpath}
+                        type="overall"
+                        total={props.row.total_count_overall}
+                    />}</span>
+        ]
+    ]
 
-    return <StatisticRow is_header={props.is_header} index={props.index} contents={cell_contents(100)} />;
+    const cell_percentages: number[] = [];
+    const cell_contents = [];
+    for (let i in cells) {
+        if (props.only_columns?.includes(cells[i][1])) {
+            continue;
+        }
+        cell_percentages.push(cells[i][0]);
+        cell_contents.push(cells[i][2]);
+    }
+    // normalize cell percentages
+    const sum = cell_percentages.reduce((a, b) => a + b, 0);
+    for (let i in cell_percentages) {
+        cell_percentages[i] = props.total_width * cell_percentages[i] / sum;
+    }
+    const contents = cell_contents.map((content, i) =>
+        <div key={100 * props._idx + i} style={{ width: cell_percentages[i] + "%", padding: "1px" }}>
+            {content}
+        </div>
+    );
+    return contents;
 }
 
 export function StatisticRow({ is_header, index, contents } : { is_header: boolean, index: number, contents: React.ReactNode }): React.ReactNode {

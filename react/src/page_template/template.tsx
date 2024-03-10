@@ -7,7 +7,7 @@ import "../components/article.css";
 import { useResponsive } from '../utils/responsive';
 import { ScreencapElements, create_screenshot } from '../components/screenshot';
 
-export function PageTemplate(props: { mainContent: React.ReactNode, screencapElements?: ScreencapElements }) {
+export function PageTemplate(props: { mainContent: (screenshotMode: boolean) => React.ReactNode, screencapElements?: ScreencapElements }) {
     const [hamburger_open, set_hamburger_open] = useState(false);
     const [screenshot_mode, set_screenshot_mode] = useState(false);
     
@@ -33,7 +33,7 @@ export function PageTemplate(props: { mainContent: React.ReactNode, screencapEle
                     initiate_screenshot={initiateScreenshot}
                 />
                 <div className="gap"></div>
-                <BodyPanel mainContent={props.mainContent} hamburger_open={hamburger_open} />
+                <BodyPanel mainContent={props.mainContent(screenshot_mode)} hamburger_open={hamburger_open} />
             </div>
         </Fragment>
     );

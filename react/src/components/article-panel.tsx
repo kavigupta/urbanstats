@@ -11,7 +11,7 @@ import { SearchBox } from './search.js';
 import { article_link, comparison_link, sanitize } from '../navigation/links.js';
 import { Settings, useSetting } from "../page_template/settings.js";
 import { useResponsive } from "../utils/responsive.js";
-import { Article, IRelatedButtons } from "../utils/protos.js";
+import { Article, IArticle, IRelatedButtons } from "../utils/protos.js";
 import { NormalizeProto } from "../utils/types.js";
 
 export function ArticlePanel({article}: { article: Article }) {
@@ -48,7 +48,7 @@ export function ArticlePanel({article}: { article: Article }) {
                 <div ref={map_ref}>
                     <Map id="map"
                         longname={article.longname}
-                        related={article.related}
+                        related={article.related as NormalizeProto<IRelatedButtons>[]}
                         article_type={article.articleType}
                         basemap={{ type: "osm" }} />
                 </div>
@@ -84,6 +84,6 @@ export function ArticlePanel({article}: { article: Article }) {
         elements_to_render: [headers_ref.current!, table_ref.current!, map_ref.current!],
     }
 
-    return <PageTemplate mainContent={mainContent} screencapElements={screencapElements} />
+    return <PageTemplate mainContent={() => mainContent} screencapElements={screencapElements} />
 }
 
