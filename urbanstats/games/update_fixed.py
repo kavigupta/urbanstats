@@ -3,8 +3,6 @@ import os
 import shutil
 
 
-site_folder = "/home/kavi/temp/site"
-
 current = __file__
 fixed_py_file = os.path.join(os.path.dirname(current), "fixed.py")
 
@@ -32,7 +30,7 @@ def save_fixed_py(fixed):
             f.write(f"{key} = {value}\n")
 
 
-def copy_up_to(key, new_up_to):
+def copy_up_to(site_folder, key, new_up_to):
     source_folder = {
         "juxtastat": "quiz",
         "retrostat": "retrostat",
