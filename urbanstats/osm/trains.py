@@ -1,6 +1,7 @@
 from collections import defaultdict
 import io
 import json
+import os
 import zipfile
 from permacache import permacache
 import requests
@@ -46,10 +47,19 @@ def read_gtfs_spec(feed_path):
     return json.loads(requests.get(url).content)
 
 
-@permacache("urbanstats/osm/trains/read_gtfs_from_url_raw", multiprocess_safe=True)
-def read_gtfs_from_url_raw(url):
+def api_key():
+    with open(os.path.expanduser("~/.transitland")) as f:
+        api_key = f.read().strip()
+    return api_key
+
+
+@permacache("urbanstats/osm/trains/read_gtfs_from_feed_id_raw_2", multiprocess_safe=True)
+def read_gtfs_from_feed_id_raw(feed_id):
     try:
-        return requests.get(url, timeout=30).content
+        return requests.get(
+            f"https://transit.land/api/v2/rest/feeds/{feed_id}/download_latest_feed_version",
+            params=dict(api_key=api_key()),
+        ).content
     except requests.exceptions.Timeout:
         return b""
     except requests.exceptions.ConnectionError:
@@ -59,12 +69,13 @@ def read_gtfs_from_url_raw(url):
     except requests.exceptions.ChunkedEncodingError:
         return b""
 
-
-def read_gtfs_from_url(url):
-    zip_buf = io.BytesIO(read_gtfs_from_url_raw(url))
+@permacache("urbanstats/osm/trains/read_gtfs_from_feed_id", multiprocess_safe=True)
+def read_gtfs_from_feed_id(feed_id):
+    zip_buf = io.BytesIO(read_gtfs_from_feed_id_raw(feed_id))
     try:
         zip_file = zipfile.ZipFile(zip_buf)
-    except zipfile.BadZipFile:
+    except zipfile.BadZipFile as e:
+        print(e)
         return None
     # pd.read_csv every file
     return {
@@ -78,6 +89,8 @@ def read_try_multiple_encodings(file):
         return pd.read_csv(file())
     except UnicodeDecodeError:
         return pd.read_csv(file(), encoding="latin1")
+    except pd.errors.EmptyDataError:
+        return pd.DataFrame()
 
 
 @permacache("urbanstats/osm/trains/gtfs_stops_5")
