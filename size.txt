@@ -112,3 +112,28 @@ add international data
 687     data
 1082    shape
 2072    total
+
+current status 2024-03-10
+
+3       index
+5       quiz
+5       scripts
+7       consolidated
+7       quiz_sample_info
+330     order
+737     data
+1130    shape
+2220    total
+
+
+adding values and population_percentiles to order/
+
+3       index
+5       quiz
+5       scripts
+7       consolidated
+7       quiz_sample_info
+440     order
+737     data
+1130    shape
+2330    total
