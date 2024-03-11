@@ -216,6 +216,14 @@ def get_idxs_by_type():
 
 
 def main(site_folder, no_geo=False, no_data=False, no_juxta=False, no_data_jsons=False):
+    if not no_geo:
+        print("Producing geometry jsons")
+    if not no_data_jsons and not no_data:
+        print("Producing data for each article")
+    if not no_data:
+        print("Producing summary data")
+    if not no_juxta:
+        print("Producing juxta quizzes")
     for sub in [
         "index",
         "r",
