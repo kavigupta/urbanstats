@@ -1,9 +1,12 @@
 import calendar
 from datetime import datetime
 import tempfile
+
+import tqdm
 import cdsapi
 import numpy as np
 import pandas as pd
+from urbanstats.weather.global_bounding_boxes import global_bounding_boxes
 import xarray as xr
 import suncalc
 import us
@@ -297,7 +300,9 @@ def dates_in_month(year, month):
 
 
 # @permacache("urbanstats/weather/era5/all_results_2", key_function=dict(quiet=None))
-def all_results(*, earliest_year=1990, regions=None, quiet=False):
+def all_results(
+    *, bounding_boxes=bounding_boxes, earliest_year=1990, regions=None, quiet=False
+):
     if regions is None:
         regions = list(bounding_boxes().keys())
     dates = []
@@ -305,7 +310,7 @@ def all_results(*, earliest_year=1990, regions=None, quiet=False):
     for year in range(2021, earliest_year - 1, -1):
         for month in range(1, 1 + 12):
             dates_this = dates_in_month(year, month)
-            for k in results:
+            for k in tqdm.tqdm(results, desc=f"{year} {month}"):
                 bounds = bounding_boxes()[k]
                 if not quiet:
                     print(year, month, k)
@@ -326,4 +331,4 @@ def all_results(*, earliest_year=1990, regions=None, quiet=False):
 
 
 if __name__ == "__main__":
-    all_results()
+    all_results(bounding_boxes=lambda: {k: k for k in global_bounding_boxes()})
