@@ -200,7 +200,7 @@ class Statistic extends React.Component {
                 return <span>{(value / 1e3).toFixed(1)}</span>;
             } else {
                 if (is_unit) {
-                    return <span></span>;
+                    return <span>&nbsp;</span>;
                 }
                 return <span>{value.toFixed(0)}</span>;
             }
@@ -265,7 +265,7 @@ class Statistic extends React.Component {
             return <span>{value.toFixed(1)}</span>;
         } else if (name == "Mean sunny hours") {
             if (is_unit) {
-                return <span></span>;
+                return <span>&nbsp;</span>;
             }
             const hours = Math.floor(value);
             const minutes = Math.floor((value - hours) * 60);
@@ -285,7 +285,7 @@ class Statistic extends React.Component {
             return <span>{value.toFixed(1)}</span>;
         }
         if (is_unit) {
-            return <span></span>;
+            return <span>&nbsp;</span>;
         }
         return <span>{value.toFixed(3)}</span>;
     }

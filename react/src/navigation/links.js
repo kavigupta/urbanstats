@@ -53,8 +53,8 @@ function statistic_link(statname, article_type, start, amount, order) {
     start = start - (start % amount);
     start = start + 1;
     const params = new URLSearchParams()
-    params.set('statname', sanitize(statname));
-    params.set('article_type', sanitize(article_type));
+    params.set('statname', statname);
+    params.set('article_type', article_type);
     params.set('start', start);
     params.set('amount', amount);
     params.set('order', order);

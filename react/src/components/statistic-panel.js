@@ -49,7 +49,7 @@ class StatisticPanel extends PageTemplate {
 
     swap_ascending_descending() {
         var new_order = this.is_ascending() ? "descending" : "ascending";
-        document.location = statistic_link(this.props.statname, this.props.article_type, this.props.start, this.props.amount, new_order);
+        document.location = statistic_link(this.props.statname, this.props.article_type, 1, this.props.amount, new_order);
     }
 
     index_range() {

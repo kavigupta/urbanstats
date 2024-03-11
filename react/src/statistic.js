@@ -23,6 +23,8 @@ async function loadPage() {
     const paths = require("./data/statistic_path_list.json");
     const explanation_pages = require("./data/explanation_page.json");
     const stats = require("./data/statistic_list.json");
+    console.log(names);
+    console.log(statname);
     const statpath = paths[names.indexOf(statname)];
     const explanation_page = explanation_pages[names.indexOf(statname)];
     const statcol = stats[names.indexOf(statname)];
