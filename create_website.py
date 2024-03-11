@@ -31,7 +31,7 @@ from urbanstats.consolidated_data.produce_consolidated_data import (
 from urbanstats.data.gpw import compute_gpw_data_for_shapefile_table
 from urbanstats.mapper.ramp import output_ramps
 
-from urbanstats.protobuf.utils import save_string_list
+from urbanstats.protobuf.utils import save_data_list, save_string_list
 from urbanstats.special_cases.simplified_country import all_simplified_countries
 
 
@@ -167,6 +167,7 @@ def output_ordering(site_folder, full):
                 "longname",
                 "type",
                 (statistic_column, "overall_ordinal"),
+                (statistic_column, "percentile_by_population"),
                 statistic_column,
             ]
         ].sort_values("longname")
@@ -187,6 +188,9 @@ def output_ordering(site_folder, full):
                 (~np.isnan(for_typ[statistic_column])).sum()
             )
             save_string_list(list(names), path)
+            value = for_typ[statistic_column]
+            percentile = for_typ[(statistic_column, "percentile_by_population")]
+            save_data_list(value, percentile, path.replace(".gz", "_data.gz"))
 
     with open(f"react/src/data/counts_by_article_type.json", "w") as f:
         json.dump(list(counts.items()), f)
