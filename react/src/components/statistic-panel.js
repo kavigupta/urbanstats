@@ -11,7 +11,7 @@ import { Percentile, Statistic } from './table.js';
 
 const table_style = { display: "flex", flexDirection: "column", padding: "1px" };
 const column_names = ["Ordinal", "Name", "Value", "", "Percentile"];
-const column_widths = ["10%", "50%", "20%", "10%", "20%"];
+const column_widths = ["15%", "60%", "20%", "10%", "20%"];
 const column_styles = [
     { textAlign: "right", paddingRight: "1em" },
     { textAlign: "left" },
@@ -47,6 +47,11 @@ class StatisticPanel extends PageTemplate {
         return this.is_ascending() ? "ascending" : "descending";
     }
 
+    swap_ascending_descending() {
+        var new_order = this.is_ascending() ? "descending" : "ascending";
+        document.location = statistic_link(this.props.statname, this.props.article_type, this.props.start, this.props.amount, new_order);
+    }
+
     index_range() {
         var start = this.props.start - 1;
         var end = start + this.props.amount;
@@ -54,12 +59,14 @@ class StatisticPanel extends PageTemplate {
             end = this.props.count;
         }
         const total = this.props.count;
-        return Array.from({ length: end - start }, (_, i) => {
+        const result = Array.from({ length: end - start }, (_, i) => {
             if (this.is_ascending()) {
                 return total - i - 1;
             }
             return start + i;
         });
+        console.log(result);
+        return result;
     }
 
     style(col_idx, row_idx) {
@@ -85,7 +92,15 @@ class StatisticPanel extends PageTemplate {
 
             <div className="serif">
                 <div style={{ display: "flex" }}>
-                    {column_names.map((name, i) => <div key={name} style={this.style(i, 0)}>{name}</div>)}
+                    {column_names.map((name, i) => {
+                        if (i === 0) {
+                            return <div key={name} style={{ ...this.style(i, 0), "display": "flex", "justifyContent": "space-between", "flexDirection": "row" }}>
+                                <div>{name}</div>
+                                <AscendingVsDescending on_click={() => this.swap_ascending_descending()} is_ascending={this.is_ascending()} />
+                            </div>
+                        }
+                        return <div key={name} style={this.style(i, 0)}>{name}</div>
+                    })}
                 </div>
                 {
                     this.index_range().map((i, row_idx) => <div key={i} style={{ display: "flex", alignItems: "baseline" }}>
@@ -205,4 +220,13 @@ class StatisticPanel extends PageTemplate {
             document.location.href = statistic_link(this.props.statname, this.props.article_type, start, new_amount, this.props.order);
         }
     }
+}
+
+function AscendingVsDescending({ on_click, is_ascending }) {
+    // either an up or down arrow, depending on the current ordering
+    return <div style={{ display: "flex", alignItems: "center" }}>
+        <div style={{ cursor: "pointer" }} onClick={on_click}>
+            {is_ascending ? "▲" : "▼"}
+        </div>
+    </div>
 }
