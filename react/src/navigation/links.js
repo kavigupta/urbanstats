@@ -1,7 +1,8 @@
 
 export {
     sanitize,
-    article_link, shape_link, data_link, ordering_link, explanation_page_link,
+    article_link, shape_link, data_link, ordering_link, ordering_data_link,
+    explanation_page_link,
     consolidated_shape_link, consolidated_stats_link, comparison_link,
     statistic_link
 };
@@ -24,6 +25,10 @@ function ordering_link(statpath, type) {
     return `/order/${sanitize(statpath, false)}__${sanitize(type, false)}.gz`
 }
 
+function ordering_data_link(statpath, type) {
+    return `/order/${sanitize(statpath, false)}__${sanitize(type, false)}_data.gz`
+}
+
 function explanation_page_link(explanation) {
     return `/data-credit.html#explanation_${sanitize(explanation)}`
 }
@@ -43,6 +48,10 @@ function comparison_link(names) {
 }
 
 function statistic_link(statname, article_type, start, amount, order) {
+    // make start % amount == 0
+    start = start - 1;
+    start = start - (start % amount);
+    start = start + 1;
     const params = new URLSearchParams()
     params.set('statname', sanitize(statname));
     params.set('article_type', sanitize(article_type));

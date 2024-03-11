@@ -6,17 +6,25 @@ import { PageTemplate } from "../page_template/template.js";
 import "../common.css";
 import "./article.css";
 import { headerTextClass, subHeaderTextClass } from '../utils/responsive.js';
-import { article_link, sanitize, statistic_link } from '../navigation/links.js';
+import { article_link, explanation_page_link, sanitize, statistic_link } from '../navigation/links.js';
+import { Percentile, Statistic } from './table.js';
 
-const table_style = { display: "flex", flexDirection: "column", padding: "0.5em" };
-const column_names = ["Ordinal", "Name"];
-const column_widths = ["10%", "90%"];
-const column_styles = [{ alignItems: "right" }, { alignItems: "left" }];
+const table_style = { display: "flex", flexDirection: "column", padding: "1px" };
+const column_names = ["Ordinal", "Name", "Value", "", "Percentile"];
+const column_widths = ["10%", "50%", "20%", "10%", "20%"];
+const column_styles = [
+    { textAlign: "right", paddingRight: "1em" },
+    { textAlign: "left" },
+    { textAlign: "right" },
+    { textAlign: "left" },
+    { textAlign: "right" }
+];
 
 class StatisticPanel extends PageTemplate {
     constructor(props) {
         super(props);
         this.main_ref = React.createRef();
+        console.log(this.props);
     }
 
     has_screenshot_button() {
@@ -36,16 +44,16 @@ class StatisticPanel extends PageTemplate {
     }
 
     rendered_order() {
-        return this.is_ascending() ? "Ascending" : "Descending";
+        return this.is_ascending() ? "ascending" : "descending";
     }
 
     index_range() {
         var start = this.props.start - 1;
         var end = start + this.props.amount;
-        if (end + this.props.amount >= this.props.article_names.elements.length) {
-            end = this.props.article_names.elements.length;
+        if (end + this.props.amount >= this.props.count) {
+            end = this.props.count;
         }
-        const total = this.props.article_names.elements.length;
+        const total = this.props.count;
         return Array.from({ length: end - start }, (_, i) => {
             if (this.is_ascending()) {
                 return total - i - 1;
@@ -59,6 +67,7 @@ class StatisticPanel extends PageTemplate {
         if (row_idx == 0) {
             // header, add a line at the bottom
             style.borderBottom = "1px solid #000";
+            style.fontWeight = "bold";
         }
         if (row_idx % 2 === 1) {
             style.backgroundColor = "#f8f8f8";
@@ -79,14 +88,46 @@ class StatisticPanel extends PageTemplate {
                     {column_names.map((name, i) => <div key={name} style={this.style(i, 0)}>{name}</div>)}
                 </div>
                 {
-                    this.index_range().map((i, row_idx) => <div key={i} style={{ display: "flex" }}>
+                    this.index_range().map((i, row_idx) => <div key={i} style={{ display: "flex", alignItems: "baseline" }}>
                         <div style={this.style(0, row_idx + 1)}>{i + 1}</div>
                         <div style={this.style(1, row_idx + 1)}>
                             <a href={article_link(this.props.article_names.elements[i])} style={{ fontWeight: "bold", color: "black", textDecoration: "none" }}>{this.props.article_names.elements[i]}</a>
                         </div>
+                        <div style={this.style(2, row_idx + 1)} className='value_numeric value'>
+                            <Statistic
+                                statname={this.props.statname}
+                                value={this.props.data.value[i]}
+                                is_unit={false}
+                                settings={this.state.settings}
+                            />
+                        </div>
+                        <div style={this.style(3, row_idx + 1)} className='value_unit value'>
+                            <Statistic
+                                statname={this.props.statname}
+                                value={this.props.data.value[i]}
+                                is_unit={true}
+                                settings={this.state.settings}
+                            />
+                        </div>
+                        <div style={this.style(4, row_idx + 1)}>
+                            <Percentile ordinal={this.props.ordinal}
+                                total={this.props.total_count_in_class}
+                                percentile_by_population={this.props.data.populationPercentile[i]}
+                                settings={this.state.settings}
+                                simple={this.state.settings.simple_ordinals}
+                            />
+                        </div>
                     </div>)}
             </div>
-            {this.pagination()}
+            <div style={{ marginBlockEnd: "1em" }}></div>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }} className="serif">
+                <div style={{ width: "70%" }}>
+                    {this.pagination()}
+                </div>
+                <div style={{ width: "30%", textAlign: "right" }}>
+                    <a href={explanation_page_link(this.props.explanation_page)}>Data Explanation and Credit</a>
+                </div>
+            </div>
         </div>
     }
 
@@ -97,11 +138,12 @@ class StatisticPanel extends PageTemplate {
         const self = this;
 
         const current = this.props.start;
-        const total = this.props.article_names.elements.length;
+        const total = this.props.count;
         const per_page = this.props.amount;
         const prev = Math.max(1, current - per_page);
-        const next = Math.min(total, current + per_page);
         const max_pages = Math.floor(total / per_page);
+        const max_page_start = max_pages * per_page + 1;
+        const next = Math.min(max_page_start, current + per_page);
         const current_page = Math.ceil(current / per_page);
 
         return <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
@@ -151,13 +193,13 @@ class StatisticPanel extends PageTemplate {
         var start = this.props.start;
         if (new_amount === "All") {
             start = 1;
-            new_amount = this.props.article_names.elements.length;
+            new_amount = this.props.count;
         }
         if (typeof new_amount === "string") {
             new_amount = parseInt(new_amount);
         }
-        if (start > this.props.article_names.elements.length - new_amount) {
-            start = this.props.article_names.elements.length - new_amount + 1;
+        if (start > this.props.count - new_amount) {
+            start = this.props.count - new_amount + 1;
         }
         if (typeof new_amount === "number") {
             document.location.href = statistic_link(this.props.statname, this.props.article_type, start, new_amount, this.props.order);

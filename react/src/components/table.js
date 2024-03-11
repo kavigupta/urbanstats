@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import ContentEditable from 'react-contenteditable'
 
-export { StatisticRowRaw, Statistic, statistic_row };
-import { article_link, explanation_page_link, ordering_link } from "../navigation/links.js";
+export { StatisticRowRaw, Statistic, statistic_row, Percentile };
+import { article_link, ordering_link, statistic_link } from "../navigation/links.js";
 import { loadProtobuf } from '../load_json.js';
 import "./table.css";
 import { is_historical_cd } from '../utils/is_historical.js';
@@ -24,7 +24,7 @@ class StatisticRowRaw extends React.Component {
                 "statname",
                 <span className="serif value">{
                     this.props.is_header ? "Statistic" :
-                        <a className="statname_no_link" href={explanation_page_link(this.props.explanation_page)}>{this.props.statname}</a>
+                        <a className="statname_no_link" href={statistic_link(this.props.statname, this.props.article_type, this.props.ordinal, 20, "descending")}>{this.props.statname}</a>
                 }
                 </span>
             ],
