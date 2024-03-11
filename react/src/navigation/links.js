@@ -2,7 +2,8 @@
 export {
     sanitize,
     article_link, shape_link, data_link, ordering_link, explanation_page_link,
-    consolidated_shape_link, consolidated_stats_link, comparison_link
+    consolidated_shape_link, consolidated_stats_link, comparison_link,
+    statistic_link
 };
 
 function article_link(longname) {
@@ -39,6 +40,16 @@ function comparison_link(names) {
     const params = new URLSearchParams()
     params.set('longnames', JSON.stringify(names.map(sanitize)));
     return "/comparison.html?" + params.toString();
+}
+
+function statistic_link(statname, article_type, start, amount, order) {
+    const params = new URLSearchParams()
+    params.set('statname', sanitize(statname));
+    params.set('article_type', sanitize(article_type));
+    params.set('start', start);
+    params.set('amount', amount);
+    params.set('order', order);
+    return "/statistic.html?" + params.toString();
 }
 
 function sanitize(longname, spaces_around_slash = true) {

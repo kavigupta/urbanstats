@@ -31,7 +31,7 @@ from urbanstats.consolidated_data.produce_consolidated_data import (
 from urbanstats.data.gpw import compute_gpw_data_for_shapefile_table
 from urbanstats.mapper.ramp import output_ramps
 
-from urbanstats.protobuf.utils import save_string_list
+from urbanstats.protobuf.utils import save_data_list, save_string_list
 from urbanstats.special_cases.simplified_country import all_simplified_countries
 
 
@@ -158,7 +158,7 @@ def get_statistic_column_path(column):
     return column.replace("/", " slash ")
 
 
-def output_ordering(full):
+def output_ordering(site_folder, full):
     counts = {}
     for statistic_column in internal_statistic_names():
         print(statistic_column)
@@ -167,6 +167,7 @@ def output_ordering(full):
                 "longname",
                 "type",
                 (statistic_column, "overall_ordinal"),
+                (statistic_column, "percentile_by_population"),
                 statistic_column,
             ]
         ].sort_values("longname")
@@ -174,19 +175,22 @@ def output_ordering(full):
             (statistic_column, "overall_ordinal"), kind="stable"
         )
         statistic_column_path = get_statistic_column_path(statistic_column)
-        path = f"{folder}/order/{statistic_column_path}__overall.gz"
+        path = f"{site_folder}/order/{statistic_column_path}__overall.gz"
         save_string_list(list(full_sorted.longname), path)
         counts[statistic_column, "overall"] = int(
             (~np.isnan(full_sorted[statistic_column])).sum()
         )
         for typ in sorted(set(full_sorted.type)):
-            path = f"{folder}/order/{statistic_column_path}__{typ}.gz"
+            path = f"{site_folder}/order/{statistic_column_path}__{typ}.gz"
             for_typ = full_sorted[full_sorted.type == typ]
             names = for_typ.longname
             counts[statistic_column, typ] = int(
                 (~np.isnan(for_typ[statistic_column])).sum()
             )
             save_string_list(list(names), path)
+            value = for_typ[statistic_column]
+            percentile = for_typ[(statistic_column, "percentile_by_population")]
+            save_data_list(value, percentile, path.replace(".gz", "_data.gz"))
 
     with open(f"react/src/data/counts_by_article_type.json", "w") as f:
         json.dump(list(counts.items()), f)
@@ -241,7 +245,7 @@ def main(site_folder, no_geo=False, no_data=False, no_juxta=False, no_data_jsons
         with open(f"{site_folder}/index/best_population_estimate.json", "w") as f:
             json.dump(list(full.best_population_estimate), f)
 
-        output_ordering(full)
+        output_ordering(site_folder, full)
 
         full_consolidated_data(site_folder)
 
@@ -249,6 +253,7 @@ def main(site_folder, no_geo=False, no_data=False, no_juxta=False, no_data_jsons
 
     shutil.copy("html_templates/article.html", f"{site_folder}")
     shutil.copy("html_templates/comparison.html", f"{site_folder}")
+    shutil.copy("html_templates/statistic.html", f"{site_folder}")
     shutil.copy("html_templates/index.html", f"{site_folder}/")
     shutil.copy("html_templates/random.html", f"{site_folder}")
     shutil.copy("html_templates/about.html", f"{site_folder}/")
@@ -303,9 +308,10 @@ def main(site_folder, no_geo=False, no_data=False, no_juxta=False, no_data_jsons
     with open(f"react/src/data/indices_by_type.json", "w") as f:
         json.dump(get_idxs_by_type(), f)
 
-    os.system("cd react; npm run prod")
+    os.system("cd react; npm run dev")
     shutil.copy("dist/article.js", f"{site_folder}/scripts/")
     shutil.copy("dist/comparison.js", f"{site_folder}/scripts/")
+    shutil.copy("dist/statistic.js", f"{site_folder}/scripts/")
     shutil.copy("dist/index.js", f"{site_folder}/scripts/")
     shutil.copy("dist/random.js", f"{site_folder}/scripts/")
     shutil.copy("dist/about.js", f"{site_folder}/scripts/")
