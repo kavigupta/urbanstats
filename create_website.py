@@ -158,7 +158,7 @@ def get_statistic_column_path(column):
     return column.replace("/", " slash ")
 
 
-def output_ordering(full):
+def output_ordering(site_folder, full):
     counts = {}
     for statistic_column in internal_statistic_names():
         print(statistic_column)
@@ -174,13 +174,13 @@ def output_ordering(full):
             (statistic_column, "overall_ordinal"), kind="stable"
         )
         statistic_column_path = get_statistic_column_path(statistic_column)
-        path = f"{folder}/order/{statistic_column_path}__overall.gz"
+        path = f"{site_folder}/order/{statistic_column_path}__overall.gz"
         save_string_list(list(full_sorted.longname), path)
         counts[statistic_column, "overall"] = int(
             (~np.isnan(full_sorted[statistic_column])).sum()
         )
         for typ in sorted(set(full_sorted.type)):
-            path = f"{folder}/order/{statistic_column_path}__{typ}.gz"
+            path = f"{site_folder}/order/{statistic_column_path}__{typ}.gz"
             for_typ = full_sorted[full_sorted.type == typ]
             names = for_typ.longname
             counts[statistic_column, typ] = int(
@@ -241,7 +241,7 @@ def main(site_folder, no_geo=False, no_data=False, no_juxta=False, no_data_jsons
         with open(f"{site_folder}/index/best_population_estimate.json", "w") as f:
             json.dump(list(full.best_population_estimate), f)
 
-        output_ordering(full)
+        output_ordering(site_folder, full)
 
         full_consolidated_data(site_folder)
 
