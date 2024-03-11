@@ -1,8 +1,6 @@
 {
-  "name": "assets",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "private": true,
+  "type": "module",
   "scripts": {
     "dev": "webpack --mode=development",
     "watch": "webpack --mode=development --watch",

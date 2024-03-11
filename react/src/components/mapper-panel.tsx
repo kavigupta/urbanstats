@@ -12,8 +12,8 @@ import { loadProtobuf } from '../load_json.js';
 import { consolidated_shape_link, consolidated_stats_link } from '../navigation/links.js';
 import { interpolate_color } from '../utils/color.js';
 
-import { RAMPS, parse_ramp } from "../mapper/ramps.js";
-import { MapperSettings, default_settings, parse_color_stat } from "../mapper/settings.js";
+import { RAMPS, parse_ramp } from "../mapper/ramps";
+import { MapperSettings, default_settings, parse_color_stat } from "../mapper/settings";
 
 import { gunzipSync, gzipSync } from "zlib";
 import { useResponsive } from '../utils/responsive.js';

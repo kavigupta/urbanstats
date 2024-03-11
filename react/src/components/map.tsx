@@ -19,7 +19,7 @@ interface BaseMap {
     type: string;
 }
 
-interface MapGenericProps {
+export interface MapGenericProps {
     height?: number,
     id: string,
     basemap: BaseMap,
