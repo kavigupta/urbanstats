@@ -24,7 +24,12 @@ class StatisticRowRaw extends React.Component {
                 "statname",
                 <span className="serif value">{
                     this.props.is_header ? "Statistic" :
-                        <a className="statname_no_link" href={statistic_link(this.props.statname, this.props.article_type, this.props.ordinal, 20, "descending")}>{this.props.statname}</a>
+                        <a className="statname_no_link" href={
+                            statistic_link(
+                                this.props.statname, this.props.article_type, this.props.ordinal,
+                                20, undefined, this.props.longname
+                            )
+                        }>{this.props.statname}</a>
                 }
                 </span>
             ],

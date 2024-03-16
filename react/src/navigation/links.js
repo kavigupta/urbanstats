@@ -47,7 +47,7 @@ function comparison_link(names) {
     return "/comparison.html?" + params.toString();
 }
 
-function statistic_link(statname, article_type, start, amount, order) {
+function statistic_link(statname, article_type, start, amount, order, highlight) {
     // make start % amount == 0
     start = start - 1;
     start = start - (start % amount);
@@ -55,9 +55,18 @@ function statistic_link(statname, article_type, start, amount, order) {
     const params = new URLSearchParams()
     params.set('statname', statname);
     params.set('article_type', article_type);
-    params.set('start', start);
-    params.set('amount', amount);
-    params.set('order', order);
+    if (start !== undefined) {
+        params.set('start', start);
+    }
+    if (amount !== undefined) {
+        params.set('amount', amount);
+    }
+    if (order !== undefined) {
+        params.set('order', order);
+    }
+    if (highlight !== undefined) {
+        params.set('highlight', highlight);
+    }
     return "/statistic.html?" + params.toString();
 }
 

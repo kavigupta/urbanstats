@@ -19,12 +19,14 @@ async function loadPage() {
     const start = parseInt(window_info.get("start") || "1");
     const amount = parseInt(window_info.get("amount") || "10");
     const order = window_info.get("order");
+    const highlight = window_info.get("highlight");
+    // delete highlight then replaceState
+    window_info.delete("highlight");
+    window.history.replaceState({}, "", "?" + window_info.toString());
     const names = require("./data/statistic_name_list.json");
     const paths = require("./data/statistic_path_list.json");
     const explanation_pages = require("./data/explanation_page.json");
     const stats = require("./data/statistic_list.json");
-    console.log(names);
-    console.log(statname);
     const statpath = paths[names.indexOf(statname)];
     const explanation_page = explanation_pages[names.indexOf(statname)];
     const statcol = stats[names.indexOf(statname)];
@@ -38,6 +40,7 @@ async function loadPage() {
         count={for_type(statcol, article_type)}
         explanation_page={explanation_page}
         ordering={order}
+        highlight={highlight}
         article_type={article_type}
         joined_string={statpath}
         start={start}

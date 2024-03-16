@@ -25,6 +25,7 @@ class StatisticPanel extends PageTemplate {
         super(props);
         this.main_ref = React.createRef();
         console.log(this.props);
+        this.index_range = this.compute_index_range();
     }
 
     has_screenshot_button() {
@@ -49,10 +50,14 @@ class StatisticPanel extends PageTemplate {
 
     swap_ascending_descending() {
         var new_order = this.is_ascending() ? "descending" : "ascending";
-        document.location = statistic_link(this.props.statname, this.props.article_type, 1, this.props.amount, new_order);
+        document.location = statistic_link(
+            this.props.statname, this.props.article_type,
+            1, this.props.amount, new_order,
+            undefined
+        );
     }
 
-    index_range() {
+    compute_index_range() {
         var start = this.props.start - 1;
         var end = start + this.props.amount;
         if (end + this.props.amount >= this.props.count) {
@@ -65,8 +70,20 @@ class StatisticPanel extends PageTemplate {
             }
             return start + i;
         });
-        console.log(result);
         return result;
+    }
+
+    background_color(row_idx) {
+        if (row_idx > 0) {
+            const name_at_idx = this.props.article_names.elements[this.index_range[row_idx - 1]];
+            if (name_at_idx === this.props.highlight) {
+                return "#d4b5e2";
+            }
+        }
+        if (row_idx % 2 === 1) {
+            return "#f8f8f8";
+        }
+        return "#ffffff";
     }
 
     style(col_idx, row_idx) {
@@ -76,9 +93,7 @@ class StatisticPanel extends PageTemplate {
             style.borderBottom = "1px solid #000";
             style.fontWeight = "bold";
         }
-        if (row_idx % 2 === 1) {
-            style.backgroundColor = "#f8f8f8";
-        }
+        style.backgroundColor = this.background_color(row_idx);
         style.width = column_widths[col_idx];
         style = { ...style, ...column_styles[col_idx] };
         return style;
@@ -103,7 +118,9 @@ class StatisticPanel extends PageTemplate {
                     })}
                 </div>
                 {
-                    this.index_range().map((i, row_idx) => <div key={i} style={{ display: "flex", alignItems: "baseline" }}>
+                    this.index_range.map((i, row_idx) => <div key={i} style={{
+                        display: "flex", alignItems: "baseline", backgroundColor: this.background_color(row_idx + 1)
+                    }}>
                         <div style={this.style(0, row_idx + 1)}>{i + 1}</div>
                         <div style={this.style(1, row_idx + 1)}>
                             <a href={article_link(this.props.article_names.elements[i])} style={{ fontWeight: "bold", color: "black", textDecoration: "none" }}>{this.props.article_names.elements[i]}</a>
@@ -201,7 +218,10 @@ class StatisticPanel extends PageTemplate {
     }
 
     change_start(new_start) {
-        document.location.href = statistic_link(this.props.statname, this.props.article_type, new_start, this.props.amount, this.props.order);
+        document.location.href = statistic_link(
+            this.props.statname, this.props.article_type,
+            new_start, this.props.amount, this.props.order, undefined
+        );
     }
 
     change_amount(new_amount) {
@@ -217,7 +237,14 @@ class StatisticPanel extends PageTemplate {
             start = this.props.count - new_amount + 1;
         }
         if (typeof new_amount === "number") {
-            document.location.href = statistic_link(this.props.statname, this.props.article_type, start, new_amount, this.props.order);
+            document.location.href = statistic_link(
+                this.props.statname,
+                this.props.article_type,
+                start,
+                new_amount,
+                this.props.order,
+                undefined
+            );
         }
     }
 }
