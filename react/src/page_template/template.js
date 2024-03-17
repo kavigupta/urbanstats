@@ -56,7 +56,7 @@ class PageTemplate extends React.Component {
             <div className={mobileLayout() ? "content_panel_mobile" : "right_panel"}>
                 {this.main_content()}
                 <div className="gap"></div>
-                <div className="centered_text">Urban Stats Version 9.4.0 by Kavi Gupta. Last updated 2024-03-04. Significant help with weather data from <a href="https://twitter.com/OklahomaPerson">OklahomaPerson</a>. Not for commercial use.</div>
+                <TemplateFooter />
             </div>
         </div>
     }
@@ -113,4 +113,30 @@ class PageTemplate extends React.Component {
         // not implemented, should be overridden
         return (<div></div>);
     }
+}
+
+function TemplateFooter() {
+    return <div className="centered_text">
+        Urban Stats Version <Version /> by <MainCredits />. Last updated <LastUpdated />.
+        <OtherCredits />
+        Not for commercial use.
+    </div>
+}
+
+function Version() {
+    return <span id="current-version">9.4.0</span>
+}
+
+function LastUpdated() {
+    return <span id="last-updated">2024-03-04</span>
+}
+
+function MainCredits() {
+    return <span id="main-credits">Kavi Gupta</span>
+}
+
+function OtherCredits() {
+    return <span>
+        Significant help with weather data from <a href="https://twitter.com/OklahomaPerson">OklahomaPerson</a>.
+    </span>
 }
