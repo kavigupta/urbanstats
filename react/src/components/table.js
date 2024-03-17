@@ -6,6 +6,7 @@ import { article_link, explanation_page_link, ordering_link } from "../navigatio
 import { loadProtobuf } from '../load_json.js';
 import "./table.css";
 import { is_historical_cd } from '../utils/is_historical.js';
+import { pluralize } from '../utils/text.js';
 
 const table_row_style = {
     display: "flex",
@@ -330,15 +331,8 @@ class Ordinal extends React.Component {
             return right_align(en);
         }
         return <span>
-            {en} of {total} {this.pluralize(type)}
+            {en} of {total} {pluralize(type)}
         </span>;
-    }
-
-    pluralize(type) {
-        if (type.endsWith("y")) {
-            return type.slice(0, -1) + "ies";
-        }
-        return type + "s";
     }
 
     async onNewNumber(number) {

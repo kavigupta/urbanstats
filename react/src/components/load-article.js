@@ -1,5 +1,15 @@
 
-export { load_article };
+export { for_type, load_article };
+
+function for_type(statcol, typ) {
+    const counts_by_article_type = require("../data/counts_by_article_type.json");
+
+    return counts_by_article_type.filter(
+        (x) =>
+            x[0][1] == typ
+            && JSON.stringify(x[0][0]) == JSON.stringify(statcol)
+    )[0][1];
+}
 
 function load_article(data, settings) {
     let article_type = data.articleType;
@@ -8,7 +18,6 @@ function load_article(data, settings) {
     const names = require("../data/statistic_name_list.json");
     const paths = require("../data/statistic_path_list.json");
     const stats = require("../data/statistic_list.json");
-    const counts_by_article_type = require("../data/counts_by_article_type.json");
     const explanation_page = require("../data/explanation_page.json");
 
     const indices = require("../data/indices_by_type.json")[article_type];
@@ -30,16 +39,8 @@ function load_article(data, settings) {
         row.explanation_page = explanation_page[i];
         row.article_type = article_type;
 
-        function for_type(typ) {
-            return counts_by_article_type.filter(
-                (x) =>
-                    x[0][1] == typ
-                    && JSON.stringify(x[0][0]) == JSON.stringify(row.statcol)
-            )[0][1];
-        }
-
-        let count_articles = for_type(article_type);
-        let count_articles_overall = for_type("overall");
+        let count_articles = for_type(row.statcol, article_type);
+        let count_articles_overall = for_type(row.statcol, "overall");
 
         row.total_count_in_class = count_articles;
         row.total_count_overall = count_articles_overall;
