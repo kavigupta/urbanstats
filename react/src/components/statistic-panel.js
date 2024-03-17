@@ -23,7 +23,8 @@ const column_styles = [
 class StatisticPanel extends PageTemplate {
     constructor(props) {
         super(props);
-        this.main_ref = React.createRef();
+        this.headers_ref = React.createRef();
+        this.table_ref = React.createRef();
         console.log(this.props);
         this.index_range = this.compute_index_range();
     }
@@ -35,8 +36,8 @@ class StatisticPanel extends PageTemplate {
     screencap_elements() {
         return {
             path: sanitize(this.props.joined_string) + ".png",
-            overall_width: this.main_ref.current.offsetWidth * 2,
-            elements_to_render: [this.main_ref.current],
+            overall_width: this.table_ref.current.offsetWidth * 2,
+            elements_to_render: [this.headers_ref.current, this.table_ref.current],
         }
     }
 
@@ -100,12 +101,13 @@ class StatisticPanel extends PageTemplate {
     }
 
     main_content() {
-        return <div ref={this.main_ref}>
-            <div className={headerTextClass()}>{this.props.statname}</div>
-            {/* // TODO plural */}
-            <div className={subHeaderTextClass()}>{this.props.article_type} ({this.rendered_order()})</div>
-
-            <div className="serif">
+        return <div>
+            <div ref={this.headers_ref}>
+                <div className={headerTextClass()}>{this.props.statname}</div>
+                {/* // TODO plural */}
+                <div className={subHeaderTextClass()}>{this.props.article_type} ({this.rendered_order()})</div>
+            </div>
+            <div className="serif" ref={this.table_ref}>
                 <div style={{ display: "flex" }}>
                     {column_names.map((name, i) => {
                         if (i === 0) {
@@ -152,14 +154,7 @@ class StatisticPanel extends PageTemplate {
                     </div>)}
             </div>
             <div style={{ marginBlockEnd: "1em" }}></div>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }} className="serif">
-                <div style={{ width: "70%" }}>
-                    {this.pagination()}
-                </div>
-                <div style={{ width: "30%", textAlign: "right" }}>
-                    <a href={explanation_page_link(this.props.explanation_page)}>Data Explanation and Credit</a>
-                </div>
-            </div>
+            {this.pagination()}
         </div>
     }
 
@@ -178,41 +173,72 @@ class StatisticPanel extends PageTemplate {
         const next = Math.min(max_page_start, current + per_page);
         const current_page = Math.ceil(current / per_page);
 
-        return <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-            <div>
-                <button onClick={() => this.change_start(prev)}>Previous</button>
-                <button onClick={() => this.change_start(next)}>Next</button>
-            </div>
+        // low-key style for the buttons
+        const button_style = {
+            backgroundColor: "#f8f8f8",
+            border: "1px solid #000",
+            padding: "0 0.5em",
+            margin: "0.5em"
+        };
+
+        const select_page = <div style={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
+            <button onClick={() => this.change_start(prev)} className="serif" style={button_style}>&lt;</button>
             <div>
                 <span>Page: </span>
-                <input type="number" defaultValue={current_page} onKeyDown={e => {
-                    if (e.key === "Enter") {
-                        var new_page = e.target.value;
-                        if (typeof new_page === "string") {
-                            new_page = parseInt(new_page);
-                        }
-                        if (typeof new_page === "number") {
-                            if (new_page < 1) {
-                                new_page = 1;
+                <input type="string" pattern="[0-9]*"
+                    style={{ width: "3em", textAlign: "right" }}
+                    className="serif"
+                    defaultValue={current_page} onKeyDown={e => {
+                        if (e.key === "Enter") {
+                            var new_page = e.target.value;
+                            if (typeof new_page === "string") {
+                                new_page = parseInt(new_page);
                             }
-                            if (new_page > max_pages) {
-                                new_page = max_pages;
+                            if (typeof new_page === "number") {
+                                if (new_page < 1) {
+                                    new_page = 1;
+                                }
+                                if (new_page > max_pages) {
+                                    new_page = max_pages;
+                                }
+                                const new_start = (new_page - 1) * per_page + 1;
+                                self.change_start(new_start);
                             }
-                            const new_start = (new_page - 1) * per_page + 1;
-                            self.change_start(new_start);
                         }
-                    }
-                }} />
+                    }} />
                 <span> of {max_pages}</span>
             </div>
-            <div>
-                <span>Showing <select defaultValue={per_page} onChange={e => this.change_amount(e.target.value)}>
-                    <option value="10">10</option>
-                    <option value="20">20</option>
-                    <option value="50">50</option>
-                    <option value="100">100</option>
-                    <option value={total}>All</option>
-                </select> per page</span>
+            <button onClick={() => this.change_start(next)} className="serif" style={button_style}>&gt;</button>
+        </div>;
+
+        // align the entire div to the center. not flex.
+        return <div style={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            flexDirection: "row",
+            margin: "1em"
+        }}>
+            <div style={{ width: "25%" }}>
+                <div style={{ margin: "auto", textAlign: "center" }}>
+                    <a href={explanation_page_link(this.props.explanation_page)}>Data Explanation and Credit</a>
+                </div>
+            </div>
+            <div style={{ width: "50%" }}>
+                <div style={{ margin: "auto", textAlign: "center" }}>
+                    {select_page}
+                </div>
+            </div>
+            <div style={{ width: "25%" }}>
+                <div style={{ margin: "auto", textAlign: "center" }}>
+                    <span><select defaultValue={per_page} onChange={e => this.change_amount(e.target.value)} className="serif">
+                        <option value="10">10</option>
+                        <option value="20">20</option>
+                        <option value="50">50</option>
+                        <option value="100">100</option>
+                        <option value={total}>All</option>
+                    </select> per page</span>
+                </div>
             </div>
         </div>
     }
