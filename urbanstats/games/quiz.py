@@ -23,7 +23,7 @@ from .fixed import juxtastat as fixed_up_to
 
 min_pop = 250_000
 min_pop_international = 20_000_000
-version = 33
+version = 34
 
 # ranges = [
 #     (0.7, 1),
@@ -67,6 +67,7 @@ def randomize_q(rng, q):
     q = copy.deepcopy(q)
     if rng.choice(2):
         q["longname_a"], q["longname_b"] = q["longname_b"], q["longname_a"]
+        q["stat_a"], q["stat_b"] = q["stat_b"], q["stat_a"]
     return q
 
 
@@ -153,6 +154,8 @@ def sample_quiz_question(
                     stat_column_original=stat_column_original,
                     longname_a=a,
                     longname_b=b,
+                    stat_a=stat_a,
+                    stat_b=stat_b,
                 )
         print("FAILED", type, stat_column_original, distance_pct_bot, distance_pct_top)
 
