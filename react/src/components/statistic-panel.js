@@ -8,6 +8,7 @@ import "./article.css";
 import { headerTextClass, subHeaderTextClass } from '../utils/responsive.js';
 import { article_link, explanation_page_link, sanitize, statistic_link } from '../navigation/links.js';
 import { Percentile, Statistic } from './table.js';
+import { pluralize } from '../utils/text.js';
 
 const table_style = { display: "flex", flexDirection: "column", padding: "1px" };
 const column_names = ["Ordinal", "Name", "Value", "", "Percentile"];
@@ -105,7 +106,7 @@ class StatisticPanel extends PageTemplate {
             <div ref={this.headers_ref}>
                 <div className={headerTextClass()}>{this.props.statname}</div>
                 {/* // TODO plural */}
-                <div className={subHeaderTextClass()}>{this.props.article_type} ({this.rendered_order()})</div>
+                <div className={subHeaderTextClass()}>{pluralize(this.props.article_type)} ({this.rendered_order()})</div>
             </div>
             <div className="serif" ref={this.table_ref}>
                 <div style={{ display: "flex" }}>
