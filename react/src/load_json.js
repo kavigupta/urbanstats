@@ -3,7 +3,7 @@ export { loadJSON, loadProtobuf };
 import { gunzipSync } from 'zlib';
 import {
     Article, Feature, StringList, ConsolidatedShapes,
-    ConsolidatedStatistics
+    ConsolidatedStatistics, DataList
 } from "./utils/protos.js";
 
 // from https://stackoverflow.com/a/4117299/1549476
