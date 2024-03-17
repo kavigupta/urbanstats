@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import ContentEditable from 'react-contenteditable'
 
-export { StatisticRowRaw, Statistic, statistic_row };
+export { StatisticRowRaw, Statistic, statistic_row, Percentile };
 import { article_link, explanation_page_link, ordering_link } from "../navigation/links.js";
 import { loadProtobuf } from '../load_json.js';
 import "./table.css";
@@ -201,7 +201,7 @@ class Statistic extends React.Component {
                 return <span>{(value / 1e3).toFixed(1)}</span>;
             } else {
                 if (is_unit) {
-                    return <span></span>;
+                    return <span>&nbsp;</span>;
                 }
                 return <span>{value.toFixed(0)}</span>;
             }
@@ -266,7 +266,7 @@ class Statistic extends React.Component {
             return <span>{value.toFixed(1)}</span>;
         } else if (name == "Mean sunny hours") {
             if (is_unit) {
-                return <span></span>;
+                return <span>&nbsp;</span>;
             }
             const hours = Math.floor(value);
             const minutes = Math.floor((value - hours) * 60);
@@ -286,7 +286,7 @@ class Statistic extends React.Component {
             return <span>{value.toFixed(1)}</span>;
         }
         if (is_unit) {
-            return <span></span>;
+            return <span>&nbsp;</span>;
         }
         return <span>{value.toFixed(3)}</span>;
     }
