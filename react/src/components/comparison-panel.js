@@ -250,7 +250,7 @@ class ComparisonPanel extends PageTemplate {
         )
 
         row_overall.push(...new StatisticRowRaw(
-            { ...param_vals[0], only_columns: ["statname"], _idx: -1, simple: true }
+            { ...param_vals[0], only_columns: ["statname"], _idx: -1, simple: true, longname: this.props.datas[0].longname }
         ).cell_contents(100 * (left_margin_pct - left_bar_margin)));
         const only_columns = this.all_data_types_same() ? main_columns : main_columns_across_types;
 

@@ -39,6 +39,7 @@ class ArticlePanel extends PageTemplate {
                         <StatisticRowRaw _idx={i} key={row.statname} index={i} {...row} settings={this.state.settings}
                             onReplace={x => { document.location = article_link(x) }}
                             simple={this.state.settings.simple_ordinals}
+                            longname={this.props.longname}
                         />)}
                 </div>
 
