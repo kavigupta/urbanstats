@@ -316,7 +316,7 @@ def main(site_folder, no_geo=False, no_data=False, no_juxta=False, no_data_jsons
     with open(f"react/src/data/indices_by_type.json", "w") as f:
         json.dump(get_idxs_by_type(), f)
 
-    os.system("cd react; npm run dev")
+    os.system("cd react; npm run prod")
     shutil.copy("dist/article.js", f"{site_folder}/scripts/")
     shutil.copy("dist/comparison.js", f"{site_folder}/scripts/")
     shutil.copy("dist/statistic.js", f"{site_folder}/scripts/")
