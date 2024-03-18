@@ -1,9 +1,10 @@
 
 export {
     sanitize,
-    article_link, shape_link, data_link, ordering_link, explanation_page_link,
-    ordering_data_link,
-    consolidated_shape_link, consolidated_stats_link, comparison_link
+    article_link, shape_link, data_link, ordering_link, ordering_data_link,
+    explanation_page_link,
+    consolidated_shape_link, consolidated_stats_link, comparison_link,
+    statistic_link
 };
 
 function article_link(longname) {
@@ -44,6 +45,31 @@ function comparison_link(names) {
     const params = new URLSearchParams()
     params.set('longnames', JSON.stringify(names.map(sanitize)));
     return "/comparison.html?" + params.toString();
+}
+
+function statistic_link(statname, article_type, start, amount, order, highlight) {
+    // make start % amount == 0
+    if (amount != "All") {
+        start = start - 1;
+        start = start - (start % amount);
+        start = start + 1;
+    }
+    const params = new URLSearchParams()
+    params.set('statname', statname);
+    params.set('article_type', article_type);
+    if (start !== undefined) {
+        params.set('start', start);
+    }
+    if (amount !== undefined) {
+        params.set('amount', amount);
+    }
+    if (order !== undefined && order !== null) {
+        params.set('order', order);
+    }
+    if (highlight !== undefined) {
+        params.set('highlight', highlight);
+    }
+    return "/statistic.html?" + params.toString();
 }
 
 function sanitize(longname, spaces_around_slash = true) {

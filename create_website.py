@@ -261,6 +261,7 @@ def main(site_folder, no_geo=False, no_data=False, no_juxta=False, no_data_jsons
 
     shutil.copy("html_templates/article.html", f"{site_folder}")
     shutil.copy("html_templates/comparison.html", f"{site_folder}")
+    shutil.copy("html_templates/statistic.html", f"{site_folder}")
     shutil.copy("html_templates/index.html", f"{site_folder}/")
     shutil.copy("html_templates/random.html", f"{site_folder}")
     shutil.copy("html_templates/about.html", f"{site_folder}/")
@@ -318,6 +319,7 @@ def main(site_folder, no_geo=False, no_data=False, no_juxta=False, no_data_jsons
     os.system("cd react; npm run prod")
     shutil.copy("dist/article.js", f"{site_folder}/scripts/")
     shutil.copy("dist/comparison.js", f"{site_folder}/scripts/")
+    shutil.copy("dist/statistic.js", f"{site_folder}/scripts/")
     shutil.copy("dist/index.js", f"{site_folder}/scripts/")
     shutil.copy("dist/random.js", f"{site_folder}/scripts/")
     shutil.copy("dist/about.js", f"{site_folder}/scripts/")
