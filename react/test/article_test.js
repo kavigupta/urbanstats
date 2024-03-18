@@ -395,6 +395,7 @@ test('statistics-navigation-amount', async t => {
         .click(Selector('option').withText('All'));
     await t.expect(getLocation())
         .eql(TARGET + '/statistic.html?statname=Population&article_type=Hospital+Referral+Region&start=1&amount=All');
+    await screencap(t, "statistics/amount-all");
 });
 
 
