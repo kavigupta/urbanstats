@@ -117,9 +117,7 @@ class PageTemplate extends React.Component {
 
 function TemplateFooter() {
     return <div className="centered_text">
-        Urban Stats Version <Version /> by <MainCredits />. Last updated <LastUpdated />.
-        <OtherCredits />
-        Not for commercial use.
+        Urban Stats Version <Version /> by <MainCredits />. Last updated <LastUpdated />. <OtherCredits /> Not for commercial use.
     </div>
 }
 
