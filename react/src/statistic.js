@@ -17,7 +17,7 @@ async function loadPage() {
     const article_type = window_info.get("article_type");
     const statname = window_info.get("statname");
     const start = parseInt(window_info.get("start") || "1");
-    const amount = parseInt(window_info.get("amount") || "10");
+    var amount = window_info.get("amount");
     const order = window_info.get("order");
     const highlight = window_info.get("highlight");
     // delete highlight then replaceState
@@ -32,6 +32,11 @@ async function loadPage() {
     const statcol = stats[names.indexOf(statname)];
     const article_names = await loadProtobuf(ordering_link(statpath, article_type), "StringList");
     const data = await loadProtobuf(ordering_data_link(statpath, article_type), "DataList");
+    if (amount == "All") {
+        amount = article_names.elements.length;
+    } else {
+        amount = parseInt(amount || "10");
+    }
     document.title = statname;
     const root = ReactDOM.createRoot(document.getElementById("root"));
     root.render(<StatisticPanel

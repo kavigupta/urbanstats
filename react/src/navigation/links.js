@@ -49,9 +49,11 @@ function comparison_link(names) {
 
 function statistic_link(statname, article_type, start, amount, order, highlight) {
     // make start % amount == 0
-    start = start - 1;
-    start = start - (start % amount);
-    start = start + 1;
+    if (amount != "All") {
+        start = start - 1;
+        start = start - (start % amount);
+        start = start + 1;
+    }
     const params = new URLSearchParams()
     params.set('statname', statname);
     params.set('article_type', article_type);
@@ -61,7 +63,7 @@ function statistic_link(statname, article_type, start, amount, order, highlight)
     if (amount !== undefined) {
         params.set('amount', amount);
     }
-    if (order !== undefined) {
+    if (order !== undefined && order !== null) {
         params.set('order', order);
     }
     if (highlight !== undefined) {

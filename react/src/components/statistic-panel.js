@@ -170,7 +170,7 @@ class StatisticPanel extends PageTemplate {
         const per_page = this.props.amount;
         const prev = Math.max(1, current - per_page);
         const max_pages = Math.floor(total / per_page);
-        const max_page_start = max_pages * per_page + 1;
+        const max_page_start = (max_pages - 1) * per_page + 1;
         const next = Math.min(max_page_start, current + per_page);
         const current_page = Math.ceil(current / per_page);
 
@@ -232,12 +232,14 @@ class StatisticPanel extends PageTemplate {
             </div>
             <div style={{ width: "25%" }}>
                 <div style={{ margin: "auto", textAlign: "center" }}>
-                    <span><select defaultValue={per_page} onChange={e => this.change_amount(e.target.value)} className="serif">
+                    <span><select defaultValue={
+                        per_page == total ? "All" : per_page
+                    } onChange={e => this.change_amount(e.target.value)} className="serif">
                         <option value="10">10</option>
                         <option value="20">20</option>
                         <option value="50">50</option>
                         <option value="100">100</option>
-                        <option value={total}>All</option>
+                        <option value="All">All</option>
                     </select> per page</span>
                 </div>
             </div>
@@ -252,6 +254,7 @@ class StatisticPanel extends PageTemplate {
     }
 
     change_amount(new_amount) {
+        const new_amount_str = new_amount;
         var start = this.props.start;
         if (new_amount === "All") {
             start = 1;
@@ -268,7 +271,7 @@ class StatisticPanel extends PageTemplate {
                 this.props.statname,
                 this.props.article_type,
                 start,
-                new_amount,
+                new_amount_str,
                 this.props.order,
                 undefined
             );
