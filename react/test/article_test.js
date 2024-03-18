@@ -16,6 +16,8 @@ async function prep_for_image(t) {
         for (const x of document.getElementsByClassName("leaflet-tile-pane")) {
             x.remove();
         }
+        document.getElementById("current-version").innerHTML = "<VERSION>";
+        document.getElementById("last-updated").innerHTML = "<DATE>";
     });
 }
 
