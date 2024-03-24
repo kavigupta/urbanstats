@@ -126,7 +126,7 @@ def next_prev_within_type(full):
     return by_statistic
 
 
-def create_page_jsons(full):
+def create_page_jsons(site_folder, full):
     # ptrs_overall = next_prev(full)
     # ptrs_within_type = next_prev_within_type(full)
     long_to_short = dict(zip(full.longname, full.shortname))
@@ -137,7 +137,7 @@ def create_page_jsons(full):
     for i in tqdm.trange(full.shape[0], desc="creating pages"):
         row = full.iloc[i]
         create_page_json(
-            f"{folder}/data",
+            f"{site_folder}/data",
             row,
             relationships,
             long_to_short,
@@ -247,7 +247,7 @@ def main(site_folder, no_geo=False, no_data=False, no_juxta=False, no_data_jsons
     if not no_data:
         full = full_shapefile()
         if not no_data_jsons:
-            create_page_jsons(full)
+            create_page_jsons(site_folder, full)
         save_string_list(list(full.longname), f"{site_folder}/index/pages.gz")
 
         with open(f"{site_folder}/index/best_population_estimate.json", "w") as f:
