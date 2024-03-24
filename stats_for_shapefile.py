@@ -14,6 +14,7 @@ import geopandas as gpd
 
 from permacache import permacache, stable_hash
 
+from urbanstats.acs import industry, occupation
 from urbanstats.acs.attach import with_acs_data
 from urbanstats.acs.entities import acs_columns
 from urbanstats.features.feature import feature_columns
@@ -97,6 +98,9 @@ transportation_stats = {
     "vehicle_ownership_at_least_1": "Households With 1+ Vehicles %",
     "vehicle_ownership_at_least_2": "Households With 2+ Vehicles %",
 }
+
+industry_stats = industry.industry_display
+occupation_stats = occupation.occupation_display
 
 national_origin_stats = {
     "citizenship_citizen_by_birth": "Citizen by Birth %",
@@ -402,6 +406,10 @@ def compute_statistics_for_shapefile(sf, sum_keys=sum_keys):
         "marriage_married_not_divorced",
         "marriage_divorced",
     )
+
+    fractionalize(*industry_stats.keys())
+
+    fractionalize(*occupation_stats.keys())
 
     fractionalize(
         "vehicle_ownership_none",

@@ -1,5 +1,6 @@
 from urbanstats.acs.load import ACSDataEntity
-
+from urbanstats.acs.industry import industry_dict, normalize_industry_name
+from urbanstats.acs.occupation import occupation_dict, normalize_occupation_name
 
 entities = dict(
     education=ACSDataEntity(
@@ -897,6 +898,17 @@ entities = dict(
                 "Estimate!!Total:!!Male:!!Professional school degree",
             ],
         },
+    industry=ACSDataEntity(
+        "SEX BY INDUSTRY FOR THE CIVILIAN EMPLOYED POPULATION 16 YEARS AND OVER",
+        "population_18",
+        "block group",
+        {normalize_industry_name(k): v for k, v in industry_dict.items()},
+    ),
+    occupation=ACSDataEntity(
+        "SEX BY OCCUPATION FOR THE CIVILIAN EMPLOYED POPULATION 16 YEARS AND OVER",
+        "population_18",
+        "block group",
+        {normalize_occupation_name(k): v for k, v in occupation_dict.items()},
     ),
     # aggregate_rent=ACSDataEntity(
     #     "AGGREGATE GROSS RENT (DOLLARS)",
