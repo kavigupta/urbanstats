@@ -898,6 +898,7 @@ entities = dict(
                 "Estimate!!Total:!!Male:!!Professional school degree",
             ],
         },
+    ),
     industry=ACSDataEntity(
         "SEX BY INDUSTRY FOR THE CIVILIAN EMPLOYED POPULATION 16 YEARS AND OVER",
         "population_18",
