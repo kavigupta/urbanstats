@@ -450,7 +450,6 @@ stats_to_display = {
         k: f"higher % of workers employed as {v.replace(' %', '')}"
         for k, v in occupation.occupation_display.items()
     },
-    }
 }
 
 renamed = {
