@@ -23,7 +23,7 @@ from .fixed import juxtastat as fixed_up_to
 
 min_pop = 250_000
 min_pop_international = 20_000_000
-version = 30 # skip 31
+version = 34
 
 # ranges = [
 #     (0.7, 1),
@@ -440,6 +440,7 @@ stats_to_display = {
     "gpw_aw_density": "higher area-weighted population density",
     "gpw_population": "higher population",
     "gpw_pw_density_4": "higher population-weighted density (r=4km)",
+    "vehicle_ownership_at_least_1": "higher % of households with at least 1 vehicle",
 }
 
 renamed = {
@@ -534,6 +535,11 @@ not_included = {
     "mean_high_dewpoint_4",
     "days_dewpoint_70_inf_4",
     "days_dewpoint_-inf_50_4",
+    "female_hs_gap_4",
+    "female_ugrad_gap_4",
+    "female_grad_gap_4",
+    "vehicle_ownership_none",
+    "vehicle_ownership_at_least_2",
     # meh whatever
     "marriage_married_not_divorced",
     "marriage_never_married",

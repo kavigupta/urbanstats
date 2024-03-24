@@ -62,6 +62,11 @@ message StringList {
     repeated string elements = 1;
 }
 
+message DataList {
+    repeated float value = 1;
+    repeated float population_percentile = 2;
+}
+
 // unified result
 
 message AllStats {

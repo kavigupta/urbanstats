@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
 import ContentEditable from 'react-contenteditable'
 
-export { StatisticRowRaw, Statistic, statistic_row };
-import { article_link, explanation_page_link, ordering_link } from "../navigation/links.js";
+export { StatisticRowRaw, Statistic, statistic_row, Percentile };
+import { article_link, ordering_link, statistic_link } from "../navigation/links.js";
 import { loadProtobuf } from '../load_json.js';
 import "./table.css";
 import { is_historical_cd } from '../utils/is_historical.js';
+import { pluralize } from '../utils/text.js';
 
 const table_row_style = {
     display: "flex",
@@ -24,7 +25,12 @@ class StatisticRowRaw extends React.Component {
                 "statname",
                 <span className="serif value">{
                     this.props.is_header ? "Statistic" :
-                        <a className="statname_no_link" href={explanation_page_link(this.props.explanation_page)}>{this.props.statname}</a>
+                        <a className="statname_no_link" href={
+                            statistic_link(
+                                this.props.statname, this.props.article_type, this.props.ordinal,
+                                20, undefined, this.props.longname
+                            )
+                        }>{this.props.statname}</a>
                 }
                 </span>
             ],
@@ -200,7 +206,7 @@ class Statistic extends React.Component {
                 return <span>{(value / 1e3).toFixed(1)}</span>;
             } else {
                 if (is_unit) {
-                    return <span></span>;
+                    return <span>&nbsp;</span>;
                 }
                 return <span>{value.toFixed(0)}</span>;
             }
@@ -265,7 +271,7 @@ class Statistic extends React.Component {
             return <span>{value.toFixed(1)}</span>;
         } else if (name == "Mean sunny hours") {
             if (is_unit) {
-                return <span></span>;
+                return <span>&nbsp;</span>;
             }
             const hours = Math.floor(value);
             const minutes = Math.floor((value - hours) * 60);
@@ -285,7 +291,7 @@ class Statistic extends React.Component {
             return <span>{value.toFixed(1)}</span>;
         }
         if (is_unit) {
-            return <span></span>;
+            return <span>&nbsp;</span>;
         }
         return <span>{value.toFixed(3)}</span>;
     }
@@ -330,15 +336,8 @@ class Ordinal extends React.Component {
             return right_align(en);
         }
         return <span>
-            {en} of {total} {this.pluralize(type)}
+            {en} of {total} {pluralize(type)}
         </span>;
-    }
-
-    pluralize(type) {
-        if (type.endsWith("y")) {
-            return type.slice(0, -1) + "ies";
-        }
-        return type + "s";
     }
 
     async onNewNumber(number) {

@@ -1,6 +1,6 @@
 import { Selector, ClientFunction } from 'testcafe';
 
-const TARGET = "http://teroknor:8000"
+const TARGET = process.env.URBANSTATS_TEST_TARGET ?? "http://localhost:8000"
 const SEARCH_FIELD = Selector('input').withAttribute('placeholder', 'Search Urban Stats');
 const getLocation = ClientFunction(() => document.location.href);
 
@@ -16,6 +16,8 @@ async function prep_for_image(t) {
         for (const x of document.getElementsByClassName("leaflet-tile-pane")) {
             x.remove();
         }
+        document.getElementById("current-version").innerHTML = "&lt;VERSION&gt;";
+        document.getElementById("last-updated").innerHTML = "&lt;LAST UPDATED&gt;";
     });
 }
 
@@ -47,8 +49,7 @@ async function copy_most_recent_file(t, name) {
     const sorted = files.map(x => path.join(downloadsFolder(), x)).sort((a, b) => fs.statSync(b).mtimeMs - fs.statSync(a).mtimeMs);
     // copy the file to the screenshots folder
     const screenshotsFolder = path.join(__dirname, '..', 'screenshots');
-    const copyFileSync = require('fs-copy-file-sync');
-    copyFileSync(sorted[0], path.join(screenshotsFolder, name + '_' + t.browser.name + '.png'));
+    fs.copyFileSync(sorted[0], path.join(screenshotsFolder, name + '_' + t.browser.name + '.png'));
 }
 
 fixture('longer article test')
@@ -329,6 +330,97 @@ test('comparison-3-editable-number-third', async t => {
     await t.expect(getLocation())
         .eql(comparison_page([upper_sgv, pasadena, chicago]));
 })
+
+fixture('statistics')
+    .page(TARGET + '/article.html?longname=Indianapolis+IN+HRR%2C+USA')
+    .beforeEach(async t => {
+        await t.eval(() => localStorage.clear());
+    });
+
+test('statistics-page', async t => {
+    await t.resizeWindow(1400, 800);
+    await t.eval(() => location.reload(true));
+    // click the link labeled "Population"
+    await t
+        .click(Selector('a').withText(/^Population$/));
+    // assert url is https://urbanstats.org/statistic.html?statname=Population&article_type=Hospital+Referral+Region&start=21&amount=20
+    await t.expect(getLocation())
+        .eql(TARGET + '/statistic.html?statname=Population&article_type=Hospital+Referral+Region&start=21&amount=20');
+    await screencap(t, "statistics/population");
+    // click link "Data Explanation and Credit"
+    await t
+        .click(Selector('a').withText(/^Data Explanation and Credit$/));
+    await t.expect(getLocation())
+        .eql(TARGET + '/data-credit.html#explanation_population');
+});
+
+fixture('statistics-navigation')
+    .page(TARGET + '/statistic.html?statname=Population&article_type=Hospital+Referral+Region&start=21&amount=20')
+    .beforeEach(async t => {
+        await t.eval(() => localStorage.clear());
+    });
+
+test('statistics-navigation-left', async t => {
+    await t
+        .click(Selector('button').withText('<'));
+    const url = TARGET + '/statistic.html?statname=Population&article_type=Hospital+Referral+Region&start=1&amount=20';
+    await t.expect(getLocation())
+        .eql(url);
+    // going left again does nothing
+    await t
+        .click(Selector('button').withText('<'));
+    await t.expect(getLocation())
+        .eql(url);
+});
+
+test('statistics-navigation-right', async t => {
+    await t
+        .click(Selector('button').withText('>'));
+    await t.expect(getLocation())
+        .eql(TARGET + '/statistic.html?statname=Population&article_type=Hospital+Referral+Region&start=41&amount=20');
+});
+
+test('statistics-navigation-amount', async t => {
+    // take the select field that currently says 20 and make it say 50
+    const amount = Selector('select').nth(0);
+    await t
+        .click(amount)
+        .click(Selector('option').withText('50'));
+    await t.expect(getLocation())
+        .eql(TARGET + '/statistic.html?statname=Population&article_type=Hospital+Referral+Region&start=1&amount=50');
+    await screencap(t, "statistics/amount-50");
+    // set to All
+    await t
+        .click(amount)
+        .click(Selector('option').withText('All'));
+    await t.expect(getLocation())
+        .eql(TARGET + '/statistic.html?statname=Population&article_type=Hospital+Referral+Region&start=1&amount=All');
+    await screencap(t, "statistics/amount-all");
+});
+
+
+test('statistics-navigation-last-page', async t => {
+    // find input with value 2, then replace it with 15
+    const page = Selector('input').withAttribute('value', '2');
+    await t
+        .click(page)
+        .pressKey('ctrl+a')
+        .typeText(page, '15')
+        .pressKey('enter');
+
+    const url = TARGET + '/statistic.html?statname=Population&article_type=Hospital+Referral+Region&start=281&amount=20';
+
+    await t.expect(getLocation())
+        .eql(url);
+
+    await screencap(t, "statistics/last-page");
+    // going right again does nothing
+    await t
+        .click(Selector('button').withText('>'));
+    await t.expect(getLocation())
+        .eql(url);
+});
+
 
 fixture('quiz result test')
     .page(TARGET + '/quiz.html?date=100')

@@ -1,8 +1,5 @@
 const path = require('path');
 
-const webpack = require('webpack');
-const HtmlWebpackPlugin = require('html-webpack-plugin');
-
 const NodePolyfillPlugin = require('node-polyfill-webpack-plugin')
 
 module.exports = {
@@ -14,7 +11,8 @@ module.exports = {
         "about": ['./src/about.js'],
         "data-credit": ['./src/data-credit.js'],
         "mapper": ['./src/mapper.js'],
-        "comparison": ['./src/comparison.js']
+        "comparison": ['./src/comparison.js'],
+        "statistic": ['./src/statistic.js']
     },
     output: {
         filename: '[name].js',

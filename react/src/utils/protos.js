@@ -2523,6 +2523,281 @@ $root.StringList = (function() {
     return StringList;
 })();
 
+$root.DataList = (function() {
+
+    /**
+     * Properties of a DataList.
+     * @exports IDataList
+     * @interface IDataList
+     * @property {Array.<number>|null} [value] DataList value
+     * @property {Array.<number>|null} [populationPercentile] DataList populationPercentile
+     */
+
+    /**
+     * Constructs a new DataList.
+     * @exports DataList
+     * @classdesc Represents a DataList.
+     * @implements IDataList
+     * @constructor
+     * @param {IDataList=} [properties] Properties to set
+     */
+    function DataList(properties) {
+        this.value = [];
+        this.populationPercentile = [];
+        if (properties)
+            for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                if (properties[keys[i]] != null)
+                    this[keys[i]] = properties[keys[i]];
+    }
+
+    /**
+     * DataList value.
+     * @member {Array.<number>} value
+     * @memberof DataList
+     * @instance
+     */
+    DataList.prototype.value = $util.emptyArray;
+
+    /**
+     * DataList populationPercentile.
+     * @member {Array.<number>} populationPercentile
+     * @memberof DataList
+     * @instance
+     */
+    DataList.prototype.populationPercentile = $util.emptyArray;
+
+    /**
+     * Creates a new DataList instance using the specified properties.
+     * @function create
+     * @memberof DataList
+     * @static
+     * @param {IDataList=} [properties] Properties to set
+     * @returns {DataList} DataList instance
+     */
+    DataList.create = function create(properties) {
+        return new DataList(properties);
+    };
+
+    /**
+     * Encodes the specified DataList message. Does not implicitly {@link DataList.verify|verify} messages.
+     * @function encode
+     * @memberof DataList
+     * @static
+     * @param {IDataList} message DataList message or plain object to encode
+     * @param {$protobuf.Writer} [writer] Writer to encode to
+     * @returns {$protobuf.Writer} Writer
+     */
+    DataList.encode = function encode(message, writer) {
+        if (!writer)
+            writer = $Writer.create();
+        if (message.value != null && message.value.length) {
+            writer.uint32(/* id 1, wireType 2 =*/10).fork();
+            for (var i = 0; i < message.value.length; ++i)
+                writer.float(message.value[i]);
+            writer.ldelim();
+        }
+        if (message.populationPercentile != null && message.populationPercentile.length) {
+            writer.uint32(/* id 2, wireType 2 =*/18).fork();
+            for (var i = 0; i < message.populationPercentile.length; ++i)
+                writer.float(message.populationPercentile[i]);
+            writer.ldelim();
+        }
+        return writer;
+    };
+
+    /**
+     * Encodes the specified DataList message, length delimited. Does not implicitly {@link DataList.verify|verify} messages.
+     * @function encodeDelimited
+     * @memberof DataList
+     * @static
+     * @param {IDataList} message DataList message or plain object to encode
+     * @param {$protobuf.Writer} [writer] Writer to encode to
+     * @returns {$protobuf.Writer} Writer
+     */
+    DataList.encodeDelimited = function encodeDelimited(message, writer) {
+        return this.encode(message, writer).ldelim();
+    };
+
+    /**
+     * Decodes a DataList message from the specified reader or buffer.
+     * @function decode
+     * @memberof DataList
+     * @static
+     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+     * @param {number} [length] Message length if known beforehand
+     * @returns {DataList} DataList
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    DataList.decode = function decode(reader, length) {
+        if (!(reader instanceof $Reader))
+            reader = $Reader.create(reader);
+        var end = length === undefined ? reader.len : reader.pos + length, message = new $root.DataList();
+        while (reader.pos < end) {
+            var tag = reader.uint32();
+            switch (tag >>> 3) {
+            case 1: {
+                    if (!(message.value && message.value.length))
+                        message.value = [];
+                    if ((tag & 7) === 2) {
+                        var end2 = reader.uint32() + reader.pos;
+                        while (reader.pos < end2)
+                            message.value.push(reader.float());
+                    } else
+                        message.value.push(reader.float());
+                    break;
+                }
+            case 2: {
+                    if (!(message.populationPercentile && message.populationPercentile.length))
+                        message.populationPercentile = [];
+                    if ((tag & 7) === 2) {
+                        var end2 = reader.uint32() + reader.pos;
+                        while (reader.pos < end2)
+                            message.populationPercentile.push(reader.float());
+                    } else
+                        message.populationPercentile.push(reader.float());
+                    break;
+                }
+            default:
+                reader.skipType(tag & 7);
+                break;
+            }
+        }
+        return message;
+    };
+
+    /**
+     * Decodes a DataList message from the specified reader or buffer, length delimited.
+     * @function decodeDelimited
+     * @memberof DataList
+     * @static
+     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+     * @returns {DataList} DataList
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    DataList.decodeDelimited = function decodeDelimited(reader) {
+        if (!(reader instanceof $Reader))
+            reader = new $Reader(reader);
+        return this.decode(reader, reader.uint32());
+    };
+
+    /**
+     * Verifies a DataList message.
+     * @function verify
+     * @memberof DataList
+     * @static
+     * @param {Object.<string,*>} message Plain object to verify
+     * @returns {string|null} `null` if valid, otherwise the reason why it is not
+     */
+    DataList.verify = function verify(message) {
+        if (typeof message !== "object" || message === null)
+            return "object expected";
+        if (message.value != null && message.hasOwnProperty("value")) {
+            if (!Array.isArray(message.value))
+                return "value: array expected";
+            for (var i = 0; i < message.value.length; ++i)
+                if (typeof message.value[i] !== "number")
+                    return "value: number[] expected";
+        }
+        if (message.populationPercentile != null && message.hasOwnProperty("populationPercentile")) {
+            if (!Array.isArray(message.populationPercentile))
+                return "populationPercentile: array expected";
+            for (var i = 0; i < message.populationPercentile.length; ++i)
+                if (typeof message.populationPercentile[i] !== "number")
+                    return "populationPercentile: number[] expected";
+        }
+        return null;
+    };
+
+    /**
+     * Creates a DataList message from a plain object. Also converts values to their respective internal types.
+     * @function fromObject
+     * @memberof DataList
+     * @static
+     * @param {Object.<string,*>} object Plain object
+     * @returns {DataList} DataList
+     */
+    DataList.fromObject = function fromObject(object) {
+        if (object instanceof $root.DataList)
+            return object;
+        var message = new $root.DataList();
+        if (object.value) {
+            if (!Array.isArray(object.value))
+                throw TypeError(".DataList.value: array expected");
+            message.value = [];
+            for (var i = 0; i < object.value.length; ++i)
+                message.value[i] = Number(object.value[i]);
+        }
+        if (object.populationPercentile) {
+            if (!Array.isArray(object.populationPercentile))
+                throw TypeError(".DataList.populationPercentile: array expected");
+            message.populationPercentile = [];
+            for (var i = 0; i < object.populationPercentile.length; ++i)
+                message.populationPercentile[i] = Number(object.populationPercentile[i]);
+        }
+        return message;
+    };
+
+    /**
+     * Creates a plain object from a DataList message. Also converts values to other types if specified.
+     * @function toObject
+     * @memberof DataList
+     * @static
+     * @param {DataList} message DataList
+     * @param {$protobuf.IConversionOptions} [options] Conversion options
+     * @returns {Object.<string,*>} Plain object
+     */
+    DataList.toObject = function toObject(message, options) {
+        if (!options)
+            options = {};
+        var object = {};
+        if (options.arrays || options.defaults) {
+            object.value = [];
+            object.populationPercentile = [];
+        }
+        if (message.value && message.value.length) {
+            object.value = [];
+            for (var j = 0; j < message.value.length; ++j)
+                object.value[j] = options.json && !isFinite(message.value[j]) ? String(message.value[j]) : message.value[j];
+        }
+        if (message.populationPercentile && message.populationPercentile.length) {
+            object.populationPercentile = [];
+            for (var j = 0; j < message.populationPercentile.length; ++j)
+                object.populationPercentile[j] = options.json && !isFinite(message.populationPercentile[j]) ? String(message.populationPercentile[j]) : message.populationPercentile[j];
+        }
+        return object;
+    };
+
+    /**
+     * Converts this DataList to JSON.
+     * @function toJSON
+     * @memberof DataList
+     * @instance
+     * @returns {Object.<string,*>} JSON object
+     */
+    DataList.prototype.toJSON = function toJSON() {
+        return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+    };
+
+    /**
+     * Gets the default type url for DataList
+     * @function getTypeUrl
+     * @memberof DataList
+     * @static
+     * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns {string} The default type url
+     */
+    DataList.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+        if (typeUrlPrefix === undefined) {
+            typeUrlPrefix = "type.googleapis.com";
+        }
+        return typeUrlPrefix + "/DataList";
+    };
+
+    return DataList;
+})();
+
 $root.AllStats = (function() {
 
     /**
