@@ -1,0 +1,107 @@
+[
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Housing Units per Adult",
+      "question": "higher number of housing units per adult",
+      "longname_a": "Delaware, USA",
+      "longname_b": "New Jersey, USA",
+      "stat_a": 0.571807305501272,
+      "stat_b": 0.5159103685391919
+    },
+    "b": {
+      "stat_column": "Only English at Home %",
+      "question": "higher % of people who only speak english at home",
+      "longname_a": "Harlingen-Weslaco-Brownsville-Mcallen TX Media Market, USA",
+      "longname_b": "New Orleans LA Media Market, USA",
+      "stat_a": 0.2104833577625626,
+      "stat_b": 0.9011148968291691
+    },
+    "a_ease": 0.4352409638554217,
+    "b_ease": 0.8554376657824934
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Mean distance to nearest Hospital",
+      "question": "!FULL Which has less access to hospitals (higher population-weighted mean distance)?",
+      "longname_a": "Snohomish County, Washington, USA",
+      "longname_b": "Bronx County, New York, USA",
+      "stat_a": 7.480533500966844,
+      "stat_b": 1.2825768322255924
+    },
+    "b": {
+      "stat_column": "Undergrad Humanities %",
+      "question": "!FULL Which has more people with a humanities degree, as a percentage of the overall population?",
+      "longname_a": "TX-29, USA",
+      "longname_b": "MN-06, USA",
+      "stat_a": 0.03554944643383957,
+      "stat_b": 0.11706928908002188
+    },
+    "a_ease": 0.9086826347305389,
+    "b_ease": 0.5081081081081081
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "% units built pre-1970",
+      "question": "higher % units built pre-1970",
+      "longname_a": "CT-02, USA",
+      "longname_b": "FL-18, USA",
+      "stat_a": 0.4984077747369744,
+      "stat_b": 0.19341652244400095
+    },
+    "b": {
+      "stat_column": "% units built pre-1970",
+      "question": "higher % units built pre-1970",
+      "longname_a": "Hickory-Lenoir-Morganton MSA, NC, USA",
+      "longname_b": "Cedar Rapids MSA, IA, USA",
+      "stat_a": 0.3075769857189866,
+      "stat_b": 0.44206179742607654
+    },
+    "a_ease": 0.9151193633952255,
+    "b_ease": 0.49019607843137253
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Snowfall [rain-equivalent]",
+      "question": "higher snowfall (population weighted)",
+      "longname_a": "New Jersey, USA",
+      "longname_b": "North Dakota, USA",
+      "stat_a": 0.09629092006668559,
+      "stat_b": 0.12794901402005035
+    },
+    "b": {
+      "stat_column": "Mean high heat index",
+      "question": "higher mean daily high heat index (population weighted)",
+      "longname_a": "Chesterfield County, Virginia, USA",
+      "longname_b": "Placer County, California, USA",
+      "stat_a": 70.30570496255184,
+      "stat_b": 73.72172666070274
+    },
+    "a_ease": 0.9162162162162162,
+    "b_ease": 0.5959183673469388
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Undergrad Humanities %",
+      "question": "!FULL Which has more people with a humanities degree, as a percentage of the overall population?",
+      "longname_a": "Gilbert town, Arizona, USA",
+      "longname_b": "Washington city, District of Columbia, USA",
+      "stat_a": 0.14614522537215072,
+      "stat_b": 0.20238604684486358
+    },
+    "b": {
+      "stat_column": "Mean distance to nearest Active Superfund Site",
+      "question": "!FULL Which has less exposure to EPA superfund sites (higher population-weighted mean distance)?",
+      "longname_a": "Modesto [Urban Area], CA, USA",
+      "longname_b": "Asheville [Urban Area], NC, USA",
+      "stat_a": 5.147523633398761,
+      "stat_b": 9.418142366251796
+    },
+    "a_ease": 0.9374149659863945,
+    "b_ease": 0.6356209150326797
+  }
+]
