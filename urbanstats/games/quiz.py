@@ -15,6 +15,7 @@ import urllib
 
 from create_website import full_shapefile, statistic_internal_to_display_name
 from produce_html_page import get_statistic_categories
+from urbanstats.acs import industry, occupation
 from urbanstats.shortener import shorten
 
 from relationship import states_for_all
@@ -441,6 +442,15 @@ stats_to_display = {
     "gpw_population": "higher population",
     "gpw_pw_density_4": "higher population-weighted density (r=4km)",
     "vehicle_ownership_at_least_1": "higher % of households with at least 1 vehicle",
+    **{
+        k: f"higher % of workers employed in the {v.replace(' %', '')} industry"
+        for k, v in industry.industry_display
+    },
+    **{
+        k: f"higher % of workers employed as {v.replace(' %', '')}"
+        for k, v in occupation.occupation_display.items()
+    },
+    }
 }
 
 renamed = {
