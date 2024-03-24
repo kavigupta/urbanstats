@@ -197,6 +197,14 @@ class DataCreditPanel extends PageTemplate {
                         </p>
                     </div>
 
+                    <h2 ref={this.nref("industry_and_occupation")}>Industry</h2>
+                    <div>
+                        <p>
+                            We disaggregate industry data from the block group level to the block level using population
+                            over 18 as a weight. Numbers are percentages of the employed population.
+                        </p>
+                    </div>
+
                     <h2 ref={this.nref("housing-acs")}>Housing</h2>
                     <div>
                         <p>

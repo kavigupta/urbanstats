@@ -24,7 +24,7 @@ from .fixed import juxtastat as fixed_up_to
 
 min_pop = 250_000
 min_pop_international = 20_000_000
-version = 34
+version = 35
 
 # ranges = [
 #     (0.7, 1),
@@ -54,6 +54,8 @@ difficulties = {
     "national_origin": 1.5,
     "race": 0.75,
     "transportation": 3,
+    "industry": 2,
+    "occupation": 2,
     "weather": 0.3,
 }
 
@@ -444,7 +446,7 @@ stats_to_display = {
     "vehicle_ownership_at_least_1": "higher % of households with at least 1 vehicle",
     **{
         k: f"higher % of workers employed in the {v.replace(' %', '')} industry"
-        for k, v in industry.industry_display
+        for k, v in industry.industry_display.items()
     },
     **{
         k: f"higher % of workers employed as {v.replace(' %', '')}"
