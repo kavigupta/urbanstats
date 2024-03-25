@@ -197,7 +197,7 @@ class DataCreditPanel extends PageTemplate {
                         </p>
                     </div>
 
-                    <h2 ref={this.nref("industry_and_occupation")}>Industry</h2>
+                    <h2 ref={this.nref("industry_and_occupation")}>Industry and Occupation</h2>
                     <div>
                         <p>
                             We disaggregate industry data from the block group level to the block level using population
