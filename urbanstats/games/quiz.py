@@ -24,7 +24,7 @@ from .fixed import juxtastat as fixed_up_to
 
 min_pop = 250_000
 min_pop_international = 20_000_000
-version = 35
+version = 39
 
 # ranges = [
 #     (0.7, 1),
@@ -59,6 +59,10 @@ difficulties = {
     "weather": 0.3,
 }
 
+skip_category_probs = {
+    "industry": 0.75,
+    "occupation": 0.75,
+}
 
 def pct_diff(x, y):
     if np.isnan(x) or np.isnan(y):
@@ -135,7 +139,11 @@ def sample_quiz_question(
             continue
         at_pop = filter_for_pop(type)
         stat_column_original = rng.choice(at_pop.columns)
-        if get_statistic_categories()[stat_column_original] in banned_categories:
+        cat = get_statistic_categories()[stat_column_original]
+        p_skip = skip_category_probs.get(cat, 0)
+        if rng.uniform() < p_skip:
+            continue
+        if cat in banned_categories:
             continue
         for _ in range(1000):
             a, b = rng.choice(at_pop.index, size=2)
