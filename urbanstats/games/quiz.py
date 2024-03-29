@@ -24,7 +24,7 @@ from .fixed import juxtastat as fixed_up_to
 
 min_pop = 250_000
 min_pop_international = 20_000_000
-version = 40
+version = 43
 
 # ranges = [
 #     (0.7, 1),
@@ -196,8 +196,14 @@ def minimum_population(type):
 
 @permacache(f"urbanstats/games/quiz/generate_quiz_{version}")
 def generate_quiz(seed):
+    from .quiz_custom import get_custom_quizzes
+
     if isinstance(seed, tuple) and seed[0] == "daily":
         check_quiz_is_guaranteed_future(seed[1])
+        cq = get_custom_quizzes()
+        if seed[1] in cq:
+            return cq[seed[1]]
+
     rng = np.random.default_rng(int(stable_hash(seed), 16))
     return sample_quiz(rng)
 
