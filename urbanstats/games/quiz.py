@@ -24,7 +24,7 @@ from .fixed import juxtastat as fixed_up_to
 
 min_pop = 250_000
 min_pop_international = 20_000_000
-version = 39
+version = 40
 
 # ranges = [
 #     (0.7, 1),
@@ -63,6 +63,7 @@ skip_category_probs = {
     "industry": 0.75,
     "occupation": 0.75,
 }
+
 
 def pct_diff(x, y):
     if np.isnan(x) or np.isnan(y):
@@ -181,6 +182,10 @@ def filter_for_pop(type):
     at_pop = at_pop[stats]
     at_pop = at_pop.loc[:, ~at_pop.applymap(np.isnan).all()]
     return at_pop
+
+
+def entire_table():
+    return pd.concat([filter_for_pop(type) for type in types])
 
 
 def minimum_population(type):
@@ -305,7 +310,7 @@ def generate_quiz_info_for_website(site_folder):
     with open(f"{folder}/list_of_regions.json", "w") as f:
         json.dump({type: list(filter_for_pop(type).index) for type in types}, f)
 
-    table = pd.concat([filter_for_pop(type) for type in types])
+    table = entire_table()
     table = {
         x: {
             get_statistic_column_path(col): float(table[col][x])
@@ -452,14 +457,50 @@ stats_to_display = {
     "gpw_population": "higher population",
     "gpw_pw_density_4": "higher population-weighted density (r=4km)",
     "vehicle_ownership_at_least_1": "higher % of households with at least 1 vehicle",
-    **{
-        k: f"higher % of workers employed in the {v.replace(' %', '')} industry"
-        for k, v in industry.industry_display.items()
-    },
-    **{
-        k: f"higher % of workers employed as {v.replace(' %', '')}"
-        for k, v in occupation.occupation_display.items()
-    },
+    "industry_agriculture,_forestry,_fishing_and_hunting": "higher % of workers employed in the agriculture, forestry, fishing, and hunting industries",
+    "industry_mining,_quarrying,_and_oil_and_gas_extraction": "higher % of workers employed in the mining, quarrying, and oil/gas extraction industries",
+    "industry_accommodation_and_food_services": "higher % of workers employed in the accommodation and food services industry",
+    "industry_arts,_entertainment,_and_recreation": "higher % of workers employed in the arts, entertainment, and recreation industry",
+    "industry_construction": "higher % of workers employed in the construction industry",
+    "industry_educational_services": "higher % of workers employed in the educational services industry",
+    "industry_health_care_and_social_assistance": "higher % of workers employed in the health care and social assistance industry",
+    "industry_finance_and_insurance": "higher % of workers employed in the finance and insurance industry",
+    "industry_real_estate_and_rental_and_leasing": "higher % of workers employed in the real estate and rental and leasing industry",
+    "industry_information": "higher % of workers employed in the information industry",
+    "industry_manufacturing": "higher % of workers employed in the manufacturing industry",
+    "industry_other_services,_except_public_administration": "higher % of workers employed in other service industries, except public administration",
+    "industry_administrative_and_support_and_waste_management_services": "higher % of workers employed in the administrative/support/waste management services industries",
+    "industry_management_of_companies_and_enterprises": "higher % of workers employed in the management industry",
+    "industry_professional,_scientific,_and_technical_services": "higher % of workers employed in the professional, scientific, and technical services industry",
+    "industry_public_administration": "higher % of workers employed in public administration",
+    "industry_retail_trade": "higher % of workers employed in the retail trade industry",
+    "industry_transportation_and_warehousing": "higher % of workers employed in the transportation and warehousing industry",
+    "industry_utilities": "higher % of workers employed in the utilities industry",
+    "industry_wholesale_trade": "higher % of workers employed in the wholesale trade industry",
+    "occupation_architecture_and_engineering_occupations": "higher % of workers employed as architects and engineers",
+    "occupation_computer_and_mathematical_occupations": "higher % of workers employed in computer and mathematical occupations",
+    "occupation_life,_physical,_and_social_science_occupations": "higher % of workers employed in life, physical, and social science occupations",
+    "occupation_arts,_design,_entertainment,_sports,_and_media_occupations": "higher % of workers employed in arts, design, entertainment, sports, and media occupations",
+    "occupation_community_and_social_service_occupations": "higher % of workers employed in community and social service occupations",
+    "occupation_educational_instruction,_and_library_occupations": "higher % of workers employed in educational instruction, and library occupations",
+    "occupation_legal_occupations": "higher % of workers employed in legal occupations",
+    "occupation_health_diagnosing_and_treating_practitioners_and_other_technical_occupations": "higher % of workers employed in health diagnosing and treating practitioners and other technical occupations",
+    "occupation_health_technologists_and_technicians": "higher % of workers employed as health technologists and technicians",
+    "occupation_business_and_financial_operations_occupations": "higher % of workers employed in business and financial operations occupations",
+    "occupation_management_occupations": "higher % of workers employed as managers",
+    "occupation_construction_and_extraction_occupations": "higher % of workers employed in construction and extraction occupations",
+    "occupation_farming,_fishing,_and_forestry_occupations": "higher % of workers employed in farming, fishing, and forestry occupations",
+    "occupation_installation,_maintenance,_and_repair_occupations": "higher % of workers employed in installation, maintenance, and repair occupations",
+    "occupation_material_moving_occupations": "higher % of workers employed as material movers",
+    "occupation_transportation_occupations": "higher % of workers employed in transportation occupations",
+    "occupation_office_and_administrative_support_occupations": "higher % of workers employed as office and administrative support workers",
+    "occupation_sales_and_related_occupations": "higher % of workers employed in sales and related occupations",
+    "occupation_building_and_grounds_cleaning_and_maintenance_occupations": "higher % of workers employed in building and grounds cleaning and maintenance occupations",
+    "occupation_food_preparation_and_serving_related_occupations": "higher % of workers employed as food preparers or servers",
+    "occupation_healthcare_support_occupations": "higher % of workers employed in healthcare support occupations",
+    "occupation_personal_care_and_service_occupations": "higher % of workers employed in personal care and service occupations",
+    "occupation_firefighting_and_prevention,_and_other_protective_service_workers_including_supervisors": "higher % of workers employed as firefighting and prevention, and other protective service workers including supervisors",
+    "occupation_law_enforcement_workers_including_supervisors": "higher % of workers employed as law enforcement workers including supervisors",
 }
 
 renamed = {
@@ -559,6 +600,7 @@ not_included = {
     "female_grad_gap_4",
     "vehicle_ownership_none",
     "vehicle_ownership_at_least_2",
+    "occupation_production_occupations",
     # meh whatever
     "marriage_married_not_divorced",
     "marriage_never_married",
