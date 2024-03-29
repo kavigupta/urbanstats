@@ -15,6 +15,7 @@ import urllib
 
 from create_website import full_shapefile, statistic_internal_to_display_name
 from produce_html_page import get_statistic_categories
+from urbanstats.acs import industry, occupation
 from urbanstats.shortener import shorten
 
 from relationship import states_for_all
@@ -23,7 +24,7 @@ from .fixed import juxtastat as fixed_up_to
 
 min_pop = 250_000
 min_pop_international = 20_000_000
-version = 34
+version = 39
 
 # ranges = [
 #     (0.7, 1),
@@ -53,9 +54,15 @@ difficulties = {
     "national_origin": 1.5,
     "race": 0.75,
     "transportation": 3,
+    "industry": 2,
+    "occupation": 2,
     "weather": 0.3,
 }
 
+skip_category_probs = {
+    "industry": 0.75,
+    "occupation": 0.75,
+}
 
 def pct_diff(x, y):
     if np.isnan(x) or np.isnan(y):
@@ -132,7 +139,11 @@ def sample_quiz_question(
             continue
         at_pop = filter_for_pop(type)
         stat_column_original = rng.choice(at_pop.columns)
-        if get_statistic_categories()[stat_column_original] in banned_categories:
+        cat = get_statistic_categories()[stat_column_original]
+        p_skip = skip_category_probs.get(cat, 0)
+        if rng.uniform() < p_skip:
+            continue
+        if cat in banned_categories:
             continue
         for _ in range(1000):
             a, b = rng.choice(at_pop.index, size=2)
@@ -441,6 +452,14 @@ stats_to_display = {
     "gpw_population": "higher population",
     "gpw_pw_density_4": "higher population-weighted density (r=4km)",
     "vehicle_ownership_at_least_1": "higher % of households with at least 1 vehicle",
+    **{
+        k: f"higher % of workers employed in the {v.replace(' %', '')} industry"
+        for k, v in industry.industry_display.items()
+    },
+    **{
+        k: f"higher % of workers employed as {v.replace(' %', '')}"
+        for k, v in occupation.occupation_display.items()
+    },
 }
 
 renamed = {
