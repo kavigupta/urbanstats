@@ -6,6 +6,8 @@ import { loadProtobuf } from '../load_json.js';
 import { is_historical_cd } from '../utils/is_historical';
 import "../common.css";
 
+
+
 class SearchBox extends React.Component {
     constructor(props) {
         super(props);
@@ -14,6 +16,7 @@ class SearchBox extends React.Component {
         this.textbox = React.createRef();
         this.dropdown = React.createRef();
         this.values = loadProtobuf("/index/pages.gz", "StringList");
+        this._match_cache = {};
     }
 
     render() {
@@ -70,13 +73,13 @@ class SearchBox extends React.Component {
         this.setState({ is_loaded: true });
         let self = this;
         this.form.current.onsubmit = function () {
-            return self.go(self.props.settings, self._values, self.textbox.current.value, self.state.focused)
+            return self.go(self.textbox.current.value, self.state.focused)
         };
         this.textbox.current.addEventListener("submit", function () {
-            return self.go(self.props.settings, self._values, self.textbox.current, self.state.focused)
+            return self.go(self.textbox.current, self.state.focused)
         });
         this.textbox.current.onkeyup = function (event) {
-            self.setState({ matches: autocompleteMatch(self.props.settings, self._values, self.textbox.current.value) });
+            self.setState({ matches: self.autocompleteMatch(self.textbox.current.value) });
             // if down arrow, then go to the next one
             let dropdowns = document.getElementsByClassName("searchbox-dropdown-item");
             if (dropdowns.length > 0) {
@@ -100,37 +103,37 @@ class SearchBox extends React.Component {
     }
 
 
-    go(settings, values, val, focused) {
-        let terms = autocompleteMatch(settings, values, val);
+    go(val, focused) {
+        let terms = this.autocompleteMatch(val);
         if (terms.length > 0) {
-            this.props.on_change(values[terms[focused]])
+            this.props.on_change(this._values[terms[focused]])
         }
         return false;
     }
+
+    autocompleteMatch(input) {
+        input = normalize(input);
+        if (input == '') {
+            return [];
+        }
+
+        var matches = this._values
+            .map((x, i) => [is_a_match(input, normalize(x)), i]);
+        
+        matches = matches
+            .filter(([x, i]) => x > 0);
+        this._match_cache[input] = matches;
+        if (!this.props.settings.show_historical_cds) {
+            matches = matches.filter(([x, i]) => !is_historical_cd(this._values[i]));
+        }
+        matches = matches.filter(([x, i]) => !is_international_duplicate(this._values[i]));
+        return top_10(matches);
+    }
+
 }
 
-function autocompleteMatch(settings, values, input) {
-    input = input.toLowerCase();
-    input = normalize(input);
-    if (input == '') {
-        return [];
-    }
-    let matches = [];
-    for (let i = 0; i < values.length; i++) {
-        let match_count = is_a_match(input, normalize(values[i].toLowerCase()));
-        if (match_count == 0) {
-            continue;
-        }
-        if (!settings.show_historical_cds) {
-            if (is_historical_cd(values[i])) {
-                continue;
-            }
-        }
-        if (is_international_duplicate(values[i])) {
-            continue;
-        }
-        matches.push([match_count, i]);
-    }
+
+function top_10(matches) {
     matches.sort(function (a, b) {
         if (a[0] != b[0]) {
             return b[0] - a[0];
@@ -170,7 +173,7 @@ function is_a_match(a, b) {
 }
 
 function normalize(a) {
-    return a.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+    return a.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 }
 
 function is_international_duplicate(x) {
