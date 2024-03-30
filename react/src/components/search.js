@@ -70,11 +70,12 @@ class SearchBox extends React.Component {
         this.setState({ is_loaded: true });
         let self = this;
         this.form.current.onsubmit = function () {
-            return self.go(self.props.settings, self._values, self.textbox.current.value, self.state.focused)
+            let terms = self.state.matches;
+            if (terms.length > 0) {
+                self.props.on_change(self._values[terms[self.state.focused]])
+            }
+            return false;
         };
-        this.textbox.current.addEventListener("submit", function () {
-            return self.go(self.props.settings, self._values, self.textbox.current, self.state.focused)
-        });
         this.textbox.current.onkeyup = function (event) {
             self.setState({ matches: autocompleteMatch(self.props.settings, self._values, self.textbox.current.value) });
             // if down arrow, then go to the next one
@@ -97,15 +98,6 @@ class SearchBox extends React.Component {
             dropdowns[i].onclick = () => this.props.on_change(this._values[this.state.matches[i]]);
             dropdowns[i].onmouseover = () => this.setState({ focused: i });
         }
-    }
-
-
-    go(settings, values, val, focused) {
-        let terms = autocompleteMatch(settings, values, val);
-        if (terms.length > 0) {
-            this.props.on_change(values[terms[focused]])
-        }
-        return false;
     }
 }
 
