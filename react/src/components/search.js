@@ -77,7 +77,7 @@ class SearchBox extends React.Component {
             return false;
         };
         this.textbox.current.onkeyup = function (event) {
-            self.setState({ matches: autocompleteMatch(self.props.settings, self._values, self.textbox.current.value) });
+            self.setState({ matches: self.autocompleteMatch(self.textbox.current.value) });
             // if down arrow, then go to the next one
             let dropdowns = document.getElementsByClassName("searchbox-dropdown-item");
             if (dropdowns.length > 0) {
@@ -99,40 +99,41 @@ class SearchBox extends React.Component {
             dropdowns[i].onmouseover = () => this.setState({ focused: i });
         }
     }
-}
 
-function autocompleteMatch(settings, values, input) {
-    input = normalize(input);
-    if (input == '') {
-        return [];
-    }
-    let matches = [];
-    for (let i = 0; i < values.length; i++) {
-        let match_count = is_a_match(input, normalize(values[i]));
-        if (match_count == 0) {
-            continue;
+    autocompleteMatch(input) {
+        input = normalize(input);
+        if (input == '') {
+            return [];
         }
-        if (!settings.show_historical_cds) {
-            if (is_historical_cd(values[i])) {
+        let matches = [];
+        for (let i = 0; i < this._values.length; i++) {
+            let match_count = is_a_match(input, normalize(this._values[i]));
+            if (match_count == 0) {
                 continue;
             }
+            if (!this.props.settings.show_historical_cds) {
+                if (is_historical_cd(this._values[i])) {
+                    continue;
+                }
+            }
+            if (is_international_duplicate(this._values[i])) {
+                continue;
+            }
+            matches.push([match_count, i]);
         }
-        if (is_international_duplicate(values[i])) {
-            continue;
+        matches.sort(function (a, b) {
+            if (a[0] != b[0]) {
+                return b[0] - a[0];
+            }
+            return a[1] - b[1];
+        });
+        let overall_matches = [];
+        for (let i = 0; i < Math.min(10, matches.length); i++) {
+            overall_matches.push(matches[i][1]);
         }
-        matches.push([match_count, i]);
+        return overall_matches;
     }
-    matches.sort(function (a, b) {
-        if (a[0] != b[0]) {
-            return b[0] - a[0];
-        }
-        return a[1] - b[1];
-    });
-    let overall_matches = [];
-    for (let i = 0; i < Math.min(10, matches.length); i++) {
-        overall_matches.push(matches[i][1]);
-    }
-    return overall_matches;
+
 }
 
 /*
