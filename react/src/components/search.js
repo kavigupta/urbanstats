@@ -110,17 +110,7 @@ class SearchBox extends React.Component {
             return [];
         }
 
-        // var matches = this._values
-        //     .map((x, i) => [is_a_match(input, normalize(x)), i]);
-        
-        // matches = matches
-        //     .filter(([x, i]) => x > 0);
-        // this._match_cache[input] = matches;
-        // if (!this.props.settings.show_historical_cds) {
-        //     matches = matches.filter(([x, i]) => !is_historical_cd(this._values[i]));
-        // }
-        // matches = matches.filter(([x, i]) => !is_international_duplicate(this._values[i]));
-        const matches = [];
+        let matches = [];
         for (let i = 0; i < this._values.length; i++) {
             let match_count = is_a_match(input, normalize(this._values[i]));
             if (match_count == 0) {
