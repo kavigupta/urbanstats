@@ -77,7 +77,7 @@ class SearchBox extends React.Component {
             return false;
         };
         this.textbox.current.onkeyup = function (event) {
-            self.setState({ matches: self.autocompleteMatch(self.textbox.current.value) });
+            self.update_matches()
             // if down arrow, then go to the next one
             let dropdowns = document.getElementsByClassName("searchbox-dropdown-item");
             if (dropdowns.length > 0) {
@@ -98,6 +98,10 @@ class SearchBox extends React.Component {
             dropdowns[i].onclick = () => this.props.on_change(this.state.matches[i]);
             dropdowns[i].onmouseover = () => this.setState({ focused: i });
         }
+    }
+
+    update_matches() {
+        this.setState({ matches: this.autocompleteMatch(this.textbox.current.value) });
     }
 
     autocompleteMatch(input) {
