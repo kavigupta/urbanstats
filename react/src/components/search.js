@@ -6,8 +6,6 @@ import { loadProtobuf } from '../load_json.js';
 import { is_historical_cd } from '../utils/is_historical';
 import "../common.css";
 
-
-
 class SearchBox extends React.Component {
     constructor(props) {
         super(props);
@@ -16,7 +14,6 @@ class SearchBox extends React.Component {
         this.textbox = React.createRef();
         this.dropdown = React.createRef();
         this.values = loadProtobuf("/index/pages.gz", "StringList");
-        this._match_cache = {};
     }
 
     render() {
@@ -103,13 +100,11 @@ class SearchBox extends React.Component {
         }
     }
 
-
     autocompleteMatch(input) {
         input = normalize(input);
         if (input == '') {
             return [];
         }
-
         let matches = [];
         for (let i = 0; i < this._values.length; i++) {
             let match_count = is_a_match(input, normalize(this._values[i]));
@@ -144,6 +139,7 @@ function top_10(matches) {
     }
     return overall_matches;
 }
+
 
 /*
     Check whether a is a substring of b (does not have to be contiguous)
