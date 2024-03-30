@@ -102,14 +102,13 @@ class SearchBox extends React.Component {
 }
 
 function autocompleteMatch(settings, values, input) {
-    input = input.toLowerCase();
     input = normalize(input);
     if (input == '') {
         return [];
     }
     let matches = [];
     for (let i = 0; i < values.length; i++) {
-        let match_count = is_a_match(input, normalize(values[i].toLowerCase()));
+        let match_count = is_a_match(input, normalize(values[i]));
         if (match_count == 0) {
             continue;
         }
@@ -162,7 +161,7 @@ function is_a_match(a, b) {
 }
 
 function normalize(a) {
-    return a.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+    return a.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 }
 
 function is_international_duplicate(x) {
