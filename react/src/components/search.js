@@ -125,7 +125,6 @@ class SearchBox extends React.Component {
 
 }
 
-
 function top_10(matches) {
     matches.sort(function (a, b) {
         if (a[0] != b[0]) {
