@@ -39,12 +39,12 @@ class SearchBox extends React.Component {
                 }
             }>
                 {
-                    this.state.matches.map((i, idx) =>
+                    this.state.matches.map((location, idx) =>
                         <div
-                            key={i}
+                            key={location}
                             className="searchbox-dropdown-item"
                             style={this.searchbox_dropdown_item_style(idx)}
-                        >{this._values[i]}</div>
+                        >{location}</div>
                     )
                 }
             </div>
@@ -72,7 +72,7 @@ class SearchBox extends React.Component {
         this.form.current.onsubmit = function () {
             let terms = self.state.matches;
             if (terms.length > 0) {
-                self.props.on_change(self._values[terms[self.state.focused]])
+                self.props.on_change(terms[self.state.focused])
             }
             return false;
         };
@@ -95,7 +95,7 @@ class SearchBox extends React.Component {
     componentDidUpdate() {
         let dropdowns = document.getElementsByClassName("searchbox-dropdown-item");
         for (let i = 0; i < dropdowns.length; i++) {
-            dropdowns[i].onclick = () => this.props.on_change(this._values[this.state.matches[i]]);
+            dropdowns[i].onclick = () => this.props.on_change(this.state.matches[i]);
             dropdowns[i].onmouseover = () => this.setState({ focused: i });
         }
     }
@@ -121,7 +121,8 @@ class SearchBox extends React.Component {
             }
             matches.push([match_count, i]);
         }
-        return top_10(matches);
+        matches = top_10(matches);
+        return matches.map((x) => this._values[x]);
     }
 
 }
