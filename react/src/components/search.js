@@ -121,20 +121,25 @@ class SearchBox extends React.Component {
             }
             matches.push([match_count, i]);
         }
-        matches.sort(function (a, b) {
-            if (a[0] != b[0]) {
-                return b[0] - a[0];
-            }
-            return a[1] - b[1];
-        });
-        let overall_matches = [];
-        for (let i = 0; i < Math.min(10, matches.length); i++) {
-            overall_matches.push(matches[i][1]);
-        }
-        return overall_matches;
+        return top_10(matches);
     }
 
 }
+
+function top_10(matches) {
+    matches.sort(function (a, b) {
+        if (a[0] != b[0]) {
+            return b[0] - a[0];
+        }
+        return a[1] - b[1];
+    });
+    let overall_matches = [];
+    for (let i = 0; i < Math.min(10, matches.length); i++) {
+        overall_matches.push(matches[i][1]);
+    }
+    return overall_matches;
+}
+
 
 /*
     Check whether a is a substring of b (does not have to be contiguous)
