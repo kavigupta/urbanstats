@@ -86,9 +86,32 @@ test('search-test', async t => {
         .eql(TARGET + '/article.html?longname=Pasadena+CCD+%5BCCD%5D%2C+Los+Angeles+County%2C+California%2C+USA');
 });
 
-test('search-test-arrows', async t => {
+test('search-test-with-extra-char', async t => {
     await t
         .click(SEARCH_FIELD)
+        .typeText(SEARCH_FIELD, "Pasadena c");
+    await screencap(t, "search/san-marino-search-pasadena-c");
+});
+
+test('search-test-with-special-chars', async t => {
+    await t
+        .click(SEARCH_FIELD)
+        .typeText(SEARCH_FIELD, "Utt");
+    await screencap(t, "search/san-marino-search-Utt");
+});
+
+test('search-test-different-first-char', async t => {
+    await t
+        .click(SEARCH_FIELD)
+        .typeText(SEARCH_FIELD, "hina");
+    await screencap(t, "search/san-marino-search-hina");
+});
+
+test('search-test-arrows', async t => {
+    await t
+        .click(SEARCH_FIELD);
+    await t.wait(1000);
+    await t
         .typeText(SEARCH_FIELD, "Pasadena");
     await t.wait(1000);
     await t
