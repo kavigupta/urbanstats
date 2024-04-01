@@ -13,7 +13,8 @@ class SearchBox extends React.Component {
         this.form = React.createRef();
         this.textbox = React.createRef();
         this.dropdown = React.createRef();
-        this.values = loadProtobuf("/index/pages.gz", "StringList");
+        this.values = undefined;
+        this.first_character = undefined;
     }
 
     render() {
@@ -66,7 +67,6 @@ class SearchBox extends React.Component {
     }
 
     async componentDidMount() {
-        this._values = (await this.values).elements;
         this.setState({ is_loaded: true });
         let self = this;
         this.form.current.onsubmit = function () {
@@ -100,33 +100,39 @@ class SearchBox extends React.Component {
         }
     }
 
-    update_matches() {
-        this.setState({ matches: this.autocompleteMatch(this.textbox.current.value) });
+    async update_matches() {
+        let matches = await this.autocompleteMatch(this.textbox.current.value);
+        this.setState({ matches: matches });
     }
 
-    autocompleteMatch(input) {
+    async autocompleteMatch(input) {
         input = normalize(input);
         if (input == '') {
             return [];
         }
+        const first_character = input[0];
+        if (this.first_character != first_character) {
+            this.values = loadProtobuf(`/index/pages_${first_character}.gz`, "StringList");
+        }
+        const values = (await this.values).elements;
         let matches = [];
-        for (let i = 0; i < this._values.length; i++) {
-            let match_count = is_a_match(input, normalize(this._values[i]));
+        for (let i = 0; i < values.length; i++) {
+            let match_count = is_a_match(input, normalize(values[i]));
             if (match_count == 0) {
                 continue;
             }
             if (!this.props.settings.show_historical_cds) {
-                if (is_historical_cd(this._values[i])) {
+                if (is_historical_cd(values[i])) {
                     continue;
                 }
             }
-            if (is_international_duplicate(this._values[i])) {
+            if (is_international_duplicate(values[i])) {
                 continue;
             }
             matches.push([match_count, i]);
         }
         matches = top_10(matches);
-        return matches.map((x) => this._values[x]);
+        return matches.map((x) => values[x]);
     }
 
 }

@@ -33,6 +33,7 @@ from urbanstats.mapper.ramp import output_ramps
 
 from urbanstats.protobuf.utils import save_data_list, save_string_list
 from urbanstats.special_cases.simplified_country import all_simplified_countries
+from urbanstats.website_data.index import export_index
 
 
 def american_shapefile():
@@ -215,7 +216,14 @@ def get_idxs_by_type():
     return idxs_by_type
 
 
-def main(site_folder, no_geo=False, no_data=False, no_juxta=False, no_data_jsons=False):
+def main(
+    site_folder,
+    no_geo=False,
+    no_data=False,
+    no_juxta=False,
+    no_data_jsons=False,
+    no_index=False,
+):
     if not no_geo:
         print("Producing geometry jsons")
     if not no_data_jsons and not no_data:
@@ -248,10 +256,10 @@ def main(site_folder, no_geo=False, no_data=False, no_juxta=False, no_data_jsons
         full = full_shapefile()
         if not no_data_jsons:
             create_page_jsons(site_folder, full)
-        save_string_list(list(full.longname), f"{site_folder}/index/pages.gz")
 
-        with open(f"{site_folder}/index/best_population_estimate.json", "w") as f:
-            json.dump(list(full.best_population_estimate), f)
+        if not no_index:
+            full = full_shapefile()
+            export_index(full, site_folder)
 
         output_ordering(site_folder, full)
 
