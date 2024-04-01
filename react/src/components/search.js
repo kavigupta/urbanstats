@@ -39,12 +39,12 @@ class SearchBox extends React.Component {
                 }
             }>
                 {
-                    this.state.matches.map((i, idx) =>
+                    this.state.matches.map((location, idx) =>
                         <div
-                            key={i}
+                            key={location}
                             className="searchbox-dropdown-item"
                             style={this.searchbox_dropdown_item_style(idx)}
-                        >{this._values[i]}</div>
+                        >{location}</div>
                     )
                 }
             </div>
@@ -70,13 +70,14 @@ class SearchBox extends React.Component {
         this.setState({ is_loaded: true });
         let self = this;
         this.form.current.onsubmit = function () {
-            return self.go(self.props.settings, self._values, self.textbox.current.value, self.state.focused)
+            let terms = self.state.matches;
+            if (terms.length > 0) {
+                self.props.on_change(terms[self.state.focused])
+            }
+            return false;
         };
-        this.textbox.current.addEventListener("submit", function () {
-            return self.go(self.props.settings, self._values, self.textbox.current, self.state.focused)
-        });
         this.textbox.current.onkeyup = function (event) {
-            self.setState({ matches: autocompleteMatch(self.props.settings, self._values, self.textbox.current.value) });
+            self.update_matches()
             // if down arrow, then go to the next one
             let dropdowns = document.getElementsByClassName("searchbox-dropdown-item");
             if (dropdowns.length > 0) {
@@ -94,43 +95,43 @@ class SearchBox extends React.Component {
     componentDidUpdate() {
         let dropdowns = document.getElementsByClassName("searchbox-dropdown-item");
         for (let i = 0; i < dropdowns.length; i++) {
-            dropdowns[i].onclick = () => this.props.on_change(this._values[this.state.matches[i]]);
+            dropdowns[i].onclick = () => this.props.on_change(this.state.matches[i]);
             dropdowns[i].onmouseover = () => this.setState({ focused: i });
         }
     }
 
-
-    go(settings, values, val, focused) {
-        let terms = autocompleteMatch(settings, values, val);
-        if (terms.length > 0) {
-            this.props.on_change(values[terms[focused]])
-        }
-        return false;
+    update_matches() {
+        this.setState({ matches: this.autocompleteMatch(this.textbox.current.value) });
     }
-}
 
-function autocompleteMatch(settings, values, input) {
-    input = input.toLowerCase();
-    input = normalize(input);
-    if (input == '') {
-        return [];
-    }
-    let matches = [];
-    for (let i = 0; i < values.length; i++) {
-        let match_count = is_a_match(input, normalize(values[i].toLowerCase()));
-        if (match_count == 0) {
-            continue;
+    autocompleteMatch(input) {
+        input = normalize(input);
+        if (input == '') {
+            return [];
         }
-        if (!settings.show_historical_cds) {
-            if (is_historical_cd(values[i])) {
+        let matches = [];
+        for (let i = 0; i < this._values.length; i++) {
+            let match_count = is_a_match(input, normalize(this._values[i]));
+            if (match_count == 0) {
                 continue;
             }
+            if (!this.props.settings.show_historical_cds) {
+                if (is_historical_cd(this._values[i])) {
+                    continue;
+                }
+            }
+            if (is_international_duplicate(this._values[i])) {
+                continue;
+            }
+            matches.push([match_count, i]);
         }
-        if (is_international_duplicate(values[i])) {
-            continue;
-        }
-        matches.push([match_count, i]);
+        matches = top_10(matches);
+        return matches.map((x) => this._values[x]);
     }
+
+}
+
+function top_10(matches) {
     matches.sort(function (a, b) {
         if (a[0] != b[0]) {
             return b[0] - a[0];
@@ -143,6 +144,7 @@ function autocompleteMatch(settings, values, input) {
     }
     return overall_matches;
 }
+
 
 /*
     Check whether a is a substring of b (does not have to be contiguous)
@@ -170,7 +172,7 @@ function is_a_match(a, b) {
 }
 
 function normalize(a) {
-    return a.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+    return a.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 }
 
 function is_international_duplicate(x) {
