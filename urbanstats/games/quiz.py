@@ -251,12 +251,17 @@ def check_quiz_is_guaranteed_future(number):
             f"Quiz {number} is in the past! It is currently {fractional_days} in Kiribati + 4 hours."
         )
 
-
-def check_quiz_is_guaranteed_past(number):
+def quiz_is_guaranteed_past(number):
     now = datetime.now(pytz.timezone("US/Samoa"))
     beginning = pytz.timezone("US/Samoa").localize(datetime(2023, 9, 2))
     fractional_days = (now - beginning).total_seconds() / (24 * 60 * 60)
-    if number >= fractional_days - 1:
+    if number < fractional_days - 1:
+        return None
+    return fractional_days
+
+def check_quiz_is_guaranteed_past(number):
+    fractional_days = quiz_is_guaranteed_past(number)
+    if fractional_days is not None:
         raise Exception(
             f"Quiz {number} is not necessarily yet done! It is currently {fractional_days} in Samoa"
         )
