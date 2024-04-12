@@ -55,9 +55,11 @@ class ScreenshotButton extends React.Component {
 }
 
 async function create_screenshot(config) {
+    console.log("HI 0")
     const overall_width = config.overall_width;
 
     async function screencap_element(ref) {
+        console.log(ref);
         const scale_factor = overall_width / ref.offsetWidth;
         const link = await domtoimage.toPng(ref, {
             bgcolor: "white",
@@ -74,10 +76,18 @@ async function create_screenshot(config) {
     const png_links = [];
     const heights = [];
     for (const ref of config.elements_to_render) {
-        const [png_link, height] = await screencap_element(ref);
-        png_links.push(png_link);
-        heights.push(height);
+        try {
+            const [png_link, height] = await screencap_element(ref);
+            console.log("screen captured")
+            png_links.push(png_link);
+            heights.push(height);
+        } catch (e) {
+            console.log("ERROR");
+            console.error(e);
+        }
     }
+
+    console.log("HI 1")
 
     const canvas = document.createElement("canvas");
 
@@ -95,6 +105,8 @@ async function create_screenshot(config) {
 
     canvas.width = pad_around * 2 + overall_width;
     canvas.height = pad_around + pad_between * (png_links.length - 1) + heights.reduce((a, b) => a + b, 0) + banner_height;
+
+    console.log("HI A");
 
     const ctx = canvas.getContext("2d");
     const imgs = [];
@@ -122,7 +134,12 @@ async function create_screenshot(config) {
     ctx.drawImage(banner, pad_around, start, overall_width, banner_height);
 
     const a = document.createElement("a");
-    a.href = canvas.toDataURL("image/png");
-    a.download = config.path;
-    a.click();
+    console.log("HI")
+    
+    // const url = canvas.toDataURL("image/png");
+    // // print the length of the url to make sure it's not too long
+    // console.log(url.length);
+    // a.href = url;
+    // a.download = config.path;
+    // a.click();
 }

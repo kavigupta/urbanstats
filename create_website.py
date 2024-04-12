@@ -324,7 +324,7 @@ def main(
     with open(f"react/src/data/indices_by_type.json", "w") as f:
         json.dump(get_idxs_by_type(), f)
 
-    os.system("cd react; npm run prod")
+    os.system("cd react; npm run dev")
     shutil.copy("dist/article.js", f"{site_folder}/scripts/")
     shutil.copy("dist/comparison.js", f"{site_folder}/scripts/")
     shutil.copy("dist/statistic.js", f"{site_folder}/scripts/")
