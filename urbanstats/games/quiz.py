@@ -24,7 +24,7 @@ from .fixed import juxtastat as fixed_up_to
 
 min_pop = 250_000
 min_pop_international = 20_000_000
-version = 43
+version = 44
 
 # ranges = [
 #     (0.7, 1),
