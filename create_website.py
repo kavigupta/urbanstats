@@ -85,7 +85,8 @@ def shapefile_without_ordinals():
     popu = np.array(full.population)
     popu[np.isnan(popu)] = full.gpw_population[np.isnan(popu)]
     full["best_population_estimate"] = popu
-    full = full.sort_values("best_population_estimate")[::-1]
+    full = full.sort_values("longname")
+    full = full.sort_values("best_population_estimate", ascending=False, kind="stable")
     return full
 
 
@@ -99,7 +100,8 @@ def full_shapefile():
         ]
     )
     full = add_ordinals(full, overall_ordinal=True)
-    full = full.sort_values("best_population_estimate")[::-1]
+    full = full.sort_values("longname")
+    full = full.sort_values("best_population_estimate", ascending=False, kind="stable")
     return full
 
 
