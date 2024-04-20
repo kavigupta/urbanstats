@@ -78,6 +78,7 @@ def international_shapefile():
     return intl
 
 
+@lru_cache(maxsize=None)
 def shapefile_without_ordinals():
     usa = american_shapefile()
     intl = international_shapefile()
