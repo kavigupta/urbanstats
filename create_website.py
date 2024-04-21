@@ -14,7 +14,6 @@ import tqdm.auto as tqdm
 from output_geometry import produce_all_geometry_json
 from stats_for_shapefile import compute_statistics_for_shapefile
 from produce_html_page import (
-    add_ordinals,
     create_page_json,
     get_explanation_page,
     get_statistic_categories,
@@ -31,6 +30,7 @@ from urbanstats.consolidated_data.produce_consolidated_data import (
 from urbanstats.data.gpw import compute_gpw_data_for_shapefile_table
 from urbanstats.mapper.ramp import output_ramps
 
+from urbanstats.ordinals.compute_ordinals import add_ordinals
 from urbanstats.protobuf.utils import save_data_list, save_string_list
 from urbanstats.special_cases.simplified_country import all_simplified_countries
 from urbanstats.website_data.index import export_index
@@ -94,13 +94,14 @@ def shapefile_without_ordinals():
 @lru_cache(maxsize=None)
 def full_shapefile():
     full = shapefile_without_ordinals()
+    keys = internal_statistic_names()
     full = pd.concat(
         [
-            add_ordinals(full[full.type == x], overall_ordinal=False)
+            add_ordinals(full[full.type == x], keys, overall_ordinal=False)
             for x in tqdm.tqdm(sorted(set(full.type)), desc="adding ordinals")
         ]
     )
-    full = add_ordinals(full, overall_ordinal=True)
+    full = add_ordinals(full, keys, overall_ordinal=True)
     full = full.sort_values("longname")
     full = full.sort_values("best_population_estimate", ascending=False, kind="stable")
     return full
@@ -253,7 +254,9 @@ def main(
             pass
 
     if not no_geo:
-        produce_all_geometry_json(f"{site_folder}/shape", set(shapefile_without_ordinals().longname))
+        produce_all_geometry_json(
+            f"{site_folder}/shape", set(shapefile_without_ordinals().longname)
+        )
 
     if not no_data:
         if not no_data_jsons:
