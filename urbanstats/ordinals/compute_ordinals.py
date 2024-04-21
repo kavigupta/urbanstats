@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from cached_property import cached_property
 from typing import Dict
 import numpy as np
 import pandas as pd
@@ -12,12 +13,21 @@ stable_sort_column = "longname"
 
 @dataclass
 class OrdinalsForTypeAndColumnInUniverse:
+    values: pd.Series
     ordinals: pd.Series
     percentiles_by_population: pd.Series
 
-    @property
+    @cached_property
     def ordered_longnames(self):
         return list(self.ordinals.sort_values(0).index)
+
+    @property
+    def ordered_values(self):
+        return np.array(self.values.loc[self.ordered_longnames][0])
+
+    @property
+    def ordered_percentiles_by_population(self):
+        return np.array(self.percentiles_by_population.loc[self.ordered_longnames])
 
 
 @dataclass
@@ -45,10 +55,10 @@ def compute_ordinals_and_percentiles(frame, key_column, *, just_ordinal):
     ordinals = np.array(
         pd.Series(np.arange(1, frame.shape[0] + 1), index=ordering).loc[frame.index]
     )
+    values_series = pd.DataFrame(np.array(frame[key_column_name]), index=frame.longname)
+    ordinals_series = pd.DataFrame(ordinals, index=frame.longname)
     if just_ordinal:
-        return OrdinalsForTypeAndColumnInUniverse(
-            pd.DataFrame(ordinals, index=frame.longname), None
-        )
+        return OrdinalsForTypeAndColumnInUniverse(values_series, ordinals_series, None)
     total_pop = frame[population_column].sum()
     # arranged_pop: ordinal - 1 -> population
     arranged_pop = np.array(frame[population_column][ordering])
@@ -57,7 +67,8 @@ def compute_ordinals_and_percentiles(frame, key_column, *, just_ordinal):
     # percentiles_by_population: index -> percentile
     percentiles_by_population = 1 - cum_pop[ordinals - 1] / total_pop
     return OrdinalsForTypeAndColumnInUniverse(
-        pd.Series(ordinals, index=frame.longname),
+        values_series,
+        ordinals_series,
         pd.Series(percentiles_by_population, index=frame.longname),
     )
 

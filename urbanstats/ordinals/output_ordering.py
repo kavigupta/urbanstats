@@ -37,11 +37,13 @@ def output_ordering(site_folder, full, ordering):
             for_typ = full_sorted[full_sorted.type == typ]
             value = for_typ[statistic_column]
             counts[statistic_column, typ] = int((~np.isnan(value)).sum())
-            save_string_list(
-                ordering.ordinal_by_type[typ][statistic_column].ordered_longnames, path
-            )
+            ordered = ordering.ordinal_by_type[typ][statistic_column]
+            ordered_longnames = ordered.ordered_longnames
+            ordered_values = ordered.ordered_values
+            ordered_percentile = ordered.ordered_percentiles_by_population
+            save_string_list(ordered_longnames, path)
             percentile = for_typ[(statistic_column, "percentile_by_population")]
-            save_data_list(value, percentile, path.replace(".gz", "_data.gz"))
+            save_data_list(ordered_values, ordered_percentile, path.replace(".gz", "_data.gz"))
 
     with open(f"react/src/data/counts_by_article_type.json", "w") as f:
         json.dump(list(counts.items()), f)
