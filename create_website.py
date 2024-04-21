@@ -32,10 +32,15 @@ from urbanstats.mapper.ramp import output_ramps
 
 from urbanstats.ordinals.compute_ordinals import (
     add_ordinals,
+    compute_all_ordinals,
     compute_all_ordinals_for_universe,
 )
 from urbanstats.protobuf.utils import save_data_list, save_string_list
 from urbanstats.special_cases.simplified_country import all_simplified_countries
+from urbanstats.universe.annotate_universes import (
+    attach_intl_universes,
+    attach_usa_universes,
+)
 from urbanstats.website_data.index import export_index
 
 
@@ -84,7 +89,9 @@ def international_shapefile():
 @lru_cache(maxsize=None)
 def shapefile_without_ordinals():
     usa = american_shapefile()
+    attach_usa_universes(usa)
     intl = international_shapefile()
+    attach_intl_universes(intl)
     full = pd.concat([usa, intl])
     popu = np.array(full.population)
     popu[np.isnan(popu)] = full.gpw_population[np.isnan(popu)]
@@ -98,7 +105,7 @@ def shapefile_without_ordinals():
 def all_ordinals():
     full = shapefile_without_ordinals()
     keys = internal_statistic_names()
-    all_ords = compute_all_ordinals_for_universe(full, keys)
+    all_ords = compute_all_ordinals(full, keys)
     return all_ords
 
 

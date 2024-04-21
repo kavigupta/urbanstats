@@ -4,7 +4,12 @@ from typing import Dict
 import numpy as np
 import pandas as pd
 
+from permacache import permacache
+
 import tqdm.auto as tqdm
+
+from urbanstats.universe.annotate_universes import all_universes
+from urbanstats.utils import hash_full_table
 
 
 population_column = "best_population_estimate"
@@ -80,12 +85,12 @@ def compute_all_ordinals_for_frame(frame, keys, *, just_ordinal):
     }
 
 
-def compute_all_ordinals_for_universe(full, keys) -> OrdinalsInUniverse:
+def compute_all_ordinals_for_universe(full, universe, keys) -> OrdinalsInUniverse:
     full = full.copy()
     full = full.reset_index(drop=True)
 
     ordinal_by_type = {}
-    for x in tqdm.tqdm(sorted(set(full.type)), desc="adding ordinals"):
+    for x in tqdm.tqdm(sorted(set(full.type)), desc=f"adding ordinals {universe!r}"):
         ordinal_by_type[x] = compute_all_ordinals_for_frame(
             full[full.type == x], keys, just_ordinal=False
         )
@@ -93,6 +98,18 @@ def compute_all_ordinals_for_universe(full, keys) -> OrdinalsInUniverse:
         overall_ordinal=compute_all_ordinals_for_frame(full, keys, just_ordinal=True),
         ordinal_by_type=ordinal_by_type,
     )
+
+
+@permacache(
+    "urbanstats/ordinals/compute_all_ordinals_2", key_function=dict(full=hash_full_table)
+)
+def compute_all_ordinals(full, keys):
+    return {
+        universe: compute_all_ordinals_for_universe(
+            full[full.universes.apply(lambda x: universe in x)], universe, keys
+        )
+        for universe in all_universes()
+    }
 
 
 def add_ordinals(frame, keys, ordinals_for_type, *, overall_ordinal):

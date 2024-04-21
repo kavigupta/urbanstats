@@ -1,6 +1,8 @@
 import json
 import numpy as np
 
+import tqdm.auto as tqdm
+
 from create_website import get_statistic_column_path
 
 from produce_html_page import internal_statistic_names
@@ -8,11 +10,20 @@ from urbanstats.protobuf.utils import save_data_list, save_string_list
 
 
 def output_ordering(site_folder, ordering):
+    result = {}
+    for universe in ordering:
+        result[universe] = output_ordering_for_universe(site_folder, universe, ordering)
+    with open(f"react/src/data/counts_by_article_type.json", "w") as f:
+        json.dump(result, f)
+
+
+def output_ordering_for_universe(site_folder, universe, ordering):
     counts = {}
-    for statistic_column in internal_statistic_names():
-        print(statistic_column)
+    for statistic_column in tqdm.tqdm(
+        internal_statistic_names(), desc=f"outputting ordinals for {universe}"
+    ):
         statistic_column_path = get_statistic_column_path(statistic_column)
-        path = f"{site_folder}/order/{statistic_column_path}__overall.gz"
+        path = f"{site_folder}/order/{universe}_{statistic_column_path}__overall.gz"
         ordered = ordering.overall_ordinal[statistic_column]
         save_string_list(
             ordered.ordered_longnames,
@@ -22,7 +33,7 @@ def output_ordering(site_folder, ordering):
             (~np.isnan(ordered.ordered_values)).sum()
         )
         for typ in sorted(ordering.ordinal_by_type):
-            path = f"{site_folder}/order/{statistic_column_path}__{typ}.gz"
+            path = f"{site_folder}/order/{universe}_{statistic_column_path}__{typ}.gz"
             ordered = ordering.ordinal_by_type[typ][statistic_column]
             ordered_longnames = ordered.ordered_longnames
             ordered_values = ordered.ordered_values
@@ -32,6 +43,4 @@ def output_ordering(site_folder, ordering):
             save_data_list(
                 ordered_values, ordered_percentile, path.replace(".gz", "_data.gz")
             )
-
-    with open(f"react/src/data/counts_by_article_type.json", "w") as f:
-        json.dump(list(counts.items()), f)
+    return list(counts.items())

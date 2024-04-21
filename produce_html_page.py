@@ -38,7 +38,7 @@ def create_page_json(
     long_to_short,
     long_to_population,
     long_to_type,
-    ordering,
+    ordering_for_all_universes,
 ):
     from create_website import get_idxs_by_type
 
@@ -49,20 +49,25 @@ def create_page_json(
     data.longname = row.longname
     data.source = row.source
     data.article_type = row.type
+    data.universes.extend(row.universes)
 
     for idx in idxs_by_type:
         stat = statistic_names[idx]
         statrow = data.rows.add()
         statrow.statval = float(row[stat])
-        ordinal_by_type = ordering.ordinal_by_type[row.type][stat]
-        ordinal_overall = ordering.overall_ordinal[stat]
-        statrow.ordinal = ord_or_zero(ordinal_by_type.ordinals.loc[row.longname, 0])
-        statrow.overall_ordinal = ord_or_zero(
-            ordinal_overall.ordinals.loc[row.longname, 0]
-        )
-        statrow.percentile_by_population = float(
-            ordinal_by_type.percentiles_by_population.loc[row.longname]
-        )
+        for universe in row.universes:
+            ordering = ordering_for_all_universes[universe]
+            ordinal_by_type = ordering.ordinal_by_type[row.type][stat]
+            ordinal_overall = ordering.overall_ordinal[stat]
+            statrow.ordinal_by_universe.append(
+                ord_or_zero(ordinal_by_type.ordinals.loc[row.longname, 0])
+            )
+            statrow.overall_ordinal_by_universe.append(
+                ord_or_zero(ordinal_overall.ordinals.loc[row.longname, 0])
+            )
+            statrow.percentile_by_population_by_universe.append(
+                float(ordinal_by_type.percentiles_by_population.loc[row.longname])
+            )
     for relationship_type in relationships:
         for_this = relationships[relationship_type].get(row.longname, set())
         for_this = [x for x in for_this if x in long_to_population]
