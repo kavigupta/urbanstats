@@ -257,7 +257,7 @@ def main(
 
     if not no_data:
         if not no_data_jsons:
-            create_page_jsons(site_folder, shapefile_without_ordinals())
+            create_page_jsons(site_folder, full_shapefile())
 
         if not no_index:
             export_index(shapefile_without_ordinals(), site_folder)
