@@ -27,6 +27,10 @@ from urbanstats.protobuf.utils import write_gzip
 from urbanstats.weather.to_blocks import weather_stat_names
 
 
+def ord_or_zero(x):
+    return 0 if np.isnan(x) else int(x)
+
+
 def create_page_json(
     folder,
     row,
@@ -34,6 +38,7 @@ def create_page_json(
     long_to_short,
     long_to_population,
     long_to_type,
+    ordering,
 ):
     from create_website import get_idxs_by_type
 
@@ -49,15 +54,15 @@ def create_page_json(
         stat = statistic_names[idx]
         statrow = data.rows.add()
         statrow.statval = float(row[stat])
-        statrow.ordinal = (
-            0 if np.isnan(row[stat, "ordinal"]) else int(row[stat, "ordinal"])
+        ordinal_by_type = ordering.ordinal_by_type[row.type][stat]
+        ordinal_overall = ordering.overall_ordinal[stat]
+        statrow.ordinal = ord_or_zero(ordinal_by_type.ordinals.loc[row.longname, 0])
+        statrow.overall_ordinal = ord_or_zero(
+            ordinal_overall.ordinals.loc[row.longname, 0]
         )
-        statrow.overall_ordinal = (
-            0
-            if np.isnan(row[stat, "overall_ordinal"])
-            else int(row[stat, "overall_ordinal"])
+        statrow.percentile_by_population = float(
+            ordinal_by_type.percentiles_by_population.loc[row.longname]
         )
-        statrow.percentile_by_population = float(row[stat, "percentile_by_population"])
     for relationship_type in relationships:
         for_this = relationships[relationship_type].get(row.longname, set())
         for_this = [x for x in for_this if x in long_to_population]

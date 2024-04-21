@@ -95,25 +95,11 @@ def shapefile_without_ordinals():
 
 
 @lru_cache(maxsize=None)
-def full_shapefile():
+def all_ordinals():
     full = shapefile_without_ordinals()
     keys = internal_statistic_names()
     all_ords = compute_all_ordinals_for_universe(full, keys)
-    full = pd.concat(
-        [
-            add_ordinals(
-                full[full.type == x],
-                keys,
-                all_ords.ordinal_by_type[x],
-                overall_ordinal=False,
-            )
-            for x in tqdm.tqdm(sorted(set(full.type)), desc="adding ordinals")
-        ]
-    )
-    full = add_ordinals(full, keys, all_ords.overall_ordinal, overall_ordinal=True)
-    full = full.sort_values("longname")
-    full = full.sort_values("best_population_estimate", ascending=False, kind="stable")
-    return full, all_ords
+    return all_ords
 
 
 def next_prev(full):
@@ -141,7 +127,7 @@ def next_prev_within_type(full):
     return by_statistic
 
 
-def create_page_jsons(site_folder, full):
+def create_page_jsons(site_folder, full, ordering):
     # ptrs_overall = next_prev(full)
     # ptrs_within_type = next_prev_within_type(full)
     long_to_short = dict(zip(full.longname, full.shortname))
@@ -158,6 +144,7 @@ def create_page_jsons(site_folder, full):
             long_to_short,
             long_to_pop,
             long_to_type,
+            ordering,
         )
 
 
@@ -231,14 +218,14 @@ def main(
 
     if not no_data:
         if not no_data_jsons:
-            create_page_jsons(site_folder, full_shapefile()[0])
+            create_page_jsons(site_folder, shapefile_without_ordinals(), all_ordinals())
 
         if not no_index:
             export_index(shapefile_without_ordinals(), site_folder)
 
         from urbanstats.ordinals.output_ordering import output_ordering
 
-        output_ordering(site_folder, full_shapefile()[1])
+        output_ordering(site_folder, all_ordinals())
 
         full_consolidated_data(site_folder)
 
