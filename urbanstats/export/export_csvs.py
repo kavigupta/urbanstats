@@ -1,7 +1,7 @@
 import fire
 import tqdm.auto as tqdm
 
-from create_website import full_shapefile
+from create_website import shapefile_without_ordinals
 from produce_html_page import (
     get_statistic_categories,
     statistic_internal_to_display_name,
@@ -9,7 +9,7 @@ from produce_html_page import (
 
 
 def csv_for(typ, category):
-    result = full_shapefile().set_index("longname")
+    result = shapefile_without_ordinals().set_index("longname")
     stats_to_use = [x for x, y in get_statistic_categories().items() if y == category]
     result_for_type = result[result.type == typ]
     return result_for_type[[x for x in stats_to_use]].rename(
@@ -18,7 +18,7 @@ def csv_for(typ, category):
 
 
 def export_all_csvs(folder):
-    for typ in tqdm.tqdm(sorted(set(full_shapefile().type))):
+    for typ in tqdm.tqdm(sorted(set(shapefile_without_ordinals().type))):
         for category in sorted(set(get_statistic_categories().values())):
             csv_for(typ, category).to_csv(f"{folder}/{typ}_{category}.csv")
 
