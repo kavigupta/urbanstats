@@ -13,7 +13,7 @@ from permacache import permacache, stable_hash
 import tqdm.auto as tqdm
 import urllib
 
-from create_website import full_shapefile, statistic_internal_to_display_name
+from create_website import shapefile_without_ordinals, statistic_internal_to_display_name
 from produce_html_page import get_statistic_categories
 from urbanstats.acs import industry, occupation
 from urbanstats.shortener import shorten
@@ -24,7 +24,7 @@ from .fixed import juxtastat as fixed_up_to
 
 min_pop = 250_000
 min_pop_international = 20_000_000
-version = 44
+version = 46
 
 # ranges = [
 #     (0.7, 1),
@@ -174,7 +174,7 @@ def sample_quiz_question(
 
 @permacache(f"urbanstats/games/quiz/filter_for_pop_{version}")
 def filter_for_pop(type):
-    full = full_shapefile()
+    full = shapefile_without_ordinals()
     filt = full[full.type == type]
     at_pop = filt[filt.best_population_estimate >= minimum_population(type)].set_index(
         "longname"
