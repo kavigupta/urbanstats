@@ -253,23 +253,20 @@ def main(
             pass
 
     if not no_geo:
-        full = full_shapefile()
-        produce_all_geometry_json(f"{site_folder}/shape", set(full.longname))
+        produce_all_geometry_json(f"{site_folder}/shape", set(shapefile_without_ordinals().longname))
 
     if not no_data:
-        full = full_shapefile()
         if not no_data_jsons:
-            create_page_jsons(site_folder, full)
+            create_page_jsons(site_folder, shapefile_without_ordinals())
 
         if not no_index:
-            full = full_shapefile()
-            export_index(full, site_folder)
+            export_index(shapefile_without_ordinals(), site_folder)
 
-        output_ordering(site_folder, full)
+        output_ordering(site_folder, full_shapefile())
 
         full_consolidated_data(site_folder)
 
-        all_simplified_countries(full, f"{site_folder}/shape")
+        all_simplified_countries(shapefile_without_ordinals(), f"{site_folder}/shape")
 
     shutil.copy("html_templates/article.html", f"{site_folder}")
     shutil.copy("html_templates/comparison.html", f"{site_folder}")
