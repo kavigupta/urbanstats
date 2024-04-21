@@ -238,7 +238,7 @@ def main(
 
         from urbanstats.ordinals.output_ordering import output_ordering
 
-        output_ordering(site_folder, *full_shapefile())
+        output_ordering(site_folder, full_shapefile()[1])
 
         full_consolidated_data(site_folder)
 
