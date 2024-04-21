@@ -1,9 +1,35 @@
+from dataclasses import dataclass
+from typing import Dict
 import numpy as np
 import pandas as pd
+
+import tqdm.auto as tqdm
 
 
 population_column = "best_population_estimate"
 stable_sort_column = "longname"
+
+
+@dataclass
+class OrdinalsForTypeAndColumnInUniverse:
+    ordinals: pd.Series
+    percentiles_by_population: pd.Series
+
+    @property
+    def ordered_longnames(self):
+        return list(self.ordinals.sort_values(0).index)
+
+
+@dataclass
+class OrdinalsForTypeInUniverse:
+    # key_column -> OrdinalsForColumnInUniverse
+    ordinals: Dict[str, OrdinalsForTypeAndColumnInUniverse]
+
+
+@dataclass
+class OrdinalsInUniverse:
+    overall_ordinal: OrdinalsForTypeInUniverse
+    ordinal_by_type: Dict[str, OrdinalsForTypeInUniverse]
 
 
 def compute_ordinals_and_percentiles(frame, key_column, *, just_ordinal):
@@ -17,10 +43,12 @@ def compute_ordinals_and_percentiles(frame, key_column, *, just_ordinal):
     )
     # ordinals: index -> ordinal
     ordinals = np.array(
-        pd.Series(np.arange(1, frame.shape[0] + 1), index=ordering)[frame.index]
+        pd.Series(np.arange(1, frame.shape[0] + 1), index=ordering).loc[frame.index]
     )
     if just_ordinal:
-        return ordinals, None
+        return OrdinalsForTypeAndColumnInUniverse(
+            pd.DataFrame(ordinals, index=frame.longname), None
+        )
     total_pop = frame[population_column].sum()
     # arranged_pop: ordinal - 1 -> population
     arranged_pop = np.array(frame[population_column][ordering])
@@ -28,20 +56,51 @@ def compute_ordinals_and_percentiles(frame, key_column, *, just_ordinal):
     cum_pop = np.cumsum(arranged_pop)
     # percentiles_by_population: index -> percentile
     percentiles_by_population = 1 - cum_pop[ordinals - 1] / total_pop
-    return ordinals, percentiles_by_population
+    return OrdinalsForTypeAndColumnInUniverse(
+        pd.Series(ordinals, index=frame.longname),
+        pd.Series(percentiles_by_population, index=frame.longname),
+    )
 
 
-def add_ordinals(frame, keys, *, overall_ordinal):
+def compute_all_ordinals_for_frame(frame, keys, *, just_ordinal):
+    return {
+        k: compute_ordinals_and_percentiles(frame, k, just_ordinal=just_ordinal)
+        for k in keys
+    }
+
+
+def compute_all_ordinals_for_universe(full, keys) -> OrdinalsInUniverse:
+    full = full.copy()
+    full = full.reset_index(drop=True)
+
+    ordinal_by_type = {}
+    for x in tqdm.tqdm(sorted(set(full.type)), desc="adding ordinals"):
+        ordinal_by_type[x] = compute_all_ordinals_for_frame(
+            full[full.type == x], keys, just_ordinal=False
+        )
+    return OrdinalsInUniverse(
+        overall_ordinal=compute_all_ordinals_for_frame(full, keys, just_ordinal=True),
+        ordinal_by_type=ordinal_by_type,
+    )
+
+
+def add_ordinals(frame, keys, ordinals_for_type, *, overall_ordinal):
     assert len(set(keys)) == len(keys)
     frame = frame.copy()
     frame = frame.reset_index(drop=True)
     for k in keys:
-        ordinals, percentiles_by_population = compute_ordinals_and_percentiles(
-            frame, k, just_ordinal=overall_ordinal
+        ord_and_pctile = ordinals_for_type[k]
+        ordinals, percentiles_by_population = (
+            ord_and_pctile.ordinals,
+            ord_and_pctile.percentiles_by_population,
         )
-        frame[k, "overall_ordinal" if overall_ordinal else "ordinal"] = ordinals
+        frame[k, "overall_ordinal" if overall_ordinal else "ordinal"] = ordinals.loc[
+            frame.longname
+        ].values
         if overall_ordinal:
             continue
         frame[k, "total"] = frame[k].shape[0]
-        frame[k, "percentile_by_population"] = percentiles_by_population
+        frame[k, "percentile_by_population"] = percentiles_by_population.loc[
+            frame.longname
+        ].values
     return frame

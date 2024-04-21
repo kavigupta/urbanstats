@@ -30,7 +30,10 @@ from urbanstats.consolidated_data.produce_consolidated_data import (
 from urbanstats.data.gpw import compute_gpw_data_for_shapefile_table
 from urbanstats.mapper.ramp import output_ramps
 
-from urbanstats.ordinals.compute_ordinals import add_ordinals
+from urbanstats.ordinals.compute_ordinals import (
+    add_ordinals,
+    compute_all_ordinals_for_universe,
+)
 from urbanstats.protobuf.utils import save_data_list, save_string_list
 from urbanstats.special_cases.simplified_country import all_simplified_countries
 from urbanstats.website_data.index import export_index
@@ -95,16 +98,22 @@ def shapefile_without_ordinals():
 def full_shapefile():
     full = shapefile_without_ordinals()
     keys = internal_statistic_names()
+    all_ords = compute_all_ordinals_for_universe(full, keys)
     full = pd.concat(
         [
-            add_ordinals(full[full.type == x], keys, overall_ordinal=False)
+            add_ordinals(
+                full[full.type == x],
+                keys,
+                all_ords.ordinal_by_type[x],
+                overall_ordinal=False,
+            )
             for x in tqdm.tqdm(sorted(set(full.type)), desc="adding ordinals")
         ]
     )
-    full = add_ordinals(full, keys, overall_ordinal=True)
+    full = add_ordinals(full, keys, all_ords.overall_ordinal, overall_ordinal=True)
     full = full.sort_values("longname")
     full = full.sort_values("best_population_estimate", ascending=False, kind="stable")
-    return full
+    return full, all_ords
 
 
 def next_prev(full):
@@ -162,44 +171,6 @@ def get_statistic_column_path(column):
     if isinstance(column, tuple):
         column = "-".join(str(x) for x in column)
     return column.replace("/", " slash ")
-
-
-def output_ordering(site_folder, full):
-    counts = {}
-    for statistic_column in internal_statistic_names():
-        print(statistic_column)
-        full_by_name = full[
-            [
-                "longname",
-                "type",
-                (statistic_column, "overall_ordinal"),
-                (statistic_column, "percentile_by_population"),
-                statistic_column,
-            ]
-        ].sort_values("longname")
-        full_sorted = full_by_name.sort_values(
-            (statistic_column, "overall_ordinal"), kind="stable"
-        )
-        statistic_column_path = get_statistic_column_path(statistic_column)
-        path = f"{site_folder}/order/{statistic_column_path}__overall.gz"
-        save_string_list(list(full_sorted.longname), path)
-        counts[statistic_column, "overall"] = int(
-            (~np.isnan(full_sorted[statistic_column])).sum()
-        )
-        for typ in sorted(set(full_sorted.type)):
-            path = f"{site_folder}/order/{statistic_column_path}__{typ}.gz"
-            for_typ = full_sorted[full_sorted.type == typ]
-            names = for_typ.longname
-            counts[statistic_column, typ] = int(
-                (~np.isnan(for_typ[statistic_column])).sum()
-            )
-            save_string_list(list(names), path)
-            value = for_typ[statistic_column]
-            percentile = for_typ[(statistic_column, "percentile_by_population")]
-            save_data_list(value, percentile, path.replace(".gz", "_data.gz"))
-
-    with open(f"react/src/data/counts_by_article_type.json", "w") as f:
-        json.dump(list(counts.items()), f)
 
 
 def get_idxs_by_type():
@@ -260,12 +231,14 @@ def main(
 
     if not no_data:
         if not no_data_jsons:
-            create_page_jsons(site_folder, full_shapefile())
+            create_page_jsons(site_folder, full_shapefile()[0])
 
         if not no_index:
             export_index(shapefile_without_ordinals(), site_folder)
 
-        output_ordering(site_folder, full_shapefile())
+        from urbanstats.ordinals.output_ordering import output_ordering
+
+        output_ordering(site_folder, *full_shapefile())
 
         full_consolidated_data(site_folder)
 
