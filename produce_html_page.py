@@ -27,6 +27,10 @@ from urbanstats.protobuf.utils import write_gzip
 from urbanstats.weather.to_blocks import weather_stat_names
 
 
+def ord_or_zero(x):
+    return 0 if np.isnan(x) else int(x)
+
+
 def create_page_json(
     folder,
     row,
@@ -34,6 +38,7 @@ def create_page_json(
     long_to_short,
     long_to_population,
     long_to_type,
+    ordering,
 ):
     from create_website import get_idxs_by_type
 
@@ -49,15 +54,15 @@ def create_page_json(
         stat = statistic_names[idx]
         statrow = data.rows.add()
         statrow.statval = float(row[stat])
-        statrow.ordinal = (
-            0 if np.isnan(row[stat, "ordinal"]) else int(row[stat, "ordinal"])
+        ordinal_by_type = ordering.ordinal_by_type[row.type][stat]
+        ordinal_overall = ordering.overall_ordinal[stat]
+        statrow.ordinal = ord_or_zero(ordinal_by_type.ordinals.loc[row.longname, 0])
+        statrow.overall_ordinal = ord_or_zero(
+            ordinal_overall.ordinals.loc[row.longname, 0]
         )
-        statrow.overall_ordinal = (
-            0
-            if np.isnan(row[stat, "overall_ordinal"])
-            else int(row[stat, "overall_ordinal"])
+        statrow.percentile_by_population = float(
+            ordinal_by_type.percentiles_by_population.loc[row.longname]
         )
-        statrow.percentile_by_population = float(row[stat, "percentile_by_population"])
     for relationship_type in relationships:
         for_this = relationships[relationship_type].get(row.longname, set())
         for_this = [x for x in for_this if x in long_to_population]
@@ -90,51 +95,6 @@ def order_key_for_relatioships(longname, typ):
 def create_filename(x, ext):
     x = x.replace("/", " slash ")
     return f"{x}." + ext
-
-
-def compute_ordinals_and_percentiles(
-    frame, key_column, population_column, stable_sort_column, *, just_ordinal
-):
-    key_column_name = key_column
-    ordering = (
-        frame[[stable_sort_column, key_column_name]]
-        .fillna(-float("inf"))
-        .sort_values(stable_sort_column)
-        .sort_values(key_column_name, ascending=False, kind="stable")
-        .index
-    )
-    # ordinals: index -> ordinal
-    ordinals = np.array(
-        pd.Series(np.arange(1, frame.shape[0] + 1), index=ordering)[frame.index]
-    )
-    if just_ordinal:
-        return ordinals, None
-    total_pop = frame[population_column].sum()
-    # arranged_pop: ordinal - 1 -> population
-    arranged_pop = np.array(frame[population_column][ordering])
-    # cum_pop: ordinal - 1 -> population of all prior
-    cum_pop = np.cumsum(arranged_pop)
-    # percentiles_by_population: index -> percentile
-    percentiles_by_population = 1 - cum_pop[ordinals - 1] / total_pop
-    return ordinals, percentiles_by_population
-
-
-def add_ordinals(frame, *, overall_ordinal):
-    keys = internal_statistic_names()
-    assert len(set(keys)) == len(keys)
-    frame = frame.copy()
-    frame = frame.reset_index(drop=True)
-    for k in keys:
-        population_column = "best_population_estimate"
-        ordinals, percentiles_by_population = compute_ordinals_and_percentiles(
-            frame, k, population_column, "longname", just_ordinal=overall_ordinal
-        )
-        frame[k, "overall_ordinal" if overall_ordinal else "ordinal"] = ordinals
-        if overall_ordinal:
-            continue
-        frame[k, "total"] = frame[k].shape[0]
-        frame[k, "percentile_by_population"] = percentiles_by_population
-    return frame
 
 
 def format_radius(x):
