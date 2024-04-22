@@ -41,6 +41,7 @@ from urbanstats.universe.annotate_universes import (
     attach_intl_universes,
     attach_usa_universes,
 )
+from urbanstats.universe.icons import place_icons_in_site_folder
 from urbanstats.website_data.index import export_index
 
 
@@ -305,6 +306,7 @@ def main(
     shutil.copy("dist/data-credit.js", f"{site_folder}/scripts/")
     shutil.copy("dist/mapper.js", f"{site_folder}/scripts/")
     shutil.copy("dist/quiz.js", f"{site_folder}/scripts/")
+    place_icons_in_site_folder(site_folder)
 
     from urbanstats.games.quiz import generate_quizzes
     from urbanstats.games.retrostat import generate_retrostats

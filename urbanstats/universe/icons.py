@@ -1,20 +1,24 @@
 import os
+import shutil
 import subprocess
 import requests
 import tempfile
 import us
 import re
 
-from urbanstats.universe.annotate_universes import all_universes
+from urbanstats.universe.annotate_universes import (
+    all_universes,
+    get_universe_name_for_state,
+)
 
 flags_folder = "icons/flags/"
 
 
 def download_and_convert_flag(wikipedia_page, out_path):
     out = flags_folder + out_path + ".png"
-    print(wikipedia_page)
     if os.path.exists(out):
         return
+    print(wikipedia_page)
     try:
         os.makedirs(flags_folder)
     except FileExistsError:
@@ -45,7 +49,7 @@ def download_all_us_state_icons():
     for state in us.states.STATES_AND_TERRITORIES:
         download_and_convert_flag(
             f"File:Flag_of_{state.name.replace(' ', '_')}.svg",
-            f"{state.name}, USA",
+            get_universe_name_for_state(state),
         )
 
 
@@ -59,6 +63,18 @@ def download_all_icons():
 
     missing = set([x + ".png" for x in all_universes()]) - set(os.listdir(flags_folder))
     assert not missing, missing
+
+
+def place_icons_in_site_folder(site_folder):
+    download_all_icons()
+    try:
+        os.makedirs(os.path.join(site_folder, flags_folder))
+    except FileExistsError:
+        pass
+    for f in os.listdir(flags_folder):
+        shutil.copy(
+            os.path.join(flags_folder, f), os.path.join(site_folder, flags_folder)
+        )
 
 
 if __name__ == "__main__":
