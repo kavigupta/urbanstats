@@ -20,8 +20,8 @@ class Header extends React.Component {
 
     universe_selector() {
         return <UniverseSelector
-            current_universe={'world'}
-            all_universes={['world', 'USA', "California, USA"]}
+            current_universe={this.props.current_universe}
+            all_universes={this.props.all_universes}
             on_universe_update={universe => console.log(universe)}
         />
     }
