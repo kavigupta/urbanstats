@@ -22,7 +22,7 @@ class Header extends React.Component {
         return <UniverseSelector
             current_universe={this.props.current_universe}
             all_universes={this.props.all_universes}
-            on_universe_update={universe => console.log(universe)}
+            on_universe_update={this.props.on_universe_update}
         />
     }
 
@@ -121,7 +121,10 @@ function UniverseSelector({ current_universe, all_universes, on_universe_update 
     var dropdown = dropdown_open ? <UniverseDropdown
         flag_size={width}
         all_universes={all_universes}
-        on_universe_update={on_universe_update} /> : undefined;
+        on_universe_update={universe => {
+            set_dropdown_open(false);
+            on_universe_update(universe);
+        }} /> : undefined;
 
     // wrap dropdown in a div to place it in front of everything else and let it spill out of the header
     // do NOT use class
@@ -182,7 +185,7 @@ function UniverseDropdown({ all_universes, on_universe_update, flag_size }) {
                             className="hoverable_elements"
                         >
                             <img src={`/icons/flags/${universe}.png`} alt={universe}
-                                width={HEADER_BAR_SIZE}
+                                width={flag_size}
                             />
                             <div className="serif">
                                 {universe == "world" ? "World" : universe}

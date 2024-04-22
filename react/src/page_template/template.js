@@ -19,10 +19,25 @@ class PageTemplate extends React.Component {
 
         this.statistic_category_metadata_checkboxes = statistic_category_metadata_checkboxes;
 
+        // get from url field
+        this.set_universe = universe => {
+            this.setState({ current_universe: universe });
+            const params = new URLSearchParams(window.location.search);
+            params.set("universe", universe);
+            window.history.replaceState({}, "", `${window.location.pathname}?${params}`);
+        }
+
+        this.all_universes = [
+            "world",
+            "USA",
+            "California, USA",
+        ]
+
         this.state = {
             settings: settings,
             hamburger_open: false,
             screenshot_mode: false,
+            current_universe: new URLSearchParams(window.location.search).get("universe") || "world",
         }
     }
 
@@ -38,6 +53,9 @@ class PageTemplate extends React.Component {
                         set_hamburger_open={x => this.setState({ hamburger_open: x })}
                         has_screenshot={this.has_screenshot_button()}
                         has_universe_selector={this.has_universe_selector()}
+                        current_universe={this.state.current_universe}
+                        all_universes={this.all_universes}
+                        on_universe_update={universe => this.set_universe(universe)}
                         screenshot_mode={this.state.screenshot_mode}
                         initiate_screenshot={() => this.initiate_screenshot()}
                     />
