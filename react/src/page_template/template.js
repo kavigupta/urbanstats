@@ -88,7 +88,7 @@ class PageTemplate extends React.Component {
     }
 
     has_universe_selector() {
-        return true;
+        return false;
     }
 
     screencap_elements() {
