@@ -37,6 +37,7 @@ class PageTemplate extends React.Component {
                         hamburger_open={this.state.hamburger_open}
                         set_hamburger_open={x => this.setState({ hamburger_open: x })}
                         has_screenshot={this.has_screenshot_button()}
+                        has_universe_selector={this.has_universe_selector()}
                         screenshot_mode={this.state.screenshot_mode}
                         initiate_screenshot={() => this.initiate_screenshot()}
                     />
@@ -84,6 +85,10 @@ class PageTemplate extends React.Component {
 
     has_screenshot_button() {
         return false;
+    }
+
+    has_universe_selector() {
+        return true;
     }
 
     screencap_elements() {
