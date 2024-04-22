@@ -101,7 +101,7 @@ def compute_all_ordinals_for_universe(full, universe, keys) -> OrdinalsInUnivers
 
 
 @permacache(
-    "urbanstats/ordinals/compute_all_ordinals_2", key_function=dict(full=hash_full_table)
+    "urbanstats/ordinals/compute_all_ordinals_3", key_function=dict(full=hash_full_table)
 )
 def compute_all_ordinals(full, keys):
     return {

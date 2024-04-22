@@ -12,7 +12,7 @@ from urbanstats.protobuf.utils import save_data_list, save_string_list
 def output_ordering(site_folder, ordering):
     result = {}
     for universe in ordering:
-        result[universe] = output_ordering_for_universe(site_folder, universe, ordering)
+        result[universe] = output_ordering_for_universe(site_folder, universe, ordering[universe])
     with open(f"react/src/data/counts_by_article_type.json", "w") as f:
         json.dump(result, f)
 
