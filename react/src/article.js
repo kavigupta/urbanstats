@@ -7,6 +7,7 @@ import { data_link } from "./navigation/links.js";
 
 import { ArticlePanel } from './components/article-panel';
 import { loadProtobuf } from './load_json';
+import { remove_universe_if_not_in } from './universe.js';
 
 
 async function loadPage() {
@@ -16,6 +17,7 @@ async function loadPage() {
     const data = await loadProtobuf(data_link(longname), "Article");
     document.title = data.shortname;
     const root = ReactDOM.createRoot(document.getElementById("root"));
+    remove_universe_if_not_in(data.universes)
     root.render(<ArticlePanel longname={longname} {...data} />);
 }
 

@@ -1,3 +1,4 @@
+import { add_universe_to_params, get_universe } from "../universe";
 
 export {
     sanitize,
@@ -10,6 +11,7 @@ export {
 function article_link(longname) {
     const params = new URLSearchParams()
     params.set('longname', sanitize(longname));
+    add_universe_to_params(params);
     return "/article.html?" + params.toString();
 }
 
@@ -22,11 +24,11 @@ function data_link(longname) {
 }
 
 function ordering_link(statpath, type) {
-    return `/order/${sanitize(statpath, false)}__${sanitize(type, false)}.gz`
+    return `/order/${get_universe()}_${sanitize(statpath, false)}__${sanitize(type, false)}.gz`
 }
 
 function ordering_data_link(statpath, type) {
-    return `/order/${sanitize(statpath, false)}__${sanitize(type, false)}_data.gz`
+    return `/order/${get_universe()}_${sanitize(statpath, false)}__${sanitize(type, false)}_data.gz`
 }
 
 function explanation_page_link(explanation) {
@@ -44,6 +46,7 @@ function consolidated_stats_link(typ) {
 function comparison_link(names) {
     const params = new URLSearchParams()
     params.set('longnames', JSON.stringify(names.map(sanitize)));
+    add_universe_to_params(params);
     return "/comparison.html?" + params.toString();
 }
 
@@ -69,6 +72,7 @@ function statistic_link(statname, article_type, start, amount, order, highlight)
     if (highlight !== undefined) {
         params.set('highlight', highlight);
     }
+    add_universe_to_params(params);
     return "/statistic.html?" + params.toString();
 }
 

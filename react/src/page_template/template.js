@@ -9,6 +9,7 @@ import "../components/article.css";
 import { load_settings } from './settings.js';
 import { mobileLayout } from '../utils/responsive.js';
 import { create_screenshot } from '../components/screenshot.js';
+import { get_universe, set_universe } from '../universe.js';
 
 
 class PageTemplate extends React.Component {
@@ -22,22 +23,16 @@ class PageTemplate extends React.Component {
         // get from url field
         this.set_universe = universe => {
             this.setState({ current_universe: universe });
-            const params = new URLSearchParams(window.location.search);
-            params.set("universe", universe);
-            window.history.replaceState({}, "", `${window.location.pathname}?${params}`);
+            set_universe(universe);
         }
 
-        this.all_universes = [
-            "world",
-            "USA",
-            "California, USA",
-        ]
+        this.all_universes = this.props.universes;
 
         this.state = {
             settings: settings,
             hamburger_open: false,
             screenshot_mode: false,
-            current_universe: new URLSearchParams(window.location.search).get("universe") || "world",
+            current_universe: get_universe(),
         }
     }
 

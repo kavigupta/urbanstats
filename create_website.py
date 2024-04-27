@@ -38,6 +38,7 @@ from urbanstats.ordinals.compute_ordinals import (
 from urbanstats.protobuf.utils import save_data_list, save_string_list
 from urbanstats.special_cases.simplified_country import all_simplified_countries
 from urbanstats.universe.annotate_universes import (
+    all_universes,
     attach_intl_universes,
     attach_usa_universes,
 )
@@ -278,6 +279,8 @@ def main(
         json.dump(list([name for name in statistic_internal_to_display_name()]), f)
     with open(f"react/src/data/explanation_page.json", "w") as f:
         json.dump(list([name for name in get_explanation_page().values()]), f)
+    with open(f"react/src/data/universes_ordered.json", "w") as f:
+        json.dump(list([name for name in all_universes()]), f)
 
     output_names()
     output_ramps()
