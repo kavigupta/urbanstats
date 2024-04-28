@@ -128,6 +128,6 @@ async function create_screenshot(config) {
     ctx.drawImage(banner, pad_around, start, overall_width, banner_height);
 
     canvas.toBlob(function (blob) {
-        saveAs(blob, "pretty image.png");
+        saveAs(blob, config.path);
     });
 }
