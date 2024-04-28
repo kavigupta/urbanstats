@@ -5,7 +5,8 @@ export {
     article_link, shape_link, data_link, ordering_link, ordering_data_link,
     explanation_page_link,
     consolidated_shape_link, consolidated_stats_link, comparison_link,
-    statistic_link
+    statistic_link,
+    universe_path
 };
 
 function article_link(longname) {
@@ -85,4 +86,8 @@ function sanitize(longname, spaces_around_slash = true) {
     }
     x = x.replace("%", "%25");
     return x;
+}
+
+function universe_path(universe) {
+    return `/icons/flags/${universe}.png`
 }
