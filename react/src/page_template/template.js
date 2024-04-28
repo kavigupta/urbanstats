@@ -116,7 +116,11 @@ class PageTemplate extends React.Component {
     async screencap() {
         const config = this.screencap_elements();
 
-        await create_screenshot(config, this.has_universe_selector() ? this.state.current_universe : undefined);
+        try {
+            await create_screenshot(config, this.has_universe_selector() ? this.state.current_universe : undefined);
+        } catch (e) {
+            console.error(e);
+        }
     }
 
     async initiate_screenshot() {

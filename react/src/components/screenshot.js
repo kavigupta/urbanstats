@@ -1,7 +1,8 @@
 export { ScreenshotButton, create_screenshot };
 
 import React from 'react';
-import domtoimage from 'dom-to-image';
+import domtoimage from 'dom-to-image-more';
+import { saveAs } from 'file-saver';
 import { universe_path } from '../navigation/links';
 
 
@@ -75,9 +76,14 @@ async function create_screenshot(config, universe) {
     const png_links = [];
     const heights = [];
     for (const ref of config.elements_to_render) {
-        const [png_link, height] = await screencap_element(ref);
-        png_links.push(png_link);
-        heights.push(height);
+        try {
+            const [png_link, height] = await screencap_element(ref);
+            png_links.push(png_link);
+            heights.push(height);
+        } catch (e) {
+            console.log("ERROR");
+            console.error(e);
+        }
     }
 
     const canvas = document.createElement("canvas");
@@ -132,8 +138,7 @@ async function create_screenshot(config, universe) {
         ctx.drawImage(flag, pad_around, start, banner_height, banner_height);
     }
 
-    const a = document.createElement("a");
-    a.href = canvas.toDataURL("image/png");
-    a.download = config.path;
-    a.click();
+    canvas.toBlob(function (blob) {
+        saveAs(blob, config.path);
+    });
 }
