@@ -16,9 +16,9 @@ $root.StatisticRow = (function() {
      * @exports IStatisticRow
      * @interface IStatisticRow
      * @property {number|null} [statval] StatisticRow statval
-     * @property {number|null} [ordinal] StatisticRow ordinal
-     * @property {number|null} [overallOrdinal] StatisticRow overallOrdinal
-     * @property {number|null} [percentileByPopulation] StatisticRow percentileByPopulation
+     * @property {Array.<number>|null} [ordinalByUniverse] StatisticRow ordinalByUniverse
+     * @property {Array.<number>|null} [overallOrdinalByUniverse] StatisticRow overallOrdinalByUniverse
+     * @property {Array.<number>|null} [percentileByPopulationByUniverse] StatisticRow percentileByPopulationByUniverse
      */
 
     /**
@@ -30,6 +30,9 @@ $root.StatisticRow = (function() {
      * @param {IStatisticRow=} [properties] Properties to set
      */
     function StatisticRow(properties) {
+        this.ordinalByUniverse = [];
+        this.overallOrdinalByUniverse = [];
+        this.percentileByPopulationByUniverse = [];
         if (properties)
             for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
                 if (properties[keys[i]] != null)
@@ -45,28 +48,28 @@ $root.StatisticRow = (function() {
     StatisticRow.prototype.statval = 0;
 
     /**
-     * StatisticRow ordinal.
-     * @member {number} ordinal
+     * StatisticRow ordinalByUniverse.
+     * @member {Array.<number>} ordinalByUniverse
      * @memberof StatisticRow
      * @instance
      */
-    StatisticRow.prototype.ordinal = 0;
+    StatisticRow.prototype.ordinalByUniverse = $util.emptyArray;
 
     /**
-     * StatisticRow overallOrdinal.
-     * @member {number} overallOrdinal
+     * StatisticRow overallOrdinalByUniverse.
+     * @member {Array.<number>} overallOrdinalByUniverse
      * @memberof StatisticRow
      * @instance
      */
-    StatisticRow.prototype.overallOrdinal = 0;
+    StatisticRow.prototype.overallOrdinalByUniverse = $util.emptyArray;
 
     /**
-     * StatisticRow percentileByPopulation.
-     * @member {number} percentileByPopulation
+     * StatisticRow percentileByPopulationByUniverse.
+     * @member {Array.<number>} percentileByPopulationByUniverse
      * @memberof StatisticRow
      * @instance
      */
-    StatisticRow.prototype.percentileByPopulation = 0;
+    StatisticRow.prototype.percentileByPopulationByUniverse = $util.emptyArray;
 
     /**
      * Creates a new StatisticRow instance using the specified properties.
@@ -94,12 +97,24 @@ $root.StatisticRow = (function() {
             writer = $Writer.create();
         if (message.statval != null && Object.hasOwnProperty.call(message, "statval"))
             writer.uint32(/* id 1, wireType 5 =*/13).float(message.statval);
-        if (message.ordinal != null && Object.hasOwnProperty.call(message, "ordinal"))
-            writer.uint32(/* id 2, wireType 0 =*/16).int32(message.ordinal);
-        if (message.overallOrdinal != null && Object.hasOwnProperty.call(message, "overallOrdinal"))
-            writer.uint32(/* id 3, wireType 0 =*/24).int32(message.overallOrdinal);
-        if (message.percentileByPopulation != null && Object.hasOwnProperty.call(message, "percentileByPopulation"))
-            writer.uint32(/* id 4, wireType 5 =*/37).float(message.percentileByPopulation);
+        if (message.ordinalByUniverse != null && message.ordinalByUniverse.length) {
+            writer.uint32(/* id 2, wireType 2 =*/18).fork();
+            for (var i = 0; i < message.ordinalByUniverse.length; ++i)
+                writer.int32(message.ordinalByUniverse[i]);
+            writer.ldelim();
+        }
+        if (message.overallOrdinalByUniverse != null && message.overallOrdinalByUniverse.length) {
+            writer.uint32(/* id 3, wireType 2 =*/26).fork();
+            for (var i = 0; i < message.overallOrdinalByUniverse.length; ++i)
+                writer.int32(message.overallOrdinalByUniverse[i]);
+            writer.ldelim();
+        }
+        if (message.percentileByPopulationByUniverse != null && message.percentileByPopulationByUniverse.length) {
+            writer.uint32(/* id 4, wireType 2 =*/34).fork();
+            for (var i = 0; i < message.percentileByPopulationByUniverse.length; ++i)
+                writer.float(message.percentileByPopulationByUniverse[i]);
+            writer.ldelim();
+        }
         return writer;
     };
 
@@ -139,15 +154,36 @@ $root.StatisticRow = (function() {
                     break;
                 }
             case 2: {
-                    message.ordinal = reader.int32();
+                    if (!(message.ordinalByUniverse && message.ordinalByUniverse.length))
+                        message.ordinalByUniverse = [];
+                    if ((tag & 7) === 2) {
+                        var end2 = reader.uint32() + reader.pos;
+                        while (reader.pos < end2)
+                            message.ordinalByUniverse.push(reader.int32());
+                    } else
+                        message.ordinalByUniverse.push(reader.int32());
                     break;
                 }
             case 3: {
-                    message.overallOrdinal = reader.int32();
+                    if (!(message.overallOrdinalByUniverse && message.overallOrdinalByUniverse.length))
+                        message.overallOrdinalByUniverse = [];
+                    if ((tag & 7) === 2) {
+                        var end2 = reader.uint32() + reader.pos;
+                        while (reader.pos < end2)
+                            message.overallOrdinalByUniverse.push(reader.int32());
+                    } else
+                        message.overallOrdinalByUniverse.push(reader.int32());
                     break;
                 }
             case 4: {
-                    message.percentileByPopulation = reader.float();
+                    if (!(message.percentileByPopulationByUniverse && message.percentileByPopulationByUniverse.length))
+                        message.percentileByPopulationByUniverse = [];
+                    if ((tag & 7) === 2) {
+                        var end2 = reader.uint32() + reader.pos;
+                        while (reader.pos < end2)
+                            message.percentileByPopulationByUniverse.push(reader.float());
+                    } else
+                        message.percentileByPopulationByUniverse.push(reader.float());
                     break;
                 }
             default:
@@ -188,15 +224,27 @@ $root.StatisticRow = (function() {
         if (message.statval != null && message.hasOwnProperty("statval"))
             if (typeof message.statval !== "number")
                 return "statval: number expected";
-        if (message.ordinal != null && message.hasOwnProperty("ordinal"))
-            if (!$util.isInteger(message.ordinal))
-                return "ordinal: integer expected";
-        if (message.overallOrdinal != null && message.hasOwnProperty("overallOrdinal"))
-            if (!$util.isInteger(message.overallOrdinal))
-                return "overallOrdinal: integer expected";
-        if (message.percentileByPopulation != null && message.hasOwnProperty("percentileByPopulation"))
-            if (typeof message.percentileByPopulation !== "number")
-                return "percentileByPopulation: number expected";
+        if (message.ordinalByUniverse != null && message.hasOwnProperty("ordinalByUniverse")) {
+            if (!Array.isArray(message.ordinalByUniverse))
+                return "ordinalByUniverse: array expected";
+            for (var i = 0; i < message.ordinalByUniverse.length; ++i)
+                if (!$util.isInteger(message.ordinalByUniverse[i]))
+                    return "ordinalByUniverse: integer[] expected";
+        }
+        if (message.overallOrdinalByUniverse != null && message.hasOwnProperty("overallOrdinalByUniverse")) {
+            if (!Array.isArray(message.overallOrdinalByUniverse))
+                return "overallOrdinalByUniverse: array expected";
+            for (var i = 0; i < message.overallOrdinalByUniverse.length; ++i)
+                if (!$util.isInteger(message.overallOrdinalByUniverse[i]))
+                    return "overallOrdinalByUniverse: integer[] expected";
+        }
+        if (message.percentileByPopulationByUniverse != null && message.hasOwnProperty("percentileByPopulationByUniverse")) {
+            if (!Array.isArray(message.percentileByPopulationByUniverse))
+                return "percentileByPopulationByUniverse: array expected";
+            for (var i = 0; i < message.percentileByPopulationByUniverse.length; ++i)
+                if (typeof message.percentileByPopulationByUniverse[i] !== "number")
+                    return "percentileByPopulationByUniverse: number[] expected";
+        }
         return null;
     };
 
@@ -214,12 +262,27 @@ $root.StatisticRow = (function() {
         var message = new $root.StatisticRow();
         if (object.statval != null)
             message.statval = Number(object.statval);
-        if (object.ordinal != null)
-            message.ordinal = object.ordinal | 0;
-        if (object.overallOrdinal != null)
-            message.overallOrdinal = object.overallOrdinal | 0;
-        if (object.percentileByPopulation != null)
-            message.percentileByPopulation = Number(object.percentileByPopulation);
+        if (object.ordinalByUniverse) {
+            if (!Array.isArray(object.ordinalByUniverse))
+                throw TypeError(".StatisticRow.ordinalByUniverse: array expected");
+            message.ordinalByUniverse = [];
+            for (var i = 0; i < object.ordinalByUniverse.length; ++i)
+                message.ordinalByUniverse[i] = object.ordinalByUniverse[i] | 0;
+        }
+        if (object.overallOrdinalByUniverse) {
+            if (!Array.isArray(object.overallOrdinalByUniverse))
+                throw TypeError(".StatisticRow.overallOrdinalByUniverse: array expected");
+            message.overallOrdinalByUniverse = [];
+            for (var i = 0; i < object.overallOrdinalByUniverse.length; ++i)
+                message.overallOrdinalByUniverse[i] = object.overallOrdinalByUniverse[i] | 0;
+        }
+        if (object.percentileByPopulationByUniverse) {
+            if (!Array.isArray(object.percentileByPopulationByUniverse))
+                throw TypeError(".StatisticRow.percentileByPopulationByUniverse: array expected");
+            message.percentileByPopulationByUniverse = [];
+            for (var i = 0; i < object.percentileByPopulationByUniverse.length; ++i)
+                message.percentileByPopulationByUniverse[i] = Number(object.percentileByPopulationByUniverse[i]);
+        }
         return message;
     };
 
@@ -236,20 +299,30 @@ $root.StatisticRow = (function() {
         if (!options)
             options = {};
         var object = {};
-        if (options.defaults) {
-            object.statval = 0;
-            object.ordinal = 0;
-            object.overallOrdinal = 0;
-            object.percentileByPopulation = 0;
+        if (options.arrays || options.defaults) {
+            object.ordinalByUniverse = [];
+            object.overallOrdinalByUniverse = [];
+            object.percentileByPopulationByUniverse = [];
         }
+        if (options.defaults)
+            object.statval = 0;
         if (message.statval != null && message.hasOwnProperty("statval"))
             object.statval = options.json && !isFinite(message.statval) ? String(message.statval) : message.statval;
-        if (message.ordinal != null && message.hasOwnProperty("ordinal"))
-            object.ordinal = message.ordinal;
-        if (message.overallOrdinal != null && message.hasOwnProperty("overallOrdinal"))
-            object.overallOrdinal = message.overallOrdinal;
-        if (message.percentileByPopulation != null && message.hasOwnProperty("percentileByPopulation"))
-            object.percentileByPopulation = options.json && !isFinite(message.percentileByPopulation) ? String(message.percentileByPopulation) : message.percentileByPopulation;
+        if (message.ordinalByUniverse && message.ordinalByUniverse.length) {
+            object.ordinalByUniverse = [];
+            for (var j = 0; j < message.ordinalByUniverse.length; ++j)
+                object.ordinalByUniverse[j] = message.ordinalByUniverse[j];
+        }
+        if (message.overallOrdinalByUniverse && message.overallOrdinalByUniverse.length) {
+            object.overallOrdinalByUniverse = [];
+            for (var j = 0; j < message.overallOrdinalByUniverse.length; ++j)
+                object.overallOrdinalByUniverse[j] = message.overallOrdinalByUniverse[j];
+        }
+        if (message.percentileByPopulationByUniverse && message.percentileByPopulationByUniverse.length) {
+            object.percentileByPopulationByUniverse = [];
+            for (var j = 0; j < message.percentileByPopulationByUniverse.length; ++j)
+                object.percentileByPopulationByUniverse[j] = options.json && !isFinite(message.percentileByPopulationByUniverse[j]) ? String(message.percentileByPopulationByUniverse[j]) : message.percentileByPopulationByUniverse[j];
+        }
         return object;
     };
 
@@ -792,6 +865,7 @@ $root.Article = (function() {
      * @property {string|null} [articleType] Article articleType
      * @property {Array.<IStatisticRow>|null} [rows] Article rows
      * @property {Array.<IRelatedButtons>|null} [related] Article related
+     * @property {Array.<string>|null} [universes] Article universes
      */
 
     /**
@@ -805,6 +879,7 @@ $root.Article = (function() {
     function Article(properties) {
         this.rows = [];
         this.related = [];
+        this.universes = [];
         if (properties)
             for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
                 if (properties[keys[i]] != null)
@@ -860,6 +935,14 @@ $root.Article = (function() {
     Article.prototype.related = $util.emptyArray;
 
     /**
+     * Article universes.
+     * @member {Array.<string>} universes
+     * @memberof Article
+     * @instance
+     */
+    Article.prototype.universes = $util.emptyArray;
+
+    /**
      * Creates a new Article instance using the specified properties.
      * @function create
      * @memberof Article
@@ -897,6 +980,9 @@ $root.Article = (function() {
         if (message.related != null && message.related.length)
             for (var i = 0; i < message.related.length; ++i)
                 $root.RelatedButtons.encode(message.related[i], writer.uint32(/* id 6, wireType 2 =*/50).fork()).ldelim();
+        if (message.universes != null && message.universes.length)
+            for (var i = 0; i < message.universes.length; ++i)
+                writer.uint32(/* id 7, wireType 2 =*/58).string(message.universes[i]);
         return writer;
     };
 
@@ -957,6 +1043,12 @@ $root.Article = (function() {
                     if (!(message.related && message.related.length))
                         message.related = [];
                     message.related.push($root.RelatedButtons.decode(reader, reader.uint32()));
+                    break;
+                }
+            case 7: {
+                    if (!(message.universes && message.universes.length))
+                        message.universes = [];
+                    message.universes.push(reader.string());
                     break;
                 }
             default:
@@ -1024,6 +1116,13 @@ $root.Article = (function() {
                     return "related." + error;
             }
         }
+        if (message.universes != null && message.hasOwnProperty("universes")) {
+            if (!Array.isArray(message.universes))
+                return "universes: array expected";
+            for (var i = 0; i < message.universes.length; ++i)
+                if (!$util.isString(message.universes[i]))
+                    return "universes: string[] expected";
+        }
         return null;
     };
 
@@ -1067,6 +1166,13 @@ $root.Article = (function() {
                 message.related[i] = $root.RelatedButtons.fromObject(object.related[i]);
             }
         }
+        if (object.universes) {
+            if (!Array.isArray(object.universes))
+                throw TypeError(".Article.universes: array expected");
+            message.universes = [];
+            for (var i = 0; i < object.universes.length; ++i)
+                message.universes[i] = String(object.universes[i]);
+        }
         return message;
     };
 
@@ -1086,6 +1192,7 @@ $root.Article = (function() {
         if (options.arrays || options.defaults) {
             object.rows = [];
             object.related = [];
+            object.universes = [];
         }
         if (options.defaults) {
             object.shortname = "";
@@ -1110,6 +1217,11 @@ $root.Article = (function() {
             object.related = [];
             for (var j = 0; j < message.related.length; ++j)
                 object.related[j] = $root.RelatedButtons.toObject(message.related[j], options);
+        }
+        if (message.universes && message.universes.length) {
+            object.universes = [];
+            for (var j = 0; j < message.universes.length; ++j)
+                object.universes[j] = message.universes[j];
         }
         return object;
     };
