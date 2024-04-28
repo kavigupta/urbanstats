@@ -9,6 +9,7 @@ import "../components/article.css";
 import { load_settings } from './settings.js';
 import { mobileLayout } from '../utils/responsive.js';
 import { create_screenshot } from '../components/screenshot.js';
+import { get_universe, set_universe } from '../universe.js';
 
 
 class PageTemplate extends React.Component {
@@ -19,10 +20,23 @@ class PageTemplate extends React.Component {
 
         this.statistic_category_metadata_checkboxes = statistic_category_metadata_checkboxes;
 
+        // get from url field
+        this.set_universe = universe => {
+            this.setState({ current_universe: universe });
+            set_universe(universe);
+        }
+
+        this.all_universes = [
+            "world",
+            "USA",
+            "California, USA",
+        ]
+
         this.state = {
             settings: settings,
             hamburger_open: false,
             screenshot_mode: false,
+            current_universe: get_universe(),
         }
     }
 
@@ -37,6 +51,10 @@ class PageTemplate extends React.Component {
                         hamburger_open={this.state.hamburger_open}
                         set_hamburger_open={x => this.setState({ hamburger_open: x })}
                         has_screenshot={this.has_screenshot_button()}
+                        has_universe_selector={this.has_universe_selector()}
+                        current_universe={this.state.current_universe}
+                        all_universes={this.all_universes}
+                        on_universe_update={universe => this.set_universe(universe)}
                         screenshot_mode={this.state.screenshot_mode}
                         initiate_screenshot={() => this.initiate_screenshot()}
                     />
@@ -83,6 +101,10 @@ class PageTemplate extends React.Component {
     }
 
     has_screenshot_button() {
+        return false;
+    }
+
+    has_universe_selector() {
         return false;
     }
 

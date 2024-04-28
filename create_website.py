@@ -14,7 +14,6 @@ import tqdm.auto as tqdm
 from output_geometry import produce_all_geometry_json
 from stats_for_shapefile import compute_statistics_for_shapefile
 from produce_html_page import (
-    add_ordinals,
     create_page_json,
     get_explanation_page,
     get_statistic_categories,
@@ -31,8 +30,19 @@ from urbanstats.consolidated_data.produce_consolidated_data import (
 from urbanstats.data.gpw import compute_gpw_data_for_shapefile_table
 from urbanstats.mapper.ramp import output_ramps
 
+from urbanstats.ordinals.compute_ordinals import (
+    add_ordinals,
+    compute_all_ordinals,
+    compute_all_ordinals_for_universe,
+)
 from urbanstats.protobuf.utils import save_data_list, save_string_list
 from urbanstats.special_cases.simplified_country import all_simplified_countries
+from urbanstats.universe.annotate_universes import (
+    all_universes,
+    attach_intl_universes,
+    attach_usa_universes,
+)
+from urbanstats.universe.icons import place_icons_in_site_folder
 from urbanstats.website_data.index import export_index
 
 
@@ -78,28 +88,27 @@ def international_shapefile():
     return intl
 
 
+@lru_cache(maxsize=None)
 def shapefile_without_ordinals():
     usa = american_shapefile()
+    attach_usa_universes(usa)
     intl = international_shapefile()
+    attach_intl_universes(intl)
     full = pd.concat([usa, intl])
     popu = np.array(full.population)
     popu[np.isnan(popu)] = full.gpw_population[np.isnan(popu)]
     full["best_population_estimate"] = popu
+    full = full.sort_values("longname")
+    full = full.sort_values("best_population_estimate", ascending=False, kind="stable")
     return full
 
 
 @lru_cache(maxsize=None)
-def full_shapefile():
+def all_ordinals():
     full = shapefile_without_ordinals()
-    full = pd.concat(
-        [
-            add_ordinals(full[full.type == x], overall_ordinal=False)
-            for x in tqdm.tqdm(sorted(set(full.type)), desc="adding ordinals")
-        ]
-    )
-    full = add_ordinals(full, overall_ordinal=True)
-    full = full.sort_values("best_population_estimate")[::-1]
-    return full
+    keys = internal_statistic_names()
+    all_ords = compute_all_ordinals(full, keys)
+    return all_ords
 
 
 def next_prev(full):
@@ -127,7 +136,7 @@ def next_prev_within_type(full):
     return by_statistic
 
 
-def create_page_jsons(site_folder, full):
+def create_page_jsons(site_folder, full, ordering):
     # ptrs_overall = next_prev(full)
     # ptrs_within_type = next_prev_within_type(full)
     long_to_short = dict(zip(full.longname, full.shortname))
@@ -144,6 +153,7 @@ def create_page_jsons(site_folder, full):
             long_to_short,
             long_to_pop,
             long_to_type,
+            ordering,
         )
 
 
@@ -157,44 +167,6 @@ def get_statistic_column_path(column):
     if isinstance(column, tuple):
         column = "-".join(str(x) for x in column)
     return column.replace("/", " slash ")
-
-
-def output_ordering(site_folder, full):
-    counts = {}
-    for statistic_column in internal_statistic_names():
-        print(statistic_column)
-        full_by_name = full[
-            [
-                "longname",
-                "type",
-                (statistic_column, "overall_ordinal"),
-                (statistic_column, "percentile_by_population"),
-                statistic_column,
-            ]
-        ].sort_values("longname")
-        full_sorted = full_by_name.sort_values(
-            (statistic_column, "overall_ordinal"), kind="stable"
-        )
-        statistic_column_path = get_statistic_column_path(statistic_column)
-        path = f"{site_folder}/order/{statistic_column_path}__overall.gz"
-        save_string_list(list(full_sorted.longname), path)
-        counts[statistic_column, "overall"] = int(
-            (~np.isnan(full_sorted[statistic_column])).sum()
-        )
-        for typ in sorted(set(full_sorted.type)):
-            path = f"{site_folder}/order/{statistic_column_path}__{typ}.gz"
-            for_typ = full_sorted[full_sorted.type == typ]
-            names = for_typ.longname
-            counts[statistic_column, typ] = int(
-                (~np.isnan(for_typ[statistic_column])).sum()
-            )
-            save_string_list(list(names), path)
-            value = for_typ[statistic_column]
-            percentile = for_typ[(statistic_column, "percentile_by_population")]
-            save_data_list(value, percentile, path.replace(".gz", "_data.gz"))
-
-    with open(f"react/src/data/counts_by_article_type.json", "w") as f:
-        json.dump(list(counts.items()), f)
 
 
 def get_idxs_by_type():
@@ -249,23 +221,24 @@ def main(
             pass
 
     if not no_geo:
-        full = full_shapefile()
-        produce_all_geometry_json(f"{site_folder}/shape", set(full.longname))
+        produce_all_geometry_json(
+            f"{site_folder}/shape", set(shapefile_without_ordinals().longname)
+        )
 
     if not no_data:
-        full = full_shapefile()
         if not no_data_jsons:
-            create_page_jsons(site_folder, full)
+            create_page_jsons(site_folder, shapefile_without_ordinals(), all_ordinals())
 
         if not no_index:
-            full = full_shapefile()
-            export_index(full, site_folder)
+            export_index(shapefile_without_ordinals(), site_folder)
 
-        output_ordering(site_folder, full)
+        from urbanstats.ordinals.output_ordering import output_ordering
+
+        output_ordering(site_folder, all_ordinals())
 
         full_consolidated_data(site_folder)
 
-        all_simplified_countries(full, f"{site_folder}/shape")
+        all_simplified_countries(shapefile_without_ordinals(), f"{site_folder}/shape")
 
     shutil.copy("html_templates/article.html", f"{site_folder}")
     shutil.copy("html_templates/comparison.html", f"{site_folder}")
@@ -306,6 +279,8 @@ def main(
         json.dump(list([name for name in statistic_internal_to_display_name()]), f)
     with open(f"react/src/data/explanation_page.json", "w") as f:
         json.dump(list([name for name in get_explanation_page().values()]), f)
+    with open(f"react/src/data/universes_ordered.json", "w") as f:
+        json.dump(list([name for name in all_universes()]), f)
 
     output_names()
     output_ramps()
@@ -334,6 +309,7 @@ def main(
     shutil.copy("dist/data-credit.js", f"{site_folder}/scripts/")
     shutil.copy("dist/mapper.js", f"{site_folder}/scripts/")
     shutil.copy("dist/quiz.js", f"{site_folder}/scripts/")
+    place_icons_in_site_folder(site_folder)
 
     from urbanstats.games.quiz import generate_quizzes
     from urbanstats.games.retrostat import generate_retrostats

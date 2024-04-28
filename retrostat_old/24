@@ -1,0 +1,107 @@
+[
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Individual Income > $100k %",
+      "question": "higher % of people who have individual income over $100k",
+      "longname_a": "Concord-Walnut Creek [Urban Area], CA, USA",
+      "longname_b": "Honolulu [Urban Area], HI, USA",
+      "stat_a": 0.33073387551386285,
+      "stat_b": 0.12897593690311263
+    },
+    "b": {
+      "stat_column": "Mean distance to nearest Airport",
+      "question": "!FULL Which has less access to airports (higher population-weighted mean distance)?",
+      "longname_a": "Placer County, California, USA",
+      "longname_b": "Collin County, Texas, USA",
+      "stat_a": 31.086310678876046,
+      "stat_b": 34.34845912664775
+    },
+    "a_ease": 0.7212698412698413,
+    "b_ease": 0.3083645443196005
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Agriculture, forestry, fishing and hunting %",
+      "question": "higher % of workers employed in the agriculture, forestry, fishing, and hunting industries",
+      "longname_a": "Texas, USA",
+      "longname_b": "Idaho, USA",
+      "stat_a": 0.007864455367423076,
+      "stat_b": 0.04103249133257653
+    },
+    "b": {
+      "stat_column": "Divorced %",
+      "question": "higher % of people who are divorced",
+      "longname_a": "NY-03, USA",
+      "longname_b": "OH-05, USA",
+      "stat_a": 0.06417042854319432,
+      "stat_b": 0.11668084662534314
+    },
+    "a_ease": 0.7523029682702149,
+    "b_ease": 0.3353204172876304
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Transportation occupations %",
+      "question": "higher % of workers employed in transportation occupations",
+      "longname_a": "CT-04, USA",
+      "longname_b": "FL-18, USA",
+      "stat_a": 0.023935584892090286,
+      "stat_b": 0.048423468939060334
+    },
+    "b": {
+      "stat_column": "1BR Rent > $1500 %",
+      "question": "higher % of units with 1br rent over $1500",
+      "longname_a": "PA-06, USA",
+      "longname_b": "MO-05, USA",
+      "stat_a": 0.20768250545269867,
+      "stat_b": 0.08283547725932104
+    },
+    "a_ease": 0.23336745138178097,
+    "b_ease": 0.6518046709129511
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Individual Income < $50k %",
+      "question": "higher % of people who have individual income under $50k",
+      "longname_a": "West Palm Beach-Fort Pierce FL Media Market, USA",
+      "longname_b": "Richmond-Petersburg VA Media Market, USA",
+      "stat_a": 0.6699779985386649,
+      "stat_b": 0.629544868901481
+    },
+    "b": {
+      "stat_column": "1BR Rent > $1500 %",
+      "question": "higher % of units with 1br rent over $1500",
+      "longname_a": "York-Hanover MSA, PA, USA",
+      "longname_b": "Aguadilla-Isabela MSA, PR, USA",
+      "stat_a": 0.026704968613682305,
+      "stat_b": 0.011636927851047323
+    },
+    "a_ease": 0.39596602972399153,
+    "b_ease": 0.8055141579731744
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Non-citizen %",
+      "question": "higher % of residents who are non-citizens",
+      "longname_a": "The Woodlands-Conroe [Urban Area], TX, USA",
+      "longname_b": "Harrisburg [Urban Area], PA, USA",
+      "stat_a": 0.09908688950114994,
+      "stat_b": 0.03798215782908917
+    },
+    "b": {
+      "stat_column": "Commute Walk %",
+      "question": "higher % of people who commute by walking",
+      "longname_a": "El Paso TX (Las Cruces NM) Media Market, USA",
+      "longname_b": "Traverse City-Cadillac MI Media Market, USA",
+      "stat_a": 0.014477458051487598,
+      "stat_b": 0.026340057117273344
+    },
+    "a_ease": 0.8264669163545568,
+    "b_ease": 0.4184126984126984
+  }
+]

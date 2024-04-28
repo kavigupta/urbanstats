@@ -1,0 +1,107 @@
+[
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "2020 Presidential Election",
+      "question": "!FULL Which voted more for Biden in the 2020 presidential election?",
+      "longname_a": "Raleigh city, North Carolina, USA",
+      "longname_b": "Indianapolis city (balance), Indiana, USA",
+      "stat_a": 0.428181537402941,
+      "stat_b": 0.30560990413692374
+    },
+    "b": {
+      "stat_column": "Born in state of residence %",
+      "question": "higher % of people who were born in their state of residence",
+      "longname_a": "SC-05, USA",
+      "longname_b": "CA-13, USA",
+      "stat_a": 0.5297206094448522,
+      "stat_b": 0.6450897178291297
+    },
+    "a_ease": 0.7101024890190337,
+    "b_ease": 0.3086734693877551
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Gen Alpha %",
+      "question": "higher % of people who are gen alpha",
+      "longname_a": "Bakersfield MSA, CA, USA",
+      "longname_b": "Scranton--Wilkes-Barre--Hazleton MSA, PA, USA",
+      "stat_a": 0.15569236135017916,
+      "stat_b": 0.10629901741110478
+    },
+    "b": {
+      "stat_column": "Transportation and warehousing %",
+      "question": "higher % of workers employed in the Transportation and warehousing industry",
+      "longname_a": "Nebraska, USA",
+      "longname_b": "Michigan, USA",
+      "stat_a": 0.048713968234832594,
+      "stat_b": 0.03774622378773304
+    },
+    "a_ease": 0.740340030911901,
+    "b_ease": 0.27685325264750377
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Asian %",
+      "question": "higher % of people who are Asian",
+      "longname_a": "Des Moines-Ames IA Media Market, USA",
+      "longname_b": "Harrisburg-Lancaster-Lebanon-York PA Media Market, USA",
+      "stat_a": 0.032734814775437174,
+      "stat_b": 0.027213170721357576
+    },
+    "b": {
+      "stat_column": "Citizen by Naturalization %",
+      "question": "higher % of residents who are citizens by naturalization",
+      "longname_a": "Pittsburgh [Urban Area], PA, USA",
+      "longname_b": "Concord-Walnut Creek [Urban Area], CA, USA",
+      "stat_a": 0.025513029982915866,
+      "stat_b": 0.14110887759586638
+    },
+    "a_ease": 0.2756827048114434,
+    "b_ease": 0.7425227568270482
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "1BR Rent > $1500 %",
+      "question": "higher % of units with 1br rent over $1500",
+      "longname_a": "Oklahoma City MSA, OK, USA",
+      "longname_b": "Manchester-Nashua MSA, NH, USA",
+      "stat_a": 0.04119160640610443,
+      "stat_b": 0.14336016096579476
+    },
+    "b": {
+      "stat_column": "2016-2020 Swing",
+      "question": "!FULL Which swung towards Democrats more from 2016 to 2020?",
+      "longname_a": "UT-02, USA",
+      "longname_b": "IN-08, USA",
+      "stat_a": -0.007397489121594297,
+      "stat_b": 0.01195996873456101
+    },
+    "a_ease": 0.7971391417425228,
+    "b_ease": 0.39590854392298436
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Silent %",
+      "question": "higher % of people who are silent generation",
+      "longname_a": "North Port-Sarasota-Bradenton MSA, FL, USA",
+      "longname_b": "Spartanburg MSA, SC, USA",
+      "stat_a": 0.15129950495049505,
+      "stat_b": 0.06310638583706603
+    },
+    "b": {
+      "stat_column": "Commute Time < 15 min %",
+      "question": "higher % of people who have commute time under 15 min",
+      "longname_a": "Kansas City city, Missouri, USA",
+      "longname_b": "Chicago city, Illinois, USA",
+      "stat_a": 0.25882077608725046,
+      "stat_b": 0.11277327680654776
+    },
+    "a_ease": 0.8158844765342961,
+    "b_ease": 0.3953185955786736
+  }
+]
