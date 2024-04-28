@@ -120,7 +120,11 @@ class PageTemplate extends React.Component {
     async screencap() {
         const config = this.screencap_elements();
 
-        await create_screenshot(config);
+        try {
+            await create_screenshot(config);
+        } catch (e) {
+            console.error(e);
+        }
     }
 
     async initiate_screenshot() {
