@@ -1,7 +1,8 @@
 export { ScreenshotButton, create_screenshot };
 
 import React from 'react';
-import domtoimage from 'dom-to-image';
+import domtoimage from 'dom-to-image-more';
+import { saveAs } from 'file-saver';
 
 
 class ScreenshotButton extends React.Component {
@@ -133,13 +134,7 @@ async function create_screenshot(config) {
 
     ctx.drawImage(banner, pad_around, start, overall_width, banner_height);
 
-    const a = document.createElement("a");
-    console.log("HI")
-    
-    // const url = canvas.toDataURL("image/png");
-    // // print the length of the url to make sure it's not too long
-    // console.log(url.length);
-    // a.href = url;
-    // a.download = config.path;
-    // a.click();
+    canvas.toBlob(function (blob) {
+        saveAs(blob, "pretty image.png");
+    });
 }
