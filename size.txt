@@ -137,3 +137,15 @@ adding values and population_percentiles to order/
 737     data
 1130    shape
 2330    total
+
+adding ordering by subregion
+
+5       index
+5       quiz
+8       consolidated
+12      quiz_sample_info
+37      scripts
+1130    shape
+1347    data
+3007    order
+5548    total
