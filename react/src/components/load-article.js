@@ -11,11 +11,12 @@ function for_type(universe, statcol, typ) {
     )[0][1];
 }
 
-function load_article(universe, data, settings) {
+function load_article(data, settings) {
+
+    const universe = "world";
 
     // index of universe in data.universes
-    // 0 for now
-    const universe_index = 0;
+    const universe_index = data.universes.indexOf(universe);
     let article_type = data.articleType;
 
     const categories = require("../data/statistic_category_list.json");
