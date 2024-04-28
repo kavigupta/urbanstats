@@ -56,11 +56,9 @@ class ScreenshotButton extends React.Component {
 }
 
 async function create_screenshot(config) {
-    console.log("HI 0")
     const overall_width = config.overall_width;
 
     async function screencap_element(ref) {
-        console.log(ref);
         const scale_factor = overall_width / ref.offsetWidth;
         const link = await domtoimage.toPng(ref, {
             bgcolor: "white",
@@ -79,7 +77,6 @@ async function create_screenshot(config) {
     for (const ref of config.elements_to_render) {
         try {
             const [png_link, height] = await screencap_element(ref);
-            console.log("screen captured")
             png_links.push(png_link);
             heights.push(height);
         } catch (e) {
@@ -87,8 +84,6 @@ async function create_screenshot(config) {
             console.error(e);
         }
     }
-
-    console.log("HI 1")
 
     const canvas = document.createElement("canvas");
 
@@ -106,8 +101,6 @@ async function create_screenshot(config) {
 
     canvas.width = pad_around * 2 + overall_width;
     canvas.height = pad_around + pad_between * (png_links.length - 1) + heights.reduce((a, b) => a + b, 0) + banner_height;
-
-    console.log("HI A");
 
     const ctx = canvas.getContext("2d");
     const imgs = [];
