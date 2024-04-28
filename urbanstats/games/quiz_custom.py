@@ -1,5 +1,5 @@
 from functools import lru_cache
-from create_website import full_shapefile
+from create_website import shapefile_without_ordinals
 from produce_html_page import statistic_internal_to_display_name
 
 from .quiz import stats_to_display
@@ -7,7 +7,7 @@ from .quiz import stats_to_display
 
 @lru_cache(maxsize=None)
 def shapefile():
-    return full_shapefile().set_index("longname")
+    return shapefile_without_ordinals().set_index("longname")
 
 
 def custom_quiz_question(stat_column_name, longname_a, longname_b):
