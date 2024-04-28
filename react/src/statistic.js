@@ -42,7 +42,7 @@ async function loadPage() {
     root.render(<StatisticPanel
         statname={statname}
         statpath={statpath}
-        count={for_type(statcol, article_type)}
+        count={for_type("world", statcol, article_type)}
         explanation_page={explanation_page}
         ordering={order}
         highlight={highlight}
