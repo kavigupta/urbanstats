@@ -1,0 +1,7 @@
+.hoverable_elements {
+    background-color: #ebebff;
+}
+
+.hoverable_elements:hover {
+    background-color: #e9d2fd;
+}

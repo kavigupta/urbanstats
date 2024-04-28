@@ -36,6 +36,7 @@ from urbanstats.ordinals.compute_ordinals import (
 )
 from urbanstats.protobuf.utils import save_data_list, save_string_list
 from urbanstats.special_cases.simplified_country import all_simplified_countries
+from urbanstats.universe.icons import place_icons_in_site_folder
 from urbanstats.website_data.index import export_index
 
 
@@ -298,6 +299,7 @@ def main(
     shutil.copy("dist/data-credit.js", f"{site_folder}/scripts/")
     shutil.copy("dist/mapper.js", f"{site_folder}/scripts/")
     shutil.copy("dist/quiz.js", f"{site_folder}/scripts/")
+    place_icons_in_site_folder(site_folder)
 
     from urbanstats.games.quiz import generate_quizzes
     from urbanstats.games.retrostat import generate_retrostats
