@@ -135,7 +135,10 @@ async function create_screenshot(config, universe) {
             flag.onload = () => resolve();
         })
         // draw on bottom left, same height as banner
-        ctx.drawImage(flag, pad_around, start, banner_height, banner_height);
+        const flag_height = banner_height / 2;
+        const offset = flag_height / 2;
+        const flag_width = flag.width * flag_height / flag.height;
+        ctx.drawImage(flag, pad_around + offset, start + offset, flag_width, flag_height);
     }
 
     canvas.toBlob(function (blob) {
