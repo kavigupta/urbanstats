@@ -186,6 +186,7 @@ function UniverseDropdown({ all_universes, on_universe_update, flag_size }) {
                         >
                             <img src={universe_path(universe)} alt={universe}
                                 width={flag_size}
+                                className="universe-selector"
                             />
                             <div className="serif">
                                 {universe == "world" ? "World" : universe}
