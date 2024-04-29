@@ -152,6 +152,7 @@ function UniverseSelector({ current_universe, all_universes, on_universe_update 
                 }
             }>
                 <img src={`/icons/flags/${current_universe}.png`} alt={current_universe} width={width}
+                    className="universe-selector"
                     onClick={() => set_dropdown_open(!dropdown_open)}
                 />
             </div>
@@ -186,7 +187,7 @@ function UniverseDropdown({ all_universes, on_universe_update, flag_size }) {
                         >
                             <img src={universe_path(universe)} alt={universe}
                                 width={flag_size}
-                                className="universe-selector"
+                                className="universe-selector-option"
                             />
                             <div className="serif">
                                 {universe == "world" ? "World" : universe}
