@@ -340,6 +340,11 @@ class DataCreditPanel extends PageTemplate {
                     but since the cells are all smaller than 1 square kilometer, this should not be a major issue for
                     radii above 1km (which is the smallest radius we use for GHS-POP data).
                 </div>
+                <h1> Flags </h1>
+                <div>
+                    Every flag for the universe selector is from Wikipedia. All of them are free to use under
+                    any circumstances, at least according to the Wikipedia page for the flag.
+                </div>
             </div>
         );
     }
