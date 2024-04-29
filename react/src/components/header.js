@@ -8,7 +8,7 @@ import { SearchBox } from './search';
 import { Nav } from './hamburger';
 import { mobileLayout } from '../utils/responsive';
 import { ScreenshotButton } from './screenshot';
-import { article_link } from '../navigation/links';
+import { article_link, universe_path } from '../navigation/links';
 
 const HEADER_BAR_SIZE = "48px";
 const HEADER_BAR_SIZE_DESKTOP = "60px";
@@ -152,6 +152,7 @@ function UniverseSelector({ current_universe, all_universes, on_universe_update 
                 }
             }>
                 <img src={`/icons/flags/${current_universe}.png`} alt={current_universe} width={width}
+                    className="universe-selector"
                     onClick={() => set_dropdown_open(!dropdown_open)}
                 />
             </div>
@@ -184,8 +185,9 @@ function UniverseDropdown({ all_universes, on_universe_update, flag_size }) {
                         }}
                             className="hoverable_elements"
                         >
-                            <img src={`/icons/flags/${universe}.png`} alt={universe}
+                            <img src={universe_path(universe)} alt={universe}
                                 width={flag_size}
+                                className="universe-selector-option"
                             />
                             <div className="serif">
                                 {universe == "world" ? "World" : universe}

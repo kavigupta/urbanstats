@@ -1,16 +1,18 @@
-import { get_universe } from "../universe";
+import { add_universe_to_params, get_universe } from "../universe";
 
 export {
     sanitize,
     article_link, shape_link, data_link, ordering_link, ordering_data_link,
     explanation_page_link,
     consolidated_shape_link, consolidated_stats_link, comparison_link,
-    statistic_link
+    statistic_link,
+    universe_path
 };
 
 function article_link(longname) {
     const params = new URLSearchParams()
     params.set('longname', sanitize(longname));
+    add_universe_to_params(params);
     return "/article.html?" + params.toString();
 }
 
@@ -45,6 +47,7 @@ function consolidated_stats_link(typ) {
 function comparison_link(names) {
     const params = new URLSearchParams()
     params.set('longnames', JSON.stringify(names.map(sanitize)));
+    add_universe_to_params(params);
     return "/comparison.html?" + params.toString();
 }
 
@@ -70,6 +73,7 @@ function statistic_link(statname, article_type, start, amount, order, highlight)
     if (highlight !== undefined) {
         params.set('highlight', highlight);
     }
+    add_universe_to_params(params);
     return "/statistic.html?" + params.toString();
 }
 
@@ -82,4 +86,8 @@ function sanitize(longname, spaces_around_slash = true) {
     }
     x = x.replace("%", "%25");
     return x;
+}
+
+function universe_path(universe) {
+    return `/icons/flags/${universe}.png`
 }

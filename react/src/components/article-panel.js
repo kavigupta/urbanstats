@@ -24,7 +24,7 @@ class ArticlePanel extends PageTemplate {
 
     main_content() {
         const self = this;
-        const [filtered_rows, _] = load_article(this.props, this.state.settings);
+        const [filtered_rows, _] = load_article(this.state.current_universe, this.props, this.state.settings);
 
         return (
             <div>
@@ -93,6 +93,10 @@ class ArticlePanel extends PageTemplate {
             overall_width: this.table_ref.current.offsetWidth * 2,
             elements_to_render: [this.headers_ref.current, this.table_ref.current, this.map_ref.current],
         }
+    }
+
+    has_universe_selector() {
+        return true;
     }
 }
 

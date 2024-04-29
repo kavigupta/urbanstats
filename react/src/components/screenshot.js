@@ -3,6 +3,7 @@ export { ScreenshotButton, create_screenshot };
 import React from 'react';
 import domtoimage from 'dom-to-image-more';
 import { saveAs } from 'file-saver';
+import { universe_path } from '../navigation/links';
 
 
 class ScreenshotButton extends React.Component {
@@ -55,7 +56,7 @@ class ScreenshotButton extends React.Component {
     }
 }
 
-async function create_screenshot(config) {
+async function create_screenshot(config, universe) {
     const overall_width = config.overall_width;
 
     async function screencap_element(ref) {
@@ -126,6 +127,19 @@ async function create_screenshot(config) {
     start -= pad_between;
 
     ctx.drawImage(banner, pad_around, start, overall_width, banner_height);
+
+    if (universe != undefined) {
+        const flag = new Image();
+        flag.src = universe_path(universe);
+        await new Promise((resolve, reject) => {
+            flag.onload = () => resolve();
+        })
+        // draw on bottom left, same height as banner
+        const flag_height = banner_height / 2;
+        const offset = flag_height / 2;
+        const flag_width = flag.width * flag_height / flag.height;
+        ctx.drawImage(flag, pad_around + offset, start + offset, flag_width, flag_height);
+    }
 
     canvas.toBlob(function (blob) {
         saveAs(blob, config.path);

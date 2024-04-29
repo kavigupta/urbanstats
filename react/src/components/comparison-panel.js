@@ -49,13 +49,16 @@ class ComparisonPanel extends PageTemplate {
         }
     }
 
+    has_universe_selector() {
+        return true;
+    }
 
     main_content() {
         const self = this;
         var rows = [];
         var idxs = [];
         for (let i in this.props.datas) {
-            const [r, idx] = load_article(this.props.datas[i], this.state.settings);
+            const [r, idx] = load_article(this.state.current_universe, this.props.datas[i], this.state.settings);
             rows.push(r);
             idxs.push(idx);
         }

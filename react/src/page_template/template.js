@@ -26,11 +26,7 @@ class PageTemplate extends React.Component {
             set_universe(universe);
         }
 
-        this.all_universes = [
-            "world",
-            "USA",
-            "California, USA",
-        ]
+        this.all_universes = this.props.universes;
 
         this.state = {
             settings: settings,
@@ -121,7 +117,7 @@ class PageTemplate extends React.Component {
         const config = this.screencap_elements();
 
         try {
-            await create_screenshot(config);
+            await create_screenshot(config, this.has_universe_selector() ? this.state.current_universe : undefined);
         } catch (e) {
             console.error(e);
         }

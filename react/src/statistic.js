@@ -9,6 +9,7 @@ import { ArticlePanel } from './components/article-panel';
 import { loadProtobuf } from './load_json';
 import { StatisticPanel } from './components/statistic-panel.js';
 import { for_type } from './components/load-article.js';
+import { get_universe } from './universe.js';
 
 
 async function loadPage() {
@@ -39,10 +40,11 @@ async function loadPage() {
     }
     document.title = statname;
     const root = ReactDOM.createRoot(document.getElementById("root"));
+    const universes = require("./data/universes_ordered.json");
     root.render(<StatisticPanel
         statname={statname}
         statpath={statpath}
-        count={for_type("world", statcol, article_type)}
+        count={for_type(get_universe(), statcol, article_type)}
         explanation_page={explanation_page}
         ordering={order}
         highlight={highlight}
@@ -53,6 +55,7 @@ async function loadPage() {
         order={order}
         article_names={article_names}
         data={data}
+        universes={universes}
     />);
 }
 
