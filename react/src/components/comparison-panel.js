@@ -112,6 +112,7 @@ class ComparisonPanel extends PageTemplate {
                                         on_click={() => self.on_delete(i)}
                                         on_change={(x) => self.on_change(i, x)}
                                         screenshot_mode={this.state.screenshot_mode}
+                                        universe={this.state.current_universe}
                                     />
                                 </div>)
                             )}
@@ -136,6 +137,7 @@ class ComparisonPanel extends PageTemplate {
                         id="map_combined"
                         article_type={undefined}
                         basemap={{ type: "osm" }}
+                        universe={this.state.current_universe}
                     />
                 </div>
             </div>
@@ -296,7 +298,7 @@ function ManipulationButton({ color, on_click, text }) {
     </div>
 }
 
-function HeadingDisplay({ longname, include_delete, on_click, on_change, screenshot_mode }) {
+function HeadingDisplay({ universe, longname, include_delete, on_click, on_change, screenshot_mode }) {
 
     const [is_editing, set_is_editing] = React.useState(false);
 
@@ -316,7 +318,7 @@ function HeadingDisplay({ longname, include_delete, on_click, on_change, screens
     return <div>
         {screenshot_mode ? undefined : manipulation_buttons}
         <div style={{ height: "5px" }} />
-        <a href={article_link(longname)} style={{ textDecoration: "none" }}><div style={comparisonHeadStyle()}>{longname}</div></a>
+        <a href={article_link(universe, longname)} style={{ textDecoration: "none" }}><div style={comparisonHeadStyle()}>{longname}</div></a>
         {is_editing ?
             <SearchBox
                 autoFocus={true}

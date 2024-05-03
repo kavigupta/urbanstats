@@ -51,7 +51,11 @@ class Header extends React.Component {
                             <SearchBox
                                 settings={this.props.settings}
                                 on_change={
-                                    new_location => { window.location.href = article_link(new_location) }
+                                    new_location => {
+                                        window.location.href = article_link(
+                                            this.props.current_universe, new_location
+                                        )
+                                    }
                                 }
                                 placeholder="Search Urban Stats"
                                 style={{

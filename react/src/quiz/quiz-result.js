@@ -351,7 +351,7 @@ export function Clickable({ longname }) {
     // return <a href={article_link(longname)}>{longname}</a>
     // same without any link formatting
     return <a
-        href={article_link(longname)}
+        href={article_link(undefined, longname)}
         style={{ textDecoration: "none", color: "inherit" }}
     >
         {longname}

@@ -57,6 +57,7 @@ class StatisticPanel extends PageTemplate {
     swap_ascending_descending() {
         var new_order = this.is_ascending() ? "descending" : "ascending";
         document.location = statistic_link(
+            this.state.current_universe,
             this.props.statname, this.props.article_type,
             1, this.props.amount, new_order,
             undefined
@@ -130,7 +131,7 @@ class StatisticPanel extends PageTemplate {
                     }}>
                         <div style={this.style(0, row_idx + 1)}>{i + 1}</div>
                         <div style={this.style(1, row_idx + 1)}>
-                            <a href={article_link(this.props.article_names.elements[i])} style={{ fontWeight: "bold", color: "black", textDecoration: "none" }}>{this.props.article_names.elements[i]}</a>
+                            <a href={article_link(this.state.current_universe, this.props.article_names.elements[i])} style={{ fontWeight: "bold", color: "black", textDecoration: "none" }}>{this.props.article_names.elements[i]}</a>
                         </div>
                         <div style={this.style(2, row_idx + 1)} className='value_numeric value'>
                             <Statistic
@@ -252,6 +253,7 @@ class StatisticPanel extends PageTemplate {
 
     change_start(new_start) {
         document.location.href = statistic_link(
+            this.state.current_universe,
             this.props.statname, this.props.article_type,
             new_start, this.props.amount, this.props.order, undefined
         );
@@ -272,6 +274,7 @@ class StatisticPanel extends PageTemplate {
         }
         if (typeof new_amount === "number") {
             document.location.href = statistic_link(
+                this.state.current_universe,
                 this.props.statname,
                 this.props.article_type,
                 start,

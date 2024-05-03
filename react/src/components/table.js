@@ -27,6 +27,7 @@ class StatisticRowRaw extends React.Component {
                     this.props.is_header ? "Statistic" :
                         <a className="statname_no_link" href={
                             statistic_link(
+                                this.props.universe,
                                 this.props.statname, this.props.article_type, this.props.ordinal,
                                 20, undefined, this.props.longname
                             )
@@ -490,7 +491,7 @@ class PointerButtonIndex extends React.Component {
                     pos += this.props.direction;
                     continue;
                 }
-                document.location = article_link(name);
+                document.location = article_link(this.props.universe, name);
                 return;
             }
         }
