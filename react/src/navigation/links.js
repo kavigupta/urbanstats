@@ -1,4 +1,4 @@
-import { add_universe_to_params, get_universe } from "../universe";
+import { add_universe_to_params } from "../universe";
 
 export {
     sanitize,
@@ -24,12 +24,12 @@ function data_link(longname) {
     return `/data/${sanitize(longname)}.gz`
 }
 
-function ordering_link(statpath, type) {
-    return `/order/${get_universe()}_${sanitize(statpath, false)}__${sanitize(type, false)}.gz`
+function ordering_link(universe, statpath, type) {
+    return `/order/${universe}_${sanitize(statpath, false)}__${sanitize(type, false)}.gz`
 }
 
-function ordering_data_link(statpath, type) {
-    return `/order/${get_universe()}_${sanitize(statpath, false)}__${sanitize(type, false)}_data.gz`
+function ordering_data_link(universe, statpath, type) {
+    return `/order/${universe}_${sanitize(statpath, false)}__${sanitize(type, false)}_data.gz`
 }
 
 function explanation_page_link(explanation) {

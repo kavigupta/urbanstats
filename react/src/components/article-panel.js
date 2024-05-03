@@ -40,6 +40,7 @@ class ArticlePanel extends PageTemplate {
                             onReplace={x => { document.location = article_link(x) }}
                             simple={this.state.settings.simple_ordinals}
                             longname={this.props.longname}
+                            universe={this.state.current_universe}
                         />)}
                 </div>
 
