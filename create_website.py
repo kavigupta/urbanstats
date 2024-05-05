@@ -88,6 +88,22 @@ def international_shapefile():
     return intl
 
 
+def merge_us_and_international(full):
+    full_longname_to_idx = {name: idx for idx, name in enumerate(full.longname)}
+    sn_mask = full.longname.apply(lambda x: x.endswith("[SN], USA"))
+    for _, row_sn in full[sn_mask].iterrows():
+        idx = full_longname_to_idx[row_sn.longname.replace("[SN], USA", ", USA")]
+        row_orig = full.iloc[idx]
+        for col in full.columns:
+            if row_sn[col] == row_orig[col]:
+                continue
+            if pd.isna(row_orig[col]):
+                full.loc[idx, col] = row_sn[col]
+                continue
+            assert pd.isna(row_sn[col]), f"{col} {row_sn[col]} {row_orig[col]}"
+    return full
+
+
 @lru_cache(maxsize=None)
 def shapefile_without_ordinals():
     usa = american_shapefile()
@@ -95,6 +111,7 @@ def shapefile_without_ordinals():
     intl = international_shapefile()
     attach_intl_universes(intl)
     full = pd.concat([usa, intl])
+    return full
     popu = np.array(full.population)
     popu[np.isnan(popu)] = full.gpw_population[np.isnan(popu)]
     full["best_population_estimate"] = popu

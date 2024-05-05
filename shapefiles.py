@@ -1,4 +1,5 @@
 from collections import Counter
+from functools import lru_cache
 import pandas as pd
 import us
 import tqdm.auto as tqdm
@@ -219,6 +220,7 @@ def iso_to_country(iso):
     return pycountry.countries.get(alpha_2=iso).name
 
 
+@lru_cache(None)
 def subnational_regions():
     path = "named_region_shapefiles/World_Administrative_Divisions.zip"
     data = gpd.read_file(path)
@@ -458,10 +460,10 @@ shapefiles = dict(
         chunk_size=1,
     ),
     subnational_regions=Shapefile(
-        hash_key="subnational_regions_4",
+        hash_key="subnational_regions_5",
         path=subnational_regions,
-        shortname_extractor=lambda x: x["NAME"].replace(", USA", " [SN], USA"),
-        longname_extractor=lambda x: x["fullname"].replace(", USA", " [SN], USA"),
+        shortname_extractor=lambda x: x["NAME"],
+        longname_extractor=lambda x: x["fullname"],
         filter=lambda x: x.COUNTRY is not None,
         meta=dict(type="Subnational Region", source="ESRI"),
         american=False,
