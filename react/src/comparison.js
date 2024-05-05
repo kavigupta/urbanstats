@@ -7,7 +7,7 @@ import { data_link } from "./navigation/links.js";
 
 import { loadProtobuf } from './load_json.js';
 import { ComparisonPanel } from './components/comparison-panel.js';
-import { get_universe, remove_universe_if_not_in } from './universe.js';
+import { default_comparison_universe, get_universe, remove_universe_if_default, remove_universe_if_not_in } from './universe.js';
 
 
 async function loadPage() {
@@ -22,7 +22,13 @@ async function loadPage() {
     // intersection of all the data.universes
     const universes = datas.map(x => x.universes).reduce((a, b) => a.filter(c => b.includes(c)));
     remove_universe_if_not_in(universes)
-    root.render(<ComparisonPanel names={names} datas={datas} joined_string={joined_string} universes={universes} universe={get_universe()} />);
+    const default_universe = default_comparison_universe(names);
+    remove_universe_if_default(default_universe);
+    root.render(<ComparisonPanel names={names} datas={datas} joined_string={joined_string} universes={universes}
+        universe={get_universe(
+            default_universe
+        )}
+    />);
 }
 
 loadPage();

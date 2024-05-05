@@ -91,7 +91,5 @@ function universe_path(universe) {
 }
 
 function add_universe_to_params(universe, params) {
-    if (universe !== "world") {
-        params.set("universe", universe)
-    }
+    params.set("universe", universe)
 }

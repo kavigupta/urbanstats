@@ -368,7 +368,7 @@ test('statistics-page', async t => {
         .click(Selector('a').withText(/^Population$/));
     // assert url is https://urbanstats.org/statistic.html?statname=Population&article_type=Hospital+Referral+Region&start=21&amount=20
     await t.expect(getLocation())
-        .eql(TARGET + '/statistic.html?statname=Population&article_type=Hospital+Referral+Region&start=21&amount=20');
+        .eql(TARGET + '/statistic.html?statname=Population&article_type=Hospital+Referral+Region&start=21&amount=20?universe=USA');
     await screencap(t, "statistics/population");
     // click link "Data Explanation and Credit"
     await t
@@ -487,9 +487,9 @@ test('article-universe-selector-test', async t => {
         .click(
             Selector('img')
                 .withAttribute('class', 'universe-selector-option')
-                .withAttribute('alt', 'USA'));
+                .withAttribute('alt', 'California, USA'));
     await t.expect(getLocation())
-        .eql(TARGET + '/article.html?longname=San+Marino+city%2C+California%2C+USA&universe=USA');
+        .eql(TARGET + '/article.html?longname=San+Marino+city%2C+California%2C+USA&universe=California%2C+USA');
 });
 
 fixture('statistic universe selector test')

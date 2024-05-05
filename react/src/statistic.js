@@ -9,7 +9,7 @@ import { ArticlePanel } from './components/article-panel';
 import { loadProtobuf } from './load_json';
 import { StatisticPanel } from './components/statistic-panel.js';
 import { for_type } from './components/load-article.js';
-import { get_universe } from './universe.js';
+import { get_universe, remove_universe_if_default } from './universe.js';
 
 
 async function loadPage() {
@@ -31,7 +31,8 @@ async function loadPage() {
     const statpath = paths[names.indexOf(statname)];
     const explanation_page = explanation_pages[names.indexOf(statname)];
     const statcol = stats[names.indexOf(statname)];
-    const universe = get_universe();
+    remove_universe_if_default("world");
+    const universe = get_universe("world");
     const article_names = await loadProtobuf(ordering_link(universe, statpath, article_type), "StringList");
     const data = await loadProtobuf(ordering_data_link(universe, statpath, article_type), "DataList");
     if (amount == "All") {
@@ -45,7 +46,7 @@ async function loadPage() {
     root.render(<StatisticPanel
         statname={statname}
         statpath={statpath}
-        count={for_type(get_universe(), statcol, article_type)}
+        count={for_type(universe, statcol, article_type)}
         explanation_page={explanation_page}
         ordering={order}
         highlight={highlight}
@@ -57,7 +58,7 @@ async function loadPage() {
         article_names={article_names}
         data={data}
         universes={universes}
-        universe={get_universe()}
+        universe={universe}
     />);
 }
 
