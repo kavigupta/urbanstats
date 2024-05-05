@@ -27,6 +27,7 @@ class StatisticRowRaw extends React.Component {
                     this.props.is_header ? "Statistic" :
                         <a className="statname_no_link" href={
                             statistic_link(
+                                this.props.universe,
                                 this.props.statname, this.props.article_type, this.props.ordinal,
                                 20, undefined, this.props.longname
                             )
@@ -77,6 +78,7 @@ class StatisticRowRaw extends React.Component {
                             statpath={this.props.statpath}
                             simple={this.props.simple}
                             onReplace={this.props.onReplace}
+                            universe={this.props.universe}
                         />
                 }</span>
             ],
@@ -105,6 +107,7 @@ class StatisticRowRaw extends React.Component {
                             type={this.props.article_type}
                             total={this.props.total_count_in_class}
                             settings={this.props.settings}
+                            universe={this.props.universe}
                         />}</span>
             ],
             [8,
@@ -118,6 +121,7 @@ class StatisticRowRaw extends React.Component {
                             type="overall"
                             total={this.props.total_count_overall}
                             settings={this.props.settings}
+                            universe={this.props.universe}
                         />}</span>
             ]
         ]
@@ -342,7 +346,7 @@ class Ordinal extends React.Component {
 
     async onNewNumber(number) {
         let num = number;
-        const link = ordering_link(this.props.statpath, this.props.type);
+        const link = ordering_link(this.props.universe, this.props.statpath, this.props.type);
         if (num < 0) {
             // -1 -> this.props.total, -2 -> this.props.total - 1, etc.
             num = this.props.total + 1 + num;
@@ -432,7 +436,7 @@ class PointerButtonsIndex extends React.Component {
     }
 
     render() {
-        const link = ordering_link(this.props.statpath, this.props.type);
+        const link = ordering_link(this.props.universe, this.props.statpath, this.props.type);
         const show_historical_cds = this.props.settings.show_historical_cds || is_historical_cd(this.props.type);
         return (
             <span>
@@ -443,6 +447,7 @@ class PointerButtonsIndex extends React.Component {
                     direction={-1}
                     total={this.props.total}
                     show_historical_cds={show_historical_cds}
+                    universe={this.props.universe}
                 />
                 <PointerButtonIndex
                     text=">"
@@ -451,6 +456,7 @@ class PointerButtonsIndex extends React.Component {
                     direction={+1}
                     total={this.props.total}
                     show_historical_cds={show_historical_cds}
+                    universe={this.props.universe}
                 />
             </span>
         );
@@ -487,7 +493,7 @@ class PointerButtonIndex extends React.Component {
                     pos += this.props.direction;
                     continue;
                 }
-                document.location = article_link(name);
+                document.location = article_link(this.props.universe, name);
                 return;
             }
         }

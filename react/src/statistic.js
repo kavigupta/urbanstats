@@ -31,8 +31,9 @@ async function loadPage() {
     const statpath = paths[names.indexOf(statname)];
     const explanation_page = explanation_pages[names.indexOf(statname)];
     const statcol = stats[names.indexOf(statname)];
-    const article_names = await loadProtobuf(ordering_link(statpath, article_type), "StringList");
-    const data = await loadProtobuf(ordering_data_link(statpath, article_type), "DataList");
+    const universe = get_universe();
+    const article_names = await loadProtobuf(ordering_link(universe, statpath, article_type), "StringList");
+    const data = await loadProtobuf(ordering_data_link(universe, statpath, article_type), "DataList");
     if (amount == "All") {
         amount = article_names.elements.length;
     } else {
@@ -56,6 +57,7 @@ async function loadPage() {
         article_names={article_names}
         data={data}
         universes={universes}
+        universe={get_universe()}
     />);
 }
 

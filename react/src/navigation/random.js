@@ -39,7 +39,7 @@ async function by_population(settings, domestic_only=false) {
             continue;
         }
 
-        document.location = article_link(x);
+        document.location = article_link("world", x);
         break;
     }
 }
@@ -52,7 +52,7 @@ async function uniform(settings) {
         if (!settings.show_historical_cds && is_historical_cd(x)) {
             continue;
         }
-        document.location = article_link(x);
+        document.location = article_link("world", x);
         break;
     }
 }

@@ -10,12 +10,6 @@ export function set_universe(universe) {
     window.location.search = params.toString();
 }
 
-export function add_universe_to_params(params) {
-    if (get_universe() !== "world") {
-        params.set("universe", get_universe())
-    }
-}
-
 export function remove_universe_if_not_in(universes) {
     if (!universes.includes(get_universe())) {
         // clear universe without actually reloading the page

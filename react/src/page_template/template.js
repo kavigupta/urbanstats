@@ -9,7 +9,7 @@ import "../components/article.css";
 import { load_settings } from './settings.js';
 import { mobileLayout } from '../utils/responsive.js';
 import { create_screenshot } from '../components/screenshot.js';
-import { get_universe, set_universe } from '../universe.js';
+import { set_universe } from '../universe.js';
 
 
 class PageTemplate extends React.Component {
@@ -32,7 +32,7 @@ class PageTemplate extends React.Component {
             settings: settings,
             hamburger_open: false,
             screenshot_mode: false,
-            current_universe: get_universe(),
+            current_universe: this.props.universe,
         }
     }
 
