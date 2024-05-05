@@ -447,6 +447,7 @@ class PointerButtonsIndex extends React.Component {
                     direction={-1}
                     total={this.props.total}
                     show_historical_cds={show_historical_cds}
+                    universe={this.props.universe}
                 />
                 <PointerButtonIndex
                     text=">"
@@ -455,6 +456,7 @@ class PointerButtonsIndex extends React.Component {
                     direction={+1}
                     total={this.props.total}
                     show_historical_cds={show_historical_cds}
+                    universe={this.props.universe}
                 />
             </span>
         );
