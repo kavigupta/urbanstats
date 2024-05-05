@@ -57,6 +57,7 @@ async function loadPage() {
         article_names={article_names}
         data={data}
         universes={universes}
+        universe={get_universe()}
     />);
 }
 
