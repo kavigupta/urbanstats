@@ -1,4 +1,5 @@
 from collections import Counter
+import os
 import pandas as pd
 import us
 import tqdm.auto as tqdm
@@ -8,6 +9,7 @@ import geopandas as gpd
 from permacache import permacache
 
 from stats_for_shapefile import Shapefile
+from urbanstats.special_cases.country import countries, subnational_regions
 
 
 def abbr_to_state(x):
@@ -219,55 +221,12 @@ def iso_to_country(iso):
     return pycountry.countries.get(alpha_2=iso).name
 
 
-def subnational_regions():
-    path = "named_region_shapefiles/World_Administrative_Divisions.zip"
-    data = gpd.read_file(path)
-    print("read subnational regions")
-    data = data[data.COUNTRY.apply(lambda x: x is not None)]
-    data["fullname"] = data.NAME + ", " + data.ISO_CC.apply(iso_to_country)
-    data["dissolveby"] = data["fullname"]
-    data = data.dissolve(by="dissolveby")
-    print("dissolved subnationals")
-    return data.reset_index(drop=True)
-
-
-@permacache("population_density/shapefiles/unbuffered_countries")
-def unbuffered_countries():
-    data = subnational_regions()
-    print("read countries")
-    data["dissolveby"] = data.ISO_CC
-    data = data.dissolve(by="dissolveby")
-    print("dissolved countries")
-    data = data.reset_index(drop=True)
-    return data
-
-
-@permacache("population_density/shapefiles/countries_3")
-def countries():
-    data = unbuffered_countries()
-    new_geos = []
-    for i, row in tqdm.tqdm(list(data.iterrows())):
-        print(row.COUNTRY, " ", i, " of ", data.shape[0])
-        # 0.1 of a cell
-        new_geos.append(row.geometry.buffer(1 / 120 * 0.1))
-    data.geometry = new_geos
-    return data
-
-
 def hrr_shortname(x, suffix="HRR"):
     state, city = [x.strip() for x in [x[: x.index("-")], x[x.index("-") + 1 :]]]
     return f"{city.title()} {state} {suffix}"
 
 
 shapefiles = dict(
-    states=Shapefile(
-        hash_key="census_states_3",
-        path="named_region_shapefiles/cb_2022_us_state_500k.zip",
-        shortname_extractor=lambda x: x["NAME"],
-        longname_extractor=lambda x: x["NAME"] + ", USA",
-        filter=lambda x: True,
-        meta=dict(type="State", source="Census"),
-    ),
     counties=COUNTIES,
     msas=Shapefile(
         hash_key="census_msas_4",
@@ -447,7 +406,7 @@ shapefiles = dict(
         meta=dict(type="Media Market", source="Nielsen via Kenneth C Black"),
     ),
     countries=Shapefile(
-        hash_key="countries_3",
+        hash_key="countries_8",
         path=countries,
         shortname_extractor=lambda x: iso_to_country(x.ISO_CC),
         longname_extractor=lambda x: iso_to_country(x.ISO_CC),
@@ -458,13 +417,26 @@ shapefiles = dict(
         chunk_size=1,
     ),
     subnational_regions=Shapefile(
-        hash_key="subnational_regions_4",
+        hash_key="subnational_regions_9",
         path=subnational_regions,
-        shortname_extractor=lambda x: x["NAME"].replace(", USA", " [SN], USA"),
-        longname_extractor=lambda x: x["fullname"].replace(", USA", " [SN], USA"),
+        shortname_extractor=lambda x: x["NAME"],
+        longname_extractor=lambda x: x["fullname"],
         filter=lambda x: x.COUNTRY is not None,
         meta=dict(type="Subnational Region", source="ESRI"),
         american=False,
         include_in_gpw=True,
     ),
 )
+
+shapefiles_for_stats = dict(
+    **shapefiles,
+    states=Shapefile(
+        hash_key="census_states_3",
+        path="named_region_shapefiles/cb_2022_us_state_500k.zip",
+        shortname_extractor=lambda x: x["NAME"],
+        longname_extractor=lambda x: x["NAME"] + ", USA",
+        filter=lambda x: True,
+        meta=dict(type="State", source="Census"),
+    ),
+)
+

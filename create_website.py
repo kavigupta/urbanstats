@@ -6,7 +6,7 @@ import fire
 import numpy as np
 
 import pandas as pd
-from shapefiles import shapefiles
+from shapefiles import shapefiles, shapefiles_for_stats
 from collections import Counter
 
 import tqdm.auto as tqdm
@@ -36,6 +36,7 @@ from urbanstats.ordinals.compute_ordinals import (
     compute_all_ordinals_for_universe,
 )
 from urbanstats.protobuf.utils import save_data_list, save_string_list
+from urbanstats.special_cases.merge_international import merge_international_and_domestic
 from urbanstats.special_cases.simplified_country import all_simplified_countries
 from urbanstats.universe.annotate_universes import (
     all_universes,
@@ -48,9 +49,9 @@ from urbanstats.website_data.index import export_index
 
 def american_shapefile():
     full = [
-        compute_statistics_for_shapefile(shapefiles[k])
-        for k in tqdm.tqdm(shapefiles, desc="computing statistics")
-        if shapefiles[k].american
+        compute_statistics_for_shapefile(shapefiles_for_stats[k])
+        for k in tqdm.tqdm(shapefiles_for_stats, desc="computing statistics")
+        if shapefiles_for_stats[k].american
     ]
     full = pd.concat(full)
     full = full.reset_index(drop=True)
@@ -74,7 +75,7 @@ def american_shapefile():
 
 def international_shapefile():
     ts = []
-    for s in shapefiles.values():
+    for s in shapefiles_for_stats.values():
         if s.include_in_gpw:
             t = compute_gpw_data_for_shapefile_table(s)
             for k in s.meta:
@@ -94,12 +95,7 @@ def shapefile_without_ordinals():
     attach_usa_universes(usa)
     intl = international_shapefile()
     attach_intl_universes(intl)
-    full = pd.concat([usa, intl])
-    popu = np.array(full.population)
-    popu[np.isnan(popu)] = full.gpw_population[np.isnan(popu)]
-    full["best_population_estimate"] = popu
-    full = full.sort_values("longname")
-    full = full.sort_values("best_population_estimate", ascending=False, kind="stable")
+    full = merge_international_and_domestic(intl, usa)
     return full
 
 

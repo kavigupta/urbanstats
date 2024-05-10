@@ -8,13 +8,13 @@ from shapefiles import shapefiles
 
 
 @lru_cache(None)
-def counties():
+def countries():
     return shapefiles["countries"].load_file()
 
 
 @permacache("urbanstats/special_cases/simplified_country/row_for_country")
 def row_for_country(name):
-    c = counties()
+    c = countries()
     row = c[c.longname == name].iloc[0]
     return row
 
@@ -22,31 +22,14 @@ def row_for_country(name):
 @permacache("urbanstats/special_cases/simplified_country/get_simplified_country")
 def get_simplified_country(name):
     r = row_for_country(name)
-    r = filter_small_islands(r)
-    return r
-
-
-def filter_small_islands(r):
     r = copy.deepcopy(r)
-    g = gpd.GeoDataFrame([r]).simplify(1 / 120 * 3)
-    polys = gpd.GeoSeries(
-        g.geometry.apply(
-            lambda g: g.geoms if g.geom_type == "MultiPolygon" else [g]
-        ).explode()
-    )
-    if len(polys) < 100:
-        return r
-    a = polys.set_crs("epsg:4326").to_crs({"proj": "cea"}).area
-    min_area = 10 * 1000**2
-    if a.max() < min_area:
-        min_area = a.max() / 10
-    r.geometry = polys[a > min_area].buffer(0).unary_union
+    r.geometry = r.geometry.buffer(1 / 120 * 3)
     return r
 
 
 def all_simplified_countries(full, path):
     names = set(full.longname)
-    for name in counties().longname:
+    for name in countries().longname:
         if name not in names:
             continue
         print(name)

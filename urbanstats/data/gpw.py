@@ -278,7 +278,7 @@ def lattice_cells_contained(glo, polygon):
     row_idxs, col_idxs = np.meshgrid(row_idxs, col_idxs)
     # filter
     glo_vals = glo[row_idxs, col_idxs]
-    mask = ~np.isnan(glo_vals)
+    mask = ~np.isnan(glo_vals) & (glo_vals > 0)
     row_idxs = row_idxs[mask]
     col_idxs = col_idxs[mask]
     # flatten
