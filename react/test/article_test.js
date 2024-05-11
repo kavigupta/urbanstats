@@ -594,3 +594,54 @@ test("article-universe-compare-different", async t => {
         );
     await screencap(t, "comparison/universe-compare-different");
 });
+
+fixture('article universe state test')
+    .page(TARGET + '/article.html?longname=California%2C+USA')
+    // no local storage
+    .beforeEach(async t => {
+        await t.eval(() => localStorage.clear());
+    });
+
+test("article-universe-state-world", async t => {
+    // go to the world
+    await t
+        .click(Selector('img').withAttribute('class', 'universe-selector'));
+    await t
+        .click(
+            Selector('img')
+                .withAttribute('class', 'universe-selector-option')
+                .withAttribute('alt', 'world'));
+    await t.expect(getLocation())
+        .eql(TARGET + '/article.html?longname=California%2C+USA&universe=world');
+    // screenshot
+    await screencap(t, "article/california-world");
+});
+
+fixture('article universe state from subnational test')
+    .page(TARGET + '/article.html?longname=Kerala%2C+India')
+    // no local storage
+    .beforeEach(async t => {
+        await t.eval(() => localStorage.clear());
+    });
+
+
+test("article-universe-state-from-subnational", async t => {
+    await screencap(t, "article/kerala-india");
+    // click the > button
+    await t
+        .click(Selector('a').withText('>'));
+    await t.expect(getLocation())
+        .eql(TARGET + '/article.html?longname=California+%5BSN%5D%2C+USA&universe=world');
+    await screencap(t, "article/california-world-from-kerala");
+});
+
+fixture('mapping')
+    .page(TARGET + '/mapper.html?settings=H4sIAAAAAAAAA1WOzQ6CQAyEX8XUeCOGixeO%2BggejSEFy7Kh%2B5PdRSWEd7dLjMHe2plvpjMociqg76d60PYBFVwTJoICOs2JAlQzkMWGSbQOOZIoo22TdjZrafIk0O9UwBODzv4I1e2%2BLAW0jl2oo8RugKitYlrtPObDmbEddgcQIKDxGytrSxjgG2Rwq%2FlAkZJoFk3eL2NDPbF%2BQ27OpBRPUiTIiotnX64j0Iu06uWr8ngSd4OR%2FtNdNJLzAd2YY7skAQAA')
+    // no local storage
+    .beforeEach(async t => {
+        await t.eval(() => localStorage.clear());
+    });
+
+test("state-map", async t => {
+    await screencap(t, "state-map");
+})
