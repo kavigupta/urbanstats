@@ -6,7 +6,7 @@ import fire
 import numpy as np
 
 import pandas as pd
-from shapefiles import shapefiles, shapefiles_for_stats
+from shapefiles import shapefiles, shapefiles_for_stats, american_to_international
 from collections import Counter
 
 import tqdm.auto as tqdm
@@ -301,7 +301,10 @@ def main(
     with open(f"react/src/data/index_lists.json", "w") as f:
         json.dump(get_index_lists(), f)
 
-    os.system("cd react; npm run prod")
+    with open(f"react/src/data/american_to_international.json", "w") as f:
+        json.dump(american_to_international, f)
+
+    os.system("cd react; npm run dev")
     shutil.copy("dist/article.js", f"{site_folder}/scripts/")
     shutil.copy("dist/comparison.js", f"{site_folder}/scripts/")
     shutil.copy("dist/statistic.js", f"{site_folder}/scripts/")

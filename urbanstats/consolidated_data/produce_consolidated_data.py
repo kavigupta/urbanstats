@@ -4,7 +4,7 @@ import tqdm.auto as tqdm
 
 import shapely.geometry
 from output_geometry import convert_to_protobuf
-from shapefiles import shapefiles
+from shapefiles import filter_table_for_type, load_file_for_type, shapefiles
 from urbanstats.protobuf import data_files_pb2
 from urbanstats.protobuf.utils import write_gzip
 
@@ -76,10 +76,11 @@ def produce_results_for_type(folder, typ):
     except FileExistsError:
         pass
     full = shapefile_without_ordinals()
-    data_table = full[full.type == typ]
+    data_table = filter_table_for_type(full, typ)
     data_table = data_table.set_index("longname")
-    [sh] = [x for x in shapefiles.values() if x.meta["type"] == typ]
-    geo_table = sh.load_file()
+    # [sh] = [x for x in shapefiles.values() if x.meta["type"] == typ]
+    # geo_table = sh.load_file()
+    geo_table = load_file_for_type(typ)
     geo_table = geo_table.set_index("longname")
     shapes, stats = produce_all_results_from_tables(geo_table, data_table)
     write_gzip(shapes, f"{folder}/shapes__{typ}.gz")
@@ -88,12 +89,8 @@ def produce_results_for_type(folder, typ):
 
 def full_consolidated_data(folder):
     assert set(use) & set(dont_use) == set()
-    for sh in shapefiles.values():
-        typ = sh.meta["type"]
-        if typ in use:
-            produce_results_for_type(folder, typ)
-        else:
-            assert typ in dont_use
+    for typ in use:
+        produce_results_for_type(folder, typ)
 
 
 def output_names():

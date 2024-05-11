@@ -31,16 +31,18 @@ def ord_or_zero(x):
     return 0 if np.isnan(x) else int(x)
 
 
-def indices(longname, typ):
+def indices(longname, typ, strict_display=False):
     from create_website import get_index_lists
 
     lists = get_index_lists()["index_lists"]
     result = []
     result += lists["universal"]
+    is_american = longname.endswith(", USA")
     if get_index_lists()["type_to_has_gpw"][typ]:
-        result += lists["gpw"]
+        if not strict_display or not is_american:
+            result += lists["gpw"]
     # else:
-    if longname.endswith(", USA"):
+    if is_american:
         result += lists["usa"]
     return sorted(result)
 

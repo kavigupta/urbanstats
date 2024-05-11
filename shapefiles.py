@@ -440,3 +440,27 @@ shapefiles_for_stats = dict(
     ),
 )
 
+american_to_international = {"State": "Subnational Region"}
+
+
+def filter_table_for_type(table, typ):
+    is_internationalized = typ in american_to_international
+    if is_internationalized:
+        typ = american_to_international[typ]
+    table = table[table.type == typ]
+    if is_internationalized:
+        table = table[table.longname.apply(lambda x: x.endswith(", USA"))]
+    return table
+
+
+def load_file_for_type(typ):
+    is_internationalized = typ in american_to_international
+    if is_internationalized:
+        typ = american_to_international[typ]
+    [loaded_file] = [x for x in shapefiles.values() if x.meta["type"] == typ]
+    loaded_file = loaded_file.load_file()
+    if is_internationalized:
+        loaded_file = loaded_file[
+            loaded_file.longname.apply(lambda x: x.endswith(", USA"))
+        ]
+    return loaded_file
