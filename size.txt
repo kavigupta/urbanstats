@@ -149,3 +149,34 @@ adding ordering by subregion
 1347    data
 3007    order
 5548    total
+
+get rid of states as a separate entity from subnational regions
+
+1       about.html
+1       article.html
+1       banner.png
+1       CNAME
+1       comparison.html
+1       data-credit.html
+1       index.html
+1       mapper.html
+1       quiz.html
+1       r
+1       random.html
+1       retrostat
+1       screenshot_footer.svg
+1       screenshot.png
+1       share.png
+1       statistic.html
+1       styles
+1       thumbnail.png
+2       icons
+5       index
+5       quiz
+8       consolidated
+12      quiz_sample_info
+36      scripts
+1091    shape
+1347    data
+2937    order
+5439    total
