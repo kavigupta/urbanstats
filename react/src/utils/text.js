@@ -6,9 +6,6 @@ const american_to_international = require("..//data/american_to_international.js
 
 function display_type(universe, type) {
     const american_to_international_reversed = Object.fromEntries(Object.entries(american_to_international).map(([a, b]) => [b, a]));
-    console.log(american_to_international_reversed);
-    console.log(universe);
-    console.log(type);
     if (type in american_to_international_reversed && universe_is_american(universe)) {
         type = american_to_international_reversed[type];
     }
