@@ -36,7 +36,6 @@ class RelatedButton extends React.Component {
             "Country": DARK_GRAY,
             "Judicial Circuit": DARK_GRAY,
             "USDA County Type": DARK_GRAY,
-            "State": BLUE,
             "Subnational Region": BLUE,
             "Native Area": BLUE,
             "CSA": ORANGE,

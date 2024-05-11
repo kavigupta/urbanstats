@@ -6,7 +6,7 @@ import { article_link, ordering_link, statistic_link } from "../navigation/links
 import { loadProtobuf } from '../load_json.js';
 import "./table.css";
 import { is_historical_cd } from '../utils/is_historical.js';
-import { pluralize } from '../utils/text.js';
+import { display_type } from '../utils/text.js';
 
 const table_row_style = {
     display: "flex",
@@ -340,7 +340,7 @@ class Ordinal extends React.Component {
             return right_align(en);
         }
         return <span>
-            {en} of {total} {pluralize(type)}
+            {en} of {total} {display_type(this.props.universe, type)}
         </span>;
     }
 

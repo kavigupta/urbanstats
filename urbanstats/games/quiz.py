@@ -13,8 +13,17 @@ from permacache import permacache, stable_hash
 import tqdm.auto as tqdm
 import urllib
 
-from create_website import shapefile_without_ordinals, statistic_internal_to_display_name
-from produce_html_page import get_statistic_categories
+from create_website import (
+    get_index_lists,
+    shapefile_without_ordinals,
+    statistic_internal_to_display_name,
+)
+from produce_html_page import (
+    get_statistic_categories,
+    indices,
+    internal_statistic_names,
+)
+from shapefiles import filter_table_for_type, american_to_international
 from urbanstats.acs import industry, occupation
 from urbanstats.shortener import shorten
 
@@ -24,7 +33,7 @@ from .fixed import juxtastat as fixed_up_to
 
 min_pop = 250_000
 min_pop_international = 20_000_000
-version = 46
+version = 51
 
 # ranges = [
 #     (0.7, 1),
@@ -175,17 +184,32 @@ def sample_quiz_question(
 @permacache(f"urbanstats/games/quiz/filter_for_pop_{version}")
 def filter_for_pop(type):
     full = shapefile_without_ordinals()
-    filt = full[full.type == type]
+    filt = filter_table_for_type(full, type)
     at_pop = filt[filt.best_population_estimate >= minimum_population(type)].set_index(
         "longname"
     )
-    at_pop = at_pop[stats]
-    at_pop = at_pop.loc[:, ~at_pop.applymap(np.isnan).all()]
+    # make sure to only include the appropriate columns
+    idxs = indices(
+        "" if is_international(type) else ", USA",
+        american_to_international.get(type, type),
+        strict_display=True,
+    )
+    stats_filter = {internal_statistic_names()[i] for i in idxs}
+    at_pop = at_pop[[s for s in stats if s in stats_filter]]
+    mask = ~at_pop.applymap(np.isnan).all()
+    assert mask.all()
+    at_pop = at_pop.loc[:, mask]
     return at_pop
 
 
 def entire_table():
-    return pd.concat([filter_for_pop(type) for type in types])
+    return pd.concat(
+        [
+            filter_for_pop(type)
+            for type in types
+            if type not in american_to_international
+        ]
+    )
 
 
 def minimum_population(type):
@@ -251,6 +275,7 @@ def check_quiz_is_guaranteed_future(number):
             f"Quiz {number} is in the past! It is currently {fractional_days} in Kiribati + 4 hours."
         )
 
+
 def quiz_is_guaranteed_past(number):
     now = datetime.now(pytz.timezone("US/Samoa"))
     beginning = pytz.timezone("US/Samoa").localize(datetime(2023, 9, 2))
@@ -258,6 +283,7 @@ def quiz_is_guaranteed_past(number):
     if number < fractional_days - 1:
         return None
     return fractional_days
+
 
 def check_quiz_is_guaranteed_past(number):
     fractional_days = quiz_is_guaranteed_past(number)

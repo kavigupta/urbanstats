@@ -1,3 +1,5 @@
 *.zip
 *.shp
 Zillow_Neighborhoods/
+countries_processed/
+World_Administrative_Divisions_processed/

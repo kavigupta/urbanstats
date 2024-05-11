@@ -7,7 +7,7 @@ from permacache import permacache
 import geopandas as gpd
 import tqdm
 
-from shapefiles import shapefiles
+from shapefiles import shapefiles_for_stats
 
 
 @lru_cache(maxsize=1)
@@ -26,8 +26,8 @@ def states_for_all():
         "PA-HD001, USA": "Pennsylvania, USA",
         "RI-HD075, USA": "Rhode Island, USA",
     }
-    for u in shapefiles:
-        for k, v in states_for(shapefiles[u]).items():
+    for u in shapefiles_for_stats:
+        for k, v in states_for(shapefiles_for_stats[u]).items():
             if (
                 k
                 == "Historical Congressional District DC-98, 103rd-117th Congress, USA"
@@ -38,7 +38,7 @@ def states_for_all():
                 systematics[k] = [one_offs[k]]
             else:
                 systematics[k] = v
-            if shapefiles[u].american:
+            if shapefiles_for_stats[u].american:
                 assert len(systematics[k]) >= 1, (u, k)
     return systematics
 
@@ -54,9 +54,9 @@ def states_for(sh):
         return {k: [] for k in elem.longname}
     elem["idx"] = np.arange(elem.shape[0])
     over = overlays(
-        shapefiles["states"].load_file(),
+        shapefiles_for_stats["states"].load_file(),
         elem,
-        shapefiles["states"].chunk_size,
+        shapefiles_for_stats["states"].chunk_size,
         sh.chunk_size,
         keep_geom_type=True,
     )
@@ -257,9 +257,9 @@ tiers = [
     ["neighborhoods", "zctas"],
 ]
 
-is_american = {k: v.american for k, v in shapefiles.items()}
+is_american = {k: v.american for k, v in shapefiles_for_stats.items()}
 
-key_to_type = {x: shapefiles[x].meta["type"] for x in shapefiles}
+key_to_type = {x: shapefiles_for_stats[x].meta["type"] for x in shapefiles_for_stats}
 
 map_relationships = [
     ("states", "counties"),
@@ -275,14 +275,16 @@ map_relationships = [
     ("urban_areas", "cities"),
     ("judicial_circuits", "judicial_districts"),
 ]
-map_relationships += [[x, x] for x in shapefiles]
+map_relationships += [[x, x] for x in shapefiles_for_stats]
 
 map_relationships_by_type = [[key_to_type[x] for x in y] for y in map_relationships]
 
 tier_idx = {x: -i for i, tier in enumerate(tiers) for x in tier}
-tier_index_by_type = {shapefiles[x].meta["type"]: tier_idx[x] for x in shapefiles}
+tier_index_by_type = {
+    shapefiles_for_stats[x].meta["type"]: tier_idx[x] for x in shapefiles_for_stats
+}
 ordering_idx = {
-    shapefiles[x].meta["type"]: (i, j)
+    shapefiles_for_stats[x].meta["type"]: (i, j)
     for i, tier in enumerate(tiers)
     for j, x in enumerate(tier)
 }
@@ -314,8 +316,8 @@ def full_relationships(long_to_type):
                 continue
             d[x].add(y)
 
-    for k1 in shapefiles:
-        for k2 in shapefiles:
+    for k1 in shapefiles_for_stats:
+        for k2 in shapefiles_for_stats:
             print(k1, k2)
             if k1 < k2:
                 continue
@@ -343,7 +345,7 @@ def full_relationships(long_to_type):
                 b_contains_a,
                 a_intersects_b,
                 a_borders_b,
-            ) = fn(shapefiles[k1], shapefiles[k2])
+            ) = fn(shapefiles_for_stats[k1], shapefiles_for_stats[k2])
 
             add(contains, a_contains_b)
             add(contains, [(big, small) for small, big in b_contains_a])

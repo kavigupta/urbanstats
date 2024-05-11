@@ -631,7 +631,7 @@ test("article-universe-state-from-subnational", async t => {
     await t
         .click(Selector('a').withText('>'));
     await t.expect(getLocation())
-        .eql(TARGET + '/article.html?longname=California+%5BSN%5D%2C+USA&universe=world');
+        .eql(TARGET + '/article.html?longname=California%2C+USA&universe=world');
     await screencap(t, "article/california-world-from-kerala");
 });
 

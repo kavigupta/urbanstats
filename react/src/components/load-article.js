@@ -1,5 +1,8 @@
+import { universe_is_american } from "../universe";
 
 export { for_type, load_article };
+
+const index_list_info = require("../data/index_lists.json");
 
 function for_type(universe, statcol, typ) {
     const counts_by_article_type = require("../data/counts_by_article_type.json");
@@ -9,6 +12,23 @@ function for_type(universe, statcol, typ) {
             x[0][1] == typ
             && JSON.stringify(x[0][0]) == JSON.stringify(statcol)
     )[0][1];
+}
+
+function compute_indices(longname, typ) {
+    // translation of produce_html_page.py::indices
+
+    let lists = index_list_info["index_lists"];
+    let result = [];
+    result = result.concat(lists["universal"]);
+    if (index_list_info["type_to_has_gpw"][typ]) {
+        result = result.concat(lists["gpw"]);
+    }
+    // else {
+    if (longname.endsWith(", USA")) {
+        result = result.concat(lists["usa"]);
+    }
+    // sort result by numeric value
+    return result.sort((a, b) => a - b);
 }
 
 function load_article(universe, data, settings) {
@@ -24,7 +44,7 @@ function load_article(universe, data, settings) {
     const stats = require("../data/statistic_list.json");
     const explanation_page = require("../data/explanation_page.json");
 
-    const indices = require("../data/indices_by_type.json")[article_type];
+    const indices = compute_indices(data.longname, article_type);
 
     let modified_rows = [];
     for (let i in data.rows) {
@@ -52,6 +72,15 @@ function load_article(universe, data, settings) {
         modified_rows.push(row);
     }
     const filtered_rows = modified_rows.filter((row) => {
+        if (universe_is_american(universe)) {
+            if (index_list_info["index_lists"]["gpw"].includes(indices[row._index])) {
+                return false;
+            }
+        } else {
+            if (index_list_info["index_lists"]["usa"].includes(indices[row._index])) {
+                return false;
+            }
+        }
         const key = "show_statistic_" + row.statistic_category;
         return settings[key];
     });

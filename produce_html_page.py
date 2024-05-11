@@ -31,6 +31,22 @@ def ord_or_zero(x):
     return 0 if np.isnan(x) else int(x)
 
 
+def indices(longname, typ, strict_display=False):
+    from create_website import get_index_lists
+
+    lists = get_index_lists()["index_lists"]
+    result = []
+    result += lists["universal"]
+    is_american = longname.endswith(", USA")
+    if get_index_lists()["type_to_has_gpw"][typ]:
+        if not strict_display or not is_american:
+            result += lists["gpw"]
+    # else:
+    if is_american:
+        result += lists["usa"]
+    return sorted(result)
+
+
 def create_page_json(
     folder,
     row,
@@ -40,10 +56,8 @@ def create_page_json(
     long_to_type,
     ordering_for_all_universes,
 ):
-    from create_website import get_idxs_by_type
-
     statistic_names = internal_statistic_names()
-    idxs_by_type = get_idxs_by_type()[row.type]
+    idxs_by_type = indices(row.longname, row.type)
     data = data_files_pb2.Article()
     data.shortname = row.shortname
     data.longname = row.longname

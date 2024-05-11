@@ -6,7 +6,7 @@ import fire
 import numpy as np
 
 import pandas as pd
-from shapefiles import shapefiles
+from shapefiles import shapefiles, shapefiles_for_stats, american_to_international
 from collections import Counter
 
 import tqdm.auto as tqdm
@@ -36,6 +36,9 @@ from urbanstats.ordinals.compute_ordinals import (
     compute_all_ordinals_for_universe,
 )
 from urbanstats.protobuf.utils import save_data_list, save_string_list
+from urbanstats.special_cases.merge_international import (
+    merge_international_and_domestic,
+)
 from urbanstats.special_cases.simplified_country import all_simplified_countries
 from urbanstats.universe.annotate_universes import (
     all_universes,
@@ -48,9 +51,9 @@ from urbanstats.website_data.index import export_index
 
 def american_shapefile():
     full = [
-        compute_statistics_for_shapefile(shapefiles[k])
-        for k in tqdm.tqdm(shapefiles, desc="computing statistics")
-        if shapefiles[k].american
+        compute_statistics_for_shapefile(shapefiles_for_stats[k])
+        for k in tqdm.tqdm(shapefiles_for_stats, desc="computing statistics")
+        if shapefiles_for_stats[k].american
     ]
     full = pd.concat(full)
     full = full.reset_index(drop=True)
@@ -74,7 +77,7 @@ def american_shapefile():
 
 def international_shapefile():
     ts = []
-    for s in shapefiles.values():
+    for s in shapefiles_for_stats.values():
         if s.include_in_gpw:
             t = compute_gpw_data_for_shapefile_table(s)
             for k in s.meta:
@@ -94,12 +97,7 @@ def shapefile_without_ordinals():
     attach_usa_universes(usa)
     intl = international_shapefile()
     attach_intl_universes(intl)
-    full = pd.concat([usa, intl])
-    popu = np.array(full.population)
-    popu[np.isnan(popu)] = full.gpw_population[np.isnan(popu)]
-    full["best_population_estimate"] = popu
-    full = full.sort_values("longname")
-    full = full.sort_values("best_population_estimate", ascending=False, kind="stable")
+    full = merge_international_and_domestic(intl, usa)
     return full
 
 
@@ -169,23 +167,27 @@ def get_statistic_column_path(column):
     return column.replace("/", " slash ")
 
 
-def get_idxs_by_type():
+@lru_cache(maxsize=None)
+def get_index_lists():
     from stats_for_shapefile import gpw_stats
 
     real_names = internal_statistic_names()
-    gpw_names = [x for x in real_names if x in gpw_stats] + ["area", "compactness"]
-    other_names = [x for x in real_names if x not in gpw_stats]
+    universal = ["area", "compactness"]
+    gpw_names = [x for x in real_names if x in gpw_stats]
+    usa_names = [x for x in real_names if x not in gpw_stats and x not in universal]
+    universal_idxs = [real_names.index(x) for x in universal]
     gpw_idxs = [internal_statistic_names().index(x) for x in gpw_names]
-    other_idxs = [internal_statistic_names().index(x) for x in other_names]
-    idxs_by_type = {}
-    for s in shapefiles.values():
-        typ = s.meta["type"]
-        if s.include_in_gpw:
-            assert not s.american
-            idxs_by_type[typ] = gpw_idxs
-        else:
-            idxs_by_type[typ] = other_idxs
-    return idxs_by_type
+    usa_idxs = [internal_statistic_names().index(x) for x in usa_names]
+    return {
+        "index_lists": {
+            "universal": universal_idxs,
+            "gpw": gpw_idxs,
+            "usa": usa_idxs,
+        },
+        "type_to_has_gpw": {
+            s.meta["type"]: s.include_in_gpw for s in shapefiles.values()
+        },
+    }
 
 
 def main(
@@ -296,8 +298,11 @@ def main(
     with open(f"{site_folder}/.nojekyll", "w") as f:
         f.write("")
 
-    with open(f"react/src/data/indices_by_type.json", "w") as f:
-        json.dump(get_idxs_by_type(), f)
+    with open(f"react/src/data/index_lists.json", "w") as f:
+        json.dump(get_index_lists(), f)
+
+    with open(f"react/src/data/american_to_international.json", "w") as f:
+        json.dump(american_to_international, f)
 
     os.system("cd react; npm run prod")
     shutil.copy("dist/article.js", f"{site_folder}/scripts/")
