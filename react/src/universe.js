@@ -46,3 +46,7 @@ export function default_comparison_universe(longnames) {
     }
     return "world";
 }
+
+export function universe_is_american(universe) {
+    return universe !== "world";
+}
