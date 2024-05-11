@@ -35,19 +35,15 @@ def merge_international(table):
     indices_to_remove = set()
     additional_rows = []
     for idx_intl, row_international in table[intl_mask].iterrows():
-        print(idx_intl, row_international.longname, table.loc[idx_intl].longname)
         domestic_name = row_international.longname.replace(" [SN], USA", ", USA")
-        print(repr(domestic_name), domestic_name in full_longname_to_idx)
         if domestic_name in full_longname_to_idx:
             domestic_idx = full_longname_to_idx[domestic_name]
-            print(domestic_idx, table.loc[domestic_idx].longname)
             row_international = merge_international_row(
                 row_international, table.loc[domestic_idx]
             )
             indices_to_remove.add(domestic_idx)
         indices_to_remove.add(idx_intl)
         additional_rows.append(row_international)
-    print(table.loc[list(indices_to_remove)].longname)
     table = table[[idx not in indices_to_remove for idx in table.index]]
     table = pd.concat([table, pd.DataFrame(additional_rows)])
     table.longname = table.longname.apply(lambda x: x.replace(" [SN], USA", ", USA"))
