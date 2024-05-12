@@ -190,7 +190,7 @@ def filter_for_pop(type):
     )
     # make sure to only include the appropriate columns
     idxs = indices(
-        "" if is_international(type) else ", USA",
+        "" if is_international(type) else "USA",
         american_to_international.get(type, type),
         strict_display=True,
     )

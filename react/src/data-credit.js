@@ -59,6 +59,14 @@ class DataCreditPanel extends PageTemplate {
                             National shapefiles are aggregated from subnational shapefiles.
                             We filter international regions for those with area above 10 km<sup>2</sup>.
                         </p>
+                        <p>
+                            Urban center shapefiles are sourced from the Global Human Settlement Layer's&nbsp;
+                            <a href="https://human-settlement.emergency.copernicus.eu/ghs_stat_ucdb2015mt_r2019a.php">
+                                Urban Centre Database v1.2
+                            </a>.&nbsp;
+                            We filtered this dataset for urban centers with a quality code (QA2_1V) of 1, indicating a true
+                            positive, and which are named.
+                        </p>
                     </div>
                     <h2 ref={this.nref("geography")}>Geography Metrics</h2>
                     <div>

@@ -48,6 +48,7 @@ class RelatedButton extends React.Component {
             "Native Subdivision": PURPLE,
             "Media Market": PURPLE,
             "Urban Area": PURPLE,
+            "Urban Center": PURPLE,
             "Hospital Service Area": PURPLE,
             "County": RED,
             "State Senate District": RED,

@@ -10,6 +10,7 @@ from permacache import permacache
 
 from stats_for_shapefile import Shapefile
 from urbanstats.special_cases.country import countries, subnational_regions
+from urbanstats.special_cases.ghsl_urban_center import load_ghsl_urban_center
 
 
 def abbr_to_state(x):
@@ -426,6 +427,16 @@ shapefiles = dict(
         american=False,
         include_in_gpw=True,
     ),
+    urban_centers=Shapefile(
+        hash_key="urban_centers_2",
+        path=lambda: load_ghsl_urban_center(),
+        shortname_extractor=lambda x: x["shortname"],
+        longname_extractor=lambda x: x["longname"],
+        meta=dict(type="Urban Center", source="GHSL"),
+        filter=lambda x: True,
+        american=False,
+        include_in_gpw=True,
+    ),
 )
 
 shapefiles_for_stats = dict(
@@ -438,9 +449,19 @@ shapefiles_for_stats = dict(
         filter=lambda x: True,
         meta=dict(type="State", source="Census"),
     ),
+    us_urban_centers=Shapefile(
+        hash_key="us_urban_centers_2",
+        path=lambda: load_ghsl_urban_center(),
+        shortname_extractor=lambda x: x["shortname"],
+        longname_extractor=lambda x: x["longname"],
+        meta=dict(type="Urban Center", source="GHSL"),
+        filter=lambda x: x.suffix.endswith("USA"),
+        american=True,
+        include_in_gpw=False,
+    ),
 )
 
-american_to_international = {"State": "Subnational Region"}
+american_to_international = {"State": "Subnational Region", "US Urban Center": "Urban Center"}
 
 
 def filter_table_for_type(table, typ):
@@ -449,7 +470,7 @@ def filter_table_for_type(table, typ):
         typ = american_to_international[typ]
     table = table[table.type == typ]
     if is_internationalized:
-        table = table[table.longname.apply(lambda x: x.endswith(", USA"))]
+        table = table[table.longname.apply(lambda x: x.endswith("USA"))]
     return table
 
 
@@ -461,6 +482,6 @@ def load_file_for_type(typ):
     loaded_file = loaded_file.load_file()
     if is_internationalized:
         loaded_file = loaded_file[
-            loaded_file.longname.apply(lambda x: x.endswith(", USA"))
+            loaded_file.longname.apply(lambda x: x.endswith("USA"))
         ]
     return loaded_file

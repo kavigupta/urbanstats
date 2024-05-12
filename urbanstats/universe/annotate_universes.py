@@ -1,4 +1,5 @@
 from functools import lru_cache
+import re
 from permacache import permacache
 import us
 
@@ -14,11 +15,34 @@ def attach_usa_universes(american):
         for longname in american.longname
     ]
 
+subnation_usa = re.compile(r"(?!([ ,-]))(?P<state>[^,\-\s][^,\-]*), USA")
+
+def compute_intl_universes(longname):
+    result = ["world"]
+    if not longname.endswith("USA"):
+        return result
+    result += ["USA"]
+    if longname == "USA":
+        return result
+    from urbanstats.special_cases.ghsl_urban_center import gsl_urban_center_longname_to_subnational_codes
+    if longname in gsl_urban_center_longname_to_subnational_codes():
+        codes = gsl_urban_center_longname_to_subnational_codes()[longname]
+        codes = [code[2:] for code in codes if code.startswith("US")]
+        codes = [
+            get_universe_name_for_state(
+                us.states.lookup(code)
+            )
+            for code in codes
+        ]
+        result += codes
+        return result
+    assert subnation_usa.match(longname), longname
+    return result + [longname]
+
 
 def attach_intl_universes(intl):
     intl["universes"] = [
-        ["world"]
-        + (["USA", longname.replace(" [SN]", "")] if longname.endswith(", USA") else [])
+        compute_intl_universes(longname)
         for longname in intl.longname
     ]
 

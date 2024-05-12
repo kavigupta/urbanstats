@@ -1,11 +1,12 @@
 from collections import Counter
+import re
 import numpy as np
 import pandas as pd
 
 
 def tag_international_duplicates(intl):
     intl = intl.copy()
-    intl.longname = intl.longname.apply(lambda x: x.replace(", USA", " [SN], USA"))
+    intl.longname = intl.longname.apply(lambda x: re.sub(", ([^,]*)USA", r" [SN], \1USA", x))
     return intl
 
 
@@ -31,11 +32,11 @@ def merge_international_row(row_international, row_domestic):
 
 def merge_international(table):
     full_longname_to_idx = {name: idx for name, idx in zip(table.longname, table.index)}
-    intl_mask = table.longname.apply(lambda x: x.endswith("[SN], USA"))
+    intl_mask = table.longname.apply(lambda x: "[SN]" in x)
     indices_to_remove = set()
     additional_rows = []
     for idx_intl, row_international in table[intl_mask].iterrows():
-        domestic_name = row_international.longname.replace(" [SN], USA", ", USA")
+        domestic_name = row_international.longname.replace(" [SN]", "")
         if domestic_name in full_longname_to_idx:
             domestic_idx = full_longname_to_idx[domestic_name]
             row_international = merge_international_row(
@@ -46,7 +47,7 @@ def merge_international(table):
         additional_rows.append(row_international)
     table = table[[idx not in indices_to_remove for idx in table.index]]
     table = pd.concat([table, pd.DataFrame(additional_rows)])
-    table.longname = table.longname.apply(lambda x: x.replace(" [SN], USA", ", USA"))
+    table.longname = table.longname.apply(lambda x: x.replace(" [SN]", ""))
     table = table.reset_index(drop=True)
     return table
 
