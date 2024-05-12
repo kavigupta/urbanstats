@@ -31,7 +31,7 @@ export function remove_universe_if_default(default_universe) {
 export function default_article_universe(longname) {
     console.log(longname);
     // if longname ends with , USA, then default to USA
-    if (longname.endsWith(", USA")) {
+    if (longname.endsWith("USA")) {
         console.log("USA!!")
         return "USA";
     }

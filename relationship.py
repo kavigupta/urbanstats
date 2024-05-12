@@ -252,6 +252,8 @@ tiers = [
         "judicial_districts",
         "county_cross_cd",
         "hospital_service_areas",
+        "urban_centers",
+        "us_urban_centers",
     ],
     ["cousub", "cities", "school_districts"],
     ["neighborhoods", "zctas"],
