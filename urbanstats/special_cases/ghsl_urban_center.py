@@ -86,9 +86,9 @@ def directions(areas, idx1, idx2):
     dlat, dlon = coord2.y - coord1.y, coord2.x - coord1.x
     if abs(dlat) > abs(dlon):
         if dlat > 0:
-            return "Northern", "Southern"
-        else:
             return "Southern", "Northern"
+        else:
+            return "Northern", "Southern"
     else:
         if dlon > 0:
             return "Western", "Eastern"
