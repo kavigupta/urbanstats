@@ -32,8 +32,8 @@ from relationship import states_for_all
 from .fixed import juxtastat as fixed_up_to
 
 min_pop = 250_000
-min_pop_international = 20_000_000
-version = 51
+min_pop_international = 2_500_000
+version = 54
 
 # ranges = [
 #     (0.7, 1),
@@ -99,7 +99,7 @@ def sample_quiz(rng):
         banned_types.append("Judicial Circuit")
     if rng.uniform() < 0.35:
         banned_types.append("Media Market")
-    if rng.uniform() < 0.75:
+    if rng.uniform() < 0.5:
         banned_types.append("international")
     result = []
     for range in ranges:
@@ -137,7 +137,7 @@ def same_state(a, b):
 
 
 def is_international(type):
-    return type in {"Country", "Subnational Region"}
+    return type in {"Country", "Subnational Region", "Urban Center"}
 
 
 def sample_quiz_question(
@@ -400,6 +400,7 @@ types = [
     "Judicial Circuit",
     "Country",
     "Subnational Region",
+    "Urban Center",
 ]
 
 stats_to_display = {
