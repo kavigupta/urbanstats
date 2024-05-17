@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from cached_property import cached_property
-from typing import Dict
+from typing import Dict, List
 import numpy as np
 import pandas as pd
 
@@ -38,7 +38,8 @@ class OrdinalsForTypeAndColumnInUniverse:
 @dataclass
 class OrdinalsForTypeInUniverse:
     # key_column -> OrdinalsForColumnInUniverse
-    ordinals: Dict[str, OrdinalsForTypeAndColumnInUniverse]
+    ordinals_by_stat: Dict[str, OrdinalsForTypeAndColumnInUniverse]
+    all_names: List[str]
 
 
 @dataclass
@@ -79,10 +80,13 @@ def compute_ordinals_and_percentiles(frame, key_column, *, just_ordinal):
 
 
 def compute_all_ordinals_for_frame(frame, keys, *, just_ordinal):
-    return {
-        k: compute_ordinals_and_percentiles(frame, k, just_ordinal=just_ordinal)
-        for k in keys
-    }
+    return OrdinalsForTypeInUniverse(
+        {
+            k: compute_ordinals_and_percentiles(frame, k, just_ordinal=just_ordinal)
+            for k in keys
+        },
+        list(frame.longname),
+    )
 
 
 def compute_all_ordinals_for_universe(full, universe, keys) -> OrdinalsInUniverse:
@@ -101,7 +105,8 @@ def compute_all_ordinals_for_universe(full, universe, keys) -> OrdinalsInUnivers
 
 
 @permacache(
-    "urbanstats/ordinals/compute_all_ordinals_3", key_function=dict(full=hash_full_table)
+    "urbanstats/ordinals/compute_all_ordinals_4",
+    key_function=dict(full=hash_full_table),
 )
 def compute_all_ordinals(full, keys):
     return {

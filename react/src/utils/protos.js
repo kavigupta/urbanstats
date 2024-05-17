@@ -2635,6 +2635,233 @@ $root.StringList = (function() {
     return StringList;
 })();
 
+$root.OrderList = (function() {
+
+    /**
+     * Properties of an OrderList.
+     * @exports IOrderList
+     * @interface IOrderList
+     * @property {Array.<number>|null} [orderIdxs] OrderList orderIdxs
+     */
+
+    /**
+     * Constructs a new OrderList.
+     * @exports OrderList
+     * @classdesc Represents an OrderList.
+     * @implements IOrderList
+     * @constructor
+     * @param {IOrderList=} [properties] Properties to set
+     */
+    function OrderList(properties) {
+        this.orderIdxs = [];
+        if (properties)
+            for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                if (properties[keys[i]] != null)
+                    this[keys[i]] = properties[keys[i]];
+    }
+
+    /**
+     * OrderList orderIdxs.
+     * @member {Array.<number>} orderIdxs
+     * @memberof OrderList
+     * @instance
+     */
+    OrderList.prototype.orderIdxs = $util.emptyArray;
+
+    /**
+     * Creates a new OrderList instance using the specified properties.
+     * @function create
+     * @memberof OrderList
+     * @static
+     * @param {IOrderList=} [properties] Properties to set
+     * @returns {OrderList} OrderList instance
+     */
+    OrderList.create = function create(properties) {
+        return new OrderList(properties);
+    };
+
+    /**
+     * Encodes the specified OrderList message. Does not implicitly {@link OrderList.verify|verify} messages.
+     * @function encode
+     * @memberof OrderList
+     * @static
+     * @param {IOrderList} message OrderList message or plain object to encode
+     * @param {$protobuf.Writer} [writer] Writer to encode to
+     * @returns {$protobuf.Writer} Writer
+     */
+    OrderList.encode = function encode(message, writer) {
+        if (!writer)
+            writer = $Writer.create();
+        if (message.orderIdxs != null && message.orderIdxs.length) {
+            writer.uint32(/* id 1, wireType 2 =*/10).fork();
+            for (var i = 0; i < message.orderIdxs.length; ++i)
+                writer.int32(message.orderIdxs[i]);
+            writer.ldelim();
+        }
+        return writer;
+    };
+
+    /**
+     * Encodes the specified OrderList message, length delimited. Does not implicitly {@link OrderList.verify|verify} messages.
+     * @function encodeDelimited
+     * @memberof OrderList
+     * @static
+     * @param {IOrderList} message OrderList message or plain object to encode
+     * @param {$protobuf.Writer} [writer] Writer to encode to
+     * @returns {$protobuf.Writer} Writer
+     */
+    OrderList.encodeDelimited = function encodeDelimited(message, writer) {
+        return this.encode(message, writer).ldelim();
+    };
+
+    /**
+     * Decodes an OrderList message from the specified reader or buffer.
+     * @function decode
+     * @memberof OrderList
+     * @static
+     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+     * @param {number} [length] Message length if known beforehand
+     * @returns {OrderList} OrderList
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    OrderList.decode = function decode(reader, length) {
+        if (!(reader instanceof $Reader))
+            reader = $Reader.create(reader);
+        var end = length === undefined ? reader.len : reader.pos + length, message = new $root.OrderList();
+        while (reader.pos < end) {
+            var tag = reader.uint32();
+            switch (tag >>> 3) {
+            case 1: {
+                    if (!(message.orderIdxs && message.orderIdxs.length))
+                        message.orderIdxs = [];
+                    if ((tag & 7) === 2) {
+                        var end2 = reader.uint32() + reader.pos;
+                        while (reader.pos < end2)
+                            message.orderIdxs.push(reader.int32());
+                    } else
+                        message.orderIdxs.push(reader.int32());
+                    break;
+                }
+            default:
+                reader.skipType(tag & 7);
+                break;
+            }
+        }
+        return message;
+    };
+
+    /**
+     * Decodes an OrderList message from the specified reader or buffer, length delimited.
+     * @function decodeDelimited
+     * @memberof OrderList
+     * @static
+     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+     * @returns {OrderList} OrderList
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    OrderList.decodeDelimited = function decodeDelimited(reader) {
+        if (!(reader instanceof $Reader))
+            reader = new $Reader(reader);
+        return this.decode(reader, reader.uint32());
+    };
+
+    /**
+     * Verifies an OrderList message.
+     * @function verify
+     * @memberof OrderList
+     * @static
+     * @param {Object.<string,*>} message Plain object to verify
+     * @returns {string|null} `null` if valid, otherwise the reason why it is not
+     */
+    OrderList.verify = function verify(message) {
+        if (typeof message !== "object" || message === null)
+            return "object expected";
+        if (message.orderIdxs != null && message.hasOwnProperty("orderIdxs")) {
+            if (!Array.isArray(message.orderIdxs))
+                return "orderIdxs: array expected";
+            for (var i = 0; i < message.orderIdxs.length; ++i)
+                if (!$util.isInteger(message.orderIdxs[i]))
+                    return "orderIdxs: integer[] expected";
+        }
+        return null;
+    };
+
+    /**
+     * Creates an OrderList message from a plain object. Also converts values to their respective internal types.
+     * @function fromObject
+     * @memberof OrderList
+     * @static
+     * @param {Object.<string,*>} object Plain object
+     * @returns {OrderList} OrderList
+     */
+    OrderList.fromObject = function fromObject(object) {
+        if (object instanceof $root.OrderList)
+            return object;
+        var message = new $root.OrderList();
+        if (object.orderIdxs) {
+            if (!Array.isArray(object.orderIdxs))
+                throw TypeError(".OrderList.orderIdxs: array expected");
+            message.orderIdxs = [];
+            for (var i = 0; i < object.orderIdxs.length; ++i)
+                message.orderIdxs[i] = object.orderIdxs[i] | 0;
+        }
+        return message;
+    };
+
+    /**
+     * Creates a plain object from an OrderList message. Also converts values to other types if specified.
+     * @function toObject
+     * @memberof OrderList
+     * @static
+     * @param {OrderList} message OrderList
+     * @param {$protobuf.IConversionOptions} [options] Conversion options
+     * @returns {Object.<string,*>} Plain object
+     */
+    OrderList.toObject = function toObject(message, options) {
+        if (!options)
+            options = {};
+        var object = {};
+        if (options.arrays || options.defaults)
+            object.orderIdxs = [];
+        if (message.orderIdxs && message.orderIdxs.length) {
+            object.orderIdxs = [];
+            for (var j = 0; j < message.orderIdxs.length; ++j)
+                object.orderIdxs[j] = message.orderIdxs[j];
+        }
+        return object;
+    };
+
+    /**
+     * Converts this OrderList to JSON.
+     * @function toJSON
+     * @memberof OrderList
+     * @instance
+     * @returns {Object.<string,*>} JSON object
+     */
+    OrderList.prototype.toJSON = function toJSON() {
+        return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+    };
+
+    /**
+     * Gets the default type url for OrderList
+     * @function getTypeUrl
+     * @memberof OrderList
+     * @static
+     * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns {string} The default type url
+     */
+    OrderList.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+        if (typeUrlPrefix === undefined) {
+            typeUrlPrefix = "type.googleapis.com";
+        }
+        return typeUrlPrefix + "/OrderList";
+    };
+
+    return OrderList;
+})();
+
 $root.DataList = (function() {
 
     /**

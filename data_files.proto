@@ -63,6 +63,10 @@ message StringList {
     repeated string elements = 1;
 }
 
+message OrderList {
+    repeated int32 order_idxs = 1;
+}
+
 message DataList {
     repeated float value = 1;
     repeated float population_percentile = 2;

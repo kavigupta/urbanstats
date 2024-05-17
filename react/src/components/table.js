@@ -2,8 +2,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import ContentEditable from 'react-contenteditable'
 
 export { StatisticRowRaw, Statistic, statistic_row, Percentile };
-import { article_link, ordering_link, statistic_link } from "../navigation/links.js";
-import { loadProtobuf } from '../load_json.js';
+import { article_link, statistic_link } from "../navigation/links.js";
+import { loadProtobuf, load_ordering } from '../load_json.js';
 import "./table.css";
 import { is_historical_cd } from '../utils/is_historical.js';
 import { display_type } from '../utils/text.js';
@@ -346,7 +346,6 @@ class Ordinal extends React.Component {
 
     async onNewNumber(number) {
         let num = number;
-        const link = ordering_link(this.props.universe, this.props.statpath, this.props.type);
         if (num < 0) {
             // -1 -> this.props.total, -2 -> this.props.total - 1, etc.
             num = this.props.total + 1 + num;
@@ -357,7 +356,7 @@ class Ordinal extends React.Component {
         if (num <= 0) {
             num = 1;
         }
-        const data = (await loadProtobuf(link, "StringList")).elements;
+        const data = await load_ordering(this.props.universe, this.props.statpath, this.props.type);
         this.props.onReplace(data[num - 1])
     }
 }
@@ -436,13 +435,14 @@ class PointerButtonsIndex extends React.Component {
     }
 
     render() {
-        const link = ordering_link(this.props.universe, this.props.statpath, this.props.type);
+        const self = this;
+        const get_data = async () => await load_ordering(self.props.universe, self.props.statpath, self.props.type);
         const show_historical_cds = this.props.settings.show_historical_cds || is_historical_cd(this.props.type);
         return (
             <span>
                 <PointerButtonIndex
                     text="<"
-                    link={link}
+                    get_data={get_data}
                     original_pos={this.props.ordinal}
                     direction={-1}
                     total={this.props.total}
@@ -451,7 +451,7 @@ class PointerButtonsIndex extends React.Component {
                 />
                 <PointerButtonIndex
                     text=">"
-                    link={link}
+                    get_data={get_data}
                     original_pos={this.props.ordinal}
                     direction={+1}
                     total={this.props.total}
@@ -485,8 +485,7 @@ class PointerButtonIndex extends React.Component {
     }
     async onClick(pos) {
         {
-            const link = this.props.link;
-            const data = (await loadProtobuf(link, "StringList")).elements;
+            const data = await this.props.get_data();
             while (!this.out_of_bounds(pos)) {
                 const name = data[pos];
                 if (!this.props.show_historical_cds && is_historical_cd(name)) {

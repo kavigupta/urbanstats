@@ -82,7 +82,7 @@ class StatisticPanel extends PageTemplate {
 
     background_color(row_idx) {
         if (row_idx > 0) {
-            const name_at_idx = this.props.article_names.elements[this.index_range[row_idx - 1]];
+            const name_at_idx = this.props.article_names[this.index_range[row_idx - 1]];
             if (name_at_idx === this.props.highlight) {
                 return "#d4b5e2";
             }
@@ -131,7 +131,7 @@ class StatisticPanel extends PageTemplate {
                     }}>
                         <div style={this.style(0, row_idx + 1)}>{i + 1}</div>
                         <div style={this.style(1, row_idx + 1)}>
-                            <a href={article_link(this.state.current_universe, this.props.article_names.elements[i])} style={{ fontWeight: "bold", color: "black", textDecoration: "none" }}>{this.props.article_names.elements[i]}</a>
+                            <a href={article_link(this.state.current_universe, this.props.article_names[i])} style={{ fontWeight: "bold", color: "black", textDecoration: "none" }}>{this.props.article_names[i]}</a>
                         </div>
                         <div style={this.style(2, row_idx + 1)} className='value_numeric value'>
                             <Statistic

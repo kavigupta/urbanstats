@@ -71,7 +71,7 @@ def create_page_json(
         statrow.statval = float(row[stat])
         for universe in row.universes:
             ordering = ordering_for_all_universes[universe]
-            ordinal_by_type = ordering.ordinal_by_type[row.type][stat]
+            ordinal_by_type = ordering.ordinal_by_type[row.type].ordinals_by_stat[stat]
             ordinal_overall = ordering.overall_ordinal[stat]
             statrow.ordinal_by_universe.append(
                 ord_or_zero(ordinal_by_type.ordinals.loc[row.longname, 0])
