@@ -195,12 +195,14 @@ add ghsl cities
 
 make ordering integer based rather than string based
 
+5       quiz
 8       consolidated
-12      index
+17      index
 18      quiz_sample_info
-55      scripts
+37      scripts
 1123    shape
 1380    data
-2679    order
-5279    total
+2207    order
+4794    total
+
 
