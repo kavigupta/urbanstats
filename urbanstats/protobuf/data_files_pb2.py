@@ -17,7 +17,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
     package="",
     syntax="proto3",
     serialized_options=None,
-    serialized_pb=b'\n\x10\x64\x61ta_files.proto"\x8f\x01\n\x0cStatisticRow\x12\x0f\n\x07statval\x18\x01 \x01(\x02\x12\x1b\n\x13ordinal_by_universe\x18\x02 \x03(\x05\x12#\n\x1boverall_ordinal_by_universe\x18\x03 \x03(\x05\x12,\n$percentile_by_population_by_universe\x18\x04 \x03(\x02"F\n\rRelatedButton\x12\x10\n\x08longname\x18\x01 \x01(\t\x12\x11\n\tshortname\x18\x02 \x01(\t\x12\x10\n\x08row_type\x18\x03 \x01(\t"L\n\x0eRelatedButtons\x12\x19\n\x11relationship_type\x18\x01 \x01(\t\x12\x1f\n\x07\x62uttons\x18\x02 \x03(\x0b\x32\x0e.RelatedButton"\xa6\x01\n\x07\x41rticle\x12\x11\n\tshortname\x18\x01 \x01(\t\x12\x10\n\x08longname\x18\x02 \x01(\t\x12\x0e\n\x06source\x18\x03 \x01(\t\x12\x14\n\x0c\x61rticle_type\x18\x04 \x01(\t\x12\x1b\n\x04rows\x18\x05 \x03(\x0b\x32\r.StatisticRow\x12 \n\x07related\x18\x06 \x03(\x0b\x32\x0f.RelatedButtons\x12\x11\n\tuniverses\x18\x07 \x03(\t"&\n\nCoordinate\x12\x0b\n\x03lon\x18\x01 \x01(\x02\x12\x0b\n\x03lat\x18\x02 \x01(\x02"#\n\x04Ring\x12\x1b\n\x06\x63oords\x18\x01 \x03(\x0b\x32\x0b.Coordinate"\x1f\n\x07Polygon\x12\x14\n\x05rings\x18\x01 \x03(\x0b\x32\x05.Ring"*\n\x0cMultiPolygon\x12\x1a\n\x08polygons\x18\x01 \x03(\x0b\x32\x08.Polygon"Y\n\x07\x46\x65\x61ture\x12\x1b\n\x07polygon\x18\x01 \x01(\x0b\x32\x08.PolygonH\x00\x12%\n\x0cmultipolygon\x18\x02 \x01(\x0b\x32\r.MultiPolygonH\x00\x42\n\n\x08geometry"\x1e\n\nStringList\x12\x10\n\x08\x65lements\x18\x01 \x03(\t"\x1a\n\tOrderList\x12\r\n\x05order\x18\x01 \x03(\x05"8\n\x08\x44\x61taList\x12\r\n\x05value\x18\x01 \x03(\x02\x12\x1d\n\x15population_percentile\x18\x02 \x03(\x02"\x19\n\x08\x41llStats\x12\r\n\x05stats\x18\x01 \x03(\x02"A\n\x12\x43onsolidatedShapes\x12\x11\n\tlongnames\x18\x01 \x03(\t\x12\x18\n\x06shapes\x18\x02 \x03(\x0b\x32\x08.Feature"Y\n\x16\x43onsolidatedStatistics\x12\x11\n\tlongnames\x18\x01 \x03(\t\x12\x12\n\nshortnames\x18\x02 \x03(\t\x12\x18\n\x05stats\x18\x03 \x03(\x0b\x32\t.AllStatsb\x06proto3',
+    serialized_pb=b'\n\x10\x64\x61ta_files.proto"\x8f\x01\n\x0cStatisticRow\x12\x0f\n\x07statval\x18\x01 \x01(\x02\x12\x1b\n\x13ordinal_by_universe\x18\x02 \x03(\x05\x12#\n\x1boverall_ordinal_by_universe\x18\x03 \x03(\x05\x12,\n$percentile_by_population_by_universe\x18\x04 \x03(\x02"F\n\rRelatedButton\x12\x10\n\x08longname\x18\x01 \x01(\t\x12\x11\n\tshortname\x18\x02 \x01(\t\x12\x10\n\x08row_type\x18\x03 \x01(\t"L\n\x0eRelatedButtons\x12\x19\n\x11relationship_type\x18\x01 \x01(\t\x12\x1f\n\x07\x62uttons\x18\x02 \x03(\x0b\x32\x0e.RelatedButton"\xa6\x01\n\x07\x41rticle\x12\x11\n\tshortname\x18\x01 \x01(\t\x12\x10\n\x08longname\x18\x02 \x01(\t\x12\x0e\n\x06source\x18\x03 \x01(\t\x12\x14\n\x0c\x61rticle_type\x18\x04 \x01(\t\x12\x1b\n\x04rows\x18\x05 \x03(\x0b\x32\r.StatisticRow\x12 \n\x07related\x18\x06 \x03(\x0b\x32\x0f.RelatedButtons\x12\x11\n\tuniverses\x18\x07 \x03(\t"&\n\nCoordinate\x12\x0b\n\x03lon\x18\x01 \x01(\x02\x12\x0b\n\x03lat\x18\x02 \x01(\x02"#\n\x04Ring\x12\x1b\n\x06\x63oords\x18\x01 \x03(\x0b\x32\x0b.Coordinate"\x1f\n\x07Polygon\x12\x14\n\x05rings\x18\x01 \x03(\x0b\x32\x05.Ring"*\n\x0cMultiPolygon\x12\x1a\n\x08polygons\x18\x01 \x03(\x0b\x32\x08.Polygon"Y\n\x07\x46\x65\x61ture\x12\x1b\n\x07polygon\x18\x01 \x01(\x0b\x32\x08.PolygonH\x00\x12%\n\x0cmultipolygon\x18\x02 \x01(\x0b\x32\r.MultiPolygonH\x00\x42\n\n\x08geometry"\x1e\n\nStringList\x12\x10\n\x08\x65lements\x18\x01 \x03(\t"\x1f\n\tOrderList\x12\x12\n\norder_idxs\x18\x01 \x03(\x05"8\n\x08\x44\x61taList\x12\r\n\x05value\x18\x01 \x03(\x02\x12\x1d\n\x15population_percentile\x18\x02 \x03(\x02"\x19\n\x08\x41llStats\x12\r\n\x05stats\x18\x01 \x03(\x02"A\n\x12\x43onsolidatedShapes\x12\x11\n\tlongnames\x18\x01 \x03(\t\x12\x18\n\x06shapes\x18\x02 \x03(\x0b\x32\x08.Feature"Y\n\x16\x43onsolidatedStatistics\x12\x11\n\tlongnames\x18\x01 \x03(\t\x12\x12\n\nshortnames\x18\x02 \x03(\t\x12\x18\n\x05stats\x18\x03 \x03(\x0b\x32\t.AllStatsb\x06proto3',
 )
 
 
@@ -679,8 +679,8 @@ _ORDERLIST = _descriptor.Descriptor(
     containing_type=None,
     fields=[
         _descriptor.FieldDescriptor(
-            name="order",
-            full_name="OrderList.order",
+            name="order_idxs",
+            full_name="OrderList.order_idxs",
             index=0,
             number=1,
             type=5,
@@ -706,7 +706,7 @@ _ORDERLIST = _descriptor.Descriptor(
     extension_ranges=[],
     oneofs=[],
     serialized_start=762,
-    serialized_end=788,
+    serialized_end=793,
 )
 
 
@@ -762,8 +762,8 @@ _DATALIST = _descriptor.Descriptor(
     syntax="proto3",
     extension_ranges=[],
     oneofs=[],
-    serialized_start=790,
-    serialized_end=846,
+    serialized_start=795,
+    serialized_end=851,
 )
 
 
@@ -801,8 +801,8 @@ _ALLSTATS = _descriptor.Descriptor(
     syntax="proto3",
     extension_ranges=[],
     oneofs=[],
-    serialized_start=848,
-    serialized_end=873,
+    serialized_start=853,
+    serialized_end=878,
 )
 
 
@@ -858,8 +858,8 @@ _CONSOLIDATEDSHAPES = _descriptor.Descriptor(
     syntax="proto3",
     extension_ranges=[],
     oneofs=[],
-    serialized_start=875,
-    serialized_end=940,
+    serialized_start=880,
+    serialized_end=945,
 )
 
 
@@ -933,8 +933,8 @@ _CONSOLIDATEDSTATISTICS = _descriptor.Descriptor(
     syntax="proto3",
     extension_ranges=[],
     oneofs=[],
-    serialized_start=942,
-    serialized_end=1031,
+    serialized_start=947,
+    serialized_end=1036,
 )
 
 _RELATEDBUTTONS.fields_by_name["buttons"].message_type = _RELATEDBUTTON

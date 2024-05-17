@@ -193,3 +193,14 @@ add ghsl cities
 3031    order
 5606    total
 
+make ordering integer based rather than string based
+
+8       consolidated
+12      index
+18      quiz_sample_info
+55      scripts
+1123    shape
+1380    data
+2679    order
+5279    total
+

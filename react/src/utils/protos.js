@@ -2641,7 +2641,7 @@ $root.OrderList = (function() {
      * Properties of an OrderList.
      * @exports IOrderList
      * @interface IOrderList
-     * @property {Array.<number>|null} [order] OrderList order
+     * @property {Array.<number>|null} [orderIdxs] OrderList orderIdxs
      */
 
     /**
@@ -2653,7 +2653,7 @@ $root.OrderList = (function() {
      * @param {IOrderList=} [properties] Properties to set
      */
     function OrderList(properties) {
-        this.order = [];
+        this.orderIdxs = [];
         if (properties)
             for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
                 if (properties[keys[i]] != null)
@@ -2661,12 +2661,12 @@ $root.OrderList = (function() {
     }
 
     /**
-     * OrderList order.
-     * @member {Array.<number>} order
+     * OrderList orderIdxs.
+     * @member {Array.<number>} orderIdxs
      * @memberof OrderList
      * @instance
      */
-    OrderList.prototype.order = $util.emptyArray;
+    OrderList.prototype.orderIdxs = $util.emptyArray;
 
     /**
      * Creates a new OrderList instance using the specified properties.
@@ -2692,10 +2692,10 @@ $root.OrderList = (function() {
     OrderList.encode = function encode(message, writer) {
         if (!writer)
             writer = $Writer.create();
-        if (message.order != null && message.order.length) {
+        if (message.orderIdxs != null && message.orderIdxs.length) {
             writer.uint32(/* id 1, wireType 2 =*/10).fork();
-            for (var i = 0; i < message.order.length; ++i)
-                writer.int32(message.order[i]);
+            for (var i = 0; i < message.orderIdxs.length; ++i)
+                writer.int32(message.orderIdxs[i]);
             writer.ldelim();
         }
         return writer;
@@ -2733,14 +2733,14 @@ $root.OrderList = (function() {
             var tag = reader.uint32();
             switch (tag >>> 3) {
             case 1: {
-                    if (!(message.order && message.order.length))
-                        message.order = [];
+                    if (!(message.orderIdxs && message.orderIdxs.length))
+                        message.orderIdxs = [];
                     if ((tag & 7) === 2) {
                         var end2 = reader.uint32() + reader.pos;
                         while (reader.pos < end2)
-                            message.order.push(reader.int32());
+                            message.orderIdxs.push(reader.int32());
                     } else
-                        message.order.push(reader.int32());
+                        message.orderIdxs.push(reader.int32());
                     break;
                 }
             default:
@@ -2778,12 +2778,12 @@ $root.OrderList = (function() {
     OrderList.verify = function verify(message) {
         if (typeof message !== "object" || message === null)
             return "object expected";
-        if (message.order != null && message.hasOwnProperty("order")) {
-            if (!Array.isArray(message.order))
-                return "order: array expected";
-            for (var i = 0; i < message.order.length; ++i)
-                if (!$util.isInteger(message.order[i]))
-                    return "order: integer[] expected";
+        if (message.orderIdxs != null && message.hasOwnProperty("orderIdxs")) {
+            if (!Array.isArray(message.orderIdxs))
+                return "orderIdxs: array expected";
+            for (var i = 0; i < message.orderIdxs.length; ++i)
+                if (!$util.isInteger(message.orderIdxs[i]))
+                    return "orderIdxs: integer[] expected";
         }
         return null;
     };
@@ -2800,12 +2800,12 @@ $root.OrderList = (function() {
         if (object instanceof $root.OrderList)
             return object;
         var message = new $root.OrderList();
-        if (object.order) {
-            if (!Array.isArray(object.order))
-                throw TypeError(".OrderList.order: array expected");
-            message.order = [];
-            for (var i = 0; i < object.order.length; ++i)
-                message.order[i] = object.order[i] | 0;
+        if (object.orderIdxs) {
+            if (!Array.isArray(object.orderIdxs))
+                throw TypeError(".OrderList.orderIdxs: array expected");
+            message.orderIdxs = [];
+            for (var i = 0; i < object.orderIdxs.length; ++i)
+                message.orderIdxs[i] = object.orderIdxs[i] | 0;
         }
         return message;
     };
@@ -2824,11 +2824,11 @@ $root.OrderList = (function() {
             options = {};
         var object = {};
         if (options.arrays || options.defaults)
-            object.order = [];
-        if (message.order && message.order.length) {
-            object.order = [];
-            for (var j = 0; j < message.order.length; ++j)
-                object.order[j] = message.order[j];
+            object.orderIdxs = [];
+        if (message.orderIdxs && message.orderIdxs.length) {
+            object.orderIdxs = [];
+            for (var j = 0; j < message.orderIdxs.length; ++j)
+                object.orderIdxs[j] = message.orderIdxs[j];
         }
         return object;
     };

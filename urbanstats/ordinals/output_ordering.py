@@ -31,6 +31,10 @@ def output_ordering_for_universe(site_folder, universe, ordering):
         ordered = ordering.ordinal_by_type[typ].all_names
         save_string_list(ordered, path)
         order_backmap[typ] = {name: i for i, name in enumerate(ordered)}
+    path = f"{site_folder}/index/{universe}_overall.gz"
+    ordered = ordering.overall_ordinal.all_names
+    save_string_list(ordered, path)
+    order_backmap["overall"] = {name: i for i, name in enumerate(ordered)}
     counts = {}
     for statistic_column in tqdm.tqdm(
         internal_statistic_names(), desc=f"outputting ordinals for {universe}"
@@ -38,8 +42,8 @@ def output_ordering_for_universe(site_folder, universe, ordering):
         statistic_column_path = get_statistic_column_path(statistic_column)
         path = f"{site_folder}/order/{universe}_{statistic_column_path}__overall.gz"
         ordered = ordering.overall_ordinal.ordinals_by_stat[statistic_column]
-        save_string_list(
-            ordered.ordered_longnames,
+        save_ordered_list(
+            [order_backmap["overall"][name] for name in ordered.ordered_longnames],
             path,
         )
         counts[statistic_column, "overall"] = int(
@@ -47,12 +51,12 @@ def output_ordering_for_universe(site_folder, universe, ordering):
         )
         for typ in sorted(ordering.ordinal_by_type):
             path = f"{site_folder}/order/{universe}_{statistic_column_path}__{typ}.gz"
-            ordered = ordering.ordinal_by_type[typ][statistic_column]
-            ordered_longnames = ordered.ordered_longnames
+            ordered = ordering.ordinal_by_type[typ].ordinals_by_stat[statistic_column]
+            idx = [order_backmap[typ][name] for name in ordered.ordered_longnames]
+            save_ordered_list(idx, path)
             ordered_values = ordered.ordered_values
             counts[statistic_column, typ] = int((~np.isnan(ordered_values)).sum())
             ordered_percentile = ordered.ordered_percentiles_by_population
-            save_string_list(ordered_longnames, path)
             save_data_list(
                 ordered_values, ordered_percentile, path.replace(".gz", "_data.gz")
             )

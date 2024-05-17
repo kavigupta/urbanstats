@@ -3,9 +3,9 @@ export { loadJSON, loadProtobuf, load_ordering };
 import { gunzipSync } from 'zlib';
 import {
     Article, Feature, StringList, ConsolidatedShapes,
-    ConsolidatedStatistics, DataList
+    ConsolidatedStatistics, DataList, OrderList
 } from "./utils/protos.js";
-import { ordering_link } from './navigation/links.js';
+import { index_link, ordering_link } from './navigation/links.js';
 
 // from https://stackoverflow.com/a/4117299/1549476
 
@@ -49,6 +49,8 @@ async function loadProtobuf(filePath, name) {
         return Feature.decode(arr);
     } else if (name == "StringList") {
         return StringList.decode(arr);
+    } else if (name == "OrderList") {
+        return OrderList.decode(arr);
     } else if (name == "DataList") {
         return DataList.decode(arr);
     } else if (name == "ConsolidatedShapes") {
@@ -61,7 +63,9 @@ async function loadProtobuf(filePath, name) {
 }
 
 async function load_ordering(universe, statpath, type) {
-    const link = ordering_link(universe, statpath, type);
-    const data = await loadProtobuf(link, "StringList");
-    return data.elements;
+    const idx_link = index_link(universe, type);
+    const order_link = ordering_link(universe, statpath, type);
+    const data = await loadProtobuf(idx_link, "StringList");
+    const ordering = await loadProtobuf(order_link, "OrderList");
+    return ordering.orderIdxs.map(i => data.elements[i]);
 }

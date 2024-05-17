@@ -1,5 +1,6 @@
 export {
     sanitize,
+    index_link,
     article_link, shape_link, data_link, ordering_link, ordering_data_link,
     explanation_page_link,
     consolidated_shape_link, consolidated_stats_link, comparison_link,
@@ -20,6 +21,10 @@ function shape_link(longname) {
 
 function data_link(longname) {
     return `/data/${sanitize(longname)}.gz`
+}
+
+function index_link(universe, typ) {
+    return `/index/${universe}_${sanitize(typ, false)}.gz`
 }
 
 function ordering_link(universe, statpath, type) {
