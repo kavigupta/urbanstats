@@ -180,3 +180,16 @@ get rid of states as a separate entity from subnational regions
 1347    data
 2937    order
 5439    total
+
+add ghsl cities
+
+5       index
+5       quiz
+8       consolidated
+18      quiz_sample_info
+37      scripts
+1123    shape
+1380    data
+3031    order
+5606    total
+

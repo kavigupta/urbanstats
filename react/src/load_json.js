@@ -1,10 +1,11 @@
-export { loadJSON, loadProtobuf };
+export { loadJSON, loadProtobuf, load_ordering };
 
 import { gunzipSync } from 'zlib';
 import {
     Article, Feature, StringList, ConsolidatedShapes,
     ConsolidatedStatistics, DataList
 } from "./utils/protos.js";
+import { ordering_link } from './navigation/links.js';
 
 // from https://stackoverflow.com/a/4117299/1549476
 
@@ -57,4 +58,10 @@ async function loadProtobuf(filePath, name) {
     } else {
         throw "protobuf type not recognized (see load_json.js)";
     }
+}
+
+async function load_ordering(universe, statpath, type) {
+    const link = ordering_link(universe, statpath, type);
+    const data = await loadProtobuf(link, "StringList");
+    return data.elements;
 }
