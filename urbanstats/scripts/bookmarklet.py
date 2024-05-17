@@ -17,4 +17,4 @@ code = (
     f"localStorage['quiz_history'] = JSON.stringify(y);"
     f"void(0)"
 )
-print(len(code))
+print("javascript:" + code)
