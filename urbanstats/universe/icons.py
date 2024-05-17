@@ -8,10 +8,34 @@ import re
 
 from urbanstats.universe.annotate_universes import (
     all_universes,
+    country_names,
     get_universe_name_for_state,
 )
 
 flags_folder = "icons/flags/"
+
+
+internal_country_to_wikipedia = {
+    "Bolivia, Plurinational State of": "Bolivia",
+    "Bouvet Island": "Norway",
+    "Congo, The Democratic Republic of the": "Democratic_Republic_of_the_Congo",
+    "Falkland Islands (Malvinas)": "Falkland_Islands",
+    "Micronesia, Federated States of": "Federated_States_of_Micronesia",
+    "Heard Island and McDonald Islands": "Australia",
+    "Iran, Islamic Republic of": "Iran",
+    "Korea, Democratic People's Republic of": "North_Korea",
+    "Korea, Republic of": "South_Korea",
+    "Lao People's Democratic Republic": "Laos",
+    "Moldova, Republic of": "Moldova",
+    "Palestine, State of": "Palestine",
+    "Syrian Arab Republic": "Syria",
+    "Tanzania, United Republic of": "Tanzania",
+    "United States Minor Outlying Islands": "United_States",
+    "Holy See (Vatican City State)": "Vatican_City",
+    "Venezuela, Bolivarian Republic of": "Venezuela",
+    "Virgin Islands, British": "British_Virgin_Islands",
+    "Viet Nam": "Vietnam",
+}
 
 
 def download_and_convert_flag(wikipedia_page, out_path):
@@ -53,7 +77,14 @@ def download_all_us_state_icons():
         )
 
 
+def download_all_country_icons():
+    for name in country_names():
+        wikiname = internal_country_to_wikipedia.get(name, name.replace(" ", "_"))
+        download_and_convert_flag(f"File:Flag_of_{wikiname}.svg", name)
+
+
 def download_all_icons():
+    download_all_country_icons()
     download_all_us_state_icons()
     download_and_convert_flag("File:Flag_of_the_United_States.svg", "USA")
     download_and_convert_flag("File:Flag_of_the_United_Nations.svg", "world")

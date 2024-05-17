@@ -20,7 +20,9 @@ subnation_usa = re.compile(r"(?!([ ,-]))(?P<state>[^,\-\s][^,\-]*), USA")
 def compute_intl_universes(longname):
     result = ["world"]
     if not longname.endswith("USA"):
-        return result
+        valid_countries = [x for x in country_names() if longname.endswith(", " + x)]
+        assert len(valid_countries) == 1, (longname, valid_countries)
+        return result + [valid_countries[0]]
     result += ["USA"]
     if longname == "USA":
         return result
@@ -47,7 +49,7 @@ def attach_intl_universes(intl):
     ]
 
 
-@permacache("urbanstats/universe/annotate_universes/country_names")
+@permacache("urbanstats/universe/annotate_universes/country_names_2")
 def country_names():
     from shapefiles import shapefiles
 
@@ -65,7 +67,7 @@ def get_universe_name_for_state(state):
 def universe_by_universe_type():
     return {
         "world": ["world"],
-        "country": ["USA"],
+        "country": country_names(),
         "state": [
             get_universe_name_for_state(x)
             for x in us.states.STATES_AND_TERRITORIES + [us.states.DC]
