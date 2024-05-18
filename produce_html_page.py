@@ -72,7 +72,7 @@ def create_page_json(
         for universe in row.universes:
             ordering = ordering_for_all_universes[universe]
             ordinal_by_type = ordering.ordinal_by_type[row.type].ordinals_by_stat[stat]
-            ordinal_overall = ordering.overall_ordinal[stat]
+            ordinal_overall = ordering.overall_ordinal.ordinals_by_stat[stat]
             statrow.ordinal_by_universe.append(
                 ord_or_zero(ordinal_by_type.ordinals.loc[row.longname, 0])
             )
