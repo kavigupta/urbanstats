@@ -33,6 +33,7 @@ class RelatedButton extends React.Component {
         const YELLOW = "#b8a32f";
 
         const colors_each = {
+            "Continent": DARK_GRAY,
             "Country": DARK_GRAY,
             "Judicial Circuit": DARK_GRAY,
             "USDA County Type": DARK_GRAY,

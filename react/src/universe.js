@@ -48,5 +48,6 @@ export function default_comparison_universe(longnames) {
 }
 
 export function universe_is_american(universe) {
-    return universe !== "world";
+    // if universe ends with USA, then it's American
+    return universe.endsWith("USA");
 }

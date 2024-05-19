@@ -2,6 +2,7 @@ import copy
 import os
 import geopandas as gpd
 import tqdm.auto as tqdm
+from permacache import permacache
 
 # < 50m
 SIMPLIFY_REALLY_SMALL = 1 / 120 * 50e-3
@@ -109,3 +110,24 @@ def countries():
         os.makedirs(path)
         c.to_file(path + "/countries.shp", encoding="utf-8")
     return gpd.read_file(path + "/countries.shp")
+
+def continents_direct():
+    data = gpd.read_file("named_region_shapefiles/continents/subnational_regions.shp")
+    data = data.dissolve("newcont")
+    data.geometry = data.geometry.buffer(SIMPLIFY_REALLY_SMALL)
+    data.geometry = data.geometry.simplify(SIMPLIFY_REALLY_SMALL)
+    data["name"] = [x.title() for x in data.index]
+    data = data.reset_index(drop=True)
+    return data
+
+def continents():
+    path = "named_region_shapefiles/continents_processed"
+    if not os.path.exists(path):
+        c = continents_direct()
+        os.makedirs(path)
+        c.to_file(path + "/continents.shp", encoding="utf-8")
+    return gpd.read_file(path + "/continents.shp")
+
+@permacache("urbanstats/special_cases/country/continent_names")
+def continent_names():
+    return continents().name_1

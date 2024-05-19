@@ -509,6 +509,27 @@ test('article-universe-selector-test', async t => {
         .eql(TARGET + '/article.html?longname=San+Marino+city%2C+California%2C+USA&universe=California%2C+USA');
 });
 
+fixture('article universe selector test international')
+    .page(TARGET + '/article.html?longname=Delhi+%5BNew+Delhi%5D+Urban+Center%2C+India')
+    // no local storage
+    .beforeEach(async t => {
+        await t.eval(() => localStorage.clear());
+    });
+
+test('article-universe-selector-test', async t => {
+    await t
+        .click(Selector('img').withAttribute('class', 'universe-selector'));
+    await screencap(t, "article-dropped-down-universe-selector-international");
+    await t
+        .click(
+            Selector('img')
+                .withAttribute('class', 'universe-selector-option')
+                .withAttribute('alt', 'India'));
+    await t.expect(getLocation())
+        .eql(TARGET + '/article.html?longname=Delhi+%5BNew+Delhi%5D+Urban+Center%2C+India&universe=India');
+    await screencap(t, "article/delhi-india");
+});
+
 fixture('statistic universe selector test')
     .page(TARGET + '/statistic.html?statname=Population&article_type=City&start=3461&amount=20')
     // no local storage
