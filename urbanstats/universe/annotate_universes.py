@@ -3,7 +3,8 @@ import re
 from permacache import permacache
 import us
 
-from relationship import states_for_all
+from relationship import continents_for_all, non_us_countries_for_all, states_for_all
+from urbanstats.special_cases.country import continent_names
 
 universe_types = ["world", "country", "state"]
 
@@ -11,19 +12,22 @@ universe_types = ["world", "country", "state"]
 def attach_usa_universes(american):
     states_map = states_for_all()
     american["universes"] = [
-        ["world", "USA"] + sorted(states_map[longname])
+        ["world", "USA", "North America"] + sorted(states_map[longname])
         for longname in american.longname
     ]
 
 subnation_usa = re.compile(r"(?!([ ,-]))(?P<state>[^,\-\s][^,\-]*), USA")
 
 def compute_intl_universes(longname):
-    result = ["world"]
+    result = ["world"] + continents_for_all()[longname]
+    if longname in continent_names():
+        return result
+    result += non_us_countries_for_all()[longname]
     if not longname.endswith("USA"):
-        valid_countries = [x for x in country_names() if longname.endswith(", " + x)]
-        assert len(valid_countries) == 1, (longname, valid_countries)
-        return result + [valid_countries[0]]
-    result += ["USA"]
+        return result
+    if "USA" not in result:
+        assert len(result) == 2, "should be just world and continent"
+        result += ["USA"]
     if longname == "USA":
         return result
     from urbanstats.special_cases.ghsl_urban_center import gsl_urban_center_longname_to_subnational_codes
@@ -67,6 +71,7 @@ def get_universe_name_for_state(state):
 def universe_by_universe_type():
     return {
         "world": ["world"],
+        "continent": continent_names(),
         "country": country_names(),
         "state": [
             get_universe_name_for_state(x)

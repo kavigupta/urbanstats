@@ -32,6 +32,7 @@ dont_use = [
     "School District",
     "Judicial District",
     "Judicial Circuit",
+    "Continent",
     "Country",
     "Subnational Region",
     "County Cross CD",

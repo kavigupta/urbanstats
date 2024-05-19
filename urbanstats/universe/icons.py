@@ -6,6 +6,7 @@ import tempfile
 import us
 import re
 
+from urbanstats.special_cases.country import continent_names
 from urbanstats.universe.annotate_universes import (
     all_universes,
     country_names,
@@ -56,14 +57,17 @@ def download_and_convert_flag(wikipedia_page, out_path):
     with tempfile.NamedTemporaryFile(suffix=".svg") as f:
         f.write(content)
         f.flush()
-        subprocess.run(
+        run_conversion(out, f.name)
+
+def run_conversion(png_path, svg_path):
+    subprocess.run(
             [
                 "inkscape",
-                f.name,
+                svg_path,
                 "--export-type=png",
-                "--export-filename=" + out,
+                "--export-filename=" + png_path,
                 "-w",
-                "400",
+                "400"
             ]
         )
 
@@ -82,6 +86,13 @@ def download_all_country_icons():
         wikiname = internal_country_to_wikipedia.get(name, name.replace(" ", "_"))
         download_and_convert_flag(f"File:Flag_of_{wikiname}.svg", name)
 
+def convert_continent_icons():
+    for continent in continent_names():
+        out = f"{flags_folder}{continent}.png"
+        if os.path.exists(out):
+            continue
+        run_conversion(out, f"continent-flags/{continent}.svg")
+
 
 def download_all_icons():
     download_all_country_icons()
@@ -91,6 +102,8 @@ def download_all_icons():
     download_and_convert_flag(
         "File:Flag_of_Washington,_D.C..svg", "District of Columbia, USA"
     )
+
+    convert_continent_icons()
 
     missing = set([x + ".png" for x in all_universes()]) - set(os.listdir(flags_folder))
     assert not missing, missing

@@ -9,7 +9,7 @@ import geopandas as gpd
 from permacache import permacache
 
 from stats_for_shapefile import Shapefile
-from urbanstats.special_cases.country import countries, subnational_regions
+from urbanstats.special_cases.country import continents, countries, subnational_regions
 from urbanstats.special_cases.ghsl_urban_center import load_ghsl_urban_center
 
 
@@ -405,6 +405,17 @@ shapefiles = dict(
         longname_extractor=lambda x: x["NAME"] + " Media Market, USA",
         filter=lambda x: x.NAME != "National",
         meta=dict(type="Media Market", source="Nielsen via Kenneth C Black"),
+    ),
+    continents=Shapefile(
+        hash_key="continents_1",
+        path=continents,
+        shortname_extractor=lambda x: x.name_1,
+        longname_extractor=lambda x: x.name_1,
+        filter=lambda x: True,
+        meta=dict(type="Continent", source="OpenDataSoft"),
+        american=False,
+        include_in_gpw=True,
+        chunk_size=1,
     ),
     countries=Shapefile(
         hash_key="countries_8",

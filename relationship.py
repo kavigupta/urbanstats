@@ -3,12 +3,15 @@ from functools import lru_cache
 from collections import defaultdict
 import numpy as np
 import pandas as pd
-from permacache import permacache
+from permacache import permacache, drop_if_equal
 import geopandas as gpd
 import tqdm
 
 from shapefiles import shapefiles_for_stats
 
+def skippable_edge_case(k):
+    # no clue what this is
+    return k == "Historical Congressional District DC-98, 103rd-117th Congress, USA"
 
 @lru_cache(maxsize=1)
 def states_for_all():
@@ -28,11 +31,7 @@ def states_for_all():
     }
     for u in shapefiles_for_stats:
         for k, v in states_for(shapefiles_for_stats[u]).items():
-            if (
-                k
-                == "Historical Congressional District DC-98, 103rd-117th Congress, USA"
-            ):
-                # no clue what this is
+            if skippable_edge_case(k):
                 continue
             if k in one_offs:
                 systematics[k] = [one_offs[k]]
@@ -42,6 +41,52 @@ def states_for_all():
                 assert len(systematics[k]) >= 1, (u, k)
     return systematics
 
+@lru_cache(maxsize=1)
+def continents_for_all():
+    systematics = {}
+    for u in shapefiles_for_stats:
+        for k, v in contained_in(shapefiles_for_stats[u], shapefiles_for_stats["continents"], only_american=False, only_nonamerican=False).items():
+            if skippable_edge_case(k):
+                continue
+            # zip codes are north american, except for hawaii, which all start with 9
+            if re.match(r"^[0-8]\d{4}, USA$", k):
+                v = ["North America"]
+            # Treasure island
+            if k == "94130, USA":
+                v = ["North America"]
+            # Blake Island
+            if k == "98353, USA":
+                v = ["North America"]
+            if k == "HI-HD051, USA":
+                v = ["Oceania"]
+            if k == "ME-HD119, USA" or k == "OH-HD013, USA" or k == "Inalik ANVSA, USA" or k == "Lesnoi ANVSA, USA":
+                v = ["North America"]
+            if k == "Venice Urban Center, Italy":
+                v = ["Europe"]
+            # things in these states are in North America
+            if re.match(r".*, (New York|Maine|Florida|Virginia|Alaska|California|Ohio|Michigan|Washington|North Carolina), USA$", k):
+                v = ["North America"]
+            if k in systematics:
+                assert systematics[k] == v, (k, systematics[k], v)
+            else:
+                systematics[k] = v
+    return systematics
+
+@lru_cache(maxsize=1)
+def non_us_countries_for_all():
+    systematics = {}
+    for u in shapefiles_for_stats:
+        for k, v in contained_in(shapefiles_for_stats[u], shapefiles_for_stats["countries"], only_american=False, only_nonamerican=True).items():
+            if skippable_edge_case(k):
+                continue
+            if k in systematics and k.endswith("USA"):
+                v = max([v, systematics[k]], key=len)
+                systematics[k] = v
+            if k in systematics:
+                assert systematics[k] == v, (k, systematics[k], v)
+            else:
+                systematics[k] = v
+    return systematics
 
 @permacache(
     "population_density/relationship/states_for_4",
@@ -49,14 +94,23 @@ def states_for_all():
 )
 def states_for(sh):
     print("states_for", sh.hash_key)
+    return contained_in(sh, shapefiles_for_stats["states"], only_american=True, only_nonamerican=False)
+
+@permacache(
+    "population_density/relationship/contained_in_2",
+    key_function=dict(sh=lambda a: a.hash_key, check_contained_in=lambda a: a.hash_key,
+                      only_nonamerican=drop_if_equal(False)),
+)
+def contained_in(sh, check_contained_in, *, only_american, only_nonamerican):
+    print("contained_in", sh.hash_key, check_contained_in.hash_key)
     elem = sh.load_file()
-    if not sh.american:
+    if only_american and not sh.american or only_nonamerican and sh.american:
         return {k: [] for k in elem.longname}
     elem["idx"] = np.arange(elem.shape[0])
     over = overlays(
-        shapefiles_for_stats["states"].load_file(),
+        check_contained_in.load_file(),
         elem,
-        shapefiles_for_stats["states"].chunk_size,
+        check_contained_in.chunk_size,
         sh.chunk_size,
         keep_geom_type=True,
     )
@@ -228,6 +282,7 @@ def add(d, edges):
 
 
 tiers = [
+    ['continents'],
     ["countries"],
     [
         "states",
