@@ -428,7 +428,7 @@ shapefiles = dict(
         include_in_gpw=True,
     ),
     urban_centers=Shapefile(
-        hash_key="urban_centers_2",
+        hash_key="urban_centers_3",
         path=lambda: load_ghsl_urban_center(),
         shortname_extractor=lambda x: x["shortname"],
         longname_extractor=lambda x: x["longname"],
@@ -450,7 +450,7 @@ shapefiles_for_stats = dict(
         meta=dict(type="State", source="Census"),
     ),
     us_urban_centers=Shapefile(
-        hash_key="us_urban_centers_2",
+        hash_key="us_urban_centers_3",
         path=lambda: load_ghsl_urban_center(),
         shortname_extractor=lambda x: x["shortname"],
         longname_extractor=lambda x: x["longname"],

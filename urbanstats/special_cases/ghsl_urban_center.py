@@ -5,7 +5,7 @@ import numpy as np
 
 from urbanstats.special_cases.country import subnational_regions
 
-version = 7
+version = 8
 
 def classify_areas_by_subnational_region(snr, areas):
     joined = gpd.overlay(snr, areas[["index_", "geometry"]], keep_geom_type=False)
@@ -34,7 +34,7 @@ def gsl_urban_center_longname_to_subnational_codes():
     areas = load_ghsl_urban_center()
     return dict(zip(areas.longname, areas.subnationals_ISO_CODE))
 
-@permacache(f"urbanstats/special_cases/ghsl_urban_center/load_ghsl_urban_center_no_names")
+@permacache(f"urbanstats/special_cases/ghsl_urban_center/load_ghsl_urban_center_no_names_2")
 def load_ghsl_urban_center_no_names():
     from shapefiles import iso_to_country
     areas = gpd.read_file(

@@ -31,7 +31,15 @@ class DataCreditPanel extends PageTemplate {
     main_content() {
         return (
             <div className="serif">
-                <div className={headerTextClass()}>Data Credit</div>
+                <div className={headerTextClass()}>Credits</div>
+
+                <h1>Code contributors</h1>
+                <p>
+                    Special thanks to <a href="https://github.com/lukebrody">Luke Brody</a>
+                    for helping with the build system (I'm hopeless with this
+                    stuff) and to <a href="https://github.com/glacialcascade">glacialcascade</a>
+                    for identifying and correcting a bug in the code.
+                </p>
 
                 <h1>Geography</h1>
                 <div>
