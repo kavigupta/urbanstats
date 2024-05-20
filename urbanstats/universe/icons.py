@@ -12,6 +12,7 @@ from urbanstats.universe.annotate_universes import (
     country_names,
     get_universe_name_for_state,
 )
+from .universe_constants import CONTINENTS, COUNTRIES
 
 flags_folder = "icons/flags/"
 
@@ -59,17 +60,18 @@ def download_and_convert_flag(wikipedia_page, out_path):
         f.flush()
         run_conversion(out, f.name)
 
+
 def run_conversion(png_path, svg_path):
     subprocess.run(
-            [
-                "inkscape",
-                svg_path,
-                "--export-type=png",
-                "--export-filename=" + png_path,
-                "-w",
-                "400"
-            ]
-        )
+        [
+            "inkscape",
+            svg_path,
+            "--export-type=png",
+            "--export-filename=" + png_path,
+            "-w",
+            "400",
+        ]
+    )
 
 
 def download_all_us_state_icons():
@@ -82,12 +84,13 @@ def download_all_us_state_icons():
 
 
 def download_all_country_icons():
-    for name in country_names():
+    for name in COUNTRIES:
         wikiname = internal_country_to_wikipedia.get(name, name.replace(" ", "_"))
         download_and_convert_flag(f"File:Flag_of_{wikiname}.svg", name)
 
+
 def convert_continent_icons():
-    for continent in continent_names():
+    for continent in CONTINENTS:
         out = f"{flags_folder}{continent}.png"
         if os.path.exists(out):
             continue

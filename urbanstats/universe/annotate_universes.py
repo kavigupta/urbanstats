@@ -6,6 +6,8 @@ import us
 from relationship import continents_for_all, non_us_countries_for_all, states_for_all
 from urbanstats.special_cases.country import continent_names
 
+from .universe_constants import CONTINENTS, COUNTRIES
+
 universe_types = ["world", "country", "state"]
 
 
@@ -47,6 +49,8 @@ def compute_intl_universes(longname):
 
 
 def attach_intl_universes(intl):
+    assert country_names() == COUNTRIES
+    assert continent_names() == CONTINENTS
     intl["universes"] = [
         compute_intl_universes(longname)
         for longname in intl.longname
@@ -71,8 +75,8 @@ def get_universe_name_for_state(state):
 def universe_by_universe_type():
     return {
         "world": ["world"],
-        "continent": continent_names(),
-        "country": country_names(),
+        "continent": CONTINENTS,
+        "country": COUNTRIES,
         "state": [
             get_universe_name_for_state(x)
             for x in us.states.STATES_AND_TERRITORIES + [us.states.DC]
