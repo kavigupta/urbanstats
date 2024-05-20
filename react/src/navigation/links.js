@@ -27,12 +27,12 @@ function index_link(universe, typ) {
     return `/index/${universe}_${sanitize(typ, false)}.gz`
 }
 
-function ordering_link(universe, statpath, type) {
-    return `/order/${universe}_${sanitize(statpath, false)}__${sanitize(type, false)}.gz`
+function ordering_link(universe, type, idx) {
+    return `/order/${universe}__${sanitize(type, false)}_${idx}.gz`
 }
 
-function ordering_data_link(universe, statpath, type) {
-    return `/order/${universe}_${sanitize(statpath, false)}__${sanitize(type, false)}_data.gz`
+function ordering_data_link(universe, type, idx) {
+    return `/order/${universe}__${sanitize(type, false)}_${idx}_data.gz`
 }
 
 function explanation_page_link(explanation) {
