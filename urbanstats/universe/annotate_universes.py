@@ -50,7 +50,7 @@ def compute_intl_universes(longname):
 
 def attach_intl_universes(intl):
     assert country_names() == COUNTRIES
-    assert continent_names() == CONTINENTS
+    assert list(continent_names()) == CONTINENTS
     intl["universes"] = [
         compute_intl_universes(longname)
         for longname in intl.longname
