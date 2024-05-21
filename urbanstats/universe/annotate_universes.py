@@ -12,7 +12,7 @@ universe_types = ["world", "country", "state"]
 def attach_usa_universes(american):
     states_map = states_for_all()
     american["universes"] = [
-        ["world", "USA", "North America"] + sorted(states_map[longname])
+        ["world", "North America", "USA"] + sorted(states_map[longname])
         for longname in american.longname
     ]
 
