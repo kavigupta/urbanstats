@@ -3137,6 +3137,534 @@ $root.DataList = (function() {
     return DataList;
 })();
 
+$root.OrderLists = (function() {
+
+    /**
+     * Properties of an OrderLists.
+     * @exports IOrderLists
+     * @interface IOrderLists
+     * @property {Array.<string>|null} [statnames] OrderLists statnames
+     * @property {Array.<IOrderList>|null} [orderLists] OrderLists orderLists
+     */
+
+    /**
+     * Constructs a new OrderLists.
+     * @exports OrderLists
+     * @classdesc Represents an OrderLists.
+     * @implements IOrderLists
+     * @constructor
+     * @param {IOrderLists=} [properties] Properties to set
+     */
+    function OrderLists(properties) {
+        this.statnames = [];
+        this.orderLists = [];
+        if (properties)
+            for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                if (properties[keys[i]] != null)
+                    this[keys[i]] = properties[keys[i]];
+    }
+
+    /**
+     * OrderLists statnames.
+     * @member {Array.<string>} statnames
+     * @memberof OrderLists
+     * @instance
+     */
+    OrderLists.prototype.statnames = $util.emptyArray;
+
+    /**
+     * OrderLists orderLists.
+     * @member {Array.<IOrderList>} orderLists
+     * @memberof OrderLists
+     * @instance
+     */
+    OrderLists.prototype.orderLists = $util.emptyArray;
+
+    /**
+     * Creates a new OrderLists instance using the specified properties.
+     * @function create
+     * @memberof OrderLists
+     * @static
+     * @param {IOrderLists=} [properties] Properties to set
+     * @returns {OrderLists} OrderLists instance
+     */
+    OrderLists.create = function create(properties) {
+        return new OrderLists(properties);
+    };
+
+    /**
+     * Encodes the specified OrderLists message. Does not implicitly {@link OrderLists.verify|verify} messages.
+     * @function encode
+     * @memberof OrderLists
+     * @static
+     * @param {IOrderLists} message OrderLists message or plain object to encode
+     * @param {$protobuf.Writer} [writer] Writer to encode to
+     * @returns {$protobuf.Writer} Writer
+     */
+    OrderLists.encode = function encode(message, writer) {
+        if (!writer)
+            writer = $Writer.create();
+        if (message.statnames != null && message.statnames.length)
+            for (var i = 0; i < message.statnames.length; ++i)
+                writer.uint32(/* id 1, wireType 2 =*/10).string(message.statnames[i]);
+        if (message.orderLists != null && message.orderLists.length)
+            for (var i = 0; i < message.orderLists.length; ++i)
+                $root.OrderList.encode(message.orderLists[i], writer.uint32(/* id 2, wireType 2 =*/18).fork()).ldelim();
+        return writer;
+    };
+
+    /**
+     * Encodes the specified OrderLists message, length delimited. Does not implicitly {@link OrderLists.verify|verify} messages.
+     * @function encodeDelimited
+     * @memberof OrderLists
+     * @static
+     * @param {IOrderLists} message OrderLists message or plain object to encode
+     * @param {$protobuf.Writer} [writer] Writer to encode to
+     * @returns {$protobuf.Writer} Writer
+     */
+    OrderLists.encodeDelimited = function encodeDelimited(message, writer) {
+        return this.encode(message, writer).ldelim();
+    };
+
+    /**
+     * Decodes an OrderLists message from the specified reader or buffer.
+     * @function decode
+     * @memberof OrderLists
+     * @static
+     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+     * @param {number} [length] Message length if known beforehand
+     * @returns {OrderLists} OrderLists
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    OrderLists.decode = function decode(reader, length) {
+        if (!(reader instanceof $Reader))
+            reader = $Reader.create(reader);
+        var end = length === undefined ? reader.len : reader.pos + length, message = new $root.OrderLists();
+        while (reader.pos < end) {
+            var tag = reader.uint32();
+            switch (tag >>> 3) {
+            case 1: {
+                    if (!(message.statnames && message.statnames.length))
+                        message.statnames = [];
+                    message.statnames.push(reader.string());
+                    break;
+                }
+            case 2: {
+                    if (!(message.orderLists && message.orderLists.length))
+                        message.orderLists = [];
+                    message.orderLists.push($root.OrderList.decode(reader, reader.uint32()));
+                    break;
+                }
+            default:
+                reader.skipType(tag & 7);
+                break;
+            }
+        }
+        return message;
+    };
+
+    /**
+     * Decodes an OrderLists message from the specified reader or buffer, length delimited.
+     * @function decodeDelimited
+     * @memberof OrderLists
+     * @static
+     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+     * @returns {OrderLists} OrderLists
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    OrderLists.decodeDelimited = function decodeDelimited(reader) {
+        if (!(reader instanceof $Reader))
+            reader = new $Reader(reader);
+        return this.decode(reader, reader.uint32());
+    };
+
+    /**
+     * Verifies an OrderLists message.
+     * @function verify
+     * @memberof OrderLists
+     * @static
+     * @param {Object.<string,*>} message Plain object to verify
+     * @returns {string|null} `null` if valid, otherwise the reason why it is not
+     */
+    OrderLists.verify = function verify(message) {
+        if (typeof message !== "object" || message === null)
+            return "object expected";
+        if (message.statnames != null && message.hasOwnProperty("statnames")) {
+            if (!Array.isArray(message.statnames))
+                return "statnames: array expected";
+            for (var i = 0; i < message.statnames.length; ++i)
+                if (!$util.isString(message.statnames[i]))
+                    return "statnames: string[] expected";
+        }
+        if (message.orderLists != null && message.hasOwnProperty("orderLists")) {
+            if (!Array.isArray(message.orderLists))
+                return "orderLists: array expected";
+            for (var i = 0; i < message.orderLists.length; ++i) {
+                var error = $root.OrderList.verify(message.orderLists[i]);
+                if (error)
+                    return "orderLists." + error;
+            }
+        }
+        return null;
+    };
+
+    /**
+     * Creates an OrderLists message from a plain object. Also converts values to their respective internal types.
+     * @function fromObject
+     * @memberof OrderLists
+     * @static
+     * @param {Object.<string,*>} object Plain object
+     * @returns {OrderLists} OrderLists
+     */
+    OrderLists.fromObject = function fromObject(object) {
+        if (object instanceof $root.OrderLists)
+            return object;
+        var message = new $root.OrderLists();
+        if (object.statnames) {
+            if (!Array.isArray(object.statnames))
+                throw TypeError(".OrderLists.statnames: array expected");
+            message.statnames = [];
+            for (var i = 0; i < object.statnames.length; ++i)
+                message.statnames[i] = String(object.statnames[i]);
+        }
+        if (object.orderLists) {
+            if (!Array.isArray(object.orderLists))
+                throw TypeError(".OrderLists.orderLists: array expected");
+            message.orderLists = [];
+            for (var i = 0; i < object.orderLists.length; ++i) {
+                if (typeof object.orderLists[i] !== "object")
+                    throw TypeError(".OrderLists.orderLists: object expected");
+                message.orderLists[i] = $root.OrderList.fromObject(object.orderLists[i]);
+            }
+        }
+        return message;
+    };
+
+    /**
+     * Creates a plain object from an OrderLists message. Also converts values to other types if specified.
+     * @function toObject
+     * @memberof OrderLists
+     * @static
+     * @param {OrderLists} message OrderLists
+     * @param {$protobuf.IConversionOptions} [options] Conversion options
+     * @returns {Object.<string,*>} Plain object
+     */
+    OrderLists.toObject = function toObject(message, options) {
+        if (!options)
+            options = {};
+        var object = {};
+        if (options.arrays || options.defaults) {
+            object.statnames = [];
+            object.orderLists = [];
+        }
+        if (message.statnames && message.statnames.length) {
+            object.statnames = [];
+            for (var j = 0; j < message.statnames.length; ++j)
+                object.statnames[j] = message.statnames[j];
+        }
+        if (message.orderLists && message.orderLists.length) {
+            object.orderLists = [];
+            for (var j = 0; j < message.orderLists.length; ++j)
+                object.orderLists[j] = $root.OrderList.toObject(message.orderLists[j], options);
+        }
+        return object;
+    };
+
+    /**
+     * Converts this OrderLists to JSON.
+     * @function toJSON
+     * @memberof OrderLists
+     * @instance
+     * @returns {Object.<string,*>} JSON object
+     */
+    OrderLists.prototype.toJSON = function toJSON() {
+        return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+    };
+
+    /**
+     * Gets the default type url for OrderLists
+     * @function getTypeUrl
+     * @memberof OrderLists
+     * @static
+     * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns {string} The default type url
+     */
+    OrderLists.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+        if (typeUrlPrefix === undefined) {
+            typeUrlPrefix = "type.googleapis.com";
+        }
+        return typeUrlPrefix + "/OrderLists";
+    };
+
+    return OrderLists;
+})();
+
+$root.DataLists = (function() {
+
+    /**
+     * Properties of a DataLists.
+     * @exports IDataLists
+     * @interface IDataLists
+     * @property {Array.<string>|null} [statnames] DataLists statnames
+     * @property {Array.<IDataList>|null} [dataLists] DataLists dataLists
+     */
+
+    /**
+     * Constructs a new DataLists.
+     * @exports DataLists
+     * @classdesc Represents a DataLists.
+     * @implements IDataLists
+     * @constructor
+     * @param {IDataLists=} [properties] Properties to set
+     */
+    function DataLists(properties) {
+        this.statnames = [];
+        this.dataLists = [];
+        if (properties)
+            for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                if (properties[keys[i]] != null)
+                    this[keys[i]] = properties[keys[i]];
+    }
+
+    /**
+     * DataLists statnames.
+     * @member {Array.<string>} statnames
+     * @memberof DataLists
+     * @instance
+     */
+    DataLists.prototype.statnames = $util.emptyArray;
+
+    /**
+     * DataLists dataLists.
+     * @member {Array.<IDataList>} dataLists
+     * @memberof DataLists
+     * @instance
+     */
+    DataLists.prototype.dataLists = $util.emptyArray;
+
+    /**
+     * Creates a new DataLists instance using the specified properties.
+     * @function create
+     * @memberof DataLists
+     * @static
+     * @param {IDataLists=} [properties] Properties to set
+     * @returns {DataLists} DataLists instance
+     */
+    DataLists.create = function create(properties) {
+        return new DataLists(properties);
+    };
+
+    /**
+     * Encodes the specified DataLists message. Does not implicitly {@link DataLists.verify|verify} messages.
+     * @function encode
+     * @memberof DataLists
+     * @static
+     * @param {IDataLists} message DataLists message or plain object to encode
+     * @param {$protobuf.Writer} [writer] Writer to encode to
+     * @returns {$protobuf.Writer} Writer
+     */
+    DataLists.encode = function encode(message, writer) {
+        if (!writer)
+            writer = $Writer.create();
+        if (message.statnames != null && message.statnames.length)
+            for (var i = 0; i < message.statnames.length; ++i)
+                writer.uint32(/* id 1, wireType 2 =*/10).string(message.statnames[i]);
+        if (message.dataLists != null && message.dataLists.length)
+            for (var i = 0; i < message.dataLists.length; ++i)
+                $root.DataList.encode(message.dataLists[i], writer.uint32(/* id 2, wireType 2 =*/18).fork()).ldelim();
+        return writer;
+    };
+
+    /**
+     * Encodes the specified DataLists message, length delimited. Does not implicitly {@link DataLists.verify|verify} messages.
+     * @function encodeDelimited
+     * @memberof DataLists
+     * @static
+     * @param {IDataLists} message DataLists message or plain object to encode
+     * @param {$protobuf.Writer} [writer] Writer to encode to
+     * @returns {$protobuf.Writer} Writer
+     */
+    DataLists.encodeDelimited = function encodeDelimited(message, writer) {
+        return this.encode(message, writer).ldelim();
+    };
+
+    /**
+     * Decodes a DataLists message from the specified reader or buffer.
+     * @function decode
+     * @memberof DataLists
+     * @static
+     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+     * @param {number} [length] Message length if known beforehand
+     * @returns {DataLists} DataLists
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    DataLists.decode = function decode(reader, length) {
+        if (!(reader instanceof $Reader))
+            reader = $Reader.create(reader);
+        var end = length === undefined ? reader.len : reader.pos + length, message = new $root.DataLists();
+        while (reader.pos < end) {
+            var tag = reader.uint32();
+            switch (tag >>> 3) {
+            case 1: {
+                    if (!(message.statnames && message.statnames.length))
+                        message.statnames = [];
+                    message.statnames.push(reader.string());
+                    break;
+                }
+            case 2: {
+                    if (!(message.dataLists && message.dataLists.length))
+                        message.dataLists = [];
+                    message.dataLists.push($root.DataList.decode(reader, reader.uint32()));
+                    break;
+                }
+            default:
+                reader.skipType(tag & 7);
+                break;
+            }
+        }
+        return message;
+    };
+
+    /**
+     * Decodes a DataLists message from the specified reader or buffer, length delimited.
+     * @function decodeDelimited
+     * @memberof DataLists
+     * @static
+     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+     * @returns {DataLists} DataLists
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    DataLists.decodeDelimited = function decodeDelimited(reader) {
+        if (!(reader instanceof $Reader))
+            reader = new $Reader(reader);
+        return this.decode(reader, reader.uint32());
+    };
+
+    /**
+     * Verifies a DataLists message.
+     * @function verify
+     * @memberof DataLists
+     * @static
+     * @param {Object.<string,*>} message Plain object to verify
+     * @returns {string|null} `null` if valid, otherwise the reason why it is not
+     */
+    DataLists.verify = function verify(message) {
+        if (typeof message !== "object" || message === null)
+            return "object expected";
+        if (message.statnames != null && message.hasOwnProperty("statnames")) {
+            if (!Array.isArray(message.statnames))
+                return "statnames: array expected";
+            for (var i = 0; i < message.statnames.length; ++i)
+                if (!$util.isString(message.statnames[i]))
+                    return "statnames: string[] expected";
+        }
+        if (message.dataLists != null && message.hasOwnProperty("dataLists")) {
+            if (!Array.isArray(message.dataLists))
+                return "dataLists: array expected";
+            for (var i = 0; i < message.dataLists.length; ++i) {
+                var error = $root.DataList.verify(message.dataLists[i]);
+                if (error)
+                    return "dataLists." + error;
+            }
+        }
+        return null;
+    };
+
+    /**
+     * Creates a DataLists message from a plain object. Also converts values to their respective internal types.
+     * @function fromObject
+     * @memberof DataLists
+     * @static
+     * @param {Object.<string,*>} object Plain object
+     * @returns {DataLists} DataLists
+     */
+    DataLists.fromObject = function fromObject(object) {
+        if (object instanceof $root.DataLists)
+            return object;
+        var message = new $root.DataLists();
+        if (object.statnames) {
+            if (!Array.isArray(object.statnames))
+                throw TypeError(".DataLists.statnames: array expected");
+            message.statnames = [];
+            for (var i = 0; i < object.statnames.length; ++i)
+                message.statnames[i] = String(object.statnames[i]);
+        }
+        if (object.dataLists) {
+            if (!Array.isArray(object.dataLists))
+                throw TypeError(".DataLists.dataLists: array expected");
+            message.dataLists = [];
+            for (var i = 0; i < object.dataLists.length; ++i) {
+                if (typeof object.dataLists[i] !== "object")
+                    throw TypeError(".DataLists.dataLists: object expected");
+                message.dataLists[i] = $root.DataList.fromObject(object.dataLists[i]);
+            }
+        }
+        return message;
+    };
+
+    /**
+     * Creates a plain object from a DataLists message. Also converts values to other types if specified.
+     * @function toObject
+     * @memberof DataLists
+     * @static
+     * @param {DataLists} message DataLists
+     * @param {$protobuf.IConversionOptions} [options] Conversion options
+     * @returns {Object.<string,*>} Plain object
+     */
+    DataLists.toObject = function toObject(message, options) {
+        if (!options)
+            options = {};
+        var object = {};
+        if (options.arrays || options.defaults) {
+            object.statnames = [];
+            object.dataLists = [];
+        }
+        if (message.statnames && message.statnames.length) {
+            object.statnames = [];
+            for (var j = 0; j < message.statnames.length; ++j)
+                object.statnames[j] = message.statnames[j];
+        }
+        if (message.dataLists && message.dataLists.length) {
+            object.dataLists = [];
+            for (var j = 0; j < message.dataLists.length; ++j)
+                object.dataLists[j] = $root.DataList.toObject(message.dataLists[j], options);
+        }
+        return object;
+    };
+
+    /**
+     * Converts this DataLists to JSON.
+     * @function toJSON
+     * @memberof DataLists
+     * @instance
+     * @returns {Object.<string,*>} JSON object
+     */
+    DataLists.prototype.toJSON = function toJSON() {
+        return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+    };
+
+    /**
+     * Gets the default type url for DataLists
+     * @function getTypeUrl
+     * @memberof DataLists
+     * @static
+     * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns {string} The default type url
+     */
+    DataLists.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+        if (typeUrlPrefix === undefined) {
+            typeUrlPrefix = "type.googleapis.com";
+        }
+        return typeUrlPrefix + "/DataLists";
+    };
+
+    return DataLists;
+})();
+
 $root.AllStats = (function() {
 
     /**

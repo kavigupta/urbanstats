@@ -14,7 +14,7 @@ universe_types = ["world", "country", "state"]
 def attach_usa_universes(american):
     states_map = states_for_all()
     american["universes"] = [
-        ["world", "USA", "North America"] + sorted(states_map[longname])
+        ["world", "North America", "USA"] + sorted(states_map[longname])
         for longname in american.longname
     ]
 
@@ -50,7 +50,7 @@ def compute_intl_universes(longname):
 
 def attach_intl_universes(intl):
     assert country_names() == COUNTRIES
-    assert continent_names() == CONTINENTS
+    assert list(continent_names()) == CONTINENTS
     intl["universes"] = [
         compute_intl_universes(longname)
         for longname in intl.longname

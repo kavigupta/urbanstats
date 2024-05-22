@@ -3,9 +3,8 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import "./style.css";
 import "./common.css";
-import { ordering_data_link } from "./navigation/links.js";
 
-import { loadProtobuf, load_ordering } from './load_json';
+import { load_ordering_protobuf, load_ordering } from './load_json';
 import { StatisticPanel } from './components/statistic-panel.js';
 import { for_type } from './components/load-article.js';
 import { get_universe, remove_universe_if_default } from './universe.js';
@@ -33,7 +32,7 @@ async function loadPage() {
     remove_universe_if_default("world");
     const universe = get_universe("world");
     const article_names = await load_ordering(universe, statpath, article_type);
-    const data = await loadProtobuf(ordering_data_link(universe, statpath, article_type), "DataList");
+    const data = await load_ordering_protobuf(universe, statpath, article_type, true);
     if (amount == "All") {
         amount = article_names.length;
     } else {
