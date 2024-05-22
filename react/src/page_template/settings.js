@@ -11,9 +11,6 @@ export function load_settings() {
             settings[key] = true;
         }
     }
-    if (!("use_population_percentiles" in settings)) {
-        settings["use_population_percentiles"] = true;
-    }
     const statistic_category_metadata = require("../data/statistic_category_metadata.json");
     // list of {key, name, show_checkbox, default}
     const statistic_category_metadata_checkboxes = [];

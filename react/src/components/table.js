@@ -408,8 +408,9 @@ class Percentile extends React.Component {
             return <span></span>
         }
         // percentile as an integer
+        // used to be keyed by a setting, but now we always use percentile_by_population
         const quantile =
-            this.props.settings.use_population_percentiles ?
+            true ?
                 this.props.percentile_by_population
                 : 1 - ordinal / total;
         const percentile = Math.floor(100 * quantile);
