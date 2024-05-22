@@ -72,6 +72,16 @@ message DataList {
     repeated float population_percentile = 2;
 }
 
+message OrderLists {
+    repeated string statnames = 1;
+    repeated OrderList order_lists = 2;
+}
+
+message DataLists {
+    repeated string statnames = 1;
+    repeated DataList data_lists = 2;
+}
+
 // unified result
 
 message AllStats {

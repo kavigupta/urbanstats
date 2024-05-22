@@ -11,6 +11,7 @@ function comparison_page(locations) {
 }
 
 async function prep_for_image(t) {
+    await t.wait(1000);
     await t.eval(() => {
         // disable the leaflet map
         for (const x of document.getElementsByClassName("leaflet-tile-pane")) {
