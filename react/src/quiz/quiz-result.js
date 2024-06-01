@@ -5,7 +5,7 @@ import { Statistic } from "../components/table.js";
 import { article_link } from "../navigation/links.js";
 
 
-import { Header, nameOfQuizKind } from './quiz-components.js';
+import { Header, nameOfQuizKind, user_id } from './quiz-components.js';
 import { AudienceStatistics, QuizStatistics } from './quiz-statistics.js';
 import { ENDPOINT, a_correct } from '../components/quiz-panel.js';
 import { render_question } from './quiz-question.js';
@@ -66,6 +66,9 @@ export class QuizResult extends React.Component {
                         />
                     )
                 )}
+                <div className="centered_text serif">
+                    {user_id()}
+                </div>
             </div>
         );
     }
@@ -129,7 +132,7 @@ class Timer extends React.Component {
 
 function TimeToNextQuiz({ today, quiz_kind }) {
     return (
-        <div style={{margin: "auto"}}>
+        <div style={{ margin: "auto" }}>
             <div style={{
                 display: "flex",
                 flexDirection: "row",
@@ -138,7 +141,7 @@ function TimeToNextQuiz({ today, quiz_kind }) {
                 flexWrap: "wrap",
                 gap: "1em",
             }}>
-                <div className="serif quiz_summary" style={{margin: "auto 0"}}>Next quiz in </div>
+                <div className="serif quiz_summary" style={{ margin: "auto 0" }}>Next quiz in </div>
                 <Timer today={today} quiz_kind={quiz_kind} />
             </div>
         </div>
