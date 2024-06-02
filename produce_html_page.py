@@ -22,6 +22,7 @@ from stats_for_shapefile import (
 from election_data import vest_elections
 from relationship import ordering_idx
 
+from urbanstats.census_2010.columns_2010 import basics_2010, cdc_columns
 from urbanstats.protobuf import data_files_pb2
 from urbanstats.protobuf.utils import write_gzip
 from urbanstats.weather.to_blocks import weather_stat_names
@@ -129,13 +130,15 @@ election_stats = {
     ("2016-2020 Swing", "margin"): "2016-2020 Swing",
 }
 
+ad = {f"ad_{k}": f"PW Density (r={format_radius(k)})" for k in RADII}
+
 
 def statistic_internal_to_display_name():
-    ad = {f"ad_{k}": f"PW Density (r={format_radius(k)})" for k in RADII}
     return {
         "population": "Population",
         **{"ad_1": ad["ad_1"]},
         "sd": "AW Density",
+        **basics_2010()[0],
         **gpw_stats,
         "area": "Area",
         "compactness": "Compactness",
@@ -146,6 +149,7 @@ def statistic_internal_to_display_name():
         **income_stats,
         **housing_stats,
         **transportation_stats,
+        **cdc_columns(),
         **industry_stats,
         **occupation_stats,
         **election_stats,
@@ -153,6 +157,7 @@ def statistic_internal_to_display_name():
         **weather_stat_names,
         **misc_stats,
         **{k: ad[k] for k in ad if k != "ad_1"},
+        **basics_2010()[1],
     }
 
 
@@ -166,6 +171,7 @@ def get_statistic_categories():
         "population": "main",
         **{"ad_1": "main"},
         "sd": "main",
+        **{k: "2010" for k in basics_2010()[0]},
         **{
             k: "other_densities"
             if k in ("gpw_pw_density_2", "gpw_pw_density_4")
@@ -181,6 +187,7 @@ def get_statistic_categories():
         **{k: "income" for k in income_stats},
         **{k: "housing" for k in housing_stats},
         **{k: "transportation" for k in transportation_stats},
+        **{k: "health" for k in cdc_columns()},
         **{k: "industry" for k in industry_stats},
         **{k: "occupation" for k in occupation_stats},
         **{elect: "election" for elect in election_stats},
@@ -188,6 +195,7 @@ def get_statistic_categories():
         **{k: "weather" for k in weather_stat_names},
         **{k: "misc" for k in misc_stats},
         **{k: ad[k] for k in ad if k != "ad_1"},
+        **{k: "2010" for k in basics_2010()[1]},
     }
     return result
 
@@ -197,6 +205,7 @@ def get_explanation_page():
         "population": "population",
         "sd": "density",
         **{f"ad_{k}": f"density" for k in RADII},
+        **{k: "2010" for k in basics_2010()[0]},
         **{k: "gpw" for k in gpw_stats},
         "area": "geography",
         "compactness": "geography",
@@ -212,6 +221,7 @@ def get_explanation_page():
             for k in housing_stats
         },
         **{k: "transportation" for k in transportation_stats},
+        **{k: "health" for k in cdc_columns()},
         **{k: "industry_and_occupation" for k in industry_stats},
         **{k: "industry_and_occupation" for k in occupation_stats},
         **{elect: "election" for elect in election_stats},
@@ -231,6 +241,7 @@ def get_explanation_page():
         },
         **{k: "weather" for k in weather_stat_names},
         **{k: k.split("_")[0] for k in misc_stats},
+        **{k: "2010" for k in basics_2010()[1]},
     }
     result = {k: result[k] for k in get_statistic_categories()}
     return result
@@ -245,6 +256,7 @@ category_metadata = {
     "income": dict(name="Income", show_checkbox=True, default=False),
     "housing": dict(name="Housing", show_checkbox=True, default=False),
     "transportation": dict(name="Transportation", show_checkbox=True, default=False),
+    "health": dict(name="Health", show_checkbox=True, default=False),
     "industry": dict(name="Industry", show_checkbox=True, default=False),
     "occupation": dict(name="Occupation", show_checkbox=True, default=False),
     "election": dict(name="Election", show_checkbox=True, default=True),
@@ -254,4 +266,5 @@ category_metadata = {
     "other_densities": dict(
         name="Other Density Metrics", show_checkbox=True, default=False
     ),
+    "2010": dict(name="2010 Census", show_checkbox=True, default=False),
 }

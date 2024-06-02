@@ -213,6 +213,13 @@ class DataCreditPanel extends PageTemplate {
                         </p>
                     </div>
 
+                    <h2 ref={this.nref("health")}>Health</h2>
+                    <div>
+                        <p>
+                            TODO FILL IN
+                        </p>
+                    </div>
+
                     <h2 ref={this.nref("industry_and_occupation")}>Industry and Occupation</h2>
                     <div>
                         <p>
@@ -284,6 +291,12 @@ class DataCreditPanel extends PageTemplate {
                             These estimates are then interpolated to the block level using the census block centroid
                             using bilinear interpolation. We then compute the population weighted average of these
                             statistics for each geography.
+                        </p>
+                    </div>
+                    <h2 ref={this.nref("2010")}>2010 Census</h2>
+                    <div>
+                        <p>
+                            TODO FILL IN
                         </p>
                     </div>
                 </div>

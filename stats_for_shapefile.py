@@ -12,15 +12,17 @@ from election_data import election_column_names
 
 import geopandas as gpd
 
-from permacache import permacache, stable_hash
+from permacache import permacache, stable_hash, drop_if_equal
 
 from urbanstats.acs import industry, occupation
 from urbanstats.acs.attach import with_acs_data
 from urbanstats.acs.entities import acs_columns
+from urbanstats.census_2010.blocks_2010 import block_level_data_2010
 from urbanstats.features.feature import feature_columns
 from urbanstats.features.extract_data import feature_data
 from urbanstats.osm.parks import park_overlap_percentages_all
 from urbanstats.weather.to_blocks import weather_stat_names, weather_block_statistics
+from urbanstats.census_2010.columns_2010 import cdc_columns
 
 racial_statistics = {
     "white": "White %",
@@ -179,7 +181,7 @@ class Shapefile:
 
 
 density_metrics = [f"ad_{k}" for k in RADII]
-sum_keys = [
+sum_keys_2020 = [
     "population",
     "population_18",
     *racial_demographics,
@@ -191,11 +193,19 @@ sum_keys = [
     "park_percent_1km_v2",
     *weather_stat_names,
 ]
+sum_keys_2010 = [
+    "population_2010",
+    "population_18_2010",
+    *[f"{k}_2010" for k in racial_demographics],
+    *[f"{k}_2010" for k in housing_units],
+    *[f"{k}_2010" for k in density_metrics],
+    *cdc_columns(),
+]
 COLUMNS_PER_JOIN = 33
 
 
 @lru_cache(None)
-def block_level_data():
+def block_level_data_2020():
     blocks_gdf = with_acs_data()
     feats = feature_data()
     [sh] = {x.shape for x in feats.values()}
@@ -213,13 +223,22 @@ def block_level_data():
     return blocks_gdf
 
 
+def block_level_data(year):
+    if year == 2020:
+        return block_level_data_2020()
+    assert year == 2010
+    return block_level_data_2010()
+
+
 @permacache(
     "population_density/stats_for_shapefile/compute_summed_shapefile_3",
-    key_function=dict(sf=lambda x: x.hash_key, sum_keys=stable_hash),
+    key_function=dict(
+        sf=lambda x: x.hash_key, sum_keys=stable_hash, year=drop_if_equal(2020)
+    ),
 )
-def compute_summed_shapefile_few_keys(sf, sum_keys):
+def compute_summed_shapefile_few_keys(sf, sum_keys, year):
     print(sf, sum_keys)
-    blocks_gdf = block_level_data()
+    blocks_gdf = block_level_data(year)
     s = sf.load_file()
     area = s["geometry"].to_crs({"proj": "cea"}).area / 1e6
     if sf.chunk_size is None:
@@ -242,46 +261,74 @@ def compute_summed_shapefile_few_keys(sf, sum_keys):
 
 @permacache(
     "population_density/stats_for_shapefile/compute_summed_shapefile_all_keys_4",
-    key_function=dict(sf=lambda x: x.hash_key, sum_keys=stable_hash),
+    key_function=dict(
+        sf=lambda x: x.hash_key, sum_keys=stable_hash, year=drop_if_equal(2020)
+    ),
 )
-def compute_summed_shapefile_all_keys(sf, sum_keys=sum_keys):
+def compute_summed_shapefile_all_keys(sf, sum_keys, year=2020):
     print(sf)
     result = {}
     for keys in tqdm.tqdm(list(chunked(sum_keys, COLUMNS_PER_JOIN))):
-        frame = compute_summed_shapefile_few_keys(sf, keys)
+        frame = compute_summed_shapefile_few_keys(sf, keys, year)
         for k in frame:
             result[k] = frame[k]
     return pd.DataFrame(result)
 
 
 @permacache(
-    "population_density/stats_for_shapefile/compute_statistics_for_shapefile_18",
+    "population_density/stats_for_shapefile/compute_statistics_for_shapefile_22",
     key_function=dict(sf=lambda x: x.hash_key, sum_keys=stable_hash),
     multiprocess_safe=True,
 )
-def compute_statistics_for_shapefile(sf, sum_keys=sum_keys):
+def compute_statistics_for_shapefile(
+    sf, sum_keys_2020=sum_keys_2020, sum_keys_2010=sum_keys_2010
+):
     sf_fr = sf.load_file()
     print(sf)
-    result = compute_summed_shapefile_all_keys(sf, sum_keys).copy()
+    result_2020 = compute_summed_shapefile_all_keys(sf, sum_keys_2020, year=2020).copy()
+    result_2010 = compute_summed_shapefile_all_keys(sf, sum_keys_2010, year=2010).copy()
+    assert (result_2020.longname == result_2010.longname).all()
+    # drop columns longname, shortname, area
+    result_2010 = result_2010.drop(columns=["longname", "shortname", "area"])
+    # assert no columns are in both result_2020 and result_2010
+    overlap_cols = set(result_2020.columns) & set(result_2010.columns)
+    assert not overlap_cols
+    result = pd.concat([result_2020, result_2010], axis=1)
     assert (result.longname == sf_fr.longname).all()
     result["perimiter"] = sf_fr.geometry.to_crs({"proj": "cea"}).length / 1e3
     result["compactness"] = 4 * np.pi * result.area / result.perimiter**2
     for k in density_metrics:
         result[k] /= result["population"]
+        result[f"{k}_2010"] /= result["population_2010"]
     result["sd"] = result["population"] / result["area"]
+    result["sd_2010"] = result["population_2010"] / result["area"]
     for k in sf.meta:
         result[k] = sf.meta[k]
     for k in racial_demographics:
         result[k] /= result["population"]
+        result[k + "_2010"] /= result["population_2010"]
     result["other / mixed"] = result["other"] + result["mixed"]
+    result["other / mixed_2010"] = result["other_2010"] + result["mixed_2010"]
     del result["other"]
     del result["mixed"]
+    del result["other_2010"]
+    del result["mixed_2010"]
     result["housing_per_pop"] = result["total"] / result["population_18"]
+    result["housing_per_pop_2010"] = result["total_2010"] / result["population_18_2010"]
     result["vacancy"] = result["vacant"] / result["total"]
+    result["vacancy_2010"] = result["vacant_2010"] / result["total_2010"]
+
+    for cdc in cdc_columns():
+        result[cdc] /= result["population_18_2010"]
+
     del result["vacant"]
     del result["total"]
     del result["occupied"]
     del result["population_18"]
+    del result["vacant_2010"]
+    del result["total_2010"]
+    del result["occupied_2010"]
+    del result["population_18_2010"]
 
     education_denominator = (
         result.education_no
