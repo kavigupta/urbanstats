@@ -1,3 +1,3 @@
 
-juxtastat = 255
+juxtastat = 275
 retrostat = 29
