@@ -96,5 +96,6 @@ function universe_path(universe) {
 }
 
 function add_universe_to_params(universe, params) {
-    params.set("universe", universe)
+    if (universe !== undefined)
+        params.set("universe", universe)
 }
