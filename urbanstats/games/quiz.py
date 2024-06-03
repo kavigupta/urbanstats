@@ -33,7 +33,7 @@ from .fixed import juxtastat as fixed_up_to
 
 min_pop = 250_000
 min_pop_international = 2_500_000
-version = 54
+version = 59
 
 # ranges = [
 #     (0.7, 1),
@@ -57,6 +57,8 @@ difficulties = {
     "feature": 1.5,
     "generation": 2,
     "housing": 1.5,
+    "2010": 1.5,
+    "health": 1.5,
     "income": 0.6,
     "main": 0.25,
     "misc": 2,
@@ -539,6 +541,30 @@ stats_to_display = {
     "occupation_personal_care_and_service_occupations": "higher % of workers employed in personal care and service occupations",
     "occupation_firefighting_and_prevention,_and_other_protective_service_workers_including_supervisors": "higher % of workers employed as firefighting and prevention, and other protective service workers including supervisors",
     "occupation_law_enforcement_workers_including_supervisors": "higher % of workers employed as law enforcement workers including supervisors",
+    "GHLTH_cdc_2": "higher % of adults with a fair or poor self-rated health status",
+    "ARTHRITIS_cdc_2": "higher % of adults with arthritis",
+    "CASTHMA_cdc_2": "higher % of adults with asthma",
+    "BPHIGH_cdc_2": "higher % of adults with high blood pressure",
+    "CANCER_cdc_2": "higher % of adults with cancer (excluding skin cancer)",
+    "KIDNEY_cdc_2": "higher % of adults with chronic kidney disease",
+    "COPD_cdc_2": "higher % of adults with COPD",
+    "CHD_cdc_2": "higher % of adults with coronary heart disease",
+    "DIABETES_cdc_2": "higher % of adults with diagnosed diabetes",
+    "OBESITY_cdc_2": "higher % of adults with obesity",
+    "STROKE_cdc_2": "higher % of adults who have had a stroke",
+    "DISABILITY_cdc_2": "higher % of adults with a disability",
+    "HEARING_cdc_2": "higher % of adults with a hearing disability",
+    "VISION_cdc_2": "higher % of adults with a vision disability",
+    "COGNITION_cdc_2": "higher % of adults with a cognitive disability",
+    "MOBILITY_cdc_2": "higher % of adults with a mobility disability",
+    "SELFCARE_cdc_2": "higher % of adults with a self-care disability",
+    "INDEPLIVE_cdc_2": "higher % of adults with an independent living disability",
+    "BINGE_cdc_2": "higher % of adults who binge drink",
+    "CSMOKING_cdc_2": "higher % of adults with smoke",
+    "LPA_cdc_2": "higher % of adults who don't exercise (do leisure-time physical activity)",
+    "SLEEP_cdc_2": "higher % of adults who sleep less than 7 hours",
+    "population_change_2010": "higher % change in population from 2010 to 2020",
+    "ad_1_change_2010": "higher % change in population-weighted density (r=1km) from 2010 to 2020",
 }
 
 renamed = {
@@ -609,6 +635,10 @@ not_included = {
     "ad_0.5",
     "ad_2",
     "ad_4",
+    "ad_0.5_change_2010",
+    "ad_4_change_2010",
+    "ad_0.25_change_2010",
+    "ad_2_change_2010",
     # irrelevant
     "area",
     "compactness",
@@ -649,6 +679,28 @@ not_included = {
     "within_Hospital_10",
     "gpw_pw_density_2",
     "gpw_pw_density_1",
+    # direct 2010 results
+    "population_2010",
+    "sd_2010",
+    "ad_0.25_2010",
+    "ad_0.5_2010",
+    "ad_1_2010",
+    "ad_2_2010",
+    "ad_4_2010",
+    "housing_per_pop_2010",
+    "asian_2010",
+    "other / mixed_2010",
+    "native_2010",
+    "white_2010",
+    "vacancy_2010",
+    "hispanic_2010",
+    "black_2010",
+    "hawaiian_pi_2010",
+    # too hard to explain
+    "CHOLSCREEN_cdc_2",
+    "CHECKUP_cdc_2",
+    "PHLTH_cdc_2",
+    "DENTAL_cdc_2",
 }
 
 stats = list(stats_to_display)

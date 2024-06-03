@@ -213,6 +213,15 @@ class DataCreditPanel extends PageTemplate {
                         </p>
                     </div>
 
+                    <h2 ref={this.nref("health")}>Health</h2>
+                    <div>
+                        <p>
+                            Health data comes from the CDC's <a href="https://chronicdata.cdc.gov/500-Cities-Places/PLACES-Local-Data-for-Better-Health-Census-Tract-D/cwsq-ngmh/about_data">PLACES dataset</a>
+                            version August 25, 2023, accessed June 1 2024. It is computed using disaggregation from the tract level to block level, using the 2010 census tracts
+                            (I am not sure why the CDC uses 2010 tracts for 2023 data, but that's what they do). This data is inherently estimate based.
+                        </p>
+                    </div>
+
                     <h2 ref={this.nref("industry_and_occupation")}>Industry and Occupation</h2>
                     <div>
                         <p>
@@ -284,6 +293,12 @@ class DataCreditPanel extends PageTemplate {
                             These estimates are then interpolated to the block level using the census block centroid
                             using bilinear interpolation. We then compute the population weighted average of these
                             statistics for each geography.
+                        </p>
+                    </div>
+                    <h2 ref={this.nref("2010")}>2010 Census</h2>
+                    <div>
+                        <p>
+                            2010 Census data is treated the same way as 2020 Census data.
                         </p>
                     </div>
                 </div>

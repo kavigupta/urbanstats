@@ -180,7 +180,13 @@ class Statistic extends React.Component {
         const name = this.props.statname;
         let value = this.props.value;
         const is_unit = this.props.is_unit;
-        if (name.includes("Density")) {
+        if (name.includes("%") || name.includes("Change")) {
+            if (is_unit) {
+                return <span>%</span>;
+            }
+            return <span>{(value * 100).toFixed(2)}</span>;
+        }
+        else if (name.includes("Density")) {
             const is_imperial = this.props.settings.use_imperial;
             let unit_name = "km";
             if (is_imperial) {
@@ -197,7 +203,7 @@ class Statistic extends React.Component {
                 return <span>/&nbsp;{unit_name}<sup>2</sup></span>;
             }
             return <span>{value.toFixed(places)}</span>;
-        } else if (name == "Population" || name == "Population [GHS-POP]") {
+        } else if (name.startsWith("Population")) {
             if (value > 1e6) {
                 if (is_unit) {
                     return <span>m</span>;
@@ -258,11 +264,6 @@ class Statistic extends React.Component {
             } else {
                 return <span>{value.toFixed(2)}</span>
             }
-        } else if (name.includes("%")) {
-            if (is_unit) {
-                return <span>%</span>;
-            }
-            return <span>{(value * 100).toFixed(2)}</span>;
         } else if (name.includes("Election") || name.includes("Swing")) {
             if (is_unit) {
                 return <span>%</span>;
