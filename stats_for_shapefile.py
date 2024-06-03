@@ -276,7 +276,7 @@ def compute_summed_shapefile_all_keys(sf, sum_keys, year=2020):
 
 
 @permacache(
-    "population_density/stats_for_shapefile/compute_statistics_for_shapefile_22",
+    "population_density/stats_for_shapefile/compute_statistics_for_shapefile_23",
     key_function=dict(sf=lambda x: x.hash_key, sum_keys=stable_hash),
     multiprocess_safe=True,
 )
@@ -297,9 +297,15 @@ def compute_statistics_for_shapefile(
     assert (result.longname == sf_fr.longname).all()
     result["perimiter"] = sf_fr.geometry.to_crs({"proj": "cea"}).length / 1e3
     result["compactness"] = 4 * np.pi * result.area / result.perimiter**2
+    result["population_change_2010"] = (
+        result["population"] - result["population_2010"]
+    ) / result["population_2010"]
     for k in density_metrics:
         result[k] /= result["population"]
         result[f"{k}_2010"] /= result["population_2010"]
+        result[f"{k}_change_2010"] = (result[k] - result[f"{k}_2010"]) / result[
+            f"{k}_2010"
+        ]
     result["sd"] = result["population"] / result["area"]
     result["sd_2010"] = result["population_2010"] / result["area"]
     for k in sf.meta:

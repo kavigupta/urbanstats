@@ -33,7 +33,7 @@ from .fixed import juxtastat as fixed_up_to
 
 min_pop = 250_000
 min_pop_international = 2_500_000
-version = 55
+version = 58
 
 # ranges = [
 #     (0.7, 1),
@@ -57,6 +57,8 @@ difficulties = {
     "feature": 1.5,
     "generation": 2,
     "housing": 1.5,
+    "2010": 1.5,
+    "health": 1.5,
     "income": 0.6,
     "main": 0.25,
     "misc": 2,
@@ -561,6 +563,8 @@ stats_to_display = {
     "CSMOKING_cdc_2": "higher % of adults with smoke",
     "LPA_cdc_2": "higher % of adults who don't exercise (do leisure-time physical activity)",
     "SLEEP_cdc_2": "higher % of adults who sleep less than 7 hours",
+    "population_change_2010": "higher % change in population from 2010 to 2020",
+    "ad_1_change_2010": "higher % change in population-weighted density (r=1km) from 2010 to 2020",
 }
 
 renamed = {
@@ -631,6 +635,10 @@ not_included = {
     "ad_0.5",
     "ad_2",
     "ad_4",
+    "ad_0.5_change_2010",
+    "ad_4_change_2010",
+    "ad_0.25_change_2010",
+    "ad_2_change_2010",
     # irrelevant
     "area",
     "compactness",
