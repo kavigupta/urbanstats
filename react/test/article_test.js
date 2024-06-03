@@ -111,6 +111,12 @@ test('san-marino-article-test', async t => {
     await screencap(t, "article/san-marino");
 });
 
+test('san-marino-2010-health', async t => {
+    await check_textboxes(t, ['2010 Census', 'Health']);
+    await screencap(t, "article/san-marino-2010-health");
+
+});
+
 test('search-test', async t => {
     await t
         .click(SEARCH_FIELD)
