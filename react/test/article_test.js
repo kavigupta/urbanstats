@@ -10,6 +10,24 @@ function comparison_page(locations) {
     return TARGET + '/comparison.html?' + params.toString();
 }
 
+async function check_textboxes(t, txts) {
+    const hamburgerMenu = Selector('div').withAttribute('class', 'hamburgermenu');
+    if (await hamburgerMenu.exists) {
+        await t.click(hamburgerMenu);
+    }
+    for (const txt of txts) {
+        const checkbox = Selector('div').withAttribute('class', 'checkbox-setting')
+            // filter for label
+            .filter(node => node.querySelector('label').innerText === txt, { txt })
+            // find checkbox
+            .find('input');
+        await t.click(checkbox);
+    }
+    if (await hamburgerMenu.exists) {
+        await t.click(hamburgerMenu);
+    }
+}
+
 async function prep_for_image(t) {
     await t.wait(1000);
     await t.eval(() => {
@@ -190,24 +208,6 @@ test('lr-buttons', async t => {
         .eql(TARGET + '/article.html?longname=78225%2C+USA');
 })
 
-async function check_textbox(t, txt) {
-    await t.eval(() => localStorage.clear());
-    const checkbox = Selector('div').withAttribute('class', 'checkbox-setting')
-        // filter for label
-        .filter(node => node.querySelector('label').innerText === txt, { txt })
-        // find checkbox
-        .find('input');
-    const hamburgerMenu = Selector('div').withAttribute('class', 'hamburgermenu');
-    if (await hamburgerMenu.exists) {
-        await t.click(hamburgerMenu);
-    }
-    await t
-        .click(checkbox);
-    if (await hamburgerMenu.exists) {
-        await t.click(hamburgerMenu);
-    }
-}
-
 test('uncheck-box-mobile', async t => {
     // Find div with class checkbox-setting containing a label with text "Race"
     // and a checkbox, then find the checkbox
@@ -215,7 +215,7 @@ test('uncheck-box-mobile', async t => {
     // refresh
     await t.eval(() => location.reload(true));
     await t.wait(1000);
-    await check_textbox(t, 'Race');
+    await check_textboxes(t, ['Race']);
 
     await screencap(t, "article/remove_race_initial_mobile");
     // refresh
@@ -228,7 +228,7 @@ test('uncheck-box-desktop', async t => {
     // refresh
     await t.eval(() => location.reload(true));
     await t.wait(1000);
-    await check_textbox(t, 'Race');
+    await check_textboxes(t, ['Race']);
 
     await screencap(t, "article/remove_race_initial_desktop");
     // refresh
@@ -240,7 +240,8 @@ test('simple', async t => {
     await t.resizeWindow(1400, 800);
     // refresh
     await t.eval(() => location.reload(true));
-    await check_textbox(t, 'Simple Ordinals');
+    await t.wait(1000);
+    await check_textboxes(t, ['Simple Ordinals']);
 
     await screencap(t, "article/simple-ordinals");
 })
