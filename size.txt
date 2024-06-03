@@ -219,11 +219,24 @@ more universes
 
 compress the order/ folder
 
+5       quiz
 8       consolidated
 18      quiz_sample_info
 23      index
-85      scripts
+65      scripts
 1042    order
 1126    shape
-2138    data
-4445    total
+1380    data
+3667    total
+
+add 2010s and health data
+
+5       quiz
+9       consolidated
+18      quiz_sample_info
+23      index
+80      scripts
+1126    shape
+1337    order
+1408    data
+4006    total
