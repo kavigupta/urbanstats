@@ -21,6 +21,15 @@ from urbanstats.census_2010.blocks_2010 import block_level_data_2010
 from urbanstats.features.feature import feature_columns
 from urbanstats.features.extract_data import feature_data
 from urbanstats.osm.parks import park_overlap_percentages_all
+from urbanstats.statistics.collections.transportation_commute_time import (
+    TransportationCommuteTimeStatistics,
+)
+from urbanstats.statistics.collections.transportation_mode import (
+    TransportationModeStatistics,
+)
+from urbanstats.statistics.collections.transportation_vehicle_ownership import (
+    TransportationVehicleOwnershipStatistics,
+)
 from urbanstats.weather.to_blocks import weather_stat_names, weather_block_statistics
 from urbanstats.census_2010.columns_2010 import cdc_columns
 
@@ -87,18 +96,9 @@ income_stats = {
 }
 
 transportation_stats = {
-    "transportation_means_car": "Commute Car %",
-    "transportation_means_bike": "Commute Bike %",
-    "transportation_means_walk": "Commute Walk %",
-    "transportation_means_transit": "Commute Transit %",
-    "transportation_means_worked_at_home": "Commute Work From Home %",
-    "transportation_commute_time_under_15": "Commute Time < 15 min %",
-    "transportation_commute_time_15_to_29": "Commute Time 15 - 29 min %",
-    "transportation_commute_time_30_to_59": "Commute Time 30 - 59 min %",
-    "transportation_commute_time_over_60": "Commute Time > 60 min %",
-    "vehicle_ownership_none": "Households With no Vehicle %",
-    "vehicle_ownership_at_least_1": "Households With 1+ Vehicles %",
-    "vehicle_ownership_at_least_2": "Households With 2+ Vehicles %",
+    **TransportationModeStatistics().name_for_each_statistic(),
+    **TransportationCommuteTimeStatistics().name_for_each_statistic(),
+    **TransportationVehicleOwnershipStatistics().name_for_each_statistic(),
 }
 
 industry_stats = industry.industry_display
@@ -381,22 +381,9 @@ def compute_statistics_for_shapefile(
         "individual_income_over_100k",
     )
 
-    fractionalize(
-        "transportation_means_car",
-        "transportation_means_bike",
-        "transportation_means_walk",
-        "transportation_means_transit",
-        "transportation_means_worked_at_home",
-        "transportation_means_other",
-    )
-    del result["transportation_means_other"]
+    TransportationModeStatistics().mutate_shapefile_table(result)
 
-    fractionalize(
-        "transportation_commute_time_under_15",
-        "transportation_commute_time_15_to_29",
-        "transportation_commute_time_30_to_59",
-        "transportation_commute_time_over_60",
-    )
+    TransportationCommuteTimeStatistics().mutate_shapefile_table(result)
 
     fractionalize(
         "rent_1br_under_750",
@@ -464,16 +451,7 @@ def compute_statistics_for_shapefile(
 
     fractionalize(*occupation_stats.keys())
 
-    fractionalize(
-        "vehicle_ownership_none",
-        "vehicle_ownership_1",
-        "vehicle_ownership_at_least_2",
-    )
-
-    result["vehicle_ownership_at_least_1"] = (
-        result["vehicle_ownership_1"] + result["vehicle_ownership_at_least_2"]
-    )
-    del result["vehicle_ownership_1"]
+    TransportationVehicleOwnershipStatistics().mutate_shapefile_table(result)
 
     fractionalize(
         "female_none_4",
