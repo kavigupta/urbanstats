@@ -703,7 +703,7 @@ not_included = {
     "DENTAL_cdc_2",
 }
 
-stats = list(stats_to_display)
+stats = sorted(stats_to_display, key=str)
 categories = sorted({get_statistic_categories()[x] for x in stats})
 
 unrecognized = (set(stats) | set(not_included)) - set(
