@@ -1,9 +1,8 @@
 from urbanstats.acs.load import ACSDataEntity
 from urbanstats.acs.industry import industry_dict, normalize_industry_name
 from urbanstats.acs.occupation import occupation_dict, normalize_occupation_name
-from urbanstats.statistics.collections.transportation_commute_time import TransportationCommuteTimeStatistics
-from urbanstats.statistics.collections.transportation_mode import TransportationModeStatistics
-from urbanstats.statistics.collections.transportation_vehicle_ownership import TransportationVehicleOwnershipStatistics
+from urbanstats.statistics.statistic_collection import ACSStatisticsColection
+from urbanstats.statistics.collections_list import statistic_collections
 
 entities = dict(
     education=ACSDataEntity(
@@ -334,8 +333,6 @@ entities = dict(
     #     },
     #     replace_negatives_with_nan=True,
     # ),
-    **TransportationModeStatistics().acs_entity_dict(),
-    **TransportationCommuteTimeStatistics().acs_entity_dict(),
     rent=ACSDataEntity(
         "BEDROOMS BY GROSS RENT",
         "occupied",
@@ -620,7 +617,6 @@ entities = dict(
             ],
         },
     ),
-    **TransportationVehicleOwnershipStatistics().acs_entity_dict(),
     gender_gap_education_4=ACSDataEntity(
         "SEX BY EDUCATIONAL ATTAINMENT FOR THE POPULATION 25 YEARS AND OVER",
         "population_18",
@@ -887,6 +883,10 @@ entities_split_by_usa_pr = dict(
         ),
     ],
 )
+
+for collection in statistic_collections:
+    if isinstance(collection, ACSStatisticsColection):
+        entities.update(collection.acs_entity_dict())
 
 entities = {k: v for k, v in sorted(entities.items())}
 

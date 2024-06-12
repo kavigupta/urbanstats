@@ -28,9 +28,7 @@ from urbanstats.acs import industry, occupation
 from urbanstats.shortener import shorten
 
 from relationship import states_for_all
-from urbanstats.statistics.collections.transportation_commute_time import TransportationCommuteTimeStatistics
-from urbanstats.statistics.collections.transportation_mode import TransportationModeStatistics
-from urbanstats.statistics.collections.transportation_vehicle_ownership import TransportationVehicleOwnershipStatistics
+from urbanstats.statistics.collections_list import statistic_collections
 
 from .fixed import juxtastat as fixed_up_to
 
@@ -452,8 +450,6 @@ stats_to_display = {
     "rent_2br_over_1500": "higher % of units with 2br rent over $1500",
     "year_built_1969_or_earlier": "higher % units built pre-1970",
     "year_built_2010_or_later": "higher % units built in 2010s+",
-    **TransportationModeStatistics().quiz_question_names(),
-    **TransportationCommuteTimeStatistics().quiz_question_names(),
     (
         "2020 Presidential Election",
         "margin",
@@ -494,7 +490,6 @@ stats_to_display = {
     "gpw_aw_density": "higher area-weighted population density",
     "gpw_population": "higher population",
     "gpw_pw_density_4": "higher population-weighted density (r=4km)",
-    **TransportationVehicleOwnershipStatistics().quiz_question_names(),
     "industry_agriculture,_forestry,_fishing_and_hunting": "higher % of workers employed in the agriculture, forestry, fishing, and hunting industries",
     "industry_mining,_quarrying,_and_oil_and_gas_extraction": "higher % of workers employed in the mining, quarrying, and oil/gas extraction industries",
     "industry_accommodation_and_food_services": "higher % of workers employed in the accommodation and food services industry",
@@ -564,6 +559,10 @@ stats_to_display = {
     "population_change_2010": "higher % change in population from 2010 to 2020",
     "ad_1_change_2010": "higher % change in population-weighted density (r=1km) from 2010 to 2020",
 }
+
+
+for collection in statistic_collections:
+    stats_to_display.update(collection.quiz_question_names())
 
 renamed = {
     "higher housing units per adult": "housing_per_pop",
@@ -654,8 +653,6 @@ not_included = {
     "rent_burden_20_to_40",
     "language_other",
     "other / mixed",
-    *TransportationModeStatistics().quiz_question_unused(),
-    *TransportationCommuteTimeStatistics().quiz_question_unused(),
     "days_dewpoint_50_70_4",
     "days_between_40_and_90_4",
     "mean_high_dewpoint_4",
@@ -664,7 +661,6 @@ not_included = {
     "female_hs_gap_4",
     "female_ugrad_gap_4",
     "female_grad_gap_4",
-    *TransportationVehicleOwnershipStatistics().quiz_question_unused(),
     "occupation_production_occupations",
     # meh whatever
     "marriage_married_not_divorced",
@@ -699,6 +695,9 @@ not_included = {
     "PHLTH_cdc_2",
     "DENTAL_cdc_2",
 }
+
+for collection in statistic_collections:
+    not_included.update(collection.quiz_question_unused())
 
 stats = sorted(stats_to_display, key=str)
 categories = sorted({get_statistic_categories()[x] for x in stats})
