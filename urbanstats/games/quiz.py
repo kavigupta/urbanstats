@@ -28,6 +28,9 @@ from urbanstats.acs import industry, occupation
 from urbanstats.shortener import shorten
 
 from relationship import states_for_all
+from urbanstats.statistics.collections.transportation_commute_time import TransportationCommuteTimeStatistics
+from urbanstats.statistics.collections.transportation_mode import TransportationModeStatistics
+from urbanstats.statistics.collections.transportation_vehicle_ownership import TransportationVehicleOwnershipStatistics
 
 from .fixed import juxtastat as fixed_up_to
 
@@ -449,13 +452,8 @@ stats_to_display = {
     "rent_2br_over_1500": "higher % of units with 2br rent over $1500",
     "year_built_1969_or_earlier": "higher % units built pre-1970",
     "year_built_2010_or_later": "higher % units built in 2010s+",
-    "transportation_means_car": "higher % of people who commute by car",
-    "transportation_means_bike": "higher % of people who commute by bike",
-    "transportation_means_walk": "higher % of people who commute by walking",
-    "transportation_means_transit": "higher % of people who commute by transit",
-    "transportation_means_worked_at_home": "higher % of people who work from home",
-    "transportation_commute_time_under_15": "higher % of people who have commute time under 15 min",
-    "transportation_commute_time_over_60": "higher % of people who have commute time over 60 min",
+    **TransportationModeStatistics().quiz_question_names(),
+    **TransportationCommuteTimeStatistics().quiz_question_names(),
     (
         "2020 Presidential Election",
         "margin",
@@ -496,7 +494,7 @@ stats_to_display = {
     "gpw_aw_density": "higher area-weighted population density",
     "gpw_population": "higher population",
     "gpw_pw_density_4": "higher population-weighted density (r=4km)",
-    "vehicle_ownership_at_least_1": "higher % of households with at least 1 vehicle",
+    **TransportationVehicleOwnershipStatistics().quiz_question_names(),
     "industry_agriculture,_forestry,_fishing_and_hunting": "higher % of workers employed in the agriculture, forestry, fishing, and hunting industries",
     "industry_mining,_quarrying,_and_oil_and_gas_extraction": "higher % of workers employed in the mining, quarrying, and oil/gas extraction industries",
     "industry_accommodation_and_food_services": "higher % of workers employed in the accommodation and food services industry",
@@ -656,8 +654,8 @@ not_included = {
     "rent_burden_20_to_40",
     "language_other",
     "other / mixed",
-    "transportation_commute_time_15_to_29",
-    "transportation_commute_time_30_to_59",
+    *TransportationModeStatistics().quiz_question_unused(),
+    *TransportationCommuteTimeStatistics().quiz_question_unused(),
     "days_dewpoint_50_70_4",
     "days_between_40_and_90_4",
     "mean_high_dewpoint_4",
@@ -666,8 +664,7 @@ not_included = {
     "female_hs_gap_4",
     "female_ugrad_gap_4",
     "female_grad_gap_4",
-    "vehicle_ownership_none",
-    "vehicle_ownership_at_least_2",
+    *TransportationVehicleOwnershipStatistics().quiz_question_unused(),
     "occupation_production_occupations",
     # meh whatever
     "marriage_married_not_divorced",
