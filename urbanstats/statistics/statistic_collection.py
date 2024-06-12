@@ -25,6 +25,14 @@ class StatisticCollection(ABC):
         pass
 
     @abstractmethod
+    def category_for_each_statistic(self):
+        pass
+
+    @abstractmethod
+    def explanation_page_for_each_statistic(self):
+        pass
+
+    @abstractmethod
     def quiz_question_names(self):
         pass
 
@@ -34,6 +42,9 @@ class StatisticCollection(ABC):
     @abstractmethod
     def mutate_shapefile_table(self, shapefile_table):
         pass
+
+    def same_for_each_name(self, value):
+        return {name: value for name in self.name_for_each_statistic()}
 
 
 class ACSStatisticsColection(StatisticCollection):

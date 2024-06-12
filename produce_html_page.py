@@ -12,7 +12,6 @@ from stats_for_shapefile import (
     education_stats,
     generation_stats,
     income_stats,
-    transportation_stats,
     industry_stats,
     occupation_stats,
     national_origin_stats,
@@ -26,6 +25,7 @@ from urbanstats.census_2010.columns_2010 import basics_2010, cdc_columns
 from urbanstats.protobuf import data_files_pb2
 from urbanstats.protobuf.utils import write_gzip
 from urbanstats.weather.to_blocks import weather_stat_names
+from urbanstats.statistics.collections_list import statistic_collections
 
 
 def ord_or_zero(x):
@@ -134,7 +134,7 @@ ad = {f"ad_{k}": f"PW Density (r={format_radius(k)})" for k in RADII}
 
 
 def statistic_internal_to_display_name():
-    return {
+    internal_to_display = {
         "population": "Population",
         **{"ad_1": ad["ad_1"]},
         "sd": "AW Density",
@@ -148,17 +148,25 @@ def statistic_internal_to_display_name():
         **generation_stats,
         **income_stats,
         **housing_stats,
-        **transportation_stats,
-        **cdc_columns(),
-        **industry_stats,
-        **occupation_stats,
-        **election_stats,
-        **feature_stats,
-        **weather_stat_names,
-        **misc_stats,
-        **{k: ad[k] for k in ad if k != "ad_1"},
-        **basics_2010()[1],
     }
+
+    for statistic_collection in statistic_collections:
+        internal_to_display.update(statistic_collection.name_for_each_statistic())
+    internal_to_display.update(
+        {
+            **cdc_columns(),
+            **industry_stats,
+            **occupation_stats,
+            **election_stats,
+            **feature_stats,
+            **weather_stat_names,
+            **misc_stats,
+            **{k: ad[k] for k in ad if k != "ad_1"},
+            **basics_2010()[1],
+        }
+    )
+
+    return internal_to_display
 
 
 def internal_statistic_names():
@@ -186,17 +194,24 @@ def get_statistic_categories():
         **{k: "generation" for k in generation_stats},
         **{k: "income" for k in income_stats},
         **{k: "housing" for k in housing_stats},
-        **{k: "transportation" for k in transportation_stats},
-        **{k: "health" for k in cdc_columns()},
-        **{k: "industry" for k in industry_stats},
-        **{k: "occupation" for k in occupation_stats},
-        **{elect: "election" for elect in election_stats},
-        **{k: "feature" for k in feature_stats},
-        **{k: "weather" for k in weather_stat_names},
-        **{k: "misc" for k in misc_stats},
-        **{k: ad[k] for k in ad if k != "ad_1"},
-        **{k: "2010" for k in basics_2010()[1]},
     }
+
+    for statistic_collection in statistic_collections:
+        result.update(statistic_collection.category_for_each_statistic())
+
+    result.update(
+        {
+            **{k: "health" for k in cdc_columns()},
+            **{k: "industry" for k in industry_stats},
+            **{k: "occupation" for k in occupation_stats},
+            **{elect: "election" for elect in election_stats},
+            **{k: "feature" for k in feature_stats},
+            **{k: "weather" for k in weather_stat_names},
+            **{k: "misc" for k in misc_stats},
+            **{k: ad[k] for k in ad if k != "ad_1"},
+            **{k: "2010" for k in basics_2010()[1]},
+        }
+    )
     return result
 
 
@@ -220,29 +235,36 @@ def get_explanation_page():
             else "housing-acs"
             for k in housing_stats
         },
-        **{k: "transportation" for k in transportation_stats},
-        **{k: "health" for k in cdc_columns()},
-        **{k: "industry_and_occupation" for k in industry_stats},
-        **{k: "industry_and_occupation" for k in occupation_stats},
-        **{elect: "election" for elect in election_stats},
-        **{
-            k: {
-                "park_percent_1km_v2": "park",
-                "within_Hospital_10": "hospital",
-                "mean_dist_Hospital_updated": "hospital",
-                "within_Public School_2": "school",
-                "mean_dist_Public School_updated": "school",
-                "within_Airport_30": "airport",
-                "mean_dist_Airport_updated": "airport",
-                "within_Active Superfund Site_10": "superfund",
-                "mean_dist_Active Superfund Site_updated": "superfund",
-            }[k]
-            for k in feature_stats
-        },
-        **{k: "weather" for k in weather_stat_names},
-        **{k: k.split("_")[0] for k in misc_stats},
-        **{k: "2010" for k in basics_2010()[1]},
     }
+
+    for statistic_collection in statistic_collections:
+        result.update(statistic_collection.explanation_page_for_each_statistic())
+
+    result.update(
+        {
+            **{k: "health" for k in cdc_columns()},
+            **{k: "industry_and_occupation" for k in industry_stats},
+            **{k: "industry_and_occupation" for k in occupation_stats},
+            **{elect: "election" for elect in election_stats},
+            **{
+                k: {
+                    "park_percent_1km_v2": "park",
+                    "within_Hospital_10": "hospital",
+                    "mean_dist_Hospital_updated": "hospital",
+                    "within_Public School_2": "school",
+                    "mean_dist_Public School_updated": "school",
+                    "within_Airport_30": "airport",
+                    "mean_dist_Airport_updated": "airport",
+                    "within_Active Superfund Site_10": "superfund",
+                    "mean_dist_Active Superfund Site_updated": "superfund",
+                }[k]
+                for k in feature_stats
+            },
+            **{k: "weather" for k in weather_stat_names},
+            **{k: k.split("_")[0] for k in misc_stats},
+            **{k: "2010" for k in basics_2010()[1]},
+        }
+    )
     result = {k: result[k] for k in get_statistic_categories()}
     return result
 

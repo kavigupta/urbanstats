@@ -21,17 +21,9 @@ from urbanstats.census_2010.blocks_2010 import block_level_data_2010
 from urbanstats.features.feature import feature_columns
 from urbanstats.features.extract_data import feature_data
 from urbanstats.osm.parks import park_overlap_percentages_all
-from urbanstats.statistics.collections.transportation_commute_time import (
-    TransportationCommuteTimeStatistics,
-)
-from urbanstats.statistics.collections.transportation_mode import (
-    TransportationModeStatistics,
-)
-from urbanstats.statistics.collections.transportation_vehicle_ownership import (
-    TransportationVehicleOwnershipStatistics,
-)
 from urbanstats.weather.to_blocks import weather_stat_names, weather_block_statistics
 from urbanstats.census_2010.columns_2010 import cdc_columns
+from urbanstats.statistics.collections_list import statistic_collections
 
 racial_statistics = {
     "white": "White %",
@@ -93,12 +85,6 @@ income_stats = {
     "individual_income_under_50k": "Individual Income < $50k %",
     "individual_income_50k_to_100k": "Individual Income $50k - $100k %",
     "individual_income_over_100k": "Individual Income > $100k %",
-}
-
-transportation_stats = {
-    **TransportationModeStatistics().name_for_each_statistic(),
-    **TransportationCommuteTimeStatistics().name_for_each_statistic(),
-    **TransportationVehicleOwnershipStatistics().name_for_each_statistic(),
 }
 
 industry_stats = industry.industry_display
@@ -382,10 +368,8 @@ def compute_statistics_for_shapefile(
         "individual_income_50k_to_100k",
         "individual_income_over_100k",
     )
-
-    TransportationModeStatistics().mutate_shapefile_table(result)
-
-    TransportationCommuteTimeStatistics().mutate_shapefile_table(result)
+    for collection in statistic_collections:
+        collection.mutate_shapefile_table(result)
 
     fractionalize(
         "rent_1br_under_750",
@@ -452,8 +436,6 @@ def compute_statistics_for_shapefile(
     fractionalize(*industry_stats.keys())
 
     fractionalize(*occupation_stats.keys())
-
-    TransportationVehicleOwnershipStatistics().mutate_shapefile_table(result)
 
     fractionalize(
         "female_none_4",

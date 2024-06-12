@@ -13,6 +13,12 @@ class TransportationModeStatistics(ACSStatisticsColection):
             "transportation_means_worked_at_home": "Commute Work From Home %",
         }
 
+    def category_for_each_statistic(self):
+        return self.same_for_each_name("transportation")
+
+    def explanation_page_for_each_statistic(self):
+        return self.same_for_each_name("transportation")
+
     def quiz_question_names(self):
         return {
             "transportation_means_car": "higher % of people who commute by car",
