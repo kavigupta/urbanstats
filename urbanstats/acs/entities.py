@@ -888,6 +888,8 @@ entities_split_by_usa_pr = dict(
     ],
 )
 
+entities = {k: v for k, v in sorted(entities.items())}
+
 acs_columns = [column for entity in entities.values() for column in entity.categories]
 acs_columns += [
     column

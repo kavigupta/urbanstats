@@ -193,6 +193,7 @@ sum_keys_2020 = [
     "park_percent_1km_v2",
     *weather_stat_names,
 ]
+sum_keys_2020 = sorted(sum_keys_2020, key=str)
 sum_keys_2010 = [
     "population_2010",
     "population_18_2010",
@@ -201,6 +202,7 @@ sum_keys_2010 = [
     *[f"{k}_2010" for k in density_metrics],
     *cdc_columns(),
 ]
+sum_keys_2010 = sorted(sum_keys_2010, key=str)
 COLUMNS_PER_JOIN = 33
 
 
