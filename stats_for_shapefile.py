@@ -39,9 +39,6 @@ housing_stats = {
     "housing_per_pop": "Housing Units per Adult",
     "vacancy": "Vacancy %",
     "rent_or_own_rent": "Renter %",
-    "rent_burden_under_20": "Rent/Income < 20%",
-    "rent_burden_20_to_40": "Rent/Income 20%-40%",
-    "rent_burden_over_40": "Rent/Income > 40%",
 }
 
 education_stats = {
@@ -358,12 +355,6 @@ def compute_statistics_for_shapefile(
     )
     for collection in statistic_collections:
         collection.mutate_shapefile_table(result)
-
-    fractionalize(
-        "rent_burden_under_20",
-        "rent_burden_20_to_40",
-        "rent_burden_over_40",
-    )
 
     fractionalize(
         "rent_or_own_rent",

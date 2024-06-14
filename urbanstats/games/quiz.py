@@ -442,8 +442,6 @@ stats_to_display = {
     "housing_per_pop": "higher number of housing units per adult",
     "vacancy": "higher % of units that are vacant",
     "rent_or_own_rent": "higher % of people who are renters",
-    "rent_burden_under_20": "higher % of people whose rent is less than 20% of their income",
-    "rent_burden_over_40": "higher % of people whose rent is greater than 40% of their income",
     (
         "2020 Presidential Election",
         "margin",
@@ -638,7 +636,6 @@ not_included = {
     "hawaiian_pi",
     "household_income_50k_to_100k",
     "individual_income_50k_to_100k",
-    "rent_burden_20_to_40",
     "language_other",
     "other / mixed",
     "days_dewpoint_50_70_4",
