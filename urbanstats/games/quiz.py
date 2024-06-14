@@ -428,12 +428,6 @@ stats_to_display = {
     "education_field_stem": "!FULL Which has more people with a STEM degree, as a percentage of the overall population?",
     "education_field_humanities": "!FULL Which has more people with a humanities degree, as a percentage of the overall population?",
     "education_field_business": "!FULL Which has more people with a business degree, as a percentage of the overall population?",
-    "generation_silent": "higher % of people who are silent generation",
-    "generation_boomer": "higher % of people who are boomers",
-    "generation_genx": "higher % of people who are gen x",
-    "generation_millenial": "higher % of people who are millennials",
-    "generation_genz": "higher % of people who are gen z",
-    "generation_genalpha": "higher % of people who are gen alpha",
     (
         "2020 Presidential Election",
         "margin",

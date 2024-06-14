@@ -47,15 +47,6 @@ education_stats = {
     "female_grad_gap_4": "% of women with graduate education - % of men with graduate education",
 }
 
-generation_stats = {
-    "generation_silent": "Silent %",
-    "generation_boomer": "Boomer %",
-    "generation_genx": "Gen X %",
-    "generation_millenial": "Millennial %",
-    "generation_genz": "Gen Z %",
-    "generation_genalpha": "Gen Alpha %",
-}
-
 industry_stats = industry.industry_display
 occupation_stats = occupation.occupation_display
 
@@ -317,14 +308,6 @@ def compute_statistics_for_shapefile(
         "education_field_business",
     ):
         result[column] = result[column] / education_denominator
-    fractionalize(
-        "generation_silent",
-        "generation_boomer",
-        "generation_genx",
-        "generation_millenial",
-        "generation_genz",
-        "generation_genalpha",
-    )
     for collection in statistic_collections:
         collection.mutate_shapefile_table(result)
 
