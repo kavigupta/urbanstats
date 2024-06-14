@@ -35,11 +35,6 @@ racial_statistics = {
     "other / mixed": "Other / Mixed %",
 }
 
-housing_stats = {
-    "housing_per_pop": "Housing Units per Adult",
-    "vacancy": "Vacancy %",
-}
-
 education_stats = {
     "education_high_school": "High School %",
     "education_ugrad": "Undergrad %",
@@ -291,9 +286,7 @@ def compute_statistics_for_shapefile(
     del result["mixed"]
     del result["other_2010"]
     del result["mixed_2010"]
-    result["housing_per_pop"] = result["total"] / result["population_18"]
     result["housing_per_pop_2010"] = result["total_2010"] / result["population_18_2010"]
-    result["vacancy"] = result["vacant"] / result["total"]
     result["vacancy_2010"] = result["vacant_2010"] / result["total_2010"]
 
     for cdc in cdc_columns():

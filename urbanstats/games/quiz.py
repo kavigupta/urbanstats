@@ -439,8 +439,6 @@ stats_to_display = {
     "household_income_over_100k": "higher % of households who have household income over $100k",
     "individual_income_under_50k": "higher % of people who have individual income under $50k",
     "individual_income_over_100k": "higher % of people who have individual income over $100k",
-    "housing_per_pop": "higher number of housing units per adult",
-    "vacancy": "higher % of units that are vacant",
     (
         "2020 Presidential Election",
         "margin",

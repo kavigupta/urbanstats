@@ -1,3 +1,4 @@
+from urbanstats.statistics.collections.housing_census import HousingCensus
 from urbanstats.statistics.collections.housing_rent import HousingRent
 from urbanstats.statistics.collections.housing_rent_burden import HousingRentBurden
 from urbanstats.statistics.collections.housing_rent_or_own import HousingRentOrOwn
@@ -16,6 +17,7 @@ from urbanstats.statistics.collections.transportation_vehicle_ownership import (
 
 
 statistic_collections = (
+    HousingCensus(),
     HousingRentOrOwn(),
     HousingRentBurden(),
     HousingRent(),

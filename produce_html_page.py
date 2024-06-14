@@ -8,7 +8,6 @@ from census_blocks import RADII
 from stats_for_shapefile import (
     gpw_stats,
     racial_statistics,
-    housing_stats,
     education_stats,
     generation_stats,
     income_stats,
@@ -147,7 +146,6 @@ def statistic_internal_to_display_name():
         **education_stats,
         **generation_stats,
         **income_stats,
-        **housing_stats,
     }
 
     for statistic_collection in statistic_collections:
@@ -193,7 +191,6 @@ def get_statistic_categories():
         **{k: "education" for k in education_stats},
         **{k: "generation" for k in generation_stats},
         **{k: "income" for k in income_stats},
-        **{k: "housing" for k in housing_stats},
     }
 
     for statistic_collection in statistic_collections:
@@ -229,12 +226,6 @@ def get_explanation_page():
         **{k: "education" for k in education_stats},
         **{k: "generation" for k in generation_stats},
         **{k: "income" for k in income_stats},
-        **{
-            k: "housing-census"
-            if k in ["housing_per_pop", "vacancy"]
-            else "housing-acs"
-            for k in housing_stats
-        },
     }
 
     for statistic_collection in statistic_collections:

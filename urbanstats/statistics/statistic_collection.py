@@ -47,6 +47,11 @@ class StatisticCollection(ABC):
         return {name: value for name in self.name_for_each_statistic()}
 
 
+class CensusStatisticsColection(StatisticCollection):
+    # TODO we should probably have this actually pull the census data, it currently does not.
+    pass
+
+
 class ACSStatisticsColection(StatisticCollection):
     @abstractmethod
     def acs_name(self):
