@@ -410,10 +410,6 @@ stats_to_display = {
     "population": "higher population",
     "ad_1": "higher population-weighted density (r=1km)",
     "sd": "higher area-weighted density",
-    "white": "higher % of people who are White",
-    "hispanic": "higher % of people who are Hispanic",
-    "black": "higher % of people who are Black",
-    "asian": "higher % of people who are Asian",
     (
         "2020 Presidential Election",
         "margin",
@@ -604,9 +600,6 @@ not_included = {
     "area",
     "compactness",
     # middle / obscure
-    "native",
-    "hawaiian_pi",
-    "other / mixed",
     "days_dewpoint_50_70_4",
     "days_between_40_and_90_4",
     "mean_high_dewpoint_4",

@@ -7,7 +7,6 @@ import pandas as pd
 from census_blocks import RADII
 from stats_for_shapefile import (
     gpw_stats,
-    racial_statistics,
     industry_stats,
     occupation_stats,
     feature_stats,
@@ -137,7 +136,6 @@ def statistic_internal_to_display_name():
         **gpw_stats,
         "area": "Area",
         "compactness": "Compactness",
-        **racial_statistics,
     }
 
     for statistic_collection in statistic_collections:
@@ -178,7 +176,6 @@ def get_statistic_categories():
         },
         "area": "main",
         "compactness": "main",
-        **{k: "race" for k in racial_statistics},
     }
 
     for statistic_collection in statistic_collections:
@@ -209,7 +206,6 @@ def get_explanation_page():
         **{k: "gpw" for k in gpw_stats},
         "area": "geography",
         "compactness": "geography",
-        **{k: "race" for k in racial_statistics},
     }
 
     for statistic_collection in statistic_collections:

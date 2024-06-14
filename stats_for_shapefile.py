@@ -25,16 +25,6 @@ from urbanstats.weather.to_blocks import weather_stat_names, weather_block_stati
 from urbanstats.census_2010.columns_2010 import cdc_columns
 from urbanstats.statistics.collections_list import statistic_collections
 
-racial_statistics = {
-    "white": "White %",
-    "hispanic": "Hispanic %",
-    "black": "Black %",
-    "asian": "Asian %",
-    "native": "Native %",
-    "hawaiian_pi": "Hawaiian / PI %",
-    "other / mixed": "Other / Mixed %",
-}
-
 industry_stats = industry.industry_display
 occupation_stats = occupation.occupation_display
 
@@ -235,7 +225,6 @@ def compute_statistics_for_shapefile(
     for k in sf.meta:
         result[k] = sf.meta[k]
     for k in racial_demographics:
-        result[k] /= result["population"]
         result[k + "_2010"] /= result["population_2010"]
     result["other / mixed"] = result["other"] + result["mixed"]
     result["other / mixed_2010"] = result["other_2010"] + result["mixed_2010"]

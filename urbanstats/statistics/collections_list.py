@@ -22,6 +22,7 @@ from urbanstats.statistics.collections.national_origin_citizenship import (
 from urbanstats.statistics.collections.national_origin_language import (
     NationalOriginLanguageStatistics,
 )
+from urbanstats.statistics.collections.race_census import RaceCensus
 from urbanstats.statistics.collections.transportation_commute_time import (
     TransportationCommuteTimeStatistics,
 )
@@ -34,6 +35,7 @@ from urbanstats.statistics.collections.transportation_vehicle_ownership import (
 
 
 statistic_collections = (
+    RaceCensus(),
     NationalOriginCitizenshipStatistics(),
     NationalOriginBirthplaceStatistics(),
     NationalOriginLanguageStatistics(),

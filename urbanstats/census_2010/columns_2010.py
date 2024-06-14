@@ -1,3 +1,6 @@
+from urbanstats.statistics.collections.race_census import RaceCensus
+
+
 def cdc_columns():
     cdc_columns = {
         "GHLTH": "Fair or poor self-rated health status %",  # "GHLTH": "Fair or poor self-rated health status among adults aged >=18 years",
@@ -58,7 +61,6 @@ def cdc_columns():
 
 def basics_2010():
     from produce_html_page import ad
-    from stats_for_shapefile import racial_statistics
 
     ad_2010 = {f"{k}_2010": f"{v} (2010)" for k, v in ad.items()}
     ad_change = {f"{k}_change_2010": f"{v} Change (2010-2020)" for k, v in ad.items()}
@@ -69,10 +71,13 @@ def basics_2010():
         **{"ad_1_2010": ad_2010["ad_1_2010"]},
         **{"ad_1_change_2010": ad_change["ad_1_change_2010"]},
         "sd_2010": "AW Density (2010)",
-        **{f"{k}_2010": f"{v} (2010)" for k, v in racial_statistics.items()},
+        **{
+            f"{k}_2010": f"{v} (2010)"
+            for k, v in RaceCensus().name_for_each_statistic().items()
+        },
         "housing_per_pop_2010": "Housing Units per Adult (2010)",
         "vacancy_2010": "Vacancy % (2010)",
     }, {
         **{k: ad_2010[k] for k in ad_2010 if k != "ad_1_2010"},
-        **{k: ad_change[k] for k in ad_change if k != "ad_1_change_2010"}
+        **{k: ad_change[k] for k in ad_change if k != "ad_1_change_2010"},
     }
