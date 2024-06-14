@@ -8,7 +8,6 @@ from census_blocks import RADII
 from stats_for_shapefile import (
     gpw_stats,
     racial_statistics,
-    education_stats,
     industry_stats,
     occupation_stats,
     national_origin_stats,
@@ -141,7 +140,6 @@ def statistic_internal_to_display_name():
         "compactness": "Compactness",
         **racial_statistics,
         **national_origin_stats,
-        **education_stats,
     }
 
     for statistic_collection in statistic_collections:
@@ -184,7 +182,6 @@ def get_statistic_categories():
         "compactness": "main",
         **{k: "race" for k in racial_statistics},
         **{k: "national_origin" for k in national_origin_stats},
-        **{k: "education" for k in education_stats},
     }
 
     for statistic_collection in statistic_collections:
@@ -217,7 +214,6 @@ def get_explanation_page():
         "compactness": "geography",
         **{k: "race" for k in racial_statistics},
         **{k: k.split("_")[0] for k in national_origin_stats},
-        **{k: "education" for k in education_stats},
     }
 
     for statistic_collection in statistic_collections:

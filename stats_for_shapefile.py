@@ -35,8 +35,6 @@ racial_statistics = {
     "other / mixed": "Other / Mixed %",
 }
 
-education_stats = {}
-
 industry_stats = industry.industry_display
 occupation_stats = occupation.occupation_display
 
