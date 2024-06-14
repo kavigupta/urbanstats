@@ -48,12 +48,6 @@ housing_stats = {
     "rent_2br_under_750": "2BR Rent < $750 %",
     "rent_2br_750_to_1500": "2BR Rent $750 - $1500 %",
     "rent_2br_over_1500": "2BR Rent > $1500 %",
-    "year_built_1969_or_earlier": "% units built pre-1970",
-    "year_built_1970_to_1979": "% units built in 1970s",
-    "year_built_1980_to_1989": "% units built in 1980s",
-    "year_built_1990_to_1999": "% units built in 1990s",
-    "year_built_2000_to_2009": "% units built in 2000s",
-    "year_built_2010_or_later": "% units built in 2010s+",
 }
 
 education_stats = {
@@ -393,15 +387,6 @@ def compute_statistics_for_shapefile(
         "rent_or_own_own",
     )
     del result["rent_or_own_own"]
-
-    fractionalize(
-        "year_built_1969_or_earlier",
-        "year_built_1970_to_1979",
-        "year_built_1980_to_1989",
-        "year_built_1990_to_1999",
-        "year_built_2000_to_2009",
-        "year_built_2010_or_later",
-    )
 
     fractionalize(
         "insurance_coverage_none",
