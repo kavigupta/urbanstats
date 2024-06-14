@@ -45,9 +45,6 @@ national_origin_stats = {
     "birthplace_non_us": "Born outside US %",
     "birthplace_us_not_state": "Born in us outside state %",
     "birthplace_us_state": "Born in state of residence %",
-    "language_english_only": "Only English at Home %",
-    "language_spanish": "Spanish at Home %",
-    "language_other": "Other at Home %",
 }
 
 feature_stats = {
@@ -289,12 +286,6 @@ def compute_statistics_for_shapefile(
         "internet_no_access",
     )
     del result["internet_access"]
-
-    fractionalize(
-        "language_english_only",
-        "language_spanish",
-        "language_other",
-    )
 
     fractionalize(
         "marriage_never_married",

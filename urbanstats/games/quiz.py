@@ -420,8 +420,6 @@ stats_to_display = {
     "birthplace_non_us": "higher % of people who were born outside the US",
     "birthplace_us_not_state": "higher % of people who were born in the US and outside their state of residence",
     "birthplace_us_state": "higher % of people who were born in their state of residence",
-    "language_english_only": "higher % of people who only speak english at home",
-    "language_spanish": "higher % of people who speak spanish at home",
     (
         "2020 Presidential Election",
         "margin",
@@ -614,7 +612,6 @@ not_included = {
     # middle / obscure
     "native",
     "hawaiian_pi",
-    "language_other",
     "other / mixed",
     "days_dewpoint_50_70_4",
     "days_between_40_and_90_4",

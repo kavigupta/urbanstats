@@ -13,6 +13,9 @@ from urbanstats.statistics.collections.housing_year_built import (
 from urbanstats.statistics.collections.income_family import IncomeFamily
 from urbanstats.statistics.collections.income_individual import IncomeIndividual
 from urbanstats.statistics.collections.income_poverty import IncomePoverty
+from urbanstats.statistics.collections.national_origin_language import (
+    NationalOriginLanguageStatistics,
+)
 from urbanstats.statistics.collections.transportation_commute_time import (
     TransportationCommuteTimeStatistics,
 )
@@ -25,6 +28,7 @@ from urbanstats.statistics.collections.transportation_vehicle_ownership import (
 
 
 statistic_collections = (
+    NationalOriginLanguageStatistics(),
     EducationStatistics(),
     EducationGenderGapStatistics(),
     GenerationStatistics(),
