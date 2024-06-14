@@ -42,12 +42,6 @@ housing_stats = {
     "rent_burden_under_20": "Rent/Income < 20%",
     "rent_burden_20_to_40": "Rent/Income 20%-40%",
     "rent_burden_over_40": "Rent/Income > 40%",
-    "rent_1br_under_750": "1BR Rent < $750 %",
-    "rent_1br_750_to_1500": "1BR Rent $750 - $1500 %",
-    "rent_1br_over_1500": "1BR Rent > $1500 %",
-    "rent_2br_under_750": "2BR Rent < $750 %",
-    "rent_2br_750_to_1500": "2BR Rent $750 - $1500 %",
-    "rent_2br_over_1500": "2BR Rent > $1500 %",
 }
 
 education_stats = {
@@ -364,17 +358,6 @@ def compute_statistics_for_shapefile(
     )
     for collection in statistic_collections:
         collection.mutate_shapefile_table(result)
-
-    fractionalize(
-        "rent_1br_under_750",
-        "rent_1br_750_to_1500",
-        "rent_1br_over_1500",
-    )
-    fractionalize(
-        "rent_2br_under_750",
-        "rent_2br_750_to_1500",
-        "rent_2br_over_1500",
-    )
 
     fractionalize(
         "rent_burden_under_20",
