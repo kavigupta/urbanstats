@@ -435,10 +435,6 @@ stats_to_display = {
     "generation_genz": "higher % of people who are gen z",
     "generation_genalpha": "higher % of people who are gen alpha",
     "poverty_below_line": "higher % of people who are in poverty",
-    "household_income_under_50k": "higher % of households who have household income under $50k",
-    "household_income_over_100k": "higher % of households who have household income over $100k",
-    "individual_income_under_50k": "higher % of people who have individual income under $50k",
-    "individual_income_over_100k": "higher % of people who have individual income over $100k",
     (
         "2020 Presidential Election",
         "margin",
@@ -631,8 +627,6 @@ not_included = {
     # middle / obscure
     "native",
     "hawaiian_pi",
-    "household_income_50k_to_100k",
-    "individual_income_50k_to_100k",
     "language_other",
     "other / mixed",
     "days_dewpoint_50_70_4",

@@ -58,12 +58,6 @@ generation_stats = {
 
 income_stats = {
     "poverty_below_line": "Poverty %",
-    "household_income_under_50k": "Household Income < $50k %",
-    "household_income_50k_to_100k": "Household Income $50k - $100k %",
-    "household_income_over_100k": "Household Income > $100k %",
-    "individual_income_under_50k": "Individual Income < $50k %",
-    "individual_income_50k_to_100k": "Individual Income $50k - $100k %",
-    "individual_income_over_100k": "Individual Income > $100k %",
 }
 
 industry_stats = industry.industry_display
@@ -334,16 +328,6 @@ def compute_statistics_for_shapefile(
         "generation_millenial",
         "generation_genz",
         "generation_genalpha",
-    )
-    fractionalize(
-        "household_income_under_50k",
-        "household_income_50k_to_100k",
-        "household_income_over_100k",
-    )
-    fractionalize(
-        "individual_income_under_50k",
-        "individual_income_50k_to_100k",
-        "individual_income_over_100k",
     )
     for collection in statistic_collections:
         collection.mutate_shapefile_table(result)
