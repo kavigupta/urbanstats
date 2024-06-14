@@ -627,9 +627,6 @@ not_included = {
     "mean_high_dewpoint_4",
     "days_dewpoint_70_inf_4",
     "days_dewpoint_-inf_50_4",
-    "female_hs_gap_4",
-    "female_ugrad_gap_4",
-    "female_grad_gap_4",
     "occupation_production_occupations",
     # meh whatever
     "marriage_married_not_divorced",

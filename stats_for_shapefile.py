@@ -42,9 +42,6 @@ education_stats = {
     "education_field_stem": "Undergrad STEM %",
     "education_field_humanities": "Undergrad Humanities %",
     "education_field_business": "Undergrad Business %",
-    "female_hs_gap_4": "% of women with high school education - % of men with high school education",
-    "female_ugrad_gap_4": "% of women with undergraduate education - % of men with undergraduate education",
-    "female_grad_gap_4": "% of women with graduate education - % of men with graduate education",
 }
 
 industry_stats = industry.industry_display
@@ -339,40 +336,6 @@ def compute_statistics_for_shapefile(
 
     fractionalize(*occupation_stats.keys())
 
-    fractionalize(
-        "female_none_4",
-        "female_hs_4",
-        "female_ugrad_4",
-        "female_grad_4",
-    )
-
-    fractionalize(
-        "male_none_4",
-        "male_hs_4",
-        "male_ugrad_4",
-        "male_grad_4",
-    )
-
-    del result["female_none_4"], result["male_none_4"]
-
-    result["female_ugrad_4"] += result["female_grad_4"]
-    result["male_ugrad_4"] += result["male_grad_4"]
-
-    result["female_hs_4"] += result["female_ugrad_4"]
-    result["male_hs_4"] += result["male_ugrad_4"]
-
-    result["female_hs_gap_4"] = result["female_hs_4"] - result["male_hs_4"]
-    result["female_ugrad_gap_4"] = result["female_ugrad_4"] - result["male_ugrad_4"]
-    result["female_grad_gap_4"] = result["female_grad_4"] - result["male_grad_4"]
-
-    del (
-        result["male_hs_4"],
-        result["female_hs_4"],
-        result["female_ugrad_4"],
-        result["male_ugrad_4"],
-        result["female_grad_4"],
-        result["male_grad_4"],
-    )
 
     fractionalize(
         "citizenship_citizen_by_birth",

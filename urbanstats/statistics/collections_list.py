@@ -1,3 +1,6 @@
+from urbanstats.statistics.collections.education_gender_gap import (
+    EducationGenderGapStatistics,
+)
 from urbanstats.statistics.collections.generation import GenerationStatistics
 from urbanstats.statistics.collections.housing_census import HousingCensus
 from urbanstats.statistics.collections.housing_rent import HousingRent
@@ -21,6 +24,7 @@ from urbanstats.statistics.collections.transportation_vehicle_ownership import (
 
 
 statistic_collections = (
+    EducationGenderGapStatistics(),
     GenerationStatistics(),
     IncomePoverty(),
     IncomeFamily(),
