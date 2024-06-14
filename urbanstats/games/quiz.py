@@ -13,17 +13,30 @@ from permacache import permacache, stable_hash
 import tqdm.auto as tqdm
 import urllib
 
-from create_website import full_shapefile, statistic_internal_to_display_name
-from produce_html_page import get_statistic_categories
+from create_website import (
+    get_index_lists,
+    shapefile_without_ordinals,
+    statistic_internal_to_display_name,
+)
+from produce_html_page import (
+    get_statistic_categories,
+    indices,
+    internal_statistic_names,
+)
+from shapefiles import filter_table_for_type, american_to_international
+from urbanstats.acs import industry, occupation
 from urbanstats.shortener import shorten
 
 from relationship import states_for_all
+from urbanstats.statistics.collections.transportation_commute_time import TransportationCommuteTimeStatistics
+from urbanstats.statistics.collections.transportation_mode import TransportationModeStatistics
+from urbanstats.statistics.collections.transportation_vehicle_ownership import TransportationVehicleOwnershipStatistics
 
 from .fixed import juxtastat as fixed_up_to
 
 min_pop = 250_000
-min_pop_international = 20_000_000
-version = 30
+min_pop_international = 2_500_000
+version = 60
 
 # ranges = [
 #     (0.7, 1),
@@ -47,13 +60,22 @@ difficulties = {
     "feature": 1.5,
     "generation": 2,
     "housing": 1.5,
+    "2010": 1.5,
+    "health": 1.5,
     "income": 0.6,
     "main": 0.25,
     "misc": 2,
     "national_origin": 1.5,
     "race": 0.75,
     "transportation": 3,
+    "industry": 2,
+    "occupation": 2,
     "weather": 0.3,
+}
+
+skip_category_probs = {
+    "industry": 0.75,
+    "occupation": 0.75,
 }
 
 
@@ -82,7 +104,7 @@ def sample_quiz(rng):
         banned_types.append("Judicial Circuit")
     if rng.uniform() < 0.35:
         banned_types.append("Media Market")
-    if rng.uniform() < 0.75:
+    if rng.uniform() < 0.5:
         banned_types.append("international")
     result = []
     for range in ranges:
@@ -120,7 +142,7 @@ def same_state(a, b):
 
 
 def is_international(type):
-    return type in {"Country", "Subnational Region"}
+    return type in {"Country", "Subnational Region", "Urban Center"}
 
 
 def sample_quiz_question(
@@ -132,7 +154,11 @@ def sample_quiz_question(
             continue
         at_pop = filter_for_pop(type)
         stat_column_original = rng.choice(at_pop.columns)
-        if get_statistic_categories()[stat_column_original] in banned_categories:
+        cat = get_statistic_categories()[stat_column_original]
+        p_skip = skip_category_probs.get(cat, 0)
+        if rng.uniform() < p_skip:
+            continue
+        if cat in banned_categories:
             continue
         for _ in range(1000):
             a, b = rng.choice(at_pop.index, size=2)
@@ -162,14 +188,33 @@ def sample_quiz_question(
 
 @permacache(f"urbanstats/games/quiz/filter_for_pop_{version}")
 def filter_for_pop(type):
-    full = full_shapefile()
-    filt = full[full.type == type]
+    full = shapefile_without_ordinals()
+    filt = filter_table_for_type(full, type)
     at_pop = filt[filt.best_population_estimate >= minimum_population(type)].set_index(
         "longname"
     )
-    at_pop = at_pop[stats]
-    at_pop = at_pop.loc[:, ~at_pop.applymap(np.isnan).all()]
+    # make sure to only include the appropriate columns
+    idxs = indices(
+        "" if is_international(type) else "USA",
+        american_to_international.get(type, type),
+        strict_display=True,
+    )
+    stats_filter = {internal_statistic_names()[i] for i in idxs}
+    at_pop = at_pop[[s for s in stats if s in stats_filter]]
+    mask = ~at_pop.applymap(np.isnan).all()
+    assert mask.all()
+    at_pop = at_pop.loc[:, mask]
     return at_pop
+
+
+def entire_table():
+    return pd.concat(
+        [
+            filter_for_pop(type)
+            for type in types
+            if type not in american_to_international
+        ]
+    )
 
 
 def minimum_population(type):
@@ -180,8 +225,14 @@ def minimum_population(type):
 
 @permacache(f"urbanstats/games/quiz/generate_quiz_{version}")
 def generate_quiz(seed):
+    from .quiz_custom import get_custom_quizzes
+
     if isinstance(seed, tuple) and seed[0] == "daily":
         check_quiz_is_guaranteed_future(seed[1])
+        cq = get_custom_quizzes()
+        if seed[1] in cq:
+            return cq[seed[1]]
+
     rng = np.random.default_rng(int(stable_hash(seed), 16))
     return sample_quiz(rng)
 
@@ -230,11 +281,18 @@ def check_quiz_is_guaranteed_future(number):
         )
 
 
-def check_quiz_is_guaranteed_past(number):
+def quiz_is_guaranteed_past(number):
     now = datetime.now(pytz.timezone("US/Samoa"))
     beginning = pytz.timezone("US/Samoa").localize(datetime(2023, 9, 2))
     fractional_days = (now - beginning).total_seconds() / (24 * 60 * 60)
-    if number >= fractional_days - 1:
+    if number < fractional_days - 1:
+        return None
+    return fractional_days
+
+
+def check_quiz_is_guaranteed_past(number):
+    fractional_days = quiz_is_guaranteed_past(number)
+    if fractional_days is not None:
         raise Exception(
             f"Quiz {number} is not necessarily yet done! It is currently {fractional_days} in Samoa"
         )
@@ -294,7 +352,7 @@ def generate_quiz_info_for_website(site_folder):
     with open(f"{folder}/list_of_regions.json", "w") as f:
         json.dump({type: list(filter_for_pop(type).index) for type in types}, f)
 
-    table = pd.concat([filter_for_pop(type) for type in types])
+    table = entire_table()
     table = {
         x: {
             get_statistic_column_path(col): float(table[col][x])
@@ -347,6 +405,7 @@ types = [
     "Judicial Circuit",
     "Country",
     "Subnational Region",
+    "Urban Center",
 ]
 
 stats_to_display = {
@@ -393,13 +452,8 @@ stats_to_display = {
     "rent_2br_over_1500": "higher % of units with 2br rent over $1500",
     "year_built_1969_or_earlier": "higher % units built pre-1970",
     "year_built_2010_or_later": "higher % units built in 2010s+",
-    "transportation_means_car": "higher % of people who commute by car",
-    "transportation_means_bike": "higher % of people who commute by bike",
-    "transportation_means_walk": "higher % of people who commute by walking",
-    "transportation_means_transit": "higher % of people who commute by transit",
-    "transportation_means_worked_at_home": "higher % of people who work from home",
-    "transportation_commute_time_under_15": "higher % of people who have commute time under 15 min",
-    "transportation_commute_time_over_60": "higher % of people who have commute time over 60 min",
+    **TransportationModeStatistics().quiz_question_names(),
+    **TransportationCommuteTimeStatistics().quiz_question_names(),
     (
         "2020 Presidential Election",
         "margin",
@@ -440,6 +494,75 @@ stats_to_display = {
     "gpw_aw_density": "higher area-weighted population density",
     "gpw_population": "higher population",
     "gpw_pw_density_4": "higher population-weighted density (r=4km)",
+    **TransportationVehicleOwnershipStatistics().quiz_question_names(),
+    "industry_agriculture,_forestry,_fishing_and_hunting": "higher % of workers employed in the agriculture, forestry, fishing, and hunting industries",
+    "industry_mining,_quarrying,_and_oil_and_gas_extraction": "higher % of workers employed in the mining, quarrying, and oil/gas extraction industries",
+    "industry_accommodation_and_food_services": "higher % of workers employed in the accommodation and food services industry",
+    "industry_arts,_entertainment,_and_recreation": "higher % of workers employed in the arts, entertainment, and recreation industry",
+    "industry_construction": "higher % of workers employed in the construction industry",
+    "industry_educational_services": "higher % of workers employed in the educational services industry",
+    "industry_health_care_and_social_assistance": "higher % of workers employed in the health care and social assistance industry",
+    "industry_finance_and_insurance": "higher % of workers employed in the finance and insurance industry",
+    "industry_real_estate_and_rental_and_leasing": "higher % of workers employed in the real estate and rental and leasing industry",
+    "industry_information": "higher % of workers employed in the information industry",
+    "industry_manufacturing": "higher % of workers employed in the manufacturing industry",
+    "industry_other_services,_except_public_administration": "higher % of workers employed in other service industries, except public administration",
+    "industry_administrative_and_support_and_waste_management_services": "higher % of workers employed in the administrative/support/waste management services industries",
+    "industry_management_of_companies_and_enterprises": "higher % of workers employed in the management industry",
+    "industry_professional,_scientific,_and_technical_services": "higher % of workers employed in the professional, scientific, and technical services industry",
+    "industry_public_administration": "higher % of workers employed in public administration",
+    "industry_retail_trade": "higher % of workers employed in the retail trade industry",
+    "industry_transportation_and_warehousing": "higher % of workers employed in the transportation and warehousing industry",
+    "industry_utilities": "higher % of workers employed in the utilities industry",
+    "industry_wholesale_trade": "higher % of workers employed in the wholesale trade industry",
+    "occupation_architecture_and_engineering_occupations": "higher % of workers employed as architects and engineers",
+    "occupation_computer_and_mathematical_occupations": "higher % of workers employed in computer and mathematical occupations",
+    "occupation_life,_physical,_and_social_science_occupations": "higher % of workers employed in life, physical, and social science occupations",
+    "occupation_arts,_design,_entertainment,_sports,_and_media_occupations": "higher % of workers employed in arts, design, entertainment, sports, and media occupations",
+    "occupation_community_and_social_service_occupations": "higher % of workers employed in community and social service occupations",
+    "occupation_educational_instruction,_and_library_occupations": "higher % of workers employed in educational instruction, and library occupations",
+    "occupation_legal_occupations": "higher % of workers employed in legal occupations",
+    "occupation_health_diagnosing_and_treating_practitioners_and_other_technical_occupations": "higher % of workers employed in health diagnosing and treating practitioners and other technical occupations",
+    "occupation_health_technologists_and_technicians": "higher % of workers employed as health technologists and technicians",
+    "occupation_business_and_financial_operations_occupations": "higher % of workers employed in business and financial operations occupations",
+    "occupation_management_occupations": "higher % of workers employed as managers",
+    "occupation_construction_and_extraction_occupations": "higher % of workers employed in construction and extraction occupations",
+    "occupation_farming,_fishing,_and_forestry_occupations": "higher % of workers employed in farming, fishing, and forestry occupations",
+    "occupation_installation,_maintenance,_and_repair_occupations": "higher % of workers employed in installation, maintenance, and repair occupations",
+    "occupation_material_moving_occupations": "higher % of workers employed as material movers",
+    "occupation_transportation_occupations": "higher % of workers employed in transportation occupations",
+    "occupation_office_and_administrative_support_occupations": "higher % of workers employed as office and administrative support workers",
+    "occupation_sales_and_related_occupations": "higher % of workers employed in sales and related occupations",
+    "occupation_building_and_grounds_cleaning_and_maintenance_occupations": "higher % of workers employed in building and grounds cleaning and maintenance occupations",
+    "occupation_food_preparation_and_serving_related_occupations": "higher % of workers employed as food preparers or servers",
+    "occupation_healthcare_support_occupations": "higher % of workers employed in healthcare support occupations",
+    "occupation_personal_care_and_service_occupations": "higher % of workers employed in personal care and service occupations",
+    "occupation_firefighting_and_prevention,_and_other_protective_service_workers_including_supervisors": "higher % of workers employed as firefighting and prevention, and other protective service workers including supervisors",
+    "occupation_law_enforcement_workers_including_supervisors": "higher % of workers employed as law enforcement workers including supervisors",
+    "GHLTH_cdc_2": "higher % of adults with a fair or poor self-rated health status",
+    "ARTHRITIS_cdc_2": "higher % of adults with arthritis",
+    "CASTHMA_cdc_2": "higher % of adults with asthma",
+    "BPHIGH_cdc_2": "higher % of adults with high blood pressure",
+    "CANCER_cdc_2": "higher % of adults with cancer (excluding skin cancer)",
+    "KIDNEY_cdc_2": "higher % of adults with chronic kidney disease",
+    "COPD_cdc_2": "higher % of adults with COPD",
+    "CHD_cdc_2": "higher % of adults with coronary heart disease",
+    "DIABETES_cdc_2": "higher % of adults with diagnosed diabetes",
+    "OBESITY_cdc_2": "higher % of adults with obesity",
+    "STROKE_cdc_2": "higher % of adults who have had a stroke",
+    "DISABILITY_cdc_2": "higher % of adults with a disability",
+    "HEARING_cdc_2": "higher % of adults with a hearing disability",
+    "VISION_cdc_2": "higher % of adults with a vision disability",
+    "COGNITION_cdc_2": "higher % of adults with a cognitive disability",
+    "MOBILITY_cdc_2": "higher % of adults with a mobility disability",
+    "SELFCARE_cdc_2": "higher % of adults with a self-care disability",
+    "INDEPLIVE_cdc_2": "higher % of adults with an independent living disability",
+    "BINGE_cdc_2": "higher % of adults who binge drink",
+    "CSMOKING_cdc_2": "higher % of adults with smoke",
+    "LPA_cdc_2": "higher % of adults who don't exercise (do leisure-time physical activity)",
+    "SLEEP_cdc_2": "higher % of adults who sleep less than 7 hours",
+    "population_change_2010": "higher % change in population from 2010 to 2020",
+    "ad_1_change_2010": "higher % change in population-weighted density (r=1km) from 2010 to 2020",
 }
 
 renamed = {
@@ -510,6 +633,10 @@ not_included = {
     "ad_0.5",
     "ad_2",
     "ad_4",
+    "ad_0.5_change_2010",
+    "ad_4_change_2010",
+    "ad_0.25_change_2010",
+    "ad_2_change_2010",
     # irrelevant
     "area",
     "compactness",
@@ -527,13 +654,18 @@ not_included = {
     "rent_burden_20_to_40",
     "language_other",
     "other / mixed",
-    "transportation_commute_time_15_to_29",
-    "transportation_commute_time_30_to_59",
+    *TransportationModeStatistics().quiz_question_unused(),
+    *TransportationCommuteTimeStatistics().quiz_question_unused(),
     "days_dewpoint_50_70_4",
     "days_between_40_and_90_4",
     "mean_high_dewpoint_4",
     "days_dewpoint_70_inf_4",
     "days_dewpoint_-inf_50_4",
+    "female_hs_gap_4",
+    "female_ugrad_gap_4",
+    "female_grad_gap_4",
+    *TransportationVehicleOwnershipStatistics().quiz_question_unused(),
+    "occupation_production_occupations",
     # meh whatever
     "marriage_married_not_divorced",
     "marriage_never_married",
@@ -544,9 +676,31 @@ not_included = {
     "within_Hospital_10",
     "gpw_pw_density_2",
     "gpw_pw_density_1",
+    # direct 2010 results
+    "population_2010",
+    "sd_2010",
+    "ad_0.25_2010",
+    "ad_0.5_2010",
+    "ad_1_2010",
+    "ad_2_2010",
+    "ad_4_2010",
+    "housing_per_pop_2010",
+    "asian_2010",
+    "other / mixed_2010",
+    "native_2010",
+    "white_2010",
+    "vacancy_2010",
+    "hispanic_2010",
+    "black_2010",
+    "hawaiian_pi_2010",
+    # too hard to explain
+    "CHOLSCREEN_cdc_2",
+    "CHECKUP_cdc_2",
+    "PHLTH_cdc_2",
+    "DENTAL_cdc_2",
 }
 
-stats = list(stats_to_display)
+stats = sorted(stats_to_display, key=str)
 categories = sorted({get_statistic_categories()[x] for x in stats})
 
 unrecognized = (set(stats) | set(not_included)) - set(

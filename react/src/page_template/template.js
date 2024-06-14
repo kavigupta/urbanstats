@@ -9,6 +9,7 @@ import "../components/article.css";
 import { load_settings } from './settings.js';
 import { mobileLayout } from '../utils/responsive.js';
 import { create_screenshot } from '../components/screenshot.js';
+import { set_universe } from '../universe.js';
 
 
 class PageTemplate extends React.Component {
@@ -19,10 +20,19 @@ class PageTemplate extends React.Component {
 
         this.statistic_category_metadata_checkboxes = statistic_category_metadata_checkboxes;
 
+        // get from url field
+        this.set_universe = universe => {
+            this.setState({ current_universe: universe });
+            set_universe(universe);
+        }
+
+        this.all_universes = this.props.universes;
+
         this.state = {
             settings: settings,
             hamburger_open: false,
             screenshot_mode: false,
+            current_universe: this.props.universe,
         }
     }
 
@@ -37,6 +47,10 @@ class PageTemplate extends React.Component {
                         hamburger_open={this.state.hamburger_open}
                         set_hamburger_open={x => this.setState({ hamburger_open: x })}
                         has_screenshot={this.has_screenshot_button()}
+                        has_universe_selector={this.has_universe_selector()}
+                        current_universe={this.state.current_universe}
+                        all_universes={this.all_universes}
+                        on_universe_update={universe => this.set_universe(universe)}
                         screenshot_mode={this.state.screenshot_mode}
                         initiate_screenshot={() => this.initiate_screenshot()}
                     />
@@ -56,7 +70,7 @@ class PageTemplate extends React.Component {
             <div className={mobileLayout() ? "content_panel_mobile" : "right_panel"}>
                 {this.main_content()}
                 <div className="gap"></div>
-                <div className="centered_text">Urban Stats Version 9.3.0 by Kavi Gupta. Last updated 2024-02-09. Significant help with weather data from <a href="https://twitter.com/OklahomaPerson">OklahomaPerson</a>. Not for commercial use.</div>
+                <TemplateFooter />
             </div>
         </div>
     }
@@ -86,6 +100,10 @@ class PageTemplate extends React.Component {
         return false;
     }
 
+    has_universe_selector() {
+        return false;
+    }
+
     screencap_elements() {
         // not implemented, should be overridden
         return {
@@ -98,7 +116,11 @@ class PageTemplate extends React.Component {
     async screencap() {
         const config = this.screencap_elements();
 
-        await create_screenshot(config);
+        try {
+            await create_screenshot(config, this.has_universe_selector() ? this.state.current_universe : undefined);
+        } catch (e) {
+            console.error(e);
+        }
     }
 
     async initiate_screenshot() {
@@ -113,4 +135,28 @@ class PageTemplate extends React.Component {
         // not implemented, should be overridden
         return (<div></div>);
     }
+}
+
+function TemplateFooter() {
+    return <div className="centered_text">
+        Urban Stats Version <Version /> by <MainCredits />. Last updated <LastUpdated />. <OtherCredits /> Not for commercial use.
+    </div>
+}
+
+function Version() {
+    return <span id="current-version">14.0.0</span>
+}
+
+function LastUpdated() {
+    return <span id="last-updated">2024-06-03</span>
+}
+
+function MainCredits() {
+    return <span id="main-credits">Kavi Gupta</span>
+}
+
+function OtherCredits() {
+    return <span>
+        Significant help with weather data from <a href="https://twitter.com/OklahomaPerson">OklahomaPerson</a>.
+    </span>
 }

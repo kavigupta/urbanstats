@@ -16,9 +16,9 @@ $root.StatisticRow = (function() {
      * @exports IStatisticRow
      * @interface IStatisticRow
      * @property {number|null} [statval] StatisticRow statval
-     * @property {number|null} [ordinal] StatisticRow ordinal
-     * @property {number|null} [overallOrdinal] StatisticRow overallOrdinal
-     * @property {number|null} [percentileByPopulation] StatisticRow percentileByPopulation
+     * @property {Array.<number>|null} [ordinalByUniverse] StatisticRow ordinalByUniverse
+     * @property {Array.<number>|null} [overallOrdinalByUniverse] StatisticRow overallOrdinalByUniverse
+     * @property {Array.<number>|null} [percentileByPopulationByUniverse] StatisticRow percentileByPopulationByUniverse
      */
 
     /**
@@ -30,6 +30,9 @@ $root.StatisticRow = (function() {
      * @param {IStatisticRow=} [properties] Properties to set
      */
     function StatisticRow(properties) {
+        this.ordinalByUniverse = [];
+        this.overallOrdinalByUniverse = [];
+        this.percentileByPopulationByUniverse = [];
         if (properties)
             for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
                 if (properties[keys[i]] != null)
@@ -45,28 +48,28 @@ $root.StatisticRow = (function() {
     StatisticRow.prototype.statval = 0;
 
     /**
-     * StatisticRow ordinal.
-     * @member {number} ordinal
+     * StatisticRow ordinalByUniverse.
+     * @member {Array.<number>} ordinalByUniverse
      * @memberof StatisticRow
      * @instance
      */
-    StatisticRow.prototype.ordinal = 0;
+    StatisticRow.prototype.ordinalByUniverse = $util.emptyArray;
 
     /**
-     * StatisticRow overallOrdinal.
-     * @member {number} overallOrdinal
+     * StatisticRow overallOrdinalByUniverse.
+     * @member {Array.<number>} overallOrdinalByUniverse
      * @memberof StatisticRow
      * @instance
      */
-    StatisticRow.prototype.overallOrdinal = 0;
+    StatisticRow.prototype.overallOrdinalByUniverse = $util.emptyArray;
 
     /**
-     * StatisticRow percentileByPopulation.
-     * @member {number} percentileByPopulation
+     * StatisticRow percentileByPopulationByUniverse.
+     * @member {Array.<number>} percentileByPopulationByUniverse
      * @memberof StatisticRow
      * @instance
      */
-    StatisticRow.prototype.percentileByPopulation = 0;
+    StatisticRow.prototype.percentileByPopulationByUniverse = $util.emptyArray;
 
     /**
      * Creates a new StatisticRow instance using the specified properties.
@@ -94,12 +97,24 @@ $root.StatisticRow = (function() {
             writer = $Writer.create();
         if (message.statval != null && Object.hasOwnProperty.call(message, "statval"))
             writer.uint32(/* id 1, wireType 5 =*/13).float(message.statval);
-        if (message.ordinal != null && Object.hasOwnProperty.call(message, "ordinal"))
-            writer.uint32(/* id 2, wireType 0 =*/16).int32(message.ordinal);
-        if (message.overallOrdinal != null && Object.hasOwnProperty.call(message, "overallOrdinal"))
-            writer.uint32(/* id 3, wireType 0 =*/24).int32(message.overallOrdinal);
-        if (message.percentileByPopulation != null && Object.hasOwnProperty.call(message, "percentileByPopulation"))
-            writer.uint32(/* id 4, wireType 5 =*/37).float(message.percentileByPopulation);
+        if (message.ordinalByUniverse != null && message.ordinalByUniverse.length) {
+            writer.uint32(/* id 2, wireType 2 =*/18).fork();
+            for (var i = 0; i < message.ordinalByUniverse.length; ++i)
+                writer.int32(message.ordinalByUniverse[i]);
+            writer.ldelim();
+        }
+        if (message.overallOrdinalByUniverse != null && message.overallOrdinalByUniverse.length) {
+            writer.uint32(/* id 3, wireType 2 =*/26).fork();
+            for (var i = 0; i < message.overallOrdinalByUniverse.length; ++i)
+                writer.int32(message.overallOrdinalByUniverse[i]);
+            writer.ldelim();
+        }
+        if (message.percentileByPopulationByUniverse != null && message.percentileByPopulationByUniverse.length) {
+            writer.uint32(/* id 4, wireType 2 =*/34).fork();
+            for (var i = 0; i < message.percentileByPopulationByUniverse.length; ++i)
+                writer.float(message.percentileByPopulationByUniverse[i]);
+            writer.ldelim();
+        }
         return writer;
     };
 
@@ -139,15 +154,36 @@ $root.StatisticRow = (function() {
                     break;
                 }
             case 2: {
-                    message.ordinal = reader.int32();
+                    if (!(message.ordinalByUniverse && message.ordinalByUniverse.length))
+                        message.ordinalByUniverse = [];
+                    if ((tag & 7) === 2) {
+                        var end2 = reader.uint32() + reader.pos;
+                        while (reader.pos < end2)
+                            message.ordinalByUniverse.push(reader.int32());
+                    } else
+                        message.ordinalByUniverse.push(reader.int32());
                     break;
                 }
             case 3: {
-                    message.overallOrdinal = reader.int32();
+                    if (!(message.overallOrdinalByUniverse && message.overallOrdinalByUniverse.length))
+                        message.overallOrdinalByUniverse = [];
+                    if ((tag & 7) === 2) {
+                        var end2 = reader.uint32() + reader.pos;
+                        while (reader.pos < end2)
+                            message.overallOrdinalByUniverse.push(reader.int32());
+                    } else
+                        message.overallOrdinalByUniverse.push(reader.int32());
                     break;
                 }
             case 4: {
-                    message.percentileByPopulation = reader.float();
+                    if (!(message.percentileByPopulationByUniverse && message.percentileByPopulationByUniverse.length))
+                        message.percentileByPopulationByUniverse = [];
+                    if ((tag & 7) === 2) {
+                        var end2 = reader.uint32() + reader.pos;
+                        while (reader.pos < end2)
+                            message.percentileByPopulationByUniverse.push(reader.float());
+                    } else
+                        message.percentileByPopulationByUniverse.push(reader.float());
                     break;
                 }
             default:
@@ -188,15 +224,27 @@ $root.StatisticRow = (function() {
         if (message.statval != null && message.hasOwnProperty("statval"))
             if (typeof message.statval !== "number")
                 return "statval: number expected";
-        if (message.ordinal != null && message.hasOwnProperty("ordinal"))
-            if (!$util.isInteger(message.ordinal))
-                return "ordinal: integer expected";
-        if (message.overallOrdinal != null && message.hasOwnProperty("overallOrdinal"))
-            if (!$util.isInteger(message.overallOrdinal))
-                return "overallOrdinal: integer expected";
-        if (message.percentileByPopulation != null && message.hasOwnProperty("percentileByPopulation"))
-            if (typeof message.percentileByPopulation !== "number")
-                return "percentileByPopulation: number expected";
+        if (message.ordinalByUniverse != null && message.hasOwnProperty("ordinalByUniverse")) {
+            if (!Array.isArray(message.ordinalByUniverse))
+                return "ordinalByUniverse: array expected";
+            for (var i = 0; i < message.ordinalByUniverse.length; ++i)
+                if (!$util.isInteger(message.ordinalByUniverse[i]))
+                    return "ordinalByUniverse: integer[] expected";
+        }
+        if (message.overallOrdinalByUniverse != null && message.hasOwnProperty("overallOrdinalByUniverse")) {
+            if (!Array.isArray(message.overallOrdinalByUniverse))
+                return "overallOrdinalByUniverse: array expected";
+            for (var i = 0; i < message.overallOrdinalByUniverse.length; ++i)
+                if (!$util.isInteger(message.overallOrdinalByUniverse[i]))
+                    return "overallOrdinalByUniverse: integer[] expected";
+        }
+        if (message.percentileByPopulationByUniverse != null && message.hasOwnProperty("percentileByPopulationByUniverse")) {
+            if (!Array.isArray(message.percentileByPopulationByUniverse))
+                return "percentileByPopulationByUniverse: array expected";
+            for (var i = 0; i < message.percentileByPopulationByUniverse.length; ++i)
+                if (typeof message.percentileByPopulationByUniverse[i] !== "number")
+                    return "percentileByPopulationByUniverse: number[] expected";
+        }
         return null;
     };
 
@@ -214,12 +262,27 @@ $root.StatisticRow = (function() {
         var message = new $root.StatisticRow();
         if (object.statval != null)
             message.statval = Number(object.statval);
-        if (object.ordinal != null)
-            message.ordinal = object.ordinal | 0;
-        if (object.overallOrdinal != null)
-            message.overallOrdinal = object.overallOrdinal | 0;
-        if (object.percentileByPopulation != null)
-            message.percentileByPopulation = Number(object.percentileByPopulation);
+        if (object.ordinalByUniverse) {
+            if (!Array.isArray(object.ordinalByUniverse))
+                throw TypeError(".StatisticRow.ordinalByUniverse: array expected");
+            message.ordinalByUniverse = [];
+            for (var i = 0; i < object.ordinalByUniverse.length; ++i)
+                message.ordinalByUniverse[i] = object.ordinalByUniverse[i] | 0;
+        }
+        if (object.overallOrdinalByUniverse) {
+            if (!Array.isArray(object.overallOrdinalByUniverse))
+                throw TypeError(".StatisticRow.overallOrdinalByUniverse: array expected");
+            message.overallOrdinalByUniverse = [];
+            for (var i = 0; i < object.overallOrdinalByUniverse.length; ++i)
+                message.overallOrdinalByUniverse[i] = object.overallOrdinalByUniverse[i] | 0;
+        }
+        if (object.percentileByPopulationByUniverse) {
+            if (!Array.isArray(object.percentileByPopulationByUniverse))
+                throw TypeError(".StatisticRow.percentileByPopulationByUniverse: array expected");
+            message.percentileByPopulationByUniverse = [];
+            for (var i = 0; i < object.percentileByPopulationByUniverse.length; ++i)
+                message.percentileByPopulationByUniverse[i] = Number(object.percentileByPopulationByUniverse[i]);
+        }
         return message;
     };
 
@@ -236,20 +299,30 @@ $root.StatisticRow = (function() {
         if (!options)
             options = {};
         var object = {};
-        if (options.defaults) {
-            object.statval = 0;
-            object.ordinal = 0;
-            object.overallOrdinal = 0;
-            object.percentileByPopulation = 0;
+        if (options.arrays || options.defaults) {
+            object.ordinalByUniverse = [];
+            object.overallOrdinalByUniverse = [];
+            object.percentileByPopulationByUniverse = [];
         }
+        if (options.defaults)
+            object.statval = 0;
         if (message.statval != null && message.hasOwnProperty("statval"))
             object.statval = options.json && !isFinite(message.statval) ? String(message.statval) : message.statval;
-        if (message.ordinal != null && message.hasOwnProperty("ordinal"))
-            object.ordinal = message.ordinal;
-        if (message.overallOrdinal != null && message.hasOwnProperty("overallOrdinal"))
-            object.overallOrdinal = message.overallOrdinal;
-        if (message.percentileByPopulation != null && message.hasOwnProperty("percentileByPopulation"))
-            object.percentileByPopulation = options.json && !isFinite(message.percentileByPopulation) ? String(message.percentileByPopulation) : message.percentileByPopulation;
+        if (message.ordinalByUniverse && message.ordinalByUniverse.length) {
+            object.ordinalByUniverse = [];
+            for (var j = 0; j < message.ordinalByUniverse.length; ++j)
+                object.ordinalByUniverse[j] = message.ordinalByUniverse[j];
+        }
+        if (message.overallOrdinalByUniverse && message.overallOrdinalByUniverse.length) {
+            object.overallOrdinalByUniverse = [];
+            for (var j = 0; j < message.overallOrdinalByUniverse.length; ++j)
+                object.overallOrdinalByUniverse[j] = message.overallOrdinalByUniverse[j];
+        }
+        if (message.percentileByPopulationByUniverse && message.percentileByPopulationByUniverse.length) {
+            object.percentileByPopulationByUniverse = [];
+            for (var j = 0; j < message.percentileByPopulationByUniverse.length; ++j)
+                object.percentileByPopulationByUniverse[j] = options.json && !isFinite(message.percentileByPopulationByUniverse[j]) ? String(message.percentileByPopulationByUniverse[j]) : message.percentileByPopulationByUniverse[j];
+        }
         return object;
     };
 
@@ -792,6 +865,7 @@ $root.Article = (function() {
      * @property {string|null} [articleType] Article articleType
      * @property {Array.<IStatisticRow>|null} [rows] Article rows
      * @property {Array.<IRelatedButtons>|null} [related] Article related
+     * @property {Array.<string>|null} [universes] Article universes
      */
 
     /**
@@ -805,6 +879,7 @@ $root.Article = (function() {
     function Article(properties) {
         this.rows = [];
         this.related = [];
+        this.universes = [];
         if (properties)
             for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
                 if (properties[keys[i]] != null)
@@ -860,6 +935,14 @@ $root.Article = (function() {
     Article.prototype.related = $util.emptyArray;
 
     /**
+     * Article universes.
+     * @member {Array.<string>} universes
+     * @memberof Article
+     * @instance
+     */
+    Article.prototype.universes = $util.emptyArray;
+
+    /**
      * Creates a new Article instance using the specified properties.
      * @function create
      * @memberof Article
@@ -897,6 +980,9 @@ $root.Article = (function() {
         if (message.related != null && message.related.length)
             for (var i = 0; i < message.related.length; ++i)
                 $root.RelatedButtons.encode(message.related[i], writer.uint32(/* id 6, wireType 2 =*/50).fork()).ldelim();
+        if (message.universes != null && message.universes.length)
+            for (var i = 0; i < message.universes.length; ++i)
+                writer.uint32(/* id 7, wireType 2 =*/58).string(message.universes[i]);
         return writer;
     };
 
@@ -957,6 +1043,12 @@ $root.Article = (function() {
                     if (!(message.related && message.related.length))
                         message.related = [];
                     message.related.push($root.RelatedButtons.decode(reader, reader.uint32()));
+                    break;
+                }
+            case 7: {
+                    if (!(message.universes && message.universes.length))
+                        message.universes = [];
+                    message.universes.push(reader.string());
                     break;
                 }
             default:
@@ -1024,6 +1116,13 @@ $root.Article = (function() {
                     return "related." + error;
             }
         }
+        if (message.universes != null && message.hasOwnProperty("universes")) {
+            if (!Array.isArray(message.universes))
+                return "universes: array expected";
+            for (var i = 0; i < message.universes.length; ++i)
+                if (!$util.isString(message.universes[i]))
+                    return "universes: string[] expected";
+        }
         return null;
     };
 
@@ -1067,6 +1166,13 @@ $root.Article = (function() {
                 message.related[i] = $root.RelatedButtons.fromObject(object.related[i]);
             }
         }
+        if (object.universes) {
+            if (!Array.isArray(object.universes))
+                throw TypeError(".Article.universes: array expected");
+            message.universes = [];
+            for (var i = 0; i < object.universes.length; ++i)
+                message.universes[i] = String(object.universes[i]);
+        }
         return message;
     };
 
@@ -1086,6 +1192,7 @@ $root.Article = (function() {
         if (options.arrays || options.defaults) {
             object.rows = [];
             object.related = [];
+            object.universes = [];
         }
         if (options.defaults) {
             object.shortname = "";
@@ -1110,6 +1217,11 @@ $root.Article = (function() {
             object.related = [];
             for (var j = 0; j < message.related.length; ++j)
                 object.related[j] = $root.RelatedButtons.toObject(message.related[j], options);
+        }
+        if (message.universes && message.universes.length) {
+            object.universes = [];
+            for (var j = 0; j < message.universes.length; ++j)
+                object.universes[j] = message.universes[j];
         }
         return object;
     };
@@ -2521,6 +2633,1036 @@ $root.StringList = (function() {
     };
 
     return StringList;
+})();
+
+$root.OrderList = (function() {
+
+    /**
+     * Properties of an OrderList.
+     * @exports IOrderList
+     * @interface IOrderList
+     * @property {Array.<number>|null} [orderIdxs] OrderList orderIdxs
+     */
+
+    /**
+     * Constructs a new OrderList.
+     * @exports OrderList
+     * @classdesc Represents an OrderList.
+     * @implements IOrderList
+     * @constructor
+     * @param {IOrderList=} [properties] Properties to set
+     */
+    function OrderList(properties) {
+        this.orderIdxs = [];
+        if (properties)
+            for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                if (properties[keys[i]] != null)
+                    this[keys[i]] = properties[keys[i]];
+    }
+
+    /**
+     * OrderList orderIdxs.
+     * @member {Array.<number>} orderIdxs
+     * @memberof OrderList
+     * @instance
+     */
+    OrderList.prototype.orderIdxs = $util.emptyArray;
+
+    /**
+     * Creates a new OrderList instance using the specified properties.
+     * @function create
+     * @memberof OrderList
+     * @static
+     * @param {IOrderList=} [properties] Properties to set
+     * @returns {OrderList} OrderList instance
+     */
+    OrderList.create = function create(properties) {
+        return new OrderList(properties);
+    };
+
+    /**
+     * Encodes the specified OrderList message. Does not implicitly {@link OrderList.verify|verify} messages.
+     * @function encode
+     * @memberof OrderList
+     * @static
+     * @param {IOrderList} message OrderList message or plain object to encode
+     * @param {$protobuf.Writer} [writer] Writer to encode to
+     * @returns {$protobuf.Writer} Writer
+     */
+    OrderList.encode = function encode(message, writer) {
+        if (!writer)
+            writer = $Writer.create();
+        if (message.orderIdxs != null && message.orderIdxs.length) {
+            writer.uint32(/* id 1, wireType 2 =*/10).fork();
+            for (var i = 0; i < message.orderIdxs.length; ++i)
+                writer.int32(message.orderIdxs[i]);
+            writer.ldelim();
+        }
+        return writer;
+    };
+
+    /**
+     * Encodes the specified OrderList message, length delimited. Does not implicitly {@link OrderList.verify|verify} messages.
+     * @function encodeDelimited
+     * @memberof OrderList
+     * @static
+     * @param {IOrderList} message OrderList message or plain object to encode
+     * @param {$protobuf.Writer} [writer] Writer to encode to
+     * @returns {$protobuf.Writer} Writer
+     */
+    OrderList.encodeDelimited = function encodeDelimited(message, writer) {
+        return this.encode(message, writer).ldelim();
+    };
+
+    /**
+     * Decodes an OrderList message from the specified reader or buffer.
+     * @function decode
+     * @memberof OrderList
+     * @static
+     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+     * @param {number} [length] Message length if known beforehand
+     * @returns {OrderList} OrderList
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    OrderList.decode = function decode(reader, length) {
+        if (!(reader instanceof $Reader))
+            reader = $Reader.create(reader);
+        var end = length === undefined ? reader.len : reader.pos + length, message = new $root.OrderList();
+        while (reader.pos < end) {
+            var tag = reader.uint32();
+            switch (tag >>> 3) {
+            case 1: {
+                    if (!(message.orderIdxs && message.orderIdxs.length))
+                        message.orderIdxs = [];
+                    if ((tag & 7) === 2) {
+                        var end2 = reader.uint32() + reader.pos;
+                        while (reader.pos < end2)
+                            message.orderIdxs.push(reader.int32());
+                    } else
+                        message.orderIdxs.push(reader.int32());
+                    break;
+                }
+            default:
+                reader.skipType(tag & 7);
+                break;
+            }
+        }
+        return message;
+    };
+
+    /**
+     * Decodes an OrderList message from the specified reader or buffer, length delimited.
+     * @function decodeDelimited
+     * @memberof OrderList
+     * @static
+     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+     * @returns {OrderList} OrderList
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    OrderList.decodeDelimited = function decodeDelimited(reader) {
+        if (!(reader instanceof $Reader))
+            reader = new $Reader(reader);
+        return this.decode(reader, reader.uint32());
+    };
+
+    /**
+     * Verifies an OrderList message.
+     * @function verify
+     * @memberof OrderList
+     * @static
+     * @param {Object.<string,*>} message Plain object to verify
+     * @returns {string|null} `null` if valid, otherwise the reason why it is not
+     */
+    OrderList.verify = function verify(message) {
+        if (typeof message !== "object" || message === null)
+            return "object expected";
+        if (message.orderIdxs != null && message.hasOwnProperty("orderIdxs")) {
+            if (!Array.isArray(message.orderIdxs))
+                return "orderIdxs: array expected";
+            for (var i = 0; i < message.orderIdxs.length; ++i)
+                if (!$util.isInteger(message.orderIdxs[i]))
+                    return "orderIdxs: integer[] expected";
+        }
+        return null;
+    };
+
+    /**
+     * Creates an OrderList message from a plain object. Also converts values to their respective internal types.
+     * @function fromObject
+     * @memberof OrderList
+     * @static
+     * @param {Object.<string,*>} object Plain object
+     * @returns {OrderList} OrderList
+     */
+    OrderList.fromObject = function fromObject(object) {
+        if (object instanceof $root.OrderList)
+            return object;
+        var message = new $root.OrderList();
+        if (object.orderIdxs) {
+            if (!Array.isArray(object.orderIdxs))
+                throw TypeError(".OrderList.orderIdxs: array expected");
+            message.orderIdxs = [];
+            for (var i = 0; i < object.orderIdxs.length; ++i)
+                message.orderIdxs[i] = object.orderIdxs[i] | 0;
+        }
+        return message;
+    };
+
+    /**
+     * Creates a plain object from an OrderList message. Also converts values to other types if specified.
+     * @function toObject
+     * @memberof OrderList
+     * @static
+     * @param {OrderList} message OrderList
+     * @param {$protobuf.IConversionOptions} [options] Conversion options
+     * @returns {Object.<string,*>} Plain object
+     */
+    OrderList.toObject = function toObject(message, options) {
+        if (!options)
+            options = {};
+        var object = {};
+        if (options.arrays || options.defaults)
+            object.orderIdxs = [];
+        if (message.orderIdxs && message.orderIdxs.length) {
+            object.orderIdxs = [];
+            for (var j = 0; j < message.orderIdxs.length; ++j)
+                object.orderIdxs[j] = message.orderIdxs[j];
+        }
+        return object;
+    };
+
+    /**
+     * Converts this OrderList to JSON.
+     * @function toJSON
+     * @memberof OrderList
+     * @instance
+     * @returns {Object.<string,*>} JSON object
+     */
+    OrderList.prototype.toJSON = function toJSON() {
+        return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+    };
+
+    /**
+     * Gets the default type url for OrderList
+     * @function getTypeUrl
+     * @memberof OrderList
+     * @static
+     * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns {string} The default type url
+     */
+    OrderList.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+        if (typeUrlPrefix === undefined) {
+            typeUrlPrefix = "type.googleapis.com";
+        }
+        return typeUrlPrefix + "/OrderList";
+    };
+
+    return OrderList;
+})();
+
+$root.DataList = (function() {
+
+    /**
+     * Properties of a DataList.
+     * @exports IDataList
+     * @interface IDataList
+     * @property {Array.<number>|null} [value] DataList value
+     * @property {Array.<number>|null} [populationPercentile] DataList populationPercentile
+     */
+
+    /**
+     * Constructs a new DataList.
+     * @exports DataList
+     * @classdesc Represents a DataList.
+     * @implements IDataList
+     * @constructor
+     * @param {IDataList=} [properties] Properties to set
+     */
+    function DataList(properties) {
+        this.value = [];
+        this.populationPercentile = [];
+        if (properties)
+            for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                if (properties[keys[i]] != null)
+                    this[keys[i]] = properties[keys[i]];
+    }
+
+    /**
+     * DataList value.
+     * @member {Array.<number>} value
+     * @memberof DataList
+     * @instance
+     */
+    DataList.prototype.value = $util.emptyArray;
+
+    /**
+     * DataList populationPercentile.
+     * @member {Array.<number>} populationPercentile
+     * @memberof DataList
+     * @instance
+     */
+    DataList.prototype.populationPercentile = $util.emptyArray;
+
+    /**
+     * Creates a new DataList instance using the specified properties.
+     * @function create
+     * @memberof DataList
+     * @static
+     * @param {IDataList=} [properties] Properties to set
+     * @returns {DataList} DataList instance
+     */
+    DataList.create = function create(properties) {
+        return new DataList(properties);
+    };
+
+    /**
+     * Encodes the specified DataList message. Does not implicitly {@link DataList.verify|verify} messages.
+     * @function encode
+     * @memberof DataList
+     * @static
+     * @param {IDataList} message DataList message or plain object to encode
+     * @param {$protobuf.Writer} [writer] Writer to encode to
+     * @returns {$protobuf.Writer} Writer
+     */
+    DataList.encode = function encode(message, writer) {
+        if (!writer)
+            writer = $Writer.create();
+        if (message.value != null && message.value.length) {
+            writer.uint32(/* id 1, wireType 2 =*/10).fork();
+            for (var i = 0; i < message.value.length; ++i)
+                writer.float(message.value[i]);
+            writer.ldelim();
+        }
+        if (message.populationPercentile != null && message.populationPercentile.length) {
+            writer.uint32(/* id 2, wireType 2 =*/18).fork();
+            for (var i = 0; i < message.populationPercentile.length; ++i)
+                writer.float(message.populationPercentile[i]);
+            writer.ldelim();
+        }
+        return writer;
+    };
+
+    /**
+     * Encodes the specified DataList message, length delimited. Does not implicitly {@link DataList.verify|verify} messages.
+     * @function encodeDelimited
+     * @memberof DataList
+     * @static
+     * @param {IDataList} message DataList message or plain object to encode
+     * @param {$protobuf.Writer} [writer] Writer to encode to
+     * @returns {$protobuf.Writer} Writer
+     */
+    DataList.encodeDelimited = function encodeDelimited(message, writer) {
+        return this.encode(message, writer).ldelim();
+    };
+
+    /**
+     * Decodes a DataList message from the specified reader or buffer.
+     * @function decode
+     * @memberof DataList
+     * @static
+     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+     * @param {number} [length] Message length if known beforehand
+     * @returns {DataList} DataList
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    DataList.decode = function decode(reader, length) {
+        if (!(reader instanceof $Reader))
+            reader = $Reader.create(reader);
+        var end = length === undefined ? reader.len : reader.pos + length, message = new $root.DataList();
+        while (reader.pos < end) {
+            var tag = reader.uint32();
+            switch (tag >>> 3) {
+            case 1: {
+                    if (!(message.value && message.value.length))
+                        message.value = [];
+                    if ((tag & 7) === 2) {
+                        var end2 = reader.uint32() + reader.pos;
+                        while (reader.pos < end2)
+                            message.value.push(reader.float());
+                    } else
+                        message.value.push(reader.float());
+                    break;
+                }
+            case 2: {
+                    if (!(message.populationPercentile && message.populationPercentile.length))
+                        message.populationPercentile = [];
+                    if ((tag & 7) === 2) {
+                        var end2 = reader.uint32() + reader.pos;
+                        while (reader.pos < end2)
+                            message.populationPercentile.push(reader.float());
+                    } else
+                        message.populationPercentile.push(reader.float());
+                    break;
+                }
+            default:
+                reader.skipType(tag & 7);
+                break;
+            }
+        }
+        return message;
+    };
+
+    /**
+     * Decodes a DataList message from the specified reader or buffer, length delimited.
+     * @function decodeDelimited
+     * @memberof DataList
+     * @static
+     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+     * @returns {DataList} DataList
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    DataList.decodeDelimited = function decodeDelimited(reader) {
+        if (!(reader instanceof $Reader))
+            reader = new $Reader(reader);
+        return this.decode(reader, reader.uint32());
+    };
+
+    /**
+     * Verifies a DataList message.
+     * @function verify
+     * @memberof DataList
+     * @static
+     * @param {Object.<string,*>} message Plain object to verify
+     * @returns {string|null} `null` if valid, otherwise the reason why it is not
+     */
+    DataList.verify = function verify(message) {
+        if (typeof message !== "object" || message === null)
+            return "object expected";
+        if (message.value != null && message.hasOwnProperty("value")) {
+            if (!Array.isArray(message.value))
+                return "value: array expected";
+            for (var i = 0; i < message.value.length; ++i)
+                if (typeof message.value[i] !== "number")
+                    return "value: number[] expected";
+        }
+        if (message.populationPercentile != null && message.hasOwnProperty("populationPercentile")) {
+            if (!Array.isArray(message.populationPercentile))
+                return "populationPercentile: array expected";
+            for (var i = 0; i < message.populationPercentile.length; ++i)
+                if (typeof message.populationPercentile[i] !== "number")
+                    return "populationPercentile: number[] expected";
+        }
+        return null;
+    };
+
+    /**
+     * Creates a DataList message from a plain object. Also converts values to their respective internal types.
+     * @function fromObject
+     * @memberof DataList
+     * @static
+     * @param {Object.<string,*>} object Plain object
+     * @returns {DataList} DataList
+     */
+    DataList.fromObject = function fromObject(object) {
+        if (object instanceof $root.DataList)
+            return object;
+        var message = new $root.DataList();
+        if (object.value) {
+            if (!Array.isArray(object.value))
+                throw TypeError(".DataList.value: array expected");
+            message.value = [];
+            for (var i = 0; i < object.value.length; ++i)
+                message.value[i] = Number(object.value[i]);
+        }
+        if (object.populationPercentile) {
+            if (!Array.isArray(object.populationPercentile))
+                throw TypeError(".DataList.populationPercentile: array expected");
+            message.populationPercentile = [];
+            for (var i = 0; i < object.populationPercentile.length; ++i)
+                message.populationPercentile[i] = Number(object.populationPercentile[i]);
+        }
+        return message;
+    };
+
+    /**
+     * Creates a plain object from a DataList message. Also converts values to other types if specified.
+     * @function toObject
+     * @memberof DataList
+     * @static
+     * @param {DataList} message DataList
+     * @param {$protobuf.IConversionOptions} [options] Conversion options
+     * @returns {Object.<string,*>} Plain object
+     */
+    DataList.toObject = function toObject(message, options) {
+        if (!options)
+            options = {};
+        var object = {};
+        if (options.arrays || options.defaults) {
+            object.value = [];
+            object.populationPercentile = [];
+        }
+        if (message.value && message.value.length) {
+            object.value = [];
+            for (var j = 0; j < message.value.length; ++j)
+                object.value[j] = options.json && !isFinite(message.value[j]) ? String(message.value[j]) : message.value[j];
+        }
+        if (message.populationPercentile && message.populationPercentile.length) {
+            object.populationPercentile = [];
+            for (var j = 0; j < message.populationPercentile.length; ++j)
+                object.populationPercentile[j] = options.json && !isFinite(message.populationPercentile[j]) ? String(message.populationPercentile[j]) : message.populationPercentile[j];
+        }
+        return object;
+    };
+
+    /**
+     * Converts this DataList to JSON.
+     * @function toJSON
+     * @memberof DataList
+     * @instance
+     * @returns {Object.<string,*>} JSON object
+     */
+    DataList.prototype.toJSON = function toJSON() {
+        return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+    };
+
+    /**
+     * Gets the default type url for DataList
+     * @function getTypeUrl
+     * @memberof DataList
+     * @static
+     * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns {string} The default type url
+     */
+    DataList.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+        if (typeUrlPrefix === undefined) {
+            typeUrlPrefix = "type.googleapis.com";
+        }
+        return typeUrlPrefix + "/DataList";
+    };
+
+    return DataList;
+})();
+
+$root.OrderLists = (function() {
+
+    /**
+     * Properties of an OrderLists.
+     * @exports IOrderLists
+     * @interface IOrderLists
+     * @property {Array.<string>|null} [statnames] OrderLists statnames
+     * @property {Array.<IOrderList>|null} [orderLists] OrderLists orderLists
+     */
+
+    /**
+     * Constructs a new OrderLists.
+     * @exports OrderLists
+     * @classdesc Represents an OrderLists.
+     * @implements IOrderLists
+     * @constructor
+     * @param {IOrderLists=} [properties] Properties to set
+     */
+    function OrderLists(properties) {
+        this.statnames = [];
+        this.orderLists = [];
+        if (properties)
+            for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                if (properties[keys[i]] != null)
+                    this[keys[i]] = properties[keys[i]];
+    }
+
+    /**
+     * OrderLists statnames.
+     * @member {Array.<string>} statnames
+     * @memberof OrderLists
+     * @instance
+     */
+    OrderLists.prototype.statnames = $util.emptyArray;
+
+    /**
+     * OrderLists orderLists.
+     * @member {Array.<IOrderList>} orderLists
+     * @memberof OrderLists
+     * @instance
+     */
+    OrderLists.prototype.orderLists = $util.emptyArray;
+
+    /**
+     * Creates a new OrderLists instance using the specified properties.
+     * @function create
+     * @memberof OrderLists
+     * @static
+     * @param {IOrderLists=} [properties] Properties to set
+     * @returns {OrderLists} OrderLists instance
+     */
+    OrderLists.create = function create(properties) {
+        return new OrderLists(properties);
+    };
+
+    /**
+     * Encodes the specified OrderLists message. Does not implicitly {@link OrderLists.verify|verify} messages.
+     * @function encode
+     * @memberof OrderLists
+     * @static
+     * @param {IOrderLists} message OrderLists message or plain object to encode
+     * @param {$protobuf.Writer} [writer] Writer to encode to
+     * @returns {$protobuf.Writer} Writer
+     */
+    OrderLists.encode = function encode(message, writer) {
+        if (!writer)
+            writer = $Writer.create();
+        if (message.statnames != null && message.statnames.length)
+            for (var i = 0; i < message.statnames.length; ++i)
+                writer.uint32(/* id 1, wireType 2 =*/10).string(message.statnames[i]);
+        if (message.orderLists != null && message.orderLists.length)
+            for (var i = 0; i < message.orderLists.length; ++i)
+                $root.OrderList.encode(message.orderLists[i], writer.uint32(/* id 2, wireType 2 =*/18).fork()).ldelim();
+        return writer;
+    };
+
+    /**
+     * Encodes the specified OrderLists message, length delimited. Does not implicitly {@link OrderLists.verify|verify} messages.
+     * @function encodeDelimited
+     * @memberof OrderLists
+     * @static
+     * @param {IOrderLists} message OrderLists message or plain object to encode
+     * @param {$protobuf.Writer} [writer] Writer to encode to
+     * @returns {$protobuf.Writer} Writer
+     */
+    OrderLists.encodeDelimited = function encodeDelimited(message, writer) {
+        return this.encode(message, writer).ldelim();
+    };
+
+    /**
+     * Decodes an OrderLists message from the specified reader or buffer.
+     * @function decode
+     * @memberof OrderLists
+     * @static
+     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+     * @param {number} [length] Message length if known beforehand
+     * @returns {OrderLists} OrderLists
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    OrderLists.decode = function decode(reader, length) {
+        if (!(reader instanceof $Reader))
+            reader = $Reader.create(reader);
+        var end = length === undefined ? reader.len : reader.pos + length, message = new $root.OrderLists();
+        while (reader.pos < end) {
+            var tag = reader.uint32();
+            switch (tag >>> 3) {
+            case 1: {
+                    if (!(message.statnames && message.statnames.length))
+                        message.statnames = [];
+                    message.statnames.push(reader.string());
+                    break;
+                }
+            case 2: {
+                    if (!(message.orderLists && message.orderLists.length))
+                        message.orderLists = [];
+                    message.orderLists.push($root.OrderList.decode(reader, reader.uint32()));
+                    break;
+                }
+            default:
+                reader.skipType(tag & 7);
+                break;
+            }
+        }
+        return message;
+    };
+
+    /**
+     * Decodes an OrderLists message from the specified reader or buffer, length delimited.
+     * @function decodeDelimited
+     * @memberof OrderLists
+     * @static
+     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+     * @returns {OrderLists} OrderLists
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    OrderLists.decodeDelimited = function decodeDelimited(reader) {
+        if (!(reader instanceof $Reader))
+            reader = new $Reader(reader);
+        return this.decode(reader, reader.uint32());
+    };
+
+    /**
+     * Verifies an OrderLists message.
+     * @function verify
+     * @memberof OrderLists
+     * @static
+     * @param {Object.<string,*>} message Plain object to verify
+     * @returns {string|null} `null` if valid, otherwise the reason why it is not
+     */
+    OrderLists.verify = function verify(message) {
+        if (typeof message !== "object" || message === null)
+            return "object expected";
+        if (message.statnames != null && message.hasOwnProperty("statnames")) {
+            if (!Array.isArray(message.statnames))
+                return "statnames: array expected";
+            for (var i = 0; i < message.statnames.length; ++i)
+                if (!$util.isString(message.statnames[i]))
+                    return "statnames: string[] expected";
+        }
+        if (message.orderLists != null && message.hasOwnProperty("orderLists")) {
+            if (!Array.isArray(message.orderLists))
+                return "orderLists: array expected";
+            for (var i = 0; i < message.orderLists.length; ++i) {
+                var error = $root.OrderList.verify(message.orderLists[i]);
+                if (error)
+                    return "orderLists." + error;
+            }
+        }
+        return null;
+    };
+
+    /**
+     * Creates an OrderLists message from a plain object. Also converts values to their respective internal types.
+     * @function fromObject
+     * @memberof OrderLists
+     * @static
+     * @param {Object.<string,*>} object Plain object
+     * @returns {OrderLists} OrderLists
+     */
+    OrderLists.fromObject = function fromObject(object) {
+        if (object instanceof $root.OrderLists)
+            return object;
+        var message = new $root.OrderLists();
+        if (object.statnames) {
+            if (!Array.isArray(object.statnames))
+                throw TypeError(".OrderLists.statnames: array expected");
+            message.statnames = [];
+            for (var i = 0; i < object.statnames.length; ++i)
+                message.statnames[i] = String(object.statnames[i]);
+        }
+        if (object.orderLists) {
+            if (!Array.isArray(object.orderLists))
+                throw TypeError(".OrderLists.orderLists: array expected");
+            message.orderLists = [];
+            for (var i = 0; i < object.orderLists.length; ++i) {
+                if (typeof object.orderLists[i] !== "object")
+                    throw TypeError(".OrderLists.orderLists: object expected");
+                message.orderLists[i] = $root.OrderList.fromObject(object.orderLists[i]);
+            }
+        }
+        return message;
+    };
+
+    /**
+     * Creates a plain object from an OrderLists message. Also converts values to other types if specified.
+     * @function toObject
+     * @memberof OrderLists
+     * @static
+     * @param {OrderLists} message OrderLists
+     * @param {$protobuf.IConversionOptions} [options] Conversion options
+     * @returns {Object.<string,*>} Plain object
+     */
+    OrderLists.toObject = function toObject(message, options) {
+        if (!options)
+            options = {};
+        var object = {};
+        if (options.arrays || options.defaults) {
+            object.statnames = [];
+            object.orderLists = [];
+        }
+        if (message.statnames && message.statnames.length) {
+            object.statnames = [];
+            for (var j = 0; j < message.statnames.length; ++j)
+                object.statnames[j] = message.statnames[j];
+        }
+        if (message.orderLists && message.orderLists.length) {
+            object.orderLists = [];
+            for (var j = 0; j < message.orderLists.length; ++j)
+                object.orderLists[j] = $root.OrderList.toObject(message.orderLists[j], options);
+        }
+        return object;
+    };
+
+    /**
+     * Converts this OrderLists to JSON.
+     * @function toJSON
+     * @memberof OrderLists
+     * @instance
+     * @returns {Object.<string,*>} JSON object
+     */
+    OrderLists.prototype.toJSON = function toJSON() {
+        return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+    };
+
+    /**
+     * Gets the default type url for OrderLists
+     * @function getTypeUrl
+     * @memberof OrderLists
+     * @static
+     * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns {string} The default type url
+     */
+    OrderLists.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+        if (typeUrlPrefix === undefined) {
+            typeUrlPrefix = "type.googleapis.com";
+        }
+        return typeUrlPrefix + "/OrderLists";
+    };
+
+    return OrderLists;
+})();
+
+$root.DataLists = (function() {
+
+    /**
+     * Properties of a DataLists.
+     * @exports IDataLists
+     * @interface IDataLists
+     * @property {Array.<string>|null} [statnames] DataLists statnames
+     * @property {Array.<IDataList>|null} [dataLists] DataLists dataLists
+     */
+
+    /**
+     * Constructs a new DataLists.
+     * @exports DataLists
+     * @classdesc Represents a DataLists.
+     * @implements IDataLists
+     * @constructor
+     * @param {IDataLists=} [properties] Properties to set
+     */
+    function DataLists(properties) {
+        this.statnames = [];
+        this.dataLists = [];
+        if (properties)
+            for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                if (properties[keys[i]] != null)
+                    this[keys[i]] = properties[keys[i]];
+    }
+
+    /**
+     * DataLists statnames.
+     * @member {Array.<string>} statnames
+     * @memberof DataLists
+     * @instance
+     */
+    DataLists.prototype.statnames = $util.emptyArray;
+
+    /**
+     * DataLists dataLists.
+     * @member {Array.<IDataList>} dataLists
+     * @memberof DataLists
+     * @instance
+     */
+    DataLists.prototype.dataLists = $util.emptyArray;
+
+    /**
+     * Creates a new DataLists instance using the specified properties.
+     * @function create
+     * @memberof DataLists
+     * @static
+     * @param {IDataLists=} [properties] Properties to set
+     * @returns {DataLists} DataLists instance
+     */
+    DataLists.create = function create(properties) {
+        return new DataLists(properties);
+    };
+
+    /**
+     * Encodes the specified DataLists message. Does not implicitly {@link DataLists.verify|verify} messages.
+     * @function encode
+     * @memberof DataLists
+     * @static
+     * @param {IDataLists} message DataLists message or plain object to encode
+     * @param {$protobuf.Writer} [writer] Writer to encode to
+     * @returns {$protobuf.Writer} Writer
+     */
+    DataLists.encode = function encode(message, writer) {
+        if (!writer)
+            writer = $Writer.create();
+        if (message.statnames != null && message.statnames.length)
+            for (var i = 0; i < message.statnames.length; ++i)
+                writer.uint32(/* id 1, wireType 2 =*/10).string(message.statnames[i]);
+        if (message.dataLists != null && message.dataLists.length)
+            for (var i = 0; i < message.dataLists.length; ++i)
+                $root.DataList.encode(message.dataLists[i], writer.uint32(/* id 2, wireType 2 =*/18).fork()).ldelim();
+        return writer;
+    };
+
+    /**
+     * Encodes the specified DataLists message, length delimited. Does not implicitly {@link DataLists.verify|verify} messages.
+     * @function encodeDelimited
+     * @memberof DataLists
+     * @static
+     * @param {IDataLists} message DataLists message or plain object to encode
+     * @param {$protobuf.Writer} [writer] Writer to encode to
+     * @returns {$protobuf.Writer} Writer
+     */
+    DataLists.encodeDelimited = function encodeDelimited(message, writer) {
+        return this.encode(message, writer).ldelim();
+    };
+
+    /**
+     * Decodes a DataLists message from the specified reader or buffer.
+     * @function decode
+     * @memberof DataLists
+     * @static
+     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+     * @param {number} [length] Message length if known beforehand
+     * @returns {DataLists} DataLists
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    DataLists.decode = function decode(reader, length) {
+        if (!(reader instanceof $Reader))
+            reader = $Reader.create(reader);
+        var end = length === undefined ? reader.len : reader.pos + length, message = new $root.DataLists();
+        while (reader.pos < end) {
+            var tag = reader.uint32();
+            switch (tag >>> 3) {
+            case 1: {
+                    if (!(message.statnames && message.statnames.length))
+                        message.statnames = [];
+                    message.statnames.push(reader.string());
+                    break;
+                }
+            case 2: {
+                    if (!(message.dataLists && message.dataLists.length))
+                        message.dataLists = [];
+                    message.dataLists.push($root.DataList.decode(reader, reader.uint32()));
+                    break;
+                }
+            default:
+                reader.skipType(tag & 7);
+                break;
+            }
+        }
+        return message;
+    };
+
+    /**
+     * Decodes a DataLists message from the specified reader or buffer, length delimited.
+     * @function decodeDelimited
+     * @memberof DataLists
+     * @static
+     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+     * @returns {DataLists} DataLists
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    DataLists.decodeDelimited = function decodeDelimited(reader) {
+        if (!(reader instanceof $Reader))
+            reader = new $Reader(reader);
+        return this.decode(reader, reader.uint32());
+    };
+
+    /**
+     * Verifies a DataLists message.
+     * @function verify
+     * @memberof DataLists
+     * @static
+     * @param {Object.<string,*>} message Plain object to verify
+     * @returns {string|null} `null` if valid, otherwise the reason why it is not
+     */
+    DataLists.verify = function verify(message) {
+        if (typeof message !== "object" || message === null)
+            return "object expected";
+        if (message.statnames != null && message.hasOwnProperty("statnames")) {
+            if (!Array.isArray(message.statnames))
+                return "statnames: array expected";
+            for (var i = 0; i < message.statnames.length; ++i)
+                if (!$util.isString(message.statnames[i]))
+                    return "statnames: string[] expected";
+        }
+        if (message.dataLists != null && message.hasOwnProperty("dataLists")) {
+            if (!Array.isArray(message.dataLists))
+                return "dataLists: array expected";
+            for (var i = 0; i < message.dataLists.length; ++i) {
+                var error = $root.DataList.verify(message.dataLists[i]);
+                if (error)
+                    return "dataLists." + error;
+            }
+        }
+        return null;
+    };
+
+    /**
+     * Creates a DataLists message from a plain object. Also converts values to their respective internal types.
+     * @function fromObject
+     * @memberof DataLists
+     * @static
+     * @param {Object.<string,*>} object Plain object
+     * @returns {DataLists} DataLists
+     */
+    DataLists.fromObject = function fromObject(object) {
+        if (object instanceof $root.DataLists)
+            return object;
+        var message = new $root.DataLists();
+        if (object.statnames) {
+            if (!Array.isArray(object.statnames))
+                throw TypeError(".DataLists.statnames: array expected");
+            message.statnames = [];
+            for (var i = 0; i < object.statnames.length; ++i)
+                message.statnames[i] = String(object.statnames[i]);
+        }
+        if (object.dataLists) {
+            if (!Array.isArray(object.dataLists))
+                throw TypeError(".DataLists.dataLists: array expected");
+            message.dataLists = [];
+            for (var i = 0; i < object.dataLists.length; ++i) {
+                if (typeof object.dataLists[i] !== "object")
+                    throw TypeError(".DataLists.dataLists: object expected");
+                message.dataLists[i] = $root.DataList.fromObject(object.dataLists[i]);
+            }
+        }
+        return message;
+    };
+
+    /**
+     * Creates a plain object from a DataLists message. Also converts values to other types if specified.
+     * @function toObject
+     * @memberof DataLists
+     * @static
+     * @param {DataLists} message DataLists
+     * @param {$protobuf.IConversionOptions} [options] Conversion options
+     * @returns {Object.<string,*>} Plain object
+     */
+    DataLists.toObject = function toObject(message, options) {
+        if (!options)
+            options = {};
+        var object = {};
+        if (options.arrays || options.defaults) {
+            object.statnames = [];
+            object.dataLists = [];
+        }
+        if (message.statnames && message.statnames.length) {
+            object.statnames = [];
+            for (var j = 0; j < message.statnames.length; ++j)
+                object.statnames[j] = message.statnames[j];
+        }
+        if (message.dataLists && message.dataLists.length) {
+            object.dataLists = [];
+            for (var j = 0; j < message.dataLists.length; ++j)
+                object.dataLists[j] = $root.DataList.toObject(message.dataLists[j], options);
+        }
+        return object;
+    };
+
+    /**
+     * Converts this DataLists to JSON.
+     * @function toJSON
+     * @memberof DataLists
+     * @instance
+     * @returns {Object.<string,*>} JSON object
+     */
+    DataLists.prototype.toJSON = function toJSON() {
+        return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+    };
+
+    /**
+     * Gets the default type url for DataLists
+     * @function getTypeUrl
+     * @memberof DataLists
+     * @static
+     * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns {string} The default type url
+     */
+    DataLists.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+        if (typeUrlPrefix === undefined) {
+            typeUrlPrefix = "type.googleapis.com";
+        }
+        return typeUrlPrefix + "/DataLists";
+    };
+
+    return DataLists;
 })();
 
 $root.AllStats = (function() {

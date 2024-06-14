@@ -1,4 +1,5 @@
 from collections import Counter
+import os
 import pandas as pd
 import us
 import tqdm.auto as tqdm
@@ -8,6 +9,8 @@ import geopandas as gpd
 from permacache import permacache
 
 from stats_for_shapefile import Shapefile
+from urbanstats.special_cases.country import continents, countries, subnational_regions
+from urbanstats.special_cases.ghsl_urban_center import load_ghsl_urban_center
 
 
 def abbr_to_state(x):
@@ -219,55 +222,12 @@ def iso_to_country(iso):
     return pycountry.countries.get(alpha_2=iso).name
 
 
-def subnational_regions():
-    path = "named_region_shapefiles/World_Administrative_Divisions.zip"
-    data = gpd.read_file(path)
-    print("read subnational regions")
-    data = data[data.COUNTRY.apply(lambda x: x is not None)]
-    data["fullname"] = data.NAME + ", " + data.ISO_CC.apply(iso_to_country)
-    data["dissolveby"] = data["fullname"]
-    data = data.dissolve(by="dissolveby")
-    print("dissolved subnationals")
-    return data.reset_index(drop=True)
-
-
-@permacache("population_density/shapefiles/unbuffered_countries")
-def unbuffered_countries():
-    data = subnational_regions()
-    print("read countries")
-    data["dissolveby"] = data.ISO_CC
-    data = data.dissolve(by="dissolveby")
-    print("dissolved countries")
-    data = data.reset_index(drop=True)
-    return data
-
-
-@permacache("population_density/shapefiles/countries_3")
-def countries():
-    data = unbuffered_countries()
-    new_geos = []
-    for i, row in tqdm.tqdm(list(data.iterrows())):
-        print(row.COUNTRY, " ", i, " of ", data.shape[0])
-        # 0.1 of a cell
-        new_geos.append(row.geometry.buffer(1 / 120 * 0.1))
-    data.geometry = new_geos
-    return data
-
-
 def hrr_shortname(x, suffix="HRR"):
     state, city = [x.strip() for x in [x[: x.index("-")], x[x.index("-") + 1 :]]]
     return f"{city.title()} {state} {suffix}"
 
 
 shapefiles = dict(
-    states=Shapefile(
-        hash_key="census_states_3",
-        path="named_region_shapefiles/cb_2022_us_state_500k.zip",
-        shortname_extractor=lambda x: x["NAME"],
-        longname_extractor=lambda x: x["NAME"] + ", USA",
-        filter=lambda x: True,
-        meta=dict(type="State", source="Census"),
-    ),
     counties=COUNTIES,
     msas=Shapefile(
         hash_key="census_msas_4",
@@ -446,8 +406,19 @@ shapefiles = dict(
         filter=lambda x: x.NAME != "National",
         meta=dict(type="Media Market", source="Nielsen via Kenneth C Black"),
     ),
+    continents=Shapefile(
+        hash_key="continents_1",
+        path=continents,
+        shortname_extractor=lambda x: x.name_1,
+        longname_extractor=lambda x: x.name_1,
+        filter=lambda x: True,
+        meta=dict(type="Continent", source="OpenDataSoft"),
+        american=False,
+        include_in_gpw=True,
+        chunk_size=1,
+    ),
     countries=Shapefile(
-        hash_key="countries_3",
+        hash_key="countries_8",
         path=countries,
         shortname_extractor=lambda x: iso_to_country(x.ISO_CC),
         longname_extractor=lambda x: iso_to_country(x.ISO_CC),
@@ -458,13 +429,70 @@ shapefiles = dict(
         chunk_size=1,
     ),
     subnational_regions=Shapefile(
-        hash_key="subnational_regions_4",
+        hash_key="subnational_regions_9",
         path=subnational_regions,
-        shortname_extractor=lambda x: x["NAME"].replace(", USA", " [SN], USA"),
-        longname_extractor=lambda x: x["fullname"].replace(", USA", " [SN], USA"),
+        shortname_extractor=lambda x: x["NAME"],
+        longname_extractor=lambda x: x["fullname"],
         filter=lambda x: x.COUNTRY is not None,
         meta=dict(type="Subnational Region", source="ESRI"),
         american=False,
         include_in_gpw=True,
     ),
+    urban_centers=Shapefile(
+        hash_key="urban_centers_3",
+        path=lambda: load_ghsl_urban_center(),
+        shortname_extractor=lambda x: x["shortname"],
+        longname_extractor=lambda x: x["longname"],
+        meta=dict(type="Urban Center", source="GHSL"),
+        filter=lambda x: True,
+        american=False,
+        include_in_gpw=True,
+    ),
 )
+
+shapefiles_for_stats = dict(
+    **shapefiles,
+    states=Shapefile(
+        hash_key="census_states_3",
+        path="named_region_shapefiles/cb_2022_us_state_500k.zip",
+        shortname_extractor=lambda x: x["NAME"],
+        longname_extractor=lambda x: x["NAME"] + ", USA",
+        filter=lambda x: True,
+        meta=dict(type="State", source="Census"),
+    ),
+    us_urban_centers=Shapefile(
+        hash_key="us_urban_centers_3",
+        path=lambda: load_ghsl_urban_center(),
+        shortname_extractor=lambda x: x["shortname"],
+        longname_extractor=lambda x: x["longname"],
+        meta=dict(type="Urban Center", source="GHSL"),
+        filter=lambda x: x.suffix.endswith("USA"),
+        american=True,
+        include_in_gpw=False,
+    ),
+)
+
+american_to_international = {"State": "Subnational Region", "US Urban Center": "Urban Center"}
+
+
+def filter_table_for_type(table, typ):
+    is_internationalized = typ in american_to_international
+    if is_internationalized:
+        typ = american_to_international[typ]
+    table = table[table.type == typ]
+    if is_internationalized:
+        table = table[table.longname.apply(lambda x: x.endswith("USA"))]
+    return table
+
+
+def load_file_for_type(typ):
+    is_internationalized = typ in american_to_international
+    if is_internationalized:
+        typ = american_to_international[typ]
+    [loaded_file] = [x for x in shapefiles.values() if x.meta["type"] == typ]
+    loaded_file = loaded_file.load_file()
+    if is_internationalized:
+        loaded_file = loaded_file[
+            loaded_file.longname.apply(lambda x: x.endswith("USA"))
+        ]
+    return loaded_file

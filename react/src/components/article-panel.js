@@ -24,7 +24,7 @@ class ArticlePanel extends PageTemplate {
 
     main_content() {
         const self = this;
-        const [filtered_rows, _] = load_article(this.props, this.state.settings);
+        const [filtered_rows, _] = load_article(this.state.current_universe, this.props, this.state.settings);
 
         return (
             <div>
@@ -34,11 +34,13 @@ class ArticlePanel extends PageTemplate {
                 </div>
 
                 <div className="stats_table" ref={this.table_ref}>
-                    <StatisticRowRaw _idx={-1} is_header={true} simple={this.state.settings.simple_ordinals}/>
+                    <StatisticRowRaw _idx={-1} is_header={true} simple={this.state.settings.simple_ordinals} />
                     {filtered_rows.map((row, i) =>
                         <StatisticRowRaw _idx={i} key={row.statname} index={i} {...row} settings={this.state.settings}
-                            onReplace={x => { document.location = article_link(x) }}
+                            onReplace={x => { document.location = article_link(self.state.current_universe, x) }}
                             simple={this.state.settings.simple_ordinals}
+                            longname={this.props.longname}
+                            universe={this.state.current_universe}
                         />)}
                 </div>
 
@@ -50,7 +52,9 @@ class ArticlePanel extends PageTemplate {
                         related={this.props.related}
                         settings={this.state.settings}
                         article_type={this.props.article_type}
-                        basemap={{ type: "osm" }} />
+                        basemap={{ type: "osm" }}
+                        universe={this.state.current_universe}
+                    />
                 </div>
 
                 <div style={{ marginBlockEnd: "1em" }}></div>
@@ -65,7 +69,9 @@ class ArticlePanel extends PageTemplate {
                             style={{ ...comparisonHeadStyle(), width: "100%" }}
                             placeholder={"Other region..."}
                             on_change={(x) => {
-                                document.location.href = comparison_link([this.props.longname, x]);
+                                document.location.href = comparison_link(
+                                    this.state.current_universe,
+                                    [this.props.longname, x]);
                             }}
                         />
                     </div>
@@ -77,7 +83,9 @@ class ArticlePanel extends PageTemplate {
                     related={this.props.related}
                     settings={this.state.settings}
                     set_setting={(key, value) => self.set_setting(key, value)}
-                    article_type={this.props.article_type} />
+                    article_type={this.props.article_type}
+                    universe={this.state.current_universe}
+                />
             </div>
         );
     }
@@ -92,6 +100,10 @@ class ArticlePanel extends PageTemplate {
             overall_width: this.table_ref.current.offsetWidth * 2,
             elements_to_render: [this.headers_ref.current, this.table_ref.current, this.map_ref.current],
         }
+    }
+
+    has_universe_selector() {
+        return true;
     }
 }
 

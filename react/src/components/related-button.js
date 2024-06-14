@@ -33,10 +33,10 @@ class RelatedButton extends React.Component {
         const YELLOW = "#b8a32f";
 
         const colors_each = {
+            "Continent": DARK_GRAY,
             "Country": DARK_GRAY,
             "Judicial Circuit": DARK_GRAY,
             "USDA County Type": DARK_GRAY,
-            "State": BLUE,
             "Subnational Region": BLUE,
             "Native Area": BLUE,
             "CSA": ORANGE,
@@ -49,6 +49,7 @@ class RelatedButton extends React.Component {
             "Native Subdivision": PURPLE,
             "Media Market": PURPLE,
             "Urban Area": PURPLE,
+            "Urban Center": PURPLE,
             "Hospital Service Area": PURPLE,
             "County": RED,
             "State Senate District": RED,
@@ -74,7 +75,7 @@ class RelatedButton extends React.Component {
                 <a
                     className={classes}
                     style={{ color: "black", backgroundColor: lighten(color, 0.7)}}
-                    href={article_link(this.props.longname)}>{this.props.shortname}
+                    href={article_link(this.props.universe, this.props.longname)}>{this.props.shortname}
                 </a>
             </li>
         );
@@ -106,6 +107,7 @@ class RelatedList extends React.Component {
                             article_type={this.props.article_type}
                             settings={this.props.settings}
                             set_setting={this.props.set_setting}
+                            universe={this.props.universe}
                         />)}
                 </ul>
                 <div className="gap_small"></div>
@@ -138,7 +140,7 @@ class CheckableRelatedList extends React.Component {
                             set_setting={this.props.set_setting} />
                     </div>
                     <ul className="linklist">
-                        {this.props.regions.map((row, i) => <RelatedButton key={i} {...row} />)}
+                        {this.props.regions.map((row, i) => <RelatedButton key={i} {...row} universe={this.props.universe} />)}
                     </ul>
                 </div>
             </li>
@@ -173,6 +175,7 @@ class Related extends React.Component {
                         article_type={this.props.article_type}
                         settings={this.props.settings}
                         set_setting={this.props.set_setting}
+                        universe={this.props.universe}
                     />
                 );
             }

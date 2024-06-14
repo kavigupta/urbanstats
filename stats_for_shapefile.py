@@ -12,14 +12,26 @@ from election_data import election_column_names
 
 import geopandas as gpd
 
-from permacache import permacache, stable_hash
+from permacache import permacache, stable_hash, drop_if_equal
 
+from urbanstats.acs import industry, occupation
 from urbanstats.acs.attach import with_acs_data
 from urbanstats.acs.entities import acs_columns
+from urbanstats.census_2010.blocks_2010 import block_level_data_2010
 from urbanstats.features.feature import feature_columns
 from urbanstats.features.extract_data import feature_data
 from urbanstats.osm.parks import park_overlap_percentages_all
+from urbanstats.statistics.collections.transportation_commute_time import (
+    TransportationCommuteTimeStatistics,
+)
+from urbanstats.statistics.collections.transportation_mode import (
+    TransportationModeStatistics,
+)
+from urbanstats.statistics.collections.transportation_vehicle_ownership import (
+    TransportationVehicleOwnershipStatistics,
+)
 from urbanstats.weather.to_blocks import weather_stat_names, weather_block_statistics
+from urbanstats.census_2010.columns_2010 import cdc_columns
 
 racial_statistics = {
     "white": "White %",
@@ -59,6 +71,9 @@ education_stats = {
     "education_field_stem": "Undergrad STEM %",
     "education_field_humanities": "Undergrad Humanities %",
     "education_field_business": "Undergrad Business %",
+    "female_hs_gap_4": "% of women with high school education - % of men with high school education",
+    "female_ugrad_gap_4": "% of women with undergraduate education - % of men with undergraduate education",
+    "female_grad_gap_4": "% of women with graduate education - % of men with graduate education",
 }
 
 generation_stats = {
@@ -81,16 +96,13 @@ income_stats = {
 }
 
 transportation_stats = {
-    "transportation_means_car": "Commute Car %",
-    "transportation_means_bike": "Commute Bike %",
-    "transportation_means_walk": "Commute Walk %",
-    "transportation_means_transit": "Commute Transit %",
-    "transportation_means_worked_at_home": "Commute Work From Home %",
-    "transportation_commute_time_under_15": "Commute Time < 15 min %",
-    "transportation_commute_time_15_to_29": "Commute Time 15 - 29 min %",
-    "transportation_commute_time_30_to_59": "Commute Time 30 - 59 min %",
-    "transportation_commute_time_over_60": "Commute Time > 60 min %",
+    **TransportationModeStatistics().name_for_each_statistic(),
+    **TransportationCommuteTimeStatistics().name_for_each_statistic(),
+    **TransportationVehicleOwnershipStatistics().name_for_each_statistic(),
 }
+
+industry_stats = industry.industry_display
+occupation_stats = occupation.occupation_display
 
 national_origin_stats = {
     "citizenship_citizen_by_birth": "Citizen by Birth %",
@@ -169,7 +181,7 @@ class Shapefile:
 
 
 density_metrics = [f"ad_{k}" for k in RADII]
-sum_keys = [
+sum_keys_2020 = [
     "population",
     "population_18",
     *racial_demographics,
@@ -181,11 +193,21 @@ sum_keys = [
     "park_percent_1km_v2",
     *weather_stat_names,
 ]
+sum_keys_2020 = sorted(sum_keys_2020, key=str)
+sum_keys_2010 = [
+    "population_2010",
+    "population_18_2010",
+    *[f"{k}_2010" for k in racial_demographics],
+    *[f"{k}_2010" for k in housing_units],
+    *[f"{k}_2010" for k in density_metrics],
+    *cdc_columns(),
+]
+sum_keys_2010 = sorted(sum_keys_2010, key=str)
 COLUMNS_PER_JOIN = 33
 
 
 @lru_cache(None)
-def block_level_data():
+def block_level_data_2020():
     blocks_gdf = with_acs_data()
     feats = feature_data()
     [sh] = {x.shape for x in feats.values()}
@@ -203,13 +225,22 @@ def block_level_data():
     return blocks_gdf
 
 
+def block_level_data(year):
+    if year == 2020:
+        return block_level_data_2020()
+    assert year == 2010
+    return block_level_data_2010()
+
+
 @permacache(
     "population_density/stats_for_shapefile/compute_summed_shapefile_3",
-    key_function=dict(sf=lambda x: x.hash_key, sum_keys=stable_hash),
+    key_function=dict(
+        sf=lambda x: x.hash_key, sum_keys=stable_hash, year=drop_if_equal(2020)
+    ),
 )
-def compute_summed_shapefile_few_keys(sf, sum_keys):
+def compute_summed_shapefile_few_keys(sf, sum_keys, year):
     print(sf, sum_keys)
-    blocks_gdf = block_level_data()
+    blocks_gdf = block_level_data(year)
     s = sf.load_file()
     area = s["geometry"].to_crs({"proj": "cea"}).area / 1e6
     if sf.chunk_size is None:
@@ -232,46 +263,80 @@ def compute_summed_shapefile_few_keys(sf, sum_keys):
 
 @permacache(
     "population_density/stats_for_shapefile/compute_summed_shapefile_all_keys_4",
-    key_function=dict(sf=lambda x: x.hash_key, sum_keys=stable_hash),
+    key_function=dict(
+        sf=lambda x: x.hash_key, sum_keys=stable_hash, year=drop_if_equal(2020)
+    ),
 )
-def compute_summed_shapefile_all_keys(sf, sum_keys=sum_keys):
+def compute_summed_shapefile_all_keys(sf, sum_keys, year=2020):
     print(sf)
     result = {}
     for keys in tqdm.tqdm(list(chunked(sum_keys, COLUMNS_PER_JOIN))):
-        frame = compute_summed_shapefile_few_keys(sf, keys)
+        frame = compute_summed_shapefile_few_keys(sf, keys, year)
         for k in frame:
             result[k] = frame[k]
     return pd.DataFrame(result)
 
 
 @permacache(
-    "population_density/stats_for_shapefile/compute_statistics_for_shapefile_16",
+    "population_density/stats_for_shapefile/compute_statistics_for_shapefile_23",
     key_function=dict(sf=lambda x: x.hash_key, sum_keys=stable_hash),
     multiprocess_safe=True,
 )
-def compute_statistics_for_shapefile(sf, sum_keys=sum_keys):
+def compute_statistics_for_shapefile(
+    sf, sum_keys_2020=sum_keys_2020, sum_keys_2010=sum_keys_2010
+):
     sf_fr = sf.load_file()
     print(sf)
-    result = compute_summed_shapefile_all_keys(sf, sum_keys).copy()
+    result_2020 = compute_summed_shapefile_all_keys(sf, sum_keys_2020, year=2020).copy()
+    result_2010 = compute_summed_shapefile_all_keys(sf, sum_keys_2010, year=2010).copy()
+    assert (result_2020.longname == result_2010.longname).all()
+    # drop columns longname, shortname, area
+    result_2010 = result_2010.drop(columns=["longname", "shortname", "area"])
+    # assert no columns are in both result_2020 and result_2010
+    overlap_cols = set(result_2020.columns) & set(result_2010.columns)
+    assert not overlap_cols
+    result = pd.concat([result_2020, result_2010], axis=1)
     assert (result.longname == sf_fr.longname).all()
     result["perimiter"] = sf_fr.geometry.to_crs({"proj": "cea"}).length / 1e3
     result["compactness"] = 4 * np.pi * result.area / result.perimiter**2
+    result["population_change_2010"] = (
+        result["population"] - result["population_2010"]
+    ) / result["population_2010"]
     for k in density_metrics:
         result[k] /= result["population"]
+        result[f"{k}_2010"] /= result["population_2010"]
+        result[f"{k}_change_2010"] = (result[k] - result[f"{k}_2010"]) / result[
+            f"{k}_2010"
+        ]
     result["sd"] = result["population"] / result["area"]
+    result["sd_2010"] = result["population_2010"] / result["area"]
     for k in sf.meta:
         result[k] = sf.meta[k]
     for k in racial_demographics:
         result[k] /= result["population"]
+        result[k + "_2010"] /= result["population_2010"]
     result["other / mixed"] = result["other"] + result["mixed"]
+    result["other / mixed_2010"] = result["other_2010"] + result["mixed_2010"]
     del result["other"]
     del result["mixed"]
+    del result["other_2010"]
+    del result["mixed_2010"]
     result["housing_per_pop"] = result["total"] / result["population_18"]
+    result["housing_per_pop_2010"] = result["total_2010"] / result["population_18_2010"]
     result["vacancy"] = result["vacant"] / result["total"]
+    result["vacancy_2010"] = result["vacant_2010"] / result["total_2010"]
+
+    for cdc in cdc_columns():
+        result[cdc] /= result["population_18_2010"]
+
     del result["vacant"]
     del result["total"]
     del result["occupied"]
     del result["population_18"]
+    del result["vacant_2010"]
+    del result["total_2010"]
+    del result["occupied_2010"]
+    del result["population_18_2010"]
 
     education_denominator = (
         result.education_no
@@ -318,22 +383,9 @@ def compute_statistics_for_shapefile(sf, sum_keys=sum_keys):
         "individual_income_over_100k",
     )
 
-    fractionalize(
-        "transportation_means_car",
-        "transportation_means_bike",
-        "transportation_means_walk",
-        "transportation_means_transit",
-        "transportation_means_worked_at_home",
-        "transportation_means_other",
-    )
-    del result["transportation_means_other"]
+    TransportationModeStatistics().mutate_shapefile_table(result)
 
-    fractionalize(
-        "transportation_commute_time_under_15",
-        "transportation_commute_time_15_to_29",
-        "transportation_commute_time_30_to_59",
-        "transportation_commute_time_over_60",
-    )
+    TransportationCommuteTimeStatistics().mutate_shapefile_table(result)
 
     fractionalize(
         "rent_1br_under_750",
@@ -395,6 +447,47 @@ def compute_statistics_for_shapefile(sf, sum_keys=sum_keys):
         "marriage_never_married",
         "marriage_married_not_divorced",
         "marriage_divorced",
+    )
+
+    fractionalize(*industry_stats.keys())
+
+    fractionalize(*occupation_stats.keys())
+
+    TransportationVehicleOwnershipStatistics().mutate_shapefile_table(result)
+
+    fractionalize(
+        "female_none_4",
+        "female_hs_4",
+        "female_ugrad_4",
+        "female_grad_4",
+    )
+
+    fractionalize(
+        "male_none_4",
+        "male_hs_4",
+        "male_ugrad_4",
+        "male_grad_4",
+    )
+
+    del result["female_none_4"], result["male_none_4"]
+
+    result["female_ugrad_4"] += result["female_grad_4"]
+    result["male_ugrad_4"] += result["male_grad_4"]
+
+    result["female_hs_4"] += result["female_ugrad_4"]
+    result["male_hs_4"] += result["male_ugrad_4"]
+
+    result["female_hs_gap_4"] = result["female_hs_4"] - result["male_hs_4"]
+    result["female_ugrad_gap_4"] = result["female_ugrad_4"] - result["male_ugrad_4"]
+    result["female_grad_gap_4"] = result["female_grad_4"] - result["male_grad_4"]
+
+    del (
+        result["male_hs_4"],
+        result["female_hs_4"],
+        result["female_ugrad_4"],
+        result["male_ugrad_4"],
+        result["female_grad_4"],
+        result["male_grad_4"],
     )
 
     fractionalize(

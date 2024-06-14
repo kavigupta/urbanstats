@@ -1,10 +1,11 @@
-export { loadJSON, loadProtobuf };
+export { loadJSON, loadProtobuf, load_ordering_protobuf, load_ordering };
 
 import { gunzipSync } from 'zlib';
 import {
     Article, Feature, StringList, ConsolidatedShapes,
-    ConsolidatedStatistics
+    ConsolidatedStatistics, DataLists, OrderLists
 } from "./utils/protos.js";
+import { index_link, ordering_data_link, ordering_link } from './navigation/links.js';
 
 // from https://stackoverflow.com/a/4117299/1549476
 
@@ -48,6 +49,10 @@ async function loadProtobuf(filePath, name) {
         return Feature.decode(arr);
     } else if (name == "StringList") {
         return StringList.decode(arr);
+    } else if (name == "OrderLists") {
+        return OrderLists.decode(arr);
+    } else if (name == "DataLists") {
+        return DataLists.decode(arr);
     } else if (name == "ConsolidatedShapes") {
         return ConsolidatedShapes.decode(arr);
     } else if (name == "ConsolidatedStatistics") {
@@ -55,4 +60,28 @@ async function loadProtobuf(filePath, name) {
     } else {
         throw "protobuf type not recognized (see load_json.js)";
     }
+}
+
+const order_links = require("./data/order_links.json");
+const data_links = require("./data/data_links.json");
+
+async function load_ordering_protobuf(universe, statpath, type, is_data) {
+    const links = is_data ? data_links : order_links;
+    const key = `${universe}__${type}__${statpath}`;
+    const idx = key in links ? links[key] : 0;
+    const order_link = is_data ? ordering_data_link(universe, type, idx) : ordering_link(universe, type, idx);
+    var ordering = await loadProtobuf(order_link,
+        is_data ? "DataLists" : "OrderLists"
+    );
+    const index = ordering.statnames.indexOf(statpath);
+    return is_data ? ordering.dataLists[index] : ordering.orderLists[index];
+}
+
+async function load_ordering(universe, statpath, type) {
+    const idx_link = index_link(universe, type);
+    const data_promise = loadProtobuf(idx_link, "StringList");
+    const ordering_promise = load_ordering_protobuf(universe, statpath, type, false);
+    const [data, ordering] = await Promise.all([data_promise, ordering_promise]);
+    const names_in_order = ordering.orderIdxs.map(i => data.elements[i]);
+    return names_in_order;
 }

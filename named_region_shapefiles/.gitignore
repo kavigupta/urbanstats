@@ -1,3 +1,8 @@
 *.zip
 *.shp
 Zillow_Neighborhoods/
+countries_processed/
+continents_processed/
+World_Administrative_Divisions_processed/
+GHS_STAT_UCDB2015MT*
+PLACES__Local_Data_for_Better_Health__Census_Tract_Data_2023_release_20240531.csv

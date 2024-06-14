@@ -49,13 +49,16 @@ class ComparisonPanel extends PageTemplate {
         }
     }
 
+    has_universe_selector() {
+        return true;
+    }
 
     main_content() {
         const self = this;
         var rows = [];
         var idxs = [];
         for (let i in this.props.datas) {
-            const [r, idx] = load_article(this.props.datas[i], this.state.settings);
+            const [r, idx] = load_article(this.state.current_universe, this.props.datas[i], this.state.settings);
             rows.push(r);
             idxs.push(idx);
         }
@@ -109,6 +112,7 @@ class ComparisonPanel extends PageTemplate {
                                         on_click={() => self.on_delete(i)}
                                         on_change={(x) => self.on_change(i, x)}
                                         screenshot_mode={this.state.screenshot_mode}
+                                        universe={this.state.current_universe}
                                     />
                                 </div>)
                             )}
@@ -133,6 +137,7 @@ class ComparisonPanel extends PageTemplate {
                         id="map_combined"
                         article_type={undefined}
                         basemap={{ type: "osm" }}
+                        universe={this.state.current_universe}
                     />
                 </div>
             </div>
@@ -250,7 +255,10 @@ class ComparisonPanel extends PageTemplate {
         )
 
         row_overall.push(...new StatisticRowRaw(
-            { ...param_vals[0], only_columns: ["statname"], _idx: -1, simple: true }
+            {
+                ...param_vals[0], only_columns: ["statname"], _idx: -1, simple: true, longname: this.props.datas[0].longname,
+                universe: this.state.current_universe
+            }
         ).cell_contents(100 * (left_margin_pct - left_bar_margin)));
         const only_columns = this.all_data_types_same() ? main_columns : main_columns_across_types;
 
@@ -258,7 +266,8 @@ class ComparisonPanel extends PageTemplate {
             row_overall.push(...new StatisticRowRaw({
                 ...param_vals[i], only_columns: only_columns, _idx: i, simple: true,
                 statistic_style: highlight_idx == i ? { backgroundColor: lighten(this.color(i), 0.7) } : {},
-                onReplace: x => this.on_change(i, x)
+                onReplace: x => this.on_change(i, x),
+                universe: this.state.current_universe
             }).cell_contents(this.each()));
         }
         return row_overall;
@@ -289,7 +298,7 @@ function ManipulationButton({ color, on_click, text }) {
     </div>
 }
 
-function HeadingDisplay({ longname, include_delete, on_click, on_change, screenshot_mode }) {
+function HeadingDisplay({ universe, longname, include_delete, on_click, on_change, screenshot_mode }) {
 
     const [is_editing, set_is_editing] = React.useState(false);
 
@@ -309,7 +318,7 @@ function HeadingDisplay({ longname, include_delete, on_click, on_change, screens
     return <div>
         {screenshot_mode ? undefined : manipulation_buttons}
         <div style={{ height: "5px" }} />
-        <a href={article_link(longname)} style={{ textDecoration: "none" }}><div style={comparisonHeadStyle()}>{longname}</div></a>
+        <a href={article_link(universe, longname)} style={{ textDecoration: "none" }}><div style={comparisonHeadStyle()}>{longname}</div></a>
         {is_editing ?
             <SearchBox
                 autoFocus={true}
