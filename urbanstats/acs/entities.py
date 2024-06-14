@@ -232,50 +232,6 @@ entities_split_by_usa_pr = dict(
     #         },
     #     ),
     # ],
-    citizenship=[
-        ACSDataEntity(
-            "NATIVITY AND CITIZENSHIP STATUS IN THE UNITED STATES",
-            "population",
-            "tract",
-            {
-                None: [
-                    "Estimate!!Total:",
-                ],
-                "citizenship_citizen_by_birth": [
-                    "Estimate!!Total:!!U.S. citizen, born in Puerto Rico or U.S. Island Areas",
-                    "Estimate!!Total:!!U.S. citizen, born in the United States",
-                    "Estimate!!Total:!!U.S. citizen, born abroad of American parent(s)",
-                ],
-                "citizenship_citizen_by_naturalization": [
-                    "Estimate!!Total:!!U.S. citizen by naturalization",
-                ],
-                "citizenship_not_citizen": [
-                    "Estimate!!Total:!!Not a U.S. citizen",
-                ],
-            },
-        ),
-        ACSDataEntity(
-            "NATIVITY AND CITIZENSHIP STATUS IN PUERTO RICO",
-            "population",
-            "tract",
-            {
-                None: [
-                    "Estimate!!Total:",
-                ],
-                "citizenship_citizen_by_birth": [
-                    "Estimate!!Total:!!U.S. citizen, born abroad of American parent(s)",
-                    "Estimate!!Total:!!U.S. citizen, born in Puerto Rico",
-                    "Estimate!!Total:!!U.S. citizen, born in U.S. or U.S. Island Areas",
-                ],
-                "citizenship_citizen_by_naturalization": [
-                    "Estimate!!Total:!!U.S. citizen by naturalization",
-                ],
-                "citizenship_not_citizen": [
-                    "Estimate!!Total:!!Not a U.S. citizen",
-                ],
-            },
-        ),
-    ],
 )
 
 for collection in statistic_collections:

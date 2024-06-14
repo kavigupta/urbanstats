@@ -38,12 +38,6 @@ racial_statistics = {
 industry_stats = industry.industry_display
 occupation_stats = occupation.occupation_display
 
-national_origin_stats = {
-    "citizenship_citizen_by_birth": "Citizen by Birth %",
-    "citizenship_citizen_by_naturalization": "Citizen by Naturalization %",
-    "citizenship_not_citizen": "Non-citizen %",
-}
-
 feature_stats = {
     "park_percent_1km_v2": "PW Mean % of parkland within 1km",
     **feature_columns,
@@ -294,11 +288,6 @@ def compute_statistics_for_shapefile(
 
     fractionalize(*occupation_stats.keys())
 
-    fractionalize(
-        "citizenship_citizen_by_birth",
-        "citizenship_citizen_by_naturalization",
-        "citizenship_not_citizen",
-    )
 
     for feat in feature_columns:
         result[feat] = result[feat] / result["population"]

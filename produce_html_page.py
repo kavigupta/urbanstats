@@ -10,7 +10,6 @@ from stats_for_shapefile import (
     racial_statistics,
     industry_stats,
     occupation_stats,
-    national_origin_stats,
     feature_stats,
     misc_stats,
 )
@@ -139,7 +138,6 @@ def statistic_internal_to_display_name():
         "area": "Area",
         "compactness": "Compactness",
         **racial_statistics,
-        **national_origin_stats,
     }
 
     for statistic_collection in statistic_collections:
@@ -181,7 +179,6 @@ def get_statistic_categories():
         "area": "main",
         "compactness": "main",
         **{k: "race" for k in racial_statistics},
-        **{k: "national_origin" for k in national_origin_stats},
     }
 
     for statistic_collection in statistic_collections:
@@ -213,7 +210,6 @@ def get_explanation_page():
         "area": "geography",
         "compactness": "geography",
         **{k: "race" for k in racial_statistics},
-        **{k: k.split("_")[0] for k in national_origin_stats},
     }
 
     for statistic_collection in statistic_collections:

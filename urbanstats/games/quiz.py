@@ -414,9 +414,6 @@ stats_to_display = {
     "hispanic": "higher % of people who are Hispanic",
     "black": "higher % of people who are Black",
     "asian": "higher % of people who are Asian",
-    "citizenship_citizen_by_birth": "higher % of residents who are citizens by birth",
-    "citizenship_citizen_by_naturalization": "higher % of residents who are citizens by naturalization",
-    "citizenship_not_citizen": "higher % of residents who are non-citizens",
     (
         "2020 Presidential Election",
         "margin",
