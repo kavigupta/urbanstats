@@ -333,16 +333,6 @@ entities = dict(
     #     },
     #     replace_negatives_with_nan=True,
     # ),
-    rent_or_own=ACSDataEntity(
-        "TENURE",
-        "occupied",
-        "block group",
-        {
-            "rent_or_own_rent": ["Estimate!!Total:!!Renter occupied"],
-            "rent_or_own_own": ["Estimate!!Total:!!Owner occupied"],
-            None: ["Estimate!!Total:"],
-        },
-    ),
     insurance_coverage=ACSDataEntity(
         "HEALTH INSURANCE COVERAGE STATUS AND TYPE BY WORK EXPERIENCE",
         "population",

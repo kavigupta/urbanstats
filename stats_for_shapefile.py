@@ -38,7 +38,6 @@ racial_statistics = {
 housing_stats = {
     "housing_per_pop": "Housing Units per Adult",
     "vacancy": "Vacancy %",
-    "rent_or_own_rent": "Renter %",
 }
 
 education_stats = {
@@ -355,12 +354,6 @@ def compute_statistics_for_shapefile(
     )
     for collection in statistic_collections:
         collection.mutate_shapefile_table(result)
-
-    fractionalize(
-        "rent_or_own_rent",
-        "rent_or_own_own",
-    )
-    del result["rent_or_own_own"]
 
     fractionalize(
         "insurance_coverage_none",

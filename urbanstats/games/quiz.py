@@ -441,7 +441,6 @@ stats_to_display = {
     "individual_income_over_100k": "higher % of people who have individual income over $100k",
     "housing_per_pop": "higher number of housing units per adult",
     "vacancy": "higher % of units that are vacant",
-    "rent_or_own_rent": "higher % of people who are renters",
     (
         "2020 Presidential Election",
         "margin",
