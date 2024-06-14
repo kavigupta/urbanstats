@@ -434,7 +434,6 @@ stats_to_display = {
     "generation_millenial": "higher % of people who are millennials",
     "generation_genz": "higher % of people who are gen z",
     "generation_genalpha": "higher % of people who are gen alpha",
-    "poverty_below_line": "higher % of people who are in poverty",
     (
         "2020 Presidential Election",
         "margin",

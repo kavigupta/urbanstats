@@ -10,7 +10,6 @@ from stats_for_shapefile import (
     racial_statistics,
     education_stats,
     generation_stats,
-    income_stats,
     industry_stats,
     occupation_stats,
     national_origin_stats,
@@ -145,7 +144,6 @@ def statistic_internal_to_display_name():
         **national_origin_stats,
         **education_stats,
         **generation_stats,
-        **income_stats,
     }
 
     for statistic_collection in statistic_collections:
@@ -190,7 +188,6 @@ def get_statistic_categories():
         **{k: "national_origin" for k in national_origin_stats},
         **{k: "education" for k in education_stats},
         **{k: "generation" for k in generation_stats},
-        **{k: "income" for k in income_stats},
     }
 
     for statistic_collection in statistic_collections:
@@ -225,7 +222,6 @@ def get_explanation_page():
         **{k: k.split("_")[0] for k in national_origin_stats},
         **{k: "education" for k in education_stats},
         **{k: "generation" for k in generation_stats},
-        **{k: "income" for k in income_stats},
     }
 
     for statistic_collection in statistic_collections:

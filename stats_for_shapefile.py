@@ -56,10 +56,6 @@ generation_stats = {
     "generation_genalpha": "Gen Alpha %",
 }
 
-income_stats = {
-    "poverty_below_line": "Poverty %",
-}
-
 industry_stats = industry.industry_display
 occupation_stats = occupation.occupation_display
 
@@ -337,12 +333,6 @@ def compute_statistics_for_shapefile(
         "insurance_coverage_govt",
         "insurance_coverage_private",
     )
-
-    fractionalize(
-        "poverty_above_line",
-        "poverty_below_line",
-    )
-    del result["poverty_above_line"]
 
     fractionalize(
         "internet_access",
