@@ -63,3 +63,16 @@ class ACSStatisticsColection(StatisticCollection):
 
     def acs_entity_dict(self):
         return {self.acs_name(): self.acs_entity()}
+
+
+class ACSUSPRStatisticsColection(StatisticCollection):
+    @abstractmethod
+    def acs_name(self):
+        pass
+
+    @abstractmethod
+    def acs_entities(self):
+        pass
+
+    def acs_entity_dict(self):
+        return {self.acs_name(): self.acs_entities()}

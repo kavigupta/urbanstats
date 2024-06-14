@@ -1,7 +1,10 @@
 from urbanstats.acs.load import ACSDataEntity
 from urbanstats.acs.industry import industry_dict, normalize_industry_name
 from urbanstats.acs.occupation import occupation_dict, normalize_occupation_name
-from urbanstats.statistics.statistic_collection import ACSStatisticsColection
+from urbanstats.statistics.statistic_collection import (
+    ACSStatisticsColection,
+    ACSUSPRStatisticsColection,
+)
 from urbanstats.statistics.collections_list import statistic_collections
 
 entities = dict(
@@ -273,73 +276,15 @@ entities_split_by_usa_pr = dict(
             },
         ),
     ],
-    birthplace=[
-        ACSDataEntity(
-            "PLACE OF BIRTH BY SEX IN THE UNITED STATES",
-            "population",
-            "tract",
-            {
-                None: [
-                    "Estimate!!Total:",
-                    "Estimate!!Total:!!Born in other state in the United States:!!Female",
-                    "Estimate!!Total:!!Born in other state in the United States:!!Male",
-                    "Estimate!!Total:!!Born in state of residence:!!Female",
-                    "Estimate!!Total:!!Born in state of residence:!!Male",
-                    "Estimate!!Total:!!Female",
-                    "Estimate!!Total:!!Foreign born:!!Female",
-                    "Estimate!!Total:!!Foreign born:!!Male",
-                    "Estimate!!Total:!!Male",
-                    "Estimate!!Total:!!Native; born outside the United States:!!Female",
-                    "Estimate!!Total:!!Native; born outside the United States:!!Male",
-                ],
-                "birthplace_non_us": [
-                    "Estimate!!Total:!!Foreign born:",
-                ],
-                "birthplace_us_not_state": [
-                    "Estimate!!Total:!!Native; born outside the United States:",
-                    "Estimate!!Total:!!Born in other state in the United States:",
-                ],
-                "birthplace_us_state": [
-                    "Estimate!!Total:!!Born in state of residence:",
-                ],
-            },
-        ),
-        ACSDataEntity(
-            "PLACE OF BIRTH BY SEX IN PUERTO RICO",
-            "population",
-            "tract",
-            {
-                None: [
-                    "Estimate!!Total:",
-                    "Estimate!!Total:!!Born in Puerto Rico:!!Female",
-                    "Estimate!!Total:!!Born in Puerto Rico:!!Male",
-                    "Estimate!!Total:!!Born in the United States:!!Female",
-                    "Estimate!!Total:!!Born in the United States:!!Male",
-                    "Estimate!!Total:!!Female",
-                    "Estimate!!Total:!!Foreign born:!!Female",
-                    "Estimate!!Total:!!Foreign born:!!Male",
-                    "Estimate!!Total:!!Male",
-                    "Estimate!!Total:!!Native; born elsewhere:!!Female",
-                    "Estimate!!Total:!!Native; born elsewhere:!!Male",
-                ],
-                "birthplace_non_us": [
-                    "Estimate!!Total:!!Foreign born:",
-                ],
-                "birthplace_us_not_state": [
-                    "Estimate!!Total:!!Native; born elsewhere:",
-                    "Estimate!!Total:!!Born in the United States:",
-                ],
-                "birthplace_us_state": [
-                    "Estimate!!Total:!!Born in Puerto Rico:",
-                ],
-            },
-        ),
-    ],
 )
 
 for collection in statistic_collections:
     if isinstance(collection, ACSStatisticsColection):
         entities.update(collection.acs_entity_dict())
+
+for collection in statistic_collections:
+    if isinstance(collection, ACSUSPRStatisticsColection):
+        entities_split_by_usa_pr.update(collection.acs_entity_dict())
 
 entities = {k: v for k, v in sorted(entities.items())}
 

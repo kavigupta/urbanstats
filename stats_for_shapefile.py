@@ -42,9 +42,6 @@ national_origin_stats = {
     "citizenship_citizen_by_birth": "Citizen by Birth %",
     "citizenship_citizen_by_naturalization": "Citizen by Naturalization %",
     "citizenship_not_citizen": "Non-citizen %",
-    "birthplace_non_us": "Born outside US %",
-    "birthplace_us_not_state": "Born in us outside state %",
-    "birthplace_us_state": "Born in state of residence %",
 }
 
 feature_stats = {
@@ -301,12 +298,6 @@ def compute_statistics_for_shapefile(
         "citizenship_citizen_by_birth",
         "citizenship_citizen_by_naturalization",
         "citizenship_not_citizen",
-    )
-
-    fractionalize(
-        "birthplace_non_us",
-        "birthplace_us_not_state",
-        "birthplace_us_state",
     )
 
     for feat in feature_columns:

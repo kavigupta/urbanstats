@@ -417,9 +417,6 @@ stats_to_display = {
     "citizenship_citizen_by_birth": "higher % of residents who are citizens by birth",
     "citizenship_citizen_by_naturalization": "higher % of residents who are citizens by naturalization",
     "citizenship_not_citizen": "higher % of residents who are non-citizens",
-    "birthplace_non_us": "higher % of people who were born outside the US",
-    "birthplace_us_not_state": "higher % of people who were born in the US and outside their state of residence",
-    "birthplace_us_state": "higher % of people who were born in their state of residence",
     (
         "2020 Presidential Election",
         "margin",
