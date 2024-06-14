@@ -5,66 +5,6 @@ from urbanstats.statistics.statistic_collection import ACSStatisticsColection
 from urbanstats.statistics.collections_list import statistic_collections
 
 entities = dict(
-    education=ACSDataEntity(
-        "EDUCATIONAL ATTAINMENT FOR THE POPULATION 25 YEARS AND OVER",
-        "population_18",
-        "block group",
-        {
-            "education_total": ["Estimate!!Total:"],
-            "education_no": [
-                "Estimate!!Total:!!No schooling completed",
-                "Estimate!!Total:!!Nursery school",
-                "Estimate!!Total:!!Kindergarten",
-                "Estimate!!Total:!!1st grade",
-                "Estimate!!Total:!!2nd grade",
-                "Estimate!!Total:!!3rd grade",
-                "Estimate!!Total:!!4th grade",
-                "Estimate!!Total:!!5th grade",
-                "Estimate!!Total:!!6th grade",
-                "Estimate!!Total:!!7th grade",
-                "Estimate!!Total:!!8th grade",
-                "Estimate!!Total:!!9th grade",
-                "Estimate!!Total:!!10th grade",
-                "Estimate!!Total:!!11th grade",
-                "Estimate!!Total:!!12th grade, no diploma",
-            ],
-            "education_high_school": [
-                "Estimate!!Total:!!Regular high school diploma",
-                "Estimate!!Total:!!GED or alternative credential",
-                "Estimate!!Total:!!GED or alternative credential",
-                "Estimate!!Total:!!Some college, less than 1 year",
-                "Estimate!!Total:!!Some college, 1 or more years, no degree",
-                "Estimate!!Total:!!Associate's degree",
-            ],
-            "education_ugrad": [
-                "Estimate!!Total:!!Bachelor's degree",
-            ],
-            "education_grad": [
-                "Estimate!!Total:!!Master's degree",
-                "Estimate!!Total:!!Professional school degree",
-                "Estimate!!Total:!!Doctorate degree",
-            ],
-        },
-    ),
-    education_field=ACSDataEntity(
-        "FIELD OF BACHELOR'S DEGREE FOR FIRST MAJOR FOR THE POPULATION 25 YEARS AND OVER",
-        "population_18",
-        "block group",
-        {
-            "education_field_total": ["Estimate!!Total:"],
-            "education_field_stem": [
-                "Estimate!!Total:!!Science and Engineering Related Fields",
-                "Estimate!!Total:!!Science and Engineering",
-            ],
-            "education_field_humanities": [
-                "Estimate!!Total:!!Arts, Humanities and Other",
-                "Estimate!!Total:!!Education",
-            ],
-            "education_field_business": [
-                "Estimate!!Total:!!Business",
-            ],
-        },
-    ),
     # aggregate_income_total=ACSDataEntity(
     #     "AGGREGATE INCOME IN THE PAST 12 MONTHS (IN 2021 INFLATION-ADJUSTED DOLLARS)",
     #     "population_18",

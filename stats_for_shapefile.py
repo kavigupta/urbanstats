@@ -35,14 +35,7 @@ racial_statistics = {
     "other / mixed": "Other / Mixed %",
 }
 
-education_stats = {
-    "education_high_school": "High School %",
-    "education_ugrad": "Undergrad %",
-    "education_grad": "Grad %",
-    "education_field_stem": "Undergrad STEM %",
-    "education_field_humanities": "Undergrad Humanities %",
-    "education_field_business": "Undergrad Business %",
-}
+education_stats = {}
 
 industry_stats = industry.industry_display
 occupation_stats = occupation.occupation_display
@@ -279,32 +272,11 @@ def compute_statistics_for_shapefile(
     del result["occupied_2010"]
     del result["population_18_2010"]
 
-    education_denominator = (
-        result.education_no
-        + result.education_high_school
-        + result.education_ugrad
-        + result.education_grad
-    )
-    result["education_high_school"] = (
-        result.education_high_school + result.education_ugrad + result.education_grad
-    ) / education_denominator
-    result["education_ugrad"] = (
-        result.education_ugrad + result.education_grad
-    ) / education_denominator
-    result["education_grad"] = result.education_grad / education_denominator
-    del result["education_no"]
-
     def fractionalize(*columns):
         denominator = sum(result[c] for c in columns)
         for c in columns:
             result[c] = result[c] / denominator
 
-    for column in (
-        "education_field_stem",
-        "education_field_humanities",
-        "education_field_business",
-    ):
-        result[column] = result[column] / education_denominator
     for collection in statistic_collections:
         collection.mutate_shapefile_table(result)
 
@@ -335,7 +307,6 @@ def compute_statistics_for_shapefile(
     fractionalize(*industry_stats.keys())
 
     fractionalize(*occupation_stats.keys())
-
 
     fractionalize(
         "citizenship_citizen_by_birth",

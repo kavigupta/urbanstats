@@ -422,12 +422,6 @@ stats_to_display = {
     "birthplace_us_state": "higher % of people who were born in their state of residence",
     "language_english_only": "higher % of people who only speak english at home",
     "language_spanish": "higher % of people who speak spanish at home",
-    "education_high_school": "higher % of people who have at least a high school diploma",
-    "education_ugrad": "higher % of people who have at least an undergrad degree",
-    "education_grad": "higher % of people who have a graduate degree",
-    "education_field_stem": "!FULL Which has more people with a STEM degree, as a percentage of the overall population?",
-    "education_field_humanities": "!FULL Which has more people with a humanities degree, as a percentage of the overall population?",
-    "education_field_business": "!FULL Which has more people with a business degree, as a percentage of the overall population?",
     (
         "2020 Presidential Election",
         "margin",

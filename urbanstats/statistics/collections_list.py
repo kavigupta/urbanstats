@@ -1,3 +1,4 @@
+from urbanstats.statistics.collections.education_statistics import EducationStatistics
 from urbanstats.statistics.collections.education_gender_gap import (
     EducationGenderGapStatistics,
 )
@@ -24,6 +25,7 @@ from urbanstats.statistics.collections.transportation_vehicle_ownership import (
 
 
 statistic_collections = (
+    EducationStatistics(),
     EducationGenderGapStatistics(),
     GenerationStatistics(),
     IncomePoverty(),
