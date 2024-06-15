@@ -226,7 +226,6 @@ def compute_statistics_for_shapefile(
         result[k] = sf.meta[k]
     for k in racial_demographics:
         result[k + "_2010"] /= result["population_2010"]
-    result["other / mixed"] = result["other"] + result["mixed"]
     result["other / mixed_2010"] = result["other_2010"] + result["mixed_2010"]
     del result["other"]
     del result["mixed"]
