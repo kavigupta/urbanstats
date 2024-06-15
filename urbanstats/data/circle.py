@@ -1,9 +1,11 @@
 from colorsys import hsv_to_rgb
+from dataclasses import dataclass
 from matplotlib import patches, pyplot as plt
 import numpy as np
 import tqdm.auto as tqdm
+from PIL import Image
 
-from permacache import permacache, stable_hash
+from permacache import permacache, stable_hash, drop_if_equal
 
 
 class MapDataset:
@@ -74,12 +76,17 @@ def compute_secants(map, coord):
 
 @permacache(
     "urbanstats/data/circle/binary_search_map_6",
-    key_function=dict(map=stable_hash, ban=stable_hash),
+    key_function=dict(
+        map=stable_hash,
+        ban=stable_hash,
+        start_radius=drop_if_equal(1),
+        high=drop_if_equal(None),
+    ),
     multiprocess_safe=True,
 )
-def binary_search_map(map, ban, P):
+def binary_search_map(map, ban, P, start_radius=1, high=None):
     dset = MapDataset(map, ban)
-    return dset.binary_search(P, 1, eps=0.25)
+    return dset.binary_search(P, start_radius, high=high, eps=0.25)
 
 
 @permacache(
@@ -124,6 +131,59 @@ def overlapping_circles(map, P, limit=100):
     return circles, circle_map
 
 
+@permacache(
+    "urbanstats/data/circle/overlapping_circles_fast",
+    key_function=dict(map=stable_hash),
+    multiprocess_safe=True,
+)
+def overlapping_circles_fast(map, P, *, limit=100, max_radius_in_chunks=10):
+    circles = []
+    map = np.array(map)
+    adjustment = 1
+    radius = 2
+    while True:
+        radius, center = binary_search_map(
+            map,
+            ban=None,
+            P=P,
+            start_radius=radius / 2,
+            high=max_radius_in_chunks * 2,
+        )
+        if center is not None:
+            y, x = center
+            circles.append((radius * adjustment, (y * adjustment, x * adjustment)))
+            clear_location(map, radius, y, x)
+            print("Found circle", circles[-1])
+        while radius > max_radius_in_chunks:
+            radius = radius / 2
+            map = chunk(map, 2)
+            adjustment *= 2
+            print(
+                "Chunked map, new size",
+                map.shape,
+                "new radius",
+                radius,
+                "adjustment",
+                adjustment,
+            )
+        if map.shape[0] <= 2:
+            break
+        if len(circles) > limit:
+            break
+    return circles
+
+
+def make_circle_map(map_shape, circles):
+    zeros_map = np.zeros(map_shape, dtype=np.int32)
+    circle_map = np.zeros(map_shape, dtype=np.int32)
+    for i, (r, (y, x)) in enumerate(circles):
+        ys, xs = clear_location(zeros_map, r, y, x)
+        untouched = circle_map[ys, xs] == 0
+        ys, xs = ys[untouched], xs[untouched]
+        circle_map[ys, xs] = i + 1
+    return circle_map
+
+
 def clear_location(map, r, y, x):
     ry = r
     secy = compute_secants(map, y)
@@ -161,8 +221,23 @@ def plot_circles(map, circles, *, reduce=10, **kwargs):
     plt.axis("off")
 
 
+def reduce_circles(circles, reduce):
+    return [(r / reduce, (y // reduce, x // reduce)) for r, (y, x) in circles]
+
+
 def plot_overlapping_circles(map, circles, circle_map, *, reduce=10):
-    plot_circles(map, circles, reduce=reduce, linewidth=0.2)
+    map = chunk(map, reduce)
+    circles = reduce_circles(circles, reduce)
+    if circle_map is None:
+        circle_map = make_circle_map(map.shape, circles)
+    else:
+        circle_map = chunk(circle_map, reduce)
+    plot_circles(map, circles, reduce=1, linewidth=0.2)
+    circle_rgb = get_rgb_circles(circles, circle_map)
+    plt.imshow(circle_rgb, extent=[-180, 180, -90, 90])
+
+
+def get_rgb_circles(circles, circle_map):
     circle_rgb = np.zeros(circle_map.shape + (4,), dtype=np.uint8)
     hues = np.linspace(0, 1, len(circles))
     sats = np.random.rand(len(circles)) * 0.5 + 0.5
@@ -173,13 +248,147 @@ def plot_overlapping_circles(map, circles, circle_map, *, reduce=10):
     rgb = (rgb * 255).astype(np.uint8)
     for i, (r, (y, x)) in enumerate(circles):
         circle_rgb[circle_map == i + 1] = (*rgb[i], 100)
-    plt.imshow(circle_rgb, extent=[-180, 180, -90, 90])
+    return circle_rgb
+
+
+def create_rgb_image(ghs, circles, reduce):
+    shape = ghs.shape
+    ghs_reduced = chunk(ghs, reduce)
+    shape = (shape[0] // reduce, shape[1] // reduce)
+    circle_map = make_circle_map(shape, reduce_circles(circles, reduce))
+    rgb = get_rgb_circles(circles, circle_map)
+    maximum = np.percentile(ghs_reduced, 99.9)
+    ghs_reduced = np.clip(ghs_reduced / maximum * 255, 0, 255)
+    no_circle_mask = rgb[:, :, -1] == 0
+    ghs_no_circles = ghs_reduced[no_circle_mask]
+    rgb[no_circle_mask] = ghs_no_circles[:, None]
+    ghs_circles = ghs_reduced[~no_circle_mask]
+    rgb[~no_circle_mask] = (
+        rgb[~no_circle_mask] * 0.5 + ghs_circles[:, None] * 0.5
+    ).astype(np.uint8)
+    rgb[:, :, -1] = 255
+
+    return Image.fromarray(rgb)
 
 
 def plot_ghs(map, reduce):
-    map_reduced = map.reshape(
-        map.shape[0] // reduce, reduce, map.shape[1] // reduce, reduce
-    ).sum((1, 3))
+    map_reduced = chunk(map, reduce)
     perc_90 = np.percentile(map_reduced, 99.9)
     # imshow from -180 to 180, -90 to 90
     plt.imshow(map_reduced, extent=[-180, 180, -90, 90], clim=[0, perc_90], cmap="gray")
+
+
+def cumulative_sum_vertically(map):
+    out = np.zeros((map.shape[0] + 1, map.shape[1]), dtype=map.dtype)
+    np.cumsum(map, axis=0, out=out[1:])
+    return out
+
+
+def cumulative_sum_horizontally(map):
+    out = np.zeros((map.shape[0], map.shape[1] + 1), dtype=map.dtype)
+    np.cumsum(map, axis=1, out=out[:, 1:])
+    return out
+
+
+@dataclass
+class MapCumulativeSum:
+    cumul: np.ndarray
+    height: int
+    width: int
+
+    @classmethod
+    def from_map(cls, map):
+        return cls(
+            cumulative_sum_horizontally(cumulative_sum_vertically(map)), *map.shape
+        )
+
+    def compute_range(self, y1, y2, x1, x2):
+        """
+        Computes sum(map[y, x % map.shape[1]] if 0 <= y < map.shape[0] else 0 for y in range(y1, y2) for x in range(x1, x2)]
+        """
+        y2 = np.clip(y2, 0, self.height)
+        y1 = np.clip(y1, 0, self.height)
+        x_cycles = ((x2 - x2 % self.width) - (x1 - x1 % self.width)) // self.width
+        x1 = x1 % self.width
+        x2 = x2 % self.width
+        result = (
+            self.cumul[y2, x2]
+            - self.cumul[y2, x1]
+            - self.cumul[y1, x2]
+            + self.cumul[y1, x1]
+        )
+        result += x_cycles * (
+            self.cumul[y2, -1]
+            - self.cumul[y2, 0]
+            - self.cumul[y1, -1]
+            + self.cumul[y1, 0]
+        )
+        return result
+
+
+def high_density_chunks(population_map, y_rad, chunk_size, min_density):
+    """
+    Return the chunks (yl, xl) corresponding to regions of population_map[yl*chunk_size:(yl+1) * chunk_sie, xl*chunk_size:(xl+1) * chunk_size]
+       with population density at least min_density.
+
+    The area of a pixel in population_map at index (y, x) is cos(y_rad[y])
+    """
+    y_rad_padded = np.pad(
+        y_rad,
+        (0, (-population_map.shape[0]) % chunk_size),
+        mode="constant",
+        constant_values=0,
+    )
+    area_chunk = np.cos(y_rad_padded).reshape(-1, chunk_size).sum(1) * chunk_size
+    population_map_padded = chunk(population_map, chunk_size)
+    return np.where(population_map_padded > area_chunk[:, None] * min_density)
+
+
+def chunk(population_map, chunk_size):
+    population_map_padded = np.pad(
+        population_map,
+        (
+            (0, (-population_map.shape[0]) % chunk_size),
+            (0, (-population_map.shape[1]) % chunk_size),
+        ),
+        mode="constant",
+        constant_values=0,
+    )
+    population_map_padded = population_map_padded.reshape(
+        population_map_padded.shape[0] // chunk_size,
+        chunk_size,
+        population_map_padded.shape[1] // chunk_size,
+        chunk_size,
+    ).sum((1, 3))
+
+    return population_map_padded
+
+
+def to_shapely_ellipse(map_shape, r_pixels, y_pixels, x_pixels):
+    import shapely
+    import shapely.affinity
+    import shapely.geometry
+
+    r = r_pixels / map_shape[1] * 360
+    x = x_pixels / map_shape[1] * 360 - 180
+    y = 90 - y_pixels / map_shape[0] * 180
+    secy = 1 / np.cos(np.deg2rad(y))
+    return shapely.affinity.scale(
+        shapely.geometry.Point(x, y).buffer(1),
+        r * secy,
+        r,
+    )
+
+
+def to_geopandas_frame(map_shape, circles):
+    import geopandas as gpd
+
+    ellipses = []
+    for r, (y, x) in tqdm.tqdm(circles):
+        current = to_shapely_ellipse(map_shape, r, y, x)
+        for other in ellipses:
+            if current.intersects(other):
+                current = current.difference(other)
+        current = current.buffer(0.001)
+        ellipses.append(current)
+    return gpd.GeoDataFrame(dict(id=np.arange(len(circles))), geometry=ellipses)
