@@ -29,3 +29,7 @@ class HousingCensus(CensusStatisticsColection):
         result = shapefile_table
         result["housing_per_pop"] = result["total"] / result["population_18"]
         result["vacancy"] = result["vacant"] / result["total"]
+        del result["vacant"]
+        del result["total"]
+        del result["occupied"]
+        del result["population_18"]

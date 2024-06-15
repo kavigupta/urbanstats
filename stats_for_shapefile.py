@@ -238,14 +238,9 @@ def compute_statistics_for_shapefile(
     for cdc in cdc_columns():
         result[cdc] /= result["population_18_2010"]
 
-    del result["vacant"]
-    del result["total"]
-    del result["occupied"]
-    del result["population_18"]
     del result["vacant_2010"]
     del result["total_2010"]
     del result["occupied_2010"]
-    del result["population_18_2010"]
 
     def fractionalize(*columns):
         denominator = sum(result[c] for c in columns)
@@ -276,7 +271,6 @@ def compute_statistics_for_shapefile(
     fractionalize(*industry_stats.keys())
 
     fractionalize(*occupation_stats.keys())
-
 
     for feat in feature_columns:
         result[feat] = result[feat] / result["population"]
