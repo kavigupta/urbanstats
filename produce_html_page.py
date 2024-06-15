@@ -169,9 +169,11 @@ def get_statistic_categories():
         "sd": "main",
         **{k: "2010" for k in basics_2010()[0]},
         **{
-            k: "other_densities"
-            if k in ("gpw_pw_density_2", "gpw_pw_density_4")
-            else "main"
+            k: (
+                "other_densities"
+                if k in ("gpw_pw_density_2", "gpw_pw_density_4")
+                else "main"
+            )
             for k in gpw_stats
         },
         "area": "main",
