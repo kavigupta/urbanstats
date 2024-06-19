@@ -1,7 +1,7 @@
 import os
+
 import numpy as np
 import pandas as pd
-
 import requests
 
 questions = [f"q{i}" for i in range(1, 1 + 5)]
@@ -26,7 +26,7 @@ def get_full_statistics(*, after_problem, debug=False):
         "last_in_batch",
     ] = 1
     result.pattern = result.pattern.apply(
-        lambda x: np.array([x // 2**i % 2 for i in range(5)])
+        lambda x: np.array([x // 2 ** i % 2 for i in range(5)])
     )
     for i, q in enumerate(questions):
         result[q] = result.pattern.apply(lambda x: x[i])

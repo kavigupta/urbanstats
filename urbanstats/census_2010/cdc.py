@@ -1,10 +1,11 @@
 import numpy as np
 import pandas as pd
-from permacache import permacache
 import tqdm.auto as tqdm
+from permacache import permacache
 
 from census_blocks import load_raw_census
 from urbanstats.acs.load import extract_tract_geoid
+
 
 @permacache("urbanstats/census_2010/cdc_table")
 def cdc_table():

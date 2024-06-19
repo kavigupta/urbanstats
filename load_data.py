@@ -1,21 +1,18 @@
-import os
 import glob
 import json
+import os
+import tempfile
 import urllib
+import zipfile
 
 import addfips
-import us
+import electiondata as e
 import geopandas
 import pandas as pd
 import requests
-import tempfile
-import zipfile
-
 import tqdm.auto as tqdm
-
-import electiondata as e
+import us
 from permacache import permacache
-
 from py_essentials import hashing
 
 

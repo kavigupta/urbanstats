@@ -1,17 +1,15 @@
+import zipfile
 from collections import defaultdict
 from functools import lru_cache
-import zipfile
-from geotiff import GeoTiff
-import pandas as pd
-import tqdm.auto as tqdm
 
-from permacache import permacache, stable_hash, drop_if_equal, drop_if
 import numpy as np
-
+import pandas as pd
 import shapely
+import tqdm.auto as tqdm
+from geotiff import GeoTiff
+from permacache import permacache, stable_hash, drop_if_equal, drop_if
 
 from urbanstats.features.within_distance import xy_to_radius
-
 
 GPW_PATH = (
     "gpw_v4_population_count_rev11_2020_30_sec_",
@@ -129,7 +127,7 @@ def row_idx_from_lat(lat):
 
 
 def grid_area_km(lat):
-    return 1 / 120 * 1 / 120 * 111**2 * np.cos(lat * np.pi / 180)
+    return 1 / 120 * 1 / 120 * 111 ** 2 * np.cos(lat * np.pi / 180)
 
 
 def cell_overlaps(shape):
@@ -172,7 +170,7 @@ def compute_full_cell_overlaps_with_circle(radius, row_idx, num_grid=10):
             lon = lon_from_col_idx(offx)
             circle = xy_to_radius(radius, lon, lat)
             for (r, c), frac in cell_overlaps(circle).items():
-                result[(r, c)] += frac / (num_grid**2)
+                result[(r, c)] += frac / (num_grid ** 2)
     return result
 
 
@@ -190,7 +188,7 @@ def compute_circle_density_per_cell(
         overlaps = compute_full_cell_overlaps_with_circle(radius, row_idx)
         for (source_row, off), weight in overlaps.items():
             out[row_idx] += np.roll(glo_zero[source_row], -off) * weight
-    out = out / (np.pi * radius**2)
+    out = out / (np.pi * radius ** 2)
     return out
 
 
@@ -228,7 +226,7 @@ def filter_lat_lon_direct(polygon, row_idxs, col_idxs):
     return row_selected, col_selected
 
 
-def filter_lat_lon(polygon, row_idxs, col_idxs, chunk_size=10**5):
+def filter_lat_lon(polygon, row_idxs, col_idxs, chunk_size=10 ** 5):
     """
     Filter a list of row/col indices to only those that are contained in the polygon.
     """
@@ -374,7 +372,7 @@ def compute_gpw_data_for_shapefile_table(shapefile):
     result.index = shapes.index
     result["area"] = shapes.to_crs({"proj": "cea"}).area / 1e6
     result["perimeter"] = shapes.to_crs({"proj": "cea"}).length / 1e3
-    result["compactness"] = 4 * np.pi * result.area / result.perimeter**2
+    result["compactness"] = 4 * np.pi * result.area / result.perimeter ** 2
     result["gpw_aw_density"] = result["gpw_population"] / result["area"]
     result["gpw_pw_density_2"] = result["gpw_pw_density_2"]
     result["gpw_pw_density_4"] = result["gpw_pw_density_4"]

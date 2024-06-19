@@ -1,5 +1,6 @@
 import copy
 import os
+
 import geopandas as gpd
 import tqdm.auto as tqdm
 from permacache import permacache
@@ -41,7 +42,7 @@ def filter_small_islands(r):
     )
     if len(polys) > 100:
         a = polys.set_crs("epsg:4326").to_crs({"proj": "cea"}).area
-        min_area = min(10 * 1000**2, a.max() / 10)
+        min_area = min(10 * 1000 ** 2, a.max() / 10)
         r.geometry = polys[a > min_area].buffer(0).unary_union
     r.geometry.simplify(SIMPLIFY_REALLY_SMALL)
     return r
@@ -111,6 +112,7 @@ def countries():
         c.to_file(path + "/countries.shp", encoding="utf-8")
     return gpd.read_file(path + "/countries.shp")
 
+
 def continents_direct():
     data = gpd.read_file("named_region_shapefiles/continents/subnational_regions.shp")
     data = data.dissolve("newcont")
@@ -120,6 +122,7 @@ def continents_direct():
     data = data.reset_index(drop=True)
     return data
 
+
 def continents():
     path = "named_region_shapefiles/continents_processed"
     if not os.path.exists(path):
@@ -127,6 +130,7 @@ def continents():
         os.makedirs(path)
         c.to_file(path + "/continents.shp", encoding="utf-8")
     return gpd.read_file(path + "/continents.shp")
+
 
 @permacache("urbanstats/special_cases/country/continent_names")
 def continent_names():

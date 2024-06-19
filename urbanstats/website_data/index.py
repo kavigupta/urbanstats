@@ -1,7 +1,8 @@
-from collections import defaultdict
 import json
 import re
 import unicodedata
+from collections import defaultdict
+
 from urbanstats.protobuf.utils import save_string_list
 
 

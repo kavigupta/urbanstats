@@ -1,4 +1,5 @@
 import json
+
 import numpy as np
 from permacache import permacache, stable_hash
 
@@ -7,7 +8,7 @@ from urbanstats.games.quiz_analysis import get_full_statistics, questions
 
 from .fixed import retrostat as fixed_up_to
 
-generate_until = 29
+generate_until = 34
 
 
 def week_for_day(day):
@@ -76,7 +77,7 @@ def get_question_pair(qdata):
 @permacache("urbanstats/games/retrostat/generate_retrostat_3")
 def generate_retrostat(retrostat_week):
     rng = np.random.RandomState(
-        int(stable_hash(("retrostat_weekly", retrostat_week)), 16) % 2**32
+        int(stable_hash(("retrostat_weekly", retrostat_week)), 16) % 2 ** 32
     )
     qdata = get_quiz_data_for_retroweek(retrostat_week)
     qdata = sorted(qdata, key=lambda x: x["ease"])

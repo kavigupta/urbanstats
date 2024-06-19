@@ -17,64 +17,49 @@ function to_name(name) {
     return name.toLowerCase().replaceAll(" ", "_");
 }
 
+const type_to_type_category = require("../data/type_to_type_category.json");
+
 class RelatedButton extends React.Component {
     constructor(props) {
         super(props);
     }
 
     render() {
-        const DARK_GRAY = "#4e525a";
+        const RED = "#f96d6d";
         const BLUE = "#5a7dc3";
         const ORANGE = "#af6707";
         const PURPLE = "#975ac3";
-        const RED = "#f96d6d";
+        const DARK_GRAY = "#4e525a";
         const PINK = "#c767b0";
         const GREEN = "#8ac35a";
         const YELLOW = "#b8a32f";
 
+        const type_category = type_to_type_category[this.props.rowType];
+
         const colors_each = {
-            "Continent": DARK_GRAY,
-            "Country": DARK_GRAY,
-            "Judicial Circuit": DARK_GRAY,
-            "USDA County Type": DARK_GRAY,
-            "Subnational Region": BLUE,
-            "Native Area": BLUE,
-            "CSA": ORANGE,
-            "Native Statistical Area": ORANGE,
-            "Judicial District": ORANGE,
-            "Hospital Referral Region": ORANGE,
-            "MSA": PURPLE,
-            "Congressional District": PURPLE,
-            "Historical Congressional District": PURPLE,
-            "Native Subdivision": PURPLE,
-            "Media Market": PURPLE,
-            "Urban Area": PURPLE,
-            "Urban Center": PURPLE,
-            "Hospital Service Area": PURPLE,
-            "County": RED,
-            "State Senate District": RED,
-            "CCD": PINK,
-            "State House District": PINK,
-            "County Cross CD": PINK,
-            "City": GREEN,
-            "School District": GREEN,
-            "Neighborhood": YELLOW,
-            "ZIP": YELLOW,
-        }
+            "International": RED,
+            "US Subdivision": BLUE,
+            "Census": ORANGE,
+            "Political": PURPLE,
+            "Oddball": DARK_GRAY,
+            "School": YELLOW,
+            "Small": PINK,
+            "Native": GREEN,
+        };
 
         let classes = `serif button_related`
         if (mobileLayout()) {
             classes += " button_related_mobile";
         }
-        const color = colors_each[this.props.rowType];
+        const color = colors_each[type_category];
         if (color === undefined) {
-            throw new Error("color is undefined; rowType is " + this.props.rowType);
+            throw new Error("color is undefined; rowType is " + this.props.rowType + " and type_category is " + type_category);
         }
         return (
             <li className={"linklistel" + (mobileLayout() ? " linklistel_mobile" : "")}>
                 <a
                     className={classes}
-                    style={{ color: "black", backgroundColor: lighten(color, 0.7)}}
+                    style={{ color: "black", backgroundColor: lighten(color, 0.7) }}
                     href={article_link(this.props.universe, this.props.longname)}>{this.props.shortname}
                 </a>
             </li>

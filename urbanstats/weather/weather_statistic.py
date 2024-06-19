@@ -1,6 +1,5 @@
 import attr
 import numpy as np
-
 from permacache import permacache, stable_hash
 
 from .era5 import all_results

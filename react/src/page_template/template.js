@@ -148,7 +148,7 @@ function Version() {
 }
 
 function LastUpdated() {
-    return <span id="last-updated">2024-06-03</span>
+    return <span id="last-updated">2024-06-19</span>
 }
 
 function MainCredits() {

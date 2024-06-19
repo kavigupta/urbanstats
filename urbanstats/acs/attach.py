@@ -1,6 +1,7 @@
-from permacache import permacache, stable_hash
-import pandas as pd
 import geopandas as gpd
+import pandas as pd
+from permacache import permacache, stable_hash
+
 from election_data import with_election_results
 
 from .entities import entities, entities_split_by_usa_pr

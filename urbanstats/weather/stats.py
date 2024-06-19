@@ -1,8 +1,7 @@
 import numpy as np
 
+from .utils import compute_heat_index, f_to_k, k_to_f
 from .weather_statistic import ERA5WeatherStatistic, for_season_mask
-from .utils import compute_heat_index, k_to_f, f_to_k
-
 
 era5_statistics = []
 era5_statistics += [
