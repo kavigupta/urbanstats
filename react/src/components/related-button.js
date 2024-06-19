@@ -42,7 +42,7 @@ class RelatedButton extends React.Component {
             "Census": ORANGE,
             "Political": PURPLE,
             "Oddball": DARK_GRAY,
-            "Education": YELLOW,
+            "School": YELLOW,
             "Small": PINK,
             "Native": GREEN,
         };
@@ -53,7 +53,7 @@ class RelatedButton extends React.Component {
         }
         const color = colors_each[type_category];
         if (color === undefined) {
-            throw new Error("color is undefined; rowType is " + this.props.rowType);
+            throw new Error("color is undefined; rowType is " + this.props.rowType + " and type_category is " + type_category);
         }
         return (
             <li className={"linklistel" + (mobileLayout() ? " linklistel_mobile" : "")}>
