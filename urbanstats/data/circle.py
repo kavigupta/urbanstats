@@ -563,6 +563,11 @@ names = {
         1: constant("Outskirts"),
         2: constant("Periphery"),
     },
+    (3, ((1, 2),)): {
+        0: relative([0, 1, 2]),
+        1: relative([0, 1, 2]),
+        2: relative([0, 1, 2]),
+    },
     (5, ((0, 1), (1, 2), (1, 4), (2, 4), (0, 4), (3, 4), (0, 2))): {
         0: constant("Center"),
         1: constant("Outskirts"),
