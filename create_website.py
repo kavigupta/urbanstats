@@ -21,7 +21,11 @@ from produce_html_page import (
     category_metadata,
     statistic_internal_to_display_name,
 )
-from relationship import full_relationships, map_relationships_by_type
+from relationship import (
+    full_relationships,
+    map_relationships_by_type,
+    type_to_type_category,
+)
 from election_data import vest_elections
 from urbanstats.consolidated_data.produce_consolidated_data import (
     full_consolidated_data,
@@ -260,6 +264,9 @@ def main(
 
     with open("react/src/data/map_relationship.json", "w") as f:
         json.dump(map_relationships_by_type, f)
+
+    with open("react/src/data/type_to_type_category.json", "w") as f:
+        json.dump(type_to_type_category, f)
 
     with open(f"react/src/data/statistic_category_metadata.json", "w") as f:
         json.dump(output_categories(), f)

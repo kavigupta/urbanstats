@@ -17,6 +17,8 @@ function to_name(name) {
     return name.toLowerCase().replaceAll(" ", "_");
 }
 
+const type_to_type_category = require("../data/type_to_type_category.json");
+
 class RelatedButton extends React.Component {
     constructor(props) {
         super(props);
@@ -32,50 +34,24 @@ class RelatedButton extends React.Component {
         const GREEN = "#8ac35a";
         const YELLOW = "#b8a32f";
 
-        const INTERNATIONAL = RED;
-        const US_SUBDIVISION = BLUE;
-        const CENSUS = ORANGE;
-        const POLITICAL = PURPLE;
-        const ODDBALL = DARK_GRAY;
-        const EDUCATION = YELLOW;
-        const SMALL = PINK;
-        const NATIVE = GREEN;
+        const type_category = type_to_type_category[this.props.rowType];
 
         const colors_each = {
-            "Continent": INTERNATIONAL,
-            "Country": INTERNATIONAL,
-            "Judicial Circuit": ODDBALL,
-            "USDA County Type": ODDBALL,
-            "Subnational Region": US_SUBDIVISION,
-            "Native Area": NATIVE,
-            "CSA": CENSUS,
-            "Native Statistical Area": NATIVE,
-            "Judicial District": ODDBALL,
-            "Hospital Referral Region": ODDBALL,
-            "MSA": CENSUS,
-            "Congressional District": POLITICAL,
-            "Historical Congressional District": POLITICAL,
-            "Native Subdivision": NATIVE,
-            "Media Market": ODDBALL,
-            "Urban Area": CENSUS,
-            "Urban Center": INTERNATIONAL,
-            "Hospital Service Area": ODDBALL,
-            "County": US_SUBDIVISION,
-            "State Senate District": POLITICAL,
-            "CCD": CENSUS,
-            "State House District": POLITICAL,
-            "County Cross CD": POLITICAL,
-            "City": US_SUBDIVISION,
-            "School District": EDUCATION,
-            "Neighborhood": SMALL,
-            "ZIP": SMALL,
-        }
+            "International": RED,
+            "US Subdivision": BLUE,
+            "Census": ORANGE,
+            "Political": PURPLE,
+            "Oddball": DARK_GRAY,
+            "Education": YELLOW,
+            "Small": PINK,
+            "Native": GREEN,
+        };
 
         let classes = `serif button_related`
         if (mobileLayout()) {
             classes += " button_related_mobile";
         }
-        const color = colors_each[this.props.rowType];
+        const color = colors_each[type_category];
         if (color === undefined) {
             throw new Error("color is undefined; rowType is " + this.props.rowType);
         }
