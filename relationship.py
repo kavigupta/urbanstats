@@ -312,36 +312,36 @@ def add(d, edges):
 
 
 tiers = [
-    ["continents"],
-    ["countries"],
+    ["Continent"],
+    ["Country"],
     [
-        "states",
-        "subnational_regions",
-        "native_areas",
-        "native_statistical_areas",
-        "judicial_circuits",
-        "media_markets",
-        "usda_county_type",
-        "hospital_referral_regions",
+        "State",
+        "Subnational Region",
+        "Native Area",
+        "Native Statistical Area",
+        "Judicial Circuit",
+        "Media Market",
+        "USDA County Type",
+        "Hospital Referral Region",
     ],
     [
-        "csas",
-        "msas",
-        "counties",
-        "historical_congressional",
-        "state_house",
-        "state_senate",
-        "congress",
-        "native_subdivisions",
-        "urban_areas",
-        "judicial_districts",
-        "county_cross_cd",
-        "hospital_service_areas",
-        "urban_centers",
-        "us_urban_centers",
+        "CSA",
+        "MSA",
+        "County",
+        "Historical Congressional District",
+        "State House District",
+        "State Senate District",
+        "Congressional District",
+        "Native Subdivision",
+        "Urban Area",
+        "Judicial District",
+        "County Cross CD",
+        "Hospital Service Area",
+        "Urban Center",
+        "Urban Center",
     ],
-    ["cousub", "cities", "school_districts"],
-    ["neighborhoods", "zctas"],
+    ["CCD", "City", "School District"],
+    ["Neighborhood", "ZIP"],
 ]
 
 type_to_type_category = {
@@ -371,15 +371,9 @@ map_relationships += [[x, x] for x in shapefiles_for_stats]
 
 map_relationships_by_type = [[key_to_type[x] for x in y] for y in map_relationships]
 
-tier_idx = {x: -i for i, tier in enumerate(tiers) for x in tier}
-tier_index_by_type = {
-    shapefiles_for_stats[x].meta["type"]: tier_idx[x] for x in shapefiles_for_stats
-}
-ordering_idx = {
-    shapefiles_for_stats[x].meta["type"]: (i, j)
-    for i, tier in enumerate(tiers)
-    for j, x in enumerate(tier)
-}
+tier_index_by_type = {x: -i for i, tier in enumerate(tiers) for x in tier}
+
+ordering_idx = {x: (i, j) for i, tier in enumerate(tiers) for j, x in enumerate(tier)}
 
 ordering_idx["Native Area"] = (
     ordering_idx["Native Subdivision"][0],
