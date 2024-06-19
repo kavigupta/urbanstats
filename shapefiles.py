@@ -279,7 +279,7 @@ shapefiles = dict(
         shortname_extractor=lambda x: x.NAMELSAD,
         longname_extractor=lambda x: f"{x.NAMELSAD}, {us.states.lookup(x.STATEFP).name}, USA",
         filter=lambda x: True,
-        meta=dict(type="City", source="Census", type_category="Census"),
+        meta=dict(type="City", source="Census", type_category="US Subdivision"),
         drop_dup=True,
     ),
     neighborhoods=Shapefile(
