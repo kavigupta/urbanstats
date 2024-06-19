@@ -314,6 +314,11 @@ tiers = [
     ["neighborhoods", "zctas"],
 ]
 
+type_to_type_category = {
+    shapefile.meta["type"]: shapefile.meta["type_category"]
+    for shapefile in shapefiles_for_stats.values()
+}
+
 is_american = {k: v.american for k, v in shapefiles_for_stats.items()}
 
 key_to_type = {x: shapefiles_for_stats[x].meta["type"] for x in shapefiles_for_stats}
