@@ -1,7 +1,6 @@
-import numpy as np
-
 from types import SimpleNamespace
 
+import numpy as np
 from permacache import permacache
 
 from geometry import locate_blocks
@@ -25,7 +24,7 @@ def load_and_process_data(*, year, radius):
     coordinates = np.array([blocks.INTPTLAT, blocks.INTPTLON]).T
     density_in_radius = locate_blocks(
         coordinates=coordinates, population=population, radius=radius
-    ) / (np.pi * radius**2)
+    ) / (np.pi * radius ** 2)
     blocks["population_density_weighted"] = density_in_radius[:, 0] * population[:, 0]
     return blocks
 

@@ -1,25 +1,24 @@
+import pickle
 from collections import Counter
 from functools import lru_cache
-import pickle
 
 import attr
-import pandas as pd
+import geopandas as gpd
 import numpy as np
+import pandas as pd
 import tqdm.auto as tqdm
 from more_itertools import chunked
-from census_blocks import RADII, racial_demographics, housing_units
+from permacache import drop_if_equal, permacache, stable_hash
+
+from census_blocks import RADII, housing_units, racial_demographics
 from election_data import election_column_names
-
-import geopandas as gpd
-
-from permacache import permacache, stable_hash, drop_if_equal
-
 from urbanstats.acs import industry, occupation
 from urbanstats.acs.attach import with_acs_data
 from urbanstats.acs.entities import acs_columns
 from urbanstats.census_2010.blocks_2010 import block_level_data_2010
-from urbanstats.features.feature import feature_columns
+from urbanstats.census_2010.columns_2010 import cdc_columns
 from urbanstats.features.extract_data import feature_data
+from urbanstats.features.feature import feature_columns
 from urbanstats.osm.parks import park_overlap_percentages_all
 from urbanstats.statistics.collections.transportation_commute_time import (
     TransportationCommuteTimeStatistics,
@@ -30,8 +29,7 @@ from urbanstats.statistics.collections.transportation_mode import (
 from urbanstats.statistics.collections.transportation_vehicle_ownership import (
     TransportationVehicleOwnershipStatistics,
 )
-from urbanstats.weather.to_blocks import weather_stat_names, weather_block_statistics
-from urbanstats.census_2010.columns_2010 import cdc_columns
+from urbanstats.weather.to_blocks import weather_block_statistics, weather_stat_names
 
 racial_statistics = {
     "white": "White %",
@@ -298,7 +296,7 @@ def compute_statistics_for_shapefile(
     result = pd.concat([result_2020, result_2010], axis=1)
     assert (result.longname == sf_fr.longname).all()
     result["perimiter"] = sf_fr.geometry.to_crs({"proj": "cea"}).length / 1e3
-    result["compactness"] = 4 * np.pi * result.area / result.perimiter**2
+    result["compactness"] = 4 * np.pi * result.area / result.perimiter ** 2
     result["population_change_2010"] = (
         result["population"] - result["population_2010"]
     ) / result["population_2010"]

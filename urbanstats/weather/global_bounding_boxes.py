@@ -10,7 +10,7 @@ def produce_all_bounding_boxes():
     rows, cols = mask.shape
     for i in range(0, rows, chunk):
         for j in range(0, cols, chunk):
-            if mask[i:i+chunk, j:j+chunk].any():
+            if mask[i : i + chunk, j : j + chunk].any():
                 yield coords(i, j, mask)
 
 
@@ -40,13 +40,16 @@ def clip(i, j, i_end, j_end, mask):
         j_end = j_end - col_any[::-1].argmax()
     return i, j, i_end, j_end
 
+
 @permacache("urbanstats/weather/global_bounding_boxes_5", multiprocess_safe=True)
 def global_bounding_boxes():
     return list(produce_all_bounding_boxes())
 
+
 def plot_bounding_boxes():
     import matplotlib.pyplot as plt
     from matplotlib.patches import Rectangle
+
     from urbanstats.data.gpw import load_full
 
     mask = load_full() > 0

@@ -5,23 +5,22 @@ import numpy as np
 import pandas as pd
 
 from census_blocks import RADII
-from stats_for_shapefile import (
-    gpw_stats,
-    racial_statistics,
-    housing_stats,
-    education_stats,
-    generation_stats,
-    income_stats,
-    transportation_stats,
-    industry_stats,
-    occupation_stats,
-    national_origin_stats,
-    feature_stats,
-    misc_stats,
-)
 from election_data import vest_elections
 from relationship import ordering_idx
-
+from stats_for_shapefile import (
+    education_stats,
+    feature_stats,
+    generation_stats,
+    gpw_stats,
+    housing_stats,
+    income_stats,
+    industry_stats,
+    misc_stats,
+    national_origin_stats,
+    occupation_stats,
+    racial_statistics,
+    transportation_stats,
+)
 from urbanstats.census_2010.columns_2010 import basics_2010, cdc_columns
 from urbanstats.protobuf import data_files_pb2
 from urbanstats.protobuf.utils import write_gzip

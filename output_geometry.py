@@ -6,7 +6,6 @@ import tqdm.auto as tqdm
 
 from produce_html_page import create_filename
 from shapefiles import shapefiles
-
 from urbanstats.protobuf import data_files_pb2
 from urbanstats.protobuf.utils import write_gzip
 

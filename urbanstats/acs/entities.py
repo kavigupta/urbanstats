@@ -1,9 +1,15 @@
-from urbanstats.acs.load import ACSDataEntity
 from urbanstats.acs.industry import industry_dict, normalize_industry_name
-from urbanstats.acs.occupation import occupation_dict, normalize_occupation_name
-from urbanstats.statistics.collections.transportation_commute_time import TransportationCommuteTimeStatistics
-from urbanstats.statistics.collections.transportation_mode import TransportationModeStatistics
-from urbanstats.statistics.collections.transportation_vehicle_ownership import TransportationVehicleOwnershipStatistics
+from urbanstats.acs.load import ACSDataEntity
+from urbanstats.acs.occupation import normalize_occupation_name, occupation_dict
+from urbanstats.statistics.collections.transportation_commute_time import (
+    TransportationCommuteTimeStatistics,
+)
+from urbanstats.statistics.collections.transportation_mode import (
+    TransportationModeStatistics,
+)
+from urbanstats.statistics.collections.transportation_vehicle_ownership import (
+    TransportationVehicleOwnershipStatistics,
+)
 
 entities = dict(
     education=ACSDataEntity(

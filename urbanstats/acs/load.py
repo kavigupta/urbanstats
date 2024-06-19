@@ -1,23 +1,25 @@
 import attr
 import numpy as np
 import pandas as pd
-from permacache import permacache, stable_hash
-from cached_property import cached_property
-
 import requests
 import tqdm.auto as tqdm
 import us
+from cached_property import cached_property
+from permacache import permacache, stable_hash
 
 from election_data import with_election_results
 
 TRACT_PREFIX_COUNT = 2 + 3 + 6  # state + county + tract
 BLOCK_GROUP_PREFIX_COUNT = TRACT_PREFIX_COUNT + 1  # block group
 
+
 def extract_tract_geoid(geoid):
     return geoid.split("US")[1][:TRACT_PREFIX_COUNT]
 
+
 def extract_block_group_geoid(geoid):
     return geoid.split("US")[1][:BLOCK_GROUP_PREFIX_COUNT]
+
 
 @permacache("population_density/acs/acs_variables")
 def acs_variables():
@@ -109,7 +111,9 @@ def disaggregate_to_blocks(
     """
     assert parent in ["block group", "tract"]
     assert universe_for_disagg in census_block_data
-    extract = extract_block_group_geoid if parent == "block group" else extract_tract_geoid
+    extract = (
+        extract_block_group_geoid if parent == "block group" else extract_tract_geoid
+    )
     census_parent = census_block_data.geoid.apply(extract)
     census_universe_pop_by_parent = (
         census_block_data[universe_for_disagg].groupby(census_parent).sum()

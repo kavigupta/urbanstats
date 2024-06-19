@@ -1,10 +1,11 @@
 import os
+import re
 import shutil
 import subprocess
-import requests
 import tempfile
+
+import requests
 import us
-import re
 
 from urbanstats.special_cases.country import continent_names
 from urbanstats.universe.annotate_universes import (
@@ -12,6 +13,7 @@ from urbanstats.universe.annotate_universes import (
     country_names,
     get_universe_name_for_state,
 )
+
 from .universe_constants import CONTINENTS, COUNTRIES
 
 flags_folder = "icons/flags/"

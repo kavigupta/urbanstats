@@ -1,6 +1,6 @@
 import attr
-import pandas as pd
 import geopandas as gpd
+import pandas as pd
 
 from .within_distance import shapefile_points_to_radius
 

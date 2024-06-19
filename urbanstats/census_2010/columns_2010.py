@@ -74,5 +74,5 @@ def basics_2010():
         "vacancy_2010": "Vacancy % (2010)",
     }, {
         **{k: ad_2010[k] for k in ad_2010 if k != "ad_1_2010"},
-        **{k: ad_change[k] for k in ad_change if k != "ad_1_change_2010"}
+        **{k: ad_change[k] for k in ad_change if k != "ad_1_change_2010"},
     }

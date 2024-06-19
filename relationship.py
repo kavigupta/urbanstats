@@ -1,17 +1,20 @@
 import re
-from functools import lru_cache
 from collections import defaultdict
+from functools import lru_cache
+
+import geopandas as gpd
 import numpy as np
 import pandas as pd
-from permacache import permacache, drop_if_equal
-import geopandas as gpd
 import tqdm
+from permacache import drop_if_equal, permacache
 
 from shapefiles import shapefiles_for_stats
+
 
 def skippable_edge_case(k):
     # no clue what this is
     return k == "Historical Congressional District DC-98, 103rd-117th Congress, USA"
+
 
 @lru_cache(maxsize=1)
 def states_for_all():
@@ -41,11 +44,17 @@ def states_for_all():
                 assert len(systematics[k]) >= 1, (u, k)
     return systematics
 
+
 @lru_cache(maxsize=1)
 def continents_for_all():
     systematics = {}
     for u in shapefiles_for_stats:
-        for k, v in contained_in(shapefiles_for_stats[u], shapefiles_for_stats["continents"], only_american=False, only_nonamerican=False).items():
+        for k, v in contained_in(
+            shapefiles_for_stats[u],
+            shapefiles_for_stats["continents"],
+            only_american=False,
+            only_nonamerican=False,
+        ).items():
             if skippable_edge_case(k):
                 continue
             # zip codes are north american, except for hawaii, which all start with 9
@@ -59,12 +68,20 @@ def continents_for_all():
                 v = ["North America"]
             if k == "HI-HD051, USA":
                 v = ["Oceania"]
-            if k == "ME-HD119, USA" or k == "OH-HD013, USA" or k == "Inalik ANVSA, USA" or k == "Lesnoi ANVSA, USA":
+            if (
+                k == "ME-HD119, USA"
+                or k == "OH-HD013, USA"
+                or k == "Inalik ANVSA, USA"
+                or k == "Lesnoi ANVSA, USA"
+            ):
                 v = ["North America"]
             if k == "Venice Urban Center, Italy":
                 v = ["Europe"]
             # things in these states are in North America
-            if re.match(r".*, (New York|Maine|Florida|Virginia|Alaska|California|Ohio|Michigan|Washington|North Carolina), USA$", k):
+            if re.match(
+                r".*, (New York|Maine|Florida|Virginia|Alaska|California|Ohio|Michigan|Washington|North Carolina), USA$",
+                k,
+            ):
                 v = ["North America"]
             if k in systematics:
                 assert systematics[k] == v, (k, systematics[k], v)
@@ -72,11 +89,17 @@ def continents_for_all():
                 systematics[k] = v
     return systematics
 
+
 @lru_cache(maxsize=1)
 def non_us_countries_for_all():
     systematics = {}
     for u in shapefiles_for_stats:
-        for k, v in contained_in(shapefiles_for_stats[u], shapefiles_for_stats["countries"], only_american=False, only_nonamerican=True).items():
+        for k, v in contained_in(
+            shapefiles_for_stats[u],
+            shapefiles_for_stats["countries"],
+            only_american=False,
+            only_nonamerican=True,
+        ).items():
             if skippable_edge_case(k):
                 continue
             if k in systematics and k.endswith("USA"):
@@ -88,18 +111,25 @@ def non_us_countries_for_all():
                 systematics[k] = v
     return systematics
 
+
 @permacache(
     "population_density/relationship/states_for_4",
     key_function=dict(sh=lambda a: a.hash_key),
 )
 def states_for(sh):
     print("states_for", sh.hash_key)
-    return contained_in(sh, shapefiles_for_stats["states"], only_american=True, only_nonamerican=False)
+    return contained_in(
+        sh, shapefiles_for_stats["states"], only_american=True, only_nonamerican=False
+    )
+
 
 @permacache(
     "population_density/relationship/contained_in_2",
-    key_function=dict(sh=lambda a: a.hash_key, check_contained_in=lambda a: a.hash_key,
-                      only_nonamerican=drop_if_equal(False)),
+    key_function=dict(
+        sh=lambda a: a.hash_key,
+        check_contained_in=lambda a: a.hash_key,
+        only_nonamerican=drop_if_equal(False),
+    ),
 )
 def contained_in(sh, check_contained_in, *, only_american, only_nonamerican):
     print("contained_in", sh.hash_key, check_contained_in.hash_key)
@@ -282,7 +312,7 @@ def add(d, edges):
 
 
 tiers = [
-    ['continents'],
+    ["continents"],
     ["countries"],
     [
         "states",

@@ -1,13 +1,10 @@
 import json
-import numpy as np
 
+import numpy as np
 import tqdm.auto as tqdm
 
-
 from produce_html_page import internal_statistic_names
-from urbanstats.protobuf.utils import (
-    save_string_list
-)
+from urbanstats.protobuf.utils import save_string_list
 
 
 def output_ordering(site_folder, ordering):
@@ -27,17 +24,21 @@ def output_ordering(site_folder, ordering):
     with open(f"react/src/data/data_links.json", "w") as f:
         json.dump(mapify(data_map_all), f)
 
+
 def mapify(lst):
     result = {}
     for ((a, b, c), v) in lst:
         result[f"{a}__{b}__{c}"] = v
     return result
 
+
 def output_ordering_for_universe(site_folder, universe, ordering):
     order_backmap = output_indices(site_folder, universe, ordering)
     counts = {}
     order_map = []
-    order_map += ordering.overall_ordinal.output_order_files(site_folder, universe, "overall", order_backmap)
+    order_map += ordering.overall_ordinal.output_order_files(
+        site_folder, universe, "overall", order_backmap
+    )
     data_map = []
     for typ in sorted(ordering.ordinal_by_type):
         order_map += ordering.ordinal_by_type[typ].output_order_files(
@@ -49,10 +50,15 @@ def output_ordering_for_universe(site_folder, universe, ordering):
     for statistic_column in tqdm.tqdm(
         internal_statistic_names(), desc=f"counting {universe}"
     ):
-        counts[statistic_column, "overall"] = ordering.overall_ordinal.ordinals_by_stat[statistic_column].count
+        counts[statistic_column, "overall"] = ordering.overall_ordinal.ordinals_by_stat[
+            statistic_column
+        ].count
         for typ in sorted(ordering.ordinal_by_type):
-            counts[statistic_column, typ] = ordering.ordinal_by_type[typ].ordinals_by_stat[statistic_column].count
+            counts[statistic_column, typ] = (
+                ordering.ordinal_by_type[typ].ordinals_by_stat[statistic_column].count
+            )
     return list(counts.items()), order_map, data_map
+
 
 def output_indices(site_folder, universe, ordering):
     order_backmap = {}

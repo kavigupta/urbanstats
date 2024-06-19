@@ -1,17 +1,17 @@
 import base64
 import copy
-from datetime import datetime, timedelta
-import pytz
-from functools import lru_cache
 import gzip
-import os
 import json
+import os
+import urllib
+from datetime import datetime, timedelta
+from functools import lru_cache
 
 import numpy as np
 import pandas as pd
-from permacache import permacache, stable_hash
+import pytz
 import tqdm.auto as tqdm
-import urllib
+from permacache import permacache, stable_hash
 
 from create_website import (
     get_index_lists,
@@ -23,14 +23,19 @@ from produce_html_page import (
     indices,
     internal_statistic_names,
 )
-from shapefiles import filter_table_for_type, american_to_international
+from relationship import states_for_all
+from shapefiles import american_to_international, filter_table_for_type
 from urbanstats.acs import industry, occupation
 from urbanstats.shortener import shorten
-
-from relationship import states_for_all
-from urbanstats.statistics.collections.transportation_commute_time import TransportationCommuteTimeStatistics
-from urbanstats.statistics.collections.transportation_mode import TransportationModeStatistics
-from urbanstats.statistics.collections.transportation_vehicle_ownership import TransportationVehicleOwnershipStatistics
+from urbanstats.statistics.collections.transportation_commute_time import (
+    TransportationCommuteTimeStatistics,
+)
+from urbanstats.statistics.collections.transportation_mode import (
+    TransportationModeStatistics,
+)
+from urbanstats.statistics.collections.transportation_vehicle_ownership import (
+    TransportationVehicleOwnershipStatistics,
+)
 
 from .fixed import juxtastat as fixed_up_to
 

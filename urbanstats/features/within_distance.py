@@ -1,10 +1,9 @@
-from permacache import permacache
-
-import shapely
 import geopandas as gpd
 import numpy as np
-from scipy.spatial import cKDTree
+import shapely
 import tqdm
+from permacache import permacache
+from scipy.spatial import cKDTree
 
 from census_blocks import load_raw_census
 from urbanstats.geometry.ellipse import Ellipse

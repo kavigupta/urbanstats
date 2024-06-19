@@ -21,7 +21,7 @@ class TransportationModeStatistics(ACSStatisticsColection):
             "transportation_means_transit": "higher % of people who commute by transit",
             "transportation_means_worked_at_home": "higher % of people who work from home",
         }
-    
+
     def mutate_shapefile_table(self, shapefile_table):
         fractionalize(
             shapefile_table,

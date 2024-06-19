@@ -9,6 +9,7 @@ def save_string_list(slist, path):
         res.elements.append(x)
     write_gzip(res, path)
 
+
 def save_ordered_list(ordered_list, path):
     res = data_files_pb2.OrderList()
     for x in ordered_list:

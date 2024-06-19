@@ -1,10 +1,10 @@
-from functools import lru_cache
 import os
 import subprocess
-import numpy as np
+from functools import lru_cache
 
-import pandas as pd
 import geopandas as gpd
+import numpy as np
+import pandas as pd
 
 from geometry import locate_blocks
 
@@ -69,7 +69,7 @@ def density_in_radius(radius, year):
     _, population, _, _, coordinates = load_raw_census(year)
     return locate_blocks(
         coordinates=coordinates, population=population, radius=radius
-    ) / (np.pi * radius**2)
+    ) / (np.pi * radius ** 2)
 
 
 def all_densities(year):
