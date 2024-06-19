@@ -1,11 +1,19 @@
+from collections import Counter, defaultdict
 from colorsys import hsv_to_rgb
 from dataclasses import dataclass
+from types import SimpleNamespace
+from typing import List
+import uuid
 from matplotlib import patches, pyplot as plt
 import numpy as np
 import tqdm.auto as tqdm
 from PIL import Image
+import geopandas as gpd
 
 from permacache import permacache, stable_hash, drop_if_equal
+
+from urbanstats.data.gpw import compute_gpw_data_for_shapefile, load_full_ghs
+from urbanstats.data.population_overlays import relevant_regions
 
 
 class MapDataset:
@@ -380,7 +388,7 @@ def to_shapely_ellipse(map_shape, r_pixels, y_pixels, x_pixels):
     )
 
 
-def to_geopandas_frame(map_shape, circles):
+def to_basic_geopandas_frame(map_shape, circles):
     import geopandas as gpd
 
     ellipses = []
@@ -391,4 +399,215 @@ def to_geopandas_frame(map_shape, circles):
                 current = current.difference(other)
         current = current.buffer(0.001)
         ellipses.append(current)
-    return gpd.GeoDataFrame(dict(id=np.arange(len(circles))), geometry=ellipses)
+    return gpd.GeoDataFrame(
+        dict(id=np.arange(len(circles))), geometry=ellipses, crs="EPSG:4326"
+    )
+
+
+def attach_urban_centers_to_frame(frame):
+    from shapefiles import shapefiles
+
+    urban_center_shapefile = shapefiles["urban_centers"].load_file()
+    urban_center_shapefile.index = urban_center_shapefile.longname
+    overlays = gpd.overlay(frame, urban_center_shapefile)
+    overlays["population"] = compute_gpw_data_for_shapefile.function(
+        SimpleNamespace(
+            load_file=lambda: overlays, hash_key="overlays " + uuid.uuid4().hex
+        ),
+        collect_density=False,
+        log=False,
+    )["gpw_population"]
+
+    circle_id_to_overlays = defaultdict(list)
+    for circle_id, index in zip(overlays.id, overlays.index):
+        circle_id_to_overlays[circle_id].append(index)
+    used = set()
+    by_circle_id = []
+    for circle_id in tqdm.trange(len(frame)):
+        #     overlays_for_id = overlays_by_id.loc[[0]]
+        overlay_idxs = circle_id_to_overlays[circle_id]
+        overlay_pops = overlays.population.iloc[overlay_idxs] * overlays.longname.iloc[
+            overlay_idxs
+        ].apply(lambda x: 1 if x in used else 2)
+        overlay_order = overlay_pops.argsort()
+        overlay_idxs = np.array(overlay_idxs)[overlay_order][::-1]
+        assert len(overlay_idxs) >= 1
+        name = overlays.longname.iloc[overlay_idxs[0]]
+        used.add(name)
+        by_circle_id.append(name)
+
+    frame["name"] = by_circle_id
+
+    long_to_short = dict(
+        zip(urban_center_shapefile.longname, urban_center_shapefile.shortname)
+    )
+    duplicates = {x: y for x, y in Counter(frame.name).items() if y > 1}
+    suffixes = {}
+    for k in duplicates:
+        rows = frame[frame.name == k]
+        structure = compute_structure(rows)
+        if structure is None:
+            print(k)
+            continue
+        suffixes.update(dict(zip(rows.id, compute_names(structure, rows))))
+    frame["shortname"] = frame.apply(
+        lambda row: long_to_short[row["name"]].replace(" Urban Center", "")
+        + (" (" + suffixes[row.id] + ")" if row.id in suffixes else ""),
+        axis=1,
+    )
+    return frame
+
+
+@permacache(
+    "urbanstats/data/circle/overlapping_circles_frame",
+    key_function=dict(country_shapefile=lambda x: x.hash_key),
+)
+def overlapping_circles_frame(
+    country_shapefile, population, max_radius_in_chunks=20
+):
+    ghs = load_full_ghs()
+    circles = overlapping_circles_fast(
+        ghs, population, limit=10 ** 9, max_radius_in_chunks=max_radius_in_chunks
+    )
+    frame = to_basic_geopandas_frame(ghs.shape, circles)
+    frame = attach_urban_centers_to_frame(frame)
+    countries = relevant_regions(country_shapefile, frame, 3, 0.9)
+    frame["suffix"] = frame.id.apply(lambda x: "-".join(countries[x]))
+    frame["longname"] = frame.shortname + ", " + frame.suffix
+    assert len(frame) == len(set(frame.longname))
+    return frame
+
+
+def get_nesting_structure(geo_frame):
+    """
+    A circle is considered ``nested'' in another if the bounding
+    box of the former is contained in the latter.
+
+    Here we return the nesting structure, that is, a set
+        {(i, j) : geo_frame.iloc[i] is nested in geo_frame.iloc[j]}
+    """
+
+    geo_frame = geo_frame.reset_index(drop=True)
+
+    nesting_structure = set()
+    for i, row_i in geo_frame.iterrows():
+        for j, row_j in geo_frame.iterrows():
+            if i == j:
+                continue
+            if (
+                row_i.geometry.bounds[0] >= row_j.geometry.bounds[0]
+                and row_i.geometry.bounds[1] >= row_j.geometry.bounds[1]
+                and row_i.geometry.bounds[2] <= row_j.geometry.bounds[2]
+                and row_i.geometry.bounds[3] <= row_j.geometry.bounds[3]
+            ):
+                nesting_structure.add((i, j))
+    return nesting_structure
+
+
+def center_point_of_bbox(polygon):
+    minx, miny, maxx, maxy = polygon.bounds
+    return np.array([(minx + maxx) / 2, (miny + maxy) / 2])
+
+
+@dataclass
+class constant:
+    const_val: str
+
+    def apply_to(self, *_):
+        return self.const_val
+
+
+@dataclass
+class relative:
+    to: List[int]
+    prefix: str = ""
+
+    def apply_to(self, current_idx, rows, resolution):
+        """
+        Compute the angle of the current_idx relative to the mean centre of the rows in the frame
+        """
+        mean_center = np.mean(
+            [center_point_of_bbox(rows.iloc[idx].geometry) for idx in self.to], axis=0
+        )
+        current_center = center_point_of_bbox(rows.iloc[current_idx].geometry)
+        delta = current_center - mean_center
+        angle = np.arctan2(delta[1], delta[0])
+        angle_revolutions = angle / (2 * np.pi)
+        angle_revolutions = np.round(angle_revolutions * resolution) / resolution
+        angle_revolutions = angle_revolutions % 1
+        direct = to_cardinal_direction(angle_revolutions)
+        if self.prefix:
+            return f"{self.prefix} {direct}"
+        return direct
+
+
+def to_cardinal_direction(angle_revolutions):
+    return {
+        0: "East",
+        0.25: "North",
+        0.5: "West",
+        0.75: "South",
+        0.125: "Northeast",
+        0.375: "Northwest",
+        0.625: "Southwest",
+        0.875: "Southeast",
+    }[angle_revolutions]
+
+
+names = {
+    (2, ()): {0: relative([0, 1]), 1: relative([0, 1])},
+    (2, ((0, 1),)): {0: constant("Center"), 1: constant("Outskirts")},
+    (3, ((0, 1),)): {0: constant("Center"), 1: constant("Outskirts"), 2: relative([0])},
+    (3, ((0, 1), (0, 2), (1, 2))): {
+        0: constant("Center"),
+        1: constant("Outskirts"),
+        2: constant("Periphery"),
+    },
+    (5, ((0, 1), (1, 2), (1, 4), (2, 4), (0, 4), (3, 4), (0, 2))): {
+        0: constant("Center"),
+        1: constant("Outskirts"),
+        2: constant("Periphery"),
+        3: relative([0], "Periphery"),
+        4: constant("Further Periphery"),
+    },
+    (5, ((0, 1), (1, 4), (0, 4), (0, 3), (3, 4))): {
+        0: constant("Center"),
+        1: constant("Outskirts"),
+        2: relative([0], "Periphery"),
+        3: relative([0], "Periphery"),
+        4: relative([0], "Periphery"),
+    },
+    (4, ((0, 3), (1, 3), (2, 3))): {
+        0: constant("Center"),
+        1: relative([0], "Outskirts"),
+        2: relative([0], "Outskirts"),
+        3: constant("Periphery"),
+    },
+    (5, ((0, 1), (1, 4), (0, 4), (3, 4), (2, 4))): {
+        0: constant("Center"),
+        1: constant("Outskirts"),
+        2: relative([0], "Periphery"),
+        3: relative([0], "Periphery"),
+        4: constant("Further Periphery"),
+    },
+}
+
+
+def compute_structure(rows):
+    nesting_structure = tuple(get_nesting_structure(rows))
+    if nesting_structure == ():
+        return {i: relative(list(range(len(rows)))) for i in range(len(rows))}
+    key = len(rows), nesting_structure
+    if key not in names:
+        print(key)
+        return None
+    return names[key]
+
+
+def compute_names(structure, rows):
+    resolution = 4
+    while True:
+        names = [structure[i].apply_to(i, rows, resolution) for i in range(len(rows))]
+        if len(set(names)) == len(names):
+            return names
+        resolution *= 2
