@@ -17,6 +17,7 @@ function to_name(name) {
     return name.toLowerCase().replaceAll(" ", "_");
 }
 
+const type_ordering_idx = require("../data/type_ordering_idx.json");
 const type_to_type_category = require("../data/type_to_type_category.json");
 
 class RelatedButton extends React.Component {
@@ -72,68 +73,67 @@ class RelatedList extends React.Component {
         super(props);
     }
 
-    render() {
-        let by_type_key = [];
-        for (let i = 0; i < this.props.regions.length; i++) {
-            let row = this.props.regions[i];
-            if (by_type_key.length == 0 || by_type_key[by_type_key.length - 1].type != row.rowType) {
-                by_type_key.push({ type: row.rowType, regions: [] });
-            }
-            by_type_key[by_type_key.length - 1].regions.push(row);
-        }
-        return (
-            <div>
-                <ul className="list_of_lists">
-                    <li className={"linklistelfirst" + (mobileLayout() ? " linklistelfirst_mobile" : "")}>{this.display_name()}</li>
-                    {by_type_key.map((row, i) =>
-                        <CheckableRelatedList
-                            key={i}
-                            {...row}
-                            article_type={this.props.article_type}
-                            settings={this.props.settings}
-                            set_setting={this.props.set_setting}
-                            universe={this.props.universe}
-                        />)}
-                </ul>
-                <div className="gap_small"></div>
-            </div>
-        );
+    key_for_setting() {
+        return relationship_key(this.props.article_type, this.props.button_type);
     }
 
-    display_name() {
-        let name = this.props.name;
-        name = name.replace("_", " ");
-        // title case
-        name = name.replace(/\w\S*/g, function (txt) {
-            return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
-        });
-        return name;
-    }
-}
 
-class CheckableRelatedList extends React.Component {
     render() {
-        let key = this.key_for_setting();
+        let setting_key = this.key_for_setting();
         return (
             <li className="list_of_lists">
                 <div style={{ display: "flex" }}>
                     <div className="linkbox">
-                        <CheckboxSetting
-                            name=""
-                            setting_key={key}
-                            settings={this.props.settings}
-                            set_setting={this.props.set_setting} />
+                        <div style={{ paddingTop: "2pt" }}>
+                            <CheckboxSetting
+                                name=""
+                                setting_key={setting_key}
+                                settings={this.props.settings}
+                                set_setting={this.props.set_setting} />
+                        </div>
                     </div>
-                    <ul className="linklist">
-                        {this.props.regions.map((row, i) => <RelatedButton key={i} {...row} universe={this.props.universe} />)}
+                    <ul className="list_of_lists">
+                        {
+                            Object.keys(this.props.regions).map((relationship_type, j) => {
+                                const regions = this.props.regions[relationship_type];
+                                return (
+                                    <ul key={j} className="linklist">
+                                        <li
+                                            className={"linklistel" + (mobileLayout() ? " linklistel_mobile" : "")}
+                                            style={{ fontSize: "10pt", paddingTop: "1pt", fontWeight: "bold" }}
+                                        >
+                                            {this.display_name(relationship_type)}
+                                        </li>
+                                        {
+                                            regions.map((row, i) =>
+                                                <RelatedButton
+                                                    key={i}
+                                                    {...row}
+                                                    article_type={this.props.article_type}
+                                                    settings={this.props.settings}
+                                                    set_setting={this.props.set_setting}
+                                                    universe={this.props.universe}
+                                                />
+                                            )
+                                        }
+                                    </ul>
+                                );
+                            }
+                            )
+                        }
                     </ul>
                 </div>
             </li>
-        )
+        );
     }
 
-    key_for_setting() {
-        return relationship_key(this.props.article_type, this.props.type);
+    display_name(relationship_type) {
+        relationship_type = relationship_type.replace("_", " ");
+        // title case
+        relationship_type = relationship_type.replace(/\w\S*/g, function (txt) {
+            return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
+        });
+        return relationship_type;
     }
 }
 
@@ -143,27 +143,45 @@ class Related extends React.Component {
     }
 
     render() {
+        // buttons[rowType][relationshipType] = <list of buttons>
+        let buttons = {};
+        for (var relateds of this.props.related) {
+            const relationship_type = relateds.relationshipType;
+            for (var button of relateds.buttons) {
+                const row_type = button.rowType;
+                if (!(row_type in buttons)) {
+                    buttons[row_type] = {};
+                }
+                if (!(relationship_type in buttons[row_type])) {
+                    buttons[row_type][relationship_type] = [];
+                }
+                buttons[row_type][relationship_type].push(button);
+            }
+        }
+
+        // get a sorted list of keys of buttons
+        const button_keys = Object.keys(buttons).sort((a, b) =>
+            type_ordering_idx[a] - type_ordering_idx[b]
+        );
 
         let elements = [];
-        for (var relateds of this.props.related) {
-            let key = relateds.relationshipType;
-            let value = relateds.buttons;
+        for (var key of button_keys) {
             if (!this.props.settings.show_historical_cds) {
-                value = value.filter((row) => !is_historical_cd(row.longname));
+                if (key == "Historical Congressional District") {
+                    continue;
+                }
             }
-            if (value.length > 0) {
-                elements.push(
-                    <RelatedList
-                        key={key}
-                        name={key}
-                        regions={value}
-                        article_type={this.props.article_type}
-                        settings={this.props.settings}
-                        set_setting={this.props.set_setting}
-                        universe={this.props.universe}
-                    />
-                );
-            }
+            elements.push(
+                <RelatedList
+                    key={key}
+                    button_type={key}
+                    regions={buttons[key]}
+                    article_type={this.props.article_type}
+                    settings={this.props.settings}
+                    set_setting={this.props.set_setting}
+                    universe={this.props.universe}
+                />
+            );
         }
 
         return (
