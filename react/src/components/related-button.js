@@ -23,43 +23,52 @@ class RelatedButton extends React.Component {
     }
 
     render() {
-        const DARK_GRAY = "#4e525a";
+        const RED = "#f96d6d";
         const BLUE = "#5a7dc3";
         const ORANGE = "#af6707";
         const PURPLE = "#975ac3";
-        const RED = "#f96d6d";
+        const DARK_GRAY = "#4e525a";
         const PINK = "#c767b0";
         const GREEN = "#8ac35a";
         const YELLOW = "#b8a32f";
 
+        const INTERNATIONAL = RED;
+        const US_SUBDIVISION = BLUE;
+        const CENSUS = ORANGE;
+        const POLITICAL = PURPLE;
+        const ODDBALL = DARK_GRAY;
+        const EDUCATION = YELLOW;
+        const SMALL = PINK;
+        const NATIVE = GREEN;
+
         const colors_each = {
-            "Continent": DARK_GRAY,
-            "Country": DARK_GRAY,
-            "Judicial Circuit": DARK_GRAY,
-            "USDA County Type": DARK_GRAY,
-            "Subnational Region": BLUE,
-            "Native Area": BLUE,
-            "CSA": ORANGE,
-            "Native Statistical Area": ORANGE,
-            "Judicial District": ORANGE,
-            "Hospital Referral Region": ORANGE,
-            "MSA": PURPLE,
-            "Congressional District": PURPLE,
-            "Historical Congressional District": PURPLE,
-            "Native Subdivision": PURPLE,
-            "Media Market": PURPLE,
-            "Urban Area": PURPLE,
-            "Urban Center": PURPLE,
-            "Hospital Service Area": PURPLE,
-            "County": RED,
-            "State Senate District": RED,
-            "CCD": PINK,
-            "State House District": PINK,
-            "County Cross CD": PINK,
-            "City": GREEN,
-            "School District": GREEN,
-            "Neighborhood": YELLOW,
-            "ZIP": YELLOW,
+            "Continent": INTERNATIONAL,
+            "Country": INTERNATIONAL,
+            "Judicial Circuit": ODDBALL,
+            "USDA County Type": ODDBALL,
+            "Subnational Region": US_SUBDIVISION,
+            "Native Area": NATIVE,
+            "CSA": CENSUS,
+            "Native Statistical Area": NATIVE,
+            "Judicial District": ODDBALL,
+            "Hospital Referral Region": ODDBALL,
+            "MSA": CENSUS,
+            "Congressional District": POLITICAL,
+            "Historical Congressional District": POLITICAL,
+            "Native Subdivision": NATIVE,
+            "Media Market": ODDBALL,
+            "Urban Area": CENSUS,
+            "Urban Center": INTERNATIONAL,
+            "Hospital Service Area": ODDBALL,
+            "County": US_SUBDIVISION,
+            "State Senate District": POLITICAL,
+            "CCD": CENSUS,
+            "State House District": POLITICAL,
+            "County Cross CD": POLITICAL,
+            "City": US_SUBDIVISION,
+            "School District": EDUCATION,
+            "Neighborhood": SMALL,
+            "ZIP": SMALL,
         }
 
         let classes = `serif button_related`
@@ -74,7 +83,7 @@ class RelatedButton extends React.Component {
             <li className={"linklistel" + (mobileLayout() ? " linklistel_mobile" : "")}>
                 <a
                     className={classes}
-                    style={{ color: "black", backgroundColor: lighten(color, 0.7)}}
+                    style={{ color: "black", backgroundColor: lighten(color, 0.7) }}
                     href={article_link(this.props.universe, this.props.longname)}>{this.props.shortname}
                 </a>
             </li>
