@@ -312,41 +312,52 @@ def add(d, edges):
 
 
 tiers = [
-    ["continents"],
-    ["countries"],
+    ["Continent"],
+    ["Country"],
     [
-        "states",
-        "subnational_regions",
-        "native_areas",
-        "native_statistical_areas",
-        "judicial_circuits",
-        "media_markets",
-        "usda_county_type",
-        "hospital_referral_regions",
+        "State",
+        "Subnational Region",
+        "Native Area",
+        "Native Statistical Area",
+        "Judicial Circuit",
+        "Media Market",
+        "USDA County Type",
+        "Hospital Referral Region",
     ],
     [
-        "csas",
-        "msas",
-        "counties",
-        "historical_congressional",
-        "state_house",
-        "state_senate",
-        "congress",
-        "native_subdivisions",
-        "urban_areas",
-        "judicial_districts",
-        "county_cross_cd",
-        "hospital_service_areas",
-        "urban_centers",
-        "us_urban_centers",
+        "CSA",
+        "MSA",
+        "County",
+        "Historical Congressional District",
+        "State House District",
+        "State Senate District",
+        "Congressional District",
+        "Native Subdivision",
+        "Urban Area",
+        "Judicial District",
+        "County Cross CD",
+        "Hospital Service Area",
+        "Urban Center",
+        "Urban Center",
     ],
-    ["cousub", "cities", "school_districts"],
-    ["neighborhoods", "zctas"],
+    ["CCD", "City", "School District"],
+    ["Neighborhood", "ZIP"],
 ]
 
 type_to_type_category = {
     shapefile.meta["type"]: shapefile.meta["type_category"]
     for shapefile in shapefiles_for_stats.values()
+}
+
+type_category_order = {
+    "US Subdivision": 0,
+    "International": 0,
+    "Census": 20,
+    "Small": 30,
+    "Political": 40,
+    "Native": 50,
+    "School": 60,
+    "Oddball": 70,
 }
 
 is_american = {k: v.american for k, v in shapefiles_for_stats.items()}
@@ -371,30 +382,44 @@ map_relationships += [[x, x] for x in shapefiles_for_stats]
 
 map_relationships_by_type = [[key_to_type[x] for x in y] for y in map_relationships]
 
-tier_idx = {x: -i for i, tier in enumerate(tiers) for x in tier}
-tier_index_by_type = {
-    shapefiles_for_stats[x].meta["type"]: tier_idx[x] for x in shapefiles_for_stats
-}
+tier_index_by_type = {x: -i for i, tier in enumerate(tiers) for x in tier}
+
 ordering_idx = {
-    shapefiles_for_stats[x].meta["type"]: (i, j)
+    x: (type_category_order[type_to_type_category[x]], i, j)
     for i, tier in enumerate(tiers)
     for j, x in enumerate(tier)
 }
 
-ordering_idx["Native Area"] = (
-    ordering_idx["Native Subdivision"][0],
-    ordering_idx["Native Subdivision"][1] - 0.2,
-)
-ordering_idx["Native Statistical Area"] = (
-    ordering_idx["Native Subdivision"][0],
-    ordering_idx["Native Subdivision"][1] - 0.1,
-)
+ordering_idx = {
+    x: i
+    for i, x in enumerate(
+        [x for x, _ in sorted(ordering_idx.items(), key=lambda x: x[1])]
+    )
+}
+
+
+def can_contain(x, y):
+    """
+    True iff y should show up on x's contains list. Only go down by 1 tier
+    """
+    return tier_index_by_type[y] >= tier_index_by_type[x] - 1
+
+
+def can_intersect(x, y):
+    """
+    True iff y should show up on x's intersects list. Do not go down
+    """
+    return tier_index_by_type[y] >= tier_index_by_type[x]
+
+
+def can_border(x, y):
+    """
+    True iff y should show up on x's borders list. Only objects of the same tier
+    """
+    return tier_index_by_type[x] == tier_index_by_type[y]
 
 
 def full_relationships(long_to_type):
-    def tier(x):
-        return tier_index_by_type[long_to_type[x]]
-
     contains, contained_by, intersects, borders = (
         defaultdict(set),
         defaultdict(set),
@@ -445,7 +470,10 @@ def full_relationships(long_to_type):
             add(contained_by, [(big, small) for small, big in a_contains_b])
             add(intersects, a_intersects_b)
             add(intersects, [(big, small) for small, big in a_intersects_b])
-            if tier_idx[k1] == tier_idx[k2]:
+            if can_border(
+                shapefiles_for_stats[k1].meta["type"],
+                shapefiles_for_stats[k2].meta["type"],
+            ):
                 add(borders, a_borders_b)
                 add(borders, [(big, small) for small, big in a_borders_b])
 
@@ -457,12 +485,15 @@ def full_relationships(long_to_type):
                     same_geography[k].add(v)
                     same_geography[v].add(k)
 
-    # for contains, go one down at most
     for k in contains:
-        contains[k] = {v for v in contains[k] if tier(v) >= tier(k) - 1}
+        contains[k] = {
+            v for v in contains[k] if can_contain(long_to_type[k], long_to_type[v])
+        }
     # for intersects, do not go down
     for k in intersects:
-        intersects[k] = {v for v in intersects[k] if tier(v) >= tier(k)}
+        intersects[k] = {
+            v for v in intersects[k] if can_intersect(long_to_type[k], long_to_type[v])
+        }
 
     contains = {
         k: {v for v in vs if v not in same_geography[k]} for k, vs in contains.items()
