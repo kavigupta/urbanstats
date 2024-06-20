@@ -349,6 +349,17 @@ type_to_type_category = {
     for shapefile in shapefiles_for_stats.values()
 }
 
+type_category_order = {
+    "US Subdivision": 0,
+    "International": 0,
+    "Census": 20,
+    "Small": 30,
+    "Political": 40,
+    "Native": 50,
+    "School": 60,
+    "Oddball": 70,
+}
+
 is_american = {k: v.american for k, v in shapefiles_for_stats.items()}
 
 key_to_type = {x: shapefiles_for_stats[x].meta["type"] for x in shapefiles_for_stats}
@@ -373,16 +384,18 @@ map_relationships_by_type = [[key_to_type[x] for x in y] for y in map_relationsh
 
 tier_index_by_type = {x: -i for i, tier in enumerate(tiers) for x in tier}
 
-ordering_idx = {x: (i, j) for i, tier in enumerate(tiers) for j, x in enumerate(tier)}
+ordering_idx = {
+    x: (type_category_order[type_to_type_category[x]], i, j)
+    for i, tier in enumerate(tiers)
+    for j, x in enumerate(tier)
+}
 
-ordering_idx["Native Area"] = (
-    ordering_idx["Native Subdivision"][0],
-    ordering_idx["Native Subdivision"][1] - 0.2,
-)
-ordering_idx["Native Statistical Area"] = (
-    ordering_idx["Native Subdivision"][0],
-    ordering_idx["Native Subdivision"][1] - 0.1,
-)
+ordering_idx = {
+    x: i
+    for i, x in enumerate(
+        [x for x, _ in sorted(ordering_idx.items(), key=lambda x: x[1])]
+    )
+}
 
 
 def can_contain(x, y):
