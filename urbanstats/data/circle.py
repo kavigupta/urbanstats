@@ -404,6 +404,30 @@ def to_basic_geopandas_frame(map_shape, circles):
     )
 
 
+manual_circle_names = [
+    (
+        (
+            46.32272728379403,
+            -18.665482799483833,
+            49.94393938287262,
+            -15.201183867182841,
+        ),
+        0.1,
+        "Toamasina Urban Center",
+    ),
+    (
+        (
+            43.76378415709698,
+            -25.395706770492726,
+            47.96954917623637,
+            -21.537626562840618,
+        ),
+        0.1,
+        "Tolagnaro Urban Center",
+    ),
+]
+
+
 def attach_urban_centers_to_frame(frame):
     from shapefiles import shapefiles
 
@@ -423,6 +447,7 @@ def attach_urban_centers_to_frame(frame):
         circle_id_to_overlays[circle_id].append(index)
     used = set()
     by_circle_id = []
+    bad = []
     for circle_id in tqdm.trange(len(frame)):
         #     overlays_for_id = overlays_by_id.loc[[0]]
         overlay_idxs = circle_id_to_overlays[circle_id]
@@ -431,16 +456,31 @@ def attach_urban_centers_to_frame(frame):
         ].apply(lambda x: 1 if x in used else 2)
         overlay_order = overlay_pops.argsort()
         overlay_idxs = np.array(overlay_idxs)[overlay_order][::-1]
-        assert len(overlay_idxs) >= 1
-        name = overlays.longname.iloc[overlay_idxs[0]]
+        if len(overlay_idxs) == 0:
+            for bounds, tolerance, manual_name in manual_circle_names:
+                if np.all(
+                    np.abs(frame.geometry.iloc[circle_id].bounds - np.array(bounds))
+                    < tolerance
+                ):
+                    name = manual_name
+                    break
+            else:
+                bad.append(circle_id)
+                continue
+        else:
+            name = overlays.longname.iloc[overlay_idxs[0]]
         used.add(name)
         by_circle_id.append(name)
+
+    assert not bad, bad
 
     frame["name"] = by_circle_id
 
     long_to_short = dict(
         zip(urban_center_shapefile.longname, urban_center_shapefile.shortname)
     )
+    for _, _, manual_name in manual_circle_names:
+        long_to_short[manual_name] = manual_name
     duplicates = {x: y for x, y in Counter(frame.name).items() if y > 1}
     suffixes = {}
     for k in duplicates:
@@ -462,12 +502,10 @@ def attach_urban_centers_to_frame(frame):
     "urbanstats/data/circle/overlapping_circles_frame",
     key_function=dict(country_shapefile=lambda x: x.hash_key),
 )
-def overlapping_circles_frame(
-    country_shapefile, population, max_radius_in_chunks=20
-):
+def overlapping_circles_frame(country_shapefile, population, max_radius_in_chunks=20):
     ghs = load_full_ghs()
     circles = overlapping_circles_fast(
-        ghs, population, limit=10 ** 9, max_radius_in_chunks=max_radius_in_chunks
+        ghs, population, limit=10**9, max_radius_in_chunks=max_radius_in_chunks
     )
     frame = to_basic_geopandas_frame(ghs.shape, circles)
     frame = attach_urban_centers_to_frame(frame)
@@ -595,6 +633,15 @@ names = {
         3: relative([0], "Periphery"),
         4: constant("Further Periphery"),
     },
+    (7, ((2, 6), (1, 4), (0, 6), (0, 4), (2, 4))): {
+        0: constant("Center"),
+        1: relative([0], "Outskirts"),
+        2: relative([0], "Outskirts"),
+        3: relative([3, 4], "Periphery"),
+        4: relative([3, 4], "Periphery"),
+        5: relative([5, 6], "Outer Periphery"),
+        6: relative([5, 6], "Outer Periphery"),
+    }
 }
 
 
