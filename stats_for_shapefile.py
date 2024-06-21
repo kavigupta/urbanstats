@@ -201,35 +201,16 @@ def compute_statistics_for_shapefile(
     assert not overlap_cols
     result = pd.concat([result_2020, result_2010], axis=1)
     assert (result.longname == sf_fr.longname).all()
-    result["population_change_2010"] = (
-        result["population"] - result["population_2010"]
-    ) / result["population_2010"]
     for k in density_metrics:
         result[k] /= result["population"]
-        result[f"{k}_2010"] /= result["population_2010"]
-        result[f"{k}_change_2010"] = (result[k] - result[f"{k}_2010"]) / result[
-            f"{k}_2010"
-        ]
     result["sd"] = result["population"] / result["area"]
-    result["sd_2010"] = result["population_2010"] / result["area"]
     for k in sf.meta:
         result[k] = sf.meta[k]
-    for k in racial_demographics:
-        result[k + "_2010"] /= result["population_2010"]
-    result["other / mixed_2010"] = result["other_2010"] + result["mixed_2010"]
     del result["other"]
     del result["mixed"]
-    del result["other_2010"]
-    del result["mixed_2010"]
-    result["housing_per_pop_2010"] = result["total_2010"] / result["population_18_2010"]
-    result["vacancy_2010"] = result["vacant_2010"] / result["total_2010"]
 
     for cdc in cdc_columns():
         result[cdc] /= result["population_18_2010"]
-
-    del result["vacant_2010"]
-    del result["total_2010"]
-    del result["occupied_2010"]
 
     def fractionalize(*columns):
         denominator = sum(result[c] for c in columns)

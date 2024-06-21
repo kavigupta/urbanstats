@@ -13,13 +13,13 @@ from stats_for_shapefile import (
     misc_stats,
     occupation_stats,
 )
-from urbanstats.census_2010.columns_2010 import basics_2010, cdc_columns
+from urbanstats.census_2010.columns_2010 import cdc_columns
 from urbanstats.protobuf import data_files_pb2
 from urbanstats.protobuf.utils import write_gzip
 from urbanstats.statistics.collections_list import statistic_collections
 from urbanstats.statistics.statistic_collection import ORDER_CATEGORY_MAIN
 from urbanstats.weather.to_blocks import weather_stat_names
-
+from urbanstats.statistics.collections.census_basics import ad
 
 def ord_or_zero(x):
     return 0 if np.isnan(x) else int(x)
@@ -110,20 +110,10 @@ def create_filename(x, ext):
     return f"{x}." + ext
 
 
-def format_radius(x):
-    if x < 1:
-        return f"{x * 1000:.0f}m"
-    else:
-        assert x == int(x)
-        return f"{x:.0f}km"
-
-
 election_stats = {
     **{(elect.name, "margin"): elect.name for elect in vest_elections},
     ("2016-2020 Swing", "margin"): "2016-2020 Swing",
 }
-
-ad = {f"ad_{k}": f"PW Density (r={format_radius(k)})" for k in RADII}
 
 
 def statistic_internal_to_display_name():
@@ -131,7 +121,6 @@ def statistic_internal_to_display_name():
         "population": "Population",
         **{"ad_1": ad["ad_1"]},
         "sd": "AW Density",
-        **basics_2010()[0],
     }
 
     order_zones = {k: ORDER_CATEGORY_MAIN for k in internal_to_display}
@@ -148,7 +137,6 @@ def statistic_internal_to_display_name():
         **weather_stat_names,
         **misc_stats,
         **{k: ad[k] for k in ad if k != "ad_1"},
-        **basics_2010()[1],
     }
     internal_to_display.update(postfix)
     order_zones.update({k: ORDER_CATEGORY_MAIN for k in postfix})
@@ -172,7 +160,6 @@ def get_statistic_categories():
         "population": "main",
         **{"ad_1": "main"},
         "sd": "main",
-        **{k: "2010" for k in basics_2010()[0]},
     }
 
     for statistic_collection in statistic_collections:
@@ -188,7 +175,6 @@ def get_statistic_categories():
             **{k: "weather" for k in weather_stat_names},
             **{k: "misc" for k in misc_stats},
             **{k: ad[k] for k in ad if k != "ad_1"},
-            **{k: "2010" for k in basics_2010()[1]},
         }
     )
     result = {k: result[k] for k in statistic_internal_to_display_name()}
@@ -200,7 +186,6 @@ def get_explanation_page():
         "population": "population",
         "sd": "density",
         **{f"ad_{k}": f"density" for k in RADII},
-        **{k: "2010" for k in basics_2010()[0]},
     }
 
     for statistic_collection in statistic_collections:
@@ -228,7 +213,6 @@ def get_explanation_page():
             },
             **{k: "weather" for k in weather_stat_names},
             **{k: k.split("_")[0] for k in misc_stats},
-            **{k: "2010" for k in basics_2010()[1]},
         }
     )
     result = {k: result[k] for k in statistic_internal_to_display_name()}

@@ -57,27 +57,3 @@ def cdc_columns():
     out = {f"{k}_cdc_2": v for k, v in cdc_columns.items()}
 
     return out
-
-
-def basics_2010():
-    from produce_html_page import ad
-
-    ad_2010 = {f"{k}_2010": f"{v} (2010)" for k, v in ad.items()}
-    ad_change = {f"{k}_change_2010": f"{v} Change (2010-2020)" for k, v in ad.items()}
-
-    return {
-        "population_2010": "Population (2010)",
-        "population_change_2010": "Population Change (2010-2020)",
-        **{"ad_1_2010": ad_2010["ad_1_2010"]},
-        **{"ad_1_change_2010": ad_change["ad_1_change_2010"]},
-        "sd_2010": "AW Density (2010)",
-        **{
-            f"{k}_2010": f"{v} (2010)"
-            for k, v in RaceCensus().name_for_each_statistic().items()
-        },
-        "housing_per_pop_2010": "Housing Units per Adult (2010)",
-        "vacancy_2010": "Vacancy % (2010)",
-    }, {
-        **{k: ad_2010[k] for k in ad_2010 if k != "ad_1_2010"},
-        **{k: ad_change[k] for k in ad_change if k != "ad_1_change_2010"},
-    }

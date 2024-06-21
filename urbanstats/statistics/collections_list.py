@@ -1,3 +1,4 @@
+from urbanstats.statistics.collections.census_2010 import Census2010
 from urbanstats.statistics.collections.education_gender_gap import (
     EducationGenderGapStatistics,
 )
@@ -36,6 +37,7 @@ from urbanstats.statistics.collections.transportation_vehicle_ownership import (
 )
 
 statistic_collections = (
+    Census2010(),
     GPWStatistics(),
     AreaAndCompactnessStatistics(),
     RaceCensus(),

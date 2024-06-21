@@ -512,8 +512,6 @@ stats_to_display = {
     "CSMOKING_cdc_2": "higher % of adults with smoke",
     "LPA_cdc_2": "higher % of adults who don't exercise (do leisure-time physical activity)",
     "SLEEP_cdc_2": "higher % of adults who sleep less than 7 hours",
-    "population_change_2010": "higher % change in population from 2010 to 2020",
-    "ad_1_change_2010": "higher % change in population-weighted density (r=1km) from 2010 to 2020",
 }
 
 
@@ -588,10 +586,6 @@ not_included = {
     "ad_0.5",
     "ad_2",
     "ad_4",
-    "ad_0.5_change_2010",
-    "ad_4_change_2010",
-    "ad_0.25_change_2010",
-    "ad_2_change_2010",
     # middle / obscure
     "days_dewpoint_50_70_4",
     "days_between_40_and_90_4",
@@ -607,23 +601,6 @@ not_included = {
     "within_Airport_30",
     "within_Public School_2",
     "within_Hospital_10",
-    # direct 2010 results
-    "population_2010",
-    "sd_2010",
-    "ad_0.25_2010",
-    "ad_0.5_2010",
-    "ad_1_2010",
-    "ad_2_2010",
-    "ad_4_2010",
-    "housing_per_pop_2010",
-    "asian_2010",
-    "other / mixed_2010",
-    "native_2010",
-    "white_2010",
-    "vacancy_2010",
-    "hispanic_2010",
-    "black_2010",
-    "hawaiian_pi_2010",
     # too hard to explain
     "CHOLSCREEN_cdc_2",
     "CHECKUP_cdc_2",
