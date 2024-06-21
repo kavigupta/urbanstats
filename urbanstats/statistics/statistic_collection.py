@@ -63,6 +63,14 @@ class GeographicStatistics(StatisticCollection):
         return True
 
 
+class InternationalStatistics(StatisticCollection):
+    def for_america(self):
+        return False
+
+    def for_international(self):
+        return True
+
+
 class CensusStatisticsColection(StatisticCollection):
     # TODO we should probably have this actually pull the census data, it currently does not.
     def for_america(self):

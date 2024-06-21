@@ -87,7 +87,6 @@ def international_shapefile():
     intl = intl[intl.area > 10].copy()
     intl = intl[intl.gpw_population > 0].copy()
     intl = intl.reset_index(drop=True)
-    intl["gpw_aw_density"] = intl.gpw_population / intl.area
     return intl
 
 
@@ -169,7 +168,9 @@ def get_statistic_column_path(column):
 
 @lru_cache(maxsize=None)
 def get_index_lists():
-    from stats_for_shapefile import gpw_stats
+    from urbanstats.statistics.collections.gpw import GPWStatistics
+
+    gpw_stats = GPWStatistics().name_for_each_statistic()
 
     real_names = internal_statistic_names()
     universal = ["area", "compactness"]

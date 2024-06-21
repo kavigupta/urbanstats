@@ -446,9 +446,6 @@ stats_to_display = {
     "snowfall_4": "higher snowfall (population weighted)",
     "rainfall_4": "higher rainfall (population weighted)",
     "hours_sunny_4": "!FULL Which has more hours of sun per day on average? (population weighted)",
-    "gpw_aw_density": "higher area-weighted population density",
-    "gpw_population": "higher population",
-    "gpw_pw_density_4": "higher population-weighted density (r=4km)",
     "industry_agriculture,_forestry,_fishing_and_hunting": "higher % of workers employed in the agriculture, forestry, fishing, and hunting industries",
     "industry_mining,_quarrying,_and_oil_and_gas_extraction": "higher % of workers employed in the mining, quarrying, and oil/gas extraction industries",
     "industry_accommodation_and_food_services": "higher % of workers employed in the accommodation and food services industry",
@@ -610,8 +607,6 @@ not_included = {
     "within_Airport_30",
     "within_Public School_2",
     "within_Hospital_10",
-    "gpw_pw_density_2",
-    "gpw_pw_density_1",
     # direct 2010 results
     "population_2010",
     "sd_2010",

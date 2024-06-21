@@ -9,7 +9,6 @@ from election_data import vest_elections
 from relationship import ordering_idx
 from stats_for_shapefile import (
     feature_stats,
-    gpw_stats,
     industry_stats,
     misc_stats,
     occupation_stats,
@@ -132,7 +131,6 @@ def statistic_internal_to_display_name():
         **{"ad_1": ad["ad_1"]},
         "sd": "AW Density",
         **basics_2010()[0],
-        **gpw_stats,
     }
 
     for statistic_collection in statistic_collections:
@@ -165,14 +163,6 @@ def get_statistic_categories():
         **{"ad_1": "main"},
         "sd": "main",
         **{k: "2010" for k in basics_2010()[0]},
-        **{
-            k: (
-                "other_densities"
-                if k in ("gpw_pw_density_2", "gpw_pw_density_4")
-                else "main"
-            )
-            for k in gpw_stats
-        },
     }
 
     for statistic_collection in statistic_collections:
@@ -200,7 +190,6 @@ def get_explanation_page():
         "sd": "density",
         **{f"ad_{k}": f"density" for k in RADII},
         **{k: "2010" for k in basics_2010()[0]},
-        **{k: "gpw" for k in gpw_stats},
     }
 
     for statistic_collection in statistic_collections:

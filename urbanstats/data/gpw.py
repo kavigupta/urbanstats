@@ -361,9 +361,6 @@ def compute_gpw_data_for_shapefile_table(shapefile):
         if collection.for_international():
             collection.mutate_statistic_table(result, shapes)
 
-    result["gpw_aw_density"] = result["gpw_population"] / result["area"]
-    result["gpw_pw_density_2"] = result["gpw_pw_density_2"]
-    result["gpw_pw_density_4"] = result["gpw_pw_density_4"]
     result["longname"] = shapes.longname
     result["shortname"] = shapes.shortname
 
