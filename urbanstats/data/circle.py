@@ -481,6 +481,10 @@ def attach_urban_centers_to_frame(frame):
     )
     for _, _, manual_name in manual_circle_names:
         long_to_short[manual_name] = manual_name
+    return frame, long_to_short
+
+
+def specify_duplicates(frame, long_to_short):
     duplicates = {x: y for x, y in Counter(frame.name).items() if y > 1}
     suffixes = {}
     for k in duplicates:
@@ -495,11 +499,10 @@ def attach_urban_centers_to_frame(frame):
         + (" (" + suffixes[row.id] + ")" if row.id in suffixes else ""),
         axis=1,
     )
-    return frame
 
 
 @permacache(
-    "urbanstats/data/circle/overlapping_circles_frame",
+    "urbanstats/data/circle/overlapping_circles_frame_3",
     key_function=dict(country_shapefile=lambda x: x.hash_key),
 )
 def overlapping_circles_frame(country_shapefile, population, max_radius_in_chunks=20):
@@ -508,43 +511,13 @@ def overlapping_circles_frame(country_shapefile, population, max_radius_in_chunk
         ghs, population, limit=10**9, max_radius_in_chunks=max_radius_in_chunks
     )
     frame = to_basic_geopandas_frame(ghs.shape, circles)
-    frame = attach_urban_centers_to_frame(frame)
+    frame, long_to_short = attach_urban_centers_to_frame(frame)
+    specify_duplicates(frame, long_to_short)
     countries = relevant_regions(country_shapefile, frame, 3, 0.9)
     frame["suffix"] = frame.id.apply(lambda x: "-".join(countries[x]))
     frame["longname"] = frame.shortname + ", " + frame.suffix
     assert len(frame) == len(set(frame.longname))
     return frame
-
-
-def get_nesting_structure(geo_frame):
-    """
-    A circle is considered ``nested'' in another if the bounding
-    box of the former is contained in the latter.
-
-    Here we return the nesting structure, that is, a set
-        {(i, j) : geo_frame.iloc[i] is nested in geo_frame.iloc[j]}
-    """
-
-    geo_frame = geo_frame.reset_index(drop=True)
-
-    nesting_structure = set()
-    for i, row_i in geo_frame.iterrows():
-        for j, row_j in geo_frame.iterrows():
-            if i == j:
-                continue
-            if (
-                row_i.geometry.bounds[0] >= row_j.geometry.bounds[0]
-                and row_i.geometry.bounds[1] >= row_j.geometry.bounds[1]
-                and row_i.geometry.bounds[2] <= row_j.geometry.bounds[2]
-                and row_i.geometry.bounds[3] <= row_j.geometry.bounds[3]
-            ):
-                nesting_structure.add((i, j))
-    return nesting_structure
-
-
-def center_point_of_bbox(polygon):
-    minx, miny, maxx, maxy = polygon.bounds
-    return np.array([(minx + maxx) / 2, (miny + maxy) / 2])
 
 
 @dataclass
@@ -589,71 +562,102 @@ def to_cardinal_direction(angle_revolutions):
         0.375: "Northwest",
         0.625: "Southwest",
         0.875: "Southeast",
+        0.0625: "East-Northeast",
+        0.1875: "North-Northeast",
+        0.3125: "North-Northwest",
+        0.4375: "West-Northwest",
+        0.5625: "West-Southwest",
+        0.6875: "South-Southwest",
+        0.8125: "South-Southeast",
+        0.9375: "East-Southeast",
     }[angle_revolutions]
 
 
-names = {
-    (2, ()): {0: relative([0, 1]), 1: relative([0, 1])},
-    (2, ((0, 1),)): {0: constant("Center"), 1: constant("Outskirts")},
-    (3, ((0, 1),)): {0: constant("Center"), 1: constant("Outskirts"), 2: relative([0])},
-    (3, ((0, 1), (0, 2), (1, 2))): {
-        0: constant("Center"),
-        1: constant("Outskirts"),
-        2: constant("Periphery"),
-    },
-    (3, ((1, 2),)): {
-        0: relative([0, 1, 2]),
-        1: relative([0, 1, 2]),
-        2: relative([0, 1, 2]),
-    },
-    (5, ((0, 1), (1, 2), (1, 4), (2, 4), (0, 4), (3, 4), (0, 2))): {
-        0: constant("Center"),
-        1: constant("Outskirts"),
-        2: constant("Periphery"),
-        3: relative([0], "Periphery"),
-        4: constant("Further Periphery"),
-    },
-    (5, ((0, 1), (1, 4), (0, 4), (0, 3), (3, 4))): {
-        0: constant("Center"),
-        1: constant("Outskirts"),
-        2: relative([0], "Periphery"),
-        3: relative([0], "Periphery"),
-        4: relative([0], "Periphery"),
-    },
-    (4, ((0, 3), (1, 3), (2, 3))): {
-        0: constant("Center"),
-        1: relative([0], "Outskirts"),
-        2: relative([0], "Outskirts"),
-        3: constant("Periphery"),
-    },
-    (5, ((0, 1), (1, 4), (0, 4), (3, 4), (2, 4))): {
-        0: constant("Center"),
-        1: constant("Outskirts"),
-        2: relative([0], "Periphery"),
-        3: relative([0], "Periphery"),
-        4: constant("Further Periphery"),
-    },
-    (7, ((2, 6), (1, 4), (0, 6), (0, 4), (2, 4))): {
-        0: constant("Center"),
-        1: relative([0], "Outskirts"),
-        2: relative([0], "Outskirts"),
-        3: relative([3, 4], "Periphery"),
-        4: relative([3, 4], "Periphery"),
-        5: relative([5, 6], "Outer Periphery"),
-        6: relative([5, 6], "Outer Periphery"),
-    }
-}
-
-
 def compute_structure(rows):
+    """
+    Returns a map from iloc to a relative object representing
+        how that iloc should be named.
+
+    The idea is that we categorize the rows into size tiers,
+        where each tier is created when a circle is 2x as big
+        as the smallest circle in the previous tier. Size
+        is computed as the square root of the area of the bounding box.
+
+        Also, a new tier is created if any given circle's bounding box
+        contains all the circles in the previous tier.
+    """
+    bounding_box_sqrtareas = (
+        np.array(
+            [
+                (row.geometry.bounds[2] - row.geometry.bounds[0])
+                * (row.geometry.bounds[3] - row.geometry.bounds[1])
+                for _, row in rows.iterrows()
+            ]
+        )
+        ** 0.5
+    )
     nesting_structure = tuple(get_nesting_structure(rows))
-    if nesting_structure == ():
-        return {i: relative(list(range(len(rows)))) for i in range(len(rows))}
-    key = len(rows), nesting_structure
-    if key not in names:
-        print(key)
-        return None
-    return names[key]
+    tiers = []
+    for i, sqrtarea in enumerate(bounding_box_sqrtareas):
+        if (
+            i == 0
+            or sqrtarea > 2 * min(bounding_box_sqrtareas[tiers[-1]])
+            or all((j, i) in nesting_structure for j in tiers[-1])
+        ):
+            tiers.append([])
+        tiers[-1].append(i)
+    if len(tiers) == 1:
+        return {i: relative(range(len(rows))) for i in range(len(rows))}
+    tier_labels = ["Center", "Outer", "Periphery", "Further Periphery"]
+    result = {}
+    all_prev = []
+    for i, tier in enumerate(tiers):
+        all_prev.extend(tier)
+        result.update(
+            {
+                j: relative(list(all_prev), tier_labels[i])
+                if len(tier) > 1
+                else constant(tier_labels[i])
+                for j in tier
+            }
+        )
+    return result
+    # return {i : constant(str(i)) for i in range(len(rows))}
+
+
+def get_nesting_structure(geo_frame, eps=0.25):
+    """
+    A circle is considered ``nested'' in another if the bounding
+    box of the former is contained in the latter, with some
+    tolerance, a fraction of the smaller bounding box size.
+
+    Here we return the nesting structure, that is, a set
+        {(i, j) : geo_frame.iloc[i] is nested in geo_frame.iloc[j]}
+    """
+
+    geo_frame = geo_frame.reset_index(drop=True)
+
+    nesting_structure = set()
+    for i, row_i in geo_frame.iterrows():
+        for j, row_j in geo_frame.iterrows():
+            if i == j:
+                continue
+            epsx, epsy = eps * (
+                row_i.geometry.bounds[2] - row_i.geometry.bounds[0]
+            ), eps * (row_i.geometry.bounds[3] - row_i.geometry.bounds[1])
+            if (
+                row_i.geometry.bounds[0] >= row_j.geometry.bounds[0] - epsx
+                and row_i.geometry.bounds[1] >= row_j.geometry.bounds[1] - epsy
+                and row_i.geometry.bounds[2] <= row_j.geometry.bounds[2] + epsx
+                and row_i.geometry.bounds[3] <= row_j.geometry.bounds[3] + epsy
+            ):
+                nesting_structure.add((i, j))
+    return nesting_structure
+
+
+def center_point_of_bbox(polygon):
+    minx, miny, maxx, maxy = polygon.bounds
+    return np.array([(minx + maxx) / 2, (miny + maxy) / 2])
 
 
 def compute_names(structure, rows):
@@ -663,3 +667,28 @@ def compute_names(structure, rows):
         if len(set(names)) == len(names):
             return names
         resolution *= 2
+
+
+named_populations = {
+    5e6: "5M",
+    1e7: "10M",
+    2e7: "20M",
+    5e7: "50M",
+    1e8: "100M",
+    2e8: "200M",
+    5e8: "500M",
+    1e9: "1B",
+}
+
+
+def produce_image(population):
+    name = named_populations[population]
+    print("Computing circles for population", name)
+    circles = overlapping_circles_fast(
+        load_full_ghs(), population, limit=10**9, max_radius_in_chunks=20
+    )
+    print("Creating image for population", name)
+    out = create_rgb_image(load_full_ghs(), circles, 5)
+    print("Saving image for population", name)
+    out.save(f"outputs/population_circles/{name}.png")
+    print("Done with population", name)
