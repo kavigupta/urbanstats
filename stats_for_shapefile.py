@@ -41,6 +41,7 @@ misc_stats = {
     "marriage_divorced": "Divorced %",
 }
 
+
 @attr.s
 class Shapefile:
     hash_key = attr.ib()

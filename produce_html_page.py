@@ -17,6 +17,7 @@ from urbanstats.census_2010.columns_2010 import basics_2010, cdc_columns
 from urbanstats.protobuf import data_files_pb2
 from urbanstats.protobuf.utils import write_gzip
 from urbanstats.statistics.collections_list import statistic_collections
+from urbanstats.statistics.statistic_collection import ORDER_CATEGORY_MAIN
 from urbanstats.weather.to_blocks import weather_stat_names
 
 
@@ -133,23 +134,32 @@ def statistic_internal_to_display_name():
         **basics_2010()[0],
     }
 
+    order_zones = {k: ORDER_CATEGORY_MAIN for k in internal_to_display}
+
     for statistic_collection in statistic_collections:
         internal_to_display.update(statistic_collection.name_for_each_statistic())
-    internal_to_display.update(
-        {
-            **cdc_columns(),
-            **industry_stats,
-            **occupation_stats,
-            **election_stats,
-            **feature_stats,
-            **weather_stat_names,
-            **misc_stats,
-            **{k: ad[k] for k in ad if k != "ad_1"},
-            **basics_2010()[1],
-        }
-    )
+        order_zones.update(statistic_collection.order_category_for_each_statistic())
+    postfix = {
+        **cdc_columns(),
+        **industry_stats,
+        **occupation_stats,
+        **election_stats,
+        **feature_stats,
+        **weather_stat_names,
+        **misc_stats,
+        **{k: ad[k] for k in ad if k != "ad_1"},
+        **basics_2010()[1],
+    }
+    internal_to_display.update(postfix)
+    order_zones.update({k: ORDER_CATEGORY_MAIN for k in postfix})
 
-    return internal_to_display
+    # reorder by order_zones
+    key_to_order = {k: (order_zones[k], i) for i, k in enumerate(internal_to_display)}
+
+    return {
+        k: internal_to_display[k]
+        for k in sorted(internal_to_display, key=lambda x: key_to_order[x])
+    }
 
 
 def internal_statistic_names():
@@ -181,6 +191,7 @@ def get_statistic_categories():
             **{k: "2010" for k in basics_2010()[1]},
         }
     )
+    result = {k: result[k] for k in statistic_internal_to_display_name()}
     return result
 
 
@@ -220,7 +231,7 @@ def get_explanation_page():
             **{k: "2010" for k in basics_2010()[1]},
         }
     )
-    result = {k: result[k] for k in get_statistic_categories()}
+    result = {k: result[k] for k in statistic_internal_to_display_name()}
     return result
 
 

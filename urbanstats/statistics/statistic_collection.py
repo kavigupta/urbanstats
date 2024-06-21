@@ -1,5 +1,8 @@
 from abc import ABC, abstractmethod
 
+ORDER_CATEGORY_MAIN = 0
+ORDER_CATEGORY_OTHER_DENSITIES = 1
+
 
 class StatisticCollection(ABC):
     def __init__(self):
@@ -50,6 +53,9 @@ class StatisticCollection(ABC):
     @abstractmethod
     def for_international(self):
         pass
+
+    def order_category_for_each_statistic(self):
+        return self.same_for_each_name(ORDER_CATEGORY_MAIN)
 
     def same_for_each_name(self, value):
         return {name: value for name in self.name_for_each_statistic()}
