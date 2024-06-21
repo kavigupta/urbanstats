@@ -149,3 +149,12 @@ class USFeatureDistanceStatisticsCollection(StatisticCollection):
 
     def for_international(self):
         return False
+
+
+class USWeatherStatisticsCollection(StatisticCollection):
+    # TODO we should probably have this actually pull the weather data, it currently does not.
+    def for_america(self):
+        return True
+
+    def for_international(self):
+        return False

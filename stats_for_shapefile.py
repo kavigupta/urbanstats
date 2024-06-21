@@ -4,7 +4,6 @@ from functools import lru_cache
 
 import attr
 import geopandas as gpd
-import numpy as np
 import pandas as pd
 import tqdm.auto as tqdm
 from more_itertools import chunked
@@ -20,8 +19,9 @@ from urbanstats.features.feature import feature_columns
 from urbanstats.osm.parks import park_overlap_percentages_all
 from urbanstats.statistics.collections.cdc_statistics import CDCStatistics
 from urbanstats.statistics.collections.census_basics import density_metrics
+from urbanstats.statistics.collections.weather import USWeatherStatistics
 from urbanstats.statistics.collections_list import statistic_collections
-from urbanstats.weather.to_blocks import weather_block_statistics, weather_stat_names
+from urbanstats.weather.to_blocks import weather_block_statistics
 
 misc_stats = {
     "internet_no_access": "No internet access %",
@@ -86,7 +86,7 @@ sum_keys_2020 = [
     *acs_columns,
     *feature_columns,
     "park_percent_1km_v2",
-    *weather_stat_names,
+    *USWeatherStatistics().name_for_each_statistic(),
 ]
 sum_keys_2020 = sorted(sum_keys_2020, key=str)
 sum_keys_2010 = [
@@ -226,9 +226,6 @@ def compute_statistics_for_shapefile(
         "marriage_married_not_divorced",
         "marriage_divorced",
     )
-
-    for weather_stat in weather_stat_names:
-        result[weather_stat] = result[weather_stat] / result["population"]
 
     return result
 

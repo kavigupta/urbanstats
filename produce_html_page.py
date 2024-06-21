@@ -8,7 +8,6 @@ from urbanstats.protobuf import data_files_pb2
 from urbanstats.protobuf.utils import write_gzip
 from urbanstats.statistics.collections_list import statistic_collections
 from urbanstats.statistics.statistic_collection import ORDER_CATEGORY_MAIN
-from urbanstats.weather.to_blocks import weather_stat_names
 
 
 def ord_or_zero(x):
@@ -109,7 +108,6 @@ def statistic_internal_to_display_name():
         internal_to_display.update(statistic_collection.name_for_each_statistic())
         order_zones.update(statistic_collection.order_category_for_each_statistic())
     postfix = {
-        **weather_stat_names,
         **misc_stats,
     }
     internal_to_display.update(postfix)
@@ -136,7 +134,6 @@ def get_statistic_categories():
 
     result.update(
         {
-            **{k: "weather" for k in weather_stat_names},
             **{k: "misc" for k in misc_stats},
         }
     )
@@ -152,7 +149,6 @@ def get_explanation_page():
 
     result.update(
         {
-            **{k: "weather" for k in weather_stat_names},
             **{k: k.split("_")[0] for k in misc_stats},
         }
     )

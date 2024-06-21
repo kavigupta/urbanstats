@@ -41,6 +41,7 @@ from urbanstats.statistics.collections.transportation_vehicle_ownership import (
     TransportationVehicleOwnershipStatistics,
 )
 from urbanstats.statistics.collections.us_election import USElectionStatistics
+from urbanstats.statistics.collections.weather import USWeatherStatistics
 
 statistic_collections = (
     CensusBasics(),
@@ -70,4 +71,5 @@ statistic_collections = (
     OccupationStatistics(),
     USElectionStatistics(),
     USFeatureDistanceStatistics(),
+    USWeatherStatistics(),
 )
