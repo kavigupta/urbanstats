@@ -472,7 +472,7 @@ renamed = {
     "higher % of people who were born in the us and born outside their state of residence": "birthplace_us_not_state",
 }
 
-not_included = {}
+not_included = set()
 
 for collection in statistic_collections:
     not_included.update(collection.quiz_question_unused())
