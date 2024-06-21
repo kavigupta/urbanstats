@@ -20,6 +20,7 @@ from urbanstats.statistics.collections.income_family import IncomeFamily
 from urbanstats.statistics.collections.income_individual import IncomeIndividual
 from urbanstats.statistics.collections.income_poverty import IncomePoverty
 from urbanstats.statistics.collections.industry import IndustryStatistics
+from urbanstats.statistics.collections.internet_access import InternetAccessStatistics
 from urbanstats.statistics.collections.national_origin_birthplace import (
     NationalOriginBirthplaceStatistics,
 )
@@ -72,4 +73,5 @@ statistic_collections = (
     USElectionStatistics(),
     USFeatureDistanceStatistics(),
     USWeatherStatistics(),
+    InternetAccessStatistics(),
 )

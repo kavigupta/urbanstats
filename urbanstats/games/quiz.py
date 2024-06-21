@@ -405,7 +405,6 @@ types = [
 ]
 
 stats_to_display = {
-    "internet_no_access": "higher % of people who have no internet access",
     "insurance_coverage_none": "higher % of people who are uninsured",
     "insurance_coverage_govt": "higher % of people who are on public insurance",
     "insurance_coverage_private": "higher % of people who are on private insurance",

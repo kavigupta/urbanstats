@@ -76,27 +76,6 @@ entities = dict(
             ],
         },
     ),
-    internet=ACSDataEntity(
-        "INTERNET SUBSCRIPTIONS IN HOUSEHOLD",
-        "occupied",
-        "block group",
-        {
-            None: [
-                "Estimate!!Total:",
-                "Estimate!!Total:!!With an Internet subscription!!Broadband such as cable, fiber optic, or DSL",
-                "Estimate!!Total:!!With an Internet subscription!!Dial-up alone",
-                "Estimate!!Total:!!With an Internet subscription!!Other service",
-                "Estimate!!Total:!!With an Internet subscription!!Satellite Internet service",
-            ],
-            "internet_access": [
-                "Estimate!!Total:!!Internet access without a subscription",
-                "Estimate!!Total:!!With an Internet subscription",
-            ],
-            "internet_no_access": [
-                "Estimate!!Total:!!No Internet access",
-            ],
-        },
-    ),
     marriage=ACSDataEntity(
         "SEX BY MARITAL STATUS FOR THE POPULATION 15 YEARS AND OVER",
         "population_18",

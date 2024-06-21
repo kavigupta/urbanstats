@@ -24,7 +24,6 @@ from urbanstats.statistics.collections_list import statistic_collections
 from urbanstats.weather.to_blocks import weather_block_statistics
 
 misc_stats = {
-    "internet_no_access": "No internet access %",
     "insurance_coverage_none": "Uninsured %",
     "insurance_coverage_govt": "Public Insurance %",
     "insurance_coverage_private": "Private Insurance %",
@@ -214,12 +213,6 @@ def compute_statistics_for_shapefile(
         "insurance_coverage_govt",
         "insurance_coverage_private",
     )
-
-    fractionalize(
-        "internet_access",
-        "internet_no_access",
-    )
-    del result["internet_access"]
 
     fractionalize(
         "marriage_never_married",
