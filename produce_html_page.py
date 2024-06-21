@@ -7,7 +7,6 @@ from relationship import ordering_idx
 from stats_for_shapefile import (
     feature_stats,
     misc_stats,
-    occupation_stats,
 )
 from urbanstats.protobuf import data_files_pb2
 from urbanstats.protobuf.utils import write_gzip
@@ -120,7 +119,6 @@ def statistic_internal_to_display_name():
         internal_to_display.update(statistic_collection.name_for_each_statistic())
         order_zones.update(statistic_collection.order_category_for_each_statistic())
     postfix = {
-        **occupation_stats,
         **election_stats,
         **feature_stats,
         **weather_stat_names,
@@ -150,7 +148,6 @@ def get_statistic_categories():
 
     result.update(
         {
-            **{k: "occupation" for k in occupation_stats},
             **{elect: "election" for elect in election_stats},
             **{k: "feature" for k in feature_stats},
             **{k: "weather" for k in weather_stat_names},
@@ -169,7 +166,6 @@ def get_explanation_page():
 
     result.update(
         {
-            **{k: "industry_and_occupation" for k in occupation_stats},
             **{elect: "election" for elect in election_stats},
             **{
                 k: {

@@ -12,7 +12,6 @@ from permacache import drop_if_equal, permacache, stable_hash
 
 from census_blocks import housing_units, racial_demographics
 from election_data import election_column_names
-from urbanstats.acs import occupation
 from urbanstats.acs.attach import with_acs_data
 from urbanstats.acs.entities import acs_columns
 from urbanstats.census_2010.blocks_2010 import block_level_data_2010
@@ -23,8 +22,6 @@ from urbanstats.statistics.collections_list import statistic_collections
 from urbanstats.weather.to_blocks import weather_block_statistics, weather_stat_names
 from urbanstats.statistics.collections.census_basics import density_metrics
 from urbanstats.statistics.collections.cdc_statistics import CDCStatistics
-
-occupation_stats = occupation.occupation_display
 
 feature_stats = {
     "park_percent_1km_v2": "PW Mean % of parkland within 1km",
@@ -234,8 +231,6 @@ def compute_statistics_for_shapefile(
         "marriage_married_not_divorced",
         "marriage_divorced",
     )
-
-    fractionalize(*occupation_stats.keys())
 
     for feat in feature_columns:
         result[feat] = result[feat] / result["population"]

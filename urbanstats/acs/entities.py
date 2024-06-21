@@ -1,5 +1,4 @@
 from urbanstats.acs.load import ACSDataEntity
-from urbanstats.acs.occupation import normalize_occupation_name, occupation_dict
 from urbanstats.statistics.collections_list import statistic_collections
 from urbanstats.statistics.statistic_collection import (
     ACSStatisticsColection,
@@ -131,12 +130,6 @@ entities = dict(
                 "Estimate!!Total:!!Male:!!Divorced",
             ],
         },
-    ),
-    occupation=ACSDataEntity(
-        "SEX BY OCCUPATION FOR THE CIVILIAN EMPLOYED POPULATION 16 YEARS AND OVER",
-        "population_18",
-        "block group",
-        {normalize_occupation_name(k): v for k, v in occupation_dict.items()},
     ),
     # aggregate_rent=ACSDataEntity(
     #     "AGGREGATE GROSS RENT (DOLLARS)",
