@@ -35,11 +35,11 @@ class RaceCensus(CensusStatisticsColection):
         ]
 
     def mutate_statistic_table(self, statistics_table, shapefile_table):
-        for k in self.name_for_each_statistic():
-            statistics_table[k] /= statistics_table["population"]
         statistics_table["other / mixed"] = (
             statistics_table["other"] + statistics_table["mixed"]
         )
+        for k in self.name_for_each_statistic():
+            statistics_table[k] /= statistics_table["population"]
 
         del statistics_table["other"]
         del statistics_table["mixed"]
