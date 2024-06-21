@@ -2,7 +2,6 @@ import re
 
 import numpy as np
 
-from election_data import vest_elections
 from relationship import ordering_idx
 from stats_for_shapefile import feature_stats, misc_stats
 from urbanstats.protobuf import data_files_pb2
@@ -101,12 +100,6 @@ def create_filename(x, ext):
     return f"{x}." + ext
 
 
-election_stats = {
-    **{(elect.name, "margin"): elect.name for elect in vest_elections},
-    ("2016-2020 Swing", "margin"): "2016-2020 Swing",
-}
-
-
 def statistic_internal_to_display_name():
     internal_to_display = {}
 
@@ -116,7 +109,6 @@ def statistic_internal_to_display_name():
         internal_to_display.update(statistic_collection.name_for_each_statistic())
         order_zones.update(statistic_collection.order_category_for_each_statistic())
     postfix = {
-        **election_stats,
         **feature_stats,
         **weather_stat_names,
         **misc_stats,
@@ -145,7 +137,6 @@ def get_statistic_categories():
 
     result.update(
         {
-            **{elect: "election" for elect in election_stats},
             **{k: "feature" for k in feature_stats},
             **{k: "weather" for k in weather_stat_names},
             **{k: "misc" for k in misc_stats},
@@ -163,7 +154,6 @@ def get_explanation_page():
 
     result.update(
         {
-            **{elect: "election" for elect in election_stats},
             **{
                 k: {
                     "park_percent_1km_v2": "park",

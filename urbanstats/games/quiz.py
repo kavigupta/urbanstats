@@ -405,18 +405,6 @@ types = [
 ]
 
 stats_to_display = {
-    (
-        "2020 Presidential Election",
-        "margin",
-    ): "!FULL Which voted more for Biden in the 2020 presidential election?",
-    (
-        "2016 Presidential Election",
-        "margin",
-    ): "!FULL Which voted more for Clinton in the 2016 presidential election?",
-    (
-        "2016-2020 Swing",
-        "margin",
-    ): "!FULL Which swung towards Democrats more from 2016 to 2020?",
     "park_percent_1km_v2": "!FULL Which has more access to parks (higher % of area within 1km of a park, population weighted)?",
     "mean_dist_Hospital_updated": "!FULL Which has less access to hospitals (higher population-weighted mean distance)?",
     "mean_dist_Active Superfund Site_updated": "!FULL Which has less exposure to EPA superfund sites (higher population-weighted mean distance)?",

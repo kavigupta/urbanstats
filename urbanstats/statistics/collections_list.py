@@ -39,6 +39,7 @@ from urbanstats.statistics.collections.transportation_mode import (
 from urbanstats.statistics.collections.transportation_vehicle_ownership import (
     TransportationVehicleOwnershipStatistics,
 )
+from urbanstats.statistics.collections.us_election import USElectionStatistics
 
 statistic_collections = (
     CensusBasics(),
@@ -66,4 +67,5 @@ statistic_collections = (
     CDCStatistics(),
     IndustryStatistics(),
     OccupationStatistics(),
+    USElectionStatistics(),
 )

@@ -131,3 +131,12 @@ class ACSUSPRStatisticsColection(StatisticCollection):
 
     def for_international(self):
         return False
+
+
+class USElectionStatisticsCollection(StatisticCollection):
+    # TODO we should probably have this actually pull the election data, it currently does not.
+    def for_america(self):
+        return True
+
+    def for_international(self):
+        return False
