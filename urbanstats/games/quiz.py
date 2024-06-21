@@ -595,9 +595,6 @@ not_included = {
     "ad_4_change_2010",
     "ad_0.25_change_2010",
     "ad_2_change_2010",
-    # irrelevant
-    "area",
-    "compactness",
     # middle / obscure
     "days_dewpoint_50_70_4",
     "days_between_40_and_90_4",

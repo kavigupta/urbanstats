@@ -43,13 +43,33 @@ class StatisticCollection(ABC):
     def mutate_statistic_table(self, statistics_table, shapefile_table):
         pass
 
+    @abstractmethod
+    def for_america(self):
+        pass
+
+    @abstractmethod
+    def for_international(self):
+        pass
+
     def same_for_each_name(self, value):
         return {name: value for name in self.name_for_each_statistic()}
 
 
+class GeographicStatistics(StatisticCollection):
+    def for_america(self):
+        return True
+
+    def for_international(self):
+        return True
+
+
 class CensusStatisticsColection(StatisticCollection):
     # TODO we should probably have this actually pull the census data, it currently does not.
-    pass
+    def for_america(self):
+        return True
+
+    def for_international(self):
+        return False
 
 
 class ACSStatisticsColection(StatisticCollection):
@@ -64,6 +84,12 @@ class ACSStatisticsColection(StatisticCollection):
     def acs_entity_dict(self):
         return {self.acs_name(): self.acs_entity()}
 
+    def for_america(self):
+        return True
+
+    def for_international(self):
+        return False
+
 
 class ACSUSPRStatisticsColection(StatisticCollection):
     @abstractmethod
@@ -76,3 +102,9 @@ class ACSUSPRStatisticsColection(StatisticCollection):
 
     def acs_entity_dict(self):
         return {self.acs_name(): self.acs_entities()}
+
+    def for_america(self):
+        return True
+
+    def for_international(self):
+        return False

@@ -3,6 +3,7 @@ from urbanstats.statistics.collections.education_gender_gap import (
 )
 from urbanstats.statistics.collections.education_statistics import EducationStatistics
 from urbanstats.statistics.collections.generation import GenerationStatistics
+from urbanstats.statistics.collections.geographic import AreaAndCompactnessStatistics
 from urbanstats.statistics.collections.housing_census import HousingCensus
 from urbanstats.statistics.collections.housing_rent import HousingRent
 from urbanstats.statistics.collections.housing_rent_burden import HousingRentBurden
@@ -34,6 +35,7 @@ from urbanstats.statistics.collections.transportation_vehicle_ownership import (
 )
 
 statistic_collections = (
+    AreaAndCompactnessStatistics(),
     RaceCensus(),
     NationalOriginCitizenshipStatistics(),
     NationalOriginBirthplaceStatistics(),

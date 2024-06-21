@@ -207,8 +207,6 @@ def compute_statistics_for_shapefile(
     assert not overlap_cols
     result = pd.concat([result_2020, result_2010], axis=1)
     assert (result.longname == sf_fr.longname).all()
-    result["perimiter"] = sf_fr.geometry.to_crs({"proj": "cea"}).length / 1e3
-    result["compactness"] = 4 * np.pi * result.area / result.perimiter ** 2
     result["population_change_2010"] = (
         result["population"] - result["population_2010"]
     ) / result["population_2010"]
@@ -245,7 +243,8 @@ def compute_statistics_for_shapefile(
             result[c] = result[c] / denominator
 
     for collection in statistic_collections:
-        collection.mutate_statistic_table(result, sf_fr)
+        if collection.for_america():
+            collection.mutate_statistic_table(result, sf_fr)
 
     fractionalize(
         "insurance_coverage_none",

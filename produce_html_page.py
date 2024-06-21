@@ -133,8 +133,6 @@ def statistic_internal_to_display_name():
         "sd": "AW Density",
         **basics_2010()[0],
         **gpw_stats,
-        "area": "Area",
-        "compactness": "Compactness",
     }
 
     for statistic_collection in statistic_collections:
@@ -175,8 +173,6 @@ def get_statistic_categories():
             )
             for k in gpw_stats
         },
-        "area": "main",
-        "compactness": "main",
     }
 
     for statistic_collection in statistic_collections:
@@ -205,8 +201,6 @@ def get_explanation_page():
         **{f"ad_{k}": f"density" for k in RADII},
         **{k: "2010" for k in basics_2010()[0]},
         **{k: "gpw" for k in gpw_stats},
-        "area": "geography",
-        "compactness": "geography",
     }
 
     for statistic_collection in statistic_collections:
