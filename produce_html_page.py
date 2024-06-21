@@ -3,7 +3,7 @@ import re
 import numpy as np
 
 from relationship import ordering_idx
-from stats_for_shapefile import feature_stats, misc_stats
+from stats_for_shapefile import misc_stats
 from urbanstats.protobuf import data_files_pb2
 from urbanstats.protobuf.utils import write_gzip
 from urbanstats.statistics.collections_list import statistic_collections
@@ -109,7 +109,6 @@ def statistic_internal_to_display_name():
         internal_to_display.update(statistic_collection.name_for_each_statistic())
         order_zones.update(statistic_collection.order_category_for_each_statistic())
     postfix = {
-        **feature_stats,
         **weather_stat_names,
         **misc_stats,
     }
@@ -137,7 +136,6 @@ def get_statistic_categories():
 
     result.update(
         {
-            **{k: "feature" for k in feature_stats},
             **{k: "weather" for k in weather_stat_names},
             **{k: "misc" for k in misc_stats},
         }
@@ -154,20 +152,6 @@ def get_explanation_page():
 
     result.update(
         {
-            **{
-                k: {
-                    "park_percent_1km_v2": "park",
-                    "within_Hospital_10": "hospital",
-                    "mean_dist_Hospital_updated": "hospital",
-                    "within_Public School_2": "school",
-                    "mean_dist_Public School_updated": "school",
-                    "within_Airport_30": "airport",
-                    "mean_dist_Airport_updated": "airport",
-                    "within_Active Superfund Site_10": "superfund",
-                    "mean_dist_Active Superfund Site_updated": "superfund",
-                }[k]
-                for k in feature_stats
-            },
             **{k: "weather" for k in weather_stat_names},
             **{k: k.split("_")[0] for k in misc_stats},
         }

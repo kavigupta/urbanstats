@@ -140,3 +140,12 @@ class USElectionStatisticsCollection(StatisticCollection):
 
     def for_international(self):
         return False
+
+
+class USFeatureDistanceStatisticsCollection(StatisticCollection):
+    # TODO we should probably have this actually pull the feature data, it currently does not.
+    def for_america(self):
+        return True
+
+    def for_international(self):
+        return False

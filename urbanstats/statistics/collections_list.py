@@ -5,6 +5,7 @@ from urbanstats.statistics.collections.education_gender_gap import (
     EducationGenderGapStatistics,
 )
 from urbanstats.statistics.collections.education_statistics import EducationStatistics
+from urbanstats.statistics.collections.feature import USFeatureDistanceStatistics
 from urbanstats.statistics.collections.generation import GenerationStatistics
 from urbanstats.statistics.collections.geographic import AreaAndCompactnessStatistics
 from urbanstats.statistics.collections.gpw import GPWStatistics
@@ -68,4 +69,5 @@ statistic_collections = (
     IndustryStatistics(),
     OccupationStatistics(),
     USElectionStatistics(),
+    USFeatureDistanceStatistics(),
 )

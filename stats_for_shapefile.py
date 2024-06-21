@@ -23,11 +23,6 @@ from urbanstats.statistics.collections.census_basics import density_metrics
 from urbanstats.statistics.collections_list import statistic_collections
 from urbanstats.weather.to_blocks import weather_block_statistics, weather_stat_names
 
-feature_stats = {
-    "park_percent_1km_v2": "PW Mean % of parkland within 1km",
-    **feature_columns,
-}
-
 misc_stats = {
     "internet_no_access": "No internet access %",
     "insurance_coverage_none": "Uninsured %",
@@ -231,11 +226,6 @@ def compute_statistics_for_shapefile(
         "marriage_married_not_divorced",
         "marriage_divorced",
     )
-
-    for feat in feature_columns:
-        result[feat] = result[feat] / result["population"]
-
-    result["park_percent_1km_v2"] /= result["population"]
 
     for weather_stat in weather_stat_names:
         result[weather_stat] = result[weather_stat] / result["population"]
