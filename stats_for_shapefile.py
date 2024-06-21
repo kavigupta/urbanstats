@@ -24,9 +24,6 @@ from urbanstats.statistics.collections_list import statistic_collections
 from urbanstats.weather.to_blocks import weather_block_statistics
 
 misc_stats = {
-    "insurance_coverage_none": "Uninsured %",
-    "insurance_coverage_govt": "Public Insurance %",
-    "insurance_coverage_private": "Private Insurance %",
     "marriage_never_married": "Never Married %",
     "marriage_married_not_divorced": "Married (not divorced) %",
     "marriage_divorced": "Divorced %",
@@ -207,12 +204,6 @@ def compute_statistics_for_shapefile(
     for collection in statistic_collections:
         if collection.for_america():
             collection.mutate_statistic_table(result, sf_fr)
-
-    fractionalize(
-        "insurance_coverage_none",
-        "insurance_coverage_govt",
-        "insurance_coverage_private",
-    )
 
     fractionalize(
         "marriage_never_married",

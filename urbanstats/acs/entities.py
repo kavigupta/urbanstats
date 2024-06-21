@@ -39,43 +39,6 @@ entities = dict(
     #     },
     #     replace_negatives_with_nan=True,
     # ),
-    insurance_coverage=ACSDataEntity(
-        "HEALTH INSURANCE COVERAGE STATUS AND TYPE BY WORK EXPERIENCE",
-        "population",
-        "tract",
-        {
-            None: [
-                "Estimate!!Total:",
-                "Estimate!!Total:!!Did not work:",
-                "Estimate!!Total:!!Did not work:!!With health insurance coverage",
-                "Estimate!!Total:!!Worked full-time, year-round:",
-                "Estimate!!Total:!!Worked full-time, year-round:!!With health insurance coverage",
-                "Estimate!!Total:!!Worked less than full-time, year-round:",
-                "Estimate!!Total:!!Worked less than full-time, year-round:!!With health insurance coverage",
-            ],
-            "insurance_coverage_none": [
-                "Estimate!!Total:!!Did not work:!!No health insurance coverage",
-                "Estimate!!Total:!!Worked full-time, year-round:!!No health insurance coverage",
-                "Estimate!!Total:!!Worked less than full-time, year-round:!!No health insurance coverage",
-            ],
-            "insurance_coverage_govt": [
-                "Estimate!!Total:!!Did not work:!!With health insurance coverage!!With Medicaid/means-tested public coverage",
-                "Estimate!!Total:!!Did not work:!!With health insurance coverage!!With Medicare coverage",
-                "Estimate!!Total:!!Worked full-time, year-round:!!With health insurance coverage!!With Medicaid/means-tested public coverage",
-                "Estimate!!Total:!!Worked full-time, year-round:!!With health insurance coverage!!With Medicare coverage",
-                "Estimate!!Total:!!Worked less than full-time, year-round:!!With health insurance coverage!!With Medicaid/means-tested public coverage",
-                "Estimate!!Total:!!Worked less than full-time, year-round:!!With health insurance coverage!!With Medicare coverage",
-            ],
-            "insurance_coverage_private": [
-                "Estimate!!Total:!!Did not work:!!With health insurance coverage!!With direct-purchase health insurance",
-                "Estimate!!Total:!!Did not work:!!With health insurance coverage!!With employer-based health insurance",
-                "Estimate!!Total:!!Worked full-time, year-round:!!With health insurance coverage!!With direct-purchase health insurance",
-                "Estimate!!Total:!!Worked full-time, year-round:!!With health insurance coverage!!With employer-based health insurance",
-                "Estimate!!Total:!!Worked less than full-time, year-round:!!With health insurance coverage!!With direct-purchase health insurance",
-                "Estimate!!Total:!!Worked less than full-time, year-round:!!With health insurance coverage!!With employer-based health insurance",
-            ],
-        },
-    ),
     marriage=ACSDataEntity(
         "SEX BY MARITAL STATUS FOR THE POPULATION 15 YEARS AND OVER",
         "population_18",
