@@ -1,0 +1,107 @@
+[
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Commute Time > 60 min %",
+      "question": "higher % of people who have commute time over 60 min",
+      "longname_a": "South Dakota, USA",
+      "longname_b": "New York, USA",
+      "stat_a": 0.031622226844997,
+      "stat_b": 0.1777954595405337
+    },
+    "b": {
+      "stat_column": "Mean sunny hours",
+      "question": "!FULL Which has more hours of sun per day on average? (population weighted)",
+      "longname_a": "Columbus [Urban Area], OH, USA",
+      "longname_b": "Barnstable Town [Urban Area], MA, USA",
+      "stat_a": 4.473202464890145,
+      "stat_b": 4.968846984166091
+    },
+    "a_ease": 0.7760084925690022,
+    "b_ease": 0.3733031674208145
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Born in us outside state %",
+      "question": "higher % of people who were born in the US and outside their state of residence",
+      "longname_a": "Reno city, Nevada, USA",
+      "longname_b": "Columbus city, Ohio, USA",
+      "stat_a": 0.5269401093873963,
+      "stat_b": 0.2302919404855391
+    },
+    "b": {
+      "stat_column": "Mean high temperature in fall",
+      "question": "higher mean daily high temperature in fall (population weighted)",
+      "longname_a": "Washington, USA",
+      "longname_b": "Iowa, USA",
+      "stat_a": 53.09722665918058,
+      "stat_b": 52.61500006299658
+    },
+    "a_ease": 0.7664543524416136,
+    "b_ease": 0.33025830258302585
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Only English at Home %",
+      "question": "higher % of people who only speak english at home",
+      "longname_a": "CA-50, USA",
+      "longname_b": "FL-26, USA",
+      "stat_a": 0.7122255896964472,
+      "stat_b": 0.2417369417672692
+    },
+    "b": {
+      "stat_column": "Public Insurance %",
+      "question": "higher % of people who are on public insurance",
+      "longname_a": "Orlando-Kissimmee-Sanford MSA, FL, USA",
+      "longname_b": "Flint MSA, MI, USA",
+      "stat_a": 0.12420755016577754,
+      "stat_b": 0.3228687948466428
+    },
+    "a_ease": 0.43017329255861364,
+    "b_ease": 0.8426311407160699
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Mean distance to nearest Airport",
+      "question": "!FULL Which has less access to airports (higher population-weighted mean distance)?",
+      "longname_a": "Douglas County, Nebraska, USA",
+      "longname_b": "Butler County, Ohio, USA",
+      "stat_a": 16.306707791004847,
+      "stat_b": 42.065020512705814
+    },
+    "b": {
+      "stat_column": "Silent %",
+      "question": "higher % of people who are silent generation",
+      "longname_a": "Alaska, USA",
+      "longname_b": "Maine, USA",
+      "stat_a": 0.038969949524241446,
+      "stat_b": 0.08073217425523861
+    },
+    "a_ease": 0.44388270980788674,
+    "b_ease": 0.8518099547511312
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Citizen by Naturalization %",
+      "question": "higher % of residents who are citizens by naturalization",
+      "longname_a": "NE-03, USA",
+      "longname_b": "CA-22, USA",
+      "stat_a": 0.023225094453166742,
+      "stat_b": 0.08516163509288537
+    },
+    "b": {
+      "stat_column": "High temperature Above 90\u00b0F %",
+      "question": "higher % of hot days (days with high temp over 90\u00b0F, population weighted)",
+      "longname_a": "8th Circuit, USA",
+      "longname_b": "9th Circuit, USA",
+      "stat_a": 0.062408012606723205,
+      "stat_b": 0.12099305165603919
+    },
+    "a_ease": 0.9134054954204829,
+    "b_ease": 0.5014299332697807
+  }
+]

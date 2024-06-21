@@ -20,6 +20,8 @@ from produce_html_page import (
     statistic_internal_to_display_name,
 )
 from relationship import full_relationships, map_relationships_by_type
+from relationship import ordering_idx as type_ordering_idx
+from relationship import type_to_type_category
 from shapefiles import american_to_international, shapefiles, shapefiles_for_stats
 from stats_for_shapefile import compute_statistics_for_shapefile
 from urbanstats.consolidated_data.produce_consolidated_data import (
@@ -258,6 +260,12 @@ def main(
 
     with open("react/src/data/map_relationship.json", "w") as f:
         json.dump(map_relationships_by_type, f)
+
+    with open("react/src/data/type_to_type_category.json", "w") as f:
+        json.dump(type_to_type_category, f)
+
+    with open("react/src/data/type_ordering_idx.json", "w") as f:
+        json.dump(type_ordering_idx, f)
 
     with open(f"react/src/data/statistic_category_metadata.json", "w") as f:
         json.dump(output_categories(), f)
