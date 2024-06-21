@@ -1,10 +1,7 @@
-import json
 import re
 
 import numpy as np
-import pandas as pd
 
-from census_blocks import RADII
 from election_data import vest_elections
 from relationship import ordering_idx
 from stats_for_shapefile import (
@@ -19,7 +16,6 @@ from urbanstats.protobuf.utils import write_gzip
 from urbanstats.statistics.collections_list import statistic_collections
 from urbanstats.statistics.statistic_collection import ORDER_CATEGORY_MAIN
 from urbanstats.weather.to_blocks import weather_stat_names
-from urbanstats.statistics.collections.census_basics import ad
 
 
 def ord_or_zero(x):
