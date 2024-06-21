@@ -12,7 +12,7 @@ from permacache import drop_if_equal, permacache, stable_hash
 
 from census_blocks import housing_units, racial_demographics
 from election_data import election_column_names
-from urbanstats.acs import industry, occupation
+from urbanstats.acs import occupation
 from urbanstats.acs.attach import with_acs_data
 from urbanstats.acs.entities import acs_columns
 from urbanstats.census_2010.blocks_2010 import block_level_data_2010
@@ -24,7 +24,6 @@ from urbanstats.weather.to_blocks import weather_block_statistics, weather_stat_
 from urbanstats.statistics.collections.census_basics import density_metrics
 from urbanstats.statistics.collections.cdc_statistics import CDCStatistics
 
-industry_stats = industry.industry_display
 occupation_stats = occupation.occupation_display
 
 feature_stats = {
@@ -235,8 +234,6 @@ def compute_statistics_for_shapefile(
         "marriage_married_not_divorced",
         "marriage_divorced",
     )
-
-    fractionalize(*industry_stats.keys())
 
     fractionalize(*occupation_stats.keys())
 

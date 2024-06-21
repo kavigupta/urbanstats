@@ -25,7 +25,6 @@ from produce_html_page import (
 )
 from relationship import states_for_all
 from shapefiles import american_to_international, filter_table_for_type
-from urbanstats.acs import industry, occupation
 from urbanstats.shortener import shorten
 from urbanstats.statistics.collections_list import statistic_collections
 
@@ -443,26 +442,6 @@ stats_to_display = {
     "snowfall_4": "higher snowfall (population weighted)",
     "rainfall_4": "higher rainfall (population weighted)",
     "hours_sunny_4": "!FULL Which has more hours of sun per day on average? (population weighted)",
-    "industry_agriculture,_forestry,_fishing_and_hunting": "higher % of workers employed in the agriculture, forestry, fishing, and hunting industries",
-    "industry_mining,_quarrying,_and_oil_and_gas_extraction": "higher % of workers employed in the mining, quarrying, and oil/gas extraction industries",
-    "industry_accommodation_and_food_services": "higher % of workers employed in the accommodation and food services industry",
-    "industry_arts,_entertainment,_and_recreation": "higher % of workers employed in the arts, entertainment, and recreation industry",
-    "industry_construction": "higher % of workers employed in the construction industry",
-    "industry_educational_services": "higher % of workers employed in the educational services industry",
-    "industry_health_care_and_social_assistance": "higher % of workers employed in the health care and social assistance industry",
-    "industry_finance_and_insurance": "higher % of workers employed in the finance and insurance industry",
-    "industry_real_estate_and_rental_and_leasing": "higher % of workers employed in the real estate and rental and leasing industry",
-    "industry_information": "higher % of workers employed in the information industry",
-    "industry_manufacturing": "higher % of workers employed in the manufacturing industry",
-    "industry_other_services,_except_public_administration": "higher % of workers employed in other service industries, except public administration",
-    "industry_administrative_and_support_and_waste_management_services": "higher % of workers employed in the administrative/support/waste management services industries",
-    "industry_management_of_companies_and_enterprises": "higher % of workers employed in the management industry",
-    "industry_professional,_scientific,_and_technical_services": "higher % of workers employed in the professional, scientific, and technical services industry",
-    "industry_public_administration": "higher % of workers employed in public administration",
-    "industry_retail_trade": "higher % of workers employed in the retail trade industry",
-    "industry_transportation_and_warehousing": "higher % of workers employed in the transportation and warehousing industry",
-    "industry_utilities": "higher % of workers employed in the utilities industry",
-    "industry_wholesale_trade": "higher % of workers employed in the wholesale trade industry",
     "occupation_architecture_and_engineering_occupations": "higher % of workers employed as architects and engineers",
     "occupation_computer_and_mathematical_occupations": "higher % of workers employed in computer and mathematical occupations",
     "occupation_life,_physical,_and_social_science_occupations": "higher % of workers employed in life, physical, and social science occupations",

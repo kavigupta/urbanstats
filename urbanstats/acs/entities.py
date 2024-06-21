@@ -1,4 +1,3 @@
-from urbanstats.acs.industry import industry_dict, normalize_industry_name
 from urbanstats.acs.load import ACSDataEntity
 from urbanstats.acs.occupation import normalize_occupation_name, occupation_dict
 from urbanstats.statistics.collections_list import statistic_collections
@@ -132,12 +131,6 @@ entities = dict(
                 "Estimate!!Total:!!Male:!!Divorced",
             ],
         },
-    ),
-    industry=ACSDataEntity(
-        "SEX BY INDUSTRY FOR THE CIVILIAN EMPLOYED POPULATION 16 YEARS AND OVER",
-        "population_18",
-        "block group",
-        {normalize_industry_name(k): v for k, v in industry_dict.items()},
     ),
     occupation=ACSDataEntity(
         "SEX BY OCCUPATION FOR THE CIVILIAN EMPLOYED POPULATION 16 YEARS AND OVER",

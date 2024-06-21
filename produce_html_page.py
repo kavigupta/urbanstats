@@ -6,7 +6,6 @@ from election_data import vest_elections
 from relationship import ordering_idx
 from stats_for_shapefile import (
     feature_stats,
-    industry_stats,
     misc_stats,
     occupation_stats,
 )
@@ -121,7 +120,6 @@ def statistic_internal_to_display_name():
         internal_to_display.update(statistic_collection.name_for_each_statistic())
         order_zones.update(statistic_collection.order_category_for_each_statistic())
     postfix = {
-        **industry_stats,
         **occupation_stats,
         **election_stats,
         **feature_stats,
@@ -152,7 +150,6 @@ def get_statistic_categories():
 
     result.update(
         {
-            **{k: "industry" for k in industry_stats},
             **{k: "occupation" for k in occupation_stats},
             **{elect: "election" for elect in election_stats},
             **{k: "feature" for k in feature_stats},
@@ -172,7 +169,6 @@ def get_explanation_page():
 
     result.update(
         {
-            **{k: "industry_and_occupation" for k in industry_stats},
             **{k: "industry_and_occupation" for k in occupation_stats},
             **{elect: "election" for elect in election_stats},
             **{

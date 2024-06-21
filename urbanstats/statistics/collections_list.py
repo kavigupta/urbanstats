@@ -17,6 +17,7 @@ from urbanstats.statistics.collections.housing_year_built import (
 from urbanstats.statistics.collections.income_family import IncomeFamily
 from urbanstats.statistics.collections.income_individual import IncomeIndividual
 from urbanstats.statistics.collections.income_poverty import IncomePoverty
+from urbanstats.statistics.collections.industry import IndustryStatistics
 from urbanstats.statistics.collections.national_origin_birthplace import (
     NationalOriginBirthplaceStatistics,
 )
@@ -62,4 +63,5 @@ statistic_collections = (
     TransportationCommuteTimeStatistics(),
     TransportationVehicleOwnershipStatistics(),
     CDCStatistics(),
+    IndustryStatistics(),
 )
