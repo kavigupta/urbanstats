@@ -33,9 +33,9 @@ class GenerationStatistics(ACSStatisticsColection):
     def quiz_question_unused(self):
         return []
 
-    def mutate_shapefile_table(self, shapefile_table):
+    def mutate_statistic_table(self, statistics_table, shapefile_table):
         fractionalize(
-            shapefile_table,
+            statistics_table,
             "generation_silent",
             "generation_boomer",
             "generation_genx",

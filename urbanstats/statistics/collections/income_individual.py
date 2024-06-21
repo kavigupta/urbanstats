@@ -28,9 +28,9 @@ class IncomeIndividual(ACSStatisticsColection):
             "individual_income_50k_to_100k",
         ]
 
-    def mutate_shapefile_table(self, shapefile_table):
+    def mutate_statistic_table(self, statistics_table, shapefile_table):
         fractionalize(
-            shapefile_table,
+            statistics_table,
             "individual_income_under_50k",
             "individual_income_50k_to_100k",
             "individual_income_over_100k",

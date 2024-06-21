@@ -34,9 +34,9 @@ class HousingYearBuiltStatistics(ACSStatisticsColection):
             "year_built_2000_to_2009",
         ]
 
-    def mutate_shapefile_table(self, shapefile_table):
+    def mutate_statistic_table(self, statistics_table, shapefile_table):
         fractionalize(
-            shapefile_table,
+            statistics_table,
             "year_built_1969_or_earlier",
             "year_built_1970_to_1979",
             "year_built_1980_to_1989",

@@ -26,9 +26,9 @@ class NationalOriginLanguageStatistics(ACSStatisticsColection):
     def quiz_question_unused(self):
         return ["language_other"]
 
-    def mutate_shapefile_table(self, shapefile_table):
+    def mutate_statistic_table(self, statistics_table, shapefile_table):
         fractionalize(
-            shapefile_table,
+            statistics_table,
             "language_english_only",
             "language_spanish",
             "language_other",

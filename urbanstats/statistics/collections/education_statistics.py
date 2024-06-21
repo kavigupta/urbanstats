@@ -33,32 +33,32 @@ class EducationStatistics(ACSStatisticsColection):
     def quiz_question_unused(self):
         return []
 
-    def mutate_shapefile_table(self, shapefile_table):
+    def mutate_statistic_table(self, statistics_table, shapefile_table):
         education_denominator = (
-            shapefile_table.education_no
-            + shapefile_table.education_high_school
-            + shapefile_table.education_ugrad
-            + shapefile_table.education_grad
+            statistics_table.education_no
+            + statistics_table.education_high_school
+            + statistics_table.education_ugrad
+            + statistics_table.education_grad
         )
-        shapefile_table["education_high_school"] = (
-            shapefile_table.education_high_school
-            + shapefile_table.education_ugrad
-            + shapefile_table.education_grad
+        statistics_table["education_high_school"] = (
+            statistics_table.education_high_school
+            + statistics_table.education_ugrad
+            + statistics_table.education_grad
         ) / education_denominator
-        shapefile_table["education_ugrad"] = (
-            shapefile_table.education_ugrad + shapefile_table.education_grad
+        statistics_table["education_ugrad"] = (
+            statistics_table.education_ugrad + statistics_table.education_grad
         ) / education_denominator
-        shapefile_table["education_grad"] = (
-            shapefile_table.education_grad / education_denominator
+        statistics_table["education_grad"] = (
+            statistics_table.education_grad / education_denominator
         )
-        del shapefile_table["education_no"]
+        del statistics_table["education_no"]
 
         for column in (
             "education_field_stem",
             "education_field_humanities",
             "education_field_business",
         ):
-            shapefile_table[column] = shapefile_table[column] / education_denominator
+            statistics_table[column] = statistics_table[column] / education_denominator
 
     def acs_entity_dict(self):
         return dict(

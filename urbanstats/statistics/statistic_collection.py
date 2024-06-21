@@ -40,7 +40,7 @@ class StatisticCollection(ABC):
         return ()
 
     @abstractmethod
-    def mutate_shapefile_table(self, shapefile_table):
+    def mutate_statistic_table(self, statistics_table, shapefile_table):
         pass
 
     def same_for_each_name(self, value):

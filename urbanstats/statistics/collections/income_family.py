@@ -28,9 +28,9 @@ class IncomeFamily(ACSStatisticsColection):
             "household_income_50k_to_100k",
         ]
 
-    def mutate_shapefile_table(self, shapefile_table):
+    def mutate_statistic_table(self, statistics_table, shapefile_table):
         fractionalize(
-            shapefile_table,
+            statistics_table,
             "household_income_under_50k",
             "household_income_50k_to_100k",
             "household_income_over_100k",

@@ -23,13 +23,13 @@ class IncomePoverty(ACSStatisticsColection):
     def quiz_question_unused(self):
         return []
 
-    def mutate_shapefile_table(self, shapefile_table):
+    def mutate_statistic_table(self, statistics_table, shapefile_table):
         fractionalize(
-            shapefile_table,
+            statistics_table,
             "poverty_above_line",
             "poverty_below_line",
         )
-        del shapefile_table["poverty_above_line"]
+        del statistics_table["poverty_above_line"]
 
     def acs_name(self):
         return "poverty"

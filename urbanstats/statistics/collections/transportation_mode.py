@@ -28,9 +28,9 @@ class TransportationModeStatistics(ACSStatisticsColection):
             "transportation_means_worked_at_home": "higher % of people who work from home",
         }
 
-    def mutate_shapefile_table(self, shapefile_table):
+    def mutate_statistic_table(self, statistics_table, shapefile_table):
         fractionalize(
-            shapefile_table,
+            statistics_table,
             "transportation_means_car",
             "transportation_means_bike",
             "transportation_means_walk",
@@ -38,7 +38,7 @@ class TransportationModeStatistics(ACSStatisticsColection):
             "transportation_means_worked_at_home",
             "transportation_means_other",
         )
-        del shapefile_table["transportation_means_other"]
+        del statistics_table["transportation_means_other"]
 
     def acs_name(self):
         return "transportation_means"

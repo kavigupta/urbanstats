@@ -27,7 +27,7 @@ class EducationGenderGapStatistics(ACSStatisticsColection):
             "female_grad_gap_4",
         ]
 
-    def mutate_shapefile_table(self, shapefile_table):
+    def mutate_statistic_table(self, statistics_table, shapefile_table):
         fractionalize(
             "female_none_4",
             "female_hs_4",
@@ -42,31 +42,31 @@ class EducationGenderGapStatistics(ACSStatisticsColection):
             "male_grad_4",
         )
 
-        del shapefile_table["female_none_4"], shapefile_table["male_none_4"]
+        del statistics_table["female_none_4"], statistics_table["male_none_4"]
 
-        shapefile_table["female_ugrad_4"] += shapefile_table["female_grad_4"]
-        shapefile_table["male_ugrad_4"] += shapefile_table["male_grad_4"]
+        statistics_table["female_ugrad_4"] += statistics_table["female_grad_4"]
+        statistics_table["male_ugrad_4"] += statistics_table["male_grad_4"]
 
-        shapefile_table["female_hs_4"] += shapefile_table["female_ugrad_4"]
-        shapefile_table["male_hs_4"] += shapefile_table["male_ugrad_4"]
+        statistics_table["female_hs_4"] += statistics_table["female_ugrad_4"]
+        statistics_table["male_hs_4"] += statistics_table["male_ugrad_4"]
 
-        shapefile_table["female_hs_gap_4"] = (
-            shapefile_table["female_hs_4"] - shapefile_table["male_hs_4"]
+        statistics_table["female_hs_gap_4"] = (
+            statistics_table["female_hs_4"] - statistics_table["male_hs_4"]
         )
-        shapefile_table["female_ugrad_gap_4"] = (
-            shapefile_table["female_ugrad_4"] - shapefile_table["male_ugrad_4"]
+        statistics_table["female_ugrad_gap_4"] = (
+            statistics_table["female_ugrad_4"] - statistics_table["male_ugrad_4"]
         )
-        shapefile_table["female_grad_gap_4"] = (
-            shapefile_table["female_grad_4"] - shapefile_table["male_grad_4"]
+        statistics_table["female_grad_gap_4"] = (
+            statistics_table["female_grad_4"] - statistics_table["male_grad_4"]
         )
 
         del (
-            shapefile_table["male_hs_4"],
-            shapefile_table["female_hs_4"],
-            shapefile_table["female_ugrad_4"],
-            shapefile_table["male_ugrad_4"],
-            shapefile_table["female_grad_4"],
-            shapefile_table["male_grad_4"],
+            statistics_table["male_hs_4"],
+            statistics_table["female_hs_4"],
+            statistics_table["female_ugrad_4"],
+            statistics_table["male_ugrad_4"],
+            statistics_table["female_grad_4"],
+            statistics_table["male_grad_4"],
         )
 
     def acs_name(self):

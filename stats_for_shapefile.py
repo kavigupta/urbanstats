@@ -245,7 +245,7 @@ def compute_statistics_for_shapefile(
             result[c] = result[c] / denominator
 
     for collection in statistic_collections:
-        collection.mutate_shapefile_table(result)
+        collection.mutate_statistic_table(result, sf_fr)
 
     fractionalize(
         "insurance_coverage_none",

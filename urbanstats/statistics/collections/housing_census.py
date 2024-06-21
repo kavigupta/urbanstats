@@ -25,8 +25,8 @@ class HousingCensus(CensusStatisticsColection):
     def quiz_question_unused(self):
         return []
 
-    def mutate_shapefile_table(self, shapefile_table):
-        result = shapefile_table
+    def mutate_statistic_table(self, statistics_table, shapefile_table):
+        result = statistics_table
         result["housing_per_pop"] = result["total"] / result["population_18"]
         result["vacancy"] = result["vacant"] / result["total"]
         del result["vacant"]
