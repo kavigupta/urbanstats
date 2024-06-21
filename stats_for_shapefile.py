@@ -16,13 +16,13 @@ from urbanstats.acs import industry, occupation
 from urbanstats.acs.attach import with_acs_data
 from urbanstats.acs.entities import acs_columns
 from urbanstats.census_2010.blocks_2010 import block_level_data_2010
-from urbanstats.census_2010.columns_2010 import cdc_columns
 from urbanstats.features.extract_data import feature_data
 from urbanstats.features.feature import feature_columns
 from urbanstats.osm.parks import park_overlap_percentages_all
 from urbanstats.statistics.collections_list import statistic_collections
 from urbanstats.weather.to_blocks import weather_block_statistics, weather_stat_names
 from urbanstats.statistics.collections.census_basics import density_metrics
+from urbanstats.statistics.collections.cdc_statistics import CDCStatistics
 
 industry_stats = industry.industry_display
 occupation_stats = occupation.occupation_display
@@ -104,7 +104,7 @@ sum_keys_2010 = [
     *[f"{k}_2010" for k in racial_demographics],
     *[f"{k}_2010" for k in housing_units],
     *[f"{k}_2010" for k in density_metrics],
-    *cdc_columns(),
+    *CDCStatistics().name_for_each_statistic(),
 ]
 sum_keys_2010 = sorted(sum_keys_2010, key=str)
 COLUMNS_PER_JOIN = 33
@@ -208,9 +208,6 @@ def compute_statistics_for_shapefile(
         result[k] = sf.meta[k]
     del result["other"]
     del result["mixed"]
-
-    for cdc in cdc_columns():
-        result[cdc] /= result["population_18_2010"]
 
     def fractionalize(*columns):
         denominator = sum(result[c] for c in columns)

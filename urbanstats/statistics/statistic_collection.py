@@ -86,6 +86,15 @@ class CensusStatisticsColection(StatisticCollection):
         return False
 
 
+class CDCStatisticsCollection(StatisticCollection):
+    # TODO we should probably have this actually pull the CDC data, it currently does not.
+    def for_america(self):
+        return True
+
+    def for_international(self):
+        return False
+
+
 class ACSStatisticsColection(StatisticCollection):
     @abstractmethod
     def acs_name(self):

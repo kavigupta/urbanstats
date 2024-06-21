@@ -10,7 +10,6 @@ from stats_for_shapefile import (
     misc_stats,
     occupation_stats,
 )
-from urbanstats.census_2010.columns_2010 import cdc_columns
 from urbanstats.protobuf import data_files_pb2
 from urbanstats.protobuf.utils import write_gzip
 from urbanstats.statistics.collections_list import statistic_collections
@@ -122,7 +121,6 @@ def statistic_internal_to_display_name():
         internal_to_display.update(statistic_collection.name_for_each_statistic())
         order_zones.update(statistic_collection.order_category_for_each_statistic())
     postfix = {
-        **cdc_columns(),
         **industry_stats,
         **occupation_stats,
         **election_stats,
@@ -154,7 +152,6 @@ def get_statistic_categories():
 
     result.update(
         {
-            **{k: "health" for k in cdc_columns()},
             **{k: "industry" for k in industry_stats},
             **{k: "occupation" for k in occupation_stats},
             **{elect: "election" for elect in election_stats},
@@ -175,7 +172,6 @@ def get_explanation_page():
 
     result.update(
         {
-            **{k: "health" for k in cdc_columns()},
             **{k: "industry_and_occupation" for k in industry_stats},
             **{k: "industry_and_occupation" for k in occupation_stats},
             **{elect: "election" for elect in election_stats},

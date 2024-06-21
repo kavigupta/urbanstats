@@ -487,28 +487,6 @@ stats_to_display = {
     "occupation_personal_care_and_service_occupations": "higher % of workers employed in personal care and service occupations",
     "occupation_firefighting_and_prevention,_and_other_protective_service_workers_including_supervisors": "higher % of workers employed as firefighting and prevention, and other protective service workers including supervisors",
     "occupation_law_enforcement_workers_including_supervisors": "higher % of workers employed as law enforcement workers including supervisors",
-    "GHLTH_cdc_2": "higher % of adults with a fair or poor self-rated health status",
-    "ARTHRITIS_cdc_2": "higher % of adults with arthritis",
-    "CASTHMA_cdc_2": "higher % of adults with asthma",
-    "BPHIGH_cdc_2": "higher % of adults with high blood pressure",
-    "CANCER_cdc_2": "higher % of adults with cancer (excluding skin cancer)",
-    "KIDNEY_cdc_2": "higher % of adults with chronic kidney disease",
-    "COPD_cdc_2": "higher % of adults with COPD",
-    "CHD_cdc_2": "higher % of adults with coronary heart disease",
-    "DIABETES_cdc_2": "higher % of adults with diagnosed diabetes",
-    "OBESITY_cdc_2": "higher % of adults with obesity",
-    "STROKE_cdc_2": "higher % of adults who have had a stroke",
-    "DISABILITY_cdc_2": "higher % of adults with a disability",
-    "HEARING_cdc_2": "higher % of adults with a hearing disability",
-    "VISION_cdc_2": "higher % of adults with a vision disability",
-    "COGNITION_cdc_2": "higher % of adults with a cognitive disability",
-    "MOBILITY_cdc_2": "higher % of adults with a mobility disability",
-    "SELFCARE_cdc_2": "higher % of adults with a self-care disability",
-    "INDEPLIVE_cdc_2": "higher % of adults with an independent living disability",
-    "BINGE_cdc_2": "higher % of adults who binge drink",
-    "CSMOKING_cdc_2": "higher % of adults with smoke",
-    "LPA_cdc_2": "higher % of adults who don't exercise (do leisure-time physical activity)",
-    "SLEEP_cdc_2": "higher % of adults who sleep less than 7 hours",
 }
 
 
@@ -593,11 +571,6 @@ not_included = {
     "within_Airport_30",
     "within_Public School_2",
     "within_Hospital_10",
-    # too hard to explain
-    "CHOLSCREEN_cdc_2",
-    "CHECKUP_cdc_2",
-    "PHLTH_cdc_2",
-    "DENTAL_cdc_2",
 }
 
 for collection in statistic_collections:
