@@ -1,8 +1,7 @@
+from urbanstats.acs import industry
 from urbanstats.acs.load import ACSDataEntity
 from urbanstats.statistics.statistic_collection import ACSStatisticsColection
 from urbanstats.statistics.utils import fractionalize
-
-from urbanstats.acs import industry
 
 
 class IndustryStatistics(ACSStatisticsColection):

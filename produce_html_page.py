@@ -4,10 +4,7 @@ import numpy as np
 
 from election_data import vest_elections
 from relationship import ordering_idx
-from stats_for_shapefile import (
-    feature_stats,
-    misc_stats,
-)
+from stats_for_shapefile import feature_stats, misc_stats
 from urbanstats.protobuf import data_files_pb2
 from urbanstats.protobuf.utils import write_gzip
 from urbanstats.statistics.collections_list import statistic_collections

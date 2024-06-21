@@ -3,13 +3,12 @@ from urbanstats.statistics.statistic_collection import (
     ORDER_CATEGORY_OTHER_DENSITIES,
     CensusStatisticsColection,
 )
-from .race_census import RaceCensus
 
-from .census_basics import ad, CensusBasics
+from .census_basics import CensusBasics, ad
+from .race_census import RaceCensus
 
 
 class Census2010(CensusStatisticsColection):
-
     def name_for_each_statistic(self):
 
         ad_2010 = {f"{k}_2010": f"{v} (2010)" for k, v in ad.items()}

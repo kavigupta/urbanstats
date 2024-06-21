@@ -2,7 +2,6 @@ from urbanstats.statistics.statistic_collection import CDCStatisticsCollection
 
 
 class CDCStatistics(CDCStatisticsCollection):
-
     def name_for_each_statistic(self):
 
         cdc_columns = {

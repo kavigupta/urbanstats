@@ -18,10 +18,10 @@ from urbanstats.census_2010.blocks_2010 import block_level_data_2010
 from urbanstats.features.extract_data import feature_data
 from urbanstats.features.feature import feature_columns
 from urbanstats.osm.parks import park_overlap_percentages_all
+from urbanstats.statistics.collections.cdc_statistics import CDCStatistics
+from urbanstats.statistics.collections.census_basics import density_metrics
 from urbanstats.statistics.collections_list import statistic_collections
 from urbanstats.weather.to_blocks import weather_block_statistics, weather_stat_names
-from urbanstats.statistics.collections.census_basics import density_metrics
-from urbanstats.statistics.collections.cdc_statistics import CDCStatistics
 
 feature_stats = {
     "park_percent_1km_v2": "PW Mean % of parkland within 1km",

@@ -1,9 +1,9 @@
+from census_blocks import RADII
 from urbanstats.statistics.statistic_collection import (
     ORDER_CATEGORY_MAIN,
     ORDER_CATEGORY_OTHER_DENSITIES,
     CensusStatisticsColection,
 )
-from census_blocks import RADII
 
 
 def format_radius(x):
@@ -19,7 +19,6 @@ density_metrics = [f"ad_{k}" for k in RADII]
 
 
 class CensusBasics(CensusStatisticsColection):
-
     def name_for_each_statistic(self):
 
         return {
