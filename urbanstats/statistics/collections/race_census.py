@@ -40,3 +40,6 @@ class RaceCensus(CensusStatisticsColection):
         statistics_table["other / mixed"] = (
             statistics_table["other"] + statistics_table["mixed"]
         )
+
+        del statistics_table["other"]
+        del statistics_table["mixed"]

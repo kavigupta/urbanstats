@@ -23,11 +23,7 @@ from urbanstats.statistics.collections.weather import USWeatherStatistics
 from urbanstats.statistics.collections_list import statistic_collections
 from urbanstats.weather.to_blocks import weather_block_statistics
 
-misc_stats = {
-    "marriage_never_married": "Never Married %",
-    "marriage_married_not_divorced": "Married (not divorced) %",
-    "marriage_divorced": "Divorced %",
-}
+misc_stats = {}
 
 
 @attr.s
@@ -188,28 +184,12 @@ def compute_statistics_for_shapefile(
     assert not overlap_cols
     result = pd.concat([result_2020, result_2010], axis=1)
     assert (result.longname == sf_fr.longname).all()
-    for k in density_metrics:
-        result[k] /= result["population"]
-    result["sd"] = result["population"] / result["area"]
     for k in sf.meta:
         result[k] = sf.meta[k]
-    del result["other"]
-    del result["mixed"]
-
-    def fractionalize(*columns):
-        denominator = sum(result[c] for c in columns)
-        for c in columns:
-            result[c] = result[c] / denominator
 
     for collection in statistic_collections:
         if collection.for_america():
             collection.mutate_statistic_table(result, sf_fr)
-
-    fractionalize(
-        "marriage_never_married",
-        "marriage_married_not_divorced",
-        "marriage_divorced",
-    )
 
     return result
 

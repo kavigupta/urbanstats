@@ -404,9 +404,7 @@ types = [
     "Urban Center",
 ]
 
-stats_to_display = {
-    "marriage_divorced": "higher % of people who are divorced",
-}
+stats_to_display = {}
 
 
 for collection in statistic_collections:
@@ -474,11 +472,7 @@ renamed = {
     "higher % of people who were born in the us and born outside their state of residence": "birthplace_us_not_state",
 }
 
-not_included = {
-    # meh whatever
-    "marriage_married_not_divorced",
-    "marriage_never_married",
-}
+not_included = {}
 
 for collection in statistic_collections:
     not_included.update(collection.quiz_question_unused())

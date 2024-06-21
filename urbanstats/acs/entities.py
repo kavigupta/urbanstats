@@ -39,40 +39,6 @@ entities = dict(
     #     },
     #     replace_negatives_with_nan=True,
     # ),
-    marriage=ACSDataEntity(
-        "SEX BY MARITAL STATUS FOR THE POPULATION 15 YEARS AND OVER",
-        "population_18",
-        "block group",
-        {
-            None: [
-                "Estimate!!Total:",
-                "Estimate!!Total:!!Female:",
-                "Estimate!!Total:!!Female:!!Now married:!!Married, spouse absent:",
-                "Estimate!!Total:!!Female:!!Now married:!!Married, spouse absent:!!Other",
-                "Estimate!!Total:!!Female:!!Now married:!!Married, spouse absent:!!Separated",
-                "Estimate!!Total:!!Female:!!Now married:!!Married, spouse present",
-                "Estimate!!Total:!!Male:",
-                "Estimate!!Total:!!Male:!!Now married:!!Married, spouse absent:",
-                "Estimate!!Total:!!Male:!!Now married:!!Married, spouse absent:!!Other",
-                "Estimate!!Total:!!Male:!!Now married:!!Married, spouse absent:!!Separated",
-                "Estimate!!Total:!!Male:!!Now married:!!Married, spouse present",
-            ],
-            "marriage_never_married": [
-                "Estimate!!Total:!!Female:!!Never married",
-                "Estimate!!Total:!!Male:!!Never married",
-            ],
-            "marriage_married_not_divorced": [
-                "Estimate!!Total:!!Female:!!Now married:",
-                "Estimate!!Total:!!Male:!!Now married:",
-                "Estimate!!Total:!!Female:!!Widowed",
-                "Estimate!!Total:!!Male:!!Widowed",
-            ],
-            "marriage_divorced": [
-                "Estimate!!Total:!!Female:!!Divorced",
-                "Estimate!!Total:!!Male:!!Divorced",
-            ],
-        },
-    ),
     # aggregate_rent=ACSDataEntity(
     #     "AGGREGATE GROSS RENT (DOLLARS)",
     #     "occupied",
