@@ -406,9 +406,6 @@ types = [
 ]
 
 stats_to_display = {
-    "population": "higher population",
-    "ad_1": "higher population-weighted density (r=1km)",
-    "sd": "higher area-weighted density",
     (
         "2020 Presidential Election",
         "margin",
@@ -581,11 +578,6 @@ renamed = {
 }
 
 not_included = {
-    # duplicate
-    "ad_0.25",
-    "ad_0.5",
-    "ad_2",
-    "ad_4",
     # middle / obscure
     "days_dewpoint_50_70_4",
     "days_between_40_and_90_4",

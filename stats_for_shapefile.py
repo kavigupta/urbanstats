@@ -10,7 +10,7 @@ import tqdm.auto as tqdm
 from more_itertools import chunked
 from permacache import drop_if_equal, permacache, stable_hash
 
-from census_blocks import RADII, housing_units, racial_demographics
+from census_blocks import housing_units, racial_demographics
 from election_data import election_column_names
 from urbanstats.acs import industry, occupation
 from urbanstats.acs.attach import with_acs_data
@@ -22,6 +22,7 @@ from urbanstats.features.feature import feature_columns
 from urbanstats.osm.parks import park_overlap_percentages_all
 from urbanstats.statistics.collections_list import statistic_collections
 from urbanstats.weather.to_blocks import weather_block_statistics, weather_stat_names
+from urbanstats.statistics.collections.census_basics import density_metrics
 
 industry_stats = industry.industry_display
 occupation_stats = occupation.occupation_display
@@ -84,7 +85,6 @@ class Shapefile:
         return s
 
 
-density_metrics = [f"ad_{k}" for k in RADII]
 sum_keys_2020 = [
     "population",
     "population_18",

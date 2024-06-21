@@ -21,6 +21,7 @@ from urbanstats.statistics.statistic_collection import ORDER_CATEGORY_MAIN
 from urbanstats.weather.to_blocks import weather_stat_names
 from urbanstats.statistics.collections.census_basics import ad
 
+
 def ord_or_zero(x):
     return 0 if np.isnan(x) else int(x)
 
@@ -117,13 +118,9 @@ election_stats = {
 
 
 def statistic_internal_to_display_name():
-    internal_to_display = {
-        "population": "Population",
-        **{"ad_1": ad["ad_1"]},
-        "sd": "AW Density",
-    }
+    internal_to_display = {}
 
-    order_zones = {k: ORDER_CATEGORY_MAIN for k in internal_to_display}
+    order_zones = {}
 
     for statistic_collection in statistic_collections:
         internal_to_display.update(statistic_collection.name_for_each_statistic())
@@ -136,7 +133,6 @@ def statistic_internal_to_display_name():
         **feature_stats,
         **weather_stat_names,
         **misc_stats,
-        **{k: ad[k] for k in ad if k != "ad_1"},
     }
     internal_to_display.update(postfix)
     order_zones.update({k: ORDER_CATEGORY_MAIN for k in postfix})
@@ -155,12 +151,7 @@ def internal_statistic_names():
 
 
 def get_statistic_categories():
-    ad = {f"ad_{k}": f"other_densities" for k in RADII}
-    result = {
-        "population": "main",
-        **{"ad_1": "main"},
-        "sd": "main",
-    }
+    result = {}
 
     for statistic_collection in statistic_collections:
         result.update(statistic_collection.category_for_each_statistic())
@@ -174,7 +165,6 @@ def get_statistic_categories():
             **{k: "feature" for k in feature_stats},
             **{k: "weather" for k in weather_stat_names},
             **{k: "misc" for k in misc_stats},
-            **{k: ad[k] for k in ad if k != "ad_1"},
         }
     )
     result = {k: result[k] for k in statistic_internal_to_display_name()}
@@ -182,11 +172,7 @@ def get_statistic_categories():
 
 
 def get_explanation_page():
-    result = {
-        "population": "population",
-        "sd": "density",
-        **{f"ad_{k}": f"density" for k in RADII},
-    }
+    result = {}
 
     for statistic_collection in statistic_collections:
         result.update(statistic_collection.explanation_page_for_each_statistic())

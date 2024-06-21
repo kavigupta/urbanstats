@@ -5,7 +5,8 @@ from urbanstats.statistics.statistic_collection import (
 )
 from .race_census import RaceCensus
 
-from .census_basics import ad
+from .census_basics import ad, CensusBasics
+
 
 class Census2010(CensusStatisticsColection):
 
@@ -33,14 +34,7 @@ class Census2010(CensusStatisticsColection):
         }
 
     def order_category_for_each_statistic(self):
-        return {
-            k: (
-                ORDER_CATEGORY_OTHER_DENSITIES
-                if k.startswith("ad_") and not k.startswith("ad_1")
-                else ORDER_CATEGORY_MAIN
-            )
-            for k in self.name_for_each_statistic()
-        }
+        return CensusBasics.order_category_for_each_statistic(self)
 
     def category_for_each_statistic(self):
         return self.same_for_each_name("2010")
