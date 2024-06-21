@@ -254,7 +254,7 @@ def get_rgb_circles(circles, circle_map):
         [hsv_to_rgb(hue, sat, val) for hue, sat, val in zip(hues, sats, vals)]
     )
     rgb = (rgb * 255).astype(np.uint8)
-    for i, (r, (y, x)) in enumerate(circles):
+    for i, (r, (y, x)) in enumerate(tqdm.tqdm(circles, desc="Stamping circles")):
         circle_rgb[circle_map == i + 1] = (*rgb[i], 100)
     return circle_rgb
 
@@ -608,7 +608,13 @@ def compute_structure(rows):
         tiers[-1].append(i)
     if len(tiers) == 1:
         return {i: relative(range(len(rows))) for i in range(len(rows))}
-    tier_labels = ["Center", "Outer", "Periphery", "Further Periphery"]
+    tier_labels = [
+        "Center",
+        "Outer",
+        "Periphery",
+        "Further Periphery",
+        "Even Further Periphery",
+    ]
     result = {}
     all_prev = []
     for i, tier in enumerate(tiers):
@@ -681,14 +687,23 @@ named_populations = {
 }
 
 
-def produce_image(population):
-    name = named_populations[population]
-    print("Computing circles for population", name)
+@permacache(
+    "urbanstats/data/circle/create_circle_image",
+)
+def create_circle_image(population):
+    print("Computing circles for population", population)
     circles = overlapping_circles_fast(
         load_full_ghs(), population, limit=10**9, max_radius_in_chunks=20
     )
-    print("Creating image for population", name)
+    print("Creating image for population", population)
     out = create_rgb_image(load_full_ghs(), circles, 5)
+    return out
+
+
+def produce_image(population):
+    name = named_populations[population]
+    print("Creating image for population", name)
+    out = create_circle_image(population)
     print("Saving image for population", name)
     out.save(f"outputs/population_circles/{name}.png")
     print("Done with population", name)
