@@ -144,7 +144,7 @@ function TemplateFooter() {
 }
 
 function Version() {
-    return <span id="current-version">14.0.0</span>
+    return <span id="current-version">14.2.0</span>
 }
 
 function LastUpdated() {
