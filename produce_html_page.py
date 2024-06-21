@@ -3,7 +3,6 @@ import re
 import numpy as np
 
 from relationship import ordering_idx
-from stats_for_shapefile import misc_stats
 from urbanstats.protobuf import data_files_pb2
 from urbanstats.protobuf.utils import write_gzip
 from urbanstats.statistics.collections_list import statistic_collections
@@ -107,11 +106,6 @@ def statistic_internal_to_display_name():
     for statistic_collection in statistic_collections:
         internal_to_display.update(statistic_collection.name_for_each_statistic())
         order_zones.update(statistic_collection.order_category_for_each_statistic())
-    postfix = {
-        **misc_stats,
-    }
-    internal_to_display.update(postfix)
-    order_zones.update({k: ORDER_CATEGORY_MAIN for k in postfix})
 
     # reorder by order_zones
     key_to_order = {k: (order_zones[k], i) for i, k in enumerate(internal_to_display)}
@@ -132,11 +126,6 @@ def get_statistic_categories():
     for statistic_collection in statistic_collections:
         result.update(statistic_collection.category_for_each_statistic())
 
-    result.update(
-        {
-            **{k: "misc" for k in misc_stats},
-        }
-    )
     result = {k: result[k] for k in statistic_internal_to_display_name()}
     return result
 
@@ -147,11 +136,6 @@ def get_explanation_page():
     for statistic_collection in statistic_collections:
         result.update(statistic_collection.explanation_page_for_each_statistic())
 
-    result.update(
-        {
-            **{k: k.split("_")[0] for k in misc_stats},
-        }
-    )
     result = {k: result[k] for k in statistic_internal_to_display_name()}
     return result
 
