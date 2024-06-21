@@ -1,7 +1,8 @@
-from functools import lru_cache
 import re
-from permacache import permacache
+from functools import lru_cache
+
 import us
+from permacache import permacache
 
 from relationship import continents_for_all, non_us_countries_for_all, states_for_all
 from urbanstats.special_cases.country import continent_names
@@ -18,7 +19,9 @@ def attach_usa_universes(american):
         for longname in american.longname
     ]
 
+
 subnation_usa = re.compile(r"(?!([ ,-]))(?P<state>[^,\-\s][^,\-]*), USA")
+
 
 def compute_intl_universes(longname):
     result = ["world"] + continents_for_all()[longname]
@@ -32,16 +35,14 @@ def compute_intl_universes(longname):
         result += ["USA"]
     if longname == "USA":
         return result
-    from urbanstats.special_cases.ghsl_urban_center import gsl_urban_center_longname_to_subnational_codes
+    from urbanstats.special_cases.ghsl_urban_center import (
+        gsl_urban_center_longname_to_subnational_codes,
+    )
+
     if longname in gsl_urban_center_longname_to_subnational_codes():
         codes = gsl_urban_center_longname_to_subnational_codes()[longname]
         codes = [code[2:] for code in codes if code.startswith("US")]
-        codes = [
-            get_universe_name_for_state(
-                us.states.lookup(code)
-            )
-            for code in codes
-        ]
+        codes = [get_universe_name_for_state(us.states.lookup(code)) for code in codes]
         result += codes
         return result
     assert subnation_usa.match(longname), longname
@@ -51,10 +52,7 @@ def compute_intl_universes(longname):
 def attach_intl_universes(intl):
     assert country_names() == COUNTRIES
     assert list(continent_names()) == CONTINENTS
-    intl["universes"] = [
-        compute_intl_universes(longname)
-        for longname in intl.longname
-    ]
+    intl["universes"] = [compute_intl_universes(longname) for longname in intl.longname]
 
 
 @permacache("urbanstats/universe/annotate_universes/country_names_2")

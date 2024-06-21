@@ -1,8 +1,7 @@
-import overpy
 import geopandas as gpd
-
-from shapely.geometry import Polygon, Point
-from shapely import unary_union, difference
+import overpy
+from shapely import difference, unary_union
+from shapely.geometry import Point, Polygon
 
 
 def merge_ring(a, b):

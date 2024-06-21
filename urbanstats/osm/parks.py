@@ -1,15 +1,13 @@
-from permacache import permacache
-import tqdm.auto as tqdm
-
+import geopandas as gpd
 import numpy as np
 import pandas as pd
 import shapely
-import geopandas as gpd
-
+import tqdm.auto as tqdm
 import us
+from permacache import permacache
 
-from .query import query_to_geopandas
 from ..features.within_distance import census_block_coordinates, point_to_radius
+from .query import query_to_geopandas
 
 
 def parks_for_state(state):

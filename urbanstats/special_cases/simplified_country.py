@@ -1,9 +1,10 @@
 import copy
 from functools import lru_cache
-from permacache import permacache
-import geopandas as gpd
-from output_geometry import produce_geometry_json
 
+import geopandas as gpd
+from permacache import permacache
+
+from output_geometry import produce_geometry_json
 from shapefiles import shapefiles
 
 

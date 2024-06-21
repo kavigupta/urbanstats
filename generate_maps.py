@@ -1,15 +1,12 @@
-from load_data import (
-    get_fips_to_counties,
-    get_subfips_to_subcounty_name,
-)
-from process import grouped_data
-from mapper import produce_full_image
-
 import addfips
-import pandas as pd
-import numpy as np
 import geopandas
 import gspread
+import numpy as np
+import pandas as pd
+
+from load_data import get_fips_to_counties, get_subfips_to_subcounty_name
+from mapper import produce_full_image
+from process import grouped_data
 
 
 def tolist(df):

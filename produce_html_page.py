@@ -5,21 +5,20 @@ import numpy as np
 import pandas as pd
 
 from census_blocks import RADII
-from stats_for_shapefile import (
-    gpw_stats,
-    industry_stats,
-    occupation_stats,
-    feature_stats,
-    misc_stats,
-)
 from election_data import vest_elections
 from relationship import ordering_idx
-
+from stats_for_shapefile import (
+    feature_stats,
+    gpw_stats,
+    industry_stats,
+    misc_stats,
+    occupation_stats,
+)
 from urbanstats.census_2010.columns_2010 import basics_2010, cdc_columns
 from urbanstats.protobuf import data_files_pb2
 from urbanstats.protobuf.utils import write_gzip
-from urbanstats.weather.to_blocks import weather_stat_names
 from urbanstats.statistics.collections_list import statistic_collections
+from urbanstats.weather.to_blocks import weather_stat_names
 
 
 def ord_or_zero(x):

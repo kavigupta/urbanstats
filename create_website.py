@@ -1,35 +1,33 @@
-from functools import lru_cache
-import os
 import json
+import os
 import shutil
+from collections import Counter
+from functools import lru_cache
+
 import fire
 import numpy as np
-
 import pandas as pd
-from shapefiles import shapefiles, shapefiles_for_stats, american_to_international
-from collections import Counter
-
 import tqdm.auto as tqdm
 
+from election_data import vest_elections
 from output_geometry import produce_all_geometry_json
-from stats_for_shapefile import compute_statistics_for_shapefile
 from produce_html_page import (
+    category_metadata,
     create_page_json,
     get_explanation_page,
     get_statistic_categories,
     internal_statistic_names,
-    category_metadata,
     statistic_internal_to_display_name,
 )
 from relationship import full_relationships, map_relationships_by_type
-from election_data import vest_elections
+from shapefiles import american_to_international, shapefiles, shapefiles_for_stats
+from stats_for_shapefile import compute_statistics_for_shapefile
 from urbanstats.consolidated_data.produce_consolidated_data import (
     full_consolidated_data,
     output_names,
 )
 from urbanstats.data.gpw import compute_gpw_data_for_shapefile_table
 from urbanstats.mapper.ramp import output_ramps
-
 from urbanstats.ordinals.compute_ordinals import (
     add_ordinals,
     compute_all_ordinals,

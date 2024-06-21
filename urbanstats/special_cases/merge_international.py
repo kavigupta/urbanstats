@@ -1,12 +1,15 @@
-from collections import Counter
 import re
+from collections import Counter
+
 import numpy as np
 import pandas as pd
 
 
 def tag_international_duplicates(intl):
     intl = intl.copy()
-    intl.longname = intl.longname.apply(lambda x: re.sub(", ([^,]*)USA", r" [SN], \1USA", x))
+    intl.longname = intl.longname.apply(
+        lambda x: re.sub(", ([^,]*)USA", r" [SN], \1USA", x)
+    )
     return intl
 
 

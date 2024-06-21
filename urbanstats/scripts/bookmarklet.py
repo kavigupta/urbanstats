@@ -1,5 +1,5 @@
-from collections import defaultdict
 import sys
+from collections import defaultdict
 
 from urbanstats.games.quiz_analysis import get_full_statistics
 
@@ -13,8 +13,7 @@ for problem, pattern in zip(result_for_user.problem, result_for_user.pattern):
     problem_to_patterns[problem].append(pattern)
 
 problem_to_pattern = {
-    problem: min(patterns, key=sum)
-    for problem, patterns in problem_to_patterns.items()
+    problem: min(patterns, key=sum) for problem, patterns in problem_to_patterns.items()
 }
 
 out = []

@@ -4,7 +4,6 @@ from urbanstats.statistics.utils import fractionalize
 
 
 class IncomeIndividual(ACSStatisticsColection):
-
     def name_for_each_statistic(self):
         return {
             "individual_income_under_50k": "Individual Income < $50k %",

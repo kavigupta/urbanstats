@@ -1,11 +1,11 @@
-from collections import Counter
 import os
-import pandas as pd
-import us
-import tqdm.auto as tqdm
+from collections import Counter
 
-import pycountry
 import geopandas as gpd
+import pandas as pd
+import pycountry
+import tqdm.auto as tqdm
+import us
 from permacache import permacache
 
 from stats_for_shapefile import Shapefile
@@ -472,7 +472,10 @@ shapefiles_for_stats = dict(
     ),
 )
 
-american_to_international = {"State": "Subnational Region", "US Urban Center": "Urban Center"}
+american_to_international = {
+    "State": "Subnational Region",
+    "US Urban Center": "Urban Center",
+}
 
 
 def filter_table_for_type(table, typ):

@@ -1,11 +1,11 @@
-from urbanstats.acs.load import ACSDataEntity
 from urbanstats.acs.industry import industry_dict, normalize_industry_name
-from urbanstats.acs.occupation import occupation_dict, normalize_occupation_name
+from urbanstats.acs.load import ACSDataEntity
+from urbanstats.acs.occupation import normalize_occupation_name, occupation_dict
+from urbanstats.statistics.collections_list import statistic_collections
 from urbanstats.statistics.statistic_collection import (
     ACSStatisticsColection,
     ACSUSPRStatisticsColection,
 )
-from urbanstats.statistics.collections_list import statistic_collections
 
 entities = dict(
     # aggregate_income_total=ACSDataEntity(

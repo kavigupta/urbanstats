@@ -1,12 +1,10 @@
 import numpy as np
-
 from permacache import permacache, stable_hash
 
 from census_blocks import load_raw_census
-
 from urbanstats.weather.era5 import bounding_boxes
-from urbanstats.weather.weather_statistic import compute_statistics
 from urbanstats.weather.stats import era5_statistics
+from urbanstats.weather.weather_statistic import compute_statistics
 
 weather_stat_names = {k: stat.display_name for k, stat in era5_statistics.items()}
 

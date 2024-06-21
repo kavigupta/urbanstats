@@ -1,10 +1,11 @@
+import heapq
+
+import geopandas as gpd
+import numpy as np
+import shapely.geometry
+import tqdm.auto as tqdm
 from disjoint_union import DisjointUnion
 from permacache import permacache, stable_hash
-import shapely.geometry
-import geopandas as gpd
-import heapq
-import numpy as np
-import tqdm.auto as tqdm
 
 from urbanstats.features.within_distance import haversine
 

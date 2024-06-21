@@ -1,7 +1,7 @@
-from urbanstats.statistics.collections.education_statistics import EducationStatistics
 from urbanstats.statistics.collections.education_gender_gap import (
     EducationGenderGapStatistics,
 )
+from urbanstats.statistics.collections.education_statistics import EducationStatistics
 from urbanstats.statistics.collections.generation import GenerationStatistics
 from urbanstats.statistics.collections.housing_census import HousingCensus
 from urbanstats.statistics.collections.housing_rent import HousingRent
@@ -32,7 +32,6 @@ from urbanstats.statistics.collections.transportation_mode import (
 from urbanstats.statistics.collections.transportation_vehicle_ownership import (
     TransportationVehicleOwnershipStatistics,
 )
-
 
 statistic_collections = (
     RaceCensus(),

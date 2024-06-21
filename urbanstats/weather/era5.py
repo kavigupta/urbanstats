@@ -1,18 +1,18 @@
 import calendar
-from datetime import datetime
 import tempfile
+from datetime import datetime
 
-import tqdm
 import cdsapi
 import numpy as np
 import pandas as pd
-from urbanstats.weather.global_bounding_boxes import global_bounding_boxes
-import xarray as xr
-import suncalc
-import us
 import shapely
-
+import suncalc
+import tqdm
+import us
+import xarray as xr
 from permacache import permacache, stable_hash
+
+from urbanstats.weather.global_bounding_boxes import global_bounding_boxes
 
 all_times = [
     "00:00",
@@ -97,7 +97,7 @@ def light(time, latitude, longitude):
     -------
     array-like, a series of fractions of each hour that is light (T, LA, LO)
     """
-    hour = 60 * 60 * 10**9
+    hour = 60 * 60 * 10 ** 9
 
     date = np.array(time)
 
@@ -141,7 +141,7 @@ def collect_main_statistics(ds):
     for ts in time:
         assert len({pd.to_datetime(x).date() for x in ts}) == 1
 
-    wind_speed = np.array((ds.u10**2 + ds.v10**2) ** 0.5)
+    wind_speed = np.array((ds.u10 ** 2 + ds.v10 ** 2) ** 0.5)
     wind_speed = wind_speed.reshape(-1, num_hours, *wind_speed.shape[1:])
     wind_speed = wind_speed.mean(1)
 
