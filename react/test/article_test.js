@@ -28,6 +28,31 @@ async function check_textboxes(t, txts) {
     }
 }
 
+async function check_all_category_boxes(t) {
+    const hamburgerMenu = Selector('div').withAttribute('class', 'hamburgermenu');
+    if (await hamburgerMenu.exists) {
+        await t.click(hamburgerMenu);
+    }
+    const checkboxes = Selector('div').withAttribute('class', 'checkbox-setting')
+        .filter(node => {
+            const label = node.querySelector('label').innerText;
+            return (
+                label !== "Use Imperial Units"
+                && label !== "Include Historical Districts"
+                && label !== "Simple Ordinals"
+                && label !== "Race"
+                && label !== "Election"
+            );
+        }).find('input');
+    for (let i = 0; i < await checkboxes.count; i++) {
+        await t.click(checkboxes.nth(i));
+    }
+    if (await hamburgerMenu.exists) {
+        await t.click(hamburgerMenu);
+    }
+}
+
+
 async function prep_for_image(t) {
     await t.wait(1000);
     await t.eval(() => {
@@ -82,6 +107,7 @@ test('california-article-test', async t => {
     // screenshot path: images/first_test.png
     await screencap(t, "article/california");
 });
+
 
 test('neighboring-state-test', async t => {
     const arizona = Selector('li').withAttribute('class', 'list_of_lists')
@@ -709,3 +735,28 @@ test("random-usa", async t => {
     await t.expect(getLocation())
         .notContains('&universe=');
 })
+
+fixture('all stats test')
+    .page(TARGET + '/article.html?longname=California%2C+USA')
+    // no local storage
+    .beforeEach(async t => {
+        await t.eval(() => localStorage.clear());
+    });
+
+test('california-all-stats', async t => {
+    await check_all_category_boxes(t);
+    await screencap(t, "article/california-all-stats");
+});
+
+// selected because the gz changed in statistic classes
+fixture('all stats test regression')
+    .page(TARGET + '/article.html?longname=Charlotte%2C+Maine%2C+USA')
+    // no local storage
+    .beforeEach(async t => {
+        await t.eval(() => localStorage.clear());
+    });
+
+test('charlotte-all-stats', async t => {
+    await check_all_category_boxes(t);
+    await screencap(t, "article/charlotte-all-stats");
+});
