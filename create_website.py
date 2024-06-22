@@ -47,6 +47,7 @@ from urbanstats.universe.annotate_universes import (
 )
 from urbanstats.universe.icons import place_icons_in_site_folder
 from urbanstats.website_data.index import export_index
+from urbanstats.statistics.collections_list import statistic_collections
 
 
 def american_shapefile():
@@ -168,17 +169,20 @@ def get_statistic_column_path(column):
 
 @lru_cache(maxsize=None)
 def get_index_lists():
-    from urbanstats.statistics.collections.gpw import GPWStatistics
-
-    gpw_stats = GPWStatistics().name_for_each_statistic()
-
     real_names = internal_statistic_names()
-    universal = ["area", "compactness"]
-    gpw_names = [x for x in real_names if x in gpw_stats]
-    usa_names = [x for x in real_names if x not in gpw_stats and x not in universal]
-    universal_idxs = [real_names.index(x) for x in universal]
-    gpw_idxs = [internal_statistic_names().index(x) for x in gpw_names]
-    usa_idxs = [internal_statistic_names().index(x) for x in usa_names]
+
+    def filter_names(filt):
+        names = [
+            x
+            for collection in statistic_collections
+            if filt(collection)
+            for x in collection.name_for_each_statistic()
+        ]
+        return sorted([real_names.index(x) for x in names])
+
+    universal_idxs = filter_names(lambda c: c.for_america() and c.for_international())
+    usa_idxs = filter_names(lambda c: c.for_america() and not c.for_international())
+    gpw_idxs = filter_names(lambda c: c.for_international() and not c.for_america())
     return {
         "index_lists": {
             "universal": universal_idxs,
