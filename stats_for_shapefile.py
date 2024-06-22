@@ -162,7 +162,7 @@ def compute_summed_shapefile_all_keys(sf, sum_keys, year=2020):
 
 
 @permacache(
-    "population_density/stats_for_shapefile/compute_statistics_for_shapefile_23",
+    "population_density/stats_for_shapefile/compute_statistics_for_shapefile_24",
     key_function=dict(sf=lambda x: x.hash_key, sum_keys=stable_hash),
     multiprocess_safe=True,
 )
