@@ -1,5 +1,8 @@
 from abc import ABC, abstractmethod
 
+ORDER_CATEGORY_MAIN = 0
+ORDER_CATEGORY_OTHER_DENSITIES = 1
+
 
 class StatisticCollection(ABC):
     def __init__(self):
@@ -25,6 +28,14 @@ class StatisticCollection(ABC):
         pass
 
     @abstractmethod
+    def category_for_each_statistic(self):
+        pass
+
+    @abstractmethod
+    def explanation_page_for_each_statistic(self):
+        pass
+
+    @abstractmethod
     def quiz_question_names(self):
         pass
 
@@ -32,8 +43,56 @@ class StatisticCollection(ABC):
         return ()
 
     @abstractmethod
-    def mutate_shapefile_table(self, shapefile_table):
+    def mutate_statistic_table(self, statistics_table, shapefile_table):
         pass
+
+    @abstractmethod
+    def for_america(self):
+        pass
+
+    @abstractmethod
+    def for_international(self):
+        pass
+
+    def order_category_for_each_statistic(self):
+        return self.same_for_each_name(ORDER_CATEGORY_MAIN)
+
+    def same_for_each_name(self, value):
+        return {name: value for name in self.name_for_each_statistic()}
+
+
+class GeographicStatistics(StatisticCollection):
+    def for_america(self):
+        return True
+
+    def for_international(self):
+        return True
+
+
+class InternationalStatistics(StatisticCollection):
+    def for_america(self):
+        return False
+
+    def for_international(self):
+        return True
+
+
+class CensusStatisticsColection(StatisticCollection):
+    # TODO we should probably have this actually pull the census data, it currently does not.
+    def for_america(self):
+        return True
+
+    def for_international(self):
+        return False
+
+
+class CDCStatisticsCollection(StatisticCollection):
+    # TODO we should probably have this actually pull the CDC data, it currently does not.
+    def for_america(self):
+        return True
+
+    def for_international(self):
+        return False
 
 
 class ACSStatisticsColection(StatisticCollection):
@@ -47,3 +106,55 @@ class ACSStatisticsColection(StatisticCollection):
 
     def acs_entity_dict(self):
         return {self.acs_name(): self.acs_entity()}
+
+    def for_america(self):
+        return True
+
+    def for_international(self):
+        return False
+
+
+class ACSUSPRStatisticsColection(StatisticCollection):
+    @abstractmethod
+    def acs_name(self):
+        pass
+
+    @abstractmethod
+    def acs_entities(self):
+        pass
+
+    def acs_entity_dict(self):
+        return {self.acs_name(): self.acs_entities()}
+
+    def for_america(self):
+        return True
+
+    def for_international(self):
+        return False
+
+
+class USElectionStatisticsCollection(StatisticCollection):
+    # TODO we should probably have this actually pull the election data, it currently does not.
+    def for_america(self):
+        return True
+
+    def for_international(self):
+        return False
+
+
+class USFeatureDistanceStatisticsCollection(StatisticCollection):
+    # TODO we should probably have this actually pull the feature data, it currently does not.
+    def for_america(self):
+        return True
+
+    def for_international(self):
+        return False
+
+
+class USWeatherStatisticsCollection(StatisticCollection):
+    # TODO we should probably have this actually pull the weather data, it currently does not.
+    def for_america(self):
+        return True
+
+    def for_international(self):
+        return False

@@ -1,11 +1,11 @@
 from permacache import permacache
 
-from urbanstats.data.gpw import lat_from_row_idx, load_full, lon_from_col_idx
-
 chunk = 360 * 4
 
 
 def produce_all_bounding_boxes():
+    from urbanstats.data.gpw import load_full
+
     mask = load_full() > 0
     rows, cols = mask.shape
     for i in range(0, rows, chunk):
@@ -15,6 +15,8 @@ def produce_all_bounding_boxes():
 
 
 def coords(i, j, mask):
+    from urbanstats.data.gpw import lat_from_row_idx, lon_from_col_idx
+
     i, j, i_end, j_end = clip(i, j, i + chunk, j + chunk, mask)
     lon_min = lon_from_col_idx(j)
     lon_max = lon_from_col_idx(j_end)

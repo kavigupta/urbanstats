@@ -4,137 +4,24 @@ from functools import lru_cache
 
 import attr
 import geopandas as gpd
-import numpy as np
 import pandas as pd
 import tqdm.auto as tqdm
 from more_itertools import chunked
 from permacache import drop_if_equal, permacache, stable_hash
 
-from census_blocks import RADII, housing_units, racial_demographics
+from census_blocks import housing_units, racial_demographics
 from election_data import election_column_names
-from urbanstats.acs import industry, occupation
 from urbanstats.acs.attach import with_acs_data
 from urbanstats.acs.entities import acs_columns
 from urbanstats.census_2010.blocks_2010 import block_level_data_2010
-from urbanstats.census_2010.columns_2010 import cdc_columns
 from urbanstats.features.extract_data import feature_data
 from urbanstats.features.feature import feature_columns
 from urbanstats.osm.parks import park_overlap_percentages_all
-from urbanstats.statistics.collections.transportation_commute_time import (
-    TransportationCommuteTimeStatistics,
-)
-from urbanstats.statistics.collections.transportation_mode import (
-    TransportationModeStatistics,
-)
-from urbanstats.statistics.collections.transportation_vehicle_ownership import (
-    TransportationVehicleOwnershipStatistics,
-)
-from urbanstats.weather.to_blocks import weather_block_statistics, weather_stat_names
-
-racial_statistics = {
-    "white": "White %",
-    "hispanic": "Hispanic %",
-    "black": "Black %",
-    "asian": "Asian %",
-    "native": "Native %",
-    "hawaiian_pi": "Hawaiian / PI %",
-    "other / mixed": "Other / Mixed %",
-}
-
-housing_stats = {
-    "housing_per_pop": "Housing Units per Adult",
-    "vacancy": "Vacancy %",
-    "rent_or_own_rent": "Renter %",
-    "rent_burden_under_20": "Rent/Income < 20%",
-    "rent_burden_20_to_40": "Rent/Income 20%-40%",
-    "rent_burden_over_40": "Rent/Income > 40%",
-    "rent_1br_under_750": "1BR Rent < $750 %",
-    "rent_1br_750_to_1500": "1BR Rent $750 - $1500 %",
-    "rent_1br_over_1500": "1BR Rent > $1500 %",
-    "rent_2br_under_750": "2BR Rent < $750 %",
-    "rent_2br_750_to_1500": "2BR Rent $750 - $1500 %",
-    "rent_2br_over_1500": "2BR Rent > $1500 %",
-    "year_built_1969_or_earlier": "% units built pre-1970",
-    "year_built_1970_to_1979": "% units built in 1970s",
-    "year_built_1980_to_1989": "% units built in 1980s",
-    "year_built_1990_to_1999": "% units built in 1990s",
-    "year_built_2000_to_2009": "% units built in 2000s",
-    "year_built_2010_or_later": "% units built in 2010s+",
-}
-
-education_stats = {
-    "education_high_school": "High School %",
-    "education_ugrad": "Undergrad %",
-    "education_grad": "Grad %",
-    "education_field_stem": "Undergrad STEM %",
-    "education_field_humanities": "Undergrad Humanities %",
-    "education_field_business": "Undergrad Business %",
-    "female_hs_gap_4": "% of women with high school education - % of men with high school education",
-    "female_ugrad_gap_4": "% of women with undergraduate education - % of men with undergraduate education",
-    "female_grad_gap_4": "% of women with graduate education - % of men with graduate education",
-}
-
-generation_stats = {
-    "generation_silent": "Silent %",
-    "generation_boomer": "Boomer %",
-    "generation_genx": "Gen X %",
-    "generation_millenial": "Millennial %",
-    "generation_genz": "Gen Z %",
-    "generation_genalpha": "Gen Alpha %",
-}
-
-income_stats = {
-    "poverty_below_line": "Poverty %",
-    "household_income_under_50k": "Household Income < $50k %",
-    "household_income_50k_to_100k": "Household Income $50k - $100k %",
-    "household_income_over_100k": "Household Income > $100k %",
-    "individual_income_under_50k": "Individual Income < $50k %",
-    "individual_income_50k_to_100k": "Individual Income $50k - $100k %",
-    "individual_income_over_100k": "Individual Income > $100k %",
-}
-
-transportation_stats = {
-    **TransportationModeStatistics().name_for_each_statistic(),
-    **TransportationCommuteTimeStatistics().name_for_each_statistic(),
-    **TransportationVehicleOwnershipStatistics().name_for_each_statistic(),
-}
-
-industry_stats = industry.industry_display
-occupation_stats = occupation.occupation_display
-
-national_origin_stats = {
-    "citizenship_citizen_by_birth": "Citizen by Birth %",
-    "citizenship_citizen_by_naturalization": "Citizen by Naturalization %",
-    "citizenship_not_citizen": "Non-citizen %",
-    "birthplace_non_us": "Born outside US %",
-    "birthplace_us_not_state": "Born in us outside state %",
-    "birthplace_us_state": "Born in state of residence %",
-    "language_english_only": "Only English at Home %",
-    "language_spanish": "Spanish at Home %",
-    "language_other": "Other at Home %",
-}
-
-feature_stats = {
-    "park_percent_1km_v2": "PW Mean % of parkland within 1km",
-    **feature_columns,
-}
-
-misc_stats = {
-    "internet_no_access": "No internet access %",
-    "insurance_coverage_none": "Uninsured %",
-    "insurance_coverage_govt": "Public Insurance %",
-    "insurance_coverage_private": "Private Insurance %",
-    "marriage_never_married": "Never Married %",
-    "marriage_married_not_divorced": "Married (not divorced) %",
-    "marriage_divorced": "Divorced %",
-}
-
-gpw_stats = {
-    "gpw_population": "Population [GHS-POP]",
-    **{f"gpw_pw_density_{k}": f"PW Density (r={k}km) [GHS-POP]" for k in (1, 2, 4)},
-    "gpw_aw_density": "AW Density [GHS-POP]",
-}
-
+from urbanstats.statistics.collections.cdc_statistics import CDCStatistics
+from urbanstats.statistics.collections.census_basics import density_metrics
+from urbanstats.statistics.collections.weather import USWeatherStatistics
+from urbanstats.statistics.collections_list import statistic_collections
+from urbanstats.weather.to_blocks import weather_block_statistics
 
 @attr.s
 class Shapefile:
@@ -178,7 +65,6 @@ class Shapefile:
         return s
 
 
-density_metrics = [f"ad_{k}" for k in RADII]
 sum_keys_2020 = [
     "population",
     "population_18",
@@ -189,7 +75,7 @@ sum_keys_2020 = [
     *acs_columns,
     *feature_columns,
     "park_percent_1km_v2",
-    *weather_stat_names,
+    *USWeatherStatistics().name_for_each_statistic(),
 ]
 sum_keys_2020 = sorted(sum_keys_2020, key=str)
 sum_keys_2010 = [
@@ -198,7 +84,7 @@ sum_keys_2010 = [
     *[f"{k}_2010" for k in racial_demographics],
     *[f"{k}_2010" for k in housing_units],
     *[f"{k}_2010" for k in density_metrics],
-    *cdc_columns(),
+    *CDCStatistics().name_for_each_statistic(),
 ]
 sum_keys_2010 = sorted(sum_keys_2010, key=str)
 COLUMNS_PER_JOIN = 33
@@ -276,7 +162,7 @@ def compute_summed_shapefile_all_keys(sf, sum_keys, year=2020):
 
 
 @permacache(
-    "population_density/stats_for_shapefile/compute_statistics_for_shapefile_23",
+    "population_density/stats_for_shapefile/compute_statistics_for_shapefile_24",
     key_function=dict(sf=lambda x: x.hash_key, sum_keys=stable_hash),
     multiprocess_safe=True,
 )
@@ -295,218 +181,12 @@ def compute_statistics_for_shapefile(
     assert not overlap_cols
     result = pd.concat([result_2020, result_2010], axis=1)
     assert (result.longname == sf_fr.longname).all()
-    result["perimiter"] = sf_fr.geometry.to_crs({"proj": "cea"}).length / 1e3
-    result["compactness"] = 4 * np.pi * result.area / result.perimiter ** 2
-    result["population_change_2010"] = (
-        result["population"] - result["population_2010"]
-    ) / result["population_2010"]
-    for k in density_metrics:
-        result[k] /= result["population"]
-        result[f"{k}_2010"] /= result["population_2010"]
-        result[f"{k}_change_2010"] = (result[k] - result[f"{k}_2010"]) / result[
-            f"{k}_2010"
-        ]
-    result["sd"] = result["population"] / result["area"]
-    result["sd_2010"] = result["population_2010"] / result["area"]
     for k in sf.meta:
         result[k] = sf.meta[k]
-    for k in racial_demographics:
-        result[k] /= result["population"]
-        result[k + "_2010"] /= result["population_2010"]
-    result["other / mixed"] = result["other"] + result["mixed"]
-    result["other / mixed_2010"] = result["other_2010"] + result["mixed_2010"]
-    del result["other"]
-    del result["mixed"]
-    del result["other_2010"]
-    del result["mixed_2010"]
-    result["housing_per_pop"] = result["total"] / result["population_18"]
-    result["housing_per_pop_2010"] = result["total_2010"] / result["population_18_2010"]
-    result["vacancy"] = result["vacant"] / result["total"]
-    result["vacancy_2010"] = result["vacant_2010"] / result["total_2010"]
 
-    for cdc in cdc_columns():
-        result[cdc] /= result["population_18_2010"]
-
-    del result["vacant"]
-    del result["total"]
-    del result["occupied"]
-    del result["population_18"]
-    del result["vacant_2010"]
-    del result["total_2010"]
-    del result["occupied_2010"]
-    del result["population_18_2010"]
-
-    education_denominator = (
-        result.education_no
-        + result.education_high_school
-        + result.education_ugrad
-        + result.education_grad
-    )
-    result["education_high_school"] = (
-        result.education_high_school + result.education_ugrad + result.education_grad
-    ) / education_denominator
-    result["education_ugrad"] = (
-        result.education_ugrad + result.education_grad
-    ) / education_denominator
-    result["education_grad"] = result.education_grad / education_denominator
-    del result["education_no"]
-
-    def fractionalize(*columns):
-        denominator = sum(result[c] for c in columns)
-        for c in columns:
-            result[c] = result[c] / denominator
-
-    for column in (
-        "education_field_stem",
-        "education_field_humanities",
-        "education_field_business",
-    ):
-        result[column] = result[column] / education_denominator
-    fractionalize(
-        "generation_silent",
-        "generation_boomer",
-        "generation_genx",
-        "generation_millenial",
-        "generation_genz",
-        "generation_genalpha",
-    )
-    fractionalize(
-        "household_income_under_50k",
-        "household_income_50k_to_100k",
-        "household_income_over_100k",
-    )
-    fractionalize(
-        "individual_income_under_50k",
-        "individual_income_50k_to_100k",
-        "individual_income_over_100k",
-    )
-
-    TransportationModeStatistics().mutate_shapefile_table(result)
-
-    TransportationCommuteTimeStatistics().mutate_shapefile_table(result)
-
-    fractionalize(
-        "rent_1br_under_750",
-        "rent_1br_750_to_1500",
-        "rent_1br_over_1500",
-    )
-    fractionalize(
-        "rent_2br_under_750",
-        "rent_2br_750_to_1500",
-        "rent_2br_over_1500",
-    )
-
-    fractionalize(
-        "rent_burden_under_20",
-        "rent_burden_20_to_40",
-        "rent_burden_over_40",
-    )
-
-    fractionalize(
-        "rent_or_own_rent",
-        "rent_or_own_own",
-    )
-    del result["rent_or_own_own"]
-
-    fractionalize(
-        "year_built_1969_or_earlier",
-        "year_built_1970_to_1979",
-        "year_built_1980_to_1989",
-        "year_built_1990_to_1999",
-        "year_built_2000_to_2009",
-        "year_built_2010_or_later",
-    )
-
-    fractionalize(
-        "insurance_coverage_none",
-        "insurance_coverage_govt",
-        "insurance_coverage_private",
-    )
-
-    fractionalize(
-        "poverty_above_line",
-        "poverty_below_line",
-    )
-    del result["poverty_above_line"]
-
-    fractionalize(
-        "internet_access",
-        "internet_no_access",
-    )
-    del result["internet_access"]
-
-    fractionalize(
-        "language_english_only",
-        "language_spanish",
-        "language_other",
-    )
-
-    fractionalize(
-        "marriage_never_married",
-        "marriage_married_not_divorced",
-        "marriage_divorced",
-    )
-
-    fractionalize(*industry_stats.keys())
-
-    fractionalize(*occupation_stats.keys())
-
-    TransportationVehicleOwnershipStatistics().mutate_shapefile_table(result)
-
-    fractionalize(
-        "female_none_4",
-        "female_hs_4",
-        "female_ugrad_4",
-        "female_grad_4",
-    )
-
-    fractionalize(
-        "male_none_4",
-        "male_hs_4",
-        "male_ugrad_4",
-        "male_grad_4",
-    )
-
-    del result["female_none_4"], result["male_none_4"]
-
-    result["female_ugrad_4"] += result["female_grad_4"]
-    result["male_ugrad_4"] += result["male_grad_4"]
-
-    result["female_hs_4"] += result["female_ugrad_4"]
-    result["male_hs_4"] += result["male_ugrad_4"]
-
-    result["female_hs_gap_4"] = result["female_hs_4"] - result["male_hs_4"]
-    result["female_ugrad_gap_4"] = result["female_ugrad_4"] - result["male_ugrad_4"]
-    result["female_grad_gap_4"] = result["female_grad_4"] - result["male_grad_4"]
-
-    del (
-        result["male_hs_4"],
-        result["female_hs_4"],
-        result["female_ugrad_4"],
-        result["male_ugrad_4"],
-        result["female_grad_4"],
-        result["male_grad_4"],
-    )
-
-    fractionalize(
-        "citizenship_citizen_by_birth",
-        "citizenship_citizen_by_naturalization",
-        "citizenship_not_citizen",
-    )
-
-    fractionalize(
-        "birthplace_non_us",
-        "birthplace_us_not_state",
-        "birthplace_us_state",
-    )
-
-    for feat in feature_columns:
-        result[feat] = result[feat] / result["population"]
-
-    result["park_percent_1km_v2"] /= result["population"]
-
-    for weather_stat in weather_stat_names:
-        result[weather_stat] = result[weather_stat] / result["population"]
+    for collection in statistic_collections:
+        if collection.for_america():
+            collection.mutate_statistic_table(result, sf_fr)
 
     return result
 
