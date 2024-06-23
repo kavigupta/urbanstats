@@ -502,10 +502,12 @@ def specify_duplicates(frame, long_to_short):
 
 
 @permacache(
-    "urbanstats/data/circle/overlapping_circles_frame_3",
+    "urbanstats/data/circle/overlapping_circles_frame_4",
     key_function=dict(country_shapefile=lambda x: x.hash_key),
 )
-def overlapping_circles_frame(country_shapefile, population, max_radius_in_chunks=20):
+def overlapping_circles_frame(
+    country_shapefile, population, suffix, max_radius_in_chunks=20
+):
     ghs = load_full_ghs()
     circles = overlapping_circles_fast(
         ghs, population, limit=10**9, max_radius_in_chunks=max_radius_in_chunks
@@ -515,7 +517,7 @@ def overlapping_circles_frame(country_shapefile, population, max_radius_in_chunk
     specify_duplicates(frame, long_to_short)
     countries = relevant_regions(country_shapefile, frame, 3, 0.9)
     frame["suffix"] = frame.id.apply(lambda x: "-".join(countries[x]))
-    frame["longname"] = frame.shortname + ", " + frame.suffix
+    frame["longname"] = frame.shortname + " " + suffix + ", " + frame.suffix
     assert len(frame) == len(set(frame.longname))
     return frame
 
@@ -686,6 +688,7 @@ named_populations = {
     1e9: "1B",
 }
 
+pc_types = {x + " Person Circle" for x in named_populations.values()}
 
 @permacache(
     "urbanstats/data/circle/create_circle_image",
@@ -707,3 +710,27 @@ def produce_image(population):
     print("Saving image for population", name)
     out.save(f"outputs/population_circles/{name}.png")
     print("Done with population", name)
+
+
+def circle_shapefile_object(country_shapefile, population, just_usa):
+    from stats_for_shapefile import Shapefile
+
+    name = named_populations[population] + " Person Circle"
+    if just_usa:
+        name = "US " + name
+        prefix = "us_"
+    else:
+        prefix = ""
+    return Shapefile(
+        hash_key=prefix + f"population_circle_{named_populations[population]}_3",
+        path=lambda: overlapping_circles_frame(
+            country_shapefile, population, named_populations[population] + "PC"
+        ),
+        shortname_extractor=lambda x: x["shortname"],
+        longname_extractor=lambda x: x["longname"],
+        meta=dict(type=name, source="GHSL", type_category="Oddball"),
+        filter=(lambda x: "USA" in x.longname) if just_usa else lambda x: True,
+        american=just_usa,
+        include_in_gpw=not just_usa,
+        tolerate_no_state=True,
+    )

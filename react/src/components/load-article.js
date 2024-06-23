@@ -24,7 +24,7 @@ function compute_indices(longname, typ) {
         result = result.concat(lists["gpw"]);
     }
     // else {
-    if (longname.endsWith("USA")) {
+    if (longname.includes("USA")) {
         result = result.concat(lists["usa"]);
     }
     // sort result by numeric value

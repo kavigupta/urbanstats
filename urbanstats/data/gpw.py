@@ -327,7 +327,7 @@ def compute_gpw_for_shape(shape, collect_density=True):
     "urbanstats/data/gpw/compute_gpw_data_for_shapefile_3",
     key_function=dict(
         shapefile=lambda x: x.hash_key, collect_density=drop_if_equal(True),
-        log=drop_if(True)
+        log=drop_if_equal(True)
     ),
 )
 def compute_gpw_data_for_shapefile(shapefile, collect_density=True, log=True):

@@ -37,7 +37,7 @@ def indices(longname, typ, strict_display=False):
     lists = get_index_lists()["index_lists"]
     result = []
     result += lists["universal"]
-    is_american = longname.endswith("USA")
+    is_american = "USA" in longname
     if get_index_lists()["type_to_has_gpw"][typ]:
         if not strict_display or not is_american:
             result += lists["gpw"]
