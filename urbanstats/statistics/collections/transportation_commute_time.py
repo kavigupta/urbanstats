@@ -12,6 +12,12 @@ class TransportationCommuteTimeStatistics(ACSStatisticsColection):
             "transportation_commute_time_over_60": "Commute Time > 60 min %",
         }
 
+    def category_for_each_statistic(self):
+        return self.same_for_each_name("transportation")
+
+    def explanation_page_for_each_statistic(self):
+        return self.same_for_each_name("transportation")
+
     def quiz_question_names(self):
         return {
             "transportation_commute_time_under_15": "higher % of people who have commute time under 15 min",
@@ -24,9 +30,9 @@ class TransportationCommuteTimeStatistics(ACSStatisticsColection):
             "transportation_commute_time_30_to_59",
         ]
 
-    def mutate_shapefile_table(self, shapefile_table):
+    def mutate_statistic_table(self, statistics_table, shapefile_table):
         fractionalize(
-            shapefile_table,
+            statistics_table,
             "transportation_commute_time_under_15",
             "transportation_commute_time_15_to_29",
             "transportation_commute_time_30_to_59",

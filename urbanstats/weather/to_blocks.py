@@ -6,8 +6,6 @@ from urbanstats.weather.era5 import bounding_boxes
 from urbanstats.weather.stats import era5_statistics
 from urbanstats.weather.weather_statistic import compute_statistics
 
-weather_stat_names = {k: stat.display_name for k, stat in era5_statistics.items()}
-
 
 def classify_which_box(bounding_box_l, coordinates):
     which_box = np.zeros(coordinates.shape[0], dtype=np.int8) - 1
