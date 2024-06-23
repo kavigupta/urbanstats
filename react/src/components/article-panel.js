@@ -59,9 +59,9 @@ class ArticlePanel extends PageTemplate {
 
                 <div style={{ marginBlockEnd: "1em" }}></div>
 
-                <div style={{ display: "flex" }}>
+                <div style={{ display: "flex", alignItems: "center" }}>
                     <div style={{ width: "30%", marginRight: "1em" }}>
-                        <div style={comparisonHeadStyle("right")}>Compare to: </div>
+                        <div class="serif" style={comparisonHeadStyle("right")}>Compare to: </div>
                     </div>
                     <div style={{ width: "70%" }}>
                         <SearchBox

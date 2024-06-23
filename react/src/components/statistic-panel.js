@@ -98,7 +98,7 @@ class StatisticPanel extends PageTemplate {
         if (row_idx == 0) {
             // header, add a line at the bottom
             style.borderBottom = "1px solid #000";
-            style.fontWeight = "bold";
+            style.fontWeight = 500;
         }
         style.backgroundColor = this.background_color(row_idx);
         style.width = column_widths[col_idx];
@@ -131,7 +131,7 @@ class StatisticPanel extends PageTemplate {
                     }}>
                         <div style={this.style(0, row_idx + 1)}>{i + 1}</div>
                         <div style={this.style(1, row_idx + 1)}>
-                            <a href={article_link(this.state.current_universe, this.props.article_names[i])} style={{ fontWeight: "bold", color: "black", textDecoration: "none" }}>{this.props.article_names[i]}</a>
+                            <a href={article_link(this.state.current_universe, this.props.article_names[i])} style={{ fontWeight: 500, color: "black", textDecoration: "none" }}>{this.props.article_names[i]}</a>
                         </div>
                         <div style={this.style(2, row_idx + 1)} className='value_numeric value'>
                             <Statistic

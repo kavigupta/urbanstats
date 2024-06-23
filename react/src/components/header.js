@@ -169,7 +169,7 @@ function UniverseDropdown({ all_universes, on_universe_update, flag_size }) {
     return (
         <div>
             <div className="serif" style={{
-                fontWeight: "bold",
+                fontWeight: 500,
                 backgroundColor: "#ebebff",
             }}
             >

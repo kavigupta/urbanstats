@@ -97,21 +97,21 @@
 .quiz_result_value_left {
   width: 10%;
   text-align: right;
-  font-weight: bold;
+  font-weight: 500;
   vertical-align: middle;
 }
 
 .quiz_result_symbol {
   width: 5%;
   text-align: center;
-  font-weight: bold;
+  font-weight: 500;
   vertical-align: middle;
 }
 
 .quiz_result_value_right {
   width: 10%;
   text-align: left;
-  font-weight: bold;
+  font-weight: 500;
   vertical-align: middle;
 }
 
@@ -141,8 +141,6 @@
   border-radius: 0.25em;
   border: none;
   color: #fff;
-
-  /* font-weight: bold; */
 }
 
 .quiz_next {
@@ -158,8 +156,6 @@
   border-radius: 0.25em;
   border: none;
   color: #fff;
-
-  /* font-weight: bold; */
 }
 
 .quiz_footer {
@@ -206,7 +202,7 @@
 
 .quiz_bar_td_header {
   text-align: center;
-  font-weight: bold;
+  font-weight: 500;
   font-size: 1.5em;
 }
 
