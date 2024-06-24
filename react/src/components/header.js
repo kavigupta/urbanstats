@@ -170,7 +170,7 @@ function UniverseDropdown({ all_universes, on_universe_update, flag_size }) {
         <div>
             <div className="serif" style={{
                 fontWeight: 500,
-                backgroundColor: "#ebebff",
+                backgroundColor: "#f7f1e8",
             }}
             >
                 Select universe for statistics
