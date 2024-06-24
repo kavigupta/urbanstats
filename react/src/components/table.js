@@ -154,15 +154,16 @@ class StatisticRowRaw extends React.Component {
             cell_percentages[i] = total_width * cell_percentages[i] / sum;
         }
 
-        const contents = cell_contents.map((content, i) => {
-            const sty = { width: cell_percentages[i] + "%", padding: "1px" };
-            if (this.props.is_header) {
-                sty.textAlign = "center";
+        const contents = cell_contents.map(
+            (content, i) => {
+                const sty = { width: cell_percentages[i] + "%", padding: "1px" };
+                if (this.props.is_header) {
+                    sty.textAlign = "center";
+                }
+                return <div key={100 * this.props._idx + i} style={sty}>
+                    {content}
+                </div>
             }
-            return <div key={100 * this.props._idx + i} style={sty}>
-                {content}
-            </div>
-        }
         );
         return contents;
     }
