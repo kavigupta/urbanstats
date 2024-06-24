@@ -84,7 +84,7 @@ class ComparisonPanel extends PageTemplate {
                 <div style={{ display: "flex" }}>
                     <div style={{ width: (100 * left_margin_pct) + "%" }} />
                     <div style={{ width: (50 * (1 - left_margin_pct)) + "%", marginRight: "1em" }}>
-                        <div style={comparisonHeadStyle("right")}>Add another region:</div>
+                        <div className="serif" style={comparisonHeadStyle("right")}>Add another region:</div>
                     </div>
                     <div style={{ width: (50 * (1 - left_margin_pct)) + "%" }}>
                         <SearchBox
@@ -318,7 +318,7 @@ function HeadingDisplay({ universe, longname, include_delete, on_click, on_chang
     return <div>
         {screenshot_mode ? undefined : manipulation_buttons}
         <div style={{ height: "5px" }} />
-        <a href={article_link(universe, longname)} style={{ textDecoration: "none" }}><div style={comparisonHeadStyle()}>{longname}</div></a>
+        <a className="serif" href={article_link(universe, longname)} style={{ textDecoration: "none" }}><div style={comparisonHeadStyle()}>{longname}</div></a>
         {is_editing ?
             <SearchBox
                 autoFocus={true}

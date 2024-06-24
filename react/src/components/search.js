@@ -44,7 +44,7 @@ class SearchBox extends React.Component {
                     this.state.matches.map((location, idx) =>
                         <div
                             key={location}
-                            className="searchbox-dropdown-item"
+                            className="serif searchbox-dropdown-item"
                             style={this.searchbox_dropdown_item_style(idx)}
                         >{location}</div>
                     )

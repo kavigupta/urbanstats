@@ -159,7 +159,7 @@ class StatisticRowRaw extends React.Component {
             if (this.props.is_header) {
                 sty.textAlign = "center";
             }
-            return <div key={100 * this.props._idx + i} style={sty} class="tablecell">
+            return <div key={100 * this.props._idx + i} style={sty}>
                 {content}
             </div>
         }
@@ -358,7 +358,7 @@ class Ordinal extends React.Component {
         if (this.props.simple) {
             return right_align(en);
         }
-        return <div class="serif" style={{ textAlign: "right" }}>
+        return <div className="serif" style={{ textAlign: "right" }}>
             {en} of {total} {display_type(this.props.universe, type)}
         </div>;
     }
@@ -445,7 +445,7 @@ class Percentile extends React.Component {
         } else if (percentile % 10 == 3 && percentile % 100 != 13) {
             text = percentile + "rd percentile";
         }
-        return <div class="serif" style={{ textAlign: "right" }}>{text}</div>;
+        return <div className="serif" style={{ textAlign: "right" }}>{text}</div>;
     }
 }
 
