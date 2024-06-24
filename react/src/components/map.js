@@ -24,7 +24,7 @@ class MapGeneric extends React.Component {
 
     render() {
         return (
-            <div id={this.props.id} className="map" style={{ background: "white", height: this.props.height || 400 }}>
+            <div id={this.props.id} className="map" style={{ background: "#fff8f0", height: this.props.height || 400 }}>
                 {/* place this on the right of the map */}
                 <div style={
                     {zIndex: 1000, position: "absolute", right: 0, top: 0, padding: "1em"}

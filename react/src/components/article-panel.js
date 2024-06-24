@@ -32,6 +32,7 @@ class ArticlePanel extends PageTemplate {
                     <div className={headerTextClass()}>{this.props.shortname}</div>
                     <div className={subHeaderTextClass()}>{this.props.longname}</div>
                 </div>
+                <div style={{ marginBlockEnd: "16px" }}></div>
 
                 <div className="stats_table" ref={this.table_ref}>
                     <StatisticRowRaw _idx={-1} is_header={true} simple={this.state.settings.simple_ordinals} />
@@ -59,9 +60,9 @@ class ArticlePanel extends PageTemplate {
 
                 <div style={{ marginBlockEnd: "1em" }}></div>
 
-                <div style={{ display: "flex" }}>
+                <div style={{ display: "flex", alignItems: "center" }}>
                     <div style={{ width: "30%", marginRight: "1em" }}>
-                        <div style={comparisonHeadStyle("right")}>Compare to: </div>
+                        <div className="serif" style={comparisonHeadStyle("right")}>Compare to: </div>
                     </div>
                     <div style={{ width: "70%" }}>
                         <SearchBox

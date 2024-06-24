@@ -99,10 +99,10 @@ class RelatedList extends React.Component {
                                 return (
                                     <ul key={j} className="linklist">
                                         <li
-                                            className={"linklistel" + (mobileLayout() ? " linklistel_mobile" : "")}
+                                            className={"serif linklistel" + (mobileLayout() ? " linklistel_mobile" : "")}
                                             style={{ fontSize:
                                                 mobileLayout() ? "12pt": "10pt"
-                                                , paddingTop: "1pt", fontWeight: "bold" }}
+                                                , paddingTop: "1pt", fontWeight: 500 }}
                                         >
                                             {this.display_name(relationship_type)}
                                         </li>

@@ -62,7 +62,7 @@ async function create_screenshot(config, universe) {
     async function screencap_element(ref) {
         const scale_factor = overall_width / ref.offsetWidth;
         const link = await domtoimage.toPng(ref, {
-            bgcolor: "white",
+            bgcolor: "#fff8f0",
             height: ref.offsetHeight * scale_factor,
             width: ref.offsetWidth * scale_factor,
             style: {
@@ -110,7 +110,7 @@ async function create_screenshot(config, universe) {
         img.src = png_link;
         imgs.push(img);
     }
-    ctx.fillStyle = "white";
+    ctx.fillStyle = "#fff8f0";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
     for (const img of imgs) {

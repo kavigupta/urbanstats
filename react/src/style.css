@@ -2,6 +2,18 @@
     box-sizing: border-box;
 }
 
+body {
+    background-color: #fff8f0;
+}
+
+input {
+    background-color: #fff8f0;
+}
+
+select {
+    background-color: #fff8f0;
+}
+
 .fill {
     display: flex;
     justify-content: center;
@@ -16,28 +28,28 @@
 
 .headertext {
     font-size: 60px;
-    font-weight: bold;
+    font-weight: 500;
     margin: 0;
     padding: 0;
 }
 
 .headertext_mobile {
     font-size: 45px;
-    font-weight: bold;
+    font-weight: 500;
     margin: 0;
     padding: 0;
 }
 
 .subheadertext {
     font-size: 40px;
-    font-style: italic;
+    font-weight: 200;
     margin: 0;
     padding: 0;
 }
 
 .subheadertext_mobile {
     font-size: 30px;
-    font-style: italic;
+    font-weight: 200;
     margin: 0;
     padding: 0;
 }
@@ -68,34 +80,27 @@
 
 .value {
     font-size: 18px;
-    font-weight: bold;
+    font-weight: 500;
     margin: 0;
     padding: 0;
 }
 
 .ordinal {
     font-size: 14px;
-    font-style: italic;
+    font-weight: 400;
     color: #444;
     margin: 0;
-    padding: 0;
-}
-
-.description {
-    font-size: 18px;
-    font-style: italic;
-    color: #444;
-    margin-top: 24px;
-    padding: 0;
 }
 
 .tableheader {
+    border-top: 1pt solid black;
     border-bottom: 1pt solid black;
-    font-weight: bold;
+    font-weight: 500;
 }
 
 .button {
-    font: bold 8pt Arial;
+    font: 8pt Arial;
+    font-weight: 500;
     text-decoration: none;
     color: #222;
     padding: 2px 6px 2px 6px;
@@ -110,7 +115,7 @@
     text-decoration: none;
     padding: 2px 6px 2px 6px;
     border-radius: 5px;
-    font-weight: bold;
+    font-weight: 400;
     font-size: 8pt;
     color: #000;
 }
@@ -122,15 +127,6 @@
 .button_random {
     display: block;
     height: 100%;
-}
-
-.main_page_header {
-    font-size: 35px;
-    font-weight: bold;
-    padding: 0;
-    text-align: left;
-    vertical-align: middle;
-    margin-right: 0.2em;
 }
 
 .searchresults {
@@ -145,7 +141,7 @@
     /* Add a border to all links */
     margin-top: -1px;
     /* Prevent double borders */
-    background-color: #f6f6f6;
+    background-color: #fff8f0;
     /* Grey background color */
     padding: 12px;
     /* Add some padding */
