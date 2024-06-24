@@ -252,13 +252,13 @@ export class GenericQuizResultRow extends React.Component {
                             <td className={first}>
                                 {this.get_option("a")}
                             </td>
-                            <td className="quiz_result_value_left">
+                            <td style={{ fontWeight: 400 }} className="serif quiz_result_value_left">
                                 {this.get_stat("a")}
                             </td>
                             <td className="serif quiz_result_symbol">
                                 {comparison}
                             </td>
-                            <td className="quiz_result_value_right">
+                            <td style={{ fontWeight: 400 }} className="serif quiz_result_value_right">
                                 {this.get_stat("b")}
                             </td>
                             <td className={second}>
