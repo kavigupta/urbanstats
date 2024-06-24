@@ -2,6 +2,10 @@
     box-sizing: border-box;
 }
 
+body {
+    background-color: #fff8f0;
+}
+
 .fill {
     display: flex;
     justify-content: center;
@@ -78,10 +82,10 @@
     font-weight: 400;
     color: #444;
     margin: 0;
-    padding: 0;
 }
 
 .tableheader {
+    border-top: 1pt solid black;
     border-bottom: 1pt solid black;
     font-weight: 500;
 }
@@ -103,7 +107,7 @@
     text-decoration: none;
     padding: 2px 6px 2px 6px;
     border-radius: 5px;
-    font-weight: 500;
+    font-weight: 400;
     font-size: 8pt;
     color: #000;
 }
@@ -129,7 +133,7 @@
     /* Add a border to all links */
     margin-top: -1px;
     /* Prevent double borders */
-    background-color: #f6f6f6;
+    background-color: #fff8f0;
     /* Grey background color */
     padding: 12px;
     /* Add some padding */

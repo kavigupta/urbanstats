@@ -88,7 +88,7 @@ class StatisticPanel extends PageTemplate {
             }
         }
         if (row_idx % 2 === 1) {
-            return "#f8f8f8";
+            return "#f7f1e8";
         }
         return "#ffffff";
     }
@@ -133,7 +133,7 @@ class StatisticPanel extends PageTemplate {
                         <div style={this.style(1, row_idx + 1)}>
                             <a href={article_link(this.state.current_universe, this.props.article_names[i])} style={{ fontWeight: 500, color: "black", textDecoration: "none" }}>{this.props.article_names[i]}</a>
                         </div>
-                        <div style={this.style(2, row_idx + 1)} className='value_numeric value'>
+                        <div style={this.style(2, row_idx + 1)} className='value'>
                             <Statistic
                                 statname={this.props.statname}
                                 value={this.props.data.value[i]}
@@ -181,7 +181,7 @@ class StatisticPanel extends PageTemplate {
 
         // low-key style for the buttons
         const button_style = {
-            backgroundColor: "#f8f8f8",
+            backgroundColor: "#f7f1e8",
             border: "1px solid #000",
             padding: "0 0.5em",
             margin: "0.5em"

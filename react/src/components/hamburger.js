@@ -100,7 +100,7 @@ function Nav({ hamburger_open, set_hamburger_open }) {
                 
                 .navigation-entry {
                     display: ${hamburger_open ? 'inline' : 'none'};
-                    background-color: #eee;
+                    background-color: #fff8f0;
                     min-height: 100vh;
                     width: 75vw;
                     margin-top: 50px;

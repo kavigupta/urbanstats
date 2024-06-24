@@ -25,8 +25,9 @@ class SearchBox extends React.Component {
                 id="searchbox"
                 type="text"
                 className="serif"
-                style={this.props.style}
-                placeholder={this.props.placeholder} />
+                style={{ backgroundColor: "#fff8f0", borderWidth: "0.1em", ...this.props.style }}
+                placeholder={this.props.placeholder}
+            />
 
             <div ref={this.dropdown} style={
                 {
@@ -34,7 +35,7 @@ class SearchBox extends React.Component {
                     width: "100%",
                     maxHeight: "20em",
                     overflowY: "auto",
-                    backgroundColor: "#ebebff",
+                    backgroundColor: "#f7f1e8",
                     borderRadius: "0.25em",
                     zIndex: "1"
                 }
@@ -60,7 +61,7 @@ class SearchBox extends React.Component {
             cursor: "pointer"
         };
         if (this.state.focused == idx) {
-            searchbox_dropdown_item_style["backgroundColor"] = "#e9d2fd";
+            searchbox_dropdown_item_style["backgroundColor"] = "#ffe0e0";
         }
 
         return searchbox_dropdown_item_style;
