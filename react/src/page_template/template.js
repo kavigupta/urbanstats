@@ -154,11 +154,11 @@ function TemplateFooter() {
 }
 
 function Version() {
-    return <span id="current-version">14.2.0</span>
+    return <span id="current-version">15.0.0</span>
 }
 
 function LastUpdated() {
-    return <span id="last-updated">2024-06-19</span>
+    return <span id="last-updated">2024-06-23</span>
 }
 
 function MainCredits() {
