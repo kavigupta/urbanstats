@@ -6,6 +6,14 @@ body {
     background-color: #fff8f0;
 }
 
+input {
+    background-color: #fff8f0;
+}
+
+select {
+    background-color: #fff8f0;
+}
+
 .fill {
     display: flex;
     justify-content: center;

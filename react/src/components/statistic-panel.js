@@ -90,7 +90,7 @@ class StatisticPanel extends PageTemplate {
         if (row_idx % 2 === 1) {
             return "#f7f1e8";
         }
-        return "#ffffff";
+        return "#fff8f0";
     }
 
     style(col_idx, row_idx) {
@@ -113,6 +113,7 @@ class StatisticPanel extends PageTemplate {
                 {/* // TODO plural */}
                 <div className={subHeaderTextClass()}>{display_type(this.state.current_universe, this.props.article_type)} ({this.rendered_order()})</div>
             </div>
+            <div style={{ marginBlockEnd: "16px" }}></div>
             <div className="serif" ref={this.table_ref}>
                 <div style={{ display: "flex" }}>
                     {column_names.map((name, i) => {

@@ -78,8 +78,7 @@ class ComparisonPanel extends PageTemplate {
             <div>
                 <div className={headerTextClass()}>Comparison</div>
                 <div className={subHeaderTextClass()}>{this.props.joined_string}</div>
-
-                <div style={{ marginBlockEnd: "1em" }}></div>
+                <div style={{ marginBlockEnd: "16px" }}></div>
 
                 <div style={{ display: "flex" }}>
                     <div style={{ width: (100 * left_margin_pct) + "%" }} />
@@ -246,7 +245,7 @@ class ComparisonPanel extends PageTemplate {
                 alignSelf: "stretch"
             }}>
                 <div style={{
-                    backgroundColor: highlight_idx == -1 ? "white" : this.color(highlight_idx),
+                    backgroundColor: highlight_idx == -1 ? "#fff8f0" : this.color(highlight_idx),
                     height: "100%",
                     width: "50%",
                     margin: "auto"
@@ -373,10 +372,10 @@ class ComparisonMap extends MapGeneric {
 
     buttons() {
         return <div style={{
-            display: "flex", backgroundColor: "white", padding: "0.5em", borderRadius: "0.5em",
+            display: "flex", backgroundColor: "#fff8f0", padding: "0.5em", borderRadius: "0.5em",
             alignItems: "center"
         }}>
-            <span className="serif" style={{ fontSize: "15px" }}><b>Zoom to:</b></span>
+            <span className="serif" style={{ fontSize: "15px", fontWeight: 500 }}>Zoom to:</span>
             <div style={{ width: "0.25em" }} />
             {this.zoom_button(-1, "black", () => this.zoom_to_all())}
             {this.props.longnames.map((longname, i) => {

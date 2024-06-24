@@ -64,7 +64,7 @@ class PageTemplate extends React.Component {
                         screenshot_mode={this.state.screenshot_mode}
                         initiate_screenshot={() => this.initiate_screenshot()}
                     />
-                    <div className="gap"></div>
+                    <div style={{marginBlockEnd: "16px"}}></div>
                     {this.bodyPanel()}
                 </div>
             </Fragment>

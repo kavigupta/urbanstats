@@ -32,6 +32,7 @@ class ArticlePanel extends PageTemplate {
                     <div className={headerTextClass()}>{this.props.shortname}</div>
                     <div className={subHeaderTextClass()}>{this.props.longname}</div>
                 </div>
+                <div style={{ marginBlockEnd: "16px" }}></div>
 
                 <div className="stats_table" ref={this.table_ref}>
                     <StatisticRowRaw _idx={-1} is_header={true} simple={this.state.settings.simple_ordinals} />
