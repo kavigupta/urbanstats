@@ -128,7 +128,7 @@ def row_idx_from_lat(lat):
 
 
 def grid_area_km(lat):
-    return 1 / 120 * 1 / 120 * 111 ** 2 * np.cos(lat * np.pi / 180)
+    return 1 / 120 * 1 / 120 * 111**2 * np.cos(lat * np.pi / 180)
 
 
 def cell_overlaps(shape):
@@ -171,7 +171,7 @@ def compute_full_cell_overlaps_with_circle(radius, row_idx, num_grid=10):
             lon = lon_from_col_idx(offx)
             circle = xy_to_radius(radius, lon, lat)
             for (r, c), frac in cell_overlaps(circle).items():
-                result[(r, c)] += frac / (num_grid ** 2)
+                result[(r, c)] += frac / (num_grid**2)
     return result
 
 
@@ -189,7 +189,7 @@ def compute_circle_density_per_cell(
         overlaps = compute_full_cell_overlaps_with_circle(radius, row_idx)
         for (source_row, off), weight in overlaps.items():
             out[row_idx] += np.roll(glo_zero[source_row], -off) * weight
-    out = out / (np.pi * radius ** 2)
+    out = out / (np.pi * radius**2)
     return out
 
 
@@ -227,7 +227,7 @@ def filter_lat_lon_direct(polygon, row_idxs, col_idxs):
     return row_selected, col_selected
 
 
-def filter_lat_lon(polygon, row_idxs, col_idxs, chunk_size=10 ** 5):
+def filter_lat_lon(polygon, row_idxs, col_idxs, chunk_size=10**5):
     """
     Filter a list of row/col indices to only those that are contained in the polygon.
     """
@@ -327,8 +327,9 @@ def compute_gpw_for_shape(shape, collect_density=True):
 @permacache(
     "urbanstats/data/gpw/compute_gpw_data_for_shapefile_3",
     key_function=dict(
-        shapefile=lambda x: x.hash_key, collect_density=drop_if_equal(True),
-        log=drop_if_equal(True)
+        shapefile=lambda x: x.hash_key,
+        collect_density=drop_if_equal(True),
+        log=drop_if_equal(True),
     ),
 )
 def compute_gpw_data_for_shapefile(shapefile, collect_density=True, log=True):
@@ -362,14 +363,14 @@ def compute_gpw_data_for_shapefile(shapefile, collect_density=True, log=True):
 
 
 @permacache(
-    "urbanstats/data/gpw/compute_gpw_data_for_shapefile_table_4",
+    "urbanstats/data/gpw/compute_gpw_data_for_shapefile_table_6",
     key_function=dict(shapefile=lambda x: x.hash_key),
 )
 def compute_gpw_data_for_shapefile_table(shapefile):
     shapes = shapefile.load_file()
     result = compute_gpw_data_for_shapefile(shapefile)
     result = pd.DataFrame(result)
-    print(len(result), len(shapes))
+    print(shapefile.hash_key, len(result), len(shapes))
     result.index = shapes.index
     result["area"] = shapes.to_crs({"proj": "cea"}).area / 1e6
     for collection in statistic_collections:

@@ -9,6 +9,7 @@ import numpy as np
 import tqdm.auto as tqdm
 from PIL import Image
 import geopandas as gpd
+import shapely.geometry
 
 from permacache import permacache, stable_hash, drop_if_equal
 
@@ -502,7 +503,7 @@ def specify_duplicates(frame, long_to_short):
 
 
 @permacache(
-    "urbanstats/data/circle/overlapping_circles_frame_4",
+    "urbanstats/data/circle/overlapping_circles_frame_5",
     key_function=dict(country_shapefile=lambda x: x.hash_key),
 )
 def overlapping_circles_frame(
@@ -518,6 +519,9 @@ def overlapping_circles_frame(
     countries = relevant_regions(country_shapefile, frame, 3, 0.9)
     frame["suffix"] = frame.id.apply(lambda x: "-".join(countries[x]))
     frame["longname"] = frame.shortname + " " + suffix + ", " + frame.suffix
+    frame.geometry = frame.geometry.intersection(
+        shapely.geometry.box(-180, -89, 180, 89)
+    )
     assert len(frame) == len(set(frame.longname))
     return frame
 
@@ -690,6 +694,7 @@ named_populations = {
 
 pc_types = {x + " Person Circle" for x in named_populations.values()}
 
+
 @permacache(
     "urbanstats/data/circle/create_circle_image",
 )
@@ -722,7 +727,7 @@ def circle_shapefile_object(country_shapefile, population, just_usa):
     else:
         prefix = ""
     return Shapefile(
-        hash_key=prefix + f"population_circle_{named_populations[population]}_3",
+        hash_key=prefix + f"population_circle_{named_populations[population]}_4",
         path=lambda: overlapping_circles_frame(
             country_shapefile, population, named_populations[population] + "PC"
         ),
