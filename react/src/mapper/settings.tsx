@@ -1,6 +1,3 @@
-
-export { MapperSettings, default_settings, parse_color_stat };
-
 import React from "react";
 import { FunctionColorStat, FilterSelector } from "./function.js";
 import { RampColormapSelector } from "./ramp-selector.js";
@@ -10,7 +7,7 @@ import { StatisticSelector } from "./function.js";
 import { Regression } from "./regression";
 import { ConstantRampDescriptor, RampDescriptor } from "./ramps.js";
 
-export type StatisticsForGeography = { statistics: {}, stats: number[] }[]
+export type StatisticsForGeography = { stats: number[] }[]
 
 export interface ColorStat {
     name(): string
@@ -29,17 +26,17 @@ export interface RegressionDescriptor {
 
 export type ColorStatDescriptor = { type: "single", value: string } | { type: "function", value: "Function", variables: { name: string, expr: ColorStatDescriptor }[], regressions?: RegressionDescriptor[], name?: string, expression: string }
 
-interface LineStyle {
+export interface LineStyle {
         color: string,
         weight: number
 
 }
 
-type Basemap = {
+export type Basemap = {
         type: "osm"
 } | { type: "none" }
 
-interface MapSettings {
+export interface MapSettings {
     geography_kind: string,
     filter: {
         enabled: boolean,
@@ -51,7 +48,7 @@ interface MapSettings {
     basemap: Basemap
 }
 
-function default_settings(add_to: Partial<MapSettings>): MapSettings {
+export function default_settings(add_to: Partial<MapSettings>): MapSettings {
     const defaults: MapSettings = {
         geography_kind: "",
         filter: {
@@ -115,7 +112,7 @@ function parse_regression(name_to_index: Record<string, number>, regr: Regressio
     );
 }
 
-function parse_color_stat(name_to_index: Record<string, number>, color_stat: ColorStatDescriptor | undefined): ColorStat {
+export function parse_color_stat(name_to_index: Record<string, number>, color_stat: ColorStatDescriptor | undefined): ColorStat {
     if (color_stat === undefined) {
         return new InvalidColorStat();
     }
@@ -302,9 +299,7 @@ function BaseMapSelector({ basemap, set_basemap} : { basemap: Basemap, set_basem
     );
 }
 
-function MapperSettings(props: { map_settings: MapSettings, valid_geographies: string[], set_map_settings: (newValue: MapSettings) => void }) {
-
-
+export function MapperSettings(props: { map_settings: MapSettings, valid_geographies: string[], set_map_settings: (newValue: MapSettings) => void }) {
         console.log("rendering MapperSettings")
         console.log("Setting", props.map_settings)
         return (

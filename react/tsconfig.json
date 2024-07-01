@@ -5,7 +5,7 @@
         "jsx": "react",
         "esModuleInterop": true,
         "target": "es2015",
-        "moduleResolution": "NodeNext",
-        "module": "NodeNext"
+        "moduleResolution": "Bundler",
+        "module": "ES2022"
     }
 }

@@ -34,11 +34,12 @@ function loadTextFileAjaxSync(filePath: string, mimeType: string) {
     }
 }
 
-
 // Load a protobuf file from the server
 async function loadProtobuf(filePath: string, name: "Article"): Promise<Article>
 async function loadProtobuf(filePath: string, name: "Feature"): Promise<Feature>
 async function loadProtobuf(filePath: string, name: "StringList"): Promise<StringList>
+async function loadProtobuf(filePath: string, name: "ConsolidatedShapes"): Promise<ConsolidatedShapes>
+async function loadProtobuf(filePath: string, name: "ConsolidatedStatistics"): Promise<ConsolidatedStatistics>
 async function loadProtobuf(filePath: string, name: string) {
     const response = await fetch(filePath);
     const compressed_buffer = await response.arrayBuffer();

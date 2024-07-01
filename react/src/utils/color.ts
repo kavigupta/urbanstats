@@ -1,3 +1,4 @@
+import { Keypoints } from "../mapper/ramps";
 
 export function random_color(name: string) {
     // randomly choose a color hex code where H is between 0 and 360,
@@ -18,7 +19,7 @@ export function random_color(name: string) {
     return `hsl(${random() * 360}, ${50 + random() * 50}%, ${20 + random() * 30}%)`;
 }
 
-export function interpolate_color(ramp: [number, string][], item: number) {
+export function interpolate_color(ramp: Keypoints, item: number) {
     // ramp is a list of [value, color] pairs
     // item is a value
 

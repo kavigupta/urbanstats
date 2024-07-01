@@ -14,15 +14,12 @@ import L from 'leaflet'
 import { NormalizeProto } from "../utils/types.js";
 import { Feature, IRelatedButton, IRelatedButtons } from "../utils/protos.js";
 import { Settings } from "../page_template/settings.js";
-
-interface BaseMap {
-    type: string;
-}
+import { Basemap } from "../mapper/settings.js";
 
 export interface MapGenericProps {
-    height?: number,
+    height?: string,
     id: string,
-    basemap: BaseMap,
+    basemap: Basemap,
 }
 
 class MapGeneric<P extends MapGenericProps> extends React.Component<P> {
@@ -35,8 +32,8 @@ class MapGeneric<P extends MapGenericProps> extends React.Component<P> {
     private version = 0;
     private last_modified = Date.now();
     private basemap_layer: null | L.TileLayer = null;
-    private basemap_props: null | BaseMap = null;
-    private map: L.Map | undefined = undefined
+    private basemap_props: null | Basemap = null;
+    protected map: L.Map | undefined = undefined
     private exist_this_time: string[] = []
 
     render() {

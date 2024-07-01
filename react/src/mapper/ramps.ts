@@ -5,9 +5,9 @@ export type EncodedColorMap = { type: 'none' } | { type: 'custom', custom_colorm
 
 export type ColorMap = [number, string][]
 
-type Keypoints = Readonly<[number, string]>[]
+export type Keypoints = Readonly<[number, string]>[]
 
-interface Ramp {
+export interface Ramp {
     create_ramp(values: number[]): Readonly<[Keypoints, number[]]>;
 }
 
