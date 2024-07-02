@@ -7,10 +7,8 @@ import tempfile
 import requests
 import us
 
-from urbanstats.special_cases.country import continent_names
 from urbanstats.universe.annotate_universes import (
     all_universes,
-    country_names,
     get_universe_name_for_state,
 )
 
@@ -76,11 +74,17 @@ def run_conversion(png_path, svg_path):
     )
 
 
+def state_flag_name(state):
+    if state.name == "Georgia":
+        return "File:Flag_of_Georgia_(U.S._state).svg"
+    return f"File:Flag_of_{state.name.replace(' ', '_')}.svg"
+
+
 def download_all_us_state_icons():
     # download_and_convert_flag("File:Flag_of_Alabama.svg", "Alabama, USA")
     for state in us.states.STATES_AND_TERRITORIES:
         download_and_convert_flag(
-            f"File:Flag_of_{state.name.replace(' ', '_')}.svg",
+            state_flag_name(state),
             get_universe_name_for_state(state),
         )
 

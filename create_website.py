@@ -315,15 +315,8 @@ def main(
         json.dump(american_to_international, f)
 
     os.system("cd react; npm run prod")
-    shutil.copy("dist/article.js", f"{site_folder}/scripts/")
-    shutil.copy("dist/comparison.js", f"{site_folder}/scripts/")
-    shutil.copy("dist/statistic.js", f"{site_folder}/scripts/")
-    shutil.copy("dist/index.js", f"{site_folder}/scripts/")
-    shutil.copy("dist/random.js", f"{site_folder}/scripts/")
-    shutil.copy("dist/about.js", f"{site_folder}/scripts/")
-    shutil.copy("dist/data-credit.js", f"{site_folder}/scripts/")
-    shutil.copy("dist/mapper.js", f"{site_folder}/scripts/")
-    shutil.copy("dist/quiz.js", f"{site_folder}/scripts/")
+    shutil.rmtree(f"{site_folder}/scripts")
+    shutil.copytree("dist", f"{site_folder}/scripts")
     place_icons_in_site_folder(site_folder)
 
     from urbanstats.games.quiz import generate_quizzes

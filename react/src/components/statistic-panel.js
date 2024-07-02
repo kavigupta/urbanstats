@@ -88,9 +88,9 @@ class StatisticPanel extends PageTemplate {
             }
         }
         if (row_idx % 2 === 1) {
-            return "#f8f8f8";
+            return "#f7f1e8";
         }
-        return "#ffffff";
+        return "#fff8f0";
     }
 
     style(col_idx, row_idx) {
@@ -98,7 +98,7 @@ class StatisticPanel extends PageTemplate {
         if (row_idx == 0) {
             // header, add a line at the bottom
             style.borderBottom = "1px solid #000";
-            style.fontWeight = "bold";
+            style.fontWeight = 500;
         }
         style.backgroundColor = this.background_color(row_idx);
         style.width = column_widths[col_idx];
@@ -113,6 +113,7 @@ class StatisticPanel extends PageTemplate {
                 {/* // TODO plural */}
                 <div className={subHeaderTextClass()}>{display_type(this.state.current_universe, this.props.article_type)} ({this.rendered_order()})</div>
             </div>
+            <div style={{ marginBlockEnd: "16px" }}></div>
             <div className="serif" ref={this.table_ref}>
                 <div style={{ display: "flex" }}>
                     {column_names.map((name, i) => {
@@ -131,9 +132,9 @@ class StatisticPanel extends PageTemplate {
                     }}>
                         <div style={this.style(0, row_idx + 1)}>{i + 1}</div>
                         <div style={this.style(1, row_idx + 1)}>
-                            <a href={article_link(this.state.current_universe, this.props.article_names[i])} style={{ fontWeight: "bold", color: "black", textDecoration: "none" }}>{this.props.article_names[i]}</a>
+                            <a href={article_link(this.state.current_universe, this.props.article_names[i])} style={{ fontWeight: 500, color: "black", textDecoration: "none" }}>{this.props.article_names[i]}</a>
                         </div>
-                        <div style={this.style(2, row_idx + 1)} className='value_numeric value'>
+                        <div style={this.style(2, row_idx + 1)} className='value'>
                             <Statistic
                                 statname={this.props.statname}
                                 value={this.props.data.value[i]}
@@ -181,7 +182,7 @@ class StatisticPanel extends PageTemplate {
 
         // low-key style for the buttons
         const button_style = {
-            backgroundColor: "#f8f8f8",
+            backgroundColor: "#f7f1e8",
             border: "1px solid #000",
             padding: "0 0.5em",
             margin: "0.5em"
