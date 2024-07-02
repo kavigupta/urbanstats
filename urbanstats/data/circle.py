@@ -727,7 +727,7 @@ def circle_shapefile_object(country_shapefile, population, just_usa):
     else:
         prefix = ""
     return Shapefile(
-        hash_key=prefix + f"population_circle_{named_populations[population]}_4",
+        hash_key=prefix + f"population_circle_{named_populations[population]}_5",
         path=lambda: overlapping_circles_frame(
             country_shapefile, population, named_populations[population] + "PC"
         ),

@@ -13,7 +13,7 @@ def tag_international_duplicates(intl):
 
 def merge_international_row(row_international, row_domestic):
     for col in row_international.index:
-        if col in ["longname", "area", "compactness", "type", "source"]:
+        if col in ["longname", "area", "compactness", "type", "source", "perimiter"]:
             continue
         if row_international[col] == row_domestic[col]:
             continue
@@ -27,7 +27,7 @@ def merge_international_row(row_international, row_domestic):
             continue
         assert (
             row_international[col] != row_international[col]
-        ), f"{col} {row_international[col]} {row_domestic[col]}"
+        ), f"{row_international.longname} {col} {row_international[col]} {row_domestic[col]}"
     return row_international
 
 

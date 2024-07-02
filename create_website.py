@@ -86,7 +86,7 @@ def international_shapefile():
             ts.append(t)
     intl = pd.concat(ts)
     # intl = intl[intl.area > 10].copy()
-    # intl = intl[intl.gpw_population > 0].copy()
+    intl = intl[intl.gpw_population > 0].copy()
     intl = intl.reset_index(drop=True)
     return intl
 
