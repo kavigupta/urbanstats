@@ -7,9 +7,7 @@ import pandas as pd
 
 def tag_international_duplicates(intl):
     intl = intl.copy()
-    intl.longname = intl.longname.apply(
-        lambda x: re.sub(", ([^,]*)USA", r" [SN], \1USA", x)
-    )
+    intl.longname = intl.longname.apply(lambda x: x + " [SN]" if "USA" in x else x)
     return intl
 
 

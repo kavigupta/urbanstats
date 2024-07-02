@@ -40,7 +40,15 @@ def states_for_all():
                 systematics[k] = [one_offs[k]]
             else:
                 systematics[k] = v
-            if shapefiles_for_stats[u].american:
+            if (
+                shapefiles_for_stats[u].american
+                and not shapefiles_for_stats[u].tolerate_no_state
+            ):
+                if len(systematics[k]) == 0:
+                    print("Error on ", k, " in ", u)
+                    print("shapefile: ", shapefiles_for_stats[u])
+                    print("systematics: ", systematics[k])
+                    raise ValueError
                 assert len(systematics[k]) >= 1, (u, k)
     return systematics
 
@@ -102,7 +110,7 @@ def non_us_countries_for_all():
         ).items():
             if skippable_edge_case(k):
                 continue
-            if k in systematics and k.endswith("USA"):
+            if k in systematics and "USA" in k:
                 v = max([v, systematics[k]], key=len)
                 systematics[k] = v
             if k in systematics:
@@ -312,8 +320,20 @@ def add(d, edges):
 
 
 tiers = [
-    ["Continent"],
-    ["Country"],
+    [
+        "Continent",
+        "1B Person Circle",
+        "US 1B Person Circle",
+        "500M Person Circle",
+        "US 500M Person Circle",
+    ],
+    [
+        "Country",
+        "200M Person Circle",
+        "US 200M Person Circle",
+        "100M Person Circle",
+        "US 100M Person Circle",
+    ],
     [
         "State",
         "Subnational Region",
@@ -323,6 +343,8 @@ tiers = [
         "Media Market",
         "USDA County Type",
         "Hospital Referral Region",
+        "50M Person Circle",
+        "US 50M Person Circle",
     ],
     [
         "CSA",
@@ -339,6 +361,12 @@ tiers = [
         "Hospital Service Area",
         "Urban Center",
         "Urban Center",
+        "20M Person Circle",
+        "US 20M Person Circle",
+        "10M Person Circle",
+        "US 10M Person Circle",
+        "5M Person Circle",
+        "US 5M Person Circle",
     ],
     ["CCD", "City", "School District"],
     ["Neighborhood", "ZIP"],

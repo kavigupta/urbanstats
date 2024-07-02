@@ -85,8 +85,8 @@ def international_shapefile():
                 t[k] = s.meta[k]
             ts.append(t)
     intl = pd.concat(ts)
-    intl = intl[intl.area > 10].copy()
-    intl = intl[intl.gpw_population > 0].copy()
+    # intl = intl[intl.area > 10].copy()
+    # intl = intl[intl.gpw_population > 0].copy()
     intl = intl.reset_index(drop=True)
     return intl
 
@@ -231,6 +231,7 @@ def main(
         produce_all_geometry_json(
             f"{site_folder}/shape", set(shapefile_without_ordinals().longname)
         )
+        all_simplified_countries(shapefile_without_ordinals(), f"{site_folder}/shape")
 
     if not no_data:
         if not no_data_jsons:
@@ -244,8 +245,6 @@ def main(
         output_ordering(site_folder, all_ordinals())
 
         full_consolidated_data(site_folder)
-
-        all_simplified_countries(shapefile_without_ordinals(), f"{site_folder}/shape")
 
     shutil.copy("html_templates/article.html", f"{site_folder}")
     shutil.copy("html_templates/comparison.html", f"{site_folder}")
