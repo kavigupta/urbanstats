@@ -8,9 +8,15 @@ protobuf==3.20.0
 geotiff
 imagecodecs
 fire
-us
+us==2.0.2
 pycountry
-geopandas
+geopandas==0.10.2
+# pygeos being installed is ABSOLUTELY NECESSARY if you want
+# to be able to load old caches
+# if not included, you will get an error with unpickling.
+pygeos==0.12.0
+pandas==1.3.4
+numpy==1.19.4
 permacache
 more_itertools
 cached_property
