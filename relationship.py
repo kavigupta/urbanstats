@@ -40,7 +40,15 @@ def states_for_all():
                 systematics[k] = [one_offs[k]]
             else:
                 systematics[k] = v
-            if shapefiles_for_stats[u].american:
+            if (
+                shapefiles_for_stats[u].american
+                and not shapefiles_for_stats[u].tolerate_no_state
+            ):
+                if len(systematics[k]) == 0:
+                    print("Error on ", k, " in ", u)
+                    print("shapefile: ", shapefiles_for_stats[u])
+                    print("systematics: ", systematics[k])
+                    raise ValueError
                 assert len(systematics[k]) >= 1, (u, k)
     return systematics
 
