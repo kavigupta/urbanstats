@@ -125,9 +125,3 @@ Source: https://human-settlement.emergency.copernicus.eu/ghs_stat_ucdb2015mt_r20
 Source: https://chronicdata.cdc.gov/500-Cities-Places/PLACES-Local-Data-for-Better-Health-Census-Tract-D/cwsq-ngmh/about_data
 
     - `PLACES__Local_Data_for_Better_Health__Census_Tract_Data_2023_release_20240531.csv`
-
-# From OpenDataSoft
-
-Source: https://public.opendatasoft.com/explore/dataset/geonames-all-cities-with-a-population-1000/information/?flg=en-us&disjunctive.cou_name_en&sort=name&location=2,34.16182,-0.17578&basemap=jawg.light
-
-    - `geonames-all-cities-with-a-population-1000.csv`
