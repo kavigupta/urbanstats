@@ -28,7 +28,7 @@ def compute_intl_universes(longname):
     if longname in continent_names():
         return result
     result += non_us_countries_for_all()[longname]
-    if not longname.endswith("USA"):
+    if "USA" not in longname:
         return result
     if "USA" not in result:
         assert len(result) == 2, "should be just world and continent"
