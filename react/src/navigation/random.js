@@ -35,6 +35,8 @@ async function by_population(settings, domestic_only = false) {
             continue;
         }
 
+        // this is specifically looking for stuff that's only in the US.
+        // so it makes sense.
         if (domestic_only && (!x.endswith(", USA"))) {
             continue;
         }
