@@ -102,7 +102,7 @@ def non_us_countries_for_all():
         ).items():
             if skippable_edge_case(k):
                 continue
-            if k in systematics and k.endswith("USA"):
+            if k in systematics and "USA" in k:
                 v = max([v, systematics[k]], key=len)
                 systematics[k] = v
             if k in systematics:
