@@ -240,3 +240,16 @@ add 2010s and health data
 1337    order
 1408    data
 4006    total
+
+add priority to index
+
+4       icons
+5       quiz
+9       consolidated
+18      quiz_sample_info
+23      index
+80      scripts
+1126    shape
+1337    order
+1408    data
+4007    total
