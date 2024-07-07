@@ -27,7 +27,7 @@ class Responsive {
         // bold
         return {
             fontSize: this.mobileLayout ? "15px" : "20px",
-            fontWeight: "bold",
+            fontWeight: 500,
             margin: "0",
             padding: "0",
             textAlign: align,

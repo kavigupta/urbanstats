@@ -24,7 +24,7 @@ class MapGeneric extends React.Component {
 
     render() {
         return (
-            <div id={this.props.id} className="map" style={{ background: "white", height: this.props.height || 400 }}>
+            <div id={this.props.id} className="map" style={{ background: "#fff8f0", height: this.props.height || 400 }}>
                 {/* place this on the right of the map */}
                 <div style={
                     {zIndex: 1000, position: "absolute", right: 0, top: 0, padding: "1em"}
@@ -263,17 +263,19 @@ class MapGeneric extends React.Component {
     }
 
     async add_polygon(map, name, fit_bounds, style, add_callback = true, add_to_bottom = false) {
+        const self = this;
         this.exist_this_time.push(name);
         if (name in this.polygon_by_name) {
             this.polygon_by_name[name].setStyle(style);
             return;
         }
         let geojson = await this.polygon_geojson(name);
+        // geojson.properties.id = name;
         let group = new L.featureGroup();
-        let polygon = L.geoJson(geojson, { style: style, smoothFactor: 0.1 });
+        let polygon = L.geoJson(geojson, { style: style, smoothFactor: 0.1, className: "tag-" + name.replace(/ /g, "_")});
         if (add_callback) {
             polygon = polygon.on("click", function (e) {
-                window.location.href = article_link(name);
+                window.location.href = article_link(self.props.universe, name);
             });
         }
 

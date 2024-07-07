@@ -1,0 +1,107 @@
+[
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Undergrad Business %",
+      "question": "!FULL Which has more people with a business degree, as a percentage of the overall population?",
+      "longname_a": "11th Circuit, USA",
+      "longname_b": "9th Circuit, USA",
+      "stat_a": 0.07240120180995253,
+      "stat_b": 0.06037236764444366
+    },
+    "b": {
+      "stat_column": "Commute Time > 60 min %",
+      "question": "higher % of people who have commute time over 60 min",
+      "longname_a": "Canton-Massillon MSA, OH, USA",
+      "longname_b": "San Antonio-New Braunfels MSA, TX, USA",
+      "stat_a": 0.04996650032344515,
+      "stat_b": 0.0699278215831071
+    },
+    "a_ease": 0.35911602209944754,
+    "b_ease": 0.7765273311897106
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "2BR Rent < $750 %",
+      "question": "higher % of units with 2br rent under $750",
+      "longname_a": "Denton County, Texas, USA",
+      "longname_b": "Allen County, Indiana, USA",
+      "stat_a": 0.02692049647769205,
+      "stat_b": 0.3078718946423227
+    },
+    "b": {
+      "stat_column": "AW Density",
+      "question": "higher area-weighted density",
+      "longname_a": "Minnesota, USA",
+      "longname_b": "West Virginia, USA",
+      "stat_a": 26.108697543408695,
+      "stat_b": 28.581812393438774
+    },
+    "a_ease": 0.8077455048409405,
+    "b_ease": 0.344
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Mean high temperature in fall",
+      "question": "higher mean daily high temperature in fall (population weighted)",
+      "longname_a": "Reno city, Nevada, USA",
+      "longname_b": "Fort Wayne city, Indiana, USA",
+      "stat_a": 56.23097600463026,
+      "stat_b": 54.04005351897463
+    },
+    "b": {
+      "stat_column": "Undergrad STEM %",
+      "question": "!FULL Which has more people with a STEM degree, as a percentage of the overall population?",
+      "longname_a": "Fresno [Urban Area], CA, USA",
+      "longname_b": "Kansas City [Urban Area], MO-KS, USA",
+      "stat_a": 0.11390689167653242,
+      "stat_b": 0.15641942543362888
+    },
+    "a_ease": 0.8392282958199357,
+    "b_ease": 0.42779291553133514
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Born in us outside state %",
+      "question": "higher % of people who were born in the US and outside their state of residence",
+      "longname_a": "Lexington KY Media Market, USA",
+      "longname_b": "Utica NY Media Market, USA",
+      "stat_a": 0.24362003384775213,
+      "stat_b": 0.13853365569476836
+    },
+    "b": {
+      "stat_column": "Undergrad Humanities %",
+      "question": "!FULL Which has more people with a humanities degree, as a percentage of the overall population?",
+      "longname_a": "OH-15, USA",
+      "longname_b": "IL-05, USA",
+      "stat_a": 0.10328570526616415,
+      "stat_b": 0.2112549702283272
+    },
+    "a_ease": 0.4790502793296089,
+    "b_ease": 0.8876404494382022
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "% units built pre-1970",
+      "question": "higher % units built pre-1970",
+      "longname_a": "CA-51, USA",
+      "longname_b": "GA-11, USA",
+      "stat_a": 0.36396256138584837,
+      "stat_b": 0.11416216043097027
+    },
+    "b": {
+      "stat_column": "Non-citizen %",
+      "question": "higher % of residents who are non-citizens",
+      "longname_a": "Washington, USA",
+      "longname_b": "Indiana, USA",
+      "stat_a": 0.07578938934112224,
+      "stat_b": 0.03183782774975042
+    },
+    "a_ease": 0.505524861878453,
+    "b_ease": 0.9100817438692098
+  }
+]

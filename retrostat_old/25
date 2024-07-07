@@ -1,0 +1,107 @@
+[
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Undergrad %",
+      "question": "higher % of people who have at least an undergrad degree",
+      "longname_a": "Stockton [Urban Area], CA, USA",
+      "longname_b": "Lexington-Fayette [Urban Area], KY, USA",
+      "stat_a": 0.16390689033116362,
+      "stat_b": 0.43849580202572647
+    },
+    "b": {
+      "stat_column": "2BR Rent > $1500 %",
+      "question": "higher % of units with 2br rent over $1500",
+      "longname_a": "Fayette County, Kentucky, USA",
+      "longname_b": "Stanislaus County, California, USA",
+      "stat_a": 0.03832926056656711,
+      "stat_b": 0.1753607563443357
+    },
+    "a_ease": 0.4121557454890788,
+    "b_ease": 0.8141683778234087
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Citizen by Naturalization %",
+      "question": "higher % of residents who are citizens by naturalization",
+      "longname_a": "Monterey-Salinas CA Media Market, USA",
+      "longname_b": "Baton Rouge LA Media Market, USA",
+      "stat_a": 0.08300741767424022,
+      "stat_b": 0.015175712525003222
+    },
+    "b": {
+      "stat_column": "Commute Time > 60 min %",
+      "question": "higher % of people who have commute time over 60 min",
+      "longname_a": "Rhode Island, USA",
+      "longname_b": "Iowa, USA",
+      "stat_a": 0.0724302416952683,
+      "stat_b": 0.03799094604784333
+    },
+    "a_ease": 0.8733766233766234,
+    "b_ease": 0.4700854700854701
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Household Income < $50k %",
+      "question": "higher % of households who have household income under $50k",
+      "longname_a": "Fort Wayne city, Indiana, USA",
+      "longname_b": "Sacramento city, California, USA",
+      "stat_a": 0.4620900039994588,
+      "stat_b": 0.3527672972071915
+    },
+    "b": {
+      "stat_column": "Administrative and support and waste management services %",
+      "question": "higher % of workers employed in the administrative/support/waste management services industries",
+      "longname_a": "11th Circuit, USA",
+      "longname_b": "4th Circuit, USA",
+      "stat_a": 0.053405046560412825,
+      "stat_b": 0.042712676675761126
+    },
+    "a_ease": 0.879746835443038,
+    "b_ease": 0.44763860369609854
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Boomer %",
+      "question": "higher % of people who are boomers",
+      "longname_a": "North Port-Sarasota-Bradenton MSA, FL, USA",
+      "longname_b": "Fayetteville MSA, NC, USA",
+      "stat_a": 0.3241251698699282,
+      "stat_b": 0.17922416254289034
+    },
+    "b": {
+      "stat_column": "2020 Presidential Election",
+      "question": "!FULL Which voted more for Biden in the 2020 presidential election?",
+      "longname_a": "Concord [Urban Area], NC, USA",
+      "longname_b": "Tallahassee [Urban Area], FL, USA",
+      "stat_a": -0.04791360538513228,
+      "stat_b": 0.3314753999096481
+    },
+    "a_ease": 0.8890959925442684,
+    "b_ease": 0.4357976653696498
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Grad %",
+      "question": "higher % of people who have a graduate degree",
+      "longname_a": "Allentown-Bethlehem [Urban Area], PA-NJ, USA",
+      "longname_b": "Greenville [Urban Area], SC, USA",
+      "stat_a": 0.12003124308082315,
+      "stat_b": 0.12332271772950754
+    },
+    "b": {
+      "stat_column": "2BR Rent < $750 %",
+      "question": "higher % of units with 2br rent under $750",
+      "longname_a": "Hawaii, USA",
+      "longname_b": "Maine, USA",
+      "stat_a": 0.06304560784986704,
+      "stat_b": 0.23200287076919668
+    },
+    "a_ease": 0.43398268398268397,
+    "b_ease": 0.8934599156118144
+  }
+]

@@ -1,7 +1,6 @@
 import os
-import tempfile
 import subprocess
-
+import tempfile
 import xml.etree.cElementTree as et
 
 import plotly.graph_objects as go

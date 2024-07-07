@@ -201,6 +201,7 @@ class JuxtastatQuizQuestion extends QuizQuestion {
             longname={this.props.longname_a}
             article_type={undefined}
             basemap={{ type: "osm" }}
+            universe={undefined}
         />
     }
 
@@ -209,6 +210,7 @@ class JuxtastatQuizQuestion extends QuizQuestion {
             longname={this.props.longname_b}
             article_type={undefined}
             basemap={{ type: "osm" }}
+            universe={undefined}
         />
     }
 }

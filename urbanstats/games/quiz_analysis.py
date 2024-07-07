@@ -1,7 +1,7 @@
 import os
+
 import numpy as np
 import pandas as pd
-
 import requests
 
 questions = [f"q{i}" for i in range(1, 1 + 5)]
@@ -18,8 +18,13 @@ def get_full_statistics(*, after_problem, debug=False):
     result = pd.DataFrame(
         result, columns=["user_id", "host", "problem", "pattern", "time"]
     )
+    time_problem = result[["time", "problem"]]
+    time_problem = time_problem[time_problem.time == time_problem.time]
     result["last_in_batch"] = 0
-    result.loc[result.groupby("time").idxmax().problem, "last_in_batch"] = 1
+    result.loc[
+        time_problem.sort_values("problem").drop_duplicates("time", keep="last").index,
+        "last_in_batch",
+    ] = 1
     result.pattern = result.pattern.apply(
         lambda x: np.array([x // 2**i % 2 for i in range(5)])
     )

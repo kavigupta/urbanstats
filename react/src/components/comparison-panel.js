@@ -49,13 +49,16 @@ class ComparisonPanel extends PageTemplate {
         }
     }
 
+    has_universe_selector() {
+        return true;
+    }
 
     main_content(responsive) {
         const self = this;
         var rows = [];
         var idxs = [];
         for (let i in this.props.datas) {
-            const [r, idx] = load_article(this.props.datas[i], this.state.settings);
+            const [r, idx] = load_article(this.state.current_universe, this.props.datas[i], this.state.settings);
             rows.push(r);
             idxs.push(idx);
         }
@@ -75,14 +78,13 @@ class ComparisonPanel extends PageTemplate {
             <div>
                 <div className={responsive.headerTextClass}>Comparison</div>
                 <div className={responsive.subHeaderTextClass}>{this.props.joined_string}</div>
-
-                <div style={{ marginBlockEnd: "1em" }}></div>
+                <div style={{ marginBlockEnd: "16px" }}></div>
 
                 <div style={{ display: "flex" }}>
                     <div style={{ width: (100 * left_margin_pct) + "%" }} />
                     <div style={{ width: (50 * (1 - left_margin_pct)) + "%", marginRight: "1em" }}>
-                        <div style={responsive.comparisonHeadStyle("right")}>Add another region:</div>
-                    </div>
+                        <div className="serif" style={responsive.comparisonHeadStyle("right")}>Add another region:</div>
+                    </div >
                     <div style={{ width: (50 * (1 - left_margin_pct)) + "%" }}>
                         <SearchBox
                             settings={this.state.settings}
@@ -91,40 +93,43 @@ class ComparisonPanel extends PageTemplate {
                             on_change={(x) => self.add_new(x)}
                         />
                     </div>
-                </div>
+                </div >
 
 
                 <div style={{ marginBlockEnd: "1em" }}></div>
 
-                {this.maybe_scroll(
-                    responsive,
-                    <div ref={this.table_ref}>
-                        {this.bars()}
-                        <div style={{ display: "flex" }}>
-                            {this.cell(true, 0, <div></div>)}
-                            {this.props.datas.map(
-                                (data, i) => this.cell(false, i, <div>
-                                    <HeadingDisplay
-                                        longname={data.longname}
-                                        include_delete={this.props.datas.length > 1}
-                                        on_click={() => self.on_delete(i)}
-                                        on_change={(x) => self.on_change(i, x)}
-                                        screenshot_mode={this.state.screenshot_mode}
-                                    />
-                                </div>)
-                            )}
+                {
+                    this.maybe_scroll(
+                        responsive,
+                        <div ref={this.table_ref}>
+                            {this.bars()}
+                            <div style={{ display: "flex" }}>
+                                {this.cell(true, 0, <div></div>)}
+                                {this.props.datas.map(
+                                    (data, i) => this.cell(false, i, <div>
+                                        <HeadingDisplay
+                                            longname={data.longname}
+                                            include_delete={this.props.datas.length > 1}
+                                            on_click={() => self.on_delete(i)}
+                                            on_change={(x) => self.on_change(i, x)}
+                                            screenshot_mode={this.state.screenshot_mode}
+                                            universe={this.state.current_universe}
+                                        />
+                                    </div>)
+                                )}
+                            </div>
+                            {this.bars()}
+
+                            {statistic_row(true, 0, header_row)}
+
+                            {
+                                render_rows.map((row, i) =>
+                                    statistic_row(false, i, row)
+                                )
+                            }
                         </div>
-                        {this.bars()}
-
-                        {statistic_row(true, 0, header_row)}
-
-                        {
-                            render_rows.map((row, i) =>
-                                statistic_row(false, i, row)
-                            )
-                        }
-                    </div>
-                )}
+                    )
+                }
                 <div className="gap"></div>
 
                 <div ref={this.map_ref}>
@@ -134,9 +139,10 @@ class ComparisonPanel extends PageTemplate {
                         id="map_combined"
                         article_type={undefined}
                         basemap={{ type: "osm" }}
+                        universe={this.state.current_universe}
                     />
                 </div>
-            </div>
+            </div >
         );
     }
 
@@ -239,7 +245,7 @@ class ComparisonPanel extends PageTemplate {
                 alignSelf: "stretch"
             }}>
                 <div style={{
-                    backgroundColor: highlight_idx == -1 ? "white" : this.color(highlight_idx),
+                    backgroundColor: highlight_idx == -1 ? "#fff8f0" : this.color(highlight_idx),
                     height: "100%",
                     width: "50%",
                     margin: "auto"
@@ -248,7 +254,10 @@ class ComparisonPanel extends PageTemplate {
         )
 
         row_overall.push(...new StatisticRowRaw(
-            { ...param_vals[0], only_columns: ["statname"], _idx: -1, simple: true }
+            {
+                ...param_vals[0], only_columns: ["statname"], _idx: -1, simple: true, longname: this.props.datas[0].longname,
+                universe: this.state.current_universe
+            }
         ).cell_contents(100 * (left_margin_pct - left_bar_margin)));
         const only_columns = this.all_data_types_same() ? main_columns : main_columns_across_types;
 
@@ -256,7 +265,8 @@ class ComparisonPanel extends PageTemplate {
             row_overall.push(...new StatisticRowRaw({
                 ...param_vals[i], only_columns: only_columns, _idx: i, simple: true,
                 statistic_style: highlight_idx == i ? { backgroundColor: lighten(this.color(i), 0.7) } : {},
-                onReplace: x => this.on_change(i, x)
+                onReplace: x => this.on_change(i, x),
+                universe: this.state.current_universe
             }).cell_contents(this.each()));
         }
         return row_overall;
@@ -287,7 +297,7 @@ function ManipulationButton({ color, on_click, text }) {
     </div>
 }
 
-function HeadingDisplay({ longname, include_delete, on_click, on_change, screenshot_mode }) {
+function HeadingDisplay({ universe, longname, include_delete, on_click, on_change, screenshot_mode }) {
 
     const [is_editing, set_is_editing] = React.useState(false);
 
@@ -309,7 +319,7 @@ function HeadingDisplay({ longname, include_delete, on_click, on_change, screens
     return <div>
         {screenshot_mode ? undefined : manipulation_buttons}
         <div style={{ height: "5px" }} />
-        <a href={article_link(longname)} style={{ textDecoration: "none" }}><div style={responsive.comparisonHeadStyle()}>{longname}</div></a>
+        <a className="serif" href={article_link(longname)} style={{ textDecoration: "none" }}><div style={responsive.comparisonHeadStyle()}>{longname}</div></a>
         {is_editing ?
             <SearchBox
                 autoFocus={true}
@@ -364,10 +374,10 @@ class ComparisonMap extends MapGeneric {
 
     buttons() {
         return <div style={{
-            display: "flex", backgroundColor: "white", padding: "0.5em", borderRadius: "0.5em",
+            display: "flex", backgroundColor: "#fff8f0", padding: "0.5em", borderRadius: "0.5em",
             alignItems: "center"
         }}>
-            <span className="serif" style={{ fontSize: "15px" }}><b>Zoom to:</b></span>
+            <span className="serif" style={{ fontSize: "15px", fontWeight: 500 }}>Zoom to:</span>
             <div style={{ width: "0.25em" }} />
             {this.zoom_button(-1, "black", () => this.zoom_to_all())}
             {this.props.longnames.map((longname, i) => {

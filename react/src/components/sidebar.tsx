@@ -75,12 +75,6 @@ export function Sidebar() {
                     </li>
                     <li>
                         <CheckboxSetting
-                            name="Use Population Percentiles"
-                            setting_key="use_population_percentiles"
-                        />
-                    </li>
-                    <li>
-                        <CheckboxSetting
                             name="Simple Ordinals"
                             setting_key="simple_ordinals"
                         />

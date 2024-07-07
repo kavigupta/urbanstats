@@ -1,16 +1,16 @@
 import React, { useState, useEffect, useRef } from 'react';
 import ContentEditable from 'react-contenteditable'
 
-export { StatisticRowRaw, Statistic, statistic_row };
-import { article_link, explanation_page_link, ordering_link } from "../navigation/links.js";
-import { loadProtobuf } from '../load_json.js';
+export { StatisticRowRaw, Statistic, statistic_row, Percentile };
+import { article_link, statistic_link } from "../navigation/links.js";
+import { loadProtobuf, load_ordering } from '../load_json.js';
 import "./table.css";
 import { is_historical_cd } from '../utils/is_historical.js';
+import { display_type } from '../utils/text.js';
 
 const table_row_style = {
     display: "flex",
     flexDirection: "row",
-    alignItems: "baseline",
 };
 
 class StatisticRowRaw extends React.Component {
@@ -19,18 +19,11 @@ class StatisticRowRaw extends React.Component {
     }
 
     cells() {
-        return [
-            [31,
-                "statname",
-                <span className="serif value">{
-                    this.props.is_header ? "Statistic" :
-                        <a className="statname_no_link" href={explanation_page_link(this.props.explanation_page)}>{this.props.statname}</a>
-                }
-                </span>
-            ],
+        const alignStyle = { textAlign: this.props.is_header ? "center" : "right" };
+        var value_columns = [
             [15,
                 "statval",
-                <div className="value_numeric">
+                <div style={alignStyle}>
                     <span className="serif value">{
                         this.props.is_header
                             ? "Value"
@@ -58,7 +51,29 @@ class StatisticRowRaw extends React.Component {
                             />}
                     </span>
                 </div>
+            ]
+        ]
+        if (this.props.is_header) {
+            value_columns[0][0] += value_columns[1][0];
+            value_columns = [value_columns[0]];
+        }
+
+        return [
+            [31,
+                "statname",
+                <span className="serif value">{
+                    this.props.is_header ? "Statistic" :
+                        <a className="statname_no_link" href={
+                            statistic_link(
+                                this.props.universe,
+                                this.props.statname, this.props.article_type, this.props.ordinal,
+                                20, undefined, this.props.longname
+                            )
+                        }>{this.props.statname}</a>
+                }
+                </span>
             ],
+            ...value_columns,
             [
                 this.props.simple ? 8 : 25,
                 "statistic_ordinal",
@@ -71,6 +86,7 @@ class StatisticRowRaw extends React.Component {
                             statpath={this.props.statpath}
                             simple={this.props.simple}
                             onReplace={this.props.onReplace}
+                            universe={this.props.universe}
                         />
                 }</span>
             ],
@@ -90,29 +106,33 @@ class StatisticRowRaw extends React.Component {
             ],
             [8,
                 "pointer_in_class",
-                <span className="serif ordinal">{
-                    this.props.is_header
-                        ? "Within Type"
-                        : <PointerButtonsIndex
+                this.props.is_header
+                    ? <span className="serif ordinal">Within Type</span>
+                    : <span className="serif ordinal" style={{ display: "flex" }}>
+                        <PointerButtonsIndex
                             ordinal={this.props.ordinal}
                             statpath={this.props.statpath}
                             type={this.props.article_type}
                             total={this.props.total_count_in_class}
                             settings={this.props.settings}
-                        />}</span>
+                            universe={this.props.universe}
+                        />
+                    </span>
             ],
             [8,
                 "pointer_overall",
-                <span className="serif ordinal">{
-                    this.props.is_header
-                        ? "Overall"
-                        : <PointerButtonsIndex
+                this.props.is_header
+                    ? <span className="serif ordinal">Overall</span>
+                    : <span className="serif ordinal" style={{ display: "flex" }}>
+                        <PointerButtonsIndex
                             ordinal={this.props.overallOrdinal}
                             statpath={this.props.statpath}
                             type="overall"
                             total={this.props.total_count_overall}
                             settings={this.props.settings}
-                        />}</span>
+                            universe={this.props.universe}
+                        />
+                    </span>
             ]
         ]
     }
@@ -133,10 +153,17 @@ class StatisticRowRaw extends React.Component {
         for (let i in cell_percentages) {
             cell_percentages[i] = total_width * cell_percentages[i] / sum;
         }
-        const contents = cell_contents.map((content, i) =>
-            <div key={100 * this.props._idx + i} style={{ width: cell_percentages[i] + "%", padding: "1px" }}>
-                {content}
-            </div>
+
+        const contents = cell_contents.map(
+            (content, i) => {
+                const sty = { width: cell_percentages[i] + "%", padding: "1px" };
+                if (this.props.is_header) {
+                    sty.textAlign = "center";
+                }
+                return <div key={100 * this.props._idx + i} style={sty}>
+                    {content}
+                </div>
+            }
         );
         return contents;
     }
@@ -147,7 +174,9 @@ class StatisticRowRaw extends React.Component {
 }
 
 function statistic_row(is_header, index, contents) {
-    return <div key={index} className={is_header ? "tableheader" : index % 2 == 1 ? "oddrow" : ""} style={table_row_style}>
+    return <div key={index} className={is_header ? "tableheader" : index % 2 == 1 ? "oddrow" : ""}
+        style={{ alignItems: is_header ? "center" : "last baseline", ...table_row_style }}
+    >
         {contents}
     </div>
 }
@@ -170,7 +199,13 @@ class Statistic extends React.Component {
         const name = this.props.statname;
         let value = this.props.value;
         const is_unit = this.props.is_unit;
-        if (name.includes("Density")) {
+        if (name.includes("%") || name.includes("Change")) {
+            if (is_unit) {
+                return <span>%</span>;
+            }
+            return <span>{(value * 100).toFixed(2)}</span>;
+        }
+        else if (name.includes("Density")) {
             const is_imperial = this.props.settings.use_imperial;
             let unit_name = "km";
             if (is_imperial) {
@@ -187,7 +222,7 @@ class Statistic extends React.Component {
                 return <span>/&nbsp;{unit_name}<sup>2</sup></span>;
             }
             return <span>{value.toFixed(places)}</span>;
-        } else if (name == "Population" || name == "Population [GHS-POP]") {
+        } else if (name.startsWith("Population")) {
             if (value > 1e6) {
                 if (is_unit) {
                     return <span>m</span>;
@@ -200,7 +235,7 @@ class Statistic extends React.Component {
                 return <span>{(value / 1e3).toFixed(1)}</span>;
             } else {
                 if (is_unit) {
-                    return <span></span>;
+                    return <span>&nbsp;</span>;
                 }
                 return <span>{value.toFixed(0)}</span>;
             }
@@ -248,11 +283,6 @@ class Statistic extends React.Component {
             } else {
                 return <span>{value.toFixed(2)}</span>
             }
-        } else if (name.includes("%")) {
-            if (is_unit) {
-                return <span>%</span>;
-            }
-            return <span>{(value * 100).toFixed(2)}</span>;
         } else if (name.includes("Election") || name.includes("Swing")) {
             if (is_unit) {
                 return <span>%</span>;
@@ -265,7 +295,7 @@ class Statistic extends React.Component {
             return <span>{value.toFixed(1)}</span>;
         } else if (name == "Mean sunny hours") {
             if (is_unit) {
-                return <span></span>;
+                return <span>&nbsp;</span>;
             }
             const hours = Math.floor(value);
             const minutes = Math.floor((value - hours) * 60);
@@ -285,7 +315,7 @@ class Statistic extends React.Component {
             return <span>{value.toFixed(1)}</span>;
         }
         if (is_unit) {
-            return <span></span>;
+            return <span>&nbsp;</span>;
         }
         return <span>{value.toFixed(3)}</span>;
     }
@@ -329,21 +359,13 @@ class Ordinal extends React.Component {
         if (this.props.simple) {
             return right_align(en);
         }
-        return <span>
-            {en} of {total} {this.pluralize(type)}
-        </span>;
-    }
-
-    pluralize(type) {
-        if (type.endsWith("y")) {
-            return type.slice(0, -1) + "ies";
-        }
-        return type + "s";
+        return <div className="serif" style={{ textAlign: "right" }}>
+            {en} of {total} {display_type(this.props.universe, type)}
+        </div>;
     }
 
     async onNewNumber(number) {
         let num = number;
-        const link = ordering_link(this.props.statpath, this.props.type);
         if (num < 0) {
             // -1 -> this.props.total, -2 -> this.props.total - 1, etc.
             num = this.props.total + 1 + num;
@@ -354,7 +376,7 @@ class Ordinal extends React.Component {
         if (num <= 0) {
             num = 1;
         }
-        const data = (await loadProtobuf(link, "StringList")).elements;
+        const data = await load_ordering(this.props.universe, this.props.statpath, this.props.type);
         this.props.onReplace(data[num - 1])
     }
 }
@@ -406,8 +428,9 @@ class Percentile extends React.Component {
             return <span></span>
         }
         // percentile as an integer
+        // used to be keyed by a setting, but now we always use percentile_by_population
         const quantile =
-            this.props.settings.use_population_percentiles ?
+            true ?
                 this.props.percentile_by_population
                 : 1 - ordinal / total;
         const percentile = Math.floor(100 * quantile);
@@ -423,7 +446,7 @@ class Percentile extends React.Component {
         } else if (percentile % 10 == 3 && percentile % 100 != 13) {
             text = percentile + "rd percentile";
         }
-        return <span>{text}</span>;
+        return <div className="serif" style={{ textAlign: "right" }}>{text}</div>;
     }
 }
 
@@ -433,25 +456,28 @@ class PointerButtonsIndex extends React.Component {
     }
 
     render() {
-        const link = ordering_link(this.props.statpath, this.props.type);
+        const self = this;
+        const get_data = async () => await load_ordering(self.props.universe, self.props.statpath, self.props.type);
         const show_historical_cds = this.props.settings.show_historical_cds || is_historical_cd(this.props.type);
         return (
-            <span>
+            <span style={{ margin: "auto" }}>
                 <PointerButtonIndex
                     text="<"
-                    link={link}
+                    get_data={get_data}
                     original_pos={this.props.ordinal}
                     direction={-1}
                     total={this.props.total}
                     show_historical_cds={show_historical_cds}
+                    universe={this.props.universe}
                 />
                 <PointerButtonIndex
                     text=">"
-                    link={link}
+                    get_data={get_data}
                     original_pos={this.props.ordinal}
                     direction={+1}
                     total={this.props.total}
                     show_historical_cds={show_historical_cds}
+                    universe={this.props.universe}
                 />
             </span>
         );
@@ -480,15 +506,14 @@ class PointerButtonIndex extends React.Component {
     }
     async onClick(pos) {
         {
-            const link = this.props.link;
-            const data = (await loadProtobuf(link, "StringList")).elements;
+            const data = await this.props.get_data();
             while (!this.out_of_bounds(pos)) {
                 const name = data[pos];
                 if (!this.props.show_historical_cds && is_historical_cd(name)) {
                     pos += this.props.direction;
                     continue;
                 }
-                document.location = article_link(name);
+                document.location = article_link(this.props.universe, name);
                 return;
             }
         }

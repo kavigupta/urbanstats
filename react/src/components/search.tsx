@@ -6,8 +6,9 @@ import "../common.css";
 import { useSetting } from "../page_template/settings.js";
 
 export function SearchBox(props: { on_change: (newValue: string) => void, autoFocus?: boolean, style: React.CSSProperties, placeholder: string }) {
-    const [matches, setMatches] = useState<number[]>([]);
+    const [matches, setMatches] = useState<string[]>([]);
     const [focused, setFocused] = useState(0);
+    const [firstCharacter, setFirstCharacter] = useState<string | undefined>(undefined);
     const [values, setValues] = useState<string[] | undefined>(undefined);
 
     const textBox = useRef<HTMLInputElement>(null);
@@ -21,7 +22,13 @@ export function SearchBox(props: { on_change: (newValue: string) => void, autoFo
 
     const show_historical_cds = useSetting('show_historical_cds');
 
+    const update_matches = () => {
+        let terms = autocompleteMatch(textBox.current!.value);
+        setMatches(terms);
+    }
+
     const onFormSubmit = () => {
+        update_matches();
         let terms = autocompleteMatch(textBox.current!.value);
         if (terms.length > 0) {
             props.on_change(values![terms[focused]])
@@ -29,7 +36,7 @@ export function SearchBox(props: { on_change: (newValue: string) => void, autoFo
         return false;
     };
 
-    function autocompleteMatch(input: string) {
+    async function autocompleteMatch(input: string) {
         if (values === undefined) {
             throw new Error('searching before values loaded')
         }
@@ -73,7 +80,7 @@ export function SearchBox(props: { on_change: (newValue: string) => void, autoFo
             cursor: "pointer"
         };
         if (focused == idx) {
-            searchbox_dropdown_item_style["backgroundColor"] = "#e9d2fd";
+            searchbox_dropdown_item_style["backgroundColor"] = "#ffe0e0";
         }
 
         return searchbox_dropdown_item_style;
@@ -100,7 +107,7 @@ export function SearchBox(props: { on_change: (newValue: string) => void, autoFo
             id="searchbox"
             type="text"
             className="serif"
-            style={props.style}
+            style={{ backgroundColor: "#fff8f0", borderWidth: "0.1em", ...props.style }}
             placeholder={props.placeholder} 
             onKeyUp={onTextBoxKeyUp}
             disabled={values === undefined}
@@ -112,20 +119,20 @@ export function SearchBox(props: { on_change: (newValue: string) => void, autoFo
                 width: "100%",
                 maxHeight: "20em",
                 overflowY: "auto",
-                backgroundColor: "#ebebff",
+                backgroundColor: "#f7f1e8",
                 borderRadius: "0.25em",
                 zIndex: "1"
             }
         }>
             {
-                matches.map((i, idx) =>
+                matches.map((location, idx) =>
                     <div
-                        key={i}
-                        className="searchbox-dropdown-item"
+                        key={location}
+                        className="serif searchbox-dropdown-item"
                         style={searchbox_dropdown_item_style(idx)}
-                        onClick={() => props.on_change(values![i])}
+                        onClick={() => props.on_change(location)}
                         onMouseOver={() => setFocused(idx)}
-                    >{values![i]}</div>
+                    >{location}</div>
                 )
             }
         </div>
@@ -157,7 +164,7 @@ function is_a_match(a: string, b: string) {
 }
 
 function normalize(a: string) {
-    return a.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+    return a.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 }
 
 function is_international_duplicate(x: string) {

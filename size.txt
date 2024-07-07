@@ -112,3 +112,144 @@ add international data
 687     data
 1082    shape
 2072    total
+
+current status 2024-03-10
+
+3       index
+5       quiz
+5       scripts
+7       consolidated
+7       quiz_sample_info
+330     order
+737     data
+1130    shape
+2220    total
+
+
+adding values and population_percentiles to order/
+
+3       index
+5       quiz
+5       scripts
+7       consolidated
+7       quiz_sample_info
+440     order
+737     data
+1130    shape
+2330    total
+
+adding ordering by subregion
+
+5       index
+5       quiz
+8       consolidated
+12      quiz_sample_info
+37      scripts
+1130    shape
+1347    data
+3007    order
+5548    total
+
+get rid of states as a separate entity from subnational regions
+
+1       about.html
+1       article.html
+1       banner.png
+1       CNAME
+1       comparison.html
+1       data-credit.html
+1       index.html
+1       mapper.html
+1       quiz.html
+1       r
+1       random.html
+1       retrostat
+1       screenshot_footer.svg
+1       screenshot.png
+1       share.png
+1       statistic.html
+1       styles
+1       thumbnail.png
+2       icons
+5       index
+5       quiz
+8       consolidated
+12      quiz_sample_info
+36      scripts
+1091    shape
+1347    data
+2937    order
+5439    total
+
+add ghsl cities
+
+5       index
+5       quiz
+8       consolidated
+18      quiz_sample_info
+37      scripts
+1123    shape
+1380    data
+3031    order
+5606    total
+
+make ordering integer based rather than string based
+
+5       quiz
+8       consolidated
+17      index
+18      quiz_sample_info
+37      scripts
+1123    shape
+1380    data
+2207    order
+4794    total
+
+more universes
+
+5       quiz
+8       consolidated
+18      quiz_sample_info
+23      index
+58      scripts
+1126    shape
+1380    data
+3485    order
+6104    total
+
+compress the order/ folder
+
+5       quiz
+8       consolidated
+18      quiz_sample_info
+23      index
+65      scripts
+1042    order
+1126    shape
+1380    data
+3667    total
+
+add 2010s and health data
+
+5       quiz
+9       consolidated
+18      quiz_sample_info
+23      index
+80      scripts
+1126    shape
+1337    order
+1408    data
+4006    total
+
+add priority to index
+
+4       icons
+5       quiz
+9       consolidated
+18      quiz_sample_info
+23      index
+80      scripts
+1126    shape
+1337    order
+1408    data
+4007    total

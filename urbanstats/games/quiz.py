@@ -1,29 +1,38 @@
 import base64
 import copy
-from datetime import datetime, timedelta
-import pytz
-from functools import lru_cache
 import gzip
-import os
 import json
+import os
+import urllib
+from datetime import datetime, timedelta
+from functools import lru_cache
 
 import numpy as np
 import pandas as pd
-from permacache import permacache, stable_hash
+import pytz
 import tqdm.auto as tqdm
-import urllib
+from permacache import permacache, stable_hash
 
-from create_website import full_shapefile, statistic_internal_to_display_name
-from produce_html_page import get_statistic_categories
-from urbanstats.shortener import shorten
-
+from create_website import (
+    get_index_lists,
+    shapefile_without_ordinals,
+    statistic_internal_to_display_name,
+)
+from produce_html_page import (
+    get_statistic_categories,
+    indices,
+    internal_statistic_names,
+)
 from relationship import states_for_all
+from shapefiles import american_to_international, filter_table_for_type
+from urbanstats.shortener import shorten
+from urbanstats.statistics.collections_list import statistic_collections
 
 from .fixed import juxtastat as fixed_up_to
 
 min_pop = 250_000
-min_pop_international = 20_000_000
-version = 30
+min_pop_international = 2_500_000
+version = 61
 
 # ranges = [
 #     (0.7, 1),
@@ -47,13 +56,22 @@ difficulties = {
     "feature": 1.5,
     "generation": 2,
     "housing": 1.5,
+    "2010": 1.5,
+    "health": 1.5,
     "income": 0.6,
     "main": 0.25,
     "misc": 2,
     "national_origin": 1.5,
     "race": 0.75,
     "transportation": 3,
+    "industry": 2,
+    "occupation": 2,
     "weather": 0.3,
+}
+
+skip_category_probs = {
+    "industry": 0.75,
+    "occupation": 0.75,
 }
 
 
@@ -82,7 +100,7 @@ def sample_quiz(rng):
         banned_types.append("Judicial Circuit")
     if rng.uniform() < 0.35:
         banned_types.append("Media Market")
-    if rng.uniform() < 0.75:
+    if rng.uniform() < 0.5:
         banned_types.append("international")
     result = []
     for range in ranges:
@@ -120,7 +138,7 @@ def same_state(a, b):
 
 
 def is_international(type):
-    return type in {"Country", "Subnational Region"}
+    return type in {"Country", "Subnational Region", "Urban Center"}
 
 
 def sample_quiz_question(
@@ -132,7 +150,11 @@ def sample_quiz_question(
             continue
         at_pop = filter_for_pop(type)
         stat_column_original = rng.choice(at_pop.columns)
-        if get_statistic_categories()[stat_column_original] in banned_categories:
+        cat = get_statistic_categories()[stat_column_original]
+        p_skip = skip_category_probs.get(cat, 0)
+        if rng.uniform() < p_skip:
+            continue
+        if cat in banned_categories:
             continue
         for _ in range(1000):
             a, b = rng.choice(at_pop.index, size=2)
@@ -162,14 +184,33 @@ def sample_quiz_question(
 
 @permacache(f"urbanstats/games/quiz/filter_for_pop_{version}")
 def filter_for_pop(type):
-    full = full_shapefile()
-    filt = full[full.type == type]
+    full = shapefile_without_ordinals()
+    filt = filter_table_for_type(full, type)
     at_pop = filt[filt.best_population_estimate >= minimum_population(type)].set_index(
         "longname"
     )
-    at_pop = at_pop[stats]
-    at_pop = at_pop.loc[:, ~at_pop.applymap(np.isnan).all()]
+    # make sure to only include the appropriate columns
+    idxs = indices(
+        "" if is_international(type) else "USA",
+        american_to_international.get(type, type),
+        strict_display=True,
+    )
+    stats_filter = {internal_statistic_names()[i] for i in idxs}
+    at_pop = at_pop[[s for s in stats if s in stats_filter]]
+    mask = ~at_pop.applymap(np.isnan).all()
+    assert mask.all()
+    at_pop = at_pop.loc[:, mask]
     return at_pop
+
+
+def entire_table():
+    return pd.concat(
+        [
+            filter_for_pop(type)
+            for type in types
+            if type not in american_to_international
+        ]
+    )
 
 
 def minimum_population(type):
@@ -180,8 +221,14 @@ def minimum_population(type):
 
 @permacache(f"urbanstats/games/quiz/generate_quiz_{version}")
 def generate_quiz(seed):
+    from .quiz_custom import get_custom_quizzes
+
     if isinstance(seed, tuple) and seed[0] == "daily":
         check_quiz_is_guaranteed_future(seed[1])
+        cq = get_custom_quizzes()
+        if seed[1] in cq:
+            return cq[seed[1]]
+
     rng = np.random.default_rng(int(stable_hash(seed), 16))
     return sample_quiz(rng)
 
@@ -230,11 +277,18 @@ def check_quiz_is_guaranteed_future(number):
         )
 
 
-def check_quiz_is_guaranteed_past(number):
+def quiz_is_guaranteed_past(number):
     now = datetime.now(pytz.timezone("US/Samoa"))
     beginning = pytz.timezone("US/Samoa").localize(datetime(2023, 9, 2))
     fractional_days = (now - beginning).total_seconds() / (24 * 60 * 60)
-    if number >= fractional_days - 1:
+    if number < fractional_days - 1:
+        return None
+    return fractional_days
+
+
+def check_quiz_is_guaranteed_past(number):
+    fractional_days = quiz_is_guaranteed_past(number)
+    if fractional_days is not None:
         raise Exception(
             f"Quiz {number} is not necessarily yet done! It is currently {fractional_days} in Samoa"
         )
@@ -294,7 +348,7 @@ def generate_quiz_info_for_website(site_folder):
     with open(f"{folder}/list_of_regions.json", "w") as f:
         json.dump({type: list(filter_for_pop(type).index) for type in types}, f)
 
-    table = pd.concat([filter_for_pop(type) for type in types])
+    table = entire_table()
     table = {
         x: {
             get_statistic_column_path(col): float(table[col][x])
@@ -347,100 +401,14 @@ types = [
     "Judicial Circuit",
     "Country",
     "Subnational Region",
+    "Urban Center",
 ]
 
-stats_to_display = {
-    "population": "higher population",
-    "ad_1": "higher population-weighted density (r=1km)",
-    "sd": "higher area-weighted density",
-    "white": "higher % of people who are White",
-    "hispanic": "higher % of people who are Hispanic",
-    "black": "higher % of people who are Black",
-    "asian": "higher % of people who are Asian",
-    "citizenship_citizen_by_birth": "higher % of residents who are citizens by birth",
-    "citizenship_citizen_by_naturalization": "higher % of residents who are citizens by naturalization",
-    "citizenship_not_citizen": "higher % of residents who are non-citizens",
-    "birthplace_non_us": "higher % of people who were born outside the US",
-    "birthplace_us_not_state": "higher % of people who were born in the US and outside their state of residence",
-    "birthplace_us_state": "higher % of people who were born in their state of residence",
-    "language_english_only": "higher % of people who only speak english at home",
-    "language_spanish": "higher % of people who speak spanish at home",
-    "education_high_school": "higher % of people who have at least a high school diploma",
-    "education_ugrad": "higher % of people who have at least an undergrad degree",
-    "education_grad": "higher % of people who have a graduate degree",
-    "education_field_stem": "!FULL Which has more people with a STEM degree, as a percentage of the overall population?",
-    "education_field_humanities": "!FULL Which has more people with a humanities degree, as a percentage of the overall population?",
-    "education_field_business": "!FULL Which has more people with a business degree, as a percentage of the overall population?",
-    "generation_silent": "higher % of people who are silent generation",
-    "generation_boomer": "higher % of people who are boomers",
-    "generation_genx": "higher % of people who are gen x",
-    "generation_millenial": "higher % of people who are millennials",
-    "generation_genz": "higher % of people who are gen z",
-    "generation_genalpha": "higher % of people who are gen alpha",
-    "poverty_below_line": "higher % of people who are in poverty",
-    "household_income_under_50k": "higher % of households who have household income under $50k",
-    "household_income_over_100k": "higher % of households who have household income over $100k",
-    "individual_income_under_50k": "higher % of people who have individual income under $50k",
-    "individual_income_over_100k": "higher % of people who have individual income over $100k",
-    "housing_per_pop": "higher number of housing units per adult",
-    "vacancy": "higher % of units that are vacant",
-    "rent_or_own_rent": "higher % of people who are renters",
-    "rent_burden_under_20": "higher % of people whose rent is less than 20% of their income",
-    "rent_burden_over_40": "higher % of people whose rent is greater than 40% of their income",
-    "rent_1br_under_750": "higher % of units with 1br rent under $750",
-    "rent_1br_over_1500": "higher % of units with 1br rent over $1500",
-    "rent_2br_under_750": "higher % of units with 2br rent under $750",
-    "rent_2br_over_1500": "higher % of units with 2br rent over $1500",
-    "year_built_1969_or_earlier": "higher % units built pre-1970",
-    "year_built_2010_or_later": "higher % units built in 2010s+",
-    "transportation_means_car": "higher % of people who commute by car",
-    "transportation_means_bike": "higher % of people who commute by bike",
-    "transportation_means_walk": "higher % of people who commute by walking",
-    "transportation_means_transit": "higher % of people who commute by transit",
-    "transportation_means_worked_at_home": "higher % of people who work from home",
-    "transportation_commute_time_under_15": "higher % of people who have commute time under 15 min",
-    "transportation_commute_time_over_60": "higher % of people who have commute time over 60 min",
-    (
-        "2020 Presidential Election",
-        "margin",
-    ): "!FULL Which voted more for Biden in the 2020 presidential election?",
-    (
-        "2016 Presidential Election",
-        "margin",
-    ): "!FULL Which voted more for Clinton in the 2016 presidential election?",
-    (
-        "2016-2020 Swing",
-        "margin",
-    ): "!FULL Which swung towards Democrats more from 2016 to 2020?",
-    "park_percent_1km_v2": "!FULL Which has more access to parks (higher % of area within 1km of a park, population weighted)?",
-    "mean_dist_Hospital_updated": "!FULL Which has less access to hospitals (higher population-weighted mean distance)?",
-    "mean_dist_Active Superfund Site_updated": "!FULL Which has less exposure to EPA superfund sites (higher population-weighted mean distance)?",
-    "mean_dist_Airport_updated": "!FULL Which has less access to airports (higher population-weighted mean distance)?",
-    "mean_dist_Public School_updated": "!FULL Which has less access to public schools (higher population-weighted mean distance)?",
-    "internet_no_access": "higher % of people who have no internet access",
-    "insurance_coverage_none": "higher % of people who are uninsured",
-    "insurance_coverage_govt": "higher % of people who are on public insurance",
-    "insurance_coverage_private": "higher % of people who are on private insurance",
-    "marriage_divorced": "higher % of people who are divorced",
-    "mean_high_temp_4": "higher mean daily high temperature (population weighted)",
-    "mean_high_temp_winter_4": "higher mean daily high temperature in winter (population weighted)",
-    "mean_high_temp_spring_4": "higher mean daily high temperature in spring (population weighted)",
-    "mean_high_temp_summer_4": "higher mean daily high temperature in summer (population weighted)",
-    "mean_high_temp_fall_4": "higher mean daily high temperature in fall (population weighted)",
-    "mean_high_heat_index_4": "higher mean daily high heat index (population weighted)",
-    # "mean_high_dewpoint_4": "more humid (higher mean daily high dewpoint, population weighted)",
-    # "days_dewpoint_70_inf_4": "higher % of humid days (days with dewpoint over 70°F, population weighted)",
-    # "days_dewpoint_-inf_50_4": "higher % of dry days (days with dewpoint under 50°F, population weighted)",
-    "days_above_90_4": "higher % of hot days (days with high temp over 90°F, population weighted)",
-    "days_below_40_4": "higher % of cold days (days with high temp under 40°F, population weighted)",
-    "wind_speed_over_10mph_4": "higher % of days with wind speed over 10mph (population weighted)",
-    "snowfall_4": "higher snowfall (population weighted)",
-    "rainfall_4": "higher rainfall (population weighted)",
-    "hours_sunny_4": "!FULL Which has more hours of sun per day on average? (population weighted)",
-    "gpw_aw_density": "higher area-weighted population density",
-    "gpw_population": "higher population",
-    "gpw_pw_density_4": "higher population-weighted density (r=4km)",
-}
+stats_to_display = {}
+
+
+for collection in statistic_collections:
+    stats_to_display.update(collection.quiz_question_names())
 
 renamed = {
     "higher housing units per adult": "housing_per_pop",
@@ -504,49 +472,12 @@ renamed = {
     "higher % of people who were born in the us and born outside their state of residence": "birthplace_us_not_state",
 }
 
-not_included = {
-    # duplicate
-    "ad_0.25",
-    "ad_0.5",
-    "ad_2",
-    "ad_4",
-    # irrelevant
-    "area",
-    "compactness",
-    # middle / obscure
-    "native",
-    "hawaiian_pi",
-    "household_income_50k_to_100k",
-    "individual_income_50k_to_100k",
-    "year_built_1970_to_1979",
-    "year_built_1980_to_1989",
-    "year_built_1990_to_1999",
-    "year_built_2000_to_2009",
-    "rent_1br_750_to_1500",
-    "rent_2br_750_to_1500",
-    "rent_burden_20_to_40",
-    "language_other",
-    "other / mixed",
-    "transportation_commute_time_15_to_29",
-    "transportation_commute_time_30_to_59",
-    "days_dewpoint_50_70_4",
-    "days_between_40_and_90_4",
-    "mean_high_dewpoint_4",
-    "days_dewpoint_70_inf_4",
-    "days_dewpoint_-inf_50_4",
-    # meh whatever
-    "marriage_married_not_divorced",
-    "marriage_never_married",
-    # duplicates
-    "within_Active Superfund Site_10",
-    "within_Airport_30",
-    "within_Public School_2",
-    "within_Hospital_10",
-    "gpw_pw_density_2",
-    "gpw_pw_density_1",
-}
+not_included = set()
 
-stats = list(stats_to_display)
+for collection in statistic_collections:
+    not_included.update(collection.quiz_question_unused())
+
+stats = sorted(stats_to_display, key=str)
 categories = sorted({get_statistic_categories()[x] for x in stats})
 
 unrecognized = (set(stats) | set(not_included)) - set(

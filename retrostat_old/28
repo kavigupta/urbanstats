@@ -1,0 +1,107 @@
+[
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "2020 Presidential Election",
+      "question": "!FULL Which voted more for Biden in the 2020 presidential election?",
+      "longname_a": "Lake County, Indiana, USA",
+      "longname_b": "St. Charles County, Missouri, USA",
+      "stat_a": 0.15060816404508692,
+      "stat_b": -0.17504684853508234
+    },
+    "b": {
+      "stat_column": "Information %",
+      "question": "higher % of workers employed in the information industry",
+      "longname_a": "Winston-Salem MSA, NC, USA",
+      "longname_b": "Reno MSA, NV, USA",
+      "stat_a": 0.011239410448896614,
+      "stat_b": 0.016063635771510452
+    },
+    "a_ease": 0.7448359659781288,
+    "b_ease": 0.3216245883644347
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Citizen by Naturalization %",
+      "question": "higher % of residents who are citizens by naturalization",
+      "longname_a": "Albuquerque city, New Mexico, USA",
+      "longname_b": "Colorado Springs city, Colorado, USA",
+      "stat_a": 0.04771163855912619,
+      "stat_b": 0.04092303470531395
+    },
+    "b": {
+      "stat_column": "Mean distance to nearest Airport",
+      "question": "!FULL Which has less access to airports (higher population-weighted mean distance)?",
+      "longname_a": "Huntington-Ashland MSA, WV-KY-OH, USA",
+      "longname_b": "Tuscaloosa MSA, AL, USA",
+      "stat_a": 22.547003289186918,
+      "stat_b": 80.2512375881905
+    },
+    "a_ease": 0.8234624145785877,
+    "b_ease": 0.38598726114649684
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Uninsured %",
+      "question": "higher % of people who are uninsured",
+      "longname_a": "Hampden County, Massachusetts, USA",
+      "longname_b": "Denver County, Colorado, USA",
+      "stat_a": 0.03807546066900664,
+      "stat_b": 0.11799277205015136
+    },
+    "b": {
+      "stat_column": "Healthcare support occupations %",
+      "question": "higher % of workers employed in healthcare support occupations",
+      "longname_a": "Syracuse MSA, NY, USA",
+      "longname_b": "Brownsville-Harlingen MSA, TX, USA",
+      "stat_a": 0.03186069549331652,
+      "stat_b": 0.08368523324270954
+    },
+    "a_ease": 0.619102416570771,
+    "b_ease": 0.1765375854214123
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Mean high temperature in summer",
+      "question": "higher mean daily high temperature in summer (population weighted)",
+      "longname_a": "Chula Vista city, California, USA",
+      "longname_b": "Columbus city, Ohio, USA",
+      "stat_a": 75.60458972056647,
+      "stat_b": 81.8838676775616
+    },
+    "b": {
+      "stat_column": "Undergrad Business %",
+      "question": "!FULL Which has more people with a business degree, as a percentage of the overall population?",
+      "longname_a": "TX-12, USA",
+      "longname_b": "FL-27, USA",
+      "stat_a": 0.07755925332932997,
+      "stat_b": 0.10913069655643134
+    },
+    "a_ease": 0.1207464324917673,
+    "b_ease": 0.5248407643312102
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Commute Transit %",
+      "question": "higher % of people who commute by transit",
+      "longname_a": "California, USA",
+      "longname_b": "Arizona, USA",
+      "stat_a": 0.040686898402220235,
+      "stat_b": 0.013870419284345958
+    },
+    "b": {
+      "stat_column": "Silent %",
+      "question": "higher % of people who are silent generation",
+      "longname_a": "Missoula MT Media Market, USA",
+      "longname_b": "Yakima-Pasco-Richland-Kennewick WA Media Market, USA",
+      "stat_a": 0.07268148992778412,
+      "stat_b": 0.05547002336600678
+    },
+    "a_ease": 0.935031847133758,
+    "b_ease": 0.5299363057324841
+  }
+]

@@ -1,17 +1,16 @@
+import zipfile
 from collections import defaultdict
 from functools import lru_cache
-import zipfile
-from geotiff import GeoTiff
-import pandas as pd
-import tqdm.auto as tqdm
 
-from permacache import permacache, stable_hash
 import numpy as np
-
+import pandas as pd
 import shapely
+import tqdm.auto as tqdm
+from geotiff import GeoTiff
+from permacache import permacache, stable_hash
 
 from urbanstats.features.within_distance import xy_to_radius
-
+from urbanstats.statistics.collections_list import statistic_collections
 
 GPW_PATH = (
     "gpw_v4_population_count_rev11_2020_30_sec_",
@@ -278,7 +277,7 @@ def lattice_cells_contained(glo, polygon):
     row_idxs, col_idxs = np.meshgrid(row_idxs, col_idxs)
     # filter
     glo_vals = glo[row_idxs, col_idxs]
-    mask = ~np.isnan(glo_vals)
+    mask = ~np.isnan(glo_vals) & (glo_vals > 0)
     row_idxs = row_idxs[mask]
     col_idxs = col_idxs[mask]
     # flatten
@@ -358,11 +357,10 @@ def compute_gpw_data_for_shapefile_table(shapefile):
     print(len(result), len(shapes))
     result.index = shapes.index
     result["area"] = shapes.to_crs({"proj": "cea"}).area / 1e6
-    result["perimeter"] = shapes.to_crs({"proj": "cea"}).length / 1e3
-    result["compactness"] = 4 * np.pi * result.area / result.perimeter**2
-    result["gpw_aw_density"] = result["gpw_population"] / result["area"]
-    result["gpw_pw_density_2"] = result["gpw_pw_density_2"]
-    result["gpw_pw_density_4"] = result["gpw_pw_density_4"]
+    for collection in statistic_collections:
+        if collection.for_international():
+            collection.mutate_statistic_table(result, shapes)
+
     result["longname"] = shapes.longname
     result["shortname"] = shapes.shortname
 

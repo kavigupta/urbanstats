@@ -10,6 +10,30 @@ def save_string_list(slist, path):
     write_gzip(res, path)
 
 
+def save_search_index(elements_list, path):
+    res = data_files_pb2.SearchIndex()
+    for name, priority in elements_list:
+        res.elements.append(name)
+        res.priorities.append(priority)
+    write_gzip(res, path)
+
+
+def save_ordered_list(ordered_list, path):
+    res = data_files_pb2.OrderList()
+    for x in ordered_list:
+        res.order_idxs.append(x)
+    write_gzip(res, path)
+
+
+def save_data_list(value, population_percentile, path):
+    res = data_files_pb2.DataList()
+    for x in value:
+        res.value.append(x)
+    for x in population_percentile:
+        res.population_percentile.append(x)
+    write_gzip(res, path)
+
+
 def write_gzip(proto, path):
     with gzip.GzipFile(path, "wb", mtime=0) as f:
         f.write(proto.SerializeToString())
