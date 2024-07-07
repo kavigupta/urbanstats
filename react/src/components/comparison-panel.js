@@ -58,7 +58,7 @@ class ComparisonPanel extends PageTemplate {
         const self = this;
         var rows = [];
         var idxs = [];
-        const exclusively_american = this.props.datas.every(x =>  longname_is_exclusively_american(x.longname));
+        const exclusively_american = this.props.datas.every(x => longname_is_exclusively_american(x.longname));
         for (let i in this.props.datas) {
             const [r, idx] = load_article(this.state.current_universe, this.props.datas[i], this.state.settings,
                 exclusively_american);
