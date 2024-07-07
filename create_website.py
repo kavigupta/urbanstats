@@ -314,7 +314,7 @@ def main(
     with open(f"react/src/data/american_to_international.json", "w") as f:
         json.dump(american_to_international, f)
 
-    os.system("cd react; npm run prod")
+    os.system("cd react; npm run dev")
     shutil.rmtree(f"{site_folder}/scripts")
     shutil.copytree("dist", f"{site_folder}/scripts")
     place_icons_in_site_folder(site_folder)

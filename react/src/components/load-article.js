@@ -31,7 +31,7 @@ function compute_indices(longname, typ) {
     return result.sort((a, b) => a - b);
 }
 
-function load_article(universe, data, settings) {
+function load_article(universe, data, settings, exclusively_american) {
 
     // index of universe in data.universes
     const universe_index = data.universes.indexOf(universe);
@@ -72,12 +72,13 @@ function load_article(universe, data, settings) {
         modified_rows.push(row);
     }
     const filtered_rows = modified_rows.filter((row) => {
+        row.rendered_statname = render_statname(row._index, row.statname, exclusively_american);
         if (universe_is_american(universe)) {
             if (index_list_info["index_lists"]["gpw"].includes(indices[row._index])) {
                 return false;
             }
         } else {
-            if (index_list_info["index_lists"]["usa"].includes(indices[row._index])) {
+            if (usa_stat) {
                 return false;
             }
         }
@@ -87,5 +88,16 @@ function load_article(universe, data, settings) {
 
     const filtered_indices = filtered_rows.map(x => x._index)
 
+    console.log("ABC");
+    console.log(filtered_rows);
+
     return [filtered_rows, filtered_indices];
+}
+
+export function render_statname(statindex, statname, exclusively_american) {
+    const usa_stat = index_list_info["index_lists"]["usa"].includes(statindex);
+    if (!exclusively_american && usa_stat) {
+        return statname + " (USA only)";
+    }
+    return statname;
 }
