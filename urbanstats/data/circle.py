@@ -1,17 +1,18 @@
+import uuid
 from collections import Counter, defaultdict
 from colorsys import hsv_to_rgb
 from dataclasses import dataclass
 from types import SimpleNamespace
 from typing import List
-import uuid
-from matplotlib import patches, pyplot as plt
-import numpy as np
-import tqdm.auto as tqdm
-from PIL import Image
-import geopandas as gpd
-import shapely.geometry
 
-from permacache import permacache, stable_hash, drop_if_equal
+import geopandas as gpd
+import numpy as np
+import shapely.geometry
+import tqdm.auto as tqdm
+from matplotlib import patches
+from matplotlib import pyplot as plt
+from permacache import drop_if_equal, permacache, stable_hash
+from PIL import Image
 
 from urbanstats.data.gpw import compute_gpw_data_for_shapefile, load_full_ghs
 from urbanstats.data.population_overlays import relevant_regions

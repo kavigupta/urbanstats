@@ -9,9 +9,9 @@ import us
 from permacache import permacache
 
 from stats_for_shapefile import Shapefile
+from urbanstats.data.circle import circle_shapefile_object, named_populations
 from urbanstats.special_cases.country import continents, countries, subnational_regions
 from urbanstats.special_cases.ghsl_urban_center import load_ghsl_urban_center
-from urbanstats.data.circle import circle_shapefile_object, named_populations
 
 
 def abbr_to_state(x):

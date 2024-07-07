@@ -1,9 +1,9 @@
+import uuid
 from collections import defaultdict
 from types import SimpleNamespace
-import uuid
 
-import numpy as np
 import geopandas as gpd
+import numpy as np
 from permacache import permacache, stable_hash
 
 from urbanstats.data.gpw import compute_gpw_data_for_shapefile
@@ -52,7 +52,9 @@ def relevant_regions(shapefile, frame, max_elements, min_pct):
         original_to_new_iloc[row.original_iloc].append(i)
     result = {}
     for original_iloc, rows in original_to_new_iloc.items():
-        rows = overlays.loc[original_to_new_iloc[original_iloc], ["longname", "pop_pct"]].copy()
+        rows = overlays.loc[
+            original_to_new_iloc[original_iloc], ["longname", "pop_pct"]
+        ].copy()
         rows = rows.sort_values("pop_pct", ascending=False)
         total = 0
         result[original_iloc] = []
