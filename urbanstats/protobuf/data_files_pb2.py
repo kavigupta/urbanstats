@@ -1097,7 +1097,7 @@ StatisticRow = _reflection.GeneratedProtocolMessageType(
     (_message.Message,),
     {
         "DESCRIPTOR": _STATISTICROW,
-        "__module__": "data_files_pb2"
+        "__module__": "data_files_pb2",
         # @@protoc_insertion_point(class_scope:StatisticRow)
     },
 )
@@ -1108,7 +1108,7 @@ RelatedButton = _reflection.GeneratedProtocolMessageType(
     (_message.Message,),
     {
         "DESCRIPTOR": _RELATEDBUTTON,
-        "__module__": "data_files_pb2"
+        "__module__": "data_files_pb2",
         # @@protoc_insertion_point(class_scope:RelatedButton)
     },
 )
@@ -1119,7 +1119,7 @@ RelatedButtons = _reflection.GeneratedProtocolMessageType(
     (_message.Message,),
     {
         "DESCRIPTOR": _RELATEDBUTTONS,
-        "__module__": "data_files_pb2"
+        "__module__": "data_files_pb2",
         # @@protoc_insertion_point(class_scope:RelatedButtons)
     },
 )
@@ -1130,7 +1130,7 @@ Article = _reflection.GeneratedProtocolMessageType(
     (_message.Message,),
     {
         "DESCRIPTOR": _ARTICLE,
-        "__module__": "data_files_pb2"
+        "__module__": "data_files_pb2",
         # @@protoc_insertion_point(class_scope:Article)
     },
 )
@@ -1141,7 +1141,7 @@ Coordinate = _reflection.GeneratedProtocolMessageType(
     (_message.Message,),
     {
         "DESCRIPTOR": _COORDINATE,
-        "__module__": "data_files_pb2"
+        "__module__": "data_files_pb2",
         # @@protoc_insertion_point(class_scope:Coordinate)
     },
 )
@@ -1152,7 +1152,7 @@ Ring = _reflection.GeneratedProtocolMessageType(
     (_message.Message,),
     {
         "DESCRIPTOR": _RING,
-        "__module__": "data_files_pb2"
+        "__module__": "data_files_pb2",
         # @@protoc_insertion_point(class_scope:Ring)
     },
 )
@@ -1163,7 +1163,7 @@ Polygon = _reflection.GeneratedProtocolMessageType(
     (_message.Message,),
     {
         "DESCRIPTOR": _POLYGON,
-        "__module__": "data_files_pb2"
+        "__module__": "data_files_pb2",
         # @@protoc_insertion_point(class_scope:Polygon)
     },
 )
@@ -1174,7 +1174,7 @@ MultiPolygon = _reflection.GeneratedProtocolMessageType(
     (_message.Message,),
     {
         "DESCRIPTOR": _MULTIPOLYGON,
-        "__module__": "data_files_pb2"
+        "__module__": "data_files_pb2",
         # @@protoc_insertion_point(class_scope:MultiPolygon)
     },
 )
@@ -1185,7 +1185,7 @@ Feature = _reflection.GeneratedProtocolMessageType(
     (_message.Message,),
     {
         "DESCRIPTOR": _FEATURE,
-        "__module__": "data_files_pb2"
+        "__module__": "data_files_pb2",
         # @@protoc_insertion_point(class_scope:Feature)
     },
 )
@@ -1196,7 +1196,7 @@ StringList = _reflection.GeneratedProtocolMessageType(
     (_message.Message,),
     {
         "DESCRIPTOR": _STRINGLIST,
-        "__module__": "data_files_pb2"
+        "__module__": "data_files_pb2",
         # @@protoc_insertion_point(class_scope:StringList)
     },
 )
@@ -1207,7 +1207,7 @@ OrderList = _reflection.GeneratedProtocolMessageType(
     (_message.Message,),
     {
         "DESCRIPTOR": _ORDERLIST,
-        "__module__": "data_files_pb2"
+        "__module__": "data_files_pb2",
         # @@protoc_insertion_point(class_scope:OrderList)
     },
 )
@@ -1218,7 +1218,7 @@ DataList = _reflection.GeneratedProtocolMessageType(
     (_message.Message,),
     {
         "DESCRIPTOR": _DATALIST,
-        "__module__": "data_files_pb2"
+        "__module__": "data_files_pb2",
         # @@protoc_insertion_point(class_scope:DataList)
     },
 )
@@ -1229,7 +1229,7 @@ OrderLists = _reflection.GeneratedProtocolMessageType(
     (_message.Message,),
     {
         "DESCRIPTOR": _ORDERLISTS,
-        "__module__": "data_files_pb2"
+        "__module__": "data_files_pb2",
         # @@protoc_insertion_point(class_scope:OrderLists)
     },
 )
@@ -1240,7 +1240,7 @@ DataLists = _reflection.GeneratedProtocolMessageType(
     (_message.Message,),
     {
         "DESCRIPTOR": _DATALISTS,
-        "__module__": "data_files_pb2"
+        "__module__": "data_files_pb2",
         # @@protoc_insertion_point(class_scope:DataLists)
     },
 )
@@ -1251,7 +1251,7 @@ AllStats = _reflection.GeneratedProtocolMessageType(
     (_message.Message,),
     {
         "DESCRIPTOR": _ALLSTATS,
-        "__module__": "data_files_pb2"
+        "__module__": "data_files_pb2",
         # @@protoc_insertion_point(class_scope:AllStats)
     },
 )
@@ -1262,7 +1262,7 @@ ConsolidatedShapes = _reflection.GeneratedProtocolMessageType(
     (_message.Message,),
     {
         "DESCRIPTOR": _CONSOLIDATEDSHAPES,
-        "__module__": "data_files_pb2"
+        "__module__": "data_files_pb2",
         # @@protoc_insertion_point(class_scope:ConsolidatedShapes)
     },
 )
@@ -1273,7 +1273,7 @@ ConsolidatedStatistics = _reflection.GeneratedProtocolMessageType(
     (_message.Message,),
     {
         "DESCRIPTOR": _CONSOLIDATEDSTATISTICS,
-        "__module__": "data_files_pb2"
+        "__module__": "data_files_pb2",
         # @@protoc_insertion_point(class_scope:ConsolidatedStatistics)
     },
 )

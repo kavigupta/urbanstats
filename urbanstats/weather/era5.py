@@ -97,7 +97,7 @@ def light(time, latitude, longitude):
     -------
     array-like, a series of fractions of each hour that is light (T, LA, LO)
     """
-    hour = 60 * 60 * 10 ** 9
+    hour = 60 * 60 * 10**9
 
     date = np.array(time)
 
@@ -141,7 +141,7 @@ def collect_main_statistics(ds):
     for ts in time:
         assert len({pd.to_datetime(x).date() for x in ts}) == 1
 
-    wind_speed = np.array((ds.u10 ** 2 + ds.v10 ** 2) ** 0.5)
+    wind_speed = np.array((ds.u10**2 + ds.v10**2) ** 0.5)
     wind_speed = wind_speed.reshape(-1, num_hours, *wind_speed.shape[1:])
     wind_speed = wind_speed.mean(1)
 

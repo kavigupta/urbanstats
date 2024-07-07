@@ -20,7 +20,6 @@ density_metrics = [f"ad_{k}" for k in RADII]
 
 class CensusBasics(CensusStatisticsColection):
     def name_for_each_statistic(self):
-
         return {
             "population": "Population",
             **ad,

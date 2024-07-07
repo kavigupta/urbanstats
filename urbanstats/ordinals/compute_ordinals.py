@@ -41,7 +41,7 @@ class OrdinalsForTypeAndColumnInUniverse:
 
 class ProtobufOutputter:
     def __init__(
-        self, protobuf_class, protobuf_field, site_folder, path_fn, limit=10 ** 6
+        self, protobuf_class, protobuf_field, site_folder, path_fn, limit=10**6
     ):
         self.protobuf_class = protobuf_class
         self.protobuf_field = protobuf_field

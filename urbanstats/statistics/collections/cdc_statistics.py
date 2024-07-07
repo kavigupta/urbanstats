@@ -3,7 +3,6 @@ from urbanstats.statistics.statistic_collection import CDCStatisticsCollection
 
 class CDCStatistics(CDCStatisticsCollection):
     def name_for_each_statistic(self):
-
         cdc_columns = {
             "GHLTH": "Fair or poor self-rated health status %",  # "GHLTH": "Fair or poor self-rated health status among adults aged >=18 years",
             "PHLTH": "Physical health not good for two weeks in last year %",  # "PHLTH": "Physical health not good for >=14 days among adults aged >=18 years",
