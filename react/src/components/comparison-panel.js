@@ -4,14 +4,14 @@ import React from 'react';
 
 import { StatisticRowRaw, statistic_row } from "./table.js";
 import { MapGeneric } from "./map.js";
-import { PageTemplate } from "../page_template/template.js";
+import { PageTemplate } from "../page_template/template";
 import "../common.css";
 import "./article.css";
 import { load_article } from './load-article.js';
 import { useResponsive } from '../utils/responsive';
-import { SearchBox } from './search.js';
-import { article_link, sanitize } from '../navigation/links.js';
-import { lighten } from '../utils/color.js';
+import { SearchBox } from './search';
+import { article_link, sanitize } from '../navigation/links';
+import { lighten } from '../utils/color.ts';
 
 const main_columns = ["statval", "statval_unit", "statistic_ordinal", "statistic_percentile"];
 const main_columns_across_types = ["statval", "statval_unit"]

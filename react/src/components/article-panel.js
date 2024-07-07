@@ -4,13 +4,13 @@ import React from 'react';
 
 import { StatisticRowRaw } from "./table.js";
 import { Map } from "./map.js";
-import { Related } from "./related-button.js";
-import { PageTemplate } from "../page_template/template.js";
+import { Related } from "./related-button";
+import { PageTemplate } from "../page_template/template";
 import "../common.css";
 import "./article.css";
 import { load_article } from './load-article.js';
-import { SearchBox } from './search.js';
-import { article_link, comparison_link, sanitize } from '../navigation/links.js';
+import { SearchBox } from './search';
+import { article_link, comparison_link, sanitize } from '../navigation/links';
 
 class ArticlePanel extends PageTemplate {
     constructor(props) {

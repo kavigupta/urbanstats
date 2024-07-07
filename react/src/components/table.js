@@ -2,10 +2,10 @@ import React, { useState, useEffect, useRef } from 'react';
 import ContentEditable from 'react-contenteditable'
 
 export { StatisticRowRaw, Statistic, statistic_row, Percentile };
-import { article_link, statistic_link } from "../navigation/links.js";
-import { loadProtobuf, load_ordering } from '../load_json.js';
+import { article_link, statistic_link } from "../navigation/links";
+import { loadProtobuf, load_ordering } from '../load_json';
 import "./table.css";
-import { is_historical_cd } from '../utils/is_historical.js';
+import { is_historical_cd } from '../utils/is_historical.ts';
 import { display_type } from '../utils/text.js';
 
 const table_row_style = {

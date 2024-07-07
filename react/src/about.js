@@ -3,7 +3,7 @@ import React, { useReducer } from 'react';
 import ReactDOM from 'react-dom/client';
 import "./style.css";
 import "./common.css";
-import { PageTemplate } from "./page_template/template.js";
+import { PageTemplate } from "./page_template/template";
 
 
 class AboutPanel extends PageTemplate {

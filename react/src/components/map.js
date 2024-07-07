@@ -2,13 +2,13 @@ import React from 'react';
 
 export { Map, MapGeneric };
 
-import { shape_link, article_link } from "../navigation/links.js";
+import { shape_link, article_link } from "../navigation/links";
 import { relationship_key } from "./Related.js";
-import { random_color } from "../utils/color.js";
+import { random_color } from "../utils/color.ts";
 
 import "./map.css";
-import { is_historical_cd } from '../utils/is_historical.js';
-import { loadProtobuf } from '../load_json.js';
+import { is_historical_cd } from '../utils/is_historical.ts';
+import { loadProtobuf } from '../load_json';
 import { GeoJSON2SVG } from 'geojson2svg';
 
 class MapGeneric extends React.Component {
