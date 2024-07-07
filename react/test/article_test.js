@@ -151,7 +151,7 @@ test('search-test', async t => {
     await t
         .pressKey('enter');
     await t.expect(getLocation())
-        .eql(TARGET + '/article.html?longname=Pasadena+CCD+%5BCCD%5D%2C+Los+Angeles+County%2C+California%2C+USA');
+        .eql(TARGET + '/article.html?longname=Pasadena+city%2C+Texas%2C+USA');
 });
 
 test('search-test-with-extra-char', async t => {
@@ -189,7 +189,7 @@ test('search-test-arrows', async t => {
     await t
         .pressKey('enter');
     await t.expect(getLocation())
-        .eql(TARGET + '/article.html?longname=Pasadena+TX+HSA%2C+Houston+TX+HRR%2C+USA');
+        .eql(TARGET + '/article.html?longname=Pasadena+CDP%2C+Maryland%2C+USA');
 })
 
 test('editable-number', async t => {
@@ -638,7 +638,7 @@ test("article-universe-search", async t => {
     await t
         .pressKey('enter');
     await t.expect(getLocation())
-        .eql(TARGET + '/article.html?longname=Chino+Valley+Unified+School+District%2C+California%2C+USA&universe=California%2C+USA');
+        .eql(TARGET + '/article.html?longname=Chino+city%2C+California%2C+USA&universe=California%2C+USA');
 });
 
 test("article-universe-compare", async t => {
@@ -662,7 +662,7 @@ test("article-universe-compare-different", async t => {
         .pressKey('enter');
     await t.expect(getLocation())
         .eql(
-            TARGET + '/comparison.html?longnames=%5B%22San+Marino+city%2C+California%2C+USA%22%2C%22Chicago+city+%5BCCD%5D%2C+Cook+County%2C+Illinois%2C+USA%22%5D'
+            TARGET + '/comparison.html?longnames=%5B%22San+Marino+city%2C+California%2C+USA%22%2C%22Chicago+city%2C+Illinois%2C+USA%22%5D'
         );
     await screencap(t, "comparison/universe-compare-different");
 });
