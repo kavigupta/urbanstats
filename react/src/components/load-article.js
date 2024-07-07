@@ -88,9 +88,6 @@ function load_article(universe, data, settings, exclusively_american) {
 
     const filtered_indices = filtered_rows.map(x => x._index)
 
-    console.log("ABC");
-    console.log(filtered_rows);
-
     return [filtered_rows, filtered_indices];
 }
 
