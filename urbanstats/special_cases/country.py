@@ -42,7 +42,7 @@ def filter_small_islands(r):
     )
     if len(polys) > 100:
         a = polys.set_crs("epsg:4326").to_crs({"proj": "cea"}).area
-        min_area = min(10 * 1000 ** 2, a.max() / 10)
+        min_area = min(10 * 1000**2, a.max() / 10)
         r.geometry = polys[a > min_area].buffer(0).unary_union
     r.geometry.simplify(SIMPLIFY_REALLY_SMALL)
     return r

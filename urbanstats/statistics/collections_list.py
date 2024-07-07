@@ -20,6 +20,7 @@ from urbanstats.statistics.collections.income_family import IncomeFamily
 from urbanstats.statistics.collections.income_individual import IncomeIndividual
 from urbanstats.statistics.collections.income_poverty import IncomePoverty
 from urbanstats.statistics.collections.industry import IndustryStatistics
+from urbanstats.statistics.collections.insurance_type import InsuranceTypeStatistics
 from urbanstats.statistics.collections.internet_access import InternetAccessStatistics
 from urbanstats.statistics.collections.marriage import MarriageStatistics
 from urbanstats.statistics.collections.national_origin_birthplace import (
@@ -44,7 +45,6 @@ from urbanstats.statistics.collections.transportation_vehicle_ownership import (
 )
 from urbanstats.statistics.collections.us_election import USElectionStatistics
 from urbanstats.statistics.collections.weather import USWeatherStatistics
-from urbanstats.statistics.collections.insurance_type import InsuranceTypeStatistics
 
 statistic_collections = (
     CensusBasics(),

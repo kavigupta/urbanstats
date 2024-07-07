@@ -40,6 +40,7 @@ from urbanstats.special_cases.merge_international import (
     merge_international_and_domestic,
 )
 from urbanstats.special_cases.simplified_country import all_simplified_countries
+from urbanstats.statistics.collections_list import statistic_collections
 from urbanstats.universe.annotate_universes import (
     all_universes,
     attach_intl_universes,
@@ -47,7 +48,6 @@ from urbanstats.universe.annotate_universes import (
 )
 from urbanstats.universe.icons import place_icons_in_site_folder
 from urbanstats.website_data.index import export_index
-from urbanstats.statistics.collections_list import statistic_collections
 
 
 def american_shapefile():

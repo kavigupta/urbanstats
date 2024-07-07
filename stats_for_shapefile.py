@@ -23,6 +23,7 @@ from urbanstats.statistics.collections.weather import USWeatherStatistics
 from urbanstats.statistics.collections_list import statistic_collections
 from urbanstats.weather.to_blocks import weather_block_statistics
 
+
 @attr.s
 class Shapefile:
     hash_key = attr.ib()

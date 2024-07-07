@@ -27,7 +27,7 @@ def output_ordering(site_folder, ordering):
 
 def mapify(lst):
     result = {}
-    for ((a, b, c), v) in lst:
+    for (a, b, c), v in lst:
         result[f"{a}__{b}__{c}"] = v
     return result
 

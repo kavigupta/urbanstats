@@ -77,7 +77,7 @@ def get_question_pair(qdata):
 @permacache("urbanstats/games/retrostat/generate_retrostat_3")
 def generate_retrostat(retrostat_week):
     rng = np.random.RandomState(
-        int(stable_hash(("retrostat_weekly", retrostat_week)), 16) % 2 ** 32
+        int(stable_hash(("retrostat_weekly", retrostat_week)), 16) % 2**32
     )
     qdata = get_quiz_data_for_retroweek(retrostat_week)
     qdata = sorted(qdata, key=lambda x: x["ease"])

@@ -10,7 +10,6 @@ from .race_census import RaceCensus
 
 class Census2010(CensusStatisticsColection):
     def name_for_each_statistic(self):
-
         ad_2010 = {f"{k}_2010": f"{v} (2010)" for k, v in ad.items()}
         ad_change = {
             f"{k}_change_2010": f"{v} Change (2010-2020)" for k, v in ad.items()
@@ -73,7 +72,6 @@ class Census2010(CensusStatisticsColection):
         ]
 
     def mutate_statistic_table(self, statistics_table, shapefile_table):
-
         from census_blocks import racial_demographics
         from stats_for_shapefile import density_metrics
 
