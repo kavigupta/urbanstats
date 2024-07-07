@@ -21,4 +21,4 @@ permacache
 more_itertools
 cached_property
 scipy
-matplotlib
+matplotlib==3.4.3
