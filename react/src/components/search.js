@@ -113,9 +113,10 @@ class SearchBox extends React.Component {
         }
         const first_character = input[0];
         if (this.first_character != first_character) {
-            this.values = loadProtobuf(`/index/pages_${first_character}.gz`, "StringList");
+            this.values = loadProtobuf(`/index/pages_${first_character}.gz`, "SearchIndex");
         }
         const values = (await this.values).elements;
+        const priorities = (await this.values).priorities;
         let matches = [];
         for (let i = 0; i < values.length; i++) {
             let match_count = is_a_match(input, normalize(values[i]));
@@ -130,7 +131,7 @@ class SearchBox extends React.Component {
             if (is_international_duplicate(values[i])) {
                 continue;
             }
-            matches.push([match_count, i]);
+            matches.push([match_count, i, match_count - priorities[i] / 10]);
         }
         matches = top_10(matches);
         return matches.map((x) => values[x]);
@@ -139,14 +140,26 @@ class SearchBox extends React.Component {
 }
 
 function top_10(matches) {
-    matches.sort(function (a, b) {
-        if (a[0] != b[0]) {
-            return b[0] - a[0];
+    const num_prioritized = 3;
+    const sort_key = idx => {
+        return (a, b) => {
+            if (a[idx] != b[idx]) {
+                return b[idx] - a[idx];
+            }
+            return a[1] - b[1];
         }
-        return a[1] - b[1];
-    });
+    };
+    matches.sort(sort_key(2));
     let overall_matches = [];
-    for (let i = 0; i < Math.min(10, matches.length); i++) {
+    for (let i = 0; i < Math.min(num_prioritized, matches.length); i++) {
+        overall_matches.push(matches[i][1]);
+        matches[i][0] = -100;
+    }
+    matches.sort(sort_key(0));
+    for (let i = 0; i < Math.min(10 - num_prioritized, matches.length); i++) {
+        if (matches[i][0] == -100) {
+            break;
+        }
         overall_matches.push(matches[i][1]);
     }
     return overall_matches;

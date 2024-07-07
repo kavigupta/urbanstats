@@ -3,7 +3,7 @@ export { loadJSON, loadProtobuf, load_ordering_protobuf, load_ordering };
 import { gunzipSync } from 'zlib';
 import {
     Article, Feature, StringList, ConsolidatedShapes,
-    ConsolidatedStatistics, DataLists, OrderLists
+    ConsolidatedStatistics, DataLists, OrderLists, SearchIndex
 } from "./utils/protos.js";
 import { index_link, ordering_data_link, ordering_link } from './navigation/links.js';
 
@@ -57,6 +57,8 @@ async function loadProtobuf(filePath, name) {
         return ConsolidatedShapes.decode(arr);
     } else if (name == "ConsolidatedStatistics") {
         return ConsolidatedStatistics.decode(arr);
+    } else if (name == "SearchIndex") {
+        return SearchIndex.decode(arr);
     } else {
         throw "protobuf type not recognized (see load_json.js)";
     }
