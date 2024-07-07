@@ -78,7 +78,7 @@ function load_article(universe, data, settings, exclusively_american) {
                 return false;
             }
         } else {
-            if (usa_stat) {
+            if (index_list_info["index_lists"]["usa"].includes(indices[row._index])) {
                 return false;
             }
         }
