@@ -2635,6 +2635,273 @@ $root.StringList = (function() {
     return StringList;
 })();
 
+$root.SearchIndex = (function() {
+
+    /**
+     * Properties of a SearchIndex.
+     * @exports ISearchIndex
+     * @interface ISearchIndex
+     * @property {Array.<string>|null} [elements] SearchIndex elements
+     * @property {Array.<number>|null} [priorities] SearchIndex priorities
+     */
+
+    /**
+     * Constructs a new SearchIndex.
+     * @exports SearchIndex
+     * @classdesc Represents a SearchIndex.
+     * @implements ISearchIndex
+     * @constructor
+     * @param {ISearchIndex=} [properties] Properties to set
+     */
+    function SearchIndex(properties) {
+        this.elements = [];
+        this.priorities = [];
+        if (properties)
+            for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                if (properties[keys[i]] != null)
+                    this[keys[i]] = properties[keys[i]];
+    }
+
+    /**
+     * SearchIndex elements.
+     * @member {Array.<string>} elements
+     * @memberof SearchIndex
+     * @instance
+     */
+    SearchIndex.prototype.elements = $util.emptyArray;
+
+    /**
+     * SearchIndex priorities.
+     * @member {Array.<number>} priorities
+     * @memberof SearchIndex
+     * @instance
+     */
+    SearchIndex.prototype.priorities = $util.emptyArray;
+
+    /**
+     * Creates a new SearchIndex instance using the specified properties.
+     * @function create
+     * @memberof SearchIndex
+     * @static
+     * @param {ISearchIndex=} [properties] Properties to set
+     * @returns {SearchIndex} SearchIndex instance
+     */
+    SearchIndex.create = function create(properties) {
+        return new SearchIndex(properties);
+    };
+
+    /**
+     * Encodes the specified SearchIndex message. Does not implicitly {@link SearchIndex.verify|verify} messages.
+     * @function encode
+     * @memberof SearchIndex
+     * @static
+     * @param {ISearchIndex} message SearchIndex message or plain object to encode
+     * @param {$protobuf.Writer} [writer] Writer to encode to
+     * @returns {$protobuf.Writer} Writer
+     */
+    SearchIndex.encode = function encode(message, writer) {
+        if (!writer)
+            writer = $Writer.create();
+        if (message.elements != null && message.elements.length)
+            for (var i = 0; i < message.elements.length; ++i)
+                writer.uint32(/* id 1, wireType 2 =*/10).string(message.elements[i]);
+        if (message.priorities != null && message.priorities.length) {
+            writer.uint32(/* id 2, wireType 2 =*/18).fork();
+            for (var i = 0; i < message.priorities.length; ++i)
+                writer.uint32(message.priorities[i]);
+            writer.ldelim();
+        }
+        return writer;
+    };
+
+    /**
+     * Encodes the specified SearchIndex message, length delimited. Does not implicitly {@link SearchIndex.verify|verify} messages.
+     * @function encodeDelimited
+     * @memberof SearchIndex
+     * @static
+     * @param {ISearchIndex} message SearchIndex message or plain object to encode
+     * @param {$protobuf.Writer} [writer] Writer to encode to
+     * @returns {$protobuf.Writer} Writer
+     */
+    SearchIndex.encodeDelimited = function encodeDelimited(message, writer) {
+        return this.encode(message, writer).ldelim();
+    };
+
+    /**
+     * Decodes a SearchIndex message from the specified reader or buffer.
+     * @function decode
+     * @memberof SearchIndex
+     * @static
+     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+     * @param {number} [length] Message length if known beforehand
+     * @returns {SearchIndex} SearchIndex
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    SearchIndex.decode = function decode(reader, length) {
+        if (!(reader instanceof $Reader))
+            reader = $Reader.create(reader);
+        var end = length === undefined ? reader.len : reader.pos + length, message = new $root.SearchIndex();
+        while (reader.pos < end) {
+            var tag = reader.uint32();
+            switch (tag >>> 3) {
+            case 1: {
+                    if (!(message.elements && message.elements.length))
+                        message.elements = [];
+                    message.elements.push(reader.string());
+                    break;
+                }
+            case 2: {
+                    if (!(message.priorities && message.priorities.length))
+                        message.priorities = [];
+                    if ((tag & 7) === 2) {
+                        var end2 = reader.uint32() + reader.pos;
+                        while (reader.pos < end2)
+                            message.priorities.push(reader.uint32());
+                    } else
+                        message.priorities.push(reader.uint32());
+                    break;
+                }
+            default:
+                reader.skipType(tag & 7);
+                break;
+            }
+        }
+        return message;
+    };
+
+    /**
+     * Decodes a SearchIndex message from the specified reader or buffer, length delimited.
+     * @function decodeDelimited
+     * @memberof SearchIndex
+     * @static
+     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+     * @returns {SearchIndex} SearchIndex
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    SearchIndex.decodeDelimited = function decodeDelimited(reader) {
+        if (!(reader instanceof $Reader))
+            reader = new $Reader(reader);
+        return this.decode(reader, reader.uint32());
+    };
+
+    /**
+     * Verifies a SearchIndex message.
+     * @function verify
+     * @memberof SearchIndex
+     * @static
+     * @param {Object.<string,*>} message Plain object to verify
+     * @returns {string|null} `null` if valid, otherwise the reason why it is not
+     */
+    SearchIndex.verify = function verify(message) {
+        if (typeof message !== "object" || message === null)
+            return "object expected";
+        if (message.elements != null && message.hasOwnProperty("elements")) {
+            if (!Array.isArray(message.elements))
+                return "elements: array expected";
+            for (var i = 0; i < message.elements.length; ++i)
+                if (!$util.isString(message.elements[i]))
+                    return "elements: string[] expected";
+        }
+        if (message.priorities != null && message.hasOwnProperty("priorities")) {
+            if (!Array.isArray(message.priorities))
+                return "priorities: array expected";
+            for (var i = 0; i < message.priorities.length; ++i)
+                if (!$util.isInteger(message.priorities[i]))
+                    return "priorities: integer[] expected";
+        }
+        return null;
+    };
+
+    /**
+     * Creates a SearchIndex message from a plain object. Also converts values to their respective internal types.
+     * @function fromObject
+     * @memberof SearchIndex
+     * @static
+     * @param {Object.<string,*>} object Plain object
+     * @returns {SearchIndex} SearchIndex
+     */
+    SearchIndex.fromObject = function fromObject(object) {
+        if (object instanceof $root.SearchIndex)
+            return object;
+        var message = new $root.SearchIndex();
+        if (object.elements) {
+            if (!Array.isArray(object.elements))
+                throw TypeError(".SearchIndex.elements: array expected");
+            message.elements = [];
+            for (var i = 0; i < object.elements.length; ++i)
+                message.elements[i] = String(object.elements[i]);
+        }
+        if (object.priorities) {
+            if (!Array.isArray(object.priorities))
+                throw TypeError(".SearchIndex.priorities: array expected");
+            message.priorities = [];
+            for (var i = 0; i < object.priorities.length; ++i)
+                message.priorities[i] = object.priorities[i] >>> 0;
+        }
+        return message;
+    };
+
+    /**
+     * Creates a plain object from a SearchIndex message. Also converts values to other types if specified.
+     * @function toObject
+     * @memberof SearchIndex
+     * @static
+     * @param {SearchIndex} message SearchIndex
+     * @param {$protobuf.IConversionOptions} [options] Conversion options
+     * @returns {Object.<string,*>} Plain object
+     */
+    SearchIndex.toObject = function toObject(message, options) {
+        if (!options)
+            options = {};
+        var object = {};
+        if (options.arrays || options.defaults) {
+            object.elements = [];
+            object.priorities = [];
+        }
+        if (message.elements && message.elements.length) {
+            object.elements = [];
+            for (var j = 0; j < message.elements.length; ++j)
+                object.elements[j] = message.elements[j];
+        }
+        if (message.priorities && message.priorities.length) {
+            object.priorities = [];
+            for (var j = 0; j < message.priorities.length; ++j)
+                object.priorities[j] = message.priorities[j];
+        }
+        return object;
+    };
+
+    /**
+     * Converts this SearchIndex to JSON.
+     * @function toJSON
+     * @memberof SearchIndex
+     * @instance
+     * @returns {Object.<string,*>} JSON object
+     */
+    SearchIndex.prototype.toJSON = function toJSON() {
+        return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+    };
+
+    /**
+     * Gets the default type url for SearchIndex
+     * @function getTypeUrl
+     * @memberof SearchIndex
+     * @static
+     * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns {string} The default type url
+     */
+    SearchIndex.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+        if (typeUrlPrefix === undefined) {
+            typeUrlPrefix = "type.googleapis.com";
+        }
+        return typeUrlPrefix + "/SearchIndex";
+    };
+
+    return SearchIndex;
+})();
+
 $root.OrderList = (function() {
 
     /**

@@ -63,6 +63,11 @@ message StringList {
     repeated string elements = 1;
 }
 
+message SearchIndex {
+    repeated string elements = 1;
+    repeated uint32 priorities = 2;
+}
+
 message OrderList {
     repeated int32 order_idxs = 1;
 }
