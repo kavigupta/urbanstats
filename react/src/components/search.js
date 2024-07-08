@@ -25,8 +25,56 @@ class SearchBox extends React.Component {
             self.setState({ focused: fn(self.state.focused) })
         }
 
+        const searchbox_dropdown_item_style = idx => {
+            return {
+                padding: "0.5em",
+                cursor: "pointer",
+                backgroundColor: (this.state.focused === idx) ? "#ffe0e0" : undefined
+            };
+        }
+
+        const onFormSubmit = event => {
+            event.preventDefault();
+            let terms = self.state.matches;
+            if (terms.length > 0) {
+                self.props.on_change(terms[self.state.focused])
+            }
+            return false;
+        }
+
+        const autocompleteMatch = async (input) => {
+            input = normalize(input);
+            if (input == '') {
+                return [];
+            }
+            const first_character = input[0];
+            if (this.first_character != first_character) {
+                this.values = loadProtobuf(`/index/pages_${first_character}.gz`, "SearchIndex");
+            }
+            const values = (await this.values).elements;
+            const priorities = (await this.values).priorities;
+            let matches = [];
+            for (let i = 0; i < values.length; i++) {
+                let match_count = is_a_match(input, normalize(values[i]));
+                if (match_count == 0) {
+                    continue;
+                }
+                if (!this.props.settings.show_historical_cds) {
+                    if (is_historical_cd(values[i])) {
+                        continue;
+                    }
+                }
+                if (is_international_duplicate(values[i])) {
+                    continue;
+                }
+                matches.push([match_count, i, match_count - priorities[i] / 10]);
+            }
+            matches = top_10(matches);
+            return matches.map((x) => values[x]);
+        }
+
         const onTextBoxKeyUp = (event) => {
-            self.update_matches()
+            update_matches()
             // if down arrow, then go to the next one
             let dropdowns = document.getElementsByClassName("searchbox-dropdown-item");
             if (dropdowns.length > 0) {
@@ -38,105 +86,56 @@ class SearchBox extends React.Component {
                 }
             }
         }
-        return (<form autoComplete="off" ref={this.form} style={{ marginBlockEnd: "0em", position: "relative", width: "100%" }}>
-            <input
-                autoFocus={this.props.autoFocus}
-                ref={this.textbox}
-                id="searchbox"
-                type="text"
-                className="serif"
-                style={{ backgroundColor: "#fff8f0", borderWidth: "0.1em", ...this.props.style }}
-                placeholder={this.props.placeholder}
-                onKeyUp={onTextBoxKeyUp}
-            />
 
-            <div ref={this.dropdown} style={
-                {
-                    position: "absolute",
-                    width: "100%",
-                    maxHeight: "20em",
-                    overflowY: "auto",
-                    backgroundColor: "#f7f1e8",
-                    borderRadius: "0.25em",
-                    zIndex: "1"
-                }
-            }>
-                {
-                    this.state.matches.map((location, idx) =>
-                        <div
-                            key={location}
-                            className="serif searchbox-dropdown-item"
-                            style={this.searchbox_dropdown_item_style(idx)}
-                            onClick={() => this.props.on_change(this.state.matches[idx])}
-                            onMouseOver={() => this.setState({ focused: idx })}
-                        >{location}</div>
-                    )
-                }
-            </div>
-        </form>);
-
-    }
-
-
-    searchbox_dropdown_item_style(idx) {
-        const searchbox_dropdown_item_style = {
-            padding: "0.5em",
-            cursor: "pointer"
-        };
-        if (this.state.focused == idx) {
-            searchbox_dropdown_item_style["backgroundColor"] = "#ffe0e0";
+        const update_matches = async () => {
+            let matches = await autocompleteMatch(this.textbox.current.value);
+            this.setState({ matches: matches });
         }
 
-        return searchbox_dropdown_item_style;
-    }
+        return (
+            <form
+                autoComplete="off" ref={this.form}
+                style={{ marginBlockEnd: "0em", position: "relative", width: "100%" }}
+                onSubmit={onFormSubmit}
+            >
+                <input
+                    autoFocus={this.props.autoFocus}
+                    ref={this.textbox}
+                    id="searchbox"
+                    type="text"
+                    className="serif"
+                    style={{ backgroundColor: "#fff8f0", borderWidth: "0.1em", ...this.props.style }}
+                    placeholder={this.props.placeholder}
+                    onKeyUp={onTextBoxKeyUp}
+                />
 
-    async componentDidMount() {
-        let self = this;
-        this.form.current.onsubmit = function () {
-            let terms = self.state.matches;
-            if (terms.length > 0) {
-                self.props.on_change(terms[self.state.focused])
-            }
-            return false;
-        };
-    }
+                <div ref={this.dropdown} style={
+                    {
+                        position: "absolute",
+                        width: "100%",
+                        maxHeight: "20em",
+                        overflowY: "auto",
+                        backgroundColor: "#f7f1e8",
+                        borderRadius: "0.25em",
+                        zIndex: "1"
+                    }
+                }>
+                    {
+                        this.state.matches.map((location, idx) =>
+                            <div
+                                key={location}
+                                className="serif searchbox-dropdown-item"
+                                style={searchbox_dropdown_item_style(idx)}
+                                onClick={() => this.props.on_change(this.state.matches[idx])}
+                                onMouseOver={() => this.setState({ focused: idx })}
+                            >{location}</div>
+                        )
+                    }
+                </div>
+            </form>
+        );
 
-    async update_matches() {
-        let matches = await this.autocompleteMatch(this.textbox.current.value);
-        this.setState({ matches: matches });
     }
-
-    async autocompleteMatch(input) {
-        input = normalize(input);
-        if (input == '') {
-            return [];
-        }
-        const first_character = input[0];
-        if (this.first_character != first_character) {
-            this.values = loadProtobuf(`/index/pages_${first_character}.gz`, "SearchIndex");
-        }
-        const values = (await this.values).elements;
-        const priorities = (await this.values).priorities;
-        let matches = [];
-        for (let i = 0; i < values.length; i++) {
-            let match_count = is_a_match(input, normalize(values[i]));
-            if (match_count == 0) {
-                continue;
-            }
-            if (!this.props.settings.show_historical_cds) {
-                if (is_historical_cd(values[i])) {
-                    continue;
-                }
-            }
-            if (is_international_duplicate(values[i])) {
-                continue;
-            }
-            matches.push([match_count, i, match_count - priorities[i] / 10]);
-        }
-        matches = top_10(matches);
-        return matches.map((x) => values[x]);
-    }
-
 }
 
 function top_10(matches) {
