@@ -2,7 +2,7 @@ import React from 'react';
 
 export { SearchBox };
 
-import { loadProtobuf } from '../load_json.js';
+import { loadProtobuf } from '../load_json';
 import { is_historical_cd } from '../utils/is_historical';
 import "../common.css";
 
