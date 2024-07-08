@@ -9,11 +9,11 @@ import "../common.css";
 class SearchBox extends React.Component {
     constructor(props) {
         super(props);
-        this.state = { matches: [], focused: 0 };
+        this.state = { matches: [], focused: 0, index_cache_uninitialized: true, matches_stale: false };
         this.form = React.createRef();
         this.textbox = React.createRef();
         this.dropdown = React.createRef();
-        this.values = undefined;
+        this.index_cache = undefined;
         this.first_character = undefined;
     }
 
@@ -42,17 +42,64 @@ class SearchBox extends React.Component {
             return false;
         }
 
-        const autocompleteMatch = async (input) => {
+        const get_input = () => {
+            var input = this.textbox.current.value;
             input = normalize(input);
+            return input;
+        }
+
+        const reload_cache = () => {
+            const input = get_input();
+            console.log("RELOADING CACHE")
             if (input == '') {
-                return [];
+                console.log("empty input; setting matches to empty array")
+                this.setState({ index_cache_uninitialized: false, matches_stale: false, matches: [] })
+                return;
             }
             const first_character = input[0];
             if (this.first_character != first_character) {
-                this.values = loadProtobuf(`/index/pages_${first_character}.gz`, "SearchIndex");
+                this.setState({ index_cache_uninitialized: true });
+                (async () => {
+                    this.first_character = first_character;
+                    this.index_cache = await loadProtobuf(`/index/pages_${first_character}.gz`, "SearchIndex");
+                    this.setState({ index_cache_uninitialized: false, matches_stale: true });
+                })();
+                return;
             }
-            const values = (await this.values).elements;
-            const priorities = (await this.values).priorities;
+            if (this.state.index_cache_uninitialized) {
+                return;
+            }
+        }
+
+        const onTextBoxKeyUp = (event) => {
+
+            reload_cache();
+            this.setState({ matches_stale: true });
+
+            // if down arrow, then go to the next one
+            let dropdowns = document.getElementsByClassName("searchbox-dropdown-item");
+            if (dropdowns.length > 0) {
+                if (event.key == "ArrowDown") {
+                    event.preventDefault();
+                    setFocused(focused => (focused + 1) % dropdowns.length)
+                }
+                if (event.key == "ArrowUp") {
+                    event.preventDefault();
+                    setFocused(focused => (focused - 1) % dropdowns.length)
+                }
+            }
+        }
+
+        const update_matches = async () => {
+            const input = get_input();
+            if (input == '') {
+                if (this.state.matches.length > 0) {
+                    this.setState({ matches: [] });
+                }
+                return;
+            }
+            const values = this.index_cache.elements;
+            const priorities = this.index_cache.priorities;
             let matches = [];
             for (let i = 0; i < values.length; i++) {
                 let match_count = is_a_match(input, normalize(values[i]));
@@ -70,27 +117,17 @@ class SearchBox extends React.Component {
                 matches.push([match_count, i, match_count - priorities[i] / 10]);
             }
             matches = top_10(matches);
-            return matches.map((x) => values[x]);
-        }
-
-        const onTextBoxKeyUp = (event) => {
-            update_matches()
-            // if down arrow, then go to the next one
-            let dropdowns = document.getElementsByClassName("searchbox-dropdown-item");
-            if (dropdowns.length > 0) {
-                if (event.key == "ArrowDown") {
-                    setFocused(focused => (focused + 1) % dropdowns.length)
-                }
-                if (event.key == "ArrowUp") {
-                    setFocused(focused => (focused - 1) % dropdowns.length)
-                }
-            }
-        }
-
-        const update_matches = async () => {
-            let matches = await autocompleteMatch(this.textbox.current.value);
+            matches = matches.map(idx => values[idx]);
+            console.log("setting matches because of input", input, "matches", matches)
             this.setState({ matches: matches });
+            this.setState({ matches_stale: false });
         }
+
+        if (this.state.matches_stale && !this.state.index_cache_uninitialized) {
+            update_matches();
+        }
+
+        console.log("render: matches", this.state.matches);
 
         return (
             <form
