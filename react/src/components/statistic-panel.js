@@ -109,7 +109,7 @@ class StatisticPanel extends PageTemplate {
     main_content() {
         return <div>
             <div ref={this.headers_ref}>
-                <div className={headerTextClass()}>{this.props.statname}</div>
+                <div className={headerTextClass()}>{this.props.rendered_statname}</div>
                 {/* // TODO plural */}
                 <div className={subHeaderTextClass()}>{display_type(this.state.current_universe, this.props.article_type)} ({this.rendered_order()})</div>
             </div>

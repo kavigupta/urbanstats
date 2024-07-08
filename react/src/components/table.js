@@ -69,7 +69,7 @@ class StatisticRowRaw extends React.Component {
                                 this.props.statname, this.props.article_type, this.props.ordinal,
                                 20, undefined, this.props.longname
                             )
-                        }>{this.props.statname}</a>
+                        }>{this.props.rendered_statname}</a>
                 }
                 </span>
             ],

@@ -51,3 +51,8 @@ export function universe_is_american(universe) {
     // if universe ends with USA, then it's American
     return universe.includes("USA");
 }
+
+export function longname_is_exclusively_american(universe) {
+    // if longname ends with ", USA", then it's exclusively American
+    return universe.endsWith(", USA");
+}
