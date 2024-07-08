@@ -4,15 +4,15 @@ import React from 'react';
 
 import { StatisticRowRaw, statistic_row } from "./table.js";
 import { MapGeneric } from "./map.js";
-import { PageTemplate } from "../page_template/template.js";
+import { PageTemplate } from "../page_template/template";
 import "../common.css";
 import "./article.css";
 import { load_article } from './load-article.js';
-import { comparisonHeadStyle, headerTextClass, mobileLayout, subHeaderTextClass } from '../utils/responsive.js';
-import { SearchBox } from './search.js';
-import { article_link, sanitize } from '../navigation/links.js';
-import { lighten } from '../utils/color.js';
-import { longname_is_exclusively_american } from '../universe.js';
+import { comparisonHeadStyle, headerTextClass, mobileLayout, subHeaderTextClass } from '../utils/responsive';
+import { SearchBox } from './search';
+import { article_link, sanitize } from '../navigation/links';
+import { lighten } from '../utils/color';
+import { longname_is_exclusively_american } from '../universe';
 
 const main_columns = ["statval", "statval_unit", "statistic_ordinal", "statistic_percentile"];
 const main_columns_across_types = ["statval", "statval_unit"]
@@ -54,7 +54,7 @@ class ComparisonPanel extends PageTemplate {
         return true;
     }
 
-    main_content() {
+    main_content(responsive) {
         const self = this;
         var rows = [];
         var idxs = [];
@@ -79,57 +79,60 @@ class ComparisonPanel extends PageTemplate {
 
         return (
             <div>
-                <div className={headerTextClass()}>Comparison</div>
-                <div className={subHeaderTextClass()}>{this.props.joined_string}</div>
+                <div className={responsive.headerTextClass}>Comparison</div>
+                <div className={responsive.subHeaderTextClass}>{this.props.joined_string}</div>
                 <div style={{ marginBlockEnd: "16px" }}></div>
 
                 <div style={{ display: "flex" }}>
                     <div style={{ width: (100 * left_margin_pct) + "%" }} />
                     <div style={{ width: (50 * (1 - left_margin_pct)) + "%", marginRight: "1em" }}>
-                        <div className="serif" style={comparisonHeadStyle("right")}>Add another region:</div>
-                    </div>
+                        <div className="serif" style={responsive.comparisonHeadStyle("right")}>Add another region:</div>
+                    </div >
                     <div style={{ width: (50 * (1 - left_margin_pct)) + "%" }}>
                         <SearchBox
                             settings={this.state.settings}
-                            style={{ ...comparisonHeadStyle(), width: "100%" }}
+                            style={{ ...responsive.comparisonHeadStyle(), width: "100%" }}
                             placeholder={"Name"}
                             on_change={(x) => self.add_new(x)}
                         />
                     </div>
-                </div>
+                </div >
 
 
                 <div style={{ marginBlockEnd: "1em" }}></div>
 
-                {this.maybe_scroll(
-                    <div ref={this.table_ref}>
-                        {this.bars()}
-                        <div style={{ display: "flex" }}>
-                            {this.cell(true, 0, <div></div>)}
-                            {this.props.datas.map(
-                                (data, i) => this.cell(false, i, <div>
-                                    <HeadingDisplay
-                                        longname={data.longname}
-                                        include_delete={this.props.datas.length > 1}
-                                        on_click={() => self.on_delete(i)}
-                                        on_change={(x) => self.on_change(i, x)}
-                                        screenshot_mode={this.state.screenshot_mode}
-                                        universe={this.state.current_universe}
-                                    />
-                                </div>)
-                            )}
+                {
+                    this.maybe_scroll(
+                        responsive,
+                        <div ref={this.table_ref}>
+                            {this.bars()}
+                            <div style={{ display: "flex" }}>
+                                {this.cell(true, 0, <div></div>)}
+                                {this.props.datas.map(
+                                    (data, i) => this.cell(false, i, <div>
+                                        <HeadingDisplay
+                                            longname={data.longname}
+                                            include_delete={this.props.datas.length > 1}
+                                            on_click={() => self.on_delete(i)}
+                                            on_change={(x) => self.on_change(i, x)}
+                                            screenshot_mode={this.state.screenshot_mode}
+                                            universe={this.state.current_universe}
+                                        />
+                                    </div>)
+                                )}
+                            </div>
+                            {this.bars()}
+
+                            {statistic_row(true, 0, header_row)}
+
+                            {
+                                render_rows.map((row, i) =>
+                                    statistic_row(false, i, row)
+                                )
+                            }
                         </div>
-                        {this.bars()}
-
-                        {statistic_row(true, 0, header_row)}
-
-                        {
-                            render_rows.map((row, i) =>
-                                statistic_row(false, i, row)
-                            )
-                        }
-                    </div>
-                )}
+                    )
+                }
                 <div className="gap"></div>
 
                 <div ref={this.map_ref}>
@@ -142,7 +145,7 @@ class ComparisonPanel extends PageTemplate {
                         universe={this.state.current_universe}
                     />
                 </div>
-            </div>
+            </div >
         );
     }
 
@@ -183,14 +186,11 @@ class ComparisonPanel extends PageTemplate {
         window.location.search = window_info.toString();
     }
 
-    max_columns() {
-        return mobileLayout() ? 4 : 6;
-    }
-
-    maybe_scroll(contents) {
-        if (this.width_columns() > this.max_columns()) {
+    maybe_scroll(responsive, contents) {
+        const max_columns = responsive.mobileLayout ? 4 : 6;
+        if (this.width_columns() > max_columns) {
             return <div style={{ overflowX: "scroll" }}>
-                <div style={{ width: 100 * this.width_columns() / (this.max_columns() - 0.7) + "%" }}>
+                <div style={{ width: 100 * this.width_columns() / (max_columns - 0.7) + "%" }}>
                     {contents}
                 </div>
             </div>
@@ -317,15 +317,17 @@ function HeadingDisplay({ universe, longname, include_delete, on_click, on_chang
         </div>
     </div>
 
+    const responsive = useResponsive()
+
     return <div>
         {screenshot_mode ? undefined : manipulation_buttons}
         <div style={{ height: "5px" }} />
-        <a className="serif" href={article_link(universe, longname)} style={{ textDecoration: "none" }}><div style={comparisonHeadStyle()}>{longname}</div></a>
+        <a className="serif" href={article_link(longname)} style={{ textDecoration: "none" }}><div style={responsive.comparisonHeadStyle()}>{longname}</div></a>
         {is_editing ?
             <SearchBox
                 autoFocus={true}
                 settings={{}}
-                style={{ ...comparisonHeadStyle(), width: "100%" }}
+                style={{ ...responsive.comparisonHeadStyle(), width: "100%" }}
                 placeholder={"Replacement"}
                 on_change={on_change}
             />

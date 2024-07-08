@@ -8,7 +8,7 @@ import "../common.css";
 
 
 
-function Hamburger({ isOpen }) {
+function Hamburger({ isOpen }: { isOpen: boolean }) {
     return (
         <>
             <div className="hamburger">
@@ -17,7 +17,7 @@ function Hamburger({ isOpen }) {
                 <div className="burger burger3" />
             </div>
 
-            <style jsx>{`
+            <style>{`
                 .hamburger{
                     width: 2rem;
                     height: 2rem;
@@ -53,7 +53,7 @@ function Hamburger({ isOpen }) {
     )
 }
 
-function Nav({ hamburger_open, set_hamburger_open }) {
+function Nav({ hamburger_open, set_hamburger_open }: { hamburger_open: boolean, set_hamburger_open: (newValue: boolean) => void }) {
 
     const toggleHamburger = () => {
         set_hamburger_open(!hamburger_open)
@@ -71,7 +71,7 @@ function Nav({ hamburger_open, set_hamburger_open }) {
             </div>
 
 
-            <style jsx>{`
+            <style>{`
 
                 .navigation{
                     width: 100%;

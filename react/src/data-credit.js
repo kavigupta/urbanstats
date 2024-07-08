@@ -3,8 +3,7 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import "./style.css";
 import "./common.css";
-import { PageTemplate } from "./page_template/template.js";
-import { headerTextClass } from './utils/responsive.js';
+import { PageTemplate } from "./page_template/template";
 
 function ScrollHereOnceLoaded(props) {
     const ref = React.useRef(null);
@@ -28,10 +27,10 @@ class DataCreditPanel extends PageTemplate {
         return this._refs[name];
     }
 
-    main_content() {
+    main_content(responsive) {
         return (
             <div className="serif">
-                <div className={headerTextClass()}>Credits</div>
+                <div className={responsive.headerTextClass}>Credits</div>
 
                 <h1>Code contributors</h1>
                 <p>

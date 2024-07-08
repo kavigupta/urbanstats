@@ -4,7 +4,7 @@ import ReactDOM from 'react-dom/client';
 import "./style.css";
 import "./common.css";
 
-import { loadJSON } from './load_json.js';
+import { loadJSON } from './load_json';
 import { gunzipSync, gzipSync } from 'zlib';
 
 import { QuizPanel } from './components/quiz-panel';

@@ -4,21 +4,21 @@ import { gunzipSync } from 'zlib';
 import {
     Article, Feature, StringList, ConsolidatedShapes,
     ConsolidatedStatistics, DataLists, OrderLists, SearchIndex
-} from "./utils/protos.js";
-import { index_link, ordering_data_link, ordering_link } from './navigation/links.js';
+} from "./utils/protos";
+import { index_link, ordering_data_link, ordering_link } from './navigation/links';
 
 // from https://stackoverflow.com/a/4117299/1549476
 
 // Load JSON text from server hosted file and return JSON parsed object
-function loadJSON(filePath) {
+function loadJSON(filePath: string) {
     // Load json file;
-    var json = loadTextFileAjaxSync(filePath, "application/json");
+    const json = loadTextFileAjaxSync(filePath, "application/json");
     // Parse json
     return JSON.parse(json);
 }
 
 // Load text with Ajax synchronously: takes path to file and optional MIME type
-function loadTextFileAjaxSync(filePath, mimeType) {
+function loadTextFileAjaxSync(filePath: string, mimeType: string) {
     var xmlhttp = new XMLHttpRequest();
     xmlhttp.open("GET", filePath, false);
     if (mimeType != null) {
@@ -31,14 +31,16 @@ function loadTextFileAjaxSync(filePath, mimeType) {
         return xmlhttp.responseText;
     }
     else {
-        // TODO Throw exception
-        return null;
+        throw new Error(`Failed loading ${filePath} status ${xmlhttp.status} readystate ${xmlhttp.readyState}`)
     }
 }
 
 
 // Load a protobuf file from the server
-async function loadProtobuf(filePath, name) {
+async function loadProtobuf(filePath: string, name: "Article"): Promise<Article>
+async function loadProtobuf(filePath: string, name: "Feature"): Promise<Feature>
+async function loadProtobuf(filePath: string, name: "StringList"): Promise<StringList>
+async function loadProtobuf(filePath: string, name: string) {
     const response = await fetch(filePath);
     const compressed_buffer = await response.arrayBuffer();
     const buffer = gunzipSync(Buffer.from(compressed_buffer));

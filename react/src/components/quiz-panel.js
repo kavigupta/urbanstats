@@ -2,7 +2,7 @@ export { QuizPanel, a_correct };
 
 import React from 'react';
 
-import { PageTemplate } from "../page_template/template.js";
+import { PageTemplate } from "../page_template/template";
 import "../common.css";
 import "./quiz.css";
 import { reportToServer, reportToServerRetro } from '../quiz/statistics.js';

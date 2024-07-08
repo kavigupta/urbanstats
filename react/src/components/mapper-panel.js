@@ -4,19 +4,19 @@ import React from 'react';
 
 import { Statistic } from "./table.js";
 import { MapGeneric } from "./map.js";
-import { Related } from "./related-button.js";
-import { PageTemplate } from "../page_template/template.js";
+import { Related } from "./related-button";
+import { PageTemplate } from "../page_template/template";
 import "../common.css";
 import "./article.css";
-import { loadProtobuf } from '../load_json.js';
-import { consolidated_shape_link, consolidated_stats_link } from '../navigation/links.js';
-import { interpolate_color } from '../utils/color.js';
+import { loadProtobuf } from '../load_json';
+import { consolidated_shape_link, consolidated_stats_link } from '../navigation/links';
+import { interpolate_color } from '../utils/color.ts';
 
 import { RAMPS, parse_ramp } from "../mapper/ramps.js";
 import { MapperSettings, default_settings, parse_color_stat } from "../mapper/settings.js";
 
 import { gunzipSync, gzipSync } from "zlib";
-import { headerTextClass } from '../utils/responsive.js';
+import { useResponsive } from '../utils/responsive';
 
 class DisplayedMap extends MapGeneric {
     constructor(props) {
@@ -340,12 +340,12 @@ class MapperPanel extends PageTemplate {
         return super.render();
     }
 
-    main_content() {
+    main_content(responsive) {
         const geography_kind = this.state.map_settings.geography_kind;
         const valid = this.valid_geographies.includes(geography_kind);
         return (
             <div>
-                <div className={headerTextClass()}>Urban Stats Mapper (beta)</div>
+                <div className={responsive.headerTextClass}>Urban Stats Mapper (beta)</div>
                 <MapperSettings
                     names={this.names}
                     valid_geographies={this.valid_geographies}

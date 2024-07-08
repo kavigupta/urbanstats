@@ -4,15 +4,15 @@ import React from 'react';
 
 import { StatisticRowRaw } from "./table.js";
 import { Map } from "./map.js";
-import { Related } from "./related-button.js";
-import { PageTemplate } from "../page_template/template.js";
+import { Related } from "./related-button";
+import { PageTemplate } from "../page_template/template";
 import "../common.css";
 import "./article.css";
 import { load_article } from './load-article.js';
-import { comparisonHeadStyle, headerTextClass, subHeaderTextClass } from '../utils/responsive.js';
-import { SearchBox } from './search.js';
-import { article_link, comparison_link, sanitize } from '../navigation/links.js';
-import { longname_is_exclusively_american } from '../universe.js';
+import { comparisonHeadStyle, headerTextClass, subHeaderTextClass } from '../utils/responsive';
+import { SearchBox } from './search';
+import { article_link, comparison_link, sanitize } from '../navigation/links';
+import { longname_is_exclusively_american } from '../universe';
 
 class ArticlePanel extends PageTemplate {
     constructor(props) {
@@ -23,7 +23,7 @@ class ArticlePanel extends PageTemplate {
         this.map_ref = React.createRef();
     }
 
-    main_content() {
+    main_content(responsive) {
         const self = this;
         const [filtered_rows, _] = load_article(this.state.current_universe, this.props, this.state.settings,
             longname_is_exclusively_american(this.props.longname));
@@ -31,8 +31,8 @@ class ArticlePanel extends PageTemplate {
         return (
             <div>
                 <div ref={this.headers_ref}>
-                    <div className={headerTextClass()}>{this.props.shortname}</div>
-                    <div className={subHeaderTextClass()}>{this.props.longname}</div>
+                    <div className={responsive.headerTextClass}>{this.props.shortname}</div>
+                    <div className={responsive.subHeaderTextClass}>{this.props.longname}</div>
                 </div>
                 <div style={{ marginBlockEnd: "16px" }}></div>
 
@@ -64,12 +64,12 @@ class ArticlePanel extends PageTemplate {
 
                 <div style={{ display: "flex", alignItems: "center" }}>
                     <div style={{ width: "30%", marginRight: "1em" }}>
-                        <div className="serif" style={comparisonHeadStyle("right")}>Compare to: </div>
+                        <div className="serif" style={responsive.comparisonHeadStyle("right")}>Compare to: </div>
                     </div>
                     <div style={{ width: "70%" }}>
                         <SearchBox
                             settings={this.state.settings}
-                            style={{ ...comparisonHeadStyle(), width: "100%" }}
+                            style={{ ...responsive.comparisonHeadStyle(), width: "100%" }}
                             placeholder={"Other region..."}
                             on_change={(x) => {
                                 document.location.href = comparison_link(

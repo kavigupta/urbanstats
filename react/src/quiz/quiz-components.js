@@ -3,10 +3,10 @@ export { Header, Footer, Help, nameOfQuizKind, user_id };
 
 import React from 'react';
 
-import { PageTemplate } from "../page_template/template.js";
+import { PageTemplate } from "../page_template/template";
 import "../common.css";
 import "../components/quiz.css";
-import { headerTextClass } from '../utils/responsive.js';
+import { useResponsive } from '../utils/responsive';
 
 
 function nameOfQuizKind(quiz_kind) {
@@ -24,7 +24,8 @@ function Header({ today, quiz_kind }) {
     if (typeof today != "number") {
         text += " " + today;
     }
-    return (<div className={headerTextClass()}>{text}</div>);
+    const responsive = useResponsive()
+    return (<div className={responsive.headerTextClass}>{text}</div>);
 }
 
 class Footer extends PageTemplate {

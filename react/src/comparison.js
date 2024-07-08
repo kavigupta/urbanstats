@@ -3,9 +3,9 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import "./style.css";
 import "./common.css";
-import { data_link } from "./navigation/links.js";
+import { data_link } from "./navigation/links";
 
-import { loadProtobuf } from './load_json.js';
+import { loadProtobuf } from './load_json';
 import { ComparisonPanel } from './components/comparison-panel.js';
 import { default_comparison_universe, get_universe, remove_universe_if_default, remove_universe_if_not_in } from './universe.js';
 

@@ -3,7 +3,7 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import "./style.css";
 import "./common.css";
-import { data_link } from "./navigation/links.js";
+import { data_link } from "./navigation/links";
 
 import { ArticlePanel } from './components/article-panel';
 import { loadProtobuf } from './load_json';

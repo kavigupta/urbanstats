@@ -3,7 +3,7 @@ import "../style.css";
 import "../common.css";
 import { article_link } from '../navigation/links';
 
-import { loadJSON, loadProtobuf } from '../load_json.js';
+import { loadJSON, loadProtobuf } from '../load_json';
 import { is_historical_cd } from "../utils/is_historical";
 
 
