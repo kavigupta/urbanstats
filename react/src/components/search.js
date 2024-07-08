@@ -9,7 +9,7 @@ import "../common.css";
 class SearchBox extends React.Component {
     constructor(props) {
         super(props);
-        this.state = { matches: [], is_loaded: false, focused: 0 };
+        this.state = { matches: [], focused: 0 };
         this.form = React.createRef();
         this.textbox = React.createRef();
         this.dropdown = React.createRef();
@@ -18,6 +18,26 @@ class SearchBox extends React.Component {
     }
 
     render() {
+
+        const self = this;
+
+        const setFocused = (fn) => {
+            self.setState({ focused: fn(self.state.focused) })
+        }
+
+        const onTextBoxKeyUp = (event) => {
+            self.update_matches()
+            // if down arrow, then go to the next one
+            let dropdowns = document.getElementsByClassName("searchbox-dropdown-item");
+            if (dropdowns.length > 0) {
+                if (event.key == "ArrowDown") {
+                    setFocused(focused => (focused + 1) % dropdowns.length)
+                }
+                if (event.key == "ArrowUp") {
+                    setFocused(focused => (focused - 1) % dropdowns.length)
+                }
+            }
+        }
         return (<form autoComplete="off" ref={this.form} style={{ marginBlockEnd: "0em", position: "relative", width: "100%" }}>
             <input
                 autoFocus={this.props.autoFocus}
@@ -27,6 +47,7 @@ class SearchBox extends React.Component {
                 className="serif"
                 style={{ backgroundColor: "#fff8f0", borderWidth: "0.1em", ...this.props.style }}
                 placeholder={this.props.placeholder}
+                onKeyUp={onTextBoxKeyUp}
             />
 
             <div ref={this.dropdown} style={
@@ -46,6 +67,8 @@ class SearchBox extends React.Component {
                             key={location}
                             className="serif searchbox-dropdown-item"
                             style={this.searchbox_dropdown_item_style(idx)}
+                            onClick={() => this.props.on_change(this.state.matches[idx])}
+                            onMouseOver={() => this.setState({ focused: idx })}
                         >{location}</div>
                     )
                 }
@@ -68,7 +91,6 @@ class SearchBox extends React.Component {
     }
 
     async componentDidMount() {
-        this.setState({ is_loaded: true });
         let self = this;
         this.form.current.onsubmit = function () {
             let terms = self.state.matches;
@@ -77,28 +99,6 @@ class SearchBox extends React.Component {
             }
             return false;
         };
-        this.textbox.current.onkeyup = function (event) {
-            self.update_matches()
-            // if down arrow, then go to the next one
-            let dropdowns = document.getElementsByClassName("searchbox-dropdown-item");
-            if (dropdowns.length > 0) {
-                if (event.key == "ArrowDown") {
-                    self.setState({ focused: (self.state.focused + 1) % dropdowns.length });
-                }
-                if (event.key == "ArrowUp") {
-                    self.setState({ focused: (self.state.focused - 1 + dropdowns.length) % dropdowns.length });
-                }
-            }
-        };
-        this.componentDidUpdate();
-    }
-
-    componentDidUpdate() {
-        let dropdowns = document.getElementsByClassName("searchbox-dropdown-item");
-        for (let i = 0; i < dropdowns.length; i++) {
-            dropdowns[i].onclick = () => this.props.on_change(this.state.matches[i]);
-            dropdowns[i].onmouseover = () => this.setState({ focused: i });
-        }
     }
 
     async update_matches() {
