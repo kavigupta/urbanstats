@@ -8,10 +8,11 @@ import { PageTemplate } from "../page_template/template";
 import "../common.css";
 import "./article.css";
 import { load_article } from './load-article.js';
-import { useResponsive } from '../utils/responsive';
+import { comparisonHeadStyle, headerTextClass, mobileLayout, subHeaderTextClass } from '../utils/responsive';
 import { SearchBox } from './search';
 import { article_link, sanitize } from '../navigation/links';
-import { lighten } from '../utils/color.ts';
+import { lighten } from '../utils/color';
+import { longname_is_exclusively_american } from '../universe';
 
 const main_columns = ["statval", "statval_unit", "statistic_ordinal", "statistic_percentile"];
 const main_columns_across_types = ["statval", "statval_unit"]
@@ -57,8 +58,10 @@ class ComparisonPanel extends PageTemplate {
         const self = this;
         var rows = [];
         var idxs = [];
+        const exclusively_american = this.props.datas.every(x => longname_is_exclusively_american(x.longname));
         for (let i in this.props.datas) {
-            const [r, idx] = load_article(this.state.current_universe, this.props.datas[i], this.state.settings);
+            const [r, idx] = load_article(this.state.current_universe, this.props.datas[i], this.state.settings,
+                exclusively_american);
             rows.push(r);
             idxs.push(idx);
         }

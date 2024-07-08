@@ -7,7 +7,7 @@ import { relationship_key } from "./Related.js";
 import { random_color } from "../utils/color.ts";
 
 import "./map.css";
-import { is_historical_cd } from '../utils/is_historical.ts';
+import { is_historical_cd } from '../utils/is_historical';
 import { loadProtobuf } from '../load_json';
 import { GeoJSON2SVG } from 'geojson2svg';
 

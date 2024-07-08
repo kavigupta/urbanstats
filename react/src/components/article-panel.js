@@ -9,8 +9,10 @@ import { PageTemplate } from "../page_template/template";
 import "../common.css";
 import "./article.css";
 import { load_article } from './load-article.js';
+import { comparisonHeadStyle, headerTextClass, subHeaderTextClass } from '../utils/responsive';
 import { SearchBox } from './search';
 import { article_link, comparison_link, sanitize } from '../navigation/links';
+import { longname_is_exclusively_american } from '../universe';
 
 class ArticlePanel extends PageTemplate {
     constructor(props) {
@@ -23,7 +25,8 @@ class ArticlePanel extends PageTemplate {
 
     main_content(responsive) {
         const self = this;
-        const [filtered_rows, _] = load_article(this.state.current_universe, this.props, this.state.settings);
+        const [filtered_rows, _] = load_article(this.state.current_universe, this.props, this.state.settings,
+            longname_is_exclusively_american(this.props.longname));
 
         return (
             <div>

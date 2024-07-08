@@ -5,7 +5,7 @@ export { StatisticRowRaw, Statistic, statistic_row, Percentile };
 import { article_link, statistic_link } from "../navigation/links";
 import { loadProtobuf, load_ordering } from '../load_json';
 import "./table.css";
-import { is_historical_cd } from '../utils/is_historical.ts';
+import { is_historical_cd } from '../utils/is_historical';
 import { display_type } from '../utils/text.js';
 
 const table_row_style = {
@@ -69,7 +69,7 @@ class StatisticRowRaw extends React.Component {
                                 this.props.statname, this.props.article_type, this.props.ordinal,
                                 20, undefined, this.props.longname
                             )
-                        }>{this.props.statname}</a>
+                        }>{this.props.rendered_statname}</a>
                 }
                 </span>
             ],
