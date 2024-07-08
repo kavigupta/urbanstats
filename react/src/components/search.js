@@ -9,12 +9,15 @@ import "../common.css";
 class SearchBox extends React.Component {
     constructor(props) {
         super(props);
-        this.state = { matches: [], focused: 0, index_cache_uninitialized: true, matches_stale: false };
+        this.state = {
+            matches: [], matches_stale: false,
+            index_cache: undefined, index_cache_uninitialized: true,
+            first_character: undefined,
+            focused: 0,
+        };
         this.form = React.createRef();
         this.textbox = React.createRef();
         this.dropdown = React.createRef();
-        this.index_cache = undefined;
-        this.first_character = undefined;
     }
 
     render() {
@@ -57,11 +60,11 @@ class SearchBox extends React.Component {
                 return;
             }
             const first_character = input[0];
-            if (this.first_character != first_character) {
+            if (this.state.first_character != first_character) {
                 this.setState({ index_cache_uninitialized: true });
                 (async () => {
-                    this.first_character = first_character;
-                    this.index_cache = await loadProtobuf(`/index/pages_${first_character}.gz`, "SearchIndex");
+                    this.setState({ first_character: first_character })
+                    this.setState({ index_cache: await loadProtobuf(`/index/pages_${first_character}.gz`, "SearchIndex") });
                     this.setState({ index_cache_uninitialized: false, matches_stale: true });
                 })();
                 return;
@@ -80,11 +83,9 @@ class SearchBox extends React.Component {
             let dropdowns = document.getElementsByClassName("searchbox-dropdown-item");
             if (dropdowns.length > 0) {
                 if (event.key == "ArrowDown") {
-                    event.preventDefault();
                     setFocused(focused => (focused + 1) % dropdowns.length)
                 }
                 if (event.key == "ArrowUp") {
-                    event.preventDefault();
                     setFocused(focused => (focused - 1) % dropdowns.length)
                 }
             }
@@ -98,8 +99,8 @@ class SearchBox extends React.Component {
                 }
                 return;
             }
-            const values = this.index_cache.elements;
-            const priorities = this.index_cache.priorities;
+            const values = this.state.index_cache.elements;
+            const priorities = this.state.index_cache.priorities;
             let matches = [];
             for (let i = 0; i < values.length; i++) {
                 let match_count = is_a_match(input, normalize(values[i]));
