@@ -2,7 +2,7 @@
 import React from 'react';
 
 export { Related, relationship_key };
-import { article_link } from "../navigation/links.js";
+import { article_link } from "../navigation/links";
 import { is_historical_cd } from '../utils/is_historical';
 import { CheckboxSetting } from "./sidebar.js";
 

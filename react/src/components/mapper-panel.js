@@ -8,8 +8,8 @@ import { Related } from "./related-button.js";
 import { PageTemplate } from "../page_template/template.js";
 import "../common.css";
 import "./article.css";
-import { loadProtobuf } from '../load_json.js';
-import { consolidated_shape_link, consolidated_stats_link } from '../navigation/links.js';
+import { loadProtobuf } from '../load_json';
+import { consolidated_shape_link, consolidated_stats_link } from '../navigation/links';
 import { interpolate_color } from '../utils/color.js';
 
 import { RAMPS, parse_ramp } from "../mapper/ramps.js";

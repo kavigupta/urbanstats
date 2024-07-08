@@ -4,7 +4,7 @@ shapely==2.0.2
 cdsapi
 xarray
 suncalc
-protobuf==3.20.0
+protobuf==4.24.4
 geotiff
 imagecodecs
 fire
