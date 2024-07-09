@@ -3,12 +3,11 @@ import React from 'react';
 
 export { Related, relationship_key };
 import { article_link } from "../navigation/links";
-import { is_historical_cd } from '../utils/is_historical';
 import { CheckboxSetting } from "./sidebar.js";
 
 import "./related.css";
 import { mobileLayout } from '../utils/responsive.js';
-import { lighten } from '../utils/color.js';
+import { lighten } from '../utils/color';
 
 function relationship_key(article_type, other_type) {
     return "related__" + article_type + "__" + other_type;

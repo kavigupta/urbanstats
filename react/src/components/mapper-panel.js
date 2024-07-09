@@ -10,7 +10,7 @@ import "../common.css";
 import "./article.css";
 import { loadProtobuf } from '../load_json';
 import { consolidated_shape_link, consolidated_stats_link } from '../navigation/links';
-import { interpolate_color } from '../utils/color.js';
+import { interpolate_color } from '../utils/color';
 
 import { RAMPS, parse_ramp } from "../mapper/ramps.js";
 import { MapperSettings, default_settings, parse_color_stat } from "../mapper/settings.js";
