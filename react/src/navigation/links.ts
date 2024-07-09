@@ -1,60 +1,50 @@
-export {
-    sanitize,
-    index_link,
-    article_link, shape_link, data_link, ordering_link, ordering_data_link,
-    explanation_page_link,
-    consolidated_shape_link, consolidated_stats_link, comparison_link,
-    statistic_link,
-    universe_path
-};
-
-function article_link(universe, longname) {
+export function article_link(universe: string, longname: string) {
     const params = new URLSearchParams()
     params.set('longname', sanitize(longname));
     add_universe_to_params(universe, params);
     return "/article.html?" + params.toString();
 }
 
-function shape_link(longname) {
+export function shape_link(longname: string) {
     return "/shape/" + sanitize(longname) + '.gz'
 }
 
-function data_link(longname) {
+export function data_link(longname: string) {
     return `/data/${sanitize(longname)}.gz`
 }
 
-function index_link(universe, typ) {
+export function index_link(universe: string, typ: string) {
     return `/index/${universe}_${sanitize(typ, false)}.gz`
 }
 
-function ordering_link(universe, type, idx) {
+export function ordering_link(universe: string, type: string, idx: number) {
     return `/order/${universe}__${sanitize(type, false)}_${idx}.gz`
 }
 
-function ordering_data_link(universe, type, idx) {
+export function ordering_data_link(universe: string, type: string, idx: number) {
     return `/order/${universe}__${sanitize(type, false)}_${idx}_data.gz`
 }
 
-function explanation_page_link(explanation) {
+export function explanation_page_link(explanation: string) {
     return `/data-credit.html#explanation_${sanitize(explanation)}`
 }
 
-function consolidated_shape_link(typ) {
+export function consolidated_shape_link(typ: string) {
     return `/consolidated/shapes__${sanitize(typ)}.gz`
 }
 
-function consolidated_stats_link(typ) {
+export function consolidated_stats_link(typ: string) {
     return `/consolidated/stats__${sanitize(typ)}.gz`
 }
 
-function comparison_link(universe, names) {
+export function comparison_link(universe: string, names: string[]) {
     const params = new URLSearchParams()
-    params.set('longnames', JSON.stringify(names.map(sanitize)));
+    params.set('longnames', JSON.stringify(names.map(name => sanitize(name))));
     add_universe_to_params(universe, params);
     return "/comparison.html?" + params.toString();
 }
 
-function statistic_link(universe, statname, article_type, start, amount, order, highlight) {
+export function statistic_link(universe: string, statname: string, article_type: string, start: number, amount: number | "All", order: string, highlight: string) {
     // make start % amount == 0
     if (amount != "All") {
         start = start - 1;
@@ -65,10 +55,10 @@ function statistic_link(universe, statname, article_type, start, amount, order, 
     params.set('statname', statname);
     params.set('article_type', article_type);
     if (start !== undefined) {
-        params.set('start', start);
+        params.set('start', start.toString());
     }
     if (amount !== undefined) {
-        params.set('amount', amount);
+        params.set('amount', `${amount}`)
     }
     if (order !== undefined && order !== null) {
         params.set('order', order);
@@ -80,7 +70,7 @@ function statistic_link(universe, statname, article_type, start, amount, order, 
     return "/statistic.html?" + params.toString();
 }
 
-function sanitize(longname, spaces_around_slash = true) {
+export function sanitize(longname: string, spaces_around_slash = true) {
     let x = longname;
     if (spaces_around_slash) {
         x = x.replace("/", " slash ");
@@ -91,11 +81,11 @@ function sanitize(longname, spaces_around_slash = true) {
     return x;
 }
 
-function universe_path(universe) {
+export function universe_path(universe: string) {
     return `/icons/flags/${universe}.png`
 }
 
-function add_universe_to_params(universe, params) {
+export function add_universe_to_params(universe: string, params: URLSearchParams) {
     if (universe !== undefined)
         params.set("universe", universe)
 }
