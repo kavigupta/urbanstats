@@ -4,7 +4,7 @@ import React from "react";
 
 import { Parser } from 'expr-eval';
 import { DataListSelector } from "./DataListSelector.js";
-import { CheckboxSetting } from "../components/sidebar.js";
+import { CheckboxSetting } from "../components/sidebar";
 
 class FunctionColorStat {
     constructor(name, variables, regressions, expr) {

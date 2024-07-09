@@ -13,11 +13,11 @@ export { PageTemplate };
 import React, { Fragment } from 'react';
 
 import { Header } from "../components/header.js";
-import { Sidebar } from "../components/sidebar.js";
+import { Sidebar } from "../components/sidebar";
 import "../common.css";
 import "../components/article.css";
 import { load_settings } from './settings.js';
-import { mobileLayout } from '../utils/responsive.js';
+import { mobileLayout } from '../utils/responsive';
 import { create_screenshot } from '../components/screenshot.js';
 import { set_universe } from '../universe.js';
 

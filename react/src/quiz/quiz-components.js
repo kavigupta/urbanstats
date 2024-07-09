@@ -6,7 +6,7 @@ import React from 'react';
 import { PageTemplate } from "../page_template/template.js";
 import "../common.css";
 import "../components/quiz.css";
-import { headerTextClass } from '../utils/responsive.js';
+import { headerTextClass } from '../utils/responsive';
 
 
 function nameOfQuizKind(quiz_kind) {

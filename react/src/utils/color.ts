@@ -1,7 +1,5 @@
 
-export { random_color, interpolate_color, lighten };
-
-function random_color(name) {
+export function random_color(name: string) {
     // randomly choose a color hex code where H is between 0 and 360,
     // S is between 50 and 100, and L is between 20 and 50
     // seed random with the hash of longname
@@ -20,7 +18,7 @@ function random_color(name) {
     return `hsl(${random() * 360}, ${50 + random() * 50}%, ${20 + random() * 30}%)`;
 }
 
-function interpolate_color(ramp, item) {
+export function interpolate_color(ramp: [number, string][], item: number) {
     // ramp is a list of [value, color] pairs
     // item is a value
 
@@ -59,12 +57,10 @@ function interpolate_color(ramp, item) {
     return "#" + r.toString(16).padStart(2, "0") + g.toString(16).padStart(2, "0") + b.toString(16).padStart(2, "0");
 }
 
-function lighten(color, fraction) {
-    // assert color is a string
-
+export function lighten(color: string, fraction: number) {
     if (!(typeof color === "string")) {
         throw new Error("color is not a string");
     }
-    const ramp = [[0, color], [1, "#ffffff"]];
+    const ramp: [number, string][] = [[0, color], [1, "#ffffff"]];
     return interpolate_color(ramp, fraction);
 }
