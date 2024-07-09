@@ -2,20 +2,22 @@ import React from 'react';
 
 import "../style.css";
 import "./sidebar.css";
-import { useResponsive } from '../utils/responsive';
-import { BooleanSettings, useSetting, useStatisticCategoryMetadataCheckboxes } from "../page_template/settings";
+import { mobileLayout } from '../utils/responsive';
 
-export function Sidebar() {
-    const statistic_category_metadata_checkboxes = useStatisticCategoryMetadataCheckboxes();
+export function Sidebar(props: {
+    settings: any, set_setting: (key: string, value: any) => void,
+    statistic_category_metadata_checkboxes: { name: string, setting_key: string }[]
+}) {
+    let settings = props.settings;
+    let statistic_category_metadata_checkboxes = props.statistic_category_metadata_checkboxes;
     let sidebar_section_content = "sidebar-section-content";
     let sidebar_section_title = "sidebar-section-title";
-    const responsive = useResponsive();
-    if (responsive.mobileLayout) {
+    if (mobileLayout()) {
         sidebar_section_content += " sidebar-section-content_mobile";
         sidebar_section_title += " sidebar-section-title_mobile";
     }
     return (
-        <div className={"serif sidebar" + (responsive.mobileLayout ? "_mobile" : "")}>
+        <div className={"serif sidebar" + (mobileLayout() ? "_mobile" : "")}>
             <div className="sidebar-section">
                 <div className={sidebar_section_title}>Main Menu</div>
                 <ul className={sidebar_section_content}>
@@ -65,18 +67,24 @@ export function Sidebar() {
                         <CheckboxSetting
                             name="Use Imperial Units"
                             setting_key="use_imperial"
+                            settings={props.settings}
+                            set_setting={props.set_setting}
                         />
                     </li>
                     <li>
                         <CheckboxSetting
                             name="Include Historical Districts"
                             setting_key="show_historical_cds"
+                            settings={props.settings}
+                            set_setting={props.set_setting}
                         />
                     </li>
                     <li>
                         <CheckboxSetting
                             name="Simple Ordinals"
                             setting_key="simple_ordinals"
+                            settings={props.settings}
+                            set_setting={props.set_setting}
                         />
                     </li>
                 </ul>
@@ -88,7 +96,9 @@ export function Sidebar() {
                         <li key={i}>
                             <CheckboxSetting
                                 name={checkbox.name}
-                                setting_key={checkbox.settingKey}
+                                setting_key={checkbox.setting_key}
+                                settings={props.settings}
+                                set_setting={props.set_setting}
                             />
                         </li>
                     )}
@@ -98,16 +108,14 @@ export function Sidebar() {
     );
 }
 
-export function CheckboxSetting(props: { name: string, setting_key: keyof BooleanSettings }) {
-
-    const [checked, setSetting] = useSetting(props.setting_key)
+export function CheckboxSetting(props: { name: string, setting_key: string, settings: any, set_setting: (key: string, value: any) => void }) {
 
     return (
         <div className="checkbox-setting">
             <input
                 type="checkbox"
-                checked={checked}
-                onChange={e => { setSetting(e.target.checked) }}
+                checked={props.settings[props.setting_key] || false}
+                onChange={e => { props.set_setting(props.setting_key, e.target.checked) }}
                 style={{ accentColor: "#5a7dc3" }}
             />
             <label>{props.name}</label>

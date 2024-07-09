@@ -3,10 +3,10 @@ import React from 'react';
 
 export { Related, relationship_key };
 import { article_link } from "../navigation/links";
-import { CheckboxSetting } from "./sidebar.js";
+import { CheckboxSetting } from "./sidebar";
 
 import "./related.css";
-import { mobileLayout } from '../utils/responsive.js';
+import { mobileLayout } from '../utils/responsive';
 import { lighten } from '../utils/color';
 
 function relationship_key(article_type, other_type) {

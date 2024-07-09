@@ -16,7 +16,7 @@ import { RAMPS, parse_ramp } from "../mapper/ramps.js";
 import { MapperSettings, default_settings, parse_color_stat } from "../mapper/settings.js";
 
 import { gunzipSync, gzipSync } from "zlib";
-import { headerTextClass } from '../utils/responsive.js';
+import { headerTextClass } from '../utils/responsive';
 
 class DisplayedMap extends MapGeneric {
     constructor(props) {

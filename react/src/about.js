@@ -4,7 +4,7 @@ import ReactDOM from 'react-dom/client';
 import "./style.css";
 import "./common.css";
 import { PageTemplate } from "./page_template/template.js";
-import { headerTextClass } from './utils/responsive.js';
+import { headerTextClass } from './utils/responsive';
 
 
 class AboutPanel extends PageTemplate {
