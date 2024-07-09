@@ -1,0 +1,13 @@
+{
+    "compilerOptions": {
+        "strict": true,
+        "lib": [
+            "ES2021",
+            "DOM"
+        ],
+        "jsx": "react",
+        "esModuleInterop": true,
+        "target": "ES2022",
+        "module": "CommonJS",
+    }
+}

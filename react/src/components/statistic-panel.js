@@ -6,7 +6,7 @@ import { PageTemplate } from "../page_template/template.js";
 import "../common.css";
 import "./article.css";
 import { headerTextClass, subHeaderTextClass } from '../utils/responsive.js';
-import { article_link, explanation_page_link, sanitize, statistic_link } from '../navigation/links.js';
+import { article_link, explanation_page_link, sanitize, statistic_link } from '../navigation/links';
 import { Percentile, Statistic } from './table.js';
 import { display_type } from '../utils/text.js';
 
@@ -109,7 +109,7 @@ class StatisticPanel extends PageTemplate {
     main_content() {
         return <div>
             <div ref={this.headers_ref}>
-                <div className={headerTextClass()}>{this.props.statname}</div>
+                <div className={headerTextClass()}>{this.props.rendered_statname}</div>
                 {/* // TODO plural */}
                 <div className={subHeaderTextClass()}>{display_type(this.state.current_universe, this.props.article_type)} ({this.rendered_order()})</div>
             </div>

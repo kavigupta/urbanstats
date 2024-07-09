@@ -2,7 +2,7 @@ import React from 'react';
 import { isMobile, isFirefox } from 'react-device-detect';
 
 import { Statistic } from "../components/table.js";
-import { article_link } from "../navigation/links.js";
+import { article_link } from "../navigation/links";
 
 
 import { Header, nameOfQuizKind, user_id } from './quiz-components.js';

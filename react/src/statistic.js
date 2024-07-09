@@ -6,8 +6,8 @@ import "./common.css";
 
 import { load_ordering_protobuf, load_ordering } from './load_json';
 import { StatisticPanel } from './components/statistic-panel.js';
-import { for_type } from './components/load-article.js';
-import { get_universe, remove_universe_if_default } from './universe.js';
+import { for_type, render_statname } from './components/load-article.js';
+import { get_universe, longname_is_exclusively_american, remove_universe_if_default } from './universe.js';
 
 
 async function loadPage() {
@@ -41,6 +41,7 @@ async function loadPage() {
     document.title = statname;
     const root = ReactDOM.createRoot(document.getElementById("root"));
     const universes = require("./data/universes_ordered.json");
+    const exclusively_american = article_names.every(longname_is_exclusively_american);
     root.render(<StatisticPanel
         statname={statname}
         statpath={statpath}
@@ -57,6 +58,7 @@ async function loadPage() {
         data={data}
         universes={universes}
         universe={universe}
+        rendered_statname={render_statname(names.indexOf(statname), statname, exclusively_american)}
     />);
 }
 
