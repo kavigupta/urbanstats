@@ -5,7 +5,7 @@ import React from 'react';
 import { PageTemplate } from "../page_template/template.js";
 import "../common.css";
 import "./article.css";
-import { headerTextClass, subHeaderTextClass } from '../utils/responsive.js';
+import { headerTextClass, subHeaderTextClass } from '../utils/responsive';
 import { article_link, explanation_page_link, sanitize, statistic_link } from '../navigation/links';
 import { Percentile, Statistic } from './table.js';
 import { display_type } from '../utils/text.js';
