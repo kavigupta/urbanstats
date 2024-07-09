@@ -9,7 +9,7 @@ import "../common.css";
 import "./article.css";
 import { load_article } from './load-article.js';
 import { comparisonHeadStyle, headerTextClass, mobileLayout, subHeaderTextClass } from '../utils/responsive.js';
-import { SearchBox } from './search.js';
+import { SearchBox } from './search';
 import { article_link, sanitize } from '../navigation/links';
 import { lighten } from '../utils/color.js';
 import { longname_is_exclusively_american } from '../universe.js';

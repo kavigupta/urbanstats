@@ -1,26 +1,27 @@
 import React from 'react';
 
-export { SearchBox };
-
 import { loadProtobuf } from '../load_json';
 import { is_historical_cd } from '../utils/is_historical';
 import "../common.css";
+import { SearchIndex } from '../utils/protos';
 
-const SearchBox = (props) => {
+export const SearchBox = (props: {
+    on_change: (inp: string) => void, autoFocus: boolean, placeholder: string, style: any, settings: any
+}) => {
 
-    const [matches, setMatches] = React.useState([]);
+    const [matches, setMatches] = React.useState<string[]>([]);
     const [matchesStale, setMatchesStale] = React.useState(false);
-    const [indexCache, setIndexCache] = React.useState(undefined);
+    const [indexCache, setIndexCache] = React.useState<SearchIndex | undefined>(undefined);
     const [indexCacheUninitialized, setIndexCacheUninitialized] = React.useState(true);
-    const [firstCharacter, setFirstCharacter] = React.useState(undefined);
+    const [firstCharacter, setFirstCharacter] = React.useState<string | undefined>(undefined);
     const [focused, setFocused] = React.useState(0);
 
-    const form = React.useRef();
-    const textbox = React.useRef();
-    const dropdown = React.useRef();
+    const form = React.useRef<HTMLFormElement>(null);
+    const textbox = React.useRef<HTMLInputElement>(null);
+    const dropdown = React.useRef<HTMLDivElement>(null);
 
 
-    const searchbox_dropdown_item_style = idx => {
+    const searchbox_dropdown_item_style = (idx: number) => {
         return {
             padding: "0.5em",
             cursor: "pointer",
@@ -28,7 +29,7 @@ const SearchBox = (props) => {
         };
     }
 
-    const onFormSubmit = event => {
+    const onFormSubmit = (event: React.FormEvent) => {
         event.preventDefault();
         let terms = matches;
         if (terms.length > 0) {
@@ -38,7 +39,7 @@ const SearchBox = (props) => {
     }
 
     const get_input = () => {
-        var input = textbox.current.value;
+        var input = textbox.current!.value;
         input = normalize(input);
         return input;
     }
@@ -67,7 +68,7 @@ const SearchBox = (props) => {
         }
     }
 
-    const onTextBoxKeyUp = (event) => {
+    const onTextBoxKeyUp = (event: React.KeyboardEvent<HTMLInputElement>) => {
 
         reload_cache();
         // this.setState({ matches_stale: true });
@@ -93,8 +94,8 @@ const SearchBox = (props) => {
             }
             return;
         }
-        const values = indexCache.elements;
-        const priorities = indexCache.priorities;
+        const values = indexCache!.elements;
+        const priorities = indexCache!.priorities;
         let matches_new = [];
         for (let i = 0; i < values.length; i++) {
             let match_count = is_a_match(input, normalize(values[i]));
@@ -124,7 +125,8 @@ const SearchBox = (props) => {
     return (
         <form
             autoComplete="off" ref={form}
-            style={{ marginBlockEnd: "0em", position: "relative", width: "100%" }}
+            style={{ marginBlockEnd: "0em", position: "relative", width: "100%" }
+            }
             onSubmit={onFormSubmit}
         >
             <input
@@ -151,6 +153,7 @@ const SearchBox = (props) => {
             }>
                 {
                     matches.map((location, idx) =>
+                    (
                         <div
                             key={location}
                             className="serif searchbox-dropdown-item"
@@ -159,7 +162,8 @@ const SearchBox = (props) => {
                             onMouseOver={() =>
                                 setFocused(idx)
                             }
-                        >{location}</div>
+                        > {location} </div>
+                    )
                     )
                 }
             </div>
@@ -167,10 +171,10 @@ const SearchBox = (props) => {
     );
 }
 
-function top_10(matches) {
+function top_10(matches: number[][]) {
     const num_prioritized = 3;
-    const sort_key = idx => {
-        return (a, b) => {
+    const sort_key = (idx: number) => {
+        return (a: number[], b: number[]) => {
             if (a[idx] != b[idx]) {
                 return b[idx] - a[idx];
             }
@@ -196,9 +200,9 @@ function top_10(matches) {
 
 /*
     Check whether a is a substring of b (does not have to be contiguous)
-
+ 
 */
-function is_a_match(a, b) {
+function is_a_match(a: string, b: string) {
     let i = 0;
     let match_count = 0;
     let prev_match = true;
@@ -219,11 +223,11 @@ function is_a_match(a, b) {
     return 0;
 }
 
-function normalize(a) {
+function normalize(a: string) {
     return a.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 }
 
-function is_international_duplicate(x) {
+function is_international_duplicate(x: string) {
     // ends with [SN], USA
     return x.endsWith(" [SN], USA");
 }
