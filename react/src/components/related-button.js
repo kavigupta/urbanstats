@@ -17,52 +17,47 @@ function relationship_key(article_type, other_type) {
 const type_ordering_idx = require("../data/type_ordering_idx.json");
 const type_to_type_category = require("../data/type_to_type_category.json");
 
-class RelatedButton extends React.Component {
-    constructor(props) {
-        super(props);
+const RED = "#f96d6d";
+const BLUE = "#5a7dc3";
+const ORANGE = "#af6707";
+const PURPLE = "#975ac3";
+const DARK_GRAY = "#4e525a";
+const PINK = "#c767b0";
+const GREEN = "#8ac35a";
+const YELLOW = "#b8a32f";
+
+const colors_each = {
+    "International": RED,
+    "US Subdivision": BLUE,
+    "Census": ORANGE,
+    "Political": PURPLE,
+    "Oddball": DARK_GRAY,
+    "School": YELLOW,
+    "Small": PINK,
+    "Native": GREEN,
+};
+
+const RelatedButton = props => {
+
+    const type_category = type_to_type_category[props.rowType];
+
+    let classes = `serif button_related`
+    if (mobileLayout()) {
+        classes += " button_related_mobile";
     }
-
-    render() {
-        const RED = "#f96d6d";
-        const BLUE = "#5a7dc3";
-        const ORANGE = "#af6707";
-        const PURPLE = "#975ac3";
-        const DARK_GRAY = "#4e525a";
-        const PINK = "#c767b0";
-        const GREEN = "#8ac35a";
-        const YELLOW = "#b8a32f";
-
-        const type_category = type_to_type_category[this.props.rowType];
-
-        const colors_each = {
-            "International": RED,
-            "US Subdivision": BLUE,
-            "Census": ORANGE,
-            "Political": PURPLE,
-            "Oddball": DARK_GRAY,
-            "School": YELLOW,
-            "Small": PINK,
-            "Native": GREEN,
-        };
-
-        let classes = `serif button_related`
-        if (mobileLayout()) {
-            classes += " button_related_mobile";
-        }
-        const color = colors_each[type_category];
-        if (color === undefined) {
-            throw new Error("color is undefined; rowType is " + this.props.rowType + " and type_category is " + type_category);
-        }
-        return (
-            <li className={"linklistel" + (mobileLayout() ? " linklistel_mobile" : "")}>
-                <a
-                    className={classes}
-                    style={{ color: "black", backgroundColor: lighten(color, 0.7) }}
-                    href={article_link(this.props.universe, this.props.longname)}>{this.props.shortname}
-                </a>
-            </li>
-        );
+    const color = colors_each[type_category];
+    if (color === undefined) {
+        throw new Error("color is undefined; rowType is " + props.rowType + " and type_category is " + type_category);
     }
+    return (
+        <li className={"linklistel" + (mobileLayout() ? " linklistel_mobile" : "")}>
+            <a
+                className={classes}
+                style={{ color: "black", backgroundColor: lighten(color, 0.7) }}
+                href={article_link(props.universe, props.longname)}>{props.shortname}
+            </a>
+        </li>
+    );
 }
 
 class RelatedList extends React.Component {
@@ -70,13 +65,8 @@ class RelatedList extends React.Component {
         super(props);
     }
 
-    key_for_setting() {
-        return relationship_key(this.props.article_type, this.props.button_type);
-    }
-
-
     render() {
-        let setting_key = this.key_for_setting();
+        let setting_key = relationship_key(this.props.article_type, this.props.button_type);
         return (
             <li className="list_of_lists">
                 <div style={{ display: "flex" }}>
@@ -97,9 +87,11 @@ class RelatedList extends React.Component {
                                     <ul key={j} className="linklist">
                                         <li
                                             className={"serif linklistel" + (mobileLayout() ? " linklistel_mobile" : "")}
-                                            style={{ fontSize:
-                                                mobileLayout() ? "12pt": "10pt"
-                                                , paddingTop: "1pt", fontWeight: 500 }}
+                                            style={{
+                                                fontSize:
+                                                    mobileLayout() ? "12pt" : "10pt"
+                                                , paddingTop: "1pt", fontWeight: 500
+                                            }}
                                         >
                                             {this.display_name(relationship_type)}
                                         </li>
