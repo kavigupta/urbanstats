@@ -13,9 +13,6 @@ import { lighten } from '../utils/color.js';
 function relationship_key(article_type, other_type) {
     return "related__" + article_type + "__" + other_type;
 }
-function to_name(name) {
-    return name.toLowerCase().replaceAll(" ", "_");
-}
 
 const type_ordering_idx = require("../data/type_ordering_idx.json");
 const type_to_type_category = require("../data/type_to_type_category.json");
