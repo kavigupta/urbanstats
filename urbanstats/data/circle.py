@@ -504,7 +504,7 @@ def specify_duplicates(frame, long_to_short):
 
 
 @permacache(
-    "urbanstats/data/circle/overlapping_circles_frame_5",
+    "urbanstats/data/circle/overlapping_circles_frame_7",
     key_function=dict(country_shapefile=lambda x: x.hash_key),
 )
 def overlapping_circles_frame(
@@ -519,7 +519,8 @@ def overlapping_circles_frame(
     specify_duplicates(frame, long_to_short)
     countries = relevant_regions(country_shapefile, frame, 3, 0.9)
     frame["suffix"] = frame.id.apply(lambda x: "-".join(countries[x]))
-    frame["longname"] = frame.shortname + " " + suffix + ", " + frame.suffix
+    frame["shortname"] = frame.shortname + " " + suffix
+    frame["longname"] = frame["shortname"] + ", " + frame.suffix
     frame.geometry = frame.geometry.intersection(
         shapely.geometry.box(-180, -89, 180, 89)
     )
@@ -727,8 +728,12 @@ def circle_shapefile_object(country_shapefile, population, just_usa):
         prefix = "us_"
     else:
         prefix = ""
+    version = 25
+    if population == 1e7:
+        # just special case for 10M, since there was some weird caching issue.
+        version += 0.1
     return Shapefile(
-        hash_key=prefix + f"population_circle_{named_populations[population]}_5",
+        hash_key=prefix + f"population_circle_{named_populations[population]}_{version}",
         path=lambda: overlapping_circles_frame(
             country_shapefile, population, named_populations[population] + "PC"
         ),
