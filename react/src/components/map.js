@@ -4,7 +4,7 @@ export { Map, MapGeneric };
 
 import { shape_link, article_link } from "../navigation/links";
 import { relationship_key } from "./related-button.js";
-import { random_color } from "../utils/color.js";
+import { random_color } from "../utils/color";
 
 import "./map.css";
 import { is_historical_cd } from '../utils/is_historical';

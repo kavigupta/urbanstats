@@ -1,19 +1,18 @@
 
-export { headerTextClass, subHeaderTextClass, mobileLayout, comparisonHeadStyle }
 
-function mobileLayout() {
+export function mobileLayout() {
     return window.innerWidth <= 1100;
 }
 
-function headerTextClass() {
+export function headerTextClass() {
     return "centered_text " + (mobileLayout() ? "headertext_mobile" : "headertext")
 }
 
-function subHeaderTextClass() {
+export function subHeaderTextClass() {
     return "centered_text " + (mobileLayout() ? "subheadertext_mobile" : "subheadertext");
 }
 
-function comparisonHeadStyle(
+export function comparisonHeadStyle(
     align = "center"
 ) {
     // bold
