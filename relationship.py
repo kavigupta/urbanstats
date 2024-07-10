@@ -386,6 +386,7 @@ type_category_order = {
     "Native": 50,
     "School": 60,
     "Oddball": 70,
+    "Kavi": 80,
 }
 
 is_american = {k: v.american for k, v in shapefiles_for_stats.items()}
