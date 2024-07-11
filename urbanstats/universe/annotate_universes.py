@@ -5,6 +5,7 @@ import us
 from permacache import permacache
 
 from relationship import continents_for_all, non_us_countries_for_all, states_for_all
+from urbanstats.data.circle import pc_types
 from urbanstats.special_cases.country import continent_names
 
 from .universe_constants import CONTINENTS, COUNTRIES
@@ -23,7 +24,9 @@ def attach_usa_universes(american):
 subnation_usa = re.compile(r"(?!([ ,-]))(?P<state>[^,\-\s][^,\-]*), USA")
 
 
-def compute_intl_universes(longname):
+def compute_intl_universes(longname, long_to_type):
+    # can intersect the US but we don't want to add state universes
+    usa_but_no_states = long_to_type[longname] in pc_types
     result = ["world"] + continents_for_all()[longname]
     if longname in continent_names():
         return result
@@ -31,7 +34,6 @@ def compute_intl_universes(longname):
     if "USA" not in longname:
         return result
     if "USA" not in result:
-        assert len(result) == 2, "should be just world and continent"
         result += ["USA"]
     if longname == "USA":
         return result
@@ -45,6 +47,10 @@ def compute_intl_universes(longname):
         codes = [get_universe_name_for_state(us.states.lookup(code)) for code in codes]
         result += codes
         return result
+
+    if usa_but_no_states:
+        return result
+
     assert subnation_usa.match(longname), longname
     return result + [longname]
 
@@ -52,7 +58,10 @@ def compute_intl_universes(longname):
 def attach_intl_universes(intl):
     assert country_names() == COUNTRIES
     assert list(continent_names()) == CONTINENTS
-    intl["universes"] = [compute_intl_universes(longname) for longname in intl.longname]
+    long_to_type = dict(zip(intl.longname, intl.type))
+    intl["universes"] = [
+        compute_intl_universes(longname, long_to_type) for longname in intl.longname
+    ]
 
 
 @permacache("urbanstats/universe/annotate_universes/country_names_2")

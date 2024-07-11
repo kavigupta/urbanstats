@@ -16,6 +16,7 @@ type_category_to_priority = {
     "Political": 3,
     "School": 3,
     "Oddball": 4,
+    "Kavi": 5,
 }
 
 

@@ -33,15 +33,17 @@ class RelatedButton extends React.Component {
         const PINK = "#c767b0";
         const GREEN = "#8ac35a";
         const YELLOW = "#b8a32f";
+        const CYAN = "#07a5af";
 
         const type_category = type_to_type_category[this.props.rowType];
 
         const colors_each = {
             "International": RED,
             "US Subdivision": BLUE,
-            "Census": ORANGE,
+            "Census": CYAN,
             "Political": PURPLE,
             "Oddball": DARK_GRAY,
+            "Kavi": ORANGE,
             "School": YELLOW,
             "Small": PINK,
             "Native": GREEN,
@@ -99,9 +101,11 @@ class RelatedList extends React.Component {
                                     <ul key={j} className="linklist">
                                         <li
                                             className={"serif linklistel" + (mobileLayout() ? " linklistel_mobile" : "")}
-                                            style={{ fontSize:
-                                                mobileLayout() ? "12pt": "10pt"
-                                                , paddingTop: "1pt", fontWeight: 500 }}
+                                            style={{
+                                                fontSize:
+                                                    mobileLayout() ? "12pt" : "10pt"
+                                                , paddingTop: "1pt", fontWeight: 500
+                                            }}
                                         >
                                             {this.display_name(relationship_type)}
                                         </li>
