@@ -4,14 +4,24 @@ export { for_type, load_article };
 
 const index_list_info = require("../data/index_lists.json");
 
-function for_type(universe, statcol, typ) {
-    const counts_by_article_type = require("../data/counts_by_article_type.json");
+function lookup_in_compressed_sequence(seq, idx) {
+    // translation of produce_html_page.py::lookup_in_compressed_sequence
+    for (let ptr = 0; ptr < seq.length; ptr += 1) {
+        const [value, length] = seq[ptr];
+        if (idx < length) {
+            return value;
+        }
+        idx -= length;
+    }
+}
 
-    return counts_by_article_type[universe].filter(
-        (x) =>
-            x[0][1] == typ
-            && JSON.stringify(x[0][0]) == JSON.stringify(statcol)
-    )[0][1];
+function for_type(universe, statcol, typ) {
+    const statnames = require("../data/statistic_list.json");
+    const idx = statnames.indexOf(statcol);
+    const counts_by_universe = require("../data/counts_by_article_type.json");
+    const counts_by_type = counts_by_universe[universe][typ];
+
+    return lookup_in_compressed_sequence(counts_by_type, idx);
 }
 
 function compute_indices(longname, typ) {
