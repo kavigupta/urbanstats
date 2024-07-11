@@ -75,6 +75,13 @@ class DataCreditPanel extends PageTemplate {
                             We filtered this dataset for urban centers with a quality code (QA2_1V) of 1, indicating a true
                             positive, and which are named.
                         </p>
+                        <p>
+                            The population circles were defined using the GHS-POP dataset, using an algorithm hand-coded
+                            for the purpose of this website. Detailed maps and JSON files are available at&nbsp;
+                            <a href="https://github.com/kavigupta/urbanstats/tree/master/outputs/population_circles">
+                                the GitHub repository
+                            </a>.
+                        </p>
                     </div>
                     <h2 ref={this.nref("geography")}>Geography Metrics</h2>
                     <div>
