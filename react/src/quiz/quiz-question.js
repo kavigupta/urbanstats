@@ -214,9 +214,29 @@ class JuxtastatQuizQuestion extends QuizQuestion {
     }
 }
 
-export function render_question(question) {
+export function question_string(question) {
     if (question.startsWith("!FULL ")) {
         return question.slice(6);
     }
     return `Which has a ${question}?`
+}
+
+export function render_question(question_text) {
+    if (question_text.includes("!TOOLTIP")) {
+        const [question, tooltip] = question_text.split("!TOOLTIP ");
+        return <span>{question_string(question)}<Tooltip content={tooltip} /></span>;
+    }
+    const q = question_string(question_text);
+    return q;
+}
+
+export function Tooltip(props) {
+    // create an image that looks like a little [?] text superscript that when you click on it
+    // shows the tooltip
+    const [show, setShow] = React.useState(false);
+    return <span>
+        <span style={{ cursor: "pointer" }} onClick={() => setShow(!show)}><sup>🛈</sup></span>
+        {show ? <div style={{ fontSize: "smaller" }}>({props.content})</div> : undefined
+        }
+    </span >
 }
