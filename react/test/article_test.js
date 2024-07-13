@@ -405,6 +405,19 @@ test('comparison-3-editable-number-third', async t => {
         .eql(comparison_page([upper_sgv, pasadena, chicago]));
 })
 
+fixture('plotted-across-180')
+    .page(TARGET + '/comparison.html?longnames=%5B%22England%2C+United+Kingdom%22%2C%22Alaska%2C+USA%22%2C%22Chukotskiy+avtonomnyy+okrug%2C+Russian+Federation%22%5D')
+    .beforeEach(async t => {
+        await t.eval(() => localStorage.clear());
+    });
+
+test('comparison-3-plotted-across-180', async t => {
+    await t.resizeWindow(1400, 800);
+    await t.eval(() => location.reload(true));
+    await screencap(t, "comparison/plotted-across-180");
+});
+
+
 fixture('statistics')
     .page(TARGET + '/article.html?longname=Indianapolis+IN+HRR%2C+USA')
     .beforeEach(async t => {
