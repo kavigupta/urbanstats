@@ -235,6 +235,29 @@ class DataCreditPanel extends PageTemplate {
                             We disaggregate industry data from the block group level to the block level using population
                             over 18 as a weight. Numbers are percentages of the employed population.
                         </p>
+
+                        <p>
+                            Details on the Occupation codes can be found <a href="https://www2.census.gov/programs-surveys/cps/methodology/Occupation%20Codes.pdf">here</a>,
+                            a summary is provided below:
+                            <div style={{ marginLeft: "1em", marginTop: "1em", border: "1px solid black" }}>
+                                <div>
+                                    {
+                                        require("./data/explanation_occupation_table.json").map(([name, description], i) =>
+                                            <div style={{
+                                                display: "flex", flexDirection: "row",
+                                                borderTop: i === 0 ? "none" : "1px solid black"
+                                            }}>
+                                                <div
+                                                    style={{ width: "30%", padding: "1em" }}
+                                                >
+                                                    {name}</div>
+                                                <div style={{ width: "70%", padding: "1em" }}>{description}</div>
+                                            </div>
+                                        )
+                                    }
+                                </div>
+                            </div>
+                        </p>
                     </div>
 
                     <h2 ref={this.nref("housing-acs")}>Housing</h2>
