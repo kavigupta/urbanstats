@@ -235,7 +235,7 @@ export function Tooltip(props) {
     // shows the tooltip
     const [show, setShow] = React.useState(false);
     return <span>
-        <span style={{ cursor: "pointer" }} onClick={() => setShow(!show)}><sup>🛈</sup></span>
+        <span style={{ cursor: "pointer" }} onClick={() => setShow(!show)}><sup>ℹ️</sup></span>
         {show ? <div style={{ fontSize: "smaller" }}>({props.content})</div> : undefined
         }
     </span >
