@@ -3,9 +3,11 @@ import json
 import numpy as np
 import shapely
 import tqdm.auto as tqdm
+from permacache import permacache, stable_hash
 
 from produce_html_page import create_filename
 from shapefiles import shapefiles
+from urbanstats.geometry.classify_coordinate_zone import classify_coordinate_zone
 from urbanstats.protobuf import data_files_pb2
 from urbanstats.protobuf.utils import write_gzip
 
@@ -22,9 +24,23 @@ def round_floats(obj):
 
 def produce_geometry_json(folder, r):
     fname = create_filename(r.longname, "gz")
-    res = shapely.geometry.mapping(r.geometry)
-    res = convert_to_protobuf(res)
-    write_gzip(res, f"{folder}/{fname}")
+    path = f"{folder}/{fname}"
+    produce_geometry_json_cached(r, path)
+
+
+@permacache(
+    "urbanstats/output_geometry/produce_geometry_json_cached_2",
+    key_function=dict(
+        r=lambda row: stable_hash(
+            [row[x] for x in row.index if x != "geometry"]
+            + [shapely.geometry.mapping(row.geometry)]
+        )
+    ),
+    out_file=["path"],
+)
+def produce_geometry_json_cached(r, path):
+    res = convert_to_protobuf(r.geometry)
+    write_gzip(res, path)
 
 
 def produce_all_geometry_json(path, valid_names):
@@ -65,8 +81,14 @@ def to_protobuf_multipolygon(f_python):
 
 
 def convert_to_protobuf(f_python):
+    zones, f_python = classify_coordinate_zone(f_python)
+    center_lon = f_python.centroid.x
+    f_python = shapely.geometry.mapping(f_python)
+
     f = data_files_pb2.Feature()
     assert isinstance(f_python, dict)
+    f.zones.extend(zones)
+    f.center_lon = center_lon
     assert f_python.keys() == {"type", "coordinates"}
     if f_python["type"] == "Polygon":
         f.polygon.CopyFrom(to_protobuf_polygon(f_python))

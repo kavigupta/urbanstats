@@ -55,6 +55,8 @@ message Feature {
         Polygon polygon = 1;
         MultiPolygon multipolygon = 2;
     }
+    repeated int32 zones = 3;
+    float center_lon = 4;
 }
 
 // string lists

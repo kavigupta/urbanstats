@@ -862,6 +862,12 @@ export interface IFeature {
 
     /** Feature multipolygon */
     multipolygon?: (IMultiPolygon|null);
+
+    /** Feature zones */
+    zones?: (number[]|null);
+
+    /** Feature centerLon */
+    centerLon?: (number|null);
 }
 
 /** Represents a Feature. */
@@ -878,6 +884,12 @@ export class Feature implements IFeature {
 
     /** Feature multipolygon. */
     public multipolygon?: (IMultiPolygon|null);
+
+    /** Feature zones. */
+    public zones: number[];
+
+    /** Feature centerLon. */
+    public centerLon: number;
 
     /** Feature geometry. */
     public geometry?: ("polygon"|"multipolygon");
