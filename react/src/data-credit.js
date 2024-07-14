@@ -262,13 +262,17 @@ class DataCreditPanel extends PageTemplate {
                             over 18 as a weight. Numbers are percentages of the employed population.
                         </p>
 
-                        <p>
-                            <ExplanationTable
-                                table={industry_occupation_table["occupation"]}
-                                name="Occupation"
-                                link="https://www2.census.gov/programs-surveys/cps/methodology/Occupation%20Codes.pdf"
-                            />
-                        </p>
+                        <ExplanationTable
+                            table={industry_occupation_table["industry"]}
+                            name="Industry"
+                            // https://www.bls.gov/cps/cpsaat18.htm
+                            link="https://archive.is/e06LF"
+                        />
+                        <ExplanationTable
+                            table={industry_occupation_table["occupation"]}
+                            name="Occupation"
+                            link="https://www2.census.gov/programs-surveys/cps/methodology/Occupation%20Codes.pdf"
+                        />
                     </div>
 
                     <h2 ref={this.nref("housing-acs")}>Housing</h2>
