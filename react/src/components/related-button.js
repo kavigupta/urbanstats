@@ -24,13 +24,15 @@ const DARK_GRAY = "#4e525a";
 const PINK = "#c767b0";
 const GREEN = "#8ac35a";
 const YELLOW = "#b8a32f";
+const CYAN = "#07a5af";
 
 const colors_each = {
     "International": RED,
     "US Subdivision": BLUE,
-    "Census": ORANGE,
+    "Census": CYAN,
     "Political": PURPLE,
     "Oddball": DARK_GRAY,
+    "Kavi": ORANGE,
     "School": YELLOW,
     "Small": PINK,
     "Native": GREEN,

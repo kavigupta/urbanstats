@@ -5,6 +5,16 @@ from urbanstats.statistics.statistic_collection import (
     CensusStatisticsColection,
 )
 
+DENSITY_EXPLANATION_AW = (
+    "!TOOLTIP Area-weighted density is the total population divided by the total area."
+)
+
+DENSITY_EXPLANATION_PW = (
+    "!TOOLTIP Population-weighted density is computed by computing the density"
+    " within the given radius for each person in the region and then averaging the results."
+    " This is a better measure of the density that people actually experience."
+)
+
 
 def format_radius(x):
     if x < 1:
@@ -51,8 +61,9 @@ class CensusBasics(CensusStatisticsColection):
     def quiz_question_names(self):
         return {
             "population": "higher population",
-            "ad_1": "higher population-weighted density (r=1km)",
-            "sd": "higher area-weighted density",
+            "ad_1": "higher population-weighted density (r=1km)"
+            + DENSITY_EXPLANATION_PW,
+            "sd": "higher area-weighted density" + DENSITY_EXPLANATION_AW,
         }
 
     def quiz_question_unused(self):

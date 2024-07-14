@@ -40,6 +40,8 @@ from urbanstats.special_cases.merge_international import (
     merge_international_and_domestic,
 )
 from urbanstats.special_cases.simplified_country import all_simplified_countries
+from urbanstats.statistics.collections.industry import IndustryStatistics
+from urbanstats.statistics.collections.occupation import OccupationStatistics
 from urbanstats.statistics.collections_list import statistic_collections
 from urbanstats.universe.annotate_universes import (
     all_universes,
@@ -85,7 +87,7 @@ def international_shapefile():
                 t[k] = s.meta[k]
             ts.append(t)
     intl = pd.concat(ts)
-    intl = intl[intl.area > 10].copy()
+    # intl = intl[intl.area > 10].copy()
     intl = intl[intl.gpw_population > 0].copy()
     intl = intl.reset_index(drop=True)
     return intl
@@ -293,6 +295,14 @@ def main(
         json.dump(list([name for name in get_explanation_page().values()]), f)
     with open(f"react/src/data/universes_ordered.json", "w") as f:
         json.dump(list([name for name in all_universes()]), f)
+    with open(f"react/src/data/explanation_industry_occupation_table.json", "w") as f:
+        json.dump(
+            {
+                "industry": IndustryStatistics().table(),
+                "occupation": OccupationStatistics().table(),
+            },
+            f,
+        )
 
     output_names()
     output_ramps()

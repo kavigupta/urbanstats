@@ -320,8 +320,20 @@ def add(d, edges):
 
 
 tiers = [
-    ["Continent"],
-    ["Country"],
+    [
+        "Continent",
+        "1B Person Circle",
+        "US 1B Person Circle",
+        "500M Person Circle",
+        "US 500M Person Circle",
+    ],
+    [
+        "Country",
+        "200M Person Circle",
+        "US 200M Person Circle",
+        "100M Person Circle",
+        "US 100M Person Circle",
+    ],
     [
         "State",
         "Subnational Region",
@@ -331,6 +343,8 @@ tiers = [
         "Media Market",
         "USDA County Type",
         "Hospital Referral Region",
+        "50M Person Circle",
+        "US 50M Person Circle",
     ],
     [
         "CSA",
@@ -347,6 +361,12 @@ tiers = [
         "Hospital Service Area",
         "Urban Center",
         "Urban Center",
+        "20M Person Circle",
+        "US 20M Person Circle",
+        "10M Person Circle",
+        "US 10M Person Circle",
+        "5M Person Circle",
+        "US 5M Person Circle",
     ],
     ["CCD", "City", "School District"],
     ["Neighborhood", "ZIP"],
@@ -366,6 +386,7 @@ type_category_order = {
     "Native": 50,
     "School": 60,
     "Oddball": 70,
+    "Kavi": 80,
 }
 
 is_american = {k: v.american for k, v in shapefiles_for_stats.items()}

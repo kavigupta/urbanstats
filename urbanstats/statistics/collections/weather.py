@@ -2,6 +2,13 @@ from urbanstats.statistics.statistic_collection import USWeatherStatisticsCollec
 from urbanstats.weather.stats import era5_statistics
 
 
+POPULATION_WEIGHTED_EXPLANATION = (
+    "!TOOLTIP Population weighted weather"
+    " statistics are calculated by computing the weather statistic for"
+    " each person in the region and then averaging the results."
+)
+
+
 class USWeatherStatistics(USWeatherStatisticsCollection):
     def name_for_each_statistic(self):
         return {k: stat.display_name for k, stat in era5_statistics.items()}
@@ -13,7 +20,7 @@ class USWeatherStatistics(USWeatherStatisticsCollection):
         return self.same_for_each_name("weather")
 
     def quiz_question_names(self):
-        return {
+        shortnames = {
             "mean_high_temp_4": "higher mean daily high temperature (population weighted)",
             "mean_high_temp_winter_4": "higher mean daily high temperature in winter (population weighted)",
             "mean_high_temp_spring_4": "higher mean daily high temperature in spring (population weighted)",
@@ -30,6 +37,7 @@ class USWeatherStatistics(USWeatherStatisticsCollection):
             "rainfall_4": "higher rainfall (population weighted)",
             "hours_sunny_4": "!FULL Which has more hours of sun per day on average? (population weighted)",
         }
+        return {k: v + POPULATION_WEIGHTED_EXPLANATION for k, v in shortnames.items()}
 
     def quiz_question_unused(self):
         return [

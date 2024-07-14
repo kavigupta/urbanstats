@@ -13,7 +13,7 @@ def tag_international_duplicates(intl):
 
 def merge_international_row(row_international, row_domestic):
     for col in row_international.index:
-        if col in ["longname", "area", "compactness", "type", "source", "perimiter"]:
+        if col in ["longname", "area", "compactness", "type", "source", "perimiter", "type_category"]:
             continue
         if row_international[col] == row_domestic[col]:
             continue
@@ -57,6 +57,7 @@ def merge_international_and_domestic(intl, usa):
     intl = tag_international_duplicates(intl)
     full = pd.concat([usa, intl]).reset_index(drop=True)
     full = merge_international(full)
+    del full["type_category"]
     popu = np.array(full.population)
     popu[np.isnan(popu)] = full.gpw_population[np.isnan(popu)]
     full["best_population_estimate"] = popu

@@ -22,12 +22,12 @@ class GenerationStatistics(ACSStatisticsColection):
 
     def quiz_question_names(self):
         return {
-            "generation_silent": "higher % of people who are silent generation",
-            "generation_boomer": "higher % of people who are boomers",
-            "generation_genx": "higher % of people who are gen x",
-            "generation_millenial": "higher % of people who are millennials",
-            "generation_genz": "higher % of people who are gen z",
-            "generation_genalpha": "higher % of people who are gen alpha",
+            "generation_silent": "higher % of people who are silent generation!TOOLTIP born before 1946",
+            "generation_boomer": "higher % of people who are boomers!TOOLTIP born between 1946 and 1966",
+            "generation_genx": "higher % of people who are gen x!TOOLTIP born between 1967 and 1981",
+            "generation_millenial": "higher % of people who are millennials!TOOLTIP born between 1982 and 1996",
+            "generation_genz": "higher % of people who are gen z!TOOLTIP born between 1997 and 2011",
+            "generation_genalpha": "higher % of people who are gen alpha!TOOLTIP born between 2012 and 2021",
         }
 
     def quiz_question_unused(self):

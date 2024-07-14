@@ -6,6 +6,8 @@ import "./common.css";
 import { PageTemplate } from "./page_template/template.js";
 import { headerTextClass } from './utils/responsive';
 
+const industry_occupation_table = require("./data/explanation_industry_occupation_table.json");
+
 function ScrollHereOnceLoaded(props) {
     const ref = React.useRef(null);
     React.useEffect(() => {
@@ -15,6 +17,30 @@ function ScrollHereOnceLoaded(props) {
     }, [ref.current]);
     return <div ref={ref}>{props.children}</div>;
 }
+
+const ExplanationTable = (props) =>
+    <div>
+        Details on the {props.name} codes can be found <a href={props.link}>here</a>,
+        a summary is provided below:
+        <div style={{ marginLeft: "1em", marginTop: "1em", marginBottom: "1em", border: "1px solid black" }}>
+            <div>
+                {
+                    props.table.map(([name, description], i) =>
+                        <div style={{
+                            display: "flex", flexDirection: "row",
+                            borderTop: i === 0 ? "none" : "1px solid black"
+                        }}>
+                            <div
+                                style={{ width: "30%", padding: "1em" }}
+                            >
+                                {name}</div>
+                            <div style={{ width: "70%", padding: "1em" }}>{description}</div>
+                        </div>
+                    )
+                }
+            </div>
+        </div>
+    </div>
 
 class DataCreditPanel extends PageTemplate {
     constructor(props) {
@@ -74,6 +100,13 @@ class DataCreditPanel extends PageTemplate {
                             </a>.&nbsp;
                             We filtered this dataset for urban centers with a quality code (QA2_1V) of 1, indicating a true
                             positive, and which are named.
+                        </p>
+                        <p>
+                            The population circles were defined using the GHS-POP dataset, using an algorithm hand-coded
+                            for the purpose of this website. Detailed maps and JSON files are available at&nbsp;
+                            <a href="https://github.com/kavigupta/urbanstats/tree/master/outputs/population_circles">
+                                the GitHub repository
+                            </a>.
                         </p>
                     </div>
                     <h2 ref={this.nref("geography")}>Geography Metrics</h2>
@@ -228,6 +261,18 @@ class DataCreditPanel extends PageTemplate {
                             We disaggregate industry data from the block group level to the block level using population
                             over 18 as a weight. Numbers are percentages of the employed population.
                         </p>
+
+                        <ExplanationTable
+                            table={industry_occupation_table["industry"]}
+                            name="Industry"
+                            // https://www.bls.gov/cps/cpsaat18.htm
+                            link="https://archive.is/e06LF"
+                        />
+                        <ExplanationTable
+                            table={industry_occupation_table["occupation"]}
+                            name="Occupation"
+                            link="https://www2.census.gov/programs-surveys/cps/methodology/Occupation%20Codes.pdf"
+                        />
                     </div>
 
                     <h2 ref={this.nref("housing-acs")}>Housing</h2>

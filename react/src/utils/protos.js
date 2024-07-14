@@ -2162,6 +2162,8 @@ $root.Feature = (function() {
      * @interface IFeature
      * @property {IPolygon|null} [polygon] Feature polygon
      * @property {IMultiPolygon|null} [multipolygon] Feature multipolygon
+     * @property {Array.<number>|null} [zones] Feature zones
+     * @property {number|null} [centerLon] Feature centerLon
      */
 
     /**
@@ -2173,6 +2175,7 @@ $root.Feature = (function() {
      * @param {IFeature=} [properties] Properties to set
      */
     function Feature(properties) {
+        this.zones = [];
         if (properties)
             for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
                 if (properties[keys[i]] != null)
@@ -2194,6 +2197,22 @@ $root.Feature = (function() {
      * @instance
      */
     Feature.prototype.multipolygon = null;
+
+    /**
+     * Feature zones.
+     * @member {Array.<number>} zones
+     * @memberof Feature
+     * @instance
+     */
+    Feature.prototype.zones = $util.emptyArray;
+
+    /**
+     * Feature centerLon.
+     * @member {number} centerLon
+     * @memberof Feature
+     * @instance
+     */
+    Feature.prototype.centerLon = 0;
 
     // OneOf field names bound to virtual getters and setters
     var $oneOfFields;
@@ -2237,6 +2256,14 @@ $root.Feature = (function() {
             $root.Polygon.encode(message.polygon, writer.uint32(/* id 1, wireType 2 =*/10).fork()).ldelim();
         if (message.multipolygon != null && Object.hasOwnProperty.call(message, "multipolygon"))
             $root.MultiPolygon.encode(message.multipolygon, writer.uint32(/* id 2, wireType 2 =*/18).fork()).ldelim();
+        if (message.zones != null && message.zones.length) {
+            writer.uint32(/* id 3, wireType 2 =*/26).fork();
+            for (var i = 0; i < message.zones.length; ++i)
+                writer.int32(message.zones[i]);
+            writer.ldelim();
+        }
+        if (message.centerLon != null && Object.hasOwnProperty.call(message, "centerLon"))
+            writer.uint32(/* id 4, wireType 5 =*/37).float(message.centerLon);
         return writer;
     };
 
@@ -2277,6 +2304,21 @@ $root.Feature = (function() {
                 }
             case 2: {
                     message.multipolygon = $root.MultiPolygon.decode(reader, reader.uint32());
+                    break;
+                }
+            case 3: {
+                    if (!(message.zones && message.zones.length))
+                        message.zones = [];
+                    if ((tag & 7) === 2) {
+                        var end2 = reader.uint32() + reader.pos;
+                        while (reader.pos < end2)
+                            message.zones.push(reader.int32());
+                    } else
+                        message.zones.push(reader.int32());
+                    break;
+                }
+            case 4: {
+                    message.centerLon = reader.float();
                     break;
                 }
             default:
@@ -2333,6 +2375,16 @@ $root.Feature = (function() {
                     return "multipolygon." + error;
             }
         }
+        if (message.zones != null && message.hasOwnProperty("zones")) {
+            if (!Array.isArray(message.zones))
+                return "zones: array expected";
+            for (var i = 0; i < message.zones.length; ++i)
+                if (!$util.isInteger(message.zones[i]))
+                    return "zones: integer[] expected";
+        }
+        if (message.centerLon != null && message.hasOwnProperty("centerLon"))
+            if (typeof message.centerLon !== "number")
+                return "centerLon: number expected";
         return null;
     };
 
@@ -2358,6 +2410,15 @@ $root.Feature = (function() {
                 throw TypeError(".Feature.multipolygon: object expected");
             message.multipolygon = $root.MultiPolygon.fromObject(object.multipolygon);
         }
+        if (object.zones) {
+            if (!Array.isArray(object.zones))
+                throw TypeError(".Feature.zones: array expected");
+            message.zones = [];
+            for (var i = 0; i < object.zones.length; ++i)
+                message.zones[i] = object.zones[i] | 0;
+        }
+        if (object.centerLon != null)
+            message.centerLon = Number(object.centerLon);
         return message;
     };
 
@@ -2374,6 +2435,10 @@ $root.Feature = (function() {
         if (!options)
             options = {};
         var object = {};
+        if (options.arrays || options.defaults)
+            object.zones = [];
+        if (options.defaults)
+            object.centerLon = 0;
         if (message.polygon != null && message.hasOwnProperty("polygon")) {
             object.polygon = $root.Polygon.toObject(message.polygon, options);
             if (options.oneofs)
@@ -2384,6 +2449,13 @@ $root.Feature = (function() {
             if (options.oneofs)
                 object.geometry = "multipolygon";
         }
+        if (message.zones && message.zones.length) {
+            object.zones = [];
+            for (var j = 0; j < message.zones.length; ++j)
+                object.zones[j] = message.zones[j];
+        }
+        if (message.centerLon != null && message.hasOwnProperty("centerLon"))
+            object.centerLon = options.json && !isFinite(message.centerLon) ? String(message.centerLon) : message.centerLon;
         return object;
     };
 

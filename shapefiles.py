@@ -9,6 +9,7 @@ import us
 from permacache import permacache
 
 from stats_for_shapefile import Shapefile
+from urbanstats.data.circle import circle_shapefile_object, named_populations
 from urbanstats.special_cases.country import continents, countries, subnational_regions
 from urbanstats.special_cases.ghsl_urban_center import load_ghsl_urban_center
 
@@ -498,6 +499,18 @@ american_to_international = {
     "State": "Subnational Region",
     "US Urban Center": "Urban Center",
 }
+
+for population in named_populations:
+    key = f"population_circle_{named_populations[population]}"
+    shapefiles[key] = shapefiles_for_stats[key] = circle_shapefile_object(
+        shapefiles["countries"], population, just_usa=False
+    )
+    shapefiles_for_stats["us_" + key] = circle_shapefile_object(
+        shapefiles["countries"], population, just_usa=True
+    )
+    american_to_international[
+        shapefiles_for_stats["us_" + key].meta["type"]
+    ] = shapefiles[key].meta["type"]
 
 
 def filter_table_for_type(table, typ):
