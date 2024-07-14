@@ -6,6 +6,8 @@ import "./common.css";
 import { PageTemplate } from "./page_template/template.js";
 import { headerTextClass } from './utils/responsive';
 
+const industry_occupation_table = require("./data/explanation_industry_occupation_table.json");
+
 function ScrollHereOnceLoaded(props) {
     const ref = React.useRef(null);
     React.useEffect(() => {
@@ -15,6 +17,30 @@ function ScrollHereOnceLoaded(props) {
     }, [ref.current]);
     return <div ref={ref}>{props.children}</div>;
 }
+
+const ExplanationTable = (props) =>
+    <div>
+        Details on the {props.name} codes can be found <a href={props.link}>here</a>,
+        a summary is provided below:
+        <div style={{ marginLeft: "1em", marginTop: "1em", border: "1px solid black" }}>
+            <div>
+                {
+                    props.table.map(([name, description], i) =>
+                        <div style={{
+                            display: "flex", flexDirection: "row",
+                            borderTop: i === 0 ? "none" : "1px solid black"
+                        }}>
+                            <div
+                                style={{ width: "30%", padding: "1em" }}
+                            >
+                                {name}</div>
+                            <div style={{ width: "70%", padding: "1em" }}>{description}</div>
+                        </div>
+                    )
+                }
+            </div>
+        </div>
+    </div>
 
 class DataCreditPanel extends PageTemplate {
     constructor(props) {
@@ -237,26 +263,11 @@ class DataCreditPanel extends PageTemplate {
                         </p>
 
                         <p>
-                            Details on the Occupation codes can be found <a href="https://www2.census.gov/programs-surveys/cps/methodology/Occupation%20Codes.pdf">here</a>,
-                            a summary is provided below:
-                            <div style={{ marginLeft: "1em", marginTop: "1em", border: "1px solid black" }}>
-                                <div>
-                                    {
-                                        require("./data/explanation_occupation_table.json").map(([name, description], i) =>
-                                            <div style={{
-                                                display: "flex", flexDirection: "row",
-                                                borderTop: i === 0 ? "none" : "1px solid black"
-                                            }}>
-                                                <div
-                                                    style={{ width: "30%", padding: "1em" }}
-                                                >
-                                                    {name}</div>
-                                                <div style={{ width: "70%", padding: "1em" }}>{description}</div>
-                                            </div>
-                                        )
-                                    }
-                                </div>
-                            </div>
+                            <ExplanationTable
+                                table={industry_occupation_table["occupation"]}
+                                name="Occupation"
+                                link="https://www2.census.gov/programs-surveys/cps/methodology/Occupation%20Codes.pdf"
+                            />
                         </p>
                     </div>
 
