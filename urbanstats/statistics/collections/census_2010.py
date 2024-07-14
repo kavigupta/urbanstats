@@ -4,7 +4,7 @@ from urbanstats.statistics.statistic_collection import (
     CensusStatisticsColection,
 )
 
-from .census_basics import CensusBasics, ad
+from .census_basics import DENSITY_EXPLANATION_PW, CensusBasics, ad
 from .race_census import RaceCensus
 
 
@@ -42,8 +42,9 @@ class Census2010(CensusStatisticsColection):
 
     def quiz_question_names(self):
         return {
-            "population_change_2010": "higher % change in population from 2010 to 2020",
-            "ad_1_change_2010": "higher % change in population-weighted density (r=1km) from 2010 to 2020",
+            "population_change_2010": "higher % increase in population from 2010 to 2020",
+            "ad_1_change_2010": "higher % increase in population-weighted density (r=1km) from 2010 to 2020"
+            + DENSITY_EXPLANATION_PW,
         }
 
     def quiz_question_unused(self):

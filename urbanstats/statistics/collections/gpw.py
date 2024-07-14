@@ -1,3 +1,7 @@
+from urbanstats.statistics.collections.census_basics import (
+    DENSITY_EXPLANATION_AW,
+    DENSITY_EXPLANATION_PW,
+)
 from urbanstats.statistics.statistic_collection import InternationalStatistics
 
 
@@ -26,9 +30,11 @@ class GPWStatistics(InternationalStatistics):
 
     def quiz_question_names(self):
         return {
-            "gpw_aw_density": "higher area-weighted population density",
+            "gpw_aw_density": "higher area-weighted population density"
+            + DENSITY_EXPLANATION_AW,
             "gpw_population": "higher population",
-            "gpw_pw_density_4": "higher population-weighted density (r=4km)",
+            "gpw_pw_density_4": "higher population-weighted density (r=4km)"
+            + DENSITY_EXPLANATION_PW,
         }
 
     def quiz_question_unused(self):

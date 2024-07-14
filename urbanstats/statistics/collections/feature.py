@@ -31,7 +31,8 @@ class USFeatureDistanceStatistics(USFeatureDistanceStatisticsCollection):
         return {
             "park_percent_1km_v2": "!FULL Which has more access to parks (higher % of area within 1km of a park, population weighted)?",
             "mean_dist_Hospital_updated": "!FULL Which has less access to hospitals (higher population-weighted mean distance)?",
-            "mean_dist_Active Superfund Site_updated": "!FULL Which has less exposure to EPA superfund sites (higher population-weighted mean distance)?",
+            "mean_dist_Active Superfund Site_updated": "!FULL Which has less exposure to active EPA superfund sites (higher population-weighted mean distance)?"
+            "!TOOLTIP EPA superfund sites are hazardous waste sites identified by the Environmental Protection Agency.",
             "mean_dist_Airport_updated": "!FULL Which has less access to airports (higher population-weighted mean distance)?",
             "mean_dist_Public School_updated": "!FULL Which has less access to public schools (higher population-weighted mean distance)?",
         }
