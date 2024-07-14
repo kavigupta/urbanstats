@@ -40,6 +40,7 @@ from urbanstats.special_cases.merge_international import (
     merge_international_and_domestic,
 )
 from urbanstats.special_cases.simplified_country import all_simplified_countries
+from urbanstats.statistics.collections.industry import IndustryStatistics
 from urbanstats.statistics.collections.occupation import OccupationStatistics
 from urbanstats.statistics.collections_list import statistic_collections
 from urbanstats.universe.annotate_universes import (
@@ -294,8 +295,14 @@ def main(
         json.dump(list([name for name in get_explanation_page().values()]), f)
     with open(f"react/src/data/universes_ordered.json", "w") as f:
         json.dump(list([name for name in all_universes()]), f)
-    with open(f"react/src/data/explanation_occupation_table.json", "w") as f:
-        json.dump(OccupationStatistics().table(), f)
+    with open(f"react/src/data/explanation_industry_occupation_table.json", "w") as f:
+        json.dump(
+            {
+                "industry": IndustryStatistics().table(),
+                "occupation": OccupationStatistics().table(),
+            },
+            f,
+        )
 
     output_names()
     output_ramps()
