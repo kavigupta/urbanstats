@@ -22,7 +22,7 @@ const ExplanationTable = (props) =>
     <div>
         Details on the {props.name} codes can be found <a href={props.link}>here</a>,
         a summary is provided below:
-        <div style={{ marginLeft: "1em", marginTop: "1em", border: "1px solid black" }}>
+        <div style={{ marginLeft: "1em", marginTop: "1em", marginBottom: "1em", border: "1px solid black" }}>
             <div>
                 {
                     props.table.map(([name, description], i) =>

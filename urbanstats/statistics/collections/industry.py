@@ -5,6 +5,12 @@ from urbanstats.statistics.utils import fractionalize
 
 
 class IndustryStatistics(ACSStatisticsColection):
+    def __init__(self):
+        super().__init__()
+        assert set(self.category_for_each_statistic()) == set(
+            self.industry_name_to_description()
+        )
+
     def name_for_each_statistic(self):
         return industry.industry_display
 
