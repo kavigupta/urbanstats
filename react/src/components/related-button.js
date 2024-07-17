@@ -61,125 +61,113 @@ const RelatedButton = props => {
     );
 }
 
-class RelatedList extends React.Component {
-    constructor(props) {
-        super(props);
-    }
-
-    render() {
-        let setting_key = relationship_key(this.props.article_type, this.props.button_type);
-        return (
-            <li className="list_of_lists">
-                <div style={{ display: "flex" }}>
-                    <div className="linkbox">
-                        <div style={{ paddingTop: "2pt" }}>
-                            <CheckboxSetting
-                                name=""
-                                setting_key={setting_key}
-                                settings={this.props.settings}
-                                set_setting={this.props.set_setting} />
-                        </div>
+const RelatedList = (props) => {
+    let setting_key = relationship_key(props.article_type, props.button_type);
+    return (
+        <li className="list_of_lists">
+            <div style={{ display: "flex" }}>
+                <div className="linkbox">
+                    <div style={{ paddingTop: "2pt" }}>
+                        <CheckboxSetting
+                            name=""
+                            setting_key={setting_key}
+                            settings={props.settings}
+                            set_setting={props.set_setting} />
                     </div>
-                    <ul className="list_of_lists">
-                        {
-                            Object.keys(this.props.regions).map((relationship_type, j) => {
-                                const regions = this.props.regions[relationship_type];
-                                return (
-                                    <ul key={j} className="linklist">
-                                        <li
-                                            className={"serif linklistel" + (mobileLayout() ? " linklistel_mobile" : "")}
-                                            style={{
-                                                fontSize:
-                                                    mobileLayout() ? "12pt" : "10pt"
-                                                , paddingTop: "1pt", fontWeight: 500
-                                            }}
-                                        >
-                                            {this.display_name(relationship_type)}
-                                        </li>
-                                        {
-                                            regions.map((row, i) =>
-                                                <RelatedButton
-                                                    key={i}
-                                                    {...row}
-                                                    article_type={this.props.article_type}
-                                                    settings={this.props.settings}
-                                                    set_setting={this.props.set_setting}
-                                                    universe={this.props.universe}
-                                                />
-                                            )
-                                        }
-                                    </ul>
-                                );
-                            }
-                            )
-                        }
-                    </ul>
                 </div>
-            </li>
-        );
-    }
-
-    display_name(relationship_type) {
-        relationship_type = relationship_type.replace("_", " ");
-        // title case
-        relationship_type = relationship_type.replace(/\w\S*/g, function (txt) {
-            return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
-        });
-        return relationship_type;
-    }
+                <ul className="list_of_lists">
+                    {
+                        Object.keys(props.regions).map((relationship_type, j) => {
+                            const regions = props.regions[relationship_type];
+                            return (
+                                <ul key={j} className="linklist">
+                                    <li
+                                        className={"serif linklistel" + (mobileLayout() ? " linklistel_mobile" : "")}
+                                        style={{
+                                            fontSize:
+                                                mobileLayout() ? "12pt" : "10pt"
+                                            , paddingTop: "1pt", fontWeight: 500
+                                        }}
+                                    >
+                                        {display_name(relationship_type)}
+                                    </li>
+                                    {
+                                        regions.map((row, i) =>
+                                            <RelatedButton
+                                                key={i}
+                                                {...row}
+                                                article_type={props.article_type}
+                                                settings={props.settings}
+                                                set_setting={props.set_setting}
+                                                universe={props.universe}
+                                            />
+                                        )
+                                    }
+                                </ul>
+                            );
+                        }
+                        )
+                    }
+                </ul>
+            </div>
+        </li>
+    );
 }
 
-class Related extends React.Component {
-    constructor(props) {
-        super(props);
+function display_name(relationship_type) {
+    relationship_type = relationship_type.replace("_", " ");
+    // title case
+    relationship_type = relationship_type.replace(/\w\S*/g, function (txt) {
+        return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
+    });
+    return relationship_type;
+}
+
+const Related = (props) => {
+    // buttons[rowType][relationshipType] = <list of buttons>
+    let buttons = {};
+    for (var relateds of props.related) {
+        const relationship_type = relateds.relationshipType;
+        for (var button of relateds.buttons) {
+            const row_type = button.rowType;
+            if (!(row_type in buttons)) {
+                buttons[row_type] = {};
+            }
+            if (!(relationship_type in buttons[row_type])) {
+                buttons[row_type][relationship_type] = [];
+            }
+            buttons[row_type][relationship_type].push(button);
+        }
     }
 
-    render() {
-        // buttons[rowType][relationshipType] = <list of buttons>
-        let buttons = {};
-        for (var relateds of this.props.related) {
-            const relationship_type = relateds.relationshipType;
-            for (var button of relateds.buttons) {
-                const row_type = button.rowType;
-                if (!(row_type in buttons)) {
-                    buttons[row_type] = {};
-                }
-                if (!(relationship_type in buttons[row_type])) {
-                    buttons[row_type][relationship_type] = [];
-                }
-                buttons[row_type][relationship_type].push(button);
+    // get a sorted list of keys of buttons
+    const button_keys = Object.keys(buttons).sort((a, b) =>
+        type_ordering_idx[a] - type_ordering_idx[b]
+    );
+
+    let elements = [];
+    for (var key of button_keys) {
+        if (!props.settings.show_historical_cds) {
+            if (key == "Historical Congressional District") {
+                continue;
             }
         }
-
-        // get a sorted list of keys of buttons
-        const button_keys = Object.keys(buttons).sort((a, b) =>
-            type_ordering_idx[a] - type_ordering_idx[b]
-        );
-
-        let elements = [];
-        for (var key of button_keys) {
-            if (!this.props.settings.show_historical_cds) {
-                if (key == "Historical Congressional District") {
-                    continue;
-                }
-            }
-            elements.push(
-                <RelatedList
-                    key={key}
-                    button_type={key}
-                    regions={buttons[key]}
-                    article_type={this.props.article_type}
-                    settings={this.props.settings}
-                    set_setting={this.props.set_setting}
-                    universe={this.props.universe}
-                />
-            );
-        }
-
-        return (
-            <div className="related_areas">
-                {elements}
-            </div>
+        elements.push(
+            <RelatedList
+                key={key}
+                button_type={key}
+                regions={buttons[key]}
+                article_type={props.article_type}
+                settings={props.settings}
+                set_setting={props.set_setting}
+                universe={props.universe}
+            />
         );
     }
+
+    return (
+        <div className="related_areas">
+            {elements}
+        </div>
+    );
 }
