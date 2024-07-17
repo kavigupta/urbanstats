@@ -2,7 +2,6 @@
 import React from 'react';
 
 import { article_link } from "../navigation/links";
-import { is_historical_cd } from '../utils/is_historical';
 import { CheckboxSetting } from "./sidebar";
 
 import "./related.css";
