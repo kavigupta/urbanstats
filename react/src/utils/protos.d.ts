@@ -6,14 +6,14 @@ export interface IStatisticRow {
     /** StatisticRow statval */
     statval?: (number|null);
 
-    /** StatisticRow ordinal */
-    ordinal?: (number|null);
+    /** StatisticRow ordinalByUniverse */
+    ordinalByUniverse?: (number[]|null);
 
-    /** StatisticRow overallOrdinal */
-    overallOrdinal?: (number|null);
+    /** StatisticRow overallOrdinalByUniverse */
+    overallOrdinalByUniverse?: (number[]|null);
 
-    /** StatisticRow percentileByPopulation */
-    percentileByPopulation?: (number|null);
+    /** StatisticRow percentileByPopulationByUniverse */
+    percentileByPopulationByUniverse?: (number[]|null);
 }
 
 /** Represents a StatisticRow. */
@@ -28,14 +28,14 @@ export class StatisticRow implements IStatisticRow {
     /** StatisticRow statval. */
     public statval: number;
 
-    /** StatisticRow ordinal. */
-    public ordinal: number;
+    /** StatisticRow ordinalByUniverse. */
+    public ordinalByUniverse: number[];
 
-    /** StatisticRow overallOrdinal. */
-    public overallOrdinal: number;
+    /** StatisticRow overallOrdinalByUniverse. */
+    public overallOrdinalByUniverse: number[];
 
-    /** StatisticRow percentileByPopulation. */
-    public percentileByPopulation: number;
+    /** StatisticRow percentileByPopulationByUniverse. */
+    public percentileByPopulationByUniverse: number[];
 
     /**
      * Creates a new StatisticRow instance using the specified properties.
@@ -347,6 +347,9 @@ export interface IArticle {
 
     /** Article related */
     related?: (IRelatedButtons[]|null);
+
+    /** Article universes */
+    universes?: (string[]|null);
 }
 
 /** Represents an Article. */
@@ -375,6 +378,9 @@ export class Article implements IArticle {
 
     /** Article related. */
     public related: IRelatedButtons[];
+
+    /** Article universes. */
+    public universes: string[];
 
     /**
      * Creates a new Article instance using the specified properties.
@@ -856,6 +862,12 @@ export interface IFeature {
 
     /** Feature multipolygon */
     multipolygon?: (IMultiPolygon|null);
+
+    /** Feature zones */
+    zones?: (number[]|null);
+
+    /** Feature centerLon */
+    centerLon?: (number|null);
 }
 
 /** Represents a Feature. */
@@ -872,6 +884,12 @@ export class Feature implements IFeature {
 
     /** Feature multipolygon. */
     public multipolygon?: (IMultiPolygon|null);
+
+    /** Feature zones. */
+    public zones: number[];
+
+    /** Feature centerLon. */
+    public centerLon: number;
 
     /** Feature geometry. */
     public geometry?: ("polygon"|"multipolygon");
@@ -1045,6 +1063,515 @@ export class StringList implements IStringList {
 
     /**
      * Gets the default type url for StringList
+     * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns The default type url
+     */
+    public static getTypeUrl(typeUrlPrefix?: string): string;
+}
+
+/** Properties of a SearchIndex. */
+export interface ISearchIndex {
+
+    /** SearchIndex elements */
+    elements?: (string[]|null);
+
+    /** SearchIndex priorities */
+    priorities?: (number[]|null);
+}
+
+/** Represents a SearchIndex. */
+export class SearchIndex implements ISearchIndex {
+
+    /**
+     * Constructs a new SearchIndex.
+     * @param [properties] Properties to set
+     */
+    constructor(properties?: ISearchIndex);
+
+    /** SearchIndex elements. */
+    public elements: string[];
+
+    /** SearchIndex priorities. */
+    public priorities: number[];
+
+    /**
+     * Creates a new SearchIndex instance using the specified properties.
+     * @param [properties] Properties to set
+     * @returns SearchIndex instance
+     */
+    public static create(properties?: ISearchIndex): SearchIndex;
+
+    /**
+     * Encodes the specified SearchIndex message. Does not implicitly {@link SearchIndex.verify|verify} messages.
+     * @param message SearchIndex message or plain object to encode
+     * @param [writer] Writer to encode to
+     * @returns Writer
+     */
+    public static encode(message: ISearchIndex, writer?: $protobuf.Writer): $protobuf.Writer;
+
+    /**
+     * Encodes the specified SearchIndex message, length delimited. Does not implicitly {@link SearchIndex.verify|verify} messages.
+     * @param message SearchIndex message or plain object to encode
+     * @param [writer] Writer to encode to
+     * @returns Writer
+     */
+    public static encodeDelimited(message: ISearchIndex, writer?: $protobuf.Writer): $protobuf.Writer;
+
+    /**
+     * Decodes a SearchIndex message from the specified reader or buffer.
+     * @param reader Reader or buffer to decode from
+     * @param [length] Message length if known beforehand
+     * @returns SearchIndex
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): SearchIndex;
+
+    /**
+     * Decodes a SearchIndex message from the specified reader or buffer, length delimited.
+     * @param reader Reader or buffer to decode from
+     * @returns SearchIndex
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): SearchIndex;
+
+    /**
+     * Verifies a SearchIndex message.
+     * @param message Plain object to verify
+     * @returns `null` if valid, otherwise the reason why it is not
+     */
+    public static verify(message: { [k: string]: any }): (string|null);
+
+    /**
+     * Creates a SearchIndex message from a plain object. Also converts values to their respective internal types.
+     * @param object Plain object
+     * @returns SearchIndex
+     */
+    public static fromObject(object: { [k: string]: any }): SearchIndex;
+
+    /**
+     * Creates a plain object from a SearchIndex message. Also converts values to other types if specified.
+     * @param message SearchIndex
+     * @param [options] Conversion options
+     * @returns Plain object
+     */
+    public static toObject(message: SearchIndex, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+    /**
+     * Converts this SearchIndex to JSON.
+     * @returns JSON object
+     */
+    public toJSON(): { [k: string]: any };
+
+    /**
+     * Gets the default type url for SearchIndex
+     * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns The default type url
+     */
+    public static getTypeUrl(typeUrlPrefix?: string): string;
+}
+
+/** Properties of an OrderList. */
+export interface IOrderList {
+
+    /** OrderList orderIdxs */
+    orderIdxs?: (number[]|null);
+}
+
+/** Represents an OrderList. */
+export class OrderList implements IOrderList {
+
+    /**
+     * Constructs a new OrderList.
+     * @param [properties] Properties to set
+     */
+    constructor(properties?: IOrderList);
+
+    /** OrderList orderIdxs. */
+    public orderIdxs: number[];
+
+    /**
+     * Creates a new OrderList instance using the specified properties.
+     * @param [properties] Properties to set
+     * @returns OrderList instance
+     */
+    public static create(properties?: IOrderList): OrderList;
+
+    /**
+     * Encodes the specified OrderList message. Does not implicitly {@link OrderList.verify|verify} messages.
+     * @param message OrderList message or plain object to encode
+     * @param [writer] Writer to encode to
+     * @returns Writer
+     */
+    public static encode(message: IOrderList, writer?: $protobuf.Writer): $protobuf.Writer;
+
+    /**
+     * Encodes the specified OrderList message, length delimited. Does not implicitly {@link OrderList.verify|verify} messages.
+     * @param message OrderList message or plain object to encode
+     * @param [writer] Writer to encode to
+     * @returns Writer
+     */
+    public static encodeDelimited(message: IOrderList, writer?: $protobuf.Writer): $protobuf.Writer;
+
+    /**
+     * Decodes an OrderList message from the specified reader or buffer.
+     * @param reader Reader or buffer to decode from
+     * @param [length] Message length if known beforehand
+     * @returns OrderList
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): OrderList;
+
+    /**
+     * Decodes an OrderList message from the specified reader or buffer, length delimited.
+     * @param reader Reader or buffer to decode from
+     * @returns OrderList
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): OrderList;
+
+    /**
+     * Verifies an OrderList message.
+     * @param message Plain object to verify
+     * @returns `null` if valid, otherwise the reason why it is not
+     */
+    public static verify(message: { [k: string]: any }): (string|null);
+
+    /**
+     * Creates an OrderList message from a plain object. Also converts values to their respective internal types.
+     * @param object Plain object
+     * @returns OrderList
+     */
+    public static fromObject(object: { [k: string]: any }): OrderList;
+
+    /**
+     * Creates a plain object from an OrderList message. Also converts values to other types if specified.
+     * @param message OrderList
+     * @param [options] Conversion options
+     * @returns Plain object
+     */
+    public static toObject(message: OrderList, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+    /**
+     * Converts this OrderList to JSON.
+     * @returns JSON object
+     */
+    public toJSON(): { [k: string]: any };
+
+    /**
+     * Gets the default type url for OrderList
+     * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns The default type url
+     */
+    public static getTypeUrl(typeUrlPrefix?: string): string;
+}
+
+/** Properties of a DataList. */
+export interface IDataList {
+
+    /** DataList value */
+    value?: (number[]|null);
+
+    /** DataList populationPercentile */
+    populationPercentile?: (number[]|null);
+}
+
+/** Represents a DataList. */
+export class DataList implements IDataList {
+
+    /**
+     * Constructs a new DataList.
+     * @param [properties] Properties to set
+     */
+    constructor(properties?: IDataList);
+
+    /** DataList value. */
+    public value: number[];
+
+    /** DataList populationPercentile. */
+    public populationPercentile: number[];
+
+    /**
+     * Creates a new DataList instance using the specified properties.
+     * @param [properties] Properties to set
+     * @returns DataList instance
+     */
+    public static create(properties?: IDataList): DataList;
+
+    /**
+     * Encodes the specified DataList message. Does not implicitly {@link DataList.verify|verify} messages.
+     * @param message DataList message or plain object to encode
+     * @param [writer] Writer to encode to
+     * @returns Writer
+     */
+    public static encode(message: IDataList, writer?: $protobuf.Writer): $protobuf.Writer;
+
+    /**
+     * Encodes the specified DataList message, length delimited. Does not implicitly {@link DataList.verify|verify} messages.
+     * @param message DataList message or plain object to encode
+     * @param [writer] Writer to encode to
+     * @returns Writer
+     */
+    public static encodeDelimited(message: IDataList, writer?: $protobuf.Writer): $protobuf.Writer;
+
+    /**
+     * Decodes a DataList message from the specified reader or buffer.
+     * @param reader Reader or buffer to decode from
+     * @param [length] Message length if known beforehand
+     * @returns DataList
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): DataList;
+
+    /**
+     * Decodes a DataList message from the specified reader or buffer, length delimited.
+     * @param reader Reader or buffer to decode from
+     * @returns DataList
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): DataList;
+
+    /**
+     * Verifies a DataList message.
+     * @param message Plain object to verify
+     * @returns `null` if valid, otherwise the reason why it is not
+     */
+    public static verify(message: { [k: string]: any }): (string|null);
+
+    /**
+     * Creates a DataList message from a plain object. Also converts values to their respective internal types.
+     * @param object Plain object
+     * @returns DataList
+     */
+    public static fromObject(object: { [k: string]: any }): DataList;
+
+    /**
+     * Creates a plain object from a DataList message. Also converts values to other types if specified.
+     * @param message DataList
+     * @param [options] Conversion options
+     * @returns Plain object
+     */
+    public static toObject(message: DataList, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+    /**
+     * Converts this DataList to JSON.
+     * @returns JSON object
+     */
+    public toJSON(): { [k: string]: any };
+
+    /**
+     * Gets the default type url for DataList
+     * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns The default type url
+     */
+    public static getTypeUrl(typeUrlPrefix?: string): string;
+}
+
+/** Properties of an OrderLists. */
+export interface IOrderLists {
+
+    /** OrderLists statnames */
+    statnames?: (string[]|null);
+
+    /** OrderLists orderLists */
+    orderLists?: (IOrderList[]|null);
+}
+
+/** Represents an OrderLists. */
+export class OrderLists implements IOrderLists {
+
+    /**
+     * Constructs a new OrderLists.
+     * @param [properties] Properties to set
+     */
+    constructor(properties?: IOrderLists);
+
+    /** OrderLists statnames. */
+    public statnames: string[];
+
+    /** OrderLists orderLists. */
+    public orderLists: IOrderList[];
+
+    /**
+     * Creates a new OrderLists instance using the specified properties.
+     * @param [properties] Properties to set
+     * @returns OrderLists instance
+     */
+    public static create(properties?: IOrderLists): OrderLists;
+
+    /**
+     * Encodes the specified OrderLists message. Does not implicitly {@link OrderLists.verify|verify} messages.
+     * @param message OrderLists message or plain object to encode
+     * @param [writer] Writer to encode to
+     * @returns Writer
+     */
+    public static encode(message: IOrderLists, writer?: $protobuf.Writer): $protobuf.Writer;
+
+    /**
+     * Encodes the specified OrderLists message, length delimited. Does not implicitly {@link OrderLists.verify|verify} messages.
+     * @param message OrderLists message or plain object to encode
+     * @param [writer] Writer to encode to
+     * @returns Writer
+     */
+    public static encodeDelimited(message: IOrderLists, writer?: $protobuf.Writer): $protobuf.Writer;
+
+    /**
+     * Decodes an OrderLists message from the specified reader or buffer.
+     * @param reader Reader or buffer to decode from
+     * @param [length] Message length if known beforehand
+     * @returns OrderLists
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): OrderLists;
+
+    /**
+     * Decodes an OrderLists message from the specified reader or buffer, length delimited.
+     * @param reader Reader or buffer to decode from
+     * @returns OrderLists
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): OrderLists;
+
+    /**
+     * Verifies an OrderLists message.
+     * @param message Plain object to verify
+     * @returns `null` if valid, otherwise the reason why it is not
+     */
+    public static verify(message: { [k: string]: any }): (string|null);
+
+    /**
+     * Creates an OrderLists message from a plain object. Also converts values to their respective internal types.
+     * @param object Plain object
+     * @returns OrderLists
+     */
+    public static fromObject(object: { [k: string]: any }): OrderLists;
+
+    /**
+     * Creates a plain object from an OrderLists message. Also converts values to other types if specified.
+     * @param message OrderLists
+     * @param [options] Conversion options
+     * @returns Plain object
+     */
+    public static toObject(message: OrderLists, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+    /**
+     * Converts this OrderLists to JSON.
+     * @returns JSON object
+     */
+    public toJSON(): { [k: string]: any };
+
+    /**
+     * Gets the default type url for OrderLists
+     * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns The default type url
+     */
+    public static getTypeUrl(typeUrlPrefix?: string): string;
+}
+
+/** Properties of a DataLists. */
+export interface IDataLists {
+
+    /** DataLists statnames */
+    statnames?: (string[]|null);
+
+    /** DataLists dataLists */
+    dataLists?: (IDataList[]|null);
+}
+
+/** Represents a DataLists. */
+export class DataLists implements IDataLists {
+
+    /**
+     * Constructs a new DataLists.
+     * @param [properties] Properties to set
+     */
+    constructor(properties?: IDataLists);
+
+    /** DataLists statnames. */
+    public statnames: string[];
+
+    /** DataLists dataLists. */
+    public dataLists: IDataList[];
+
+    /**
+     * Creates a new DataLists instance using the specified properties.
+     * @param [properties] Properties to set
+     * @returns DataLists instance
+     */
+    public static create(properties?: IDataLists): DataLists;
+
+    /**
+     * Encodes the specified DataLists message. Does not implicitly {@link DataLists.verify|verify} messages.
+     * @param message DataLists message or plain object to encode
+     * @param [writer] Writer to encode to
+     * @returns Writer
+     */
+    public static encode(message: IDataLists, writer?: $protobuf.Writer): $protobuf.Writer;
+
+    /**
+     * Encodes the specified DataLists message, length delimited. Does not implicitly {@link DataLists.verify|verify} messages.
+     * @param message DataLists message or plain object to encode
+     * @param [writer] Writer to encode to
+     * @returns Writer
+     */
+    public static encodeDelimited(message: IDataLists, writer?: $protobuf.Writer): $protobuf.Writer;
+
+    /**
+     * Decodes a DataLists message from the specified reader or buffer.
+     * @param reader Reader or buffer to decode from
+     * @param [length] Message length if known beforehand
+     * @returns DataLists
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): DataLists;
+
+    /**
+     * Decodes a DataLists message from the specified reader or buffer, length delimited.
+     * @param reader Reader or buffer to decode from
+     * @returns DataLists
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): DataLists;
+
+    /**
+     * Verifies a DataLists message.
+     * @param message Plain object to verify
+     * @returns `null` if valid, otherwise the reason why it is not
+     */
+    public static verify(message: { [k: string]: any }): (string|null);
+
+    /**
+     * Creates a DataLists message from a plain object. Also converts values to their respective internal types.
+     * @param object Plain object
+     * @returns DataLists
+     */
+    public static fromObject(object: { [k: string]: any }): DataLists;
+
+    /**
+     * Creates a plain object from a DataLists message. Also converts values to other types if specified.
+     * @param message DataLists
+     * @param [options] Conversion options
+     * @returns Plain object
+     */
+    public static toObject(message: DataLists, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+    /**
+     * Converts this DataLists to JSON.
+     * @returns JSON object
+     */
+    public toJSON(): { [k: string]: any };
+
+    /**
+     * Gets the default type url for DataLists
      * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
      * @returns The default type url
      */
