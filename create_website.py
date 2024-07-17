@@ -1,45 +1,62 @@
-from functools import lru_cache
-import os
 import json
+import os
 import shutil
+from collections import Counter
+from functools import lru_cache
+
 import fire
 import numpy as np
-
 import pandas as pd
-from shapefiles import shapefiles
-from collections import Counter
-
 import tqdm.auto as tqdm
 
+from election_data import vest_elections
 from output_geometry import produce_all_geometry_json
-from stats_for_shapefile import compute_statistics_for_shapefile
 from produce_html_page import (
-    add_ordinals,
+    category_metadata,
     create_page_json,
     get_explanation_page,
     get_statistic_categories,
     internal_statistic_names,
-    category_metadata,
     statistic_internal_to_display_name,
 )
 from relationship import full_relationships, map_relationships_by_type
-from election_data import vest_elections
+from relationship import ordering_idx as type_ordering_idx
+from relationship import type_to_type_category
+from shapefiles import american_to_international, shapefiles, shapefiles_for_stats
+from stats_for_shapefile import compute_statistics_for_shapefile
 from urbanstats.consolidated_data.produce_consolidated_data import (
     full_consolidated_data,
     output_names,
 )
 from urbanstats.data.gpw import compute_gpw_data_for_shapefile_table
 from urbanstats.mapper.ramp import output_ramps
-
-from urbanstats.protobuf.utils import save_string_list
+from urbanstats.ordinals.compute_ordinals import (
+    add_ordinals,
+    compute_all_ordinals,
+    compute_all_ordinals_for_universe,
+)
+from urbanstats.protobuf.utils import save_data_list, save_string_list
+from urbanstats.special_cases.merge_international import (
+    merge_international_and_domestic,
+)
 from urbanstats.special_cases.simplified_country import all_simplified_countries
+from urbanstats.statistics.collections.industry import IndustryStatistics
+from urbanstats.statistics.collections.occupation import OccupationStatistics
+from urbanstats.statistics.collections_list import statistic_collections
+from urbanstats.universe.annotate_universes import (
+    all_universes,
+    attach_intl_universes,
+    attach_usa_universes,
+)
+from urbanstats.universe.icons import place_icons_in_site_folder
+from urbanstats.website_data.index import export_index
 
 
 def american_shapefile():
     full = [
-        compute_statistics_for_shapefile(shapefiles[k])
-        for k in tqdm.tqdm(shapefiles, desc="computing statistics")
-        if shapefiles[k].american
+        compute_statistics_for_shapefile(shapefiles_for_stats[k])
+        for k in tqdm.tqdm(shapefiles_for_stats, desc="computing statistics")
+        if shapefiles_for_stats[k].american
     ]
     full = pd.concat(full)
     full = full.reset_index(drop=True)
@@ -63,42 +80,35 @@ def american_shapefile():
 
 def international_shapefile():
     ts = []
-    for s in shapefiles.values():
+    for s in shapefiles_for_stats.values():
         if s.include_in_gpw:
             t = compute_gpw_data_for_shapefile_table(s)
             for k in s.meta:
                 t[k] = s.meta[k]
             ts.append(t)
     intl = pd.concat(ts)
-    intl = intl[intl.area > 10].copy()
+    # intl = intl[intl.area > 10].copy()
     intl = intl[intl.gpw_population > 0].copy()
     intl = intl.reset_index(drop=True)
-    intl["gpw_aw_density"] = intl.gpw_population / intl.area
     return intl
 
 
+@lru_cache(maxsize=None)
 def shapefile_without_ordinals():
     usa = american_shapefile()
+    attach_usa_universes(usa)
     intl = international_shapefile()
-    full = pd.concat([usa, intl])
-    popu = np.array(full.population)
-    popu[np.isnan(popu)] = full.gpw_population[np.isnan(popu)]
-    full["best_population_estimate"] = popu
+    attach_intl_universes(intl)
+    full = merge_international_and_domestic(intl, usa)
     return full
 
 
 @lru_cache(maxsize=None)
-def full_shapefile():
+def all_ordinals():
     full = shapefile_without_ordinals()
-    full = pd.concat(
-        [
-            add_ordinals(full[full.type == x], overall_ordinal=False)
-            for x in tqdm.tqdm(sorted(set(full.type)), desc="adding ordinals")
-        ]
-    )
-    full = add_ordinals(full, overall_ordinal=True)
-    full = full.sort_values("best_population_estimate")[::-1]
-    return full
+    keys = internal_statistic_names()
+    all_ords = compute_all_ordinals(full, keys)
+    return all_ords
 
 
 def next_prev(full):
@@ -126,7 +136,7 @@ def next_prev_within_type(full):
     return by_statistic
 
 
-def create_page_jsons(full):
+def create_page_jsons(site_folder, full, ordering):
     # ptrs_overall = next_prev(full)
     # ptrs_within_type = next_prev_within_type(full)
     long_to_short = dict(zip(full.longname, full.shortname))
@@ -137,12 +147,13 @@ def create_page_jsons(full):
     for i in tqdm.trange(full.shape[0], desc="creating pages"):
         row = full.iloc[i]
         create_page_json(
-            f"{folder}/data",
+            f"{site_folder}/data",
             row,
             relationships,
             long_to_short,
             long_to_pop,
             long_to_type,
+            ordering,
         )
 
 
@@ -158,60 +169,50 @@ def get_statistic_column_path(column):
     return column.replace("/", " slash ")
 
 
-def output_ordering(full):
-    counts = {}
-    for statistic_column in internal_statistic_names():
-        print(statistic_column)
-        full_by_name = full[
-            [
-                "longname",
-                "type",
-                (statistic_column, "overall_ordinal"),
-                statistic_column,
-            ]
-        ].sort_values("longname")
-        full_sorted = full_by_name.sort_values(
-            (statistic_column, "overall_ordinal"), kind="stable"
-        )
-        statistic_column_path = get_statistic_column_path(statistic_column)
-        path = f"{folder}/order/{statistic_column_path}__overall.gz"
-        save_string_list(list(full_sorted.longname), path)
-        counts[statistic_column, "overall"] = int(
-            (~np.isnan(full_sorted[statistic_column])).sum()
-        )
-        for typ in sorted(set(full_sorted.type)):
-            path = f"{folder}/order/{statistic_column_path}__{typ}.gz"
-            for_typ = full_sorted[full_sorted.type == typ]
-            names = for_typ.longname
-            counts[statistic_column, typ] = int(
-                (~np.isnan(for_typ[statistic_column])).sum()
-            )
-            save_string_list(list(names), path)
-
-    with open(f"react/src/data/counts_by_article_type.json", "w") as f:
-        json.dump(list(counts.items()), f)
-
-
-def get_idxs_by_type():
-    from stats_for_shapefile import gpw_stats
-
+@lru_cache(maxsize=None)
+def get_index_lists():
     real_names = internal_statistic_names()
-    gpw_names = [x for x in real_names if x in gpw_stats] + ["area", "compactness"]
-    other_names = [x for x in real_names if x not in gpw_stats]
-    gpw_idxs = [internal_statistic_names().index(x) for x in gpw_names]
-    other_idxs = [internal_statistic_names().index(x) for x in other_names]
-    idxs_by_type = {}
-    for s in shapefiles.values():
-        typ = s.meta["type"]
-        if s.include_in_gpw:
-            assert not s.american
-            idxs_by_type[typ] = gpw_idxs
-        else:
-            idxs_by_type[typ] = other_idxs
-    return idxs_by_type
+
+    def filter_names(filt):
+        names = [
+            x
+            for collection in statistic_collections
+            if filt(collection)
+            for x in collection.name_for_each_statistic()
+        ]
+        return sorted([real_names.index(x) for x in names])
+
+    universal_idxs = filter_names(lambda c: c.for_america() and c.for_international())
+    usa_idxs = filter_names(lambda c: c.for_america() and not c.for_international())
+    gpw_idxs = filter_names(lambda c: c.for_international() and not c.for_america())
+    return {
+        "index_lists": {
+            "universal": universal_idxs,
+            "gpw": gpw_idxs,
+            "usa": usa_idxs,
+        },
+        "type_to_has_gpw": {
+            s.meta["type"]: s.include_in_gpw for s in shapefiles.values()
+        },
+    }
 
 
-def main(site_folder, no_geo=False, no_data=False, no_juxta=False, no_data_jsons=False):
+def main(
+    site_folder,
+    no_geo=False,
+    no_data=False,
+    no_juxta=False,
+    no_data_jsons=False,
+    no_index=False,
+):
+    if not no_geo:
+        print("Producing geometry jsons")
+    if not no_data_jsons and not no_data:
+        print("Producing data for each article")
+    if not no_data:
+        print("Producing summary data")
+    if not no_juxta:
+        print("Producing juxta quizzes")
     for sub in [
         "index",
         "r",
@@ -229,26 +230,27 @@ def main(site_folder, no_geo=False, no_data=False, no_juxta=False, no_data_jsons
             pass
 
     if not no_geo:
-        full = full_shapefile()
-        produce_all_geometry_json(f"{site_folder}/shape", set(full.longname))
+        produce_all_geometry_json(
+            f"{site_folder}/shape", set(shapefile_without_ordinals().longname)
+        )
+        all_simplified_countries(shapefile_without_ordinals(), f"{site_folder}/shape")
 
     if not no_data:
-        full = full_shapefile()
         if not no_data_jsons:
-            create_page_jsons(full)
-        save_string_list(list(full.longname), f"{site_folder}/index/pages.gz")
+            create_page_jsons(site_folder, shapefile_without_ordinals(), all_ordinals())
 
-        with open(f"{site_folder}/index/best_population_estimate.json", "w") as f:
-            json.dump(list(full.best_population_estimate), f)
+        if not no_index:
+            export_index(shapefile_without_ordinals(), site_folder)
 
-        output_ordering(full)
+        from urbanstats.ordinals.output_ordering import output_ordering
+
+        output_ordering(site_folder, all_ordinals())
 
         full_consolidated_data(site_folder)
 
-        all_simplified_countries(full, f"{site_folder}/shape")
-
     shutil.copy("html_templates/article.html", f"{site_folder}")
     shutil.copy("html_templates/comparison.html", f"{site_folder}")
+    shutil.copy("html_templates/statistic.html", f"{site_folder}")
     shutil.copy("html_templates/index.html", f"{site_folder}/")
     shutil.copy("html_templates/random.html", f"{site_folder}")
     shutil.copy("html_templates/about.html", f"{site_folder}/")
@@ -264,6 +266,12 @@ def main(site_folder, no_geo=False, no_data=False, no_juxta=False, no_data_jsons
 
     with open("react/src/data/map_relationship.json", "w") as f:
         json.dump(map_relationships_by_type, f)
+
+    with open("react/src/data/type_to_type_category.json", "w") as f:
+        json.dump(type_to_type_category, f)
+
+    with open("react/src/data/type_ordering_idx.json", "w") as f:
+        json.dump(type_ordering_idx, f)
 
     with open(f"react/src/data/statistic_category_metadata.json", "w") as f:
         json.dump(output_categories(), f)
@@ -285,6 +293,16 @@ def main(site_folder, no_geo=False, no_data=False, no_juxta=False, no_data_jsons
         json.dump(list([name for name in statistic_internal_to_display_name()]), f)
     with open(f"react/src/data/explanation_page.json", "w") as f:
         json.dump(list([name for name in get_explanation_page().values()]), f)
+    with open(f"react/src/data/universes_ordered.json", "w") as f:
+        json.dump(list([name for name in all_universes()]), f)
+    with open(f"react/src/data/explanation_industry_occupation_table.json", "w") as f:
+        json.dump(
+            {
+                "industry": IndustryStatistics().table(),
+                "occupation": OccupationStatistics().table(),
+            },
+            f,
+        )
 
     output_names()
     output_ramps()
@@ -300,18 +318,16 @@ def main(site_folder, no_geo=False, no_data=False, no_juxta=False, no_data_jsons
     with open(f"{site_folder}/.nojekyll", "w") as f:
         f.write("")
 
-    with open(f"react/src/data/indices_by_type.json", "w") as f:
-        json.dump(get_idxs_by_type(), f)
+    with open(f"react/src/data/index_lists.json", "w") as f:
+        json.dump(get_index_lists(), f)
+
+    with open(f"react/src/data/american_to_international.json", "w") as f:
+        json.dump(american_to_international, f)
 
     os.system("cd react; npm run prod")
-    shutil.copy("dist/article.js", f"{site_folder}/scripts/")
-    shutil.copy("dist/comparison.js", f"{site_folder}/scripts/")
-    shutil.copy("dist/index.js", f"{site_folder}/scripts/")
-    shutil.copy("dist/random.js", f"{site_folder}/scripts/")
-    shutil.copy("dist/about.js", f"{site_folder}/scripts/")
-    shutil.copy("dist/data-credit.js", f"{site_folder}/scripts/")
-    shutil.copy("dist/mapper.js", f"{site_folder}/scripts/")
-    shutil.copy("dist/quiz.js", f"{site_folder}/scripts/")
+    shutil.rmtree(f"{site_folder}/scripts")
+    shutil.copytree("dist", f"{site_folder}/scripts")
+    place_icons_in_site_folder(site_folder)
 
     from urbanstats.games.quiz import generate_quizzes
     from urbanstats.games.retrostat import generate_retrostats

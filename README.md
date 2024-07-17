@@ -8,7 +8,7 @@ Currently live at [urbanstats.org](https://urbanstats.org/).
 
 # Build instructions
 
-Very incomplete, I started documenting this halfway through
+Very incomplete, I started documenting this halfway through. Note that I have only successfully built the backend on py37, there's a lot of packages pinned to older versions since the caching relies on unpickling the data.
 
 ```
 conda install -c conda-forge cfgrib

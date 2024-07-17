@@ -1,14 +1,13 @@
-from functools import lru_cache
 import glob
-import numpy as np
+from functools import lru_cache
 
+import attr
+import geopandas as gpd
+import numpy as np
+import pandas as pd
+import tqdm.auto as tqdm
 import us
 from permacache import permacache
-import attr
-
-import pandas as pd
-import geopandas as gpd
-import tqdm.auto as tqdm
 
 from census_blocks import all_densities_gpd
 

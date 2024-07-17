@@ -1,10 +1,10 @@
 from collections import defaultdict
+
 import numpy as np
-
-from permacache import permacache, stable_hash
 import tqdm.auto as tqdm
-from urbanstats.geometry.categorize_coordinates import categorize
+from permacache import permacache, stable_hash
 
+from urbanstats.geometry.categorize_coordinates import categorize
 from urbanstats.geometry.ellipse import Ellipse
 
 

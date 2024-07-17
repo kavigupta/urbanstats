@@ -1,13 +1,17 @@
+import os
 from collections import Counter
-import pandas as pd
-import us
-import tqdm.auto as tqdm
 
-import pycountry
 import geopandas as gpd
+import pandas as pd
+import pycountry
+import tqdm.auto as tqdm
+import us
 from permacache import permacache
 
 from stats_for_shapefile import Shapefile
+from urbanstats.data.circle import circle_shapefile_object, named_populations
+from urbanstats.special_cases.country import continents, countries, subnational_regions
+from urbanstats.special_cases.ghsl_urban_center import load_ghsl_urban_center
 
 
 def abbr_to_state(x):
@@ -61,7 +65,7 @@ def districts(file_name, district_type, district_abbrev):
         + district_abbrev
         + x["district"]
         + ", USA",
-        meta=dict(type=district_type, source="Census"),
+        meta=dict(type=district_type, source="Census", type_category="Political"),
         filter=lambda x: True,
     )
 
@@ -75,7 +79,7 @@ COUNTIES = Shapefile(
     + us.states.lookup(x["STATEFP"]).name
     + ", USA",
     filter=lambda x: True,
-    meta=dict(type="County", source="Census"),
+    meta=dict(type="County", source="Census", type_category="US Subdivision"),
 )
 CONGRESSIONAL_DISTRICTS = districts("cd118", "Congressional District", "")
 
@@ -219,55 +223,12 @@ def iso_to_country(iso):
     return pycountry.countries.get(alpha_2=iso).name
 
 
-def subnational_regions():
-    path = "named_region_shapefiles/World_Administrative_Divisions.zip"
-    data = gpd.read_file(path)
-    print("read subnational regions")
-    data = data[data.COUNTRY.apply(lambda x: x is not None)]
-    data["fullname"] = data.NAME + ", " + data.ISO_CC.apply(iso_to_country)
-    data["dissolveby"] = data["fullname"]
-    data = data.dissolve(by="dissolveby")
-    print("dissolved subnationals")
-    return data.reset_index(drop=True)
-
-
-@permacache("population_density/shapefiles/unbuffered_countries")
-def unbuffered_countries():
-    data = subnational_regions()
-    print("read countries")
-    data["dissolveby"] = data.ISO_CC
-    data = data.dissolve(by="dissolveby")
-    print("dissolved countries")
-    data = data.reset_index(drop=True)
-    return data
-
-
-@permacache("population_density/shapefiles/countries_3")
-def countries():
-    data = unbuffered_countries()
-    new_geos = []
-    for i, row in tqdm.tqdm(list(data.iterrows())):
-        print(row.COUNTRY, " ", i, " of ", data.shape[0])
-        # 0.1 of a cell
-        new_geos.append(row.geometry.buffer(1 / 120 * 0.1))
-    data.geometry = new_geos
-    return data
-
-
 def hrr_shortname(x, suffix="HRR"):
     state, city = [x.strip() for x in [x[: x.index("-")], x[x.index("-") + 1 :]]]
     return f"{city.title()} {state} {suffix}"
 
 
 shapefiles = dict(
-    states=Shapefile(
-        hash_key="census_states_3",
-        path="named_region_shapefiles/cb_2022_us_state_500k.zip",
-        shortname_extractor=lambda x: x["NAME"],
-        longname_extractor=lambda x: x["NAME"] + ", USA",
-        filter=lambda x: True,
-        meta=dict(type="State", source="Census"),
-    ),
     counties=COUNTIES,
     msas=Shapefile(
         hash_key="census_msas_4",
@@ -277,7 +238,7 @@ shapefiles = dict(
             name_components("MSA", x, abbreviate=True)
         ),
         filter=lambda x: True,
-        meta=dict(type="MSA", source="Census"),
+        meta=dict(type="MSA", source="Census", type_category="Census"),
     ),
     csas=Shapefile(
         hash_key="census_csas_4",
@@ -287,7 +248,7 @@ shapefiles = dict(
             name_components("CSA", x, abbreviate=True)
         ),
         filter=lambda x: True,
-        meta=dict(type="CSA", source="Census"),
+        meta=dict(type="CSA", source="Census", type_category="Census"),
     ),
     urban_areas=Shapefile(
         hash_key="urban_areas",
@@ -295,7 +256,7 @@ shapefiles = dict(
         shortname_extractor=lambda x: urban_area(x.NAMELSAD20, is_shortname=True),
         longname_extractor=lambda x: urban_area(x.NAMELSAD20, is_shortname=False),
         filter=lambda x: True,
-        meta=dict(type="Urban Area", source="Census"),
+        meta=dict(type="Urban Area", source="Census", type_category="Census"),
     ),
     zctas=Shapefile(
         hash_key="census_zctas",
@@ -303,7 +264,7 @@ shapefiles = dict(
         shortname_extractor=lambda x: f"{x.ZCTA5CE10}",
         longname_extractor=lambda x: f"{x.ZCTA5CE10}, USA",
         filter=lambda x: True,
-        meta=dict(type="ZIP", source="Census"),
+        meta=dict(type="ZIP", source="Census", type_category="Small"),
     ),
     cousub=Shapefile(
         hash_key="census_cousub_8",
@@ -311,7 +272,7 @@ shapefiles = dict(
         shortname_extractor=lambda x: f"{x.NAMELSAD}",
         longname_extractor=lambda x: f"{x.NAMELSAD} [CCD], {x.NAMELSADCO}, {x.STATE_NAME}, USA",
         filter=lambda x: True,
-        meta=dict(type="CCD", source="Census"),
+        meta=dict(type="CCD", source="Census", type_category="Census"),
     ),
     cities=Shapefile(
         hash_key="census_places_4",
@@ -319,7 +280,7 @@ shapefiles = dict(
         shortname_extractor=lambda x: x.NAMELSAD,
         longname_extractor=lambda x: f"{x.NAMELSAD}, {us.states.lookup(x.STATEFP).name}, USA",
         filter=lambda x: True,
-        meta=dict(type="City", source="Census"),
+        meta=dict(type="City", source="Census", type_category="US Subdivision"),
         drop_dup=True,
     ),
     neighborhoods=Shapefile(
@@ -333,7 +294,7 @@ shapefiles = dict(
         + us.states.lookup(x["State"]).name
         + ", USA",
         filter=lambda x: True,
-        meta=dict(type="Neighborhood", source="Zillow"),
+        meta=dict(type="Neighborhood", source="Zillow", type_category="Small"),
         drop_dup=True,
     ),
     congress=CONGRESSIONAL_DISTRICTS,
@@ -346,7 +307,11 @@ shapefiles = dict(
         longname_extractor=lambda x: f"Historical Congressional District"
         + f" {x['state']}-{x['district']}, {render_start_and_end(x)} Congress, USA",
         filter=lambda x: True,
-        meta=dict(type="Historical Congressional District", source="Census"),
+        meta=dict(
+            type="Historical Congressional District",
+            source="Census",
+            type_category="Political",
+        ),
         chunk_size=100,
     ),
     native_areas=Shapefile(
@@ -355,7 +320,7 @@ shapefiles = dict(
         shortname_extractor=lambda x: f"{x.NAMELSAD}",
         longname_extractor=lambda x: f"{x.NAMELSAD}, USA",
         filter=lambda x: not is_native_statistical_area(x),
-        meta=dict(type="Native Area", source="Census"),
+        meta=dict(type="Native Area", source="Census", type_category="Native"),
     ),
     native_statistical_areas=Shapefile(
         hash_key="native_statistical_areas",
@@ -363,7 +328,9 @@ shapefiles = dict(
         shortname_extractor=lambda x: f"{x.NAMELSAD}",
         longname_extractor=lambda x: f"{x.NAMELSAD}, USA",
         filter=lambda x: is_native_statistical_area(x),
-        meta=dict(type="Native Statistical Area", source="Census"),
+        meta=dict(
+            type="Native Statistical Area", source="Census", type_category="Native"
+        ),
     ),
     native_subdivisions=Shapefile(
         hash_key="native_subdivisions_2",
@@ -371,7 +338,7 @@ shapefiles = dict(
         shortname_extractor=lambda x: f"{x.NAMELSAD}",
         longname_extractor=lambda x: f"{x.NAMELSAD}, {ce_to_name()[x.AIANNHCE]}, USA",
         filter=lambda x: True,
-        meta=dict(type="Native Subdivision", source="Census"),
+        meta=dict(type="Native Subdivision", source="Census", type_category="Native"),
     ),
     school_districts=Shapefile(
         hash_key="school_districts_2",
@@ -379,7 +346,7 @@ shapefiles = dict(
         shortname_extractor=lambda x: x["NAME"],
         longname_extractor=lambda x: f"{x['NAME']}{x['suffix']}, {x['STATE_NAME']}, USA",
         filter=lambda x: True,
-        meta=dict(type="School District", source="Census"),
+        meta=dict(type="School District", source="Census", type_category="School"),
     ),
     judicial_districts=Shapefile(
         hash_key="judicial_districts",
@@ -392,7 +359,7 @@ shapefiles = dict(
         + us.states.lookup(x["STATE"]).abbr
         + ", USA",
         filter=lambda x: True,
-        meta=dict(type="Judicial District", source="HIFLD"),
+        meta=dict(type="Judicial District", source="HIFLD", type_category="Oddball"),
     ),
     judicial_circuits=Shapefile(
         hash_key="judicial_circuits_2",
@@ -400,7 +367,7 @@ shapefiles = dict(
         shortname_extractor=lambda x: x["shortname"],
         longname_extractor=lambda x: x["shortname"] + ", USA",
         filter=lambda x: True,
-        meta=dict(type="Judicial Circuit", source="HIFLD"),
+        meta=dict(type="Judicial Circuit", source="HIFLD", type_category="Oddball"),
     ),
     county_cross_cd=Shapefile(
         hash_key="county_cross_cd_3",
@@ -408,7 +375,7 @@ shapefiles = dict(
         shortname_extractor=lambda x: x["shortname"],
         longname_extractor=lambda x: x["longname"],
         filter=lambda x: True,
-        meta=dict(type="County Cross CD", source="Census"),
+        meta=dict(type="County Cross CD", source="Census", type_category="Political"),
         chunk_size=100,
     ),
     usda_county_type=Shapefile(
@@ -417,7 +384,7 @@ shapefiles = dict(
         shortname_extractor=lambda x: x.name + " [USDA County Type]",
         longname_extractor=lambda x: x.name + " [USDA County Type], USA",
         filter=lambda x: True,
-        meta=dict(type="USDA County Type", source="Census"),
+        meta=dict(type="USDA County Type", source="Census", type_category="Oddball"),
     ),
     hospital_referral_regions=Shapefile(
         hash_key="hospital_referral_regions_3",
@@ -425,7 +392,11 @@ shapefiles = dict(
         shortname_extractor=lambda x: hrr_shortname(x.hrrcity),
         longname_extractor=lambda x: hrr_shortname(x.hrrcity) + ", USA",
         filter=lambda x: True,
-        meta=dict(type="Hospital Referral Region", source="Dartmouth Atlas"),
+        meta=dict(
+            type="Hospital Referral Region",
+            source="Dartmouth Atlas",
+            type_category="Oddball",
+        ),
     ),
     hospital_service_areas=Shapefile(
         hash_key="hospital_service_areas_2",
@@ -436,7 +407,11 @@ shapefiles = dict(
         + hrr_shortname(x.HRR93_NAME)
         + ", USA",
         filter=lambda x: True,
-        meta=dict(type="Hospital Service Area", source="Dartmouth Atlas"),
+        meta=dict(
+            type="Hospital Service Area",
+            source="Dartmouth Atlas",
+            type_category="Oddball",
+        ),
     ),
     media_markets=Shapefile(
         hash_key="media_markets_2",
@@ -444,27 +419,116 @@ shapefiles = dict(
         shortname_extractor=lambda x: x["NAME"] + " Media Market",
         longname_extractor=lambda x: x["NAME"] + " Media Market, USA",
         filter=lambda x: x.NAME != "National",
-        meta=dict(type="Media Market", source="Nielsen via Kenneth C Black"),
+        meta=dict(
+            type="Media Market",
+            source="Nielsen via Kenneth C Black",
+            type_category="Oddball",
+        ),
+    ),
+    continents=Shapefile(
+        hash_key="continents_1",
+        path=continents,
+        shortname_extractor=lambda x: x.name_1,
+        longname_extractor=lambda x: x.name_1,
+        filter=lambda x: True,
+        meta=dict(
+            type="Continent", source="OpenDataSoft", type_category="International"
+        ),
+        american=False,
+        include_in_gpw=True,
+        chunk_size=1,
     ),
     countries=Shapefile(
-        hash_key="countries_3",
+        hash_key="countries_8",
         path=countries,
         shortname_extractor=lambda x: iso_to_country(x.ISO_CC),
         longname_extractor=lambda x: iso_to_country(x.ISO_CC),
         filter=lambda x: iso_to_country(x.ISO_CC) is not None,
-        meta=dict(type="Country", source="OpenDataSoft"),
+        meta=dict(type="Country", source="OpenDataSoft", type_category="International"),
         american=False,
         include_in_gpw=True,
         chunk_size=1,
     ),
     subnational_regions=Shapefile(
-        hash_key="subnational_regions_4",
+        hash_key="subnational_regions_9",
         path=subnational_regions,
-        shortname_extractor=lambda x: x["NAME"].replace(", USA", " [SN], USA"),
-        longname_extractor=lambda x: x["fullname"].replace(", USA", " [SN], USA"),
+        shortname_extractor=lambda x: x["NAME"],
+        longname_extractor=lambda x: x["fullname"],
         filter=lambda x: x.COUNTRY is not None,
-        meta=dict(type="Subnational Region", source="ESRI"),
+        meta=dict(
+            type="Subnational Region", source="ESRI", type_category="US Subdivision"
+        ),
+        american=False,
+        include_in_gpw=True,
+    ),
+    urban_centers=Shapefile(
+        hash_key="urban_centers_3",
+        path=lambda: load_ghsl_urban_center(),
+        shortname_extractor=lambda x: x["shortname"],
+        longname_extractor=lambda x: x["longname"],
+        meta=dict(type="Urban Center", source="GHSL", type_category="International"),
+        filter=lambda x: True,
         american=False,
         include_in_gpw=True,
     ),
 )
+
+shapefiles_for_stats = dict(
+    **shapefiles,
+    states=Shapefile(
+        hash_key="census_states_3",
+        path="named_region_shapefiles/cb_2022_us_state_500k.zip",
+        shortname_extractor=lambda x: x["NAME"],
+        longname_extractor=lambda x: x["NAME"] + ", USA",
+        filter=lambda x: True,
+        meta=dict(type="State", source="Census", type_category="US Subdivision"),
+    ),
+    us_urban_centers=Shapefile(
+        hash_key="us_urban_centers_3",
+        path=lambda: load_ghsl_urban_center(),
+        shortname_extractor=lambda x: x["shortname"],
+        longname_extractor=lambda x: x["longname"],
+        meta=dict(type="Urban Center", source="GHSL", type_category="International"),
+        filter=lambda x: "USA" in x.suffix,
+        american=True,
+        include_in_gpw=False,
+    ),
+)
+
+american_to_international = {
+    "State": "Subnational Region",
+    "US Urban Center": "Urban Center",
+}
+
+for population in named_populations:
+    key = f"population_circle_{named_populations[population]}"
+    shapefiles[key] = shapefiles_for_stats[key] = circle_shapefile_object(
+        shapefiles["countries"], population, just_usa=False
+    )
+    shapefiles_for_stats["us_" + key] = circle_shapefile_object(
+        shapefiles["countries"], population, just_usa=True
+    )
+    american_to_international[
+        shapefiles_for_stats["us_" + key].meta["type"]
+    ] = shapefiles[key].meta["type"]
+
+
+def filter_table_for_type(table, typ):
+    is_internationalized = typ in american_to_international
+    if is_internationalized:
+        typ = american_to_international[typ]
+    table = table[table.type == typ]
+    if is_internationalized:
+        table = table[table.longname.apply(lambda x: "USA" in x)]
+    return table
+
+
+def load_file_for_type(typ):
+    is_internationalized = typ in american_to_international
+    if is_internationalized:
+        typ = american_to_international[typ]
+    [loaded_file] = [x for x in shapefiles.values() if x.meta["type"] == typ]
+    loaded_file = loaded_file.load_file()
+    if is_internationalized:
+        loaded_file = loaded_file[loaded_file.longname.apply(lambda x: "USA" in x)]
+    return loaded_file

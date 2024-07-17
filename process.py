@@ -1,7 +1,6 @@
-import numpy as np
-
 from types import SimpleNamespace
 
+import numpy as np
 from permacache import permacache
 
 from geometry import locate_blocks

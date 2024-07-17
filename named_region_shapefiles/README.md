@@ -114,3 +114,14 @@ Source: https://data.dartmouthatlas.org/supplemental/#boundaries
 
   - HRR_Bdry__AK_HI_unmodified_original.geojson [hrr.geojson is derived from this, some small errors fixed]
   - HSA_Bdry__AK_HI_unmodified.geojson
+
+# from GHSL
+
+Source: https://human-settlement.emergency.copernicus.eu/ghs_stat_ucdb2015mt_r2019a.php
+   - `GHS_STAT_UCDB2015MT_GLOBE_R2019A_V1_2.gpkg`
+
+# From CDC
+
+Source: https://chronicdata.cdc.gov/500-Cities-Places/PLACES-Local-Data-for-Better-Health-Census-Tract-D/cwsq-ngmh/about_data
+
+    - `PLACES__Local_Data_for_Better_Health__Census_Tract_Data_2023_release_20240531.csv`
