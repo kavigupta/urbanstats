@@ -1,4 +1,5 @@
 import json
+
 import numpy as np
 from permacache import permacache, stable_hash
 
@@ -7,7 +8,7 @@ from urbanstats.games.quiz_analysis import get_full_statistics, questions
 
 from .fixed import retrostat as fixed_up_to
 
-generate_until = 17
+generate_until = 34
 
 
 def week_for_day(day):

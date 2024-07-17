@@ -2,7 +2,6 @@ import ast
 import os
 import shutil
 
-
 current = __file__
 fixed_py_file = os.path.join(os.path.dirname(current), "fixed.py")
 
