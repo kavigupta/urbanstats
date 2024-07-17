@@ -5,6 +5,8 @@ import "./style.css";
 import "./common.css";
 import { PageTemplate } from "./page_template/template.js";
 
+const industry_occupation_table = require("./data/explanation_industry_occupation_table.json");
+
 function ScrollHereOnceLoaded(props) {
     const ref = React.useRef(null);
     React.useEffect(() => {
@@ -14,6 +16,30 @@ function ScrollHereOnceLoaded(props) {
     }, [ref.current]);
     return <div ref={ref}>{props.children}</div>;
 }
+
+const ExplanationTable = (props) =>
+    <div>
+        Details on the {props.name} codes can be found <a href={props.link}>here</a>,
+        a summary is provided below:
+        <div style={{ marginLeft: "1em", marginTop: "1em", marginBottom: "1em", border: "1px solid black" }}>
+            <div>
+                {
+                    props.table.map(([name, description], i) =>
+                        <div style={{
+                            display: "flex", flexDirection: "row",
+                            borderTop: i === 0 ? "none" : "1px solid black"
+                        }}>
+                            <div
+                                style={{ width: "30%", padding: "1em" }}
+                            >
+                                {name}</div>
+                            <div style={{ width: "70%", padding: "1em" }}>{description}</div>
+                        </div>
+                    )
+                }
+            </div>
+        </div>
+    </div>
 
 class DataCreditPanel extends PageTemplate {
     constructor(props) {
@@ -30,7 +56,15 @@ class DataCreditPanel extends PageTemplate {
     main_content(responsive) {
         return (
             <div className="serif">
-                <div className={responsive.headerTextClass}>Data Credit</div>
+                <div className={responsive.headerTextClass}>Credits</div>
+
+                <h1>Code contributors</h1>
+                <p>
+                    Special thanks to <a href="https://github.com/lukebrody">Luke Brody</a>
+                    for helping with the build system (I'm hopeless with this
+                    stuff) and to <a href="https://github.com/glacialcascade">glacialcascade</a>
+                    for identifying and correcting a bug in the code.
+                </p>
 
                 <h1>Geography</h1>
                 <div>
@@ -57,6 +91,21 @@ class DataCreditPanel extends PageTemplate {
                             Subnational shapefiles are from <a href=" https://hub.arcgis.com/datasets/esri::world-administrative-divisions/explore?location=41.502196%2C25.823236%2C6.69">ESRI</a>.
                             National shapefiles are aggregated from subnational shapefiles.
                             We filter international regions for those with area above 10 km<sup>2</sup>.
+                        </p>
+                        <p>
+                            Urban center shapefiles are sourced from the Global Human Settlement Layer's&nbsp;
+                            <a href="https://human-settlement.emergency.copernicus.eu/ghs_stat_ucdb2015mt_r2019a.php">
+                                Urban Centre Database v1.2
+                            </a>.&nbsp;
+                            We filtered this dataset for urban centers with a quality code (QA2_1V) of 1, indicating a true
+                            positive, and which are named.
+                        </p>
+                        <p>
+                            The population circles were defined using the GHS-POP dataset, using an algorithm hand-coded
+                            for the purpose of this website. Detailed maps and JSON files are available at&nbsp;
+                            <a href="https://github.com/kavigupta/urbanstats/tree/master/outputs/population_circles">
+                                the GitHub repository
+                            </a>.
                         </p>
                     </div>
                     <h2 ref={this.nref("geography")}>Geography Metrics</h2>
@@ -196,6 +245,35 @@ class DataCreditPanel extends PageTemplate {
                         </p>
                     </div>
 
+                    <h2 ref={this.nref("health")}>Health</h2>
+                    <div>
+                        <p>
+                            Health data comes from the CDC's <a href="https://chronicdata.cdc.gov/500-Cities-Places/PLACES-Local-Data-for-Better-Health-Census-Tract-D/cwsq-ngmh/about_data">PLACES dataset</a>
+                            version August 25, 2023, accessed June 1 2024. It is computed using disaggregation from the tract level to block level, using the 2010 census tracts
+                            (I am not sure why the CDC uses 2010 tracts for 2023 data, but that's what they do). This data is inherently estimate based.
+                        </p>
+                    </div>
+
+                    <h2 ref={this.nref("industry_and_occupation")}>Industry and Occupation</h2>
+                    <div>
+                        <p>
+                            We disaggregate industry data from the block group level to the block level using population
+                            over 18 as a weight. Numbers are percentages of the employed population.
+                        </p>
+
+                        <ExplanationTable
+                            table={industry_occupation_table["industry"]}
+                            name="Industry"
+                            // https://www.bls.gov/cps/cpsaat18.htm
+                            link="https://archive.is/e06LF"
+                        />
+                        <ExplanationTable
+                            table={industry_occupation_table["occupation"]}
+                            name="Occupation"
+                            link="https://www2.census.gov/programs-surveys/cps/methodology/Occupation%20Codes.pdf"
+                        />
+                    </div>
+
                     <h2 ref={this.nref("housing-acs")}>Housing</h2>
                     <div>
                         <p>
@@ -259,6 +337,12 @@ class DataCreditPanel extends PageTemplate {
                             These estimates are then interpolated to the block level using the census block centroid
                             using bilinear interpolation. We then compute the population weighted average of these
                             statistics for each geography.
+                        </p>
+                    </div>
+                    <h2 ref={this.nref("2010")}>2010 Census</h2>
+                    <div>
+                        <p>
+                            2010 Census data is treated the same way as 2020 Census data.
                         </p>
                     </div>
                 </div>
@@ -330,6 +414,11 @@ class DataCreditPanel extends PageTemplate {
                     we are using for the US data. To compute PW density, we treat each cell as effectively homogenous,
                     but since the cells are all smaller than 1 square kilometer, this should not be a major issue for
                     radii above 1km (which is the smallest radius we use for GHS-POP data).
+                </div>
+                <h1> Flags </h1>
+                <div>
+                    Every flag for the universe selector is from Wikipedia. All of them are free to use under
+                    any circumstances, at least according to the Wikipedia page for the flag.
                 </div>
             </div>
         );
