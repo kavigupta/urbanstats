@@ -59,6 +59,9 @@ export function interpolate_color(ramp: Keypoints, item: number) {
 }
 
 export function lighten(color: string, fraction: number) {
+    if (!(typeof color === "string")) {
+        throw new Error("color is not a string");
+    }
     const ramp: [number, string][] = [[0, color], [1, "#ffffff"]];
     return interpolate_color(ramp, fraction);
 }
