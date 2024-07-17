@@ -3,7 +3,7 @@ import "../style.css";
 import "../common.css";
 import { article_link } from '../navigation/links';
 
-import { loadJSON, loadProtobuf } from '../load_json.js';
+import { loadJSON, loadProtobuf } from '../load_json';
 import { is_historical_cd } from "../utils/is_historical";
 
 
@@ -35,11 +35,13 @@ async function by_population(settings, domestic_only=false) {
             continue;
         }
 
-        if (domestic_only && (!x.endsWith(", USA") || x.endsWith(" [SN], USA"))) {
+        // this is specifically looking for stuff that's only in the US.
+        // so it makes sense.
+        if (domestic_only && (!x.endsWith(", USA"))) {
             continue;
         }
 
-        document.location = article_link(x);
+        document.location = article_link(undefined, x);
         break;
     }
 }
@@ -52,7 +54,7 @@ async function uniform(settings) {
         if (!settings.show_historical_cds && is_historical_cd(x)) {
             continue;
         }
-        document.location = article_link(x);
+        document.location = article_link(undefined, x);
         break;
     }
 }
