@@ -1,11 +1,13 @@
 {
     "compilerOptions": {
         "strict": true,
-        "lib": ["ES2021", "DOM"],
+        "lib": [
+            "ES2021",
+            "DOM"
+        ],
         "jsx": "react",
         "esModuleInterop": true,
-        "target": "es2015",
-        "moduleResolution": "Bundler",
-        "module": "ES2022"
+        "target": "ES2022",
+        "module": "CommonJS",
     }
 }
