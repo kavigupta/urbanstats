@@ -11,7 +11,8 @@ module.exports = {
         "about": ['./src/about.js'],
         "data-credit": ['./src/data-credit.js'],
         "mapper": ['./src/mapper.js'],
-        "comparison": ['./src/comparison.js']
+        "comparison": ['./src/comparison.js'],
+        "statistic": ['./src/statistic.js']
     },
     output: {
         filename: '[name].js',
