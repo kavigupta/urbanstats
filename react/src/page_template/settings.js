@@ -1,4 +1,4 @@
-import { relationship_key } from "../components/related-button.js";
+import { relationship_key } from "../components/related-button";
 
 
 export function load_settings() {
