@@ -1,6 +1,8 @@
 {
-  "private": true,
-  "type": "module",
+  "name": "assets",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
   "scripts": {
     "dev": "webpack --mode=development",
     "watch": "webpack --mode=development --watch",
@@ -36,9 +38,13 @@
   "dependencies": {
     "@dnd-kit/core": "^6.0.6",
     "@dnd-kit/sortable": "^7.0.1",
-    "dom-to-image": "^2.6.0",
+    "@fontsource/jost": "^5.0.18",
+    "@types/google-protobuf": "^3.21.2",
+    "dom-to-image-more": "^3.3.0",
     "expr-eval": "^2.0.2",
+    "file-saver": "^2.0.5",
     "geojson2svg": "^2.0.1",
+    "google-protobuf": "^3.21.2",
     "json5": "^2.2.0",
     "mathjs": "^12.1.0",
     "node-polyfill-webpack-plugin": "^2.0.1",
@@ -49,6 +55,7 @@
     "react-device-detect": "^2.2.3",
     "react-dom": "^18.2.0",
     "react-mobile-share": "^1.0.30",
-    "react-zlib-js": "^1.0.5"
+    "react-zlib-js": "^1.0.5",
+    "resolve-cwd": "^3.0.0"
   }
 }
