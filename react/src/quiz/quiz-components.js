@@ -1,12 +1,12 @@
 
-export { Header, Footer, Help, nameOfQuizKind };
+export { Header, Footer, Help, nameOfQuizKind, user_id };
 
 import React from 'react';
 
 import { PageTemplate } from "../page_template/template.js";
 import "../common.css";
 import "../components/quiz.css";
-import { useResponsive } from '../utils/responsive.js';
+import { headerTextClass } from '../utils/responsive';
 
 
 function nameOfQuizKind(quiz_kind) {
@@ -69,7 +69,16 @@ class Help extends PageTemplate {
 
     render() {
         return <div className="centered_text serif">
-            {this.text()}
+            {this.text()} {user_id()}
         </div>
+    }
+}
+
+function user_id() {
+    const user_id = localStorage.getItem("persistent_id");
+    if (user_id === null) {
+        return "";
+    } else {
+        return <div>Your user id is {user_id}</div>;
     }
 }

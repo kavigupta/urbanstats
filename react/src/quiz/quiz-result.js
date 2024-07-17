@@ -2,10 +2,10 @@ import React from 'react';
 import { isMobile, isFirefox } from 'react-device-detect';
 
 import { Statistic } from "../components/table.js";
-import { article_link } from "../navigation/links.js";
+import { article_link } from "../navigation/links";
 
 
-import { Header, nameOfQuizKind } from './quiz-components.js';
+import { Header, nameOfQuizKind, user_id } from './quiz-components.js';
 import { AudienceStatistics, QuizStatistics } from './quiz-statistics.js';
 import { ENDPOINT, a_correct } from '../components/quiz-panel.js';
 import { render_question } from './quiz-question.js';
@@ -66,6 +66,9 @@ export class QuizResult extends React.Component {
                         />
                     )
                 )}
+                <div className="centered_text serif">
+                    {user_id()}
+                </div>
             </div>
         );
     }
@@ -249,13 +252,13 @@ export class GenericQuizResultRow extends React.Component {
                             <td className={first}>
                                 {this.get_option("a")}
                             </td>
-                            <td className="quiz_result_value_left">
+                            <td style={{ fontWeight: 400 }} className="serif quiz_result_value_left">
                                 {this.get_stat("a")}
                             </td>
                             <td className="serif quiz_result_symbol">
                                 {comparison}
                             </td>
-                            <td className="quiz_result_value_right">
+                            <td style={{ fontWeight: 400 }} className="serif quiz_result_value_right">
                                 {this.get_stat("b")}
                             </td>
                             <td className={second}>
@@ -351,7 +354,7 @@ export function Clickable({ longname }) {
     // return <a href={article_link(longname)}>{longname}</a>
     // same without any link formatting
     return <a
-        href={article_link(longname)}
+        href={article_link(undefined, longname)}
         style={{ textDecoration: "none", color: "inherit" }}
     >
         {longname}
