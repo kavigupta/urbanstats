@@ -739,6 +739,7 @@ fixture('mapping-more-complex')
     });
 
 test("mapping-more-complex", async t => {
+    await t.wait(5000);
     await screencap(t, "mapping-more-complex");
 })
 
