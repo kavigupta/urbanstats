@@ -13,158 +13,159 @@ const table_row_style = {
     flexDirection: "row",
 };
 
+export function StatisticRowRawCellContents(props) {
+    const alignStyle = { textAlign: props.is_header ? "center" : "right" };
+    var value_columns = [
+        [15,
+            "statval",
+            <div style={alignStyle}>
+                <span className="serif value">{
+                    props.is_header
+                        ? "Value"
+                        : <Statistic
+                            statname={props.statname}
+                            value={props.statval}
+                            is_unit={false}
+                            settings={props.settings}
+                            style={props.statistic_style || {}}
+                        />}
+                </span>
+            </div>
+        ],
+        [10,
+            "statval_unit",
+            <div className="value_unit">
+                <span className="serif value">{
+                    props.is_header
+                        ? ""
+                        : <Statistic
+                            statname={props.statname}
+                            value={props.statval}
+                            is_unit={true}
+                            settings={props.settings}
+                        />}
+                </span>
+            </div>
+        ]
+    ]
+    if (props.is_header) {
+        value_columns[0][0] += value_columns[1][0];
+        value_columns = [value_columns[0]];
+    }
+
+    const cells = [
+        [31,
+            "statname",
+            <span className="serif value">{
+                props.is_header ? "Statistic" :
+                    <a className="statname_no_link" href={
+                        statistic_link(
+                            props.universe,
+                            props.statname, props.article_type, props.ordinal,
+                            20, undefined, props.longname
+                        )
+                    }>{props.rendered_statname}</a>
+            }
+            </span>
+        ],
+        ...value_columns,
+        [
+            props.simple ? 8 : 25,
+            "statistic_ordinal",
+            <span className="serif ordinal">{
+                props.is_header
+                    ? (props.simple ? right_align("Ord") : "Ordinal")
+                    : <Ordinal ordinal={props.ordinal}
+                        total={props.total_count_in_class}
+                        type={props.article_type}
+                        statpath={props.statpath}
+                        simple={props.simple}
+                        onReplace={props.onReplace}
+                        universe={props.universe}
+                    />
+            }</span>
+        ],
+        [
+            props.simple ? 7 : 17,
+            "statistic_percentile",
+            <span className="serif ordinal">{
+                props.is_header
+                    ? (props.simple ? right_align("%ile") : "Percentile")
+                    : <Percentile ordinal={props.ordinal}
+                        total={props.total_count_in_class}
+                        percentile_by_population={props.percentile_by_population}
+                        settings={props.settings}
+                        simple={props.simple}
+                    />
+            }</span>
+        ],
+        [8,
+            "pointer_in_class",
+            props.is_header
+                ? <span className="serif ordinal">Within Type</span>
+                : <span className="serif ordinal" style={{ display: "flex" }}>
+                    <PointerButtonsIndex
+                        ordinal={props.ordinal}
+                        statpath={props.statpath}
+                        type={props.article_type}
+                        total={props.total_count_in_class}
+                        settings={props.settings}
+                        universe={props.universe}
+                    />
+                </span>
+        ],
+        [8,
+            "pointer_overall",
+            props.is_header
+                ? <span className="serif ordinal">Overall</span>
+                : <span className="serif ordinal" style={{ display: "flex" }}>
+                    <PointerButtonsIndex
+                        ordinal={props.overallOrdinal}
+                        statpath={props.statpath}
+                        type="overall"
+                        total={props.total_count_overall}
+                        settings={props.settings}
+                        universe={props.universe}
+                    />
+                </span>
+        ]
+    ];
+    var cell_percentages = [];
+    var cell_contents = [];
+    for (let i in cells) {
+        if (props.only_columns && !props.only_columns.includes(cells[i][1])) {
+            continue;
+        }
+        cell_percentages.push(cells[i][0]);
+        cell_contents.push(cells[i][2]);
+    }
+    // normalize cell percentages
+    const sum = cell_percentages.reduce((a, b) => a + b, 0);
+    for (let i in cell_percentages) {
+        cell_percentages[i] = props.total_width * cell_percentages[i] / sum;
+    }
+
+    const contents = cell_contents.map(
+        (content, i) => {
+            const sty = { width: cell_percentages[i] + "%", padding: "1px" };
+            if (props.is_header) {
+                sty.textAlign = "center";
+            }
+            return <div key={100 * props._idx + i} style={sty}>
+                {content}
+            </div>
+        }
+    );
+    return contents;
+}
+
 class StatisticRowRaw extends React.Component {
     constructor(props) {
         super(props);
     }
 
-    cells() {
-        const alignStyle = { textAlign: this.props.is_header ? "center" : "right" };
-        var value_columns = [
-            [15,
-                "statval",
-                <div style={alignStyle}>
-                    <span className="serif value">{
-                        this.props.is_header
-                            ? "Value"
-                            : <Statistic
-                                statname={this.props.statname}
-                                value={this.props.statval}
-                                is_unit={false}
-                                settings={this.props.settings}
-                                style={this.props.statistic_style || {}}
-                            />}
-                    </span>
-                </div>
-            ],
-            [10,
-                "statval_unit",
-                <div className="value_unit">
-                    <span className="serif value">{
-                        this.props.is_header
-                            ? ""
-                            : <Statistic
-                                statname={this.props.statname}
-                                value={this.props.statval}
-                                is_unit={true}
-                                settings={this.props.settings}
-                            />}
-                    </span>
-                </div>
-            ]
-        ]
-        if (this.props.is_header) {
-            value_columns[0][0] += value_columns[1][0];
-            value_columns = [value_columns[0]];
-        }
-
-        return [
-            [31,
-                "statname",
-                <span className="serif value">{
-                    this.props.is_header ? "Statistic" :
-                        <a className="statname_no_link" href={
-                            statistic_link(
-                                this.props.universe,
-                                this.props.statname, this.props.article_type, this.props.ordinal,
-                                20, undefined, this.props.longname
-                            )
-                        }>{this.props.rendered_statname}</a>
-                }
-                </span>
-            ],
-            ...value_columns,
-            [
-                this.props.simple ? 8 : 25,
-                "statistic_ordinal",
-                <span className="serif ordinal">{
-                    this.props.is_header
-                        ? (this.props.simple ? right_align("Ord") : "Ordinal")
-                        : <Ordinal ordinal={this.props.ordinal}
-                            total={this.props.total_count_in_class}
-                            type={this.props.article_type}
-                            statpath={this.props.statpath}
-                            simple={this.props.simple}
-                            onReplace={this.props.onReplace}
-                            universe={this.props.universe}
-                        />
-                }</span>
-            ],
-            [
-                this.props.simple ? 7 : 17,
-                "statistic_percentile",
-                <span className="serif ordinal">{
-                    this.props.is_header
-                        ? (this.props.simple ? right_align("%ile") : "Percentile")
-                        : <Percentile ordinal={this.props.ordinal}
-                            total={this.props.total_count_in_class}
-                            percentile_by_population={this.props.percentile_by_population}
-                            settings={this.props.settings}
-                            simple={this.props.simple}
-                        />
-                }</span>
-            ],
-            [8,
-                "pointer_in_class",
-                this.props.is_header
-                    ? <span className="serif ordinal">Within Type</span>
-                    : <span className="serif ordinal" style={{ display: "flex" }}>
-                        <PointerButtonsIndex
-                            ordinal={this.props.ordinal}
-                            statpath={this.props.statpath}
-                            type={this.props.article_type}
-                            total={this.props.total_count_in_class}
-                            settings={this.props.settings}
-                            universe={this.props.universe}
-                        />
-                    </span>
-            ],
-            [8,
-                "pointer_overall",
-                this.props.is_header
-                    ? <span className="serif ordinal">Overall</span>
-                    : <span className="serif ordinal" style={{ display: "flex" }}>
-                        <PointerButtonsIndex
-                            ordinal={this.props.overallOrdinal}
-                            statpath={this.props.statpath}
-                            type="overall"
-                            total={this.props.total_count_overall}
-                            settings={this.props.settings}
-                            universe={this.props.universe}
-                        />
-                    </span>
-            ]
-        ]
-    }
-
     cell_contents(total_width) {
-        var cell_percentages = [];
-        var cell_contents = [];
-        const cells = this.cells();
-        for (let i in cells) {
-            if (this.props.only_columns && !this.props.only_columns.includes(cells[i][1])) {
-                continue;
-            }
-            cell_percentages.push(cells[i][0]);
-            cell_contents.push(cells[i][2]);
-        }
-        // normalize cell percentages
-        const sum = cell_percentages.reduce((a, b) => a + b, 0);
-        for (let i in cell_percentages) {
-            cell_percentages[i] = total_width * cell_percentages[i] / sum;
-        }
-
-        const contents = cell_contents.map(
-            (content, i) => {
-                const sty = { width: cell_percentages[i] + "%", padding: "1px" };
-                if (this.props.is_header) {
-                    sty.textAlign = "center";
-                }
-                return <div key={100 * this.props._idx + i} style={sty}>
-                    {content}
-                </div>
-            }
-        );
+        const contents = <StatisticRowRawCellContents {...this.props} total_width={total_width}/>;
         return contents;
     }
 
