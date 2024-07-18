@@ -2,7 +2,7 @@ export { ComparisonPanel };
 
 import React from 'react';
 
-import { StatisticRowRaw, StatisticRowRawCellContents, StatisticRow } from "./table.js";
+import { StatisticRowRaw, StatisticRowRawCellContents, StatisticRow } from "./table";
 import { MapGeneric } from "./map.js";
 import { PageTemplate } from "../page_template/template.js";
 import "../common.css";
