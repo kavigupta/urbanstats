@@ -2,7 +2,7 @@ export { ComparisonPanel };
 
 import React from 'react';
 
-import { StatisticRowRaw, statistic_row } from "./table.js";
+import { StatisticRowRaw, StatisticRowRawCellContents, statistic_row } from "./table.js";
 import { MapGeneric } from "./map.js";
 import { PageTemplate } from "../page_template/template.js";
 import "../common.css";
@@ -256,21 +256,25 @@ class ComparisonPanel extends PageTemplate {
             </div>
         )
 
-        row_overall.push(...new StatisticRowRaw(
+        row_overall.push(...StatisticRowRawCellContents(
             {
                 ...param_vals[0], only_columns: ["statname"], _idx: -1, simple: true, longname: this.props.datas[0].longname,
-                universe: this.state.current_universe
+                universe: this.state.current_universe,
+                total_width: 100 * (left_margin_pct - left_bar_margin)
             }
-        ).cell_contents(100 * (left_margin_pct - left_bar_margin)));
+        ));
         const only_columns = this.all_data_types_same() ? main_columns : main_columns_across_types;
 
         for (const i in this.props.datas) {
-            row_overall.push(...new StatisticRowRaw({
-                ...param_vals[i], only_columns: only_columns, _idx: i, simple: true,
-                statistic_style: highlight_idx == i ? { backgroundColor: lighten(this.color(i), 0.7) } : {},
-                onReplace: x => this.on_change(i, x),
-                universe: this.state.current_universe
-            }).cell_contents(this.each()));
+            row_overall.push(...StatisticRowRawCellContents(
+                {
+                    ...param_vals[i], only_columns: only_columns, _idx: i, simple: true,
+                    statistic_style: highlight_idx == i ? { backgroundColor: lighten(this.color(i), 0.7) } : {},
+                    onReplace: x => this.on_change(i, x),
+                    universe: this.state.current_universe,
+                    total_width: this.each()
+                }
+            ));
         }
         return row_overall;
     }

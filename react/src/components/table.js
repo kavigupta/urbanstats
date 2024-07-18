@@ -164,13 +164,9 @@ class StatisticRowRaw extends React.Component {
         super(props);
     }
 
-    cell_contents(total_width) {
-        const contents = <StatisticRowRawCellContents {...this.props} total_width={total_width}/>;
-        return contents;
-    }
-
     render() {
-        return statistic_row(this.props.is_header, this.props.index, this.cell_contents(100));
+        return statistic_row(this.props.is_header, this.props.index, 
+            StatisticRowRawCellContents({ ...this.props, total_width: 100 }));
     }
 }
 
