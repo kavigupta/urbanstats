@@ -1,7 +1,7 @@
 import React from 'react';
 import { isMobile, isFirefox } from 'react-device-detect';
 
-import { Statistic } from "../components/table.js";
+import { Statistic } from "../components/table";
 import { article_link } from "../navigation/links";
 
 
