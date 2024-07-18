@@ -383,107 +383,84 @@ function EditableNumber(props) {
     )
 };
 
-class Percentile extends React.Component {
-    constructor(props) {
-        super(props);
+function Percentile(props) {
+    const ordinal = props.ordinal;
+    const total = props.total;
+    if (ordinal > total) {
+        return <span></span>
     }
-
-    render() {
-        const ordinal = this.props.ordinal;
-        const total = this.props.total;
-        if (ordinal > total) {
-            return <span></span>
-        }
-        // percentile as an integer
-        // used to be keyed by a setting, but now we always use percentile_by_population
-        const quantile =
-            true ?
-                this.props.percentile_by_population
-                : 1 - ordinal / total;
-        const percentile = Math.floor(100 * quantile);
-        if (this.props.simple) {
-            return right_align(percentile.toString() + "%");
-        }
-        // something like Xth percentile
-        let text = percentile + "th percentile";
-        if (percentile % 10 == 1 && percentile % 100 != 11) {
-            text = percentile + "st percentile";
-        } else if (percentile % 10 == 2 && percentile % 100 != 12) {
-            text = percentile + "nd percentile";
-        } else if (percentile % 10 == 3 && percentile % 100 != 13) {
-            text = percentile + "rd percentile";
-        }
-        return <div className="serif" style={{ textAlign: "right" }}>{text}</div>;
+    // percentile as an integer
+    // used to be keyed by a setting, but now we always use percentile_by_population
+    const quantile =
+        true ?
+            props.percentile_by_population
+            : 1 - ordinal / total;
+    const percentile = Math.floor(100 * quantile);
+    if (props.simple) {
+        return right_align(percentile.toString() + "%");
     }
+    // something like Xth percentile
+    let text = percentile + "th percentile";
+    if (percentile % 10 == 1 && percentile % 100 != 11) {
+        text = percentile + "st percentile";
+    } else if (percentile % 10 == 2 && percentile % 100 != 12) {
+        text = percentile + "nd percentile";
+    } else if (percentile % 10 == 3 && percentile % 100 != 13) {
+        text = percentile + "rd percentile";
+    }
+    return <div className="serif" style={{ textAlign: "right" }}>{text}</div>;
 }
 
-class PointerButtonsIndex extends React.Component {
-    constructor(props) {
-        super(props);
-    }
-
-    render() {
-        const self = this;
-        const get_data = async () => await load_ordering(self.props.universe, self.props.statpath, self.props.type);
-        const show_historical_cds = this.props.settings.show_historical_cds || is_historical_cd(this.props.type);
-        return (
-            <span style={{ margin: "auto" }}>
-                <PointerButtonIndex
-                    text="<"
-                    get_data={get_data}
-                    original_pos={this.props.ordinal}
-                    direction={-1}
-                    total={this.props.total}
-                    show_historical_cds={show_historical_cds}
-                    universe={this.props.universe}
-                />
-                <PointerButtonIndex
-                    text=">"
-                    get_data={get_data}
-                    original_pos={this.props.ordinal}
-                    direction={+1}
-                    total={this.props.total}
-                    show_historical_cds={show_historical_cds}
-                    universe={this.props.universe}
-                />
-            </span>
-        );
-    }
+function PointerButtonsIndex(props) {
+    const get_data = async () => await load_ordering(props.universe, props.statpath, props.type);
+    const show_historical_cds = props.settings.show_historical_cds || is_historical_cd(props.type);
+    return (
+        <span style={{ margin: "auto" }}>
+            <PointerButtonIndex
+                text="<"
+                get_data={get_data}
+                original_pos={props.ordinal}
+                direction={-1}
+                total={props.total}
+                show_historical_cds={show_historical_cds}
+                universe={props.universe}
+            />
+            <PointerButtonIndex
+                text=">"
+                get_data={get_data}
+                original_pos={props.ordinal}
+                direction={+1}
+                total={props.total}
+                show_historical_cds={show_historical_cds}
+                universe={props.universe}
+            />
+        </span>
+    );
 }
 
-class PointerButtonIndex extends React.Component {
-    constructor(props) {
-        super(props);
-    }
-
-    out_of_bounds(pos) {
-        return pos < 0 || pos >= this.props.total
-    }
-
-    render() {
-        let pos = this.props.original_pos - 1 + + this.props.direction;
-        const self = this;
-        if (self.out_of_bounds(pos) || this.props.original_pos > this.props.total) {
-            return <span className="button">&nbsp;&nbsp;</span>
-        } else {
-            return (
-                <a href="#" className="button" onClick={() => self.onClick(pos)}>{this.props.text}</a>
-            );
-        }
-    }
-    async onClick(pos) {
+function PointerButtonIndex(props) {
+    const out_of_bounds = (pos) => pos < 0 || pos >= props.total;
+    const onClick = async (pos) => {
         {
-            const data = await this.props.get_data();
-            while (!this.out_of_bounds(pos)) {
+            const data = await props.get_data();
+            while (!out_of_bounds(pos)) {
                 const name = data[pos];
-                if (!this.props.show_historical_cds && is_historical_cd(name)) {
-                    pos += this.props.direction;
+                if (!props.show_historical_cds && is_historical_cd(name)) {
+                    pos += props.direction;
                     continue;
                 }
-                document.location = article_link(this.props.universe, name);
+                document.location = article_link(props.universe, name);
                 return;
             }
         }
+    }
+    let pos = props.original_pos - 1 + + props.direction;
+    if (out_of_bounds(pos) || props.original_pos > props.total) {
+        return <span className="button">&nbsp;&nbsp;</span>
+    } else {
+        return (
+            <a href="#" className="button" onClick={() => onClick(pos)}>{props.text}</a>
+        );
     }
 }
 
