@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import ContentEditable from 'react-contenteditable'
 
-export { StatisticRowRaw, Statistic, statistic_row, Percentile };
+export { Statistic, Percentile };
 import { article_link, statistic_link } from "../navigation/links";
 import { loadProtobuf, load_ordering } from '../load_json';
 import "./table.css";
@@ -12,6 +12,13 @@ const table_row_style = {
     display: "flex",
     flexDirection: "row",
 };
+
+export function StatisticRowRaw(props) {
+
+    const cell_contents = StatisticRowRawCellContents({ ...props, total_width: 100 });
+
+    return <StatisticRow is_header={props.is_header} index={props.index} contents={cell_contents} />;
+}
 
 export function StatisticRowRawCellContents(props) {
     const alignStyle = { textAlign: props.is_header ? "center" : "right" };
@@ -159,18 +166,7 @@ export function StatisticRowRawCellContents(props) {
     return contents;
 }
 
-class StatisticRowRaw extends React.Component {
-    constructor(props) {
-        super(props);
-    }
-
-    render() {
-        return statistic_row(this.props.is_header, this.props.index, 
-            StatisticRowRawCellContents({ ...this.props, total_width: 100 }));
-    }
-}
-
-function statistic_row(is_header, index, contents) {
+export function StatisticRow({ is_header, index, contents }) {
     return <div key={index} className={is_header ? "tableheader" : index % 2 == 1 ? "oddrow" : ""}
         style={{ alignItems: is_header ? "center" : "last baseline", ...table_row_style }}
     >
@@ -179,23 +175,11 @@ function statistic_row(is_header, index, contents) {
 }
 
 
-class Statistic extends React.Component {
-    constructor(props) {
-        super(props);
-    }
-
-    render() {
-        const content = this.render_content();
-        if (this.props.style) {
-            return <span style={this.props.style}>{content}</span>;
-        }
-        return content;
-    }
-
-    render_content() {
-        const name = this.props.statname;
-        let value = this.props.value;
-        const is_unit = this.props.is_unit;
+function Statistic(props) {
+    const content = (() => {
+        const name = props.statname;
+        let value = props.value;
+        const is_unit = props.is_unit;
         if (name.includes("%") || name.includes("Change")) {
             if (is_unit) {
                 return <span>%</span>;
@@ -203,7 +187,7 @@ class Statistic extends React.Component {
             return <span>{(value * 100).toFixed(2)}</span>;
         }
         else if (name.includes("Density")) {
-            const is_imperial = this.props.settings.use_imperial;
+            const is_imperial = props.settings.use_imperial;
             let unit_name = "km";
             if (is_imperial) {
                 unit_name = "mi";
@@ -237,7 +221,7 @@ class Statistic extends React.Component {
                 return <span>{value.toFixed(0)}</span>;
             }
         } else if (name == "Area") {
-            const is_imperial = this.props.settings.use_imperial;
+            const is_imperial = props.settings.use_imperial;
             let unit = "null";
             if (is_imperial) {
                 value /= 1.60934 * 1.60934;
@@ -269,7 +253,7 @@ class Statistic extends React.Component {
                 }
             }
         } else if (name.includes("Mean distance")) {
-            const is_imperial = this.props.settings.use_imperial;
+            const is_imperial = props.settings.use_imperial;
             let unit = <span>km</span>;
             if (is_imperial) {
                 unit = <span>mi</span>
@@ -299,7 +283,7 @@ class Statistic extends React.Component {
             // e.g., 3:05
             return <span>{hours}:{minutes.toString().padStart(2, "0")}</span>;
         } else if (name == "Rainfall" || name == "Snowfall [rain-equivalent]") {
-            const is_imperial = this.props.settings.use_imperial;
+            const is_imperial = props.settings.use_imperial;
             value *= 100;
             let unit = "cm";
             if (is_imperial) {
@@ -315,25 +299,23 @@ class Statistic extends React.Component {
             return <span>&nbsp;</span>;
         }
         return <span>{value.toFixed(3)}</span>;
+    })();
+    if (props.style) {
+        return <span style={props.style}>{content}</span>;
     }
+    return content;
 }
 
-class ElectionResult extends React.Component {
-    constructor(props) {
-        super(props);
+function ElectionResult(props) {
+    // check if value is NaN
+    if (props.value != props.value) {
+        return <span>N/A</span>;
     }
-
-    render() {
-        // check if value is NaN
-        if (this.props.value != this.props.value) {
-            return <span>N/A</span>;
-        }
-        const value = Math.abs(this.props.value) * 100;
-        const places = value > 10 ? 1 : value > 1 ? 2 : value > 0.1 ? 3 : 4;
-        const text = value.toFixed(places);
-        const party = this.props.value > 0 ? "D" : "R";
-        return <span className={"party_result_" + party}>{party}+{text}</span>;
-    }
+    const value = Math.abs(props.value) * 100;
+    const places = value > 10 ? 1 : value > 1 ? 2 : value > 0.1 ? 3 : 4;
+    const text = value.toFixed(places);
+    const party = props.value > 0 ? "D" : "R";
+    return <span className={"party_result_" + party}>{party}+{text}</span>;
 }
 
 class Ordinal extends React.Component {
@@ -342,6 +324,21 @@ class Ordinal extends React.Component {
     }
 
     render() {
+        const onNewNumber = async (number) => {
+            let num = number;
+            if (num < 0) {
+                // -1 -> this.props.total, -2 -> this.props.total - 1, etc.
+                num = this.props.total + 1 + num;
+            }
+            if (num > this.props.total) {
+                num = this.props.total;
+            }
+            if (num <= 0) {
+                num = 1;
+            }
+            const data = await load_ordering(this.props.universe, this.props.statpath, this.props.type);
+            this.props.onReplace(data[num - 1]);
+        }
         const ordinal = this.props.ordinal;
         const total = this.props.total;
         const type = this.props.type;
@@ -351,7 +348,7 @@ class Ordinal extends React.Component {
         }
         const en = <EditableNumber
             number={ordinal}
-            onNewNumber={num => self.onNewNumber(num)}
+            onNewNumber={onNewNumber}
         />;
         if (this.props.simple) {
             return right_align(en);
@@ -359,22 +356,6 @@ class Ordinal extends React.Component {
         return <div className="serif" style={{ textAlign: "right" }}>
             {en} of {total} {display_type(this.props.universe, type)}
         </div>;
-    }
-
-    async onNewNumber(number) {
-        let num = number;
-        if (num < 0) {
-            // -1 -> this.props.total, -2 -> this.props.total - 1, etc.
-            num = this.props.total + 1 + num;
-        }
-        if (num > this.props.total) {
-            num = this.props.total;
-        }
-        if (num <= 0) {
-            num = 1;
-        }
-        const data = await load_ordering(this.props.universe, this.props.statpath, this.props.type);
-        this.props.onReplace(data[num - 1])
     }
 }
 

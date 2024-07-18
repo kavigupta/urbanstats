@@ -2,7 +2,7 @@ export { ComparisonPanel };
 
 import React from 'react';
 
-import { StatisticRowRaw, StatisticRowRawCellContents, statistic_row } from "./table.js";
+import { StatisticRowRaw, StatisticRowRawCellContents, StatisticRow } from "./table.js";
 import { MapGeneric } from "./map.js";
 import { PageTemplate } from "../page_template/template.js";
 import "../common.css";
@@ -121,11 +121,11 @@ class ComparisonPanel extends PageTemplate {
                         </div>
                         {this.bars()}
 
-                        {statistic_row(true, 0, header_row)}
+                        <StatisticRow is_header={true} index={0} contents={header_row}/>
 
                         {
                             render_rows.map((row, i) =>
-                                statistic_row(false, i, row)
+                                <StatisticRow key={i} is_header={false} index={i} contents={row} />
                             )
                         }
                     </div>
