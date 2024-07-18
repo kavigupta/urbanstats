@@ -61,9 +61,9 @@ class DataCreditPanel extends PageTemplate {
 
                 <h1>Code contributors</h1>
                 <p>
-                    Special thanks to <a href="https://github.com/lukebrody">Luke Brody</a>
-                    for helping with the build system (I'm hopeless with this
-                    stuff) and to <a href="https://github.com/glacialcascade">glacialcascade</a>
+                    Special thanks to <a href="https://github.com/lukebrody">Luke Brody</a>&nbsp;
+                    for helping with the build system (I'm hopeless with this stuff) and to&nbsp;
+                    <a href="https://github.com/glacialcascade">glacialcascade</a>&nbsp;
                     for identifying and correcting a bug in the code.
                 </p>
 
@@ -91,7 +91,6 @@ class DataCreditPanel extends PageTemplate {
                         <p>
                             Subnational shapefiles are from <a href=" https://hub.arcgis.com/datasets/esri::world-administrative-divisions/explore?location=41.502196%2C25.823236%2C6.69">ESRI</a>.
                             National shapefiles are aggregated from subnational shapefiles.
-                            We filter international regions for those with area above 10 km<sup>2</sup>.
                         </p>
                         <p>
                             Urban center shapefiles are sourced from the Global Human Settlement Layer's&nbsp;
@@ -194,7 +193,7 @@ class DataCreditPanel extends PageTemplate {
                     <h2 ref={this.nref("education")}>Education</h2>
                     <div>
                         <p>
-                            We analyze education data by computing the percentage of the population over 25 with <b>at least</b>
+                            We analyze education data by computing the percentage of the population over 25 with <b>at least</b>&nbsp;
                             a high school degree, a bachelor's degree, or a graduate degree. These will not add to 100%.
                             This data is disaggregated from the block group level to the block level using adult population
                             as a weight.
@@ -249,7 +248,7 @@ class DataCreditPanel extends PageTemplate {
                     <h2 ref={this.nref("health")}>Health</h2>
                     <div>
                         <p>
-                            Health data comes from the CDC's <a href="https://chronicdata.cdc.gov/500-Cities-Places/PLACES-Local-Data-for-Better-Health-Census-Tract-D/cwsq-ngmh/about_data">PLACES dataset</a>
+                            Health data comes from the CDC's <a href="https://chronicdata.cdc.gov/500-Cities-Places/PLACES-Local-Data-for-Better-Health-Census-Tract-D/cwsq-ngmh/about_data">PLACES dataset</a>&nbsp;
                             version August 25, 2023, accessed June 1 2024. It is computed using disaggregation from the tract level to block level, using the 2010 census tracts
                             (I am not sure why the CDC uses 2010 tracts for 2023 data, but that's what they do). This data is inherently estimate based.
                         </p>
@@ -382,7 +381,7 @@ class DataCreditPanel extends PageTemplate {
                     <div>
 
                         <p>
-                            Airport data is from OurAirports via
+                            Airport data is from OurAirports via&nbsp;
                             <a href="https://hub.arcgis.com/datasets/esri-de-content::world-airports/about">ArcGIS Hub</a>
                         </p>
                     </div>
@@ -393,23 +392,23 @@ class DataCreditPanel extends PageTemplate {
                     </div>
                     <h2 ref={this.nref("superfund")}>Superfund Sites</h2>
                     <div>
-                        Superfund site data is from the EPA via
+                        Superfund site data is from the EPA via&nbsp;
                         <a href="https://catalog.data.gov/dataset/u-s-epa-national-priorities-list-npl-sites-point-data-with-ciesin-modifications-version-2">
                             Data Gov
                         </a>
                     </div>
                     <h2 ref={this.nref("school")}>Schools</h2>
                     <div>
-                        School data is from NCES via
+                        School data is from NCES via&nbsp;
                         <a href="https://hifld-geoplatform.opendata.arcgis.com/datasets/geoplatform::public-schools/about">HIFLD</a>.
                     </div>
                 </div>
                 <h1 ref={this.nref("gpw")}>Gridded Population</h1>
                 <div>
-                    Gridded population data is from Schiavina M., Freire S., Carioli A., MacManus K. (2023): GHS-POP R2023A - GHS population grid multitemporal (1975-2030).European Commission, Joint Research Centre (JRC)
-                    {/* PID: http://data.europa.eu/89h/2ff68a52-5b5b-4a22-8f40-c41da8332cfe, doi:10.2905/2FF68A52-5B5B-4A22-8F40-C41DA8332CFE */}
-                    PID: <a href="http://data.europa.eu/89h/2ff68a52-5b5b-4a22-8f40-c41da8332cfe">http://data.europa.eu/89h/2ff68a52-5b5b-4a22-8f40-c41da8332cfe</a>,
-                    <a href="https://doi.org/10.2905/2FF68A52-5B5B-4A22-8F40-C41DA8332CFE">10.2905/2FF68A52-5B5B-4A22-8F40-C41DA8332CFE</a>
+                    Gridded population data is from <tt>Schiavina M., Freire S., Carioli A., MacManus K. (2023): GHS-POP R2023A - GHS population grid multitemporal (1975-2030).European Commission, Joint Research Centre (JRC)
+                        {/* PID: http://data.europa.eu/89h/2ff68a52-5b5b-4a22-8f40-c41da8332cfe, doi:10.2905/2FF68A52-5B5B-4A22-8F40-C41DA8332CFE */}
+                        PID: <a href="http://data.europa.eu/89h/2ff68a52-5b5b-4a22-8f40-c41da8332cfe">http://data.europa.eu/89h/2ff68a52-5b5b-4a22-8f40-c41da8332cfe</a>,
+                        <a href="https://doi.org/10.2905/2FF68A52-5B5B-4A22-8F40-C41DA8332CFE">10.2905/2FF68A52-5B5B-4A22-8F40-C41DA8332CFE</a>.</tt>
                     We use the 2020 population estimates, which are
                     not perfectly accurate in all cases, but should be the best match to the 2020 Census numbers
                     we are using for the US data. To compute PW density, we treat each cell as effectively homogenous,

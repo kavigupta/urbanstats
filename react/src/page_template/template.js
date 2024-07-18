@@ -154,15 +154,15 @@ function TemplateFooter() {
 }
 
 function Version() {
-    return <span id="current-version">16.2.0</span>
+    return <span id="current-version">16.3.0</span>
 }
 
 function LastUpdated() {
-    return <span id="last-updated">2024-07-13</span>
+    return <span id="last-updated">2024-07-18</span>
 }
 
 function MainCredits() {
-    return <span id="main-credits">Kavi Gupta</span>
+    return <span id="main-credits">Kavi Gupta and Luke Brody</span>
 }
 
 function OtherCredits() {
