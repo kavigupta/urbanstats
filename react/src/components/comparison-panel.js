@@ -7,7 +7,7 @@ import { MapGeneric } from "./map.js";
 import { PageTemplate } from "../page_template/template.js";
 import "../common.css";
 import "./article.css";
-import { load_article } from './load-article.js';
+import { load_article } from './load-article';
 import { comparisonHeadStyle, headerTextClass, mobileLayout, subHeaderTextClass } from '../utils/responsive';
 import { SearchBox } from './search';
 import { article_link, sanitize } from '../navigation/links';

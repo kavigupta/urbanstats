@@ -8,7 +8,7 @@ import "./article.css";
 import { headerTextClass, subHeaderTextClass } from '../utils/responsive';
 import { article_link, explanation_page_link, sanitize, statistic_link } from '../navigation/links';
 import { Percentile, Statistic } from './table.js';
-import { display_type } from '../utils/text.js';
+import { display_type } from '../utils/text';
 
 const table_style = { display: "flex", flexDirection: "column", padding: "1px" };
 const column_names = ["Ordinal", "Name", "Value", "", "Percentile"];
