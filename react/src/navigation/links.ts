@@ -85,7 +85,7 @@ export function universe_path(universe: string) {
     return `/icons/flags/${universe}.png`
 }
 
-export function add_universe_to_params(universe: string, params: URLSearchParams) {
+export function add_universe_to_params(universe: string | undefined, params: URLSearchParams) {
     if (universe !== undefined)
         params.set("universe", universe)
 }
