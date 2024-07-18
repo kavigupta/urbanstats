@@ -320,7 +320,6 @@ function ElectionResult(props) {
 
 export function Ordinal(props) {
     const onNewNumber = async (number) => {
-        console.log("HI", number);
         let num = number;
         if (num < 0) {
             // -1 -> props.total, -2 -> props.total - 1, etc.
@@ -362,18 +361,18 @@ class EditableNumber extends React.Component {
             html: this.props.number.toString(),
         };
     }
-    handleChange = evt => {
-        this.setState({ html: evt.target.value });
-    };
     render() {
         const self = this;
+        const handleChange = evt => {
+            self.setState({ html: evt.target.value });
+        };
         return (
             <ContentEditable
                 className="editable_number"
                 innerRef={this.contentEditable}
                 html={this.state.html} // innerHTML of the editable div
                 disabled={false}       // use true to disable editing
-                onChange={this.handleChange} // handle innerHTML change
+                onChange={handleChange} // handle innerHTML change
                 onKeyDown={(e) => {
                     if (e.key == "Enter") {
                         const number = parseInt(self.state.html);
