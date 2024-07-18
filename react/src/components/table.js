@@ -318,80 +318,78 @@ function ElectionResult(props) {
     return <span className={"party_result_" + party}>{party}+{text}</span>;
 }
 
-class Ordinal extends React.Component {
-    constructor(props) {
-        super(props);
+export function Ordinal(props) {
+    const onNewNumber = async (number) => {
+        console.log("HI", number);
+        let num = number;
+        if (num < 0) {
+            // -1 -> props.total, -2 -> props.total - 1, etc.
+            num = props.total + 1 + num;
+        }
+        if (num > props.total) {
+            num = props.total;
+        }
+        if (num <= 0) {
+            num = 1;
+        }
+        const data = await load_ordering(props.universe, props.statpath, props.type);
+        props.onReplace(data[num - 1]);
     }
-
-    render() {
-        const onNewNumber = async (number) => {
-            let num = number;
-            if (num < 0) {
-                // -1 -> this.props.total, -2 -> this.props.total - 1, etc.
-                num = this.props.total + 1 + num;
-            }
-            if (num > this.props.total) {
-                num = this.props.total;
-            }
-            if (num <= 0) {
-                num = 1;
-            }
-            const data = await load_ordering(this.props.universe, this.props.statpath, this.props.type);
-            this.props.onReplace(data[num - 1]);
-        }
-        const ordinal = this.props.ordinal;
-        const total = this.props.total;
-        const type = this.props.type;
-        const self = this;
-        if (ordinal > total) {
-            return <span></span>
-        }
-        const en = <EditableNumber
-            number={ordinal}
-            onNewNumber={onNewNumber}
-        />;
-        if (this.props.simple) {
-            return right_align(en);
-        }
-        return <div className="serif" style={{ textAlign: "right" }}>
-            {en} of {total} {display_type(this.props.universe, type)}
-        </div>;
+    const ordinal = props.ordinal;
+    const total = props.total;
+    const type = props.type;
+    const self = this;
+    if (ordinal > total) {
+        return <span></span>
     }
+    const en = <EditableNumber
+        number={ordinal}
+        onNewNumber={onNewNumber}
+    />;
+    if (props.simple) {
+        return right_align(en);
+    }
+    return <div className="serif" style={{ textAlign: "right" }}>
+        {en} of {total} {display_type(props.universe, type)}
+    </div>;
 }
 
-class EditableNumber extends React.Component {
-    constructor(props) {
-        super(props);
-        this.contentEditable = React.createRef();
-        this.state = {
-            html: this.props.number.toString(),
-        };
-    }
-    handleChange = evt => {
-        this.setState({ html: evt.target.value });
+function EditableNumber(props) {
+    // constructor(props) {
+    //     super(props);
+    //     this.contentEditable = React.createRef();
+    //     this.state = {
+    //         html: this.props.number.toString(),
+    //     };
+    // }
+    const contentEditable = useRef(null);
+    const [html, setHtml] = useState(props.number.toString())
+
+    const handleChange = evt => {
+        console.log("html", evt.target.value);
+        setHtml(evt.target.value);
     };
-    render() {
-        const self = this;
-        return (
-            <ContentEditable
-                className="editable_number"
-                innerRef={this.contentEditable}
-                html={this.state.html} // innerHTML of the editable div
-                disabled={false}       // use true to disable editing
-                onChange={this.handleChange} // handle innerHTML change
-                onKeyDown={(e) => {
-                    if (e.key == "Enter") {
-                        const number = parseInt(self.state.html);
-                        if (number != NaN) {
-                            self.props.onNewNumber(number);
-                        }
-                        e.preventDefault();
+    return (
+        <ContentEditable
+            className="editable_number"
+            innerRef={contentEditable}
+            html={html} // innerHTML of the editable div
+            disabled={false}       // use true to disable editing
+            onChange={handleChange} // handle innerHTML change
+            onKeyDown={(e) => {
+                if (e.key == "Enter") {
+                    console.log("enter, html", html);
+                    const number = parseInt(html);
+                    console.log("enter, number", number);
+                    if (number != NaN) {
+                        props.onNewNumber(number);
                     }
-                }}
-                tagName='span' // Use a custom HTML tag (uses a div by default)
-            />
-        )
-    }
+                    e.preventDefault();
+                }
+            }}
+            tagName='span' // Use a custom HTML tag (uses a div by default)
+        />
+    )
 };
 
 class Percentile extends React.Component {
