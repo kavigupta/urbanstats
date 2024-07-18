@@ -6,7 +6,7 @@ import { article_link, statistic_link } from "../navigation/links";
 import { loadProtobuf, load_ordering } from '../load_json';
 import "./table.css";
 import { is_historical_cd } from '../utils/is_historical';
-import { display_type } from '../utils/text.js';
+import { display_type } from '../utils/text';
 
 const table_row_style = {
     display: "flex",
