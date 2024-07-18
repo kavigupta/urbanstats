@@ -1,17 +1,18 @@
 
 
-export function get_universe(default_universe) {
+export function get_universe(default_universe: string | undefined) {
     return new URLSearchParams(window.location.search).get("universe") || default_universe
 }
 
-export function set_universe(universe) {
+export function set_universe(universe: string) {
     const params = new URLSearchParams(window.location.search);
     params.set("universe", universe);
     window.location.search = params.toString();
 }
 
-export function remove_universe_if_not_in(universes) {
-    if (!universes.includes(get_universe(undefined))) {
+export function remove_universe_if_not_in(universes: string[]) {
+    const universe = get_universe(undefined);
+    if (universe == undefined || !universes.includes(universe)) {
         // clear universe without actually reloading the page
         const params = new URLSearchParams(window.location.search);
         params.delete("universe");
@@ -19,7 +20,7 @@ export function remove_universe_if_not_in(universes) {
     }
 }
 
-export function remove_universe_if_default(default_universe) {
+export function remove_universe_if_default(default_universe: string) {
     if (get_universe(undefined) === default_universe) {
         // clear universe without actually reloading the page
         const params = new URLSearchParams(window.location.search);
@@ -28,7 +29,7 @@ export function remove_universe_if_default(default_universe) {
     }
 }
 
-export function default_article_universe(longname) {
+export function default_article_universe(longname: string) {
     console.log(longname);
     // if longname contains USA, then default to USA
     if (longname.includes("USA")) {
@@ -38,7 +39,7 @@ export function default_article_universe(longname) {
     return "world";
 }
 
-export function default_comparison_universe(longnames) {
+export function default_comparison_universe(longnames: string[]) {
     // if all longnames are the same universe, default to that universe
     const universes = longnames.map(x => default_article_universe(x));
     if (universes.every(x => x === universes[0])) {
@@ -47,12 +48,12 @@ export function default_comparison_universe(longnames) {
     return "world";
 }
 
-export function universe_is_american(universe) {
+export function universe_is_american(universe: string) {
     // if universe ends with USA, then it's American
     return universe.includes("USA");
 }
 
-export function longname_is_exclusively_american(universe) {
+export function longname_is_exclusively_american(universe: string) {
     // if longname ends with ", USA", then it's exclusively American
     return universe.endsWith(", USA");
 }

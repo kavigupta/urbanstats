@@ -7,7 +7,7 @@ import { data_link } from "./navigation/links";
 
 import { ArticlePanel } from './components/article-panel';
 import { loadProtobuf } from './load_json';
-import { default_article_universe, get_universe, remove_universe_if_default, remove_universe_if_not_in } from './universe.js';
+import { default_article_universe, get_universe, remove_universe_if_default, remove_universe_if_not_in } from './universe';
 
 
 async function loadPage() {

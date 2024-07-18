@@ -7,7 +7,7 @@ import { data_link } from "./navigation/links";
 
 import { loadProtobuf } from './load_json';
 import { ComparisonPanel } from './components/comparison-panel.js';
-import { default_comparison_universe, get_universe, remove_universe_if_default, remove_universe_if_not_in } from './universe.js';
+import { default_comparison_universe, get_universe, remove_universe_if_default, remove_universe_if_not_in } from './universe';
 
 
 async function loadPage() {

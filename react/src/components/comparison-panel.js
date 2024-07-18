@@ -12,7 +12,7 @@ import { comparisonHeadStyle, headerTextClass, mobileLayout, subHeaderTextClass 
 import { SearchBox } from './search';
 import { article_link, sanitize } from '../navigation/links';
 import { lighten } from '../utils/color';
-import { longname_is_exclusively_american } from '../universe.js';
+import { longname_is_exclusively_american } from '../universe';
 
 const main_columns = ["statval", "statval_unit", "statistic_ordinal", "statistic_percentile"];
 const main_columns_across_types = ["statval", "statval_unit"]
