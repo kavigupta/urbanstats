@@ -7,12 +7,12 @@ import { MapGeneric } from "./map.js";
 import { PageTemplate } from "../page_template/template.js";
 import "../common.css";
 import "./article.css";
-import { load_article } from './load-article.js';
+import { load_article } from './load-article';
 import { comparisonHeadStyle, headerTextClass, mobileLayout, subHeaderTextClass } from '../utils/responsive';
 import { SearchBox } from './search';
 import { article_link, sanitize } from '../navigation/links';
 import { lighten } from '../utils/color';
-import { longname_is_exclusively_american } from '../universe.js';
+import { longname_is_exclusively_american } from '../universe';
 
 const main_columns = ["statval", "statval_unit", "statistic_ordinal", "statistic_percentile"];
 const main_columns_across_types = ["statval", "statval_unit"]

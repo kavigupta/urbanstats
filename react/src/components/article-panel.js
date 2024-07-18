@@ -8,11 +8,11 @@ import { Related } from "./related-button";
 import { PageTemplate } from "../page_template/template.js";
 import "../common.css";
 import "./article.css";
-import { load_article } from './load-article.js';
+import { load_article } from './load-article';
 import { comparisonHeadStyle, headerTextClass, subHeaderTextClass } from '../utils/responsive';
 import { SearchBox } from './search';
 import { article_link, comparison_link, sanitize } from '../navigation/links';
-import { longname_is_exclusively_american } from '../universe.js';
+import { longname_is_exclusively_american } from '../universe';
 
 class ArticlePanel extends PageTemplate {
     constructor(props) {

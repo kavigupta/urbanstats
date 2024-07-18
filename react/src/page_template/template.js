@@ -19,7 +19,7 @@ import "../components/article.css";
 import { load_settings } from './settings.js';
 import { mobileLayout } from '../utils/responsive';
 import { create_screenshot } from '../components/screenshot.js';
-import { set_universe } from '../universe.js';
+import { set_universe } from '../universe';
 
 
 class PageTemplate extends React.Component {
