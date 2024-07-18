@@ -354,42 +354,39 @@ export function Ordinal(props) {
     </div>;
 }
 
-function EditableNumber(props) {
-    // constructor(props) {
-    //     super(props);
-    //     this.contentEditable = React.createRef();
-    //     this.state = {
-    //         html: this.props.number.toString(),
-    //     };
-    // }
-    const contentEditable = useRef(null);
-    const [html, setHtml] = useState(props.number.toString())
-
-    const handleChange = evt => {
-        console.log("html", evt.target.value);
-        setHtml(evt.target.value);
+class EditableNumber extends React.Component {
+    constructor(props) {
+        super(props);
+        this.contentEditable = React.createRef();
+        this.state = {
+            html: this.props.number.toString(),
+        };
+    }
+    handleChange = evt => {
+        this.setState({ html: evt.target.value });
     };
-    return (
-        <ContentEditable
-            className="editable_number"
-            innerRef={contentEditable}
-            html={html} // innerHTML of the editable div
-            disabled={false}       // use true to disable editing
-            onChange={handleChange} // handle innerHTML change
-            onKeyDown={(e) => {
-                if (e.key == "Enter") {
-                    console.log("enter, html", html);
-                    const number = parseInt(html);
-                    console.log("enter, number", number);
-                    if (number != NaN) {
-                        props.onNewNumber(number);
+    render() {
+        const self = this;
+        return (
+            <ContentEditable
+                className="editable_number"
+                innerRef={this.contentEditable}
+                html={this.state.html} // innerHTML of the editable div
+                disabled={false}       // use true to disable editing
+                onChange={this.handleChange} // handle innerHTML change
+                onKeyDown={(e) => {
+                    if (e.key == "Enter") {
+                        const number = parseInt(self.state.html);
+                        if (number != NaN) {
+                            self.props.onNewNumber(number);
+                        }
+                        e.preventDefault();
                     }
-                    e.preventDefault();
-                }
-            }}
-            tagName='span' // Use a custom HTML tag (uses a div by default)
-        />
-    )
+                }}
+                tagName='span' // Use a custom HTML tag (uses a div by default)
+            />
+        )
+    }
 };
 
 class Percentile extends React.Component {
