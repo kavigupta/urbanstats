@@ -1,23 +1,15 @@
-export { Regression };
+import { MathNumericType, Matrix, dotMultiply, lusolve, multiply, transpose } from "mathjs";
+import { ColorStat, StatisticsForGeography } from "./settings.js";
 
-import { dotMultiply, lusolve, multiply, transpose } from "mathjs";
-
-class Regression {
+export class Regression {
     constructor(
-        independent_fn, dependent_fns, dependent_names,
-        intercept_name, residual_name,
-        weight_by_population, population_idx
+        readonly independent_fn: ColorStat, readonly dependent_fns: ColorStat[], readonly dependent_names: string[],
+        readonly intercept_name: string, readonly residual_name: string,
+        readonly weight_by_population: boolean, readonly population_idx: number
     ) {
-        this.independent_fn = independent_fn;
-        this.dependent_fns = dependent_fns;
-        this.dependent_names = dependent_names;
-        this.intercept_name = intercept_name;
-        this.residual_name = residual_name;
-        this.weight_by_population = weight_by_population;
-        this.population_idx = population_idx;
     }
 
-    compute(statistics_for_geography, variables) {
+    compute(statistics_for_geography: StatisticsForGeography, variables: Record<string, number[]>) {
         let independent = this.independent_fn.compute(statistics_for_geography, variables);
         let dependent = this.dependent_fns.map((fn) => fn.compute(statistics_for_geography, variables));
 
@@ -46,8 +38,7 @@ class Regression {
         var ATW = transpose(A);
 
         if (this.weight_by_population) {
-            const self = this;
-            const W = sfg_filt.map(sfg => sfg.stats[self.population_idx]);
+            const W = sfg_filt.map(sfg => sfg.stats[this.population_idx]);
             ATW = dotMultiply(ATW, W);
         }
 
@@ -58,22 +49,22 @@ class Regression {
         // solve for weights. weights = (ata)^-1 atb
 
         const ws_col = lusolve(ata, atb);
-        const ws = ws_col.map(x => x[0]);
+        const ws = ws_col.map(x => (x as MathNumericType[])[0]);
 
         const weights = ws.slice(1);
         const intercept = ws[0];
 
-        const preds = multiply(Awofilt, ws_col).map(x => x[0]);
+        const preds = multiply(Awofilt, ws_col).map(x => (x as number[])[0]);
 
-        const result = {};
+        const result: Record<string, number[]> = {};
         for (let i = 0; i < this.dependent_names.length; i++) {
             if (this.dependent_names[i] == "") {
                 continue;
             }
-            result[this.dependent_names[i]] = preds.map(_ => weights[i]);
+            result[this.dependent_names[i]] = preds.map(_ => weights[i] as number);
         }
         if (this.intercept_name != "") {
-            result[this.intercept_name] = preds.map(_ => intercept);
+            result[this.intercept_name] = preds.map(_ => intercept as number);
         }
 
         if (this.residual_name != "") {
