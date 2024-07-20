@@ -91,172 +91,167 @@ class DisplayedMap extends MapGeneric {
 }
 
 
-class Colorbar extends React.Component {
-    constructor(props) {
-        super(props);
+function Colorbar(props) {
+    // do this as a table with 10 columns, each 10% wide and
+    // 2 rows. Top one is the colorbar, bottom one is the
+    // labels.
+    if (props.ramp === undefined) {
+        return <div></div>;
     }
+    const steps = 10;
+    const min = props.ramp.ramp[0][0];
+    const max = props.ramp.ramp[props.ramp.ramp.length - 1][0];
+    const range = max - min;
+    const values = props.ramp.interpolations;
 
-    render() {
-        const self = this;
-        // do this as a table with 10 columns, each 10% wide and
-        // 2 rows. Top one is the colorbar, bottom one is the
-        // labels.
-        if (this.props.ramp === undefined) {
-            return <div></div>;
-        }
-        const steps = 10;
-        const min = this.props.ramp.ramp[0][0];
-        const max = this.props.ramp.ramp[this.props.ramp.ramp.length - 1][0];
-        const range = max - min;
-        const values = this.props.ramp.interpolations;
 
-        return (
-            <div>
-                <table style={{ width: "100%", height: "100%" }}>
-                    <tbody>
-                        <tr>
-                            {
-                                values.map((x, i) => (
-                                    <td key={i} style={
-                                        {
-                                            width: "10%", height: "1em",
-                                            backgroundColor: interpolate_color(self.props.ramp.ramp, x)
-                                        }
-                                    }>
-                                    </td>
-                                ))
-                            }
-                        </tr>
-                        <tr>
-                            {
-                                values.map((x, i) => (
-                                    <td key={i} style={{ width: "10%", height: "1em" }}>
-                                        {self.create_value(x)}
-                                    </td>
-                                ))
-                            }
-                        </tr>
-                    </tbody>
-                </table>
-                <div className="centered_text">
-                    {this.props.name}
-                </div>
-            </div>
-        );
-    }
-    create_value(stat) {
+    const create_value = (stat) => {
         return <div className="centered_text">
             <Statistic
-                statname={this.props.name}
+                statname={props.name}
                 value={stat}
                 is_unit={false}
-                settings={this.props.settings}
+                settings={props.settings}
             />
             <Statistic
-                statname={this.props.name}
+                statname={props.name}
                 value={stat}
                 is_unit={true}
-                settings={this.props.settings}
+                settings={props.settings}
             />
         </div>
     }
-}
 
-class MapComponent extends React.Component {
-    constructor(props) {
-        super(props);
-    }
 
-    render() {
-
-        const color_stat = parse_color_stat(this.props.name_to_index, this.props.color_stat);
-        const filter = this.props.filter.enabled ? parse_color_stat(this.props.name_to_index, this.props.filter.function) : undefined;
-
-        return (
-            <div style={{
-                display: "flex",
-                flexDirection: "column",
-                height: this.props.height,
-            }}>
-                <div style={{ height: "90%", width: "100%" }}>
-                    <DisplayedMap
-                        id="mapper"
-                        color_stat={color_stat}
-                        filter={filter}
-                        geography_kind={this.props.geography_kind}
-                        underlying_shapes={this.props.underlying_shapes}
-                        underlying_stats={this.props.underlying_stats}
-                        ramp={this.props.ramp}
-                        ramp_callback={(ramp) => this.props.set_empirical_ramp(ramp)}
-                        ref={this.props.map_ref}
-                        line_style={this.props.line_style}
-                        basemap={this.props.basemap}
-                        height={this.props.height}
-                        universe={this.props.universe}
-                    />
-                </div>
-                <div style={{ height: "8%", width: "100%" }}>
-                    <Colorbar
-                        name={color_stat.name()}
-                        ramp={this.props.get_empirical_ramp()}
-                        settings={this.props.get_settings()}
-                    />
-                </div>
+    return (
+        <div>
+            <table style={{ width: "100%", height: "100%" }}>
+                <tbody>
+                    <tr>
+                        {
+                            values.map((x, i) => (
+                                <td key={i} style={
+                                    {
+                                        width: "10%", height: "1em",
+                                        backgroundColor: interpolate_color(props.ramp.ramp, x)
+                                    }
+                                }>
+                                </td>
+                            ))
+                        }
+                    </tr>
+                    <tr>
+                        {
+                            values.map((x, i) => (
+                                <td key={i} style={{ width: "10%", height: "1em" }}>
+                                    {create_value(x)}
+                                </td>
+                            ))
+                        }
+                    </tr>
+                </tbody>
+            </table>
+            <div className="centered_text">
+                {props.name}
             </div>
-        )
-    }
+        </div>
+    );
 }
 
-class Export extends React.Component {
-    constructor(props) {
-        super(props);
-    }
+function MapComponent(props) {
 
-    render() {
-        const self = this;
-        return <div>
-            <button onClick={() => {
-                self.exportAsSvg()
-            }}>Export as SVG</button>
-            <button onClick={() => {
-                self.exportAsGeoJSON()
-            }}>Export as GeoJSON</button>
-            <button onClick={() => {
-                const params = new URLSearchParams(window.location.search);
-                params.set("view", "true");
-                // navigate to the page in a new tab
-                window.open("?" + params.toString(), "_blank");
-            }
-            }>View as Zoomable Page</button>
+    const color_stat = parse_color_stat(props.name_to_index, props.color_stat);
+    const filter = props.filter.enabled ? parse_color_stat(props.name_to_index, props.filter.function) : undefined;
+
+    return (
+        <div style={{
+            display: "flex",
+            flexDirection: "column",
+            height: props.height,
+        }}>
+            <div style={{ height: "90%", width: "100%" }}>
+                <DisplayedMap
+                    id="mapper"
+                    color_stat={color_stat}
+                    filter={filter}
+                    geography_kind={props.geography_kind}
+                    underlying_shapes={props.underlying_shapes}
+                    underlying_stats={props.underlying_stats}
+                    ramp={props.ramp}
+                    ramp_callback={(ramp) => props.set_empirical_ramp(ramp)}
+                    ref={props.map_ref}
+                    line_style={props.line_style}
+                    basemap={props.basemap}
+                    height={props.height}
+                    universe={props.universe}
+                />
+            </div>
+            <div style={{ height: "8%", width: "100%" }}>
+                <Colorbar
+                    name={color_stat.name()}
+                    ramp={props.get_empirical_ramp()}
+                    settings={props.get_settings()}
+                />
+            </div>
         </div>
-    }
+    )
+}
 
-    saveAsFile(filename, data, type) {
-        const blob = new Blob([data], { type: type });
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = filename;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-    }
+function saveAsFile(filename, data, type) {
+    const blob = new Blob([data], { type: type });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
 
-    async exportAsSvg() {
-        if (this.props.map_ref.current === null) {
+function Export(props) {
+    const exportAsSvg = async () => {
+        if (props.map_ref.current === null) {
             return;
         }
-        const svg = await this.props.map_ref.current.exportAsSvg();
-        this.saveAsFile("map.svg", svg, "image/svg+xml");
+        const svg = await props.map_ref.current.exportAsSvg();
+        saveAsFile("map.svg", svg, "image/svg+xml");
     }
 
-    async exportAsGeoJSON() {
-        if (this.props.map_ref.current === null) {
+    const exportAsGeoJSON = async () => {
+        if (props.map_ref.current === null) {
             return;
         }
-        const geojson = await this.props.map_ref.current.exportAsGeoJSON();
-        this.saveAsFile("map.geojson", geojson, "application/geo+json");
+        const geojson = await props.map_ref.current.exportAsGeoJSON();
+        saveAsFile("map.geojson", geojson, "application/geo+json");
     }
+
+    return <div>
+        <button onClick={() => {
+            exportAsSvg()
+        }}>Export as SVG</button>
+        <button onClick={() => {
+            exportAsGeoJSON()
+        }}>Export as GeoJSON</button>
+        <button onClick={() => {
+            const params = new URLSearchParams(window.location.search);
+            params.set("view", "true");
+            // navigate to the page in a new tab
+            window.open("?" + params.toString(), "_blank");
+        }
+        }>View as Zoomable Page</button>
+    </div>
+}
+
+function mapSettingsFromURLParams() {
+    const params = new URLSearchParams(window.location.search);
+    const encoded_settings = params.get("settings");
+    var settings = {}
+    if (encoded_settings !== null) {
+        const jsoned_settings = gunzipSync(Buffer.from(encoded_settings, 'base64')).toString();
+        settings = JSON.parse(jsoned_settings);
+    }
+    default_settings(settings);
+    return settings;
 }
 
 class MapperPanel extends PageTemplate {
@@ -269,7 +264,7 @@ class MapperPanel extends PageTemplate {
             this.name_to_index[this.names[i]] = i;
         }
 
-        const map_settings = this.get_settings();
+        const map_settings = mapSettingsFromURLParams();
 
         this.state = {
             ...this.state,
@@ -279,18 +274,6 @@ class MapperPanel extends PageTemplate {
         this.underlying_shapes = undefined;
         this.underlying_stats = undefined;
         this.map_ref = React.createRef();
-    }
-
-    get_settings() {
-        const params = new URLSearchParams(window.location.search);
-        const encoded_settings = params.get("settings");
-        var settings = {}
-        if (encoded_settings !== null) {
-            const jsoned_settings = gunzipSync(Buffer.from(encoded_settings, 'base64')).toString();
-            settings = JSON.parse(jsoned_settings);
-        }
-        default_settings(settings);
-        return settings;
     }
 
     update_geography_kind() {
@@ -397,7 +380,7 @@ class MapperPanel extends PageTemplate {
         const self = this;
         window.onpopstate = e => {
             self.setState({
-                map_settings: self.get_settings()
+                map_settings: mapSettingsFromURLParams()
             });
         }
     }
