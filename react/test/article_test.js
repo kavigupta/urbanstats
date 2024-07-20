@@ -62,6 +62,9 @@ async function prep_for_image(t) {
         }
         document.getElementById("current-version").innerHTML = "&lt;VERSION&gt;";
         document.getElementById("last-updated").innerHTML = "&lt;LAST UPDATED&gt;";
+        for (const x of document.getElementsByClassName("juxtastat-user-id")) {
+            x.innerHTML = "&lt;USER ID&gt;";
+        }
     });
 }
 
@@ -531,8 +534,12 @@ fixture('quiz result test')
     });
 
 test('quiz-results-test', async t => {
+    await t.resizeWindow(1400, 800);
+    await t.eval(() => location.reload(true));
+    await t.wait(1000);
     await t.eval(() => location.reload(true));
     await t.eval(() => document.getElementById("quiz-timer").remove());
+    await t.wait(1000);
     await screencap(t, "quiz/results-page");
 });
 

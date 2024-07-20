@@ -78,6 +78,6 @@ function user_id() {
     if (user_id === null) {
         return "";
     } else {
-        return <div>Your user id is {user_id}</div>;
+        return <div>Your user id is <span class="juxtastat-user-id">{user_id}</span></div>;
     }
 }
