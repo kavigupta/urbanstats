@@ -38,12 +38,14 @@ class MapGeneric<P extends MapGenericProps> extends React.Component<P> {
 
     render() {
         return (
-            <div id={this.props.id} className="map" style={{ background: "#fff8f0", height: this.props.height || 400 }}>
-                {/* place this on the right of the map */}
-                <div style={
-                    {zIndex: 1000, position: "absolute", right: 0, top: 0, padding: "1em"}
-                }>
-                    {this.buttons()}
+            <div className="map-container-for-testing">
+                <div id={this.props.id} className="map" style={{ background: "#fff8f0", height: this.props.height || 400 }}>
+                    {/* place this on the right of the map */}
+                    <div style={
+                        { zIndex: 1000, position: "absolute", right: 0, top: 0, padding: "1em" }
+                    }>
+                        {this.buttons()}
+                    </div>
                 </div>
             </div>
         );
@@ -286,8 +288,8 @@ class MapGeneric<P extends MapGenericProps> extends React.Component<P> {
         }
         let geojson = await this.polygon_geojson(name);
         let group = L.featureGroup();
-        let polygon = L.geoJson(geojson, { 
-            style: style, 
+        let polygon = L.geoJson(geojson, {
+            style: style,
             // @ts-expect-error 
             smoothFactor: 0.1,
             className: "tag-" + name.replace(/ /g, "_")
@@ -350,7 +352,7 @@ class Map extends MapGeneric<MapProps> {
         const styles = [];
 
         names.push(this.props.longname);
-        styles.push({ "interactive": false , "fillOpacity": 0.5, "weight": 1, "color": "#5a7dc3", "fillColor": "#5a7dc3" });
+        styles.push({ "interactive": false, "fillOpacity": 0.5, "weight": 1, "color": "#5a7dc3", "fillColor": "#5a7dc3" });
 
         const [related_names, related_styles] = this.related_polygons(relateds);
         names.push(...related_names);
