@@ -86,7 +86,9 @@ function RelatedList(props: { articleType: string, buttonType: string, settings:
                             name=""
                             setting_key={setting_key}
                             settings={props.settings}
-                            set_setting={props.set_setting} />
+                            set_setting={props.set_setting}
+                            classNameToUse="related_checkbox"
+                            />
                     </div>
                 </div>
                 <ul className="list_of_lists">
