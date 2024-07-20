@@ -11,7 +11,6 @@ import { is_historical_cd } from '../utils/is_historical';
 import { loadProtobuf } from '../load_json';
 import { GeoJSON2SVG } from 'geojson2svg';
 import L from 'leaflet'
-import 'leaflet/dist/leaflet.css';
 import { NormalizeProto } from "../utils/types";
 import { Feature, IRelatedButton, IRelatedButtons } from "../utils/protos";
 import { Basemap } from "../mapper/settings";
