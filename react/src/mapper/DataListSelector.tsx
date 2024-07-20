@@ -1,11 +1,11 @@
 import React from "react";
-import { setting_name_style } from "./style.js";
+import { setting_name_style } from "./style";
 
-export function DataListSelector({ overall_name, initial_value, names, onChange, no_neutral, header_style }) {
+export function DataListSelector<T extends string>({ overall_name, initial_value, names, onChange, no_neutral, header_style }: { overall_name: string | undefined, initial_value: T | undefined, names: T[], onChange: (newValue: T) => void, no_neutral?: boolean, header_style?: React.CSSProperties}) {
     const names_full = no_neutral ? names : ["", ...names];
-    const set_initial = names_full.includes(initial_value);
+    const set_initial = initial_value != undefined && names_full.includes(initial_value);
     const actual_selector = <select
-        onChange={e => onChange(e.target.value)}
+        onChange={e => onChange(e.target.value as T)}
         style={{ width: "100%" }}
         value={set_initial ? initial_value : ""}
     >

@@ -12,8 +12,8 @@ import { loadProtobuf } from '../load_json';
 import { consolidated_shape_link, consolidated_stats_link } from '../navigation/links';
 import { interpolate_color } from '../utils/color';
 
-import { RAMPS, parse_ramp } from "../mapper/ramps.js";
-import { MapperSettings, default_settings, parse_color_stat } from "../mapper/settings.js";
+import { RAMPS, parse_ramp } from "../mapper/ramps";
+import { MapperSettings, default_settings, parse_color_stat } from "../mapper/settings";
 
 import { gunzipSync, gzipSync } from "zlib";
 import { headerTextClass } from '../utils/responsive';
@@ -329,6 +329,9 @@ class MapperPanel extends PageTemplate {
     }
 
     get_map_settings() {
+        if (this.state.map_settings === undefined) {
+            throw new Error("MapperPanel.main_content: map settings not set");
+        }
         return this.state.map_settings;
     }
 
@@ -341,6 +344,9 @@ class MapperPanel extends PageTemplate {
     }
 
     main_content() {
+        if (this.state.map_settings === undefined) {
+            throw new Error("MapperPanel.main_content: map settings not set");
+        }
         const geography_kind = this.state.map_settings.geography_kind;
         const valid = this.valid_geographies.includes(geography_kind);
         return (
@@ -349,7 +355,7 @@ class MapperPanel extends PageTemplate {
                 <MapperSettings
                     names={this.names}
                     valid_geographies={this.valid_geographies}
-                    get_map_settings={() => this.get_map_settings()}
+                    map_settings={this.get_map_settings()}
                     set_map_settings={(settings) => this.set_map_settings(settings)}
                 />
                 <Export
