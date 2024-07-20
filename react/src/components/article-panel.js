@@ -3,7 +3,7 @@ export { ArticlePanel };
 import React from 'react';
 
 import { StatisticRowRaw } from "./table";
-import { Map } from "./map.js";
+import { Map } from "./map";
 import { Related } from "./related-button";
 import { PageTemplate } from "../page_template/template.js";
 import "../common.css";

@@ -7,7 +7,7 @@ import "../components/quiz.css";
 
 import { isFirefox } from 'react-device-detect';
 import { Header, Footer, Help } from './quiz-components.js';
-import { MapGeneric } from '../components/map.js';
+import { MapGeneric } from '../components/map';
 import { a_correct } from "../components/quiz-panel.js";
 import { mobileLayout } from "../utils/responsive";
 
