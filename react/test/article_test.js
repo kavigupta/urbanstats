@@ -50,6 +50,8 @@ async function check_all_category_boxes(t) {
     if (await hamburgerMenu.exists) {
         await t.click(hamburgerMenu);
     }
+    // reload
+    await t.eval(() => location.reload(true));
 }
 
 
