@@ -78,7 +78,7 @@ class MapGeneric<P extends MapGenericProps> extends React.Component<P> {
     async componentDidMount() {
         const map = new L.Map(this.props.id, {
             layers: [], center: new L.LatLng(0, 0), zoom: 0,
-            zoomSnap: this.delta, zoomDelta: this.delta, wheelPxPerZoomLevel: 60 / this.delta
+            zoomSnap: this.delta, zoomDelta: this.delta, wheelPxPerZoomLevel: 60 / this.delta,
         });
         this.map = map;
         await this.componentDidUpdate();
