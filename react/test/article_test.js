@@ -776,6 +776,8 @@ fixture('all stats test')
     });
 
 test('california-all-stats', async t => {
+    await t.resizeWindow(1400, 800);
+    await t.eval(() => location.reload(true));
     await check_all_category_boxes(t);
     await screencap(t, "article/california-all-stats");
 });
@@ -789,6 +791,8 @@ fixture('all stats test regression')
     });
 
 test('charlotte-all-stats', async t => {
+    await t.resizeWindow(1400, 800);
+    await t.eval(() => location.reload(true));
     await check_all_category_boxes(t);
     await screencap(t, "article/charlotte-all-stats");
 });
