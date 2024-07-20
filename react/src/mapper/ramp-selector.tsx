@@ -1,8 +1,8 @@
 import React from "react";
-import { ColorMap, EncodedColorMap, RampDescriptor, RAMPS, parse_custom_colormap } from "./ramps.js";
+import { ColorMap, EncodedColorMap, RampDescriptor, RAMPS, parse_custom_colormap } from "./ramps";
 
-import { setting_name_style, setting_sub_name_style } from "./style.js";
-import { interpolate_color } from "../utils/color.js";
+import { setting_name_style, setting_sub_name_style } from "./style";
+import { interpolate_color } from "../utils/color";
 
 export function RampColormapSelector(props: { ramp: RampDescriptor, set_ramp: (newValue: RampDescriptor) => void, name?: string }) {
     // dropdown selector for either a custom ramp or a ramp from a list of presets
