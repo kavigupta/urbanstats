@@ -32,7 +32,7 @@ from .fixed import juxtastat as fixed_up_to
 
 min_pop = 250_000
 min_pop_international = 2_500_000
-version = 63
+version = 64
 
 # ranges = [
 #     (0.7, 1),
