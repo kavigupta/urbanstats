@@ -71,6 +71,9 @@ function RelatedButton(props: { region: RelatedButtonModel, universe: string }) 
 }
 
 function RelatedList(props: { articleType: string, buttonType: string, regions: Record<string, any[]>, universe: string }) {
+    if (props.articleType == undefined) {
+        throw new Error("articleType is undefined; shoud be defined");
+    }
     const responsive = useResponsive();
     let key = relationship_key(props.articleType, props.buttonType);
     function displayName(name: string) {

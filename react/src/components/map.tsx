@@ -347,6 +347,7 @@ class Map extends MapGeneric<MapProps> {
         relateds.push(...this.get_related("intersects"));
         relateds.push(...this.get_related("borders"));
         relateds.push(...this.get_related("contains"));
+        relateds.push(...this.get_related("same_geography"));
 
         const names = [];
         const styles = [];
