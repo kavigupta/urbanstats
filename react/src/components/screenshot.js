@@ -6,54 +6,48 @@ import { saveAs } from 'file-saver';
 import { universe_path } from '../navigation/links';
 
 
-class ScreenshotButton extends React.Component {
-    constructor(props) {
-        super(props);
-    }
-
-    render() {
-        const screencap_button = <div
-            onClick={this.props.onClick}
-            style={{
-                height: "100%",
-                cursor: "pointer",
-            }}
-        >
-            <img src="/screenshot.png" alt="Screenshot Button" style={{ height: "100%" }} />
+function ScreenshotButton(props) {
+    const screencap_button = <div
+        onClick={props.onClick}
+        style={{
+            height: "100%",
+            cursor: "pointer",
+        }}
+    >
+        <img src="/screenshot.png" alt="Screenshot Button" style={{ height: "100%" }} />
+    </div>
+    // if screenshot mode is on, put a loading circle over the image
+    if (props.screenshot_mode) {
+        const pad = 10; // pct
+        const loading_circle = <div style={{
+            position: "absolute",
+            height: (100 - 2 * pad) + "%",
+            width: (100 - 2 * pad) + "%",
+            top: pad + "%",
+            left: pad + "%",
+            borderRadius: "50%",
+            border: "5px solid #fff",
+            borderTop: "5px solid #000",
+            animation: "spin 2s linear infinite",
+            zIndex: 2,
+            animationPlayState: "running",
+        }}></div>
+        const dim_filter = <div style={{
+            position: "absolute",
+            height: "100%",
+            width: "100%",
+            top: 0,
+            left: 0,
+            backgroundColor: "rgba(0,0,0,0.5)",
+            zIndex: 1,
+        }}></div>
+        return <div style={{ position: "relative", height: "100%", aspectRatio: "1/1" }}>
+            {screencap_button}
+            {dim_filter}
+            {loading_circle}
         </div>
-        // if screenshot mode is on, put a loading circle over the image
-        if (this.props.screenshot_mode) {
-            const pad = 10; // pct
-            const loading_circle = <div style={{
-                position: "absolute",
-                height: (100 - 2 * pad) + "%",
-                width: (100 - 2 * pad) + "%",
-                top: pad + "%",
-                left: pad + "%",
-                borderRadius: "50%",
-                border: "5px solid #fff",
-                borderTop: "5px solid #000",
-                animation: "spin 2s linear infinite",
-                zIndex: 2,
-                animationPlayState: "running",
-            }}></div>
-            const dim_filter = <div style={{
-                position: "absolute",
-                height: "100%",
-                width: "100%",
-                top: 0,
-                left: 0,
-                backgroundColor: "rgba(0,0,0,0.5)",
-                zIndex: 1,
-            }}></div>
-            return <div style={{ position: "relative", height: "100%", aspectRatio: "1/1" }}>
-                {screencap_button}
-                {dim_filter}
-                {loading_circle}
-            </div>
-        }
-        return screencap_button;
     }
+    return screencap_button;
 }
 
 async function create_screenshot(config, universe) {
