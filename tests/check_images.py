@@ -20,6 +20,8 @@ def get_region_size(bitmap, location):
     visited = set()
     while queue:
         x, y = queue.pop()
+        if not (0 <= x < bitmap.shape[0] and 0 <= y < bitmap.shape[1]):
+            continue
         if (x, y) in visited:
             continue
         visited.add((x, y))
