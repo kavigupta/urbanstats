@@ -12,7 +12,7 @@ export { PageTemplate };
 
 import React, { Fragment } from 'react';
 
-import { Header } from "../components/header.js";
+import { Header } from "../components/header";
 import { Sidebar } from "../components/sidebar";
 import "../common.css";
 import "../components/article.css";
