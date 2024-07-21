@@ -2,24 +2,25 @@ import React, { CSSProperties, SVGProps } from 'react';
 
 export { Map, MapGeneric };
 
-import { shape_link, article_link } from "../navigation/links.js";
-import { relationship_key } from "./related-button.js";
-import { random_color } from "../utils/color.js";
+import { shape_link, article_link } from "../navigation/links";
+import { relationship_key } from "./related-button";
+import { random_color } from "../utils/color";
 
 import "./map.css";
-import { is_historical_cd } from '../utils/is_historical.js';
-import { loadProtobuf } from '../load_json.js';
+import { is_historical_cd } from '../utils/is_historical';
+import { loadProtobuf } from '../load_json';
 import { GeoJSON2SVG } from 'geojson2svg';
 import L from 'leaflet'
-import { NormalizeProto } from "../utils/types.js";
-import { Feature, IRelatedButton, IRelatedButtons } from "../utils/protos.js";
-import { Settings } from "../page_template/settings.js";
-import { Basemap } from "../mapper/settings.js";
+import { NormalizeProto } from "../utils/types";
+import { Feature, IRelatedButton, IRelatedButtons } from "../utils/protos";
+import { Settings } from "../page_template/settings";
+import { Basemap } from "../mapper/settings";
 
 export interface MapGenericProps {
     height?: string,
     id: string,
     basemap: Basemap,
+    universe: string,
 }
 
 class MapGeneric<P extends MapGenericProps> extends React.Component<P> {
@@ -38,12 +39,14 @@ class MapGeneric<P extends MapGenericProps> extends React.Component<P> {
 
     render() {
         return (
-            <div id={this.props.id} className="map" style={{ background: "white", height: this.props.height || 400 }}>
-                {/* place this on the right of the map */}
-                <div style={
-                    {zIndex: 1000, position: "absolute", right: 0, top: 0, padding: "1em"}
-                }>
-                    {this.buttons()}
+            <div className="map-container-for-testing">
+                <div id={this.props.id} className="map" style={{ background: "#fff8f0", height: this.props.height || 400 }}>
+                    {/* place this on the right of the map */}
+                    <div style={
+                        { zIndex: 1000, position: "absolute", right: 0, top: 0, padding: "1em" }
+                    }>
+                        {this.buttons()}
+                    </div>
                 </div>
             </div>
         );
@@ -89,7 +92,7 @@ class MapGeneric<P extends MapGenericProps> extends React.Component<P> {
      * @returns string svg
      */
     async exportAsSvg() {
-        const [names, styles] = await this.compute_polygons();
+        const [names, styles, _1, _2] = await this.compute_polygons();
         const map_bounds = this.map!.getBounds();
         const bounds = {
             left: map_bounds.getWest(),
@@ -158,7 +161,7 @@ class MapGeneric<P extends MapGenericProps> extends React.Component<P> {
 
     async exportAsGeoJSON() {
         console.log("EXPORT AS GEOJSON")
-        const [names, , metas] = await this.compute_polygons();
+        const [names, _1, metas, _3] = await this.compute_polygons();
         const geojson: GeoJSON.FeatureCollection = {
             "type": "FeatureCollection",
             "features": [],
@@ -216,7 +219,7 @@ class MapGeneric<P extends MapGenericProps> extends React.Component<P> {
     }
 
     attachBasemap() {
-        if (JSON.stringify(this.props.basemap) === JSON.stringify(this.basemap_props)) {
+        if (JSON.stringify(this.props.basemap) == JSON.stringify(this.basemap_props)) {
             return;
         }
         this.basemap_props = this.props.basemap;
@@ -278,6 +281,7 @@ class MapGeneric<P extends MapGenericProps> extends React.Component<P> {
     }
 
     async add_polygon(map: L.Map, name: string, fit_bounds: boolean, style: Record<string, unknown>, add_callback = true, add_to_bottom = false) {
+        const self = this;
         this.exist_this_time.push(name);
         if (name in this.polygon_by_name) {
             this.polygon_by_name[name].setStyle(style);
@@ -285,14 +289,15 @@ class MapGeneric<P extends MapGenericProps> extends React.Component<P> {
         }
         let geojson = await this.polygon_geojson(name);
         let group = L.featureGroup();
-        let polygon = L.geoJson(geojson, { 
-            style: style, 
+        let polygon = L.geoJson(geojson, {
+            style: style,
             // @ts-expect-error 
-            smoothFactor: 0.1 
+            smoothFactor: 0.1,
+            className: "tag-" + name.replace(/ /g, "_")
         });
         if (add_callback) {
             polygon = polygon.on("click", function (e) {
-                window.location.href = article_link(name);
+                window.location.href = article_link(self.props.universe, name);
             });
         }
 
@@ -324,7 +329,8 @@ class MapGeneric<P extends MapGenericProps> extends React.Component<P> {
 interface MapProps extends MapGenericProps {
     longname: string,
     related: NormalizeProto<IRelatedButtons>[],
-    article_type: string
+    article_type: string,
+    universe: string
 }
 
 class Map extends MapGeneric<MapProps> {
@@ -346,7 +352,7 @@ class Map extends MapGeneric<MapProps> {
         const styles = [];
 
         names.push(this.props.longname);
-        styles.push({ "interactive": false , "fillOpacity": 0.5, "weight": 1, "color": "#5a7dc3", "fillColor": "#5a7dc3" });
+        styles.push({ "interactive": false, "fillOpacity": 0.5, "weight": 1, "color": "#5a7dc3", "fillColor": "#5a7dc3" });
 
         const [related_names, related_styles] = this.related_polygons(relateds);
         names.push(...related_names);
