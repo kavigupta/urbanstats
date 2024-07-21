@@ -30,14 +30,6 @@ class PageTemplate extends React.Component {
 
         this.statistic_category_metadata_checkboxes = statistic_category_metadata_checkboxes;
 
-        // get from url field
-        this.set_universe = universe => {
-            this.setState({ current_universe: universe });
-            set_universe(universe);
-        }
-
-        this.all_universes = this.props.universes;
-
         this.state = {
             settings: settings,
             hamburger_open: false,
@@ -48,6 +40,28 @@ class PageTemplate extends React.Component {
 
     render() {
         const self = this;
+
+
+        function set_setting(key, value) {
+            let settings = self.state.settings;
+            settings[key] = value;
+            self.setState({ settings: settings });
+            localStorage.setItem("settings", JSON.stringify(settings));
+        }
+
+        const set_universe = universe => {
+            self.setState({ current_universe: universe });
+            set_universe(universe);
+        }
+
+        const initiate_screenshot = async () => {
+            self.setState({ screenshot_mode: true });
+            setTimeout(async () => {
+                await self.screencap();
+                self.setState({ screenshot_mode: false });
+            })
+        }
+
         return (
             <Fragment>
                 <meta name="viewport" content="width=600" />
@@ -59,51 +73,22 @@ class PageTemplate extends React.Component {
                         has_screenshot={this.has_screenshot_button()}
                         has_universe_selector={this.has_universe_selector()}
                         current_universe={this.state.current_universe}
-                        all_universes={this.all_universes}
-                        on_universe_update={universe => this.set_universe(universe)}
+                        all_universes={this.props.universes}
+                        on_universe_update={set_universe}
                         screenshot_mode={this.state.screenshot_mode}
-                        initiate_screenshot={() => this.initiate_screenshot()}
+                        initiate_screenshot={() => initiate_screenshot()}
                     />
-                    <div style={{marginBlockEnd: "16px"}}></div>
-                    {this.bodyPanel()}
+                    <div style={{ marginBlockEnd: "16px" }}></div>
+                    <BodyPanel
+                        hamburger_open={this.state.hamburger_open}
+                        settings={this.state.settings}
+                        set_setting={set_setting(key, value)}
+                        main_content={this.main_content()}
+                        statistic_category_metadata={this.statistic_category_metadata_checkboxes}
+                    />
                 </div>
             </Fragment>
         );
-    }
-
-    bodyPanel() {
-        if (this.state.hamburger_open) {
-            return this.leftPanel();
-        }
-        return <div className="body_panel">
-            {mobileLayout() ? undefined : this.leftPanel()}
-            <div className={mobileLayout() ? "content_panel_mobile" : "right_panel"}>
-                {this.main_content()}
-                <div className="gap"></div>
-                <TemplateFooter />
-            </div>
-        </div>
-    }
-
-    leftPanel() {
-        const self = this;
-        return (
-            <div className={mobileLayout() ? "left_panel_mobile" : "left_panel"}>
-                <Sidebar
-                    shortname={this.props.shortname}
-                    source={this.props.source}
-                    settings={this.state.settings}
-                    set_setting={(key, value) => self.set_setting(key, value)}
-                    statistic_category_metadata_checkboxes={this.statistic_category_metadata_checkboxes} />
-            </div>
-        )
-    }
-
-    set_setting(key, value) {
-        let settings = this.state.settings;
-        settings[key] = value;
-        this.setState({ settings: settings });
-        localStorage.setItem("settings", JSON.stringify(settings));
     }
 
     has_screenshot_button() {
@@ -134,14 +119,6 @@ class PageTemplate extends React.Component {
         }
     }
 
-    async initiate_screenshot() {
-        this.setState({ screenshot_mode: true });
-        setTimeout(async () => {
-            await this.screencap();
-            this.setState({ screenshot_mode: false });
-        })
-    }
-
     main_content() {
         // not implemented, should be overridden
         return (<div></div>);
@@ -170,4 +147,33 @@ function OtherCredits() {
     return <span>
         Significant help with weather data from <a href="https://twitter.com/OklahomaPerson">OklahomaPerson</a>.
     </span>
+}
+
+function BodyPanel(props) {
+    if (props.hamburger_open) {
+        return <LeftPanel
+            settings={props.settings}
+            set_setting={props.set_setting}
+            statistic_category_metadata_checkboxes={props.statistic_category_metadata}
+        />
+    }
+    return <div className="body_panel">
+        {mobileLayout() ? undefined : <LeftPanel />}
+        <div className={mobileLayout() ? "content_panel_mobile" : "right_panel"}>
+            {props.main_content}
+            <div className="gap"></div>
+            <TemplateFooter />
+        </div>
+    </div>
+}
+
+function LeftPanel(props) {
+    return (
+        <div className={mobileLayout() ? "left_panel_mobile" : "left_panel"}>
+            <Sidebar
+                settings={props.settings}
+                set_setting={props.set_setting}
+                statistic_category_metadata_checkboxes={props.statistic_category_metadata_checkboxes} />
+        </div>
+    )
 }
