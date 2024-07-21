@@ -19,12 +19,6 @@ test('california-article-test', async t => {
 
 
 test('neighboring-state-test', async t => {
-    const arizona = Selector('li').withAttribute('class', 'list_of_lists')
-        .withText('Arizona')
-        // find a checkbox inside it
-        .find('input');
-    await t
-        .click(arizona);
     await t.wait(1000);
     await screencap(t, "article/california-with-neighbors");
     await t
