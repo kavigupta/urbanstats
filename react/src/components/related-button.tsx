@@ -2,7 +2,6 @@
 import React from 'react';
 
 import { article_link } from "../navigation/links";
-import { is_historical_cd } from '../utils/is_historical';
 import { CheckboxSetting } from "./sidebar";
 
 import "./related.css";
@@ -15,84 +14,66 @@ import { IRelatedButtons, IRelatedButton as RelatedButtonProto } from "../utils/
 type RelatedButtonModel = NormalizeProto<RelatedButtonProto>
 
 export type RelationshipKey = `related__${string}__${string}`
+const type_ordering_idx = require("../data/type_ordering_idx.json");
+const type_to_type_category = require("../data/type_to_type_category.json");
 
-const DARK_GRAY = "#4e525a";
+
+const RED = "#f96d6d";
 const BLUE = "#5a7dc3";
 const ORANGE = "#af6707";
 const PURPLE = "#975ac3";
-const RED = "#f96d6d";
+const DARK_GRAY = "#4e525a";
 const PINK = "#c767b0";
 const GREEN = "#8ac35a";
 const YELLOW = "#b8a32f";
+const CYAN = "#07a5af";
 
 const colorsEach: Record<string, string> = {
-    "Country": DARK_GRAY,
-    "Judicial Circuit": DARK_GRAY,
-    "USDA County Type": DARK_GRAY,
-    "State": BLUE,
-    "Subnational Region": BLUE,
-    "Native Area": BLUE,
-    "CSA": ORANGE,
-    "Native Statistical Area": ORANGE,
-    "Judicial District": ORANGE,
-    "Hospital Referral Region": ORANGE,
-    "MSA": PURPLE,
-    "Congressional District": PURPLE,
-    "Historical Congressional District": PURPLE,
-    "Native Subdivision": PURPLE,
-    "Media Market": PURPLE,
-    "Urban Area": PURPLE,
-    "Hospital Service Area": PURPLE,
-    "County": RED,
-    "State Senate District": RED,
-    "CCD": PINK,
-    "State House District": PINK,
-    "County Cross CD": PINK,
-    "City": GREEN,
-    "School District": GREEN,
-    "Neighborhood": YELLOW,
-    "ZIP": YELLOW,
-}
+    "International": RED,
+    "US Subdivision": BLUE,
+    "Census": CYAN,
+    "Political": PURPLE,
+    "Oddball": DARK_GRAY,
+    "Kavi": ORANGE,
+    "School": YELLOW,
+    "Small": PINK,
+    "Native": GREEN,
+};
+
+type RowType = string;
 
 export function relationship_key(article_type: string, other_type: string) {
     return `related__${article_type}__${other_type}` as const;
 }
 
-function RelatedButton(props: RelatedButtonModel) {
+function RelatedButton(props: { region: RelatedButtonModel, universe: string }) {
 
     const responsive = useResponsive()
+    const type_category = type_to_type_category[props.region.rowType];
 
     let classes = `serif button_related`
     if (responsive.mobileLayout) {
         classes += " button_related_mobile";
     }
-    const color = colorsEach[props.rowType];
+    const color = colorsEach[type_category];
     if (color === undefined) {
-        throw new Error("color is undefined; rowType is " + props.rowType);
+        throw new Error("color is undefined; rowType is " + props.region.rowType + " and type_category is " + type_category);
     }
     return (
         <li className={"linklistel" + (responsive.mobileLayout ? " linklistel_mobile" : "")}>
             <a
                 className={classes}
-                style={{ color: "black", backgroundColor: lighten(color, 0.7)}}
-                href={article_link(props.longname)}>{props.shortname}
+                style={{ color: "black", backgroundColor: lighten(color, 0.7) }}
+                href={article_link(props.universe, props.region.longname)}>{props.region.shortname}
             </a>
         </li>
     );
 }
 
-function RelatedList(props: { name: string, regions: RelatedButtonModel[], articleType: string }) {
-
-    let byTypeKey: { type: string, regions: typeof props.regions }[] = [];
-    for (let i = 0; i < props.regions.length; i++) {
-        let row = props.regions[i];
-        if (byTypeKey.length == 0 || byTypeKey[byTypeKey.length - 1].type != row.rowType) {
-            byTypeKey.push({ type: row.rowType, regions: [] });
-        }
-        byTypeKey[byTypeKey.length - 1].regions.push(row);
-    }
-    const displayName = () => {
-        let name = props.name;
+function RelatedList(props: { articleType: string, buttonType: string, regions: Record<string, any[]>, universe: string }) {
+    const responsive = useResponsive();
+    let key = relationship_key(props.articleType, props.buttonType);
+    function displayName(name: string) {
         name = name.replace("_", " ");
         // title case
         name = name.replace(/\w\S*/g, function (txt) {
@@ -100,60 +81,94 @@ function RelatedList(props: { name: string, regions: RelatedButtonModel[], artic
         });
         return name;
     }
-    const responsive = useResponsive()
-    return (
-        <div>
-            <ul className="list_of_lists">
-                <li className={"linklistelfirst" + (responsive.mobileLayout ? " linklistelfirst_mobile" : "")}>{displayName()}</li>
-                {byTypeKey.map((row, i) =>
-                    <CheckableRelatedList
-                        key={i}
-                        {...row}
-                        article_type={props.articleType}
-                    />)}
-            </ul>
-            <div className="gap_small"></div>
-        </div>
-    );
-}
 
-function CheckableRelatedList(props: { article_type: string, type: string, regions: RelatedButtonModel[] }) {
-    let key = relationship_key(props.article_type, props.type);
     return (
         <li className="list_of_lists">
             <div style={{ display: "flex" }}>
                 <div className="linkbox">
-                    <CheckboxSetting
-                        name=""
-                        setting_key={key} />
+                    <div style={{ paddingTop: "2pt" }}>
+                        <CheckboxSetting
+                            name=""
+                            setting_key={key}
+                            classNameToUse="related_checkbox"
+                            />
+                    </div>
                 </div>
-                <ul className="linklist">
-                    {props.regions.map((row, i) => <RelatedButton key={i} {...row} />)}
+                <ul className="list_of_lists">
+                    {
+                        Object.keys(props.regions).map((relationship_type, j) => {
+                            const regions = props.regions[relationship_type];
+                            return (
+                                <ul key={j} className="linklist">
+                                    <li
+                                        className={"serif linklistel" + (responsive.mobileLayout ? " linklistel_mobile" : "")}
+                                        style={{
+                                            fontSize:
+                                                responsive.mobileLayout ? "12pt" : "10pt"
+                                            , paddingTop: "1pt", fontWeight: 500
+                                        }}
+                                    >
+                                        {displayName(relationship_type)}
+                                    </li>
+                                    {
+                                        regions.map((row, i) =>
+                                            <RelatedButton
+                                                key={i}
+                                                region={row}
+                                                universe={props.universe}
+                                            />
+                                        )
+                                    }
+                                </ul>
+                            );
+                        }
+                        )
+                    }
                 </ul>
             </div>
         </li>
-    )
+    );
 }
 
-export function Related(props: { article_type: string, related: NormalizeProto<IRelatedButtons>[] }) {
-    let elements = [];
+export function Related(props: { article_type: string, related: { relationshipType: string, buttons: RelatedButtonModel[] }[], universe: string }) {
+    // buttons[rowType][relationshipType] = <list of buttons>
+    let buttons: Record<string, Record<string, RelatedButtonModel[]>> = {};
     for (var relateds of props.related) {
-        let key = relateds.relationshipType;
-        let value = relateds.buttons;
+        const relationship_type = relateds.relationshipType;
+        for (var button of relateds.buttons) {
+            const row_type = button.rowType;
+            if (!(row_type in buttons)) {
+                buttons[row_type] = {};
+            }
+            if (!(relationship_type in buttons[row_type])) {
+                buttons[row_type][relationship_type] = [];
+            }
+            buttons[row_type][relationship_type].push(button);
+        }
+    }
+
+    // get a sorted list of keys of buttons
+    const button_keys = Object.keys(buttons).sort((a, b) =>
+        type_ordering_idx[a] - type_ordering_idx[b]
+    );
+
+    let elements = [];
+    for (var key of button_keys) {
         const [show_historical_cds] = useSetting('show_historical_cds')
         if (!show_historical_cds) {
-            value = value.filter((row) => !is_historical_cd(row.longname));
+            if (key == "Historical Congressional District") {
+                continue;
+            }
         }
-        if (value.length > 0) {
-            elements.push(
-                <RelatedList
-                    key={key}
-                    name={key}
-                    regions={value}
-                    articleType={props.article_type}
-                />
-            );
-        }
+        elements.push(
+            <RelatedList
+                key={key}
+                buttonType={key}
+                regions={buttons[key]}
+                articleType={props.article_type}
+                universe={props.universe}
+            />
+        );
     }
 
     return (
