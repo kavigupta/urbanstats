@@ -67,6 +67,9 @@ function RelatedButton(props: { region: Region, universe: string }) {
 }
 
 function RelatedList(props: { articleType: string, buttonType: string, settings: any, set_setting: any, regions: Record<string, any[]>, universe: string }) {
+    if (props.articleType == undefined) {
+        throw new Error("articleType is undefined; shoud be defined");
+    }
     let setting_key = relationship_key(props.articleType, props.buttonType);
     function displayName(name: string) {
         name = name.replace("_", " ");
