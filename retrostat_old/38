@@ -1,0 +1,107 @@
+[
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Health technologists and technicians %",
+      "question": "higher % of workers employed as health technologists and technicians",
+      "longname_a": "San Jose city, California, USA",
+      "longname_b": "Fort Wayne city, Indiana, USA",
+      "stat_a": 0.011830648623662334,
+      "stat_b": 0.024211172788984728
+    },
+    "b": {
+      "stat_column": "Public administration %",
+      "question": "higher % of workers employed in public administration",
+      "longname_a": "Alaska, USA",
+      "longname_b": "Iowa, USA",
+      "stat_a": 0.11548315005260178,
+      "stat_b": 0.031433937398660905
+    },
+    "a_ease": 0.2441947565543071,
+    "b_ease": 0.6495726495726496
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "AW Density",
+      "question": "higher area-weighted density",
+      "longname_a": "TX-07, USA",
+      "longname_b": "IL-09, USA",
+      "stat_a": 2229.830874650435,
+      "stat_b": 1689.9026647176145
+    },
+    "b": {
+      "stat_column": "Undergrad STEM %",
+      "question": "!FULL Which has more people with a STEM degree, as a percentage of the overall population?",
+      "longname_a": "Tulsa city, Oklahoma, USA",
+      "longname_b": "Cincinnati city, Ohio, USA",
+      "stat_a": 0.12142435722645809,
+      "stat_b": 0.16587712449955036
+    },
+    "a_ease": 0.2972972972972973,
+    "b_ease": 0.7316239316239316
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Professional, scientific, and technical services %",
+      "question": "higher % of workers employed in the professional, scientific, and technical services industry",
+      "longname_a": "Atlantic City-Ocean City-Villas [Urban Area], NJ, USA",
+      "longname_b": "Virginia Beach-Norfolk [Urban Area], VA, USA",
+      "stat_a": 0.0558227238162062,
+      "stat_b": 0.08374072954260274
+    },
+    "b": {
+      "stat_column": "Cancer (excluding skin cancer) %",
+      "question": "higher % of adults with cancer (excluding skin cancer)",
+      "longname_a": "Sacramento-Stockton-Modesto CA Media Market, USA",
+      "longname_b": "Spokane WA Media Market, USA",
+      "stat_a": 0.06016570614270134,
+      "stat_b": 0.0711442618243625
+    },
+    "a_ease": 0.7671549730146492,
+    "b_ease": 0.33931623931623933
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Mean distance to nearest Active Superfund Site",
+      "question": "!FULL Which has less exposure to EPA superfund sites (higher population-weighted mean distance)?",
+      "longname_a": "Franklin County, Ohio, USA",
+      "longname_b": "Spartanburg County, South Carolina, USA",
+      "stat_a": 67.308883318231,
+      "stat_b": 16.872257086039735
+    },
+    "b": {
+      "stat_column": "PW Density (r=4km) [GHS-POP]",
+      "question": "higher population-weighted density (r=4km)",
+      "longname_a": "Ecuador",
+      "longname_b": "Uzbekistan",
+      "stat_a": 3426.58642578125,
+      "stat_b": 2563.208740234375
+    },
+    "a_ease": 0.39861218195836545,
+    "b_ease": 0.847940074906367
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Educational services %",
+      "question": "higher % of workers employed in the educational services industry",
+      "longname_a": "MA-04, USA",
+      "longname_b": "KY-03, USA",
+      "stat_a": 0.11627657136380518,
+      "stat_b": 0.08876084418808355
+    },
+    "b": {
+      "stat_column": "High windspeed (>10mph) days %",
+      "question": "higher % of days with wind speed over 10mph (population weighted)",
+      "longname_a": "South Carolina, USA",
+      "longname_b": "Idaho, USA",
+      "stat_a": 0.10872955841444729,
+      "stat_b": 0.0610357814365843
+    },
+    "a_ease": 0.8544346648612051,
+    "b_ease": 0.37260468417317244
+  }
+]
