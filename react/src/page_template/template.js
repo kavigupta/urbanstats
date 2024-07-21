@@ -18,7 +18,7 @@ import "../common.css";
 import "../components/article.css";
 import { load_settings } from './settings.js';
 import { mobileLayout } from '../utils/responsive';
-import { create_screenshot } from '../components/screenshot.js';
+import { create_screenshot } from '../components/screenshot';
 import { set_universe } from '../universe';
 
 
@@ -127,6 +127,7 @@ class PageTemplate extends React.Component {
         const config = this.screencap_elements();
 
         try {
+            console.log("Creating screenshot...");
             await create_screenshot(config, this.has_universe_selector() ? this.state.current_universe : undefined);
         } catch (e) {
             console.error(e);
