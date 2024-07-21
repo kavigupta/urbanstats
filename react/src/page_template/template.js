@@ -82,7 +82,7 @@ class PageTemplate extends React.Component {
                     <BodyPanel
                         hamburger_open={this.state.hamburger_open}
                         settings={this.state.settings}
-                        set_setting={set_setting(key, value)}
+                        set_setting={set_setting}
                         main_content={this.main_content()}
                         statistic_category_metadata={this.statistic_category_metadata_checkboxes}
                     />
@@ -158,7 +158,11 @@ function BodyPanel(props) {
         />
     }
     return <div className="body_panel">
-        {mobileLayout() ? undefined : <LeftPanel />}
+        {mobileLayout() ? undefined : <LeftPanel
+            settings={props.settings}
+            set_setting={props.set_setting}
+            statistic_category_metadata_checkboxes={props.statistic_category_metadata}
+        />}
         <div className={mobileLayout() ? "content_panel_mobile" : "right_panel"}>
             {props.main_content}
             <div className="gap"></div>
