@@ -1,5 +1,8 @@
 import React from 'react';
-import domtoimage from 'dom-to-image';
+import domtoimage from 'dom-to-image-more';
+import { saveAs } from 'file-saver';
+import { universe_path } from '../navigation/links';
+
 
 export function ScreenshotButton(props: { screenshot_mode: boolean, onClick: () => void }) {
     const screencap_button = <div
@@ -51,13 +54,13 @@ export interface ScreencapElements {
     elements_to_render: HTMLElement[]
 }
 
-export async function create_screenshot(config: ScreencapElements) {
+export async function create_screenshot(config: ScreencapElements, universe: string) {
     const overall_width = config.overall_width;
 
     async function screencap_element(ref: HTMLElement): Promise<[string, number]> {
         const scale_factor = overall_width / ref.offsetWidth;
         const link = await domtoimage.toPng(ref, {
-            bgcolor: "white",
+            bgcolor: "#fff8f0",
             height: ref.offsetHeight * scale_factor,
             width: ref.offsetWidth * scale_factor,
             style: {
@@ -71,9 +74,14 @@ export async function create_screenshot(config: ScreencapElements) {
     const png_links = [];
     const heights = [];
     for (const ref of config.elements_to_render) {
-        const [png_link, height] = await screencap_element(ref);
-        png_links.push(png_link);
-        heights.push(height);
+        try {
+            const [png_link, height] = await screencap_element(ref);
+            png_links.push(png_link);
+            heights.push(height);
+        } catch (e) {
+            console.log("ERROR");
+            console.error(e);
+        }
     }
 
     const canvas = document.createElement("canvas");
@@ -100,7 +108,7 @@ export async function create_screenshot(config: ScreencapElements) {
         img.src = png_link;
         imgs.push(img);
     }
-    ctx.fillStyle = "white";
+    ctx.fillStyle = "#fff8f0";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
     for (const img of imgs) {
@@ -118,8 +126,20 @@ export async function create_screenshot(config: ScreencapElements) {
 
     ctx.drawImage(banner, pad_around, start, overall_width, banner_height);
 
-    const a = document.createElement("a");
-    a.href = canvas.toDataURL("image/png");
-    a.download = config.path;
-    a.click();
+    if (universe != undefined) {
+        const flag = new Image();
+        flag.src = universe_path(universe);
+        await new Promise<void>((resolve) => {
+            flag.onload = () => resolve();
+        })
+        // draw on bottom left, same height as banner
+        const flag_height = banner_height / 2;
+        const offset = flag_height / 2;
+        const flag_width = flag.width * flag_height / flag.height;
+        ctx.drawImage(flag, pad_around + offset, start + offset, flag_width, flag_height);
+    }
+
+    canvas.toBlob(function (blob) {
+        saveAs(blob!, config.path);
+    });
 }
