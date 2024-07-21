@@ -150,6 +150,7 @@ category_metadata = {
     "housing": dict(name="Housing", show_checkbox=True, default=False),
     "transportation": dict(name="Transportation", show_checkbox=True, default=False),
     "health": dict(name="Health", show_checkbox=True, default=False),
+    "climate": dict(name="Climate Change", show_checkbox=True, default=False),
     "industry": dict(name="Industry", show_checkbox=True, default=False),
     "occupation": dict(name="Occupation", show_checkbox=True, default=False),
     "election": dict(name="Election", show_checkbox=True, default=True),

@@ -1,7 +1,7 @@
 import React from 'react';
 import { isMobile, isFirefox } from 'react-device-detect';
 
-import { Statistic } from "../components/table.js";
+import { Statistic } from "../components/table";
 import { article_link } from "../navigation/links";
 
 
@@ -132,7 +132,7 @@ class Timer extends React.Component {
 
 function TimeToNextQuiz({ today, quiz_kind }) {
     return (
-        <div style={{margin: "auto"}}>
+        <div style={{ margin: "auto" }}>
             <div style={{
                 display: "flex",
                 flexDirection: "row",
@@ -141,7 +141,7 @@ function TimeToNextQuiz({ today, quiz_kind }) {
                 flexWrap: "wrap",
                 gap: "1em",
             }}>
-                <div className="serif quiz_summary" style={{margin: "auto 0"}}>Next quiz in </div>
+                <div className="serif quiz_summary" style={{ margin: "auto 0" }}>Next quiz in </div>
                 <Timer today={today} quiz_kind={quiz_kind} />
             </div>
         </div>

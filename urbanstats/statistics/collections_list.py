@@ -9,6 +9,7 @@ from urbanstats.statistics.collections.feature import USFeatureDistanceStatistic
 from urbanstats.statistics.collections.generation import GenerationStatistics
 from urbanstats.statistics.collections.geographic import AreaAndCompactnessStatistics
 from urbanstats.statistics.collections.gpw import GPWStatistics
+from urbanstats.statistics.collections.heating import HouseHeating
 from urbanstats.statistics.collections.housing_census import HousingCensus
 from urbanstats.statistics.collections.housing_rent import HousingRent
 from urbanstats.statistics.collections.housing_rent_burden import HousingRentBurden
@@ -70,6 +71,7 @@ statistic_collections = (
     TransportationCommuteTimeStatistics(),
     TransportationVehicleOwnershipStatistics(),
     CDCStatistics(),
+    HouseHeating(),
     IndustryStatistics(),
     OccupationStatistics(),
     USElectionStatistics(),

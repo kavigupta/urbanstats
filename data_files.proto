@@ -4,9 +4,9 @@ syntax = "proto3";
 
 message StatisticRow {
     float statval = 1;
-    int32 ordinal = 2;
-    int32 overall_ordinal = 3;
-    float percentile_by_population = 4;
+    repeated int32 ordinal_by_universe = 2;
+    repeated int32 overall_ordinal_by_universe = 3;
+    repeated float percentile_by_population_by_universe = 4;
 }
 
 message RelatedButton {
@@ -27,6 +27,7 @@ message Article {
     string article_type = 4;
     repeated StatisticRow rows = 5;
     repeated RelatedButtons related = 6;
+    repeated string universes = 7;
 }
 
 
@@ -54,12 +55,38 @@ message Feature {
         Polygon polygon = 1;
         MultiPolygon multipolygon = 2;
     }
+    repeated int32 zones = 3;
+    float center_lon = 4;
 }
 
 // string lists
 
 message StringList {
     repeated string elements = 1;
+}
+
+message SearchIndex {
+    repeated string elements = 1;
+    repeated uint32 priorities = 2;
+}
+
+message OrderList {
+    repeated int32 order_idxs = 1;
+}
+
+message DataList {
+    repeated float value = 1;
+    repeated float population_percentile = 2;
+}
+
+message OrderLists {
+    repeated string statnames = 1;
+    repeated OrderList order_lists = 2;
+}
+
+message DataLists {
+    repeated string statnames = 1;
+    repeated DataList data_lists = 2;
 }
 
 // unified result

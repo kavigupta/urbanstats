@@ -50,6 +50,8 @@ async function check_all_category_boxes(t) {
     if (await hamburgerMenu.exists) {
         await t.click(hamburgerMenu);
     }
+    // reload
+    await t.eval(() => location.reload(true));
 }
 
 
@@ -60,8 +62,15 @@ async function prep_for_image(t) {
         for (const x of document.getElementsByClassName("leaflet-tile-pane")) {
             x.remove();
         }
+        for (const x of document.getElementsByClassName("map-container-for-testing")) {
+            const style = "border-style: solid; border-color: #abcdef";
+            x.setAttribute("style", style);
+        }
         document.getElementById("current-version").innerHTML = "&lt;VERSION&gt;";
         document.getElementById("last-updated").innerHTML = "&lt;LAST UPDATED&gt;";
+        for (const x of document.getElementsByClassName("juxtastat-user-id")) {
+            x.innerHTML = "&lt;USER ID&gt;";
+        }
     });
 }
 
@@ -531,8 +540,12 @@ fixture('quiz result test')
     });
 
 test('quiz-results-test', async t => {
+    await t.resizeWindow(1400, 800);
+    await t.eval(() => location.reload(true));
+    await t.wait(1000);
     await t.eval(() => location.reload(true));
     await t.eval(() => document.getElementById("quiz-timer").remove());
+    await t.wait(1000);
     await screencap(t, "quiz/results-page");
 });
 
@@ -739,6 +752,8 @@ fixture('mapping-more-complex')
     });
 
 test("mapping-more-complex", async t => {
+    await t.resizeWindow(1400, 800);
+    await t.eval(() => location.reload(true));
     await t.wait(5000);
     await screencap(t, "mapping-more-complex");
 })
@@ -769,6 +784,8 @@ fixture('all stats test')
     });
 
 test('california-all-stats', async t => {
+    await t.resizeWindow(1400, 800);
+    await t.eval(() => location.reload(true));
     await check_all_category_boxes(t);
     await screencap(t, "article/california-all-stats");
 });
@@ -782,6 +799,8 @@ fixture('all stats test regression')
     });
 
 test('charlotte-all-stats', async t => {
+    await t.resizeWindow(1400, 800);
+    await t.eval(() => location.reload(true));
     await check_all_category_boxes(t);
     await screencap(t, "article/charlotte-all-stats");
 });

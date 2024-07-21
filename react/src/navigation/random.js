@@ -7,7 +7,7 @@ import { loadJSON, loadProtobuf } from '../load_json';
 import { is_historical_cd } from "../utils/is_historical";
 
 
-async function by_population(settings, domestic_only=false) {
+async function by_population(settings, domestic_only = false) {
     let values = (await loadProtobuf("/index/pages.gz", "StringList")).elements;
     let populations = loadJSON("/index/best_population_estimate.json");
     var totalWeight = populations.reduce(function (sum, x) {
