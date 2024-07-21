@@ -13,105 +13,98 @@ import { article_link, universe_path } from '../navigation/links';
 const HEADER_BAR_SIZE = "48px";
 const HEADER_BAR_SIZE_DESKTOP = "60px";
 
-class Header extends React.Component {
-    constructor(props) {
-        super(props);
-    }
+function Header(props) {
 
-    universe_selector() {
-        return <UniverseSelector
-            current_universe={this.props.current_universe}
-            all_universes={this.props.all_universes}
-            on_universe_update={this.props.on_universe_update}
-        />
-    }
-
-    render() {
-
-        return (
-            <div className="top_panel">
-                {this.topLeft()}
-                <div className="right_panel_top" style={{ height: HEADER_BAR_SIZE }}>
-                    {/* flex but stretch to fill */}
-                    <div style={{ display: "flex", flexDirection: "row", height: "100%" }}>
-                        {!mobileLayout() && this.props.has_universe_selector
-                            ? <div style={{ paddingRight: "0.5em" }}>
-                                {this.universe_selector()}
-                            </div>
-                            : undefined}
-                        {
-                            this.props.has_screenshot ?
-                                <ScreenshotButton
-                                    screenshot_mode={this.props.screenshot_mode}
-                                    onClick={this.props.initiate_screenshot}
-                                /> : undefined
-                        }
-                        <div className="hgap"></div>
-                        <div style={{ flexGrow: 1 }}>
-                            <SearchBox
-                                settings={this.props.settings}
-                                on_change={
-                                    new_location => {
-                                        window.location.href = article_link(
-                                            this.props.current_universe, new_location
-                                        )
-                                    }
-                                }
-                                placeholder="Search Urban Stats"
-                                style={{
-                                    fontSize: "30px",
-                                    border: "1px solid #444",
-                                    paddingLeft: "1em",
-                                    width: "100%",
-                                    verticalAlign: "middle",
-                                    height: HEADER_BAR_SIZE,
-                                }}
+    return (
+        <div className="top_panel">
+            <TopLeft
+                hamburger_open={props.hamburger_open}
+                set_hamburger_open={props.set_hamburger_open}
+                has_universe_selector={props.has_universe_selector}
+                current_universe={props.current_universe}
+                all_universes={props.all_universes}
+                on_universe_update={props.on_universe_update}
+            />
+            <div className="right_panel_top" style={{ height: HEADER_BAR_SIZE }}>
+                {/* flex but stretch to fill */}
+                <div style={{ display: "flex", flexDirection: "row", height: "100%" }}>
+                    {!mobileLayout() && props.has_universe_selector
+                        ? <div style={{ paddingRight: "0.5em" }}>
+                            <UniverseSelector
+                                current_universe={props.current_universe}
+                                all_universes={props.all_universes}
+                                on_universe_update={props.on_universe_update}
                             />
                         </div>
+                        : undefined}
+                    {
+                        props.has_screenshot ?
+                            <ScreenshotButton
+                                screenshot_mode={props.screenshot_mode}
+                                onClick={props.initiate_screenshot}
+                            /> : undefined
+                    }
+                    <div className="hgap"></div>
+                    <div style={{ flexGrow: 1 }}>
+                        <SearchBox
+                            settings={props.settings}
+                            on_change={
+                                new_location => {
+                                    window.location.href = article_link(
+                                        props.current_universe, new_location
+                                    )
+                                }
+                            }
+                            placeholder="Search Urban Stats"
+                            style={{
+                                fontSize: "30px",
+                                border: "1px solid #444",
+                                paddingLeft: "1em",
+                                width: "100%",
+                                verticalAlign: "middle",
+                                height: HEADER_BAR_SIZE,
+                            }}
+                        />
                     </div>
                 </div>
             </div>
-        )
-    }
+        </div>
+    )
+}
 
-    topLeft() {
-        const self = this;
-        if (mobileLayout()) {
-            return (
-                <div className="left_panel_top">
-                    <Nav hamburger_open={this.props.hamburger_open} set_hamburger_open={this.props.set_hamburger_open} />
-                    <div className="hgap"></div>
-                    {
-                        this.props.has_universe_selector ?
-                            this.universe_selector() :
-                            <HeaderImage />
-                    }
-                </div>
-            );
-        } else {
-            return (
-                <div className="left_panel_top">
-                    <HeaderImage />
-                </div>
-            );
-        }
-
+function TopLeft(props) {
+    if (mobileLayout()) {
+        return (
+            <div className="left_panel_top">
+                <Nav hamburger_open={props.hamburger_open} set_hamburger_open={props.set_hamburger_open} />
+                <div className="hgap"></div>
+                {
+                    props.has_universe_selector ?
+                        <UniverseSelector
+                            current_universe={props.current_universe}
+                            all_universes={props.all_universes}
+                            on_universe_update={props.on_universe_update}
+                        /> :
+                        <HeaderImage />
+                }
+            </div>
+        );
+    } else {
+        return (
+            <div className="left_panel_top">
+                <HeaderImage />
+            </div>
+        );
     }
 }
 
-class HeaderImage extends React.Component {
-    constructor(props) {
-        super(props);
-    }
-
-    render() {
-        const path = mobileLayout() ? "/thumbnail.png" : "/banner.png";
-        return (
-            <a href="/index.html"><img src={path} style={{
-                height: mobileLayout() ? HEADER_BAR_SIZE : HEADER_BAR_SIZE_DESKTOP,
-            }} alt="Urban Stats Logo" /></a>
-        )
-    }
+function HeaderImage() {
+    const path = mobileLayout() ? "/thumbnail.png" : "/banner.png";
+    return (
+        <a href="/index.html"><img src={path} style={{
+            height: mobileLayout() ? HEADER_BAR_SIZE : HEADER_BAR_SIZE_DESKTOP,
+        }} alt="Urban Stats Logo" /></a>
+    )
 }
 
 function UniverseSelector({ current_universe, all_universes, on_universe_update }) {
