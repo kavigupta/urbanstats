@@ -12,13 +12,13 @@ export { PageTemplate };
 
 import React, { Fragment } from 'react';
 
-import { Header } from "../components/header.js";
+import { Header } from "../components/header";
 import { Sidebar } from "../components/sidebar";
 import "../common.css";
 import "../components/article.css";
 import { load_settings } from './settings.js';
 import { mobileLayout } from '../utils/responsive';
-import { create_screenshot } from '../components/screenshot.js';
+import { create_screenshot } from '../components/screenshot';
 import { set_universe } from '../universe';
 
 
@@ -127,6 +127,7 @@ class PageTemplate extends React.Component {
         const config = this.screencap_elements();
 
         try {
+            console.log("Creating screenshot...");
             await create_screenshot(config, this.has_universe_selector() ? this.state.current_universe : undefined);
         } catch (e) {
             console.error(e);
@@ -154,11 +155,11 @@ function TemplateFooter() {
 }
 
 function Version() {
-    return <span id="current-version">16.3.0</span>
+    return <span id="current-version">16.6.0</span>
 }
 
 function LastUpdated() {
-    return <span id="last-updated">2024-07-18</span>
+    return <span id="last-updated">2024-07-21</span>
 }
 
 function MainCredits() {

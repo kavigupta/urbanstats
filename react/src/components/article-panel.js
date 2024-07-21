@@ -3,7 +3,7 @@ export { ArticlePanel };
 import React from 'react';
 
 import { StatisticRowRaw } from "./table";
-import { Map } from "./map.js";
+import { Map } from "./map";
 import { Related } from "./related-button";
 import { PageTemplate } from "../page_template/template.js";
 import "../common.css";
@@ -24,6 +24,9 @@ class ArticlePanel extends PageTemplate {
     }
 
     main_content() {
+        if (this.props.articleType == undefined) {
+            throw new Error("articleType is undefined");
+        }
         const self = this;
         const [filtered_rows, _] = load_article(this.state.current_universe, this.props, this.state.settings,
             longname_is_exclusively_american(this.props.longname));
@@ -54,7 +57,7 @@ class ArticlePanel extends PageTemplate {
                         longname={this.props.longname}
                         related={this.props.related}
                         settings={this.state.settings}
-                        article_type={this.props.article_type}
+                        article_type={this.props.articleType}
                         basemap={{ type: "osm" }}
                         universe={this.state.current_universe}
                     />
@@ -86,7 +89,7 @@ class ArticlePanel extends PageTemplate {
                     related={this.props.related}
                     settings={this.state.settings}
                     set_setting={(key, value) => self.set_setting(key, value)}
-                    article_type={this.props.article_type}
+                    article_type={this.props.articleType}
                     universe={this.state.current_universe}
                 />
             </div>

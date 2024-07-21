@@ -15,8 +15,40 @@ def pad_images(ref, act):
         ref = np.pad(ref, ((0, 0), (0, act.shape[1] - ref.shape[1]), (0, 0)))
     return ref, act
 
+def get_region_size(bitmap, location):
+    queue = [location]
+    visited = set()
+    while queue:
+        x, y = queue.pop()
+        if not (0 <= x < bitmap.shape[0] and 0 <= y < bitmap.shape[1]):
+            continue
+        if (x, y) in visited:
+            continue
+        visited.add((x, y))
+        if bitmap[x, y]:
+            queue.append((x + 1, y))
+            queue.append((x - 1, y))
+            queue.append((x, y + 1))
+            queue.append((x, y - 1))
+    return len(visited)
+
+def region_size_bounded(bitmask, size=4 * 4):
+    return all(get_region_size(bitmask, (x, y)) <= size for x, y in zip(*np.where(bitmask)))
+
+def handle_normalized_map(ref, act):
+    ys, xs = np.where((ref == [0xab, 0xcd, 0xef, 0xff]).all(-1))
+    if ys.size == 0:
+        return
+    ymin, ymax = ys.min(), ys.max()
+    xmin, xmax = xs.min(), xs.max()
+    bitmask = (act[ymin:ymax, xmin:xmax] != ref[ymin:ymax, xmin:xmax]).any(-1)
+    if not region_size_bounded(bitmask):
+        return
+    act[ymin:ymax, xmin:xmax] = ref[ymin:ymax, xmin:xmax]
+
 def compute_delta_image(ref, act):
     ref, act = pad_images(ref, act)
+    handle_normalized_map(ref, act)
     color = [255, 0, 255, 255]
     diff_mask = (act != ref).any(-1)
     ref[diff_mask] = color

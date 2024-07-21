@@ -63,11 +63,12 @@ class CensusBasics(CensusStatisticsColection):
             "population": "higher population",
             "ad_1": "higher population-weighted density (r=1km)"
             + DENSITY_EXPLANATION_PW,
-            "sd": "higher area-weighted density" + DENSITY_EXPLANATION_AW,
         }
 
     def quiz_question_unused(self):
         return [
+            # no sd because it's antithetical to the purpose of this site
+            "sd",
             # duplicate
             "ad_0.25",
             "ad_0.5",

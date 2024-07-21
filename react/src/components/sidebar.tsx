@@ -108,10 +108,10 @@ export function Sidebar(props: {
     );
 }
 
-export function CheckboxSetting(props: { name: string, setting_key: string, settings: any, set_setting: (key: string, value: any) => void }) {
+export function CheckboxSetting(props: { name: string, setting_key: string, settings: any, set_setting: (key: string, value: any) => void, classNameToUse?: string }) {
 
     return (
-        <div className="checkbox-setting">
+        <div className={props.classNameToUse || "checkbox-setting"}>
             <input
                 type="checkbox"
                 checked={props.settings[props.setting_key] || false}

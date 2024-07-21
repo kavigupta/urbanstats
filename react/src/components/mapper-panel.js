@@ -3,7 +3,7 @@ export { MapperPanel };
 import React from 'react';
 
 import { Statistic } from "./table";
-import { MapGeneric } from "./map.js";
+import { MapGeneric } from "./map";
 import { Related } from "./related-button";
 import { PageTemplate } from "../page_template/template.js";
 import "../common.css";
