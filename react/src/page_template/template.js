@@ -16,7 +16,7 @@ import { Header } from "../components/header";
 import { Sidebar } from "../components/sidebar";
 import "../common.css";
 import "../components/article.css";
-import { load_settings } from './settings.js';
+import { load_settings } from './settings';
 import { mobileLayout } from '../utils/responsive';
 import { create_screenshot } from '../components/screenshot';
 import { set_universe } from '../universe';

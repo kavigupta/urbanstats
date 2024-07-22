@@ -3,7 +3,7 @@ import { relationship_key } from "../components/related-button";
 
 export function load_settings() {
     // backed by local storage
-    let settings = JSON.parse(localStorage.getItem("settings")) || {};
+    let settings = JSON.parse(localStorage.getItem("settings") ?? "{}") || {};
     const map_relationship = require("../data/map_relationship.json");
     for (let i in map_relationship) {
         const key = relationship_key(map_relationship[i][0], map_relationship[i][1]);

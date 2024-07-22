@@ -1,5 +1,5 @@
 import { MathNumericType, Matrix, dotMultiply, lusolve, multiply, transpose } from "mathjs";
-import { ColorStat, StatisticsForGeography } from "./settings.js";
+import { ColorStat, StatisticsForGeography } from "./settings";
 
 export class Regression {
     constructor(
