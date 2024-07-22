@@ -207,25 +207,3 @@ def compute_all_ordinals(full, keys):
         )
         for universe in all_universes()
     }
-
-
-def add_ordinals(frame, keys, ordinals_for_type, *, overall_ordinal):
-    assert len(set(keys)) == len(keys)
-    frame = frame.copy()
-    frame = frame.reset_index(drop=True)
-    for k in keys:
-        ord_and_pctile = ordinals_for_type[k]
-        ordinals, percentiles_by_population = (
-            ord_and_pctile.ordinals,
-            ord_and_pctile.percentiles_by_population,
-        )
-        frame[k, "overall_ordinal" if overall_ordinal else "ordinal"] = ordinals.loc[
-            frame.longname
-        ].values
-        if overall_ordinal:
-            continue
-        frame[k, "total"] = frame[k].shape[0]
-        frame[k, "percentile_by_population"] = percentiles_by_population.loc[
-            frame.longname
-        ].values
-    return frame
