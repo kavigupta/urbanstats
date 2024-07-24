@@ -87,7 +87,7 @@ class OrdinalsForTypeInUniverse:
             data_files_pb2.OrderLists,
             "order_lists",
             site_folder,
-            lambda count: f"/order/{universe}__{typ}_{count}.gz",
+            lambda count: f"/order/{universe}/{typ}_{count}.gz",
         )
 
         for statistic_column in tqdm.tqdm(
@@ -113,7 +113,7 @@ class OrdinalsForTypeInUniverse:
             data_files_pb2.DataLists,
             "data_lists",
             site_folder,
-            lambda count: f"/order/{universe}__{typ}_{count}_data.gz",
+            lambda count: f"/order/{universe}/{typ}_{count}_data.gz",
         )
 
         for statistic_column in tqdm.tqdm(

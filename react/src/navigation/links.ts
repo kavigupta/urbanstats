@@ -5,24 +5,51 @@ export function article_link(universe: string, longname: string) {
     return "/article.html?" + params.toString();
 }
 
+function shard_bytes(longname: string): [string, string] {
+    // as bytes, in utf-8
+    const bytes = new TextEncoder().encode(longname);
+    const hash = new Uint32Array([0]);
+    for (let i = 0; i < bytes.length; i++) {
+        hash[0] = (hash[0] * 31 + bytes[i]) & 0xffffffff;
+    }
+    // last 4 hex digits
+    let string = ""
+    for (let i = 0; i < 4; i++) {
+        string += (hash[0] & 0xf).toString(16);
+        hash[0] = hash[0] >> 4;
+    }
+    // get first two and last two
+    return [
+        string.slice(0, 2),
+        string.slice(2, 4)
+    ]
+}
+
+
+function sharded_name(longname: string) {
+    const sanitized_name = sanitize(longname);
+    const [a, b] = shard_bytes(sanitized_name);
+    return `${a}/${b}/${sanitized_name}`;
+}
+
 export function shape_link(longname: string) {
-    return "/shape/" + sanitize(longname) + '.gz'
+    return "/shape/" + sharded_name(longname) + '.gz'
 }
 
 export function data_link(longname: string) {
-    return `/data/${sanitize(longname)}.gz`
+    return `/data/${sharded_name(longname)}.gz`
 }
 
 export function index_link(universe: string, typ: string) {
-    return `/index/${universe}_${sanitize(typ, false)}.gz`
+    return `/index/${universe}/${sanitize(typ, false)}.gz`
 }
 
 export function ordering_link(universe: string, type: string, idx: number) {
-    return `/order/${universe}__${sanitize(type, false)}_${idx}.gz`
+    return `/order/${universe}/${sanitize(type, false)}_${idx}.gz`
 }
 
 export function ordering_data_link(universe: string, type: string, idx: number) {
-    return `/order/${universe}__${sanitize(type, false)}_${idx}_data.gz`
+    return `/order/${universe}/${sanitize(type, false)}_${idx}_data.gz`
 }
 
 export function explanation_page_link(explanation: string) {
