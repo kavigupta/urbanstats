@@ -21,7 +21,7 @@ function shard_bytes(longname: string): [string, string] {
     // get first two and last two
     return [
         string.slice(0, 2),
-        string.slice(2, 3)
+        string.slice(2, 4)
     ]
 }
 
