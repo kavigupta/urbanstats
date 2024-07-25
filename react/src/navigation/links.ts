@@ -21,12 +21,12 @@ function shard_bytes(longname: string): [string, string] {
     // get first two and last two
     return [
         string.slice(0, 2),
-        string.slice(2, 4)
+        string.slice(2, 3)
     ]
 }
 
 
-function sharded_name(longname: string) {
+export function sharded_name(longname: string) {
     const sanitized_name = sanitize(longname);
     const [a, b] = shard_bytes(sanitized_name);
     return `${a}/${b}/${sanitized_name}`;
