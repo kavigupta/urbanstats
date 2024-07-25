@@ -102,7 +102,7 @@ def shard_bytes(longname):
     for i in range(4):
         string += hex(hash_ & 0xf)[2:]
         hash_ >>= 4
-    return string[:2], string[2:]
+    return string[0:2], string[2:3]
 
 
 def shard_bytes(longname):
