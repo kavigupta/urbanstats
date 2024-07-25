@@ -33,7 +33,7 @@ function sampleQuiz(num_questions, seed) {
 }
 
 function sampleQuestion(category, type, rng) {
-        //     {
+    //     {
     //         "stat_column": "Household Income > $100k %",
     //         "question": "higher % of people who have household income > $100k",
     //         "longname_a": "McKinney-Frisco [Urban Area], TX, USA",
@@ -50,8 +50,8 @@ function sampleQuestion(category, type, rng) {
         const region_b = sample_without_replacement(LIST_OF_REGIONS[type], 1, rng)[0];
         const question = STAT_TO_QUESTION[stat_column];
 
-        const stat_a = loadJSON(`/quiz_sample_info/${region_a.replace("/", "slash")}`)[stat_column];
-        const stat_b = loadJSON(`/quiz_sample_info/${region_b.replace("/", "slash")}`)[stat_column];
+        const stat_a = loadJSON(`/quiz_sample_info/${sharded_name(region_a)}.json`)[stat_column];
+        const stat_b = loadJSON(`/quiz_sample_info/${sharded_name(region_b)}.json`)[stat_column];
 
         if (stat_a > stat_b && (stat_a - stat_b) / stat_a < 0.05) {
             continue
