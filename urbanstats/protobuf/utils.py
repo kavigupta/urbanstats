@@ -1,4 +1,5 @@
 import gzip
+import os
 
 from . import data_files_pb2
 
@@ -35,5 +36,10 @@ def save_data_list(value, population_percentile, path):
 
 
 def write_gzip(proto, path):
+    folder = os.path.dirname(path)
+    try:
+        os.makedirs(folder)
+    except FileExistsError:
+        pass
     with gzip.GzipFile(path, "wb", mtime=0) as f:
         f.write(proto.SerializeToString())
