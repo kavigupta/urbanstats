@@ -30,12 +30,7 @@ from urbanstats.consolidated_data.produce_consolidated_data import (
 )
 from urbanstats.data.gpw import compute_gpw_data_for_shapefile_table
 from urbanstats.mapper.ramp import output_ramps
-from urbanstats.ordinals.compute_ordinals import (
-    add_ordinals,
-    compute_all_ordinals,
-    compute_all_ordinals_for_universe,
-)
-from urbanstats.protobuf.utils import save_data_list, save_string_list
+from urbanstats.ordinals.compute_ordinals import compute_all_ordinals
 from urbanstats.special_cases.merge_international import (
     merge_international_and_domestic,
 )
