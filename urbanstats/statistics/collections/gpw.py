@@ -30,15 +30,13 @@ class GPWStatistics(InternationalStatistics):
 
     def quiz_question_names(self):
         return {
-            "gpw_aw_density": "higher area-weighted population density"
-            + DENSITY_EXPLANATION_AW,
             "gpw_population": "higher population",
             "gpw_pw_density_4": "higher population-weighted density (r=4km)"
             + DENSITY_EXPLANATION_PW,
         }
 
     def quiz_question_unused(self):
-        return ["gpw_pw_density_2", "gpw_pw_density_1"]
+        return ["gpw_pw_density_2", "gpw_pw_density_1", "gpw_aw_density"]
 
     def mutate_statistic_table(self, statistics_table, shapefile_table):
         assert (

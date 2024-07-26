@@ -19,6 +19,7 @@ from create_website import (
     statistic_internal_to_display_name,
 )
 from produce_html_page import (
+    create_filename,
     get_statistic_categories,
     indices,
     internal_statistic_names,
@@ -32,7 +33,7 @@ from .fixed import juxtastat as fixed_up_to
 
 min_pop = 250_000
 min_pop_international = 2_500_000
-version = 63
+version = 64
 
 # ranges = [
 #     (0.7, 1),
@@ -358,9 +359,13 @@ def generate_quiz_info_for_website(site_folder):
         for x in table.index
     }
     for loc in table:
-        with open(
-            f"{site_folder}/quiz_sample_info/{loc.replace('/', 'slash')}", "w"
-        ) as f:
+        path = f"{site_folder}/quiz_sample_info/{create_filename(loc, 'json')}"
+        folder = os.path.dirname(path)
+        try:
+            os.makedirs(folder)
+        except FileExistsError:
+            pass
+        with open(path, "w") as f:
             json.dump(table[loc], f)
 
 

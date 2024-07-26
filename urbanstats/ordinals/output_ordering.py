@@ -100,12 +100,12 @@ def output_ordering_for_universe(site_folder, universe, ordering):
 def output_indices(site_folder, universe, ordering):
     order_backmap = {}
     for typ in sorted(ordering.ordinal_by_type):
-        # output a string list to /index/universe_typ.gz
-        path = f"{site_folder}/index/{universe}_{typ}.gz"
+        # output a string list to /index/universe/typ.gz
+        path = f"{site_folder}/index/{universe}/{typ}.gz"
         ordered = ordering.ordinal_by_type[typ].all_names
         save_string_list(ordered, path)
         order_backmap[typ] = {name: i for i, name in enumerate(ordered)}
-    path = f"{site_folder}/index/{universe}_overall.gz"
+    path = f"{site_folder}/index/{universe}/overall.gz"
     ordered = ordering.overall_ordinal.all_names
     save_string_list(ordered, path)
     order_backmap["overall"] = {name: i for i, name in enumerate(ordered)}
