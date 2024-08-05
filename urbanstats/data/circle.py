@@ -733,7 +733,8 @@ def circle_shapefile_object(country_shapefile, population, just_usa):
         # just special case for 10M, since there was some weird caching issue.
         version += 0.1
     return Shapefile(
-        hash_key=prefix + f"population_circle_{named_populations[population]}_{version}",
+        hash_key=prefix
+        + f"population_circle_{named_populations[population]}_{version}",
         path=lambda: overlapping_circles_frame(
             country_shapefile, population, named_populations[population] + "PC"
         ),

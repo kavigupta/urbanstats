@@ -1,6 +1,6 @@
 import numpy as np
-from permacache import stable_hash
 import shapely
+from permacache import stable_hash
 
 
 def hash_full_table(sh):
