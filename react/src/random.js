@@ -2,7 +2,7 @@ import "./style.css";
 import "./common.css";
 
 import { by_population, uniform } from './navigation/random.js';
-import { load_settings } from './page_template/settings.js';
+import { load_settings } from './page_template/settings';
 
 
 async function main() {
