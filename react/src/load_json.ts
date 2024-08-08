@@ -24,7 +24,7 @@ function loadJSON(filePath: string) {
 
 // Load text with Ajax synchronously: takes path to file and optional MIME type
 function loadTextFileAjaxSync(filePath: string, mimeType: string) {
-    var xmlhttp = new XMLHttpRequest();
+    const xmlhttp = new XMLHttpRequest();
     xmlhttp.open("GET", filePath, false);
     if (mimeType != null) {
         if (xmlhttp.overrideMimeType) {

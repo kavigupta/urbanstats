@@ -132,7 +132,7 @@ function UniverseSelector(
 
     const [dropdown_open, set_dropdown_open] = React.useState(false);
 
-    var dropdown = dropdown_open ? <UniverseDropdown
+    let dropdown = dropdown_open ? <UniverseDropdown
         flag_size={width}
         all_universes={all_universes}
         on_universe_update={(universe: string) => {

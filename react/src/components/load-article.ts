@@ -19,7 +19,7 @@ export interface ArticleRow {
     rendered_statname: string
 }
 
-const index_list_info = require("../data/index_lists.json") as { [key: string]: any };
+const index_list_info = require("../data/index_lists.json") as Record<string, any>;
 
 function lookup_in_compressed_sequence(seq: [number, number][], idx: number) {
     // translation of produce_html_page.py::lookup_in_compressed_sequence
@@ -36,7 +36,7 @@ function lookup_in_compressed_sequence(seq: [number, number][], idx: number) {
 export function for_type(universe: string, statcol: string, typ: string) : number {
     const statnames = require("../data/statistic_list.json") as string[];
     const idx = statnames.indexOf(statcol);
-    const counts_by_universe = require("../data/counts_by_article_type.json") as { [key: string]: { [key: string]: [number, number][] } };
+    const counts_by_universe = require("../data/counts_by_article_type.json") as Record<string, Record<string, [number, number][]>>;
     const counts_by_type = counts_by_universe[universe][typ];
 
     return lookup_in_compressed_sequence(counts_by_type, idx);
@@ -45,7 +45,7 @@ export function for_type(universe: string, statcol: string, typ: string) : numbe
 function compute_indices(longname: string, typ: string) {
     // translation of produce_html_page.py::indices
 
-    let lists = index_list_info["index_lists"];
+    const lists = index_list_info["index_lists"];
     let result: number[] = [];
     result = result.concat(lists["universal"]);
     if (index_list_info["type_to_has_gpw"][typ]) {
@@ -63,7 +63,7 @@ export function load_article(universe: string, data: Article, settings: TableChe
 
     // index of universe in data.universes
     const universe_index = data.universes.indexOf(universe);
-    let article_type = data.articleType;
+    const article_type = data.articleType;
 
     const categories = require("../data/statistic_category_list.json") as string[];
     const names = require("../data/statistic_name_list.json") as string[];
@@ -73,7 +73,7 @@ export function load_article(universe: string, data: Article, settings: TableChe
 
     const indices = compute_indices(data.longname, article_type) as number[];
 
-    let modified_rows: ArticleRow[] = data.rows.map((row_original, row_index) => {
+    const modified_rows: ArticleRow[] = data.rows.map((row_original, row_index) => {
         const i = indices[row_index];
         // fresh row object
         return {

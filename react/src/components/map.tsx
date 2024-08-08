@@ -115,7 +115,7 @@ class MapGeneric<P extends MapGenericProps> extends React.Component<P> {
 
         function toSvgStyle(style: Record<string, unknown> & { weight?: number }) {
             let svg_style = "";
-            for (var key in style) {
+            for (const key in style) {
                 if (key == "fillColor") {
                     svg_style += `fill:${style[key]};`;
                     continue;
@@ -168,7 +168,7 @@ class MapGeneric<P extends MapGenericProps> extends React.Component<P> {
         for (let i = 0; i < names.length; i++) {
             let feature = await this.polygon_geojson(names[i]);
             feature = JSON.parse(JSON.stringify(feature));
-            for (let key in metas[i]) {
+            for (const key in metas[i]) {
                 feature.properties![key] = metas[i][key];
             }
             geojson.features.push(feature);
@@ -209,7 +209,7 @@ class MapGeneric<P extends MapGenericProps> extends React.Component<P> {
         await this.mapDidRender();
 
         // Remove polygons that no longer exist
-        for (let name in this.polygon_by_name) {
+        for (const name in this.polygon_by_name) {
             if (!this.exist_this_time.includes(name)) {
                 map.removeLayer(this.polygon_by_name[name]);
                 delete this.polygon_by_name[name];
@@ -286,8 +286,8 @@ class MapGeneric<P extends MapGenericProps> extends React.Component<P> {
             this.polygon_by_name[name].setStyle(style);
             return;
         }
-        let geojson = await this.polygon_geojson(name);
-        let group = L.featureGroup();
+        const geojson = await this.polygon_geojson(name);
+        const group = L.featureGroup();
         let polygon = L.geoJson(geojson, {
             style: style,
             // @ts-expect-error 
@@ -312,7 +312,7 @@ class MapGeneric<P extends MapGenericProps> extends React.Component<P> {
     zoom_to_all() {
         // zoom such that all polygons are visible
         const bounds = new L.LatLngBounds([]);
-        for (let name in this.polygon_by_name) {
+        for (const name in this.polygon_by_name) {
             bounds.extend(this.polygon_by_name[name].getBounds());
         }
         this.map!.fitBounds(bounds);
@@ -401,7 +401,7 @@ class ArticleMap extends MapGeneric<ArticleMapProps> {
             if (!this.props.show_historical_cds && is_historical_cd(related[i].rowType)) {
                 continue;
             }
-            let key = relationship_key(this.props.article_type, related[i].rowType);
+            const key = relationship_key(this.props.article_type, related[i].rowType);
             if (!this.props.settings[key]) {
                 continue;
             }

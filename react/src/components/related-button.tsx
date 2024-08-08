@@ -38,8 +38,6 @@ const colorsEach: Record<string, string> = {
     "Native": GREEN,
 };
 
-type RowType = string;
-
 function RelatedButton(props: { region: Region, universe: string }) {
 
     const type_category = type_to_type_category[props.region.rowType];
@@ -67,7 +65,7 @@ function RelatedList(props: { articleType: string, buttonType: string, regions: 
     if (props.articleType == undefined) {
         throw new Error("articleType is undefined; shoud be defined");
     }
-    let setting_key = relationship_key(props.articleType, props.buttonType);
+    const setting_key = relationship_key(props.articleType, props.buttonType);
     function displayName(name: string) {
         name = name.replace("_", " ");
         // title case
@@ -128,10 +126,10 @@ function RelatedList(props: { articleType: string, buttonType: string, regions: 
 export function Related(props: { article_type: string, related: { relationshipType: string, buttons: Region[] }[], universe: string }) {
     // buttons[rowType][relationshipType] = <list of buttons>
     const [showHistoricalCds, _] = useSetting("show_historical_cds");
-    let buttons: Record<string, Record<string, Region[]>> = {};
-    for (var relateds of props.related) {
+    const buttons: Record<string, Record<string, Region[]>> = {};
+    for (const relateds of props.related) {
         const relationship_type = relateds.relationshipType;
-        for (var button of relateds.buttons) {
+        for (const button of relateds.buttons) {
             const row_type = button.rowType;
             if (!(row_type in buttons)) {
                 buttons[row_type] = {};
@@ -148,8 +146,8 @@ export function Related(props: { article_type: string, related: { relationshipTy
         type_ordering_idx[a] - type_ordering_idx[b]
     );
 
-    let elements = [];
-    for (var key of button_keys) {
+    const elements = [];
+    for (const key of button_keys) {
         if (!showHistoricalCds) {
             if (key == "Historical Congressional District") {
                 continue;

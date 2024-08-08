@@ -33,7 +33,7 @@ export const SearchBox = (props: {
 
     const onFormSubmit = (event: React.FormEvent) => {
         event.preventDefault();
-        let terms = matches;
+        const terms = matches;
         if (terms.length > 0) {
             props.on_change(terms[focused])
         }
@@ -41,7 +41,7 @@ export const SearchBox = (props: {
     }
 
     const get_input = () => {
-        var input = textbox.current!.value;
+        let input = textbox.current!.value;
         input = normalize(input);
         return input;
     }
@@ -77,7 +77,7 @@ export const SearchBox = (props: {
         setMatchesStale(true);
 
         // if down arrow, then go to the next one
-        let dropdowns = document.getElementsByClassName("searchbox-dropdown-item");
+        const dropdowns = document.getElementsByClassName("searchbox-dropdown-item");
         if (dropdowns.length > 0) {
             if (event.key == "ArrowDown") {
                 setFocused((focused + 1) % dropdowns.length)
@@ -100,7 +100,7 @@ export const SearchBox = (props: {
         const priorities = indexCache!.priorities;
         let matches_new = [];
         for (let i = 0; i < values.length; i++) {
-            let match_count = is_a_match(input, normalize(values[i]));
+            const match_count = is_a_match(input, normalize(values[i]));
             if (match_count == 0) {
                 continue;
             }
@@ -184,7 +184,7 @@ function top_10(matches: number[][]) {
         }
     };
     matches.sort(sort_key(2));
-    let overall_matches = [];
+    const overall_matches = [];
     for (let i = 0; i < Math.min(num_prioritized, matches.length); i++) {
         overall_matches.push(matches[i][1]);
         matches[i][0] = -100;

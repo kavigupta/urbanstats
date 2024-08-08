@@ -42,7 +42,7 @@ export function StatisticRowRawCellContents(props: StatisticRowRawProps & { tota
         throw "StatisticRowRawCellContents: universe is undefined";
     }
     const alignStyle: React.CSSProperties = { textAlign: props.is_header ? "center" : "right" };
-    var value_columns: [number, string, React.ReactNode][] = [
+    let value_columns: [number, string, React.ReactNode][] = [
         [15,
             "statval",
             <div style={alignStyle}>
@@ -152,9 +152,9 @@ export function StatisticRowRawCellContents(props: StatisticRowRawProps & { tota
                 </span>
         ]
     ];
-    var cell_percentages: number[] = [];
-    var cell_contents = [];
-    for (let i in cells) {
+    const cell_percentages: number[] = [];
+    const cell_contents = [];
+    for (const i in cells) {
         if (props.only_columns && !props.only_columns.includes(cells[i][1])) {
             continue;
         }
@@ -163,7 +163,7 @@ export function StatisticRowRawCellContents(props: StatisticRowRawProps & { tota
     }
     // normalize cell percentages
     const sum = cell_percentages.reduce((a, b) => a + b, 0);
-    for (let i in cell_percentages) {
+    for (const i in cell_percentages) {
         cell_percentages[i] = props.total_width * cell_percentages[i] / sum;
     }
 
@@ -476,7 +476,7 @@ function PointerButtonIndex(props: { text: string, get_data: () => Promise<strin
             }
         }
     }
-    let pos = props.original_pos - 1 + + props.direction;
+    const pos = props.original_pos - 1 + + props.direction;
     if (out_of_bounds(pos) || props.original_pos > props.total) {
         return <span className="button">&nbsp;&nbsp;</span>
     } else {

@@ -8,7 +8,7 @@ import { SettingsDictionary, useSetting } from '../page_template/settings';
 export function Sidebar(props: {
     statistic_category_metadata_checkboxes: { name: string, setting_key: keyof SettingsDictionary }[]
 }) {
-    let statistic_category_metadata_checkboxes = props.statistic_category_metadata_checkboxes;
+    const statistic_category_metadata_checkboxes = props.statistic_category_metadata_checkboxes;
     let sidebar_section_content = "sidebar-section-content";
     let sidebar_section_title = "sidebar-section-title";
     if (mobileLayout()) {

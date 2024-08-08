@@ -10,8 +10,8 @@ export class Regression {
     }
 
     compute(statistics_for_geography: StatisticsForGeography, variables: Record<string, number[]>) {
-        let independent = this.independent_fn.compute(statistics_for_geography, variables);
-        let dependent = this.dependent_fns.map((fn) => fn.compute(statistics_for_geography, variables));
+        const independent = this.independent_fn.compute(statistics_for_geography, variables);
+        const dependent = this.dependent_fns.map((fn) => fn.compute(statistics_for_geography, variables));
 
         // independent: (N,)
         // dependent: (K, N)
@@ -35,7 +35,7 @@ export class Regression {
 
         const Awofilt = x.map(row => [1, ...row]);
         const A = xfilt.map(row => [1, ...row]);
-        var ATW = transpose(A);
+        let ATW = transpose(A);
 
         if (this.weight_by_population) {
             const W = sfg_filt.map(sfg => sfg.stats[this.population_idx]);
