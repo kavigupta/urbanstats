@@ -31,6 +31,13 @@ class ArticlePanel extends PageTemplate {
         const [filtered_rows, _] = load_article(this.state.current_universe, this.props, this.state.settings,
             longname_is_exclusively_american(this.props.longname));
 
+        const set_setting = (key, value) => {
+            let settings = self.state.settings;
+            settings[key] = value;
+            self.setState({ settings: settings });
+            localStorage.setItem("settings", JSON.stringify(settings));
+        }
+
         return (
             <div>
                 <div ref={this.headers_ref}>
@@ -88,7 +95,7 @@ class ArticlePanel extends PageTemplate {
                 <Related
                     related={this.props.related}
                     settings={this.state.settings}
-                    set_setting={(key, value) => self.set_setting(key, value)}
+                    set_setting={(key, value) => set_setting(key, value)}
                     article_type={this.props.articleType}
                     universe={this.state.current_universe}
                 />
