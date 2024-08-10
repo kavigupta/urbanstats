@@ -63,7 +63,7 @@ function RelatedButton(props: { region: Region, universe: string }) {
     );
 }
 
-function RelatedList(props: { articleType: string, buttonType: string, settings: any, set_setting: any, regions: Record<string, any[]>, universe: string }) {
+function RelatedList(props: { articleType: string, buttonType: string, regions: Record<string, any[]>, universe: string }) {
     if (props.articleType == undefined) {
         throw new Error("articleType is undefined; shoud be defined");
     }
@@ -85,8 +85,6 @@ function RelatedList(props: { articleType: string, buttonType: string, settings:
                         <CheckboxSetting
                             name=""
                             setting_key={setting_key}
-                            settings={props.settings}
-                            set_setting={props.set_setting}
                             classNameToUse="related_checkbox"
                         />
                     </div>
@@ -127,7 +125,7 @@ function RelatedList(props: { articleType: string, buttonType: string, settings:
     );
 }
 
-export function Related(props: { article_type: string, related: { relationshipType: string, buttons: Region[] }[], settings: any, set_setting: any, universe: string }) {
+export function Related(props: { article_type: string, related: { relationshipType: string, buttons: Region[] }[], universe: string }) {
     // buttons[rowType][relationshipType] = <list of buttons>
     const [showHistoricalCds, _] = useSetting("show_historical_cds");
     let buttons: Record<string, Record<string, Region[]>> = {};
@@ -163,8 +161,6 @@ export function Related(props: { article_type: string, related: { relationshipTy
                 buttonType={key}
                 regions={buttons[key]}
                 articleType={props.article_type}
-                settings={props.settings}
-                set_setting={props.set_setting}
                 universe={props.universe}
             />
         );

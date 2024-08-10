@@ -19,7 +19,6 @@ import "../components/article.css";
 import { load_settings } from './settings';
 import { mobileLayout } from '../utils/responsive';
 import { create_screenshot } from '../components/screenshot';
-import { set_universe } from '../universe';
 
 
 class PageTemplate extends React.Component {
@@ -42,13 +41,6 @@ class PageTemplate extends React.Component {
         const self = this;
 
 
-        function set_setting(key, value) {
-            let settings = self.state.settings;
-            settings[key] = value;
-            self.setState({ settings: settings });
-            localStorage.setItem("settings", JSON.stringify(settings));
-        }
-
         const set_universe = universe => {
             self.setState({ current_universe: universe });
             set_universe(universe);
@@ -67,7 +59,6 @@ class PageTemplate extends React.Component {
                 <meta name="viewport" content="width=600" />
                 <div className={mobileLayout() ? "main_panel_mobile" : "main_panel"}>
                     <Header
-                        settings={this.state.settings}
                         hamburger_open={this.state.hamburger_open}
                         set_hamburger_open={x => this.setState({ hamburger_open: x })}
                         has_screenshot={this.has_screenshot_button()}
@@ -81,8 +72,6 @@ class PageTemplate extends React.Component {
                     <div style={{ marginBlockEnd: "16px" }}></div>
                     <BodyPanel
                         hamburger_open={this.state.hamburger_open}
-                        settings={this.state.settings}
-                        set_setting={set_setting}
                         main_content={this.main_content()}
                         statistic_category_metadata={this.statistic_category_metadata_checkboxes}
                     />
@@ -152,15 +141,11 @@ function OtherCredits() {
 function BodyPanel(props) {
     if (props.hamburger_open) {
         return <LeftPanel
-            settings={props.settings}
-            set_setting={props.set_setting}
             statistic_category_metadata_checkboxes={props.statistic_category_metadata}
         />
     }
     return <div className="body_panel">
         {mobileLayout() ? undefined : <LeftPanel
-            settings={props.settings}
-            set_setting={props.set_setting}
             statistic_category_metadata_checkboxes={props.statistic_category_metadata}
         />}
         <div className={mobileLayout() ? "content_panel_mobile" : "right_panel"}>
@@ -175,8 +160,6 @@ function LeftPanel(props) {
     return (
         <div className={mobileLayout() ? "left_panel_mobile" : "left_panel"}>
             <Sidebar
-                settings={props.settings}
-                set_setting={props.set_setting}
                 statistic_category_metadata_checkboxes={props.statistic_category_metadata_checkboxes} />
         </div>
     )

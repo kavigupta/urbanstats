@@ -30,13 +30,6 @@ class ArticlePanel extends PageTemplate {
         }
         const self = this;
 
-        const set_setting = (key, value) => {
-            let settings = self.state.settings;
-            settings[key] = value;
-            self.setState({ settings: settings });
-            localStorage.setItem("settings", JSON.stringify(settings));
-        }
-
         return (
             <div>
                 <div ref={this.headers_ref}>
@@ -48,7 +41,6 @@ class ArticlePanel extends PageTemplate {
                 <div className="stats_table" ref={this.table_ref}>
                     <StatisticRowRaw _idx={-1} is_header={true} simple={this.state.settings.simple_ordinals} />
                     <ArticlePanelRows
-                        settings={this.state.settings}
                         current_universe={this.state.current_universe}
                         longname={this.props.longname}
                         article_row={this.props}
@@ -76,7 +68,6 @@ class ArticlePanel extends PageTemplate {
                     </div>
                     <div style={{ width: "70%" }}>
                         <SearchBox
-                            settings={this.state.settings}
                             style={{ ...comparisonHeadStyle(), width: "100%" }}
                             placeholder={"Other region..."}
                             on_change={(x) => {
@@ -92,8 +83,6 @@ class ArticlePanel extends PageTemplate {
 
                 <Related
                     related={this.props.related}
-                    settings={this.state.settings}
-                    set_setting={(key, value) => set_setting(key, value)}
                     article_type={this.props.articleType}
                     universe={this.state.current_universe}
                 />

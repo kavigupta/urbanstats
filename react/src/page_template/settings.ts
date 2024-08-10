@@ -102,13 +102,23 @@ export function useSetting<K extends keyof SettingsDictionary>(key: K): [Setting
 }
 
 
-export type TableCheckboxSettings = { [key: StatisticSettingKey] : boolean }
+export type TableCheckboxSettings = { [key: StatisticSettingKey]: boolean }
 
 export function useTableCheckboxSettings(): BooleanSettings {
     const categories = require("../data/statistic_category_list.json");
     const result = {} as BooleanSettings
     for (const category of categories) {
         const key = `show_statistic_${category}` as StatisticSettingKey
+        result[key] = useSetting(key)[0]
+    }
+    return result
+}
+
+export function useRelatedCheckboxSettings(article_type_this: string): { [key: RelationshipKey]: boolean } {
+    const article_types_other = require("../data/type_to_type_category.json");
+    const result = {} as { [key: RelationshipKey]: boolean }
+    for (const article_type_other in article_types_other) {
+        const key = relationship_key(article_type_this, article_type_other)
         result[key] = useSetting(key)[0]
     }
     return result

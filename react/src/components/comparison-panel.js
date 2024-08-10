@@ -71,7 +71,6 @@ class ComparisonPanel extends PageTemplate {
                     </div>
                     <div style={{ width: (50 * (1 - left_margin_pct)) + "%" }}>
                         <SearchBox
-                            settings={this.state.settings}
                             style={{ ...comparisonHeadStyle(), width: "100%" }}
                             placeholder={"Name"}
                             on_change={(x) => add_new(self.props.names, x)}
@@ -350,7 +349,6 @@ function HeadingDisplay({ universe, longname, include_delete, on_click, on_chang
         {is_editing ?
             <SearchBox
                 autoFocus={true}
-                settings={{}}
                 style={{ ...comparisonHeadStyle(), width: "100%" }}
                 placeholder={"Replacement"}
                 on_change={on_change}
