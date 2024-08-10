@@ -21,6 +21,10 @@ class HistogramSpec(ExtraStatistic):
         result.histogram.bin_min = self.min_value
         result.histogram.bin_size = self.bin_size
         histogram = data_row[self.key]
+        # nan values are inserted when no histogram is available
+        if isinstance(histogram, float):
+            assert histogram != histogram
+            return result
         histogram = histogram / histogram.sum()
         histogram = histogram * (2**16)
         histogram = histogram.round().astype(int)
