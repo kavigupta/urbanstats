@@ -9,6 +9,7 @@ import { headerTextClass, subHeaderTextClass } from '../utils/responsive';
 import { article_link, explanation_page_link, sanitize, statistic_link } from '../navigation/links';
 import { Percentile, Statistic } from './table';
 import { display_type } from '../utils/text';
+import { useSetting } from '../page_template/settings';
 
 const table_style = { display: "flex", flexDirection: "column", padding: "1px" };
 const column_names = ["Ordinal", "Name", "Value", "", "Percentile"];
@@ -149,10 +150,10 @@ class StatisticPanel extends PageTemplate {
                             />
                         </div>
                         <div style={this.style(4, row_idx + 1)}>
-                            <Percentile ordinal={this.props.ordinal}
-                                total={this.props.total_count_in_class}
-                                percentile_by_population={this.props.data.populationPercentile[i]}
-                                simple={this.state.settings.simple_ordinals}
+                            <AutoPercentile
+                                ordinal={this.props.ordinal}
+                                total_count_in_class={this.props.total_count_in_class}
+                                data={this.props.data}
                             />
                         </div>
                     </div>)}
@@ -282,6 +283,15 @@ class StatisticPanel extends PageTemplate {
             );
         }
     }
+}
+
+function AutoPercentile(props) {
+    const [simple_ordinals, _] = useSetting("simple_ordinals");
+    return <Percentile ordinal={props.ordinal}
+        total={props.total_count_in_class}
+        percentile_by_population={props.data.populationPercentile[i]}
+        simple={simple_ordinals}
+    />
 }
 
 function AscendingVsDescending({ on_click, is_ascending }) {
