@@ -13,6 +13,7 @@ import { comparisonHeadStyle, headerTextClass, subHeaderTextClass } from '../uti
 import { SearchBox } from './search';
 import { article_link, comparison_link, sanitize } from '../navigation/links';
 import { longname_is_exclusively_american } from '../universe';
+import { useSetting, useTableCheckboxSettings } from '../page_template/settings';
 
 class ArticlePanel extends PageTemplate {
     constructor(props) {
@@ -28,8 +29,6 @@ class ArticlePanel extends PageTemplate {
             throw new Error("articleType is undefined");
         }
         const self = this;
-        const [filtered_rows, _] = load_article(this.state.current_universe, this.props, this.state.settings,
-            longname_is_exclusively_american(this.props.longname));
 
         const set_setting = (key, value) => {
             let settings = self.state.settings;
@@ -48,13 +47,12 @@ class ArticlePanel extends PageTemplate {
 
                 <div className="stats_table" ref={this.table_ref}>
                     <StatisticRowRaw _idx={-1} is_header={true} simple={this.state.settings.simple_ordinals} />
-                    {filtered_rows.map((row, i) =>
-                        <StatisticRowRaw _idx={i} key={row.statname} index={i} {...row} settings={this.state.settings}
-                            onReplace={x => { document.location = article_link(self.state.current_universe, x) }}
-                            simple={this.state.settings.simple_ordinals}
-                            longname={this.props.longname}
-                            universe={this.state.current_universe}
-                        />)}
+                    <ArticlePanelRows
+                        settings={this.state.settings}
+                        current_universe={this.state.current_universe}
+                        longname={this.props.longname}
+                        article_row={this.props}
+                    />
                 </div>
 
                 <p></p>
@@ -120,3 +118,18 @@ class ArticlePanel extends PageTemplate {
     }
 }
 
+function ArticlePanelRows(props) {
+    const settings = useTableCheckboxSettings();
+    const [simple_ordinals, _set_simple_ordinals] = useSetting("simple_ordinals");
+    const [filtered_rows, _] = load_article(props.current_universe, props.article_row, settings,
+        longname_is_exclusively_american(props.longname));
+    return <>
+        {filtered_rows.map((row, i) =>
+            <StatisticRowRaw _idx={i} key={row.statname} index={i} {...row} settings={settings}
+                onReplace={x => { document.location = article_link(props.current_universe, x) }}
+                simple={simple_ordinals}
+                longname={props.longname}
+                universe={props.current_universe}
+            />)}
+    </>
+}

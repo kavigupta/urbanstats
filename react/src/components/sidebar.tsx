@@ -3,10 +3,11 @@ import React from 'react';
 import "../style.css";
 import "./sidebar.css";
 import { mobileLayout } from '../utils/responsive';
+import { SettingsDictionary, useSetting } from '../page_template/settings';
 
 export function Sidebar(props: {
     settings: any, set_setting: (key: string, value: any) => void,
-    statistic_category_metadata_checkboxes: { name: string, setting_key: string }[]
+    statistic_category_metadata_checkboxes: { name: string, setting_key: keyof SettingsDictionary }[]
 }) {
     let settings = props.settings;
     let statistic_category_metadata_checkboxes = props.statistic_category_metadata_checkboxes;
@@ -108,8 +109,27 @@ export function Sidebar(props: {
     );
 }
 
-export function CheckboxSetting(props: { name: string, setting_key: string, settings: any, set_setting: (key: string, value: any) => void, classNameToUse?: string }) {
+export function CheckboxSetting(props: { name: string, setting_key: keyof SettingsDictionary, settings: any, set_setting: (key: string, value: any) => void, classNameToUse?: string }) {
 
+    const [checked, setChecked] = useSetting(props.setting_key);
+
+    return <CheckboxSettingCustom
+        name={props.name}
+        setting_key={props.setting_key}
+        settings={{ [props.setting_key]: checked }}
+        set_setting={(key, value) => {
+            if (key === props.setting_key) {
+                setChecked(value);
+            } else {
+                throw new Error("Invalid key: " + key);
+            }
+        }}
+        classNameToUse={props.classNameToUse}
+    />;
+};
+
+export function CheckboxSettingCustom(props: { name: string, setting_key: string, settings: any, set_setting: (key: string, value: any) => void, classNameToUse?: string }) {
+    // like CheckboxSetting, but doesn't use useSetting, instead using the callbacks
     return (
         <div className={props.classNameToUse || "checkbox-setting"}>
             <input

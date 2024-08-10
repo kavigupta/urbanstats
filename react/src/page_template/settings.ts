@@ -1,7 +1,7 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { DefaultMap } from "../utils/DefaultMap";
 
-type StatisticSettingKey = `show_statistic_${string}`
+export type StatisticSettingKey = `show_statistic_${string}`
 export type RelationshipKey = `related__${string}__${string}`
 
 interface StatisticCategoryMetadataCheckbox {
@@ -10,7 +10,7 @@ interface StatisticCategoryMetadataCheckbox {
 }
 
 
-interface SettingsDictionary {
+export interface SettingsDictionary {
     [relationshipKey: RelationshipKey]: boolean;
     [showStatisticKey: StatisticSettingKey]: boolean;
     show_historical_cds: boolean,
@@ -84,6 +84,7 @@ export class Settings {
 
     setSetting<K extends keyof SettingsDictionary>(key: K, newValue: SettingsDictionary[K]): void {
         this.settings[key] = newValue
+        localStorage.setItem("settings", JSON.stringify(this.settings))
         this.observers.get(key).forEach(observer => observer())
     }
 
@@ -98,6 +99,19 @@ export class Settings {
 export function useSetting<K extends keyof SettingsDictionary>(key: K): [SettingsDictionary[K], (newValue: SettingsDictionary[K]) => void] {
     const settings = useContext(Settings.Context)
     return [settings.useSetting(key), (value) => settings.setSetting(key, value)]
+}
+
+
+export type TableCheckboxSettings = { [key: StatisticSettingKey] : boolean }
+
+export function useTableCheckboxSettings(): BooleanSettings {
+    const categories = require("../data/statistic_category_list.json");
+    const result = {} as BooleanSettings
+    for (const category of categories) {
+        const key = `show_statistic_${category}` as StatisticSettingKey
+        result[key] = useSetting(key)[0]
+    }
+    return result
 }
 
 export function useStatisticCategoryMetadataCheckboxes() {

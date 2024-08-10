@@ -7,6 +7,7 @@ import "./table.css";
 import { is_historical_cd } from '../utils/is_historical';
 import { display_type } from '../utils/text';
 import { ArticleRow } from './load-article';
+import { useSetting } from '../page_template/settings';
 
 const table_row_style: React.CSSProperties = {
     display: "flex",
@@ -192,6 +193,7 @@ export function StatisticRow({ is_header, index, contents }: { is_header: boolea
 
 
 export function Statistic(props: { style?: React.CSSProperties, statname: string, value: number, is_unit: boolean, settings: any }) {
+    const [use_imperial, _] = useSetting("use_imperial");
     const content = (() => {
         {
             const name = props.statname;
@@ -204,7 +206,7 @@ export function Statistic(props: { style?: React.CSSProperties, statname: string
                 return <span>{(value * 100).toFixed(2)}</span>;
             }
             else if (name.includes("Density")) {
-                const is_imperial = props.settings.use_imperial;
+                const is_imperial = use_imperial;
                 let unit_name = "km";
                 if (is_imperial) {
                     unit_name = "mi";
@@ -238,7 +240,7 @@ export function Statistic(props: { style?: React.CSSProperties, statname: string
                     return <span>{value.toFixed(0)}</span>;
                 }
             } else if (name == "Area") {
-                const is_imperial = props.settings.use_imperial;
+                const is_imperial = use_imperial;
                 let unit: string | React.ReactElement = "null";
                 if (is_imperial) {
                     value /= 1.60934 * 1.60934;
@@ -270,7 +272,7 @@ export function Statistic(props: { style?: React.CSSProperties, statname: string
                     }
                 }
             } else if (name.includes("Mean distance")) {
-                const is_imperial = props.settings.use_imperial;
+                const is_imperial = use_imperial;
                 let unit = <span>km</span>;
                 if (is_imperial) {
                     unit = <span>mi</span>
@@ -300,7 +302,7 @@ export function Statistic(props: { style?: React.CSSProperties, statname: string
                 // e.g., 3:05
                 return <span>{hours}:{minutes.toString().padStart(2, "0")}</span>;
             } else if (name == "Rainfall" || name == "Snowfall [rain-equivalent]") {
-                const is_imperial = props.settings.use_imperial;
+                const is_imperial = use_imperial;
                 value *= 100;
                 let unit = "cm";
                 if (is_imperial) {
@@ -431,7 +433,8 @@ export function Percentile(props: { ordinal: number, total: number, percentile_b
 
 function PointerButtonsIndex(props: { ordinal: number, statpath: string, type: string, total: number, settings: any, universe: string }) {
     const get_data = async () => await load_ordering(props.universe, props.statpath, props.type);
-    const show_historical_cds = props.settings.show_historical_cds || is_historical_cd(props.type);
+    const [settings_show_historical_cds, _] = useSetting("show_historical_cds");
+    const show_historical_cds = settings_show_historical_cds || is_historical_cd(props.type);
     return (
         <span style={{ margin: "auto" }}>
             <PointerButtonIndex

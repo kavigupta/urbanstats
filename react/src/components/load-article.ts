@@ -1,4 +1,4 @@
-
+import { StatisticSettingKey, TableCheckboxSettings } from "../page_template/settings";
 import { universe_is_american } from "../universe";
 import { Article } from "../utils/protos";
 
@@ -59,11 +59,10 @@ function compute_indices(longname: string, typ: string) {
     return result.sort((a, b) => a - b);
 }
 
-export function load_article(universe: string, data: Article, settings: any, exclusively_american: boolean): [ArticleRow[], number[]] {
+export function load_article(universe: string, data: Article, settings: TableCheckboxSettings, exclusively_american: boolean) {
 
     // index of universe in data.universes
     const universe_index = data.universes.indexOf(universe);
-    console.log("DEF", data.universes, universe, universe_index)
     let article_type = data.articleType;
 
     const categories = require("../data/statistic_category_list.json") as string[];
@@ -104,13 +103,13 @@ export function load_article(universe: string, data: Article, settings: any, exc
                 return false;
             }
         }
-        const key = "show_statistic_" + row.statistic_category;
+        const key: StatisticSettingKey = ("show_statistic_" + row.statistic_category) as StatisticSettingKey;
         return settings[key];
     });
 
     const filtered_indices = filtered_rows.map(x => x._index)
 
-    return [filtered_rows, filtered_indices];
+    return [filtered_rows, filtered_indices] as const;
 }
 
 export function render_statname(statindex: number, statname: string, exclusively_american: boolean): string {
