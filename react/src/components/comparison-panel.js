@@ -104,7 +104,6 @@ class ComparisonPanel extends PageTemplate {
                         <ComparsionPageRows
                             names={this.props.names}
                             datas={this.props.datas}
-                            settings={this.state.settings}
                             current_universe={this.state.current_universe}
                         />
                     </div>
@@ -214,7 +213,7 @@ function all_data_types_same(datas) {
 }
 
 
-function ComparsionPageRows({ names, datas, settings, current_universe }) {
+function ComparsionPageRows({ names, datas, current_universe }) {
     var rows = [];
     var idxs = [];
     const exclusively_american = datas.every(x => longname_is_exclusively_american(x.longname));
@@ -237,7 +236,7 @@ function ComparsionPageRows({ names, datas, settings, current_universe }) {
         <ComparisonRow
             params={data_idx => {
                 return {
-                    key: row_idx, index: row_idx, ...rows[data_idx][row_idx], settings: settings
+                    key: row_idx, index: row_idx, ...rows[data_idx][row_idx]
                 }
             }}
             datas={datas} />

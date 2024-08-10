@@ -61,7 +61,6 @@ export class QuizResult extends React.Component {
                             index={index}
                             choice={this.props.history.choices[index]}
                             correct={correct_pattern[index]}
-                            settings={this.props.settings}
                             quiz_kind={this.props.quiz_kind}
                         />
                     )

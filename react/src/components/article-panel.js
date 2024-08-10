@@ -39,7 +39,7 @@ class ArticlePanel extends PageTemplate {
                 <div style={{ marginBlockEnd: "16px" }}></div>
 
                 <div className="stats_table" ref={this.table_ref}>
-                    <StatisticRowRaw _idx={-1} is_header={true} simple={this.state.settings.simple_ordinals} />
+                    <StatisticRowHeader />
                     <ArticlePanelRows
                         current_universe={this.state.current_universe}
                         longname={this.props.longname}
@@ -53,7 +53,6 @@ class ArticlePanel extends PageTemplate {
                     <Map id="map"
                         longname={this.props.longname}
                         related={this.props.related}
-                        settings={this.state.settings}
                         article_type={this.props.articleType}
                         basemap={{ type: "osm" }}
                         universe={this.state.current_universe}
@@ -105,6 +104,11 @@ class ArticlePanel extends PageTemplate {
     has_universe_selector() {
         return true;
     }
+}
+
+function StatisticRowHeader() {
+    const [simple_ordinals, _] = useSetting("simple_ordinals");
+    return <StatisticRowRaw _idx={-1} is_header={true} simple={simple_ordinals} />
 }
 
 function ArticlePanelRows(props) {
