@@ -3,7 +3,6 @@ import React, { CSSProperties, SVGProps } from 'react';
 export { Map, MapGeneric };
 
 import { shape_link, article_link } from "../navigation/links";
-import { relationship_key } from "./related-button";
 import { random_color } from "../utils/color";
 
 import "./map.css";
@@ -14,6 +13,7 @@ import L from 'leaflet'
 import { NormalizeProto } from "../utils/types";
 import { Feature, IRelatedButton, IRelatedButtons } from "../utils/protos";
 import { Basemap } from "../mapper/settings";
+import { relationship_key } from '../page_template/settings';
 
 export interface MapGenericProps {
     height?: string,

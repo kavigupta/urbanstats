@@ -1,8 +1,8 @@
-import { RelationshipKey, relationship_key } from "../components/related-button";
 import { createContext, useContext, useEffect, useState } from "react";
 import { DefaultMap } from "../utils/DefaultMap";
 
 type StatisticSettingKey = `show_statistic_${string}`
+export type RelationshipKey = `related__${string}__${string}`
 
 interface StatisticCategoryMetadataCheckbox {
     setting_key: StatisticSettingKey
@@ -16,6 +16,10 @@ interface SettingsDictionary {
     show_historical_cds: boolean,
     simple_ordinals: boolean,
     use_imperial: boolean
+}
+
+export function relationship_key(article_type: string, other_type: string) {
+    return `related__${article_type}__${other_type}` as const;
 }
 
 export function load_settings() {
