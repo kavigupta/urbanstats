@@ -11,6 +11,7 @@ from permacache import drop_if, drop_if_equal, permacache, stable_hash
 
 from urbanstats.features.within_distance import xy_to_radius
 from urbanstats.statistics.collections_list import statistic_collections
+from urbanstats.utils import compute_bins
 
 GPW_PATH = (
     "gpw_v4_population_count_rev11_2020_30_sec_",
@@ -289,8 +290,19 @@ def lattice_cells_contained(glo, polygon):
     return row_selected, col_selected
 
 
+def produce_histogram(density_data, population_data):
+    """
+    Produce a histogram of population data with the given density data.
+    """
+    density_data = np.log(density_data) / np.log(10)
+    density_data = density_data.flatten()
+    population_data = population_data.flatten()
+
+    return compute_bins(density_data, population_data, bin_size=0.1)
+
+
 @permacache(
-    "urbanstats/data/gpw/compute_gpw_for_shape_2",
+    "urbanstats/data/gpw/compute_gpw_for_shape_4",
     key_function=dict(
         shape=lambda x: stable_hash(shapely.to_geojson(x)),
         collect_density=drop_if_equal(True),
@@ -307,9 +319,22 @@ def compute_gpw_for_shape(shape, collect_density=True):
 
     pop_sum = np.nansum(pop)
     if collect_density:
-        dens_1_sum = np.nansum(pop * dens_1[row_selected, col_selected])
-        dens_2_sum = np.nansum(pop * dens_2[row_selected, col_selected])
-        dens_4_sum = np.nansum(pop * dens_4[row_selected, col_selected])
+        dens_1_selected = dens_1[row_selected, col_selected]
+        dens_2_selected = dens_2[row_selected, col_selected]
+        dens_4_selected = dens_4[row_selected, col_selected]
+        dens_1_sum = np.nansum(pop * dens_1_selected)
+        dens_2_sum = np.nansum(pop * dens_2_selected)
+        dens_4_sum = np.nansum(pop * dens_4_selected)
+        dens_1_hist = produce_histogram(dens_1_selected, pop)
+        dens_2_hist = produce_histogram(dens_2_selected, pop)
+        dens_4_hist = produce_histogram(dens_4_selected, pop)
+        hists = dict(
+            gpw_pw_density_histogram_1=dens_1_hist,
+            gpw_pw_density_histogram_2=dens_2_hist,
+            gpw_pw_density_histogram_4=dens_4_hist,
+        )
+    else:
+        hists = {}
 
     result = dict(gpw_population=pop_sum)
     if collect_density:
@@ -321,11 +346,11 @@ def compute_gpw_for_shape(shape, collect_density=True):
             )
         )
 
-    return result
+    return result, hists
 
 
 @permacache(
-    "urbanstats/data/gpw/compute_gpw_data_for_shapefile_3",
+    "urbanstats/data/gpw/compute_gpw_data_for_shapefile_5",
     key_function=dict(
         shapefile=lambda x: x.hash_key,
         collect_density=drop_if_equal(True),
@@ -346,6 +371,12 @@ def compute_gpw_data_for_shapefile(shapefile, collect_density=True, log=True):
         "gpw_pw_density_4": [],
     }
 
+    result_hists = {
+        "gpw_pw_density_histogram_1": [],
+        "gpw_pw_density_histogram_2": [],
+        "gpw_pw_density_histogram_4": [],
+    }
+
     for longname, shape in tqdm.tqdm(
         zip(shapes.longname, shapes.geometry),
         desc=f"gpw for {shapefile.hash_key}",
@@ -353,22 +384,24 @@ def compute_gpw_data_for_shapefile(shapefile, collect_density=True, log=True):
     ):
         if log:
             print(longname)
-        res = compute_gpw_for_shape(shape, collect_density=collect_density)
+        res, hists = compute_gpw_for_shape(shape, collect_density=collect_density)
         if log:
             print(res)
         for k, v in res.items():
             result[k].append(v)
+        for k, v in hists.items():
+            result_hists[k].append(v)
 
-    return result
+    return result, result_hists
 
 
 @permacache(
-    "urbanstats/data/gpw/compute_gpw_data_for_shapefile_table_6",
+    "urbanstats/data/gpw/compute_gpw_data_for_shapefile_table_8",
     key_function=dict(shapefile=lambda x: x.hash_key),
 )
 def compute_gpw_data_for_shapefile_table(shapefile):
     shapes = shapefile.load_file()
-    result = compute_gpw_data_for_shapefile(shapefile)
+    result, hists = compute_gpw_data_for_shapefile(shapefile)
     result = pd.DataFrame(result)
     print(shapefile.hash_key, len(result), len(shapes))
     result.index = shapes.index
@@ -380,4 +413,4 @@ def compute_gpw_data_for_shapefile_table(shapefile):
     result["longname"] = shapes.longname
     result["shortname"] = shapes.shortname
 
-    return result
+    return result, hists

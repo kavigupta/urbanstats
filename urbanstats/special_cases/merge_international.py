@@ -23,6 +23,8 @@ def merge_international_row(row_international, row_domestic):
             "type_category",
         ]:
             continue
+        if "histogram" in col:
+            continue
         if row_international[col] == row_domestic[col]:
             continue
         if row_domestic[col] != row_domestic[col]:

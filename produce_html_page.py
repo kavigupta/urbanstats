@@ -64,6 +64,8 @@ def create_page_json(
             statrow.percentile_by_population_by_universe.append(
                 float(ordinal_by_type.percentiles_by_population.loc[row.longname])
             )
+    for _, extra_stat in sorted(extra_stats().items()):
+        data.extra_stats.append(extra_stat.create(row))
     for relationship_type in relationships:
         for_this = relationships[relationship_type].get(row.longname, set())
         for_this = [x for x in for_this if x in long_to_population]
@@ -152,6 +154,14 @@ def get_explanation_page():
 
     result = {k: result[k] for k in statistic_internal_to_display_name()}
     return result
+
+
+def extra_stats():
+    result = {}
+    for statistic_collection in statistic_collections:
+        result.update(statistic_collection.extra_stats())
+    name_to_idx = {name: idx for idx, name in enumerate(internal_statistic_names())}
+    return {name_to_idx[k]: v for k, v in result.items()}
 
 
 category_metadata = {

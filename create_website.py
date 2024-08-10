@@ -77,9 +77,11 @@ def international_shapefile():
     ts = []
     for s in shapefiles_for_stats.values():
         if s.include_in_gpw:
-            t = compute_gpw_data_for_shapefile_table(s)
+            t, hist = compute_gpw_data_for_shapefile_table(s)
             for k in s.meta:
                 t[k] = s.meta[k]
+            for k in hist:
+                t[k] = hist[k]
             ts.append(t)
     intl = pd.concat(ts)
     # intl = intl[intl.area > 10].copy()
