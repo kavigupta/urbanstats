@@ -56,26 +56,6 @@ class ComparisonPanel extends PageTemplate {
 
     main_content() {
         const self = this;
-        var rows = [];
-        var idxs = [];
-        const exclusively_american = this.props.datas.every(x => longname_is_exclusively_american(x.longname));
-        for (let i in this.props.datas) {
-            const [r, idx] = load_article(this.state.current_universe, this.props.datas[i], this.state.settings,
-                exclusively_american);
-            rows.push(r);
-            idxs.push(idx);
-        }
-
-        rows = insert_missing(rows, idxs);
-
-        const header_row = this.produce_row(i => { return { is_header: true } });
-        const render_rows = rows[0].map((_, row_idx) =>
-            this.produce_row(data_idx => {
-                return {
-                    key: row_idx, index: row_idx, ...rows[data_idx][row_idx], settings: this.state.settings
-                }
-            })
-        );
 
         return (
             <div>
@@ -93,7 +73,7 @@ class ComparisonPanel extends PageTemplate {
                             settings={this.state.settings}
                             style={{ ...comparisonHeadStyle(), width: "100%" }}
                             placeholder={"Name"}
-                            on_change={(x) => self.add_new(x)}
+                            on_change={(x) => add_new(self.props.names, x)}
                         />
                     </div>
                 </div>
@@ -111,8 +91,8 @@ class ComparisonPanel extends PageTemplate {
                                     <HeadingDisplay
                                         longname={data.longname}
                                         include_delete={this.props.datas.length > 1}
-                                        on_click={() => self.on_delete(i)}
-                                        on_change={(x) => self.on_change(i, x)}
+                                        on_click={() => on_delete(self.props.names, i)}
+                                        on_change={(x) => on_change(self.props.names, i, x)}
                                         screenshot_mode={this.state.screenshot_mode}
                                         universe={this.state.current_universe}
                                     />
@@ -121,13 +101,12 @@ class ComparisonPanel extends PageTemplate {
                         </div>
                         {this.bars()}
 
-                        <StatisticRow is_header={true} index={0} contents={header_row}/>
-
-                        {
-                            render_rows.map((row, i) =>
-                                <StatisticRow key={i} is_header={false} index={i} contents={row} />
-                            )
-                        }
+                        <ComparsionPageRows
+                            names={this.props.names}
+                            datas={this.props.datas}
+                            settings={this.state.settings}
+                            current_universe={this.state.current_universe}
+                        />
                     </div>
                 )}
                 <div className="gap"></div>
@@ -135,7 +114,7 @@ class ComparisonPanel extends PageTemplate {
                 <div ref={this.map_ref}>
                     <ComparisonMap
                         longnames={this.props.datas.map(x => x.longname)}
-                        colors={this.props.datas.map((_, i) => this.color(i))}
+                        colors={this.props.datas.map((_, i) => color(i))}
                         id="map_combined"
                         article_type={undefined}
                         basemap={{ type: "osm" }}
@@ -151,36 +130,12 @@ class ComparisonPanel extends PageTemplate {
             {this.cell(true, 0, <div></div>)}
             {this.props.datas.map(
                 (data, i) => <div key={i} style={{
-                    width: this.each() + "%",
+                    width: each(this.props.datas) + "%",
                     height: bar_height,
-                    backgroundColor: this.color(i)
+                    backgroundColor: color(i)
                 }} />
             )}
         </div>
-    }
-
-    on_change(i, x) {
-        const new_names = [...this.props.names];
-        new_names[i] = x;
-        this.go(new_names);
-    }
-
-    on_delete(i) {
-        const new_names = [...this.props.names];
-        new_names.splice(i, 1);
-        this.go(new_names);
-    }
-
-    add_new(x) {
-        const new_names = [...this.props.names];
-        new_names.push(x);
-        this.go(new_names);
-    }
-
-    go(names) {
-        const window_info = new URLSearchParams(window.location.search);
-        window_info.set("longnames", JSON.stringify(names));
-        window.location.search = window_info.toString();
     }
 
     max_columns() {
@@ -204,7 +159,7 @@ class ComparisonPanel extends PageTemplate {
                 {contents}
             </div>
         }
-        const width = this.each() + "%";
+        const width = each(this.props.datas) + "%";
         return <div key={i} style={{ width: width }}>
             {contents}
         </div>
@@ -213,76 +168,142 @@ class ComparisonPanel extends PageTemplate {
     width_columns() {
         // 1.5 columns each if all data types are the same, otherwise 1 column each
         // + 1 for the left margin
-        return (this.all_data_types_same() ? 1.5 : 1) * this.props.datas.length + 1;
-    }
-
-    each() {
-        return 100 * (1 - left_margin_pct) / this.props.datas.length;
+        return (all_data_types_same(this.props.datas) ? 1.5 : 1) * this.props.datas.length + 1;
     }
 
     left_margin() {
         return 100 * left_margin_pct;
     }
+}
 
-    all_data_types_same() {
-        return this.props.datas.every(x => x.articleType == this.props.datas[0].articleType)
+function color(i) {
+    return COLOR_CYCLE[i % COLOR_CYCLE.length];
+}
+
+
+function on_change(names, i, x) {
+    const new_names = [...names];
+    new_names[i] = x;
+    go(new_names);
+}
+
+function on_delete(names, i) {
+    const new_names = [...names];
+    new_names.splice(i, 1);
+    go(new_names);
+}
+
+function add_new(names, x) {
+    const new_names = [...names];
+    new_names.push(x);
+    go(new_names);
+}
+
+function go(names) {
+    const window_info = new URLSearchParams(window.location.search);
+    window_info.set("longnames", JSON.stringify(names));
+    window.location.search = window_info.toString();
+}
+
+function each(datas) {
+    return 100 * (1 - left_margin_pct) / datas.length;
+}
+
+function all_data_types_same(datas) {
+    return datas.every(x => x.articleType == datas[0].articleType)
+}
+
+
+function ComparsionPageRows({ names, datas, settings, current_universe }) {
+    var rows = [];
+    var idxs = [];
+    const exclusively_american = datas.every(x => longname_is_exclusively_american(x.longname));
+    for (let i in datas) {
+        const [r, idx] = load_article(current_universe, datas[i], settings,
+            exclusively_american);
+        rows.push(r);
+        idxs.push(idx);
     }
 
-    produce_row(params) {
-        const row_overall = [];
-        const param_vals = Array.from(Array(this.props.datas.length).keys()).map(params);
+    rows = insert_missing(rows, idxs);
 
-        var highlight_idx = param_vals.map(x => x.statval).reduce((iMax, x, i, arr) => {
-            if (isNaN(x)) {
-                return iMax;
+    const header_row = <ComparisonRow
+        params={i => { return { is_header: true } }}
+        datas={datas}
+        current_universe={current_universe}
+        names={names}
+    />;
+    const render_rows = rows[0].map((_, row_idx) =>
+        <ComparisonRow
+            params={data_idx => {
+                return {
+                    key: row_idx, index: row_idx, ...rows[data_idx][row_idx], settings: settings
+                }
+            }}
+            datas={datas} />
+    );
+    return (
+        <>
+            <StatisticRow is_header={true} index={0} contents={header_row} />
+
+            {
+                render_rows.map((row, i) =>
+                    <StatisticRow key={i} is_header={false} index={i} contents={row} />
+                )
             }
-            if (iMax == -1) {
-                return i;
-            }
-            return x > arr[iMax] ? i : iMax
-        }, -1);
+        </>
+    )
+}
 
-        row_overall.push(
-            <div key={"color"} style={{
-                width: 100 * left_bar_margin + "%",
-                alignSelf: "stretch"
-            }}>
-                <div style={{
-                    backgroundColor: highlight_idx == -1 ? "#fff8f0" : this.color(highlight_idx),
-                    height: "100%",
-                    width: "50%",
-                    margin: "auto"
-                }} />
-            </div>
-        )
+function ComparisonRow({ names, params, datas, current_universe }) {
+    const row_overall = [];
+    const param_vals = Array.from(Array(datas.length).keys()).map(params);
 
+    var highlight_idx = param_vals.map(x => x.statval).reduce((iMax, x, i, arr) => {
+        if (isNaN(x)) {
+            return iMax;
+        }
+        if (iMax == -1) {
+            return i;
+        }
+        return x > arr[iMax] ? i : iMax
+    }, -1);
+
+    row_overall.push(
+        <div key={"color"} style={{
+            width: 100 * left_bar_margin + "%",
+            alignSelf: "stretch"
+        }}>
+            <div style={{
+                backgroundColor: highlight_idx == -1 ? "#fff8f0" : color(highlight_idx),
+                height: "100%",
+                width: "50%",
+                margin: "auto"
+            }} />
+        </div>
+    )
+
+    row_overall.push(...StatisticRowRawCellContents(
+        {
+            ...param_vals[0], only_columns: ["statname"], _idx: -1, simple: true, longname: datas[0].longname,
+            universe: current_universe,
+            total_width: 100 * (left_margin_pct - left_bar_margin)
+        }
+    ));
+    const only_columns = all_data_types_same(datas) ? main_columns : main_columns_across_types;
+
+    for (const i in datas) {
         row_overall.push(...StatisticRowRawCellContents(
             {
-                ...param_vals[0], only_columns: ["statname"], _idx: -1, simple: true, longname: this.props.datas[0].longname,
-                universe: this.state.current_universe,
-                total_width: 100 * (left_margin_pct - left_bar_margin)
+                ...param_vals[i], only_columns: only_columns, _idx: i, simple: true,
+                statistic_style: highlight_idx == i ? { backgroundColor: lighten(color(i), 0.7) } : {},
+                onReplace: x => on_change(names, i, x),
+                universe: current_universe,
+                total_width: each(datas)
             }
         ));
-        const only_columns = this.all_data_types_same() ? main_columns : main_columns_across_types;
-
-        for (const i in this.props.datas) {
-            row_overall.push(...StatisticRowRawCellContents(
-                {
-                    ...param_vals[i], only_columns: only_columns, _idx: i, simple: true,
-                    statistic_style: highlight_idx == i ? { backgroundColor: lighten(this.color(i), 0.7) } : {},
-                    onReplace: x => this.on_change(i, x),
-                    universe: this.state.current_universe,
-                    total_width: this.each()
-                }
-            ));
-        }
-        return row_overall;
     }
-
-    color(i) {
-        return COLOR_CYCLE[i % COLOR_CYCLE.length];
-    }
-
+    return row_overall;
 }
 
 const manipulation_button_height = "24px";
