@@ -9,6 +9,7 @@ import { mobileLayout } from '../utils/responsive';
 import { lighten } from '../utils/color';
 
 
+export type RelationshipKey = `related__${string}__${string}`
 const type_ordering_idx = require("../data/type_ordering_idx.json");
 const type_to_type_category = require("../data/type_to_type_category.json");
 
