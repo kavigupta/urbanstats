@@ -13,6 +13,7 @@ import { SearchBox } from './search';
 import { article_link, sanitize } from '../navigation/links';
 import { lighten } from '../utils/color';
 import { longname_is_exclusively_american } from '../universe';
+import { useTableCheckboxSettings } from '../page_template/settings';
 
 const main_columns = ["statval", "statval_unit", "statistic_ordinal", "statistic_percentile"];
 const main_columns_across_types = ["statval", "statval_unit"]
@@ -219,7 +220,7 @@ function ComparsionPageRows({ names, datas, settings, current_universe }) {
     var idxs = [];
     const exclusively_american = datas.every(x => longname_is_exclusively_american(x.longname));
     for (let i in datas) {
-        const [r, idx] = load_article(current_universe, datas[i], settings,
+        const [r, idx] = load_article(current_universe, datas[i], useTableCheckboxSettings(),
             exclusively_american);
         rows.push(r);
         idxs.push(idx);
