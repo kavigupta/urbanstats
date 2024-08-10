@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "webpack --mode=development",
     "watch": "webpack --mode=development --watch",
-    "prod": "export NODE_ENV=production && webpack --mode=production"
+    "prod": "export NODE_ENV=production && webpack --mode=production",
+    "lint": "npx eslint . --fix"
   },
   "keywords": [],
   "author": "",

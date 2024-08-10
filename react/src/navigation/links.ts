@@ -9,8 +9,8 @@ function shard_bytes(longname: string): [string, string] {
     // as bytes, in utf-8
     const bytes = new TextEncoder().encode(longname);
     const hash = new Uint32Array([0]);
-    for (let i = 0; i < bytes.length; i++) {
-        hash[0] = (hash[0] * 31 + bytes[i]) & 0xffffffff;
+    for (const byte of bytes) {
+        hash[0] = (hash[0] * 31 + byte) & 0xffffffff;
     }
     // last 4 hex digits
     let string = ""

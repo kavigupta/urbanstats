@@ -20,7 +20,7 @@ export function Header(props: {
     on_universe_update: (universe: string) => void,
     has_screenshot: boolean,
     screenshot_mode: boolean,
-    initiate_screenshot: () => void,
+    initiate_screenshot: () => void
 }) {
     return (
         <div className="top_panel">

@@ -1,4 +1,4 @@
-import { StatisticSettingKey, TableCheckboxSettings } from "../page_template/settings";
+import { TableCheckboxSettings } from "../page_template/settings";
 import { universe_is_american } from "../universe";
 import { Article } from "../utils/protos";
 
@@ -19,12 +19,18 @@ export interface ArticleRow {
     rendered_statname: string
 }
 
-const index_list_info = require("../data/index_lists.json") as Record<string, any>;
+const index_list_info = require("../data/index_lists.json") as {
+    index_lists: {
+        universal: number[];
+        gpw: number[];
+        usa: number[];
+    },
+    type_to_has_gpw: Record<string, boolean>
+}
 
 function lookup_in_compressed_sequence(seq: [number, number][], idx: number) {
     // translation of produce_html_page.py::lookup_in_compressed_sequence
-    for (let ptr = 0; ptr < seq.length; ptr += 1) {
-        const [value, length] = seq[ptr];
+    for (const [value, length] of seq) {
         if (idx < length) {
             return value;
         }
@@ -103,8 +109,7 @@ export function load_article(universe: string, data: Article, settings: TableChe
                 return false;
             }
         }
-        const key: StatisticSettingKey = ("show_statistic_" + row.statistic_category) as StatisticSettingKey;
-        return settings[key];
+        return settings[`show_statistic_${row.statistic_category}`];
     });
 
     const filtered_indices = filtered_rows.map(x => x._index)

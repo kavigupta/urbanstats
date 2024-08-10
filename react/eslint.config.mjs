@@ -15,5 +15,11 @@ export default tseslint.config(
   },
   {
     ignores: ['**/*.js', 'src/utils/protos.d.ts'],
+  },
+  {
+    rules: {
+      "@typescript-eslint/no-require-imports": ["error", { allow: ['\\.json$']}],
+      "@typescript-eslint/no-non-null-assertion": "off"
+    }
   }
 );

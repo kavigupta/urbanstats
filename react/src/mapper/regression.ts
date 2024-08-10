@@ -1,4 +1,4 @@
-import { MathNumericType, Matrix, dotMultiply, lusolve, multiply, transpose } from "mathjs";
+import { MathNumericType, dotMultiply, lusolve, multiply, transpose } from "mathjs";
 import { ColorStat, StatisticsForGeography } from "./settings";
 
 export class Regression {
@@ -61,10 +61,10 @@ export class Regression {
             if (this.dependent_names[i] == "") {
                 continue;
             }
-            result[this.dependent_names[i]] = preds.map(_ => weights[i] as number);
+            result[this.dependent_names[i]] = preds.map(() => weights[i] as number);
         }
         if (this.intercept_name != "") {
-            result[this.intercept_name] = preds.map(_ => intercept as number);
+            result[this.intercept_name] = preds.map(() => intercept as number);
         }
 
         if (this.residual_name != "") {

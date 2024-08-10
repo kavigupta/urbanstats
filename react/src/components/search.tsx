@@ -208,6 +208,7 @@ function is_a_match(a: string, b: string) {
     let i = 0;
     let match_count = 0;
     let prev_match = true;
+    // eslint-disable-next-line @typescript-eslint/prefer-for-of
     for (let j = 0; j < b.length; j++) {
         if (a[i] == b[j]) {
             i++;

@@ -124,8 +124,9 @@ function RelatedList(props: { articleType: string, buttonType: string, regions: 
 }
 
 export function Related(props: { article_type: string, related: { relationshipType: string, buttons: Region[] }[], universe: string }) {
+
     // buttons[rowType][relationshipType] = <list of buttons>
-    const [showHistoricalCds, _] = useSetting("show_historical_cds");
+    const [showHistoricalCds] = useSetting("show_historical_cds");
     const buttons: Record<string, Record<string, Region[]>> = {};
     for (const relateds of props.related) {
         const relationship_type = relateds.relationshipType;

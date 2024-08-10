@@ -1,8 +1,8 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useRef } from 'react';
 import ContentEditable, { ContentEditableEvent } from 'react-contenteditable'
 
 import { article_link, statistic_link } from "../navigation/links";
-import { loadProtobuf, load_ordering } from '../load_json';
+import { load_ordering } from '../load_json';
 import "./table.css";
 import { is_historical_cd } from '../utils/is_historical';
 import { display_type } from '../utils/text';
@@ -189,9 +189,8 @@ export function StatisticRow({ is_header, index, contents }: { is_header: boolea
     </div>
 }
 
-
 export function Statistic(props: { style?: React.CSSProperties, statname: string, value: number, is_unit: boolean }) {
-    const [use_imperial, _] = useSetting("use_imperial");
+    const [use_imperial] = useSetting("use_imperial");
     const content = (() => {
         {
             const name = props.statname;
@@ -412,10 +411,7 @@ export function Percentile(props: { ordinal: number, total: number, percentile_b
     }
     // percentile as an integer
     // used to be keyed by a setting, but now we always use percentile_by_population
-    const quantile =
-        true ?
-            props.percentile_by_population
-            : 1 - ordinal / total;
+    const quantile = props.percentile_by_population;
     const percentile = Math.floor(100 * quantile);
     if (props.simple) {
         return right_align(percentile.toString() + "%");
@@ -434,7 +430,7 @@ export function Percentile(props: { ordinal: number, total: number, percentile_b
 
 function PointerButtonsIndex(props: { ordinal: number, statpath: string, type: string, total: number, universe: string }) {
     const get_data = async () => await load_ordering(props.universe, props.statpath, props.type);
-    const [settings_show_historical_cds, _] = useSetting("show_historical_cds");
+    const [settings_show_historical_cds] = useSetting("show_historical_cds");
     const show_historical_cds = settings_show_historical_cds || is_historical_cd(props.type);
     return (
         <span style={{ margin: "auto" }}>
