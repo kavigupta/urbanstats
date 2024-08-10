@@ -19,7 +19,7 @@ import "../components/article.css";
 import { load_settings } from './settings';
 import { mobileLayout } from '../utils/responsive';
 import { create_screenshot } from '../components/screenshot';
-
+import { set_universe } from '../universe';
 
 class PageTemplate extends React.Component {
     constructor(props) {
@@ -41,7 +41,7 @@ class PageTemplate extends React.Component {
         const self = this;
 
 
-        const set_universe = universe => {
+        const set_this_universe = universe => {
             self.setState({ current_universe: universe });
             set_universe(universe);
         }
@@ -65,7 +65,7 @@ class PageTemplate extends React.Component {
                         has_universe_selector={this.has_universe_selector()}
                         current_universe={this.state.current_universe}
                         all_universes={this.props.universes}
-                        on_universe_update={set_universe}
+                        on_universe_update={set_this_universe}
                         screenshot_mode={this.state.screenshot_mode}
                         initiate_screenshot={() => initiate_screenshot()}
                     />
