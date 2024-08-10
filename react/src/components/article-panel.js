@@ -114,7 +114,7 @@ function ArticlePanelRows(props) {
         longname_is_exclusively_american(props.longname));
     return <>
         {filtered_rows.map((row, i) =>
-            <StatisticRowRaw _idx={i} key={row.statname} index={i} {...row} settings={settings}
+            <StatisticRowRaw _idx={i} key={row.statname} index={i} {...row}
                 onReplace={x => { document.location = article_link(props.current_universe, x) }}
                 simple={simple_ordinals}
                 longname={props.longname}

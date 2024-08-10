@@ -30,14 +30,14 @@ export type StatisticRowRawProps = {
         }
     )
 
-export function StatisticRowRaw(props: StatisticRowRawProps & { index: number, settings: any, universe: string, longname?: string }) {
+export function StatisticRowRaw(props: StatisticRowRawProps & { index: number, universe: string, longname?: string }) {
 
     const cell_contents = StatisticRowRawCellContents({ ...props, total_width: 100 });
 
     return <StatisticRow is_header={props.is_header} index={props.index} contents={cell_contents} />;
 }
 
-export function StatisticRowRawCellContents(props: StatisticRowRawProps & { total_width: number, settings: any, universe: string, longname?: string }) {
+export function StatisticRowRawCellContents(props: StatisticRowRawProps & { total_width: number, universe: string, longname?: string }) {
     const alignStyle: React.CSSProperties = { textAlign: props.is_header ? "center" : "right" };
     var value_columns: [number, string, React.ReactNode][] = [
         [15,
@@ -50,7 +50,6 @@ export function StatisticRowRawCellContents(props: StatisticRowRawProps & { tota
                             statname={props.statname}
                             value={props.statval}
                             is_unit={false}
-                            settings={props.settings}
                             style={props.statistic_style || {}}
                         />}
                 </span>
@@ -66,7 +65,6 @@ export function StatisticRowRawCellContents(props: StatisticRowRawProps & { tota
                             statname={props.statname}
                             value={props.statval}
                             is_unit={true}
-                            settings={props.settings}
                         />}
                 </span>
             </div>
@@ -118,7 +116,6 @@ export function StatisticRowRawCellContents(props: StatisticRowRawProps & { tota
                     : <Percentile ordinal={props.ordinal}
                         total={props.total_count_in_class}
                         percentile_by_population={props.percentile_by_population}
-                        settings={props.settings}
                         simple={props.simple}
                     />
             }</span>
@@ -133,7 +130,6 @@ export function StatisticRowRawCellContents(props: StatisticRowRawProps & { tota
                         statpath={props.statpath}
                         type={props.article_type}
                         total={props.total_count_in_class}
-                        settings={props.settings}
                         universe={props.universe}
                     />
                 </span>
@@ -148,7 +144,6 @@ export function StatisticRowRawCellContents(props: StatisticRowRawProps & { tota
                         statpath={props.statpath}
                         type="overall"
                         total={props.total_count_overall}
-                        settings={props.settings}
                         universe={props.universe}
                     />
                 </span>
@@ -192,7 +187,7 @@ export function StatisticRow({ is_header, index, contents }: { is_header: boolea
 }
 
 
-export function Statistic(props: { style?: React.CSSProperties, statname: string, value: number, is_unit: boolean, settings: any }) {
+export function Statistic(props: { style?: React.CSSProperties, statname: string, value: number, is_unit: boolean }) {
     const [use_imperial, _] = useSetting("use_imperial");
     const content = (() => {
         {
@@ -403,7 +398,7 @@ function EditableNumber(props: { number: number, onNewNumber: (number: number) =
     )
 };
 
-export function Percentile(props: { ordinal: number, total: number, percentile_by_population: number, settings: any, simple: boolean }) {
+export function Percentile(props: { ordinal: number, total: number, percentile_by_population: number, simple: boolean }) {
     const ordinal = props.ordinal;
     const total = props.total;
     if (ordinal > total) {
@@ -431,7 +426,7 @@ export function Percentile(props: { ordinal: number, total: number, percentile_b
     return <div className="serif" style={{ textAlign: "right" }}>{text}</div>;
 }
 
-function PointerButtonsIndex(props: { ordinal: number, statpath: string, type: string, total: number, settings: any, universe: string }) {
+function PointerButtonsIndex(props: { ordinal: number, statpath: string, type: string, total: number, universe: string }) {
     const get_data = async () => await load_ordering(props.universe, props.statpath, props.type);
     const [settings_show_historical_cds, _] = useSetting("show_historical_cds");
     const show_historical_cds = settings_show_historical_cds || is_historical_cd(props.type);

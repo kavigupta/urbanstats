@@ -292,12 +292,12 @@ export class GenericQuizResultRow extends React.Component {
                 statname={stat_column}
                 value={stat}
                 is_unit={false}
-                settings={this.props.settings} />
+            />
             <Statistic
                 statname={stat_column}
                 value={stat}
                 is_unit={true}
-                settings={this.props.settings} />
+            />
         </span>;
     }
 }

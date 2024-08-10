@@ -139,7 +139,6 @@ class StatisticPanel extends PageTemplate {
                                 statname={this.props.statname}
                                 value={this.props.data.value[i]}
                                 is_unit={false}
-                                settings={this.state.settings}
                             />
                         </div>
                         <div style={this.style(3, row_idx + 1)} className='value_unit value'>
@@ -147,14 +146,12 @@ class StatisticPanel extends PageTemplate {
                                 statname={this.props.statname}
                                 value={this.props.data.value[i]}
                                 is_unit={true}
-                                settings={this.state.settings}
                             />
                         </div>
                         <div style={this.style(4, row_idx + 1)}>
                             <Percentile ordinal={this.props.ordinal}
                                 total={this.props.total_count_in_class}
                                 percentile_by_population={this.props.data.populationPercentile[i]}
-                                settings={this.state.settings}
                                 simple={this.state.settings.simple_ordinals}
                             />
                         </div>
