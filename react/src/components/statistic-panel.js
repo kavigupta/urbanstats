@@ -154,6 +154,7 @@ class StatisticPanel extends PageTemplate {
                                 ordinal={this.props.ordinal}
                                 total_count_in_class={this.props.total_count_in_class}
                                 data={this.props.data}
+                                i={i}
                             />
                         </div>
                     </div>)}
@@ -289,7 +290,7 @@ function AutoPercentile(props) {
     const [simple_ordinals, _] = useSetting("simple_ordinals");
     return <Percentile ordinal={props.ordinal}
         total={props.total_count_in_class}
-        percentile_by_population={props.data.populationPercentile[i]}
+        percentile_by_population={props.data.populationPercentile[props.i]}
         simple={simple_ordinals}
     />
 }
