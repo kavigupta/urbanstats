@@ -127,16 +127,16 @@ class PageTemplate extends React.Component {
 
 function TemplateFooter() {
     return <div className="centered_text">
-        Urban Stats Version <Version /> by <MainCredits />. Last updated <LastUpdated />. <OtherCredits /> Not for commercial use.
+        Urban Stats Version <Version /> by <MainCredits />. Last updated <LastUpdated />. <OtherCredits /> Not for commercial use. <Support />
     </div>
 }
 
 function Version() {
-    return <span id="current-version">16.6.0</span>
+    return <span id="current-version">16.6.1</span>
 }
 
 function LastUpdated() {
-    return <span id="last-updated">2024-07-21</span>
+    return <span id="last-updated">2024-08-09</span>
 }
 
 function MainCredits() {
@@ -180,4 +180,10 @@ function LeftPanel(props) {
                 statistic_category_metadata_checkboxes={props.statistic_category_metadata_checkboxes} />
         </div>
     )
+}
+
+function Support() {
+    return <span>
+        If you find urbanstats useful, please donate on <a href="https://ko-fi.com/notkavi">kofi</a>!
+    </span>
 }
