@@ -106,11 +106,11 @@ class LinearRamp implements Ramp {
         const minimum = Math.min(...values);
         const maximum = Math.max(...values);
         const range = maximum - minimum;
-        const ramp_min = Math.min(...this.values.map(([value, color]) => value));
-        const ramp_max = Math.max(...this.values.map(([value, color]) => value));
+        const ramp_min = Math.min(...this.values.map(([value]) => value));
+        const ramp_max = Math.max(...this.values.map(([value]) => value));
         const ramp_range = ramp_max - ramp_min;
         const ramp: [number, string][] = this.values.map(x => [x[0], x[1]]);
-        for (let i in ramp) {
+        for (const i in ramp) {
             ramp[i][0] = (ramp[i][0] - ramp_min) / ramp_range * range + minimum;
         }
         return [ramp, linear_values(minimum, maximum)] as const;
