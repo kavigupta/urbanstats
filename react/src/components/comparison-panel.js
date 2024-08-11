@@ -13,6 +13,7 @@ import { SearchBox } from './search';
 import { article_link, sanitize } from '../navigation/links';
 import { lighten } from '../utils/color';
 import { longname_is_exclusively_american } from '../universe';
+import { useTableCheckboxSettings } from '../page_template/settings';
 
 const main_columns = ["statval", "statval_unit", "statistic_ordinal", "statistic_percentile"];
 const main_columns_across_types = ["statval", "statval_unit"]
@@ -56,6 +57,12 @@ class ComparisonPanel extends PageTemplate {
 
     main_content() {
         const self = this;
+        if (this.state.current_universe == undefined) {
+            throw new Error("ComparisonPanel: current_universe not set");
+        }
+        if (this.props.names == undefined) {
+            throw new Error("ComparisonPanel: names not set");
+        }
 
         return (
             <div>
@@ -70,7 +77,6 @@ class ComparisonPanel extends PageTemplate {
                     </div>
                     <div style={{ width: (50 * (1 - left_margin_pct)) + "%" }}>
                         <SearchBox
-                            settings={this.state.settings}
                             style={{ ...comparisonHeadStyle(), width: "100%" }}
                             placeholder={"Name"}
                             on_change={(x) => add_new(self.props.names, x)}
@@ -104,7 +110,6 @@ class ComparisonPanel extends PageTemplate {
                         <ComparsionPageRows
                             names={this.props.names}
                             datas={this.props.datas}
-                            settings={this.state.settings}
                             current_universe={this.state.current_universe}
                         />
                     </div>
@@ -182,6 +187,9 @@ function color(i) {
 
 
 function on_change(names, i, x) {
+    if (names == undefined) {
+        throw new Error("names is undefined");
+    }
     const new_names = [...names];
     new_names[i] = x;
     go(new_names);
@@ -214,12 +222,12 @@ function all_data_types_same(datas) {
 }
 
 
-function ComparsionPageRows({ names, datas, settings, current_universe }) {
+function ComparsionPageRows({ names, datas, current_universe }) {
     var rows = [];
     var idxs = [];
     const exclusively_american = datas.every(x => longname_is_exclusively_american(x.longname));
     for (let i in datas) {
-        const [r, idx] = load_article(current_universe, datas[i], settings,
+        const [r, idx] = load_article(current_universe, datas[i], useTableCheckboxSettings(),
             exclusively_american);
         rows.push(r);
         idxs.push(idx);
@@ -237,10 +245,13 @@ function ComparsionPageRows({ names, datas, settings, current_universe }) {
         <ComparisonRow
             params={data_idx => {
                 return {
-                    key: row_idx, index: row_idx, ...rows[data_idx][row_idx], settings: settings
+                    key: row_idx, index: row_idx, ...rows[data_idx][row_idx]
                 }
             }}
-            datas={datas} />
+            datas={datas}
+            current_universe={current_universe}
+            names={names}
+        />
     );
     return (
         <>
@@ -256,6 +267,9 @@ function ComparsionPageRows({ names, datas, settings, current_universe }) {
 }
 
 function ComparisonRow({ names, params, datas, current_universe }) {
+    if (names == undefined) {
+        throw new Error("ComparisonRow: names is undefined");
+    }
     const row_overall = [];
     const param_vals = Array.from(Array(datas.length).keys()).map(params);
 
@@ -349,7 +363,6 @@ function HeadingDisplay({ universe, longname, include_delete, on_click, on_chang
         {is_editing ?
             <SearchBox
                 autoFocus={true}
-                settings={{}}
                 style={{ ...comparisonHeadStyle(), width: "100%" }}
                 placeholder={"Replacement"}
                 on_change={on_change}

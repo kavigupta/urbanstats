@@ -7,6 +7,7 @@ import { CheckboxSetting } from "./sidebar";
 import "./related.css";
 import { mobileLayout } from '../utils/responsive';
 import { lighten } from '../utils/color';
+import { useSetting, relationship_key } from '../page_template/settings';
 
 
 const type_ordering_idx = require("../data/type_ordering_idx.json");
@@ -39,10 +40,6 @@ const colorsEach: Record<string, string> = {
 
 type RowType = string;
 
-export function relationship_key(article_type: string, other_type: string) {
-    return `related__${article_type}__${other_type}` as const;
-}
-
 function RelatedButton(props: { region: Region, universe: string }) {
 
     const type_category = type_to_type_category[props.region.rowType];
@@ -66,7 +63,7 @@ function RelatedButton(props: { region: Region, universe: string }) {
     );
 }
 
-function RelatedList(props: { articleType: string, buttonType: string, settings: any, set_setting: any, regions: Record<string, any[]>, universe: string }) {
+function RelatedList(props: { articleType: string, buttonType: string, regions: Record<string, any[]>, universe: string }) {
     if (props.articleType == undefined) {
         throw new Error("articleType is undefined; shoud be defined");
     }
@@ -88,10 +85,8 @@ function RelatedList(props: { articleType: string, buttonType: string, settings:
                         <CheckboxSetting
                             name=""
                             setting_key={setting_key}
-                            settings={props.settings}
-                            set_setting={props.set_setting}
                             classNameToUse="related_checkbox"
-                            />
+                        />
                     </div>
                 </div>
                 <ul className="list_of_lists">
@@ -130,8 +125,9 @@ function RelatedList(props: { articleType: string, buttonType: string, settings:
     );
 }
 
-export function Related(props: { article_type: string, related: { relationshipType: string, buttons: Region[] }[], settings: any, set_setting: any, universe: string }) {
+export function Related(props: { article_type: string, related: { relationshipType: string, buttons: Region[] }[], universe: string }) {
     // buttons[rowType][relationshipType] = <list of buttons>
+    const [showHistoricalCds, _] = useSetting("show_historical_cds");
     let buttons: Record<string, Record<string, Region[]>> = {};
     for (var relateds of props.related) {
         const relationship_type = relateds.relationshipType;
@@ -154,7 +150,7 @@ export function Related(props: { article_type: string, related: { relationshipTy
 
     let elements = [];
     for (var key of button_keys) {
-        if (!props.settings.show_historical_cds) {
+        if (!showHistoricalCds) {
             if (key == "Historical Congressional District") {
                 continue;
             }
@@ -165,8 +161,6 @@ export function Related(props: { article_type: string, related: { relationshipTy
                 buttonType={key}
                 regions={buttons[key]}
                 articleType={props.article_type}
-                settings={props.settings}
-                set_setting={props.set_setting}
                 universe={props.universe}
             />
         );

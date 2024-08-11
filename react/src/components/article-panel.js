@@ -13,6 +13,7 @@ import { comparisonHeadStyle, headerTextClass, subHeaderTextClass } from '../uti
 import { SearchBox } from './search';
 import { article_link, comparison_link, sanitize } from '../navigation/links';
 import { longname_is_exclusively_american } from '../universe';
+import { useSetting, useTableCheckboxSettings } from '../page_template/settings';
 
 class ArticlePanel extends PageTemplate {
     constructor(props) {
@@ -28,8 +29,6 @@ class ArticlePanel extends PageTemplate {
             throw new Error("articleType is undefined");
         }
         const self = this;
-        const [filtered_rows, _] = load_article(this.state.current_universe, this.props, this.state.settings,
-            longname_is_exclusively_american(this.props.longname));
 
         return (
             <div>
@@ -40,14 +39,12 @@ class ArticlePanel extends PageTemplate {
                 <div style={{ marginBlockEnd: "16px" }}></div>
 
                 <div className="stats_table" ref={this.table_ref}>
-                    <StatisticRowRaw _idx={-1} is_header={true} simple={this.state.settings.simple_ordinals} />
-                    {filtered_rows.map((row, i) =>
-                        <StatisticRowRaw _idx={i} key={row.statname} index={i} {...row} settings={this.state.settings}
-                            onReplace={x => { document.location = article_link(self.state.current_universe, x) }}
-                            simple={this.state.settings.simple_ordinals}
-                            longname={this.props.longname}
-                            universe={this.state.current_universe}
-                        />)}
+                    <StatisticRowHeader universe={this.state.current_universe} />
+                    <ArticlePanelRows
+                        current_universe={this.state.current_universe}
+                        longname={this.props.longname}
+                        article_row={this.props}
+                    />
                 </div>
 
                 <p></p>
@@ -56,7 +53,6 @@ class ArticlePanel extends PageTemplate {
                     <Map id="map"
                         longname={this.props.longname}
                         related={this.props.related}
-                        settings={this.state.settings}
                         article_type={this.props.articleType}
                         basemap={{ type: "osm" }}
                         universe={this.state.current_universe}
@@ -71,7 +67,6 @@ class ArticlePanel extends PageTemplate {
                     </div>
                     <div style={{ width: "70%" }}>
                         <SearchBox
-                            settings={this.state.settings}
                             style={{ ...comparisonHeadStyle(), width: "100%" }}
                             placeholder={"Other region..."}
                             on_change={(x) => {
@@ -87,8 +82,6 @@ class ArticlePanel extends PageTemplate {
 
                 <Related
                     related={this.props.related}
-                    settings={this.state.settings}
-                    set_setting={(key, value) => self.set_setting(key, value)}
                     article_type={this.props.articleType}
                     universe={this.state.current_universe}
                 />
@@ -113,3 +106,23 @@ class ArticlePanel extends PageTemplate {
     }
 }
 
+function StatisticRowHeader(props) {
+    const [simple_ordinals, _] = useSetting("simple_ordinals");
+    return <StatisticRowRaw _idx={-1} is_header={true} simple={simple_ordinals} universe={props.universe}/>
+}
+
+function ArticlePanelRows(props) {
+    const settings = useTableCheckboxSettings();
+    const [simple_ordinals, _set_simple_ordinals] = useSetting("simple_ordinals");
+    const [filtered_rows, _] = load_article(props.current_universe, props.article_row, settings,
+        longname_is_exclusively_american(props.longname));
+    return <>
+        {filtered_rows.map((row, i) =>
+            <StatisticRowRaw _idx={i} key={row.statname} index={i} {...row}
+                onReplace={x => { document.location = article_link(props.current_universe, x) }}
+                simple={simple_ordinals}
+                longname={props.longname}
+                universe={props.current_universe}
+            />)}
+    </>
+}

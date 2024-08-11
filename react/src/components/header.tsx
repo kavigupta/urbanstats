@@ -21,7 +21,6 @@ export function Header(props: {
     has_screenshot: boolean,
     screenshot_mode: boolean,
     initiate_screenshot: () => void,
-    settings: any,
 }) {
     return (
         <div className="top_panel">
@@ -55,7 +54,6 @@ export function Header(props: {
                     <div className="hgap"></div>
                     <div style={{ flexGrow: 1 }}>
                         <SearchBox
-                            settings={props.settings}
                             on_change={
                                 new_location => {
                                     window.location.href = article_link(

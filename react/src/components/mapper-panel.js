@@ -4,7 +4,6 @@ import React from 'react';
 
 import { Statistic } from "./table";
 import { MapGeneric } from "./map";
-import { Related } from "./related-button";
 import { PageTemplate } from "../page_template/template.js";
 import "../common.css";
 import "./article.css";
@@ -12,7 +11,7 @@ import { loadProtobuf } from '../load_json';
 import { consolidated_shape_link, consolidated_stats_link } from '../navigation/links';
 import { interpolate_color } from '../utils/color';
 
-import { RAMPS, parse_ramp } from "../mapper/ramps";
+import { parse_ramp } from "../mapper/ramps";
 import { MapperSettings, default_settings, parse_color_stat } from "../mapper/settings";
 
 import { gunzipSync, gzipSync } from "zlib";
@@ -111,13 +110,11 @@ function Colorbar(props) {
                 statname={props.name}
                 value={stat}
                 is_unit={false}
-                settings={props.settings}
             />
             <Statistic
                 statname={props.name}
                 value={stat}
                 is_unit={true}
-                settings={props.settings}
             />
         </div>
     }
@@ -190,7 +187,6 @@ function MapComponent(props) {
                 <Colorbar
                     name={color_stat.name()}
                     ramp={props.get_empirical_ramp()}
-                    settings={props.get_settings()}
                 />
             </div>
         </div>
@@ -362,7 +358,6 @@ class MapperPanel extends PageTemplate {
             underlying_shapes={this.underlying_shapes}
             underlying_stats={this.underlying_stats}
             geography_kind={geography_kind}
-            get_settings={() => this.state.settings}
             ramp={ramp}
             get_empirical_ramp={() => this.state.empirical_ramp}
             set_empirical_ramp={(ramp) => this.set_empirical_ramp(ramp)}

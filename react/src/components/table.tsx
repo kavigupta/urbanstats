@@ -7,6 +7,7 @@ import "./table.css";
 import { is_historical_cd } from '../utils/is_historical';
 import { display_type } from '../utils/text';
 import { ArticleRow } from './load-article';
+import { useSetting } from '../page_template/settings';
 
 const table_row_style: React.CSSProperties = {
     display: "flex",
@@ -29,14 +30,17 @@ export type StatisticRowRawProps = {
         }
     )
 
-export function StatisticRowRaw(props: StatisticRowRawProps & { index: number, settings: any, universe: string, longname?: string }) {
+export function StatisticRowRaw(props: StatisticRowRawProps & { index: number, universe: string, longname?: string }) {
 
     const cell_contents = StatisticRowRawCellContents({ ...props, total_width: 100 });
 
     return <StatisticRow is_header={props.is_header} index={props.index} contents={cell_contents} />;
 }
 
-export function StatisticRowRawCellContents(props: StatisticRowRawProps & { total_width: number, settings: any, universe: string, longname?: string }) {
+export function StatisticRowRawCellContents(props: StatisticRowRawProps & { total_width: number, universe: string, longname?: string }) {
+    if (props.universe == undefined) {
+        throw "StatisticRowRawCellContents: universe is undefined";
+    }
     const alignStyle: React.CSSProperties = { textAlign: props.is_header ? "center" : "right" };
     var value_columns: [number, string, React.ReactNode][] = [
         [15,
@@ -49,7 +53,6 @@ export function StatisticRowRawCellContents(props: StatisticRowRawProps & { tota
                             statname={props.statname}
                             value={props.statval}
                             is_unit={false}
-                            settings={props.settings}
                             style={props.statistic_style || {}}
                         />}
                 </span>
@@ -65,7 +68,6 @@ export function StatisticRowRawCellContents(props: StatisticRowRawProps & { tota
                             statname={props.statname}
                             value={props.statval}
                             is_unit={true}
-                            settings={props.settings}
                         />}
                 </span>
             </div>
@@ -117,7 +119,6 @@ export function StatisticRowRawCellContents(props: StatisticRowRawProps & { tota
                     : <Percentile ordinal={props.ordinal}
                         total={props.total_count_in_class}
                         percentile_by_population={props.percentile_by_population}
-                        settings={props.settings}
                         simple={props.simple}
                     />
             }</span>
@@ -132,7 +133,6 @@ export function StatisticRowRawCellContents(props: StatisticRowRawProps & { tota
                         statpath={props.statpath}
                         type={props.article_type}
                         total={props.total_count_in_class}
-                        settings={props.settings}
                         universe={props.universe}
                     />
                 </span>
@@ -147,7 +147,6 @@ export function StatisticRowRawCellContents(props: StatisticRowRawProps & { tota
                         statpath={props.statpath}
                         type="overall"
                         total={props.total_count_overall}
-                        settings={props.settings}
                         universe={props.universe}
                     />
                 </span>
@@ -191,7 +190,8 @@ export function StatisticRow({ is_header, index, contents }: { is_header: boolea
 }
 
 
-export function Statistic(props: { style?: React.CSSProperties, statname: string, value: number, is_unit: boolean, settings: any }) {
+export function Statistic(props: { style?: React.CSSProperties, statname: string, value: number, is_unit: boolean }) {
+    const [use_imperial, _] = useSetting("use_imperial");
     const content = (() => {
         {
             const name = props.statname;
@@ -204,7 +204,7 @@ export function Statistic(props: { style?: React.CSSProperties, statname: string
                 return <span>{(value * 100).toFixed(2)}</span>;
             }
             else if (name.includes("Density")) {
-                const is_imperial = props.settings.use_imperial;
+                const is_imperial = use_imperial;
                 let unit_name = "km";
                 if (is_imperial) {
                     unit_name = "mi";
@@ -238,7 +238,7 @@ export function Statistic(props: { style?: React.CSSProperties, statname: string
                     return <span>{value.toFixed(0)}</span>;
                 }
             } else if (name == "Area") {
-                const is_imperial = props.settings.use_imperial;
+                const is_imperial = use_imperial;
                 let unit: string | React.ReactElement = "null";
                 if (is_imperial) {
                     value /= 1.60934 * 1.60934;
@@ -270,7 +270,7 @@ export function Statistic(props: { style?: React.CSSProperties, statname: string
                     }
                 }
             } else if (name.includes("Mean distance")) {
-                const is_imperial = props.settings.use_imperial;
+                const is_imperial = use_imperial;
                 let unit = <span>km</span>;
                 if (is_imperial) {
                     unit = <span>mi</span>
@@ -300,7 +300,7 @@ export function Statistic(props: { style?: React.CSSProperties, statname: string
                 // e.g., 3:05
                 return <span>{hours}:{minutes.toString().padStart(2, "0")}</span>;
             } else if (name == "Rainfall" || name == "Snowfall [rain-equivalent]") {
-                const is_imperial = props.settings.use_imperial;
+                const is_imperial = use_imperial;
                 value *= 100;
                 let unit = "cm";
                 if (is_imperial) {
@@ -339,6 +339,9 @@ function ElectionResult(props: { value: number }) {
 }
 
 export function Ordinal(props: { ordinal: number, total: number, type: string, statpath: string, onReplace?: (newValue: string) => void, simple: boolean, universe: string }) {
+    if (props.universe == undefined) {
+        throw "Ordinal: universe is undefined";
+    }
     const onNewNumber = async (number: number) => {
         let num = number;
         if (num < 0) {
@@ -401,7 +404,7 @@ function EditableNumber(props: { number: number, onNewNumber: (number: number) =
     )
 };
 
-export function Percentile(props: { ordinal: number, total: number, percentile_by_population: number, settings: any, simple: boolean }) {
+export function Percentile(props: { ordinal: number, total: number, percentile_by_population: number, simple: boolean }) {
     const ordinal = props.ordinal;
     const total = props.total;
     if (ordinal > total) {
@@ -429,9 +432,10 @@ export function Percentile(props: { ordinal: number, total: number, percentile_b
     return <div className="serif" style={{ textAlign: "right" }}>{text}</div>;
 }
 
-function PointerButtonsIndex(props: { ordinal: number, statpath: string, type: string, total: number, settings: any, universe: string }) {
+function PointerButtonsIndex(props: { ordinal: number, statpath: string, type: string, total: number, universe: string }) {
     const get_data = async () => await load_ordering(props.universe, props.statpath, props.type);
-    const show_historical_cds = props.settings.show_historical_cds || is_historical_cd(props.type);
+    const [settings_show_historical_cds, _] = useSetting("show_historical_cds");
+    const show_historical_cds = settings_show_historical_cds || is_historical_cd(props.type);
     return (
         <span style={{ margin: "auto" }}>
             <PointerButtonIndex

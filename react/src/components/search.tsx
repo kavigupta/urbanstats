@@ -4,11 +4,13 @@ import { loadProtobuf } from '../load_json';
 import { is_historical_cd } from '../utils/is_historical';
 import "../common.css";
 import { SearchIndex } from '../utils/protos';
+import { useSetting } from '../page_template/settings';
 
 export const SearchBox = (props: {
-    on_change: (inp: string) => void, autoFocus: boolean, placeholder: string, style: any, settings: any
+    on_change: (inp: string) => void, autoFocus: boolean, placeholder: string, style: any
 }) => {
 
+    const [show_historical_cds, _] = useSetting("show_historical_cds");
     const [matches, setMatches] = React.useState<string[]>([]);
     const [matchesStale, setMatchesStale] = React.useState(false);
     const [indexCache, setIndexCache] = React.useState<SearchIndex | undefined>(undefined);
@@ -102,7 +104,7 @@ export const SearchBox = (props: {
             if (match_count == 0) {
                 continue;
             }
-            if (!props.settings.show_historical_cds) {
+            if (!show_historical_cds) {
                 if (is_historical_cd(values[i])) {
                     continue;
                 }

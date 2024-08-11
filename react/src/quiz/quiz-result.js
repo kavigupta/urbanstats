@@ -61,7 +61,6 @@ export class QuizResult extends React.Component {
                             index={index}
                             choice={this.props.history.choices[index]}
                             correct={correct_pattern[index]}
-                            settings={this.props.settings}
                             quiz_kind={this.props.quiz_kind}
                         />
                     )
@@ -292,12 +291,12 @@ export class GenericQuizResultRow extends React.Component {
                 statname={stat_column}
                 value={stat}
                 is_unit={false}
-                settings={this.props.settings} />
+            />
             <Statistic
                 statname={stat_column}
                 value={stat}
                 is_unit={true}
-                settings={this.props.settings} />
+            />
         </span>;
     }
 }
