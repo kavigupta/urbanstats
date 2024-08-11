@@ -7,7 +7,7 @@ import { CheckboxSetting } from "./sidebar";
 import "./related.css";
 import { useResponsive } from '../utils/responsive';
 import { lighten } from '../utils/color';
-import { useSetting } from "../page_template/settings";
+import { useSetting, relationship_key } from "../page_template/settings";
 import { NormalizeProto } from "../utils/types";
 import { IRelatedButtons, IRelatedButton as RelatedButtonProto } from "../utils/protos";
 
@@ -41,10 +41,6 @@ const colorsEach: Record<string, string> = {
 };
 
 type RowType = string;
-
-export function relationship_key(article_type: string, other_type: string) {
-    return `related__${article_type}__${other_type}` as const;
-}
 
 function RelatedButton(props: { region: RelatedButtonModel, universe: string }) {
 
@@ -94,7 +90,7 @@ function RelatedList(props: { articleType: string, buttonType: string, regions: 
                             name=""
                             setting_key={key}
                             classNameToUse="related_checkbox"
-                            />
+                        />
                     </div>
                 </div>
                 <ul className="list_of_lists">
@@ -135,6 +131,7 @@ function RelatedList(props: { articleType: string, buttonType: string, regions: 
 
 export function Related(props: { article_type: string, related: { relationshipType: string, buttons: RelatedButtonModel[] }[], universe: string }) {
     // buttons[rowType][relationshipType] = <list of buttons>
+    const [showHistoricalCds, _] = useSetting("show_historical_cds");
     let buttons: Record<string, Record<string, RelatedButtonModel[]>> = {};
     for (var relateds of props.related) {
         const relationship_type = relateds.relationshipType;
@@ -157,8 +154,7 @@ export function Related(props: { article_type: string, related: { relationshipTy
 
     let elements = [];
     for (var key of button_keys) {
-        const [show_historical_cds] = useSetting('show_historical_cds')
-        if (!show_historical_cds) {
+        if (!showHistoricalCds) {
             if (key == "Historical Congressional District") {
                 continue;
             }

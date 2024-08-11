@@ -1,15 +1,20 @@
-import { RelationshipKey, relationship_key } from "../components/related-button";
 import { createContext, useContext, useEffect, useState } from "react";
 import { DefaultMap } from "../utils/DefaultMap";
 
-type StatisticSettingKey = `show_statistic_${string}`
+export type StatisticSettingKey = `show_statistic_${string}`
+export type RelationshipKey = `related__${string}__${string}`
 
 interface StatisticCategoryMetadataCheckbox {
-    settingKey: StatisticSettingKey
+    setting_key: StatisticSettingKey
     name: string
 }
 
-function load_settings() {
+
+export function relationship_key(article_type: string, other_type: string) {
+    return `related__${article_type}__${other_type}` as const;
+}
+
+export function load_settings() {
     // backed by local storage
     let settings = JSON.parse(localStorage.getItem("settings") ?? "{}") as Partial<SettingsDictionary>;
     const map_relationship = require("../data/map_relationship.json");
@@ -18,9 +23,6 @@ function load_settings() {
         if (!(key in settings)) {
             settings[key] = true;
         }
-    }
-    if (!("use_population_percentiles" in settings)) {
-        settings["use_population_percentiles"] = true;
     }
     const statistic_category_metadata = require("../data/statistic_category_metadata.json") as { key: string, name: string, show_checkbox: boolean, default: boolean }[];
     // list of {key, name, show_checkbox, default}
@@ -33,7 +35,7 @@ function load_settings() {
         }
         if (statistic_category_metadata[i]["show_checkbox"]) {
             statistic_category_metadata_checkboxes.push({
-                settingKey: setting_key,
+                setting_key: setting_key,
                 name: statistic_category_metadata[i]["name"],
             });
         }
@@ -46,10 +48,9 @@ function load_settings() {
     return [settings as SettingsDictionary, statistic_category_metadata_checkboxes] as const;
 }
 
-interface SettingsDictionary {
+export interface SettingsDictionary {
     [relationshipKey: RelationshipKey]: boolean;
     [showStatisticKey: StatisticSettingKey]: boolean;
-    use_population_percentiles: boolean,
     show_historical_cds: boolean,
     simple_ordinals: boolean,
     use_imperial: boolean
@@ -82,6 +83,7 @@ export class Settings {
 
     setSetting<K extends keyof SettingsDictionary>(key: K, newValue: SettingsDictionary[K]): void {
         this.settings[key] = newValue
+        localStorage.setItem("settings", JSON.stringify(this.settings))
         this.observers.get(key).forEach(observer => observer())
     }
 
@@ -96,6 +98,29 @@ export class Settings {
 export function useSetting<K extends keyof SettingsDictionary>(key: K): [SettingsDictionary[K], (newValue: SettingsDictionary[K]) => void] {
     const settings = useContext(Settings.Context)
     return [settings.useSetting(key), (value) => settings.setSetting(key, value)]
+}
+
+
+export type TableCheckboxSettings = { [key: StatisticSettingKey]: boolean }
+
+export function useTableCheckboxSettings(): BooleanSettings {
+    const categories = require("../data/statistic_category_list.json");
+    const result = {} as BooleanSettings
+    for (const category of categories) {
+        const key = `show_statistic_${category}` as StatisticSettingKey
+        result[key] = useSetting(key)[0]
+    }
+    return result
+}
+
+export function useRelatedCheckboxSettings(article_type_this: string): { [key: RelationshipKey]: boolean } {
+    const article_types_other = require("../data/type_to_type_category.json");
+    const result = {} as { [key: RelationshipKey]: boolean }
+    for (const article_type_other in article_types_other) {
+        const key = relationship_key(article_type_this, article_type_other)
+        result[key] = useSetting(key)[0]
+    }
+    return result
 }
 
 export function useStatisticCategoryMetadataCheckboxes() {

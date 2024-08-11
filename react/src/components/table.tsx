@@ -7,7 +7,7 @@ import "./table.css";
 import { is_historical_cd } from '../utils/is_historical';
 import { display_type } from '../utils/text';
 import { ArticleRow } from './load-article';
-import { useSetting } from "../page_template/settings.js";
+import { useSetting } from '../page_template/settings';
 
 const table_row_style: React.CSSProperties = {
     display: "flex",
@@ -38,6 +38,9 @@ export function StatisticRowRaw(props: StatisticRowRawProps & { index: number, u
 }
 
 export function StatisticRowRawCellContents(props: StatisticRowRawProps & { total_width: number, universe: string, longname?: string }) {
+    if (props.universe == undefined) {
+        throw "StatisticRowRawCellContents: universe is undefined";
+    }
     const alignStyle: React.CSSProperties = { textAlign: props.is_header ? "center" : "right" };
     var value_columns: [number, string, React.ReactNode][] = [
         [15,
@@ -188,9 +191,7 @@ export function StatisticRow({ is_header, index, contents }: { is_header: boolea
 
 
 export function Statistic(props: { style?: React.CSSProperties, statname: string, value: number, is_unit: boolean }) {
-
-    const [is_imperial] = useSetting('use_imperial')
-
+    const [use_imperial, _] = useSetting("use_imperial");
     const content = (() => {
         {
             const name = props.statname;
@@ -333,6 +334,9 @@ function ElectionResult(props: { value: number }) {
 }
 
 export function Ordinal(props: { ordinal: number, total: number, type: string, statpath: string, onReplace?: (newValue: string) => void, simple: boolean, universe: string }) {
+    if (props.universe == undefined) {
+        throw "Ordinal: universe is undefined";
+    }
     const onNewNumber = async (number: number) => {
         let num = number;
         if (num < 0) {
@@ -427,7 +431,8 @@ export function Percentile(props: { ordinal: number, total: number, percentile_b
 
 function PointerButtonsIndex(props: { ordinal: number, statpath: string, type: string, total: number, universe: string }) {
     const get_data = async () => await load_ordering(props.universe, props.statpath, props.type);
-    const [show_historical_cds] = useSetting('show_historical_cds');
+    const [settings_show_historical_cds, _] = useSetting("show_historical_cds");
+    const show_historical_cds = settings_show_historical_cds || is_historical_cd(props.type);
     return (
         <span style={{ margin: "auto" }}>
             <PointerButtonIndex

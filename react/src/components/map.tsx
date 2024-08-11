@@ -3,7 +3,6 @@ import React, { CSSProperties, SVGProps } from 'react';
 export { Map, MapGeneric };
 
 import { shape_link, article_link } from "../navigation/links";
-import { relationship_key } from "./related-button";
 import { random_color } from "../utils/color";
 
 import "./map.css";
@@ -15,6 +14,7 @@ import { NormalizeProto } from "../utils/types";
 import { Feature, IRelatedButton, IRelatedButtons } from "../utils/protos";
 import { Settings } from "../page_template/settings";
 import { Basemap } from "../mapper/settings";
+import { relationship_key, useRelatedCheckboxSettings, useSetting } from '../page_template/settings';
 
 export interface MapGenericProps {
     height?: string,
@@ -330,14 +330,29 @@ interface MapProps extends MapGenericProps {
     longname: string,
     related: NormalizeProto<IRelatedButtons>[],
     article_type: string,
-    universe: string
+    universe: string,
 }
 
-class Map extends MapGeneric<MapProps> {
+interface ArticleMapProps extends MapProps {
+    show_historical_cds: boolean,
+    settings: Record<string, unknown>,
+}
+
+function Map(props: MapProps) {
+    const [show_historical_cds, _set_shc] = useSetting("show_historical_cds");
+    const related_checkbox_settings = useRelatedCheckboxSettings(props.article_type);
+    return <ArticleMap
+        {...props}
+        show_historical_cds={show_historical_cds}
+        settings={related_checkbox_settings}
+    />
+}
+
+class ArticleMap extends MapGeneric<ArticleMapProps> {
 
     private already_fit_bounds: string | undefined = undefined;
 
-    constructor(props: MapProps) {
+    constructor(props: ArticleMapProps) {
         super(props);
     }
 
@@ -384,7 +399,7 @@ class Map extends MapGeneric<MapProps> {
         const names = [];
         const styles = [];
         for (let i = related.length - 1; i >= 0; i--) {
-            if (!this.context.get('show_historical_cds') && is_historical_cd(related[i].rowType)) {
+            if (!this.props.show_historical_cds && is_historical_cd(related[i].rowType)) {
                 continue;
             }
             let key = relationship_key(this.props.article_type, related[i].rowType);

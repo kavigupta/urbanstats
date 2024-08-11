@@ -3,7 +3,7 @@ import React from 'react';
 import "../style.css";
 import "./sidebar.css";
 import { useResponsive } from '../utils/responsive';
-import { BooleanSettings, useSetting, useStatisticCategoryMetadataCheckboxes } from "../page_template/settings";
+import { BooleanSettings, useSetting, useStatisticCategoryMetadataCheckboxes, SettingsDictionary } from "../page_template/settings";
 
 export function Sidebar() {
     const statistic_category_metadata_checkboxes = useStatisticCategoryMetadataCheckboxes();
@@ -88,7 +88,7 @@ export function Sidebar() {
                         <li key={i}>
                             <CheckboxSetting
                                 name={checkbox.name}
-                                setting_key={checkbox.settingKey}
+                                setting_key={checkbox.setting_key}
                             />
                         </li>
                     )}
@@ -98,10 +98,27 @@ export function Sidebar() {
     );
 }
 
-export function CheckboxSetting(props: { name: string, setting_key: keyof BooleanSettings }) {
+export function CheckboxSetting(props: { name: string, setting_key: keyof SettingsDictionary, classNameToUse?: string }) {
 
-    const [checked, setSetting] = useSetting(props.setting_key)
+    const [checked, setChecked] = useSetting(props.setting_key);
 
+    return <CheckboxSettingCustom
+        name={props.name}
+        setting_key={props.setting_key}
+        settings={{ [props.setting_key]: checked }}
+        set_setting={(key, value) => {
+            if (key === props.setting_key) {
+                setChecked(value);
+            } else {
+                throw new Error("Invalid key: " + key);
+            }
+        }}
+        classNameToUse={props.classNameToUse}
+    />;
+};
+
+export function CheckboxSettingCustom(props: { name: string, setting_key: string, settings: any, set_setting: (key: string, value: any) => void, classNameToUse?: string }) {
+    // like CheckboxSetting, but doesn't use useSetting, instead using the callbacks
     return (
         <div className="checkbox-setting">
             <input

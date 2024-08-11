@@ -65,7 +65,6 @@ class QuizPanel extends PageTemplate {
                     history={history}
                     today={this.today}
                     today_name={this.today_name}
-                    settings={this.state.settings}
                     parameters={this.props.parameters}
                     get_per_question={get_per_question}
                     quiz_kind={this.props.quiz_kind}
