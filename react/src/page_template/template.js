@@ -25,12 +25,8 @@ class PageTemplate extends React.Component {
     constructor(props) {
         super(props);
 
-        const [settings, statistic_category_metadata_checkboxes] = load_settings();
-
-        this.statistic_category_metadata_checkboxes = statistic_category_metadata_checkboxes;
 
         this.state = {
-            settings: settings,
             hamburger_open: false,
             screenshot_mode: false,
             current_universe: this.props.universe,
@@ -73,7 +69,6 @@ class PageTemplate extends React.Component {
                     <BodyPanel
                         hamburger_open={this.state.hamburger_open}
                         main_content={this.main_content()}
-                        statistic_category_metadata={this.statistic_category_metadata_checkboxes}
                     />
                 </div>
             </Fragment>
@@ -140,14 +135,10 @@ function OtherCredits() {
 
 function BodyPanel(props) {
     if (props.hamburger_open) {
-        return <LeftPanel
-            statistic_category_metadata_checkboxes={props.statistic_category_metadata}
-        />
+        return <LeftPanel />
     }
     return <div className="body_panel">
-        {mobileLayout() ? undefined : <LeftPanel
-            statistic_category_metadata_checkboxes={props.statistic_category_metadata}
-        />}
+        {mobileLayout() ? undefined : <LeftPanel />}
         <div className={mobileLayout() ? "content_panel_mobile" : "right_panel"}>
             {props.main_content}
             <div className="gap"></div>
@@ -159,8 +150,7 @@ function BodyPanel(props) {
 function LeftPanel(props) {
     return (
         <div className={mobileLayout() ? "left_panel_mobile" : "left_panel"}>
-            <Sidebar
-                statistic_category_metadata_checkboxes={props.statistic_category_metadata_checkboxes} />
+            <Sidebar />
         </div>
     )
 }
