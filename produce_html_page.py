@@ -92,6 +92,7 @@ def order_key_for_relatioships(longname, typ):
         processed_longname = -end_congress, longname
     return ordering_idx[typ], processed_longname
 
+
 def shard_bytes(longname):
     """translation of links.ts::shardBytes"""
     bytes_ = longname.encode("utf-8")
@@ -100,7 +101,7 @@ def shard_bytes(longname):
         hash_ = (hash_ * 31 + bytes_[i]) & 0xFFFFFFFF
     string = ""
     for i in range(4):
-        string += hex(hash_ & 0xf)[2:]
+        string += hex(hash_ & 0xF)[2:]
         hash_ >>= 4
     return string[0:2], string[2:3]
 
