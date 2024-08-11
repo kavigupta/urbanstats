@@ -1,7 +1,6 @@
 from urbanstats.statistics.statistic_collection import USWeatherStatisticsCollection
 from urbanstats.weather.stats import era5_statistics
 
-
 POPULATION_WEIGHTED_EXPLANATION = (
     "!TOOLTIP Population weighted weather"
     " statistics are calculated by computing the weather statistic for"

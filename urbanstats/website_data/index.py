@@ -3,8 +3,8 @@ import re
 import unicodedata
 from collections import defaultdict
 
-from urbanstats.protobuf.utils import save_string_list, save_search_index
 from relationship import type_to_type_category
+from urbanstats.protobuf.utils import save_search_index, save_string_list
 
 # maps types to their search priority scores, which must fit into an uint32. Higher=less important
 type_category_to_priority = {
