@@ -61,7 +61,7 @@ function RelatedButton(props: { region: Region, universe: string }) {
     );
 }
 
-function RelatedList(props: { articleType: string, buttonType: string, regions: Record<string, any[]>, universe: string }) {
+function RelatedList(props: { articleType: string, buttonType: string, regions: Record<string, Region[]>, universe: string }) {
     if (props.articleType == undefined) {
         throw new Error("articleType is undefined; shoud be defined");
     }

@@ -7,10 +7,10 @@ import { SearchIndex } from '../utils/protos';
 import { useSetting } from '../page_template/settings';
 
 export const SearchBox = (props: {
-    on_change: (inp: string) => void, autoFocus: boolean, placeholder: string, style: any
+    on_change: (inp: string) => void, autoFocus: boolean, placeholder: string, style: React.CSSProperties
 }) => {
 
-    const [show_historical_cds, _] = useSetting("show_historical_cds");
+    const [show_historical_cds] = useSetting("show_historical_cds");
     const [matches, setMatches] = React.useState<string[]>([]);
     const [matchesStale, setMatchesStale] = React.useState(false);
     const [indexCache, setIndexCache] = React.useState<SearchIndex | undefined>(undefined);
