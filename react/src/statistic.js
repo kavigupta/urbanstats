@@ -43,7 +43,7 @@ async function loadPage() {
     const universes = require("./data/universes_ordered.json");
     const exclusively_american = article_names.every(longname_is_exclusively_american);
     root.render(
-        <UNIVERSE_CONTEXT.Provider value={get_universe(default_universe)}>
+        <UNIVERSE_CONTEXT.Provider value={universe}>
             <StatisticPanel
                 statname={statname}
                 statpath={statpath}
