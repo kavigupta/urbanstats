@@ -22,6 +22,7 @@ import { create_screenshot } from '../components/screenshot';
 import { set_universe } from '../universe';
 
 class PageTemplate extends React.Component {
+
     constructor(props) {
         super(props);
 
@@ -36,9 +37,7 @@ class PageTemplate extends React.Component {
     render() {
         const self = this;
 
-
         const set_this_universe = universe => {
-            self.setState({ current_universe: universe });
             set_universe(universe);
         }
 
@@ -59,7 +58,6 @@ class PageTemplate extends React.Component {
                         set_hamburger_open={x => this.setState({ hamburger_open: x })}
                         has_screenshot={this.has_screenshot_button()}
                         has_universe_selector={this.has_universe_selector()}
-                        current_universe={this.state.current_universe}
                         all_universes={this.props.universes}
                         on_universe_update={set_this_universe}
                         screenshot_mode={this.state.screenshot_mode}

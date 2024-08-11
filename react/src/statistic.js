@@ -7,7 +7,7 @@ import "./common.css";
 import { load_ordering_protobuf, load_ordering } from './load_json';
 import { StatisticPanel } from './components/statistic-panel.js';
 import { for_type, render_statname } from './components/load-article';
-import { get_universe, longname_is_exclusively_american, remove_universe_if_default } from './universe';
+import { get_universe, longname_is_exclusively_american, remove_universe_if_default, UNIVERSE_CONTEXT } from './universe';
 
 
 async function loadPage() {
@@ -42,24 +42,28 @@ async function loadPage() {
     const root = ReactDOM.createRoot(document.getElementById("root"));
     const universes = require("./data/universes_ordered.json");
     const exclusively_american = article_names.every(longname_is_exclusively_american);
-    root.render(<StatisticPanel
-        statname={statname}
-        statpath={statpath}
-        count={for_type(universe, statcol, article_type)}
-        explanation_page={explanation_page}
-        ordering={order}
-        highlight={highlight}
-        article_type={article_type}
-        joined_string={statpath}
-        start={start}
-        amount={amount}
-        order={order}
-        article_names={article_names}
-        data={data}
-        universes={universes}
-        universe={universe}
-        rendered_statname={render_statname(names.indexOf(statname), statname, exclusively_american)}
-    />);
+    root.render(
+        <UNIVERSE_CONTEXT.Provider value={get_universe(default_universe)}>
+            <StatisticPanel
+                statname={statname}
+                statpath={statpath}
+                count={for_type(universe, statcol, article_type)}
+                explanation_page={explanation_page}
+                ordering={order}
+                highlight={highlight}
+                article_type={article_type}
+                joined_string={statpath}
+                start={start}
+                amount={amount}
+                order={order}
+                article_names={article_names}
+                data={data}
+                universes={universes}
+                universe={universe}
+                rendered_statname={render_statname(names.indexOf(statname), statname, exclusively_american)}
+            />
+        </UNIVERSE_CONTEXT.Provider>
+    );
 }
 
 loadPage();

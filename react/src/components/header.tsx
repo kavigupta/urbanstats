@@ -7,6 +7,7 @@ import { Nav } from './hamburger';
 import { mobileLayout } from '../utils/responsive';
 import { ScreenshotButton } from './screenshot';
 import { article_link, universe_path } from '../navigation/links';
+import { useUniverse } from '../universe';
 
 export const HEADER_BAR_SIZE = "48px";
 const HEADER_BAR_SIZE_DESKTOP = "60px";
@@ -15,20 +16,21 @@ export function Header(props: {
     hamburger_open: boolean,
     set_hamburger_open: (newValue: boolean) => void,
     has_universe_selector: boolean,
-    current_universe: string,
     all_universes: string[],
     on_universe_update: (universe: string) => void,
     has_screenshot: boolean,
     screenshot_mode: boolean,
     initiate_screenshot: () => void,
 }) {
+
+    const current_universe = useUniverse();
     return (
         <div className="top_panel">
             <TopLeft
                 hamburger_open={props.hamburger_open}
                 set_hamburger_open={props.set_hamburger_open}
                 has_universe_selector={props.has_universe_selector}
-                current_universe={props.current_universe}
+                current_universe={current_universe}
                 all_universes={props.all_universes}
                 on_universe_update={props.on_universe_update}
             />
@@ -38,7 +40,7 @@ export function Header(props: {
                     {!mobileLayout() && props.has_universe_selector
                         ? <div style={{ paddingRight: "0.5em" }}>
                             <UniverseSelector
-                                current_universe={props.current_universe}
+                                current_universe={current_universe}
                                 all_universes={props.all_universes}
                                 on_universe_update={props.on_universe_update}
                             />
@@ -57,7 +59,7 @@ export function Header(props: {
                             on_change={
                                 new_location => {
                                     window.location.href = article_link(
-                                        props.current_universe, new_location
+                                        current_universe, new_location
                                     )
                                 }
                             }

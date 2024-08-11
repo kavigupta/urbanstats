@@ -7,7 +7,7 @@ import { data_link } from "./navigation/links";
 
 import { loadProtobuf } from './load_json';
 import { ComparisonPanel } from './components/comparison-panel.js';
-import { default_comparison_universe, get_universe, remove_universe_if_default, remove_universe_if_not_in } from './universe';
+import { default_comparison_universe, get_universe, remove_universe_if_default, remove_universe_if_not_in, UNIVERSE_CONTEXT } from './universe';
 
 
 async function loadPage() {
@@ -24,11 +24,15 @@ async function loadPage() {
     remove_universe_if_not_in(universes)
     const default_universe = default_comparison_universe(names);
     remove_universe_if_default(default_universe);
-    root.render(<ComparisonPanel names={names} datas={datas} joined_string={joined_string} universes={universes}
-        universe={get_universe(
-            default_universe
-        )}
-    />);
+    root.render(
+        <UNIVERSE_CONTEXT.Provider value={get_universe(default_universe)}>
+            <ComparisonPanel names={names} datas={datas} joined_string={joined_string} universes={universes}
+                universe={get_universe(
+                    default_universe
+                )}
+            />
+        </UNIVERSE_CONTEXT.Provider>
+    );
 }
 
 loadPage();
