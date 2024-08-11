@@ -39,7 +39,7 @@ class ArticlePanel extends PageTemplate {
                 <div style={{ marginBlockEnd: "16px" }}></div>
 
                 <div className="stats_table" ref={this.table_ref}>
-                    <StatisticRowHeader />
+                    <StatisticRowHeader universe={this.state.current_universe} />
                     <ArticlePanelRows
                         current_universe={this.state.current_universe}
                         longname={this.props.longname}
@@ -106,9 +106,9 @@ class ArticlePanel extends PageTemplate {
     }
 }
 
-function StatisticRowHeader() {
+function StatisticRowHeader(props) {
     const [simple_ordinals, _] = useSetting("simple_ordinals");
-    return <StatisticRowRaw _idx={-1} is_header={true} simple={simple_ordinals} />
+    return <StatisticRowRaw _idx={-1} is_header={true} simple={simple_ordinals} universe={props.universe}/>
 }
 
 function ArticlePanelRows(props) {

@@ -97,6 +97,9 @@ async function load_ordering_protobuf(universe: string, statpath: string, type: 
 }
 
 async function load_ordering(universe: string, statpath: string, type: string) {
+    if (universe == undefined) {
+        throw "universe is undefined";
+    }
     const idx_link = index_link(universe, type);
     const data_promise = loadProtobuf(idx_link, "StringList");
     const ordering_promise = load_ordering_protobuf(universe, statpath, type, false);

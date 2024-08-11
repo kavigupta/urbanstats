@@ -38,6 +38,9 @@ export function StatisticRowRaw(props: StatisticRowRawProps & { index: number, u
 }
 
 export function StatisticRowRawCellContents(props: StatisticRowRawProps & { total_width: number, universe: string, longname?: string }) {
+    if (props.universe == undefined) {
+        throw "StatisticRowRawCellContents: universe is undefined";
+    }
     const alignStyle: React.CSSProperties = { textAlign: props.is_header ? "center" : "right" };
     var value_columns: [number, string, React.ReactNode][] = [
         [15,
@@ -336,6 +339,9 @@ function ElectionResult(props: { value: number }) {
 }
 
 export function Ordinal(props: { ordinal: number, total: number, type: string, statpath: string, onReplace?: (newValue: string) => void, simple: boolean, universe: string }) {
+    if (props.universe == undefined) {
+        throw "Ordinal: universe is undefined";
+    }
     const onNewNumber = async (number: number) => {
         let num = number;
         if (num < 0) {

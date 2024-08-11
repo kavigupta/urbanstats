@@ -57,6 +57,12 @@ class ComparisonPanel extends PageTemplate {
 
     main_content() {
         const self = this;
+        if (this.state.current_universe == undefined) {
+            throw new Error("ComparisonPanel: current_universe not set");
+        }
+        if (this.props.names == undefined) {
+            throw new Error("ComparisonPanel: names not set");
+        }
 
         return (
             <div>
@@ -181,6 +187,9 @@ function color(i) {
 
 
 function on_change(names, i, x) {
+    if (names == undefined) {
+        throw new Error("names is undefined");
+    }
     const new_names = [...names];
     new_names[i] = x;
     go(new_names);
@@ -239,7 +248,10 @@ function ComparsionPageRows({ names, datas, current_universe }) {
                     key: row_idx, index: row_idx, ...rows[data_idx][row_idx]
                 }
             }}
-            datas={datas} />
+            datas={datas}
+            current_universe={current_universe}
+            names={names}
+        />
     );
     return (
         <>
@@ -255,6 +267,9 @@ function ComparsionPageRows({ names, datas, current_universe }) {
 }
 
 function ComparisonRow({ names, params, datas, current_universe }) {
+    if (names == undefined) {
+        throw new Error("ComparisonRow: names is undefined");
+    }
     const row_overall = [];
     const param_vals = Array.from(Array(datas.length).keys()).map(params);
 
