@@ -320,7 +320,7 @@ def main(
     with open(f"react/src/data/american_to_international.json", "w") as f:
         json.dump(american_to_international, f)
 
-    os.system(f"cd react; npm i; npm run {'dev' if dev else 'prod'}")
+    os.system(f"cd react; npm ci; npm run {'dev' if dev else 'prod'}")
     shutil.rmtree(f"{site_folder}/scripts")
     shutil.copytree("dist", f"{site_folder}/scripts")
     place_icons_in_site_folder(site_folder)

@@ -1,4 +1,5 @@
 #!/bin/bash
+# You probably want to update test-ci.sh as well
 
 cd react
 
