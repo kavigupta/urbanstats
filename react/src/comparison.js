@@ -24,11 +24,15 @@ async function loadPage() {
     remove_universe_if_not_in(universes)
     const default_universe = default_comparison_universe(names);
     remove_universe_if_default(default_universe);
-    root.render(<ComparisonPanel names={names} datas={datas} joined_string={joined_string} universes={universes}
-        universe={get_universe(
-            default_universe
-        )}
-    />);
+    root.render(
+        <UNIVERSE_CONTEXT.Provider value={get_universe(default_universe)}>
+            <ComparisonPanel names={names} datas={datas} joined_string={joined_string} universes={universes}
+                universe={get_universe(
+                    default_universe
+                )}
+            />
+        </UNIVERSE_CONTEXT.Provider>
+    );
 }
 
 loadPage();

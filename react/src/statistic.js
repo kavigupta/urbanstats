@@ -42,24 +42,28 @@ async function loadPage() {
     const root = ReactDOM.createRoot(document.getElementById("root"));
     const universes = require("./data/universes_ordered.json");
     const exclusively_american = article_names.every(longname_is_exclusively_american);
-    root.render(<StatisticPanel
-        statname={statname}
-        statpath={statpath}
-        count={for_type(universe, statcol, article_type)}
-        explanation_page={explanation_page}
-        ordering={order}
-        highlight={highlight}
-        article_type={article_type}
-        joined_string={statpath}
-        start={start}
-        amount={amount}
-        order={order}
-        article_names={article_names}
-        data={data}
-        universes={universes}
-        universe={universe}
-        rendered_statname={render_statname(names.indexOf(statname), statname, exclusively_american)}
-    />);
+    root.render(
+        <UNIVERSE_CONTEXT.Provider value={universe}>
+            <StatisticPanel
+                statname={statname}
+                statpath={statpath}
+                count={for_type(universe, statcol, article_type)}
+                explanation_page={explanation_page}
+                ordering={order}
+                highlight={highlight}
+                article_type={article_type}
+                joined_string={statpath}
+                start={start}
+                amount={amount}
+                order={order}
+                article_names={article_names}
+                data={data}
+                universes={universes}
+                universe={universe}
+                rendered_statname={render_statname(names.indexOf(statname), statname, exclusively_american)}
+            />
+        </UNIVERSE_CONTEXT.Provider>
+    );
 }
 
 loadPage();
