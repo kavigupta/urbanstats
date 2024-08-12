@@ -7,7 +7,7 @@ import "./common.css";
 import { load_ordering_protobuf, load_ordering } from './load_json';
 import { StatisticPanel } from './components/statistic-panel.js';
 import { for_type, render_statname } from './components/load-article';
-import { get_universe, longname_is_exclusively_american, remove_universe_if_default } from './universe';
+import { get_universe, longname_is_exclusively_american, remove_universe_if_default, UNIVERSE_CONTEXT } from './universe';
 
 
 async function loadPage() {
