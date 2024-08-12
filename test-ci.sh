@@ -22,7 +22,7 @@ export DISPLAY=:10
 
 cd react
 
-for browser in chromium firefox ; do
+for browser in path:$(which firefox-nightly) ; do
     for test_file in test/*_test.js ; do
         npx testcafe -e $browser $test_file
     done
