@@ -12,7 +12,7 @@ import { load_article } from './load-article';
 import { comparisonHeadStyle, headerTextClass, subHeaderTextClass } from '../utils/responsive';
 import { SearchBox } from './search';
 import { article_link, comparison_link, sanitize } from '../navigation/links';
-import { longname_is_exclusively_american } from '../universe';
+import { longname_is_exclusively_american, useUniverse } from '../universe';
 import { useSetting, useTableCheckboxSettings } from '../page_template/settings';
 
 class ArticlePanel extends PageTemplate {
@@ -39,9 +39,8 @@ class ArticlePanel extends PageTemplate {
                 <div style={{ marginBlockEnd: "16px" }}></div>
 
                 <div className="stats_table" ref={this.table_ref}>
-                    <StatisticRowHeader universe={this.state.current_universe} />
+                    <StatisticRowHeader />
                     <ArticlePanelRows
-                        current_universe={this.state.current_universe}
                         longname={this.props.longname}
                         article_row={this.props}
                     />
@@ -55,7 +54,6 @@ class ArticlePanel extends PageTemplate {
                         related={this.props.related}
                         article_type={this.props.articleType}
                         basemap={{ type: "osm" }}
-                        universe={this.state.current_universe}
                     />
                 </div>
 
@@ -66,15 +64,7 @@ class ArticlePanel extends PageTemplate {
                         <div className="serif" style={comparisonHeadStyle("right")}>Compare to: </div>
                     </div>
                     <div style={{ width: "70%" }}>
-                        <SearchBox
-                            style={{ ...comparisonHeadStyle(), width: "100%" }}
-                            placeholder={"Other region..."}
-                            on_change={(x) => {
-                                document.location.href = comparison_link(
-                                    this.state.current_universe,
-                                    [this.props.longname, x]);
-                            }}
-                        />
+                        <ComparisonSearchBox longname={this.props.longname} />
                     </div>
                 </div>
 
@@ -83,7 +73,6 @@ class ArticlePanel extends PageTemplate {
                 <Related
                     related={this.props.related}
                     article_type={this.props.articleType}
-                    universe={this.state.current_universe}
                 />
             </div>
         );
@@ -106,23 +95,36 @@ class ArticlePanel extends PageTemplate {
     }
 }
 
-function StatisticRowHeader(props) {
+function ComparisonSearchBox(props) {
+    const curr_universe = useUniverse();
+    return <SearchBox
+        style={{ ...comparisonHeadStyle(), width: "100%" }}
+        placeholder={"Other region..."}
+        on_change={(x) => {
+            document.location.href = comparison_link(
+                curr_universe,
+                [props.longname, x]);
+        }}
+    />
+}
+
+function StatisticRowHeader() {
     const [simple_ordinals, _] = useSetting("simple_ordinals");
-    return <StatisticRowRaw _idx={-1} is_header={true} simple={simple_ordinals} universe={props.universe}/>
+    return <StatisticRowRaw _idx={-1} is_header={true} simple={simple_ordinals} />
 }
 
 function ArticlePanelRows(props) {
+    const curr_universe = useUniverse();
     const settings = useTableCheckboxSettings();
     const [simple_ordinals, _set_simple_ordinals] = useSetting("simple_ordinals");
-    const [filtered_rows, _] = load_article(props.current_universe, props.article_row, settings,
+    const [filtered_rows, _] = load_article(curr_universe, props.article_row, settings,
         longname_is_exclusively_american(props.longname));
     return <>
         {filtered_rows.map((row, i) =>
             <StatisticRowRaw _idx={i} key={row.statname} index={i} {...row}
-                onReplace={x => { document.location = article_link(props.current_universe, x) }}
+                onReplace={x => { document.location = article_link(curr_universe, x) }}
                 simple={simple_ordinals}
                 longname={props.longname}
-                universe={props.current_universe}
             />)}
     </>
 }

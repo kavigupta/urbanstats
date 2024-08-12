@@ -180,7 +180,6 @@ function MapComponent(props) {
                     line_style={props.line_style}
                     basemap={props.basemap}
                     height={props.height}
-                    universe={props.universe}
                 />
             </div>
             <div style={{ height: "8%", width: "100%" }}>
@@ -367,7 +366,6 @@ class MapperPanel extends PageTemplate {
             line_style={this.state.map_settings.line_style}
             basemap={this.state.map_settings.basemap}
             height={height}
-            universe={this.state.current_universe}
         />
     }
 
