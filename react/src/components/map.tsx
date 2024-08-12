@@ -1,6 +1,6 @@
-import React, { CSSProperties, SVGProps } from 'react';
+import React from 'react';
 
-export { Map, MapGeneric };
+export { MapComponent as Map, MapGeneric };
 
 import { shape_link, article_link } from "../navigation/links";
 import { random_color } from "../utils/color";
@@ -15,20 +15,16 @@ import { Feature, IRelatedButton, IRelatedButtons } from "../utils/protos";
 import { Settings } from "../page_template/settings";
 import { Basemap } from "../mapper/settings";
 import { relationship_key, useRelatedCheckboxSettings, useSetting } from '../page_template/settings';
+import { UNIVERSE_CONTEXT } from '../universe';
 
 export interface MapGenericProps {
     height?: string,
     id: string,
     basemap: Basemap,
-    universe: string,
 }
 
 class MapGeneric<P extends MapGenericProps> extends React.Component<P> {
-    constructor(props: P) {
-        super(props);
-    }
-
-    private polygon_by_name: Record<string, L.FeatureGroup> = {};
+    private polygon_by_name = new Map<string, L.FeatureGroup>();
     private delta = 0.25;
     private version = 0;
     private last_modified = Date.now();
@@ -92,7 +88,7 @@ class MapGeneric<P extends MapGenericProps> extends React.Component<P> {
      * @returns string svg
      */
     async exportAsSvg() {
-        const [names, styles, _1, _2] = await this.compute_polygons();
+        const [names, styles] = await this.compute_polygons();
         const map_bounds = this.map!.getBounds();
         const bounds = {
             left: map_bounds.getWest(),
@@ -116,7 +112,7 @@ class MapGeneric<P extends MapGenericProps> extends React.Component<P> {
 
         function toSvgStyle(style: Record<string, unknown> & { weight?: number }) {
             let svg_style = "";
-            for (var key in style) {
+            for (const key in style) {
                 if (key == "fillColor") {
                     svg_style += `fill:${style[key]};`;
                     continue;
@@ -140,8 +136,8 @@ class MapGeneric<P extends MapGenericProps> extends React.Component<P> {
         for (let i = 0; i < names.length; i++) {
             const geojson = await this.polygon_geojson(names[i]);
             const svg = converter.convert(geojson, { attributes: { style: toSvgStyle(styles[i]) } });
-            for (let j = 0; j < svg.length; j++) {
-                overall_svg.push(svg[j]);
+            for (const elem of svg) {
+                overall_svg.push(elem);
             }
         }
         const header = `<?xml version="1.0" encoding="UTF-8" standalone="no"?>
@@ -161,7 +157,7 @@ class MapGeneric<P extends MapGenericProps> extends React.Component<P> {
 
     async exportAsGeoJSON() {
         console.log("EXPORT AS GEOJSON")
-        const [names, _1, metas, _3] = await this.compute_polygons();
+        const [names, , metas] = await this.compute_polygons();
         const geojson: GeoJSON.FeatureCollection = {
             "type": "FeatureCollection",
             "features": [],
@@ -169,7 +165,7 @@ class MapGeneric<P extends MapGenericProps> extends React.Component<P> {
         for (let i = 0; i < names.length; i++) {
             let feature = await this.polygon_geojson(names[i]);
             feature = JSON.parse(JSON.stringify(feature));
-            for (let key in metas[i]) {
+            for (const key in metas[i]) {
                 feature.properties![key] = metas[i][key];
             }
             geojson.features.push(feature);
@@ -203,17 +199,17 @@ class MapGeneric<P extends MapGenericProps> extends React.Component<P> {
 
         this.attachBasemap();
 
-        const [names, styles, _, zoom_index] = await this.compute_polygons();
+        const [names, styles, , zoom_index] = await this.compute_polygons();
 
         await this.add_polygons(map, names, styles, zoom_index);
 
         await this.mapDidRender();
 
         // Remove polygons that no longer exist
-        for (let name in this.polygon_by_name) {
+        for (const [name, polygon] of this.polygon_by_name.entries()) {
             if (!this.exist_this_time.includes(name)) {
-                map.removeLayer(this.polygon_by_name[name]);
-                delete this.polygon_by_name[name];
+                map.removeLayer(polygon);
+                this.polygon_by_name.delete(name);
             }
         }
     }
@@ -281,40 +277,39 @@ class MapGeneric<P extends MapGenericProps> extends React.Component<P> {
     }
 
     async add_polygon(map: L.Map, name: string, fit_bounds: boolean, style: Record<string, unknown>, add_callback = true, add_to_bottom = false) {
-        const self = this;
         this.exist_this_time.push(name);
-        if (name in this.polygon_by_name) {
-            this.polygon_by_name[name].setStyle(style);
+        if (this.polygon_by_name.has(name)) {
+            this.polygon_by_name.get(name)!.setStyle(style);
             return;
         }
-        let geojson = await this.polygon_geojson(name);
-        let group = L.featureGroup();
+        const geojson = await this.polygon_geojson(name);
+        const group = L.featureGroup();
         let polygon = L.geoJson(geojson, {
             style: style,
-            // @ts-expect-error 
+            // @ts-expect-error smoothFactor not included in library type definitions
             smoothFactor: 0.1,
             className: "tag-" + name.replace(/ /g, "_")
         });
         if (add_callback) {
-            polygon = polygon.on("click", function (e) {
-                window.location.href = article_link(self.props.universe, name);
+            polygon = polygon.on("click", () => {
+                window.location.href = article_link(this.context!, name);
             });
         }
 
-        // @ts-expect-error
+        // @ts-expect-error Second parameter not included in library type definitions
         group.addLayer(polygon, add_to_bottom);
         if (fit_bounds) {
             map.fitBounds(group.getBounds(), { "animate": false });
         }
         map.addLayer(group);
-        this.polygon_by_name[name] = group;
+        this.polygon_by_name.set(name, group);
     }
 
     zoom_to_all() {
         // zoom such that all polygons are visible
         const bounds = new L.LatLngBounds([]);
-        for (let name in this.polygon_by_name) {
-            bounds.extend(this.polygon_by_name[name].getBounds());
+        for (const polygon of this.polygon_by_name.values()) {
+            bounds.extend(polygon.getBounds());
         }
         this.map!.fitBounds(bounds);
     }
@@ -322,15 +317,18 @@ class MapGeneric<P extends MapGenericProps> extends React.Component<P> {
     zoom_to(name: string) {
         // zoom to a specific polygon
         console.log("zoom to", name);
-        this.map!.fitBounds(this.polygon_by_name[name].getBounds());
+        this.map!.fitBounds(this.polygon_by_name.get(name)!.getBounds());
     }
+
+    static contextType = UNIVERSE_CONTEXT;
+    
+    declare context: React.ContextType<typeof UNIVERSE_CONTEXT>;
 }
 
 interface MapProps extends MapGenericProps {
     longname: string,
     related: NormalizeProto<IRelatedButtons>[],
     article_type: string,
-    universe: string,
 }
 
 interface ArticleMapProps extends MapProps {
@@ -338,8 +336,8 @@ interface ArticleMapProps extends MapProps {
     settings: Record<string, unknown>,
 }
 
-function Map(props: MapProps) {
-    const [show_historical_cds, _set_shc] = useSetting("show_historical_cds");
+function MapComponent(props: MapProps) {
+    const [show_historical_cds] = useSetting("show_historical_cds");
     const related_checkbox_settings = useRelatedCheckboxSettings(props.article_type);
     return <ArticleMap
         {...props}
@@ -351,10 +349,6 @@ function Map(props: MapProps) {
 class ArticleMap extends MapGeneric<ArticleMapProps> {
 
     private already_fit_bounds: string | undefined = undefined;
-
-    constructor(props: ArticleMapProps) {
-        super(props);
-    }
 
     async compute_polygons() {
         const relateds = [];
@@ -376,7 +370,7 @@ class ArticleMap extends MapGeneric<ArticleMapProps> {
 
         const zoom_index = this.already_fit_bounds != this.props.longname ? 0 : -1;
 
-        const metas = names.map((x) => { return {} });
+        const metas = names.map(() => ({}));
 
         return [names, styles, metas, zoom_index] as const;
     }

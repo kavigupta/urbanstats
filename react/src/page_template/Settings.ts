@@ -16,9 +16,9 @@ export function relationship_key(article_type: string, other_type: string) {
 
 export function load_settings() {
     // backed by local storage
-    let settings = JSON.parse(localStorage.getItem("settings") ?? "{}") as Partial<SettingsDictionary>;
+    const settings = JSON.parse(localStorage.getItem("settings") ?? "{}") as Partial<SettingsDictionary>;
     const map_relationship = require("../data/map_relationship.json");
-    for (let i in map_relationship) {
+    for (const i in map_relationship) {
         const key = relationship_key(map_relationship[i][0], map_relationship[i][1]);
         if (!(key in settings)) {
             settings[key] = true;
@@ -27,7 +27,7 @@ export function load_settings() {
     const statistic_category_metadata = require("../data/statistic_category_metadata.json") as { key: string, name: string, show_checkbox: boolean, default: boolean }[];
     // list of {key, name, show_checkbox, default}
     const statistic_category_metadata_checkboxes: StatisticCategoryMetadataCheckbox[] = [];
-    for (let i in statistic_category_metadata) {
+    for (const i in statistic_category_metadata) {
         const key = statistic_category_metadata[i]["key"];
         const setting_key = `show_statistic_${key}` as const;
         if (!(setting_key in settings)) {
@@ -101,7 +101,7 @@ export function useSetting<K extends keyof SettingsDictionary>(key: K): [Setting
 }
 
 
-export type TableCheckboxSettings = { [key: StatisticSettingKey]: boolean }
+export type TableCheckboxSettings = Record<StatisticSettingKey, boolean>;
 
 export function useTableCheckboxSettings(): BooleanSettings {
     const categories = require("../data/statistic_category_list.json");
@@ -113,9 +113,9 @@ export function useTableCheckboxSettings(): BooleanSettings {
     return result
 }
 
-export function useRelatedCheckboxSettings(article_type_this: string): { [key: RelationshipKey]: boolean } {
+export function useRelatedCheckboxSettings(article_type_this: string): Record<RelationshipKey, boolean> {
     const article_types_other = require("../data/type_to_type_category.json");
-    const result = {} as { [key: RelationshipKey]: boolean }
+    const result = {} as Record<RelationshipKey, boolean>
     for (const article_type_other in article_types_other) {
         const key = relationship_key(article_type_this, article_type_other)
         result[key] = useSetting(key)[0]

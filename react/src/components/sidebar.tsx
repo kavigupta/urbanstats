@@ -98,14 +98,14 @@ export function Sidebar() {
     );
 }
 
-export function CheckboxSetting(props: { name: string, setting_key: keyof SettingsDictionary, classNameToUse?: string }) {
+export function CheckboxSetting<K extends keyof SettingsDictionary>(props: { name: string, setting_key: K, classNameToUse?: string }) {
 
     const [checked, setChecked] = useSetting(props.setting_key);
 
     return <CheckboxSettingCustom
         name={props.name}
         setting_key={props.setting_key}
-        settings={{ [props.setting_key]: checked }}
+        settings={{ [props.setting_key]: checked } as Record<K, boolean>}
         set_setting={(key, value) => {
             if (key === props.setting_key) {
                 setChecked(value);
@@ -117,7 +117,7 @@ export function CheckboxSetting(props: { name: string, setting_key: keyof Settin
     />;
 };
 
-export function CheckboxSettingCustom(props: { name: string, setting_key: string, settings: any, set_setting: (key: string, value: any) => void, classNameToUse?: string }) {
+export function CheckboxSettingCustom<K extends string>(props: { name: string, setting_key: K, settings: Record<K, boolean>, set_setting: (key: K, value: boolean) => void, classNameToUse?: string }) {
     // like CheckboxSetting, but doesn't use useSetting, instead using the callbacks
     return (
         <div className="checkbox-setting">

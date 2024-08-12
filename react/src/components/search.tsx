@@ -5,7 +5,9 @@ import { is_historical_cd } from '../utils/is_historical.js';
 import "../common.css";
 import { useSetting } from "../page_template/settings.js";
 
-export function SearchBox(props: { on_change: (newValue: string) => void, autoFocus?: boolean, style: React.CSSProperties, placeholder: string }) {
+export function SearchBox(props: { 
+    on_change: (newValue: string) => void, autoFocus?: boolean, style: React.CSSProperties, placeholder: string
+}) {
     const [matches, setMatches] = useState<number[]>([]);
     const [focused, setFocused] = useState(0);
     const [values, setValues] = useState<string[] | undefined>(undefined);
@@ -21,6 +23,13 @@ export function SearchBox(props: { on_change: (newValue: string) => void, autoFo
 
     const [show_historical_cds] = useSetting('show_historical_cds');
 
+    const searchbox_dropdown_item_style = (idx: number) => {
+        return {
+            padding: "0.5em",
+            cursor: "pointer",
+            backgroundColor: (focused === idx) ? "#ffe0e0" : undefined
+        };
+    }
     const onFormSubmit = () => {
         let terms = autocompleteMatch(textBox.current!.value);
         if (terms.length > 0) {
@@ -135,6 +144,7 @@ function is_a_match(a: string, b: string) {
     let i = 0;
     let match_count = 0;
     let prev_match = true;
+    // eslint-disable-next-line @typescript-eslint/prefer-for-of
     for (let j = 0; j < b.length; j++) {
         if (a[i] == b[j]) {
             i++;

@@ -10,6 +10,7 @@ import { lighten } from '../utils/color';
 import { useSetting, relationship_key } from "../page_template/settings";
 import { NormalizeProto } from "../utils/types";
 import { IRelatedButtons, IRelatedButton as RelatedButtonProto } from "../utils/protos";
+import { useUniverse } from '../universe';
 
 type RelatedButtonModel = NormalizeProto<RelatedButtonProto>
 
@@ -42,8 +43,9 @@ const colorsEach: Record<string, string> = {
 
 type RowType = string;
 
-function RelatedButton(props: { region: RelatedButtonModel, universe: string }) {
+function RelatedButton(props: { region: Region }) {
 
+    const curr_universe = useUniverse();
     const responsive = useResponsive()
     const type_category = type_to_type_category[props.region.rowType];
 
@@ -60,13 +62,13 @@ function RelatedButton(props: { region: RelatedButtonModel, universe: string }) 
             <a
                 className={classes}
                 style={{ color: "black", backgroundColor: lighten(color, 0.7) }}
-                href={article_link(props.universe, props.region.longname)}>{props.region.shortname}
+                href={article_link(curr_universe, props.region.longname)}>{props.region.shortname}
             </a>
         </li>
     );
 }
 
-function RelatedList(props: { articleType: string, buttonType: string, regions: Record<string, any[]>, universe: string }) {
+function RelatedList(props: { articleType: string, buttonType: string, regions: Record<string, Region[]> }) {
     if (props.articleType == undefined) {
         throw new Error("articleType is undefined; shoud be defined");
     }
@@ -114,7 +116,6 @@ function RelatedList(props: { articleType: string, buttonType: string, regions: 
                                             <RelatedButton
                                                 key={i}
                                                 region={row}
-                                                universe={props.universe}
                                             />
                                         )
                                     }
@@ -135,7 +136,7 @@ export function Related(props: { article_type: string, related: { relationshipTy
     let buttons: Record<string, Record<string, RelatedButtonModel[]>> = {};
     for (var relateds of props.related) {
         const relationship_type = relateds.relationshipType;
-        for (var button of relateds.buttons) {
+        for (const button of relateds.buttons) {
             const row_type = button.rowType;
             if (!(row_type in buttons)) {
                 buttons[row_type] = {};
@@ -152,8 +153,8 @@ export function Related(props: { article_type: string, related: { relationshipTy
         type_ordering_idx[a] - type_ordering_idx[b]
     );
 
-    let elements = [];
-    for (var key of button_keys) {
+    const elements = [];
+    for (const key of button_keys) {
         if (!showHistoricalCds) {
             if (key == "Historical Congressional District") {
                 continue;
@@ -165,7 +166,6 @@ export function Related(props: { article_type: string, related: { relationshipTy
                 buttonType={key}
                 regions={buttons[key]}
                 articleType={props.article_type}
-                universe={props.universe}
             />
         );
     }
