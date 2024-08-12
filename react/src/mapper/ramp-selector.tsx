@@ -1,7 +1,7 @@
 import React from "react";
 import { ColorMap, EncodedColorMap, RampDescriptor, RAMPS, parse_custom_colormap } from "./ramps";
 
-import { setting_name_style, setting_sub_name_style } from "./style";
+import { setting_sub_name_style } from "./style";
 import { interpolate_color } from "../utils/color";
 
 export function RampColormapSelector(props: { ramp: RampDescriptor, set_ramp: (newValue: RampDescriptor) => void, name?: string }) {
@@ -127,7 +127,7 @@ function CustomColormapSelector(props: { colormap: string, set_colormap: (newVal
         // at the end there is a plus button to add a new color tab
         // each color tab has a minus button to remove itself
         let colormap_text = props.colormap;
-        let parsed_colormap = parse_custom_colormap(colormap_text);
+        const parsed_colormap = parse_custom_colormap(colormap_text);
         let colormap: ColorMap
         if (parsed_colormap !== undefined) {
             colormap = parsed_colormap.sort((a, b) => a[0] - b[0]);
@@ -140,7 +140,7 @@ function CustomColormapSelector(props: { colormap: string, set_colormap: (newVal
 
         const add_cell = (at_index: number) => {
             const new_colormap = colormap.slice();
-            var value = 0;
+            let value = 0;
             if (at_index == 0) {
                 value = colormap[0][0] - 1;
             } else if (at_index == colormap.length) {

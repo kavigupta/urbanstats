@@ -2,7 +2,7 @@ export { FilterSelector, FunctionSelector, FunctionColorStat };
 
 import React from "react";
 
-import { Expression, Parser, Value } from 'expr-eval';
+import { Parser, Value } from 'expr-eval';
 import { DataListSelector } from "./DataListSelector";
 import { CheckboxSettingCustom } from "../components/sidebar";
 import { Regression } from "./regression";

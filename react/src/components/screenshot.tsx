@@ -116,7 +116,7 @@ export async function create_screenshot(config: ScreencapElements, universe: str
             img.onload = () => resolve();
         })
     }
-    var start = pad_around;
+    let start = pad_around;
     for (const img of imgs) {
         ctx.drawImage(img, pad_around, start);
         start += img.height + pad_between;

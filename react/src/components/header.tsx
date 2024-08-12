@@ -20,7 +20,7 @@ export function Header(props: {
     on_universe_update: (universe: string) => void,
     has_screenshot: boolean,
     screenshot_mode: boolean,
-    initiate_screenshot: () => void,
+    initiate_screenshot: () => void
 }) {
     return (
         <div className="top_panel">
@@ -132,7 +132,7 @@ function UniverseSelector(
 
     const [dropdown_open, set_dropdown_open] = React.useState(false);
 
-    var dropdown = dropdown_open ? <UniverseDropdown
+    let dropdown = dropdown_open ? <UniverseDropdown
         flag_size={width}
         all_universes={all_universes}
         on_universe_update={(universe: string) => {

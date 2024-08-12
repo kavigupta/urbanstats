@@ -1,4 +1,8 @@
 declare module 'dom-to-image-more' {
-    import domToImage = require('dom-to-image-more');
-    export = domToImage;
+    function toPng(e: HTMLElement, options: {
+        bgcolor: string,
+        height: number,
+        width: number,
+        style: React.CSSProperties
+    }): string;
 }
