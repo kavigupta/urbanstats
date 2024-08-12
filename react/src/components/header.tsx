@@ -7,6 +7,7 @@ import { Nav } from './hamburger';
 import { mobileLayout } from '../utils/responsive';
 import { ScreenshotButton } from './screenshot';
 import { article_link, universe_path } from '../navigation/links';
+import { set_universe, useUniverse } from '../universe';
 
 export const HEADER_BAR_SIZE = "48px";
 const HEADER_BAR_SIZE_DESKTOP = "60px";
@@ -15,22 +16,19 @@ export function Header(props: {
     hamburger_open: boolean,
     set_hamburger_open: (newValue: boolean) => void,
     has_universe_selector: boolean,
-    current_universe: string,
     all_universes: string[],
-    on_universe_update: (universe: string) => void,
     has_screenshot: boolean,
     screenshot_mode: boolean,
-    initiate_screenshot: () => void
+    initiate_screenshot: (curr_universe: string) => void
 }) {
+    const curr_universe = useUniverse();
     return (
         <div className="top_panel">
             <TopLeft
                 hamburger_open={props.hamburger_open}
                 set_hamburger_open={props.set_hamburger_open}
                 has_universe_selector={props.has_universe_selector}
-                current_universe={props.current_universe}
                 all_universes={props.all_universes}
-                on_universe_update={props.on_universe_update}
             />
             <div className="right_panel_top" style={{ height: HEADER_BAR_SIZE }}>
                 {/* flex but stretch to fill */}
@@ -38,9 +36,7 @@ export function Header(props: {
                     {!mobileLayout() && props.has_universe_selector
                         ? <div style={{ paddingRight: "0.5em" }}>
                             <UniverseSelector
-                                current_universe={props.current_universe}
                                 all_universes={props.all_universes}
-                                on_universe_update={props.on_universe_update}
                             />
                         </div>
                         : undefined}
@@ -48,7 +44,7 @@ export function Header(props: {
                         props.has_screenshot ?
                             <ScreenshotButton
                                 screenshot_mode={props.screenshot_mode}
-                                onClick={props.initiate_screenshot}
+                                onClick={() => props.initiate_screenshot(curr_universe)}
                             /> : undefined
                     }
                     <div className="hgap"></div>
@@ -57,7 +53,7 @@ export function Header(props: {
                             on_change={
                                 new_location => {
                                     window.location.href = article_link(
-                                        props.current_universe, new_location
+                                        curr_universe, new_location
                                     )
                                 }
                             }
@@ -83,9 +79,7 @@ function TopLeft(props: {
     hamburger_open: boolean,
     set_hamburger_open: (newValue: boolean) => void,
     has_universe_selector: boolean,
-    current_universe: string,
     all_universes: string[],
-    on_universe_update: (universe: string) => void
 }) {
     if (mobileLayout()) {
         return (
@@ -95,9 +89,7 @@ function TopLeft(props: {
                 {
                     props.has_universe_selector ?
                         <UniverseSelector
-                            current_universe={props.current_universe}
                             all_universes={props.all_universes}
-                            on_universe_update={props.on_universe_update}
                         /> :
                         <HeaderImage />
                 }
@@ -122,9 +114,10 @@ function HeaderImage() {
 }
 
 function UniverseSelector(
-    { current_universe, all_universes, on_universe_update }
-    : { current_universe: string, all_universes: string[], on_universe_update: (universe: string) => void }
+    { all_universes }
+        : { all_universes: string[] }
 ) {
+    const curr_universe = useUniverse();
     // button to select universe. Image is icons/flags/${universe}.png
     // when clicked, a dropdown appears with all universes, labeled by their flags
 
@@ -135,10 +128,7 @@ function UniverseSelector(
     let dropdown = dropdown_open ? <UniverseDropdown
         flag_size={width}
         all_universes={all_universes}
-        on_universe_update={(universe: string) => {
-            set_dropdown_open(false);
-            on_universe_update(universe);
-        }} /> : undefined;
+    /> : undefined;
 
     // wrap dropdown in a div to place it in front of everything else and let it spill out of the header
     // do NOT use class
@@ -165,7 +155,7 @@ function UniverseSelector(
                     alignItems: "center",
                 }
             }>
-                <img src={`/icons/flags/${current_universe}.png`} alt={current_universe} width={width}
+                <img src={`/icons/flags/${curr_universe}.png`} alt={curr_universe} width={width}
                     className="universe-selector"
                     onClick={() => set_dropdown_open(!dropdown_open)}
                 />
@@ -176,8 +166,8 @@ function UniverseSelector(
 }
 
 function UniverseDropdown(
-    { all_universes, on_universe_update, flag_size }
-    : { all_universes: string[], on_universe_update: (universe: string) => void, flag_size: string }
+    { all_universes, flag_size }
+        : { all_universes: string[], flag_size: string }
 ) {
     return (
         <div>
@@ -188,9 +178,9 @@ function UniverseDropdown(
             >
                 Select universe for statistics
             </div>
-            {all_universes.map(universe => {
+            {all_universes.map(alt_universe => {
                 return (
-                    <div key={universe} onClick={() => on_universe_update(universe)}>
+                    <div key={alt_universe} onClick={() => set_universe(alt_universe)}>
                         <div style={{
                             display: "flex",
                             flexDirection: "row",
@@ -202,12 +192,12 @@ function UniverseDropdown(
                         }}
                             className="hoverable_elements"
                         >
-                            <img src={universe_path(universe)} alt={universe}
+                            <img src={universe_path(alt_universe)} alt={alt_universe}
                                 width={flag_size}
                                 className="universe-selector-option"
                             />
                             <div className="serif">
-                                {universe == "world" ? "World" : universe}
+                                {alt_universe == "world" ? "World" : alt_universe}
                             </div>
                         </div>
                     </div>

@@ -8,6 +8,7 @@ import { is_historical_cd } from '../utils/is_historical';
 import { display_type } from '../utils/text';
 import { ArticleRow } from './load-article';
 import { useSetting } from '../page_template/settings';
+import { useUniverse } from '../universe';
 
 const table_row_style: React.CSSProperties = {
     display: "flex",
@@ -30,17 +31,15 @@ export type StatisticRowRawProps = {
         }
     )
 
-export function StatisticRowRaw(props: StatisticRowRawProps & { index: number, universe: string, longname?: string }) {
+export function StatisticRowRaw(props: StatisticRowRawProps & { index: number, longname?: string }) {
 
     const cell_contents = StatisticRowRawCellContents({ ...props, total_width: 100 });
 
     return <StatisticRow is_header={props.is_header} index={props.index} contents={cell_contents} />;
 }
 
-export function StatisticRowRawCellContents(props: StatisticRowRawProps & { total_width: number, universe: string, longname?: string }) {
-    if (props.universe == undefined) {
-        throw "StatisticRowRawCellContents: universe is undefined";
-    }
+export function StatisticRowRawCellContents(props: StatisticRowRawProps & { total_width: number, longname?: string }) {
+    const curr_universe = useUniverse();
     const alignStyle: React.CSSProperties = { textAlign: props.is_header ? "center" : "right" };
     let value_columns: [number, string, React.ReactNode][] = [
         [15,
@@ -85,7 +84,7 @@ export function StatisticRowRawCellContents(props: StatisticRowRawProps & { tota
                 props.is_header ? "Statistic" :
                     <a className="statname_no_link" href={
                         statistic_link(
-                            props.universe,
+                            curr_universe,
                             props.statname, props.article_type, props.ordinal,
                             20, undefined, props.longname!
                         )
@@ -106,7 +105,6 @@ export function StatisticRowRawCellContents(props: StatisticRowRawProps & { tota
                         statpath={props.statpath}
                         simple={props.simple}
                         onReplace={props.onReplace}
-                        universe={props.universe}
                     />
             }</span>
         ],
@@ -133,7 +131,6 @@ export function StatisticRowRawCellContents(props: StatisticRowRawProps & { tota
                         statpath={props.statpath}
                         type={props.article_type}
                         total={props.total_count_in_class}
-                        universe={props.universe}
                     />
                 </span>
         ],
@@ -147,7 +144,6 @@ export function StatisticRowRawCellContents(props: StatisticRowRawProps & { tota
                         statpath={props.statpath}
                         type="overall"
                         total={props.total_count_overall}
-                        universe={props.universe}
                     />
                 </span>
         ]
@@ -337,10 +333,8 @@ function ElectionResult(props: { value: number }) {
     return <span className={"party_result_" + party}>{party}+{text}</span>;
 }
 
-export function Ordinal(props: { ordinal: number, total: number, type: string, statpath: string, onReplace?: (newValue: string) => void, simple: boolean, universe: string }) {
-    if (props.universe == undefined) {
-        throw "Ordinal: universe is undefined";
-    }
+export function Ordinal(props: { ordinal: number, total: number, type: string, statpath: string, onReplace?: (newValue: string) => void, simple: boolean }) {
+    const curr_universe = useUniverse();
     const onNewNumber = async (number: number) => {
         let num = number;
         if (num < 0) {
@@ -353,7 +347,7 @@ export function Ordinal(props: { ordinal: number, total: number, type: string, s
         if (num <= 0) {
             num = 1;
         }
-        const data = await load_ordering(props.universe, props.statpath, props.type);
+        const data = await load_ordering(curr_universe, props.statpath, props.type);
         props.onReplace?.(data[num - 1])
     }
     const ordinal = props.ordinal;
@@ -370,7 +364,7 @@ export function Ordinal(props: { ordinal: number, total: number, type: string, s
         return right_align(en);
     }
     return <div className="serif" style={{ textAlign: "right" }}>
-        {en} of {total} {display_type(props.universe, type)}
+        {en} of {total} {display_type(curr_universe, type)}
     </div>;
 }
 
@@ -428,8 +422,9 @@ export function Percentile(props: { ordinal: number, total: number, percentile_b
     return <div className="serif" style={{ textAlign: "right" }}>{text}</div>;
 }
 
-function PointerButtonsIndex(props: { ordinal: number, statpath: string, type: string, total: number, universe: string }) {
-    const get_data = async () => await load_ordering(props.universe, props.statpath, props.type);
+function PointerButtonsIndex(props: { ordinal: number, statpath: string, type: string, total: number }) {
+    const curr_universe = useUniverse();
+    const get_data = async () => await load_ordering(curr_universe, props.statpath, props.type);
     const [settings_show_historical_cds] = useSetting("show_historical_cds");
     const show_historical_cds = settings_show_historical_cds || is_historical_cd(props.type);
     return (
@@ -441,7 +436,6 @@ function PointerButtonsIndex(props: { ordinal: number, statpath: string, type: s
                 direction={-1}
                 total={props.total}
                 show_historical_cds={show_historical_cds}
-                universe={props.universe}
             />
             <PointerButtonIndex
                 text=">"
@@ -450,13 +444,13 @@ function PointerButtonsIndex(props: { ordinal: number, statpath: string, type: s
                 direction={+1}
                 total={props.total}
                 show_historical_cds={show_historical_cds}
-                universe={props.universe}
             />
         </span>
     );
 }
 
-function PointerButtonIndex(props: { text: string, get_data: () => Promise<string[]>, original_pos: number, direction: number, total: number, show_historical_cds: boolean, universe: string }) {
+function PointerButtonIndex(props: { text: string, get_data: () => Promise<string[]>, original_pos: number, direction: number, total: number, show_historical_cds: boolean }) {
+    const curr_universe = useUniverse();
     const out_of_bounds = (pos: number) => pos < 0 || pos >= props.total
     const onClick = async (pos: number) => {
         {
@@ -467,7 +461,7 @@ function PointerButtonIndex(props: { text: string, get_data: () => Promise<strin
                     pos += props.direction;
                     continue;
                 }
-                document.location = article_link(props.universe, name);
+                document.location = article_link(curr_universe, name);
                 return;
             }
         }

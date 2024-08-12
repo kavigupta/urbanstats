@@ -33,7 +33,6 @@ class PageTemplate extends React.Component {
             settings: settings,
             hamburger_open: false,
             screenshot_mode: false,
-            current_universe: this.props.universe,
         }
     }
 
@@ -41,15 +40,10 @@ class PageTemplate extends React.Component {
         const self = this;
 
 
-        const set_this_universe = universe => {
-            self.setState({ current_universe: universe });
-            set_universe(universe);
-        }
-
-        const initiate_screenshot = async () => {
+        const initiate_screenshot = async curr_universe => {
             self.setState({ screenshot_mode: true });
             setTimeout(async () => {
-                await self.screencap();
+                await self.screencap(curr_universe);
                 self.setState({ screenshot_mode: false });
             })
         }
@@ -63,11 +57,9 @@ class PageTemplate extends React.Component {
                         set_hamburger_open={x => this.setState({ hamburger_open: x })}
                         has_screenshot={this.has_screenshot_button()}
                         has_universe_selector={this.has_universe_selector()}
-                        current_universe={this.state.current_universe}
                         all_universes={this.props.universes}
-                        on_universe_update={set_this_universe}
                         screenshot_mode={this.state.screenshot_mode}
-                        initiate_screenshot={() => initiate_screenshot()}
+                        initiate_screenshot={curr_universe => initiate_screenshot(curr_universe)}
                     />
                     <div style={{ marginBlockEnd: "16px" }}></div>
                     <BodyPanel
@@ -97,12 +89,12 @@ class PageTemplate extends React.Component {
         }
     }
 
-    async screencap() {
+    async screencap(curr_universe) {
         const config = this.screencap_elements();
 
         try {
             console.log("Creating screenshot...");
-            await create_screenshot(config, this.has_universe_selector() ? this.state.current_universe : undefined);
+            await create_screenshot(config, this.has_universe_selector() ? curr_universe : undefined);
         } catch (e) {
             console.error(e);
         }

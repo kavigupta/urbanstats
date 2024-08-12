@@ -12,7 +12,7 @@ import { comparisonHeadStyle, headerTextClass, mobileLayout, subHeaderTextClass 
 import { SearchBox } from './search';
 import { article_link, sanitize } from '../navigation/links';
 import { lighten } from '../utils/color';
-import { longname_is_exclusively_american } from '../universe';
+import { longname_is_exclusively_american, useUniverse } from '../universe';
 import { useTableCheckboxSettings } from '../page_template/settings';
 
 const main_columns = ["statval", "statval_unit", "statistic_ordinal", "statistic_percentile"];
@@ -57,9 +57,6 @@ class ComparisonPanel extends PageTemplate {
 
     main_content() {
         const self = this;
-        if (this.state.current_universe == undefined) {
-            throw new Error("ComparisonPanel: current_universe not set");
-        }
         if (this.props.names == undefined) {
             throw new Error("ComparisonPanel: names not set");
         }
@@ -100,7 +97,6 @@ class ComparisonPanel extends PageTemplate {
                                         on_click={() => on_delete(self.props.names, i)}
                                         on_change={(x) => on_change(self.props.names, i, x)}
                                         screenshot_mode={this.state.screenshot_mode}
-                                        universe={this.state.current_universe}
                                     />
                                 </div>)
                             )}
@@ -110,7 +106,6 @@ class ComparisonPanel extends PageTemplate {
                         <ComparsionPageRows
                             names={this.props.names}
                             datas={this.props.datas}
-                            current_universe={this.state.current_universe}
                         />
                     </div>
                 )}
@@ -123,7 +118,6 @@ class ComparisonPanel extends PageTemplate {
                         id="map_combined"
                         article_type={undefined}
                         basemap={{ type: "osm" }}
-                        universe={this.state.current_universe}
                     />
                 </div>
             </div>
@@ -222,12 +216,13 @@ function all_data_types_same(datas) {
 }
 
 
-function ComparsionPageRows({ names, datas, current_universe }) {
+function ComparsionPageRows({ names, datas }) {
+    const curr_universe = useUniverse();
     var rows = [];
     var idxs = [];
     const exclusively_american = datas.every(x => longname_is_exclusively_american(x.longname));
     for (let i in datas) {
-        const [r, idx] = load_article(current_universe, datas[i], useTableCheckboxSettings(),
+        const [r, idx] = load_article(curr_universe, datas[i], useTableCheckboxSettings(),
             exclusively_american);
         rows.push(r);
         idxs.push(idx);
@@ -238,7 +233,6 @@ function ComparsionPageRows({ names, datas, current_universe }) {
     const header_row = <ComparisonRow
         params={i => { return { is_header: true } }}
         datas={datas}
-        current_universe={current_universe}
         names={names}
     />;
     const render_rows = rows[0].map((_, row_idx) =>
@@ -249,7 +243,6 @@ function ComparsionPageRows({ names, datas, current_universe }) {
                 }
             }}
             datas={datas}
-            current_universe={current_universe}
             names={names}
         />
     );
@@ -266,7 +259,7 @@ function ComparsionPageRows({ names, datas, current_universe }) {
     )
 }
 
-function ComparisonRow({ names, params, datas, current_universe }) {
+function ComparisonRow({ names, params, datas }) {
     if (names == undefined) {
         throw new Error("ComparisonRow: names is undefined");
     }
@@ -300,7 +293,6 @@ function ComparisonRow({ names, params, datas, current_universe }) {
     row_overall.push(...StatisticRowRawCellContents(
         {
             ...param_vals[0], only_columns: ["statname"], _idx: -1, simple: true, longname: datas[0].longname,
-            universe: current_universe,
             total_width: 100 * (left_margin_pct - left_bar_margin)
         }
     ));
@@ -312,7 +304,6 @@ function ComparisonRow({ names, params, datas, current_universe }) {
                 ...param_vals[i], only_columns: only_columns, _idx: i, simple: true,
                 statistic_style: highlight_idx == i ? { backgroundColor: lighten(color(i), 0.7) } : {},
                 onReplace: x => on_change(names, i, x),
-                universe: current_universe,
                 total_width: each(datas)
             }
         ));
@@ -339,9 +330,10 @@ function ManipulationButton({ color, on_click, text }) {
     </div>
 }
 
-function HeadingDisplay({ universe, longname, include_delete, on_click, on_change, screenshot_mode }) {
+function HeadingDisplay({ longname, include_delete, on_click, on_change, screenshot_mode }) {
 
     const [is_editing, set_is_editing] = React.useState(false);
+    const curr_universe = useUniverse();
 
     const manipulation_buttons = <div style={{ height: manipulation_button_height }}>
         <div style={{ display: "flex", justifyContent: "flex-end", height: "100%" }}>
@@ -359,7 +351,7 @@ function HeadingDisplay({ universe, longname, include_delete, on_click, on_chang
     return <div>
         {screenshot_mode ? undefined : manipulation_buttons}
         <div style={{ height: "5px" }} />
-        <a className="serif" href={article_link(universe, longname)} style={{ textDecoration: "none" }}><div style={comparisonHeadStyle()}>{longname}</div></a>
+        <a className="serif" href={article_link(curr_universe, longname)} style={{ textDecoration: "none" }}><div style={comparisonHeadStyle()}>{longname}</div></a>
         {is_editing ?
             <SearchBox
                 autoFocus={true}

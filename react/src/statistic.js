@@ -59,7 +59,6 @@ async function loadPage() {
                 article_names={article_names}
                 data={data}
                 universes={universes}
-                universe={universe}
                 rendered_statname={render_statname(names.indexOf(statname), statname, exclusively_american)}
             />
         </UNIVERSE_CONTEXT.Provider>

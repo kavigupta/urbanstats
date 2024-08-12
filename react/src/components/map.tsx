@@ -14,12 +14,12 @@ import { NormalizeProto } from "../utils/types";
 import { Feature, IRelatedButton, IRelatedButtons } from "../utils/protos";
 import { Basemap } from "../mapper/settings";
 import { relationship_key, useRelatedCheckboxSettings, useSetting } from '../page_template/settings';
+import { UNIVERSE_CONTEXT } from '../universe';
 
 export interface MapGenericProps {
     height?: string,
     id: string,
     basemap: Basemap,
-    universe: string,
 }
 
 class MapGeneric<P extends MapGenericProps> extends React.Component<P> {
@@ -291,7 +291,7 @@ class MapGeneric<P extends MapGenericProps> extends React.Component<P> {
         });
         if (add_callback) {
             polygon = polygon.on("click", () => {
-                window.location.href = article_link(this.props.universe, name);
+                window.location.href = article_link(this.context!, name);
             });
         }
 
@@ -318,13 +318,16 @@ class MapGeneric<P extends MapGenericProps> extends React.Component<P> {
         console.log("zoom to", name);
         this.map!.fitBounds(this.polygon_by_name.get(name)!.getBounds());
     }
+
+    static contextType = UNIVERSE_CONTEXT;
+    
+    declare context: React.ContextType<typeof UNIVERSE_CONTEXT>;
 }
 
 interface MapProps extends MapGenericProps {
     longname: string,
     related: NormalizeProto<IRelatedButtons>[],
     article_type: string,
-    universe: string,
 }
 
 interface ArticleMapProps extends MapProps {

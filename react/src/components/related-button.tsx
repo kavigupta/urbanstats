@@ -8,6 +8,7 @@ import "./related.css";
 import { mobileLayout } from '../utils/responsive';
 import { lighten } from '../utils/color';
 import { useSetting, relationship_key } from '../page_template/settings';
+import { useUniverse } from '../universe';
 
 
 const type_ordering_idx = require("../data/type_ordering_idx.json");
@@ -38,8 +39,9 @@ const colorsEach: Record<string, string> = {
     "Native": GREEN,
 };
 
-function RelatedButton(props: { region: Region, universe: string }) {
+function RelatedButton(props: { region: Region }) {
 
+    const curr_universe = useUniverse();
     const type_category = type_to_type_category[props.region.rowType];
 
     let classes = `serif button_related`
@@ -55,13 +57,13 @@ function RelatedButton(props: { region: Region, universe: string }) {
             <a
                 className={classes}
                 style={{ color: "black", backgroundColor: lighten(color, 0.7) }}
-                href={article_link(props.universe, props.region.longname)}>{props.region.shortname}
+                href={article_link(curr_universe, props.region.longname)}>{props.region.shortname}
             </a>
         </li>
     );
 }
 
-function RelatedList(props: { articleType: string, buttonType: string, regions: Record<string, Region[]>, universe: string }) {
+function RelatedList(props: { articleType: string, buttonType: string, regions: Record<string, Region[]> }) {
     if (props.articleType == undefined) {
         throw new Error("articleType is undefined; shoud be defined");
     }
@@ -108,7 +110,6 @@ function RelatedList(props: { articleType: string, buttonType: string, regions: 
                                             <RelatedButton
                                                 key={i}
                                                 region={row}
-                                                universe={props.universe}
                                             />
                                         )
                                     }
@@ -123,7 +124,7 @@ function RelatedList(props: { articleType: string, buttonType: string, regions: 
     );
 }
 
-export function Related(props: { article_type: string, related: { relationshipType: string, buttons: Region[] }[], universe: string }) {
+export function Related(props: { article_type: string, related: { relationshipType: string, buttons: Region[] }[] }) {
 
     // buttons[rowType][relationshipType] = <list of buttons>
     const [showHistoricalCds] = useSetting("show_historical_cds");
@@ -160,7 +161,6 @@ export function Related(props: { article_type: string, related: { relationshipTy
                 buttonType={key}
                 regions={buttons[key]}
                 articleType={props.article_type}
-                universe={props.universe}
             />
         );
     }

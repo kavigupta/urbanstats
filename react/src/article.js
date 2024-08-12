@@ -22,7 +22,7 @@ async function loadPage() {
     remove_universe_if_default(default_universe);
     root.render(
         <UNIVERSE_CONTEXT.Provider value={get_universe(default_universe)}>
-            <ArticlePanel longname={longname} {...data} universe={get_universe(default_universe)} />
+            <ArticlePanel longname={longname} {...data} />
         </UNIVERSE_CONTEXT.Provider>
     );
 }
