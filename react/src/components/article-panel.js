@@ -1,11 +1,11 @@
 export { ArticlePanel };
+import React, { useRef } from 'react';
 
-import React from 'react';
 
 import { StatisticRowRaw } from "./table";
 import { Map } from "./map";
 import { Related } from "./related-button";
-import { PageTemplateClass } from "../page_template/template.js";
+import { PageTemplate } from "../page_template/template.js";
 import "../common.css";
 import "./article.css";
 import { load_article } from './load-article';
@@ -15,44 +15,46 @@ import { article_link, comparison_link, sanitize } from '../navigation/links';
 import { longname_is_exclusively_american, useUniverse } from '../universe';
 import { useSetting, useTableCheckboxSettings } from '../page_template/settings';
 
-class ArticlePanel extends PageTemplateClass {
-    constructor(props) {
-        super(props);
+function ArticlePanel(props) {
+    const table_ref = useRef(null);
+    const headers_ref = useRef(null);
+    const map_ref = useRef(null);
 
-        this.headers_ref = React.createRef();
-        this.table_ref = React.createRef();
-        this.map_ref = React.createRef();
-    }
+    const screencap_elements = () => ({
+        path: sanitize(props.longname) + ".png",
+        overall_width: table_ref.current.offsetWidth * 2,
+        elements_to_render: [headers_ref.current, table_ref.current, map_ref.current],
+    });
 
-    main_content(template_info) {
-        if (this.props.articleType == undefined) {
+    console.log("table_ref", table_ref);
+    const main_content = (template_info) => {
+        console.log("table_ref", table_ref);
+        if (props.articleType == undefined) {
             throw new Error("articleType is undefined");
         }
-        const self = this;
-
         return (
             <div>
-                <div ref={this.headers_ref}>
-                    <div className={headerTextClass()}>{this.props.shortname}</div>
-                    <div className={subHeaderTextClass()}>{this.props.longname}</div>
+                <div ref={headers_ref}>
+                    <div className={headerTextClass()}>{props.shortname}</div>
+                    <div className={subHeaderTextClass()}>{props.longname}</div>
                 </div>
                 <div style={{ marginBlockEnd: "16px" }}></div>
 
-                <div className="stats_table" ref={this.table_ref}>
+                <div className="stats_table" ref={table_ref}>
                     <StatisticRowHeader />
                     <ArticlePanelRows
-                        longname={this.props.longname}
-                        article_row={this.props}
+                        longname={props.longname}
+                        article_row={props}
                     />
                 </div>
 
                 <p></p>
 
-                <div ref={this.map_ref}>
+                <div ref={map_ref}>
                     <Map id="map"
-                        longname={this.props.longname}
-                        related={this.props.related}
-                        article_type={this.props.articleType}
+                        longname={props.longname}
+                        related={props.related}
+                        article_type={props.articleType}
                         basemap={{ type: "osm" }}
                     />
                 </div>
@@ -64,27 +66,24 @@ class ArticlePanel extends PageTemplateClass {
                         <div className="serif" style={comparisonHeadStyle("right")}>Compare to: </div>
                     </div>
                     <div style={{ width: "70%" }}>
-                        <ComparisonSearchBox longname={this.props.longname} />
+                        <ComparisonSearchBox longname={props.longname} />
                     </div>
                 </div>
 
                 <script src="/scripts/map.js"></script>
 
                 <Related
-                    related={this.props.related}
-                    article_type={this.props.articleType}
+                    related={props.related}
+                    article_type={props.articleType}
                 />
             </div>
         );
     }
-
-    screencap_elements() {
-        return () => ({
-            path: sanitize(this.props.longname) + ".png",
-            overall_width: this.table_ref.current.offsetWidth * 2,
-            elements_to_render: [this.headers_ref.current, this.table_ref.current, this.map_ref.current],
-        })
-    }
+    return <PageTemplate
+        main_content={main_content}
+        screencap_elements={screencap_elements}
+        universes={props.universes}
+    />
 }
 
 function ComparisonSearchBox(props) {

@@ -53,6 +53,45 @@ class ComparisonPanel extends PageTemplateClass {
             throw new Error("ComparisonPanel: names not set");
         }
 
+        const left_margin = 100 * left_margin_pct
+        const width_columns = (all_data_types_same(this.props.datas) ? 1.5 : 1) * this.props.datas.length + 1;
+
+        const cell = (is_left, i, contents) => {
+            if (is_left) {
+                return <div key={i} style={{ width: left_margin + "%" }}>
+                    {contents}
+                </div>
+            }
+            const width = each(this.props.datas) + "%";
+            return <div key={i} style={{ width: width }}>
+                {contents}
+            </div>
+        }
+
+        const bars = () => <div style={{ display: "flex" }}>
+            {cell(true, 0, <div></div>)}
+            {this.props.datas.map(
+                (data, i) => <div key={i} style={{
+                    width: each(this.props.datas) + "%",
+                    height: bar_height,
+                    backgroundColor: color(i)
+                }} />
+            )}
+        </div>;
+
+        const maybe_scroll = (contents) => {
+            const max_columns = mobileLayout() ? 4 : 6;
+            if (width_columns > max_columns) {
+                return <div style={{ overflowX: "scroll" }}>
+                    <div style={{ width: 100 * width_columns / (max_columns - 0.7) + "%" }}>
+                        {contents}
+                    </div>
+                </div>
+            }
+            return contents;
+        }
+
+
         return (
             <div>
                 <div className={headerTextClass()}>Comparison</div>
@@ -76,13 +115,13 @@ class ComparisonPanel extends PageTemplateClass {
 
                 <div style={{ marginBlockEnd: "1em" }}></div>
 
-                {this.maybe_scroll(
+                {maybe_scroll(
                     <div ref={this.table_ref}>
-                        {this.bars()}
+                        {bars()}
                         <div style={{ display: "flex" }}>
-                            {this.cell(true, 0, <div></div>)}
+                            {cell(true, 0, <div></div>)}
                             {this.props.datas.map(
-                                (data, i) => this.cell(false, i, <div>
+                                (data, i) => cell(false, i, <div>
                                     <HeadingDisplay
                                         longname={data.longname}
                                         include_delete={this.props.datas.length > 1}
@@ -93,7 +132,7 @@ class ComparisonPanel extends PageTemplateClass {
                                 </div>)
                             )}
                         </div>
-                        {this.bars()}
+                        {bars()}
 
                         <ComparsionPageRows
                             names={this.props.names}
@@ -114,56 +153,6 @@ class ComparisonPanel extends PageTemplateClass {
                 </div>
             </div>
         );
-    }
-
-    bars() {
-        return <div style={{ display: "flex" }}>
-            {this.cell(true, 0, <div></div>)}
-            {this.props.datas.map(
-                (data, i) => <div key={i} style={{
-                    width: each(this.props.datas) + "%",
-                    height: bar_height,
-                    backgroundColor: color(i)
-                }} />
-            )}
-        </div>
-    }
-
-    max_columns() {
-        return mobileLayout() ? 4 : 6;
-    }
-
-    maybe_scroll(contents) {
-        if (this.width_columns() > this.max_columns()) {
-            return <div style={{ overflowX: "scroll" }}>
-                <div style={{ width: 100 * this.width_columns() / (this.max_columns() - 0.7) + "%" }}>
-                    {contents}
-                </div>
-            </div>
-        }
-        return contents;
-    }
-
-    cell(is_left, i, contents) {
-        if (is_left) {
-            return <div key={i} style={{ width: this.left_margin() + "%" }}>
-                {contents}
-            </div>
-        }
-        const width = each(this.props.datas) + "%";
-        return <div key={i} style={{ width: width }}>
-            {contents}
-        </div>
-    }
-
-    width_columns() {
-        // 1.5 columns each if all data types are the same, otherwise 1 column each
-        // + 1 for the left margin
-        return (all_data_types_same(this.props.datas) ? 1.5 : 1) * this.props.datas.length + 1;
-    }
-
-    left_margin() {
-        return 100 * left_margin_pct;
     }
 }
 

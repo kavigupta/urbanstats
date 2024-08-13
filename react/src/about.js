@@ -3,18 +3,15 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import "./style.css";
 import "./common.css";
-import { PageTemplateClass } from "./page_template/template.js";
+import { PageTemplate } from "./page_template/template.js";
 import { headerTextClass } from './utils/responsive';
 
 
-class AboutPanel extends PageTemplateClass {
-    constructor(props) {
-        super(props);
-    }
-
-    main_content(template_info) {
-        return (
-            <div className="serif">
+function AboutPanel(props) {
+    return <PageTemplate
+        has_universe_selector={false}
+        main_content={
+            template_info => <div className="serif">
                 <div className={headerTextClass()}>About</div>
 
                 <p>
@@ -40,8 +37,8 @@ class AboutPanel extends PageTemplateClass {
                     <a href="https://github.com/kavigupta/urbanstats/issues">filing an issue on GitHub</a>.
                 </p>
             </div>
-        );
-    }
+        }
+    />
 }
 
 async function loadPage() {

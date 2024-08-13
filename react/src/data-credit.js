@@ -1,22 +1,12 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 
 import ReactDOM from 'react-dom/client';
 import "./style.css";
 import "./common.css";
-import { PageTemplateClass } from "./page_template/template.js";
+import { PageTemplate } from "./page_template/template.js";
 import { headerTextClass } from './utils/responsive';
 
 const industry_occupation_table = require("./data/explanation_industry_occupation_table.json");
-
-function ScrollHereOnceLoaded(props) {
-    const ref = React.useRef(null);
-    React.useEffect(() => {
-        if (ref.current) {
-            ref.current.scrollIntoView();
-        }
-    }, [ref.current]);
-    return <div ref={ref}>{props.children}</div>;
-}
 
 const ExplanationTable = (props) =>
     <div>
@@ -42,20 +32,34 @@ const ExplanationTable = (props) =>
         </div>
     </div>
 
-class DataCreditPanel extends PageTemplateClass {
-    constructor(props) {
-        super(props);
-        this._refs = {};
-    }
+function DataCreditPanel() {
 
-    nref(name) {
+    const refs = {};
+
+    function nref(name) {
         name = "explanation_" + name;
-        this._refs[name] = React.createRef();
-        return this._refs[name];
+        refs[name] = React.createRef();
+        return refs[name];
     }
 
-    main_content(template_info) {
-        return (
+    useEffect(() => {
+        // scroll to fragment
+        if (window.location.hash) {
+            console.log(window.location.hash);
+            const hash = window.location.hash.substring(1);
+            if (refs[hash]) {
+                console.log(refs[hash].current)
+                // delay to allow page to render
+                setTimeout(() => {
+                    refs[hash].current.scrollIntoView();
+                    refs[hash].current.classList.add("highlighted_header");
+                }, 200);
+            }
+        }
+    }, []);
+
+    return <PageTemplate
+        main_content={template_info =>
             <div className="serif">
                 <div className={headerTextClass()}>Credits</div>
 
@@ -108,7 +112,7 @@ class DataCreditPanel extends PageTemplateClass {
                             </a>.
                         </p>
                     </div>
-                    <h2 ref={this.nref("geography")}>Geography Metrics</h2>
+                    <h2 ref={nref("geography")}>Geography Metrics</h2>
                     <div>
                         <p>
                             We compute area using the projection <a href="https://proj.org/en/9.3/operations/projections/cea.html">CEA</a>.
@@ -126,14 +130,14 @@ class DataCreditPanel extends PageTemplateClass {
 
                     All data listed in this section is collected from the 2020 US Census.
 
-                    <h2 ref={this.nref("population")}>Population</h2>
+                    <h2 ref={nref("population")}>Population</h2>
                     <div>
                         <p>
                             We compute population data as the column POP100. This is the total population
                             by census block.
                         </p>
                     </div>
-                    <h2 ref={this.nref("density")}>Density Metrics</h2>
+                    <h2 ref={nref("density")}>Density Metrics</h2>
                     <div>
                         <p>
                             AW (area weighted) density is the standard Population/Area density.
@@ -142,7 +146,7 @@ class DataCreditPanel extends PageTemplateClass {
                             see <a href="https://kavigupta.org/2021/09/26/Youre-calculating-population-density-incorrectly/">this page</a>.
                         </p>
                     </div>
-                    <h2 ref={this.nref("race")}>Race</h2>
+                    <h2 ref={nref("race")}>Race</h2>
                     <div>
                         <p>
                             Race data is as defined by the census. Here, all the categories other than Hispanic are
@@ -150,7 +154,7 @@ class DataCreditPanel extends PageTemplateClass {
                         </p>
                     </div>
 
-                    <h2 ref={this.nref("housing-census")}>Vacancy and Units Per Adult</h2>
+                    <h2 ref={nref("housing-census")}>Vacancy and Units Per Adult</h2>
                     <div>
                         <p>
                             We compute vacancy as the percentage of housing units that are vacant. We compute
@@ -163,7 +167,7 @@ class DataCreditPanel extends PageTemplateClass {
                 <div>
                     All data listed in this section is collected from the 2021 American Community Survey 5-year estimates.
 
-                    <h2 ref={this.nref("citizenship")}>Citizenship</h2>
+                    <h2 ref={nref("citizenship")}>Citizenship</h2>
                     <div>
                         <p>
                             We analyze citizenship data by dividing the population into Citizen by Birth, Citizen by Naturalization,
@@ -171,7 +175,7 @@ class DataCreditPanel extends PageTemplateClass {
                             level to the block level using overall population as a weight.
                         </p>
                     </div>
-                    <h2 ref={this.nref("birthplace")}>Birthplace</h2>
+                    <h2 ref={nref("birthplace")}>Birthplace</h2>
                     <div>
 
                         <p>
@@ -181,7 +185,7 @@ class DataCreditPanel extends PageTemplateClass {
                         </p>
                     </div>
 
-                    <h2 ref={this.nref("language")}>Language Spoken at Home</h2>
+                    <h2 ref={nref("language")}>Language Spoken at Home</h2>
                     <div>
                         <p>
                             We analyze language data by dividing the population into English Only, Spanish, and Other.
@@ -190,7 +194,7 @@ class DataCreditPanel extends PageTemplateClass {
                         </p>
                     </div>
 
-                    <h2 ref={this.nref("education")}>Education</h2>
+                    <h2 ref={nref("education")}>Education</h2>
                     <div>
                         <p>
                             We analyze education data by computing the percentage of the population over 25 with <b>at least</b>&nbsp;
@@ -207,7 +211,7 @@ class DataCreditPanel extends PageTemplateClass {
                         </p>
                     </div>
 
-                    <h2 ref={this.nref("generation")}>Generation</h2>
+                    <h2 ref={nref("generation")}>Generation</h2>
                     <div>
                         Generations are defined as follows:
                         <ul>
@@ -221,7 +225,7 @@ class DataCreditPanel extends PageTemplateClass {
                         These will add to 100%. This data is disaggregated from the block group level to the block level
                         using overall population as a weight.
                     </div>
-                    <h2 ref={this.nref("income")}>Income</h2>
+                    <h2 ref={nref("income")}>Income</h2>
                     <div>
                         <p>
                             We use the census definition of poverty status, disaggregating from the tract level to the block level
@@ -236,7 +240,7 @@ class DataCreditPanel extends PageTemplateClass {
                         </p>
                     </div>
 
-                    <h2 ref={this.nref("transportation")}>Transportation</h2>
+                    <h2 ref={nref("transportation")}>Transportation</h2>
                     <div>
                         <p>
                             All transportation data is computed using disaggregation from the block group level
@@ -245,7 +249,7 @@ class DataCreditPanel extends PageTemplateClass {
                         </p>
                     </div>
 
-                    <h2 ref={this.nref("health")}>Health</h2>
+                    <h2 ref={nref("health")}>Health</h2>
                     <div>
                         <p>
                             Health data comes from the CDC's <a href="https://chronicdata.cdc.gov/500-Cities-Places/PLACES-Local-Data-for-Better-Health-Census-Tract-D/cwsq-ngmh/about_data">PLACES dataset</a>&nbsp;
@@ -254,7 +258,7 @@ class DataCreditPanel extends PageTemplateClass {
                         </p>
                     </div>
 
-                    <h2 ref={this.nref("industry_and_occupation")}>Industry and Occupation</h2>
+                    <h2 ref={nref("industry_and_occupation")}>Industry and Occupation</h2>
                     <div>
                         <p>
                             We disaggregate industry data from the block group level to the block level using population
@@ -274,14 +278,14 @@ class DataCreditPanel extends PageTemplateClass {
                         />
                     </div>
 
-                    <h2 ref={this.nref("housing-acs")}>Housing</h2>
+                    <h2 ref={nref("housing-acs")}>Housing</h2>
                     <div>
                         <p>
                             All housing statistics are computed using disaggregation from the tract level to the block level,
                             weighted by occupied housing units.
                         </p>
                     </div>
-                    <h2 ref={this.nref("internet")}>Internet Access</h2>
+                    <h2 ref={nref("internet")}>Internet Access</h2>
                     <div>
                         <p>
                             We analyze internet access data by taking a percentage of households without
@@ -289,7 +293,7 @@ class DataCreditPanel extends PageTemplateClass {
                             weighted by occupied housing units.
                         </p>
                     </div>
-                    <h2 ref={this.nref("insurance")}>Insurance Access</h2>
+                    <h2 ref={nref("insurance")}>Insurance Access</h2>
                     <div>
                         <p>
                             We analyze insurance data by dividing the population into those with private insurance,
@@ -301,7 +305,7 @@ class DataCreditPanel extends PageTemplateClass {
                             to the block level using overall population as a weight.
                         </p>
                     </div>
-                    <h2 ref={this.nref("marriage")}>Marriage</h2>
+                    <h2 ref={nref("marriage")}>Marriage</h2>
                     <div>
                         <p>
                             We analyze marriage data by dividing the over-15 population into those who are married,
@@ -310,7 +314,7 @@ class DataCreditPanel extends PageTemplateClass {
                             as a weight.
                         </p>
                     </div>
-                    <h2 ref={this.nref("weather")}>Weather</h2>
+                    <h2 ref={nref("weather")}>Weather</h2>
                     <div>
                         <p>
                             Special thanks to <a href="https://twitter.com/OklahomaPerson">OklahomaPerson</a> for helping understand meterological data and help me
@@ -339,7 +343,7 @@ class DataCreditPanel extends PageTemplateClass {
                             statistics for each geography.
                         </p>
                     </div>
-                    <h2 ref={this.nref("2010")}>2010 Census</h2>
+                    <h2 ref={nref("2010")}>2010 Census</h2>
                     <div>
                         <p>
                             2010 Census data is treated the same way as 2020 Census data.
@@ -347,7 +351,7 @@ class DataCreditPanel extends PageTemplateClass {
                     </div>
                 </div>
 
-                <h1 ref={this.nref("election")}>Voting and Elections Science Team Data</h1>
+                <h1 ref={nref("election")}>Voting and Elections Science Team Data</h1>
                 <div>
                     Election Data is from the US Elections Project's Voting and Elections Science Team
                     (<a href="https://twitter.com/VEST_Team">VEST</a>).
@@ -360,7 +364,7 @@ class DataCreditPanel extends PageTemplateClass {
                     precinct boundaries in the dataset are slightly inaccurate, or there are no results for
                     the precincts overlapping the geography.
                 </div>
-                <h1 ref={this.nref("park")}>Parkland</h1>
+                <h1 ref={nref("park")}>Parkland</h1>
                 <div>
                     We compute the percentage of each 1km disc around each census block that is parkland.
                     We then compute the population weighted average of this statistic for each geography.
@@ -372,12 +376,12 @@ class DataCreditPanel extends PageTemplateClass {
                     We compute two statistics for each census block: the distance to the nearest feature, and
                     whether the census block is within some distance of the feature. We then compute
                     the population weighted average of these statistics for each geography.
-                    <h2 ref={this.nref("hospital")}>Hospitals</h2>
+                    <h2 ref={nref("hospital")}>Hospitals</h2>
                     <div>
                         Hospital data is from HIFLD via <a href="https://www.kaggle.com/datasets/carlosaguayo/usa-hospitals">Kaggle</a>.
                         We pick 10km as the distance threshold for hospitals.
                     </div>
-                    <h2 ref={this.nref("airport")}>Airports</h2>
+                    <h2 ref={nref("airport")}>Airports</h2>
                     <div>
 
                         <p>
@@ -385,25 +389,25 @@ class DataCreditPanel extends PageTemplateClass {
                             <a href="https://hub.arcgis.com/datasets/esri-de-content::world-airports/about">ArcGIS Hub</a>
                         </p>
                     </div>
-                    <h2 ref={this.nref("transit")}>Transit Stops</h2>
+                    <h2 ref={nref("transit")}>Transit Stops</h2>
                     <div>
                         Train stop data is from OSM. Special thanks to <a href="https://twitter.com/averyhatestwt">Avery</a> for helping process the train stop
                         data.
                     </div>
-                    <h2 ref={this.nref("superfund")}>Superfund Sites</h2>
+                    <h2 ref={nref("superfund")}>Superfund Sites</h2>
                     <div>
                         Superfund site data is from the EPA via&nbsp;
                         <a href="https://catalog.data.gov/dataset/u-s-epa-national-priorities-list-npl-sites-point-data-with-ciesin-modifications-version-2">
                             Data Gov
                         </a>
                     </div>
-                    <h2 ref={this.nref("school")}>Schools</h2>
+                    <h2 ref={nref("school")}>Schools</h2>
                     <div>
                         School data is from NCES via&nbsp;
                         <a href="https://hifld-geoplatform.opendata.arcgis.com/datasets/geoplatform::public-schools/about">HIFLD</a>.
                     </div>
                 </div>
-                <h1 ref={this.nref("gpw")}>Gridded Population</h1>
+                <h1 ref={nref("gpw")}>Gridded Population</h1>
                 <div>
                     Gridded population data is from <tt>Schiavina M., Freire S., Carioli A., MacManus K. (2023): GHS-POP R2023A - GHS population grid multitemporal (1975-2030).European Commission, Joint Research Centre (JRC)
                         {/* PID: http://data.europa.eu/89h/2ff68a52-5b5b-4a22-8f40-c41da8332cfe, doi:10.2905/2FF68A52-5B5B-4A22-8F40-C41DA8332CFE */}
@@ -421,28 +425,8 @@ class DataCreditPanel extends PageTemplateClass {
                     any circumstances, at least according to the Wikipedia page for the flag.
                 </div>
             </div>
-        );
-    }
-
-    componentDidMount() {
-        this.componentDidUpdate();
-    }
-
-    componentDidUpdate() {
-        // scroll to fragment
-        if (window.location.hash) {
-            console.log(window.location.hash);
-            const hash = window.location.hash.substring(1);
-            if (this._refs[hash]) {
-                console.log(this._refs[hash].current)
-                // delay to allow page to render
-                setTimeout(() => {
-                    this._refs[hash].current.scrollIntoView();
-                    this._refs[hash].current.classList.add("highlighted_header");
-                }, 200);
-            }
         }
-    }
+    />
 }
 
 async function loadPage() {

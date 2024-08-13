@@ -4,23 +4,19 @@ import ReactDOM from 'react-dom/client';
 import "./style.css";
 import "./common.css";
 
-import { PageTemplateClass } from './page_template/template';
+import { PageTemplate } from './page_template/template';
 
 
-class IndexPanel extends PageTemplateClass {
-    constructor(props) {
-        super(props);
-    }
-
-    main_content(template_info) {
-        return (
+function IndexPanel(props) {
+    return <PageTemplate
+        main_content={template_info =>
             <div>
                 <div>
                     <img src="/banner.png" alt="Urban Stats Logo" width="100%" />
                 </div>
 
                 <div className="centered_text" style={{ textAlign: "left" }}>
-                    <p>The Urban Stats is a database of various statistics related to density, housing, and race
+                    <p>Urban Stats is a database of various statistics related to density, housing, and race
                         in the United States for a variety of regions. It is intended to be a resource for journalists,
                         researchers, and anyone else who is interested in these topics. The data is collected from the
                         US Census Bureau's 2020 census; and shapefiles for each region of interest are obtained from
@@ -35,8 +31,8 @@ class IndexPanel extends PageTemplateClass {
                         href="https://twitter.com/notkavi">@notkavi</a>)</p>
                 </div>
             </div>
-        );
-    }
+        }
+    />
 }
 
 async function loadPage() {
