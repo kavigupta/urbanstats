@@ -5,8 +5,6 @@ RUN apt-get -y update
 RUN apt-get -y install python3-pip
 RUN apt-get -y install libgdal-dev
 
-WORKDIR /urbanstats
-COPY ./requirements.txt ./
 RUN pip3 install --break-system-packages -r requirements.txt
 
 RUN apt-get -y install chromium
@@ -21,5 +19,4 @@ RUN apt-get -y install libc6:i386
 RUN apt-get -y install libx11-6:i386
 RUN apt-get -y install fluxbox
 
-COPY ./ ./
 CMD ./test-ci.sh
