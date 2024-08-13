@@ -47,5 +47,5 @@ jobs:
   e2e:
     runs-on: ubuntu-22.04
     needs: build-and-push-image
-    container:
-      image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+    steps:
+      - uses: docker://${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
