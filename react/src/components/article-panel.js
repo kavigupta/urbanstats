@@ -78,16 +78,12 @@ class ArticlePanel extends PageTemplate {
         );
     }
 
-    has_screenshot_button() {
-        return true;
-    }
-
     screencap_elements() {
-        return {
+        return () => ({
             path: sanitize(this.props.longname) + ".png",
             overall_width: this.table_ref.current.offsetWidth * 2,
             elements_to_render: [this.headers_ref.current, this.table_ref.current, this.map_ref.current],
-        }
+        })
     }
 
     has_universe_selector() {

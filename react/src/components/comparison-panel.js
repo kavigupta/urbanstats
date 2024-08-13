@@ -39,16 +39,12 @@ class ComparisonPanel extends PageTemplate {
         this.map_ref = React.createRef();
     }
 
-    has_screenshot_button() {
-        return true;
-    }
-
     screencap_elements() {
-        return {
+        return () => ({
             path: sanitize(this.props.joined_string) + ".png",
             overall_width: this.table_ref.current.offsetWidth * 2,
             elements_to_render: [this.table_ref.current, this.map_ref.current],
-        }
+        })
     }
 
     has_universe_selector() {
