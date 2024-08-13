@@ -46,10 +46,10 @@ class PageTemplateClass extends React.Component {
 
 function PageTemplate({
     screencap_elements,
-    has_universe_selector,
     universes,
     main_content,
 }) {
+    const has_universe_selector = universes != undefined;
     const [hamburger_open, set_hamburger_open] = useState(false);
     const [screenshot_mode, set_screenshot_mode] = useState(false);
 
