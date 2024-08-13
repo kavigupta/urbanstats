@@ -12,7 +12,7 @@ class IndexPanel extends PageTemplate {
         super(props);
     }
 
-    main_content() {
+    main_content(template_info) {
         return (
             <div>
                 <div>

@@ -3,12 +3,10 @@ import React from 'react';
 import "../style.css";
 import "./sidebar.css";
 import { mobileLayout } from '../utils/responsive';
-import { SettingsDictionary, useSetting } from '../page_template/settings';
+import { SettingsDictionary, useSetting, useStatisticCategoryMetadataCheckboxes } from '../page_template/settings';
 
-export function Sidebar(props: {
-    statistic_category_metadata_checkboxes: { name: string, setting_key: keyof SettingsDictionary }[]
-}) {
-    const statistic_category_metadata_checkboxes = props.statistic_category_metadata_checkboxes;
+export function Sidebar() {
+    const statistic_category_metadata_checkboxes = useStatisticCategoryMetadataCheckboxes();
     let sidebar_section_content = "sidebar-section-content";
     let sidebar_section_title = "sidebar-section-title";
     if (mobileLayout()) {

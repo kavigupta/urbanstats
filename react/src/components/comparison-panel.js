@@ -39,23 +39,19 @@ class ComparisonPanel extends PageTemplate {
         this.map_ref = React.createRef();
     }
 
-    has_screenshot_button() {
-        return true;
-    }
-
     screencap_elements() {
-        return {
+        return () => ({
             path: sanitize(this.props.joined_string) + ".png",
             overall_width: this.table_ref.current.offsetWidth * 2,
             elements_to_render: [this.table_ref.current, this.map_ref.current],
-        }
+        })
     }
 
     has_universe_selector() {
         return true;
     }
 
-    main_content() {
+    main_content(template_info) {
         const self = this;
         if (this.props.names == undefined) {
             throw new Error("ComparisonPanel: names not set");
@@ -96,7 +92,7 @@ class ComparisonPanel extends PageTemplate {
                                         include_delete={this.props.datas.length > 1}
                                         on_click={() => on_delete(self.props.names, i)}
                                         on_change={(x) => on_change(self.props.names, i, x)}
-                                        screenshot_mode={this.state.screenshot_mode}
+                                        screenshot_mode={template_info.screenshot_mode}
                                     />
                                 </div>)
                             )}

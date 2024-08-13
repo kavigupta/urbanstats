@@ -10,70 +10,23 @@ import "@fontsource/jost/900.css";
 
 export { PageTemplate };
 
-import React, { Fragment } from 'react';
+import React, { Fragment, useState } from 'react';
 
 import { Header } from "../components/header";
 import { Sidebar } from "../components/sidebar";
 import "../common.css";
 import "../components/article.css";
-import { load_settings } from './settings';
 import { mobileLayout } from '../utils/responsive';
 import { create_screenshot } from '../components/screenshot';
-import { set_universe } from '../universe';
 
 class PageTemplate extends React.Component {
-    constructor(props) {
-        super(props);
-
-        const [settings, statistic_category_metadata_checkboxes] = load_settings();
-
-        this.statistic_category_metadata_checkboxes = statistic_category_metadata_checkboxes;
-
-        this.state = {
-            settings: settings,
-            hamburger_open: false,
-            screenshot_mode: false,
-        }
-    }
-
     render() {
-        const self = this;
-
-
-        const initiate_screenshot = async curr_universe => {
-            self.setState({ screenshot_mode: true });
-            setTimeout(async () => {
-                await self.screencap(curr_universe);
-                self.setState({ screenshot_mode: false });
-            })
-        }
-
-        return (
-            <Fragment>
-                <meta name="viewport" content="width=600" />
-                <div className={mobileLayout() ? "main_panel_mobile" : "main_panel"}>
-                    <Header
-                        hamburger_open={this.state.hamburger_open}
-                        set_hamburger_open={x => this.setState({ hamburger_open: x })}
-                        has_screenshot={this.has_screenshot_button()}
-                        has_universe_selector={this.has_universe_selector()}
-                        all_universes={this.props.universes}
-                        screenshot_mode={this.state.screenshot_mode}
-                        initiate_screenshot={curr_universe => initiate_screenshot(curr_universe)}
-                    />
-                    <div style={{ marginBlockEnd: "16px" }}></div>
-                    <BodyPanel
-                        hamburger_open={this.state.hamburger_open}
-                        main_content={this.main_content()}
-                        statistic_category_metadata={this.statistic_category_metadata_checkboxes}
-                    />
-                </div>
-            </Fragment>
-        );
-    }
-
-    has_screenshot_button() {
-        return false;
+        return <PageFunction
+            screencap_elements={this.screencap_elements()}
+            has_universe_selector={this.has_universe_selector()}
+            universes={this.props.universes}
+            main_content={template_info => this.main_content(template_info)}
+        />
     }
 
     has_universe_selector() {
@@ -82,28 +35,68 @@ class PageTemplate extends React.Component {
 
     screencap_elements() {
         // not implemented, should be overridden
-        return {
-            path: undefined,
-            overall_width: undefined,
-            elements_to_render: undefined,
-        }
+        return undefined;
     }
 
-    async screencap(curr_universe) {
-        const config = this.screencap_elements();
+    main_content(template_info) {
+        // not implemented, should be overridden
+        return (<div></div>);
+    }
+}
 
+function PageFunction({
+    screencap_elements,
+    has_universe_selector,
+    universes,
+    main_content,
+}) {
+    const [hamburger_open, set_hamburger_open] = useState(false);
+    const [screenshot_mode, set_screenshot_mode] = useState(false);
+
+    const has_screenshot_button = screencap_elements != undefined;
+
+    const screencap = async (curr_universe) => {
         try {
             console.log("Creating screenshot...");
-            await create_screenshot(config, this.has_universe_selector() ? curr_universe : undefined);
+            await create_screenshot(screencap_elements(), has_universe_selector ? curr_universe : undefined);
         } catch (e) {
             console.error(e);
         }
     }
 
-    main_content() {
-        // not implemented, should be overridden
-        return (<div></div>);
+    const initiate_screenshot = async curr_universe => {
+        set_screenshot_mode(true)
+        setTimeout(async () => {
+            await screencap(curr_universe);
+            set_screenshot_mode(false)
+        })
     }
+
+    const template_info = {
+        screenshot_mode: screenshot_mode
+    }
+
+    return (
+        <Fragment>
+            <meta name="viewport" content="width=600" />
+            <div className={mobileLayout() ? "main_panel_mobile" : "main_panel"}>
+                <Header
+                    hamburger_open={hamburger_open}
+                    set_hamburger_open={set_hamburger_open}
+                    has_screenshot={has_screenshot_button}
+                    has_universe_selector={has_universe_selector}
+                    all_universes={universes}
+                    screenshot_mode={screenshot_mode}
+                    initiate_screenshot={curr_universe => initiate_screenshot(curr_universe)}
+                />
+                <div style={{ marginBlockEnd: "16px" }}></div>
+                <BodyPanel
+                    hamburger_open={hamburger_open}
+                    main_content={main_content(template_info)}
+                />
+            </div>
+        </Fragment>
+    );
 }
 
 function TemplateFooter() {
@@ -132,14 +125,10 @@ function OtherCredits() {
 
 function BodyPanel(props) {
     if (props.hamburger_open) {
-        return <LeftPanel
-            statistic_category_metadata_checkboxes={props.statistic_category_metadata}
-        />
+        return <LeftPanel />
     }
     return <div className="body_panel">
-        {mobileLayout() ? undefined : <LeftPanel
-            statistic_category_metadata_checkboxes={props.statistic_category_metadata}
-        />}
+        {mobileLayout() ? undefined : <LeftPanel />}
         <div className={mobileLayout() ? "content_panel_mobile" : "right_panel"}>
             {props.main_content}
             <div className="gap"></div>
@@ -148,11 +137,10 @@ function BodyPanel(props) {
     </div>
 }
 
-function LeftPanel(props) {
+function LeftPanel() {
     return (
         <div className={mobileLayout() ? "left_panel_mobile" : "left_panel"}>
-            <Sidebar
-                statistic_category_metadata_checkboxes={props.statistic_category_metadata_checkboxes} />
+            <Sidebar />
         </div>
     )
 }

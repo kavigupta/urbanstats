@@ -24,7 +24,7 @@ class ArticlePanel extends PageTemplate {
         this.map_ref = React.createRef();
     }
 
-    main_content() {
+    main_content(template_info) {
         if (this.props.articleType == undefined) {
             throw new Error("articleType is undefined");
         }
@@ -78,16 +78,12 @@ class ArticlePanel extends PageTemplate {
         );
     }
 
-    has_screenshot_button() {
-        return true;
-    }
-
     screencap_elements() {
-        return {
+        return () => ({
             path: sanitize(this.props.longname) + ".png",
             overall_width: this.table_ref.current.offsetWidth * 2,
             elements_to_render: [this.headers_ref.current, this.table_ref.current, this.map_ref.current],
-        }
+        })
     }
 
     has_universe_selector() {

@@ -12,7 +12,7 @@ class AboutPanel extends PageTemplate {
         super(props);
     }
 
-    main_content() {
+    main_content(template_info) {
         return (
             <div className="serif">
                 <div className={headerTextClass()}>About</div>
