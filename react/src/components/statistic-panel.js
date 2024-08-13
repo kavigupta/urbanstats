@@ -40,10 +40,6 @@ class StatisticPanel extends PageTemplateClass {
         })
     }
 
-    has_universe_selector() {
-        return true;
-    }
-
     is_ascending() {
         return this.props.ordering === "ascending";
     }

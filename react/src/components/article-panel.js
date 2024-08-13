@@ -85,10 +85,6 @@ class ArticlePanel extends PageTemplateClass {
             elements_to_render: [this.headers_ref.current, this.table_ref.current, this.map_ref.current],
         })
     }
-
-    has_universe_selector() {
-        return true;
-    }
 }
 
 function ComparisonSearchBox(props) {

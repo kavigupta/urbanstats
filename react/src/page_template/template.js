@@ -23,14 +23,9 @@ class PageTemplateClass extends React.Component {
     render() {
         return <PageTemplate
             screencap_elements={this.screencap_elements()}
-            has_universe_selector={this.has_universe_selector()}
             universes={this.props.universes}
             main_content={template_info => this.main_content(template_info)}
         />
-    }
-
-    has_universe_selector() {
-        return false;
     }
 
     screencap_elements() {

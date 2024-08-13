@@ -47,10 +47,6 @@ class ComparisonPanel extends PageTemplateClass {
         })
     }
 
-    has_universe_selector() {
-        return true;
-    }
-
     main_content(template_info) {
         const self = this;
         if (this.props.names == undefined) {
