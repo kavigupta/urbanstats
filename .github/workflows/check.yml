@@ -1,4 +1,4 @@
-name: lint
+name: check
 on: [push]
 jobs:
   lint:
@@ -12,3 +12,10 @@ jobs:
         working-directory: react
       - run: npx eslint .
         working-directory: react
+  e2e:
+    runs-on: ubuntu-22.04
+    needs: lint # don't want to waste e2e runs
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./
+        id: e2e-test
