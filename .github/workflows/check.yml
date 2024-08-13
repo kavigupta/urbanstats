@@ -17,5 +17,4 @@ jobs:
     needs: lint # don't want to waste e2e runs
     steps:
       - uses: actions/checkout@v4
-      - uses: ./
-        id: e2e-test
+      - uses: ./actions/e2e-test
