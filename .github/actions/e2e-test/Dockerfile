@@ -5,6 +5,7 @@ RUN apt-get -y update
 RUN apt-get -y install python3-pip
 RUN apt-get -y install libgdal-dev
 
+RUN ls
 RUN pip3 install --break-system-packages -r requirements.txt
 
 RUN apt-get -y install chromium
