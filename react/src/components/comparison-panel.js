@@ -4,7 +4,7 @@ import React from 'react';
 
 import { StatisticRowRaw, StatisticRowRawCellContents, StatisticRow } from "./table";
 import { MapGeneric } from "./map";
-import { PageTemplateClass } from "../page_template/template.js";
+import { PageTemplate, PageTemplateClass } from "../page_template/template.js";
 import "../common.css";
 import "./article.css";
 import { load_article } from './load-article';
@@ -32,29 +32,16 @@ const COLOR_CYCLE = [
     "#8ac35a", // green
 ];
 
-class ComparisonPanel extends PageTemplateClass {
-    constructor(props) {
-        super(props);
-        this.table_ref = React.createRef();
-        this.map_ref = React.createRef();
-    }
-
-    screencap_elements() {
-        return () => ({
-            path: sanitize(this.props.joined_string) + ".png",
-            overall_width: this.table_ref.current.offsetWidth * 2,
-            elements_to_render: [this.table_ref.current, this.map_ref.current],
-        })
-    }
-
-    main_content(template_info) {
-        const self = this;
-        if (this.props.names == undefined) {
+function ComparisonPanel(props) {
+    const table_ref = React.createRef();
+    const map_ref = React.createRef();
+    const main_content = (template_info) => {
+        if (props.names == undefined) {
             throw new Error("ComparisonPanel: names not set");
         }
 
         const left_margin = 100 * left_margin_pct
-        const width_columns = (all_data_types_same(this.props.datas) ? 1.5 : 1) * this.props.datas.length + 1;
+        const width_columns = (all_data_types_same(props.datas) ? 1.5 : 1) * props.datas.length + 1;
 
         const cell = (is_left, i, contents) => {
             if (is_left) {
@@ -62,7 +49,7 @@ class ComparisonPanel extends PageTemplateClass {
                     {contents}
                 </div>
             }
-            const width = each(this.props.datas) + "%";
+            const width = each(props.datas) + "%";
             return <div key={i} style={{ width: width }}>
                 {contents}
             </div>
@@ -70,9 +57,9 @@ class ComparisonPanel extends PageTemplateClass {
 
         const bars = () => <div style={{ display: "flex" }}>
             {cell(true, 0, <div></div>)}
-            {this.props.datas.map(
+            {props.datas.map(
                 (data, i) => <div key={i} style={{
-                    width: each(this.props.datas) + "%",
+                    width: each(props.datas) + "%",
                     height: bar_height,
                     backgroundColor: color(i)
                 }} />
@@ -95,7 +82,7 @@ class ComparisonPanel extends PageTemplateClass {
         return (
             <div>
                 <div className={headerTextClass()}>Comparison</div>
-                <div className={subHeaderTextClass()}>{this.props.joined_string}</div>
+                <div className={subHeaderTextClass()}>{props.joined_string}</div>
                 <div style={{ marginBlockEnd: "16px" }}></div>
 
                 <div style={{ display: "flex" }}>
@@ -107,7 +94,7 @@ class ComparisonPanel extends PageTemplateClass {
                         <SearchBox
                             style={{ ...comparisonHeadStyle(), width: "100%" }}
                             placeholder={"Name"}
-                            on_change={(x) => add_new(self.props.names, x)}
+                            on_change={(x) => add_new(props.names, x)}
                         />
                     </div>
                 </div>
@@ -116,17 +103,17 @@ class ComparisonPanel extends PageTemplateClass {
                 <div style={{ marginBlockEnd: "1em" }}></div>
 
                 {maybe_scroll(
-                    <div ref={this.table_ref}>
+                    <div ref={table_ref}>
                         {bars()}
                         <div style={{ display: "flex" }}>
                             {cell(true, 0, <div></div>)}
-                            {this.props.datas.map(
+                            {props.datas.map(
                                 (data, i) => cell(false, i, <div>
                                     <HeadingDisplay
                                         longname={data.longname}
-                                        include_delete={this.props.datas.length > 1}
-                                        on_click={() => on_delete(self.props.names, i)}
-                                        on_change={(x) => on_change(self.props.names, i, x)}
+                                        include_delete={props.datas.length > 1}
+                                        on_click={() => on_delete(props.names, i)}
+                                        on_change={(x) => on_change(props.names, i, x)}
                                         screenshot_mode={template_info.screenshot_mode}
                                     />
                                 </div>)
@@ -135,17 +122,17 @@ class ComparisonPanel extends PageTemplateClass {
                         {bars()}
 
                         <ComparsionPageRows
-                            names={this.props.names}
-                            datas={this.props.datas}
+                            names={props.names}
+                            datas={props.datas}
                         />
                     </div>
                 )}
                 <div className="gap"></div>
 
-                <div ref={this.map_ref}>
+                <div ref={map_ref}>
                     <ComparisonMap
-                        longnames={this.props.datas.map(x => x.longname)}
-                        colors={this.props.datas.map((_, i) => color(i))}
+                        longnames={props.datas.map(x => x.longname)}
+                        colors={props.datas.map((_, i) => color(i))}
                         id="map_combined"
                         article_type={undefined}
                         basemap={{ type: "osm" }}
@@ -154,6 +141,16 @@ class ComparisonPanel extends PageTemplateClass {
             </div>
         );
     }
+    const screencap_elements = () => ({
+        path: sanitize(props.joined_string) + ".png",
+        overall_width: table_ref.current.offsetWidth * 2,
+        elements_to_render: [table_ref.current, map_ref.current],
+    })
+    return <PageTemplate
+        main_content={main_content}
+        screencap_elements={screencap_elements}
+        universes={props.universes}
+    />
 }
 
 function color(i) {
