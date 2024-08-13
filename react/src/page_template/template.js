@@ -8,7 +8,7 @@ import "@fontsource/jost/700.css";
 import "@fontsource/jost/800.css";
 import "@fontsource/jost/900.css";
 
-export { PageTemplate };
+export { PageTemplateClass, PageTemplate };
 
 import React, { Fragment, useState } from 'react';
 
@@ -19,9 +19,9 @@ import "../components/article.css";
 import { mobileLayout } from '../utils/responsive';
 import { create_screenshot } from '../components/screenshot';
 
-class PageTemplate extends React.Component {
+class PageTemplateClass extends React.Component {
     render() {
-        return <PageFunction
+        return <PageTemplate
             screencap_elements={this.screencap_elements()}
             has_universe_selector={this.has_universe_selector()}
             universes={this.props.universes}
@@ -44,7 +44,7 @@ class PageTemplate extends React.Component {
     }
 }
 
-function PageFunction({
+function PageTemplate({
     screencap_elements,
     has_universe_selector,
     universes,

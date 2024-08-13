@@ -4,7 +4,7 @@ import React from 'react';
 
 import { StatisticRowRaw, StatisticRowRawCellContents, StatisticRow } from "./table";
 import { MapGeneric } from "./map";
-import { PageTemplate } from "../page_template/template.js";
+import { PageTemplateClass } from "../page_template/template.js";
 import "../common.css";
 import "./article.css";
 import { load_article } from './load-article';
@@ -32,7 +32,7 @@ const COLOR_CYCLE = [
     "#8ac35a", // green
 ];
 
-class ComparisonPanel extends PageTemplate {
+class ComparisonPanel extends PageTemplateClass {
     constructor(props) {
         super(props);
         this.table_ref = React.createRef();

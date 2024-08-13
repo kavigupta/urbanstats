@@ -4,7 +4,7 @@ import React from 'react';
 
 import { Statistic } from "./table";
 import { MapGeneric } from "./map";
-import { PageTemplate } from "../page_template/template.js";
+import { PageTemplateClass } from "../page_template/template.js";
 import "../common.css";
 import "./article.css";
 import { loadProtobuf } from '../load_json';
@@ -249,7 +249,7 @@ function mapSettingsFromURLParams() {
     return settings;
 }
 
-class MapperPanel extends PageTemplate {
+class MapperPanel extends PageTemplateClass {
     constructor(props) {
         super(props);
         this.names = require("../data/statistic_name_list.json");

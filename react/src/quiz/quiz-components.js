@@ -3,7 +3,6 @@ export { Header, Footer, Help, nameOfQuizKind, user_id };
 
 import React from 'react';
 
-import { PageTemplate } from "../page_template/template.js";
 import "../common.css";
 import "../components/quiz.css";
 import { headerTextClass } from '../utils/responsive';
@@ -27,7 +26,7 @@ function Header({ today, quiz_kind }) {
     return (<div className={headerTextClass()}>{text}</div>);
 }
 
-class Footer extends PageTemplate {
+class Footer extends React.Component {
     constructor(props) {
         super(props);
     }
@@ -52,7 +51,7 @@ class Footer extends PageTemplate {
     }
 }
 
-class Help extends PageTemplate {
+class Help extends React.Component {
     constructor(props) {
         super(props);
     }

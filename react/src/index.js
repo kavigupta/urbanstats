@@ -4,10 +4,10 @@ import ReactDOM from 'react-dom/client';
 import "./style.css";
 import "./common.css";
 
-import { PageTemplate } from './page_template/template';
+import { PageTemplateClass } from './page_template/template';
 
 
-class IndexPanel extends PageTemplate {
+class IndexPanel extends PageTemplateClass {
     constructor(props) {
         super(props);
     }

@@ -5,7 +5,7 @@ import React from 'react';
 import { StatisticRowRaw } from "./table";
 import { Map } from "./map";
 import { Related } from "./related-button";
-import { PageTemplate } from "../page_template/template.js";
+import { PageTemplateClass } from "../page_template/template.js";
 import "../common.css";
 import "./article.css";
 import { load_article } from './load-article';
@@ -15,7 +15,7 @@ import { article_link, comparison_link, sanitize } from '../navigation/links';
 import { longname_is_exclusively_american, useUniverse } from '../universe';
 import { useSetting, useTableCheckboxSettings } from '../page_template/settings';
 
-class ArticlePanel extends PageTemplate {
+class ArticlePanel extends PageTemplateClass {
     constructor(props) {
         super(props);
 

@@ -2,7 +2,7 @@ export { QuizPanel, a_correct };
 
 import React from 'react';
 
-import { PageTemplate } from "../page_template/template.js";
+import { PageTemplateClass } from "../page_template/template.js";
 import "../common.css";
 import "./quiz.css";
 import { reportToServer, reportToServerRetro } from '../quiz/statistics.js';
@@ -11,7 +11,7 @@ import { QuizResult } from '../quiz/quiz-result.js';
 
 export const ENDPOINT = "https://persistent.urbanstats.org";
 
-class QuizPanel extends PageTemplate {
+class QuizPanel extends PageTemplateClass {
     constructor(props) {
         super(props);
         this.state = {

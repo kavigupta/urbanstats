@@ -2,7 +2,7 @@ export { StatisticPanel };
 
 import React from 'react';
 
-import { PageTemplate } from "../page_template/template.js";
+import { PageTemplateClass } from "../page_template/template.js";
 import "../common.css";
 import "./article.css";
 import { headerTextClass, subHeaderTextClass } from '../utils/responsive';
@@ -23,7 +23,7 @@ const column_styles = [
     { textAlign: "right" }
 ];
 
-class StatisticPanel extends PageTemplate {
+class StatisticPanel extends PageTemplateClass {
     constructor(props) {
         super(props);
         this.headers_ref = React.createRef();

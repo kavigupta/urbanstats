@@ -3,7 +3,7 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import "./style.css";
 import "./common.css";
-import { PageTemplate } from "./page_template/template.js";
+import { PageTemplateClass } from "./page_template/template.js";
 import { headerTextClass } from './utils/responsive';
 
 const industry_occupation_table = require("./data/explanation_industry_occupation_table.json");
@@ -42,7 +42,7 @@ const ExplanationTable = (props) =>
         </div>
     </div>
 
-class DataCreditPanel extends PageTemplate {
+class DataCreditPanel extends PageTemplateClass {
     constructor(props) {
         super(props);
         this._refs = {};
