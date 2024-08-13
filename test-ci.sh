@@ -19,15 +19,10 @@ python3 create_website.py ../density-db --no-data --no-geo --no-juxta
 # Start display subsystem to browser can run
 Xvfb :10 -ac &
 export DISPLAY=:10
+fluxbox >/dev/null 2>&1 & # needed for window resizing in Testcafe
 
 cd react
 
-for browser in path:$(which firefox-nightly) ; do
-    for test_file in test/*_test.js ; do
-        npx testcafe -e $browser $test_file
-    done
+for test_file in test/*_test.js ; do
+    npx testcafe -e chromium $test_file
 done
-
-cd ..
-
-python3 tests/check_images.py

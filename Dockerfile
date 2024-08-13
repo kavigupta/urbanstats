@@ -11,10 +11,15 @@ RUN pip3 install --break-system-packages -r requirements.txt
 
 RUN apt-get -y install chromium
 RUN apt-get -y install xvfb
-COPY ./install-firefox-ci.sh ./
-RUN ./install-firefox-ci.sh
 
 RUN git clone --progress --depth 1 https://github.com/densitydb/densitydb.github.io.git ../density-db
+
+# needed for window resizing in Testcafe
+RUN dpkg --add-architecture i386
+RUN apt-get -y update
+RUN apt-get -y install libc6:i386
+RUN apt-get -y install libx11-6:i386
+RUN apt-get -y install fluxbox
 
 COPY ./ ./
 CMD ./test-ci.sh
