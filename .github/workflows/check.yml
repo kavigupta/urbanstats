@@ -3,6 +3,7 @@ on: [push]
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}/e2e
+  BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
 jobs:
   lint:
     runs-on: ubuntu-22.04

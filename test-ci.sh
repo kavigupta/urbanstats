@@ -3,13 +3,12 @@
 
 set -e
 
-# env:
-# BRANCH_NAME: ${{ github.head_ref || github.ref_name }} 
+cd /urbanstats
 
 pushd ../density-db
 git fetch --depth 1 origin # cloned in docker
 git checkout origin
-git checkout origin/$BRANCH_NAME || true # Checkout the same branch name on the remote, if it exists
+git checkout origin/$BRANCH_NAME || true # Checkout the same branch name on the remote, if it exists. BRANCH_NAME defined in workflow env
 
 python3 -m http.server &
 
