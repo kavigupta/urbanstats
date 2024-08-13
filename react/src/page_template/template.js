@@ -41,6 +41,10 @@ class PageTemplate extends React.Component {
             })
         }
 
+        const template_info = {
+            screenshot_mode: this.state.screenshot_mode
+        }
+
         return (
             <Fragment>
                 <meta name="viewport" content="width=600" />
@@ -57,7 +61,7 @@ class PageTemplate extends React.Component {
                     <div style={{ marginBlockEnd: "16px" }}></div>
                     <BodyPanel
                         hamburger_open={this.state.hamburger_open}
-                        main_content={this.main_content()}
+                        main_content={this.main_content(template_info)}
                     />
                 </div>
             </Fragment>
@@ -92,7 +96,7 @@ class PageTemplate extends React.Component {
         }
     }
 
-    main_content() {
+    main_content(template_info) {
         // not implemented, should be overridden
         return (<div></div>);
     }

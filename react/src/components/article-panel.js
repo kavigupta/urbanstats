@@ -24,7 +24,7 @@ class ArticlePanel extends PageTemplate {
         this.map_ref = React.createRef();
     }
 
-    main_content() {
+    main_content(template_info) {
         if (this.props.articleType == undefined) {
             throw new Error("articleType is undefined");
         }

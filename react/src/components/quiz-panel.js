@@ -24,7 +24,7 @@ class QuizPanel extends PageTemplate {
         this.todays_quiz = this.props.todays_quiz;
     }
 
-    main_content() {
+    main_content(template_info) {
 
         const quiz = this.todays_quiz;
         const history = this.get_todays_quiz_history();

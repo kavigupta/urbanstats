@@ -321,7 +321,7 @@ class MapperPanel extends PageTemplate {
         return super.render();
     }
 
-    main_content() {
+    main_content(template_info) {
         if (this.state.map_settings === undefined) {
             throw new Error("MapperPanel.main_content: map settings not set");
         }

@@ -108,7 +108,7 @@ class StatisticPanel extends PageTemplate {
         return style;
     }
 
-    main_content() {
+    main_content(template_info) {
         return <div>
             <div ref={this.headers_ref}>
                 <div className={headerTextClass()}>{this.props.rendered_statname}</div>
