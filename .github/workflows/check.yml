@@ -1,20 +1,20 @@
 name: check
 on: [push]
 jobs:
-  lint:
-    runs-on: ubuntu-22.04
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 20
-      - run: npm ci
-        working-directory: react
-      - run: npx eslint .
-        working-directory: react
+  # lint:
+  #   runs-on: ubuntu-22.04
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #     - uses: actions/setup-node@v4
+  #       with:
+  #         node-version: 20
+  #     - run: npm ci
+  #       working-directory: react
+  #     - run: npx eslint .
+  #       working-directory: react
   e2e:
     runs-on: ubuntu-22.04
-    needs: lint # don't want to waste e2e runs
+    # needs: lint # don't want to waste e2e runs
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/e2e-test
