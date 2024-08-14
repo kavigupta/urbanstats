@@ -104,7 +104,7 @@ class QuizQuestion extends React.Component {
                 <div className="gap"></div>
                 <div style={row_style}>
                     <div style={{ width: "50%", padding: "0.5em" }}>
-                        <div role='button' className={button_a} onClick={() => this.props.on_select("A")} style={button_style}>
+                        <div role='button' id="quiz-answer-button-a" className={button_a} onClick={() => this.props.on_select("A")} style={button_style}>
                             <span style={{ margin: "auto" }}>
                                 <div className={"centered_text " + quiztext_css}>
                                     {this.get_option_a()}
@@ -113,7 +113,7 @@ class QuizQuestion extends React.Component {
                         </div>
                     </div>
                     <div style={{ width: "50%", padding: "0.5em" }}>
-                        <div role='button' className={button_b} onClick={() => this.props.on_select("B")} style={button_style}>
+                        <div role='button' id="quiz-answer-button-b" className={button_b} onClick={() => this.props.on_select("B")} style={button_style}>
                             <span style={{ margin: "auto" }}>
                                 <div className={"centered_text " + quiztext_css}>
                                     {this.get_option_b()}
