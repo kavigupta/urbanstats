@@ -16,7 +16,7 @@ export function Header(props: {
     hamburger_open: boolean,
     set_hamburger_open: (newValue: boolean) => void,
     has_universe_selector: boolean,
-    all_universes: string[],
+    all_universes?: string[],
     has_screenshot: boolean,
     screenshot_mode: boolean,
     initiate_screenshot: (curr_universe: string) => void
@@ -36,7 +36,7 @@ export function Header(props: {
                     {!mobileLayout() && props.has_universe_selector
                         ? <div style={{ paddingRight: "0.5em" }}>
                             <UniverseSelector
-                                all_universes={props.all_universes}
+                                all_universes={props.all_universes!}
                             />
                         </div>
                         : undefined}
@@ -79,7 +79,7 @@ function TopLeft(props: {
     hamburger_open: boolean,
     set_hamburger_open: (newValue: boolean) => void,
     has_universe_selector: boolean,
-    all_universes: string[],
+    all_universes?: string[],
 }) {
     if (mobileLayout()) {
         return (
@@ -89,7 +89,7 @@ function TopLeft(props: {
                 {
                     props.has_universe_selector ?
                         <UniverseSelector
-                            all_universes={props.all_universes}
+                            all_universes={props.all_universes!}
                         /> :
                         <HeaderImage />
                 }

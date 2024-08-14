@@ -17,14 +17,22 @@ import { Sidebar } from "../components/sidebar";
 import "../common.css";
 import "../components/article.css";
 import { mobileLayout } from '../utils/responsive';
-import { create_screenshot } from '../components/screenshot';
+import { create_screenshot, ScreencapElements } from '../components/screenshot';
 
-class PageTemplateClass extends React.Component {
+interface TemplateParams {
+    universes?: string[];
+}
+
+interface TemplateInfo {
+    screenshot_mode: boolean;
+}
+
+class PageTemplateClass extends React.Component<TemplateParams> {
     render() {
         return <PageTemplate
             screencap_elements={this.screencap_elements()}
             universes={this.props.universes}
-            main_content={template_info => this.main_content(template_info)}
+            main_content={(template_info: TemplateInfo) => this.main_content(template_info)}
         />
     }
 
@@ -33,33 +41,35 @@ class PageTemplateClass extends React.Component {
         return undefined;
     }
 
-    main_content(template_info) {
+    main_content(template_info: TemplateInfo) {
         // not implemented, should be overridden
         return (<div></div>);
     }
 }
 
-function PageTemplate({
-    screencap_elements,
-    universes,
-    main_content,
+type ScreencapElementsProvider = () => ScreencapElements;
+
+function PageTemplate(props: {
+    screencap_elements?: ScreencapElementsProvider,
+    universes?: string[],
+    main_content: (template_info: TemplateInfo) => JSX.Element
 }) {
-    const has_universe_selector = universes != undefined;
+    const has_universe_selector = props.universes != undefined;
     const [hamburger_open, set_hamburger_open] = useState(false);
     const [screenshot_mode, set_screenshot_mode] = useState(false);
 
-    const has_screenshot_button = screencap_elements != undefined;
+    const has_screenshot_button = props.screencap_elements != undefined;
 
-    const screencap = async (curr_universe) => {
+    const screencap = async (curr_universe: string) => {
         try {
             console.log("Creating screenshot...");
-            await create_screenshot(screencap_elements(), has_universe_selector ? curr_universe : undefined);
+            await create_screenshot(props.screencap_elements!(), has_universe_selector ? curr_universe : undefined);
         } catch (e) {
             console.error(e);
         }
     }
 
-    const initiate_screenshot = async curr_universe => {
+    const initiate_screenshot = async (curr_universe: string) => {
         set_screenshot_mode(true)
         setTimeout(async () => {
             await screencap(curr_universe);
@@ -80,14 +90,14 @@ function PageTemplate({
                     set_hamburger_open={set_hamburger_open}
                     has_screenshot={has_screenshot_button}
                     has_universe_selector={has_universe_selector}
-                    all_universes={universes}
+                    all_universes={props.universes}
                     screenshot_mode={screenshot_mode}
                     initiate_screenshot={curr_universe => initiate_screenshot(curr_universe)}
                 />
                 <div style={{ marginBlockEnd: "16px" }}></div>
                 <BodyPanel
                     hamburger_open={hamburger_open}
-                    main_content={main_content(template_info)}
+                    main_content={props.main_content(template_info)}
                 />
             </div>
         </Fragment>
@@ -118,7 +128,7 @@ function OtherCredits() {
     </span>
 }
 
-function BodyPanel(props) {
+function BodyPanel(props: {hamburger_open: boolean, main_content: JSX.Element}) {
     if (props.hamburger_open) {
         return <LeftPanel />
     }

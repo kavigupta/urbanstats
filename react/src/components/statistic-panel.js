@@ -2,7 +2,7 @@ export { StatisticPanel };
 
 import React from 'react';
 
-import { PageTemplateClass } from "../page_template/template.js";
+import { PageTemplateClass } from "../page_template/template";
 import "../common.css";
 import "./article.css";
 import { headerTextClass, subHeaderTextClass } from '../utils/responsive';

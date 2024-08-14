@@ -5,7 +5,7 @@ import React, { useRef } from 'react';
 import { StatisticRowRaw } from "./table";
 import { Map } from "./map";
 import { Related } from "./related-button";
-import { PageTemplate } from "../page_template/template.js";
+import { PageTemplate } from "../page_template/template";
 import "../common.css";
 import "./article.css";
 import { load_article } from './load-article';
