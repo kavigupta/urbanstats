@@ -1,9 +1,9 @@
 FROM ubuntu:22.04
 FROM node:20
+FROM python:3.10
 
 RUN dpkg --add-architecture i386
 RUN apt-get -y update
-RUN apt-get -y install python3-pip
 RUN apt-get -y install libgdal-dev
 
 RUN apt-get -y install chromium
