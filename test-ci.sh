@@ -3,16 +3,15 @@
 
 set -e
 
-cd /urbanstats
+echo "GITHUB_WORKSPACE $GITHUB_WORKSPACE"
 
-pushd ../density-db
-git fetch --depth 1 origin # cloned in docker
+cd /density-db
 git checkout origin
 git checkout origin/$BRANCH_NAME || true # Checkout the same branch name on the remote, if it exists. BRANCH_NAME defined in workflow env
 
 python3 -m http.server &
 
-popd
+cd $GITHUB_WORKSPACE
 python3 create_website.py ../density-db --no-data --no-geo --no-juxta
 
 # Start display subsystem to browser can run
