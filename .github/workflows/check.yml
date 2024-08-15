@@ -18,6 +18,8 @@ jobs:
         working-directory: react
   build-and-push-image:
     runs-on: ubuntu-22.04
+    outputs:
+      image_tag: ${{ steps.meta.outputs.tags }}
     permissions:
       contents: read
       packages: write
@@ -51,4 +53,4 @@ jobs:
     runs-on: ubuntu-22.04
     needs: build-and-push-image
     steps:
-      - uses: docker://${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.BRANCH_NAME }}
+      - uses: docker://ghcr.io/${{ needs.build.outputs.image_tag }}
