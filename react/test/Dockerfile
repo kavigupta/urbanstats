@@ -22,4 +22,4 @@ RUN apt-get -y install libx11-6:i386
 RUN apt-get -y install fluxbox
 
 COPY ./ ./
-CMD /urbanstats/test-ci.sh
+ENTRYPOINT [ "/bin/bash" ] 
