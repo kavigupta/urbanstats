@@ -1,6 +1,9 @@
-FROM ubuntu:22.04
-FROM node:20
+# This version for compatibility with pandas
 FROM python:3.10
+
+# 😭
+RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash -
+RUN apt-get install -y nodejs
 
 RUN dpkg --add-architecture i386
 RUN apt-get -y update
