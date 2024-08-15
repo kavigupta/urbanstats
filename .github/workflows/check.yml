@@ -53,6 +53,6 @@ jobs:
     runs-on: ubuntu-22.04
     needs: build-and-push-image
     container:
-      image: ghcr.io/${{ needs.build.outputs.image_tag }}
+      image: ghcr.io/${{ needs.build-and-push-image.outputs.image_tag }}
     steps:
       - run: /urbanstats/test-ci.sh
