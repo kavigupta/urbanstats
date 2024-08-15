@@ -12,7 +12,7 @@ git checkout origin/$BRANCH_NAME || true # Checkout the same branch name on the 
 python3 -m http.server &
 
 cd $GITHUB_WORKSPACE
-python3 create_website.py ../density-db --no-data --no-geo --no-juxta
+python3 create_website.py /density-db --no-data --no-geo --no-juxta
 
 # Start display subsystem to browser can run
 Xvfb :10 -ac &
