@@ -16,6 +16,7 @@ jobs:
         working-directory: react
       - run: npx eslint .
         working-directory: react
+
   build-and-push-image:
     runs-on: ubuntu-22.04
     outputs:
@@ -50,12 +51,49 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=registry,ref=${{ steps.meta.outputs.tags }}
           cache-to: type=inline
-  e2e:
+
+  build-frontend:
     runs-on: ubuntu-22.04
     needs: build-and-push-image
     container:
       image: ghcr.io/${{ needs.build-and-push-image.outputs.image_tag }}
     steps:
       - uses: actions/checkout@v4
-      - run: git clone --progress --depth 1 https://github.com/densitydb/densitydb.github.io.git /density-db
-      - run: $GITHUB_WORKSPACE/test-ci.sh
+      - run: python3 create_website.py react/test/density-db --no-data --no-geo --no-juxta
+      - uses: actions/upload-artifact@v4
+        with:
+          name: frontend-build
+          path: react/test/density-db
+
+  list-e2e-tests:
+    runs-on: ubuntu-22.04
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: set-matrix
+        run: echo "matrix=$(ls ./test/**/*_test.js | jq -R -s -c 'split("\n")[:-1]')" >> $GITHUB_OUTPUT
+        working-directory: react
+
+  run-e2e-tests:
+    runs-on: ubuntu-22.04
+    needs: [build-and-push-image, list-e2e-tests]
+    container:
+      image: ghcr.io/${{ needs.build-and-push-image.outputs.image_tag }}
+    strategy:
+      matrix:
+        test-file: ${{ fromJson(needs.list-e2e-tests.outputs.matrix) }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: frontend-build
+      - run: |
+          # Start display subsystem to browser can run
+          Xvfb :10 -ac &
+          export DISPLAY=:10
+          fluxbox >/dev/null 2>&1 & # needed for window resizing in Testcafe
+      - run: |
+          npx ts-node test/ci_proxy.ts &
+          npx testcafe -e chromium ${{ matrix.test-file }}
+        working-directory: react

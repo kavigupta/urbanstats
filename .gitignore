@@ -7,3 +7,4 @@ dist
 .vscode
 *Copy1.ipynb*
 .DS_Store
+react/test/density-db
