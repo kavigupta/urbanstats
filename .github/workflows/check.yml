@@ -73,7 +73,7 @@ jobs:
       - uses: actions/checkout@v4
       - id: set-matrix
         run: echo "matrix=$(find . -name '*_test.js' | jq -R -s -c 'split("\n")[:-1]')" >> $GITHUB_OUTPUT
-        working-directory: react
+        working-directory: react/test
 
   run-e2e-tests:
     runs-on: ubuntu-22.04
@@ -88,12 +88,13 @@ jobs:
       - uses: actions/download-artifact@v4
         with:
           name: frontend-build
+          path: react/test/density-db
       - run: |
           # Start display subsystem to browser can run
           Xvfb :10 -ac &
           export DISPLAY=:10
           fluxbox >/dev/null 2>&1 & # needed for window resizing in Testcafe
-      - run: |
+          npm ci
           npx ts-node test/ci_proxy.ts &
-          npx testcafe -e chromium ${{ matrix.test-file }}
+          npx testcafe -e chromium test/${{ matrix.test-file }}
         working-directory: react
