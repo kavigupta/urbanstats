@@ -77,7 +77,7 @@ jobs:
 
   run-e2e-tests:
     runs-on: ubuntu-22.04
-    needs: [build-and-push-image, list-e2e-tests]
+    needs: [build-and-push-image, build-frontend, list-e2e-tests]
     container:
       image: ghcr.io/${{ needs.build-and-push-image.outputs.image_tag }}
     strategy:
