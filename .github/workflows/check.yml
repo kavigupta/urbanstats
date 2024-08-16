@@ -90,7 +90,8 @@ jobs:
         with:
           name: frontend-build
           path: react/test/density-db
-      - run: |
+      - name: Run tests
+        run: |
           # Start display subsystem to browser can run
           Xvfb :10 -ac &
           export DISPLAY=:10
