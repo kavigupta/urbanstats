@@ -81,6 +81,7 @@ jobs:
     container:
       image: ghcr.io/${{ needs.build-and-push-image.outputs.image_tag }}
     strategy:
+      fail-fast: false
       matrix:
         test-file: ${{ fromJson(needs.list-e2e-tests.outputs.matrix) }}
     steps:
