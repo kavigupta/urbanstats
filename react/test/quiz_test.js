@@ -55,6 +55,10 @@ function juxtastat_table() {
     return run_query("SELECT user, day, corrects from JuxtaStatIndividualStats");
 }
 
+function retrostat_table() {
+    return run_query("SELECT user, week, corrects from JuxtaStatIndividualStatsRetrostat");
+}
+
 function quiz_fixture(fix_name, url, new_localstorage, sql_statements) {
     fixture(fix_name)
         .page(url)
@@ -103,7 +107,7 @@ async function click_buttons(t, whichs) {
     }
 }
 
-function example_quiz_history(min_quiz, max_quiz) {
+function example_quiz_history(min_quiz, max_quiz, min_retro, max_retro) {
     const quiz_history = {};
     for (var i = min_quiz; i <= max_quiz; i++) {
         quiz_history[i] = {
@@ -115,6 +119,14 @@ function example_quiz_history(min_quiz, max_quiz) {
         quiz_history[62] = {
             "choices": ["A", "A", "A", "A", "A"],
             "correct_pattern": [false, false, false, false, false]
+        }
+    }
+    if (min_retro && max_retro) {
+        for (var i = min_retro; i <= max_retro; i++) {
+            quiz_history["W" + i] = {
+                "choices": ["A", "A", "A", "A", "A"],
+                "correct_pattern": [true, true, true, i % 3 == 1, i % 4 == 1]
+            }
         }
     }
     return quiz_history;
@@ -254,7 +266,7 @@ test('quiz-percentage-correct', async t => {
 quiz_fixture(
     'new user',
     TARGET + '/quiz.html?date=99',
-    { },
+    {},
     "",
 );
 
@@ -279,6 +291,58 @@ test('quiz-new-user', async t => {
     const juxta_table = await juxtastat_table();
     await t.expect(juxta_table).eql(`${user_id_int}|99|15\n`);
     await t.expect(await run_query("SELECT user from JuxtastatUserDomain")).eql(`${user_id_int}\n`);
+});
+
+quiz_fixture(
+    'retrostat',
+    TARGET + '/quiz.html?date=99',
+    { "persistent_id": "000000000000007", "quiz_history": JSON.stringify(example_quiz_history(87, 93, 27, 33)) },
+    `
+    CREATE TABLE IF NOT EXISTS JuxtaStatIndividualStats
+        (user integer, day integer, corrects integer, time integer, PRIMARY KEY (user, day));
+    
+    CREATE TABLE IF NOT EXISTS JuxtaStatIndividualStatsRetrostat
+        (user integer, week integer, corrects integer, time integer, PRIMARY KEY (user, week));
+
+    INSERT INTO JuxtaStatIndividualStats VALUES (7, 90, 0, 0);
+    INSERT INTO JuxtaStatIndividualStatsRetrostat VALUES (7, 30, 0, 0);
+    `
+);
+
+test('quiz-retrostat-regular-quiz-reporting', async t => {
+    await t.eval(() => location.reload(true));
+    await click_buttons(t, ["a", "a", "a", "a", "a"]);
+    await t.wait(2000);
+    let quiz_history = await t.eval(() => {
+        return JSON.parse(localStorage.getItem("quiz_history"));
+    });
+    let expected_quiz_history = example_quiz_history(87, 93, 27, 33);
+    expected_quiz_history[99] = {
+        "choices": ["A", "A", "A", "A", "A"],
+        "correct_pattern": [true, true, true, true, false]
+    }
+    await t.expect(quiz_history).eql(expected_quiz_history);
+    await t.expect(await juxtastat_table()).eql("7|90|0\n7|91|15\n7|92|7\n7|93|23\n7|99|15\n");
+    await t.expect(await retrostat_table()).eql("7|30|0\n");
+})
+
+test('quiz-retrostat-retrostat-reporting', async t => {
+    const url = TARGET + '/quiz.html?mode=retro&date=38';
+    await t.navigateTo(url);
+    await t.eval(() => location.reload(true));
+    await click_buttons(t, ["a", "a", "a", "a", "a"]);
+    await t.wait(2000);
+    let quiz_history = await t.eval(() => {
+        return JSON.parse(localStorage.getItem("quiz_history"));
+    });
+    let expected_quiz_history = example_quiz_history(87, 93, 27, 33);
+    expected_quiz_history["W38"] = {
+        "choices": ["A", "A", "A", "A", "A"],
+        "correct_pattern": [false, false, true, false, true]
+    }
+    await t.expect(quiz_history).eql(expected_quiz_history);
+    await t.expect(await juxtastat_table()).eql("7|90|0\n");
+    await t.expect(await retrostat_table()).eql("7|30|0\n7|31|15\n7|32|7\n7|33|23\n7|38|20\n");
 });
 
 fixture('quiz result test')
