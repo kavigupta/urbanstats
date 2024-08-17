@@ -55,7 +55,17 @@ function quiz_fixture(fix_name, url, new_localstorage, sql_statements) {
             const tempfile = "/tmp/quiz_test_" + Math.floor(Math.random() * 1000000) + ".sql";
             // write the sql statements to the temporary file
             writeFileSync(tempfile, sql_statements);
-            exec(`rm ../urbanstats-persistent-data/db.sqlite3; cd ../urbanstats-persistent-data; cat ${tempfile} | sqlite3 db.sqlite3; cd -`);
+            await new Promise((resolve, reject) => {
+                exec(`rm ../urbanstats-persistent-data/db.sqlite3; cd ../urbanstats-persistent-data; cat ${tempfile} | sqlite3 db.sqlite3; cd -`, (err, stdout, stderr) => {
+                    if (err || stderr) {
+                        console.log(err);
+                        console.log(stderr);
+                        reject(err);
+                    }
+                    resolve(stdout);
+                }
+                );
+            });
             exec("bash ../urbanstats-persistent-data/run_for_test.sh");
             await t.wait(2000);
             await t.eval(() => {
@@ -166,7 +176,7 @@ fixture('quiz result test')
         await t.eval(() => {
             localStorage.clear()
             localStorage.setItem("quiz_history", JSON.stringify(example_quiz_history(2, 100)));
-        });
+        }, { dependencies: { example_quiz_history } });
     });
 
 test('quiz-results-test', async t => {
