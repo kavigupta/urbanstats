@@ -4,7 +4,12 @@ import { exec } from 'child_process';
 import { writeFileSync } from 'fs';
 
 async function quiz_screencap(t, name) {
-    await t.eval(() => document.getElementById("quiz-timer").remove());
+    await t.eval(() => {
+        const elem = document.getElementById("quiz-timer");
+        if (elem) {
+            elem.remove();
+        }
+    });
     await t.wait(1000);
     await screencap(t, name);
 }
