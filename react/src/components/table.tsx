@@ -94,6 +94,19 @@ export function StatisticRowRawCellContents(props: StatisticRowRawProps & { tota
         ],
         ...value_columns,
         [
+            props.simple ? 7 : 17,
+            "statistic_percentile",
+            <span className="serif ordinal">{
+                props.is_header
+                    ? (props.simple ? right_align("%ile") : "Percentile")
+                    : <Percentile ordinal={props.ordinal}
+                        total={props.total_count_in_class}
+                        percentile_by_population={props.percentile_by_population}
+                        simple={props.simple}
+                    />
+            }</span>
+        ],
+        [
             props.simple ? 8 : 25,
             "statistic_ordinal",
             <span className="serif ordinal">{
@@ -105,19 +118,6 @@ export function StatisticRowRawCellContents(props: StatisticRowRawProps & { tota
                         statpath={props.statpath}
                         simple={props.simple}
                         onReplace={props.onReplace}
-                    />
-            }</span>
-        ],
-        [
-            props.simple ? 7 : 17,
-            "statistic_percentile",
-            <span className="serif ordinal">{
-                props.is_header
-                    ? (props.simple ? right_align("%ile") : "Percentile")
-                    : <Percentile ordinal={props.ordinal}
-                        total={props.total_count_in_class}
-                        percentile_by_population={props.percentile_by_population}
-                        simple={props.simple}
                     />
             }</span>
         ],
