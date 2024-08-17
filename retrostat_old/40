@@ -1,0 +1,107 @@
+[
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Household Income > $100k %",
+      "question": "higher % of households who have household income over $100k",
+      "longname_a": "Mississippi, USA",
+      "longname_b": "Puerto Rico, USA",
+      "stat_a": 0.20541106209803478,
+      "stat_b": 0.053308976919600334
+    },
+    "b": {
+      "stat_column": "Management of companies and enterprises %",
+      "question": "higher % of workers employed in the management industry!TOOLTIP management of companies and enterprises",
+      "longname_a": "Johnson County, Kansas, USA",
+      "longname_b": "Hampden County, Massachusetts, USA",
+      "stat_a": 0.0015600905936777178,
+      "stat_b": 0.0005357892271977289
+    },
+    "a_ease": 0.7418496340652029,
+    "b_ease": 0.33611532625189683
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Poverty %",
+      "question": "higher % of people who are in poverty",
+      "longname_a": "Dallas-Fort Worth-Arlington [Urban Area], TX, USA",
+      "longname_b": "Toledo [Urban Area], OH-MI, USA",
+      "stat_a": 0.11820424217716942,
+      "stat_b": 0.16460862341274082
+    },
+    "b": {
+      "stat_column": "Household Income > $100k %",
+      "question": "higher % of households who have household income over $100k",
+      "longname_a": "FL-19, USA",
+      "longname_b": "CA-05, USA",
+      "stat_a": 0.3244034556973861,
+      "stat_b": 0.3859226479300992
+    },
+    "a_ease": 0.7885816235504014,
+    "b_ease": 0.3798151001540832
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "High temperature Above 90\u00b0F %",
+      "question": "higher % of hot days (days with high temp over 90\u00b0F, population weighted)!TOOLTIP Population weighted weather statistics are calculated by computing the weather statistic for each person in the region and then averaging the results.",
+      "longname_a": "CA-34, USA",
+      "longname_b": "TX-01, USA",
+      "stat_a": 0.09633097844118607,
+      "stat_b": 0.230005359514047
+    },
+    "b": {
+      "stat_column": "Management of companies and enterprises %",
+      "question": "higher % of workers employed in the management industry!TOOLTIP management of companies and enterprises",
+      "longname_a": "Fresno city, California, USA",
+      "longname_b": "Lexington-Fayette urban county, Kentucky, USA",
+      "stat_a": 0.00039966026380433903,
+      "stat_b": 0.0020091031932295
+    },
+    "a_ease": 0.8016528925619835,
+    "b_ease": 0.3420647149460709
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Public Insurance %",
+      "question": "higher % of people who are on public insurance",
+      "longname_a": "Laredo TX Media Market, USA",
+      "longname_b": "Bakersfield CA Media Market, USA",
+      "stat_a": 0.10479047471779805,
+      "stat_b": 0.34632661496970235
+    },
+    "b": {
+      "stat_column": "Individual Income > $100k %",
+      "question": "higher % of people who have individual income over $100k",
+      "longname_a": "Portland OR Media Market, USA",
+      "longname_b": "Harrisonburg VA Media Market, USA",
+      "stat_a": 0.12885725972782305,
+      "stat_b": 0.05751411320037902
+    },
+    "a_ease": 0.44992295839753466,
+    "b_ease": 0.8528072837632777
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "High blood pressure %",
+      "question": "higher % of adults with high blood pressure",
+      "longname_a": "Salt Lake City UT Media Market, USA",
+      "longname_b": "Bluefield-Beckley-Oak Hill WV Media Market, USA",
+      "stat_a": 0.2530933345355766,
+      "stat_b": 0.43345642868992973
+    },
+    "b": {
+      "stat_column": "PW Density (r=1km) Change (2010-2020)",
+      "question": "higher % increase in population-weighted density (r=1km) from 2010 to 2020!TOOLTIP Population-weighted density is computed by computing the density within the given radius for each person in the region and then averaging the results. This is a better measure of the density that people actually experience.",
+      "longname_a": "DC Circuit, USA",
+      "longname_b": "11th Circuit, USA",
+      "stat_a": 0.1627767624214775,
+      "stat_b": 0.09945796840756783
+    },
+    "a_ease": 0.8453473132372215,
+    "b_ease": 0.4241274658573596
+  }
+]
