@@ -56,11 +56,11 @@ function quiz_fixture(fix_name, url, new_localstorage, sql_statements) {
             // write the sql statements to the temporary file
             writeFileSync(tempfile, sql_statements);
             await new Promise((resolve, reject) => {
-                exec(`rm ../urbanstats-persistent-data/db.sqlite3; cd ../urbanstats-persistent-data; cat ${tempfile} | sqlite3 db.sqlite3; cd -`, (err, stdout, stderr) => {
+                exec(`rm -f ../urbanstats-persistent-data/db.sqlite3; cd ../urbanstats-persistent-data; cat ${tempfile} | sqlite3 db.sqlite3; cd -`, (err, stdout, stderr) => {
                     if (err || stderr) {
                         console.log(err);
                         console.log(stderr);
-                        reject(err);
+                        reject(err || stderr);
                     }
                     resolve(stdout);
                 }
