@@ -330,7 +330,7 @@ def main(
     with open(f"react/src/data/american_to_international.json", "w") as f:
         json.dump(american_to_international, f)
 
-    os.system(f"cd react; npm {'i' if dev else 'ci'};  {'dev' if dev else 'prod'}")
+    os.system(f"cd react; npm {'i' if dev else 'ci'}; npm run {'dev' if dev else 'prod'}")
 
     link_scripts_folder(site_folder, dev)
 
