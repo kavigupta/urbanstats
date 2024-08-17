@@ -87,6 +87,13 @@ function click_button(t, which) {
     return t.click(Selector("div").withAttribute("id", "quiz-answer-button-" + which));
 }
 
+async function click_buttons(t, whichs) {
+    for (var i = 0; i < whichs.length; i++) {
+        await click_button(t, whichs[i]);
+        await t.wait(500);
+    }
+}
+
 function example_quiz_history(min_quiz, max_quiz) {
     const quiz_history = {};
     for (var i = min_quiz; i <= max_quiz; i++) {
@@ -147,16 +154,7 @@ quiz_fixture(
 
 test('quiz-report-old-results', async t => {
     await t.eval(() => location.reload(true));
-    await click_button(t, "a");
-    await t.wait(500);
-    await click_button(t, "a");
-    await t.wait(500);
-    await click_button(t, "a");
-    await t.wait(500);
-    await click_button(t, "a");
-    await t.wait(500);
-    await click_button(t, "a");
-    await t.wait(500);
+    await click_buttons(t, ["a", "a", "a", "a", "a"]);
     let quiz_history = await t.eval(() => {
         return JSON.parse(localStorage.getItem("quiz_history"));
     });
@@ -168,6 +166,36 @@ test('quiz-report-old-results', async t => {
     await t.expect(quiz_history).eql(expected_quiz_history);
     await t.expect(await juxtastat_table()).eql("7|87|7\n7|88|15\n7|89|23\n7|90|7\n7|99|15\n");
 });
+
+quiz_fixture(
+    'do not report stale quiz results',
+    TARGET + '/quiz.html?date=99',
+    { "persistent_id": "000000000000007", "quiz_history": JSON.stringify(example_quiz_history(87, 92)) },
+    `
+    CREATE TABLE IF NOT EXISTS JuxtaStatIndividualStats
+        (user integer, day integer, corrects integer, time integer, PRIMARY KEY (user, day));
+    INSERT INTO JuxtaStatIndividualStats VALUES (7, 87, 0, 0);
+    INSERT INTO JuxtaStatIndividualStats VALUES (7, 88, 0, 0);
+    INSERT INTO JuxtaStatIndividualStats VALUES (7, 89, 0, 0);
+    INSERT INTO JuxtaStatIndividualStats VALUES (7, 90, 0, 0);
+    `
+);
+
+test('quiz-do-not-report-stale-results', async t => {
+    await t.eval(() => location.reload(true));
+    await click_buttons(t, ["a", "a", "a", "a", "a"]);
+    let quiz_history = await t.eval(() => {
+        return JSON.parse(localStorage.getItem("quiz_history"));
+    });
+    let expected_quiz_history = example_quiz_history(87, 92);
+    expected_quiz_history[99] = {
+        "choices": ["A", "A", "A", "A", "A"],
+        "correct_pattern": [true, true, true, true, false]
+    }
+    await t.expect(quiz_history).eql(expected_quiz_history);
+    await t.expect(await juxtastat_table()).eql("7|87|0\n7|88|0\n7|89|0\n7|90|0\n7|91|15\n7|92|7\n7|99|15\n");
+});
+
 
 fixture('quiz result test')
     .page(TARGET + '/quiz.html?date=100')
