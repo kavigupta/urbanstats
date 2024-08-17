@@ -2,6 +2,7 @@ import { Selector, RequestHook } from 'testcafe';
 import { TARGET, screencap } from './test_utils';
 import { exec } from 'child_process';
 import { writeFileSync } from 'fs';
+import { promisify } from 'util';
 
 async function quiz_screencap(t, name) {
     await t.eval(() => {
@@ -39,16 +40,8 @@ export class ProxyPersistent extends RequestHook {
 async function run_query(query) {
     // dump given query to a string
     const command_line = `sqlite3 ../urbanstats-persistent-data/db.sqlite3 "${query}"`;
-    return new Promise((resolve, reject) => {
-        exec(command_line, (err, stdout, stderr) => {
-            if (err || stderr) {
-                console.log(err);
-                console.log(stderr);
-                reject(err);
-            }
-            resolve(stdout);
-        });
-    });
+    const result = await promisify(exec)(command_line);
+    return result.stdout;
 }
 
 function juxtastat_table() {
@@ -68,17 +61,7 @@ function quiz_fixture(fix_name, url, new_localstorage, sql_statements) {
             const tempfile = "/tmp/quiz_test_" + Math.floor(Math.random() * 1000000) + ".sql";
             // write the sql statements to the temporary file
             writeFileSync(tempfile, sql_statements);
-            await new Promise((resolve, reject) => {
-                exec(`rm -f ../urbanstats-persistent-data/db.sqlite3; cd ../urbanstats-persistent-data; cat ${tempfile} | sqlite3 db.sqlite3; cd -`, (err, stdout, stderr) => {
-                    if (err || stderr) {
-                        console.log(err);
-                        console.log(stderr);
-                        reject(err || stderr);
-                    }
-                    resolve(stdout);
-                }
-                );
-            });
+            await promisify(exec)(`rm -f ../urbanstats-persistent-data/db.sqlite3; cd ../urbanstats-persistent-data; cat ${tempfile} | sqlite3 db.sqlite3; cd -`);
             exec("bash ../urbanstats-persistent-data/run_for_test.sh");
             await t.wait(2000);
             await t.eval(() => {
