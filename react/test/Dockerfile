@@ -12,7 +12,7 @@ RUN apt-get -y install libgdal-dev
 RUN apt-get -y install chromium
 RUN apt-get -y install xvfb
 
-RUN sudo apt -y install sqlite3
+RUN apt-get -y install sqlite3
 
 # needed for window resizing in Testcafe
 RUN apt-get -y install libc6:i386
