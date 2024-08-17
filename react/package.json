@@ -5,8 +5,8 @@
   "main": "index.js",
   "scripts": {
     "dev": "webpack --mode=development",
-    "watch": "webpack --mode=development --watch",
     "prod": "export NODE_ENV=production && webpack --mode=production",
+    "watch": "./watch.sh",
     "lint": "npx eslint . --fix"
   },
   "keywords": [],

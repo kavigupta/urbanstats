@@ -191,6 +191,16 @@ def get_index_lists():
         },
     }
 
+def link_scripts_folder(site_folder, dev):
+    if os.path.islink(f"{site_folder}/scripts"):
+        os.unlink(f"{site_folder}/scripts")
+    else:
+        shutil.rmtree(f"{site_folder}/scripts")
+    if dev:
+        os.symlink(f"{os.getcwd()}/dist", f"{site_folder}/scripts", True)
+    else:
+        shutil.copytree("dist", f"{site_folder}/scripts")
+
 
 def main(
     site_folder,
@@ -320,9 +330,10 @@ def main(
     with open(f"react/src/data/american_to_international.json", "w") as f:
         json.dump(american_to_international, f)
 
-    os.system(f"cd react; npm {'i' if dev else 'ci'}; npm run {'dev' if dev else 'prod'}")
-    shutil.rmtree(f"{site_folder}/scripts")
-    shutil.copytree("dist", f"{site_folder}/scripts")
+    os.system(f"cd react; npm {'i' if dev else 'ci'};  {'dev' if dev else 'prod'}")
+
+    link_scripts_folder(site_folder, dev)
+
     place_icons_in_site_folder(site_folder)
 
     from urbanstats.games.quiz import generate_quizzes
