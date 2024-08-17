@@ -2,7 +2,7 @@ const path = require('path');
 
 const NodePolyfillPlugin = require('node-polyfill-webpack-plugin')
 
-module.exports = {
+module.exports = env => ({
     entry: {
         "article": ['./src/article.js'],
         "quiz": ['./src/quiz.js'],
@@ -37,6 +37,15 @@ module.exports = {
     // devtool: 'inline-source-map',
     plugins: [
         new NodePolyfillPlugin(),
-    ]
-
-};
+    ],
+    devServer: {
+        static: {
+            directory: env.directory,
+        },
+        compress: true,
+        port: 8000,
+        devMiddleware: {
+            writeToDisk: true,
+        },
+    },
+});
