@@ -1,10 +1,8 @@
-
 # urbanstats
 
 A tool for viewing statistics of various areas in the United States.
 
 Currently live at [urbanstats.org](https://urbanstats.org/).
-
 
 # Build instructions
 
@@ -13,7 +11,7 @@ Very incomplete, I started documenting this halfway through. Note that I have on
 ```
 conda install -c conda-forge cfgrib
 pip install -r requirements.txt
-cd react; npm i; cd ..
+cd react; npm ci; cd ..
 ```
 
 You will want to clone the site repository to some location, using a shallow clone
