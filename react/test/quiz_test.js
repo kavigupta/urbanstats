@@ -3,7 +3,11 @@ import { TARGET, screencap } from './test_utils';
 import { exec } from 'child_process';
 import { writeFileSync } from 'fs';
 
-// proxy persistent.urbanstats.org to localhost:54579
+async function quiz_screencap(t, name) {
+    await t.eval(() => document.getElementById("quiz-timer").remove());
+    await t.wait(1000);
+    await screencap(t, name);
+}
 
 export class ProxyPersistent extends RequestHook {
     constructor() {
@@ -123,21 +127,21 @@ quiz_fixture(
 test('quiz-clickthrough-test', async t => {
     await click_button(t, "a");
     await t.wait(2000);
-    await screencap(t, "quiz/clickthrough-1");
+    await quiz_screencap(t, "quiz/clickthrough-1");
     await click_button(t, "b");
     await t.wait(2000);
-    await screencap(t, "quiz/clickthrough-2");
+    await quiz_screencap(t, "quiz/clickthrough-2");
     await click_button(t, "a");
     await t.wait(2000);
-    await screencap(t, "quiz/clickthrough-3");
+    await quiz_screencap(t, "quiz/clickthrough-3");
     await click_button(t, "b");
     await t.wait(2000);
-    await screencap(t, "quiz/clickthrough-4");
+    await quiz_screencap(t, "quiz/clickthrough-4");
     await click_button(t, "a");
     await t.wait(2000);
     await t.eval(() => document.getElementById("quiz-timer").remove());
     await t.wait(3000);
-    await screencap(t, "quiz/clickthrough-5");
+    await quiz_screencap(t, "quiz/clickthrough-5");
     let quiz_history = await t.eval(() => {
         return JSON.stringify(JSON.parse(localStorage.getItem("quiz_history")));
     });
@@ -197,6 +201,51 @@ test('quiz-do-not-report-stale-results', async t => {
 });
 
 
+quiz_fixture(
+    'percentage correct test',
+    TARGET + '/quiz.html?date=99',
+    { "persistent_id": "000000000000007" },
+    `
+    CREATE TABLE IF NOT EXISTS JuxtaStatIndividualStats
+        (user integer, day integer, corrects integer, time integer, PRIMARY KEY (user, day));
+    CREATE TABLE IF NOT EXISTS JuxtaStatUserDomain (user integer PRIMARY KEY, domain text);
+
+    INSERT INTO JuxtastatUserDomain VALUES (7, 'urbanstats.org');
+    INSERT INTO JuxtastatUserDomain VALUES (8, 'urbanstats.org');
+    
+    ` + Array.from(Array(30).keys()).map(
+        i => `INSERT INTO JuxtaStatIndividualStats VALUES(${i + 30}, 99, 101, 0); INSERT INTO JuxtaStatUserDomain VALUES(${i + 30}, 'urbanstats.org');`
+    ).join("\n")
+);
+
+test('quiz-percentage-correct', async t => {
+    await t.eval(() => location.reload(true));
+    await click_buttons(t, ["a", "a", "a", "a", "a"]);
+    await t.wait(2000);
+    await quiz_screencap(t, "quiz/percentage-correct");
+    await t.expect(await juxtastat_table()).eql(
+        Array.from(Array(30).keys()).map(i => `${i + 30}|99|101`).join("\n") + "\n" + "7|99|15\n"
+    );
+    // assert no element with id quiz-audience-statistics
+    await t.expect(Selector("#quiz-audience-statistics").exists).notOk();
+    // now become user 8
+    await t.eval(() => {
+        localStorage.clear();
+        localStorage.setItem("persistent_id", "000000000000008");
+    });
+    await t.eval(() => location.reload(true));
+    await click_buttons(t, ["a", "a", "a", "a", "a"]);
+    await t.wait(2000);
+    await quiz_screencap(t, "quiz/percentage-correct-2");
+    await t.expect(await juxtastat_table()).eql(
+        Array.from(Array(30).keys()).map(i => `${i + 30}|99|101`).join("\n") + "\n" + "7|99|15\n" + "8|99|15\n"
+    );
+    // assert element with id quiz-audience-statistics exists
+    await t.expect(Selector("#quiz-audience-statistics").exists).ok();
+    const stats = await Selector("#quiz-audience-statistics").innerText;
+    await t.expect(stats).eql('Question Difficulty\n100%\nQ1 Correct\n3%\nQ2 Correct\n100%\nQ3 Correct\n3%\nQ4 Correct\n0%\nQ5 Correct');
+});
+
 fixture('quiz result test')
     .page(TARGET + '/quiz.html?date=100')
     // very specific local storage
@@ -212,7 +261,5 @@ test('quiz-results-test', async t => {
     await t.eval(() => location.reload(true));
     await t.wait(1000);
     await t.eval(() => location.reload(true));
-    await t.eval(() => document.getElementById("quiz-timer").remove());
-    await t.wait(1000);
-    await screencap(t, "quiz/results-page");
+    await quiz_screencap(t, "quiz/results-page");
 });
