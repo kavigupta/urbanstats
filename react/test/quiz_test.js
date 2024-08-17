@@ -246,6 +246,36 @@ test('quiz-percentage-correct', async t => {
     await t.expect(stats).eql('Question Difficulty\n100%\nQ1 Correct\n3%\nQ2 Correct\n100%\nQ3 Correct\n3%\nQ4 Correct\n0%\nQ5 Correct');
 });
 
+quiz_fixture(
+    'new user',
+    TARGET + '/quiz.html?date=99',
+    { },
+    "",
+);
+
+function hex_to_dec(hex) {
+    // https://stackoverflow.com/a/53751162/1549476
+    if (hex.length % 2) { hex = '0' + hex; }
+
+    var bn = BigInt('0x' + hex);
+
+    var d = bn.toString(10);
+    return d;
+}
+
+test('quiz-new-user', async t => {
+    await click_buttons(t, ["a", "a", "a", "a", "a"]);
+    await t.wait(2000);
+    const user_id = await t.eval(() => {
+        return localStorage.getItem("persistent_id");
+    });
+    await t.expect(user_id).notEql(null);
+    var user_id_int = hex_to_dec(user_id);
+    const juxta_table = await juxtastat_table();
+    await t.expect(juxta_table).eql(`${user_id_int}|99|15\n`);
+    await t.expect(await run_query("SELECT user from JuxtastatUserDomain")).eql(`${user_id_int}\n`);
+});
+
 fixture('quiz result test')
     .page(TARGET + '/quiz.html?date=100')
     // very specific local storage
