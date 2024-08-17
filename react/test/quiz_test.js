@@ -32,7 +32,9 @@ async function run_query(query) {
     const command_line = `sqlite3 ../urbanstats-persistent-data/db.sqlite3 "${query}"`;
     return new Promise((resolve, reject) => {
         exec(command_line, (err, stdout, stderr) => {
-            if (err) {
+            if (err || stderr) {
+                console.log(err);
+                console.log(stderr);
                 reject(err);
             }
             resolve(stdout);
@@ -70,17 +72,36 @@ function quiz_fixture(fix_name, url, new_localstorage, sql_statements) {
         .requestHooks(new ProxyPersistent());
 }
 
-quiz_fixture(
-    'quiz clickthrough test on empty background',
-    TARGET + '/quiz.html?date=99',
-    { "persistent_id": "000000000000007" },
-    "CREATE TABLE A (a INT);"
-);
-
 // click the kth button with id quiz-answer-button-$which
 function click_button(t, which) {
     return t.click(Selector("div").withAttribute("id", "quiz-answer-button-" + which));
 }
+
+function example_quiz_history(min_quiz, max_quiz) {
+    const quiz_history = {};
+    for (var i = min_quiz; i <= max_quiz; i++) {
+        quiz_history[i] = {
+            "choices": ["A", "A", "A", "A", "A"],
+            "correct_pattern": [true, true, true, i % 3 == 1, i % 4 == 1]
+        }
+    }
+    if (min_quiz <= 62 && max_quiz >= 62) {
+        quiz_history[62] = {
+            "choices": ["A", "A", "A", "A", "A"],
+            "correct_pattern": [false, false, false, false, false]
+        }
+    }
+    return quiz_history;
+}
+
+
+
+quiz_fixture(
+    'quiz clickthrough test on empty background',
+    TARGET + '/quiz.html?date=99',
+    { "persistent_id": "000000000000007" },
+    ""
+);
 
 test('quiz-clickthrough-test', async t => {
     await click_button(t, "a");
@@ -107,24 +128,44 @@ test('quiz-clickthrough-test', async t => {
     await t.expect(await juxtastat_table()).eql("7|99|5\n");
 });
 
+quiz_fixture(
+    'report old quiz results too',
+    TARGET + '/quiz.html?date=99',
+    { "persistent_id": "000000000000007", "quiz_history": JSON.stringify(example_quiz_history(87, 90)) },
+    ""
+);
+
+test('quiz-report-old-results', async t => {
+    await t.eval(() => location.reload(true));
+    await click_button(t, "a");
+    await t.wait(500);
+    await click_button(t, "a");
+    await t.wait(500);
+    await click_button(t, "a");
+    await t.wait(500);
+    await click_button(t, "a");
+    await t.wait(500);
+    await click_button(t, "a");
+    await t.wait(500);
+    let quiz_history = await t.eval(() => {
+        return JSON.parse(localStorage.getItem("quiz_history"));
+    });
+    let expected_quiz_history = example_quiz_history(87, 90);
+    expected_quiz_history[99] = {
+        "choices": ["A", "A", "A", "A", "A"],
+        "correct_pattern": [true, true, true, true, false]
+    }
+    await t.expect(quiz_history).eql(expected_quiz_history);
+    await t.expect(await juxtastat_table()).eql("7|87|7\n7|88|15\n7|89|23\n7|90|7\n7|99|15\n");
+});
+
 fixture('quiz result test')
     .page(TARGET + '/quiz.html?date=100')
     // very specific local storage
     .beforeEach(async t => {
         await t.eval(() => {
             localStorage.clear()
-            const quiz_history = {};
-            for (var i = 2; i <= 100; i++) {
-                quiz_history[i] = {
-                    "choices": ["A", "A", "A", "A", "A"],
-                    "correct_pattern": [true, true, true, i % 3 == 1, i % 4 == 1]
-                }
-            }
-            quiz_history[62] = {
-                "choices": ["A", "A", "A", "A", "A"],
-                "correct_pattern": [false, false, false, false, false]
-            }
-            localStorage.setItem("quiz_history", JSON.stringify(quiz_history));
+            localStorage.setItem("quiz_history", JSON.stringify(example_quiz_history(2, 100)));
         });
     });
 
