@@ -88,6 +88,7 @@ async function click_buttons(t, whichs) {
         await click_button(t, whichs[i]);
         await t.wait(500);
     }
+    await t.wait(2000);
 }
 
 function example_quiz_history(min_quiz, max_quiz, min_retro, max_retro) {
@@ -221,7 +222,6 @@ quiz_fixture(
 test('quiz-percentage-correct', async t => {
     await t.eval(() => location.reload(true));
     await click_buttons(t, ["a", "a", "a", "a", "a"]);
-    await t.wait(2000);
     await quiz_screencap(t, "quiz/percentage-correct");
     await t.expect(await juxtastat_table()).eql(
         Array.from(Array(30).keys()).map(i => `${i + 30}|99|101`).join("\n") + "\n" + "7|99|15\n"
@@ -235,7 +235,6 @@ test('quiz-percentage-correct', async t => {
     });
     await t.eval(() => location.reload(true));
     await click_buttons(t, ["a", "a", "a", "a", "a"]);
-    await t.wait(2000);
     await quiz_screencap(t, "quiz/percentage-correct-2");
     await t.expect(await juxtastat_table()).eql(
         Array.from(Array(30).keys()).map(i => `${i + 30}|99|101`).join("\n") + "\n" + "7|99|15\n" + "8|99|15\n"
@@ -265,7 +264,6 @@ function hex_to_dec(hex) {
 
 test('quiz-new-user', async t => {
     await click_buttons(t, ["a", "a", "a", "a", "a"]);
-    await t.wait(2000);
     const user_id = await t.eval(() => {
         return localStorage.getItem("persistent_id");
     });
@@ -295,7 +293,6 @@ quiz_fixture(
 test('quiz-retrostat-regular-quiz-reporting', async t => {
     await t.eval(() => location.reload(true));
     await click_buttons(t, ["a", "a", "a", "a", "a"]);
-    await t.wait(2000);
     let quiz_history = await t.eval(() => {
         return JSON.parse(localStorage.getItem("quiz_history"));
     });
@@ -314,7 +311,6 @@ test('quiz-retrostat-retrostat-reporting', async t => {
     await t.navigateTo(url);
     await t.eval(() => location.reload(true));
     await click_buttons(t, ["a", "a", "a", "a", "a"]);
-    await t.wait(2000);
     let quiz_history = await t.eval(() => {
         return JSON.parse(localStorage.getItem("quiz_history"));
     });
