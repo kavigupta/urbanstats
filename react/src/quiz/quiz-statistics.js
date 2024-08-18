@@ -99,13 +99,13 @@ export class QuizStatistics extends React.Component {
 }
 export function AudienceStatistics({ total, per_question, scores }) {
     // two flexboxes of the scores for each
-    return <div>
+    return <div id="quiz-audience-statistics">
         <div className="serif quiz_summary">Question Difficulty</div>
         <DisplayedStats statistics={per_question.map((x, i) => {
             return {
                 name: "Q" + (i + 1) + " Correct",
                 value: (x / total * 100).toFixed(0) + "%",
-                addtl_class: x / total > 0.5 ? "text_quiz_correct" : "text_quiz_incorrect",
+                addtl_class: (x / total > 0.5 ? "text_quiz_correct" : "text_quiz_incorrect") + " quiz-audience-statistics-displayed",
             };
         }
         )} />
