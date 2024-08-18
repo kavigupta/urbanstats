@@ -12,7 +12,8 @@ import { load_article } from './load-article';
 import { comparisonHeadStyle, headerTextClass, subHeaderTextClass } from '../utils/responsive';
 import { SearchBox } from './search';
 import { article_link, comparison_link, sanitize } from '../navigation/links';
-import { longname_is_exclusively_american } from '../universe';
+import { longname_is_exclusively_american, useUniverse } from '../universe';
+import { useSetting, useTableCheckboxSettings } from '../page_template/settings';
 
 class ArticlePanel extends PageTemplate {
     constructor(props) {
@@ -23,13 +24,11 @@ class ArticlePanel extends PageTemplate {
         this.map_ref = React.createRef();
     }
 
-    main_content() {
+    main_content(template_info) {
         if (this.props.articleType == undefined) {
             throw new Error("articleType is undefined");
         }
         const self = this;
-        const [filtered_rows, _] = load_article(this.state.current_universe, this.props, this.state.settings,
-            longname_is_exclusively_american(this.props.longname));
 
         return (
             <div>
@@ -40,14 +39,11 @@ class ArticlePanel extends PageTemplate {
                 <div style={{ marginBlockEnd: "16px" }}></div>
 
                 <div className="stats_table" ref={this.table_ref}>
-                    <StatisticRowRaw _idx={-1} is_header={true} simple={this.state.settings.simple_ordinals} />
-                    {filtered_rows.map((row, i) =>
-                        <StatisticRowRaw _idx={i} key={row.statname} index={i} {...row} settings={this.state.settings}
-                            onReplace={x => { document.location = article_link(self.state.current_universe, x) }}
-                            simple={this.state.settings.simple_ordinals}
-                            longname={this.props.longname}
-                            universe={this.state.current_universe}
-                        />)}
+                    <StatisticRowHeader />
+                    <ArticlePanelRows
+                        longname={this.props.longname}
+                        article_row={this.props}
+                    />
                 </div>
 
                 <p></p>
@@ -56,10 +52,8 @@ class ArticlePanel extends PageTemplate {
                     <Map id="map"
                         longname={this.props.longname}
                         related={this.props.related}
-                        settings={this.state.settings}
                         article_type={this.props.articleType}
                         basemap={{ type: "osm" }}
-                        universe={this.state.current_universe}
                     />
                 </div>
 
@@ -70,16 +64,7 @@ class ArticlePanel extends PageTemplate {
                         <div className="serif" style={comparisonHeadStyle("right")}>Compare to: </div>
                     </div>
                     <div style={{ width: "70%" }}>
-                        <SearchBox
-                            settings={this.state.settings}
-                            style={{ ...comparisonHeadStyle(), width: "100%" }}
-                            placeholder={"Other region..."}
-                            on_change={(x) => {
-                                document.location.href = comparison_link(
-                                    this.state.current_universe,
-                                    [this.props.longname, x]);
-                            }}
-                        />
+                        <ComparisonSearchBox longname={this.props.longname} />
                     </div>
                 </div>
 
@@ -87,25 +72,18 @@ class ArticlePanel extends PageTemplate {
 
                 <Related
                     related={this.props.related}
-                    settings={this.state.settings}
-                    set_setting={(key, value) => self.set_setting(key, value)}
                     article_type={this.props.articleType}
-                    universe={this.state.current_universe}
                 />
             </div>
         );
     }
 
-    has_screenshot_button() {
-        return true;
-    }
-
     screencap_elements() {
-        return {
+        return () => ({
             path: sanitize(this.props.longname) + ".png",
             overall_width: this.table_ref.current.offsetWidth * 2,
             elements_to_render: [this.headers_ref.current, this.table_ref.current, this.map_ref.current],
-        }
+        })
     }
 
     has_universe_selector() {
@@ -113,3 +91,36 @@ class ArticlePanel extends PageTemplate {
     }
 }
 
+function ComparisonSearchBox(props) {
+    const curr_universe = useUniverse();
+    return <SearchBox
+        style={{ ...comparisonHeadStyle(), width: "100%" }}
+        placeholder={"Other region..."}
+        on_change={(x) => {
+            document.location.href = comparison_link(
+                curr_universe,
+                [props.longname, x]);
+        }}
+    />
+}
+
+function StatisticRowHeader() {
+    const [simple_ordinals, _] = useSetting("simple_ordinals");
+    return <StatisticRowRaw _idx={-1} is_header={true} simple={simple_ordinals} />
+}
+
+function ArticlePanelRows(props) {
+    const curr_universe = useUniverse();
+    const settings = useTableCheckboxSettings();
+    const [simple_ordinals, _set_simple_ordinals] = useSetting("simple_ordinals");
+    const [filtered_rows, _] = load_article(curr_universe, props.article_row, settings,
+        longname_is_exclusively_american(props.longname));
+    return <>
+        {filtered_rows.map((row, i) =>
+            <StatisticRowRaw _idx={i} key={row.statname} index={i} {...row}
+                onReplace={x => { document.location = article_link(curr_universe, x) }}
+                simple={simple_ordinals}
+                longname={props.longname}
+            />)}
+    </>
+}

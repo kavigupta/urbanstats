@@ -54,7 +54,7 @@ class DataCreditPanel extends PageTemplate {
         return this._refs[name];
     }
 
-    main_content() {
+    main_content(template_info) {
         return (
             <div className="serif">
                 <div className={headerTextClass()}>Credits</div>

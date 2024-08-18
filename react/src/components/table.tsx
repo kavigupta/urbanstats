@@ -1,12 +1,14 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useRef } from 'react';
 import ContentEditable, { ContentEditableEvent } from 'react-contenteditable'
 
 import { article_link, statistic_link } from "../navigation/links";
-import { loadProtobuf, load_ordering } from '../load_json';
+import { load_ordering } from '../load_json';
 import "./table.css";
 import { is_historical_cd } from '../utils/is_historical';
 import { display_type } from '../utils/text';
 import { ArticleRow } from './load-article';
+import { useSetting } from '../page_template/settings';
+import { useUniverse } from '../universe';
 
 const table_row_style: React.CSSProperties = {
     display: "flex",
@@ -29,16 +31,17 @@ export type StatisticRowRawProps = {
         }
     )
 
-export function StatisticRowRaw(props: StatisticRowRawProps & { index: number, settings: any, universe: string, longname?: string }) {
+export function StatisticRowRaw(props: StatisticRowRawProps & { index: number, longname?: string }) {
 
     const cell_contents = StatisticRowRawCellContents({ ...props, total_width: 100 });
 
     return <StatisticRow is_header={props.is_header} index={props.index} contents={cell_contents} />;
 }
 
-export function StatisticRowRawCellContents(props: StatisticRowRawProps & { total_width: number, settings: any, universe: string, longname?: string }) {
+export function StatisticRowRawCellContents(props: StatisticRowRawProps & { total_width: number, longname?: string }) {
+    const curr_universe = useUniverse();
     const alignStyle: React.CSSProperties = { textAlign: props.is_header ? "center" : "right" };
-    var value_columns: [number, string, React.ReactNode][] = [
+    let value_columns: [number, string, React.ReactNode][] = [
         [15,
             "statval",
             <div style={alignStyle}>
@@ -49,7 +52,6 @@ export function StatisticRowRawCellContents(props: StatisticRowRawProps & { tota
                             statname={props.statname}
                             value={props.statval}
                             is_unit={false}
-                            settings={props.settings}
                             style={props.statistic_style || {}}
                         />}
                 </span>
@@ -65,7 +67,6 @@ export function StatisticRowRawCellContents(props: StatisticRowRawProps & { tota
                             statname={props.statname}
                             value={props.statval}
                             is_unit={true}
-                            settings={props.settings}
                         />}
                 </span>
             </div>
@@ -83,7 +84,7 @@ export function StatisticRowRawCellContents(props: StatisticRowRawProps & { tota
                 props.is_header ? "Statistic" :
                     <a className="statname_no_link" href={
                         statistic_link(
-                            props.universe,
+                            curr_universe,
                             props.statname, props.article_type, props.ordinal,
                             20, undefined, props.longname!
                         )
@@ -92,6 +93,19 @@ export function StatisticRowRawCellContents(props: StatisticRowRawProps & { tota
             </span>
         ],
         ...value_columns,
+        [
+            props.simple ? 7 : 17,
+            "statistic_percentile",
+            <span className="serif ordinal">{
+                props.is_header
+                    ? (props.simple ? right_align("%ile") : "Percentile")
+                    : <Percentile ordinal={props.ordinal}
+                        total={props.total_count_in_class}
+                        percentile_by_population={props.percentile_by_population}
+                        simple={props.simple}
+                    />
+            }</span>
+        ],
         [
             props.simple ? 8 : 25,
             "statistic_ordinal",
@@ -104,21 +118,6 @@ export function StatisticRowRawCellContents(props: StatisticRowRawProps & { tota
                         statpath={props.statpath}
                         simple={props.simple}
                         onReplace={props.onReplace}
-                        universe={props.universe}
-                    />
-            }</span>
-        ],
-        [
-            props.simple ? 7 : 17,
-            "statistic_percentile",
-            <span className="serif ordinal">{
-                props.is_header
-                    ? (props.simple ? right_align("%ile") : "Percentile")
-                    : <Percentile ordinal={props.ordinal}
-                        total={props.total_count_in_class}
-                        percentile_by_population={props.percentile_by_population}
-                        settings={props.settings}
-                        simple={props.simple}
                     />
             }</span>
         ],
@@ -132,8 +131,6 @@ export function StatisticRowRawCellContents(props: StatisticRowRawProps & { tota
                         statpath={props.statpath}
                         type={props.article_type}
                         total={props.total_count_in_class}
-                        settings={props.settings}
-                        universe={props.universe}
                     />
                 </span>
         ],
@@ -147,15 +144,13 @@ export function StatisticRowRawCellContents(props: StatisticRowRawProps & { tota
                         statpath={props.statpath}
                         type="overall"
                         total={props.total_count_overall}
-                        settings={props.settings}
-                        universe={props.universe}
                     />
                 </span>
         ]
     ];
-    var cell_percentages: number[] = [];
-    var cell_contents = [];
-    for (let i in cells) {
+    const cell_percentages: number[] = [];
+    const cell_contents = [];
+    for (const i in cells) {
         if (props.only_columns && !props.only_columns.includes(cells[i][1])) {
             continue;
         }
@@ -164,7 +159,7 @@ export function StatisticRowRawCellContents(props: StatisticRowRawProps & { tota
     }
     // normalize cell percentages
     const sum = cell_percentages.reduce((a, b) => a + b, 0);
-    for (let i in cell_percentages) {
+    for (const i in cell_percentages) {
         cell_percentages[i] = props.total_width * cell_percentages[i] / sum;
     }
 
@@ -190,8 +185,8 @@ export function StatisticRow({ is_header, index, contents }: { is_header: boolea
     </div>
 }
 
-
-export function Statistic(props: { style?: React.CSSProperties, statname: string, value: number, is_unit: boolean, settings: any }) {
+export function Statistic(props: { style?: React.CSSProperties, statname: string, value: number, is_unit: boolean }) {
+    const [use_imperial] = useSetting("use_imperial");
     const content = (() => {
         {
             const name = props.statname;
@@ -204,7 +199,7 @@ export function Statistic(props: { style?: React.CSSProperties, statname: string
                 return <span>{(value * 100).toFixed(2)}</span>;
             }
             else if (name.includes("Density")) {
-                const is_imperial = props.settings.use_imperial;
+                const is_imperial = use_imperial;
                 let unit_name = "km";
                 if (is_imperial) {
                     unit_name = "mi";
@@ -238,7 +233,7 @@ export function Statistic(props: { style?: React.CSSProperties, statname: string
                     return <span>{value.toFixed(0)}</span>;
                 }
             } else if (name == "Area") {
-                const is_imperial = props.settings.use_imperial;
+                const is_imperial = use_imperial;
                 let unit: string | React.ReactElement = "null";
                 if (is_imperial) {
                     value /= 1.60934 * 1.60934;
@@ -270,7 +265,7 @@ export function Statistic(props: { style?: React.CSSProperties, statname: string
                     }
                 }
             } else if (name.includes("Mean distance")) {
-                const is_imperial = props.settings.use_imperial;
+                const is_imperial = use_imperial;
                 let unit = <span>km</span>;
                 if (is_imperial) {
                     unit = <span>mi</span>
@@ -300,7 +295,7 @@ export function Statistic(props: { style?: React.CSSProperties, statname: string
                 // e.g., 3:05
                 return <span>{hours}:{minutes.toString().padStart(2, "0")}</span>;
             } else if (name == "Rainfall" || name == "Snowfall [rain-equivalent]") {
-                const is_imperial = props.settings.use_imperial;
+                const is_imperial = use_imperial;
                 value *= 100;
                 let unit = "cm";
                 if (is_imperial) {
@@ -338,7 +333,8 @@ function ElectionResult(props: { value: number }) {
     return <span className={"party_result_" + party}>{party}+{text}</span>;
 }
 
-export function Ordinal(props: { ordinal: number, total: number, type: string, statpath: string, onReplace?: (newValue: string) => void, simple: boolean, universe: string }) {
+export function Ordinal(props: { ordinal: number, total: number, type: string, statpath: string, onReplace?: (newValue: string) => void, simple: boolean }) {
+    const curr_universe = useUniverse();
     const onNewNumber = async (number: number) => {
         let num = number;
         if (num < 0) {
@@ -351,7 +347,7 @@ export function Ordinal(props: { ordinal: number, total: number, type: string, s
         if (num <= 0) {
             num = 1;
         }
-        const data = await load_ordering(props.universe, props.statpath, props.type);
+        const data = await load_ordering(curr_universe, props.statpath, props.type);
         props.onReplace?.(data[num - 1])
     }
     const ordinal = props.ordinal;
@@ -368,7 +364,7 @@ export function Ordinal(props: { ordinal: number, total: number, type: string, s
         return right_align(en);
     }
     return <div className="serif" style={{ textAlign: "right" }}>
-        {en} of {total} {display_type(props.universe, type)}
+        {en} of {total} {display_type(curr_universe, type)}
     </div>;
 }
 
@@ -401,7 +397,7 @@ function EditableNumber(props: { number: number, onNewNumber: (number: number) =
     )
 };
 
-export function Percentile(props: { ordinal: number, total: number, percentile_by_population: number, settings: any, simple: boolean }) {
+export function Percentile(props: { ordinal: number, total: number, percentile_by_population: number, simple: boolean }) {
     const ordinal = props.ordinal;
     const total = props.total;
     if (ordinal > total) {
@@ -409,10 +405,7 @@ export function Percentile(props: { ordinal: number, total: number, percentile_b
     }
     // percentile as an integer
     // used to be keyed by a setting, but now we always use percentile_by_population
-    const quantile =
-        true ?
-            props.percentile_by_population
-            : 1 - ordinal / total;
+    const quantile = props.percentile_by_population;
     const percentile = Math.floor(100 * quantile);
     if (props.simple) {
         return right_align(percentile.toString() + "%");
@@ -429,9 +422,11 @@ export function Percentile(props: { ordinal: number, total: number, percentile_b
     return <div className="serif" style={{ textAlign: "right" }}>{text}</div>;
 }
 
-function PointerButtonsIndex(props: { ordinal: number, statpath: string, type: string, total: number, settings: any, universe: string }) {
-    const get_data = async () => await load_ordering(props.universe, props.statpath, props.type);
-    const show_historical_cds = props.settings.show_historical_cds || is_historical_cd(props.type);
+function PointerButtonsIndex(props: { ordinal: number, statpath: string, type: string, total: number }) {
+    const curr_universe = useUniverse();
+    const get_data = async () => await load_ordering(curr_universe, props.statpath, props.type);
+    const [settings_show_historical_cds] = useSetting("show_historical_cds");
+    const show_historical_cds = settings_show_historical_cds || is_historical_cd(props.type);
     return (
         <span style={{ margin: "auto" }}>
             <PointerButtonIndex
@@ -441,7 +436,6 @@ function PointerButtonsIndex(props: { ordinal: number, statpath: string, type: s
                 direction={-1}
                 total={props.total}
                 show_historical_cds={show_historical_cds}
-                universe={props.universe}
             />
             <PointerButtonIndex
                 text=">"
@@ -450,13 +444,13 @@ function PointerButtonsIndex(props: { ordinal: number, statpath: string, type: s
                 direction={+1}
                 total={props.total}
                 show_historical_cds={show_historical_cds}
-                universe={props.universe}
             />
         </span>
     );
 }
 
-function PointerButtonIndex(props: { text: string, get_data: () => Promise<string[]>, original_pos: number, direction: number, total: number, show_historical_cds: boolean, universe: string }) {
+function PointerButtonIndex(props: { text: string, get_data: () => Promise<string[]>, original_pos: number, direction: number, total: number, show_historical_cds: boolean }) {
+    const curr_universe = useUniverse();
     const out_of_bounds = (pos: number) => pos < 0 || pos >= props.total
     const onClick = async (pos: number) => {
         {
@@ -467,12 +461,12 @@ function PointerButtonIndex(props: { text: string, get_data: () => Promise<strin
                     pos += props.direction;
                     continue;
                 }
-                document.location = article_link(props.universe, name);
+                document.location = article_link(curr_universe, name);
                 return;
             }
         }
     }
-    let pos = props.original_pos - 1 + + props.direction;
+    const pos = props.original_pos - 1 + + props.direction;
     if (out_of_bounds(pos) || props.original_pos > props.total) {
         return <span className="button">&nbsp;&nbsp;</span>
     } else {

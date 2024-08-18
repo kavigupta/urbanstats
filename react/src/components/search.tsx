@@ -4,11 +4,13 @@ import { loadProtobuf } from '../load_json';
 import { is_historical_cd } from '../utils/is_historical';
 import "../common.css";
 import { SearchIndex } from '../utils/protos';
+import { useSetting } from '../page_template/settings';
 
 export const SearchBox = (props: {
-    on_change: (inp: string) => void, autoFocus: boolean, placeholder: string, style: any, settings: any
+    on_change: (inp: string) => void, autoFocus: boolean, placeholder: string, style: React.CSSProperties
 }) => {
 
+    const [show_historical_cds] = useSetting("show_historical_cds");
     const [matches, setMatches] = React.useState<string[]>([]);
     const [matchesStale, setMatchesStale] = React.useState(false);
     const [indexCache, setIndexCache] = React.useState<SearchIndex | undefined>(undefined);
@@ -31,7 +33,7 @@ export const SearchBox = (props: {
 
     const onFormSubmit = (event: React.FormEvent) => {
         event.preventDefault();
-        let terms = matches;
+        const terms = matches;
         if (terms.length > 0) {
             props.on_change(terms[focused])
         }
@@ -39,7 +41,7 @@ export const SearchBox = (props: {
     }
 
     const get_input = () => {
-        var input = textbox.current!.value;
+        let input = textbox.current!.value;
         input = normalize(input);
         return input;
     }
@@ -75,7 +77,7 @@ export const SearchBox = (props: {
         setMatchesStale(true);
 
         // if down arrow, then go to the next one
-        let dropdowns = document.getElementsByClassName("searchbox-dropdown-item");
+        const dropdowns = document.getElementsByClassName("searchbox-dropdown-item");
         if (dropdowns.length > 0) {
             if (event.key == "ArrowDown") {
                 setFocused((focused + 1) % dropdowns.length)
@@ -98,11 +100,11 @@ export const SearchBox = (props: {
         const priorities = indexCache!.priorities;
         let matches_new = [];
         for (let i = 0; i < values.length; i++) {
-            let match_count = is_a_match(input, normalize(values[i]));
+            const match_count = is_a_match(input, normalize(values[i]));
             if (match_count == 0) {
                 continue;
             }
-            if (!props.settings.show_historical_cds) {
+            if (!show_historical_cds) {
                 if (is_historical_cd(values[i])) {
                     continue;
                 }
@@ -182,7 +184,7 @@ function top_10(matches: number[][]) {
         }
     };
     matches.sort(sort_key(2));
-    let overall_matches = [];
+    const overall_matches = [];
     for (let i = 0; i < Math.min(num_prioritized, matches.length); i++) {
         overall_matches.push(matches[i][1]);
         matches[i][0] = -100;
@@ -206,6 +208,7 @@ function is_a_match(a: string, b: string) {
     let i = 0;
     let match_count = 0;
     let prev_match = true;
+    // eslint-disable-next-line @typescript-eslint/prefer-for-of
     for (let j = 0; j < b.length; j++) {
         if (a[i] == b[j]) {
             i++;

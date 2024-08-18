@@ -1,0 +1,102 @@
+name: check
+on: [push]
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}/e2e
+  BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
+jobs:
+  lint:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: npm ci
+        working-directory: react
+      - run: npx eslint .
+        working-directory: react
+
+  build-and-push-image:
+    runs-on: ubuntu-22.04
+    outputs:
+      image_tag: ${{ steps.meta.outputs.tags }}
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Log in to the Container registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata (tags, labels) for Docker
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: react/test/Dockerfile
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=registry,ref=${{ steps.meta.outputs.tags }}
+          cache-to: type=inline
+
+  build-frontend:
+    runs-on: ubuntu-22.04
+    needs: build-and-push-image
+    container:
+      image: ghcr.io/${{ needs.build-and-push-image.outputs.image_tag }}
+    steps:
+      - uses: actions/checkout@v4
+      - run: python3 create_website.py react/test/density-db --no-data --no-geo --no-juxta
+      - uses: actions/upload-artifact@v4
+        with:
+          name: frontend-build
+          path: react/test/density-db
+
+  list-e2e-tests:
+    runs-on: ubuntu-22.04
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: set-matrix
+        run: echo "matrix=$(find . -name '*_test.js' | jq -R -s -c 'split("\n")[:-1]')" >> $GITHUB_OUTPUT
+        working-directory: react/test
+
+  run-e2e-tests:
+    runs-on: ubuntu-22.04
+    needs: [build-and-push-image, build-frontend, list-e2e-tests]
+    container:
+      image: ghcr.io/${{ needs.build-and-push-image.outputs.image_tag }}
+    strategy:
+      fail-fast: false
+      matrix:
+        test-file: ${{ fromJson(needs.list-e2e-tests.outputs.matrix) }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: frontend-build
+          path: react/test/density-db
+      - name: Run tests
+        run: |
+          # Start display subsystem to browser can run
+          Xvfb :10 -ac &
+          export DISPLAY=:10
+          fluxbox >/dev/null 2>&1 & # needed for window resizing in Testcafe
+          npm ci
+          npx ts-node test/ci_proxy.ts &
+          npx testcafe -e chromium test/${{ matrix.test-file }}
+        working-directory: react

@@ -10,104 +10,23 @@ import "@fontsource/jost/900.css";
 
 export { PageTemplate };
 
-import React, { Fragment } from 'react';
+import React, { Fragment, useState } from 'react';
 
 import { Header } from "../components/header";
 import { Sidebar } from "../components/sidebar";
 import "../common.css";
 import "../components/article.css";
-import { load_settings } from './settings.js';
 import { mobileLayout } from '../utils/responsive';
 import { create_screenshot } from '../components/screenshot';
-import { set_universe } from '../universe';
-
 
 class PageTemplate extends React.Component {
-    constructor(props) {
-        super(props);
-
-        const [settings, statistic_category_metadata_checkboxes] = load_settings();
-
-        this.statistic_category_metadata_checkboxes = statistic_category_metadata_checkboxes;
-
-        // get from url field
-        this.set_universe = universe => {
-            this.setState({ current_universe: universe });
-            set_universe(universe);
-        }
-
-        this.all_universes = this.props.universes;
-
-        this.state = {
-            settings: settings,
-            hamburger_open: false,
-            screenshot_mode: false,
-            current_universe: this.props.universe,
-        }
-    }
-
     render() {
-        const self = this;
-        return (
-            <Fragment>
-                <meta name="viewport" content="width=600" />
-                <div className={mobileLayout() ? "main_panel_mobile" : "main_panel"}>
-                    <Header
-                        settings={this.state.settings}
-                        hamburger_open={this.state.hamburger_open}
-                        set_hamburger_open={x => this.setState({ hamburger_open: x })}
-                        has_screenshot={this.has_screenshot_button()}
-                        has_universe_selector={this.has_universe_selector()}
-                        current_universe={this.state.current_universe}
-                        all_universes={this.all_universes}
-                        on_universe_update={universe => this.set_universe(universe)}
-                        screenshot_mode={this.state.screenshot_mode}
-                        initiate_screenshot={() => this.initiate_screenshot()}
-                    />
-                    <div style={{marginBlockEnd: "16px"}}></div>
-                    {this.bodyPanel()}
-                </div>
-            </Fragment>
-        );
-    }
-
-    bodyPanel() {
-        if (this.state.hamburger_open) {
-            return this.leftPanel();
-        }
-        return <div className="body_panel">
-            {mobileLayout() ? undefined : this.leftPanel()}
-            <div className={mobileLayout() ? "content_panel_mobile" : "right_panel"}>
-                {this.main_content()}
-                <div className="gap"></div>
-                <TemplateFooter />
-            </div>
-        </div>
-    }
-
-    leftPanel() {
-        const self = this;
-        return (
-            <div className={mobileLayout() ? "left_panel_mobile" : "left_panel"}>
-                <Sidebar
-                    shortname={this.props.shortname}
-                    source={this.props.source}
-                    settings={this.state.settings}
-                    set_setting={(key, value) => self.set_setting(key, value)}
-                    statistic_category_metadata_checkboxes={this.statistic_category_metadata_checkboxes} />
-            </div>
-        )
-    }
-
-    set_setting(key, value) {
-        let settings = this.state.settings;
-        settings[key] = value;
-        this.setState({ settings: settings });
-        localStorage.setItem("settings", JSON.stringify(settings));
-    }
-
-    has_screenshot_button() {
-        return false;
+        return <PageFunction
+            screencap_elements={this.screencap_elements()}
+            has_universe_selector={this.has_universe_selector()}
+            universes={this.props.universes}
+            main_content={template_info => this.main_content(template_info)}
+        />
     }
 
     has_universe_selector() {
@@ -116,50 +35,82 @@ class PageTemplate extends React.Component {
 
     screencap_elements() {
         // not implemented, should be overridden
-        return {
-            path: undefined,
-            overall_width: undefined,
-            elements_to_render: undefined,
-        }
+        return undefined;
     }
 
-    async screencap() {
-        const config = this.screencap_elements();
-
-        try {
-            console.log("Creating screenshot...");
-            await create_screenshot(config, this.has_universe_selector() ? this.state.current_universe : undefined);
-        } catch (e) {
-            console.error(e);
-        }
-    }
-
-    async initiate_screenshot() {
-        this.setState({ screenshot_mode: true });
-        setTimeout(async () => {
-            await this.screencap();
-            this.setState({ screenshot_mode: false });
-        })
-    }
-
-    main_content() {
+    main_content(template_info) {
         // not implemented, should be overridden
         return (<div></div>);
     }
 }
 
+function PageFunction({
+    screencap_elements,
+    has_universe_selector,
+    universes,
+    main_content,
+}) {
+    const [hamburger_open, set_hamburger_open] = useState(false);
+    const [screenshot_mode, set_screenshot_mode] = useState(false);
+
+    const has_screenshot_button = screencap_elements != undefined;
+
+    const screencap = async (curr_universe) => {
+        try {
+            console.log("Creating screenshot...");
+            await create_screenshot(screencap_elements(), has_universe_selector ? curr_universe : undefined);
+        } catch (e) {
+            console.error(e);
+        }
+    }
+
+    const initiate_screenshot = async curr_universe => {
+        set_screenshot_mode(true)
+        setTimeout(async () => {
+            await screencap(curr_universe);
+            set_screenshot_mode(false)
+        })
+    }
+
+    const template_info = {
+        screenshot_mode: screenshot_mode
+    }
+
+    return (
+        <Fragment>
+            <meta name="viewport" content="width=600" />
+            <div className={mobileLayout() ? "main_panel_mobile" : "main_panel"}>
+                <Header
+                    hamburger_open={hamburger_open}
+                    set_hamburger_open={set_hamburger_open}
+                    has_screenshot={has_screenshot_button}
+                    has_universe_selector={has_universe_selector}
+                    all_universes={universes}
+                    screenshot_mode={screenshot_mode}
+                    initiate_screenshot={curr_universe => initiate_screenshot(curr_universe)}
+                />
+                <div style={{ marginBlockEnd: "16px" }}></div>
+                <BodyPanel
+                    hamburger_open={hamburger_open}
+                    main_content={main_content(template_info)}
+                />
+            </div>
+        </Fragment>
+    );
+}
+
 function TemplateFooter() {
     return <div className="centered_text">
-        Urban Stats Version <Version /> by <MainCredits />. Last updated <LastUpdated />. <OtherCredits /> Not for commercial use.
+        Urban Stats Version <Version /> by <MainCredits />. Last updated <LastUpdated />. <OtherCredits /> Not for commercial use. <Support />
     </div>
 }
 
 function Version() {
-    return <span id="current-version">16.6.0</span>
+    return <span id="current-version">16.6.1</span>
 }
 
 function LastUpdated() {
-    return <span id="last-updated">2024-07-21</span>
+    return <span id="last-updated">2024-08-09</span>
 }
 
 function MainCredits() {
@@ -169,5 +120,33 @@ function MainCredits() {
 function OtherCredits() {
     return <span>
         Significant help with weather data from <a href="https://twitter.com/OklahomaPerson">OklahomaPerson</a>.
+    </span>
+}
+
+function BodyPanel(props) {
+    if (props.hamburger_open) {
+        return <LeftPanel />
+    }
+    return <div className="body_panel">
+        {mobileLayout() ? undefined : <LeftPanel />}
+        <div className={mobileLayout() ? "content_panel_mobile" : "right_panel"}>
+            {props.main_content}
+            <div className="gap"></div>
+            <TemplateFooter />
+        </div>
+    </div>
+}
+
+function LeftPanel() {
+    return (
+        <div className={mobileLayout() ? "left_panel_mobile" : "left_panel"}>
+            <Sidebar />
+        </div>
+    )
+}
+
+function Support() {
+    return <span>
+        If you find urbanstats useful, please donate on <a href="https://ko-fi.com/notkavi">kofi</a>!
     </span>
 }

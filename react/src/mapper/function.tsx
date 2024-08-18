@@ -2,9 +2,9 @@ export { FilterSelector, FunctionSelector, FunctionColorStat };
 
 import React from "react";
 
-import { Expression, Parser, Value } from 'expr-eval';
+import { Parser, Value } from 'expr-eval';
 import { DataListSelector } from "./DataListSelector";
-import { CheckboxSetting } from "../components/sidebar";
+import { CheckboxSettingCustom } from "../components/sidebar";
 import { Regression } from "./regression";
 import { ColorStat, ColorStatDescriptor, FilterSettings, RegressionDescriptor, StatisticsForGeography } from "./settings";
 
@@ -206,7 +206,7 @@ function RegressionSelector(props: { regression: RegressionDescriptor, set_regre
         </div>
         <div style={{ width: "70%" }}>
             {rhs_stack}
-            <CheckboxSetting
+            <CheckboxSettingCustom
                 name="Weighted by Population"
                 setting_key="weight_by_population"
                 settings={props.regression}

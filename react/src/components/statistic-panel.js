@@ -9,6 +9,8 @@ import { headerTextClass, subHeaderTextClass } from '../utils/responsive';
 import { article_link, explanation_page_link, sanitize, statistic_link } from '../navigation/links';
 import { Percentile, Statistic } from './table';
 import { display_type } from '../utils/text';
+import { useSetting } from '../page_template/settings';
+import { useUniverse } from '../universe';
 
 const table_style = { display: "flex", flexDirection: "column", padding: "1px" };
 const column_names = ["Ordinal", "Name", "Value", "", "Percentile"];
@@ -30,16 +32,12 @@ class StatisticPanel extends PageTemplate {
         this.index_range = this.compute_index_range();
     }
 
-    has_screenshot_button() {
-        return true;
-    }
-
     screencap_elements() {
-        return {
+        return () => ({
             path: sanitize(this.props.joined_string) + ".png",
             overall_width: this.table_ref.current.offsetWidth * 2,
             elements_to_render: [this.headers_ref.current, this.table_ref.current],
-        }
+        })
     }
 
     has_universe_selector() {
@@ -54,10 +52,10 @@ class StatisticPanel extends PageTemplate {
         return this.is_ascending() ? "ascending" : "descending";
     }
 
-    swap_ascending_descending() {
+    swap_ascending_descending(curr_universe) {
         var new_order = this.is_ascending() ? "descending" : "ascending";
         document.location = statistic_link(
-            this.state.current_universe,
+            curr_universe,
             this.props.statname, this.props.article_type,
             1, this.props.amount, new_order,
             undefined
@@ -106,12 +104,15 @@ class StatisticPanel extends PageTemplate {
         return style;
     }
 
-    main_content() {
+    main_content(template_info) {
         return <div>
             <div ref={this.headers_ref}>
                 <div className={headerTextClass()}>{this.props.rendered_statname}</div>
                 {/* // TODO plural */}
-                <div className={subHeaderTextClass()}>{display_type(this.state.current_universe, this.props.article_type)} ({this.rendered_order()})</div>
+                <StatisticPanelSubhead
+                    article_type={this.props.article_type}
+                    rendered_order={this.rendered_order()}
+                />
             </div>
             <div style={{ marginBlockEnd: "16px" }}></div>
             <div className="serif" ref={this.table_ref}>
@@ -120,7 +121,7 @@ class StatisticPanel extends PageTemplate {
                         if (i === 0) {
                             return <div key={name} style={{ ...this.style(i, 0), "display": "flex", "justifyContent": "space-between", "flexDirection": "row" }}>
                                 <div>{name}</div>
-                                <AscendingVsDescending on_click={() => this.swap_ascending_descending()} is_ascending={this.is_ascending()} />
+                                <AscendingVsDescending on_click={curr_universe => this.swap_ascending_descending(curr_universe)} is_ascending={this.is_ascending()} />
                             </div>
                         }
                         return <div key={name} style={this.style(i, 0)}>{name}</div>
@@ -132,14 +133,13 @@ class StatisticPanel extends PageTemplate {
                     }}>
                         <div style={this.style(0, row_idx + 1)}>{i + 1}</div>
                         <div style={this.style(1, row_idx + 1)}>
-                            <a href={article_link(this.state.current_universe, this.props.article_names[i])} style={{ fontWeight: 500, color: "black", textDecoration: "none" }}>{this.props.article_names[i]}</a>
+                            <ArticleLink longname={this.props.article_names[i]} />
                         </div>
                         <div style={this.style(2, row_idx + 1)} className='value'>
                             <Statistic
                                 statname={this.props.statname}
                                 value={this.props.data.value[i]}
                                 is_unit={false}
-                                settings={this.state.settings}
                             />
                         </div>
                         <div style={this.style(3, row_idx + 1)} className='value_unit value'>
@@ -147,15 +147,14 @@ class StatisticPanel extends PageTemplate {
                                 statname={this.props.statname}
                                 value={this.props.data.value[i]}
                                 is_unit={true}
-                                settings={this.state.settings}
                             />
                         </div>
                         <div style={this.style(4, row_idx + 1)}>
-                            <Percentile ordinal={this.props.ordinal}
-                                total={this.props.total_count_in_class}
-                                percentile_by_population={this.props.data.populationPercentile[i]}
-                                settings={this.state.settings}
-                                simple={this.state.settings.simple_ordinals}
+                            <AutoPercentile
+                                ordinal={this.props.ordinal}
+                                total_count_in_class={this.props.total_count_in_class}
+                                data={this.props.data}
+                                i={i}
                             />
                         </div>
                     </div>)}
@@ -180,43 +179,15 @@ class StatisticPanel extends PageTemplate {
         const next = Math.min(max_page_start, current + per_page);
         const current_page = Math.ceil(current / per_page);
 
-        // low-key style for the buttons
-        const button_style = {
-            backgroundColor: "#f7f1e8",
-            border: "1px solid #000",
-            padding: "0 0.5em",
-            margin: "0.5em"
-        };
 
-        const select_page = <div style={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
-            <button onClick={() => this.change_start(prev)} className="serif" style={button_style}>&lt;</button>
-            <div>
-                <span>Page: </span>
-                <input type="string" pattern="[0-9]*"
-                    style={{ width: "3em", textAlign: "right" }}
-                    className="serif"
-                    defaultValue={current_page} onKeyDown={e => {
-                        if (e.key === "Enter") {
-                            var new_page = e.target.value;
-                            if (typeof new_page === "string") {
-                                new_page = parseInt(new_page);
-                            }
-                            if (typeof new_page === "number") {
-                                if (new_page < 1) {
-                                    new_page = 1;
-                                }
-                                if (new_page > max_pages) {
-                                    new_page = max_pages;
-                                }
-                                const new_start = (new_page - 1) * per_page + 1;
-                                self.change_start(new_start);
-                            }
-                        }
-                    }} />
-                <span> of {max_pages}</span>
-            </div>
-            <button onClick={() => this.change_start(next)} className="serif" style={button_style}>&gt;</button>
-        </div>;
+        const select_page = <SelectPage
+            change_start={(curr_universe, new_start) => self.change_start(curr_universe, new_start)}
+            current_page={current_page}
+            max_pages={max_pages}
+            prev_page={prev}
+            next_page={next}
+            per_page={per_page}
+        />
 
         // align the entire div to the center. not flex.
         return <div style={{
@@ -237,30 +208,24 @@ class StatisticPanel extends PageTemplate {
                 </div>
             </div>
             <div style={{ width: "25%" }}>
-                <div style={{ margin: "auto", textAlign: "center" }}>
-                    <span><select defaultValue={
-                        per_page == total ? "All" : per_page
-                    } onChange={e => this.change_amount(e.target.value)} className="serif">
-                        <option value="10">10</option>
-                        <option value="20">20</option>
-                        <option value="50">50</option>
-                        <option value="100">100</option>
-                        <option value="All">All</option>
-                    </select> per page</span>
-                </div>
+                <PerPageSelector
+                    per_page={per_page}
+                    total={total}
+                    change_amount={(curr_universe, new_amount) => self.change_amount(curr_universe, new_amount)}
+                />
             </div>
         </div>
     }
 
-    change_start(new_start) {
+    change_start(curr_universe, new_start) {
         document.location.href = statistic_link(
-            this.state.current_universe,
+            curr_universe,
             this.props.statname, this.props.article_type,
             new_start, this.props.amount, this.props.order, undefined
         );
     }
 
-    change_amount(new_amount) {
+    change_amount(curr_universe, new_amount) {
         const new_amount_str = new_amount;
         var start = this.props.start;
         if (new_amount === "All") {
@@ -275,7 +240,7 @@ class StatisticPanel extends PageTemplate {
         }
         if (typeof new_amount === "number") {
             document.location.href = statistic_link(
-                this.state.current_universe,
+                curr_universe,
                 this.props.statname,
                 this.props.article_type,
                 start,
@@ -287,10 +252,91 @@ class StatisticPanel extends PageTemplate {
     }
 }
 
+function PerPageSelector(props) {
+    const curr_universe = useUniverse();
+    return <div style={{ margin: "auto", textAlign: "center" }}>
+        <span><select defaultValue={
+            props.per_page == props.total ? "All" : props.per_page
+        } onChange={e => props.change_amount(curr_universe, e.target.value)} className="serif">
+            <option value="10">10</option>
+            <option value="20">20</option>
+            <option value="50">50</option>
+            <option value="100">100</option>
+            <option value="All">All</option>
+        </select> per page</span>
+    </div>
+}
+
+function SelectPage(props) {
+    // low-key style for the buttons
+    const button_style = {
+        backgroundColor: "#f7f1e8",
+        border: "1px solid #000",
+        padding: "0 0.5em",
+        margin: "0.5em"
+    };
+
+    const curr_universe = useUniverse();
+    return <div style={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
+        <button onClick={() => props.change_start(curr_universe, props.prev_page)} className="serif" style={button_style}>&lt;</button>
+        <div>
+            <span>Page: </span>
+            <input type="string" pattern="[0-9]*"
+                style={{ width: "3em", textAlign: "right" }}
+                className="serif"
+                defaultValue={props.current_page} onKeyDown={e => {
+                    if (e.key === "Enter") {
+                        var new_page = e.target.value;
+                        if (typeof new_page === "string") {
+                            new_page = parseInt(new_page);
+                        }
+                        if (typeof new_page === "number") {
+                            if (new_page < 1) {
+                                new_page = 1;
+                            }
+                            if (new_page > props.max_pages) {
+                                new_page = props.max_pages;
+                            }
+                            const new_start = (new_page - 1) * props.per_page + 1;
+                            props.change_start(curr_universe, new_start);
+                        }
+                    }
+                }} />
+            <span> of {props.max_pages}</span>
+        </div>
+        <button onClick={() => props.change_start(curr_universe, props.next_page)} className="serif" style={button_style}>&gt;</button>
+    </div>
+}
+
+function ArticleLink(props) {
+    const curr_universe = useUniverse();
+    return <a
+        href={article_link(curr_universe, props.longname)}
+        style={{ fontWeight: 500, color: "black", textDecoration: "none" }}
+    >{props.longname}</a>
+}
+
+function StatisticPanelSubhead(props) {
+    const curr_universe = useUniverse();
+    return <div className={subHeaderTextClass()}>
+        {display_type(curr_universe, props.article_type)} ({props.rendered_order})
+    </div>
+}
+
+function AutoPercentile(props) {
+    const [simple_ordinals, _] = useSetting("simple_ordinals");
+    return <Percentile ordinal={props.ordinal}
+        total={props.total_count_in_class}
+        percentile_by_population={props.data.populationPercentile[props.i]}
+        simple={simple_ordinals}
+    />
+}
+
 function AscendingVsDescending({ on_click, is_ascending }) {
+    const curr_universe = useUniverse();
     // either an up or down arrow, depending on the current ordering
     return <div style={{ display: "flex", alignItems: "center" }}>
-        <div style={{ cursor: "pointer" }} onClick={on_click}>
+        <div style={{ cursor: "pointer" }} onClick={() => on_click(curr_universe)}>
             {is_ascending ? "▲" : "▼"}
         </div>
     </div>

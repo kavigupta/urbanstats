@@ -1,4 +1,10 @@
+import { createContext, useContext } from "react";
 
+export const UNIVERSE_CONTEXT = createContext<string | undefined>(undefined);
+
+export function useUniverse(): string {
+    return useContext(UNIVERSE_CONTEXT)!;
+}
 
 export function get_universe(default_universe: string | undefined) {
     return new URLSearchParams(window.location.search).get("universe") || default_universe
