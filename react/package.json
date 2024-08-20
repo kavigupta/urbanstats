@@ -7,7 +7,8 @@
     "dev": "webpack --mode=development",
     "prod": "export NODE_ENV=production && webpack --mode=production",
     "watch": "./watch.sh",
-    "lint": "npx eslint . --fix"
+    "lint": "eslint . --fix",
+    "dependencygraph": "depcruise --include-only \"^src\" --output-type dot src | dot -T svg > dependencygraph.svg"
   },
   "keywords": [],
   "author": "",
@@ -30,6 +31,7 @@
     "babel-loader": "^9.1.0",
     "babel-plugin-import": "^1.13.8",
     "css-loader": "^6.8.1",
+    "dependency-cruiser": "^16.4.0",
     "downloads-folder": "^3.0.3",
     "eslint": "^9.8.0",
     "express": "^4.19.2",
