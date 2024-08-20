@@ -1,19 +1,19 @@
 import React, { useRef } from 'react';
 
-import { StatisticRowRaw } from "./table.js";
-import { Map } from "./map.js";
-import { Related } from "./related-button.js";
-import { PageTemplate } from "../page_template/template.js";
+import { StatisticRowRaw } from "./table";
+import { Map } from "./map";
+import { Related } from "./related-button";
+import { PageTemplate } from "../page_template/template";
 import "../common.css";
 import "./article.css";
-import { load_article } from './load-article.js';
-import { comparisonHeadStyle, headerTextClass, subHeaderTextClass } from '../utils/responsive.js';
-import { SearchBox } from './search.js';
-import { article_link, comparison_link, sanitize } from '../navigation/links.js';
-import { longname_is_exclusively_american, useUniverse } from '../universe.js';
-import { useSetting, useTableCheckboxSettings } from '../page_template/settings.js';
-import { Article, IRelatedButtons } from "../utils/protos.js";
-import { NormalizeProto } from "../utils/types.js";
+import { load_article } from './load-article';
+import { comparisonHeadStyle, headerTextClass, subHeaderTextClass } from '../utils/responsive';
+import { SearchBox } from './search';
+import { article_link, comparison_link, sanitize } from '../navigation/links';
+import { longname_is_exclusively_american, useUniverse } from '../universe';
+import { useSetting, useTableCheckboxSettings } from '../page_template/settings';
+import { Article, IRelatedButtons } from "../utils/protos";
+import { NormalizeProto } from "../utils/types";
 
 export function ArticlePanel({ article } : { article: Article }) {
 

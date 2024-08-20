@@ -3,8 +3,8 @@ import React, { useEffect, useRef } from 'react';
 import ReactDOM from 'react-dom/client';
 import "./style.css";
 import "./common.css";
-import { PageTemplate } from "./page_template/template.js";
-import { headerTextClass } from './utils/responsive.js';
+import { PageTemplate } from "./page_template/template";
+import { headerTextClass } from './utils/responsive';
 
 const industry_occupation_table = require("./data/explanation_industry_occupation_table.json");
 
