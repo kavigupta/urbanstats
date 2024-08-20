@@ -18,15 +18,15 @@ import { mobileLayout } from '../utils/responsive';
 import { create_screenshot, ScreencapElements } from '../components/screenshot';
 
 export function PageTemplate({
-    screencap_elements,
-    has_universe_selector,
-    universes,
-    main_content,
+    screencap_elements = undefined,
+    has_universe_selector = false,
+    universes = [],
+    children,
 }: {
-    screencap_elements: () => ScreencapElements
-    has_universe_selector: boolean,
-    universes: string[],
-    main_content: ({ screenshot_mode }: { screenshot_mode: boolean }) => React.ReactNode
+    screencap_elements?: () => ScreencapElements
+    has_universe_selector?: boolean,
+    universes?: string[],
+    children: ({ screenshot_mode }: { screenshot_mode: boolean }) => React.ReactNode
 }) {
     const [hamburger_open, set_hamburger_open] = useState(false);
     const [screenshot_mode, set_screenshot_mode] = useState(false);
@@ -34,6 +34,10 @@ export function PageTemplate({
     const has_screenshot_button = screencap_elements != undefined;
 
     const screencap = async (curr_universe: string) => {
+        if (screencap_elements === undefined) {
+            console.log("No screencap elements defined for this page.");
+            return;
+        }
         try {
             console.log("Creating screenshot...");
             await create_screenshot(screencap_elements(), has_universe_selector ? curr_universe : undefined);
@@ -48,10 +52,6 @@ export function PageTemplate({
             await screencap(curr_universe);
             set_screenshot_mode(false)
         })
-    }
-
-    const template_info = {
-        screenshot_mode: screenshot_mode
     }
 
     return (
@@ -70,7 +70,7 @@ export function PageTemplate({
                 <div style={{ marginBlockEnd: "16px" }}></div>
                 <BodyPanel
                     hamburger_open={hamburger_open}
-                    main_content={main_content(template_info)}
+                    main_content={children({ screenshot_mode })}
                 />
             </div>
         </Fragment>
