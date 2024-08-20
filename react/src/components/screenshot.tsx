@@ -54,7 +54,7 @@ export interface ScreencapElements {
     elements_to_render: HTMLElement[]
 }
 
-export async function create_screenshot(config: ScreencapElements, universe: string) {
+export async function create_screenshot(config: ScreencapElements, universe: string | undefined) {
     const overall_width = config.overall_width;
 
     async function screencap_element(ref: HTMLElement): Promise<[string, number]> {
