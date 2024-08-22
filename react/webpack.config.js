@@ -10,7 +10,7 @@ module.exports = env => ({
         "random": ["./src/random.js"],
         "about": ['./src/about.tsx'],
         "data-credit": ['./src/data-credit.tsx'],
-        "mapper": ['./src/mapper.js'],
+        "mapper": ['./src/mapper.tsx'],
         "comparison": ['./src/comparison.tsx'],
         "statistic": ['./src/statistic.js']
     },
