@@ -9,11 +9,13 @@ import numpy as np
 import pandas as pd
 import tqdm.auto as tqdm
 
+from census_blocks import RADII
 from election_data import vest_elections
 from output_geometry import produce_all_geometry_json
 from produce_html_page import (
     category_metadata,
     create_page_json,
+    extra_stats,
     get_explanation_page,
     get_statistic_categories,
     internal_statistic_names,
@@ -28,6 +30,7 @@ from urbanstats.consolidated_data.produce_consolidated_data import (
     full_consolidated_data,
     output_names,
 )
+from urbanstats.data.census_histogram import census_histogram
 from urbanstats.data.gpw import compute_gpw_data_for_shapefile_table
 from urbanstats.mapper.ramp import output_ramps
 from urbanstats.ordinals.compute_ordinals import compute_all_ordinals
@@ -48,11 +51,21 @@ from urbanstats.website_data.index import export_index
 
 
 def american_shapefile():
-    full = [
-        compute_statistics_for_shapefile(shapefiles_for_stats[k])
-        for k in tqdm.tqdm(shapefiles_for_stats, desc="computing statistics")
-        if shapefiles_for_stats[k].american
-    ]
+    full = []
+    for k in tqdm.tqdm(shapefiles_for_stats, desc="computing statistics"):
+        if not shapefiles_for_stats[k].american:
+            continue
+
+        t = compute_statistics_for_shapefile(shapefiles_for_stats[k])
+        
+        hists = census_histogram(shapefiles_for_stats[k], 2020)
+        for dens in RADII:
+            t[f"pw_density_histogram_{dens}"] = [
+                hists[x][f"ad_{dens}"] if x in hists else np.nan for x in t.longname
+            ]
+
+        full.append(t)
+
     full = pd.concat(full)
     full = full.reset_index(drop=True)
     for elect in vest_elections:
@@ -311,6 +324,9 @@ def main(
             },
             f,
         )
+    
+    with open("react/src/data/extra_stats.json", "w") as f:
+        json.dump(sorted(extra_stats()), f)
 
     output_names()
     output_ramps()
