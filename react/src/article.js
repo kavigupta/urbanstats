@@ -15,6 +15,7 @@ async function loadPage() {
 
     const longname = window_info.get("longname");
     const data = await loadProtobuf(data_link(longname), "Article");
+    console.log(data);
     document.title = data.shortname;
     const root = ReactDOM.createRoot(document.getElementById("root"));
     remove_universe_if_not_in(data.universes)

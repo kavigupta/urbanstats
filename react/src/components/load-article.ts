@@ -1,6 +1,6 @@
 import { TableCheckboxSettings } from "../page_template/settings";
 import { universe_is_american } from "../universe";
-import { Article } from "../utils/protos";
+import { Article, IExtraStatistic } from "../utils/protos";
 
 export interface ArticleRow {
     statval: number,
@@ -16,7 +16,8 @@ export interface ArticleRow {
     total_count_in_class: number,
     total_count_overall: number,
     _index: number,
-    rendered_statname: string
+    rendered_statname: string,
+    extra_stat?: IExtraStatistic
 }
 
 const index_list_info = require("../data/index_lists.json") as {
@@ -77,11 +78,17 @@ export function load_article(universe: string, data: Article, settings: TableChe
     const stats = require("../data/statistic_list.json") as string[];
     const explanation_page = require("../data/explanation_page.json") as string[];
 
+    const extra_stats = require("../data/extra_stats.json") as number[];
+
     const indices = compute_indices(data.longname, article_type) as number[];
 
     const modified_rows: ArticleRow[] = data.rows.map((row_original, row_index) => {
         const i = indices[row_index];
         // fresh row object
+        var extra_stat: IExtraStatistic | undefined = undefined;
+        if (extra_stats.includes(i)) {
+            extra_stat = data.extraStats[extra_stats.indexOf(i)];
+        }
         return {
             statval: row_original.statval!,
             ordinal: row_original.ordinalByUniverse![universe_index],
@@ -96,7 +103,8 @@ export function load_article(universe: string, data: Article, settings: TableChe
             total_count_in_class: for_type(universe, stats[i], article_type),
             total_count_overall: for_type(universe, stats[i], "overall"),
             _index: i,
-            rendered_statname: render_statname(i, names[i], exclusively_american)
+            rendered_statname: render_statname(i, names[i], exclusively_american),
+            extra_stat: extra_stat
         } satisfies ArticleRow
     })
     const filtered_rows = modified_rows.filter((row) => {

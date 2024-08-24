@@ -7,8 +7,9 @@ import "./table.css";
 import { is_historical_cd } from '../utils/is_historical';
 import { display_type } from '../utils/text';
 import { ArticleRow } from './load-article';
-import { useSetting } from '../page_template/settings';
+import { row_expanded_key, useSetting } from '../page_template/settings';
 import { useUniverse } from '../universe';
+import { WithPlot } from './plots';
 
 const table_row_style: React.CSSProperties = {
     display: "flex",
@@ -33,12 +34,19 @@ export type StatisticRowRawProps = {
 
 export function StatisticRowRaw(props: StatisticRowRawProps & { index: number, longname?: string }) {
 
-    const cell_contents = StatisticRowRawCellContents({ ...props, total_width: 100 });
+    const [expanded, setExpanded] = useSetting(row_expanded_key(props.is_header ? "header" : props.statname));
 
-    return <StatisticRow is_header={props.is_header} index={props.index} contents={cell_contents} />;
+    const cell_contents = StatisticRowRawCellContents({ ...props, total_width: 100, expanded, setExpanded });
+
+    return <WithPlot plot_props={[props]} expanded={expanded}>
+        <StatisticRow is_header={props.is_header} index={props.index} contents={cell_contents} />
+    </WithPlot>;
+
 }
 
-export function StatisticRowRawCellContents(props: StatisticRowRawProps & { total_width: number, longname?: string }) {
+export function StatisticRowRawCellContents(props: StatisticRowRawProps & {
+    total_width: number, longname?: string, expanded: boolean, setExpanded: (expanded: boolean) => void
+}) {
     const curr_universe = useUniverse();
     const alignStyle: React.CSSProperties = { textAlign: props.is_header ? "center" : "right" };
     let value_columns: [number, string, React.ReactNode][] = [
@@ -82,13 +90,17 @@ export function StatisticRowRawCellContents(props: StatisticRowRawProps & { tota
             "statname",
             <span className="serif value">{
                 props.is_header ? "Statistic" :
-                    <a className="statname_no_link" href={
-                        statistic_link(
-                            curr_universe,
-                            props.statname, props.article_type, props.ordinal,
-                            20, undefined, props.longname!
-                        )
-                    }>{props.rendered_statname}</a>
+                    <StatisticName
+                        statname={props.statname}
+                        article_type={props.article_type}
+                        ordinal={props.ordinal}
+                        longname={props.longname!}
+                        rendered_statname={props.rendered_statname}
+                        curr_universe={curr_universe}
+                        use_toggle={props.extra_stat != undefined}
+                        expanded={props.expanded}
+                        setExpanded={props.setExpanded}
+                    />
             }
             </span>
         ],
@@ -175,6 +187,44 @@ export function StatisticRowRawCellContents(props: StatisticRowRawProps & { tota
         }
     );
     return contents;
+}
+
+export function StatisticName(props: {
+    statname: string, article_type: string, ordinal: number,
+    longname?: string, rendered_statname: string,
+    curr_universe: string,
+    use_toggle: boolean,
+    expanded: boolean,
+    setExpanded: (expanded: boolean) => void
+}) {
+    const link = <a className="statname_no_link" href={
+        statistic_link(
+            props.curr_universe,
+            props.statname, props.article_type, props.ordinal,
+            20, undefined, props.longname!
+        )
+    }>{props.rendered_statname}</a>
+    if (props.use_toggle) {
+        return <span style={{
+            display: "flex",
+            alignItems: "center",
+            flexDirection: "row",
+        }}>
+            {link}
+            <div style={{ marginLeft: "0.3em" }} />
+            <div
+                className="expand_toggle"
+                onClick={() => props.setExpanded(!props.expanded)}
+                style={{
+                    cursor: "pointer", border: "1px solid black",
+                    padding: "0px 2px", borderRadius: "3px", fontSize: "50%",
+                }}
+            >
+                {props.expanded ? "-" : "+"}
+            </div>
+        </span>
+    }
+    return link;
 }
 
 export function StatisticRow({ is_header, index, contents }: { is_header: boolean, index: number, contents: React.ReactNode }): React.ReactNode {

@@ -1,6 +1,6 @@
 export { ComparisonPanel };
 
-import React from 'react';
+import React, { useState } from 'react';
 
 import { StatisticRowRaw, StatisticRowRawCellContents, StatisticRow } from "./table";
 import { MapGeneric } from "./map";
@@ -13,7 +13,8 @@ import { SearchBox } from './search';
 import { article_link, sanitize } from '../navigation/links';
 import { lighten } from '../utils/color';
 import { longname_is_exclusively_american, useUniverse } from '../universe';
-import { useTableCheckboxSettings } from '../page_template/settings';
+import { row_expanded_key, useSetting, useTableCheckboxSettings } from '../page_template/settings';
+import { WithPlot } from './plots';
 
 const main_columns = ["statval", "statval_unit", "statistic_ordinal", "statistic_percentile"];
 const main_columns_across_types = ["statval", "statval_unit"]
@@ -231,31 +232,45 @@ function ComparsionPageRows({ names, datas }) {
         datas={datas}
         names={names}
     />;
-    const render_rows = rows[0].map((_, row_idx) =>
-        <ComparisonRow
-            params={data_idx => {
-                return {
-                    key: row_idx, index: row_idx, ...rows[data_idx][row_idx]
-                }
-            }}
-            datas={datas}
-            names={names}
-        />
-    );
     return (
         <>
             <StatisticRow is_header={true} index={0} contents={header_row} />
 
             {
-                render_rows.map((row, i) =>
-                    <StatisticRow key={i} is_header={false} index={i} contents={row} />
+                rows[0].map((_, row_idx) => 
+                    <ComparisonRowBody
+                        key={row_idx}
+                        rows={rows}
+                        row_idx={row_idx}
+                        datas={datas}
+                        names={names}
+                    />
                 )
             }
         </>
     )
 }
 
-function ComparisonRow({ names, params, datas }) {
+function ComparisonRowBody({rows, row_idx, datas, names}) {
+    const [expanded, setExpanded] = useSetting(row_expanded_key(rows[0][row_idx].statname));
+    const contents = <ComparisonRow
+        params={data_idx => {
+            return {
+                key: row_idx, index: row_idx, ...rows[data_idx][row_idx]
+            }
+        }}
+        datas={datas}
+        names={names}
+        expanded={expanded}
+        setExpanded={setExpanded}
+    />;
+    const plot_props = rows.map(row => row[row_idx]);
+    return <WithPlot plot_props={plot_props} expanded={expanded} key={row_idx}>
+        <StatisticRow key={row_idx} is_header={false} index={row_idx} contents={contents} />
+    </WithPlot>
+}
+
+function ComparisonRow({ names, params, datas, expanded, setExpanded }) {
     if (names == undefined) {
         throw new Error("ComparisonRow: names is undefined");
     }
@@ -289,7 +304,9 @@ function ComparisonRow({ names, params, datas }) {
     row_overall.push(...StatisticRowRawCellContents(
         {
             ...param_vals[0], only_columns: ["statname"], _idx: -1, simple: true, longname: datas[0].longname,
-            total_width: 100 * (left_margin_pct - left_bar_margin)
+            total_width: 100 * (left_margin_pct - left_bar_margin),
+            expanded: expanded,
+            setExpanded: setExpanded
         }
     ));
     const only_columns = all_data_types_same(datas) ? main_columns : main_columns_across_types;
@@ -300,7 +317,9 @@ function ComparisonRow({ names, params, datas }) {
                 ...param_vals[i], only_columns: only_columns, _idx: i, simple: true,
                 statistic_style: highlight_idx == i ? { backgroundColor: lighten(color(i), 0.7) } : {},
                 onReplace: x => on_change(names, i, x),
-                total_width: each(datas)
+                total_width: each(datas),
+                expanded: expanded,
+                setExpanded: setExpanded
             }
         ));
     }

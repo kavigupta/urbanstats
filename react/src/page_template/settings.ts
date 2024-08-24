@@ -3,6 +3,7 @@ import { DefaultMap } from "../utils/DefaultMap";
 
 export type StatisticSettingKey = `show_statistic_${string}`
 export type RelationshipKey = `related__${string}__${string}`
+export type RowExpandedKey = `expanded__${string}`
 
 interface StatisticCategoryMetadataCheckbox {
     setting_key: StatisticSettingKey
@@ -13,6 +14,7 @@ interface StatisticCategoryMetadataCheckbox {
 export interface SettingsDictionary {
     [relationshipKey: RelationshipKey]: boolean;
     [showStatisticKey: StatisticSettingKey]: boolean;
+    [rowExpandedKey: RowExpandedKey]: boolean;
     show_historical_cds: boolean,
     simple_ordinals: boolean,
     use_imperial: boolean
@@ -20,6 +22,10 @@ export interface SettingsDictionary {
 
 export function relationship_key(article_type: string, other_type: string) {
     return `related__${article_type}__${other_type}` as const;
+}
+
+export function row_expanded_key(row_statname: string) {
+    return `expanded__${row_statname}` as const;
 }
 
 export function load_settings() {
@@ -83,6 +89,7 @@ export class Settings {
     }
 
     setSetting<K extends keyof SettingsDictionary>(key: K, newValue: SettingsDictionary[K]): void {
+        console.log(`Setting ${key} to ${newValue}`)
         this.settings[key] = newValue
         localStorage.setItem("settings", JSON.stringify(this.settings))
         this.observers.get(key).forEach(observer => observer())
