@@ -264,7 +264,7 @@ function ComparisonRowBody({rows, row_idx, datas, names}) {
         expanded={expanded}
         setExpanded={setExpanded}
     />;
-    const plot_props = rows.map(row => row[row_idx]);
+    const plot_props = rows.map((row, data_idx) => ({...row[row_idx], color: color(data_idx)}));
     return <WithPlot plot_props={plot_props} expanded={expanded} key={row_idx}>
         <StatisticRow key={row_idx} is_header={false} index={row_idx} contents={contents} />
     </WithPlot>
