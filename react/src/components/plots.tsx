@@ -4,7 +4,7 @@ import { IExtraStatistic, IHistogram } from '../utils/protos';
 
 // imort Observable plot
 import * as Plot from "@observablehq/plot";
-import { useSetting } from '../page_template/settings';
+import { HistogramType, useSetting } from '../page_template/settings';
 
 interface PlotProps {
     longname?: string;
@@ -60,42 +60,16 @@ function Histogram(props: { histograms: HistogramProps[] }) {
     }
     // get the length of the x values
     // get the x values
-    const [x_idx_start, x_idx_end] = histogramBounds(props.histograms);
-    const xidxs = Array.from({ length: x_idx_end - x_idx_start }, (_, i) => i + x_idx_start);
-    const series = mulitipleSeriesConsistentLength(props.histograms, xidxs, histogram_type === "Line (cumulative)");
-    const series_single = dovetailSequences(series);
-
-    const max_value = Math.max(...series.map(s => Math.max(...s.values.map(v => v.y))));
-    const marks: Plot.Markish[] = [];
-    if (histogram_type === "Line" || histogram_type === "Line (cumulative)") {
-        marks.push(
-            ...series.map(s => Plot.line(s.values, {
-                x: "xidx", y: "y", stroke: s.color, title: s.name
-            })),
-        );
-    } else if (histogram_type === "Bar") {
-        marks.push(
-            Plot.rectY(series_single, {
-                x1: "xidx_left",
-                x2: "xidx_right",
-                y: "y",
-                fx: "name",
-                fill: (d) => d.color,
-            })
-        );
-    } else {
-        throw new Error("histogram_type not recognized: " + histogram_type);
-    }
-
-    marks.push(
-        ...x_axis(xidxs, binSize, binMin)
-    );
 
     const plot_ref = useRef<HTMLDivElement>(null);
     useEffect(() => {
         if (plot_ref.current) {
-            // add a line graph for each series
-            // LINE GRAPH! NOT BAR GRAPH!
+            const [x_idx_start, x_idx_end] = histogramBounds(props.histograms);
+            const xidxs = Array.from({ length: x_idx_end - x_idx_start }, (_, i) => i + x_idx_start);
+            const [marks, domain]: [Plot.Markish[], [number, number]] = createHistogramMarks(props.histograms, xidxs, histogram_type);
+            marks.push(
+                ...x_axis(xidxs, binSize, binMin)
+            );
             const plot = Plot.plot({
                 marks: marks,
                 x: {
@@ -104,8 +78,7 @@ function Histogram(props: { histograms: HistogramProps[] }) {
                 },
                 y: {
                     label: "% of total",
-                    // padding: 0.1 * max_value,
-                    domain: [max_value * (-Y_PAD), max_value * (1 + Y_PAD)]
+                    domain: domain
                 },
                 grid: true,
                 width: 1000,
@@ -174,7 +147,7 @@ function mulitipleSeriesConsistentLength(histograms: HistogramProps[], xidxs: nu
     const sum = (arr: number[]) => arr.reduce((a, b) => a + b, 0);
     const sum_each = histograms.map(histogram => sum(histogram.histogram.counts!));
     const series = histograms.map((histogram, histogram_idx) => {
-        const counts = histogram.histogram.counts!;
+        const counts = [...histogram.histogram.counts!];
         let after_val = 0;
         if (is_cumulative) {
             for (let i = counts.length - 2; i >= 0; i--) {
@@ -269,4 +242,33 @@ function render_pow10(x: number) {
         return (p10 / 1e9).toFixed(0) + "B";
     }
     return p10.toExponential(1);
+}
+
+function createHistogramMarks(histograms: HistogramProps[], xidxs: number[], histogram_type: HistogramType): [Plot.Markish[], [number, number]] {
+    const series = mulitipleSeriesConsistentLength(histograms, xidxs, histogram_type === "Line (cumulative)");
+    const series_single = dovetailSequences(series);
+
+    const max_value = Math.max(...series.map(s => Math.max(...s.values.map(v => v.y))));
+    const marks: Plot.Markish[] = [];
+    if (histogram_type === "Line" || histogram_type === "Line (cumulative)") {
+        marks.push(
+            ...series.map(s => Plot.line(s.values, {
+                x: "xidx", y: "y", stroke: s.color, title: s.name
+            })),
+        );
+    } else if (histogram_type === "Bar") {
+        marks.push(
+            Plot.rectY(series_single, {
+                x1: "xidx_left",
+                x2: "xidx_right",
+                y: "y",
+                fx: "name",
+                fill: (d) => d.color,
+            })
+        );
+    } else {
+        throw new Error("histogram_type not recognized: " + histogram_type);
+    }
+    const domain: [number, number] = [max_value * (-Y_PAD), max_value * (1 + Y_PAD)];
+    return [marks, domain];
 }
