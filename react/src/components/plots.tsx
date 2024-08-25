@@ -61,71 +61,25 @@ function Histogram(props: { histograms: HistogramProps[] }) {
     // get the length of the x values
     // get the x values
     const [x_idx_start, x_idx_end] = histogramBounds(props.histograms);
-    const x = Array.from({ length: x_idx_end - x_idx_start }, (_, i) => binMin + (i + x_idx_start) * binSize);
-    const sum = (arr: number[]) => arr.reduce((a, b) => a + b, 0);
-    const sum_each = props.histograms.map(histogram => sum(histogram.histogram.counts!));
-    const series = props.histograms.map((histogram, histogram_idx) => {
-        // return { name: histogram.longname, values: x.map((x, i) => [x, histogram.histogram.counts![i]]) };
-        const counts = histogram.histogram.counts!;
-        let after_val = 0;
-        if (histogram_type === "Line (cumulative)") {
-            for (let i = counts.length - 2; i >= 0; i--) {
-                counts[i] += counts[i + 1];
-            }
-            // after_val = counts[counts.length - 1] / sum_each[histogram_idx];
-        }
-        return {
-            name: histogram.longname,
-            values: x.map((x, i) => ({
-                x,
-                y: (
-                    i + x_idx_start >= counts.length ?
-                        after_val
-                        :
-                        counts[i + x_idx_start] / sum_each[histogram_idx]
-                ) * 100,
-            })),
-            color: histogram.color
-        };
-    });
-    const series_single: { x: number, y: number, name: string, color: string }[] = [];
-    for (let i = 0; i < series.length; i++) {
-        const s = series[i];
-        var off = i;
-        off /= series.length - 1;
-        off -= 0.5;
-        off *= 0.9;
-        off *= binSize;
-        series_single.push(...
-            s.values
-                .map(v => ({ x: v.x + off, y: v.y, name: s.name, color: s.color }))
-        )
-    }
-    console.log("SERIES", series);
-    console.log(series.map(s => Math.max(...s.values.map(v => v.y))))
+    const xidxs = Array.from({ length: x_idx_end - x_idx_start }, (_, i) => i + x_idx_start);
+    const series = mulitipleSeriesConsistentLength(props.histograms, xidxs, histogram_type === "Line (cumulative)");
+    const series_single = dovetailSequences(series);
+
     const max_value = Math.max(...series.map(s => Math.max(...s.values.map(v => v.y))));
-    console.log("MAX VALUE", max_value);
-    const x_keypoints: number[] = [];
-    for (let i = 0; i < x.length; i++) {
-        const last_digit = (i + x_idx_start) % 10;
-        if (last_digit == 0 || last_digit == 3 || last_digit == 7) {
-            x_keypoints.push(x[i]);
-        }
-    }
-    console.log(series);
     const marks: Plot.Markish[] = [];
     if (histogram_type === "Line" || histogram_type === "Line (cumulative)") {
         marks.push(
             ...series.map(s => Plot.line(s.values, {
-                x: "x", y: "y", stroke: s.color, title: s.name
+                x: "xidx", y: "y", stroke: s.color, title: s.name
             })),
         );
     } else if (histogram_type === "Bar") {
         marks.push(
-            Plot.barY(series_single, {
-                x: "x",
+            Plot.rectY(series_single, {
+                x1: "xidx_left",
+                x2: "xidx_right",
                 y: "y",
-                fx: (d) => d.name,
+                fx: "name",
                 fill: (d) => d.color,
             })
         );
@@ -134,7 +88,7 @@ function Histogram(props: { histograms: HistogramProps[] }) {
     }
 
     marks.push(
-        Plot.axisX(x_keypoints, { tickFormat: d => Math.pow(10, d).toFixed(0) }),
+        ...x_axis(xidxs, binSize, binMin)
     );
 
     const plot_ref = useRef<HTMLDivElement>(null);
@@ -155,7 +109,6 @@ function Histogram(props: { histograms: HistogramProps[] }) {
                 },
                 grid: true,
                 width: 1000,
-                // set x labels to 
             },
             );
             plot_ref.current.innerHTML = "";
@@ -214,4 +167,106 @@ function histogramBounds(histograms: HistogramProps[]): [number, number] {
     }
 
     return [x_idx_start, x_idx_end];
+}
+
+function mulitipleSeriesConsistentLength(histograms: HistogramProps[], xidxs: number[], is_cumulative: boolean) {
+    // Create a list of series, each with the same length
+    const sum = (arr: number[]) => arr.reduce((a, b) => a + b, 0);
+    const sum_each = histograms.map(histogram => sum(histogram.histogram.counts!));
+    const series = histograms.map((histogram, histogram_idx) => {
+        const counts = histogram.histogram.counts!;
+        let after_val = 0;
+        if (is_cumulative) {
+            for (let i = counts.length - 2; i >= 0; i--) {
+                counts[i] += counts[i + 1];
+            }
+        }
+        return {
+            name: histogram.longname,
+            values: xidxs.map(xidx => ({
+                xidx,
+                y: (
+                    xidx >= counts.length ?
+                        after_val
+                        :
+                        counts[xidx] / sum_each[histogram_idx]
+                ) * 100,
+            })),
+            color: histogram.color
+        };
+    });
+    return series;
+}
+
+function dovetailSequences(series: {name: string, values: {xidx: number, y: number}[], color: string}[]) {
+    const series_single: { xidx_left: number, xidx_right: number, y: number, name: string, color: string }[] = [];
+    for (let i = 0; i < series.length; i++) {
+        const s = series[i];
+        var width = 1 / (series.length) * 0.8;
+        var off = i - (series.length - 1) / 2;
+        off *= width;
+        series_single.push(...
+            s.values
+            .map(v => ({
+                xidx_left: v.xidx + off, xidx_right: v.xidx + off + width,
+                y: v.y, name: s.name, color: s.color }))
+        )
+    }
+    return series_single;
+}
+
+function x_axis(xidxs: number[], binSize: number, binMin: number) {
+    const x_keypoints: number[] = [];
+    for (let i = 0; i < xidxs.length; i++) {
+        const last_digit = xidxs[i] % 10;
+        if (last_digit == 0 || last_digit == 3 || last_digit == 7) {
+            x_keypoints.push(xidxs[i]);
+        }
+    }
+    return [
+        Plot.axisX(x_keypoints, { tickFormat: d => render_pow10(d * binSize + binMin) }),
+        Plot.gridX(x_keypoints)
+    ]
+}
+
+function pow10_moral(x: number): number {
+    // 10 ** x, but "morally" so, i.e., 10 ** 0.3 = 2
+    if (x < 0) {
+        return 1 / pow10_moral(-x);
+    }
+    if (x >= 1) {
+        return 10 ** Math.floor(x) * pow10_moral(x - Math.floor(x));
+    }
+    const x10 = x * 10;
+    const error_round = Math.abs(x10 - Math.round(x10));
+    if (error_round > 0.1) {
+        return 10 ** x;
+    }
+    if (Math.round(x10) == 0) {
+        return 1;
+    }
+    if (Math.round(x10) == 3) {
+        return 2;
+    }
+    if (Math.round(x10) == 7) {
+        return 5;
+    }
+    return 10 ** x;
+}
+
+function render_pow10(x: number) {
+    const p10 = pow10_moral(x);
+    if (p10 < 1000) {
+        return p10.toString();
+    }
+    if (p10 < 1e6) {
+        return (p10 / 1e3).toFixed(0) + "k";
+    }
+    if (p10 < 1e9) {
+        return (p10 / 1e6).toFixed(0) + "M";
+    }
+    if (p10 < 1e12) {
+        return (p10 / 1e9).toFixed(0) + "B";
+    }
+    return p10.toExponential(1);
 }
