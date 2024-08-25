@@ -4,6 +4,7 @@ import { IExtraStatistic, IHistogram } from '../utils/protos';
 
 // imort Observable plot
 import * as Plot from "@observablehq/plot";
+import { useSetting } from '../page_template/settings';
 
 interface PlotProps {
     longname?: string;
@@ -44,6 +45,7 @@ interface HistogramProps {
 }
 
 function Histogram(props: { histograms: HistogramProps[] }) {
+    const [histogram_type] = useSetting("histogram_type");
     // series for each histogram. Each series is a list of [x, y] pairs
     // x start at histogram.binMin and goes up by histogram.binSize
     // y is histogram.counts
@@ -64,18 +66,41 @@ function Histogram(props: { histograms: HistogramProps[] }) {
     const sum_each = props.histograms.map(histogram => sum(histogram.histogram.counts!));
     const series = props.histograms.map((histogram, histogram_idx) => {
         // return { name: histogram.longname, values: x.map((x, i) => [x, histogram.histogram.counts![i]]) };
+        const counts = histogram.histogram.counts!;
+        let after_val = 0;
+        if (histogram_type === "Line (cumulative)") {
+            for (let i = counts.length - 2; i >= 0; i--) {
+                counts[i] += counts[i + 1];
+            }
+            // after_val = counts[counts.length - 1] / sum_each[histogram_idx];
+        }
         return {
             name: histogram.longname,
             values: x.map((x, i) => ({
                 x,
-                y: i + x_idx_start >= histogram.histogram.counts!.length ?
-                    0
-                    :
-                    histogram.histogram.counts![i + x_idx_start] / sum_each[histogram_idx] * 100,
+                y: (
+                    i + x_idx_start >= counts.length ?
+                        after_val
+                        :
+                        counts[i + x_idx_start] / sum_each[histogram_idx]
+                ) * 100,
             })),
             color: histogram.color
         };
     });
+    const series_single: { x: number, y: number, name: string, color: string }[] = [];
+    for (let i = 0; i < series.length; i++) {
+        const s = series[i];
+        var off = i;
+        off /= series.length - 1;
+        off -= 0.5;
+        off *= 0.9;
+        off *= binSize;
+        series_single.push(...
+            s.values
+                .map(v => ({ x: v.x + off, y: v.y, name: s.name, color: s.color }))
+        )
+    }
     console.log("SERIES", series);
     console.log(series.map(s => Math.max(...s.values.map(v => v.y))))
     const max_value = Math.max(...series.map(s => Math.max(...s.values.map(v => v.y))));
@@ -88,27 +113,37 @@ function Histogram(props: { histograms: HistogramProps[] }) {
         }
     }
     console.log(series);
+    const marks: Plot.Markish[] = [];
+    if (histogram_type === "Line" || histogram_type === "Line (cumulative)") {
+        marks.push(
+            ...series.map(s => Plot.line(s.values, {
+                x: "x", y: "y", stroke: s.color, title: s.name
+            })),
+        );
+    } else if (histogram_type === "Bar") {
+        marks.push(
+            Plot.barY(series_single, {
+                x: "x",
+                y: "y",
+                fx: (d) => d.name,
+                fill: (d) => d.color,
+            })
+        );
+    } else {
+        throw new Error("histogram_type not recognized: " + histogram_type);
+    }
+
+    marks.push(
+        Plot.axisX(x_keypoints, { tickFormat: d => Math.pow(10, d).toFixed(0) }),
+    );
+
     const plot_ref = useRef<HTMLDivElement>(null);
     useEffect(() => {
-        console.log("EFFECT!");
         if (plot_ref.current) {
-            console.log("PLOTTING!");
             // add a line graph for each series
             // LINE GRAPH! NOT BAR GRAPH!
             const plot = Plot.plot({
-                marks: [
-                    ...series.map(s => Plot.line(s.values, {
-                        x: "x", y: "y", stroke: s.color, title: s.name
-                    })),
-                    // ...series.map(s =>
-                    //     Plot.tip(s.values, Plot.pointer({
-                    //         x: "x",
-                    //         y: "y",
-                    //         title: (d) => [d.x, d.y].join("\n\n")
-                    //     }))
-                    // ),
-                    Plot.axisX(x_keypoints, { tickFormat: d => Math.pow(10, d).toFixed(0) }),
-                ],
+                marks: marks,
                 x: {
                     label: "Density",
                     grid: true
@@ -126,13 +161,29 @@ function Histogram(props: { histograms: HistogramProps[] }) {
             plot_ref.current.innerHTML = "";
             plot_ref.current.appendChild(plot);
         }
-    }, []);
-    return <div ref={plot_ref} style={
-        {
-            width: "100%",
-            // height: "20em"
-        }
-    }></div>;
+    }, [histogram_type]);
+    // put a button panel in the top right corner
+    return <div style={{ width: "100%", position: "relative" }} >
+        <div ref={plot_ref} style={
+            {
+                width: "100%",
+                // height: "20em"
+            }
+        }></div>
+        <div style={{ zIndex: 1000, position: "absolute", top: 0, right: 0 }}>
+            <HistogramSettings />
+        </div>
+    </div>
+}
+
+function HistogramSettings() {
+    const [histogram_type, setHistogramType] = useSetting("histogram_type");
+    // dropdown for histogram type
+    return <select value={histogram_type} onChange={e => setHistogramType(e.target.value as any)} className="serif">
+        <option value="Line">Line</option>
+        <option value="Line (cumulative)">Line (cumulative)</option>
+        <option value="Bar">Bar</option>
+    </select>
 }
 
 function histogramBounds(histograms: HistogramProps[]): [number, number] {
