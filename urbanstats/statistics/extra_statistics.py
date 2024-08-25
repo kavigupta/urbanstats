@@ -15,6 +15,7 @@ class HistogramSpec(ExtraStatistic):
     min_value: float
     bin_size: float
     key: str
+    universe_column: str
 
     def create(self, data_row):
         result = data_files_pb2.ExtraStatistic()

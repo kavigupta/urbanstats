@@ -2,6 +2,11 @@ import { TableCheckboxSettings } from "../page_template/settings";
 import { universe_is_american } from "../universe";
 import { Article, IExtraStatistic } from "../utils/protos";
 
+export interface ExtraStat {
+    stat: IExtraStatistic,
+    universe_total: number
+}
+
 export interface ArticleRow {
     statval: number,
     ordinal: number,
@@ -17,7 +22,7 @@ export interface ArticleRow {
     total_count_overall: number,
     _index: number,
     rendered_statname: string,
-    extra_stat?: IExtraStatistic
+    extra_stat?: ExtraStat
 }
 
 const index_list_info = require("../data/index_lists.json") as {
@@ -78,16 +83,22 @@ export function load_article(universe: string, data: Article, settings: TableChe
     const stats = require("../data/statistic_list.json") as string[];
     const explanation_page = require("../data/explanation_page.json") as string[];
 
-    const extra_stats = require("../data/extra_stats.json") as number[];
+    const extra_stats = require("../data/extra_stats.json") as [number, number][];
+    const extra_stat_idx_to_col = extra_stats.map((xy) => xy[0]);
 
     const indices = compute_indices(data.longname, article_type) as number[];
 
     const modified_rows: ArticleRow[] = data.rows.map((row_original, row_index) => {
         const i = indices[row_index];
         // fresh row object
-        var extra_stat: IExtraStatistic | undefined = undefined;
-        if (extra_stats.includes(i)) {
-            extra_stat = data.extraStats[extra_stats.indexOf(i)];
+        var extra_stat: ExtraStat | undefined = undefined;
+        if (extra_stat_idx_to_col.includes(i)) {
+            const extra_stat_idx = extra_stat_idx_to_col.indexOf(i);
+            const [_, universe_total_idx] = extra_stats[extra_stat_idx];
+            extra_stat = {
+                stat: data.extraStats[extra_stat_idx],
+                universe_total: data.rows.filter((row, row_index) => indices[row_index] === universe_total_idx)[0].statval!
+            };
         }
         return {
             statval: row_original.statval!,

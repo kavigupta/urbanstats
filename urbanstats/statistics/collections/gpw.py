@@ -49,7 +49,7 @@ class GPWStatistics(InternationalStatistics):
 
     def extra_stats(self):
         return {
-            "gpw_pw_density_1": HistogramSpec(0, 0.1, "gpw_pw_density_histogram_1"),
-            "gpw_pw_density_2": HistogramSpec(0, 0.1, "gpw_pw_density_histogram_2"),
-            "gpw_pw_density_4": HistogramSpec(0, 0.1, "gpw_pw_density_histogram_4"),
+            "gpw_pw_density_1": HistogramSpec(0, 0.1, "gpw_pw_density_histogram_1", "gpw_population"),
+            "gpw_pw_density_2": HistogramSpec(0, 0.1, "gpw_pw_density_histogram_2", "gpw_population"),
+            "gpw_pw_density_4": HistogramSpec(0, 0.1, "gpw_pw_density_histogram_4", "gpw_population"),
         }

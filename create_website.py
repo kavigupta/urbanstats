@@ -57,7 +57,7 @@ def american_shapefile():
             continue
 
         t = compute_statistics_for_shapefile(shapefiles_for_stats[k])
-        
+
         hists = census_histogram(shapefiles_for_stats[k], 2020)
         for dens in RADII:
             t[f"pw_density_histogram_{dens}"] = [
@@ -206,6 +206,7 @@ def get_index_lists():
         },
     }
 
+
 def link_scripts_folder(site_folder, dev):
     if os.path.islink(f"{site_folder}/scripts"):
         os.unlink(f"{site_folder}/scripts")
@@ -324,9 +325,15 @@ def main(
             },
             f,
         )
-    
+
     with open("react/src/data/extra_stats.json", "w") as f:
-        json.dump(sorted(extra_stats()), f)
+        json.dump(
+            [
+                (k, list(statistic_internal_to_display_name()).index(v.universe_column))
+                for k, v in sorted(extra_stats().items())
+            ],
+            f,
+        )
 
     output_names()
     output_ramps()
@@ -348,7 +355,9 @@ def main(
     with open(f"react/src/data/american_to_international.json", "w") as f:
         json.dump(american_to_international, f)
 
-    os.system(f"cd react; npm {'i' if dev else 'ci'}; npm run {'dev' if dev else 'prod'}")
+    os.system(
+        f"cd react; npm {'i' if dev else 'ci'}; npm run {'dev' if dev else 'prod'}"
+    )
 
     link_scripts_folder(site_folder, dev)
 

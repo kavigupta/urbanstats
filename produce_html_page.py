@@ -161,7 +161,8 @@ def extra_stats():
     for statistic_collection in statistic_collections:
         result.update(statistic_collection.extra_stats())
     name_to_idx = {name: idx for idx, name in enumerate(internal_statistic_names())}
-    return {name_to_idx[k]: v for k, v in result.items()}
+    extra = {name_to_idx[k]: v for k, v in result.items()}
+    return extra
 
 
 category_metadata = {

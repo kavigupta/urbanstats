@@ -20,6 +20,7 @@ export interface SettingsDictionary {
     simple_ordinals: boolean,
     use_imperial: boolean,
     histogram_type: HistogramType,
+    histogram_relative: boolean,
 }
 
 export function relationship_key(article_type: string, other_type: string) {
@@ -61,6 +62,7 @@ export function load_settings() {
     settings.simple_ordinals = settings.simple_ordinals ?? false
     settings.use_imperial = settings.use_imperial ?? false
     settings.histogram_type = settings.histogram_type ?? "Line"
+    settings.histogram_relative = settings.histogram_relative ?? true
 
     return [settings as SettingsDictionary, statistic_category_metadata_checkboxes] as const;
 }

@@ -5,10 +5,12 @@ import { IExtraStatistic, IHistogram } from '../utils/protos';
 // imort Observable plot
 import * as Plot from "@observablehq/plot";
 import { HistogramType, useSetting } from '../page_template/settings';
+import { ExtraStat } from './load-article';
+import { CheckboxSetting } from './sidebar';
 
 interface PlotProps {
     longname?: string;
-    extra_stat?: IExtraStatistic;
+    extra_stat?: ExtraStat;
     color: string;
 }
 
@@ -24,15 +26,20 @@ export function WithPlot(props: { children: React.ReactNode, plot_props: PlotPro
 }
 
 function RenderedPlot({ plot_props }: { plot_props: PlotProps[] }) {
-    if (plot_props[0].extra_stat?.histogram) {
+    if (plot_props[0].extra_stat?.stat.histogram) {
         // check all
         for (const props of plot_props) {
-            if (!props.extra_stat?.histogram) {
+            if (!props.extra_stat?.stat.histogram) {
                 throw new Error("histogram expected but not found");
             }
         }
         return <Histogram histograms={plot_props.map(
-            props => ({ longname: props.longname!, histogram: props.extra_stat!.histogram!, color: props.color })
+            props => ({
+                longname: props.longname!,
+                histogram: props.extra_stat!.stat.histogram!,
+                color: props.color,
+                universe_total: props.extra_stat!.universe_total
+            })
         )} />
     }
     throw new Error("plot not recognized: " + JSON.stringify(plot_props));
@@ -42,11 +49,13 @@ interface HistogramProps {
     longname: string;
     histogram: IHistogram;
     color: string;
+    universe_total: number;
 }
 
 function Histogram(props: { histograms: HistogramProps[] }) {
     const [histogram_type] = useSetting("histogram_type");
     const [use_imperial] = useSetting("use_imperial");
+    const [relative] = useSetting("histogram_relative");
     // series for each histogram. Each series is a list of [x, y] pairs
     // x start at histogram.binMin and goes up by histogram.binSize
     // y is histogram.counts
@@ -67,7 +76,7 @@ function Histogram(props: { histograms: HistogramProps[] }) {
         if (plot_ref.current) {
             const [x_idx_start, x_idx_end] = histogramBounds(props.histograms);
             const xidxs = Array.from({ length: x_idx_end - x_idx_start }, (_, i) => i + x_idx_start);
-            const [marks, domain]: [Plot.Markish[], [number, number]] = createHistogramMarks(props.histograms, xidxs, histogram_type);
+            const [marks, domain]: [Plot.Markish[], [number, number]] = createHistogramMarks(props.histograms, xidxs, histogram_type, relative);
             marks.push(
                 ...x_axis(xidxs, binSize, binMin, use_imperial)
             );
@@ -97,7 +106,7 @@ function Histogram(props: { histograms: HistogramProps[] }) {
             plot_ref.current.innerHTML = "";
             plot_ref.current.appendChild(plot);
         }
-    }, [histogram_type, use_imperial]);
+    }, [histogram_type, use_imperial, relative]);
     // put a button panel in the top right corner
     return <div style={{ width: "100%", position: "relative" }} >
         <div ref={plot_ref} style={
@@ -114,12 +123,16 @@ function Histogram(props: { histograms: HistogramProps[] }) {
 
 function HistogramSettings() {
     const [histogram_type, setHistogramType] = useSetting("histogram_type");
+    const [relative, setRelative] = useSetting("histogram_relative");
     // dropdown for histogram type
-    return <select value={histogram_type} onChange={e => setHistogramType(e.target.value as any)} className="serif">
-        <option value="Line">Line</option>
-        <option value="Line (cumulative)">Line (cumulative)</option>
-        <option value="Bar">Bar</option>
-    </select>
+    return <div className="serif" style={{ backgroundColor: "#fff8f0", padding: "0.5em", border: "1px solid black" }}>
+        <select value={histogram_type} onChange={e => setHistogramType(e.target.value as any)} className="serif">
+            <option value="Line">Line</option>
+            <option value="Line (cumulative)">Line (cumulative)</option>
+            <option value="Bar">Bar</option>
+        </select>
+        <CheckboxSetting name="Relative Histograms" setting_key="histogram_relative" />
+    </div>
 }
 
 function histogramBounds(histograms: HistogramProps[]): [number, number] {
@@ -152,7 +165,7 @@ function histogramBounds(histograms: HistogramProps[]): [number, number] {
     return [x_idx_start, x_idx_end];
 }
 
-function mulitipleSeriesConsistentLength(histograms: HistogramProps[], xidxs: number[], is_cumulative: boolean) {
+function mulitipleSeriesConsistentLength(histograms: HistogramProps[], xidxs: number[], relative: boolean, is_cumulative: boolean) {
     // Create a list of series, each with the same length
     const sum = (arr: number[]) => arr.reduce((a, b) => a + b, 0);
     const sum_each = histograms.map(histogram => sum(histogram.histogram.counts!));
@@ -173,7 +186,7 @@ function mulitipleSeriesConsistentLength(histograms: HistogramProps[], xidxs: nu
                         after_val
                         :
                         counts[xidx] / sum_each[histogram_idx]
-                ) * 100,
+                ) * (relative ? 100 : histogram.universe_total)
             })),
             color: histogram.color
         };
@@ -260,8 +273,8 @@ function render_pow10(x: number) {
     return p10.toExponential(1);
 }
 
-function createHistogramMarks(histograms: HistogramProps[], xidxs: number[], histogram_type: HistogramType): [Plot.Markish[], [number, number]] {
-    const series = mulitipleSeriesConsistentLength(histograms, xidxs, histogram_type === "Line (cumulative)");
+function createHistogramMarks(histograms: HistogramProps[], xidxs: number[], histogram_type: HistogramType, relative: boolean): [Plot.Markish[], [number, number]] {
+    const series = mulitipleSeriesConsistentLength(histograms, xidxs, relative, histogram_type === "Line (cumulative)");
     const series_single = dovetailSequences(series);
 
     const max_value = Math.max(...series.map(s => Math.max(...s.values.map(v => v.y))));
