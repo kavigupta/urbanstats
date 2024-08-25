@@ -46,6 +46,7 @@ interface HistogramProps {
 
 function Histogram(props: { histograms: HistogramProps[] }) {
     const [histogram_type] = useSetting("histogram_type");
+    const [use_imperial] = useSetting("use_imperial");
     // series for each histogram. Each series is a list of [x, y] pairs
     // x start at histogram.binMin and goes up by histogram.binSize
     // y is histogram.counts
@@ -68,26 +69,35 @@ function Histogram(props: { histograms: HistogramProps[] }) {
             const xidxs = Array.from({ length: x_idx_end - x_idx_start }, (_, i) => i + x_idx_start);
             const [marks, domain]: [Plot.Markish[], [number, number]] = createHistogramMarks(props.histograms, xidxs, histogram_type);
             marks.push(
-                ...x_axis(xidxs, binSize, binMin)
+                ...x_axis(xidxs, binSize, binMin, use_imperial)
             );
+            // y grid marks
+            // marks.push(Plot.gridY([0, 25, 50, 75, 100]));
             const plot = Plot.plot({
                 marks: marks,
                 x: {
-                    label: "Density",
-                    grid: true
+                    // ^2
+                    label: `Density (/${use_imperial ? "mi" : "km"}²)`,
                 },
                 y: {
                     label: "% of total",
-                    domain: domain
+                    domain: domain,
+                    grid: true,
                 },
-                grid: true,
+                grid: false,
                 width: 1000,
+                style: {
+                    fontSize: "1em",
+                    fontFamily: "Jost"
+                },
+                marginBottom: 40,
+                title: "",
             },
             );
             plot_ref.current.innerHTML = "";
             plot_ref.current.appendChild(plot);
         }
-    }, [histogram_type]);
+    }, [histogram_type, use_imperial]);
     // put a button panel in the top right corner
     return <div style={{ width: "100%", position: "relative" }} >
         <div ref={plot_ref} style={
@@ -171,7 +181,7 @@ function mulitipleSeriesConsistentLength(histograms: HistogramProps[], xidxs: nu
     return series;
 }
 
-function dovetailSequences(series: {name: string, values: {xidx: number, y: number}[], color: string}[]) {
+function dovetailSequences(series: { name: string, values: { xidx: number, y: number }[], color: string }[]) {
     const series_single: { xidx_left: number, xidx_right: number, y: number, name: string, color: string }[] = [];
     for (let i = 0; i < series.length; i++) {
         const s = series[i];
@@ -180,24 +190,29 @@ function dovetailSequences(series: {name: string, values: {xidx: number, y: numb
         off *= width;
         series_single.push(...
             s.values
-            .map(v => ({
-                xidx_left: v.xidx + off, xidx_right: v.xidx + off + width,
-                y: v.y, name: s.name, color: s.color }))
+                .map(v => ({
+                    xidx_left: v.xidx + off, xidx_right: v.xidx + off + width,
+                    y: v.y, name: s.name, color: s.color
+                }))
         )
     }
     return series_single;
 }
 
-function x_axis(xidxs: number[], binSize: number, binMin: number) {
+function x_axis(xidxs: number[], binSize: number, binMin: number, use_imperial: boolean) {
     const x_keypoints: number[] = [];
     for (let i = 0; i < xidxs.length; i++) {
-        const last_digit = xidxs[i] % 10;
+        var last_digit = xidxs[i] % 10;
+        if (use_imperial) {
+            last_digit = (last_digit + 4) % 10;
+        }
         if (last_digit == 0 || last_digit == 3 || last_digit == 7) {
             x_keypoints.push(xidxs[i]);
         }
     }
+    const adjustment = use_imperial ? Math.log10(1.60934) * 2 : 0;
     return [
-        Plot.axisX(x_keypoints, { tickFormat: d => render_pow10(d * binSize + binMin) }),
+        Plot.axisX(x_keypoints, { tickFormat: d => render_pow10(d * binSize + binMin + adjustment) }),
         Plot.gridX(x_keypoints)
     ]
 }
@@ -212,7 +227,7 @@ function pow10_moral(x: number): number {
     }
     const x10 = x * 10;
     const error_round = Math.abs(x10 - Math.round(x10));
-    if (error_round > 0.1) {
+    if (error_round > 0.2) {
         return 10 ** x;
     }
     if (Math.round(x10) == 0) {
@@ -229,6 +244,7 @@ function pow10_moral(x: number): number {
 
 function render_pow10(x: number) {
     const p10 = pow10_moral(x);
+
     if (p10 < 1000) {
         return p10.toString();
     }
@@ -253,7 +269,7 @@ function createHistogramMarks(histograms: HistogramProps[], xidxs: number[], his
     if (histogram_type === "Line" || histogram_type === "Line (cumulative)") {
         marks.push(
             ...series.map(s => Plot.line(s.values, {
-                x: "xidx", y: "y", stroke: s.color, title: s.name
+                x: "xidx", y: "y", stroke: s.color
             })),
         );
     } else if (histogram_type === "Bar") {
