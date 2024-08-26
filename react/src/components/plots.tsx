@@ -178,7 +178,7 @@ function mulitipleSeriesConsistentLength(histograms: HistogramProps[], xidxs: nu
             }
         }
         return {
-            name: histogram.longname,
+            name2: histogram.longname,
             values: xidxs.map(xidx => ({
                 xidx,
                 y: (
@@ -194,8 +194,8 @@ function mulitipleSeriesConsistentLength(histograms: HistogramProps[], xidxs: nu
     return series;
 }
 
-function dovetailSequences(series: { name: string, values: { xidx: number, y: number }[], color: string }[]) {
-    const series_single: { xidx_left: number, xidx_right: number, y: number, name: string, color: string }[] = [];
+function dovetailSequences(series: { name2: string, values: { xidx: number, y: number }[], color: string }[]) {
+    const series_single: { xidx_left: number, xidx_right: number, y: number, name2: string, color: string }[] = [];
     for (let i = 0; i < series.length; i++) {
         const s = series[i];
         var width = 1 / (series.length) * 0.8;
@@ -205,7 +205,7 @@ function dovetailSequences(series: { name: string, values: { xidx: number, y: nu
             s.values
                 .map(v => ({
                     xidx_left: v.xidx + off, xidx_right: v.xidx + off + width,
-                    y: v.y, name: s.name, color: s.color
+                    y: v.y, name2: s.name2, color: s.color
                 }))
         )
     }
@@ -291,7 +291,6 @@ function createHistogramMarks(histograms: HistogramProps[], xidxs: number[], his
                 x1: "xidx_left",
                 x2: "xidx_right",
                 y: "y",
-                fx: "name",
                 fill: (d) => d.color,
             })
         );
