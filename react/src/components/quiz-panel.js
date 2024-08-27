@@ -1,17 +1,14 @@
-export { QuizPanel, a_correct };
-
 import React from 'react';
 
 import { PageTemplate } from "../page_template/template.js";
 import "../common.css";
 import "./quiz.css";
-import { reportToServer, reportToServerRetro } from '../quiz/statistics.js';
-import { QuizQuestionDispatch } from '../quiz/quiz-question.js';
-import { QuizResult } from '../quiz/quiz-result.js';
+import { reportToServer, reportToServerRetro } from '../quiz/statistics';
+import { QuizQuestionDispatch } from '../quiz/quiz-question';
+import { QuizResult } from '../quiz/quiz-result';
+import { ENDPOINT } from "../quiz/quiz";
 
-export const ENDPOINT = "https://persistent.urbanstats.org";
-
-class QuizPanel extends PageTemplate {
+export class QuizPanel extends PageTemplate {
     constructor(props) {
         super(props);
         this.state = {
@@ -136,13 +133,4 @@ class QuizPanel extends PageTemplate {
             this.setState({ waiting: false }) //After 1 second, set render to true
         }.bind(this), 500)
     }
-}
-
-function a_correct(quiz_kind, quiz) {
-    if (quiz_kind == "juxtastat") {
-        return quiz.stat_a > quiz.stat_b;
-    } else if (quiz_kind == "retrostat") {
-        return quiz.a_ease > quiz.b_ease;
-    }
-    throw new Error("Unknown quiz kind: " + quiz_kind);
 }

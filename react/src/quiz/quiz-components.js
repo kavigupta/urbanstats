@@ -1,39 +1,15 @@
-
-export { Header, Footer, Help, nameOfQuizKind, user_id };
-
 import React from 'react';
 
 import { PageTemplate } from "../page_template/template.js";
 import "../common.css";
 import "../components/quiz.css";
-import { headerTextClass } from '../utils/responsive';
 
-
-function nameOfQuizKind(quiz_kind) {
-    return quiz_kind.replace(
-        /\w\S*/g,
-        function (txt) {
-            return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
-        }
-    );
-}
-
-
-function Header({ today, quiz_kind }) {
-    let text = nameOfQuizKind(quiz_kind);
-    if (typeof today != "number") {
-        text += " " + today;
-    }
-    return (<div className={headerTextClass()}>{text}</div>);
-}
-
-class Footer extends PageTemplate {
+export class Footer extends PageTemplate {
     constructor(props) {
         super(props);
     }
 
     render() {
-        console.log(this.props.history);
         const choices = this.props.history.correct_pattern.map(
             (correct, _) => correct ? "quiz_green" : "quiz_red"
         );
@@ -52,7 +28,7 @@ class Footer extends PageTemplate {
     }
 }
 
-class Help extends PageTemplate {
+export class Help extends PageTemplate {
     constructor(props) {
         super(props);
     }
@@ -70,14 +46,5 @@ class Help extends PageTemplate {
         return <div className="centered_text serif">
             {this.text()} {user_id()}
         </div>
-    }
-}
-
-function user_id() {
-    const user_id = localStorage.getItem("persistent_id");
-    if (user_id === null) {
-        return "";
-    } else {
-        return <div>Your user id is <span class="juxtastat-user-id">{user_id}</span></div>;
     }
 }

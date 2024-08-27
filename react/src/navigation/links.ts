@@ -1,4 +1,4 @@
-export function article_link(universe: string, longname: string) {
+export function article_link(universe: string | undefined, longname: string) {
     const params = new URLSearchParams()
     params.set('longname', sanitize(longname));
     add_universe_to_params(universe, params);

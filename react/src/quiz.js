@@ -10,7 +10,7 @@ import { gunzipSync, gzipSync } from 'zlib';
 import { QuizPanel } from './components/quiz-panel';
 import { sampleQuiz } from './quiz/sample';
 
-import { get_daily_offset_number, get_retrostat_offset_number } from './quiz/dates.js';
+import { get_daily_offset_number, get_retrostat_offset_number } from './quiz/dates';
 
 const ENDPOINT = "https://persistent.urbanstats.org";
 
