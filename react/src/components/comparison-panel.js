@@ -387,6 +387,8 @@ function insert_missing(rows, idxs) {
             for (const key in empty_row_example[idx]) {
                 if (typeof empty_row_example[idx][key] == "number") {
                     empty_row_example[idx][key] = NaN;
+                } else if (key == "extra_stat") {
+                    empty_row_example[idx][key] = undefined;
                 }
             }
             empty_row_example[idx].article_type = "none"; // doesn't matter since we are using simple mode
