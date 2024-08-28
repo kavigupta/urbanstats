@@ -14,7 +14,7 @@ interface PlotProps {
     color: string;
 }
 
-const Y_PAD = 0.1;
+const Y_PAD = 0.025;
 
 export function WithPlot(props: { children: React.ReactNode, plot_props: PlotProps[], expanded: boolean }) {
     return (
@@ -76,9 +76,10 @@ function Histogram(props: { histograms: HistogramProps[] }) {
         if (plot_ref.current) {
             const [x_idx_start, x_idx_end] = histogramBounds(props.histograms);
             const xidxs = Array.from({ length: x_idx_end - x_idx_start }, (_, i) => i + x_idx_start);
-            const [marks, domain]: [Plot.Markish[], [number, number]] = createHistogramMarks(props.histograms, xidxs, histogram_type, relative);
+            const [marks, max_value] = createHistogramMarks(props.histograms, xidxs, histogram_type, relative);
             marks.push(
-                ...x_axis(xidxs, binSize, binMin, use_imperial)
+                ...x_axis(xidxs, binSize, binMin, use_imperial),
+                ...y_axis(max_value)
             );
             // y grid marks
             // marks.push(Plot.gridY([0, 25, 50, 75, 100]));
@@ -89,8 +90,8 @@ function Histogram(props: { histograms: HistogramProps[] }) {
                     label: `Density (/${use_imperial ? "mi" : "km"}²)`,
                 },
                 y: {
-                    label: "% of total",
-                    domain: domain,
+                    label: relative ? "% of total" : "Population",
+                    domain: [max_value * (-Y_PAD), max_value * (1 + Y_PAD)],
                     grid: true,
                 },
                 grid: false,
@@ -99,7 +100,9 @@ function Histogram(props: { histograms: HistogramProps[] }) {
                     fontSize: "1em",
                     fontFamily: "Jost"
                 },
+                marginTop: 80,
                 marginBottom: 40,
+                marginLeft: 50,
                 title: "",
             },
             );
@@ -230,6 +233,22 @@ function x_axis(xidxs: number[], binSize: number, binMin: number, use_imperial: 
     ]
 }
 
+function y_axis(max_value: number) {
+    const MIN_N_Y_TICKS = 5;
+    const ideal_tick_gap = max_value / MIN_N_Y_TICKS;
+    const log10_tick_gap_times_3 = Math.floor(Math.log10(ideal_tick_gap) * 3);
+    const tick_gap_oom = Math.pow(10, Math.floor(log10_tick_gap_times_3 / 3));
+    const tick_gap_mantissa = log10_tick_gap_times_3 % 3 == 0 ? 1 : log10_tick_gap_times_3 % 3 == 1 ? 2 : 5;
+    const tick_gap = tick_gap_mantissa * tick_gap_oom;
+    const max_value_rounded = Math.ceil(max_value / tick_gap) * tick_gap;
+    const y_keypoints = Array.from({ length: Math.floor(max_value_rounded / tick_gap) + 1 }, (_, i) => i * tick_gap);
+
+    return [
+        Plot.axisY(y_keypoints, { tickFormat: d => render_number_highly_rounded(d, 1) }),
+        Plot.gridY(y_keypoints)
+    ]
+}
+
 function pow10_moral(x: number): number {
     // 10 ** x, but "morally" so, i.e., 10 ** 0.3 = 2
     if (x < 0) {
@@ -258,22 +277,29 @@ function pow10_moral(x: number): number {
 function render_pow10(x: number) {
     const p10 = pow10_moral(x);
 
-    if (p10 < 1000) {
-        return p10.toString();
-    }
-    if (p10 < 1e6) {
-        return (p10 / 1e3).toFixed(0) + "k";
-    }
-    if (p10 < 1e9) {
-        return (p10 / 1e6).toFixed(0) + "M";
-    }
-    if (p10 < 1e12) {
-        return (p10 / 1e9).toFixed(0) + "B";
-    }
-    return p10.toExponential(1);
+    return render_number_highly_rounded(p10);
 }
 
-function createHistogramMarks(histograms: HistogramProps[], xidxs: number[], histogram_type: HistogramType, relative: boolean): [Plot.Markish[], [number, number]] {
+function render_number_highly_rounded(x: number, places = 0) {
+    if (x < 1000) {
+        return x.toString();
+    }
+    if (x < 1e6) {
+        return (x / 1e3).toFixed(places) + "k";
+    }
+    if (x < 1e9) {
+        return (x / 1e6).toFixed(places) + "M";
+    }
+    if (x < 1e12) {
+        return (x / 1e9).toFixed(places) + "B";
+    }
+    return x.toExponential(1);
+}
+
+function createHistogramMarks(
+    histograms: HistogramProps[], xidxs: number[],
+    histogram_type: HistogramType, relative: boolean
+): [Plot.Markish[], number] {
     const series = mulitipleSeriesConsistentLength(histograms, xidxs, relative, histogram_type === "Line (cumulative)");
     const series_single = dovetailSequences(series);
 
@@ -282,7 +308,7 @@ function createHistogramMarks(histograms: HistogramProps[], xidxs: number[], his
     if (histogram_type === "Line" || histogram_type === "Line (cumulative)") {
         marks.push(
             ...series.map(s => Plot.line(s.values, {
-                x: "xidx", y: "y", stroke: s.color
+                x: "xidx", y: "y", stroke: s.color, strokeWidth: 4
             })),
         );
     } else if (histogram_type === "Bar") {
@@ -297,6 +323,5 @@ function createHistogramMarks(histograms: HistogramProps[], xidxs: number[], his
     } else {
         throw new Error("histogram_type not recognized: " + histogram_type);
     }
-    const domain: [number, number] = [max_value * (-Y_PAD), max_value * (1 + Y_PAD)];
-    return [marks, domain];
+    return [marks, max_value];
 }
