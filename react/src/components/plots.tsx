@@ -9,7 +9,7 @@ import { ExtraStat } from './load-article';
 import { CheckboxSetting } from './sidebar';
 
 interface PlotProps {
-    longname?: string;
+    shortname?: string;
     extra_stat?: ExtraStat;
     color: string;
 }
@@ -31,7 +31,7 @@ function RenderedPlot({ plot_props }: { plot_props: PlotProps[] }) {
         plot_props = plot_props.filter(p => p.extra_stat?.stat.histogram);
         return <Histogram histograms={plot_props.map(
             props => ({
-                longname: props.longname!,
+                shortname: props.shortname!,
                 histogram: props.extra_stat!.stat.histogram!,
                 color: props.color,
                 universe_total: props.extra_stat!.universe_total
@@ -42,7 +42,7 @@ function RenderedPlot({ plot_props }: { plot_props: PlotProps[] }) {
 }
 
 interface HistogramProps {
-    longname: string;
+    shortname: string;
     histogram: IHistogram;
     color: string;
     universe_total: number;
@@ -70,11 +70,14 @@ function Histogram(props: { histograms: HistogramProps[] }) {
     const plot_ref = useRef<HTMLDivElement>(null);
     useEffect(() => {
         if (plot_ref.current) {
+            const render_y = relative ? (y: number) => y.toFixed(2) + "%" : (y: number) => render_number_highly_rounded(y, 2);
+
             const [x_idx_start, x_idx_end] = histogramBounds(props.histograms);
             const xidxs = Array.from({ length: x_idx_end - x_idx_start }, (_, i) => i + x_idx_start);
-            const [marks, max_value] = createHistogramMarks(props.histograms, xidxs, histogram_type, relative);
+            const [x_axis_marks, render_x] = x_axis(xidxs, binSize, binMin, use_imperial);
+            const [marks, max_value] = createHistogramMarks(props.histograms, xidxs, histogram_type, relative, render_x, render_y);
             marks.push(
-                ...x_axis(xidxs, binSize, binMin, use_imperial),
+                ...x_axis_marks,
                 ...y_axis(max_value)
             );
             // y grid marks
@@ -177,6 +180,7 @@ function mulitipleSeriesConsistentLength(histograms: HistogramProps[], xidxs: nu
         }
         return {
             values: xidxs.map(xidx => ({
+                name: histogram.shortname,
                 xidx,
                 y: (
                     xidx >= counts.length ?
@@ -209,7 +213,20 @@ function dovetailSequences(series: { values: { xidx: number, y: number }[], colo
     return series_single;
 }
 
-function x_axis(xidxs: number[], binSize: number, binMin: number, use_imperial: boolean) {
+function maxSequences(series: { values: { xidx: number, y: number, name: string }[] }[]) {
+    const series_max: { xidx: number, y: number, names: string[], ys: number[] }[] = [];
+    for (let i = 0; i < series[0].values.length; i++) {
+        series_max.push({
+            xidx: series[0].values[i].xidx,
+            y: Math.max(...series.map(s => s.values[i].y)),
+            names: series.map(s => s.values[i].name),
+            ys: series.map(s => s.values[i].y)
+        });
+    }
+    return series_max;
+}
+
+function x_axis(xidxs: number[], binSize: number, binMin: number, use_imperial: boolean): [Plot.Markish[], (x: number) => string] {
     const x_keypoints: number[] = [];
     for (let i = 0; i < xidxs.length; i++) {
         var last_digit = xidxs[i] % 10;
@@ -222,8 +239,11 @@ function x_axis(xidxs: number[], binSize: number, binMin: number, use_imperial: 
     }
     const adjustment = use_imperial ? Math.log10(1.60934) * 2 : 0;
     return [
-        Plot.axisX(x_keypoints, { tickFormat: d => render_pow10(d * binSize + binMin + adjustment) }),
-        Plot.gridX(x_keypoints)
+        [
+            Plot.axisX(x_keypoints, { tickFormat: d => render_pow10(d * binSize + binMin + adjustment) }),
+            Plot.gridX(x_keypoints)
+        ],
+        x => render_number_highly_rounded(Math.pow(10, x * binSize + binMin + adjustment), 2) + "/" + (use_imperial ? "mi" : "km") + "²"
     ]
 }
 
@@ -239,7 +259,7 @@ function y_axis(max_value: number) {
 
     return [
         Plot.axisY(y_keypoints, { tickFormat: d => render_number_highly_rounded(d, 1) }),
-        Plot.gridY(y_keypoints)
+        Plot.gridY(y_keypoints),
     ]
 }
 
@@ -276,7 +296,7 @@ function render_pow10(x: number) {
 
 function render_number_highly_rounded(x: number, places = 0) {
     if (x < 1000) {
-        return x.toString();
+        return x.toFixed(0);
     }
     if (x < 1e6) {
         return (x / 1e3).toFixed(places) + "k";
@@ -292,12 +312,27 @@ function render_number_highly_rounded(x: number, places = 0) {
 
 function createHistogramMarks(
     histograms: HistogramProps[], xidxs: number[],
-    histogram_type: HistogramType, relative: boolean
+    histogram_type: HistogramType, relative: boolean,
+    render_x: (x: number) => string,
+    render_y: (y: number) => string
 ): [Plot.Markish[], number] {
     const series = mulitipleSeriesConsistentLength(histograms, xidxs, relative, histogram_type === "Line (cumulative)");
     const series_single = dovetailSequences(series);
 
     const max_value = Math.max(...series.map(s => Math.max(...s.values.map(v => v.y))));
+    const tip = Plot.tip(maxSequences(series), Plot.pointerX({
+        x: "xidx", y: "y",
+        title: (d) => {
+
+            var result = "Density: " + render_x(d.xidx) + "\n";
+            if (d.names.length > 1) {
+                result += d.names.map((name: string, i: number) => `${name}: ${render_y(d.ys[i])}`).join("\n")
+            } else {
+                result += `Frequency: ${render_y(d.ys[0])}`;
+            }
+            return result;
+        },
+    }))
     const marks: Plot.Markish[] = [];
     if (histogram_type === "Line" || histogram_type === "Line (cumulative)") {
         marks.push(
@@ -317,5 +352,6 @@ function createHistogramMarks(
     } else {
         throw new Error("histogram_type not recognized: " + histogram_type);
     }
+    marks.push(tip);
     return [marks, max_value];
 }
