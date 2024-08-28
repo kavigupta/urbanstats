@@ -88,7 +88,6 @@ function Histogram(props: { histograms: HistogramProps[] }) {
                 y: {
                     label: relative ? "% of total" : "Population",
                     domain: [max_value * (-Y_PAD), max_value * (1 + Y_PAD)],
-                    grid: true,
                 },
                 grid: false,
                 width: 1000,
@@ -177,7 +176,6 @@ function mulitipleSeriesConsistentLength(histograms: HistogramProps[], xidxs: nu
             }
         }
         return {
-            name2: histogram.longname,
             values: xidxs.map(xidx => ({
                 xidx,
                 y: (
@@ -193,8 +191,8 @@ function mulitipleSeriesConsistentLength(histograms: HistogramProps[], xidxs: nu
     return series;
 }
 
-function dovetailSequences(series: { name2: string, values: { xidx: number, y: number }[], color: string }[]) {
-    const series_single: { xidx_left: number, xidx_right: number, y: number, name2: string, color: string }[] = [];
+function dovetailSequences(series: { values: { xidx: number, y: number }[], color: string }[]) {
+    const series_single: { xidx_left: number, xidx_right: number, y: number, color: string }[] = [];
     for (let i = 0; i < series.length; i++) {
         const s = series[i];
         var width = 1 / (series.length) * 0.8;
@@ -204,7 +202,7 @@ function dovetailSequences(series: { name2: string, values: { xidx: number, y: n
             s.values
                 .map(v => ({
                     xidx_left: v.xidx + off, xidx_right: v.xidx + off + width,
-                    y: v.y, name2: s.name2, color: s.color
+                    y: v.y, color: s.color
                 }))
         )
     }
