@@ -42,6 +42,7 @@ class ArticlePanel extends PageTemplate {
                     <StatisticRowHeader />
                     <ArticlePanelRows
                         longname={this.props.longname}
+                        shortname={this.props.shortname}
                         article_row={this.props}
                     />
                 </div>
@@ -120,7 +121,7 @@ function ArticlePanelRows(props) {
             <StatisticRowRaw _idx={i} key={row.statname} index={i} {...row}
                 onReplace={x => { document.location = article_link(curr_universe, x) }}
                 simple={simple_ordinals}
-                longname={props.longname}
+                shortname={props.shortname}
             />)}
     </>
 }

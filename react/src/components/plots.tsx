@@ -68,8 +68,10 @@ function Histogram(props: { histograms: HistogramProps[] }) {
     // get the x values
 
     const plot_ref = useRef<HTMLDivElement>(null);
+    const title = props.histograms.length === 1 ? props.histograms[0].shortname : "";
     useEffect(() => {
         if (plot_ref.current) {
+            const colors = props.histograms.map(h => h.color);
             const render_y = relative ? (y: number) => y.toFixed(2) + "%" : (y: number) => render_number_highly_rounded(y, 2);
 
             const [x_idx_start, x_idx_end] = histogramBounds(props.histograms);
@@ -78,11 +80,12 @@ function Histogram(props: { histograms: HistogramProps[] }) {
             const [marks, max_value] = createHistogramMarks(props.histograms, xidxs, histogram_type, relative, render_x, render_y);
             marks.push(
                 ...x_axis_marks,
-                ...y_axis(max_value)
+                ...y_axis(max_value),
+                Plot.text([title], { frameAnchor: "top", dy: -40 }),
             );
             // y grid marks
             // marks.push(Plot.gridY([0, 25, 50, 75, 100]));
-            const plot = Plot.plot({
+            const plot_config = {
                 marks: marks,
                 x: {
                     // ^2
@@ -101,9 +104,9 @@ function Histogram(props: { histograms: HistogramProps[] }) {
                 marginTop: 80,
                 marginBottom: 40,
                 marginLeft: 50,
-                title: "",
-            },
-            );
+                color: colors.length === 1 ? undefined : { legend: true, range: colors },
+            };
+            const plot = Plot.plot(plot_config);
             plot_ref.current.innerHTML = "";
             plot_ref.current.appendChild(plot);
         }
@@ -195,7 +198,7 @@ function mulitipleSeriesConsistentLength(histograms: HistogramProps[], xidxs: nu
     return series;
 }
 
-function dovetailSequences(series: { values: { xidx: number, y: number }[], color: string }[]) {
+function dovetailSequences(series: { values: { xidx: number, y: number, name: string }[], color: string }[]) {
     const series_single: { xidx_left: number, xidx_right: number, y: number, color: string }[] = [];
     for (let i = 0; i < series.length; i++) {
         const s = series[i];
@@ -206,7 +209,7 @@ function dovetailSequences(series: { values: { xidx: number, y: number }[], colo
             s.values
                 .map(v => ({
                     xidx_left: v.xidx + off, xidx_right: v.xidx + off + width,
-                    y: v.y, color: s.color
+                    y: v.y, color: s.color, name: v.name
                 }))
         )
     }
@@ -333,11 +336,12 @@ function createHistogramMarks(
             return result;
         },
     }))
+    const color = histograms.length === 1 ? histograms[0].color : "name";
     const marks: Plot.Markish[] = [];
     if (histogram_type === "Line" || histogram_type === "Line (cumulative)") {
         marks.push(
             ...series.map(s => Plot.line(s.values, {
-                x: "xidx", y: "y", stroke: s.color, strokeWidth: 4
+                x: "xidx", y: "y", stroke: color, strokeWidth: 4
             })),
         );
     } else if (histogram_type === "Bar") {
@@ -346,7 +350,7 @@ function createHistogramMarks(
                 x1: "xidx_left",
                 x2: "xidx_right",
                 y: "y",
-                fill: (d) => d.color,
+                fill: color,
             })
         );
     } else {

@@ -32,13 +32,13 @@ export type StatisticRowRawProps = {
         }
     )
 
-export function StatisticRowRaw(props: StatisticRowRawProps & { index: number, longname?: string }) {
+export function StatisticRowRaw(props: StatisticRowRawProps & { index: number, shortname?: string }) {
 
     const [expanded, setExpanded] = useSetting(row_expanded_key(props.is_header ? "header" : props.statname));
 
     const cell_contents = StatisticRowRawCellContents({ ...props, total_width: 100, expanded, setExpanded });
 
-    return <WithPlot plot_props={[{ ...props, color: "#5a7dc3" }]} expanded={expanded}>
+    return <WithPlot plot_props={[{ ...props, color: "#5a7dc3", shortname: props.shortname }]} expanded={expanded}>
         <StatisticRow is_header={props.is_header} index={props.index} contents={cell_contents} />
     </WithPlot>;
 
