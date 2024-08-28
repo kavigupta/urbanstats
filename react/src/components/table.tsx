@@ -217,7 +217,9 @@ export function StatisticName(props: {
                 onClick={() => props.setExpanded(!props.expanded)}
                 style={{
                     cursor: "pointer", border: "1px solid black",
-                    padding: "0px 2px", borderRadius: "3px", fontSize: "50%",
+                    padding: 0, borderRadius: "3px", fontSize: "75%",
+                    minWidth: "1.5em", minHeight: "1.5em", textAlign: "center",
+                    lineHeight: "1.2em",
                 }}
             >
                 {props.expanded ? "-" : "+"}
