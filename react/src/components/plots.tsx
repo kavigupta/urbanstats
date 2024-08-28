@@ -26,13 +26,9 @@ export function WithPlot(props: { children: React.ReactNode, plot_props: PlotPro
 }
 
 function RenderedPlot({ plot_props }: { plot_props: PlotProps[] }) {
-    if (plot_props[0].extra_stat?.stat.histogram) {
-        // check all
-        for (const props of plot_props) {
-            if (!props.extra_stat?.stat.histogram) {
-                throw new Error("histogram expected but not found");
-            }
-        }
+    console.log("plot props", plot_props)
+    if (plot_props.some(p => p.extra_stat?.stat.histogram)) {
+        plot_props = plot_props.filter(p => p.extra_stat?.stat.histogram);
         return <Histogram histograms={plot_props.map(
             props => ({
                 longname: props.longname!,
