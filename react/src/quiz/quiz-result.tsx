@@ -9,26 +9,9 @@ import { AudienceStatistics, QuizStatistics } from './quiz-statistics';
 import { render_question } from './quiz-question';
 import { render_time_remaining } from './dates';
 import { QuizDescriptor, ENDPOINT, a_correct, QuizQuestion, JuxtaQuestion, RetroQuestion, nameOfQuizKind } from "./quiz";
-import { headerTextClass } from "../utils/responsive";
 import { History } from "./statistics";
+import { Header, UserId } from "./quiz-components";
 
-
-function Header({ quiz }: { quiz: QuizDescriptor }) {
-    let text = nameOfQuizKind(quiz.kind);
-    if (typeof quiz.name != "number") {
-        text += " " + quiz.name;
-    }
-    return (<div className={headerTextClass()}>{text}</div>);
-}
-
-function UserId() {
-    const user_id = localStorage.getItem("persistent_id");
-    if (user_id === null) {
-        return "";
-    } else {
-        return <div>Your user id is <span className="juxtastat-user-id">{user_id}</span></div>;
-    }
-}
 
 interface QuizResultProps {
     quizDescriptor: QuizDescriptor

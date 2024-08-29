@@ -86,7 +86,7 @@ function QuizQuestion(props: QuizQuestionProps & {
 
     return (
         <div>
-            {props.no_header ? undefined : <Header today={props.quiz.name} quiz_kind={props.quiz.kind} />}
+            {props.no_header ? undefined : <Header quiz={props.quiz} />}
             <div className={"centered_text " + quiztext_css}>
                 {question}
             </div>
