@@ -24,8 +24,7 @@ class Map extends MapGeneric<MapProps> {
 }
 
 function QuizQuestionDispatch(props: QuizQuestionProps & (
-    { question: JuxtaQuestion } |
-    { question: RetroQuestion }
+    { question: JuxtaQuestion | RetroQuestion }
 )) {
     switch (props.question.kind) {
         case "retrostat":
@@ -41,7 +40,7 @@ interface QuizQuestionProps {
     nested: boolean
     no_header: boolean
     no_footer: boolean
-    quiz: { kind: "juxtastat" | "retrostat", name: string}
+    quiz: { kind: "juxtastat" | "retrostat", name: number | string}
     on_select: (letter: "A" | "B") => void
     length: number
 }

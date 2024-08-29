@@ -15,7 +15,7 @@ import { Header, UserId } from "./quiz-components";
 
 interface QuizResultProps {
     quizDescriptor: QuizDescriptor
-    get_per_question: Promise<Response>;
+    get_per_question: Promise<Response> | undefined;
     today_name: string;
     history: {
         correct_pattern: boolean[];
@@ -34,7 +34,7 @@ export function QuizResult(props: QuizResultProps) {
 
     useEffect(() => {
         (async () => {
-            if (props.get_per_question != null) {
+            if (props.get_per_question !== undefined) {
                 const response = await props.get_per_question.then((response) => response.json());
                 setTotal(response.total);
                 set_per_question(response.per_question)
