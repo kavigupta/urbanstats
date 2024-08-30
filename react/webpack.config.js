@@ -12,7 +12,7 @@ module.exports = env => ({
         "data-credit": ['./src/data-credit.tsx'],
         "mapper": ['./src/mapper.tsx'],
         "comparison": ['./src/comparison.tsx'],
-        "statistic": ['./src/statistic.js']
+        "statistic": ['./src/statistic.tsx']
     },
     output: {
         filename: '[name].js',

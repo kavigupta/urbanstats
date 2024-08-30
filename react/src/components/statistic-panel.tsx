@@ -36,8 +36,6 @@ export function StatisticPanel(props: {
         value: number[],
         populationPercentile: number[]
     }
-    ordinal: number
-    total_count_in_class: number,
     explanation_page: string
 }) {
 
@@ -152,8 +150,8 @@ export function StatisticPanel(props: {
                         </div>
                         <div style={style(4, row_idx + 1)}>
                             <AutoPercentile
-                                ordinal={props.ordinal}
-                                total_count_in_class={props.total_count_in_class}
+                                ordinal={0}
+                                total_count_in_class={0}
                                 data={props.data}
                                 i={i}
                             />
