@@ -3,11 +3,11 @@
 import { Selector } from 'testcafe';
 import { TARGET, getLocation, comparison_page, screencap, download_image } from './test_utils';
 
-const upper_sgv = "Upper San Gabriel Valley CCD [CCD], Los Angeles County, California, USA"
-const pasadena = "Pasadena CCD [CCD], Los Angeles County, California, USA"
-const sw_sgv = "Southwest San Gabriel Valley CCD [CCD], Los Angeles County, California, USA"
-const east_sgv = "East San Gabriel Valley CCD [CCD], Los Angeles County, California, USA"
-const chicago = "Chicago city [CCD], Cook County, Illinois, USA"
+export const upper_sgv = "Upper San Gabriel Valley CCD [CCD], Los Angeles County, California, USA"
+export const pasadena = "Pasadena CCD [CCD], Los Angeles County, California, USA"
+export const sw_sgv = "Southwest San Gabriel Valley CCD [CCD], Los Angeles County, California, USA"
+export const east_sgv = "East San Gabriel Valley CCD [CCD], Los Angeles County, California, USA"
+export const chicago = "Chicago city [CCD], Cook County, Illinois, USA"
 
 fixture('comparison test heterogenous')
     .page(comparison_page(["San Marino city, California, USA", pasadena, sw_sgv]))

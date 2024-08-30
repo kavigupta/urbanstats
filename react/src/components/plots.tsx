@@ -7,6 +7,7 @@ import * as Plot from "@observablehq/plot";
 import { HistogramType, useSetting } from '../page_template/settings';
 import { ExtraStat } from './load-article';
 import { CheckboxSetting } from './sidebar';
+import { saveAs } from 'file-saver';
 
 interface PlotProps {
     shortname?: string;
@@ -91,7 +92,6 @@ function Histogram(props: { histograms: HistogramProps[] }) {
             const plot_config = {
                 marks: marks,
                 x: {
-                    // ^2
                     label: `Density (/${use_imperial ? "mi" : "km"}²)`,
                 },
                 y: {
@@ -116,21 +116,22 @@ function Histogram(props: { histograms: HistogramProps[] }) {
     }, [histogram_type, use_imperial, relative]);
     // put a button panel in the top right corner
     return <div style={{ width: "100%", position: "relative" }} >
-        <div ref={plot_ref} style={
+        <div id="histogram-svg-panel" ref={plot_ref} style={
             {
                 width: "100%",
                 // height: "20em"
             }
         }></div>
         <div style={{ zIndex: 1000, position: "absolute", top: 0, right: 0 }}>
-            <HistogramSettings />
+            <HistogramSettings plot_ref={plot_ref} />
         </div>
     </div>
 }
 
-function HistogramSettings() {
+function HistogramSettings(props: {
+    plot_ref: React.RefObject<HTMLDivElement>
+}) {
     const [histogram_type, setHistogramType] = useSetting("histogram_type");
-    const [relative, setRelative] = useSetting("histogram_relative");
     // dropdown for histogram type
     return <div className="serif" style={{ backgroundColor: "#fff8f0", padding: "0.5em", border: "1px solid black" }}>
         <select value={histogram_type} onChange={e => setHistogramType(e.target.value as any)} className="serif">
