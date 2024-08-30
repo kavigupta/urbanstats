@@ -116,7 +116,7 @@ function Histogram(props: { histograms: HistogramProps[] }) {
     }, [histogram_type, use_imperial, relative]);
     // put a button panel in the top right corner
     return <div style={{ width: "100%", position: "relative" }} >
-        <div id="histogram-svg-panel" ref={plot_ref} style={
+        <div className="histogram-svg-panel" ref={plot_ref} style={
             {
                 width: "100%",
                 // height: "20em"

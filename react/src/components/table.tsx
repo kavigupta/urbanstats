@@ -213,7 +213,7 @@ export function StatisticName(props: {
             {link}
             <div style={{ marginLeft: "0.3em" }} />
             <div
-                className="expand_toggle"
+                className="expand-toggle"
                 onClick={() => props.setExpanded(!props.expanded)}
                 style={{
                     cursor: "pointer", border: "1px solid black",
