@@ -60,6 +60,9 @@ class StatisticCollection(ABC):
     def same_for_each_name(self, value):
         return {name: value for name in self.name_for_each_statistic()}
 
+    def extra_stats(self):
+        return {}
+
 
 class GeographicStatistics(StatisticCollection):
     def for_america(self):

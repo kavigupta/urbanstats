@@ -20,6 +20,17 @@ message RelatedButtons {
     repeated RelatedButton buttons = 2;
 }
 
+message Histogram {
+    float bin_min = 1;
+    float bin_size = 2;
+    // the counts are normalized to sum to 2**16
+    repeated int32 counts = 3;
+}
+
+message ExtraStatistic {
+    optional Histogram histogram = 1;
+}
+
 message Article {
     string shortname = 1;
     string longname = 2;
@@ -28,6 +39,7 @@ message Article {
     repeated StatisticRow rows = 5;
     repeated RelatedButtons related = 6;
     repeated string universes = 7;
+    repeated ExtraStatistic extra_stats = 8;
 }
 
 

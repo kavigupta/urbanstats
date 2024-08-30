@@ -436,7 +436,7 @@ def attach_urban_centers_to_frame(frame):
     urban_center_shapefile = shapefiles["urban_centers"].load_file()
     urban_center_shapefile.index = urban_center_shapefile.longname
     overlays = gpd.overlay(frame, urban_center_shapefile)
-    overlays["population"] = compute_gpw_data_for_shapefile.function(
+    overlays["population"], _ = compute_gpw_data_for_shapefile.function(
         SimpleNamespace(
             load_file=lambda: overlays, hash_key="overlays " + uuid.uuid4().hex
         ),

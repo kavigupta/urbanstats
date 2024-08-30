@@ -1,3 +1,5 @@
+from census_blocks import RADII
+from urbanstats.statistics.extra_statistics import HistogramSpec
 from urbanstats.statistics.statistic_collection import (
     ORDER_CATEGORY_MAIN,
     ORDER_CATEGORY_OTHER_DENSITIES,
@@ -104,3 +106,9 @@ class Census2010(CensusStatisticsColection):
         del statistics_table["vacant_2010"]
         del statistics_table["total_2010"]
         del statistics_table["occupied_2010"]
+
+    def extra_stats(self):
+        return {
+            f"ad_{d}_2010": HistogramSpec(0, 0.1, f"pw_density_histogram_{d}_2010", "population")
+            for d in RADII
+        }
