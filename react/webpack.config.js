@@ -5,7 +5,7 @@ const NodePolyfillPlugin = require('node-polyfill-webpack-plugin')
 module.exports = env => ({
     entry: {
         "article": ['./src/article.tsx'],
-        "quiz": ['./src/quiz.js'],
+        "quiz": ['./src/quiz.tsx'],
         "index": ['./src/index.tsx'],
         "random": ["./src/random.js"],
         "about": ['./src/about.tsx'],
