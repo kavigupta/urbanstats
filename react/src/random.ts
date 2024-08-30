@@ -1,14 +1,14 @@
 import "./style.css";
 import "./common.css";
 
-import { by_population, uniform } from './navigation/random.js';
+import { by_population, uniform } from './navigation/random';
 import { load_settings } from './page_template/settings';
 
 
 async function main() {
     const window_info = new URLSearchParams(window.location.search);
 
-    const [settings, _] = load_settings();
+    const [settings] = load_settings();
 
     console.log(settings);
 
@@ -18,7 +18,7 @@ async function main() {
     if (sampleby == "uniform" || sampleby === null) {
         uniform(settings);
     } else if (sampleby == "population") {
-        by_population(settings, window_info.get("us_only").toLowerCase() == "true");
+        by_population(settings, window_info.get("us_only")!.toLowerCase() == "true");
     }
 }
 

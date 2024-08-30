@@ -7,7 +7,7 @@ module.exports = env => ({
         "article": ['./src/article.tsx'],
         "quiz": ['./src/quiz.tsx'],
         "index": ['./src/index.tsx'],
-        "random": ["./src/random.js"],
+        "random": ["./src/random.ts"],
         "about": ['./src/about.tsx'],
         "data-credit": ['./src/data-credit.tsx'],
         "mapper": ['./src/mapper.tsx'],
