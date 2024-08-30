@@ -59,9 +59,14 @@ def american_shapefile():
         t = compute_statistics_for_shapefile(shapefiles_for_stats[k])
 
         hists = census_histogram(shapefiles_for_stats[k], 2020)
+        hists_2010 = census_histogram(shapefiles_for_stats[k], 2010)
         for dens in RADII:
             t[f"pw_density_histogram_{dens}"] = [
                 hists[x][f"ad_{dens}"] if x in hists else np.nan for x in t.longname
+            ]
+            t[f"pw_density_histogram_{dens}_2010"] = [
+                hists_2010[x][f"ad_{dens}"] if x in hists_2010 else np.nan
+                for x in t.longname
             ]
 
         full.append(t)
