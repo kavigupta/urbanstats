@@ -1,4 +1,5 @@
 from census_blocks import RADII
+from urbanstats.statistics.extra_statistics import HistogramSpec
 from urbanstats.statistics.statistic_collection import (
     ORDER_CATEGORY_MAIN,
     ORDER_CATEGORY_OTHER_DENSITIES,
@@ -82,3 +83,8 @@ class CensusBasics(CensusStatisticsColection):
         statistics_table["sd"] = (
             statistics_table["population"] / statistics_table["area"]
         )
+
+    def extra_stats(self):
+        return {
+            f"ad_{d}": HistogramSpec(0, 0.1, f"pw_density_histogram_{d}", "population") for d in RADII
+        }

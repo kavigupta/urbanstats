@@ -11,6 +11,10 @@ def tag_international_duplicates(intl):
     return intl
 
 
+def isnan(x):
+    return isinstance(x, (float, np.float32, np.float64)) and np.isnan(x)
+
+
 def merge_international_row(row_international, row_domestic):
     for col in row_international.index:
         if col in [
@@ -23,15 +27,15 @@ def merge_international_row(row_international, row_domestic):
             "type_category",
         ]:
             continue
-        if row_international[col] == row_domestic[col]:
+        if isnan(row_domestic[col]):
             continue
-        if row_domestic[col] != row_domestic[col]:
-            continue
-        if row_international[col] != row_international[col] or col in [
+        if isnan(row_international[col]) or col in [
             "universes",
             "best_population_estimate",
         ]:
             row_international[col] = row_domestic[col]
+            continue
+        if row_international[col] == row_domestic[col]:
             continue
         assert (
             row_international[col] != row_international[col]
