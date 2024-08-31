@@ -24,7 +24,7 @@ function loadQuizHistory(): History {
 
 export function QuizPanel(props: { quizDescriptor: QuizDescriptor, today_name: string, todays_quiz: QuizQuestion[], parameters: string }) {
 
-    const [quiz_history, set_quiz_history] = useState(loadQuizHistory);
+    const [quiz_history, set_quiz_history] = useState(loadQuizHistory());
     const [waiting, setWaiting] = useState(false);
 
     const todays_quiz_history = quiz_history[props.quizDescriptor.name] ?? { choices: [], correct_pattern: [] }
@@ -39,7 +39,7 @@ export function QuizPanel(props: { quizDescriptor: QuizDescriptor, today_name: s
         setWaiting(true);
         // if today is a number and not a string
         if (is_daily || is_weekly) {
-            localStorage.setItem("quiz_history", JSON.stringify(history));
+            localStorage.setItem("quiz_history", JSON.stringify(newHistory));
         }
     }
 

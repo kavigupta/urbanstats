@@ -1,6 +1,5 @@
 import React from 'react';
 
-import { PageTemplate } from "../page_template/template";
 import "../common.css";
 import "../components/quiz.css";
 import { History } from "./statistics";
@@ -22,20 +21,18 @@ export function Footer(props: { length: number, history: History[string] }) {
     while (choices.length < props.length) {
         choices.push("quiz_blank");
     }
-    return <PageTemplate>{() =>
-        <table className="quiz_footer">
-            <tbody>
-                <tr>
-                    {choices.map((x, i) =>
-                        <td key={i} className={x}></td>
-                    )}
-                </tr>
-            </tbody>
-        </table >
-    }</PageTemplate>
+    return <table className="quiz_footer">
+        <tbody>
+            <tr>
+                {choices.map((x, i) =>
+                    <td key={i} className={x}></td>
+                )}
+            </tr>
+        </tbody>
+    </table >
 }
 
-export function Help(props: {quiz_kind: "juxtastat" | "retrostat"}) {
+export function Help(props: { quiz_kind: "juxtastat" | "retrostat" }) {
 
     const text = () => {
         if (props.quiz_kind == "juxtastat") {
@@ -46,11 +43,9 @@ export function Help(props: {quiz_kind: "juxtastat" | "retrostat"}) {
         throw new Error("Unknown quiz kind " + props.quiz_kind);
     }
 
-    return <PageTemplate>{() =>
-        <div className="centered_text serif">
-            {text()} {UserId()}
-        </div>
-    }</PageTemplate>
+    return <div className="centered_text serif">
+        {text()} {UserId()}
+    </div>
 }
 
 export function UserId() {

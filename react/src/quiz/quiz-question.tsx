@@ -31,6 +31,8 @@ function QuizQuestionDispatch(props: QuizQuestionProps & (
             return  <RetroQuizQuestion {...props} question={props.question} />;
         case "juxtastat":
             return <JuxtastatQuizQuestion {...props} question={props.question} />;
+        default:
+            throw new Error("Invalid question kind");
     }
 }
 
@@ -159,7 +161,6 @@ function RetroQuizQuestion(props: QuizQuestionProps & { question: RetroQuestion 
 function JuxtastatQuizQuestion(props: QuizQuestionProps & {
     question: JuxtaQuestion
 }) {
-
     return <QuizQuestion
         {...props}
         get_question={() => render_question(props.question.question)}

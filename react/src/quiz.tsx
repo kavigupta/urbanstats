@@ -9,7 +9,7 @@ import { loadJSON } from './load_json';
 import { QuizPanel } from './components/quiz-panel';
 
 import { get_daily_offset_number, get_retrostat_offset_number } from './quiz/dates';
-import { QuizDescriptor } from "./quiz/quiz";
+import { JuxtaQuestionJSON, load_juxta, load_retro, QuizDescriptor, RetroQuestionJSON } from "./quiz/quiz";
 
 const ENDPOINT = "https://persistent.urbanstats.org";
 
@@ -54,7 +54,7 @@ async function loadPage() {
             name: `W${retro}`
         }
         today_name = "Week " + retro;
-        todays_quiz = loadJSON("/retrostat/" + retro);
+        todays_quiz = (loadJSON("/retrostat/" + retro) as RetroQuestionJSON[]).map(load_retro);
     } else {
         // daily quiz
         let today: number;
@@ -63,7 +63,7 @@ async function loadPage() {
         } else {
             today = get_daily_offset_number();
         }
-        todays_quiz = loadJSON("/quiz/" + today);
+        todays_quiz = (loadJSON("/quiz/" + today) as JuxtaQuestionJSON[]).map(load_juxta);
         today_name = today.toString();
         descriptor = { kind: "juxtastat", name: today }
     }

@@ -45,7 +45,7 @@ export function QuizResult(props: QuizResultProps) {
 
     const today_name = props.today_name;
     const correct_pattern = props.history.correct_pattern;
-    const total_correct = correct_pattern.reduce((partialSum, a) => partialSum + (a ? 0 : 1), 0);
+    const total_correct = correct_pattern.reduce((partialSum, a) => partialSum + (a ? 1 : 0), 0);
 
     return (
         <div>
