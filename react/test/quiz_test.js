@@ -349,3 +349,66 @@ test('quiz-results-test', async t => {
     await quiz_screencap(t, "quiz/results-page");
     await check_text(t, "Excellent! 😊 4/5", "🟩🟩🟩🟩🟥");
 });
+
+fixture('several quiz results')
+    .page(TARGET + '/quiz.html?date=90')
+    // very specific local storage
+    .beforeEach(async t => {
+        await t.eval(() => {
+            localStorage.clear()
+            localStorage.setItem("quiz_history", JSON.stringify({
+                "90": {
+                    "choices": ["A", "A", "A", "A", "A"],
+                    "correct_pattern": [true, true, true, true, false]
+                },
+                "91": {
+                    "choices": ["A", "A", "A", "A", "A"],
+                    "correct_pattern": [true, false, true, false, true],
+                },
+                "92": {
+                    "choices": ["A", "A", "A", "A", "A"],
+                    "correct_pattern": [true, true, true, true, true],
+                },
+                "93": {
+                    "choices": ["A", "A", "A", "A", "A"],
+                    "correct_pattern": [false, false, false, false, false],
+                },
+                "94": {
+                    "choices": ["A", "A", "A", "A", "A"],
+                    "correct_pattern": [false, false, false, true, true],
+                },
+                "95": {
+                    "choices": ["A", "A", "A", "A", "A"],
+                    "correct_pattern": [true, true, true, true, false],
+                },
+            }));
+        }, { dependencies: { example_quiz_history } });
+    });
+
+test('several-quiz-results-test', async t => {
+    await t.eval(() => location.reload(true));
+    await quiz_screencap(t, "quiz/results-page-several");
+    // true true true true false
+    await check_text(t, "Excellent! 😊 4/5", "🟩🟩🟩🟩🟥");
+    // go to the next quiz via changing the href
+    await t.eval(() => {
+        document.location.href = "/quiz.html?date=91";
+    });
+    await check_text(t, "Good! 🙃 3/5", "🟩🟥🟩🟥🟩");
+    await t.eval(() => {
+        document.location.href = "/quiz.html?date=92";
+    });
+    await check_text(t, "Perfect! 🔥 5/5", "🟩🟩🟩🟩🟩");
+    await t.eval(() => {
+        document.location.href = "/quiz.html?date=93";
+    });
+    await check_text(t, "Impressively Bad Job! 😢 0/5", "🟥🟥🟥🟥🟥");
+    await t.eval(() => {
+        document.location.href = "/quiz.html?date=94";
+    });
+    await check_text(t, "Better luck next time! 🫤 2/5", "🟥🟥🟥🟩🟩");
+    await t.eval(() => {
+        document.location.href = "/quiz.html?date=95";
+    });
+    await check_text(t, "Excellent! 😊 4/5", "🟩🟩🟩🟩🟥");
+});
