@@ -87,7 +87,7 @@ export function statistic_link(universe: string | undefined, statname: string, a
     if (amount !== undefined) {
         params.set('amount', `${amount}`)
     }
-    if (order !== undefined && order !== null) {
+    if (order !== undefined && order !== null && order !== 'descending') {
         params.set('order', order);
     }
     if (highlight !== undefined) {
