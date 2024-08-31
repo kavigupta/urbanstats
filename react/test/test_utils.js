@@ -96,14 +96,19 @@ export async function download_image(t, name) {
     await copy_most_recent_file(t, name);
 }
 
-async function copy_most_recent_file(t, name) {
+function most_recent_file_path() {
     // get the most recent file in the downloads folder
     const fs = require('fs');
     const path = require('path');
     const downloadsFolder = require('downloads-folder');
     const files = fs.readdirSync(downloadsFolder());
     const sorted = files.map(x => path.join(downloadsFolder(), x)).sort((a, b) => fs.statSync(b).mtimeMs - fs.statSync(a).mtimeMs);
+
+    return sorted[0];
+}
+
+async function copy_most_recent_file(t, name) {
     // copy the file to the screenshots folder
     const screenshotsFolder = path.join(__dirname, '..', 'screenshots');
-    fs.copyFileSync(sorted[0], path.join(screenshotsFolder, name + '_' + t.browser.name + '.png'));
+    fs.copyFileSync(most_recent_file_path(), path.join(screenshotsFolder, name + '_' + t.browser.name + '.png'));
 }
