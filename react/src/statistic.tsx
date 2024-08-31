@@ -20,7 +20,7 @@ async function loadPage() {
     const statname = window_info.get("statname")!;
     const start = parseInt(window_info.get("start") || "1");
     const amount = window_info.get("amount");
-    const order = (window_info.get("order") ?? 'ascending') as 'ascending' | 'descending';
+    const order = (window_info.get("order") ?? 'descending') as 'ascending' | 'descending';
     const highlight = window_info.get("highlight") ?? undefined;
     // delete highlight then replaceState
     window_info.delete("highlight");

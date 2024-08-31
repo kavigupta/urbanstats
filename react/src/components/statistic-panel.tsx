@@ -61,7 +61,7 @@ export function StatisticPanel(props: {
     }, [props.start, props.amount, props.count, is_ascending]);
 
     const swap_ascending_descending = (curr_universe: string | undefined) => {
-        const new_order = is_ascending ? "descending" : "ascending";
+        const new_order = is_ascending ? "ascending" : "descending";
         document.location = statistic_link(
             curr_universe,
             props.statname, props.article_type,
