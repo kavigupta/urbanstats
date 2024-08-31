@@ -1,6 +1,6 @@
 
 import { Selector } from 'testcafe';
-import { TARGET, check_textboxes, comparison_page, screencap } from './test_utils';
+import { TARGET, check_textboxes, comparison_page, download_or_check_string, screencap } from './test_utils';
 
 const fs = require('fs');
 
@@ -10,20 +10,12 @@ export const sw_sgv = "Southwest San Gabriel Valley CCD [CCD], Los Angeles Count
 export const east_sgv = "East San Gabriel Valley CCD [CCD], Los Angeles County, California, USA"
 export const chicago = "Chicago city [CCD], Cook County, Illinois, USA"
 
-const IS_TESTING = false;
-
 async function download_or_check_histogram(t, name) {
-    await t.wait(1000);
     const path = `../tests/reference_strings/${name}.txt`;
     const output = await t.eval(() => {
         return document.getElementsByClassName("histogram-svg-panel")[0].innerHTML;
     });
-    if (IS_TESTING) {
-        const expected = fs.readFileSync(path, 'utf8');
-        await t.expect(output).eql(expected);
-    } else {
-        fs.writeFileSync(path, output);
-    }
+    await download_or_check_string(t, output, path);
 }
 
 fixture('article check and uncheck test')
