@@ -27,8 +27,6 @@ def merge_international_row(row_international, row_domestic):
             "type_category",
         ]:
             continue
-        # if "histogram" in col:
-        #     continue
         if isnan(row_domestic[col]):
             continue
         if isnan(row_international[col]) or col in [
