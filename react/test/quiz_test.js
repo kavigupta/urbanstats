@@ -340,4 +340,10 @@ test('quiz-results-test', async t => {
     await t.wait(1000);
     await t.eval(() => location.reload(true));
     await quiz_screencap(t, "quiz/results-page");
+    const text = await Selector("#quiz-result-summary-words").innerText;
+    await t.expect(text).eql("Excellent! 😊 4/5");
+    const emoji = await Selector("#quiz-result-summary-emoji").innerText;
+    await t.expect(emoji).eql("🟩🟩🟩🟩🟥");
+    // fail this test
+    await t.expect(1).eql(2);
 });
