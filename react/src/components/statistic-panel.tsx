@@ -103,6 +103,7 @@ export function StatisticPanel(props: {
             elements_to_render: [headers_ref.current!, table_ref.current!],
         })}
         has_universe_selector={true}
+        universes={require("../data/universes_ordered.json")}
     >{() =>
         <div>
             <div ref={headers_ref}>
