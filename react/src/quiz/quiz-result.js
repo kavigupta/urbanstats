@@ -173,8 +173,8 @@ export class Summary extends React.Component {
         }
         show = show + " " + correct + "/" + this.props.total;
         return <div>
-            <span className="serif quiz_summary">{show}</span>
-            <span className="serif quiz_summary">{red_and_green_squares(this.props.correct_pattern)}</span>
+            <span className="serif quiz_summary" id="quiz-result-summary-words">{show}</span>
+            <span className="serif quiz_summary" id="quiz-result-summary-emoji">{red_and_green_squares(this.props.correct_pattern)}</span>
         </div>;
     }
 
