@@ -334,16 +334,18 @@ fixture('quiz result test')
         }, { dependencies: { example_quiz_history } });
     });
 
+async function check_text(t, words, emoji) {
+    const text = await Selector("#quiz-result-summary-words").innerText;
+    await t.expect(text).eql(words);
+    const emoji_text = await Selector("#quiz-result-summary-emoji").innerText;
+    await t.expect(emoji_text).eql(emoji);
+}
+
 test('quiz-results-test', async t => {
     await t.resizeWindow(1400, 800);
     await t.eval(() => location.reload(true));
     await t.wait(1000);
     await t.eval(() => location.reload(true));
     await quiz_screencap(t, "quiz/results-page");
-    const text = await Selector("#quiz-result-summary-words").innerText;
-    await t.expect(text).eql("Excellent! 😊 4/5");
-    const emoji = await Selector("#quiz-result-summary-emoji").innerText;
-    await t.expect(emoji).eql("🟩🟩🟩🟩🟥");
-    // fail this test
-    await t.expect(1).eql(2);
+    await check_text(t, "Excellent! 😊 4/5", "🟩🟩🟩🟩🟥");
 });
