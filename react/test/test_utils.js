@@ -1,11 +1,13 @@
 
 import { Selector, ClientFunction } from 'testcafe';
 
+const fs = require('fs');
 
 export const TARGET = process.env.URBANSTATS_TEST_TARGET ?? "http://localhost:8000"
 export const SEARCH_FIELD = Selector('input').withAttribute('placeholder', 'Search Urban Stats');
 export const getLocation = ClientFunction(() => document.location.href);
 
+const IS_TESTING = true;
 
 export function comparison_page(locations) {
     const params = new URLSearchParams();
@@ -98,7 +100,6 @@ export async function download_image(t, name) {
 
 function most_recent_file_path() {
     // get the most recent file in the downloads folder
-    const fs = require('fs');
     const path = require('path');
     const downloadsFolder = require('downloads-folder');
     const files = fs.readdirSync(downloadsFolder());
@@ -111,4 +112,14 @@ async function copy_most_recent_file(t, name) {
     // copy the file to the screenshots folder
     const screenshotsFolder = path.join(__dirname, '..', 'screenshots');
     fs.copyFileSync(most_recent_file_path(), path.join(screenshotsFolder, name + '_' + t.browser.name + '.png'));
+}
+
+export async function download_or_check_string(t, string, name) {
+    const path = `../tests/reference_strings/${name}.txt`;
+    if (IS_TESTING) {
+        const expected = fs.readFileSync(path, 'utf8');
+        await t.expect(string).eql(expected);
+    } else {
+        fs.writeFileSync(path, string);
+    }
 }
