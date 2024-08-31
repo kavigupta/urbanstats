@@ -402,7 +402,7 @@ test('several-quiz-results-test', async t => {
     await t.eval(() => {
         document.location.href = "/quiz.html?date=93";
     });
-    await check_text(t, "Impressively Bad Job! 😢 0/5", "🟥🟥🟥🟥🟥");
+    await check_text(t, "Impressively Bad Job! 🤷 0/5", "🟥🟥🟥🟥🟥");
     await t.eval(() => {
         document.location.href = "/quiz.html?date=94";
     });
