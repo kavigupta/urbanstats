@@ -10,7 +10,5 @@ fixture('mapping')
     });
 
 test("state-map", async t => {
-    if (!IS_TESTING) {
-        throw new Error("String tests are in overwrite mode. Set IS_TESTING to true to run tests.");
-    }
+    await t.expect(IS_TESTING).ok("String tests are in overwrite mode. Set IS_TESTING to true to run tests.")
 })
