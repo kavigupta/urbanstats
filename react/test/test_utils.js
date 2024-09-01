@@ -7,7 +7,7 @@ export const TARGET = process.env.URBANSTATS_TEST_TARGET ?? "http://localhost:80
 export const SEARCH_FIELD = Selector('input').withAttribute('placeholder', 'Search Urban Stats');
 export const getLocation = ClientFunction(() => document.location.href);
 
-const IS_TESTING = true;
+export const IS_TESTING = false;
 
 export function comparison_page(locations) {
     const params = new URLSearchParams();
@@ -98,7 +98,7 @@ export async function download_image(t, name) {
     await copy_most_recent_file(t, name);
 }
 
-function most_recent_file_path() {
+export function most_recent_download_path() {
     // get the most recent file in the downloads folder
     const path = require('path');
     const downloadsFolder = require('downloads-folder');
@@ -111,7 +111,7 @@ function most_recent_file_path() {
 async function copy_most_recent_file(t, name) {
     // copy the file to the screenshots folder
     const screenshotsFolder = path.join(__dirname, '..', 'screenshots');
-    fs.copyFileSync(most_recent_file_path(), path.join(screenshotsFolder, name + '_' + t.browser.name + '.png'));
+    fs.copyFileSync(most_recent_download_path(), path.join(screenshotsFolder, name + '_' + t.browser.name + '.png'));
 }
 
 export async function download_or_check_string(t, string, name) {
