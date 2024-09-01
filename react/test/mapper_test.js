@@ -9,9 +9,7 @@ async function check_geojson(t, path) {
     await t.click(Selector('button').withText('Export as GeoJSON'));
     await t.wait(3000);
     const mrdp = most_recent_download_path();
-    console.log("Most recent download: " + mrdp);
     const most_recent_download = fs.readFileSync(mrdp, 'utf8');
-    console.log("Most recent download: " + most_recent_download);
     await download_or_check_string(t, most_recent_download, path);
 }
 
