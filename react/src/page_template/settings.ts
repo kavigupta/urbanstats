@@ -94,7 +94,6 @@ export class Settings {
     }
 
     setSetting<K extends keyof SettingsDictionary>(key: K, newValue: SettingsDictionary[K]): void {
-        console.log(`Setting ${key} to ${newValue}`)
         this.settings[key] = newValue
         localStorage.setItem("settings", JSON.stringify(this.settings))
         this.observers.get(key).forEach(observer => observer())
