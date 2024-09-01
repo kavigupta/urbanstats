@@ -11,11 +11,10 @@ export const east_sgv = "East San Gabriel Valley CCD [CCD], Los Angeles County, 
 export const chicago = "Chicago city [CCD], Cook County, Illinois, USA"
 
 async function download_or_check_histogram(t, name) {
-    const path = `../tests/reference_strings/${name}.txt`;
     const output = await t.eval(() => {
         return document.getElementsByClassName("histogram-svg-panel")[0].innerHTML;
     });
-    await download_or_check_string(t, output, path);
+    await download_or_check_string(t, output, name);
 }
 
 fixture('article check and uncheck test')
