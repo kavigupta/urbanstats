@@ -106,6 +106,7 @@ export function most_recent_download_path() {
     const files = fs.readdirSync(downloadsFolder());
     const sorted = files.map(x => path.join(downloadsFolder(), x)).sort((a, b) => fs.statSync(b).mtimeMs - fs.statSync(a).mtimeMs);
 
+    console.log("Most recent download: " + sorted[0]);
     return sorted[0];
 }
 
