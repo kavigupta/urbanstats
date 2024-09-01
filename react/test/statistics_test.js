@@ -18,6 +18,9 @@ test('statistics-page', async t => {
     await t.expect(getLocation())
         .eql(TARGET + '/statistic.html?statname=Population&article_type=Hospital+Referral+Region&start=21&amount=20&universe=USA');
     await screencap(t, "statistics/population");
+    const count = Selector('div').withAttribute('style', /background-color: rgb\(212, 181, 226\);/)
+        .withText(/Indianapolis IN HRR, USA/);
+    await t.expect(count.count).gte(1, "Need highlighting");
     // click link "Data Explanation and Credit"
     await t
         .click(Selector('a').withText(/^Data Explanation and Credit$/));
