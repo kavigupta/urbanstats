@@ -290,6 +290,7 @@ def main(
     shutil.copy("screenshot_footer.svg", f"{site_folder}/")
     shutil.copy("share.png", f"{site_folder}/")
     shutil.copy("screenshot.png", f"{site_folder}/")
+    shutil.copy("assets/download.png", f"{site_folder}/")
 
     with open("react/src/data/map_relationship.json", "w") as f:
         json.dump(map_relationships_by_type, f)

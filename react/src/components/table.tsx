@@ -195,6 +195,7 @@ export function StatisticName(props: {
     use_toggle: boolean,
     screenshot_mode: boolean
 }) {
+    const [expanded, setExpanded] = useSetting(row_expanded_key(props.statname));
     const link = <a className="statname_no_link" href={
         statistic_link(
             props.curr_universe,
@@ -202,6 +203,28 @@ export function StatisticName(props: {
             20, undefined, props.longname
         )
     }>{props.rendered_statname}</a>
+    if (props.use_toggle && !props.screenshot_mode) {
+        return <span style={{
+            display: "flex",
+            alignItems: "center",
+            flexDirection: "row",
+        }}>
+            {link}
+            <div style={{ marginLeft: "0.3em" }} />
+            <div
+                className="expand-toggle"
+                onClick={() => setExpanded!(!expanded)}
+                style={{
+                    cursor: "pointer", border: "1px solid black",
+                    padding: 0, borderRadius: "3px", fontSize: "75%",
+                    minWidth: "1.5em", minHeight: "1.5em", textAlign: "center",
+                    lineHeight: "1.2em",
+                }}
+            >
+                {expanded ? "-" : "+"}
+            </div>
+        </span>
+    }
     return link;
 }
 
