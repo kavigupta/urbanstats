@@ -34,9 +34,9 @@ export type StatisticRowRawProps = {
 
 export function StatisticRowRaw(props: StatisticRowRawProps & { index: number, shortname?: string }) {
 
-    const [expanded, setExpanded] = useSetting(row_expanded_key(props.is_header ? "header" : props.statname));
+    const [expanded] = useSetting(row_expanded_key(props.is_header ? "header" : props.statname));
 
-    const cell_contents = StatisticRowRawCellContents({ ...props, total_width: 100, expanded, setExpanded });
+    const cell_contents = StatisticRowRawCellContents({ ...props, total_width: 100 });
 
     return <WithPlot plot_props={[{ ...props, color: "#5a7dc3", shortname: props.shortname }]} expanded={expanded}>
         <StatisticRow is_header={props.is_header} index={props.index} contents={cell_contents} />
@@ -45,7 +45,7 @@ export function StatisticRowRaw(props: StatisticRowRawProps & { index: number, s
 }
 
 export function StatisticRowRawCellContents(props: StatisticRowRawProps & {
-    total_width: number, longname?: string, expanded: boolean, setExpanded: (expanded: boolean) => void
+    total_width: number, longname?: string
 }) {
     const curr_universe = useUniverse();
     const alignStyle: React.CSSProperties = { textAlign: props.is_header ? "center" : "right" };
@@ -98,8 +98,6 @@ export function StatisticRowRawCellContents(props: StatisticRowRawProps & {
                         rendered_statname={props.rendered_statname}
                         curr_universe={curr_universe}
                         use_toggle={props.extra_stat != undefined}
-                        expanded={props.expanded}
-                        setExpanded={props.setExpanded}
                     />
             }
             </span>
@@ -193,10 +191,9 @@ export function StatisticName(props: {
     statname: string, article_type: string, ordinal: number,
     longname?: string, rendered_statname: string,
     curr_universe: string,
-    use_toggle: boolean,
-    expanded: boolean,
-    setExpanded: (expanded: boolean) => void
+    use_toggle: boolean
 }) {
+    const [expanded, setExpanded] = useSetting(row_expanded_key(props.statname));
     const link = <a className="statname_no_link" href={
         statistic_link(
             props.curr_universe,
@@ -214,7 +211,7 @@ export function StatisticName(props: {
             <div style={{ marginLeft: "0.3em" }} />
             <div
                 className="expand-toggle"
-                onClick={() => props.setExpanded(!props.expanded)}
+                onClick={() => setExpanded!(!expanded)}
                 style={{
                     cursor: "pointer", border: "1px solid black",
                     padding: 0, borderRadius: "3px", fontSize: "75%",
@@ -222,7 +219,7 @@ export function StatisticName(props: {
                     lineHeight: "1.2em",
                 }}
             >
-                {props.expanded ? "-" : "+"}
+                {expanded ? "-" : "+"}
             </div>
         </span>
     }
