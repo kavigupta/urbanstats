@@ -1,6 +1,11 @@
 import { TableCheckboxSettings } from "../page_template/settings";
 import { universe_is_american } from "../universe";
-import { Article } from "../utils/protos";
+import { Article, IExtraStatistic } from "../utils/protos";
+
+export interface ExtraStat {
+    stat: IExtraStatistic,
+    universe_total: number
+}
 
 export interface ArticleRow {
     statval: number,
@@ -16,7 +21,8 @@ export interface ArticleRow {
     total_count_in_class: number,
     total_count_overall: number,
     _index: number,
-    rendered_statname: string
+    rendered_statname: string,
+    extra_stat?: ExtraStat
 }
 
 const index_list_info = require("../data/index_lists.json") as {
@@ -77,11 +83,23 @@ export function load_article(universe: string, data: Article, settings: TableChe
     const stats = require("../data/statistic_list.json") as string[];
     const explanation_page = require("../data/explanation_page.json") as string[];
 
+    const extra_stats = require("../data/extra_stats.json") as [number, number][];
+    const extra_stat_idx_to_col = extra_stats.map((xy) => xy[0]);
+
     const indices = compute_indices(data.longname, article_type) as number[];
 
     const modified_rows: ArticleRow[] = data.rows.map((row_original, row_index) => {
         const i = indices[row_index];
         // fresh row object
+        let extra_stat: ExtraStat | undefined = undefined;
+        if (extra_stat_idx_to_col.includes(i)) {
+            const extra_stat_idx = extra_stat_idx_to_col.indexOf(i);
+            const [, universe_total_idx] = extra_stats[extra_stat_idx];
+            extra_stat = {
+                stat: data.extraStats[extra_stat_idx],
+                universe_total: data.rows.filter((row, row_index) => indices[row_index] === universe_total_idx)[0].statval!
+            };
+        }
         return {
             statval: row_original.statval!,
             ordinal: row_original.ordinalByUniverse![universe_index],
@@ -96,7 +114,8 @@ export function load_article(universe: string, data: Article, settings: TableChe
             total_count_in_class: for_type(universe, stats[i], article_type),
             total_count_overall: for_type(universe, stats[i], "overall"),
             _index: i,
-            rendered_statname: render_statname(i, names[i], exclusively_american)
+            rendered_statname: render_statname(i, names[i], exclusively_american),
+            extra_stat: extra_stat
         } satisfies ArticleRow
     })
     const filtered_rows = modified_rows.filter((row) => {

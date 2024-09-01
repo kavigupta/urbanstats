@@ -97,7 +97,10 @@ export function Sidebar() {
     );
 }
 
-export function CheckboxSetting<K extends keyof SettingsDictionary>(props: { name: string, setting_key: K, classNameToUse?: string }) {
+// type representing a key of SettingsDictionary that have boolean values
+type BooleanSettingKey = keyof { [K in keyof SettingsDictionary as SettingsDictionary[K] extends boolean ? K : never]: boolean };
+
+export function CheckboxSetting<K extends BooleanSettingKey>(props: { name: string, setting_key: K, classNameToUse?: string }) {
 
     const [checked, setChecked] = useSetting(props.setting_key);
 

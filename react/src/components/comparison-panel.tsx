@@ -11,7 +11,8 @@ import { SearchBox } from './search';
 import { article_link, sanitize } from '../navigation/links';
 import { lighten } from '../utils/color';
 import { longname_is_exclusively_american, useUniverse } from '../universe';
-import { useTableCheckboxSettings } from '../page_template/settings';
+import { row_expanded_key, useSetting, useTableCheckboxSettings } from '../page_template/settings';
+import { WithPlot } from './plots';
 import { Article } from "../utils/protos";
 
 const main_columns = ["statval", "statval_unit", "statistic_ordinal", "statistic_percentile"];
@@ -141,6 +142,7 @@ export function ComparisonPanel(props: { joined_string: string, universes: strin
                     <ComparsionPageRows
                         names={props.names}
                         datas={props.datas}
+                        screenshot_mode={template_info.screenshot_mode}
                     />
                 </div>
             )}
@@ -199,7 +201,7 @@ function all_data_types_same(datas: Article[]) {
 }
 
 
-function ComparsionPageRows({ names, datas }: { names: string[], datas: Article[] }) {
+function ComparsionPageRows({ names, datas, screenshot_mode }: { names: string[], datas: Article[], screenshot_mode: boolean }) {
     const curr_universe = useUniverse();
     let rows: ArticleRow[][] = [];
     const idxs: number[][] = [];
@@ -217,32 +219,58 @@ function ComparsionPageRows({ names, datas }: { names: string[], datas: Article[
         params={() => { return { is_header: true } }}
         datas={datas}
         names={names}
+        screenshot_mode={screenshot_mode}
     />;
-    const render_rows = rows[0].map((_, row_idx) =>
-        <ComparisonRow
-            params={data_idx => {
-                return {
-                    key: row_idx, index: row_idx, is_header: false, ...rows[data_idx][row_idx]
-                }
-            }}
-            datas={datas}
-            names={names}
-        />
-    );
     return (
         <>
             <StatisticRow is_header={true} index={0} contents={header_row} />
 
             {
-                render_rows.map((row, i) =>
-                    <StatisticRow key={i} is_header={false} index={i} contents={row} />
+                rows[0].map((_, row_idx) => 
+                    <ComparisonRowBody
+                        key={row_idx}
+                        rows={rows}
+                        row_idx={row_idx}
+                        datas={datas}
+                        names={names}
+                        screenshot_mode={screenshot_mode}
+                    />
                 )
             }
         </>
     )
 }
 
-function ComparisonRow({ names, params, datas }: { names: string[], params: (i: number) => { is_header: true } | ({ is_header: false, key: number, index: number } & ArticleRow), datas: Article[] }) {
+function ComparisonRowBody({ rows, row_idx, datas, names, screenshot_mode }: {
+    rows: ArticleRow[][],
+    row_idx: number,
+    datas: Article[],
+    names: string[],
+    screenshot_mode: boolean
+}) {
+    const [expanded] = useSetting(row_expanded_key(rows[0][row_idx].statname));
+    const contents = <ComparisonRow
+        params={data_idx => {
+            return {
+                key: row_idx, index: row_idx, ...rows[data_idx][row_idx], is_header: false
+            }
+        }}
+        datas={datas}
+        names={names}
+        screenshot_mode={screenshot_mode}
+    />;
+    const plot_props = rows.map((row, data_idx) => ({...row[row_idx], color: color(data_idx), shortname: datas[data_idx].shortname}));
+    return <WithPlot plot_props={plot_props} expanded={expanded} key={row_idx} screenshot_mode={screenshot_mode}>
+        <StatisticRow key={row_idx} is_header={false} index={row_idx} contents={contents} />
+    </WithPlot>
+}
+
+function ComparisonRow({ names, params, datas, screenshot_mode }: {
+    names: string[],
+    params: (i: number) => { is_header: true } | ({ is_header: false, key: number, index: number } & ArticleRow),
+    datas: Article[],
+    screenshot_mode: boolean
+}) {
     if (names == undefined) {
         throw new Error("ComparisonRow: names is undefined");
     }
@@ -276,7 +304,8 @@ function ComparisonRow({ names, params, datas }: { names: string[], params: (i: 
     row_overall.push(...StatisticRowRawCellContents(
         {
             ...param_vals[0], only_columns: ["statname"], _idx: -1, simple: true, longname: datas[0].longname,
-            total_width: 100 * (left_margin_pct - left_bar_margin)
+            total_width: 100 * (left_margin_pct - left_bar_margin),
+            screenshot_mode: screenshot_mode
         }
     ));
     const only_columns = all_data_types_same(datas) ? main_columns : main_columns_across_types;
@@ -287,7 +316,8 @@ function ComparisonRow({ names, params, datas }: { names: string[], params: (i: 
                 ...param_vals[i], only_columns: only_columns, _idx: i, simple: true,
                 statistic_style: highlight_idx == i ? { backgroundColor: lighten(color(i), 0.7) } : {},
                 onReplace: x => on_change(names, i, x),
-                total_width: each(datas)
+                total_width: each(datas),
+                screenshot_mode: screenshot_mode
             }
         ));
     }
@@ -356,6 +386,8 @@ function insert_missing(rows: ArticleRow[][], idxs: number[][]) {
                 if (typeof empty_row_example[idx][key] === "number") {
                     // @ts-expect-error Typescript is fucking up this assignment
                     empty_row_example[idx][key] = NaN;
+                } else if (key == "extra_stat") {
+                    empty_row_example[idx][key] = undefined;
                 }
             }
             empty_row_example[idx].article_type = "none"; // doesn't matter since we are using simple mode

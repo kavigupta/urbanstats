@@ -31,7 +31,7 @@ export function ArticlePanel({ article } : { article: Article }) {
         elements_to_render: [headers_ref.current!, table_ref.current!, map_ref.current!],
     })
 
-        return <PageTemplate screencap_elements={screencap_elements} has_universe_selector={true} universes={article.universes}>{() =>
+        return <PageTemplate screencap_elements={screencap_elements} has_universe_selector={true} universes={article.universes}>{(template_info) =>
             <div>
                 <div ref={headers_ref}>
                     <div className={headerTextClass()}>{article.shortname}</div>
@@ -40,10 +40,12 @@ export function ArticlePanel({ article } : { article: Article }) {
                 <div style={{ marginBlockEnd: "16px" }}></div>
 
                 <div className="stats_table" ref={table_ref}>
-                    <StatisticRowHeader />
+                    <StatisticRowHeader screenshot_mode={template_info.screenshot_mode} />
                     <ArticlePanelRows
                         longname={article.longname}
+                        shortname={article.shortname}
                         article_row={article}
+                        screenshot_mode={template_info.screenshot_mode}
                     />
                 </div>
 
@@ -93,12 +95,12 @@ function ComparisonSearchBox({ longname }: { longname: string }) {
     />
 }
 
-function StatisticRowHeader() {
+function StatisticRowHeader(props: { screenshot_mode : boolean}) {
     const [simple_ordinals] = useSetting("simple_ordinals");
-    return <StatisticRowRaw index={0} _idx={-1} is_header={true} simple={simple_ordinals} />
+    return <StatisticRowRaw index={0} _idx={-1} is_header={true} simple={simple_ordinals} screenshot_mode={props.screenshot_mode} />
 }
 
-function ArticlePanelRows(props: { article_row: Article, longname: string }) {
+function ArticlePanelRows(props: { article_row: Article, longname: string, shortname: string, screenshot_mode: boolean }) {
     const curr_universe = useUniverse();
     const settings = useTableCheckboxSettings();
     const [simple_ordinals] = useSetting("simple_ordinals");
@@ -110,6 +112,8 @@ function ArticlePanelRows(props: { article_row: Article, longname: string }) {
                 onReplace={x => { document.location = article_link(curr_universe, x) }}
                 simple={simple_ordinals}
                 longname={props.longname}
+                shortname={props.shortname}
+                screenshot_mode={props.screenshot_mode}
             />)}
     </>
 }
