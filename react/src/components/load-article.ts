@@ -91,10 +91,10 @@ export function load_article(universe: string, data: Article, settings: TableChe
     const modified_rows: ArticleRow[] = data.rows.map((row_original, row_index) => {
         const i = indices[row_index];
         // fresh row object
-        var extra_stat: ExtraStat | undefined = undefined;
+        let extra_stat: ExtraStat | undefined = undefined;
         if (extra_stat_idx_to_col.includes(i)) {
             const extra_stat_idx = extra_stat_idx_to_col.indexOf(i);
-            const [_, universe_total_idx] = extra_stats[extra_stat_idx];
+            const [, universe_total_idx] = extra_stats[extra_stat_idx];
             extra_stat = {
                 stat: data.extraStats[extra_stat_idx],
                 universe_total: data.rows.filter((row, row_index) => indices[row_index] === universe_total_idx)[0].statval!

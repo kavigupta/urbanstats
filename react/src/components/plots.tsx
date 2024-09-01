@@ -162,7 +162,7 @@ function HistogramSettings(props: {
             }}
             width="20" height="20"
         />
-        <select value={histogram_type} onChange={e => setHistogramType(e.target.value as any)} className="serif">
+        <select value={histogram_type} onChange={e => setHistogramType(e.target.value as HistogramType)} className="serif">
             <option value="Line">Line</option>
             <option value="Line (cumulative)">Line (cumulative)</option>
             <option value="Bar">Bar</option>
@@ -172,7 +172,7 @@ function HistogramSettings(props: {
 }
 
 function histogramBounds(histograms: HistogramProps[]): [number, number] {
-    var x_idx_end = Math.max(...histograms.map(histogram => histogram.histogram.counts!.length));
+    let x_idx_end = Math.max(...histograms.map(histogram => histogram.histogram.counts!.length));
     x_idx_end += 1;
     const zeros_at_front = (arr: number[]) => {
         let i = 0;
@@ -181,7 +181,7 @@ function histogramBounds(histograms: HistogramProps[]): [number, number] {
         }
         return i;
     }
-    var x_idx_start = Math.min(...histograms.map(histogram => zeros_at_front(histogram.histogram.counts!)));
+    let x_idx_start = Math.min(...histograms.map(histogram => zeros_at_front(histogram.histogram.counts!)));
 
     if (x_idx_start > 0) {
         x_idx_start--;
@@ -207,7 +207,7 @@ function mulitipleSeriesConsistentLength(histograms: HistogramProps[], xidxs: nu
     const sum_each = histograms.map(histogram => sum(histogram.histogram.counts!));
     const series = histograms.map((histogram, histogram_idx) => {
         const counts = [...histogram.histogram.counts!];
-        let after_val = 0;
+        const after_val = 0;
         if (is_cumulative) {
             for (let i = counts.length - 2; i >= 0; i--) {
                 counts[i] += counts[i + 1];
@@ -234,9 +234,8 @@ function dovetailSequences(series: { values: { xidx: number, y: number, name: st
     const series_single: { xidx_left: number, xidx_right: number, y: number, color: string }[] = [];
     for (let i = 0; i < series.length; i++) {
         const s = series[i];
-        var width = 1 / (series.length) * 0.8;
-        var off = i - (series.length - 1) / 2;
-        off *= width;
+        const width = 1 / (series.length) * 0.8;
+        const off = (i - (series.length - 1) / 2) * width;
         series_single.push(...
             s.values
                 .map(v => ({
@@ -263,13 +262,13 @@ function maxSequences(series: { values: { xidx: number, y: number, name: string 
 
 function x_axis(xidxs: number[], binSize: number, binMin: number, use_imperial: boolean): [Plot.Markish[], (x: number) => string] {
     const x_keypoints: number[] = [];
-    for (let i = 0; i < xidxs.length; i++) {
-        var last_digit = xidxs[i] % 10;
+    for (const xidx of xidxs) {
+        let last_digit = xidx % 10;
         if (use_imperial) {
             last_digit = (last_digit + 4) % 10;
         }
         if (last_digit == 0 || last_digit == 3 || last_digit == 7) {
-            x_keypoints.push(xidxs[i]);
+            x_keypoints.push(xidx);
         }
     }
     const adjustment = use_imperial ? Math.log10(1.60934) * 2 : 0;
