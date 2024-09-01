@@ -3,8 +3,8 @@ import { TARGET, download_or_check_string, most_recent_download_path, screencap 
 
 const fs = require('fs');
 
-function check_geojson(t, path) {
-    download_or_check_string(t, fs.readFileSync(most_recent_download_path(), 'utf8'), path);
+async function check_geojson(t, path) {
+    await download_or_check_string(t, fs.readFileSync(most_recent_download_path(), 'utf8'), path);
 }
 
 fixture('mapping')
