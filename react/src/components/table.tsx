@@ -32,7 +32,7 @@ export type StatisticRowRawProps = {
         }
     )
 
-export function StatisticRowRaw(props: StatisticRowRawProps & { index: number, shortname?: string, screenshot_mode: boolean }) {
+export function StatisticRowRaw(props: StatisticRowRawProps & { index: number, longname?: string, shortname?: string, screenshot_mode: boolean }) {
 
     const [expanded] = useSetting(row_expanded_key(props.is_header ? "header" : props.statname));
 
@@ -190,17 +190,16 @@ export function StatisticRowRawCellContents(props: StatisticRowRawProps & {
 
 export function StatisticName(props: {
     statname: string, article_type: string, ordinal: number,
-    longname?: string, rendered_statname: string,
+    longname: string, rendered_statname: string,
     curr_universe: string,
     use_toggle: boolean,
     screenshot_mode: boolean
 }) {
-    const [expanded, setExpanded] = useSetting(row_expanded_key(props.statname));
     const link = <a className="statname_no_link" href={
         statistic_link(
             props.curr_universe,
             props.statname, props.article_type, props.ordinal,
-            20, undefined, props.longname!
+            20, undefined, props.longname
         )
     }>{props.rendered_statname}</a>
     return link;

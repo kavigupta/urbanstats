@@ -111,6 +111,7 @@ function ArticlePanelRows(props: { article_row: Article, longname: string, short
             <StatisticRowRaw is_header={false} _idx={i} key={row.statname} index={i} {...row}
                 onReplace={x => { document.location = article_link(curr_universe, x) }}
                 simple={simple_ordinals}
+                longname={props.longname}
                 shortname={props.shortname}
                 screenshot_mode={props.screenshot_mode}
             />)}
