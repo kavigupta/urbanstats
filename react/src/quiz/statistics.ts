@@ -8,8 +8,8 @@ async function unique_persistent_id() {
     // random 60 bit hex number
     // (15 hex digits)
     if (localStorage.getItem("persistent_id") == undefined) {
-        var random_hex = "";
-        for (var i = 0; i < 15; i++) {
+        let random_hex = "";
+        for (let i = 0; i < 15; i++) {
             random_hex += Math.floor(Math.random() * 16).toString(16)[0];
         }
         // register via server
@@ -26,7 +26,9 @@ async function unique_persistent_id() {
     return localStorage.getItem("persistent_id");
 }
 
-async function reportToServerGeneric(whole_history, endpoint_latest, endpoint_store, parse_day) {
+export type History = Record<string, { choices: ("A" | "B")[], correct_pattern: boolean[] }>
+
+async function reportToServerGeneric(whole_history: History, endpoint_latest: string, endpoint_store: string, parse_day: (day: string) => number) {
     const user = await unique_persistent_id();
     console.log("USER", user);
     console.log("whole history", whole_history);
@@ -59,17 +61,16 @@ async function reportToServerGeneric(whole_history, endpoint_latest, endpoint_st
     });
 }
 
-function parse_time_identifier(quiz_kind, today) {
-    if (quiz_kind == "juxtastat") {
+function parse_time_identifier(quiz_kind: "juxtastat" | "retrostat", today: string) {
+    switch (quiz_kind) {
+    case "juxtastat":
         return parse_juxtastat_day(today);
-    }
-    if (quiz_kind == "retrostat") {
+    case "retrostat":
         return parse_retrostat_week(today);
     }
-    throw new Error("Unknown quiz kind " + quiz_kind);
 }
 
-function parse_juxtastat_day(day) {
+function parse_juxtastat_day(day: string) {
     // return -10000 if day doesn't match -?[0-9]+
     if (/^-?[0-9]+$/.test(day) == false) {
         return -10000;
@@ -77,7 +78,7 @@ function parse_juxtastat_day(day) {
     return parseInt(day);
 }
 
-function parse_retrostat_week(day) {
+function parse_retrostat_week(day: string) {
     // return -10000 if day doesn't match W-?[0-9]+
     if (/^W-?[0-9]+$/.test(day) == false) {
         return -10000;
@@ -87,10 +88,10 @@ function parse_retrostat_week(day) {
 
 
 
-async function reportToServer(whole_history) {
+async function reportToServer(whole_history: History) {
     await reportToServerGeneric(whole_history, "/juxtastat/latest_day", "/juxtastat/store_user_stats", parse_juxtastat_day);
 }
 
-async function reportToServerRetro(whole_history) {
+async function reportToServerRetro(whole_history: History) {
     await reportToServerGeneric(whole_history, "/retrostat/latest_week", "/retrostat/store_user_stats", parse_retrostat_week);
 }

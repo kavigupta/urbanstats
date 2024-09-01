@@ -1,19 +1,18 @@
-export { ComparisonPanel };
+import React, { useRef } from 'react';
 
-import React from 'react';
-
-import { StatisticRowRaw, StatisticRowRawCellContents, StatisticRow } from "./table";
-import { MapGeneric } from "./map";
-import { PageTemplate } from "../page_template/template.js";
+import { StatisticRowRawCellContents, StatisticRow } from "./table";
+import { MapGeneric, MapGenericProps } from "./map";
+import { PageTemplate } from "../page_template/template";
 import "../common.css";
 import "./article.css";
-import { load_article } from './load-article';
+import { ArticleRow, load_article } from './load-article';
 import { comparisonHeadStyle, headerTextClass, mobileLayout, subHeaderTextClass } from '../utils/responsive';
 import { SearchBox } from './search';
 import { article_link, sanitize } from '../navigation/links';
 import { lighten } from '../utils/color';
 import { longname_is_exclusively_american, useUniverse } from '../universe';
 import { useTableCheckboxSettings } from '../page_template/settings';
+import { Article } from "../utils/protos";
 
 const main_columns = ["statval", "statval_unit", "statistic_ordinal", "statistic_percentile"];
 const main_columns_across_types = ["statval", "statval_unit"]
@@ -32,100 +31,42 @@ const COLOR_CYCLE = [
     "#8ac35a", // green
 ];
 
-class ComparisonPanel extends PageTemplate {
-    constructor(props) {
-        super(props);
-        this.table_ref = React.createRef();
-        this.map_ref = React.createRef();
-    }
+export function ComparisonPanel(props: { joined_string: string, universes: string[], names: string[], datas: Article[] }) {
+    const table_ref = useRef<HTMLDivElement>(null);
+    const map_ref = useRef(null);
 
-    screencap_elements() {
-        return () => ({
-            path: sanitize(this.props.joined_string) + ".png",
-            overall_width: this.table_ref.current.offsetWidth * 2,
-            elements_to_render: [this.table_ref.current, this.map_ref.current],
+    const screencap_elements = () => ({
+            path: sanitize(props.joined_string) + ".png",
+            overall_width: table_ref.current!.offsetWidth * 2,
+            elements_to_render: [table_ref.current!, map_ref.current!],
         })
+
+    if (props.names == undefined) {
+        throw new Error("ComparisonPanel: names not set");
     }
 
-    has_universe_selector() {
-        return true;
+    const left_margin = () => {
+        return 100 * left_margin_pct;
     }
 
-    main_content(template_info) {
-        const self = this;
-        if (this.props.names == undefined) {
-            throw new Error("ComparisonPanel: names not set");
-        }
-
-        return (
-            <div>
-                <div className={headerTextClass()}>Comparison</div>
-                <div className={subHeaderTextClass()}>{this.props.joined_string}</div>
-                <div style={{ marginBlockEnd: "16px" }}></div>
-
-                <div style={{ display: "flex" }}>
-                    <div style={{ width: (100 * left_margin_pct) + "%" }} />
-                    <div style={{ width: (50 * (1 - left_margin_pct)) + "%", marginRight: "1em" }}>
-                        <div className="serif" style={comparisonHeadStyle("right")}>Add another region:</div>
-                    </div>
-                    <div style={{ width: (50 * (1 - left_margin_pct)) + "%" }}>
-                        <SearchBox
-                            style={{ ...comparisonHeadStyle(), width: "100%" }}
-                            placeholder={"Name"}
-                            on_change={(x) => add_new(self.props.names, x)}
-                        />
-                    </div>
-                </div>
-
-
-                <div style={{ marginBlockEnd: "1em" }}></div>
-
-                {this.maybe_scroll(
-                    <div ref={this.table_ref}>
-                        {this.bars()}
-                        <div style={{ display: "flex" }}>
-                            {this.cell(true, 0, <div></div>)}
-                            {this.props.datas.map(
-                                (data, i) => this.cell(false, i, <div>
-                                    <HeadingDisplay
-                                        longname={data.longname}
-                                        include_delete={this.props.datas.length > 1}
-                                        on_click={() => on_delete(self.props.names, i)}
-                                        on_change={(x) => on_change(self.props.names, i, x)}
-                                        screenshot_mode={template_info.screenshot_mode}
-                                    />
-                                </div>)
-                            )}
-                        </div>
-                        {this.bars()}
-
-                        <ComparsionPageRows
-                            names={this.props.names}
-                            datas={this.props.datas}
-                        />
-                    </div>
-                )}
-                <div className="gap"></div>
-
-                <div ref={this.map_ref}>
-                    <ComparisonMap
-                        longnames={this.props.datas.map(x => x.longname)}
-                        colors={this.props.datas.map((_, i) => color(i))}
-                        id="map_combined"
-                        article_type={undefined}
-                        basemap={{ type: "osm" }}
-                    />
-                </div>
+    const cell = (is_left: boolean, i: number, contents: React.ReactNode) => {
+        if (is_left) {
+            return <div key={i} style={{ width: left_margin() + "%" }}>
+                {contents}
             </div>
-        );
+        }
+        const width = each(props.datas) + "%";
+        return <div key={i} style={{ width: width }}>
+            {contents}
+        </div>
     }
 
-    bars() {
+    const bars = () => {
         return <div style={{ display: "flex" }}>
-            {this.cell(true, 0, <div></div>)}
-            {this.props.datas.map(
+            {cell(true, 0, <div></div>)}
+            {props.datas.map(
                 (data, i) => <div key={i} style={{
-                    width: each(this.props.datas) + "%",
+                    width: each(props.datas) + "%",
                     height: bar_height,
                     backgroundColor: color(i)
                 }} />
@@ -133,14 +74,20 @@ class ComparisonPanel extends PageTemplate {
         </div>
     }
 
-    max_columns() {
+    const max_columns = () => {
         return mobileLayout() ? 4 : 6;
     }
 
-    maybe_scroll(contents) {
-        if (this.width_columns() > this.max_columns()) {
+    const width_columns = () => {
+        // 1.5 columns each if all data types are the same, otherwise 1 column each
+        // + 1 for the left margin
+        return (all_data_types_same(props.datas) ? 1.5 : 1) * props.datas.length + 1;
+    }
+
+    const maybe_scroll = (contents: React.ReactNode) => {
+        if (width_columns() > max_columns()) {
             return <div style={{ overflowX: "scroll" }}>
-                <div style={{ width: 100 * this.width_columns() / (this.max_columns() - 0.7) + "%" }}>
+                <div style={{ width: 100 * width_columns() / (max_columns() - 0.7) + "%" }}>
                     {contents}
                 </div>
             </div>
@@ -148,35 +95,75 @@ class ComparisonPanel extends PageTemplate {
         return contents;
     }
 
-    cell(is_left, i, contents) {
-        if (is_left) {
-            return <div key={i} style={{ width: this.left_margin() + "%" }}>
-                {contents}
+    return <PageTemplate screencap_elements={screencap_elements} has_universe_selector={true} universes={props.universes}>{ (template_info) => 
+        <div>
+            <div className={headerTextClass()}>Comparison</div>
+            <div className={subHeaderTextClass()}>{props.joined_string}</div>
+            <div style={{ marginBlockEnd: "16px" }}></div>
+
+            <div style={{ display: "flex" }}>
+                <div style={{ width: (100 * left_margin_pct) + "%" }} />
+                <div style={{ width: (50 * (1 - left_margin_pct)) + "%", marginRight: "1em" }}>
+                    <div className="serif" style={comparisonHeadStyle("right")}>Add another region:</div>
+                </div>
+                <div style={{ width: (50 * (1 - left_margin_pct)) + "%" }}>
+                    <SearchBox
+                        style={{ ...comparisonHeadStyle(), width: "100%" }}
+                        placeholder={"Name"}
+                        on_change={(x) => add_new(props.names, x)}
+                        autoFocus={false}
+                    />
+                </div>
             </div>
-        }
-        const width = each(this.props.datas) + "%";
-        return <div key={i} style={{ width: width }}>
-            {contents}
+
+
+            <div style={{ marginBlockEnd: "1em" }}></div>
+
+            {maybe_scroll(
+                <div ref={table_ref}>
+                    {bars()}
+                    <div style={{ display: "flex" }}>
+                        {cell(true, 0, <div></div>)}
+                        {props.datas.map(
+                            (data, i) => cell(false, i, <div>
+                                <HeadingDisplay
+                                    longname={data.longname}
+                                    include_delete={props.datas.length > 1}
+                                    on_click={() => on_delete(props.names, i)}
+                                    on_change={(x) => on_change(props.names, i, x)}
+                                    screenshot_mode={template_info.screenshot_mode}
+                                />
+                            </div>)
+                        )}
+                    </div>
+                    {bars()}
+
+                    <ComparsionPageRows
+                        names={props.names}
+                        datas={props.datas}
+                    />
+                </div>
+            )}
+            <div className="gap"></div>
+
+            <div ref={map_ref}>
+                <ComparisonMap
+                    longnames={props.datas.map(x => x.longname)}
+                    colors={props.datas.map((_, i) => color(i))}
+                    id="map_combined"
+                    basemap={{ type: "osm" }}
+                />
+            </div>
         </div>
-    }
-
-    width_columns() {
-        // 1.5 columns each if all data types are the same, otherwise 1 column each
-        // + 1 for the left margin
-        return (all_data_types_same(this.props.datas) ? 1.5 : 1) * this.props.datas.length + 1;
-    }
-
-    left_margin() {
-        return 100 * left_margin_pct;
-    }
+    }</PageTemplate>
 }
 
-function color(i) {
+function color(i: number) {
     return COLOR_CYCLE[i % COLOR_CYCLE.length];
 }
 
 
-function on_change(names, i, x) {
+function on_change(names: string[] | undefined, i: number, x: string) {
     if (names == undefined) {
         throw new Error("names is undefined");
     }
@@ -185,39 +172,39 @@ function on_change(names, i, x) {
     go(new_names);
 }
 
-function on_delete(names, i) {
+function on_delete(names: string[], i: number) {
     const new_names = [...names];
     new_names.splice(i, 1);
     go(new_names);
 }
 
-function add_new(names, x) {
+function add_new(names: string[], x: string) {
     const new_names = [...names];
     new_names.push(x);
     go(new_names);
 }
 
-function go(names) {
+function go(names: string[]) {
     const window_info = new URLSearchParams(window.location.search);
     window_info.set("longnames", JSON.stringify(names));
     window.location.search = window_info.toString();
 }
 
-function each(datas) {
+function each(datas: Article[]) {
     return 100 * (1 - left_margin_pct) / datas.length;
 }
 
-function all_data_types_same(datas) {
+function all_data_types_same(datas: Article[]) {
     return datas.every(x => x.articleType == datas[0].articleType)
 }
 
 
-function ComparsionPageRows({ names, datas }) {
+function ComparsionPageRows({ names, datas }: { names: string[], datas: Article[] }) {
     const curr_universe = useUniverse();
-    var rows = [];
-    var idxs = [];
+    let rows: ArticleRow[][] = [];
+    const idxs: number[][] = [];
     const exclusively_american = datas.every(x => longname_is_exclusively_american(x.longname));
-    for (let i in datas) {
+    for (const i in datas) {
         const [r, idx] = load_article(curr_universe, datas[i], useTableCheckboxSettings(),
             exclusively_american);
         rows.push(r);
@@ -227,7 +214,7 @@ function ComparsionPageRows({ names, datas }) {
     rows = insert_missing(rows, idxs);
 
     const header_row = <ComparisonRow
-        params={i => { return { is_header: true } }}
+        params={() => { return { is_header: true } }}
         datas={datas}
         names={names}
     />;
@@ -235,7 +222,7 @@ function ComparsionPageRows({ names, datas }) {
         <ComparisonRow
             params={data_idx => {
                 return {
-                    key: row_idx, index: row_idx, ...rows[data_idx][row_idx]
+                    key: row_idx, index: row_idx, is_header: false, ...rows[data_idx][row_idx]
                 }
             }}
             datas={datas}
@@ -255,14 +242,14 @@ function ComparsionPageRows({ names, datas }) {
     )
 }
 
-function ComparisonRow({ names, params, datas }) {
+function ComparisonRow({ names, params, datas }: { names: string[], params: (i: number) => { is_header: true } | ({ is_header: false, key: number, index: number } & ArticleRow), datas: Article[] }) {
     if (names == undefined) {
         throw new Error("ComparisonRow: names is undefined");
     }
     const row_overall = [];
     const param_vals = Array.from(Array(datas.length).keys()).map(params);
 
-    var highlight_idx = param_vals.map(x => x.statval).reduce((iMax, x, i, arr) => {
+    const highlight_idx = param_vals.map(x => 'statval' in x ? x.statval: NaN).reduce((iMax, x, i, arr) => {
         if (isNaN(x)) {
             return iMax;
         }
@@ -294,7 +281,7 @@ function ComparisonRow({ names, params, datas }) {
     ));
     const only_columns = all_data_types_same(datas) ? main_columns : main_columns_across_types;
 
-    for (const i in datas) {
+    for (const i of datas.keys()) {
         row_overall.push(...StatisticRowRawCellContents(
             {
                 ...param_vals[i], only_columns: only_columns, _idx: i, simple: true,
@@ -309,7 +296,7 @@ function ComparisonRow({ names, params, datas }) {
 
 const manipulation_button_height = "24px";
 
-function ManipulationButton({ color, on_click, text }) {
+function ManipulationButton({ color, on_click, text }: { color: string, on_click: () => void, text: React.ReactNode }) {
     return <div
         style={{
             height: manipulation_button_height,
@@ -326,7 +313,7 @@ function ManipulationButton({ color, on_click, text }) {
     </div>
 }
 
-function HeadingDisplay({ longname, include_delete, on_click, on_change, screenshot_mode }) {
+function HeadingDisplay({ longname, include_delete, on_click, on_change, screenshot_mode }: { longname: string, include_delete: boolean, on_click: () => void, on_change: (q: string) => void, screenshot_mode: boolean }) {
 
     const [is_editing, set_is_editing] = React.useState(false);
     const curr_universe = useUniverse();
@@ -359,14 +346,15 @@ function HeadingDisplay({ longname, include_delete, on_click, on_change, screens
     </div>
 }
 
-function insert_missing(rows, idxs) {
-    const empty_row_example = {};
+function insert_missing(rows: ArticleRow[][], idxs: number[][]) {
+    const empty_row_example: Record<number, ArticleRow> = {};
     for (const data_i in rows) {
         for (const row_i in rows[data_i]) {
             const idx = idxs[data_i][row_i];
             empty_row_example[idx] = JSON.parse(JSON.stringify(rows[data_i][row_i]));
-            for (const key in empty_row_example[idx]) {
-                if (typeof empty_row_example[idx][key] == "number") {
+            for (const key of Object.keys(empty_row_example[idx]) as (keyof ArticleRow)[]) {
+                if (typeof empty_row_example[idx][key] === "number") {
+                    // @ts-expect-error Typescript is fucking up this assignment
                     empty_row_example[idx][key] = NaN;
                 }
             }
@@ -374,7 +362,7 @@ function insert_missing(rows, idxs) {
         }
     }
 
-    var all_idxs = idxs.flat().filter((x, i, a) => a.indexOf(x) == i);
+    const all_idxs = idxs.flat().filter((x, i, a) => a.indexOf(x) == i);
     // sort all_idxs in ascending order numerically
     all_idxs.sort((a, b) => a - b);
 
@@ -394,10 +382,7 @@ function insert_missing(rows, idxs) {
     return new_rows_all;
 }
 
-class ComparisonMap extends MapGeneric {
-    constructor(props) {
-        super(props);
-    }
+class ComparisonMap extends MapGeneric<MapGenericProps & { longnames: string[], colors: string[] }> {
 
     buttons() {
         return <div style={{
@@ -413,7 +398,7 @@ class ComparisonMap extends MapGeneric {
         </div>
     }
 
-    zoom_button(i, color, onClick) {
+    zoom_button(i: number, color: string, onClick: () => void) {
         return <div
             key={i}
             style={{
@@ -425,7 +410,7 @@ class ComparisonMap extends MapGeneric {
         />
     }
 
-    async compute_polygons() {
+    async compute_polygons(): Promise<Readonly<[string[], Record<string, unknown>[], Record<string, unknown>[], number]>> {
         const names = [];
         const styles = [];
 
@@ -436,7 +421,7 @@ class ComparisonMap extends MapGeneric {
 
         const zoom_index = -1;
 
-        const metas = names.map((x) => { return {} });
+        const metas = names.map(() => { return {} });
 
         return [names, styles, metas, zoom_index];
     }

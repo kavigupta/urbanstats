@@ -1,4 +1,4 @@
-export function article_link(universe: string, longname: string) {
+export function article_link(universe: string | undefined, longname: string) {
     const params = new URLSearchParams()
     params.set('longname', sanitize(longname));
     add_universe_to_params(universe, params);
@@ -71,7 +71,7 @@ export function comparison_link(universe: string, names: string[]) {
     return "/comparison.html?" + params.toString();
 }
 
-export function statistic_link(universe: string | undefined, statname: string, article_type: string, start: number, amount: number | "All", order: string | undefined, highlight: string) {
+export function statistic_link(universe: string | undefined, statname: string, article_type: string, start: number, amount: number | "All", order: string | undefined, highlight: string | undefined) {
     // make start % amount == 0
     if (amount != "All") {
         start = start - 1;
@@ -87,7 +87,7 @@ export function statistic_link(universe: string | undefined, statname: string, a
     if (amount !== undefined) {
         params.set('amount', `${amount}`)
     }
-    if (order !== undefined && order !== null) {
+    if (order !== undefined && order !== null && order !== 'descending') {
         params.set('order', order);
     }
     if (highlight !== undefined) {

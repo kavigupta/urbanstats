@@ -5,20 +5,23 @@ import "./style.css";
 import "./common.css";
 
 import { load_ordering_protobuf, load_ordering } from './load_json';
-import { StatisticPanel } from './components/statistic-panel.js';
+import { StatisticPanel } from './components/statistic-panel';
 import { for_type, render_statname } from './components/load-article';
 import { get_universe, longname_is_exclusively_american, remove_universe_if_default, UNIVERSE_CONTEXT } from './universe';
+import { NormalizeProto } from "./utils/types";
+import { IDataList } from "./utils/protos";
 
 
 async function loadPage() {
     const window_info = new URLSearchParams(window.location.search);
 
-    const article_type = window_info.get("article_type");
-    const statname = window_info.get("statname");
+    // TODO: Use zod to better parse these
+    const article_type = window_info.get("article_type")!;
+    const statname = window_info.get("statname")!;
     const start = parseInt(window_info.get("start") || "1");
-    var amount = window_info.get("amount");
-    const order = window_info.get("order");
-    const highlight = window_info.get("highlight");
+    const amount = window_info.get("amount");
+    const order = (window_info.get("order") ?? 'descending') as 'ascending' | 'descending';
+    const highlight = window_info.get("highlight") ?? undefined;
     // delete highlight then replaceState
     window_info.delete("highlight");
     window.history.replaceState({}, "", "?" + window_info.toString());
@@ -32,21 +35,20 @@ async function loadPage() {
     remove_universe_if_default("world");
     const universe = get_universe("world");
     const article_names = await load_ordering(universe, statpath, article_type);
-    const data = await load_ordering_protobuf(universe, statpath, article_type, true);
+    const data = await load_ordering_protobuf(universe, statpath, article_type, true) as NormalizeProto<IDataList>;
+    let parsedAmount: number
     if (amount == "All") {
-        amount = article_names.length;
+        parsedAmount = article_names.length;
     } else {
-        amount = parseInt(amount || "10");
+        parsedAmount = parseInt(amount ?? "10");
     }
     document.title = statname;
-    const root = ReactDOM.createRoot(document.getElementById("root"));
-    const universes = require("./data/universes_ordered.json");
+    const root = ReactDOM.createRoot(document.getElementById("root")!);
     const exclusively_american = article_names.every(longname_is_exclusively_american);
     root.render(
         <UNIVERSE_CONTEXT.Provider value={universe}>
             <StatisticPanel
                 statname={statname}
-                statpath={statpath}
                 count={for_type(universe, statcol, article_type)}
                 explanation_page={explanation_page}
                 ordering={order}
@@ -54,11 +56,9 @@ async function loadPage() {
                 article_type={article_type}
                 joined_string={statpath}
                 start={start}
-                amount={amount}
-                order={order}
+                amount={parsedAmount}
                 article_names={article_names}
                 data={data}
-                universes={universes}
                 rendered_statname={render_statname(names.indexOf(statname), statname, exclusively_american)}
             />
         </UNIVERSE_CONTEXT.Provider>

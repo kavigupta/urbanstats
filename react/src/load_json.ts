@@ -4,7 +4,9 @@ import { gunzipSync } from 'zlib';
 import {
     Article, Feature, StringList, ConsolidatedShapes,
     ConsolidatedStatistics, DataLists, OrderLists, SearchIndex,
-    OrderList
+    OrderList,
+    IDataList,
+    IOrderList
 } from "./utils/protos";
 import { index_link, ordering_data_link, ordering_link } from './navigation/links';
 
@@ -80,6 +82,8 @@ async function loadProtobuf(filePath: string, name: string) {
 const order_links = require("./data/order_links.json");
 const data_links = require("./data/data_links.json");
 
+async function load_ordering_protobuf(universe: string, statpath: string, type: string, is_data: true): Promise<IDataList>
+async function load_ordering_protobuf(universe: string, statpath: string, type: string, is_data: boolean): Promise<IOrderList>
 async function load_ordering_protobuf(universe: string, statpath: string, type: string, is_data: boolean) {
     const links = is_data ? data_links : order_links;
     const key = `${universe}__${type}__${statpath}`;

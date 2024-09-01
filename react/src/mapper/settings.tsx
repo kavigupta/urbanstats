@@ -95,7 +95,7 @@ function merge<T>(add_to: Partial<T>, add_from: T): T {
     return add_to as T;
 }
 
-function parse_regression(name_to_index: Record<string, number>, regr: RegressionDescriptor) {
+function parse_regression(name_to_index: ReadonlyMap<string, number>, regr: RegressionDescriptor) {
     console.log(regr);
     const independent_fn = parse_color_stat(name_to_index, regr.independent);
     const dependent_fns = regr.dependents.map(dependent => parse_color_stat(name_to_index, dependent));
@@ -113,19 +113,19 @@ function parse_regression(name_to_index: Record<string, number>, regr: Regressio
         intercept_name,
         residual_name,
         weight_by_population,
-        name_to_index["Population"],
+        name_to_index.get("Population")!,
     );
 }
 
-export function parse_color_stat(name_to_index: Record<string, number>, color_stat: ColorStatDescriptor | undefined): ColorStat {
+export function parse_color_stat(name_to_index: ReadonlyMap<string, number>, color_stat: ColorStatDescriptor | undefined): ColorStat {
     if (color_stat === undefined) {
         return new InvalidColorStat();
     }
     const type = color_stat.type;
     if (type === "single") {
         const value = color_stat.value;
-        if (value in name_to_index) {
-            return new SingleColorStat(name_to_index[value], value);
+        if (name_to_index.has(value)) {
+            return new SingleColorStat(name_to_index.get(value)!, value);
         }
         return new InvalidColorStat();
     }
@@ -305,11 +305,6 @@ function BaseMapSelector({ basemap, set_basemap }: { basemap: Basemap, set_basem
 }
 
 export function MapperSettings(props: { map_settings: MapSettings, valid_geographies: string[], set_map_settings: (newValue: MapSettings) => void, names: string[] }) {
-    if (props.map_settings === undefined) {
-        throw new Error("map_settings is undefined");
-    }
-    console.log("rendering MapperSettings")
-    console.log("Setting", props.map_settings)
     return (
         <div>
             <DataListSelector
