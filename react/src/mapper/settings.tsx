@@ -124,7 +124,7 @@ export function parse_color_stat(name_to_index: ReadonlyMap<string, number>, col
     const type = color_stat.type;
     if (type === "single") {
         const value = color_stat.value;
-        if (value in name_to_index) {
+        if (name_to_index.has(value)) {
             return new SingleColorStat(name_to_index.get(value)!, value);
         }
         return new InvalidColorStat();
