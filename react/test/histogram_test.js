@@ -1,6 +1,6 @@
 
 import { Selector } from 'testcafe';
-import { TARGET, check_textboxes, comparison_page, download_or_check_string, screencap } from './test_utils';
+import { TARGET, check_textboxes, comparison_page, download_histogram, download_image, download_or_check_string, screencap } from './test_utils';
 
 const fs = require('fs');
 
@@ -61,6 +61,9 @@ test('histogram-basic-article-multi', async t => {
         }
     });
     await screencap(t, "histogram/histogram-basic-article-multi");
+    await download_image(t, "histogram/histogram-basic-article-multi-screenshot");
+    await download_histogram(t, "histogram/histogram-basic-article-multi-histogram-0", 0);
+    await download_histogram(t, "histogram/histogram-basic-article-multi-histogram-1", 1);
 });
 
 fixture('comparison test heterogenous')

@@ -91,13 +91,22 @@ export async function screencap(t, name) {
     })
 }
 
-export async function download_image(t, name) {
-    const download = Selector('img').withAttribute('src', '/screenshot.png');
+export async function grab_download(t, name, button) {
     await prep_for_image(t);
     await t
-        .click(download);
+        .click(button);
     await t.wait(3000);
     await copy_most_recent_file(t, name);
+}
+
+export async function download_image(t, name) {
+    const download = Selector('img').withAttribute('src', '/screenshot.png');
+    await grab_download(t, name, download);
+}
+
+export async function download_histogram(t, name, nth) {
+    const download = Selector('img').withAttribute('src', '/download.png').nth(nth);
+    await grab_download(t, name, download);
 }
 
 export function most_recent_download_path() {
