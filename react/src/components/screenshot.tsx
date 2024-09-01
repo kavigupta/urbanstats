@@ -51,24 +51,27 @@ export function ScreenshotButton(props: { screenshot_mode: boolean, onClick: () 
 export interface ScreencapElements {
     path: string,
     overall_width: number,
-    elements_to_render: HTMLElement[]
+    elements_to_render: HTMLElement[],
+    height_multiplier?: number,
 }
 
 export async function create_screenshot(config: ScreencapElements, universe: string | undefined) {
     const overall_width = config.overall_width;
+    const height_multiplier = config.height_multiplier ?? 1;
 
     async function screencap_element(ref: HTMLElement): Promise<[string, number]> {
+        console.log("Processing element", ref);
         const scale_factor = overall_width / ref.offsetWidth;
         const link = await domtoimage.toPng(ref, {
             bgcolor: "#fff8f0",
-            height: ref.offsetHeight * scale_factor,
+            height: ref.offsetHeight * scale_factor * height_multiplier,
             width: ref.offsetWidth * scale_factor,
             style: {
                 transform: "scale(" + scale_factor + ")",
                 transformOrigin: "top left"
             }
         });
-        return [link, scale_factor * ref.offsetHeight]
+        return [link, scale_factor * ref.offsetHeight * height_multiplier]
     }
 
     const png_links = [];

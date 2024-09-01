@@ -1,13 +1,14 @@
 
 import React, { useEffect, useRef } from 'react';
-import { IExtraStatistic, IHistogram } from '../utils/protos';
+import { IHistogram } from '../utils/protos';
 
 // imort Observable plot
 import * as Plot from "@observablehq/plot";
 import { HistogramType, useSetting } from '../page_template/settings';
 import { ExtraStat } from './load-article';
 import { CheckboxSetting } from './sidebar';
-import { saveAs } from 'file-saver';
+import { create_screenshot } from './screenshot';
+import { useUniverse } from '../universe';
 
 interface PlotProps {
     shortname?: string;
@@ -123,17 +124,38 @@ function Histogram(props: { histograms: HistogramProps[] }) {
             }
         }></div>
         <div style={{ zIndex: 1000, position: "absolute", top: 0, right: 0 }}>
-            <HistogramSettings plot_ref={plot_ref} />
+            <HistogramSettings plot_ref={plot_ref} shortnames={props.histograms.map(h => h.shortname)} />
         </div>
     </div>
 }
 
 function HistogramSettings(props: {
+    shortnames: string[];
     plot_ref: React.RefObject<HTMLDivElement>
 }) {
+    const universe = useUniverse();
     const [histogram_type, setHistogramType] = useSetting("histogram_type");
     // dropdown for histogram type
-    return <div className="serif" style={{ backgroundColor: "#fff8f0", padding: "0.5em", border: "1px solid black" }}>
+    return <div className="serif" style={{
+        backgroundColor: "#fff8f0", padding: "0.5em", border: "1px solid black",
+        display: "flex", gap: "0.5em"
+    }}>
+        <img src="/download.png"
+            onClick={() => {
+                if (props.plot_ref.current) {
+                    create_screenshot(
+                        {
+                            path: props.shortnames.join("_") + "_histogram",
+                            overall_width: props.plot_ref.current.offsetWidth * 2,
+                            elements_to_render: [props.plot_ref.current],
+                            height_multiplier: 1.2,
+                        },
+                        universe
+                    )
+                }
+            }}
+            width="20" height="20"
+        />
         <select value={histogram_type} onChange={e => setHistogramType(e.target.value as any)} className="serif">
             <option value="Line">Line</option>
             <option value="Line (cumulative)">Line (cumulative)</option>
@@ -331,7 +353,7 @@ function createHistogramMarks(
         x: "xidx", y: "y",
         title: (d) => {
 
-            var result = "Density: " + render_x(d.xidx) + "\n";
+            let result = "Density: " + render_x(d.xidx) + "\n";
             if (d.names.length > 1) {
                 result += d.names.map((name: string, i: number) => `${name}: ${render_y(d.ys[i])}`).join("\n")
             } else {
