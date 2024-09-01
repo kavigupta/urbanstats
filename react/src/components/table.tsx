@@ -7,8 +7,9 @@ import "./table.css";
 import { is_historical_cd } from '../utils/is_historical';
 import { display_type } from '../utils/text';
 import { ArticleRow } from './load-article';
-import { useSetting } from '../page_template/settings';
+import { row_expanded_key, useSetting } from '../page_template/settings';
 import { useUniverse } from '../universe';
+import { WithPlot } from './plots';
 
 const table_row_style: React.CSSProperties = {
     display: "flex",
@@ -31,14 +32,21 @@ export type StatisticRowRawProps = {
         }
     )
 
-export function StatisticRowRaw(props: StatisticRowRawProps & { index: number, longname?: string }) {
+export function StatisticRowRaw(props: StatisticRowRawProps & { index: number, shortname?: string, screenshot_mode: boolean }) {
 
-    const cell_contents = StatisticRowRawCellContents({ ...props, total_width: 100 });
+    const [expanded] = useSetting(row_expanded_key(props.is_header ? "header" : props.statname));
 
-    return <StatisticRow is_header={props.is_header} index={props.index} contents={cell_contents} />;
+    const cell_contents = StatisticRowRawCellContents({ ...props, total_width: 100, screenshot_mode: props.screenshot_mode });
+
+    return <WithPlot plot_props={[{ ...props, color: "#5a7dc3", shortname: props.shortname }]} expanded={expanded} screenshot_mode={props.screenshot_mode}>
+        <StatisticRow is_header={props.is_header} index={props.index} contents={cell_contents} />
+    </WithPlot>;
+
 }
 
-export function StatisticRowRawCellContents(props: StatisticRowRawProps & { total_width: number, longname?: string }) {
+export function StatisticRowRawCellContents(props: StatisticRowRawProps & {
+    total_width: number, longname?: string, screenshot_mode: boolean
+}) {
     const curr_universe = useUniverse();
     const alignStyle: React.CSSProperties = { textAlign: props.is_header ? "center" : "right" };
     let value_columns: [number, string, React.ReactNode][] = [
@@ -82,13 +90,16 @@ export function StatisticRowRawCellContents(props: StatisticRowRawProps & { tota
             "statname",
             <span className="serif value">{
                 props.is_header ? "Statistic" :
-                    <a className="statname_no_link" href={
-                        statistic_link(
-                            curr_universe,
-                            props.statname, props.article_type, props.ordinal,
-                            20, undefined, props.longname!
-                        )
-                    }>{props.rendered_statname}</a>
+                    <StatisticName
+                        statname={props.statname}
+                        article_type={props.article_type}
+                        ordinal={props.ordinal}
+                        longname={props.longname!}
+                        rendered_statname={props.rendered_statname}
+                        curr_universe={curr_universe}
+                        use_toggle={props.extra_stat != undefined}
+                        screenshot_mode={props.screenshot_mode}
+                    />
             }
             </span>
         ],
@@ -175,6 +186,24 @@ export function StatisticRowRawCellContents(props: StatisticRowRawProps & { tota
         }
     );
     return contents;
+}
+
+export function StatisticName(props: {
+    statname: string, article_type: string, ordinal: number,
+    longname?: string, rendered_statname: string,
+    curr_universe: string,
+    use_toggle: boolean,
+    screenshot_mode: boolean
+}) {
+    const [expanded, setExpanded] = useSetting(row_expanded_key(props.statname));
+    const link = <a className="statname_no_link" href={
+        statistic_link(
+            props.curr_universe,
+            props.statname, props.article_type, props.ordinal,
+            20, undefined, props.longname!
+        )
+    }>{props.rendered_statname}</a>
+    return link;
 }
 
 export function StatisticRow({ is_header, index, contents }: { is_header: boolean, index: number, contents: React.ReactNode }): React.ReactNode {

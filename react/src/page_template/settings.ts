@@ -3,6 +3,8 @@ import { DefaultMap } from "../utils/DefaultMap";
 
 export type StatisticSettingKey = `show_statistic_${string}`
 export type RelationshipKey = `related__${string}__${string}`
+export type RowExpandedKey = `expanded__${string}`
+export type HistogramType = "Bar" | "Line" | "Line (cumulative)"
 
 interface StatisticCategoryMetadataCheckbox {
     setting_key: StatisticSettingKey
@@ -13,13 +15,20 @@ interface StatisticCategoryMetadataCheckbox {
 export interface SettingsDictionary {
     [relationshipKey: RelationshipKey]: boolean;
     [showStatisticKey: StatisticSettingKey]: boolean;
+    [rowExpandedKey: RowExpandedKey]: boolean;
     show_historical_cds: boolean,
     simple_ordinals: boolean,
-    use_imperial: boolean
+    use_imperial: boolean,
+    histogram_type: HistogramType,
+    histogram_relative: boolean,
 }
 
 export function relationship_key(article_type: string, other_type: string) {
     return `related__${article_type}__${other_type}` as const;
+}
+
+export function row_expanded_key(row_statname: string) {
+    return `expanded__${row_statname}` as const;
 }
 
 export function load_settings() {
@@ -52,6 +61,8 @@ export function load_settings() {
     settings.show_historical_cds = settings.show_historical_cds ?? false
     settings.simple_ordinals = settings.simple_ordinals ?? false
     settings.use_imperial = settings.use_imperial ?? false
+    settings.histogram_type = settings.histogram_type ?? "Line"
+    settings.histogram_relative = settings.histogram_relative ?? true
 
     return [settings as SettingsDictionary, statistic_category_metadata_checkboxes] as const;
 }
