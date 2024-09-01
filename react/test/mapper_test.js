@@ -1,5 +1,17 @@
 
-import { TARGET, screencap } from './test_utils';
+import { Selector } from 'testcafe';
+import { TARGET, download_or_check_string, most_recent_download_path, screencap } from './test_utils';
+
+const fs = require('fs');
+
+async function check_geojson(t, path) {
+    // download the geojson by clicking the button
+    await t.click(Selector('button').withText('Export as GeoJSON'));
+    await t.wait(3000);
+    const mrdp = most_recent_download_path();
+    const most_recent_download = fs.readFileSync(mrdp, 'utf8');
+    await download_or_check_string(t, most_recent_download, path);
+}
 
 fixture('mapping')
     .page(TARGET + '/mapper.html?settings=H4sIAAAAAAAAA1WOzQ6CQAyEX8XUeCOGixeO%2BggejSEFy7Kh%2B5PdRSWEd7dLjMHe2plvpjMociqg76d60PYBFVwTJoICOs2JAlQzkMWGSbQOOZIoo22TdjZrafIk0O9UwBODzv4I1e2%2BLAW0jl2oo8RugKitYlrtPObDmbEddgcQIKDxGytrSxjgG2Rwq%2FlAkZJoFk3eL2NDPbF%2BQ27OpBRPUiTIiotnX64j0Iu06uWr8ngSd4OR%2FtNdNJLzAd2YY7skAQAA')
@@ -10,6 +22,7 @@ fixture('mapping')
 
 test("state-map", async t => {
     await screencap(t, "state-map");
+    await check_geojson(t, "state-map-geojson");
 })
 
 fixture('mapping-more-complex')
@@ -24,4 +37,5 @@ test("mapping-more-complex", async t => {
     await t.eval(() => location.reload(true));
     await t.wait(5000);
     await screencap(t, "mapping-more-complex");
+    await check_geojson(t, "mapping-more-complex-geojson");
 })

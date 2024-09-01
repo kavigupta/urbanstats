@@ -1,11 +1,15 @@
 
 import { Selector, ClientFunction } from 'testcafe';
 
+const fs = require('fs');
+const path = require('path');
+
 
 export const TARGET = process.env.URBANSTATS_TEST_TARGET ?? "http://localhost:8000"
 export const SEARCH_FIELD = Selector('input').withAttribute('placeholder', 'Search Urban Stats');
 export const getLocation = ClientFunction(() => document.location.href);
 
+export const IS_TESTING = true;
 
 export function comparison_page(locations) {
     const params = new URLSearchParams();
@@ -96,14 +100,28 @@ export async function download_image(t, name) {
     await copy_most_recent_file(t, name);
 }
 
-async function copy_most_recent_file(t, name) {
+export function most_recent_download_path() {
     // get the most recent file in the downloads folder
-    const fs = require('fs');
-    const path = require('path');
     const downloadsFolder = require('downloads-folder');
     const files = fs.readdirSync(downloadsFolder());
     const sorted = files.map(x => path.join(downloadsFolder(), x)).sort((a, b) => fs.statSync(b).mtimeMs - fs.statSync(a).mtimeMs);
+
+    console.log("Most recent download: " + sorted[0]);
+    return sorted[0];
+}
+
+async function copy_most_recent_file(t, name) {
     // copy the file to the screenshots folder
     const screenshotsFolder = path.join(__dirname, '..', 'screenshots');
-    fs.copyFileSync(sorted[0], path.join(screenshotsFolder, name + '_' + t.browser.name + '.png'));
+    fs.copyFileSync(most_recent_download_path(), path.join(screenshotsFolder, name + '_' + t.browser.name + '.png'));
+}
+
+export async function download_or_check_string(t, string, name) {
+    const path_to_file = path.join(__dirname, '..', "..", "tests", 'reference_strings', name + '.txt');
+    if (IS_TESTING) {
+        const expected = fs.readFileSync(path_to_file, 'utf8');
+        await t.expect(string).eql(expected);
+    } else {
+        fs.writeFileSync(path_to_file, string);
+    }
 }
