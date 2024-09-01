@@ -125,13 +125,3 @@ export async function download_or_check_string(t, string, name) {
         fs.writeFileSync(path_to_file, string);
     }
 }
-
-export async function download_or_check_string(t, string, name) {
-    const path = `../tests/reference_strings/${name}.txt`;
-    if (IS_TESTING) {
-        const expected = fs.readFileSync(path, 'utf8');
-        await t.expect(output).eql(expected);
-    } else {
-        fs.writeFileSync(path, output);
-    }
-}
