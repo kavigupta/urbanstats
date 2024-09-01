@@ -9,7 +9,7 @@ import { MapperPanel } from './components/mapper-panel';
 
 
 async function loadPage() {
-    const root = ReactDOM.createRoot(document.getElementById("root"));
+    const root = ReactDOM.createRoot(document.getElementById("root")!);
     root.render(<MapperPanel key={window.location.pathname}/>);
 }
 

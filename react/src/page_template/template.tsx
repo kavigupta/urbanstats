@@ -8,8 +8,6 @@ import "@fontsource/jost/700.css";
 import "@fontsource/jost/800.css";
 import "@fontsource/jost/900.css";
 
-export { PageTemplate };
-
 import React, { Fragment, useState } from 'react';
 
 import { Header } from "../components/header";
@@ -17,45 +15,29 @@ import { Sidebar } from "../components/sidebar";
 import "../common.css";
 import "../components/article.css";
 import { mobileLayout } from '../utils/responsive';
-import { create_screenshot } from '../components/screenshot';
+import { create_screenshot, ScreencapElements } from '../components/screenshot';
 
-class PageTemplate extends React.Component {
-    render() {
-        return <PageFunction
-            screencap_elements={this.screencap_elements()}
-            has_universe_selector={this.has_universe_selector()}
-            universes={this.props.universes}
-            main_content={template_info => this.main_content(template_info)}
-        />
-    }
-
-    has_universe_selector() {
-        return false;
-    }
-
-    screencap_elements() {
-        // not implemented, should be overridden
-        return undefined;
-    }
-
-    main_content(template_info) {
-        // not implemented, should be overridden
-        return (<div></div>);
-    }
-}
-
-function PageFunction({
-    screencap_elements,
-    has_universe_selector,
-    universes,
-    main_content,
+export function PageTemplate({
+    screencap_elements = undefined,
+    has_universe_selector = false,
+    universes = [],
+    children,
+}: {
+    screencap_elements?: () => ScreencapElements
+    has_universe_selector?: boolean,
+    universes?: string[],
+    children: ({ screenshot_mode }: { screenshot_mode: boolean }) => React.ReactNode
 }) {
     const [hamburger_open, set_hamburger_open] = useState(false);
     const [screenshot_mode, set_screenshot_mode] = useState(false);
 
     const has_screenshot_button = screencap_elements != undefined;
 
-    const screencap = async (curr_universe) => {
+    const screencap = async (curr_universe: string) => {
+        if (screencap_elements === undefined) {
+            console.log("No screencap elements defined for this page.");
+            return;
+        }
         try {
             console.log("Creating screenshot...");
             await create_screenshot(screencap_elements(), has_universe_selector ? curr_universe : undefined);
@@ -64,16 +46,12 @@ function PageFunction({
         }
     }
 
-    const initiate_screenshot = async curr_universe => {
+    const initiate_screenshot = async (curr_universe: string) => {
         set_screenshot_mode(true)
         setTimeout(async () => {
             await screencap(curr_universe);
             set_screenshot_mode(false)
         })
-    }
-
-    const template_info = {
-        screenshot_mode: screenshot_mode
     }
 
     return (
@@ -92,7 +70,7 @@ function PageFunction({
                 <div style={{ marginBlockEnd: "16px" }}></div>
                 <BodyPanel
                     hamburger_open={hamburger_open}
-                    main_content={main_content(template_info)}
+                    main_content={children({ screenshot_mode })}
                 />
             </div>
         </Fragment>
@@ -123,14 +101,14 @@ function OtherCredits() {
     </span>
 }
 
-function BodyPanel(props) {
-    if (props.hamburger_open) {
+function BodyPanel({ hamburger_open, main_content }: { hamburger_open: boolean, main_content: React.ReactNode }) {
+    if (hamburger_open) {
         return <LeftPanel />
     }
     return <div className="body_panel">
         {mobileLayout() ? undefined : <LeftPanel />}
         <div className={mobileLayout() ? "content_panel_mobile" : "right_panel"}>
-            {props.main_content}
+            {main_content}
             <div className="gap"></div>
             <TemplateFooter />
         </div>

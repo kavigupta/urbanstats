@@ -4,15 +4,15 @@ const NodePolyfillPlugin = require('node-polyfill-webpack-plugin')
 
 module.exports = env => ({
     entry: {
-        "article": ['./src/article.js'],
-        "quiz": ['./src/quiz.js'],
-        "index": ['./src/index.js'],
-        "random": ["./src/random.js"],
-        "about": ['./src/about.js'],
-        "data-credit": ['./src/data-credit.js'],
-        "mapper": ['./src/mapper.js'],
-        "comparison": ['./src/comparison.js'],
-        "statistic": ['./src/statistic.js']
+        "article": ['./src/article.tsx'],
+        "quiz": ['./src/quiz.tsx'],
+        "index": ['./src/index.tsx'],
+        "random": ["./src/random.ts"],
+        "about": ['./src/about.tsx'],
+        "data-credit": ['./src/data-credit.tsx'],
+        "mapper": ['./src/mapper.tsx'],
+        "comparison": ['./src/comparison.tsx'],
+        "statistic": ['./src/statistic.tsx']
     },
     output: {
         filename: '[name].js',

@@ -13,17 +13,17 @@ import { default_article_universe, get_universe, remove_universe_if_default, rem
 async function loadPage() {
     const window_info = new URLSearchParams(window.location.search);
 
-    const longname = window_info.get("longname");
+    const longname = window_info.get("longname")!;
     const data = await loadProtobuf(data_link(longname), "Article");
     console.log(data);
     document.title = data.shortname;
-    const root = ReactDOM.createRoot(document.getElementById("root"));
+    const root = ReactDOM.createRoot(document.getElementById("root")!);
     remove_universe_if_not_in(data.universes)
     const default_universe = default_article_universe(longname);
     remove_universe_if_default(default_universe);
     root.render(
         <UNIVERSE_CONTEXT.Provider value={get_universe(default_universe)}>
-            <ArticlePanel longname={longname} {...data} />
+            <ArticlePanel article={data} />
         </UNIVERSE_CONTEXT.Provider>
     );
 }

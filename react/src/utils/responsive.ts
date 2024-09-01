@@ -13,8 +13,8 @@ export function subHeaderTextClass() {
 }
 
 export function comparisonHeadStyle(
-    align = "center"
-) {
+    align: React.CSSProperties['textAlign'] = "center"
+): React.CSSProperties {
     // bold
     return {
         fontSize: mobileLayout() ? "15px" : "20px",

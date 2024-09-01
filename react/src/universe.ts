@@ -6,8 +6,8 @@ export function useUniverse(): string {
     return useContext(UNIVERSE_CONTEXT)!;
 }
 
-export function get_universe(default_universe: string | undefined) {
-    return new URLSearchParams(window.location.search).get("universe") || default_universe
+export function get_universe<Default extends string | undefined>(default_universe: Default): string | Default {
+    return new URLSearchParams(window.location.search).get("universe") ?? default_universe
 }
 
 export function set_universe(universe: string) {
