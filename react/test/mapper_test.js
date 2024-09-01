@@ -1,9 +1,13 @@
 
+import { Selector } from 'testcafe';
 import { TARGET, download_or_check_string, most_recent_download_path, screencap } from './test_utils';
 
 const fs = require('fs');
 
 async function check_geojson(t, path) {
+    // download the geojson by clicking the button
+    await t.click(Selector('button').withText('Export as GeoJSON'));
+    await t.wait(3000);
     const mrdp = most_recent_download_path();
     console.log("Most recent download: " + mrdp);
     const most_recent_download = fs.readFileSync(mrdp, 'utf8');

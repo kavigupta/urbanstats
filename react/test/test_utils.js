@@ -117,11 +117,11 @@ async function copy_most_recent_file(t, name) {
 }
 
 export async function download_or_check_string(t, string, name) {
-    const path = path.join(__dirname, '..', 'reference_strings', name + '.txt');
+    const path_to_file = path.join(__dirname, '..', "..", "tests", 'reference_strings', name + '.txt');
     if (IS_TESTING) {
-        const expected = fs.readFileSync(path, 'utf8');
+        const expected = fs.readFileSync(path_to_file, 'utf8');
         await t.expect(string).eql(expected);
     } else {
-        fs.writeFileSync(path, string);
+        fs.writeFileSync(path_to_file, string);
     }
 }
