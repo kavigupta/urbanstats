@@ -2,6 +2,8 @@
 import { Selector, ClientFunction } from 'testcafe';
 
 const fs = require('fs');
+const path = require('path');
+
 
 export const TARGET = process.env.URBANSTATS_TEST_TARGET ?? "http://localhost:8000"
 export const SEARCH_FIELD = Selector('input').withAttribute('placeholder', 'Search Urban Stats');
@@ -100,7 +102,6 @@ export async function download_image(t, name) {
 
 export function most_recent_download_path() {
     // get the most recent file in the downloads folder
-    const path = require('path');
     const downloadsFolder = require('downloads-folder');
     const files = fs.readdirSync(downloadsFolder());
     const sorted = files.map(x => path.join(downloadsFolder(), x)).sort((a, b) => fs.statSync(b).mtimeMs - fs.statSync(a).mtimeMs);
