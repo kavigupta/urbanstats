@@ -18,27 +18,30 @@ interface PlotProps {
 
 const Y_PAD = 0.025;
 
-export function WithPlot(props: { children: React.ReactNode, plot_props: PlotProps[], expanded: boolean }) {
+export function WithPlot(props: { children: React.ReactNode, plot_props: PlotProps[], expanded: boolean, screenshot_mode: boolean }) {
     return (
         <div className="plot">
             {props.children}
-            {props.expanded ? <RenderedPlot plot_props={props.plot_props} /> : null}
+            {props.expanded ? <RenderedPlot plot_props={props.plot_props} screenshot_mode={props.screenshot_mode} /> : null}
         </div>
     )
 }
 
-function RenderedPlot({ plot_props }: { plot_props: PlotProps[] }) {
+function RenderedPlot({ plot_props, screenshot_mode }: { plot_props: PlotProps[], screenshot_mode: boolean }) {
     console.log("plot props", plot_props)
     if (plot_props.some(p => p.extra_stat?.stat.histogram)) {
         plot_props = plot_props.filter(p => p.extra_stat?.stat.histogram);
-        return <Histogram histograms={plot_props.map(
-            props => ({
-                shortname: props.shortname!,
-                histogram: props.extra_stat!.stat.histogram!,
-                color: props.color,
-                universe_total: props.extra_stat!.universe_total
-            })
-        )} />
+        return <Histogram
+            histograms={plot_props.map(
+                props => ({
+                    shortname: props.shortname!,
+                    histogram: props.extra_stat!.stat.histogram!,
+                    color: props.color,
+                    universe_total: props.extra_stat!.universe_total
+                })
+            )}
+            screenshot_mode={screenshot_mode}
+        />
     }
     throw new Error("plot not recognized: " + JSON.stringify(plot_props));
 }
@@ -50,7 +53,7 @@ interface HistogramProps {
     universe_total: number;
 }
 
-function Histogram(props: { histograms: HistogramProps[] }) {
+function Histogram(props: { histograms: HistogramProps[], screenshot_mode: boolean }) {
     const [histogram_type] = useSetting("histogram_type");
     const [use_imperial] = useSetting("use_imperial");
     const [relative] = useSetting("histogram_relative");
@@ -123,9 +126,12 @@ function Histogram(props: { histograms: HistogramProps[] }) {
                 // height: "20em"
             }
         }></div>
-        <div style={{ zIndex: 1000, position: "absolute", top: 0, right: 0 }}>
-            <HistogramSettings plot_ref={plot_ref} shortnames={props.histograms.map(h => h.shortname)} />
-        </div>
+        {props.screenshot_mode
+            ? undefined
+            : <div style={{ zIndex: 1000, position: "absolute", top: 0, right: 0 }}>
+                <HistogramSettings plot_ref={plot_ref} shortnames={props.histograms.map(h => h.shortname)} />
+            </div>
+        }
     </div>
 }
 

@@ -142,6 +142,7 @@ export function ComparisonPanel(props: { joined_string: string, universes: strin
                     <ComparsionPageRows
                         names={props.names}
                         datas={props.datas}
+                        screenshot_mode={template_info.screenshot_mode}
                     />
                 </div>
             )}
@@ -200,7 +201,7 @@ function all_data_types_same(datas: Article[]) {
 }
 
 
-function ComparsionPageRows({ names, datas }: { names: string[], datas: Article[] }) {
+function ComparsionPageRows({ names, datas, screenshot_mode }: { names: string[], datas: Article[], screenshot_mode: boolean }) {
     const curr_universe = useUniverse();
     let rows: ArticleRow[][] = [];
     const idxs: number[][] = [];
@@ -218,6 +219,7 @@ function ComparsionPageRows({ names, datas }: { names: string[], datas: Article[
         params={() => { return { is_header: true } }}
         datas={datas}
         names={names}
+        screenshot_mode={screenshot_mode}
     />;
     return (
         <>
@@ -231,6 +233,7 @@ function ComparsionPageRows({ names, datas }: { names: string[], datas: Article[
                         row_idx={row_idx}
                         datas={datas}
                         names={names}
+                        screenshot_mode={screenshot_mode}
                     />
                 )
             }
@@ -238,13 +241,14 @@ function ComparsionPageRows({ names, datas }: { names: string[], datas: Article[
     )
 }
 
-function ComparisonRowBody({rows, row_idx, datas, names}: {
+function ComparisonRowBody({ rows, row_idx, datas, names, screenshot_mode }: {
     rows: ArticleRow[][],
     row_idx: number,
     datas: Article[],
-    names: string[]
+    names: string[],
+    screenshot_mode: boolean
 }) {
-    const [expanded, setExpanded] = useSetting(row_expanded_key(rows[0][row_idx].statname));
+    const [expanded] = useSetting(row_expanded_key(rows[0][row_idx].statname));
     const contents = <ComparisonRow
         params={data_idx => {
             return {
@@ -253,17 +257,19 @@ function ComparisonRowBody({rows, row_idx, datas, names}: {
         }}
         datas={datas}
         names={names}
+        screenshot_mode={screenshot_mode}
     />;
     const plot_props = rows.map((row, data_idx) => ({...row[row_idx], color: color(data_idx), shortname: datas[data_idx].shortname}));
-    return <WithPlot plot_props={plot_props} expanded={expanded} key={row_idx}>
+    return <WithPlot plot_props={plot_props} expanded={expanded} key={row_idx} screenshot_mode={screenshot_mode}>
         <StatisticRow key={row_idx} is_header={false} index={row_idx} contents={contents} />
     </WithPlot>
 }
 
-function ComparisonRow({ names, params, datas }: {
+function ComparisonRow({ names, params, datas, screenshot_mode }: {
     names: string[],
     params: (i: number) => { is_header: true } | ({ is_header: false, key: number, index: number } & ArticleRow),
     datas: Article[],
+    screenshot_mode: boolean
 }) {
     if (names == undefined) {
         throw new Error("ComparisonRow: names is undefined");
@@ -299,6 +305,7 @@ function ComparisonRow({ names, params, datas }: {
         {
             ...param_vals[0], only_columns: ["statname"], _idx: -1, simple: true, longname: datas[0].longname,
             total_width: 100 * (left_margin_pct - left_bar_margin),
+            screenshot_mode: screenshot_mode
         }
     ));
     const only_columns = all_data_types_same(datas) ? main_columns : main_columns_across_types;
@@ -310,6 +317,7 @@ function ComparisonRow({ names, params, datas }: {
                 statistic_style: highlight_idx == i ? { backgroundColor: lighten(color(i), 0.7) } : {},
                 onReplace: x => on_change(names, i, x),
                 total_width: each(datas),
+                screenshot_mode: screenshot_mode
             }
         ));
     }

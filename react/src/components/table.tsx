@@ -32,20 +32,20 @@ export type StatisticRowRawProps = {
         }
     )
 
-export function StatisticRowRaw(props: StatisticRowRawProps & { index: number, shortname?: string }) {
+export function StatisticRowRaw(props: StatisticRowRawProps & { index: number, shortname?: string, screenshot_mode: boolean }) {
 
     const [expanded] = useSetting(row_expanded_key(props.is_header ? "header" : props.statname));
 
-    const cell_contents = StatisticRowRawCellContents({ ...props, total_width: 100 });
+    const cell_contents = StatisticRowRawCellContents({ ...props, total_width: 100, screenshot_mode: props.screenshot_mode });
 
-    return <WithPlot plot_props={[{ ...props, color: "#5a7dc3", shortname: props.shortname }]} expanded={expanded}>
+    return <WithPlot plot_props={[{ ...props, color: "#5a7dc3", shortname: props.shortname }]} expanded={expanded} screenshot_mode={props.screenshot_mode}>
         <StatisticRow is_header={props.is_header} index={props.index} contents={cell_contents} />
     </WithPlot>;
 
 }
 
 export function StatisticRowRawCellContents(props: StatisticRowRawProps & {
-    total_width: number, longname?: string
+    total_width: number, longname?: string, screenshot_mode: boolean
 }) {
     const curr_universe = useUniverse();
     const alignStyle: React.CSSProperties = { textAlign: props.is_header ? "center" : "right" };
@@ -98,6 +98,7 @@ export function StatisticRowRawCellContents(props: StatisticRowRawProps & {
                         rendered_statname={props.rendered_statname}
                         curr_universe={curr_universe}
                         use_toggle={props.extra_stat != undefined}
+                        screenshot_mode={props.screenshot_mode}
                     />
             }
             </span>
@@ -191,7 +192,8 @@ export function StatisticName(props: {
     statname: string, article_type: string, ordinal: number,
     longname?: string, rendered_statname: string,
     curr_universe: string,
-    use_toggle: boolean
+    use_toggle: boolean,
+    screenshot_mode: boolean
 }) {
     const [expanded, setExpanded] = useSetting(row_expanded_key(props.statname));
     const link = <a className="statname_no_link" href={
@@ -201,7 +203,7 @@ export function StatisticName(props: {
             20, undefined, props.longname!
         )
     }>{props.rendered_statname}</a>
-    if (props.use_toggle) {
+    if (props.use_toggle && !props.screenshot_mode) {
         return <span style={{
             display: "flex",
             alignItems: "center",
