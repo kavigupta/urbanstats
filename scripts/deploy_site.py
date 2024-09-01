@@ -8,18 +8,21 @@ REPO = "git@github.com:densitydb/densitydb.github.io.git"
 
 temp_branch = "temp"
 
-
-def update_scripts():
-    """
-    Copy the files from the local repo to the site folder, then add a commit
-    and push to the remote repo.
-    """
+def synchronize():
     # pull the latest changes from the remote repo
     subprocess.run(["git", "pull", "origin", "master"], cwd=LOCAL_REPO, check=True)
     # copy the files from the local repo to the site folder, using rsync
     subprocess.run(
         ["rsync", "-a", "--info=progress2", LOCAL_REPO + "/", PATH, "--exclude", ".git"], check=True
     )
+
+
+def update_scripts():
+    """
+    Copy the files from the local repo to the site folder, then add a commit
+    and push to the remote repo.
+    """
+    synchronize()
     # add the files to the git repo
     subprocess.run(["git", "add", "."], cwd=PATH)
     # commit the changes, using the commit message corresponding to the one in the local repo
@@ -34,6 +37,7 @@ def update_scripts():
 
 
 def update_all():
+    synchronize()
     # remove .git folder
     shutil.rmtree(os.path.join(PATH, ".git"), ignore_errors=True)
     # initialize git
