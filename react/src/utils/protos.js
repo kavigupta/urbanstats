@@ -853,6 +853,508 @@ $root.RelatedButtons = (function() {
     return RelatedButtons;
 })();
 
+$root.Histogram = (function() {
+
+    /**
+     * Properties of a Histogram.
+     * @exports IHistogram
+     * @interface IHistogram
+     * @property {number|null} [binMin] Histogram binMin
+     * @property {number|null} [binSize] Histogram binSize
+     * @property {Array.<number>|null} [counts] Histogram counts
+     */
+
+    /**
+     * Constructs a new Histogram.
+     * @exports Histogram
+     * @classdesc Represents a Histogram.
+     * @implements IHistogram
+     * @constructor
+     * @param {IHistogram=} [properties] Properties to set
+     */
+    function Histogram(properties) {
+        this.counts = [];
+        if (properties)
+            for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                if (properties[keys[i]] != null)
+                    this[keys[i]] = properties[keys[i]];
+    }
+
+    /**
+     * Histogram binMin.
+     * @member {number} binMin
+     * @memberof Histogram
+     * @instance
+     */
+    Histogram.prototype.binMin = 0;
+
+    /**
+     * Histogram binSize.
+     * @member {number} binSize
+     * @memberof Histogram
+     * @instance
+     */
+    Histogram.prototype.binSize = 0;
+
+    /**
+     * Histogram counts.
+     * @member {Array.<number>} counts
+     * @memberof Histogram
+     * @instance
+     */
+    Histogram.prototype.counts = $util.emptyArray;
+
+    /**
+     * Creates a new Histogram instance using the specified properties.
+     * @function create
+     * @memberof Histogram
+     * @static
+     * @param {IHistogram=} [properties] Properties to set
+     * @returns {Histogram} Histogram instance
+     */
+    Histogram.create = function create(properties) {
+        return new Histogram(properties);
+    };
+
+    /**
+     * Encodes the specified Histogram message. Does not implicitly {@link Histogram.verify|verify} messages.
+     * @function encode
+     * @memberof Histogram
+     * @static
+     * @param {IHistogram} message Histogram message or plain object to encode
+     * @param {$protobuf.Writer} [writer] Writer to encode to
+     * @returns {$protobuf.Writer} Writer
+     */
+    Histogram.encode = function encode(message, writer) {
+        if (!writer)
+            writer = $Writer.create();
+        if (message.binMin != null && Object.hasOwnProperty.call(message, "binMin"))
+            writer.uint32(/* id 1, wireType 5 =*/13).float(message.binMin);
+        if (message.binSize != null && Object.hasOwnProperty.call(message, "binSize"))
+            writer.uint32(/* id 2, wireType 5 =*/21).float(message.binSize);
+        if (message.counts != null && message.counts.length) {
+            writer.uint32(/* id 3, wireType 2 =*/26).fork();
+            for (var i = 0; i < message.counts.length; ++i)
+                writer.int32(message.counts[i]);
+            writer.ldelim();
+        }
+        return writer;
+    };
+
+    /**
+     * Encodes the specified Histogram message, length delimited. Does not implicitly {@link Histogram.verify|verify} messages.
+     * @function encodeDelimited
+     * @memberof Histogram
+     * @static
+     * @param {IHistogram} message Histogram message or plain object to encode
+     * @param {$protobuf.Writer} [writer] Writer to encode to
+     * @returns {$protobuf.Writer} Writer
+     */
+    Histogram.encodeDelimited = function encodeDelimited(message, writer) {
+        return this.encode(message, writer).ldelim();
+    };
+
+    /**
+     * Decodes a Histogram message from the specified reader or buffer.
+     * @function decode
+     * @memberof Histogram
+     * @static
+     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+     * @param {number} [length] Message length if known beforehand
+     * @returns {Histogram} Histogram
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    Histogram.decode = function decode(reader, length) {
+        if (!(reader instanceof $Reader))
+            reader = $Reader.create(reader);
+        var end = length === undefined ? reader.len : reader.pos + length, message = new $root.Histogram();
+        while (reader.pos < end) {
+            var tag = reader.uint32();
+            switch (tag >>> 3) {
+            case 1: {
+                    message.binMin = reader.float();
+                    break;
+                }
+            case 2: {
+                    message.binSize = reader.float();
+                    break;
+                }
+            case 3: {
+                    if (!(message.counts && message.counts.length))
+                        message.counts = [];
+                    if ((tag & 7) === 2) {
+                        var end2 = reader.uint32() + reader.pos;
+                        while (reader.pos < end2)
+                            message.counts.push(reader.int32());
+                    } else
+                        message.counts.push(reader.int32());
+                    break;
+                }
+            default:
+                reader.skipType(tag & 7);
+                break;
+            }
+        }
+        return message;
+    };
+
+    /**
+     * Decodes a Histogram message from the specified reader or buffer, length delimited.
+     * @function decodeDelimited
+     * @memberof Histogram
+     * @static
+     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+     * @returns {Histogram} Histogram
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    Histogram.decodeDelimited = function decodeDelimited(reader) {
+        if (!(reader instanceof $Reader))
+            reader = new $Reader(reader);
+        return this.decode(reader, reader.uint32());
+    };
+
+    /**
+     * Verifies a Histogram message.
+     * @function verify
+     * @memberof Histogram
+     * @static
+     * @param {Object.<string,*>} message Plain object to verify
+     * @returns {string|null} `null` if valid, otherwise the reason why it is not
+     */
+    Histogram.verify = function verify(message) {
+        if (typeof message !== "object" || message === null)
+            return "object expected";
+        if (message.binMin != null && message.hasOwnProperty("binMin"))
+            if (typeof message.binMin !== "number")
+                return "binMin: number expected";
+        if (message.binSize != null && message.hasOwnProperty("binSize"))
+            if (typeof message.binSize !== "number")
+                return "binSize: number expected";
+        if (message.counts != null && message.hasOwnProperty("counts")) {
+            if (!Array.isArray(message.counts))
+                return "counts: array expected";
+            for (var i = 0; i < message.counts.length; ++i)
+                if (!$util.isInteger(message.counts[i]))
+                    return "counts: integer[] expected";
+        }
+        return null;
+    };
+
+    /**
+     * Creates a Histogram message from a plain object. Also converts values to their respective internal types.
+     * @function fromObject
+     * @memberof Histogram
+     * @static
+     * @param {Object.<string,*>} object Plain object
+     * @returns {Histogram} Histogram
+     */
+    Histogram.fromObject = function fromObject(object) {
+        if (object instanceof $root.Histogram)
+            return object;
+        var message = new $root.Histogram();
+        if (object.binMin != null)
+            message.binMin = Number(object.binMin);
+        if (object.binSize != null)
+            message.binSize = Number(object.binSize);
+        if (object.counts) {
+            if (!Array.isArray(object.counts))
+                throw TypeError(".Histogram.counts: array expected");
+            message.counts = [];
+            for (var i = 0; i < object.counts.length; ++i)
+                message.counts[i] = object.counts[i] | 0;
+        }
+        return message;
+    };
+
+    /**
+     * Creates a plain object from a Histogram message. Also converts values to other types if specified.
+     * @function toObject
+     * @memberof Histogram
+     * @static
+     * @param {Histogram} message Histogram
+     * @param {$protobuf.IConversionOptions} [options] Conversion options
+     * @returns {Object.<string,*>} Plain object
+     */
+    Histogram.toObject = function toObject(message, options) {
+        if (!options)
+            options = {};
+        var object = {};
+        if (options.arrays || options.defaults)
+            object.counts = [];
+        if (options.defaults) {
+            object.binMin = 0;
+            object.binSize = 0;
+        }
+        if (message.binMin != null && message.hasOwnProperty("binMin"))
+            object.binMin = options.json && !isFinite(message.binMin) ? String(message.binMin) : message.binMin;
+        if (message.binSize != null && message.hasOwnProperty("binSize"))
+            object.binSize = options.json && !isFinite(message.binSize) ? String(message.binSize) : message.binSize;
+        if (message.counts && message.counts.length) {
+            object.counts = [];
+            for (var j = 0; j < message.counts.length; ++j)
+                object.counts[j] = message.counts[j];
+        }
+        return object;
+    };
+
+    /**
+     * Converts this Histogram to JSON.
+     * @function toJSON
+     * @memberof Histogram
+     * @instance
+     * @returns {Object.<string,*>} JSON object
+     */
+    Histogram.prototype.toJSON = function toJSON() {
+        return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+    };
+
+    /**
+     * Gets the default type url for Histogram
+     * @function getTypeUrl
+     * @memberof Histogram
+     * @static
+     * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns {string} The default type url
+     */
+    Histogram.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+        if (typeUrlPrefix === undefined) {
+            typeUrlPrefix = "type.googleapis.com";
+        }
+        return typeUrlPrefix + "/Histogram";
+    };
+
+    return Histogram;
+})();
+
+$root.ExtraStatistic = (function() {
+
+    /**
+     * Properties of an ExtraStatistic.
+     * @exports IExtraStatistic
+     * @interface IExtraStatistic
+     * @property {IHistogram|null} [histogram] ExtraStatistic histogram
+     */
+
+    /**
+     * Constructs a new ExtraStatistic.
+     * @exports ExtraStatistic
+     * @classdesc Represents an ExtraStatistic.
+     * @implements IExtraStatistic
+     * @constructor
+     * @param {IExtraStatistic=} [properties] Properties to set
+     */
+    function ExtraStatistic(properties) {
+        if (properties)
+            for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                if (properties[keys[i]] != null)
+                    this[keys[i]] = properties[keys[i]];
+    }
+
+    /**
+     * ExtraStatistic histogram.
+     * @member {IHistogram|null|undefined} histogram
+     * @memberof ExtraStatistic
+     * @instance
+     */
+    ExtraStatistic.prototype.histogram = null;
+
+    // OneOf field names bound to virtual getters and setters
+    var $oneOfFields;
+
+    /**
+     * ExtraStatistic _histogram.
+     * @member {"histogram"|undefined} _histogram
+     * @memberof ExtraStatistic
+     * @instance
+     */
+    Object.defineProperty(ExtraStatistic.prototype, "_histogram", {
+        get: $util.oneOfGetter($oneOfFields = ["histogram"]),
+        set: $util.oneOfSetter($oneOfFields)
+    });
+
+    /**
+     * Creates a new ExtraStatistic instance using the specified properties.
+     * @function create
+     * @memberof ExtraStatistic
+     * @static
+     * @param {IExtraStatistic=} [properties] Properties to set
+     * @returns {ExtraStatistic} ExtraStatistic instance
+     */
+    ExtraStatistic.create = function create(properties) {
+        return new ExtraStatistic(properties);
+    };
+
+    /**
+     * Encodes the specified ExtraStatistic message. Does not implicitly {@link ExtraStatistic.verify|verify} messages.
+     * @function encode
+     * @memberof ExtraStatistic
+     * @static
+     * @param {IExtraStatistic} message ExtraStatistic message or plain object to encode
+     * @param {$protobuf.Writer} [writer] Writer to encode to
+     * @returns {$protobuf.Writer} Writer
+     */
+    ExtraStatistic.encode = function encode(message, writer) {
+        if (!writer)
+            writer = $Writer.create();
+        if (message.histogram != null && Object.hasOwnProperty.call(message, "histogram"))
+            $root.Histogram.encode(message.histogram, writer.uint32(/* id 1, wireType 2 =*/10).fork()).ldelim();
+        return writer;
+    };
+
+    /**
+     * Encodes the specified ExtraStatistic message, length delimited. Does not implicitly {@link ExtraStatistic.verify|verify} messages.
+     * @function encodeDelimited
+     * @memberof ExtraStatistic
+     * @static
+     * @param {IExtraStatistic} message ExtraStatistic message or plain object to encode
+     * @param {$protobuf.Writer} [writer] Writer to encode to
+     * @returns {$protobuf.Writer} Writer
+     */
+    ExtraStatistic.encodeDelimited = function encodeDelimited(message, writer) {
+        return this.encode(message, writer).ldelim();
+    };
+
+    /**
+     * Decodes an ExtraStatistic message from the specified reader or buffer.
+     * @function decode
+     * @memberof ExtraStatistic
+     * @static
+     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+     * @param {number} [length] Message length if known beforehand
+     * @returns {ExtraStatistic} ExtraStatistic
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    ExtraStatistic.decode = function decode(reader, length) {
+        if (!(reader instanceof $Reader))
+            reader = $Reader.create(reader);
+        var end = length === undefined ? reader.len : reader.pos + length, message = new $root.ExtraStatistic();
+        while (reader.pos < end) {
+            var tag = reader.uint32();
+            switch (tag >>> 3) {
+            case 1: {
+                    message.histogram = $root.Histogram.decode(reader, reader.uint32());
+                    break;
+                }
+            default:
+                reader.skipType(tag & 7);
+                break;
+            }
+        }
+        return message;
+    };
+
+    /**
+     * Decodes an ExtraStatistic message from the specified reader or buffer, length delimited.
+     * @function decodeDelimited
+     * @memberof ExtraStatistic
+     * @static
+     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+     * @returns {ExtraStatistic} ExtraStatistic
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    ExtraStatistic.decodeDelimited = function decodeDelimited(reader) {
+        if (!(reader instanceof $Reader))
+            reader = new $Reader(reader);
+        return this.decode(reader, reader.uint32());
+    };
+
+    /**
+     * Verifies an ExtraStatistic message.
+     * @function verify
+     * @memberof ExtraStatistic
+     * @static
+     * @param {Object.<string,*>} message Plain object to verify
+     * @returns {string|null} `null` if valid, otherwise the reason why it is not
+     */
+    ExtraStatistic.verify = function verify(message) {
+        if (typeof message !== "object" || message === null)
+            return "object expected";
+        var properties = {};
+        if (message.histogram != null && message.hasOwnProperty("histogram")) {
+            properties._histogram = 1;
+            {
+                var error = $root.Histogram.verify(message.histogram);
+                if (error)
+                    return "histogram." + error;
+            }
+        }
+        return null;
+    };
+
+    /**
+     * Creates an ExtraStatistic message from a plain object. Also converts values to their respective internal types.
+     * @function fromObject
+     * @memberof ExtraStatistic
+     * @static
+     * @param {Object.<string,*>} object Plain object
+     * @returns {ExtraStatistic} ExtraStatistic
+     */
+    ExtraStatistic.fromObject = function fromObject(object) {
+        if (object instanceof $root.ExtraStatistic)
+            return object;
+        var message = new $root.ExtraStatistic();
+        if (object.histogram != null) {
+            if (typeof object.histogram !== "object")
+                throw TypeError(".ExtraStatistic.histogram: object expected");
+            message.histogram = $root.Histogram.fromObject(object.histogram);
+        }
+        return message;
+    };
+
+    /**
+     * Creates a plain object from an ExtraStatistic message. Also converts values to other types if specified.
+     * @function toObject
+     * @memberof ExtraStatistic
+     * @static
+     * @param {ExtraStatistic} message ExtraStatistic
+     * @param {$protobuf.IConversionOptions} [options] Conversion options
+     * @returns {Object.<string,*>} Plain object
+     */
+    ExtraStatistic.toObject = function toObject(message, options) {
+        if (!options)
+            options = {};
+        var object = {};
+        if (message.histogram != null && message.hasOwnProperty("histogram")) {
+            object.histogram = $root.Histogram.toObject(message.histogram, options);
+            if (options.oneofs)
+                object._histogram = "histogram";
+        }
+        return object;
+    };
+
+    /**
+     * Converts this ExtraStatistic to JSON.
+     * @function toJSON
+     * @memberof ExtraStatistic
+     * @instance
+     * @returns {Object.<string,*>} JSON object
+     */
+    ExtraStatistic.prototype.toJSON = function toJSON() {
+        return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+    };
+
+    /**
+     * Gets the default type url for ExtraStatistic
+     * @function getTypeUrl
+     * @memberof ExtraStatistic
+     * @static
+     * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns {string} The default type url
+     */
+    ExtraStatistic.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+        if (typeUrlPrefix === undefined) {
+            typeUrlPrefix = "type.googleapis.com";
+        }
+        return typeUrlPrefix + "/ExtraStatistic";
+    };
+
+    return ExtraStatistic;
+})();
+
 $root.Article = (function() {
 
     /**
@@ -866,6 +1368,7 @@ $root.Article = (function() {
      * @property {Array.<IStatisticRow>|null} [rows] Article rows
      * @property {Array.<IRelatedButtons>|null} [related] Article related
      * @property {Array.<string>|null} [universes] Article universes
+     * @property {Array.<IExtraStatistic>|null} [extraStats] Article extraStats
      */
 
     /**
@@ -880,6 +1383,7 @@ $root.Article = (function() {
         this.rows = [];
         this.related = [];
         this.universes = [];
+        this.extraStats = [];
         if (properties)
             for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
                 if (properties[keys[i]] != null)
@@ -943,6 +1447,14 @@ $root.Article = (function() {
     Article.prototype.universes = $util.emptyArray;
 
     /**
+     * Article extraStats.
+     * @member {Array.<IExtraStatistic>} extraStats
+     * @memberof Article
+     * @instance
+     */
+    Article.prototype.extraStats = $util.emptyArray;
+
+    /**
      * Creates a new Article instance using the specified properties.
      * @function create
      * @memberof Article
@@ -983,6 +1495,9 @@ $root.Article = (function() {
         if (message.universes != null && message.universes.length)
             for (var i = 0; i < message.universes.length; ++i)
                 writer.uint32(/* id 7, wireType 2 =*/58).string(message.universes[i]);
+        if (message.extraStats != null && message.extraStats.length)
+            for (var i = 0; i < message.extraStats.length; ++i)
+                $root.ExtraStatistic.encode(message.extraStats[i], writer.uint32(/* id 8, wireType 2 =*/66).fork()).ldelim();
         return writer;
     };
 
@@ -1049,6 +1564,12 @@ $root.Article = (function() {
                     if (!(message.universes && message.universes.length))
                         message.universes = [];
                     message.universes.push(reader.string());
+                    break;
+                }
+            case 8: {
+                    if (!(message.extraStats && message.extraStats.length))
+                        message.extraStats = [];
+                    message.extraStats.push($root.ExtraStatistic.decode(reader, reader.uint32()));
                     break;
                 }
             default:
@@ -1123,6 +1644,15 @@ $root.Article = (function() {
                 if (!$util.isString(message.universes[i]))
                     return "universes: string[] expected";
         }
+        if (message.extraStats != null && message.hasOwnProperty("extraStats")) {
+            if (!Array.isArray(message.extraStats))
+                return "extraStats: array expected";
+            for (var i = 0; i < message.extraStats.length; ++i) {
+                var error = $root.ExtraStatistic.verify(message.extraStats[i]);
+                if (error)
+                    return "extraStats." + error;
+            }
+        }
         return null;
     };
 
@@ -1173,6 +1703,16 @@ $root.Article = (function() {
             for (var i = 0; i < object.universes.length; ++i)
                 message.universes[i] = String(object.universes[i]);
         }
+        if (object.extraStats) {
+            if (!Array.isArray(object.extraStats))
+                throw TypeError(".Article.extraStats: array expected");
+            message.extraStats = [];
+            for (var i = 0; i < object.extraStats.length; ++i) {
+                if (typeof object.extraStats[i] !== "object")
+                    throw TypeError(".Article.extraStats: object expected");
+                message.extraStats[i] = $root.ExtraStatistic.fromObject(object.extraStats[i]);
+            }
+        }
         return message;
     };
 
@@ -1193,6 +1733,7 @@ $root.Article = (function() {
             object.rows = [];
             object.related = [];
             object.universes = [];
+            object.extraStats = [];
         }
         if (options.defaults) {
             object.shortname = "";
@@ -1222,6 +1763,11 @@ $root.Article = (function() {
             object.universes = [];
             for (var j = 0; j < message.universes.length; ++j)
                 object.universes[j] = message.universes[j];
+        }
+        if (message.extraStats && message.extraStats.length) {
+            object.extraStats = [];
+            for (var j = 0; j < message.extraStats.length; ++j)
+                object.extraStats[j] = $root.ExtraStatistic.toObject(message.extraStats[j], options);
         }
         return object;
     };
