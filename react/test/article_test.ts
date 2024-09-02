@@ -3,7 +3,7 @@ import { Selector } from 'testcafe';
 import { 
     TARGET, SEARCH_FIELD, getLocation, comparison_page, check_textboxes, check_all_category_boxes,
     screencap, download_image
-} from './test_utils.js';
+} from './test_utils';
 
 fixture('longer article test')
     .page(TARGET + '/article.html?longname=California%2C+USA')
@@ -99,33 +99,33 @@ test('uncheck-box-mobile', async t => {
     // and a checkbox, then find the checkbox
     await t.resizeWindow(400, 800);
     // refresh
-    await t.eval(() => location.reload(true));
+    await t.eval(() => location.reload());
     await t.wait(1000);
     await check_textboxes(t, ['Race']);
 
     await screencap(t, "article/remove_race_initial_mobile");
     // refresh
-    await t.eval(() => location.reload(true));
+    await t.eval(() => location.reload());
     await screencap(t, "article/remove_race_refresh_mobile");
 })
 
 test('uncheck-box-desktop', async t => {
     await t.resizeWindow(1400, 800);
     // refresh
-    await t.eval(() => location.reload(true));
+    await t.eval(() => location.reload());
     await t.wait(1000);
     await check_textboxes(t, ['Race']);
 
     await screencap(t, "article/remove_race_initial_desktop");
     // refresh
-    await t.eval(() => location.reload(true));
+    await t.eval(() => location.reload());
     await screencap(t, "article/remove_race_refresh_desktop");
 })
 
 test('simple', async t => {
     await t.resizeWindow(1400, 800);
     // refresh
-    await t.eval(() => location.reload(true));
+    await t.eval(() => location.reload());
     await t.wait(1000);
     await check_textboxes(t, ['Simple Ordinals']);
 
@@ -317,7 +317,7 @@ fixture('all stats test')
 
 test('california-all-stats', async t => {
     await t.resizeWindow(1400, 800);
-    await t.eval(() => location.reload(true));
+    await t.eval(() => location.reload());
     await check_all_category_boxes(t);
     await screencap(t, "article/california-all-stats");
 });
@@ -332,7 +332,7 @@ fixture('all stats test regression')
 
 test('charlotte-all-stats', async t => {
     await t.resizeWindow(1400, 800);
-    await t.eval(() => location.reload(true));
+    await t.eval(() => location.reload());
     await check_all_category_boxes(t);
     await screencap(t, "article/charlotte-all-stats");
 });

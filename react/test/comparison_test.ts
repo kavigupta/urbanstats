@@ -17,13 +17,13 @@ fixture('comparison test heterogenous')
 
 test('comparison-3-desktop-heterogenous', async t => {
     await t.resizeWindow(1400, 800);
-    await t.eval(() => location.reload(true));
+    await t.eval(() => location.reload());
     await screencap(t, "comparison/heterogenous-comparison-desktop");
 })
 
 test('comparison-3-mobile-heterogenous', async t => {
     await t.resizeWindow(400, 800);
-    await t.eval(() => location.reload(true));
+    await t.eval(() => location.reload());
     await screencap(t, "comparison/heterogenous-comparison-mobile");
 })
 
@@ -35,7 +35,7 @@ fixture('comparison test homogenous (2)')
 
 test('comparison-2-mobile', async t => {
     await t.resizeWindow(400, 800);
-    await t.eval(() => location.reload(true));
+    await t.eval(() => location.reload());
     await screencap(t, "comparison/basic-comparison-2-mobile");
 })
 
@@ -48,19 +48,19 @@ fixture('comparison test homogenous (3)')
 
 test('comparison-3-desktop', async t => {
     await t.resizeWindow(1400, 800);
-    await t.eval(() => location.reload(true));
+    await t.eval(() => location.reload());
     await screencap(t, "comparison/basic-comparison-desktop");
 })
 
 test('comparison-3-mobile', async t => {
     await t.resizeWindow(400, 800);
-    await t.eval(() => location.reload(true));
+    await t.eval(() => location.reload());
     await screencap(t, "comparison/basic-comparison-mobile");
 })
 
 test('comparison-3-download', async t => {
     await t.resizeWindow(1400, 800);
-    await t.eval(() => location.reload(true));
+    await t.eval(() => location.reload());
     await download_image(t, "comparison/download-comparison");
 })
 
@@ -124,7 +124,7 @@ fixture('plotted-across-180')
 
 test('comparison-3-plotted-across-180', async t => {
     await t.resizeWindow(1400, 800);
-    await t.eval(() => location.reload(true));
+    await t.eval(() => location.reload());
     await screencap(t, "comparison/plotted-across-180");
 });
 

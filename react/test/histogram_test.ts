@@ -2,15 +2,13 @@
 import { Selector } from 'testcafe';
 import { TARGET, check_textboxes, comparison_page, download_histogram, download_image, download_or_check_string, screencap } from './test_utils';
 
-const fs = require('fs');
-
 export const upper_sgv = "Upper San Gabriel Valley CCD [CCD], Los Angeles County, California, USA"
 export const pasadena = "Pasadena CCD [CCD], Los Angeles County, California, USA"
 export const sw_sgv = "Southwest San Gabriel Valley CCD [CCD], Los Angeles County, California, USA"
 export const east_sgv = "East San Gabriel Valley CCD [CCD], Los Angeles County, California, USA"
 export const chicago = "Chicago city [CCD], Cook County, Illinois, USA"
 
-async function download_or_check_histogram(t, name) {
+async function download_or_check_histogram(t: TestController, name: string) {
     const output = await t.eval(() => {
         return document.getElementsByClassName("histogram-svg-panel")[0].innerHTML;
     });
@@ -25,7 +23,7 @@ fixture('article check and uncheck test')
 
 test("histogram-article-check-uncheck", async t => {
     await t.resizeWindow(800, 800);
-    await t.eval(() => location.reload(true));
+    await t.eval(() => location.reload());
     // count the number of `histogram-svg-panel` elements
     await t.expect(Selector('.histogram-svg-panel').count).eql(0);
     await t.click(Selector('.expand-toggle'));
@@ -42,7 +40,7 @@ fixture('article test')
 
 test('histogram-basic-article', async t => {
     await t.resizeWindow(800, 800);
-    await t.eval(() => location.reload(true));
+    await t.eval(() => location.reload());
     await t.click(Selector('.expand-toggle'));
     await download_or_check_histogram(t, 'histogram-basic-article');
     await screencap(t, "histogram/histogram-basic-article");
@@ -51,9 +49,9 @@ test('histogram-basic-article', async t => {
 
 test('histogram-basic-article-multi', async t => {
     await t.resizeWindow(800, 800);
-    await t.eval(() => location.reload(true));
+    await t.eval(() => location.reload());
     await check_textboxes(t, ["Other Density Metrics"]);
-    await t.eval(() => location.reload(true));
+    await t.eval(() => location.reload());
     await t.wait(1000);
     Selector('.expand-toggle').count.then(async count => {
         for (let i = 0; i < count; i++) {
@@ -74,7 +72,7 @@ fixture('comparison test heterogenous')
 
 test('histogram-basic-comparison', async t => {
     await t.resizeWindow(800, 800);
-    await t.eval(() => location.reload(true));
+    await t.eval(() => location.reload());
     // select element with class name `expand-toggle`
     await t.click(Selector('.expand-toggle'));
     await download_or_check_histogram(t, 'histogram-basic-comparison');
@@ -90,7 +88,7 @@ fixture('comparison test heterogenous with nan')
 
 test('histogram-basic-comparison-nan', async t => {
     await t.resizeWindow(800, 800);
-    await t.eval(() => location.reload(true));
+    await t.eval(() => location.reload());
     // select element with class name `expand-toggle`
     await t.click(Selector('.expand-toggle'));
     await download_or_check_histogram(t, 'histogram-basic-comparison-nan');
@@ -106,7 +104,7 @@ fixture('comparison test heterogenous with nan in the middle')
 
 test('histogram-basic-comparison-nan-middle', async t => {
     await t.resizeWindow(800, 800);
-    await t.eval(() => location.reload(true));
+    await t.eval(() => location.reload());
     // select element with class name `expand-toggle`
     await t.click(Selector('.expand-toggle'));
     await download_or_check_histogram(t, 'histogram-basic-comparison-nan-middle');
