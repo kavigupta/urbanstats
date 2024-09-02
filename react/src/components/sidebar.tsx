@@ -1,20 +1,20 @@
-import React from 'react';
+import React, { ReactNode } from 'react'
 
-import "../style.css";
-import "./sidebar.css";
-import { mobileLayout } from '../utils/responsive';
-import { SettingsDictionary, useSetting, useStatisticCategoryMetadataCheckboxes } from '../page_template/settings';
+import '../style.css'
+import './sidebar.css'
+import { SettingsDictionary, useSetting, useStatisticCategoryMetadataCheckboxes } from '../page_template/settings'
+import { mobileLayout } from '../utils/responsive'
 
-export function Sidebar() {
-    const statistic_category_metadata_checkboxes = useStatisticCategoryMetadataCheckboxes();
-    let sidebar_section_content = "sidebar-section-content";
-    let sidebar_section_title = "sidebar-section-title";
+export function Sidebar(): ReactNode {
+    const statistic_category_metadata_checkboxes = useStatisticCategoryMetadataCheckboxes()
+    let sidebar_section_content = 'sidebar-section-content'
+    let sidebar_section_title = 'sidebar-section-title'
     if (mobileLayout()) {
-        sidebar_section_content += " sidebar-section-content_mobile";
-        sidebar_section_title += " sidebar-section-title_mobile";
+        sidebar_section_content += ' sidebar-section-content_mobile'
+        sidebar_section_title += ' sidebar-section-title_mobile'
     }
     return (
-        <div className={"serif sidebar" + (mobileLayout() ? "_mobile" : "")}>
+        <div className={`serif sidebar${mobileLayout() ? '_mobile' : ''}`}>
             <div className="sidebar-section">
                 <div className={sidebar_section_title}>Main Menu</div>
                 <ul className={sidebar_section_content}>
@@ -83,53 +83,56 @@ export function Sidebar() {
             <div className="sidebar-section">
                 <div className={sidebar_section_title}>Statistic Categories</div>
                 <ul className={sidebar_section_content}>
-                    {statistic_category_metadata_checkboxes.map((checkbox, i) =>
+                    {statistic_category_metadata_checkboxes.map((checkbox, i) => (
                         <li key={i}>
                             <CheckboxSetting
                                 name={checkbox.name}
                                 setting_key={checkbox.setting_key}
                             />
                         </li>
+                    ),
                     )}
                 </ul>
             </div>
         </div>
-    );
+    )
 }
 
 // type representing a key of SettingsDictionary that have boolean values
-type BooleanSettingKey = keyof { [K in keyof SettingsDictionary as SettingsDictionary[K] extends boolean ? K : never]: boolean };
+type BooleanSettingKey = keyof { [K in keyof SettingsDictionary as SettingsDictionary[K] extends boolean ? K : never]: boolean }
 
-export function CheckboxSetting<K extends BooleanSettingKey>(props: { name: string, setting_key: K, classNameToUse?: string }) {
+export function CheckboxSetting<K extends BooleanSettingKey>(props: { name: string, setting_key: K, classNameToUse?: string }): ReactNode {
+    const [checked, setChecked] = useSetting(props.setting_key)
 
-    const [checked, setChecked] = useSetting(props.setting_key);
-
-    return <CheckboxSettingCustom
-        name={props.name}
-        setting_key={props.setting_key}
-        settings={{ [props.setting_key]: checked } as Record<K, boolean>}
-        set_setting={(key, value) => {
-            if (key === props.setting_key) {
-                setChecked(value);
-            } else {
-                throw new Error("Invalid key: " + key);
-            }
-        }}
-        classNameToUse={props.classNameToUse}
-    />;
+    return (
+        <CheckboxSettingCustom
+            name={props.name}
+            setting_key={props.setting_key}
+            settings={{ [props.setting_key]: checked } as Record<K, boolean>}
+            set_setting={(key, value) => {
+                if (key === props.setting_key) {
+                    setChecked(value)
+                }
+                else {
+                    throw new Error(`Invalid key: ${key}`)
+                }
+            }}
+            classNameToUse={props.classNameToUse}
+        />
+    )
 };
 
-export function CheckboxSettingCustom<K extends string>(props: { name: string, setting_key: K, settings: Record<K, boolean>, set_setting: (key: K, value: boolean) => void, classNameToUse?: string }) {
+export function CheckboxSettingCustom<K extends string>(props: { name: string, setting_key: K, settings: Record<K, boolean>, set_setting: (key: K, value: boolean) => void, classNameToUse?: string }): ReactNode {
     // like CheckboxSetting, but doesn't use useSetting, instead using the callbacks
     return (
-        <div className={props.classNameToUse || "checkbox-setting"}>
+        <div className={props.classNameToUse ?? 'checkbox-setting'}>
             <input
                 type="checkbox"
                 checked={props.settings[props.setting_key] || false}
-                onChange={e => { props.set_setting(props.setting_key, e.target.checked) }}
-                style={{ accentColor: "#5a7dc3" }}
+                onChange={(e) => { props.set_setting(props.setting_key, e.target.checked) }}
+                style={{ accentColor: '#5a7dc3' }}
             />
             <label>{props.name}</label>
         </div>
-    );
+    )
 };

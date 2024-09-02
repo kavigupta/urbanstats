@@ -1,14 +1,10 @@
 // based on https://khuang159.medium.com/creating-a-hamburger-menu-in-react-f22e5ae442cb
 
-export { Nav };
+import React, { ReactNode } from 'react'
 
-import React from 'react';
+import '../common.css'
 
-import "../common.css";
-
-
-
-function Hamburger({ isOpen }: { isOpen: boolean }) {
+function Hamburger({ isOpen }: { isOpen: boolean }): ReactNode {
     return (
         <>
             <div className="hamburger">
@@ -17,7 +13,8 @@ function Hamburger({ isOpen }: { isOpen: boolean }) {
                 <div className="burger burger3" />
             </div>
 
-            <style>{`
+            <style>
+                {`
                 .hamburger{
                     width: 2rem;
                     height: 2rem;
@@ -48,14 +45,14 @@ function Hamburger({ isOpen }: { isOpen: boolean }) {
                 }
 
                 
-            `}</style>
+            `}
+            </style>
         </>
     )
 }
 
-function Nav({ hamburger_open, set_hamburger_open }: { hamburger_open: boolean, set_hamburger_open: (newValue: boolean) => void }) {
-
-    const toggleHamburger = () => {
+export function Nav({ hamburger_open, set_hamburger_open }: { hamburger_open: boolean, set_hamburger_open: (newValue: boolean) => void }): ReactNode {
+    const toggleHamburger = (): void => {
         set_hamburger_open(!hamburger_open)
     }
 
@@ -70,8 +67,8 @@ function Nav({ hamburger_open, set_hamburger_open }: { hamburger_open: boolean, 
                 </div>
             </div>
 
-
-            <style>{`
+            <style>
+                {`
 
                 .navigation{
                     width: 100%;
@@ -108,8 +105,8 @@ function Nav({ hamburger_open, set_hamburger_open }: { hamburger_open: boolean, 
                     z-index: 10000;                    
 
                 }
-            `}</style>
+            `}
+            </style>
         </div>
     )
-
 }
