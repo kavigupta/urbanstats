@@ -9,7 +9,7 @@ export const TARGET = process.env.URBANSTATS_TEST_TARGET ?? "http://localhost:80
 export const SEARCH_FIELD = Selector('input').withAttribute('placeholder', 'Search Urban Stats');
 export const getLocation = ClientFunction(() => document.location.href);
 
-export const IS_TESTING = false;
+export const IS_TESTING = true;
 
 export function comparison_page(locations) {
     const params = new URLSearchParams();
