@@ -3,7 +3,7 @@ import { Selector } from 'testcafe';
 import {
     TARGET, SEARCH_FIELD, getLocation, check_textboxes,
     screencap
-} from './test_utils.js';
+} from './test_utils';
 
 fixture('settings regression test')
     .page(TARGET + '/article.html?longname=San+Marino+city%2C+California%2C+USA')
