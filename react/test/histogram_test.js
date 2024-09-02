@@ -112,3 +112,15 @@ test('histogram-basic-comparison-nan-middle', async t => {
     await download_or_check_histogram(t, 'histogram-basic-comparison-nan-middle');
     await screencap(t, "histogram/histogram-basic-comparison-nan-middle");
 });
+
+fixture('comparison ordering test')
+    .page(TARGET + "/comparison.html?longnames=%5B%22USA%22%2C%22United+Kingdom%22%5D")
+    .beforeEach(async t => {
+        await t.eval(() => localStorage.clear());
+    });
+
+test('histogram-ordering', async t => {
+    await t.click(Selector('.expand-toggle'));
+    await download_or_check_histogram(t, 'histogram-ordering');
+    await screencap(t, "histogram/histogram-ordering");
+});
