@@ -76,10 +76,8 @@ function Histogram(props: { histograms: HistogramProps[], screenshot_mode: boole
     const title = props.histograms.length === 1 ? props.histograms[0].shortname : "";
     useEffect(() => {
         if (plot_ref.current) {
-            const colors = props.histograms
-                // sort histograms by the shortname (since plots are sorted by the name for some reason)
-                .sort((a, b) => a.shortname.localeCompare(b.shortname))
-                .map(h => h.color);
+            const colors = props.histograms.map(h => h.color);
+            const shortnames = props.histograms.map(h => h.shortname);
             const render_y = relative ? (y: number) => y.toFixed(2) + "%" : (y: number) => render_number_highly_rounded(y, 2);
 
             const [x_idx_start, x_idx_end] = histogramBounds(props.histograms);
@@ -111,7 +109,8 @@ function Histogram(props: { histograms: HistogramProps[], screenshot_mode: boole
                 marginTop: 80,
                 marginBottom: 40,
                 marginLeft: 50,
-                color: colors.length === 1 ? undefined : { legend: true, range: colors },
+                color: props.histograms.length === 1 ? undefined :
+                    { legend: true, range: colors, domain: shortnames },
             };
             const plot = Plot.plot(plot_config);
             plot_ref.current.innerHTML = "";
