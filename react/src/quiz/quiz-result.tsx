@@ -102,7 +102,7 @@ interface ShareButtonProps {
 }
 
 function ShareButton({ button_ref, parameters, today_name, correct_pattern, total_correct, quiz_kind }: ShareButtonProps) {
-    const can_share = navigator.canShare({ url: "https://juxtastat.org", text: "test" });
+    const can_share = navigator.canShare && navigator.canShare({ url: "https://juxtastat.org", text: "test" });
     const is_share = isMobile && can_share && !isFirefox;
     console.log("ismobile, canshare, isfirefox", isMobile, can_share, isFirefox);
 
