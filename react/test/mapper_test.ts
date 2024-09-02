@@ -1,10 +1,9 @@
 
 import { Selector } from 'testcafe';
 import { TARGET, download_or_check_string, most_recent_download_path, screencap } from './test_utils';
+import fs from 'fs';
 
-const fs = require('fs');
-
-async function check_geojson(t, path) {
+async function check_geojson(t: TestController, path: string) {
     // download the geojson by clicking the button
     await t.click(Selector('button').withText('Export as GeoJSON'));
     await t.wait(3000);
@@ -34,7 +33,7 @@ fixture('mapping-more-complex')
 
 test("mapping-more-complex", async t => {
     await t.resizeWindow(1400, 800);
-    await t.eval(() => location.reload(true));
+    await t.eval(() => location.reload());
     await t.wait(5000);
     await screencap(t, "mapping-more-complex");
     await check_geojson(t, "mapping-more-complex-geojson");

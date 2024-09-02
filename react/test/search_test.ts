@@ -1,6 +1,6 @@
 import { 
     TARGET, SEARCH_FIELD, getLocation, screencap
-} from './test_utils.js';
+} from './test_utils';
 
 fixture('shorter article test')
     .page(TARGET + '/article.html?longname=San+Marino+city%2C+California%2C+USA')

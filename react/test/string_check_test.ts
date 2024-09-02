@@ -1,7 +1,5 @@
 import { IS_TESTING, TARGET } from "./test_utils";
 
-
-
 fixture('mapping')
     .page(TARGET)
     // no local storage

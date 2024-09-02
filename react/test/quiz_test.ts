@@ -4,7 +4,7 @@ import { exec } from 'child_process';
 import { writeFileSync } from 'fs';
 import { promisify } from 'util';
 
-async function quiz_screencap(t, name) {
+async function quiz_screencap(t: TestController, name: string) {
     await t.eval(() => {
         const elem = document.getElementById("quiz-timer");
         if (elem) {
@@ -16,13 +16,8 @@ async function quiz_screencap(t, name) {
 }
 
 export class ProxyPersistent extends RequestHook {
-    constructor() {
-        // only use this hook for persistent.urbanstats.org
-        // super("https://persistent.urbanstats.org", 443);
-        super()
-    }
 
-    async onRequest(e) {
+    async onRequest(e: { requestOptions: RequestMockOptions }) {
         if (e.requestOptions.hostname == "persistent.urbanstats.org") {
             e.requestOptions.hostname = "localhost";
             e.requestOptions.port = 54579;
@@ -33,11 +28,12 @@ export class ProxyPersistent extends RequestHook {
         }
     }
 
-    async onResponse(e) {
-    }
+    // TestCafe complains if we don't have this
+    // eslint-disable-next-line @typescript-eslint/no-empty-function
+    async onResponse() {}
 }
 
-async function run_query(query) {
+async function run_query(query: string) {
     // dump given query to a string
     const command_line = `sqlite3 ../urbanstats-persistent-data/db.sqlite3 "${query}"`;
     const result = await promisify(exec)(command_line);
@@ -52,7 +48,7 @@ function retrostat_table() {
     return run_query("SELECT user, week, corrects from JuxtaStatIndividualStatsRetrostat");
 }
 
-function quiz_fixture(fix_name, url, new_localstorage, sql_statements) {
+function quiz_fixture(fix_name: string, url: string, new_localstorage: Record<string, string>, sql_statements: string) {
     fixture(fix_name)
         .page(url)
         // no local storage
@@ -66,7 +62,7 @@ function quiz_fixture(fix_name, url, new_localstorage, sql_statements) {
             await t.wait(2000);
             await t.eval(() => {
                 localStorage.clear()
-                for (var k in new_localstorage) {
+                for (const k in new_localstorage) {
                     localStorage.setItem(k, new_localstorage[k]);
                 }
             }, { dependencies: { new_localstorage } });
@@ -79,21 +75,21 @@ function quiz_fixture(fix_name, url, new_localstorage, sql_statements) {
 }
 
 // click the kth button with id quiz-answer-button-$which
-function click_button(t, which) {
+function click_button(t: TestController, which: string) {
     return t.click(Selector("div").withAttribute("id", "quiz-answer-button-" + which));
 }
 
-async function click_buttons(t, whichs) {
-    for (var i = 0; i < whichs.length; i++) {
-        await click_button(t, whichs[i]);
+async function click_buttons(t: TestController, whichs: string[]) {
+    for (const which of whichs) {
+        await click_button(t, which);
         await t.wait(500);
     }
     await t.wait(2000);
 }
 
-function example_quiz_history(min_quiz, max_quiz, min_retro, max_retro) {
-    const quiz_history = {};
-    for (var i = min_quiz; i <= max_quiz; i++) {
+function example_quiz_history(min_quiz: number, max_quiz: number, min_retro?: number, max_retro?: number) {
+    const quiz_history: Record<number | string, { choices: ('A' | 'B')[], correct_pattern: [boolean, boolean, boolean, boolean, boolean] }> = {};
+    for (let i = min_quiz; i <= max_quiz; i++) {
         quiz_history[i] = {
             "choices": ["A", "A", "A", "A", "A"],
             "correct_pattern": [true, true, true, i % 3 == 1, i % 4 == 1]
@@ -106,7 +102,7 @@ function example_quiz_history(min_quiz, max_quiz, min_retro, max_retro) {
         }
     }
     if (min_retro && max_retro) {
-        for (var i = min_retro; i <= max_retro; i++) {
+        for (let i = min_retro; i <= max_retro; i++) {
             quiz_history["W" + i] = {
                 "choices": ["A", "A", "A", "A", "A"],
                 "correct_pattern": [true, true, true, i % 3 == 1, i % 4 == 1]
@@ -140,11 +136,11 @@ test('quiz-clickthrough-test', async t => {
     await quiz_screencap(t, "quiz/clickthrough-4");
     await click_button(t, "a");
     await t.wait(2000);
-    await t.eval(() => document.getElementById("quiz-timer").remove());
+    await t.eval(() => document.getElementById("quiz-timer")!.remove());
     await t.wait(3000);
     await quiz_screencap(t, "quiz/clickthrough-5");
-    let quiz_history = await t.eval(() => {
-        return JSON.stringify(JSON.parse(localStorage.getItem("quiz_history")));
+    const quiz_history = await t.eval(() => {
+        return JSON.stringify(JSON.parse(localStorage.getItem("quiz_history")!));
     });
     await t.expect(quiz_history).eql('{"99":{"choices":["A","B","A","B","A"],"correct_pattern":[true,false,true,false,false]}}');
     await t.expect(await juxtastat_table()).eql("7|99|5\n");
@@ -158,12 +154,12 @@ quiz_fixture(
 );
 
 test('quiz-report-old-results', async t => {
-    await t.eval(() => location.reload(true));
+    await t.eval(() => location.reload());
     await click_buttons(t, ["a", "a", "a", "a", "a"]);
-    let quiz_history = await t.eval(() => {
-        return JSON.parse(localStorage.getItem("quiz_history"));
+    const quiz_history = await t.eval(() => {
+        return JSON.parse(localStorage.getItem("quiz_history")!);
     });
-    let expected_quiz_history = example_quiz_history(87, 90);
+    const expected_quiz_history = example_quiz_history(87, 90);
     expected_quiz_history[99] = {
         "choices": ["A", "A", "A", "A", "A"],
         "correct_pattern": [true, true, true, true, false]
@@ -187,12 +183,12 @@ quiz_fixture(
 );
 
 test('quiz-do-not-report-stale-results', async t => {
-    await t.eval(() => location.reload(true));
+    await t.eval(() => location.reload());
     await click_buttons(t, ["a", "a", "a", "a", "a"]);
-    let quiz_history = await t.eval(() => {
-        return JSON.parse(localStorage.getItem("quiz_history"));
+    const quiz_history = await t.eval(() => {
+        return JSON.parse(localStorage.getItem("quiz_history")!);
     });
-    let expected_quiz_history = example_quiz_history(87, 92);
+    const expected_quiz_history = example_quiz_history(87, 92);
     expected_quiz_history[99] = {
         "choices": ["A", "A", "A", "A", "A"],
         "correct_pattern": [true, true, true, true, false]
@@ -220,7 +216,7 @@ quiz_fixture(
 );
 
 test('quiz-percentage-correct', async t => {
-    await t.eval(() => location.reload(true));
+    await t.eval(() => location.reload());
     await click_buttons(t, ["a", "a", "a", "a", "a"]);
     await quiz_screencap(t, "quiz/percentage-correct");
     await t.expect(await juxtastat_table()).eql(
@@ -233,7 +229,7 @@ test('quiz-percentage-correct', async t => {
         localStorage.clear();
         localStorage.setItem("persistent_id", "000000000000008");
     });
-    await t.eval(() => location.reload(true));
+    await t.eval(() => location.reload());
     await click_buttons(t, ["a", "a", "a", "a", "a"]);
     await quiz_screencap(t, "quiz/percentage-correct-2");
     await t.expect(await juxtastat_table()).eql(
@@ -252,13 +248,13 @@ quiz_fixture(
     "",
 );
 
-function hex_to_dec(hex) {
+function hex_to_dec(hex: string) {
     // https://stackoverflow.com/a/53751162/1549476
     if (hex.length % 2) { hex = '0' + hex; }
 
-    var bn = BigInt('0x' + hex);
+    const bn = BigInt('0x' + hex);
 
-    var d = bn.toString(10);
+    const d = bn.toString(10);
     return d;
 }
 
@@ -268,7 +264,7 @@ test('quiz-new-user', async t => {
         return localStorage.getItem("persistent_id");
     });
     await t.expect(user_id).notEql(null);
-    var user_id_int = hex_to_dec(user_id);
+    const user_id_int = hex_to_dec(user_id);
     const juxta_table = await juxtastat_table();
     await t.expect(juxta_table).eql(`${user_id_int}|99|15\n`);
     await t.expect(await run_query("SELECT user from JuxtastatUserDomain")).eql(`${user_id_int}\n`);
@@ -291,12 +287,12 @@ quiz_fixture(
 );
 
 test('quiz-retrostat-regular-quiz-reporting', async t => {
-    await t.eval(() => location.reload(true));
+    await t.eval(() => location.reload());
     await click_buttons(t, ["a", "a", "a", "a", "a"]);
-    let quiz_history = await t.eval(() => {
-        return JSON.parse(localStorage.getItem("quiz_history"));
+    const quiz_history = await t.eval(() => {
+        return JSON.parse(localStorage.getItem("quiz_history")!);
     });
-    let expected_quiz_history = example_quiz_history(87, 93, 27, 33);
+    const expected_quiz_history = example_quiz_history(87, 93, 27, 33);
     expected_quiz_history[99] = {
         "choices": ["A", "A", "A", "A", "A"],
         "correct_pattern": [true, true, true, true, false]
@@ -309,12 +305,12 @@ test('quiz-retrostat-regular-quiz-reporting', async t => {
 test('quiz-retrostat-retrostat-reporting', async t => {
     const url = TARGET + '/quiz.html?mode=retro&date=38';
     await t.navigateTo(url);
-    await t.eval(() => location.reload(true));
+    await t.eval(() => location.reload());
     await click_buttons(t, ["a", "a", "a", "a", "a"]);
-    let quiz_history = await t.eval(() => {
-        return JSON.parse(localStorage.getItem("quiz_history"));
+    const quiz_history = await t.eval(() => {
+        return JSON.parse(localStorage.getItem("quiz_history")!);
     });
-    let expected_quiz_history = example_quiz_history(87, 93, 27, 33);
+    const expected_quiz_history = example_quiz_history(87, 93, 27, 33);
     expected_quiz_history["W38"] = {
         "choices": ["A", "A", "A", "A", "A"],
         "correct_pattern": [false, false, true, false, true]
@@ -334,7 +330,7 @@ fixture('quiz result test')
         }, { dependencies: { example_quiz_history } });
     });
 
-async function check_text(t, words, emoji) {
+async function check_text(t: TestController, words: string, emoji: string) {
     const text = await Selector("#quiz-result-summary-words").innerText;
     await t.expect(text).eql(words);
     const emoji_text = await Selector("#quiz-result-summary-emoji").innerText;
@@ -343,9 +339,9 @@ async function check_text(t, words, emoji) {
 
 test('quiz-results-test', async t => {
     await t.resizeWindow(1400, 800);
-    await t.eval(() => location.reload(true));
+    await t.eval(() => location.reload());
     await t.wait(1000);
-    await t.eval(() => location.reload(true));
+    await t.eval(() => location.reload());
     await quiz_screencap(t, "quiz/results-page");
     await check_text(t, "Excellent! 😊 4/5", "🟩🟩🟩🟩🟥");
 });
@@ -386,7 +382,7 @@ fixture('several quiz results')
     });
 
 test('several-quiz-results-test', async t => {
-    await t.eval(() => location.reload(true));
+    await t.eval(() => location.reload());
     await quiz_screencap(t, "quiz/results-page-several");
     // true true true true false
     await check_text(t, "Excellent! 😊 4/5", "🟩🟩🟩🟩🟥");

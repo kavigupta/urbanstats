@@ -10,7 +10,7 @@ fixture('statistics')
 
 test('statistics-page', async t => {
     await t.resizeWindow(1400, 800);
-    await t.eval(() => location.reload(true));
+    await t.eval(() => location.reload());
     // click the link labeled "Population"
     await t
         .click(Selector('a').withText(/^Population$/));

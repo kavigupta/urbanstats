@@ -3,7 +3,7 @@
 cd react
 
 for browser in chrome firefox ; do
-    for test_file in test/*_test.js ; do
+    for test_file in test/*_test.ts ; do
         npx testcafe -e $browser $test_file
     done
 done
