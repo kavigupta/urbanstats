@@ -27,6 +27,10 @@ export class ProxyPersistent extends RequestHook {
             // console.log(e)
         }
     }
+
+    // TestCafe complains if we don't have this
+    // eslint-disable-next-line @typescript-eslint/no-empty-function
+    async onResponse() {}
 }
 
 async function run_query(query: string) {
