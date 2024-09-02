@@ -192,7 +192,6 @@ function MapComponent(props: MapComponentProps) {
         }}>
             <div style={{ height: "90%", width: "100%" }}>
                 <DisplayedMap
-                    id="mapper"
                     color_stat={color_stat}
                     filter={filter}
                     geography_kind={props.geography_kind}

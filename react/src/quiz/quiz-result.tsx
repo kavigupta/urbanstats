@@ -102,7 +102,9 @@ interface ShareButtonProps {
 }
 
 function ShareButton({ button_ref, parameters, today_name, correct_pattern, total_correct, quiz_kind }: ShareButtonProps) {
-    const is_share = isMobile && navigator.canShare() && !isFirefox;
+    const can_share = navigator.canShare && navigator.canShare({ url: "https://juxtastat.org", text: "test" });
+    const is_share = isMobile && can_share && !isFirefox;
+    console.log("ismobile, canshare, isfirefox", isMobile, can_share, isFirefox);
 
     return <button className="serif quiz_copy_button" ref={button_ref} onClick={async () => {
         const [text, url] = await summary(today_name, correct_pattern, total_correct, parameters, quiz_kind);

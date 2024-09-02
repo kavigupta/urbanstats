@@ -44,7 +44,7 @@ interface QuizQuestionProps {
     no_footer: boolean
     quiz: { kind: "juxtastat" | "retrostat", name: number | string}
     on_select: (letter: "A" | "B") => void
-    length: number
+    length: number,
 }
 
 function QuizQuestion(props: QuizQuestionProps & {
@@ -165,7 +165,7 @@ function JuxtastatQuizQuestion(props: QuizQuestionProps & {
         {...props}
         get_question={() => render_question(props.question.question)}
         get_option={(letter) => props.question[`longname_${letter}`]}
-        get_demo={(letter) => <Map id={`map_${letter}this.props.ident`}
+        get_demo={(letter) => <Map
             longname={props.question[`longname_${letter}`]}
             basemap={{ type: "osm" }}
         />}

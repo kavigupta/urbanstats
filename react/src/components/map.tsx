@@ -18,7 +18,6 @@ import { UNIVERSE_CONTEXT } from '../universe';
 
 export interface MapGenericProps {
     height?: string,
-    id: string,
     basemap: Basemap,
 }
 
@@ -31,11 +30,17 @@ class MapGeneric<P extends MapGenericProps> extends React.Component<P> {
     private basemap_props: null | Basemap = null;
     protected map: L.Map | undefined = undefined
     private exist_this_time: string[] = []
+    private id: string;
+
+    constructor(props: P) {
+        super(props);
+        this.id = "map-" + Math.random().toString(36).substring(2);
+    }
 
     render() {
         return (
             <div className="map-container-for-testing">
-                <div id={this.props.id} className="map" style={{ background: "#fff8f0", height: this.props.height || 400 }}>
+                <div id={this.id} className="map" style={{ background: "#fff8f0", height: this.props.height || 400 }}>
                     {/* place this on the right of the map */}
                     <div style={
                         { zIndex: 1000, position: "absolute", right: 0, top: 0, padding: "1em" }
@@ -73,7 +78,7 @@ class MapGeneric<P extends MapGenericProps> extends React.Component<P> {
     }
 
     async componentDidMount() {
-        const map = new L.Map(this.props.id, {
+        const map = new L.Map(this.id, {
             layers: [], center: new L.LatLng(0, 0), zoom: 0,
             zoomSnap: this.delta, zoomDelta: this.delta, wheelPxPerZoomLevel: 60 / this.delta
         });

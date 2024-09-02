@@ -52,7 +52,7 @@ export function ArticlePanel({ article } : { article: Article }) {
                 <p></p>
 
                 <div ref={map_ref}>
-                    <Map id="map"
+                    <Map
                         longname={article.longname}
                         related={article.related as NormalizeProto<IRelatedButtons>[]}
                         article_type={article.articleType}

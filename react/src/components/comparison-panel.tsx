@@ -152,7 +152,6 @@ export function ComparisonPanel(props: { joined_string: string, universes: strin
                 <ComparisonMap
                     longnames={props.datas.map(x => x.longname)}
                     colors={props.datas.map((_, i) => color(i))}
-                    id="map_combined"
                     basemap={{ type: "osm" }}
                 />
             </div>
