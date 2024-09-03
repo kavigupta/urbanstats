@@ -163,7 +163,7 @@ function RetroQuizQuestion(props: QuizQuestionProps & { question: RetroQuestion 
 
 function JuxtastatQuizQuestion(props: QuizQuestionProps & {
     question: JuxtaQuestion
-}) {
+}): ReactNode {
     return (
         <QuizQuestion
             {...props}

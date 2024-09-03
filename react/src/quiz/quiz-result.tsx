@@ -101,8 +101,9 @@ interface ShareButtonProps {
     quiz_kind: 'juxtastat' | 'retrostat'
 }
 
-function ShareButton({ button_ref, parameters, today_name, correct_pattern, total_correct, quiz_kind }: ShareButtonProps) {
-    const can_share = navigator.canShare && navigator.canShare({ url: 'https://juxtastat.org', text: 'test' })
+function ShareButton({ button_ref, parameters, today_name, correct_pattern, total_correct, quiz_kind }: ShareButtonProps): ReactNode {
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+    const can_share = navigator.canShare?.({ url: 'https://juxtastat.org', text: 'test' }) ?? false
     const is_share = isMobile && can_share && !isFirefox
 
     return (

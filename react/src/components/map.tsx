@@ -40,7 +40,7 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P> {
     override render(): ReactNode {
         return (
             <div className="map-container-for-testing">
-                <div id={this.id} className="map" style={{ background: '#fff8f0', height: this.props.height || 400 }}>
+                <div id={this.id} className="map" style={{ background: '#fff8f0', height: this.props.height ?? 400 }}>
                     {/* place this on the right of the map */}
                     <div style={
                         { zIndex: 1000, position: 'absolute', right: 0, top: 0, padding: '1em' }
@@ -78,7 +78,7 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P> {
         return await loadProtobuf(shape_link(name), 'Feature') as NormalizeProto<Feature>
     }
 
-    async componentDidMount() {
+    override async componentDidMount(): Promise<void> {
         const map = new L.Map(this.id, {
             layers: [], center: new L.LatLng(0, 0), zoom: 0,
             zoomSnap: this.delta, zoomDelta: this.delta, wheelPxPerZoomLevel: 60 / this.delta,
