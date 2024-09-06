@@ -525,6 +525,7 @@ export function Ordinal(props: { ordinal: number, total: number, type: string, s
             {en}
             {' '}
             of
+            {' '}
             {total}
             {' '}
             {display_type(curr_universe, type)}
