@@ -37,7 +37,7 @@ export function QuizResult(props: QuizResultProps): ReactNode {
                 set_per_question(responseJson.per_question)
             }
         })()
-    }, [])
+    }, [props.get_per_question])
 
     const today_name = props.today_name
     const correct_pattern = props.history.correct_pattern

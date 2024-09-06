@@ -16,6 +16,7 @@ function ExplanationTable(props: { name: string, link: string, table: [string, s
             {props.name}
             {' '}
             codes can be found
+            {' '}
             <a href={props.link}>here</a>
             ,
             a summary is provided below:
@@ -55,7 +56,7 @@ function NRef({ children, name, h: Header = 'h2' }: { children: React.ReactNode,
         if (highlighted && ref.current !== null) {
             ref.current.scrollIntoView()
         }
-    }, [highlighted, ref.current])
+    }, [highlighted])
 
     return <Header ref={ref} className={highlighted ? 'highlighted_header' : undefined}>{children}</Header>
 }

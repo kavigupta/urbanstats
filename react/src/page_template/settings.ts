@@ -76,7 +76,9 @@ export class Settings {
     private readonly observers = new DefaultMap<keyof SettingsDictionary, Set<() => void>>(() => new Set())
 
     useSetting<K extends keyof SettingsDictionary>(key: K): SettingsDictionary[K] {
+        // eslint-disable-next-line react-hooks/rules-of-hooks
         const [result, setResult] = useState(this.settings[key])
+        // eslint-disable-next-line react-hooks/rules-of-hooks
         useEffect(() => {
             setResult(this.settings[key]) // So that if `key` changes we change our result immediately
             const observer = (): void => { setResult(this.settings[key]) }
@@ -114,6 +116,7 @@ export function useTableCheckboxSettings(): BooleanSettings {
     const result = {} as BooleanSettings
     for (const category of categories) {
         const key = `show_statistic_${category}` as const
+        // eslint-disable-next-line react-hooks/rules-of-hooks
         result[key] = useSetting(key)[0]
     }
     return result
@@ -124,6 +127,7 @@ export function useRelatedCheckboxSettings(article_type_this: string): Record<Re
     const result = {} as Record<RelationshipKey, boolean>
     for (const article_type_other of Object.keys(article_types_other)) {
         const key = relationship_key(article_type_this, article_type_other)
+        // eslint-disable-next-line react-hooks/rules-of-hooks
         result[key] = useSetting(key)[0]
     }
     return result

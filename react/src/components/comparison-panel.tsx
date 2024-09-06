@@ -220,8 +220,9 @@ function ComparsionPageRows({ names, datas, screenshot_mode }: { names: string[]
     let rows: ArticleRow[][] = []
     const idxs: number[][] = []
     const exclusively_american = datas.every(x => longname_is_exclusively_american(x.longname))
+    const settings = useTableCheckboxSettings()
     for (const i of datas.keys()) {
-        const [r, idx] = load_article(curr_universe, datas[i], useTableCheckboxSettings(),
+        const [r, idx] = load_article(curr_universe, datas[i], settings,
             exclusively_american)
         rows.push(r)
         idxs.push(idx)

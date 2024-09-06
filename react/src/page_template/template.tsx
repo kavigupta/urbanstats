@@ -85,13 +85,17 @@ function TemplateFooter(): ReactNode {
             <Version />
             {' '}
             by
+            {' '}
             <MainCredits />
             . Last updated
+            {' '}
             <LastUpdated />
             .
+            {' '}
             <OtherCredits />
             {' '}
             Not for commercial use.
+            {' '}
             <Support />
         </div>
     )

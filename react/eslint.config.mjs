@@ -5,13 +5,27 @@ import comments from 'eslint-plugin-eslint-comments'
 import importPlugin from 'eslint-plugin-import'
 import tseslint from 'typescript-eslint'
 import reactPlugin from "eslint-plugin-react"
-import preferFC from "eslint-plugin-react-prefer-function-component/config"
+import preferFC from 'eslint-plugin-react-prefer-function-component/config'
+import reactHooks from 'eslint-plugin-react-hooks'
 
 export default tseslint.config(
     ...tseslint.configs.strictTypeChecked,
     ...tseslint.configs.stylisticTypeChecked,
     reactPlugin.configs.flat.recommended,
+    {
+        settings: {
+            react: {
+                version: 'detect',
+            },
+        }
+    },
     preferFC.configs.recommended,
+    {
+        plugins: {
+            'react-hooks': reactHooks
+        },
+        rules: reactHooks.configs.recommended.rules
+    },
     stylistic.configs.customize({
         indent: 4,
     }),

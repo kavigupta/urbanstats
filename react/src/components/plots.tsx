@@ -117,7 +117,7 @@ function Histogram(props: { histograms: HistogramProps[], screenshot_mode: boole
             plot_ref.current.innerHTML = ''
             plot_ref.current.appendChild(plot)
         }
-    }, [histogram_type, use_imperial, relative])
+    }, [histogram_type, use_imperial, relative, binMin, binSize, props.histograms, title])
     // put a button panel in the top right corner
     return (
         <div style={{ width: '100%', position: 'relative' }}>
