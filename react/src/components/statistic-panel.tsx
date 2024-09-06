@@ -84,16 +84,16 @@ export function StatisticPanel(props: {
     }
 
     const style = (col_idx: number, row_idx: number): CSSProperties => {
-        let style: CSSProperties = { ...table_style }
+        let result: CSSProperties = { ...table_style }
         if (row_idx === 0) {
             // header, add a line at the bottom
-            style.borderBottom = '1px solid #000'
-            style.fontWeight = 500
+            result.borderBottom = '1px solid #000'
+            result.fontWeight = 500
         }
-        style.backgroundColor = background_color(row_idx)
-        style.width = column_widths[col_idx]
-        style = { ...style, ...column_styles[col_idx] }
-        return style
+        result.backgroundColor = background_color(row_idx)
+        result.width = column_widths[col_idx]
+        result = { ...result, ...column_styles[col_idx] }
+        return result
     }
 
     return (

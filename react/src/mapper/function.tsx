@@ -39,11 +39,11 @@ export class FunctionColorStat implements ColorStat {
         }
         return statistics_for_geography.map((_, i) => {
             const expr = Parser.parse(this._expr)
-            const vars: Value = {}
+            const statVars: Value = {}
             for (const key of Object.keys(variables)) {
-                vars[key] = variables[key][i]
+                statVars[key] = variables[key][i]
             }
-            return expr.evaluate(vars) as number
+            return expr.evaluate(statVars) as number
         })
     }
 }

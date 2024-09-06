@@ -96,7 +96,7 @@ export function load_article(universe: string, data: Article, settings: TableChe
             const [, universe_total_idx] = extra_stats[extra_stat_idx]
             extra_stat = {
                 stat: data.extraStats[extra_stat_idx],
-                universe_total: data.rows.find((_, row_index) => indices[row_index] === universe_total_idx)!.statval!,
+                universe_total: data.rows.find((_, universe_row_index) => indices[universe_row_index] === universe_total_idx)!.statval!,
             }
         }
         return {

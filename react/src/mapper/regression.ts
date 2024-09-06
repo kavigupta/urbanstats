@@ -49,12 +49,12 @@ export class Regression {
         // solve for weights. weights = (ata)^-1 atb
 
         const ws_col = lusolve(ata, atb)
-        const ws = ws_col.map(x => (x as MathNumericType[])[0])
+        const ws = ws_col.map(col => (col as MathNumericType[])[0])
 
         const weights = ws.slice(1)
         const intercept = ws[0]
 
-        const preds = multiply(Awofilt, ws_col).map(x => (x as number[])[0])
+        const preds = multiply(Awofilt, ws_col).map(pred => (pred as number[])[0])
 
         const result: Record<string, number[]> = {}
         for (let i = 0; i < this.dependent_names.length; i++) {

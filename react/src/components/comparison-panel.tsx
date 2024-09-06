@@ -348,7 +348,7 @@ function ComparisonRow({ names, params, datas, screenshot_mode }: {
 
 const manipulation_button_height = '24px'
 
-function ManipulationButton({ color, on_click, text }: { color: string, on_click: () => void, text: string }): ReactNode {
+function ManipulationButton({ color: buttonColor, on_click, text }: { color: string, on_click: () => void, text: string }): ReactNode {
     return (
         <div
             style={{
@@ -358,7 +358,7 @@ function ManipulationButton({ color, on_click, text }: { color: string, on_click
                 paddingLeft: '0.5em', paddingRight: '0.5em',
                 borderRadius: '0.25em',
                 verticalAlign: 'middle',
-                backgroundColor: color,
+                backgroundColor: buttonColor,
             }}
             className={`serif manipulation-button-${text}`}
             onClick={on_click}
@@ -368,7 +368,7 @@ function ManipulationButton({ color, on_click, text }: { color: string, on_click
     )
 }
 
-function HeadingDisplay({ longname, include_delete, on_click, on_change, screenshot_mode }: { longname: string, include_delete: boolean, on_click: () => void, on_change: (q: string) => void, screenshot_mode: boolean }): ReactNode {
+function HeadingDisplay({ longname, include_delete, on_click, on_change: on_search_change, screenshot_mode }: { longname: string, include_delete: boolean, on_click: () => void, on_change: (q: string) => void, screenshot_mode: boolean }): ReactNode {
     const [is_editing, set_is_editing] = React.useState(false)
     const curr_universe = useUniverse()
 
@@ -400,7 +400,7 @@ function HeadingDisplay({ longname, include_delete, on_click, on_change, screens
                             autoFocus={true}
                             style={{ ...comparisonHeadStyle(), width: '100%' }}
                             placeholder="Replacement"
-                            on_change={on_change}
+                            on_change={on_search_change}
                         />
                     )
                 : null}
@@ -467,13 +467,13 @@ class ComparisonMap extends MapGeneric<MapGenericProps & { longnames: string[], 
         )
     }
 
-    zoom_button(i: number, color: string, onClick: () => void): ReactNode {
+    zoom_button(i: number, buttonColor: string, onClick: () => void): ReactNode {
         return (
             <div
                 key={i}
                 style={{
                     display: 'inline-block', width: '2em', height: '2em',
-                    backgroundColor: color, borderRadius: '50%', marginLeft: '5px', marginRight: '5px',
+                    backgroundColor: buttonColor, borderRadius: '50%', marginLeft: '5px', marginRight: '5px',
                     cursor: 'pointer',
                 }}
                 onClick={onClick}

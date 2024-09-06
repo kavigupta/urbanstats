@@ -253,7 +253,7 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P> {
         if (poly.geometry === 'multipolygon') {
             const polys = poly.multipolygon.polygons
             const coords = polys.map(
-                poly => poly.rings.map(
+                multiPoly => multiPoly.rings.map(
                     ring => ring.coords.map(
                         coordinate => [coordinate.lon, coordinate.lat],
                     ),

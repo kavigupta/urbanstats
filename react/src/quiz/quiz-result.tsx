@@ -32,9 +32,9 @@ export function QuizResult(props: QuizResultProps): ReactNode {
     useEffect(() => {
         void (async () => {
             if (props.get_per_question !== undefined) {
-                const response = await props.get_per_question.then(response => response.json() as Promise<{ total: number, per_question: number[] }>)
-                setTotal(response.total)
-                set_per_question(response.per_question)
+                const responseJson = await props.get_per_question.then(response => response.json() as Promise<{ total: number, per_question: number[] }>)
+                setTotal(responseJson.total)
+                set_per_question(responseJson.per_question)
             }
         })()
     }, [])
@@ -223,7 +223,7 @@ export async function summary(today_name: string, correct_pattern: boolean[], to
     if (parameters !== '') {
         if (parameters.length > 100) {
             // POST to endpoint
-            const response = await fetch(`${ENDPOINT}/shorten`, {
+            const responseJson = await fetch(`${ENDPOINT}/shorten`, {
                 method: 'POST',
                 body: JSON.stringify({ full_text: parameters }),
                 headers: {
@@ -232,7 +232,7 @@ export async function summary(today_name: string, correct_pattern: boolean[], to
             }).then(response => response.json() as Promise<{ shortened: string }>)
 
             // get short url
-            const short = response.shortened
+            const short = responseJson.shortened
             parameters = `short=${short}`
         }
         url += `/#${parameters}`

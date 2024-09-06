@@ -78,7 +78,8 @@ export default tseslint.config(
             'guard-for-in': 'error',
             'object-shorthand': 'error',
             'no-restricted-syntax': ['error', 'ExportNamedDeclaration:not([declaration])'],
-            'react/prop-types': 'off'
+            'react/prop-types': 'off',
+            'no-shadow': 'error'
         },
     },
     {

@@ -22,14 +22,14 @@ async function loadPage(): Promise<void> {
     // look up short url
         const short = urlParams.get('short')
         // POST to endpoint
-        const response = await fetch(`${ENDPOINT}/lengthen`, {
+        const responseJson = await fetch(`${ENDPOINT}/lengthen`, {
             method: 'POST',
             body: JSON.stringify({ shortened: short }),
             headers: {
                 'Content-Type': 'application/json',
             },
         }).then(response => response.json() as Promise<{ full_text: string }>)
-        urlParams = new URLSearchParams(response.full_text)
+        urlParams = new URLSearchParams(responseJson.full_text)
     }
     const mode = urlParams.get('mode')
     let todays_quiz

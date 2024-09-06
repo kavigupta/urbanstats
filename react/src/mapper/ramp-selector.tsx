@@ -11,10 +11,10 @@ export function RampColormapSelector(props: { ramp: RampDescriptor, set_ramp: (n
 
     const colormap = props.ramp.colormap
 
-    const set_colormap = (colormap: EncodedColorMap): void => {
+    const set_colormap = (encodedColormap: EncodedColorMap): void => {
         props.set_ramp({
             ...props.ramp,
-            colormap,
+            colormap: encodedColormap,
         })
     }
 
