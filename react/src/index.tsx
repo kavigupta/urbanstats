@@ -22,11 +22,14 @@ function IndexPanel(): ReactNode {
                             US Census Bureau&apos;s 2020 census; and shapefiles for each region of interest are obtained from
                             the US Census Bureau&apos;s TIGER/Line database; except for the shapefiles for neighborhoods, which
                             are obtained from
+                            {' '}
                             <a href="https://catalog.data.gov/dataset/neighborhoods-us-2017-zillow-segs">Zillow</a>
                             .
 
                             Election Data is from the
+                            {' '}
                             <a href="https://www.electproject.org/home">US Elections Project&apos;s</a>
+                            {' '}
                             Voting and Elections Science Team
                             (
                             <a href="https://twitter.com/VEST_Team">VEST</a>
@@ -36,6 +39,7 @@ function IndexPanel(): ReactNode {
                             Website by Kavi Gupta (
                             <a href="https://kavigupta.org">kavigupta.org</a>
                             ,
+                            {' '}
                             <a
                                 href="https://twitter.com/notkavi"
                             >
