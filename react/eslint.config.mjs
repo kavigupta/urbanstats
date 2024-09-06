@@ -4,10 +4,14 @@ import stylistic from '@stylistic/eslint-plugin'
 import comments from 'eslint-plugin-eslint-comments'
 import importPlugin from 'eslint-plugin-import'
 import tseslint from 'typescript-eslint'
+import reactPlugin from "eslint-plugin-react"
+import preferFC from "eslint-plugin-react-prefer-function-component/config"
 
 export default tseslint.config(
     ...tseslint.configs.strictTypeChecked,
     ...tseslint.configs.stylisticTypeChecked,
+    reactPlugin.configs.flat.recommended,
+    preferFC.configs.recommended,
     stylistic.configs.customize({
         indent: 4,
     }),
@@ -74,6 +78,7 @@ export default tseslint.config(
             'guard-for-in': 'error',
             'object-shorthand': 'error',
             'no-restricted-syntax': ['error', 'ExportNamedDeclaration:not([declaration])'],
+            'react/prop-types': 'off'
         },
     },
     {

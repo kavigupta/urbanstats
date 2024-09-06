@@ -73,7 +73,7 @@ function DataCreditPanel(): ReactNode {
                         {' '}
                         <a href="https://github.com/lukebrody">Luke Brody</a>
                         &nbsp;
-                        for helping with the build system (I'm hopeless with this stuff) and to&nbsp;
+                        for helping with the build system (I&apos;m hopeless with this stuff) and to&nbsp;
                         <a href="https://github.com/glacialcascade">glacialcascade</a>
                         &nbsp;
                         for identifying and correcting a bug in the code.
@@ -117,7 +117,7 @@ function DataCreditPanel(): ReactNode {
                                 National shapefiles are aggregated from subnational shapefiles.
                             </p>
                             <p>
-                                Urban center shapefiles are sourced from the Global Human Settlement Layer's&nbsp;
+                                Urban center shapefiles are sourced from the Global Human Settlement Layer&apos;s&nbsp;
                                 <a href="https://human-settlement.emergency.copernicus.eu/ghs_stat_ucdb2015mt_r2019a.php">
                                     Urban Centre Database v1.2
                                 </a>
@@ -167,7 +167,7 @@ function DataCreditPanel(): ReactNode {
                             <p>
                                 AW (area weighted) density is the standard Population/Area density.
                                 PW (population weighted) density with a radius of X is the population-weighted density within
-                                X miles of each census block's interior point, as defined by the census. For more information,
+                                X miles of each census block&apos;s interior point, as defined by the census. For more information,
                                 see
                                 {' '}
                                 <a href="https://kavigupta.org/2021/09/26/Youre-calculating-population-density-incorrectly/">this page</a>
@@ -229,7 +229,7 @@ function DataCreditPanel(): ReactNode {
                                 {' '}
                                 <b>at least</b>
                                 &nbsp;
-                                a high school degree, a bachelor's degree, or a graduate degree. These will not add to 100%.
+                                a high school degree, a bachelor&apos;s degree, or a graduate degree. These will not add to 100%.
                                 This data is disaggregated from the block group level to the block level using adult population
                                 as a weight.
                             </p>
@@ -283,12 +283,12 @@ function DataCreditPanel(): ReactNode {
                         <NRef name="health">Health</NRef>
                         <div>
                             <p>
-                                Health data comes from the CDC's
+                                Health data comes from the CDC&apos;s
                                 {' '}
                                 <a href="https://chronicdata.cdc.gov/500-Cities-Places/PLACES-Local-Data-for-Better-Health-Census-Tract-D/cwsq-ngmh/about_data">PLACES dataset</a>
                                 &nbsp;
                                 version August 25, 2023, accessed June 1 2024. It is computed using disaggregation from the tract level to block level, using the 2010 census tracts
-                                (I am not sure why the CDC uses 2010 tracts for 2023 data, but that's what they do). This data is inherently estimate based.
+                                (I am not sure why the CDC uses 2010 tracts for 2023 data, but that&apos;s what they do). This data is inherently estimate based.
                             </p>
                         </div>
 
@@ -394,7 +394,7 @@ function DataCreditPanel(): ReactNode {
 
                     <NRef name="election" h="h1">Voting and Elections Science Team Data</NRef>
                     <div>
-                        Election Data is from the US Elections Project's Voting and Elections Science Team
+                        Election Data is from the US Elections Project&apos;s Voting and Elections Science Team
                         (
                         <a href="https://twitter.com/VEST_Team">VEST</a>
                         ).

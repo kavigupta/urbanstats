@@ -36,6 +36,8 @@
     "eslint-import-resolver-typescript": "^3.6.3",
     "eslint-plugin-eslint-comments": "^3.2.0",
     "eslint-plugin-import": "^2.29.1",
+    "eslint-plugin-react": "^7.35.2",
+    "eslint-plugin-react-prefer-function-component": "^3.3.0",
     "express": "^4.19.2",
     "express-http-proxy": "^2.1.1",
     "protobufjs-cli": "^1.1.1",

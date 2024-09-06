@@ -448,6 +448,7 @@ function insert_missing(rows: ArticleRow[][], idxs: number[][]): ArticleRow[][] 
     return new_rows_all
 }
 
+// eslint-disable-next-line prefer-function-component/prefer-function-component
 class ComparisonMap extends MapGeneric<MapGenericProps & { longnames: string[], colors: string[] }> {
     override buttons(): ReactNode {
         return (

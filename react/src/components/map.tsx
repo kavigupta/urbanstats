@@ -21,6 +21,7 @@ export interface MapGenericProps {
 
 export type Polygons = Readonly<[string[], Record<string, unknown>[], Record<string, unknown>[], number]>
 
+// eslint-disable-next-line prefer-function-component/prefer-function-component
 export class MapGeneric<P extends MapGenericProps> extends React.Component<P> {
     private polygon_by_name = new Map<string, L.FeatureGroup>()
     private delta = 0.25

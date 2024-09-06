@@ -56,7 +56,7 @@ export function StatisticRowRawCellContents(props: StatisticRowRawProps & {
     let value_columns: [number, string, React.ReactNode][] = [
         [15,
             'statval',
-            <div style={alignStyle}>
+            <div style={alignStyle} key="value">
                 <span className="serif value">
                     {
                         props.is_header
@@ -75,7 +75,7 @@ export function StatisticRowRawCellContents(props: StatisticRowRawProps & {
         ],
         [10,
             'statval_unit',
-            <div className="value_unit">
+            <div className="value_unit" key="unit">
                 <span className="serif value">
                     {
                         props.is_header
@@ -100,7 +100,7 @@ export function StatisticRowRawCellContents(props: StatisticRowRawProps & {
     const cells: [number, string, React.ReactNode][] = [
         [31,
             'statname',
-            <span className="serif value">
+            <span className="serif value" key="statistic">
                 {
                     props.is_header
                         ? 'Statistic'
@@ -123,7 +123,7 @@ export function StatisticRowRawCellContents(props: StatisticRowRawProps & {
         [
             props.simple ? 7 : 17,
             'statistic_percentile',
-            <span className="serif ordinal">
+            <span className="serif ordinal" key="ordinal">
                 {
                     props.is_header
                         ? (props.simple ? right_align('%ile') : 'Percentile')
@@ -141,7 +141,7 @@ export function StatisticRowRawCellContents(props: StatisticRowRawProps & {
         [
             props.simple ? 8 : 25,
             'statistic_ordinal',
-            <span className="serif ordinal">
+            <span className="serif ordinal" key="statistic_ordinal">
                 {
                     props.is_header
                         ? (props.simple ? right_align('Ord') : 'Ordinal')

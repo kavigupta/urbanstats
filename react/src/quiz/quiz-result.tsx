@@ -72,7 +72,7 @@ export function QuizResult(props: QuizResultProps): ReactNode {
             <div className="gap"></div>
             <QuizStatistics whole_history={props.whole_history} quiz={props.quizDescriptor} />
             <div className="gap"></div>
-            <span className="serif quiz_summary">Details (spoilers, don't share!)</span>
+            <span className="serif quiz_summary">Details (spoilers, don&apos;t share!)</span>
             <div className="gap_small"></div>
             {props.quiz.map(
                 (quiz, index) => (
