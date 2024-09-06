@@ -4,5 +4,5 @@ declare module 'dom-to-image-more' {
         height: number
         width: number
         style: React.CSSProperties
-    }): string
+    }): Promise<string>
 }

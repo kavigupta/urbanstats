@@ -71,9 +71,9 @@ export async function create_screenshot(config: ScreencapElements, universe: str
     const overall_width = config.overall_width
     const height_multiplier = config.height_multiplier ?? 1
 
-    function screencap_element(ref: HTMLElement): [string, number] {
+    async function screencap_element(ref: HTMLElement): Promise<[string, number]> {
         const scale_factor = overall_width / ref.offsetWidth
-        const link = domtoimage.toPng(ref, {
+        const link = await domtoimage.toPng(ref, {
             bgcolor: '#fff8f0',
             height: ref.offsetHeight * scale_factor * height_multiplier,
             width: ref.offsetWidth * scale_factor,
@@ -89,7 +89,7 @@ export async function create_screenshot(config: ScreencapElements, universe: str
     const heights = []
     for (const ref of config.elements_to_render) {
         try {
-            const [png_link, height] = screencap_element(ref)
+            const [png_link, height] = await screencap_element(ref)
             png_links.push(png_link)
             heights.push(height)
         }
@@ -118,6 +118,7 @@ export async function create_screenshot(config: ScreencapElements, universe: str
 
     const ctx = canvas.getContext('2d')!
     const imgs = []
+
     for (const png_link of png_links) {
         const img = new Image()
         img.src = png_link
