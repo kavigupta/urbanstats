@@ -29,8 +29,7 @@ export class ProxyPersistent extends RequestHook {
         }
     }
 
-    // TestCafe complains if we don't have this
-    // eslint-disable-next-line @typescript-eslint/no-empty-function
+    // eslint-disable-next-line @typescript-eslint/no-empty-function -- TestCafe complains if we don't have this
     override onResponse(): void {}
 }
 

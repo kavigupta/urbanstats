@@ -110,9 +110,6 @@ export function most_recent_download_path(): string {
     // get the most recent file in the downloads folder
     const files = fs.readdirSync(downloadsFolder())
     const sorted = files.map(x => path.join(downloadsFolder(), x)).sort((a, b) => fs.statSync(b).mtimeMs - fs.statSync(a).mtimeMs)
-
-    // eslint-disable-next-line no-console
-    console.log(`Most recent download: ${sorted[0]}`)
     return sorted[0]
 }
 
@@ -124,7 +121,7 @@ function copy_most_recent_file(t: TestController, name: string): void {
 
 export async function download_or_check_string(t: TestController, string: string, name: string): Promise<void> {
     const path_to_file = path.join(__dirname, '..', '..', 'tests', 'reference_strings', `${name}.txt`)
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- We might want to change this variable
     if (IS_TESTING) {
         const expected = fs.readFileSync(path_to_file, 'utf8')
         await t.expect(string).eql(expected)

@@ -78,7 +78,7 @@ export default tseslint.config(
             'prefer-template': 'error',
             '@typescript-eslint/restrict-template-expressions': 'off',
             'eslint-comments/no-unused-disable': 'error',
-            'no-console': 'error',
+            'no-console': ['error', { "allow": ["warn", "error"] }],
             '@stylistic/max-statements-per-line': 'off',
             '@typescript-eslint/no-unnecessary-condition': ['error', { allowConstantLoopConditions: true }],
             '@typescript-eslint/explicit-function-return-type': ['error', { allowExpressions: true }],
@@ -93,7 +93,10 @@ export default tseslint.config(
             'object-shorthand': 'error',
             'no-restricted-syntax': ['error', 'ExportNamedDeclaration:not([declaration])'],
             'react/prop-types': 'off',
-            'no-shadow': 'error'
+            'no-shadow': 'error',
+            'eslint-comments/require-description': ['error', {
+                ignore: ['eslint-enable']
+            }],
         },
     },
     {

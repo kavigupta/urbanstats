@@ -41,7 +41,6 @@ export function PageTemplate({
             await create_screenshot(screencap_elements(), has_universe_selector ? curr_universe : undefined)
         }
         catch (e) {
-            // eslint-disable-next-line no-console
             console.error(e)
         }
     }

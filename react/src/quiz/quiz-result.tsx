@@ -102,7 +102,7 @@ interface ShareButtonProps {
 }
 
 function ShareButton({ button_ref, parameters, today_name, correct_pattern, total_correct, quiz_kind }: ShareButtonProps): ReactNode {
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- We need to check the condition for browser compatibility.
     const can_share = navigator.canShare?.({ url: 'https://juxtastat.org', text: 'test' }) ?? false
     const is_share = isMobile && can_share && !isFirefox
 

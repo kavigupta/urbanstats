@@ -21,7 +21,7 @@ export interface MapGenericProps {
 
 export type Polygons = Readonly<[string[], Record<string, unknown>[], Record<string, unknown>[], number]>
 
-// eslint-disable-next-line prefer-function-component/prefer-function-component
+// eslint-disable-next-line prefer-function-component/prefer-function-component  -- TODO: Maps don't support function components yet.
 export class MapGeneric<P extends MapGenericProps> extends React.Component<P> {
     private polygon_by_name = new Map<string, L.FeatureGroup>()
     private delta = 0.25
@@ -342,7 +342,7 @@ interface ArticleMapProps extends MapProps {
     settings: Record<string, unknown>
 }
 
-// eslint-disable-next-line no-restricted-syntax
+// eslint-disable-next-line no-restricted-syntax -- Don't want to overwrite the JS Map
 export { MapComponent as Map }
 function MapComponent(props: MapProps): ReactNode {
     const [show_historical_cds] = useSetting('show_historical_cds')

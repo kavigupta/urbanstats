@@ -94,7 +94,6 @@ export async function create_screenshot(config: ScreencapElements, universe: str
             heights.push(height)
         }
         catch (e) {
-            // eslint-disable-next-line no-console
             console.error(e)
         }
     }

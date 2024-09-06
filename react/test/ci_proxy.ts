@@ -36,7 +36,7 @@ app.use(express.static('test/density-db'), proxy('https://raw.githubusercontent.
     userResHeaderDecorator(headers, userReq) {
         const fileExtension = (/\.(.+)$/.exec(userReq.path))?.[1]
         const mimeType = fileExtension ? { html: 'text/html', js: 'text/javascript' }[fileExtension] : undefined
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars -- We're removing the context-security-policy header via destructuring
         const { 'content-security-policy': _, ...filteredHeaders } = headers
         return {
             ...filteredHeaders,

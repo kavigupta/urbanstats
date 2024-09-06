@@ -35,8 +35,7 @@ export function parse_custom_colormap(custom_colormap: string): ColorMap | undef
         }
     }
     catch (e) {
-        // eslint-disable-next-line no-console
-        console.log('error! in_parse_custom_colormap', e)
+        console.error('error! in_parse_custom_colormap', e)
     }
     return undefined
 }

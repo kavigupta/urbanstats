@@ -213,7 +213,7 @@ function is_a_match(a: string, b: string): number {
     let i = 0
     let match_count = 0
     let prev_match = true
-    // eslint-disable-next-line @typescript-eslint/prefer-for-of
+    // eslint-disable-next-line @typescript-eslint/prefer-for-of -- b is a string
     for (let j = 0; j < b.length; j++) {
         if (a[i] === b[j]) {
             i++
