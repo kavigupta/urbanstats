@@ -23,10 +23,12 @@ function ExplanationTable(props: { name: string, link: string, table: [string, s
                 <div>
                     {
                         props.table.map(([name, description], i) => (
-                            <div style={{
-                                display: 'flex', flexDirection: 'row',
-                                borderTop: i === 0 ? 'none' : '1px solid black',
-                            }}
+                            <div
+                                style={{
+                                    display: 'flex', flexDirection: 'row',
+                                    borderTop: i === 0 ? 'none' : '1px solid black',
+                                }}
+                                key={i}
                             >
                                 <div
                                     style={{ width: '30%', padding: '1em' }}
