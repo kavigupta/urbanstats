@@ -96,7 +96,7 @@ test('statistics-navigation-last-page', async (t) => {
 
 fixture('statistic universe selector test')
     .page(`${TARGET}/statistic.html?statname=Population&article_type=City&start=3461&amount=20`)
-// no local storage
+    // no local storage
     .beforeEach(async (t) => {
         await t.eval(() => { localStorage.clear() })
     })
@@ -112,6 +112,71 @@ test('statistic-universe-selector-test', async (t) => {
                 .withAttribute('alt', 'Puerto Rico, USA'))
     await t.expect(getLocation())
         .eql(`${TARGET}/statistic.html?statname=Population&article_type=City&start=3461&amount=20&universe=Puerto+Rico%2C+USA`)
+})
+
+fixture('statistic ascending descending')
+    .page(`${TARGET}/statistic.html?statname=Population&article_type=Subnational+Region&start=1&amount=10`)
+    .beforeEach(async (t) => {
+        await t.eval(() => { localStorage.clear() })
+    })
+
+// get elements on page
+
+async function getElements() {
+    const elements = Selector('div').withText(/, USA$/);
+    const texts: string[] = [];
+    for (let i = 0; i < (await elements.count); i++) {
+        texts.push(await elements.nth(i).innerText)
+    }
+    console.log(texts)
+    return texts
+}
+
+test('statistic-ascending-descending-check-descending', async (t) => {
+    // ensure the div with California and ensure 1 is in the div
+    await t.expect(await getElements()).eql([
+        'California, USA',
+        'Texas, USA',
+        'Florida, USA',
+        'New York, USA',
+        'Pennsylvania, USA',
+        'Illinois, USA',
+        'Ohio, USA',
+        'Georgia, USA',
+        'North Carolina, USA',
+        'Michigan, USA'
+    ])
+});
+
+test('statistic-ascending-descending-check-click', async (t) => {
+    // click the button
+    // check that button "statistic-panel-order-swap" has text downwards arrow ▼
+    await t.expect(Selector("#statistic-panel-order-swap").innerText).eql('▼');
+    await t.click(Selector("#statistic-panel-order-swap"))
+    // ensure the button is now ▲
+    await t.expect(Selector("#statistic-panel-order-swap").innerText).eql('▲');
+    // check the url
+    await t.expect(getLocation())
+        .eql(`${TARGET}/statistic.html?statname=Population&article_type=Subnational+Region&start=1&amount=10&order=ascending`)
+
+    await t.expect(await getElements()).eql([
+        "Wyoming, USA",
+        "Vermont, USA",
+        "District of Columbia, USA",
+        "Alaska, USA",
+        "North Dakota, USA",
+        "South Dakota, USA",
+        "Delaware, USA",
+        "Montana, USA",
+        "Rhode Island, USA",
+        "Maine, USA"
+    ])
+    // click the button again
+    await t.click(Selector("#statistic-panel-order-swap"))
+    // check the url again
+    await t.expect(getLocation())
+        .eql(`${TARGET}/statistic.html?statname=Population&article_type=Subnational+Region&start=1&amount=10`)
+    await t.expect(Selector('div').withText('▼').exists).ok()
 })
 
 fixture('statistic ascending')

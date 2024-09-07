@@ -61,13 +61,14 @@ export function StatisticPanel(props: {
     }, [props.start, props.amount, props.count, is_ascending])
 
     const swap_ascending_descending = (curr_universe: string | undefined): void => {
-        const new_order = is_ascending ? 'ascending' : 'descending'
-        document.location = statistic_link(
+        const new_order = is_ascending ? 'descending' : 'ascending'
+        const link = statistic_link(
             curr_universe,
             props.statname, props.article_type,
             1, props.amount, new_order,
             undefined,
         )
+        document.location = link
     }
 
     const background_color = (row_idx: number): string => {
@@ -405,7 +406,7 @@ function AscendingVsDescending({ on_click, is_ascending }: { on_click: (curr_uni
     // either an up or down arrow, depending on the current ordering
     return (
         <div style={{ display: 'flex', alignItems: 'center' }}>
-            <div style={{ cursor: 'pointer' }} onClick={() => { on_click(curr_universe) }}>
+            <div style={{ cursor: 'pointer' }} onClick={() => { on_click(curr_universe) }} id="statistic-panel-order-swap">
                 {is_ascending ? '▲' : '▼'}
             </div>
         </div>
