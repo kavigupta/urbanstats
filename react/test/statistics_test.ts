@@ -113,3 +113,12 @@ test('statistic-universe-selector-test', async (t) => {
     await t.expect(getLocation())
         .eql(`${TARGET}/statistic.html?statname=Population&article_type=City&start=3461&amount=20&universe=Puerto+Rico%2C+USA`)
 })
+
+fixture('statistic ascending')
+    .page(`${TARGET}/statistic.html?statname=Households+With+no+Vehicle+%25&article_type=Subnational+Region&start=21&amount=20&order=ascending&universe=USA`)
+
+test.only('statistic-ascending-page', async (t) => {
+    // We should see the state with the least vehicles, which is DC
+    await t.expect(Selector('div').withExactText('1').exists).ok()
+    await t.expect(Selector('div').withText('District of Columbia, USA').exists).ok()
+})
