@@ -19,6 +19,9 @@ RUN apt-get -y install libc6:i386
 RUN apt-get -y install libx11-6:i386
 RUN apt-get -y install fluxbox
 
+# needed for downloads directory in TestCafe
+RUN apt-get -y install xdg-user-dirs
+
 COPY ./requirements.txt ./
 RUN pip3 install --break-system-packages -r requirements.txt
 

@@ -1,8 +1,8 @@
 declare module 'dom-to-image-more' {
     function toPng(e: HTMLElement, options: {
-        bgcolor: string,
-        height: number,
-        width: number,
+        bgcolor: string
+        height: number
+        width: number
         style: React.CSSProperties
-    }): string;
+    }): Promise<string>
 }
