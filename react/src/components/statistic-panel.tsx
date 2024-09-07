@@ -53,7 +53,7 @@ export function StatisticPanel(props: {
         const total = props.count
         const result = Array.from({ length: end - start }, (_, i) => {
             if (is_ascending) {
-                return total - i - 1
+                return total - start - i - 1
             }
             return start + i
         })
