@@ -122,13 +122,12 @@ fixture('statistic ascending descending')
 
 // get elements on page
 
-async function getElements() {
-    const elements = Selector('div').withText(/, USA$/);
-    const texts: string[] = [];
+async function getElements(): Promise<string[]> {
+    const elements = Selector('div').withText(/, USA$/)
+    const texts: string[] = []
     for (let i = 0; i < (await elements.count); i++) {
         texts.push(await elements.nth(i).innerText)
     }
-    console.log(texts)
     return texts
 }
 
@@ -144,35 +143,35 @@ test('statistic-ascending-descending-check-descending', async (t) => {
         'Ohio, USA',
         'Georgia, USA',
         'North Carolina, USA',
-        'Michigan, USA'
+        'Michigan, USA',
     ])
-});
+})
 
 test('statistic-ascending-descending-check-click', async (t) => {
     // click the button
     // check that button "statistic-panel-order-swap" has text downwards arrow ▼
-    await t.expect(Selector("#statistic-panel-order-swap").innerText).eql('▼');
-    await t.click(Selector("#statistic-panel-order-swap"))
+    await t.expect(Selector('#statistic-panel-order-swap').innerText).eql('▼')
+    await t.click(Selector('#statistic-panel-order-swap'))
     // ensure the button is now ▲
-    await t.expect(Selector("#statistic-panel-order-swap").innerText).eql('▲');
+    await t.expect(Selector('#statistic-panel-order-swap').innerText).eql('▲')
     // check the url
     await t.expect(getLocation())
         .eql(`${TARGET}/statistic.html?statname=Population&article_type=Subnational+Region&start=1&amount=10&order=ascending`)
 
     await t.expect(await getElements()).eql([
-        "Wyoming, USA",
-        "Vermont, USA",
-        "District of Columbia, USA",
-        "Alaska, USA",
-        "North Dakota, USA",
-        "South Dakota, USA",
-        "Delaware, USA",
-        "Montana, USA",
-        "Rhode Island, USA",
-        "Maine, USA"
+        'Wyoming, USA',
+        'Vermont, USA',
+        'District of Columbia, USA',
+        'Alaska, USA',
+        'North Dakota, USA',
+        'South Dakota, USA',
+        'Delaware, USA',
+        'Montana, USA',
+        'Rhode Island, USA',
+        'Maine, USA',
     ])
     // click the button again
-    await t.click(Selector("#statistic-panel-order-swap"))
+    await t.click(Selector('#statistic-panel-order-swap'))
     // check the url again
     await t.expect(getLocation())
         .eql(`${TARGET}/statistic.html?statname=Population&article_type=Subnational+Region&start=1&amount=10`)
