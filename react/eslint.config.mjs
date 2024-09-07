@@ -7,6 +7,7 @@ import tseslint from 'typescript-eslint'
 import reactPlugin from "eslint-plugin-react"
 import preferFC from 'eslint-plugin-react-prefer-function-component/config'
 import reactHooks from 'eslint-plugin-react-hooks'
+import noOnlyTests from 'eslint-plugin-no-only-tests'
 
 export default tseslint.config(
     ...tseslint.configs.strictTypeChecked,
@@ -107,4 +108,12 @@ export default tseslint.config(
             },
         },
     },
+    {
+        plugins: {
+            'no-only-tests': noOnlyTests
+        },
+        rules: {
+            'no-only-tests/no-only-tests': 'error'
+        }
+    }
 )
