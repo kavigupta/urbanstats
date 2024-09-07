@@ -4,8 +4,25 @@ import numpy as np
 import pandas as pd
 import requests
 
+from urbanstats.games.quiz import quiz_is_guaranteed_past
+
 questions = [f"q{i}" for i in range(1, 1 + 5)]
 
+named_users = dict(
+    vo=1000233398257748901,
+    avery=1027246234047181785,
+    kavi=225074120239201340,
+    guava=533487794723891791,
+    parth=232188494395851367,
+#     gus=65416843712317322,
+    adiastra=727538863697858149,
+    ellie=691958428450574907,
+    sleepy=19800660824996662,
+    antifa=1128140214864259863,
+#     ashjubilee=846814263642105530,
+    april=0x1d2efe90871f22b,
+    violetncs=0x523ff09c66f52f4,
+)
 
 def get_full_statistics(*, after_problem, debug=False):
     with open(os.path.expanduser("~/.juxtastat-persistent-token")) as f:
@@ -50,3 +67,12 @@ def get_full_statistics(*, after_problem, debug=False):
         result = result[result.host == "urbanstats.org"]
     result = result.copy().reset_index(drop=True)
     return result
+
+def get_dau(after_problem=49, radius=14):
+    result = get_full_statistics(after_problem=after_problem, debug=False)
+    num_users_by_problem = result.groupby("problem").count().user_id
+    is_valid_day = lambda x: quiz_is_guaranteed_past(x) is None and x > after_problem
+    mask = [is_valid_day(x) for x in num_users_by_problem.index]
+    xs, ys = num_users_by_problem.index[mask], num_users_by_problem[mask]
+    ys_rolling = [ys[(x - radius <= xs) & (xs <= x + radius)].median() for x in xs]
+    return xs, ys, ys_rolling
