@@ -62,7 +62,7 @@ export function UserId(): ReactNode {
     else {
         return (
             <div>
-                Your user id is
+                {'Your user id is '}
                 <span className="juxtastat-user-id">{user_id}</span>
             </div>
         )

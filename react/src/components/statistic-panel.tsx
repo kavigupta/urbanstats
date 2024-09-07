@@ -349,8 +349,7 @@ function SelectPage(props: {
                     }}
                 />
                 <span>
-                    {' '}
-                    of
+                    {' of '}
                     {props.max_pages}
                 </span>
             </div>
