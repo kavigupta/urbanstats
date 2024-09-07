@@ -79,22 +79,15 @@ export function PageTemplate({
 function TemplateFooter(): ReactNode {
     return (
         <div className="centered_text">
-            Urban Stats Version
-            {' '}
+            {'Urban Stats Version '}
             <Version />
-            {' '}
-            by
-            {' '}
+            {' by '}
             <MainCredits />
-            . Last updated
-            {' '}
+            {'. Last updated '}
             <LastUpdated />
-            .
-            {' '}
+            {'. '}
             <OtherCredits />
-            {' '}
-            Not for commercial use.
-            {' '}
+            {' Not for commercial use. '}
             <Support />
         </div>
     )
@@ -115,8 +108,7 @@ function MainCredits(): ReactNode {
 function OtherCredits(): ReactNode {
     return (
         <span>
-            Significant help with weather data from
-            {' '}
+            {'Significant help with weather data from '}
             <a href="https://twitter.com/OklahomaPerson">OklahomaPerson</a>
             .
         </span>
@@ -150,8 +142,7 @@ function LeftPanel(): ReactNode {
 function Support(): ReactNode {
     return (
         <span>
-            If you find urbanstats useful, please donate on
-            {' '}
+            {'If you find urbanstats useful, please donate on '}
             <a href="https://ko-fi.com/notkavi">kofi</a>
             !
         </span>

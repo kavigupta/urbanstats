@@ -523,9 +523,7 @@ export function Ordinal(props: { ordinal: number, total: number, type: string, s
     return (
         <div className="serif" style={{ textAlign: 'right' }}>
             {en}
-            {' '}
-            of
-            {' '}
+            {' of '}
             {total}
             {' '}
             {display_type(curr_universe, type)}

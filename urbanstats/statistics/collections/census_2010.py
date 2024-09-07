@@ -109,6 +109,8 @@ class Census2010(CensusStatisticsColection):
 
     def extra_stats(self):
         return {
-            f"ad_{d}_2010": HistogramSpec(0, 0.1, f"pw_density_histogram_{d}_2010", "population")
+            f"ad_{d}_2010": HistogramSpec(
+                0, 0.1, f"pw_density_histogram_{d}_2010", "population"
+            )
             for d in RADII
         }
