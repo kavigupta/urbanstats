@@ -132,6 +132,7 @@ async function getElements(): Promise<string[]> {
 }
 
 test('statistic-ascending-descending-check-descending', async (t) => {
+    await t.wait(1000)
     // ensure the div with California and ensure 1 is in the div
     await t.expect(await getElements()).eql([
         'California, USA',
@@ -154,6 +155,7 @@ test('statistic-ascending-descending-check-click', async (t) => {
     await t.click(Selector('#statistic-panel-order-swap'))
     // ensure the button is now ▲
     await t.expect(Selector('#statistic-panel-order-swap').innerText).eql('▲')
+    await t.wait(1000)
     // check the url
     await t.expect(getLocation())
         .eql(`${TARGET}/statistic.html?statname=Population&article_type=Subnational+Region&start=1&amount=10&order=ascending`)
