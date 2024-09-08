@@ -94,14 +94,14 @@ export function Sidebar(): ReactNode {
                     )}
                 </ul>
             </div>
-            <div className="sidebar-section">
+            {/* <div className="sidebar-section">
                 <div className={sidebar_section_title}>Appearance</div>
                 <ul className={sidebar_section_content}>
                     <li>
                         <ColorThemeSetting />
                     </li>
                 </ul>
-            </div>
+            </div> */}
         </div>
     )
 }
