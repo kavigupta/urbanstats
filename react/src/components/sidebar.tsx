@@ -94,6 +94,14 @@ export function Sidebar(): ReactNode {
                     )}
                 </ul>
             </div>
+            <div className="sidebar-section">
+                <div className={sidebar_section_title}>Appearance</div>
+                <ul className={sidebar_section_content}>
+                    <li>
+                        <ColorThemeSetting />
+                    </li>
+                </ul>
+            </div>
         </div>
     )
 }
@@ -119,6 +127,25 @@ export function CheckboxSetting<K extends BooleanSettingKey>(props: { name: stri
             }}
             classNameToUse={props.classNameToUse}
         />
+    )
+};
+
+// represents the color theme setting, which sets it to either 'light' or 'dark'
+export function ColorThemeSetting(): ReactNode {
+    const [theme, setTheme] = useSetting('theme')
+
+    return (
+        <div className="theme-setting">
+            <label>{'Theme '}</label>
+            <select
+                className="serif"
+                value={theme}
+                onChange={(e: React.ChangeEvent<HTMLSelectElement>) => { setTheme(e.target.value) }}
+            >
+                <option value="Light Mode">Light Mode</option>
+                <option value="Dark Mode">Dark Mode</option>
+            </select>
+        </div>
     )
 };
 

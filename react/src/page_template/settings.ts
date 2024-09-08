@@ -21,6 +21,7 @@ export interface SettingsDictionary {
     use_imperial: boolean
     histogram_type: HistogramType
     histogram_relative: boolean
+    theme: string
 }
 
 export function relationship_key(article_type: string, other_type: string): RelationshipKey {
@@ -59,6 +60,7 @@ export function load_settings(): [SettingsDictionary, StatisticCategoryMetadataC
     settings.use_imperial = settings.use_imperial ?? false
     settings.histogram_type = settings.histogram_type ?? 'Line'
     settings.histogram_relative = settings.histogram_relative ?? true
+    settings.theme = settings.theme ?? 'Light Mode'
 
     return [settings as SettingsDictionary, statistic_category_metadata_checkboxes]
 }
