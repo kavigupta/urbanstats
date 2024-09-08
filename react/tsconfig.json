@@ -9,6 +9,10 @@
         "esModuleInterop": true,
         "target": "ES2022",
         "module": "CommonJS",
-        "resolveJsonModule": true
+        "resolveJsonModule": true,
+        "noImplicitOverride": true,
+        "noImplicitReturns": true,
+        "noFallthroughCasesInSwitch": true,
+        "allowUnreachableCode": false
     }
 }

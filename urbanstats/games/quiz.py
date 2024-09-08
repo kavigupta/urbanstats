@@ -268,11 +268,7 @@ def custom_quiz_link(seed, name, *, localhost):
 
 
 def check_quiz_is_guaranteed_future(number):
-    now = datetime.now(pytz.timezone("Pacific/Kiritimati"))
-    beginning = pytz.timezone("Pacific/Kiritimati").localize(datetime(2023, 9, 2))
-    fractional_days = (now - beginning + timedelta(hours=4)).total_seconds() / (
-        24 * 60 * 60
-    )
+    fractional_days = compute_fractional_days("Pacific/Kiritimati")
     if number <= fractional_days:
         raise Exception(
             f"Quiz {number} is in the past! It is currently {fractional_days} in Kiribati + 4 hours."
@@ -280,11 +276,15 @@ def check_quiz_is_guaranteed_future(number):
 
 
 def quiz_is_guaranteed_past(number):
-    now = datetime.now(pytz.timezone("US/Samoa"))
-    beginning = pytz.timezone("US/Samoa").localize(datetime(2023, 9, 2))
-    fractional_days = (now - beginning).total_seconds() / (24 * 60 * 60)
+    fractional_days = compute_fractional_days("US/Samoa")
     if number < fractional_days - 1:
         return None
+    return fractional_days
+
+def compute_fractional_days(tz):
+    now = datetime.now(pytz.timezone(tz))
+    beginning = pytz.timezone(tz).localize(datetime(2023, 9, 2))
+    fractional_days = (now - beginning).total_seconds() / (24 * 60 * 60)
     return fractional_days
 
 

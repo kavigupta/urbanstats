@@ -1,10 +1,11 @@
-import React from "react";
-import { FunctionColorStat, FilterSelector, StatisticSelector } from "./function";
-import { RampColormapSelector } from "./ramp-selector";
-import { setting_name_style, setting_sub_name_style } from "./style";
-import { DataListSelector } from "./DataListSelector";
-import { Regression } from "./regression";
-import { ConstantRampDescriptor, RampDescriptor } from "./ramps";
+import React, { ReactNode } from 'react'
+
+import { DataListSelector } from './DataListSelector'
+import { FilterSelector, FunctionColorStat, StatisticSelector } from './function'
+import { RampColormapSelector } from './ramp-selector'
+import { ConstantRampDescriptor, RampDescriptor } from './ramps'
+import { Regression } from './regression'
+import { setting_name_style, setting_sub_name_style } from './style'
 
 export type StatisticsForGeography = { stats: number[] }[]
 
@@ -14,97 +15,95 @@ export interface ColorStat {
 }
 
 export interface RegressionDescriptor {
-    var_coefficients: string[],
-    var_intercept: string,
-    independent: ColorStatDescriptor | undefined,
-    residual_name?: string,
-    var_residue: string,
+    var_coefficients: string[]
+    var_intercept: string
+    independent: ColorStatDescriptor | undefined
+    residual_name?: string
+    var_residue: string
     weight_by_population: boolean
     dependents: (ColorStatDescriptor | undefined)[]
 }
 
 export type ColorStatDescriptor = (
-    { type: "single", value: string, variables?:  { name: string, expr: (ColorStatDescriptor | undefined) }[], regressions?: RegressionDescriptor[], name?: string, expression?: string }
+    { type: 'single', value: string, variables?: { name: string, expr: (ColorStatDescriptor | undefined) }[], regressions?: RegressionDescriptor[], name?: string, expression?: string }
     |
-    { type: "function", value: "Function", variables: { name: string, expr: (ColorStatDescriptor | undefined) }[], regressions?: RegressionDescriptor[], name?: string, expression: string }
+    { type: 'function', value: 'Function', variables: { name: string, expr: (ColorStatDescriptor | undefined) }[], regressions?: RegressionDescriptor[], name?: string, expression: string }
 )
 
 export interface LineStyle {
-    color: string,
+    color: string
     weight: number
 
 }
 
 export type Basemap = {
-    type: "osm"
-} | { type: "none" }
+    type: 'osm'
+} | { type: 'none' }
 
 export interface FilterSettings {
-    enabled: boolean,
+    enabled: boolean
     function: ColorStatDescriptor
 };
 
 export interface MapSettings {
-    geography_kind: string,
-    filter: FilterSettings,
+    geography_kind: string
+    filter: FilterSettings
     color_stat: undefined | ColorStatDescriptor
-    ramp: RampDescriptor,
-    line_style: LineStyle,
+    ramp: RampDescriptor
+    line_style: LineStyle
     basemap: Basemap
 }
 
 export function default_settings(add_to: Partial<MapSettings>): MapSettings {
     const defaults: MapSettings = {
-        geography_kind: "",
+        geography_kind: '',
         filter: {
             enabled: false,
             function: {
-                type: "function",
-                value: "Function",
-                expression: "",
-                variables: []
+                type: 'function',
+                value: 'Function',
+                expression: '',
+                variables: [],
             },
         },
         color_stat: undefined,
         ramp: {
-            type: "linear",
+            type: 'linear',
             colormap: {
-                type: "none",
-            }
+                type: 'none',
+            },
         },
         line_style: {
-            color: "#000000",
+            color: '#000000',
             weight: 0.5,
         },
         basemap: {
-            type: "osm",
-        }
+            type: 'osm',
+        },
     }
-    return merge(add_to, defaults);
+    return merge(add_to, defaults)
 }
 
 function merge<T>(add_to: Partial<T>, add_from: T): T {
     let key: keyof T
     for (key in add_from) {
         if (add_to[key] === undefined) {
-            add_to[key] = add_from[key];
-        } else if (typeof add_to[key] === "object") {
-            merge(add_to[key]!, add_from[key]);
+            add_to[key] = add_from[key]
+        }
+        else if (typeof add_to[key] === 'object') {
+            merge(add_to[key] as object, add_from[key])
         }
     }
-    return add_to as T;
+    return add_to as T
 }
 
-function parse_regression(name_to_index: ReadonlyMap<string, number>, regr: RegressionDescriptor) {
-    console.log(regr);
-    const independent_fn = parse_color_stat(name_to_index, regr.independent);
-    const dependent_fns = regr.dependents.map(dependent => parse_color_stat(name_to_index, dependent));
-    const dependent_names = regr.var_coefficients;
-    const intercept_name = regr.var_intercept;
-    const residual_name = regr.var_residue;
-    const weight_by_population = regr.weight_by_population;
-
-    console.log(name_to_index);
+function parse_regression(name_to_index: ReadonlyMap<string, number>, regr: RegressionDescriptor): Regression {
+    const independent_fn = parse_color_stat(name_to_index, regr.independent)
+    const dependent_fns = regr.dependents.map(dependent => parse_color_stat(name_to_index, dependent))
+    const dependent_names = regr.var_coefficients
+    const intercept_name = regr.var_intercept
+    const residual_name = regr.var_residue
+    const weight_by_population = regr.weight_by_population
 
     return new Regression(
         independent_fn,
@@ -113,94 +112,94 @@ function parse_regression(name_to_index: ReadonlyMap<string, number>, regr: Regr
         intercept_name,
         residual_name,
         weight_by_population,
-        name_to_index.get("Population")!,
-    );
+        name_to_index.get('Population')!,
+    )
 }
 
 export function parse_color_stat(name_to_index: ReadonlyMap<string, number>, color_stat: ColorStatDescriptor | undefined): ColorStat {
     if (color_stat === undefined) {
-        return new InvalidColorStat();
+        return new InvalidColorStat()
     }
-    const type = color_stat.type;
-    if (type === "single") {
-        const value = color_stat.value;
+    const type = color_stat.type
+    if (type === 'single') {
+        const value = color_stat.value
         if (name_to_index.has(value)) {
-            return new SingleColorStat(name_to_index.get(value)!, value);
+            return new SingleColorStat(name_to_index.get(value)!, value)
         }
-        return new InvalidColorStat();
+        return new InvalidColorStat()
     }
-    if (type == "function") {
-        const variables = color_stat.variables.map(variable => {
+    else {
+        const variables = color_stat.variables.map((variable) => {
             return {
                 name: variable.name,
                 expr: parse_color_stat(name_to_index, variable.expr),
             }
-        });
-        const regressions = (color_stat.regressions ?? []).map(regr => parse_regression(name_to_index, regr));
-        console.log("regressions", regressions);
-        return new FunctionColorStat(color_stat.name, variables, regressions, color_stat.expression);
+        })
+        const regressions = (color_stat.regressions ?? []).map(regr => parse_regression(name_to_index, regr))
+        return new FunctionColorStat(color_stat.name, variables, regressions, color_stat.expression)
     }
-    return new InvalidColorStat();
 }
 
 class SingleColorStat implements ColorStat {
     constructor(private readonly _index: number, private readonly _name: string) {
     }
 
-    name() {
-        return this._name;
+    name(): string {
+        return this._name
     }
 
-    compute(statistics_for_geography: StatisticsForGeography) {
-        return statistics_for_geography.map(statistics => statistics.stats[this._index]);
+    compute(statistics_for_geography: StatisticsForGeography): number[] {
+        return statistics_for_geography.map(statistics => statistics.stats[this._index])
     }
 }
 
 class InvalidColorStat implements ColorStat {
-    name() {
-        return "[Invalid]";
+    name(): string {
+        return '[Invalid]'
     }
 
-    compute(statistics_for_geography: StatisticsForGeography) {
-        return statistics_for_geography.map(() => 0);
+    compute(statistics_for_geography: StatisticsForGeography): number[] {
+        return statistics_for_geography.map(() => 0)
     }
 }
 
-function ConstantParametersSelector({ ramp, set_ramp }: { ramp: ConstantRampDescriptor, set_ramp: (newValue: ConstantRampDescriptor) => void }) {
+function ConstantParametersSelector({ ramp, set_ramp }: { ramp: ConstantRampDescriptor, set_ramp: (newValue: ConstantRampDescriptor) => void }): ReactNode {
     return (
-        <div style={{ display: "flex" }}>
+        <div style={{ display: 'flex' }}>
             <div style={setting_sub_name_style}>
                 Lower Bound:
             </div>
             <input
                 type="number"
-                style={{ width: "5em" }}
+                style={{ width: '5em' }}
                 value={ramp.lower_bound}
-                onChange={e => set_ramp({
-                    ...ramp,
-                    lower_bound: e.target.value,
-                })}
+                onChange={(e) => {
+                    set_ramp({
+                        ...ramp,
+                        lower_bound: e.target.value,
+                    })
+                }}
             />
-            <div style={{ width: "0.5em" }} />
+            <div style={{ width: '0.5em' }} />
             <div style={setting_sub_name_style}>
                 Upper Bound:
             </div>
             <input
                 type="number"
-                style={{ width: "5em" }}
+                style={{ width: '5em' }}
                 value={ramp.upper_bound}
-                onChange={e => set_ramp({
-                    ...ramp,
-                    upper_bound: e.target.value,
-                })}
+                onChange={(e) => {
+                    set_ramp({
+                        ...ramp,
+                        upper_bound: e.target.value,
+                    })
+                }}
             />
         </div>
-    );
+    )
 }
 
-
-
-function RampSelector(props: { ramp: RampDescriptor, set_ramp: (newValue: RampDescriptor) => void }) {
+function RampSelector(props: { ramp: RampDescriptor, set_ramp: (newValue: RampDescriptor) => void }): ReactNode {
     return (
         <div>
             <div style={setting_name_style}>
@@ -208,103 +207,117 @@ function RampSelector(props: { ramp: RampDescriptor, set_ramp: (newValue: RampDe
             </div>
             <RampColormapSelector
                 ramp={props.ramp}
-                set_ramp={ramp => props.set_ramp(ramp)}
+                set_ramp={(ramp) => { props.set_ramp(ramp) }}
             />
             <DataListSelector
                 overall_name="Ramp Type:"
-                names={["linear", "constant", "geometric"] as const}
+                names={['linear', 'constant', 'geometric'] as const}
                 no_neutral={true}
                 header_style={setting_sub_name_style}
                 initial_value={props.ramp.type}
-                onChange={name => props.set_ramp({
-                    ...props.ramp,
-                    type: name,
-                })}
+                onChange={(name) => {
+                    props.set_ramp({
+                        ...props.ramp,
+                        type: name,
+                    })
+                }}
             />
             {
-                props.ramp.type === "constant" ? <ConstantParametersSelector
-                    ramp={props.ramp}
-                    set_ramp={props.set_ramp}
-                /> : <div></div>
+                props.ramp.type === 'constant'
+                    ? (
+                            <ConstantParametersSelector
+                                ramp={props.ramp}
+                                set_ramp={props.set_ramp}
+                            />
+                        )
+                    : <div></div>
             }
-            <div style={{ display: "flex" }}>
+            <div style={{ display: 'flex' }}>
                 <div style={setting_sub_name_style}>
                     Reversed:
                 </div>
                 <input
                     type="checkbox"
                     checked={props.ramp.reversed ?? false}
-                    onChange={e => props.set_ramp({
-                        ...props.ramp,
-                        reversed: e.target.checked,
-                    })}
+                    onChange={(e) => {
+                        props.set_ramp({
+                            ...props.ramp,
+                            reversed: e.target.checked,
+                        })
+                    }}
                 />
             </div>
         </div>
     )
 }
 
-function LineStyleSelector(props: { line_style: LineStyle, set_line_style: (newValue: LineStyle) => void }) {
+function LineStyleSelector(props: { line_style: LineStyle, set_line_style: (newValue: LineStyle) => void }): ReactNode {
     return (
         <div>
             <div style={setting_name_style}>
                 Line Style:
             </div>
-            <div style={{ display: "flex" }}>
+            <div style={{ display: 'flex' }}>
                 <div style={setting_sub_name_style}>
                     Color:
                 </div>
                 <input
                     type="color"
                     value={props.line_style.color}
-                    onChange={e => props.set_line_style({
-                        ...props.line_style,
-                        color: e.target.value,
-                    })}
+                    onChange={(e) => {
+                        props.set_line_style({
+                            ...props.line_style,
+                            color: e.target.value,
+                        })
+                    }}
                 />
             </div>
-            <div style={{ display: "flex" }}>
+            <div style={{ display: 'flex' }}>
                 <div style={setting_sub_name_style}>
                     Weight:
                 </div>
                 <input
                     type="number"
-                    style={{ width: "5em" }}
+                    style={{ width: '5em' }}
                     value={props.line_style.weight}
-                    onChange={e => props.set_line_style({
-                        ...props.line_style,
-                        weight: parseFloat(e.target.value),
-                    })}
+                    onChange={(e) => {
+                        props.set_line_style({
+                            ...props.line_style,
+                            weight: parseFloat(e.target.value),
+                        })
+                    }}
                 />
             </div>
         </div>
     )
 }
 
-function BaseMapSelector({ basemap, set_basemap }: { basemap: Basemap, set_basemap: (newValue: Basemap) => void }) {
+function BaseMapSelector({ basemap, set_basemap }: { basemap: Basemap, set_basemap: (newValue: Basemap) => void }): ReactNode {
     // just a checkbox for now
     return (
         <div>
             <div style={setting_name_style}>
                 Basemap:
             </div>
-            <div style={{ display: "flex" }}>
+            <div style={{ display: 'flex' }}>
                 <div style={setting_sub_name_style}>
                     OSM:
                 </div>
                 <input
                     type="checkbox"
-                    checked={basemap.type !== "none"}
-                    onChange={e => set_basemap({
-                        type: e.target.checked ? "osm" : "none",
-                    })}
+                    checked={basemap.type !== 'none'}
+                    onChange={(e) => {
+                        set_basemap({
+                            type: e.target.checked ? 'osm' : 'none',
+                        })
+                    }}
                 />
             </div>
         </div>
-    );
+    )
 }
 
-export function MapperSettings(props: { map_settings: MapSettings, valid_geographies: string[], set_map_settings: (newValue: MapSettings) => void, names: string[] }) {
+export function MapperSettings(props: { map_settings: MapSettings, valid_geographies: string[], set_map_settings: (newValue: MapSettings) => void, names: string[] }): ReactNode {
     return (
         <div>
             <DataListSelector
@@ -314,50 +327,63 @@ export function MapperSettings(props: { map_settings: MapSettings, valid_geograp
                 }
                 initial_value={props.map_settings.geography_kind}
                 onChange={
-                    name => props.set_map_settings({
-                        ...props.map_settings,
-                        geography_kind: name
-                    })
+                    (name) => {
+                        props.set_map_settings({
+                            ...props.map_settings,
+                            geography_kind: name,
+                        })
+                    }
                 }
             />
             <div style={setting_name_style}>Filter</div>
             <FilterSelector
                 filter={props.map_settings.filter}
-                set_filter={filter => props.set_map_settings({
-                    ...props.map_settings,
-                    filter: filter,
-                })}
+                set_filter={(filter) => {
+                    props.set_map_settings({
+                        ...props.map_settings,
+                        filter,
+                    })
+                }}
                 names={props.names}
             />
             <StatisticSelector
-                overall_name={"Statistic for Color:"}
+                overall_name="Statistic for Color:"
                 statistic={props.map_settings.color_stat}
-                set_statistic={color_stat => props.set_map_settings({
-                    ...props.map_settings,
-                    color_stat: color_stat,
-                })}
+                set_statistic={(color_stat) => {
+                    props.set_map_settings({
+                        ...props.map_settings,
+                        color_stat,
+                    })
+                }}
                 names={props.names}
                 simple={false}
             />
             <RampSelector
                 ramp={props.map_settings.ramp}
-                set_ramp={ramp => props.set_map_settings({
-                    ...props.map_settings,
-                    ramp: ramp,
-                })}
+                set_ramp={(ramp) => {
+                    props.set_map_settings({
+                        ...props.map_settings,
+                        ramp,
+                    })
+                }}
             />
-            <LineStyleSelector line_style={props.map_settings.line_style}
-                set_line_style={line_style => props.set_map_settings({
-                    ...props.map_settings,
-                    line_style: line_style,
-                })}
+            <LineStyleSelector
+                line_style={props.map_settings.line_style}
+                set_line_style={(line_style) => {
+                    props.set_map_settings({
+                        ...props.map_settings,
+                        line_style,
+                    })
+                }}
             />
             <BaseMapSelector
                 basemap={props.map_settings.basemap}
-                set_basemap={basemap => props.set_map_settings({
-                    ...props.map_settings,
-                    basemap: basemap,
-                })}
+                set_basemap={(basemap) => {
+                    props.set_map_settings({
+                        ...props.map_settings,
+                        basemap,
+                    })
+                }}
             />
         </div>
     )
