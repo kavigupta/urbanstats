@@ -130,9 +130,9 @@ def drop_duplicate(s, duplicates, drop_dup_shapefile_key):
     all_delete_indices = set()
     for longname, indices in tqdm.tqdm(list(duplicates.items())):
         indices, delete_indices = remove_total_duplicates(s, indices)
+        all_delete_indices.update(delete_indices)
         if len(indices) == 1:
             continue
-        all_delete_indices.update(delete_indices)
         addtl_name_each = [
             compute_additional_name(s.iloc[idx].geometry, drop_dup_shapefile_key)
             for idx in indices

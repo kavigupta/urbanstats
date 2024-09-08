@@ -284,7 +284,7 @@ shapefiles = dict(
         drop_dup="counties",
     ),
     neighborhoods=Shapefile(
-        hash_key="zillow_neighborhoods_5",
+        hash_key="zillow_neighborhoods_6",
         path="named_region_shapefiles/Zillow_Neighborhoods/zillow.shp",
         shortname_extractor=lambda x: x["Name"] + ", " + x["City"],
         longname_extractor=lambda x: x["Name"]
