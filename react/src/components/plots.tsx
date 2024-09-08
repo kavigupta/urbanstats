@@ -108,7 +108,7 @@ function Histogram(props: { histograms: HistogramProps[], screenshot_mode: boole
                 },
                 marginTop: 80,
                 marginBottom: 40,
-                marginLeft: 50,
+                marginLeft: 80,
                 color: props.histograms.length === 1
                     ? undefined
                     : { legend: true, range: colors, domain: shortnames },
