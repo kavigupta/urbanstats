@@ -2,7 +2,7 @@ import * as Plot from '@observablehq/plot'
 import React, { ReactNode, useEffect, useRef } from 'react'
 
 // imort Observable plot
-import { HistogramType, useSetting } from '../page_template/settings'
+import { HistogramType, useColors, useSetting } from '../page_template/settings'
 import { useUniverse } from '../universe'
 import { IHistogram } from '../utils/protos'
 
@@ -149,12 +149,13 @@ function HistogramSettings(props: {
 }): ReactNode {
     const universe = useUniverse()
     const [histogram_type, setHistogramType] = useSetting('histogram_type')
+    const colors = useColors()
     // dropdown for histogram type
     return (
         <div
             className="serif"
             style={{
-                backgroundColor: '#fff8f0', padding: '0.5em', border: '1px solid black',
+                backgroundColor: colors.background, padding: '0.5em', border: '1px solid black',
                 display: 'flex', gap: '0.5em',
             }}
         >
@@ -170,13 +171,19 @@ function HistogramSettings(props: {
                                 height_multiplier: 1.2,
                             },
                             universe,
+                            colors,
                         )
                     }
                 }}
                 width="20"
                 height="20"
             />
-            <select value={histogram_type} onChange={(e) => { setHistogramType(e.target.value as HistogramType) }} className="serif">
+            <select
+                value={histogram_type}
+                style={{ backgroundColor: colors.background }}
+                onChange={(e) => { setHistogramType(e.target.value as HistogramType) }}
+                className="serif"
+            >
                 <option value="Line">Line</option>
                 <option value="Line (cumulative)">Line (cumulative)</option>
                 <option value="Bar">Bar</option>

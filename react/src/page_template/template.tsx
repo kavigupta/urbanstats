@@ -17,6 +17,8 @@ import '../common.css'
 import '../components/article.css'
 import { mobileLayout } from '../utils/responsive'
 
+import { useColors } from './settings'
+
 export function PageTemplate({
     screencap_elements = undefined,
     has_universe_selector = false,
@@ -30,6 +32,9 @@ export function PageTemplate({
 }): ReactNode {
     const [hamburger_open, set_hamburger_open] = useState(false)
     const [screenshot_mode, set_screenshot_mode] = useState(false)
+    const colors = useColors()
+
+    document.body.style.backgroundColor = colors.background
 
     const has_screenshot_button = screencap_elements !== undefined
 
@@ -38,7 +43,7 @@ export function PageTemplate({
             return
         }
         try {
-            await create_screenshot(screencap_elements(), has_universe_selector ? curr_universe : undefined)
+            await create_screenshot(screencap_elements(), has_universe_selector ? curr_universe : undefined, colors)
         }
         catch (e) {
             console.error(e)
@@ -56,7 +61,7 @@ export function PageTemplate({
     return (
         <Fragment>
             <meta name="viewport" content="width=600" />
-            <div className={mobileLayout() ? 'main_panel_mobile' : 'main_panel'}>
+            <div className={mobileLayout() ? 'main_panel_mobile' : 'main_panel'} style={{ backgroundColor: colors.background }}>
                 <Header
                     hamburger_open={hamburger_open}
                     set_hamburger_open={set_hamburger_open}

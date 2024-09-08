@@ -3,6 +3,7 @@
 import React, { ReactNode } from 'react'
 
 import '../common.css'
+import { useColors } from '../page_template/settings'
 
 function Hamburger({ isOpen }: { isOpen: boolean }): ReactNode {
     return (
@@ -52,6 +53,7 @@ function Hamburger({ isOpen }: { isOpen: boolean }): ReactNode {
 }
 
 export function Nav({ hamburger_open, set_hamburger_open }: { hamburger_open: boolean, set_hamburger_open: (newValue: boolean) => void }): ReactNode {
+    const colors = useColors()
     const toggleHamburger = (): void => {
         set_hamburger_open(!hamburger_open)
     }
@@ -97,7 +99,7 @@ export function Nav({ hamburger_open, set_hamburger_open }: { hamburger_open: bo
                 
                 .navigation-entry {
                     display: ${hamburger_open ? 'inline' : 'none'};
-                    background-color: #fff8f0;
+                    background-color: ${colors.background};
                     min-height: 100vh;
                     width: 75vw;
                     margin-top: 50px;

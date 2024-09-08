@@ -7,7 +7,7 @@ import React, { ReactNode } from 'react'
 import { loadProtobuf } from '../load_json'
 import { Basemap } from '../mapper/settings'
 import { article_link, shape_link } from '../navigation/links'
-import { relationship_key, useRelatedCheckboxSettings, useSetting } from '../page_template/settings'
+import { relationship_key, useColors, useRelatedCheckboxSettings, useSetting } from '../page_template/settings'
 import { UNIVERSE_CONTEXT } from '../universe'
 import { random_color } from '../utils/color'
 import { is_historical_cd } from '../utils/is_historical'
@@ -40,17 +40,7 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P> {
 
     override render(): ReactNode {
         return (
-            <div className="map-container-for-testing">
-                <div id={this.id} className="map" style={{ background: '#fff8f0', height: this.props.height ?? 400 }}>
-                    {/* place this on the right of the map */}
-                    <div style={
-                        { zIndex: 1000, position: 'absolute', right: 0, top: 0, padding: '1em' }
-                    }
-                    >
-                        {this.buttons()}
-                    </div>
-                </div>
-            </div>
+            <MapBody id={this.id} height={this.props.height} buttons={this.buttons()} />
         )
     }
 
@@ -329,6 +319,23 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P> {
     static override contextType = UNIVERSE_CONTEXT
 
     declare context: React.ContextType<typeof UNIVERSE_CONTEXT>
+}
+
+const MapBody = (props: { id: string, height: string | undefined, buttons: ReactNode }): ReactNode => {
+    const colors = useColors()
+    return (
+        <div className="map-container-for-testing">
+            <div id={props.id} className="map" style={{ background: colors.background, height: props.height ?? 400 }}>
+                {/* place this on the right of the map */}
+                <div style={
+                    { zIndex: 1000, position: 'absolute', right: 0, top: 0, padding: '1em' }
+                }
+                >
+                    {props.buttons}
+                </div>
+            </div>
+        </div>
+    )
 }
 
 interface MapProps extends MapGenericProps {
