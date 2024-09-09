@@ -275,16 +275,16 @@ shapefiles = dict(
         meta=dict(type="CCD", source="Census", type_category="Census"),
     ),
     cities=Shapefile(
-        hash_key="census_places_4",
+        hash_key="census_places_6",
         path="named_region_shapefiles/cb_2022_us_place_500k.zip",
         shortname_extractor=lambda x: x.NAMELSAD,
         longname_extractor=lambda x: f"{x.NAMELSAD}, {us.states.lookup(x.STATEFP).name}, USA",
         filter=lambda x: True,
         meta=dict(type="City", source="Census", type_category="US Subdivision"),
-        drop_dup=True,
+        drop_dup="counties",
     ),
     neighborhoods=Shapefile(
-        hash_key="zillow_neighborhoods_3",
+        hash_key="zillow_neighborhoods_6",
         path="named_region_shapefiles/Zillow_Neighborhoods/zillow.shp",
         shortname_extractor=lambda x: x["Name"] + ", " + x["City"],
         longname_extractor=lambda x: x["Name"]
@@ -295,7 +295,7 @@ shapefiles = dict(
         + ", USA",
         filter=lambda x: True,
         meta=dict(type="Neighborhood", source="Zillow", type_category="Small"),
-        drop_dup=True,
+        drop_dup="cousub",
     ),
     congress=CONGRESSIONAL_DISTRICTS,
     state_house=districts("sldl", "State House District", "HD"),

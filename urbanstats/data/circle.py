@@ -560,6 +560,42 @@ class relative:
         return direct
 
 
+def naive_directions_for_rows(rows):
+    """
+    Get the cardinal direction of each row, relative to the mean center of all rows.
+    """
+    resolution = 4
+    while True:
+        names = [
+            relative(range(len(rows)), "").apply_to(i, rows, resolution)
+            for i in range(len(rows))
+        ]
+        if len(set(names)) == len(names):
+            return names
+        resolution *= 2
+
+
+def naive_directions_for_rows_with_names(rows, names):
+    """
+    Like naive_directions_for_rows, but each row already has a name.
+
+    If the name is unique, it is kept. Otherwise, the direction is added
+        If all the names are the same, we only keep the direction.
+    """
+    name_to_idx = defaultdict(list)
+    for i, name in enumerate(names):
+        name_to_idx[name].append(i)
+    if len(name_to_idx) == 1:
+        return naive_directions_for_rows(rows)
+    names_out = names[:]
+    for name, idxs in name_to_idx.items():
+        if len(idxs) == 1:
+            continue
+        for idx, direction in zip(idxs, naive_directions_for_rows(rows.iloc[idxs])):
+            names_out[idx] = f"{name} {direction}"
+    return names_out
+
+
 def to_cardinal_direction(angle_revolutions):
     return {
         0: "East",
