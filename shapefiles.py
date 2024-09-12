@@ -475,6 +475,16 @@ shapefiles = dict(
 
 shapefiles_for_stats = dict(
     **shapefiles,
+    usa_only=Shapefile(
+        hash_key="usa_only_1",
+        path=lambda: load_file_for_type("Country"),
+        shortname_extractor=lambda x: x["shortname"],
+        longname_extractor=lambda x: x["longname"],
+        filter=lambda x: "USA" in x.longname,
+        meta=dict(type="Country", source="OpenDataSoft", type_category="International"),
+        american=True,
+        include_in_gpw=True,
+    ),
     states=Shapefile(
         hash_key="census_states_3",
         path="named_region_shapefiles/cb_2022_us_state_500k.zip",
