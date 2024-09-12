@@ -215,7 +215,7 @@ test('article-universe-statistic-page', async (t) => {
     await t
         .click(Selector('a').withText(/^Area$/))
     await t.expect(getLocation())
-        .eql(`${TARGET}/statistic.html?statname=Area&article_type=City&start=801&amount=20&universe=California%2C+USA`)
+        .eql(`${TARGET}/statistic.html?statname=Area&article_type=City&start=821&amount=20&universe=California%2C+USA`)
     await screencap(t, 'statistics/universe-statistic-page')
 })
 
