@@ -483,7 +483,7 @@ shapefiles_for_stats = dict(
         filter=lambda x: "USA" in x.longname,
         meta=dict(type="Country", source="OpenDataSoft", type_category="International"),
         american=True,
-        include_in_gpw=True,
+        include_in_gpw=False,
     ),
     states=Shapefile(
         hash_key="census_states_3",
@@ -506,6 +506,7 @@ shapefiles_for_stats = dict(
 )
 
 american_to_international = {
+    "USA": "Country",
     "State": "Subnational Region",
     "US Urban Center": "Urban Center",
 }
