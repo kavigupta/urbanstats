@@ -1,0 +1,107 @@
+[
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Born in us outside state %",
+      "question": "higher % of people who were born in the US and outside their state of residence",
+      "longname_a": "McAllen-Edinburg-Mission MSA, TX, USA",
+      "longname_b": "Raleigh MSA, NC, USA",
+      "stat_a": 0.0969507102533624,
+      "stat_b": 0.415202854386708
+    },
+    "b": {
+      "stat_column": "Utility gas heating %",
+      "question": "!FULL Which has a larger % of homes heated using utility gas?",
+      "longname_a": "Laredo city, Texas, USA",
+      "longname_b": "Chula Vista city, California, USA",
+      "stat_a": 0.1430666937725261,
+      "stat_b": 0.6916859935482372
+    },
+    "a_ease": 0.7433808553971487,
+    "b_ease": 0.3413597733711048
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "No leisure-time physical activity %",
+      "question": "higher % of adults who don't exercise (do leisure-time physical activity)",
+      "longname_a": "Memphis MSA, TN-MS-AR, USA",
+      "longname_b": "Baton Rouge MSA, LA, USA",
+      "stat_a": 0.2943029032774157,
+      "stat_b": 0.2704219929587839
+    },
+    "b": {
+      "stat_column": "Uninsured %",
+      "question": "higher % of people who are uninsured",
+      "longname_a": "San Diego County, California, USA",
+      "longname_b": "Tarrant County, Texas, USA",
+      "stat_a": 0.10093243187118682,
+      "stat_b": 0.21244521796835278
+    },
+    "a_ease": 0.2603619381202569,
+    "b_ease": 0.6820113314447592
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Commute Walk %",
+      "question": "higher % of people who commute by walking",
+      "longname_a": "Oxnard-San Buenaventura (Ventura) [Urban Area], CA, USA",
+      "longname_b": "Barnstable Town [Urban Area], MA, USA",
+      "stat_a": 0.01649642771231432,
+      "stat_b": 0.019237759915043957
+    },
+    "b": {
+      "stat_column": "Household Income < $50k %",
+      "question": "higher % of households who have household income under $50k",
+      "longname_a": "GA-07, USA",
+      "longname_b": "CA-44, USA",
+      "stat_a": 0.32241075742201547,
+      "stat_b": 0.3575435126164577
+    },
+    "a_ease": 0.6291172595520421,
+    "b_ease": 0.2261437908496732
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "High temperature Above 90\u00b0F %",
+      "question": "higher % of hot days (days with high temp over 90\u00b0F, population weighted)!TOOLTIP Population weighted weather statistics are calculated by computing the weather statistic for each person in the region and then averaging the results.",
+      "longname_a": "Butler County, Ohio, USA",
+      "longname_b": "Capitol Planning Region, Connecticut, USA",
+      "stat_a": 0.032463253538382926,
+      "stat_b": 0.02584524745672871
+    },
+    "b": {
+      "stat_column": "Individual Income > $100k %",
+      "question": "higher % of people who have individual income over $100k",
+      "longname_a": "4th Circuit, USA",
+      "longname_b": "9th Circuit, USA",
+      "stat_a": 0.1270459137498517,
+      "stat_b": 0.14473319897068734
+    },
+    "a_ease": 0.8750848608282417,
+    "b_ease": 0.46911065852002715
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "PW Density (r=4km) [GHS-POP]",
+      "question": "higher population-weighted density (r=4km)!TOOLTIP Population-weighted density is computed by computing the density within the given radius for each person in the region and then averaging the results. This is a better measure of the density that people actually experience.",
+      "longname_a": "Sana'a Urban Center, Yemen",
+      "longname_b": "Toronto Urban Center, Canada",
+      "stat_a": 18097.38671875,
+      "stat_b": 3612.881103515625
+    },
+    "b": {
+      "stat_column": "% units built pre-1970",
+      "question": "higher % units built pre-1970",
+      "longname_a": "Arizona, USA",
+      "longname_b": "Nebraska, USA",
+      "stat_a": 0.14916663667976277,
+      "stat_b": 0.44474204390569955
+    },
+    "a_ease": 0.4553415061295972,
+    "b_ease": 0.8753541076487252
+  }
+]
