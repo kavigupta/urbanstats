@@ -72,7 +72,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - id: set-matrix
-        run: echo "matrix=$(find . -name '*_test.ts' | jq -R -s -c 'split("\n")[:-1]')" >> $GITHUB_OUTPUT
+        run: echo "matrix=$(find . -name '*_test.ts' | jq -R -s -c 'gsub("./"; "") | gsub(".ts"; "") | split("\n")[:-1]')" >> $GITHUB_OUTPUT
         working-directory: react/test
 
   run-e2e-tests:
@@ -98,5 +98,32 @@ jobs:
           fluxbox >/dev/null 2>&1 & # needed for window resizing in Testcafe
           npm ci
           npx ts-node test/ci_proxy.ts &
-          npx testcafe -e chromium test/${{ matrix.test-file }}
+          npx testcafe -e "chromium '--window-size=1400,800' --hide-scrollbars" -s thumbnails=false --disable-gpu test/${{ matrix.test-file }}.ts
         working-directory: react
+      - uses: actions/upload-artifact@v4
+        with:
+          name: test-screenshots-${{ matrix.test-file }}
+          path: react/screenshots/${{ matrix.test-file }}
+
+  check-screenshots:
+    runs-on: ubuntu-22.04
+    needs: [build-and-push-image, list-e2e-tests, run-e2e-tests]
+    container:
+      image: ghcr.io/${{ needs.build-and-push-image.outputs.image_tag }}
+    strategy:
+      fail-fast: false
+      matrix:
+        test-file: ${{ fromJson(needs.list-e2e-tests.outputs.matrix) }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: test-screenshots-${{ matrix.test-file }}
+          path: react/screenshots/${{ matrix.test-file }}
+        continue-on-error: true
+      - name: Check screenshots
+        run: python3 tests/check_images.py --test=${{ matrix.test-file }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: screenshot-deltas-${{ matrix.test-file }}
+          path: react/delta/${{ matrix.test-file }}

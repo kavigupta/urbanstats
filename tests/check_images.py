@@ -74,9 +74,17 @@ def test_paths(reference, actual, delta_path):
     else:
         return True
 
-def test_all_same(reference="reference_test_screeshots", actual="react/screenshots"):
+def test_all_same(reference, actual):
     shutil.rmtree("react/delta", ignore_errors=True)
     errors = 0
+    for root, dirs, files in os.walk(actual):
+        for file in files:
+            actual_path = os.path.join(root, file)
+            relative = os.path.relpath(actual_path, actual)
+            reference_path = os.path.join(reference, relative)
+            if not os.path.isfile(reference_path):
+                errors += 1
+                print(f"Expected reference file {reference_path} not found")
     for root, dirs, files in os.walk(reference):
         for file in files:
             reference_path = os.path.join(root, file)
@@ -86,7 +94,15 @@ def test_all_same(reference="reference_test_screeshots", actual="react/screensho
             errors += not test_paths(reference_path, actual_path, delta_path)
     if errors:
         print(f"{errors} errors found")
+        exit(1)
     else:
         print("All tests passed")
 if __name__ == "__main__":
-    test_all_same()
+    import argparse
+    p = argparse.ArgumentParser()
+    p.add_argument("--test", required=False)
+    args = p.parse_args()
+    if args.test:
+        test_all_same(reference=f"reference_test_screenshots/{args.test}", actual=f"react/screenshots/{args.test}")
+    else:
+        test_all_same("reference_test_screeshots", "react/screenshots")

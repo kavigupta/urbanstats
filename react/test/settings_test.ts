@@ -17,7 +17,7 @@ urbanstatsFixture('settings regression test', `${TARGET}/article.html?longname=S
 
 test('check-settings-loaded', async (t) => {
     // screenshot path: images/first_test.png
-    await screencap(t, 'settings/check-settings-loaded')
+    await screencap(t)
     // check there's an element containing class Huntington_Library
     await t.expect(Selector('path').withAttribute('class', /tag-Huntington_Library/).exists).ok()
     // check that there's no element Pasadena_city or 91101
@@ -29,7 +29,7 @@ test('check-settings-loaded-desktop', async (t) => {
     // screenshot path: images/first_test.png
     await t.resizeWindow(1400, 800)
     await t.eval(() => { location.reload() })
-    await screencap(t, 'settings/check-settings-loaded-desktop')
+    await screencap(t)
 })
 
 test('check-settings-persistent', async (t) => {

@@ -6,7 +6,7 @@ import { RequestHook, Selector } from 'testcafe'
 
 import { TARGET, screencap, urbanstatsFixture } from './test_utils'
 
-async function quiz_screencap(t: TestController, name: string): Promise<void> {
+async function quiz_screencap(t: TestController): Promise<void> {
     await t.eval(() => {
         const elem = document.getElementById('quiz-timer')
         if (elem) {
@@ -14,7 +14,7 @@ async function quiz_screencap(t: TestController, name: string): Promise<void> {
         }
     })
     await t.wait(1000)
-    await screencap(t, name)
+    await screencap(t)
 }
 
 export class ProxyPersistent extends RequestHook {
@@ -119,21 +119,21 @@ quiz_fixture(
 test('quiz-clickthrough-test', async (t) => {
     await click_button(t, 'a')
     await t.wait(2000)
-    await quiz_screencap(t, 'quiz/clickthrough-1')
+    await quiz_screencap(t)
     await click_button(t, 'b')
     await t.wait(2000)
-    await quiz_screencap(t, 'quiz/clickthrough-2')
+    await quiz_screencap(t)
     await click_button(t, 'a')
     await t.wait(2000)
-    await quiz_screencap(t, 'quiz/clickthrough-3')
+    await quiz_screencap(t)
     await click_button(t, 'b')
     await t.wait(2000)
-    await quiz_screencap(t, 'quiz/clickthrough-4')
+    await quiz_screencap(t)
     await click_button(t, 'a')
     await t.wait(2000)
     await t.eval(() => { document.getElementById('quiz-timer')!.remove() })
     await t.wait(3000)
-    await quiz_screencap(t, 'quiz/clickthrough-5')
+    await quiz_screencap(t)
     const quiz_history: unknown = await t.eval(() => {
         return JSON.stringify(JSON.parse(localStorage.getItem('quiz_history')!))
     })
@@ -212,7 +212,7 @@ quiz_fixture(
 test('quiz-percentage-correct', async (t) => {
     await t.eval(() => { location.reload() })
     await click_buttons(t, ['a', 'a', 'a', 'a', 'a'])
-    await quiz_screencap(t, 'quiz/percentage-correct')
+    await quiz_screencap(t)
     await t.expect(await juxtastat_table()).eql(
         `${Array.from(Array(30).keys()).map(i => `${i + 30}|99|101`).join('\n')}\n` + `7|99|15\n`,
     )
@@ -225,7 +225,7 @@ test('quiz-percentage-correct', async (t) => {
     })
     await t.eval(() => { location.reload() })
     await click_buttons(t, ['a', 'a', 'a', 'a', 'a'])
-    await quiz_screencap(t, 'quiz/percentage-correct-2')
+    await quiz_screencap(t)
     await t.expect(await juxtastat_table()).eql(
         `${Array.from(Array(30).keys()).map(i => `${i + 30}|99|101`).join('\n')}\n` + `7|99|15\n` + `8|99|15\n`,
     )
@@ -332,7 +332,7 @@ test('quiz-results-test', async (t) => {
     await t.eval(() => { location.reload() })
     await t.wait(1000)
     await t.eval(() => { location.reload() })
-    await quiz_screencap(t, 'quiz/results-page')
+    await quiz_screencap(t)
     await check_text(t, 'Excellent! 😊 4/5', '🟩🟩🟩🟩🟥')
 })
 
@@ -369,7 +369,7 @@ urbanstatsFixture('several quiz results', `${TARGET}/quiz.html?date=90`, async (
 
 test('several-quiz-results-test', async (t) => {
     await t.eval(() => { location.reload() })
-    await quiz_screencap(t, 'quiz/results-page-several')
+    await quiz_screencap(t)
     // true true true true false
     await check_text(t, 'Excellent! 😊 4/5', '🟩🟩🟩🟩🟥')
     // go to the next quiz via changing the href

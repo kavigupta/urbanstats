@@ -35,7 +35,7 @@ test('histogram-basic-article', async (t) => {
     await t.eval(() => { location.reload() })
     await t.click(Selector('.expand-toggle'))
     await download_or_check_histogram(t, 'histogram-basic-article')
-    await screencap(t, 'histogram/histogram-basic-article')
+    await screencap(t)
 })
 
 test('histogram-basic-article-multi', async (t) => {
@@ -48,10 +48,10 @@ test('histogram-basic-article-multi', async (t) => {
     for (let i = 0; i < count; i++) {
         await t.click(Selector('.expand-toggle').nth(i))
     }
-    await screencap(t, 'histogram/histogram-basic-article-multi')
-    await download_image(t, 'histogram/histogram-basic-article-multi-screenshot')
-    await download_histogram(t, 'histogram/histogram-basic-article-multi-histogram-0', 0)
-    await download_histogram(t, 'histogram/histogram-basic-article-multi-histogram-1', 1)
+    await screencap(t)
+    await download_image(t)
+    await download_histogram(t, 0)
+    await download_histogram(t, 1)
 })
 
 urbanstatsFixture('comparison test heterogenous', comparison_page(['San Marino city, California, USA', pasadena, sw_sgv]))
@@ -62,7 +62,7 @@ test('histogram-basic-comparison', async (t) => {
     // select element with class name `expand-toggle`
     await t.click(Selector('.expand-toggle'))
     await download_or_check_histogram(t, 'histogram-basic-comparison')
-    await screencap(t, 'histogram/histogram-basic-comparison')
+    await screencap(t)
 })
 
 urbanstatsFixture('comparison test heterogenous with nan', comparison_page(['India', 'China', pasadena]))
@@ -73,7 +73,7 @@ test('histogram-basic-comparison-nan', async (t) => {
     // select element with class name `expand-toggle`
     await t.click(Selector('.expand-toggle'))
     await download_or_check_histogram(t, 'histogram-basic-comparison-nan')
-    await screencap(t, 'histogram/histogram-basic-comparison-nan')
+    await screencap(t)
 })
 
 urbanstatsFixture('comparison test heterogenous with nan in the middle', comparison_page(['India', pasadena, 'China']))
@@ -84,7 +84,7 @@ test('histogram-basic-comparison-nan-middle', async (t) => {
     // select element with class name `expand-toggle`
     await t.click(Selector('.expand-toggle'))
     await download_or_check_histogram(t, 'histogram-basic-comparison-nan-middle')
-    await screencap(t, 'histogram/histogram-basic-comparison-nan-middle')
+    await screencap(t)
 })
 
 urbanstatsFixture('comparison ordering test', `${TARGET}/comparison.html?longnames=%5B%22USA%22%2C%22United+Kingdom%22%5D`)
@@ -92,5 +92,5 @@ urbanstatsFixture('comparison ordering test', `${TARGET}/comparison.html?longnam
 test('histogram-ordering', async (t) => {
     await t.click(Selector('.expand-toggle'))
     await download_or_check_histogram(t, 'histogram-ordering')
-    await screencap(t, 'histogram/histogram-ordering')
+    await screencap(t)
 })
