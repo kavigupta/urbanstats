@@ -1,12 +1,9 @@
 import {
     SEARCH_FIELD, TARGET, getLocation, screencap,
+    urbanstatsFixture,
 } from './test_utils'
 
-fixture('shorter article test')
-    .page(`${TARGET}/article.html?longname=San+Marino+city%2C+California%2C+USA`)
-    .beforeEach(async (t) => {
-        await t.eval(() => { localStorage.clear() })
-    })
+urbanstatsFixture('shorter article test', `${TARGET}/article.html?longname=San+Marino+city%2C+California%2C+USA`)
 
 test('search-test', async (t) => {
     await t

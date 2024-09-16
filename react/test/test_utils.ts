@@ -81,6 +81,7 @@ async function prep_for_image(t: TestController): Promise<void> {
 
 export async function screencap(t: TestController, name: string): Promise<void> {
     await prep_for_image(t)
+    // return t.takeElementScreenshot(Selector('body'), `${name}_${t.browser.name}.png`)
     return t.takeScreenshot({
     // include the browser name in the screenshot path
         path: `${name}_${t.browser.name}.png`,
@@ -130,3 +131,34 @@ export async function download_or_check_string(t: TestController, string: string
         fs.writeFileSync(path_to_file, string)
     }
 }
+
+export function urbanstatsFixture(name: string, url: string, beforeEach: undefined | ((t: TestController) => Promise<void>) = undefined): FixtureFn {
+    if (url.startsWith('/')) {
+        url = TARGET + url
+    }
+    else {
+        // assert url starts with TARGET
+        if (!url.startsWith(TARGET)) {
+            throw new Error(`URL ${url} does not start with ${TARGET}`)
+        }
+    }
+    return fixture(name)
+        .page(url)
+        .beforeEach(async (t) => {
+            await t.eval(() => { localStorage.clear() })
+            await t.resizeWindow(1400, 800)
+            await t.eval(() => { location.reload() })
+            if (beforeEach !== undefined) {
+                await beforeEach(t)
+            }
+        })
+}
+
+// export async function setInnerSize(t: TestController, width: number, height: number): Promise<void> {
+//     await t.resizeWindow(width, height)
+//     await t.eval(() => { location.reload() })
+//     // console.log(`Resized window to ${newWidth}x${newHeight}`)
+//     // console.log(`Inner size is now ${await t.eval(() => [window.innerWidth, window.innerHeight])}`)
+//     // // print out the size of the body element
+//     // console.log(`Body size is now ${await t.eval(() => [document.body.clientWidth, document.body.clientHeight])}`)
+// }

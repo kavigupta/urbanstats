@@ -1,12 +1,8 @@
 import { Selector } from 'testcafe'
 
-import { TARGET, getLocation, screencap } from './test_utils'
+import { TARGET, getLocation, screencap, urbanstatsFixture } from './test_utils'
 
-fixture('statistics')
-    .page(`${TARGET}/article.html?longname=Indianapolis+IN+HRR%2C+USA`)
-    .beforeEach(async (t) => {
-        await t.eval(() => { localStorage.clear() })
-    })
+urbanstatsFixture('statistics', `${TARGET}/article.html?longname=Indianapolis+IN+HRR%2C+USA`)
 
 test('statistics-page', async (t) => {
     await t.resizeWindow(1400, 800)
@@ -28,11 +24,7 @@ test('statistics-page', async (t) => {
         .eql(`${TARGET}/data-credit.html#explanation_population`)
 })
 
-fixture('statistics-navigation')
-    .page(`${TARGET}/statistic.html?statname=Population&article_type=Hospital+Referral+Region&start=21&amount=20`)
-    .beforeEach(async (t) => {
-        await t.eval(() => { localStorage.clear() })
-    })
+urbanstatsFixture('statistics-navigation', `${TARGET}/statistic.html?statname=Population&article_type=Hospital+Referral+Region&start=21&amount=20`)
 
 test('statistics-navigation-left', async (t) => {
     await t
@@ -94,12 +86,7 @@ test('statistics-navigation-last-page', async (t) => {
         .eql(url)
 })
 
-fixture('statistic universe selector test')
-    .page(`${TARGET}/statistic.html?statname=Population&article_type=City&start=3461&amount=20`)
-    // no local storage
-    .beforeEach(async (t) => {
-        await t.eval(() => { localStorage.clear() })
-    })
+urbanstatsFixture('statistic universe selector test', `${TARGET}/statistic.html?statname=Population&article_type=City&start=3461&amount=20`)
 
 test('statistic-universe-selector-test', async (t) => {
     await t
@@ -114,11 +101,7 @@ test('statistic-universe-selector-test', async (t) => {
         .eql(`${TARGET}/statistic.html?statname=Population&article_type=City&start=3461&amount=20&universe=Puerto+Rico%2C+USA`)
 })
 
-fixture('statistic ascending descending')
-    .page(`${TARGET}/statistic.html?statname=Population&article_type=Subnational+Region&start=1&amount=10`)
-    .beforeEach(async (t) => {
-        await t.eval(() => { localStorage.clear() })
-    })
+urbanstatsFixture('statistic ascending descending', `${TARGET}/statistic.html?statname=Population&article_type=Subnational+Region&start=1&amount=10`)
 
 // get elements on page
 
@@ -180,8 +163,7 @@ test('statistic-ascending-descending-check-click', async (t) => {
     await t.expect(Selector('div').withText('▼').exists).ok()
 })
 
-fixture('statistic ascending')
-    .page(`${TARGET}/statistic.html?statname=Households+With+no+Vehicle+%25&article_type=Subnational+Region&start=21&amount=20&order=ascending&universe=USA`)
+urbanstatsFixture('statistic ascending', `${TARGET}/statistic.html?statname=Households+With+no+Vehicle+%25&article_type=Subnational+Region&start=21&amount=20&order=ascending&universe=USA`)
 
 test('statistic-ascending-page', async (t) => {
     // We should see the state with the least vehicles, which is DC
