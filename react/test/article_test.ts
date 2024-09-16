@@ -8,7 +8,7 @@ import {
 
 urbanstatsFixture('longer article test', '/article.html?longname=California%2C+USA')
 
-test.only('california-article-test', async (t) => {
+test('california-article-test', async (t) => {
     // screenshot path: images/first_test.png
     await screencap(t, 'article/california')
 })
