@@ -4,6 +4,8 @@ import shutil
 import numpy as np
 from PIL import Image
 
+border_color = [0xab, 0xcd, 0xef, 0xff]
+
 def pad_images(ref, act):
     if ref.shape[0] > act.shape[0]:
         act = np.pad(act, ((0, ref.shape[0] - act.shape[0]), (0, 0), (0, 0)))
@@ -15,34 +17,33 @@ def pad_images(ref, act):
         ref = np.pad(ref, ((0, 0), (0, act.shape[1] - ref.shape[1]), (0, 0)))
     return ref, act
 
-def get_region_size(bitmap, location):
-    queue = [location]
-    visited = set()
-    while queue:
-        x, y = queue.pop()
-        if not (0 <= x < bitmap.shape[0] and 0 <= y < bitmap.shape[1]):
-            continue
-        if (x, y) in visited:
-            continue
-        visited.add((x, y))
-        if bitmap[x, y]:
-            queue.append((x + 1, y))
-            queue.append((x - 1, y))
-            queue.append((x, y + 1))
-            queue.append((x, y - 1))
-    return len(visited)
+def plurality_color(arr):
+    arr = arr.astype(np.uint32) << np.arange(24, -1, -8)
+    arr = arr.sum(-1)
+    arr = arr.flatten()
+    unique, counts = np.unique(arr, return_counts=True)
+    plur = unique[counts.argmax()]
+    return np.array([
+        (plur >> x) & 0xff
+        for x in range(24, -1, -8)
+    ])
 
-def region_size_bounded(bitmask, size=4 * 4):
-    return all(get_region_size(bitmask, (x, y)) <= size for x, y in zip(*np.where(bitmask)))
+def difference_minimal(act, ref, bgc):
+    number_non_border = (ref != border_color).any(-1).sum()
+    number_distinct_pixels = (act != ref).any(-1).sum()
+    number_non_bg_non_border = ((ref != border_color).any(-1) & (ref != bgc).any(-1)).sum()
+    frac_distinct = number_distinct_pixels / number_non_border
+    frac_filled = number_non_bg_non_border / number_non_border
+    frac_filled = max(frac_filled, 0.1)
+    return frac_distinct / frac_filled < 0.1
 
 def handle_normalized_map(ref, act):
-    ys, xs = np.where((ref == [0xab, 0xcd, 0xef, 0xff]).all(-1))
+    ys, xs = np.where((ref == border_color).all(-1))
     if ys.size == 0:
         return
     ymin, ymax = ys.min(), ys.max()
     xmin, xmax = xs.min(), xs.max()
-    bitmask = (act[ymin:ymax, xmin:xmax] != ref[ymin:ymax, xmin:xmax]).any(-1)
-    if not region_size_bounded(bitmask):
+    if not difference_minimal(act[ymin:ymax, xmin:xmax], ref[ymin:ymax, xmin:xmax], plurality_color(ref)):
         return
     act[ymin:ymax, xmin:xmax] = ref[ymin:ymax, xmin:xmax]
 
