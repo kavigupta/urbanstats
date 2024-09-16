@@ -59,5 +59,5 @@ export function universe_is_american(universe: string): boolean {
 
 export function longname_is_exclusively_american(universe: string): boolean {
     // if longname ends with ", USA", then it's exclusively American
-    return universe.endsWith(', USA') || universe == 'USA'
+    return universe.endsWith(', USA') || universe === 'USA'
 }
