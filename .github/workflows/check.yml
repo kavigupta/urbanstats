@@ -108,6 +108,7 @@ jobs:
   check-screenshots:
     runs-on: ubuntu-22.04
     needs: [build-and-push-image, list-e2e-tests, run-e2e-tests]
+    if: ${{ !cancelled() && needs.build-and-push-image.result == 'success' && needs.list-e2e-tests.result == 'success' }} # Should run even if e2e tests fail
     container:
       image: ghcr.io/${{ needs.build-and-push-image.outputs.image_tag }}
     strategy:
