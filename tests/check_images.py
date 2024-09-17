@@ -82,6 +82,10 @@ def test_all_same(reference="reference_test_screeshots", actual="react/screensho
             reference_path = os.path.join(root, file)
             relative = os.path.relpath(reference_path, reference)
             actual_path = os.path.join(actual, relative)
+            if not os.path.exists(actual_path):
+                print(f"File {actual_path} is missing")
+                errors += 1
+                continue
             delta_path = os.path.join("react/delta", relative)
             errors += not test_paths(reference_path, actual_path, delta_path)
     if errors:
