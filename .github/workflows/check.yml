@@ -98,12 +98,19 @@ jobs:
           fluxbox >/dev/null 2>&1 & # needed for window resizing in Testcafe
           npm ci
           npx ts-node test/ci_proxy.ts &
-          npx testcafe -e "chromium '--window-size=1400,800' --hide-scrollbars --disable-gpu" -s thumbnails=false  test/${{ matrix.test-file }}.ts
+          npx testcafe -e "chromium '--window-size=1400,800' --hide-scrollbars --disable-gpu" \
+            -s thumbnails=false \
+            --video videos \
+            test/${{ matrix.test-file }}.ts
         working-directory: react
       - uses: actions/upload-artifact@v4
         with:
           name: screenshots-${{ matrix.test-file }}
           path: react/screenshots
+      - uses: actions/upload-artifact@v4
+        with:
+          name: videos-${{ matrix.test-file }}
+          path: react/videos
 
   check-screenshots:
     runs-on: ubuntu-22.04
