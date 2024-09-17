@@ -103,7 +103,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: test-screenshots-${{ matrix.test-file }}
-          path: react/screenshots/${{ matrix.test-file }}
+          path: react/screenshots
 
   check-screenshots:
     runs-on: ubuntu-22.04
@@ -119,7 +119,7 @@ jobs:
       - uses: actions/download-artifact@v4
         with:
           name: test-screenshots-${{ matrix.test-file }}
-          path: react/screenshots/${{ matrix.test-file }}
+          path: react/screenshots
         continue-on-error: true
       - name: Check screenshots
         run: python3 tests/check_images.py --test=${{ matrix.test-file }}
@@ -127,4 +127,14 @@ jobs:
         if: "!cancelled()"
         with:
           name: screenshot-deltas-${{ matrix.test-file }}
-          path: react/delta/${{ matrix.test-file }}
+          path: react/delta
+
+  merge-screenshots:
+    runs-on: ubuntu-22.04
+    needs: [run-e2e-tests, check-screenshots]
+    if: "!cancelled()"
+    steps:
+      - uses: actions/upload-artifact/merge@v4
+        with:
+          name: screenshot-results
+          pattern: "{test-screenshots,screenshot-deltas}-*"
