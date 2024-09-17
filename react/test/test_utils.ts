@@ -130,3 +130,25 @@ export async function download_or_check_string(t: TestController, string: string
         fs.writeFileSync(path_to_file, string)
     }
 }
+
+export function urbanstatsFixture(name: string, url: string, beforeEach: undefined | ((t: TestController) => Promise<void>) = undefined): FixtureFn {
+    if (url.startsWith('/')) {
+        url = TARGET + url
+    }
+    else {
+        // assert url starts with TARGET
+        if (!url.startsWith(TARGET)) {
+            throw new Error(`URL ${url} does not start with ${TARGET}`)
+        }
+    }
+    return fixture(name)
+        .page(url)
+        .beforeEach(async (t) => {
+            await t.eval(() => { localStorage.clear() })
+            await t.resizeWindow(1400, 800)
+            await t.eval(() => { location.reload() })
+            if (beforeEach !== undefined) {
+                await beforeEach(t)
+            }
+        })
+}

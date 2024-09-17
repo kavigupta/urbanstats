@@ -2,14 +2,11 @@
 
 cd react
 
-for browser in chrome firefox ; do
+for browser in "chrome --no-first-run '--window-size=1400,800' --hide-scrollbars --disable-gpu"; do
     for test_file in test/*_test.ts ; do
-        npx testcafe -e $browser $test_file
+        npx testcafe -e "$browser" $test_file -s thumbnails=false
     done
 done
-
-# npx testcafe -e "chrome '--window-size=1400,800'" test/article_test.js
-# npx testcafe -e "firefox -width 1400 -height 800" test/article_test.js
 
 cd ..
 
