@@ -142,6 +142,7 @@ jobs:
         with:
           name: delta
           pattern: "delta-*"
+        continue-on-error: true
       - uses: actions/upload-artifact/merge@v4
         with:
           name: combined
