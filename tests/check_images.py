@@ -113,13 +113,13 @@ if __name__ == "__main__":
         test_all_same(
             reference=f"reference_test_screenshots/{args.test}",
             actual=f"react/screenshots/{args.test}", 
-            delta=f"react/delta/{args.test}"
+            delta=f"react/delta/{args.test}",
             changed=f"react/changed_screenshots/{args.test}"
         )
     else:
         test_all_same(
             reference="reference_test_screenshots", 
             actual="react/screenshots", 
-            delta="react/delta"
+            delta="react/delta",
             changed=f"react/changed_screenshots"
         )
