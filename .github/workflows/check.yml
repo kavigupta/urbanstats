@@ -146,3 +146,4 @@ jobs:
         with:
           name: combined
           pattern: "{screenshots,delta}"
+          separate-directories: true
