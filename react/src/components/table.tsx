@@ -532,11 +532,33 @@ export function Ordinal(props: { ordinal: number, total: number, type: string, s
 }
 
 function EditableNumber(props: { number: number, onNewNumber: (number: number) => void }): ReactNode {
+    /*
+     * This code is weird because the `ContentEditable` needs to use refs.
+     * See https://www.npmjs.com/package/react-contenteditable
+     */
+
     const contentEditable: React.Ref<HTMLElement> = useRef(null)
     const [html, setHtml] = useState(props.number.toString())
 
     const handleChange = (evt: ContentEditableEvent): void => {
         setHtml(evt.target.value)
+    }
+
+    const handleSubmit = (): void => {
+        const number = parseInt(contentEditable.current!.innerText)
+        if (!Number.isNaN(number) && number !== props.number) {
+            props.onNewNumber(number)
+        }
+    }
+
+    const selectAll = (): void => {
+        setTimeout(() => {
+            const range = document.createRange()
+            range.selectNodeContents(contentEditable.current!)
+            const selection = window.getSelection()
+            selection?.removeAllRanges()
+            selection?.addRange(range)
+        }, 0)
     }
 
     return (
@@ -548,14 +570,14 @@ function EditableNumber(props: { number: number, onNewNumber: (number: number) =
             onChange={handleChange}
             onKeyDown={(e: React.KeyboardEvent) => {
                 if (e.key === 'Enter') {
-                    const number = parseInt(contentEditable.current!.innerText || '')
-                    if (!Number.isNaN(number)) {
-                        props.onNewNumber(number)
-                    }
+                    handleSubmit()
                     e.preventDefault()
                 }
             }}
+            onBlur={handleSubmit}
             tagName="span" // Use a custom HTML tag (uses a div by default)
+            inputMode="decimal"
+            onFocus={selectAll}
         />
     )
 };
