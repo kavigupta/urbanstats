@@ -124,6 +124,7 @@ jobs:
       - name: Check screenshots
         run: python3 tests/check_images.py --test=${{ matrix.test-file }}
       - uses: actions/upload-artifact@v4
+        if: "!cancelled()"
         with:
           name: screenshot-deltas-${{ matrix.test-file }}
           path: react/delta/${{ matrix.test-file }}
