@@ -132,6 +132,7 @@ jobs:
   merge-screenshots:
     runs-on: ubuntu-22.04
     needs: [run-e2e-tests, check-screenshots]
+    if: "!cancelled()"
     steps:
       - uses: actions/upload-artifact/merge@v4
         with:
