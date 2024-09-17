@@ -76,6 +76,9 @@ async function prep_for_image(t: TestController): Promise<void> {
         for (const x of Array.from(document.getElementsByClassName('juxtastat-user-id'))) {
             x.innerHTML = '&lt;USER ID&gt;'
         }
+
+        // remove the flashing text caret
+        document.querySelectorAll('input[type=text]').forEach((element) => { element.setAttribute('style', `${element.getAttribute('style')} caret-color: transparent;`) })
     })
     // Wait for the map to finish loading
     while (await Selector('.map-container-loading-for-testing').exists) {
