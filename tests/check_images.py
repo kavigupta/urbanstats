@@ -90,6 +90,10 @@ def test_all_same(reference, actual, delta):
             reference_path = os.path.join(root, file)
             relative = os.path.relpath(reference_path, reference)
             actual_path = os.path.join(actual, relative)
+            if not os.path.isfile(actual_path):
+                errors += 1
+                print(f"Expected actual file {actual_path} not found")
+                continue
             delta_path = os.path.join(delta, relative)
             errors += not test_paths(reference_path, actual_path, delta_path)
     if errors:
@@ -105,4 +109,4 @@ if __name__ == "__main__":
     if args.test:
         test_all_same(reference=f"reference_test_screenshots/{args.test}", actual=f"react/screenshots/{args.test}", delta=f"react/delta/{args.test}")
     else:
-        test_all_same(reference="reference_test_screeshots", actual="react/screenshots", delta="react/delta")
+        test_all_same(reference="reference_test_screenshots", actual="react/screenshots", delta="react/delta")
