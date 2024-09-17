@@ -138,6 +138,11 @@ jobs:
         with:
           name: delta-${{ matrix.test-file }}
           path: react/delta
+      - uses: actions/upload-artifact@v4
+        if: "!cancelled()"
+        with:
+          name: changed_screenshots-${{ matrix.test-file }}
+          path: react/changed_screenshots
 
   merge-screenshots:
     runs-on: ubuntu-22.04
@@ -155,6 +160,11 @@ jobs:
         continue-on-error: true
       - uses: actions/upload-artifact/merge@v4
         with:
+          name: changed_screenshots
+          pattern: "changed_screenshots-*"
+        continue-on-error: true
+      - uses: actions/upload-artifact/merge@v4
+        with:
           name: combined
-          pattern: "{screenshots,delta}"
+          pattern: "{screenshots,delta,changed_screenshots}"
           separate-directories: true
