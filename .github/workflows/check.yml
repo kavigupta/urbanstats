@@ -102,7 +102,7 @@ jobs:
         working-directory: react
       - uses: actions/upload-artifact@v4
         with:
-          name: test-screenshots-${{ matrix.test-file }}
+          name: screenshots-${{ matrix.test-file }}
           path: react/screenshots
 
   check-screenshots:
@@ -118,7 +118,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/download-artifact@v4
         with:
-          name: test-screenshots-${{ matrix.test-file }}
+          name: screenshots-${{ matrix.test-file }}
           path: react/screenshots
         continue-on-error: true
       - name: Check screenshots
@@ -126,7 +126,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: "!cancelled()"
         with:
-          name: screenshot-deltas-${{ matrix.test-file }}
+          name: delta-${{ matrix.test-file }}
           path: react/delta
 
   merge-screenshots:
@@ -136,5 +136,13 @@ jobs:
     steps:
       - uses: actions/upload-artifact/merge@v4
         with:
-          name: screenshot-results
-          pattern: "{test-screenshots,screenshot-deltas}-*"
+          name: screenshots
+          pattern: "screenshots-*"
+      - uses: actions/upload-artifact/merge@v4
+        with:
+          name: delta
+          pattern: "delta-*"
+      - uses: actions/upload-artifact/merge@v4
+        with:
+          name: combined
+          pattern: "{screenshots,delta}"
