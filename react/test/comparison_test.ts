@@ -1,6 +1,6 @@
 import { Selector } from 'testcafe'
 
-import { TARGET, comparison_page, download_image, getLocation, screencap } from './test_utils'
+import { TARGET, comparison_page, download_image, getLocation, screencap, urbanstatsFixture } from './test_utils'
 
 export const upper_sgv = 'Upper San Gabriel Valley CCD [CCD], Los Angeles County, California, USA'
 export const pasadena = 'Pasadena CCD [CCD], Los Angeles County, California, USA'
@@ -8,11 +8,7 @@ export const sw_sgv = 'Southwest San Gabriel Valley CCD [CCD], Los Angeles Count
 export const east_sgv = 'East San Gabriel Valley CCD [CCD], Los Angeles County, California, USA'
 export const chicago = 'Chicago city [CCD], Cook County, Illinois, USA'
 
-fixture('comparison test heterogenous')
-    .page(comparison_page(['San Marino city, California, USA', pasadena, sw_sgv]))
-    .beforeEach(async (t) => {
-        await t.eval(() => { localStorage.clear() })
-    })
+urbanstatsFixture('comparison test heterogenous', comparison_page(['San Marino city, California, USA', pasadena, sw_sgv]))
 
 test('comparison-3-desktop-heterogenous', async (t) => {
     await t.resizeWindow(1400, 800)
@@ -26,11 +22,7 @@ test('comparison-3-mobile-heterogenous', async (t) => {
     await screencap(t, 'comparison/heterogenous-comparison-mobile')
 })
 
-fixture('comparison test homogenous (2)')
-    .page(comparison_page([upper_sgv, sw_sgv]))
-    .beforeEach(async (t) => {
-        await t.eval(() => { localStorage.clear() })
-    })
+urbanstatsFixture('comparison test homogenous (2)', comparison_page([upper_sgv, sw_sgv]))
 
 test('comparison-2-mobile', async (t) => {
     await t.resizeWindow(400, 800)
@@ -38,11 +30,7 @@ test('comparison-2-mobile', async (t) => {
     await screencap(t, 'comparison/basic-comparison-2-mobile')
 })
 
-fixture('comparison test homogenous (3)')
-    .page(comparison_page([upper_sgv, pasadena, sw_sgv]))
-    .beforeEach(async (t) => {
-        await t.eval(() => { localStorage.clear() })
-    })
+urbanstatsFixture('comparison test homogenous (3)', comparison_page([upper_sgv, pasadena, sw_sgv]))
 
 test('comparison-3-desktop', async (t) => {
     await t.resizeWindow(1400, 800)
@@ -114,11 +102,7 @@ test('comparison-3-editable-number-third', async (t) => {
         .eql(comparison_page([upper_sgv, pasadena, chicago]))
 })
 
-fixture('plotted-across-180')
-    .page(`${TARGET}/comparison.html?longnames=%5B%22England%2C+United+Kingdom%22%2C%22Alaska%2C+USA%22%2C%22Chukotskiy+avtonomnyy+okrug%2C+Russian+Federation%22%5D`)
-    .beforeEach(async (t) => {
-        await t.eval(() => { localStorage.clear() })
-    })
+urbanstatsFixture('plotted-across-180', `${TARGET}/comparison.html?longnames=%5B%22England%2C+United+Kingdom%22%2C%22Alaska%2C+USA%22%2C%22Chukotskiy+avtonomnyy+okrug%2C+Russian+Federation%22%5D`)
 
 test('comparison-3-plotted-across-180', async (t) => {
     await t.resizeWindow(1400, 800)

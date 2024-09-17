@@ -3,14 +3,10 @@ import { Selector } from 'testcafe'
 import {
     SEARCH_FIELD, TARGET, check_all_category_boxes, check_textboxes, comparison_page, download_image,
     getLocation, screencap,
+    urbanstatsFixture,
 } from './test_utils'
 
-fixture('longer article test')
-    .page(`${TARGET}/article.html?longname=California%2C+USA`)
-// no local storage
-    .beforeEach(async (t) => {
-        await t.eval(() => { localStorage.clear() })
-    })
+urbanstatsFixture('longer article test', '/article.html?longname=California%2C+USA')
 
 test('california-article-test', async (t) => {
     // screenshot path: images/first_test.png
@@ -26,11 +22,7 @@ test('neighboring-state-test', async (t) => {
         .eql(`${TARGET}/article.html?longname=Arizona%2C+USA`)
 })
 
-fixture('shorter article test')
-    .page(`${TARGET}/article.html?longname=San+Marino+city%2C+California%2C+USA`)
-    .beforeEach(async (t) => {
-        await t.eval(() => { localStorage.clear() })
-    })
+urbanstatsFixture('shorter article test', `/article.html?longname=San+Marino+city%2C+California%2C+USA`)
 
 test('san-marino-article-test', async (t) => {
     await screencap(t, 'article/san-marino')
@@ -141,12 +133,7 @@ test('create-comparison-from-article', async (t) => {
         .eql(comparison_page(['San Marino city, California, USA', 'Pasadena city, California, USA']))
 })
 
-fixture('article universe selector test')
-    .page(`${TARGET}/article.html?longname=San+Marino+city%2C+California%2C+USA`)
-// no local storage
-    .beforeEach(async (t) => {
-        await t.eval(() => { localStorage.clear() })
-    })
+urbanstatsFixture('article universe selector test', `/article.html?longname=San+Marino+city%2C+California%2C+USA`)
 
 test('article-universe-selector-test', async (t) => {
     await t
@@ -161,12 +148,7 @@ test('article-universe-selector-test', async (t) => {
         .eql(`${TARGET}/article.html?longname=San+Marino+city%2C+California%2C+USA&universe=California%2C+USA`)
 })
 
-fixture('article universe selector test international')
-    .page(`${TARGET}/article.html?longname=Delhi+%5BNew+Delhi%5D+Urban+Center%2C+India`)
-// no local storage
-    .beforeEach(async (t) => {
-        await t.eval(() => { localStorage.clear() })
-    })
+urbanstatsFixture('article universe selector test international', `/article.html?longname=Delhi+%5BNew+Delhi%5D+Urban+Center%2C+India`)
 
 test('article-universe-selector-test', async (t) => {
     await t
@@ -182,12 +164,7 @@ test('article-universe-selector-test', async (t) => {
     await screencap(t, 'article/delhi-india')
 })
 
-fixture('article universe navigation test')
-    .page(`${TARGET}/article.html?longname=San+Marino+city%2C+California%2C+USA&universe=California%2C+USA`)
-// no local storage
-    .beforeEach(async (t) => {
-        await t.eval(() => { localStorage.clear() })
-    })
+urbanstatsFixture('article universe navigation test', `/article.html?longname=San+Marino+city%2C+California%2C+USA&universe=California%2C+USA`)
 
 test('article-universe-right-arrow', async (t) => {
     // click right population arrow
@@ -262,12 +239,7 @@ test('article-universe-compare-different', async (t) => {
     await screencap(t, 'comparison/universe-compare-different')
 })
 
-fixture('article universe state test')
-    .page(`${TARGET}/article.html?longname=California%2C+USA`)
-// no local storage
-    .beforeEach(async (t) => {
-        await t.eval(() => { localStorage.clear() })
-    })
+urbanstatsFixture('article universe state test', `/article.html?longname=California%2C+USA`)
 
 test('article-universe-state-world', async (t) => {
     // go to the world
@@ -284,12 +256,7 @@ test('article-universe-state-world', async (t) => {
     await screencap(t, 'article/california-world')
 })
 
-fixture('article universe state from subnational test')
-    .page(`${TARGET}/article.html?longname=Kerala%2C+India`)
-// no local storage
-    .beforeEach(async (t) => {
-        await t.eval(() => { localStorage.clear() })
-    })
+urbanstatsFixture('article universe state from subnational test', `/article.html?longname=Kerala%2C+India`)
 
 test('article-universe-state-from-subnational', async (t) => {
     await screencap(t, 'article/kerala-india')
@@ -301,12 +268,7 @@ test('article-universe-state-from-subnational', async (t) => {
     await screencap(t, 'article/california-world-from-kerala')
 })
 
-fixture('all stats test')
-    .page(`${TARGET}/article.html?longname=California%2C+USA`)
-// no local storage
-    .beforeEach(async (t) => {
-        await t.eval(() => { localStorage.clear() })
-    })
+urbanstatsFixture('all stats test', `/article.html?longname=California%2C+USA`)
 
 test('california-all-stats', async (t) => {
     await t.resizeWindow(1400, 800)
@@ -316,12 +278,7 @@ test('california-all-stats', async (t) => {
 })
 
 // selected because the gz changed in statistic classes
-fixture('all stats test regression')
-    .page(`${TARGET}/article.html?longname=Charlotte%2C+Maine%2C+USA`)
-// no local storage
-    .beforeEach(async (t) => {
-        await t.eval(() => { localStorage.clear() })
-    })
+urbanstatsFixture('all stats test regression', `/article.html?longname=Charlotte%2C+Maine%2C+USA`)
 
 test('charlotte-all-stats', async (t) => {
     await t.resizeWindow(1400, 800)
