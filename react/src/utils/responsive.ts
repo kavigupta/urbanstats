@@ -1,21 +1,26 @@
-export function mobileLayout(): boolean {
-    return window.innerWidth <= 1100
+import { useSyncExternalStore } from 'react'
+
+export function useMobileLayout(): boolean {
+    return useSyncExternalStore((listener) => {
+        window.addEventListener('resize', listener)
+        return () => { window.removeEventListener('resize', listener) }
+    }, () => window.innerWidth <= 1100)
 }
 
-export function headerTextClass(): string {
-    return `centered_text ${mobileLayout() ? 'headertext_mobile' : 'headertext'}`
+export function useHeaderTextClass(): string {
+    return `centered_text ${useMobileLayout() ? 'headertext_mobile' : 'headertext'}`
 }
 
-export function subHeaderTextClass(): string {
-    return `centered_text ${mobileLayout() ? 'subheadertext_mobile' : 'subheadertext'}`
+export function useSubHeaderTextClass(): string {
+    return `centered_text ${useMobileLayout() ? 'subheadertext_mobile' : 'subheadertext'}`
 }
 
-export function comparisonHeadStyle(
+export function useComparisonHeadStyle(
     align: React.CSSProperties['textAlign'] = 'center',
 ): React.CSSProperties {
     // bold
     return {
-        fontSize: mobileLayout() ? '15px' : '20px',
+        fontSize: useMobileLayout() ? '15px' : '20px',
         fontWeight: 500,
         margin: '0',
         padding: '0',

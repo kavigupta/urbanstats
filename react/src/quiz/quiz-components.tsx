@@ -2,7 +2,7 @@ import React, { ReactNode } from 'react'
 
 import '../common.css'
 import '../components/quiz.css'
-import { headerTextClass } from '../utils/responsive'
+import { useHeaderTextClass } from '../utils/responsive'
 
 import { nameOfQuizKind } from './quiz'
 import { History } from './statistics'
@@ -12,7 +12,7 @@ export function Header({ quiz }: { quiz: { kind: 'juxtastat' | 'retrostat', name
     if (typeof quiz.name !== 'number') {
         text += ` ${quiz.name}`
     }
-    return (<div className={headerTextClass()}>{text}</div>)
+    return (<div className={useHeaderTextClass()}>{text}</div>)
 }
 
 export function Footer(props: { length: number, history: History[string] }): ReactNode {
