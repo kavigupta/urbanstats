@@ -89,13 +89,11 @@ function test_file_name(): string {
     throw new Error(`Test file not found in args: ${process.argv}`)
 }
 
+let screenshot_number = 0
+
 function screenshot_path(t: TestController): string {
-    let number = 0
-    const resultPath = (): string => `${test_file_name()}/${t.browser.name}/${t.test.name}-${number}.png`
-    while (fs.existsSync(resultPath())) {
-        number++
-    }
-    return resultPath()
+    screenshot_number++
+    return `${test_file_name()}/${t.browser.name}/${t.test.name}-${screenshot_number}.png`
 }
 
 export async function screencap(t: TestController): Promise<void> {
@@ -164,6 +162,7 @@ export function urbanstatsFixture(name: string, url: string, beforeEach: undefin
     return fixture(name)
         .page(url)
         .beforeEach(async (t) => {
+            screenshot_number = 0
             await t.eval(() => { localStorage.clear() })
             await t.resizeWindow(1400, 800)
             await t.eval(() => { location.reload() })
