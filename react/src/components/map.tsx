@@ -90,7 +90,7 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
             zoomSnap: this.delta, zoomDelta: this.delta, wheelPxPerZoomLevel: 60 / this.delta,
         })
         this.map = map
-        await this.componentDidUpdate()
+        await this.componentDidUpdate(this.props, this.state)
     }
 
     /**
@@ -186,8 +186,11 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
         return JSON.stringify(geojson)
     }
 
-    override async componentDidUpdate(): Promise<void> {
-        await this.updateToVersion(this.version + 1)
+    override async componentDidUpdate(prevProps: P, prevState: MapState): Promise<void> {
+        if (this.version === 0 || JSON.stringify(prevProps) !== JSON.stringify(this.props) || JSON.stringify({ ...prevState, loading: undefined }) !== JSON.stringify({ ...this.state, loading: undefined })) {
+            // Only update if something that's not the loading has changed, or it's the first load
+            await this.updateToVersion(this.version + 1)
+        }
     }
 
     async updateToVersion(version: number): Promise<void> {
