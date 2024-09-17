@@ -104,10 +104,12 @@ jobs:
             test/${{ matrix.test-file }}.ts
         working-directory: react
       - uses: actions/upload-artifact@v4
+        if: "!cancelled()"
         with:
           name: screenshots-${{ matrix.test-file }}
           path: react/screenshots
       - uses: actions/upload-artifact@v4
+        if: "!cancelled()"
         with:
           name: videos-${{ matrix.test-file }}
           path: react/videos
