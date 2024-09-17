@@ -151,20 +151,5 @@ export function urbanstatsFixture(name: string, url: string, beforeEach: undefin
             if (beforeEach !== undefined) {
                 await beforeEach(t)
             }
-            // print out the outer size of the window
-            console.log(`Outer size: ${await t.eval(() => [window.outerWidth, window.outerHeight])}`)
-            // print out the size of the inner window
-            console.log(`Inner size: ${await t.eval(() => [window.innerWidth, window.innerHeight])}`)
-            // print out the size of the body element
-            console.log(`Body size is now ${await t.eval(() => [document.body.clientWidth, document.body.clientHeight])}`)
         })
 }
-
-// export async function setInnerSize(t: TestController, width: number, height: number): Promise<void> {
-//     await t.resizeWindow(width, height)
-//     await t.eval(() => { location.reload() })
-//     // console.log(`Resized window to ${newWidth}x${newHeight}`)
-//     // console.log(`Inner size is now ${await t.eval(() => [window.innerWidth, window.innerHeight])}`)
-//     // // print out the size of the body element
-//     // console.log(`Body size is now ${await t.eval(() => [document.body.clientWidth, document.body.clientHeight])}`)
-// }
