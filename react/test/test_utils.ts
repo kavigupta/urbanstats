@@ -63,7 +63,7 @@ export async function check_all_category_boxes(t: TestController): Promise<void>
 async function prep_for_image(t: TestController): Promise<void> {
     await t.wait(1000)
     await t.eval(() => {
-    // disable the leaflet map
+        // disable the base map, so that we're not testing the tiles
         for (const x of Array.from(document.getElementsByClassName('leaflet-tile-pane'))) {
             x.remove()
         }
@@ -77,6 +77,10 @@ async function prep_for_image(t: TestController): Promise<void> {
             x.innerHTML = '&lt;USER ID&gt;'
         }
     })
+    // Wait for the map to finish loading
+    while (await Selector('.map-container-loading-for-testing').exists) {
+        await t.wait(1000)
+    }
 }
 
 function test_file_name(): string {
