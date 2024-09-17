@@ -13,7 +13,7 @@ test('statistics-page', async (t) => {
     // assert url is https://urbanstats.org/statistic.html?statname=Population&article_type=Hospital+Referral+Region&start=21&amount=20
     await t.expect(getLocation())
         .eql(`${TARGET}/statistic.html?statname=Population&article_type=Hospital+Referral+Region&start=21&amount=20&universe=USA`)
-    await screencap(t, 'statistics/population')
+    await screencap(t)
     const count = Selector('div').withAttribute('style', /background-color: rgb\(212, 181, 226\);/)
         .withText(/Indianapolis IN HRR, USA/)
     await t.expect(count.count).gte(1, 'Need highlighting')
@@ -54,14 +54,14 @@ test('statistics-navigation-amount', async (t) => {
         .click(Selector('option').withText('50'))
     await t.expect(getLocation())
         .eql(`${TARGET}/statistic.html?statname=Population&article_type=Hospital+Referral+Region&start=1&amount=50`)
-    await screencap(t, 'statistics/amount-50')
+    await screencap(t)
     // set to All
     await t
         .click(amount)
         .click(Selector('option').withText('All'))
     await t.expect(getLocation())
         .eql(`${TARGET}/statistic.html?statname=Population&article_type=Hospital+Referral+Region&start=1&amount=All`)
-    await screencap(t, 'statistics/amount-all')
+    await screencap(t)
 })
 
 test('statistics-navigation-last-page', async (t) => {
@@ -78,7 +78,7 @@ test('statistics-navigation-last-page', async (t) => {
     await t.expect(getLocation())
         .eql(url)
 
-    await screencap(t, 'statistics/last-page')
+    await screencap(t)
     // going right again does nothing
     await t
         .click(Selector('button').withText('>'))
@@ -91,7 +91,7 @@ urbanstatsFixture('statistic universe selector test', `${TARGET}/statistic.html?
 test('statistic-universe-selector-test', async (t) => {
     await t
         .click(Selector('img').withAttribute('class', 'universe-selector'))
-    await screencap(t, 'statistic-dropped-down-universe-selector')
+    await screencap(t)
     await t
         .click(
             Selector('img')

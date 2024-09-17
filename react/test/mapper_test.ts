@@ -16,7 +16,7 @@ async function check_geojson(t: TestController, path: string): Promise<void> {
 urbanstatsFixture('mapping', `${TARGET}/mapper.html?settings=H4sIAAAAAAAAA1WOzQ6CQAyEX8XUeCOGixeO%2BggejSEFy7Kh%2B5PdRSWEd7dLjMHe2plvpjMociqg76d60PYBFVwTJoICOs2JAlQzkMWGSbQOOZIoo22TdjZrafIk0O9UwBODzv4I1e2%2BLAW0jl2oo8RugKitYlrtPObDmbEddgcQIKDxGytrSxjgG2Rwq%2FlAkZJoFk3eL2NDPbF%2BQ27OpBRPUiTIiotnX64j0Iu06uWr8ngSd4OR%2FtNdNJLzAd2YY7skAQAA`)
 
 test('state-map', async (t) => {
-    await screencap(t, 'state-map')
+    await screencap(t)
     await check_geojson(t, 'state-map-geojson')
 })
 
@@ -26,6 +26,6 @@ test('mapping-more-complex', async (t) => {
     await t.resizeWindow(1400, 800)
     await t.eval(() => { location.reload() })
     await t.wait(5000)
-    await screencap(t, 'mapping-more-complex')
+    await screencap(t)
     await check_geojson(t, 'mapping-more-complex-geojson')
 })
