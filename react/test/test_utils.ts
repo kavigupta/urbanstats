@@ -84,6 +84,7 @@ async function prep_for_image(t: TestController): Promise<void> {
     while (await Selector('.map-container-loading-for-testing').exists) {
         await t.wait(1000)
     }
+    await t.wait(1000) // Wait for map to finish rendering
 }
 
 function test_file_name(): string {
