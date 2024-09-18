@@ -1,4 +1,4 @@
-import React, { ReactNode } from 'react'
+import React, { ReactNode, useId } from 'react'
 
 import './related.css'
 import { article_link } from '../navigation/links'
@@ -69,6 +69,8 @@ function RelatedList(props: { articleType: string, buttonType: string, regions: 
         return name
     }
 
+    const checkId = useId()
+
     return (
         <li className="list_of_lists">
             <div style={{ display: 'flex' }}>
@@ -78,6 +80,7 @@ function RelatedList(props: { articleType: string, buttonType: string, regions: 
                             name=""
                             setting_key={setting_key}
                             classNameToUse="related_checkbox"
+                            id={checkId}
                         />
                     </div>
                 </div>
@@ -95,7 +98,9 @@ function RelatedList(props: { articleType: string, buttonType: string, regions: 
                                             paddingTop: '1pt', fontWeight: 500,
                                         }}
                                     >
-                                        {displayName(relationship_type)}
+                                        <label htmlFor={checkId}>
+                                            {displayName(relationship_type)}
+                                        </label>
                                     </li>
                                     {
                                         regions.map((row, i) => (
