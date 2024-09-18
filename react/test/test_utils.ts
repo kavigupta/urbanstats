@@ -164,7 +164,6 @@ export function urbanstatsFixture(name: string, url: string, beforeEach: undefin
             screenshot_number = 0
             await t.eval(() => { localStorage.clear() })
             await t.resizeWindow(1400, 800)
-            await t.eval(() => { location.reload() })
             if (beforeEach !== undefined) {
                 await beforeEach(t)
             }

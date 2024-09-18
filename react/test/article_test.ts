@@ -14,7 +14,6 @@ test('california-article-test', async (t) => {
 })
 
 test('neighboring-state-test', async (t) => {
-    await t.wait(1000)
     await screencap(t)
     await t
         .click(Selector('path').withAttribute('class', /tag-Arizona,_USA/))
@@ -85,35 +84,22 @@ test('uncheck-box-mobile', async (t) => {
     // Find div with class checkbox-setting containing a label with text "Race"
     // and a checkbox, then find the checkbox
     await t.resizeWindow(400, 800)
-    // refresh
-    await t.eval(() => { location.reload() })
-    await t.wait(1000)
     await check_textboxes(t, ['Race'])
 
-    await screencap(t)
-    // refresh
-    await t.eval(() => { location.reload() })
     await screencap(t)
 })
 
 test('uncheck-box-desktop', async (t) => {
     await t.resizeWindow(1400, 800)
-    // refresh
-    await t.eval(() => { location.reload() })
-    await t.wait(1000)
+
     await check_textboxes(t, ['Race'])
 
-    await screencap(t)
-    // refresh
-    await t.eval(() => { location.reload() })
     await screencap(t)
 })
 
 test('simple', async (t) => {
     await t.resizeWindow(1400, 800)
-    // refresh
-    await t.eval(() => { location.reload() })
-    await t.wait(1000)
+
     await check_textboxes(t, ['Simple Ordinals'])
 
     await screencap(t)
@@ -272,7 +258,6 @@ urbanstatsFixture('all stats test', `/article.html?longname=California%2C+USA`)
 
 test('california-all-stats', async (t) => {
     await t.resizeWindow(1400, 800)
-    await t.eval(() => { location.reload() })
     await check_all_category_boxes(t)
     await screencap(t)
 })
@@ -282,7 +267,6 @@ urbanstatsFixture('all stats test regression', `/article.html?longname=Charlotte
 
 test('charlotte-all-stats', async (t) => {
     await t.resizeWindow(1400, 800)
-    await t.eval(() => { location.reload() })
     await check_all_category_boxes(t)
     await screencap(t)
 })

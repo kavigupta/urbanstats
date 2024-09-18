@@ -12,13 +12,11 @@ urbanstatsFixture('comparison test heterogenous', comparison_page(['San Marino c
 
 test('comparison-3-desktop-heterogenous', async (t) => {
     await t.resizeWindow(1400, 800)
-    await t.eval(() => { location.reload() })
     await screencap(t)
 })
 
 test('comparison-3-mobile-heterogenous', async (t) => {
     await t.resizeWindow(400, 800)
-    await t.eval(() => { location.reload() })
     await screencap(t)
 })
 
@@ -26,7 +24,6 @@ urbanstatsFixture('comparison test homogenous (2)', comparison_page([upper_sgv, 
 
 test('comparison-2-mobile', async (t) => {
     await t.resizeWindow(400, 800)
-    await t.eval(() => { location.reload() })
     await screencap(t)
 })
 
@@ -34,19 +31,16 @@ urbanstatsFixture('comparison test homogenous (3)', comparison_page([upper_sgv, 
 
 test('comparison-3-desktop', async (t) => {
     await t.resizeWindow(1400, 800)
-    await t.eval(() => { location.reload() })
     await screencap(t)
 })
 
 test('comparison-3-mobile', async (t) => {
     await t.resizeWindow(400, 800)
-    await t.eval(() => { location.reload() })
     await screencap(t)
 })
 
 test('comparison-3-download', async (t) => {
     await t.resizeWindow(1400, 800)
-    await t.eval(() => { location.reload() })
     await download_image(t)
 })
 
@@ -106,6 +100,5 @@ urbanstatsFixture('plotted-across-180', `${TARGET}/comparison.html?longnames=%5B
 
 test('comparison-3-plotted-across-180', async (t) => {
     await t.resizeWindow(1400, 800)
-    await t.eval(() => { location.reload() })
     await screencap(t)
 })

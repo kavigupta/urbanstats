@@ -19,7 +19,6 @@ urbanstatsFixture('article check and uncheck test', `${TARGET}/article.html?long
 
 test('histogram-article-check-uncheck', async (t) => {
     await t.resizeWindow(800, 800)
-    await t.eval(() => { location.reload() })
     // count the number of `histogram-svg-panel` elements
     await t.expect(Selector('.histogram-svg-panel').count).eql(0)
     await t.click(Selector('.expand-toggle'))
@@ -32,7 +31,6 @@ urbanstatsFixture('article test', `${TARGET}/article.html?longname=Germany&unive
 
 test('histogram-basic-article', async (t) => {
     await t.resizeWindow(800, 800)
-    await t.eval(() => { location.reload() })
     await t.click(Selector('.expand-toggle'))
     await download_or_check_histogram(t, 'histogram-basic-article')
     await screencap(t)
@@ -40,10 +38,7 @@ test('histogram-basic-article', async (t) => {
 
 test('histogram-basic-article-multi', async (t) => {
     await t.resizeWindow(800, 800)
-    await t.eval(() => { location.reload() })
     await check_textboxes(t, ['Other Density Metrics'])
-    await t.eval(() => { location.reload() })
-    await t.wait(1000)
     const count = await Selector('.expand-toggle').count
     for (let i = 0; i < count; i++) {
         await t.click(Selector('.expand-toggle').nth(i))
@@ -58,7 +53,6 @@ urbanstatsFixture('comparison test heterogenous', comparison_page(['San Marino c
 
 test('histogram-basic-comparison', async (t) => {
     await t.resizeWindow(800, 800)
-    await t.eval(() => { location.reload() })
     // select element with class name `expand-toggle`
     await t.click(Selector('.expand-toggle'))
     await download_or_check_histogram(t, 'histogram-basic-comparison')
@@ -69,7 +63,6 @@ urbanstatsFixture('comparison test heterogenous with nan', comparison_page(['Ind
 
 test('histogram-basic-comparison-nan', async (t) => {
     await t.resizeWindow(800, 800)
-    await t.eval(() => { location.reload() })
     // select element with class name `expand-toggle`
     await t.click(Selector('.expand-toggle'))
     await download_or_check_histogram(t, 'histogram-basic-comparison-nan')
@@ -80,7 +73,6 @@ urbanstatsFixture('comparison test heterogenous with nan in the middle', compari
 
 test('histogram-basic-comparison-nan-middle', async (t) => {
     await t.resizeWindow(800, 800)
-    await t.eval(() => { location.reload() })
     // select element with class name `expand-toggle`
     await t.click(Selector('.expand-toggle'))
     await download_or_check_histogram(t, 'histogram-basic-comparison-nan-middle')
