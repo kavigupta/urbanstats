@@ -63,7 +63,7 @@ export async function check_all_category_boxes(t: TestController): Promise<void>
 async function prep_for_image(t: TestController): Promise<void> {
     await t.wait(1000)
     await t.eval(() => {
-    // disable the leaflet map
+        // disable the base map, so that we're not testing the tiles
         for (const x of Array.from(document.getElementsByClassName('leaflet-tile-pane'))) {
             x.remove()
         }
@@ -76,7 +76,15 @@ async function prep_for_image(t: TestController): Promise<void> {
         for (const x of Array.from(document.getElementsByClassName('juxtastat-user-id'))) {
             x.innerHTML = '&lt;USER ID&gt;'
         }
+
+        // remove the flashing text caret
+        document.querySelectorAll('input[type=text]').forEach((element) => { element.setAttribute('style', `${element.getAttribute('style')} caret-color: transparent;`) })
     })
+    // Wait for the map to finish loading
+    while (await Selector('.map-container-loading-for-testing').exists) {
+        await t.wait(1000)
+    }
+    await t.wait(1000) // Wait for map to finish rendering
 }
 
 export async function screencap(t: TestController, name: string): Promise<void> {
