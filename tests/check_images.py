@@ -59,34 +59,67 @@ def compute_delta_image(ref, act):
     delta = np.concatenate([ref, indicator], axis=1)
     return diff_mask.any(), delta
 
-def test_paths(reference, actual, delta_path):
+def test_paths(reference, actual, delta_path, changed_path):
     ref = np.array(Image.open(reference))
     act = np.array(Image.open(actual))
     diff, delta = compute_delta_image(ref, act)
     if diff:
-        try:
-            os.makedirs(os.path.dirname(delta_path))
-        except FileExistsError:
-            pass
+        os.makedirs(os.path.dirname(delta_path), exist_ok=True)
         Image.fromarray(delta).save(delta_path)
         print(f"{reference} and {actual} are different")
+        os.makedirs(os.path.dirname(changed_path), exist_ok=True)
+        shutil.copy(actual, changed_path)
         return False
     else:
         return True
 
-def test_all_same(reference="reference_test_screeshots", actual="react/screenshots"):
-    shutil.rmtree("react/delta", ignore_errors=True)
+def test_all_same(reference, actual, delta, changed):
+    shutil.rmtree(delta, ignore_errors=True)
     errors = 0
+    for root, dirs, files in os.walk(actual):
+        for file in files:
+            actual_path = os.path.join(root, file)
+            relative = os.path.relpath(actual_path, actual)
+            reference_path = os.path.join(reference, relative)
+            changed_path = os.path.join(changed, relative)
+            if not os.path.isfile(reference_path):
+                errors += 1
+                print(f"Expected reference file {reference_path} not found")
+                os.makedirs(os.path.dirname(changed_path), exist_ok=True)
+                shutil.copy(actual_path, changed_path)
     for root, dirs, files in os.walk(reference):
         for file in files:
             reference_path = os.path.join(root, file)
             relative = os.path.relpath(reference_path, reference)
             actual_path = os.path.join(actual, relative)
-            delta_path = os.path.join("react/delta", relative)
-            errors += not test_paths(reference_path, actual_path, delta_path)
+            changed_path = os.path.join(changed, relative)
+            if not os.path.isfile(actual_path):
+                errors += 1
+                print(f"Expected actual file {actual_path} not found")
+                continue
+            delta_path = os.path.join(delta, relative)
+            errors += not test_paths(reference_path, actual_path, delta_path, changed_path)
     if errors:
         print(f"{errors} errors found")
+        exit(1)
     else:
         print("All tests passed")
 if __name__ == "__main__":
-    test_all_same()
+    import argparse
+    p = argparse.ArgumentParser()
+    p.add_argument("--test", required=False)
+    args = p.parse_args()
+    if args.test:
+        test_all_same(
+            reference=f"reference_test_screenshots/{args.test}",
+            actual=f"react/screenshots/{args.test}", 
+            delta=f"react/delta/{args.test}",
+            changed=f"react/changed_screenshots/{args.test}"
+        )
+    else:
+        test_all_same(
+            reference="reference_test_screenshots", 
+            actual="react/screenshots", 
+            delta="react/delta",
+            changed=f"react/changed_screenshots"
+        )
