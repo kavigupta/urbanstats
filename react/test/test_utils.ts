@@ -87,31 +87,48 @@ async function prep_for_image(t: TestController): Promise<void> {
     await t.wait(1000) // Wait for map to finish rendering
 }
 
-export async function screencap(t: TestController, name: string): Promise<void> {
+function test_file_name(): string {
+    for (const arg of process.argv) {
+        const match = /^test\/(.+)\.ts$/.exec(arg)
+        if (match) {
+            return match[1]
+        }
+    }
+    throw new Error(`Test file not found in args: ${process.argv}`)
+}
+
+let screenshot_number = 0
+
+function screenshot_path(t: TestController): string {
+    screenshot_number++
+    return `${test_file_name()}/${t.browser.name}/${t.test.name}-${screenshot_number}.png`
+}
+
+export async function screencap(t: TestController): Promise<void> {
     await prep_for_image(t)
     return t.takeScreenshot({
     // include the browser name in the screenshot path
-        path: `${name}_${t.browser.name}.png`,
+        path: screenshot_path(t),
         fullPage: true,
     })
 }
 
-export async function grab_download(t: TestController, name: string, button: Selector): Promise<void> {
+export async function grab_download(t: TestController, button: Selector): Promise<void> {
     await prep_for_image(t)
     await t
         .click(button)
     await t.wait(3000)
-    copy_most_recent_file(t, name)
+    copy_most_recent_file(t)
 }
 
-export async function download_image(t: TestController, name: string): Promise<void> {
+export async function download_image(t: TestController): Promise<void> {
     const download = Selector('img').withAttribute('src', '/screenshot.png')
-    await grab_download(t, name, download)
+    await grab_download(t, download)
 }
 
-export async function download_histogram(t: TestController, name: string, nth: number): Promise<void> {
+export async function download_histogram(t: TestController, nth: number): Promise<void> {
     const download = Selector('img').withAttribute('src', '/download.png').nth(nth)
-    await grab_download(t, name, download)
+    await grab_download(t, download)
 }
 
 export function most_recent_download_path(): string {
@@ -121,10 +138,10 @@ export function most_recent_download_path(): string {
     return sorted[0]
 }
 
-function copy_most_recent_file(t: TestController, name: string): void {
+function copy_most_recent_file(t: TestController): void {
     // copy the file to the screenshots folder
     const screenshotsFolder = path.join(__dirname, '..', 'screenshots')
-    fs.copyFileSync(most_recent_download_path(), path.join(screenshotsFolder, `${name}_${t.browser.name}.png`))
+    fs.copyFileSync(most_recent_download_path(), path.join(screenshotsFolder, screenshot_path(t)))
 }
 
 export async function download_or_check_string(t: TestController, string: string, name: string): Promise<void> {
@@ -152,6 +169,7 @@ export function urbanstatsFixture(name: string, url: string, beforeEach: undefin
     return fixture(name)
         .page(url)
         .beforeEach(async (t) => {
+            screenshot_number = 0
             await t.eval(() => { localStorage.clear() })
             await t.resizeWindow(1400, 800)
             await t.eval(() => { location.reload() })
