@@ -20,6 +20,7 @@ from urbanstats.features.feature import feature_columns
 from urbanstats.osm.parks import park_overlap_percentages_all
 from urbanstats.statistics.collections.cdc_statistics import CDCStatistics
 from urbanstats.statistics.collections.census_basics import density_metrics
+from urbanstats.statistics.collections.usda_fra_statistics import USDAFRAStatistics
 from urbanstats.statistics.collections.weather import USWeatherStatistics
 from urbanstats.statistics.collections_list import statistic_collections
 from urbanstats.weather.to_blocks import weather_block_statistics
@@ -225,6 +226,7 @@ sum_keys_2010 = [
     *[f"{k}_2010" for k in housing_units],
     *[f"{k}_2010" for k in density_metrics],
     *CDCStatistics().name_for_each_statistic(),
+    *USDAFRAStatistics().name_for_each_statistic(),
 ]
 sum_keys_2010 = sorted(sum_keys_2010, key=str)
 COLUMNS_PER_JOIN = 33
