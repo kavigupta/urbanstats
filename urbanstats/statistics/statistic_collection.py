@@ -97,6 +97,14 @@ class CDCStatisticsCollection(StatisticCollection):
     def for_international(self):
         return False
 
+class USDAFRAStatisticsCollection(StatisticCollection):
+    # TODO we should probably have this actually pull the USDA FRA data, it currently does not.
+    def for_america(self):
+        return True
+
+    def for_international(self):
+        return False
+
 
 class ACSStatisticsColection(StatisticCollection):
     @abstractmethod
