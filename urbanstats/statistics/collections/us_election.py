@@ -1,4 +1,7 @@
-from election_data import vest_elections
+from election_data import (
+    aggregated_election_results,
+    vest_elections,
+)
 from urbanstats.statistics.statistic_collection import USElectionStatisticsCollection
 
 
@@ -31,6 +34,22 @@ class USElectionStatistics(USElectionStatisticsCollection):
             ): "!FULL Which swung towards Democrats more from 2016 to 2020?",
         }
 
+    def compute_statistics(self, shapefile, statistics_table, shapefile_table):
+        table = aggregated_election_results(shapefile)
+        for elect_k in vest_elections:
+            table[elect_k.name, "margin"] = (
+                table[elect_k.name, "dem"] - table[elect_k.name, "gop"]
+            ) / table[elect_k.name, "total"]
+
+        table[("2016-2020 Swing", "margin")] = (
+            table[("2020 Presidential Election", "margin")]
+            - table[("2016 Presidential Election", "margin")]
+        )
+
+        table = table[[x for x in table.columns if x[1] == "margin"]]
+
+        for k in table.columns:
+            statistics_table[k] = table[k]
+
     def mutate_statistic_table(self, statistics_table, shapefile_table):
-        # TODO this should be here not in the american_shapefile class
-        pass
+        raise NotImplementedError

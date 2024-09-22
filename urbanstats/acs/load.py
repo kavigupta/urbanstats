@@ -7,7 +7,7 @@ import us
 from cached_property import cached_property
 from permacache import permacache, stable_hash
 
-from election_data import with_election_results
+from census_blocks import all_densities_gpd
 from urbanstats.geometry.census_aggregation import aggregate_by_census_block
 
 TRACT_PREFIX_COUNT = 2 + 3 + 6  # state + county + tract
@@ -165,7 +165,7 @@ class ACSDataEntity:
     key_function=dict(acs_data_entity=stable_hash),
 )
 def get_acs_data(acs_data_entity):
-    data = with_election_results()
+    data = all_densities_gpd()
     acs_data = query_acs(
         sorted(acs_data_entity.var_for_concept),
         acs_data_entity.categories,
@@ -199,9 +199,12 @@ def aggregated_acs_data(year, entity, shapefile):
     acs_data = aggregate_by_census_block(year, shapefile, acs_data)
     return acs_data
 
+
 @permacache(
     "population_density/acs/aggregated_acs_data_us_pr",
-    key_function=dict(entity_us=stable_hash, entity_pr=stable_hash, shapefile=lambda x: x.hash_key),
+    key_function=dict(
+        entity_us=stable_hash, entity_pr=stable_hash, shapefile=lambda x: x.hash_key
+    ),
 )
 def aggregated_acs_data_us_pr(year, entity_us, entity_pr, shapefile):
     print("Aggregating ACS data for", entity_us.concept)

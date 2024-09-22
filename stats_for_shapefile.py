@@ -10,8 +10,7 @@ import tqdm.auto as tqdm
 from more_itertools import chunked
 from permacache import drop_if_equal, permacache, stable_hash
 
-from census_blocks import housing_units, racial_demographics
-from election_data import election_column_names, with_election_results
+from census_blocks import all_densities_gpd, housing_units, racial_demographics
 from urbanstats.census_2010.blocks_2010 import block_level_data_2010
 from urbanstats.features.extract_data import feature_data
 from urbanstats.features.feature import feature_columns
@@ -209,7 +208,6 @@ sum_keys_2020 = [
     *racial_demographics,
     *housing_units,
     *density_metrics,
-    *election_column_names,
     *feature_columns,
     "park_percent_1km_v2",
     *USWeatherStatistics().name_for_each_statistic(),
@@ -229,7 +227,7 @@ COLUMNS_PER_JOIN = 33
 
 @lru_cache(None)
 def block_level_data_2020():
-    blocks_gdf = with_election_results()
+    blocks_gdf = all_densities_gpd()
     feats = feature_data()
     [sh] = {x.shape for x in feats.values()}
     assert sh == (blocks_gdf.shape[0],)

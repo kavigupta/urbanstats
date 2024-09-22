@@ -73,14 +73,6 @@ def american_shapefile():
 
     full = pd.concat(full)
     full = full.reset_index(drop=True)
-    for elect in vest_elections:
-        full[elect.name, "margin"] = (
-            full[elect.name, "dem"] - full[elect.name, "gop"]
-        ) / full[elect.name, "total"]
-    full[("2016-2020 Swing", "margin")] = (
-        full[("2020 Presidential Election", "margin")]
-        - full[("2016 Presidential Election", "margin")]
-    )
     # Simply abolish local government tbh. How is this a thing.
     # https://www.openstreetmap.org/user/Minh%20Nguyen/diary/398893#:~:text=An%20administrative%20area%E2%80%99s%20name%20is%20unique%20within%20its%20immediate%20containing%20area%20%E2%80%93%20false
     # Ban both of these from the database
