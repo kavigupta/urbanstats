@@ -25,7 +25,12 @@ class SexualOrientationRelationshipStatusStatistics(ACSStatisticsColection):
         }
 
     def quiz_question_unused(self):
-        return []
+        return [
+            "sors_unpartnered_householder",
+            "sors_cohabiting_partnered_straight",
+            "sors_child",
+            "sors_other",
+        ]
 
     def mutate_statistic_table(self, statistics_table, shapefile_table):
         fractionalize(
