@@ -35,6 +35,9 @@ from urbanstats.statistics.collections.national_origin_language import (
 )
 from urbanstats.statistics.collections.occupation import OccupationStatistics
 from urbanstats.statistics.collections.race_census import RaceCensus
+from urbanstats.statistics.collections.sexual_orientation_and_relationship_status import (
+    SexualOrientationRelationshipStatusStatistics,
+)
 from urbanstats.statistics.collections.transportation_commute_time import (
     TransportationCommuteTimeStatistics,
 )
@@ -75,6 +78,7 @@ statistic_collections = (
     HouseHeating(),
     IndustryStatistics(),
     OccupationStatistics(),
+    SexualOrientationRelationshipStatusStatistics(),
     USElectionStatistics(),
     USFeatureDistanceStatistics(),
     USDAFRAStatistics(),
