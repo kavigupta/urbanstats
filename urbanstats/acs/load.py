@@ -8,6 +8,7 @@ from cached_property import cached_property
 from permacache import permacache, stable_hash
 
 from election_data import with_election_results
+from urbanstats.geometry.census_aggregation import aggregate_by_census_block
 
 TRACT_PREFIX_COUNT = 2 + 3 + 6  # state + county + tract
 BLOCK_GROUP_PREFIX_COUNT = TRACT_PREFIX_COUNT + 1  # block group
@@ -179,3 +180,32 @@ def get_acs_data(acs_data_entity):
         list(acs_data_entity.categories),
         parent=acs_data_entity.geography_level,
     )
+
+
+def combine_us_pr(us, pr):
+    us, pr = get_acs_data(us), get_acs_data(pr)
+    assert list(us) == list(pr) and (us.index == pr.index).all()
+    return us.fillna(0) + pr.fillna(0)
+
+
+@permacache(
+    "population_density/acs/aggregated_acs_data",
+    key_function=dict(entity=stable_hash, shapefile=lambda x: x.hash_key),
+)
+def aggregated_acs_data(year, entity, shapefile):
+    print("Aggregating ACS data for", entity.concept)
+    print("    on shapefile", shapefile.hash_key)
+    acs_data = get_acs_data(entity)
+    acs_data = aggregate_by_census_block(year, shapefile, acs_data)
+    return acs_data
+
+@permacache(
+    "population_density/acs/aggregated_acs_data_us_pr",
+    key_function=dict(entity_us=stable_hash, entity_pr=stable_hash, shapefile=lambda x: x.hash_key),
+)
+def aggregated_acs_data_us_pr(year, entity_us, entity_pr, shapefile):
+    print("Aggregating ACS data for", entity_us.concept)
+    print("    on shapefile", shapefile.hash_key)
+    acs_data = combine_us_pr(entity_us, entity_pr)
+    acs_data = aggregate_by_census_block(year, shapefile, acs_data)
+    return acs_data
