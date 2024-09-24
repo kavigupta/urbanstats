@@ -87,21 +87,11 @@ async function prep_for_image(t: TestController): Promise<void> {
     await t.wait(1000) // Wait for map to finish rendering
 }
 
-function test_file_name(): string {
-    for (const arg of process.argv) {
-        const match = /^test\/(.+)\.ts$/.exec(arg)
-        if (match) {
-            return match[1]
-        }
-    }
-    throw new Error(`Test file not found in args: ${process.argv}`)
-}
-
 let screenshot_number = 0
 
 function screenshot_path(t: TestController): string {
     screenshot_number++
-    return `${test_file_name()}/${t.browser.name}/${t.test.name}-${screenshot_number}.png`
+    return `${t.browser.name}/${t.test.name}-${screenshot_number}.png`
 }
 
 export async function screencap(t: TestController): Promise<void> {
