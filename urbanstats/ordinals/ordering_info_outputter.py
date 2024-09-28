@@ -52,9 +52,7 @@ def output_order_files(order_info, site_folder, universe, typ):
         lambda count: f"/order/{universe}/{typ}_{count}.gz",
     )
 
-    for statistic_column in tqdm.tqdm(
-        internal_statistic_names(), desc=f"outputting ordinals for {universe} {typ}"
-    ):
+    for statistic_column in internal_statistic_names():
         order_list = outputter.with_name(
             universe, typ, get_statistic_column_path(statistic_column)
         )
@@ -78,9 +76,7 @@ def output_data_files(order_info, site_folder, universe, typ):
         lambda count: f"/order/{universe}/{typ}_{count}_data.gz",
     )
 
-    for statistic_column in tqdm.tqdm(
-        internal_statistic_names(), desc=f"outputting data for {universe} {typ}"
-    ):
+    for statistic_column in internal_statistic_names():
         data_list = outputter.with_name(
             universe, typ, get_statistic_column_path(statistic_column)
         )
@@ -117,16 +113,18 @@ def output_indices(ordinal_info, site_folder, universe):
 def output_ordering_for_universe(ordinal_info, site_folder, universe):
     output_indices(ordinal_info, site_folder, universe)
     order_map = []
-    order_map += output_order_files(
-        ordinal_info,
-        site_folder,
-        universe,
-        "overall",
-    )
+    if (universe, "overall") in ordinal_info.universe_type_to_idx:
+        order_map += output_order_files(
+            ordinal_info,
+            site_folder,
+            universe,
+            "overall",
+        )
     data_map = []
-    for typ in sorted(
+    typs = sorted(
         {t for u, t in ordinal_info.universe_type if t != "overall" and u == universe}
-    ):
+    )
+    for typ in tqdm.tqdm(typs, desc=f"ords for {universe}"):
         order_map += output_order_files(ordinal_info, site_folder, universe, typ)
         data_map += output_data_files(ordinal_info, site_folder, universe, typ)
     return order_map, data_map
@@ -135,9 +133,10 @@ def output_ordering_for_universe(ordinal_info, site_folder, universe):
 def reorganize_counts_for_universe(ordinal_info, counts, universe):
     counts_reorganized = {}
     for col in internal_statistic_names():
-        counts_reorganized[col, "overall"] = int(
-            counts[col].get((universe, "overall"), 0)
-        )
+        if (universe, "overall") in counts[col]:
+            counts_reorganized[col, "overall"] = int(
+                counts[col].get((universe, "overall"), 0)
+            )
         for typ in sorted({t for _, t in ordinal_info.universe_type if t != "overall"}):
             if (universe, typ) not in counts[col]:
                 continue
