@@ -33,7 +33,8 @@ from urbanstats.consolidated_data.produce_consolidated_data import (
 from urbanstats.data.census_histogram import census_histogram
 from urbanstats.data.gpw import compute_gpw_data_for_shapefile_table
 from urbanstats.mapper.ramp import output_ramps
-from urbanstats.ordinals.compute_ordinals import compute_all_ordinals
+from urbanstats.ordinals.flat_ordinals import compute_flat_ordinals
+from urbanstats.ordinals.ordinal_info import fully_complete_ordinals
 from urbanstats.special_cases.merge_international import (
     merge_international_and_domestic,
 )
@@ -113,9 +114,18 @@ def shapefile_without_ordinals():
 @lru_cache(maxsize=None)
 def all_ordinals():
     full = shapefile_without_ordinals()
-    keys = internal_statistic_names()
-    all_ords = compute_all_ordinals(full, keys)
-    return all_ords
+
+    full["index_order"] = np.arange(len(full))
+    sorted_by_name = full.sort_values("longname")[::-1].reset_index(drop=True)
+    universe_typ = {
+        (u, t)
+        for us, t in zip(sorted_by_name.universes, sorted_by_name.type)
+        for u in us
+    }
+    universe_typ |= {(u, "overall") for u, _ in universe_typ}
+    universe_typ = sorted(universe_typ)
+    ordinal_info = fully_complete_ordinals(sorted_by_name, universe_typ)
+    return ordinal_info
 
 
 def next_prev(full):
@@ -149,6 +159,9 @@ def create_page_jsons(site_folder, full, ordering):
     long_to_short = dict(zip(full.longname, full.shortname))
     long_to_pop = dict(zip(full.longname, full.population))
     long_to_type = dict(zip(full.longname, full.type))
+    long_to_idx = {x: i for i, x in enumerate(full.longname)}
+
+    flat_ords = compute_flat_ordinals(full, ordering)
 
     relationships = full_relationships(long_to_type)
     for i in tqdm.trange(full.shape[0], desc="creating pages"):
@@ -160,7 +173,8 @@ def create_page_jsons(site_folder, full, ordering):
             long_to_short,
             long_to_pop,
             long_to_type,
-            ordering,
+            long_to_idx,
+            flat_ords,
         )
 
 
@@ -261,7 +275,7 @@ def main(
         if not no_index:
             export_index(shapefile_without_ordinals(), site_folder)
 
-        from urbanstats.ordinals.output_ordering import output_ordering
+        from urbanstats.ordinals.ordering_info_outputter import output_ordering
 
         output_ordering(site_folder, all_ordinals())
 

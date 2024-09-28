@@ -36,7 +36,8 @@ def create_page_json(
     long_to_short,
     long_to_population,
     long_to_type,
-    ordering_for_all_universes,
+    long_to_idx,
+    flat_ords,
 ):
     statistic_names = internal_statistic_names()
     idxs_by_type = indices(row.longname, row.type)
@@ -47,23 +48,22 @@ def create_page_json(
     data.article_type = row.type
     data.universes.extend(row.universes)
 
+    ords, percs = flat_ords.query(long_to_idx[row.longname])
+
     for idx in idxs_by_type:
         stat = statistic_names[idx]
         statrow = data.rows.add()
         statrow.statval = float(row[stat])
-        for universe in row.universes:
-            ordering = ordering_for_all_universes[universe]
-            ordinal_by_type = ordering.ordinal_by_type[row.type].ordinals_by_stat[stat]
-            ordinal_overall = ordering.overall_ordinal.ordinals_by_stat[stat]
-            statrow.ordinal_by_universe.append(
-                ord_or_zero(ordinal_by_type.ordinals.loc[row.longname, 0])
-            )
-            statrow.overall_ordinal_by_universe.append(
-                ord_or_zero(ordinal_overall.ordinals.loc[row.longname, 0])
-            )
-            statrow.percentile_by_population_by_universe.append(
-                float(ordinal_by_type.percentiles_by_population.loc[row.longname])
-            )
+
+        ordinals_by_type, ordinals_overall = ords[idx]
+        percs_by_typ, _ = percs[idx]
+
+        for ordinal_by_type, ordinal_overall, percentile_by_type in zip(
+            ordinals_by_type, ordinals_overall, percs_by_typ
+        ):
+            statrow.ordinal_by_universe.append(int(ordinal_by_type))
+            statrow.overall_ordinal_by_universe.append(int(ordinal_overall))
+            statrow.percentile_by_population_by_universe.append(percentile_by_type)
     for _, extra_stat in sorted(extra_stats().items()):
         data.extra_stats.append(extra_stat.create(row))
     for relationship_type in relationships:
