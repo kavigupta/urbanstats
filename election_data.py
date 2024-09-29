@@ -10,6 +10,7 @@ import us
 from permacache import permacache
 
 from census_blocks import all_densities_gpd
+from urbanstats.geometry.census_aggregation import aggregate_by_census_block
 
 
 @attr.s
@@ -123,17 +124,21 @@ def disaggregate_to_blocks(election):
     return mask, disaggregated
 
 
+@permacache(
+    "election_data/aggregated_election_results",
+    key_function=dict(shapefile=lambda x: x.hash_key),
+)
+def aggregated_election_results(shapefile):
+    return aggregate_by_census_block(2020, shapefile, election_results_by_block())
+
+
 @lru_cache(None)
-def with_election_results():
-    dense = all_densities_gpd()
-    blocks_edited = dense.copy()
+def election_results_by_block():
+    blocks_edited = {}
     for election in tqdm.tqdm(vest_elections):
         mask, disaggregated = disaggregate_to_blocks(election)
         for col in data_cols:
-            unmasked = np.zeros(blocks_edited.shape[0])
+            unmasked = np.zeros(mask.shape[0])
             unmasked[mask] = np.array(disaggregated[col])
             blocks_edited[(election.name, col)] = unmasked
-    return blocks_edited
-
-
-election_column_names = [(x.name, y) for x in vest_elections for y in data_cols]
+    return pd.DataFrame(blocks_edited)

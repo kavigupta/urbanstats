@@ -462,6 +462,13 @@ function DataCreditPanel(): ReactNode {
                             <a href="https://hifld-geoplatform.opendata.arcgis.com/datasets/geoplatform::public-schools/about">HIFLD</a>
                             .
                         </div>
+                        <NRef name="usda_fra">Grocery Stores</NRef>
+                        <div>
+                            We do not compute this using our algorithm. Instead, we use the USDA&apos;s Food Access Research Atlas,
+                            which has precomputed numbers by census tract, and we disaggregate these to the block level (using
+                            2010 census tracts) using overall population as a weight. For more information, see&nbsp;
+                            <a href="https://www.ers.usda.gov/data-products/food-access-research-atlas/">the USDA&apos;s website</a>
+                        </div>
                     </div>
                     <NRef name="gpw" h="h1">Gridded Population</NRef>
                     <div>

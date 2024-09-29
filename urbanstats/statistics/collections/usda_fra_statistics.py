@@ -2,6 +2,9 @@ from urbanstats.statistics.statistic_collection import USDAFRAStatisticsCollecti
 
 
 class USDAFRAStatistics(USDAFRAStatisticsCollection):
+    version = 3
+    tooltip = "!TOOLTIP The USDA defines a grocery store as a 'supermarket, supercenter, or large grocery store.'"
+
     def name_for_each_statistic(self):
         return {
             "lapophalfshare_usda_fra_1": "Within 0.5mi of a grocery store %",
@@ -18,13 +21,15 @@ class USDAFRAStatistics(USDAFRAStatisticsCollection):
 
     def quiz_question_names(self):
         return {
-            "lapophalfshare_usda_fra_1": "!FULL Which has more access to grocery stores (higher % of people within 0.5mi of a grocery store)?",
+            "lapophalfshare_usda_fra_1": "!FULL Which has more access to grocery stores (higher % of people within 0.5mi of a grocery store)?"
+            + self.tooltip,
+            "lapop1share_usda_fra_1": "!FULL Which has more access to grocery stores (higher % of people within 1mi of a grocery store)?"
+            + self.tooltip,
         }
 
     def quiz_question_unused(self):
         return [
-            # duplicates
-            "lapop1share_usda_fra_1",
+            # too low variance (almost all are 100%)
             "lapop10share_usda_fra_1",
             "lapop20share_usda_fra_1",
         ]
@@ -32,3 +37,5 @@ class USDAFRAStatistics(USDAFRAStatisticsCollection):
     def mutate_statistic_table(self, statistics_table, shapefile_table):
         for cdc in self.name_for_each_statistic():
             statistics_table[cdc] /= statistics_table["population_2010"]
+            # not having access to grocery stores -> having access to grocery stores
+            statistics_table[cdc] = 1 - statistics_table[cdc]
