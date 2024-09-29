@@ -17,7 +17,7 @@ class SexualOrientationRelationshipStatusStatistics(ACSStatisticsColection):
         return self.same_for_each_name("social")
 
     def explanation_page_for_each_statistic(self):
-        return self.same_for_each_name("social")
+        return self.same_for_each_name("sors")
 
     def quiz_question_names(self):
         return {
