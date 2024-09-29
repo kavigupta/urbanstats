@@ -23,7 +23,8 @@ class USDAFRAStatistics(USDAFRAStatisticsCollection):
         return {
             "lapophalfshare_usda_fra_1": "!FULL Which has more access to grocery stores (higher % of people within 0.5mi of a grocery store)?"
             + self.tooltip,
-            "lapop1share_usda_fra_1": "!FULL Which has more access to grocery stores (higher % of people within 1mi of a grocery store)?",
+            "lapop1share_usda_fra_1": "!FULL Which has more access to grocery stores (higher % of people within 1mi of a grocery store)?"
+            + self.tooltip,
         }
 
     def quiz_question_unused(self):
