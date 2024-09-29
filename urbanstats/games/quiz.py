@@ -62,6 +62,7 @@ difficulties = {
     "2010": 1.5,
     "health": 1.5,
     "climate": 1.5,
+    "relationships": 1.5,
     "income": 0.6,
     "main": 0.25,
     "misc": 2,
