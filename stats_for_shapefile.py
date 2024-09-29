@@ -10,10 +10,7 @@ import tqdm.auto as tqdm
 from more_itertools import chunked
 from permacache import drop_if_equal, permacache, stable_hash
 
-from census_blocks import housing_units, racial_demographics
-from election_data import election_column_names
-from urbanstats.acs.attach import with_acs_data
-from urbanstats.acs.entities import acs_columns
+from census_blocks import all_densities_gpd, housing_units, racial_demographics
 from urbanstats.census_2010.blocks_2010 import block_level_data_2010
 from urbanstats.features.extract_data import feature_data
 from urbanstats.features.feature import feature_columns
@@ -212,8 +209,6 @@ sum_keys_2020 = [
     *racial_demographics,
     *housing_units,
     *density_metrics,
-    *election_column_names,
-    *acs_columns,
     *feature_columns,
     "park_percent_1km_v2",
     *USWeatherStatistics().name_for_each_statistic(),
@@ -234,7 +229,7 @@ COLUMNS_PER_JOIN = 33
 
 @lru_cache(None)
 def block_level_data_2020():
-    blocks_gdf = with_acs_data()
+    blocks_gdf = all_densities_gpd()
     feats = feature_data()
     [sh] = {x.shape for x in feats.values()}
     assert sh == (blocks_gdf.shape[0],)
@@ -328,16 +323,19 @@ def compute_statistics_for_shapefile(
 
     for collection in statistic_collections:
         if collection.for_america():
-            collection.mutate_statistic_table(result, sf_fr)
+            collection.compute_statistics(sf, result, sf_fr)
 
     return result
 
 
 def compute_grouped_stats(blocks_gdf, s, sum_keys):
-    joined = s.sjoin(
+    joined = crosswalk(blocks_gdf, s, sum_keys)
+    grouped_stats = pd.DataFrame(joined[sum_keys]).groupby(joined.index).sum()
+    return grouped_stats
+
+def crosswalk(blocks_gdf, s, sum_keys):
+    return s.sjoin(
         blocks_gdf[[*sum_keys, "geometry"]].fillna(0),
         how="inner",
         predicate="intersects",
     )
-    grouped_stats = pd.DataFrame(joined[sum_keys]).groupby(joined.index).sum()
-    return grouped_stats
