@@ -5,6 +5,7 @@ from urbanstats.acs.load import (
     aggregated_acs_data_us_pr,
     get_acs_data,
 )
+from urbanstats.census_2010.usda_food_research_atlas import aggregated_usda_fra
 from urbanstats.geometry.census_aggregation import aggregate_by_census_block
 
 ORDER_CATEGORY_MAIN = 0
@@ -115,6 +116,9 @@ class USDAFRAStatisticsCollection(StatisticCollection):
     def for_international(self):
         return False
 
+    def compute_statistics(self, shapefile, statistics_table, shapefile_table):
+        t = aggregated_usda_fra(shapefile)
+        import IPython; IPython.embed()
 
 class ACSStatisticsColection(StatisticCollection):
     def year(self):
