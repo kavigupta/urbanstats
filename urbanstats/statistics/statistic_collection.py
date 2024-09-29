@@ -74,6 +74,9 @@ class StatisticCollection(ABC):
     def extra_stats(self):
         return {}
 
+    def __permacache_hash__(self):
+        return (self.__class__.__name__, getattr(self, "version", None))
+
 
 class GeographicStatistics(StatisticCollection):
     def for_america(self):
@@ -108,6 +111,7 @@ class CDCStatisticsCollection(StatisticCollection):
     def for_international(self):
         return False
 
+
 class USDAFRAStatisticsCollection(StatisticCollection):
     # TODO we should probably have this actually pull the USDA FRA data, it currently does not.
     def for_america(self):
@@ -118,7 +122,11 @@ class USDAFRAStatisticsCollection(StatisticCollection):
 
     def compute_statistics(self, shapefile, statistics_table, shapefile_table):
         t = aggregated_usda_fra(shapefile)
-        import IPython; IPython.embed()
+        for column in t.columns:
+            statistics_table[column] = t[column]
+
+        self.mutate_statistic_table(statistics_table, shapefile_table)
+
 
 class ACSStatisticsColection(StatisticCollection):
     def year(self):
