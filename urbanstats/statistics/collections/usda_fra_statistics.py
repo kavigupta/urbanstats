@@ -2,7 +2,8 @@ from urbanstats.statistics.statistic_collection import USDAFRAStatisticsCollecti
 
 
 class USDAFRAStatistics(USDAFRAStatisticsCollection):
-    version = 2
+    version = 3
+    tooltip = "!TOOLTIP The USDA defines a grocery store as a 'supermarket, supercenter, or large grocery store.'"
 
     def name_for_each_statistic(self):
         return {
@@ -21,13 +22,13 @@ class USDAFRAStatistics(USDAFRAStatisticsCollection):
     def quiz_question_names(self):
         return {
             "lapophalfshare_usda_fra_1": "!FULL Which has more access to grocery stores (higher % of people within 0.5mi of a grocery store)?"
-            "!TOOLTIP The USDA defines a grocery store as a 'supermarket, supercenter, or large grocery store.'",
+            + self.tooltip,
+            "lapop1share_usda_fra_1": "!FULL Which has more access to grocery stores (higher % of people within 1mi of a grocery store)?",
         }
 
     def quiz_question_unused(self):
         return [
-            # duplicates
-            "lapop1share_usda_fra_1",
+            # too low variance (almost all are 100%)
             "lapop10share_usda_fra_1",
             "lapop20share_usda_fra_1",
         ]

@@ -466,7 +466,7 @@ function DataCreditPanel(): ReactNode {
                         <div>
                             We do not compute this using our algorithm. Instead, we use the USDA&apos;s Food Access Research Atlas,
                             which has precomputed numbers by census tract, and we disaggregate these to the block level (using
-                            2010 census tracts) using overall population as a weight. For more information, see
+                            2010 census tracts) using overall population as a weight. For more information, see&nbsp;
                             <a href="https://www.ers.usda.gov/data-products/food-access-research-atlas/">the USDA&apos;s website</a>
                         </div>
                     </div>
