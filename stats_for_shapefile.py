@@ -298,11 +298,11 @@ def compute_summed_shapefile_all_keys(sf, sum_keys, year=2020):
 
 @permacache(
     "population_density/stats_for_shapefile/compute_statistics_for_shapefile_24",
-    key_function=dict(sf=lambda x: x.hash_key, sum_keys=stable_hash),
+    key_function=dict(sf=lambda x: x.hash_key, sum_keys=stable_hash, statistic_collections=stable_hash),
     multiprocess_safe=True,
 )
 def compute_statistics_for_shapefile(
-    sf, sum_keys_2020=sum_keys_2020, sum_keys_2010=sum_keys_2010
+    sf, sum_keys_2020=sum_keys_2020, sum_keys_2010=sum_keys_2010, statistic_collections=statistic_collections
 ):
     sf_fr = sf.load_file()
     print(sf)

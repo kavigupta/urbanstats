@@ -73,6 +73,9 @@ class StatisticCollection(ABC):
     def extra_stats(self):
         return {}
 
+    def __permacache_hash__(self):
+        return (self.__class__.__name__, getattr(self, "version", None))
+
 
 class GeographicStatistics(StatisticCollection):
     def for_america(self):
