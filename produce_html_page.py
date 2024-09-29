@@ -178,6 +178,7 @@ category_metadata = {
     "climate": dict(name="Climate Change", show_checkbox=True, default=False),
     "industry": dict(name="Industry", show_checkbox=True, default=False),
     "occupation": dict(name="Occupation", show_checkbox=True, default=False),
+    "relationships": dict(name="Relationships", show_checkbox=True, default=False),
     "election": dict(name="Election", show_checkbox=True, default=True),
     "feature": dict(name="Proximity to Features", show_checkbox=True, default=False),
     "weather": dict(name="Weather", show_checkbox=True, default=False),

@@ -349,6 +349,22 @@ function DataCreditPanel(): ReactNode {
                                 as a weight.
                             </p>
                         </div>
+                        <NRef name="sors">Sexual Orientation/Relationship Status</NRef>
+                        <div>
+                            <p>
+                                We take data on sexual orientation and relationship status from the ACS&apos;s household
+                                type by relationship data and disaggregate from block groups to blocks. To compute
+                                the percentage of the population not cohabiting,
+                                we take the percentage of the population that are householders, and subtract out the
+                                number of people cohabiting with a partner (yes, this assumes that all cohabiting
+                                people in relationships are couples; this is not a perfect assumption, but it is
+                                the best we can do). We correspondingly double the number of people who are not
+                                a householder but are cohabiting with a partner to get the number of people
+                                who are cohabiting with a partner. Finally, all non-householders who are not
+                                cohabiting with a partner are divided into children (including foster children,
+                                stepchildren, and grandchildren) and a catch-all other category.
+                            </p>
+                        </div>
                         <NRef name="weather">Weather</NRef>
                         <div>
                             <p>
