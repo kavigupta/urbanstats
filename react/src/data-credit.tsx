@@ -352,7 +352,7 @@ function DataCreditPanel(): ReactNode {
                         <NRef name="sors">Sexual Orientation/Relationship Status</NRef>
                         <div>
                             <p>
-                                We take data on sexual orientation and relationship status from the ACS's household
+                                We take data on sexual orientation and relationship status from the ACS&apos;s household
                                 type by relationship data and disaggregate from block groups to blocks. To compute
                                 the percentage of the population not cohabiting,
                                 we take the percentage of the population that are householders, and subtract out the
