@@ -1,3 +1,4 @@
+import { MathJax, MathJaxContext } from 'better-react-mathjax'
 import React, { ReactNode, useEffect, useRef } from 'react'
 import ReactDOM from 'react-dom/client'
 
@@ -5,7 +6,6 @@ import './style.css'
 import './common.css'
 import { PageTemplate } from './page_template/template'
 import { headerTextClass } from './utils/responsive'
-import { MathJax, MathJaxContext } from 'better-react-mathjax'
 
 const industry_occupation_table = require('./data/explanation_industry_occupation_table.json') as { industry: [string, string][], occupation: [string, string][] }
 
@@ -206,7 +206,8 @@ function DataCreditPanel(): ReactNode {
                             <p>
                                 Technical details follow, but as a TLDR, the three metrics we compute are
                                 <ul>
-                                    <li>Homogenity: the mean probability that a person will encounter someone
+                                    <li>
+                                        Homogenity: the mean probability that a person will encounter someone
                                         of the same race if they randomly select a person in the 250m circle
                                         centered around them.
                                     </li>
@@ -232,8 +233,16 @@ function DataCreditPanel(): ReactNode {
                                         `\\[I(r) = \\sum_{b \\in B} v_b[r] \\frac{p_b v_b[r]}{\\sum_{b'} p_b v_{b'}[r]}\\]`
                                     }
                                 </MathJax>
-                                where <MathJax inline>{'\\(v_b[r]\\)'}</MathJax> is the proportion of people of race r in block
-                                b, <MathJax inline>{"\\(p_b\\)"}</MathJax> is the total population of block b, and
+                                where
+                                {' '}
+                                <MathJax inline>{'\\(v_b[r]\\)'}</MathJax>
+                                {' '}
+                                is the proportion of people of race r in block
+                                b,
+                                {' '}
+                                <MathJax inline>{'\\(p_b\\)'}</MathJax>
+                                {' '}
+                                is the total population of block b, and
                                 B is the set of all blocks.
                             </p>
                             <p>
@@ -251,14 +260,18 @@ function DataCreditPanel(): ReactNode {
                                         `\\[I(B) = \\mathbb E_{b \\in B} \\left[\\sum_r v_b[r] v_b[r]\\right]\\]`
                                     }
                                 </MathJax>
-                                To make this metric geography independent, we replace <MathJax inline>{"\\(v_b[r]\\)"}</MathJax> with
+                                To make this metric geography independent, we replace
+                                {' '}
+                                <MathJax inline>{'\\(v_b[r]\\)'}</MathJax>
+                                {' '}
+                                with
                                 the proportion of people who are of that race in nearby blocks, which we define as
                                 <MathJax>
                                     {
                                         `\\[w_b[r] = \\mathbb E_{b' \\in n(b)} [v_{b'}[r]]\\]`
                                     }
                                 </MathJax>
-                                We define a "nearby block" similarly to the PW density metric, as a block within a certain
+                                We define a &ldquo;nearby block&rdquo; similarly to the PW density metric, as a block within a certain
                                 radius of the block in question. Putting this together, we have our homogenity metric:
                                 <MathJax>
                                     {
@@ -668,7 +681,7 @@ function loadPage(): void {
     root.render(
         <MathJaxContext>
             <DataCreditPanel />
-        </MathJaxContext>
+        </MathJaxContext>,
     )
 }
 
