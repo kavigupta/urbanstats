@@ -10,6 +10,8 @@ homogeneity_explanation = (
 
 
 class SegregationStatistics(CensusStatisticsColection):
+    version = 2
+
     def name_for_each_statistic(self):
         return {
             "homogeneity_250_2020": "Racial Homogeneity %",
@@ -33,7 +35,8 @@ class SegregationStatistics(CensusStatisticsColection):
 
     def quiz_question_names(self):
         return {
-            "homogeneity_250_2020": "higher racial homogeneity" + homogeneity_explanation,
+            "homogeneity_250_2020": "higher racial homogeneity"
+            + homogeneity_explanation,
             "homogeneity_250_diff": "increase in racial homogeneity from 2010 to 2020"
             + homogeneity_explanation,
         }
@@ -66,11 +69,9 @@ class SegregationStatistics(CensusStatisticsColection):
         ) = compute_homogenity_statistics(
             2010, radius_small=0.25, radius_large=10, shapefile=shapefile
         )
-        homogeneity_diff = (homogeneity_2020 - homogeneity_2010) / homogeneity_2010
-        segregation_diff = (segregation_2020 - segregation_2010) / segregation_2010
-        segregation_10_diff = (
-            segregation_10_2020 - segregation_10_2010
-        ) / segregation_10_2010
+        homogeneity_diff = homogeneity_2020 - homogeneity_2010
+        segregation_diff = segregation_2020 - segregation_2010
+        segregation_10_diff = segregation_10_2020 - segregation_10_2010
 
         statistics_table["homogeneity_250_2020"] = homogeneity_2020
         statistics_table["segregation_250_2020"] = segregation_2020

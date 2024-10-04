@@ -34,6 +34,15 @@ class Crosswalk:
 
         Returns: np.ndarray of shape (max(index_shapefile), ...)
         """
+        chunk = 5
+        if values.shape[1] > chunk:
+            results_each = [
+                self.compute_sum_by_shapefile(values[:, start : start + chunk])
+                for start in tqdm.trange(
+                    0, values.shape[1], chunk, desc="chunking the aggregation"
+                )
+            ]
+            return np.concatenate(results_each, axis=1)
 
         result = np.zeros(
             (self.index_shapefile.max() + 1, *values.shape[1:]), dtype=np.float64
