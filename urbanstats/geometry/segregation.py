@@ -115,6 +115,18 @@ def compute_homogenity_info_by_shapefile(year, radius_small, radius_large, shape
     return segregation, evTu, evTeu
 
 
+def compute_homogenity_statistics(year, radius_small, radius_large, shapefile):
+    (
+        local_segregation,
+        homogenity,
+        expected_homogenity,
+    ) = compute_homogenity_info_by_shapefile(
+        year, radius_small, radius_large, shapefile
+    )
+    segregation = (homogenity - expected_homogenity) / (1 - expected_homogenity)
+    return homogenity, segregation, local_segregation
+
+
 @lru_cache(None)
 def compute_race_data(year):
     _, _, _, data, _ = load_raw_census(year=year)
