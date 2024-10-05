@@ -19,13 +19,13 @@ function booleanArgument({ defaultValue }: { defaultValue: boolean }): z.ZodDefa
 async function main(): Promise<void> {
     const options = argumentParser({
         options: z.object({
-            proxyToGithub: booleanArgument({ defaultValue: false }),
+            proxy: booleanArgument({ defaultValue: false }),
             browser: z.union([z.literal('chrome'), z.literal('chromium')]).default('chrome'),
             test: z.array(z.string()).default(['test/*_test.ts']),
             parallel: z.string().transform(string => parseInt(string)).default('1'),
             headless: booleanArgument({ defaultValue: true }),
             video: booleanArgument({ defaultValue: false }),
-            compareScreenshots: booleanArgument({ defaultValue: false }),
+            compare: booleanArgument({ defaultValue: false }),
         }).strict(),
     }).parse(process.argv.slice(2))
 
@@ -39,7 +39,7 @@ async function main(): Promise<void> {
         void execa('bash', ['-c', 'fluxbox >/dev/null 2>&1'])
     }
 
-    if (options.proxyToGithub) {
+    if (options.proxy) {
         runProxy()
     }
 
@@ -74,7 +74,7 @@ async function main(): Promise<void> {
 
     const testsFailed = (await Promise.all(Array.from({ length: options.parallel }).map(runTest))).reduce((a, n) => a + n, 0)
 
-    if (options.compareScreenshots) {
+    if (options.compare) {
         await Promise.all(tests.map(test => execa('python', ['tests/check_images.py', `--test=${test}`], {
             cwd: '..',
             stdio: 'inherit',
