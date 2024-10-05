@@ -7,6 +7,7 @@ import { TARGET, download_or_check_string, most_recent_download_path, screencap,
 async function check_geojson(t: TestController, path: string): Promise<void> {
     // download the geojson by clicking the button
     await t.click(Selector('button').withText('Export as GeoJSON'))
+    await t.wait(1000) // sometimes downloading takes a little time
     const mrdp = most_recent_download_path()
     const most_recent_download = fs.readFileSync(mrdp, 'utf8')
     await download_or_check_string(t, most_recent_download, path)
