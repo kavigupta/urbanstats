@@ -54,7 +54,6 @@ async function main(): Promise<void> {
         const failedTests = await testcafe.createRunner()
             .src(`test/${test}.ts`)
             .browsers([`${options.mode === 'ci' ? 'chromium' : 'chrome'} --window-size=1400,800 --hide-scrollbars --disable-gpu`])
-            .concurrency(options.parallel)
             .video('videos')
             .screenshots(`screenshots/${test}`)
             .run()
