@@ -3,10 +3,10 @@ import React, { ReactNode, useState } from 'react'
 import { PageTemplate } from '../page_template/template'
 import '../common.css'
 import './quiz.css'
-import { ENDPOINT, QuizDescriptor, QuizQuestion, a_correct } from '../quiz/quiz'
+import { QuizDescriptor, QuizQuestion, a_correct } from '../quiz/quiz'
 import { QuizQuestionDispatch } from '../quiz/quiz-question'
 import { QuizResult } from '../quiz/quiz-result'
-import { History, reportToServer, reportToServerRetro } from '../quiz/statistics'
+import { History } from '../quiz/statistics'
 
 function loadQuizHistory(): History {
     const history = JSON.parse(localStorage.getItem('quiz_history') ?? '{}') as History
@@ -32,8 +32,12 @@ export function QuizPanel(props: { quizDescriptor: QuizDescriptor, today_name: s
         const newHistory = { ...quiz_history, [props.quizDescriptor.name]: history_today }
         set_quiz_history(newHistory)
         setWaiting(true)
-        if (props.quizDescriptor.kind === 'juxtastat' || props.quizDescriptor.kind === 'retrostat') {
-            localStorage.setItem('quiz_history', JSON.stringify(newHistory))
+        switch (props.quizDescriptor.kind) {
+            case 'juxtastat':
+            case 'retrostat':
+                localStorage.setItem('quiz_history', JSON.stringify(newHistory))
+                break
+            default:
         }
     }
 
