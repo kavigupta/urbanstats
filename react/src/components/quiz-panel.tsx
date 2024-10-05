@@ -28,16 +28,11 @@ export function QuizPanel(props: { quizDescriptor: QuizDescriptor, today_name: s
 
     const todays_quiz_history = quiz_history[props.quizDescriptor.name] ?? { choices: [], correct_pattern: [] }
 
-    const is_daily = typeof props.quizDescriptor.name === 'number'
-
-    const is_weekly = typeof props.quizDescriptor.name === 'string' && (/^W-?\d+$/.exec(props.quizDescriptor.name))
-
     const set_todays_quiz_history = (history_today: History[string]): void => {
         const newHistory = { ...quiz_history, [props.quizDescriptor.name]: history_today }
         set_quiz_history(newHistory)
         setWaiting(true)
-        // if today is a number and not a string
-        if (is_daily || is_weekly) {
+        if (props.quizDescriptor.kind === 'juxtastat' || props.quizDescriptor.kind === 'retrostat') {
             localStorage.setItem('quiz_history', JSON.stringify(newHistory))
         }
     }
@@ -67,28 +62,6 @@ export function QuizPanel(props: { quizDescriptor: QuizDescriptor, today_name: s
                 }
 
                 if (index === quiz.length) {
-                    let get_per_question
-                    if (is_daily) {
-                        void reportToServer(quiz_history)
-                        // POST to endpoint /juxtastat/get_per_question_stats with the current day
-                        get_per_question = fetch(`${ENDPOINT}/juxtastat/get_per_question_stats`, {
-                            method: 'POST',
-                            body: JSON.stringify({ day: props.quizDescriptor.name }),
-                            headers: {
-                                'Content-Type': 'application/json',
-                            },
-                        })
-                    }
-                    if (is_weekly && typeof props.quizDescriptor.name === 'string') {
-                        void reportToServerRetro(quiz_history)
-                        get_per_question = fetch(`${ENDPOINT}/retrostat/get_per_question_stats`, {
-                            method: 'POST',
-                            body: JSON.stringify({ week: parseInt(props.quizDescriptor.name.substring(1)) }),
-                            headers: {
-                                'Content-Type': 'application/json',
-                            },
-                        })
-                    }
                     return (
                         <QuizResult
                             quiz={quiz}
@@ -96,7 +69,6 @@ export function QuizPanel(props: { quizDescriptor: QuizDescriptor, today_name: s
                             history={history}
                             today_name={props.today_name}
                             parameters={props.parameters}
-                            get_per_question={get_per_question}
                             quizDescriptor={props.quizDescriptor}
                         />
                     )
