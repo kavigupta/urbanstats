@@ -64,7 +64,9 @@ async function main(): Promise<void> {
             .screenshots(`screenshots/${test}`)
 
         if (options.video) {
-            runner = runner.video('videos')
+            runner = runner.video(`videos/${test}`, {
+                pathPattern: '${BROWSER}/${TEST}.mp4',
+            })
         }
 
         const failedTests = await runner.run()
