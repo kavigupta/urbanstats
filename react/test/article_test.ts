@@ -87,6 +87,9 @@ test('uncheck-box-mobile', async (t) => {
     await check_textboxes(t, ['Race'])
 
     await screencap(t)
+    // refresh
+    await t.eval(() => { location.reload() })
+    await screencap(t)
 })
 
 test('uncheck-box-desktop', async (t) => {
@@ -94,6 +97,9 @@ test('uncheck-box-desktop', async (t) => {
 
     await check_textboxes(t, ['Race'])
 
+    await screencap(t)
+    // refresh
+    await t.eval(() => { location.reload() })
     await screencap(t)
 })
 
