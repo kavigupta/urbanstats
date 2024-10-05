@@ -10,14 +10,14 @@
 import express from 'express'
 import proxy from 'express-http-proxy'
 
-export function runProxy(): void {
+export async function startProxy(): Promise<void> {
     /**
      * If the user is using a branch that also exists on densitydb, we should use it as well.
      *
      * Otherwise, use `master`
      */
 
-    const branch = fetch(`https://github.com/densitydb/densitydb.github.io/tree/${process.env.BRANCH_NAME}`, { method: 'HEAD' }).then((response) => {
+    const branch = await fetch(`https://github.com/densitydb/densitydb.github.io/tree/${process.env.BRANCH_NAME}`, { method: 'HEAD' }).then((response) => {
         switch (response.status) {
             case 200:
                 return process.env.BRANCH_NAME!
@@ -31,8 +31,8 @@ export function runProxy(): void {
     const app = express()
 
     app.use(express.static('test/density-db'), proxy('https://raw.githubusercontent.com', {
-        async proxyReqPathResolver(req) {
-            return `/densitydb/densitydb.github.io/${await branch}${req.path}`
+        proxyReqPathResolver(req) {
+            return `/densitydb/densitydb.github.io/${branch}${req.path}`
         },
         userResHeaderDecorator(headers, userReq) {
             const fileExtension = (/\.(.+)$/.exec(userReq.path))?.[1]

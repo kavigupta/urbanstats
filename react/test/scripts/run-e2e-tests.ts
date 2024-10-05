@@ -6,7 +6,7 @@ import createTestCafe from 'testcafe'
 import { z } from 'zod'
 import { argumentParser } from 'zodcli'
 
-import { runProxy } from './ci_proxy'
+import { startProxy } from './ci_proxy'
 
 function booleanArgument({ defaultValue }: { defaultValue: boolean }): z.ZodDefault<z.ZodUnion<[z.ZodEffects<z.ZodLiteral<'true'>, boolean, 'true'>, z.ZodEffects<z.ZodLiteral<'false'>, boolean, 'false'>, z.ZodEffects<z.ZodNull, boolean, null>]>> {
     return z.union([
@@ -40,7 +40,7 @@ async function main(): Promise<void> {
     }
 
     if (options.proxy) {
-        runProxy()
+        await startProxy()
     }
 
     const testcafe = await createTestCafe('localhost', 1337, 1338)
