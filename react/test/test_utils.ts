@@ -130,7 +130,9 @@ export function most_recent_download_path(): string {
 
 function copy_most_recent_file(t: TestController): void {
     // copy the file to the screenshots folder
-    const screenshotsFolder = path.join(__dirname, '..', 'screenshots')
+    // @ts-expect-error -- TestCafe doesn't have a public API for the screenshots folder
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access -- TestCafe doesn't have a public API for the screenshots folder
+    const screenshotsFolder: string = t.testRun.opts.screenshots.path ?? (() => { throw new Error() })()
     fs.copyFileSync(most_recent_download_path(), path.join(screenshotsFolder, screenshot_path(t)))
 }
 
