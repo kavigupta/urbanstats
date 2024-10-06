@@ -1,6 +1,6 @@
 const ENDPOINT = 'https://persistent.urbanstats.org'
 
-async function unique_persistent_id(): Promise<string> {
+export function unique_persistent_id(): string {
     // (domain name, id stored in local storage)
     // random 60 bit hex number
     // (15 hex digits)
@@ -9,24 +9,28 @@ async function unique_persistent_id(): Promise<string> {
         for (let i = 0; i < 15; i++) {
             random_hex += Math.floor(Math.random() * 16).toString(16)[0]
         }
-        // register via server
-        await fetch(`${ENDPOINT}/juxtastat/register_user`, {
-            method: 'POST',
-            body: JSON.stringify({ user: random_hex, domain: window.location.hostname }),
-            headers: {
-                'Content-Type': 'application/json',
-            },
-        })
         // register
         localStorage.setItem('persistent_id', random_hex)
     }
     return localStorage.getItem('persistent_id')!
 }
 
+async function registerUser(userId: string): Promise<void> {
+    // Idempotent
+    await fetch(`${ENDPOINT}/juxtastat/register_user`, {
+        method: 'POST',
+        body: JSON.stringify({ user: userId, domain: window.location.hostname }),
+        headers: {
+            'Content-Type': 'application/json',
+        },
+    })
+}
+
 export type History = Record<string, { choices: ('A' | 'B')[], correct_pattern: boolean[] }>
 
 async function reportToServerGeneric(whole_history: History, endpoint_latest: string, endpoint_store: string, parse_day: (day: string) => number): Promise<void> {
-    const user = await unique_persistent_id()
+    const user = unique_persistent_id()
+    await registerUser(user)
     // fetch from latest_day endpoint
     const latest_day_response = await fetch(ENDPOINT + endpoint_latest, {
         method: 'POST',

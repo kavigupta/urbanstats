@@ -5,7 +5,7 @@ import '../components/quiz.css'
 import { useHeaderTextClass } from '../utils/responsive'
 
 import { nameOfQuizKind } from './quiz'
-import { History } from './statistics'
+import { History, unique_persistent_id } from './statistics'
 
 export function Header({ quiz }: { quiz: { kind: 'juxtastat' | 'retrostat', name: string | number } }): ReactNode {
     let text = nameOfQuizKind(quiz.kind)
@@ -55,16 +55,10 @@ export function Help(props: { quiz_kind: 'juxtastat' | 'retrostat' }): ReactNode
 }
 
 export function UserId(): ReactNode {
-    const user_id = localStorage.getItem('persistent_id')
-    if (user_id === null) {
-        return ''
-    }
-    else {
-        return (
-            <div>
-                {'Your user id is '}
-                <span className="juxtastat-user-id">{user_id}</span>
-            </div>
-        )
-    }
+    return (
+        <div>
+            {'Your user id is '}
+            <span className="juxtastat-user-id">{unique_persistent_id()}</span>
+        </div>
+    )
 }

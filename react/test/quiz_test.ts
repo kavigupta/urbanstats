@@ -329,7 +329,6 @@ async function check_text(t: TestController, words: string, emoji: string): Prom
 test('quiz-results-test', async (t) => {
     await t.resizeWindow(1400, 800)
     await t.eval(() => { location.reload() })
-    await t.expect(Selector('.juxtastat-user-id').exists).ok('', { timeout: 10000 }) // wait for user id to load
     await quiz_screencap(t)
     await check_text(t, 'Excellent! 😊 4/5', '🟩🟩🟩🟩🟥')
 })
