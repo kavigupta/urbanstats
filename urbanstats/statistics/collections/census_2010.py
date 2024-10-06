@@ -1,4 +1,7 @@
-from census_blocks import RADII
+from permacache import permacache
+
+from census_blocks import RADII, all_densities_gpd, housing_units, racial_demographics
+from urbanstats.geometry.census_aggregation import aggregate_by_census_block
 from urbanstats.statistics.extra_statistics import HistogramSpec
 from urbanstats.statistics.statistic_collection import (
     ORDER_CATEGORY_MAIN,
@@ -74,6 +77,15 @@ class Census2010(CensusStatisticsColection):
             "hawaiian_pi_2010",
         ]
 
+    def compute_statistics(self, shapefile, statistics_table, shapefile_table):
+        from stats_for_shapefile import density_metrics
+
+        table = aggregate_2010(shapefile)
+        for k in table:
+            statistics_table[k] = table[k]
+
+        self.mutate_statistic_table(statistics_table, shapefile_table)
+
     def mutate_statistic_table(self, statistics_table, shapefile_table):
         from census_blocks import racial_demographics
         from stats_for_shapefile import density_metrics
@@ -114,3 +126,23 @@ class Census2010(CensusStatisticsColection):
             )
             for d in RADII
         }
+
+
+@permacache(
+    "urbanstats/statistics/collections/aggregate_2010",
+    key_function=dict(shapefile=lambda x: x.hash_key),
+)
+def aggregate_2010(shapefile):
+    from stats_for_shapefile import density_metrics
+
+    print("aggregating 2010 for", shapefile.hash_key)
+    sum_keys = [
+        "population_2010",
+        "population_18_2010",
+        *[f"{k}_2010" for k in racial_demographics],
+        *[f"{k}_2010" for k in housing_units],
+        *[f"{k}_2010" for k in density_metrics],
+    ]
+    t = all_densities_gpd(2010).copy()
+    t.columns = [f"{k}_2010" for k in t.columns]
+    return aggregate_by_census_block(2010, shapefile, t[sum_keys])
