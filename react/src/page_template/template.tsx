@@ -55,7 +55,7 @@ export function PageTemplate({
 
     return (
         <Fragment>
-            <meta name="viewport" content="width=600" />
+            <meta name="viewport" content="width=device-width, initial-scale=0.75, shrink-to-fit=no, maximum-scale=0.75" />
             <div className={useMobileLayout() ? 'main_panel_mobile' : 'main_panel'}>
                 <Header
                     hamburger_open={hamburger_open}
