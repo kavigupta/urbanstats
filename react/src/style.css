@@ -2,6 +2,10 @@
     box-sizing: border-box;
 }
 
+body {
+    font-family: 'Jost', 'Arial', sans-serif;
+}
+
 .fill {
     display: flex;
     justify-content: center;
