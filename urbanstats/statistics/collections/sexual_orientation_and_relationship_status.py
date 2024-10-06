@@ -21,7 +21,7 @@ class SexualOrientationRelationshipStatusStatistics(ACSStatisticsColection):
 
     def quiz_question_names(self):
         return {
-            "sors_cohabiting_partnered_gay": "% of people who are gay and cohabiting with a partner/spouse",
+            "sors_cohabiting_partnered_gay": "higher % of people who are gay and cohabiting with a partner/spouse",
         }
 
     def quiz_question_unused(self):
