@@ -1,12 +1,13 @@
 import React, { ReactNode } from 'react'
 
+import { useColors } from '../page_template/settings'
+
 import { DataListSelector } from './DataListSelector'
 import { FilterSelector, FunctionColorStat, StatisticSelector } from './function'
 import { RampColormapSelector } from './ramp-selector'
 import { ConstantRampDescriptor, RampDescriptor } from './ramps'
 import { Regression } from './regression'
 import { setting_name_style, setting_sub_name_style } from './style'
-import { useColors } from '../page_template/settings'
 
 export type StatisticsForGeography = { stats: number[] }[]
 
