@@ -92,16 +92,15 @@ jobs:
           path: react/test/density-db
       - name: Run tests
         run: |
-          # Start display subsystem to browser can run
-          Xvfb :10 -ac &
-          export DISPLAY=:10
-          fluxbox >/dev/null 2>&1 & # needed for window resizing in Testcafe
           npm ci
-          npx ts-node test/ci_proxy.ts &
-          npx testcafe -e "chromium '--window-size=1400,800' --hide-scrollbars --disable-gpu" \
-            -s thumbnails=false \
-            --video videos \
-            test/${{ matrix.test-file }}.ts
+          npm run test:e2e -- \
+            --proxy=true \
+            --browser=chromium \
+            --test=test/${{ matrix.test-file }}.ts \
+            --parallel=1 \
+            --headless=true \
+            --video=true \
+            --compare=false
         working-directory: react
       - uses: actions/upload-artifact@v4
         if: "!cancelled()"
