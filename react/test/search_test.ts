@@ -1,18 +1,15 @@
 import {
     SEARCH_FIELD, TARGET, getLocation, screencap,
+    urbanstatsFixture,
 } from './test_utils'
 
-fixture('shorter article test')
-    .page(`${TARGET}/article.html?longname=San+Marino+city%2C+California%2C+USA`)
-    .beforeEach(async (t) => {
-        await t.eval(() => { localStorage.clear() })
-    })
+urbanstatsFixture('shorter article test', `${TARGET}/article.html?longname=San+Marino+city%2C+California%2C+USA`)
 
 test('search-test', async (t) => {
     await t
         .click(SEARCH_FIELD)
         .typeText(SEARCH_FIELD, 'Pasadena')
-    await screencap(t, 'search/san-marino-search-pasadena')
+    await screencap(t)
     await t
         .pressKey('enter')
     await t.expect(getLocation())
@@ -23,21 +20,21 @@ test('search-test-with-extra-char', async (t) => {
     await t
         .click(SEARCH_FIELD)
         .typeText(SEARCH_FIELD, 'Pasadena c')
-    await screencap(t, 'search/san-marino-search-pasadena-c')
+    await screencap(t)
 })
 
 test('search-test-with-special-chars', async (t) => {
     await t
         .click(SEARCH_FIELD)
         .typeText(SEARCH_FIELD, 'Utt')
-    await screencap(t, 'search/san-marino-search-Utt')
+    await screencap(t)
 })
 
 test('search-test-different-first-char', async (t) => {
     await t
         .click(SEARCH_FIELD)
         .typeText(SEARCH_FIELD, 'hina')
-    await screencap(t, 'search/san-marino-search-hina')
+    await screencap(t)
 })
 
 test('search-test-arrows', async (t) => {
@@ -50,7 +47,7 @@ test('search-test-arrows', async (t) => {
     await t
         .pressKey('down')
         .pressKey('down')
-    await screencap(t, 'search/san-marino-search-pasadena-down-down')
+    await screencap(t)
     await t
         .pressKey('enter')
     await t.expect(getLocation())

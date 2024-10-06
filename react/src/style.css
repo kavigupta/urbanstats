@@ -87,7 +87,8 @@
 }
 
 .button {
-    font: 8pt Arial;
+    font-family: 'Jost', 'Arial', sans-serif;
+    font-size: 8pt;
     font-weight: 500;
     text-decoration: none;
     color: #222;

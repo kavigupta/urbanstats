@@ -21,8 +21,12 @@ export interface MapGenericProps {
 
 export type Polygons = Readonly<[string[], Record<string, unknown>[], Record<string, unknown>[], number]>
 
+interface MapState {
+    loading: boolean
+}
+
 // eslint-disable-next-line prefer-function-component/prefer-function-component  -- TODO: Maps don't support function components yet.
-export class MapGeneric<P extends MapGenericProps> extends React.Component<P> {
+export class MapGeneric<P extends MapGenericProps> extends React.Component<P, MapState> {
     private polygon_by_name = new Map<string, L.FeatureGroup>()
     private delta = 0.25
     private version = 0
@@ -36,6 +40,7 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P> {
     constructor(props: P) {
         super(props)
         this.id = `map-${Math.random().toString(36).substring(2)}`
+        this.state = { loading: true }
     }
 
     override render(): ReactNode {
@@ -75,7 +80,7 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P> {
             zoomSnap: this.delta, zoomDelta: this.delta, wheelPxPerZoomLevel: 60 / this.delta,
         })
         this.map = map
-        await this.componentDidUpdate()
+        await this.componentDidUpdate(this.props, this.state)
     }
 
     /**
@@ -171,8 +176,11 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P> {
         return JSON.stringify(geojson)
     }
 
-    override async componentDidUpdate(): Promise<void> {
-        await this.updateToVersion(this.version + 1)
+    override async componentDidUpdate(prevProps: P, prevState: MapState): Promise<void> {
+        if (this.version === 0 || JSON.stringify(prevProps) !== JSON.stringify(this.props) || JSON.stringify({ ...prevState, loading: undefined }) !== JSON.stringify({ ...this.state, loading: undefined })) {
+            // Only update if something that's not the loading has changed, or it's the first load
+            await this.updateToVersion(this.version + 1)
+        }
     }
 
     async updateToVersion(version: number): Promise<void> {
@@ -192,6 +200,8 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P> {
     }
 
     async updateFn(): Promise<void> {
+        this.setState({ loading: true })
+
         const map = this.map!
         this.exist_this_time = []
 
@@ -210,6 +220,7 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P> {
                 this.polygon_by_name.delete(name)
             }
         }
+        this.setState({ loading: false })
     }
 
     attachBasemap(): void {

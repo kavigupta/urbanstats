@@ -1,4 +1,4 @@
-import React, { ReactNode } from 'react'
+import React, { ReactNode, useId } from 'react'
 
 import '../style.css'
 import './sidebar.css'
@@ -109,7 +109,7 @@ export function Sidebar(): ReactNode {
 // type representing a key of SettingsDictionary that have boolean values
 type BooleanSettingKey = keyof { [K in keyof SettingsDictionary as SettingsDictionary[K] extends boolean ? K : never]: boolean }
 
-export function CheckboxSetting<K extends BooleanSettingKey>(props: { name: string, setting_key: K, classNameToUse?: string }): ReactNode {
+export function CheckboxSetting<K extends BooleanSettingKey>(props: { name: string, setting_key: K, classNameToUse?: string, id?: string }): ReactNode {
     const [checked, setChecked] = useSetting(props.setting_key)
 
     return (
@@ -126,6 +126,7 @@ export function CheckboxSetting<K extends BooleanSettingKey>(props: { name: stri
                 }
             }}
             classNameToUse={props.classNameToUse}
+            id={props.id}
         />
     )
 };
@@ -151,18 +152,21 @@ export function ColorThemeSetting(): ReactNode {
     )
 };
 
-export function CheckboxSettingCustom<K extends string>(props: { name: string, setting_key: K, settings: Record<K, boolean>, set_setting: (key: K, value: boolean) => void, classNameToUse?: string }): ReactNode {
+export function CheckboxSettingCustom<K extends string>(props: { name: string, setting_key: K, settings: Record<K, boolean>, set_setting: (key: K, value: boolean) => void, classNameToUse?: string, id?: string }): ReactNode {
     const colors = useColors()
     // like CheckboxSetting, but doesn't use useSetting, instead using the callbacks
+    const id = useId()
+    const inputId = props.id ?? id
     return (
         <div className={props.classNameToUse ?? 'checkbox-setting'}>
             <input
+                id={inputId}
                 type="checkbox"
                 checked={props.settings[props.setting_key] || false}
                 onChange={(e) => { props.set_setting(props.setting_key, e.target.checked) }}
                 style={{ accentColor: '#5a7dc3', backgroundColor: colors.background }}
             />
-            <label>{props.name}</label>
+            <label htmlFor={inputId}>{props.name}</label>
         </div>
     )
 };

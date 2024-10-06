@@ -1,0 +1,107 @@
+[
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Commute Walk %",
+      "question": "higher % of people who commute by walking",
+      "longname_a": "TX-28, USA",
+      "longname_b": "MT-02, USA",
+      "stat_a": 0.01569313865400118,
+      "stat_b": 0.041915632569279306
+    },
+    "b": {
+      "stat_column": "Uninsured %",
+      "question": "higher % of people who are uninsured",
+      "longname_a": "Chicago city, Illinois, USA",
+      "longname_b": "Nashville-Davidson metropolitan government (balance), Tennessee, USA",
+      "stat_a": 0.1276634610440944,
+      "stat_b": 0.14784195815171416
+    },
+    "a_ease": 0.19221698113207547,
+    "b_ease": 0.5924812030075188
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Population [GHS-POP]",
+      "question": "higher population",
+      "longname_a": "Germany",
+      "longname_b": "Mali",
+      "stat_a": 83402224.0,
+      "stat_b": 21238624.0
+    },
+    "b": {
+      "stat_column": "Non-citizen %",
+      "question": "higher % of residents who are non-citizens",
+      "longname_a": "Boston [Urban Area], MA-NH, USA",
+      "longname_b": "Daytona Beach-Palm Coast-Port Orange [Urban Area], FL, USA",
+      "stat_a": 0.10069061546676897,
+      "stat_b": 0.03027170678376211
+    },
+    "a_ease": 0.8142688679245284,
+    "b_ease": 0.40350877192982454
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Uninsured %",
+      "question": "higher % of people who are uninsured",
+      "longname_a": "Bakersfield [Urban Area], CA, USA",
+      "longname_b": "Barnstable Town [Urban Area], MA, USA",
+      "stat_a": 0.1161923791475496,
+      "stat_b": 0.047711594129830594
+    },
+    "b": {
+      "stat_column": "Undergrad STEM %",
+      "question": "!FULL Which has more people with a STEM degree, as a percentage of the overall population?",
+      "longname_a": "Guilford County, North Carolina, USA",
+      "longname_b": "Davidson County, Tennessee, USA",
+      "stat_a": 0.15336273884518417,
+      "stat_b": 0.17375203013592988
+    },
+    "a_ease": 0.8457497612225406,
+    "b_ease": 0.43272727272727274
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "High temperature Below 40\u00b0F %",
+      "question": "higher % of cold days (days with high temp under 40\u00b0F, population weighted)!TOOLTIP Population weighted weather statistics are calculated by computing the weather statistic for each person in the region and then averaging the results.",
+      "longname_a": "Salt Lake City [Urban Area], UT, USA",
+      "longname_b": "Kennewick-Richland-Pasco [Urban Area], WA, USA",
+      "stat_a": 0.2072361926881842,
+      "stat_b": 0.09125078234025592
+    },
+    "b": {
+      "stat_column": "Undergrad STEM %",
+      "question": "!FULL Which has more people with a STEM degree, as a percentage of the overall population?",
+      "longname_a": "Alabama, USA",
+      "longname_b": "Massachusetts, USA",
+      "stat_a": 0.10174379366110768,
+      "stat_b": 0.21749991380033387
+    },
+    "a_ease": 0.4593406593406593,
+    "b_ease": 0.8811072454999244
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Snowfall [rain-equivalent]",
+      "question": "higher snowfall (population weighted)!TOOLTIP Population weighted weather statistics are calculated by computing the weather statistic for each person in the region and then averaging the results.",
+      "longname_a": "Buffalo city, New York, USA",
+      "longname_b": "Phoenix city, Arizona, USA",
+      "stat_a": 0.18657461378700205,
+      "stat_b": 0.00015462829065153498
+    },
+    "b": {
+      "stat_column": "Gen Z %",
+      "question": "higher % of people who are gen z!TOOLTIP born between 1997 and 2011",
+      "longname_a": "Brevard County, Florida, USA",
+      "longname_b": "Pinal County, Arizona, USA",
+      "stat_a": 0.16280817124438762,
+      "stat_b": 0.18586828605470473
+    },
+    "a_ease": 0.9887971698113207,
+    "b_ease": 0.5768863419293219
+  }
+]

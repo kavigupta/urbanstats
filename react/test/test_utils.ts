@@ -63,7 +63,7 @@ export async function check_all_category_boxes(t: TestController): Promise<void>
 async function prep_for_image(t: TestController): Promise<void> {
     await t.wait(1000)
     await t.eval(() => {
-    // disable the leaflet map
+        // disable the base map, so that we're not testing the tiles
         for (const x of Array.from(document.getElementsByClassName('leaflet-tile-pane'))) {
             x.remove()
         }
@@ -76,34 +76,49 @@ async function prep_for_image(t: TestController): Promise<void> {
         for (const x of Array.from(document.getElementsByClassName('juxtastat-user-id'))) {
             x.innerHTML = '&lt;USER ID&gt;'
         }
+
+        // remove the flashing text caret
+        document.querySelectorAll('input[type=text]').forEach((element) => { element.setAttribute('style', `${element.getAttribute('style')} caret-color: transparent;`) })
     })
+    // Wait for the map to finish loading
+    while (await Selector('.map-container-loading-for-testing').exists) {
+        await t.wait(1000)
+    }
+    await t.wait(1000) // Wait for map to finish rendering
 }
 
-export async function screencap(t: TestController, name: string): Promise<void> {
+let screenshot_number = 0
+
+function screenshot_path(t: TestController): string {
+    screenshot_number++
+    return `${t.browser.name}/${t.test.name}-${screenshot_number}.png`
+}
+
+export async function screencap(t: TestController): Promise<void> {
     await prep_for_image(t)
     return t.takeScreenshot({
     // include the browser name in the screenshot path
-        path: `${name}_${t.browser.name}.png`,
+        path: screenshot_path(t),
         fullPage: true,
     })
 }
 
-export async function grab_download(t: TestController, name: string, button: Selector): Promise<void> {
+export async function grab_download(t: TestController, button: Selector): Promise<void> {
     await prep_for_image(t)
     await t
         .click(button)
     await t.wait(3000)
-    copy_most_recent_file(t, name)
+    copy_most_recent_file(t)
 }
 
-export async function download_image(t: TestController, name: string): Promise<void> {
+export async function download_image(t: TestController): Promise<void> {
     const download = Selector('img').withAttribute('src', '/screenshot.png')
-    await grab_download(t, name, download)
+    await grab_download(t, download)
 }
 
-export async function download_histogram(t: TestController, name: string, nth: number): Promise<void> {
+export async function download_histogram(t: TestController, nth: number): Promise<void> {
     const download = Selector('img').withAttribute('src', '/download.png').nth(nth)
-    await grab_download(t, name, download)
+    await grab_download(t, download)
 }
 
 export function most_recent_download_path(): string {
@@ -113,10 +128,12 @@ export function most_recent_download_path(): string {
     return sorted[0]
 }
 
-function copy_most_recent_file(t: TestController, name: string): void {
+function copy_most_recent_file(t: TestController): void {
     // copy the file to the screenshots folder
-    const screenshotsFolder = path.join(__dirname, '..', 'screenshots')
-    fs.copyFileSync(most_recent_download_path(), path.join(screenshotsFolder, `${name}_${t.browser.name}.png`))
+    // @ts-expect-error -- TestCafe doesn't have a public API for the screenshots folder
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access -- TestCafe doesn't have a public API for the screenshots folder
+    const screenshotsFolder: string = t.testRun.opts.screenshots.path ?? (() => { throw new Error() })()
+    fs.copyFileSync(most_recent_download_path(), path.join(screenshotsFolder, screenshot_path(t)))
 }
 
 export async function download_or_check_string(t: TestController, string: string, name: string): Promise<void> {
@@ -129,4 +146,27 @@ export async function download_or_check_string(t: TestController, string: string
     else {
         fs.writeFileSync(path_to_file, string)
     }
+}
+
+export function urbanstatsFixture(name: string, url: string, beforeEach: undefined | ((t: TestController) => Promise<void>) = undefined): FixtureFn {
+    if (url.startsWith('/')) {
+        url = TARGET + url
+    }
+    else {
+        // assert url starts with TARGET
+        if (!url.startsWith(TARGET)) {
+            throw new Error(`URL ${url} does not start with ${TARGET}`)
+        }
+    }
+    return fixture(name)
+        .page(url)
+        .beforeEach(async (t) => {
+            screenshot_number = 0
+            await t.eval(() => { localStorage.clear() })
+            await t.resizeWindow(1400, 800)
+            await t.eval(() => { location.reload() })
+            if (beforeEach !== undefined) {
+                await beforeEach(t)
+            }
+        })
 }

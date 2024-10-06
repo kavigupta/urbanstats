@@ -33,7 +33,9 @@ from .fixed import juxtastat as fixed_up_to
 
 min_pop = 250_000
 min_pop_international = 2_500_000
-version = 64
+version_numeric = 65
+
+version = str(version_numeric) + stable_hash(statistic_collections)
 
 # ranges = [
 #     (0.7, 1),
@@ -60,6 +62,7 @@ difficulties = {
     "2010": 1.5,
     "health": 1.5,
     "climate": 1.5,
+    "relationships": 0.5,
     "income": 0.6,
     "main": 0.25,
     "misc": 2,
@@ -280,6 +283,7 @@ def quiz_is_guaranteed_past(number):
     if number < fractional_days - 1:
         return None
     return fractional_days
+
 
 def compute_fractional_days(tz):
     now = datetime.now(pytz.timezone(tz))

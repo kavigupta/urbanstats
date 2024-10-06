@@ -1,3 +1,4 @@
+import { MathJax, MathJaxContext } from 'better-react-mathjax'
 import React, { ReactNode, useEffect, useRef } from 'react'
 import ReactDOM from 'react-dom/client'
 
@@ -190,6 +191,164 @@ function DataCreditPanel(): ReactNode {
                                 units per adult as the number of housing units divided by the number of adults.
                             </p>
                         </div>
+
+                        <NRef name="segregation">Segregation</NRef>
+                        <div>
+                            <p>
+                                We compute segregation using a variant of the isolation index as described on
+                                pages 288-289 of
+                                {' '}
+                                <a href="https://github.com/user-attachments/files/17184972/s.pdf">The Dimensions of Residential Segregation</a>
+                                {' '}
+                                by Douglas Massey and Nancy Denton. Our variant attempts to update this metric
+                                to work for more than two groups and be geography independent.
+                            </p>
+                            <p>
+                                Technical details follow, but as a TLDR, the three metrics we compute are
+                                <ul>
+                                    <li>
+                                        Homogenity: the mean probability that a person will encounter someone
+                                        of the same race if they randomly select a person in the 250m circle
+                                        centered around them.
+                                    </li>
+                                    <li>
+                                        Segregation: the homogenity metric normalized to be between 0 and 1,
+                                        where 0 is if the region of interest had its population perfectly
+                                        equally distributed by race, and 1 is if the region of interest
+                                        was perfectly segregated (homogenity 100%).
+                                    </li>
+                                    <li>
+                                        Local Segregation: the segregation metric in a 10km circle around
+                                        each block, averaged over all blocks. This metric is included to
+                                        reflect more local patterns of segregation and not penalize, e.g.,
+                                        states that have Native American reservations or large states with
+                                        far apart cities with distinct racial distributions.
+                                    </li>
+                                </ul>
+                            </p>
+                            <p>
+                                Massey and Denton use the following metric of isolation:
+                                <MathJax>
+                                    {
+                                        `\\[I(r) = \\sum_{b \\in B} v_b[r] \\frac{p_b v_b[r]}{\\sum_{b'} p_b v_{b'}[r]}\\]`
+                                    }
+                                </MathJax>
+                                where
+                                {' '}
+                                <MathJax inline>{'\\(v_b[r]\\)'}</MathJax>
+                                {' '}
+                                is the proportion of people of race r in block
+                                b,
+                                {' '}
+                                <MathJax inline>{'\\(p_b\\)'}</MathJax>
+                                {' '}
+                                is the total population of block b, and
+                                B is the set of all blocks.
+                            </p>
+                            <p>
+                                Generalizing this isolation index to more than two groups is relatively straightforward,
+                                we simply take the mean of the isolation index for each group, weighted by the population
+                                of the group. This yields the metric
+                                <MathJax>
+                                    {
+                                        `\\[I(B) = \\sum_{b \\in B} \\sum_r v_b[r] \\frac{p_b v_b[r]}{\\sum_{b'} p_{b'}}\\]`
+                                    }
+                                </MathJax>
+                                which can be rearranged to
+                                <MathJax>
+                                    {
+                                        `\\[I(B) = \\mathbb E_{b \\in B} \\left[\\sum_r v_b[r] v_b[r]\\right]\\]`
+                                    }
+                                </MathJax>
+                                To make this metric geography independent, we replace
+                                {' '}
+                                <MathJax inline>{'\\(v_b[r]\\)'}</MathJax>
+                                {' '}
+                                with
+                                the proportion of people who are of that race in nearby blocks, which we define as
+                                <MathJax>
+                                    {
+                                        `\\[w_b[r] = \\mathbb E_{b' \\in n(b)} [v_{b'}[r]]\\]`
+                                    }
+                                </MathJax>
+                                We define a &ldquo;nearby block&rdquo; similarly to the PW density metric, as a block within a certain
+                                radius of the block in question. Putting this together, we have our homogenity metric:
+                                <MathJax>
+                                    {
+                                        `\\[H(B) = \\mathbb E_{b \\in B} \\left[\\sum_r v_b[r] w_b[r]\\right] = \\mathbb E_{b \\in B} [v_b^T w_b]\\]`
+                                    }
+                                </MathJax>
+                                The homogenity metric can be interpreted as the mean probability that a person
+                                will encounter someone of their own race if they randomly select a person in the
+                                radius around them, and is thus independent of the block geography (for radii
+                                substantially larger than the block size).
+                            </p>
+                            <p>
+                                Of course, this is merely a metric of homogenity, not segregation. A crucial
+                                issue with this metric is that can never be 0, even in a perfectly integrated
+                                society. To address this, Massey and Denton normalize their metric, creating the
+                                V or Eta squared index, by subtracting out the minimum possible value of the
+                                isolation index, then dividing by 1 minus the minimum possible value.
+
+                                We do the same, creating the metric
+                                <MathJax>
+                                    {
+                                        `\\[S(B) = \\frac{H(B) - H_{\\text{min}}(B)}{1 - H_{\\text{min}}(B)}\\]`
+                                    }
+                                </MathJax>
+                                where we can compute
+                                <MathJax>
+                                    {
+                                        `\\[H_{\\text{min}}(B) = \\mathbb E_{b \\in B} [v_b^T] \\mathbb E_{b \\in B} [w_b]\\]`
+                                    }
+                                </MathJax>
+                                as the minimum possible value of the homogenity metric (the one that would be achieved
+                                if every block had the same racial distribution).
+                            </p>
+                            <p>
+                                A final issue with the segregation metric as described above is that it is not
+                                local. That is, it cannot be expressed as the average of a value computed for each
+                                block.
+                            </p>
+                            <p>
+                                To see why this might be problematic, imagine a state that has exactly two
+                                cities, 100 miles apart, each of which is perfectly integrated, but one is
+                                75% white and 25% black, and the other is 75% black and 25% white.
+                            </p>
+                            <p>
+                                Each individual city would have a homogenity of 62.5%, but a segregation of 0%,
+                                since the minimum homogenity is 62.5%. in each city.
+                            </p>
+                            <p>
+                                The state as a whole would have the same homogenity, as expected, because
+                                the homogenity metric is in fact local. However, the minimum homogenity for the
+                                state would be 50%, since the state as a whole is 50% white and 50% black.
+                                This means that the segregation metric would be 25% for the state.
+                            </p>
+                            <p>
+                                In some sense this is a desirable property because one could argue that
+                                the state is segregated, even though the cities are not, as people could
+                                move between the cities and have not. As such, we do include this metric.
+                                However, we also want to include a local segregation metric, to reflect
+                                more local patterns of segregation and not penalize states that have, e.g.,
+                                Native American reservations.
+                            </p>
+                            <p>
+                                As such, we define a local region block segregation as the segregation metric
+                                in a large region around a block (circle of radius 10km).
+                                <MathJax>
+                                    {
+                                        `\\[S^{\\{10\\}}_{b}(B) = S(n_{10}(b))\\]`
+                                    }
+                                </MathJax>
+                                We then compute the average of this metric for each block.
+                                <MathJax>
+                                    {
+                                        `\\[S^{\\{10\\}}(B) = \\mathbb E_{b \\in B} [S^{\\{10\\}}_{b}(B)]\\]`
+                                    }
+                                </MathJax>
+                            </p>
+                        </div>
                     </div>
 
                     <h1>American Community Survey Data</h1>
@@ -349,6 +508,22 @@ function DataCreditPanel(): ReactNode {
                                 as a weight.
                             </p>
                         </div>
+                        <NRef name="sors">Sexual Orientation/Relationship Status</NRef>
+                        <div>
+                            <p>
+                                We take data on sexual orientation and relationship status from the ACS&apos;s household
+                                type by relationship data and disaggregate from block groups to blocks. To compute
+                                the percentage of the population not cohabiting,
+                                we take the percentage of the population that are householders, and subtract out the
+                                number of people cohabiting with a partner (yes, this assumes that all cohabiting
+                                people in relationships are couples; this is not a perfect assumption, but it is
+                                the best we can do). We correspondingly double the number of people who are not
+                                a householder but are cohabiting with a partner to get the number of people
+                                who are cohabiting with a partner. Finally, all non-householders who are not
+                                cohabiting with a partner are divided into children (including foster children,
+                                stepchildren, and grandchildren) and a catch-all other category.
+                            </p>
+                        </div>
                         <NRef name="weather">Weather</NRef>
                         <div>
                             <p>
@@ -462,6 +637,13 @@ function DataCreditPanel(): ReactNode {
                             <a href="https://hifld-geoplatform.opendata.arcgis.com/datasets/geoplatform::public-schools/about">HIFLD</a>
                             .
                         </div>
+                        <NRef name="usda_fra">Grocery Stores</NRef>
+                        <div>
+                            We do not compute this using our algorithm. Instead, we use the USDA&apos;s Food Access Research Atlas,
+                            which has precomputed numbers by census tract, and we disaggregate these to the block level (using
+                            2010 census tracts) using overall population as a weight. For more information, see&nbsp;
+                            <a href="https://www.ers.usda.gov/data-products/food-access-research-atlas/">the USDA&apos;s website</a>
+                        </div>
                     </div>
                     <NRef name="gpw" h="h1">Gridded Population</NRef>
                     <div>
@@ -496,7 +678,11 @@ function DataCreditPanel(): ReactNode {
 
 function loadPage(): void {
     const root = ReactDOM.createRoot(document.getElementById('root')!)
-    root.render(<DataCreditPanel />)
+    root.render(
+        <MathJaxContext>
+            <DataCreditPanel />
+        </MathJaxContext>,
+    )
 }
 
 loadPage()
