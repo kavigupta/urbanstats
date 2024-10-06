@@ -60,6 +60,13 @@ export async function check_all_category_boxes(t: TestController): Promise<void>
     await t.eval(() => { location.reload() })
 }
 
+export async function waitForMapLoad(t: TestController): Promise<void> {
+    while (await Selector('.map-container-loading-for-testing').exists) {
+        await t.wait(1000)
+    }
+    await t.wait(1000) // Wait for map to finish rendering
+}
+
 async function prep_for_image(t: TestController): Promise<void> {
     await t.wait(1000)
     await t.eval(() => {
@@ -81,10 +88,7 @@ async function prep_for_image(t: TestController): Promise<void> {
         document.querySelectorAll('input[type=text]').forEach((element) => { element.setAttribute('style', `${element.getAttribute('style')} caret-color: transparent;`) })
     })
     // Wait for the map to finish loading
-    while (await Selector('.map-container-loading-for-testing').exists) {
-        await t.wait(1000)
-    }
-    await t.wait(1000) // Wait for map to finish rendering
+    await waitForMapLoad(t)
 }
 
 let screenshot_number = 0
