@@ -96,17 +96,17 @@ class CensusForPreviousYear(CensusStatisticsColection):
 
         year = self.year()
 
-        statistics_table[f"population_change_{year}"] = (
-            statistics_table["population"] - statistics_table[f"population_{year}"]
-        ) / statistics_table[f"population_{year}"]
+        # statistics_table[f"population_change_{year}"] = (
+        #     statistics_table["population"] - statistics_table[f"population_{year}"]
+        # ) / statistics_table[f"population_{year}"]
         for k in density_metrics:
             statistics_table[f"{k}_{year}"] /= statistics_table[f"population_{year}"]
-            statistics_table[f"{k}_change_{year}"] = (
-                statistics_table[k] - statistics_table[f"{k}_{year}"]
-            ) / statistics_table[f"{k}_{year}"]
-        statistics_table[f"sd_{year}"] = (
-            statistics_table[f"population_{year}"] / statistics_table["area"]
-        )
+            # statistics_table[f"{k}_change_{year}"] = (
+            #     statistics_table[k] - statistics_table[f"{k}_{year}"]
+            # ) / statistics_table[f"{k}_{year}"]
+        # statistics_table[f"sd_{year}"] = (
+        #     statistics_table[f"population_{year}"] / statistics_table["area"]
+        # )
         for k in racial_demographics:
             statistics_table[f"{k}_{year}"] /= statistics_table[f"population_{year}"]
         statistics_table[f"other / mixed_{year}"] = (
@@ -138,12 +138,20 @@ class CensusForPreviousYear(CensusStatisticsColection):
 
 class Census2010(CensusForPreviousYear):
     version = 2
+
     def year(self):
         return 2010
 
 
+class Census2000(CensusForPreviousYear):
+    version = 3
+
+    def year(self):
+        return 2000
+
+
 @permacache(
-    "urbanstats/statistics/collections/aggregate_basics_of_year",
+    "urbanstats/statistics/collections/aggregate_basics_of_year_2",
     key_function=dict(shapefile=lambda x: x.hash_key),
 )
 def aggregate_basics_of_year(shapefile, year):
