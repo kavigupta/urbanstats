@@ -286,3 +286,14 @@ post-histograms
 1392    order
 1573    data
 4205    total
+
+added segregation data
+
+10	consolidated
+23	scripts
+25	quiz_sample_info
+28	index
+1154	shape
+1510	order
+1834	data
+4591	total

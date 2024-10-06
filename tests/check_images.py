@@ -4,6 +4,8 @@ import shutil
 import numpy as np
 from PIL import Image
 
+border_color = [0xab, 0xcd, 0xef, 0xff]
+
 def pad_images(ref, act):
     if ref.shape[0] > act.shape[0]:
         act = np.pad(act, ((0, ref.shape[0] - act.shape[0]), (0, 0), (0, 0)))
@@ -15,34 +17,33 @@ def pad_images(ref, act):
         ref = np.pad(ref, ((0, 0), (0, act.shape[1] - ref.shape[1]), (0, 0)))
     return ref, act
 
-def get_region_size(bitmap, location):
-    queue = [location]
-    visited = set()
-    while queue:
-        x, y = queue.pop()
-        if not (0 <= x < bitmap.shape[0] and 0 <= y < bitmap.shape[1]):
-            continue
-        if (x, y) in visited:
-            continue
-        visited.add((x, y))
-        if bitmap[x, y]:
-            queue.append((x + 1, y))
-            queue.append((x - 1, y))
-            queue.append((x, y + 1))
-            queue.append((x, y - 1))
-    return len(visited)
+def plurality_color(arr):
+    arr = arr.astype(np.uint32) << np.arange(24, -1, -8)
+    arr = arr.sum(-1)
+    arr = arr.flatten()
+    unique, counts = np.unique(arr, return_counts=True)
+    plur = unique[counts.argmax()]
+    return np.array([
+        (plur >> x) & 0xff
+        for x in range(24, -1, -8)
+    ])
 
-def region_size_bounded(bitmask, size=4 * 4):
-    return all(get_region_size(bitmask, (x, y)) <= size for x, y in zip(*np.where(bitmask)))
+def difference_minimal(act, ref, bgc):
+    number_non_border = (ref != border_color).any(-1).sum()
+    number_distinct_pixels = (act != ref).any(-1).sum()
+    number_non_bg_non_border = ((ref != border_color).any(-1) & (ref != bgc).any(-1)).sum()
+    frac_distinct = number_distinct_pixels / number_non_border
+    frac_filled = number_non_bg_non_border / number_non_border
+    frac_filled = max(frac_filled, 0.1)
+    return frac_distinct / frac_filled < 0.1
 
 def handle_normalized_map(ref, act):
-    ys, xs = np.where((ref == [0xab, 0xcd, 0xef, 0xff]).all(-1))
+    ys, xs = np.where((ref == border_color).all(-1))
     if ys.size == 0:
         return
     ymin, ymax = ys.min(), ys.max()
     xmin, xmax = xs.min(), xs.max()
-    bitmask = (act[ymin:ymax, xmin:xmax] != ref[ymin:ymax, xmin:xmax]).any(-1)
-    if not region_size_bounded(bitmask):
+    if not difference_minimal(act[ymin:ymax, xmin:xmax], ref[ymin:ymax, xmin:xmax], plurality_color(ref)):
         return
     act[ymin:ymax, xmin:xmax] = ref[ymin:ymax, xmin:xmax]
 
@@ -58,34 +59,67 @@ def compute_delta_image(ref, act):
     delta = np.concatenate([ref, indicator], axis=1)
     return diff_mask.any(), delta
 
-def test_paths(reference, actual, delta_path):
+def test_paths(reference, actual, delta_path, changed_path):
     ref = np.array(Image.open(reference))
     act = np.array(Image.open(actual))
     diff, delta = compute_delta_image(ref, act)
     if diff:
-        try:
-            os.makedirs(os.path.dirname(delta_path))
-        except FileExistsError:
-            pass
+        os.makedirs(os.path.dirname(delta_path), exist_ok=True)
         Image.fromarray(delta).save(delta_path)
         print(f"{reference} and {actual} are different")
+        os.makedirs(os.path.dirname(changed_path), exist_ok=True)
+        shutil.copy(actual, changed_path)
         return False
     else:
         return True
 
-def test_all_same(reference="reference_test_screeshots", actual="react/screenshots"):
-    shutil.rmtree("react/delta", ignore_errors=True)
+def test_all_same(reference, actual, delta, changed):
+    shutil.rmtree(delta, ignore_errors=True)
     errors = 0
+    for root, dirs, files in os.walk(actual):
+        for file in files:
+            actual_path = os.path.join(root, file)
+            relative = os.path.relpath(actual_path, actual)
+            reference_path = os.path.join(reference, relative)
+            changed_path = os.path.join(changed, relative)
+            if not os.path.isfile(reference_path):
+                errors += 1
+                print(f"Expected reference file {reference_path} not found")
+                os.makedirs(os.path.dirname(changed_path), exist_ok=True)
+                shutil.copy(actual_path, changed_path)
     for root, dirs, files in os.walk(reference):
         for file in files:
             reference_path = os.path.join(root, file)
             relative = os.path.relpath(reference_path, reference)
             actual_path = os.path.join(actual, relative)
-            delta_path = os.path.join("react/delta", relative)
-            errors += not test_paths(reference_path, actual_path, delta_path)
+            changed_path = os.path.join(changed, relative)
+            if not os.path.isfile(actual_path):
+                errors += 1
+                print(f"Expected actual file {actual_path} not found")
+                continue
+            delta_path = os.path.join(delta, relative)
+            errors += not test_paths(reference_path, actual_path, delta_path, changed_path)
     if errors:
         print(f"{errors} errors found")
+        exit(1)
     else:
         print("All tests passed")
 if __name__ == "__main__":
-    test_all_same()
+    import argparse
+    p = argparse.ArgumentParser()
+    p.add_argument("--test", required=False)
+    args = p.parse_args()
+    if args.test:
+        test_all_same(
+            reference=f"reference_test_screenshots/{args.test}",
+            actual=f"react/screenshots/{args.test}", 
+            delta=f"react/delta/{args.test}",
+            changed=f"react/changed_screenshots/{args.test}"
+        )
+    else:
+        test_all_same(
+            reference="reference_test_screenshots", 
+            actual="react/screenshots", 
+            delta="react/delta",
+            changed=f"react/changed_screenshots"
+        )

@@ -3,37 +3,29 @@ import { Selector } from 'testcafe'
 import {
     SEARCH_FIELD, TARGET, check_all_category_boxes, check_textboxes, comparison_page, download_image,
     getLocation, screencap,
+    urbanstatsFixture,
 } from './test_utils'
 
-fixture('longer article test')
-    .page(`${TARGET}/article.html?longname=California%2C+USA`)
-// no local storage
-    .beforeEach(async (t) => {
-        await t.eval(() => { localStorage.clear() })
-    })
+urbanstatsFixture('longer article test', '/article.html?longname=California%2C+USA')
 
 test('california-article-test', async (t) => {
     // screenshot path: images/first_test.png
-    await screencap(t, 'article/california')
+    await screencap(t)
 })
 
 test('neighboring-state-test', async (t) => {
     await t.wait(1000)
-    await screencap(t, 'article/california-with-neighbors')
+    await screencap(t)
     await t
         .click(Selector('path').withAttribute('class', /tag-Arizona,_USA/))
     await t.expect(getLocation())
         .eql(`${TARGET}/article.html?longname=Arizona%2C+USA`)
 })
 
-fixture('shorter article test')
-    .page(`${TARGET}/article.html?longname=San+Marino+city%2C+California%2C+USA`)
-    .beforeEach(async (t) => {
-        await t.eval(() => { localStorage.clear() })
-    })
+urbanstatsFixture('shorter article test', `/article.html?longname=San+Marino+city%2C+California%2C+USA`)
 
 test('san-marino-article-test', async (t) => {
-    await screencap(t, 'article/san-marino')
+    await screencap(t)
 })
 
 test('editable-number', async (t) => {
@@ -86,7 +78,7 @@ test('lr-buttons', async (t) => {
 
 test('san-marino-2010-health', async (t) => {
     await check_textboxes(t, ['2010 Census', 'Health'])
-    await screencap(t, 'article/san-marino-2010-health')
+    await screencap(t)
 })
 
 test('uncheck-box-mobile', async (t) => {
@@ -98,10 +90,10 @@ test('uncheck-box-mobile', async (t) => {
     await t.wait(1000)
     await check_textboxes(t, ['Race'])
 
-    await screencap(t, 'article/remove_race_initial_mobile')
+    await screencap(t)
     // refresh
     await t.eval(() => { location.reload() })
-    await screencap(t, 'article/remove_race_refresh_mobile')
+    await screencap(t)
 })
 
 test('uncheck-box-desktop', async (t) => {
@@ -111,10 +103,10 @@ test('uncheck-box-desktop', async (t) => {
     await t.wait(1000)
     await check_textboxes(t, ['Race'])
 
-    await screencap(t, 'article/remove_race_initial_desktop')
+    await screencap(t)
     // refresh
     await t.eval(() => { location.reload() })
-    await screencap(t, 'article/remove_race_refresh_desktop')
+    await screencap(t)
 })
 
 test('simple', async (t) => {
@@ -124,11 +116,11 @@ test('simple', async (t) => {
     await t.wait(1000)
     await check_textboxes(t, ['Simple Ordinals'])
 
-    await screencap(t, 'article/simple-ordinals')
+    await screencap(t)
 })
 
 test('download-article', async (t) => {
-    await download_image(t, 'article/download-article')
+    await download_image(t)
 })
 
 test('create-comparison-from-article', async (t) => {
@@ -141,17 +133,12 @@ test('create-comparison-from-article', async (t) => {
         .eql(comparison_page(['San Marino city, California, USA', 'Pasadena city, California, USA']))
 })
 
-fixture('article universe selector test')
-    .page(`${TARGET}/article.html?longname=San+Marino+city%2C+California%2C+USA`)
-// no local storage
-    .beforeEach(async (t) => {
-        await t.eval(() => { localStorage.clear() })
-    })
+urbanstatsFixture('article universe selector test', `/article.html?longname=San+Marino+city%2C+California%2C+USA`)
 
-test('article-universe-selector-test', async (t) => {
+test('article-universe-selector-test-california', async (t) => {
     await t
         .click(Selector('img').withAttribute('class', 'universe-selector'))
-    await screencap(t, 'article-dropped-down-universe-selector')
+    await screencap(t)
     await t
         .click(
             Selector('img')
@@ -161,17 +148,12 @@ test('article-universe-selector-test', async (t) => {
         .eql(`${TARGET}/article.html?longname=San+Marino+city%2C+California%2C+USA&universe=California%2C+USA`)
 })
 
-fixture('article universe selector test international')
-    .page(`${TARGET}/article.html?longname=Delhi+%5BNew+Delhi%5D+Urban+Center%2C+India`)
-// no local storage
-    .beforeEach(async (t) => {
-        await t.eval(() => { localStorage.clear() })
-    })
+urbanstatsFixture('article universe selector test international', `/article.html?longname=Delhi+%5BNew+Delhi%5D+Urban+Center%2C+India`)
 
-test('article-universe-selector-test', async (t) => {
+test('article-universe-selector-test-india', async (t) => {
     await t
         .click(Selector('img').withAttribute('class', 'universe-selector'))
-    await screencap(t, 'article-dropped-down-universe-selector-international')
+    await screencap(t)
     await t
         .click(
             Selector('img')
@@ -179,15 +161,10 @@ test('article-universe-selector-test', async (t) => {
                 .withAttribute('alt', 'India'))
     await t.expect(getLocation())
         .eql(`${TARGET}/article.html?longname=Delhi+%5BNew+Delhi%5D+Urban+Center%2C+India&universe=India`)
-    await screencap(t, 'article/delhi-india')
+    await screencap(t)
 })
 
-fixture('article universe navigation test')
-    .page(`${TARGET}/article.html?longname=San+Marino+city%2C+California%2C+USA&universe=California%2C+USA`)
-// no local storage
-    .beforeEach(async (t) => {
-        await t.eval(() => { localStorage.clear() })
-    })
+urbanstatsFixture('article universe navigation test', `/article.html?longname=San+Marino+city%2C+California%2C+USA&universe=California%2C+USA`)
 
 test('article-universe-right-arrow', async (t) => {
     // click right population arrow
@@ -215,8 +192,8 @@ test('article-universe-statistic-page', async (t) => {
     await t
         .click(Selector('a').withText(/^Area$/))
     await t.expect(getLocation())
-        .eql(`${TARGET}/statistic.html?statname=Area&article_type=City&start=801&amount=20&universe=California%2C+USA`)
-    await screencap(t, 'statistics/universe-statistic-page')
+        .eql(`${TARGET}/statistic.html?statname=Area&article_type=City&start=821&amount=20&universe=California%2C+USA`)
+    await screencap(t)
 })
 
 test('article-universe-related-button', async (t) => {
@@ -246,7 +223,7 @@ test('article-universe-compare', async (t) => {
         .eql(
             `${TARGET}/comparison.html?longnames=%5B%22San+Marino+city%2C+California%2C+USA%22%2C%22San+Francisco+city%2C+California%2C+USA%22%5D&universe=California%2C+USA`,
         )
-    await screencap(t, 'comparison/universe-compare')
+    await screencap(t)
 })
 
 test('article-universe-compare-different', async (t) => {
@@ -259,15 +236,10 @@ test('article-universe-compare-different', async (t) => {
         .eql(
             `${TARGET}/comparison.html?longnames=%5B%22San+Marino+city%2C+California%2C+USA%22%2C%22Chicago+city%2C+Illinois%2C+USA%22%5D`,
         )
-    await screencap(t, 'comparison/universe-compare-different')
+    await screencap(t)
 })
 
-fixture('article universe state test')
-    .page(`${TARGET}/article.html?longname=California%2C+USA`)
-// no local storage
-    .beforeEach(async (t) => {
-        await t.eval(() => { localStorage.clear() })
-    })
+urbanstatsFixture('article universe state test', `/article.html?longname=California%2C+USA`)
 
 test('article-universe-state-world', async (t) => {
     // go to the world
@@ -281,51 +253,36 @@ test('article-universe-state-world', async (t) => {
     await t.expect(getLocation())
         .eql(`${TARGET}/article.html?longname=California%2C+USA&universe=world`)
     // screenshot
-    await screencap(t, 'article/california-world')
+    await screencap(t)
 })
 
-fixture('article universe state from subnational test')
-    .page(`${TARGET}/article.html?longname=Kerala%2C+India`)
-// no local storage
-    .beforeEach(async (t) => {
-        await t.eval(() => { localStorage.clear() })
-    })
+urbanstatsFixture('article universe state from subnational test', `/article.html?longname=Kerala%2C+India`)
 
 test('article-universe-state-from-subnational', async (t) => {
-    await screencap(t, 'article/kerala-india')
+    await screencap(t)
     // click the > button
     await t
         .click(Selector('a').withText('>'))
     await t.expect(getLocation())
         .eql(`${TARGET}/article.html?longname=California%2C+USA&universe=world`)
-    await screencap(t, 'article/california-world-from-kerala')
+    await screencap(t)
 })
 
-fixture('all stats test')
-    .page(`${TARGET}/article.html?longname=California%2C+USA`)
-// no local storage
-    .beforeEach(async (t) => {
-        await t.eval(() => { localStorage.clear() })
-    })
+urbanstatsFixture('all stats test', `/article.html?longname=California%2C+USA`)
 
 test('california-all-stats', async (t) => {
     await t.resizeWindow(1400, 800)
     await t.eval(() => { location.reload() })
     await check_all_category_boxes(t)
-    await screencap(t, 'article/california-all-stats')
+    await screencap(t)
 })
 
 // selected because the gz changed in statistic classes
-fixture('all stats test regression')
-    .page(`${TARGET}/article.html?longname=Charlotte%2C+Maine%2C+USA`)
-// no local storage
-    .beforeEach(async (t) => {
-        await t.eval(() => { localStorage.clear() })
-    })
+urbanstatsFixture('all stats test regression', `/article.html?longname=Charlotte%2C+Maine%2C+USA`)
 
 test('charlotte-all-stats', async (t) => {
     await t.resizeWindow(1400, 800)
     await t.eval(() => { location.reload() })
     await check_all_category_boxes(t)
-    await screencap(t, 'article/charlotte-all-stats')
+    await screencap(t)
 })

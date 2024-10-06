@@ -408,7 +408,7 @@ def compute_gpw_data_for_shapefile_table(shapefile):
     result["area"] = shapes.to_crs({"proj": "cea"}).area / 1e6
     for collection in statistic_collections:
         if collection.for_international():
-            collection.mutate_statistic_table(result, shapes)
+            collection.compute_statistics(shapefile, result, shapes)
 
     result["longname"] = shapes.longname
     result["shortname"] = shapes.shortname

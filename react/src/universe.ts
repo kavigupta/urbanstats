@@ -19,7 +19,7 @@ export function set_universe(universe: string): void {
 export function remove_universe_if_not_in(universes: string[]): void {
     const universe = get_universe(undefined)
     if (universe === undefined || !universes.includes(universe)) {
-    // clear universe without actually reloading the page
+        // clear universe without actually reloading the page
         const params = new URLSearchParams(window.location.search)
         params.delete('universe')
         window.history.replaceState({}, '', `${window.location.pathname}?${params.toString()}`)
@@ -28,7 +28,7 @@ export function remove_universe_if_not_in(universes: string[]): void {
 
 export function remove_universe_if_default(default_universe: string): void {
     if (get_universe(undefined) === default_universe) {
-    // clear universe without actually reloading the page
+        // clear universe without actually reloading the page
         const params = new URLSearchParams(window.location.search)
         params.delete('universe')
         window.history.replaceState({}, '', `${window.location.pathname}?${params.toString()}`)
@@ -59,5 +59,5 @@ export function universe_is_american(universe: string): boolean {
 
 export function longname_is_exclusively_american(universe: string): boolean {
     // if longname ends with ", USA", then it's exclusively American
-    return universe.endsWith(', USA')
+    return universe.endsWith(', USA') || universe === 'USA'
 }

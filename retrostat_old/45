@@ -1,0 +1,107 @@
+[
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Cancer (excluding skin cancer) %",
+      "question": "higher % of adults with cancer (excluding skin cancer)",
+      "longname_a": "Salisbury MSA, MD-DE, USA",
+      "longname_b": "El Paso MSA, TX, USA",
+      "stat_a": 0.07801998238726505,
+      "stat_b": 0.047863149702812975
+    },
+    "b": {
+      "stat_column": "Self-care disability %",
+      "question": "higher % of adults with a self-care disability",
+      "longname_a": "Raleigh city, North Carolina, USA",
+      "longname_b": "Detroit city, Michigan, USA",
+      "stat_a": 0.030513110462528976,
+      "stat_b": 0.08971177696733627
+    },
+    "a_ease": 0.3309608540925267,
+    "b_ease": 0.7346711259754738
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Boomer %",
+      "question": "higher % of people who are boomers!TOOLTIP born between 1946 and 1966",
+      "longname_a": "NY-03, USA",
+      "longname_b": "AZ-03, USA",
+      "stat_a": 0.2616908646096328,
+      "stat_b": 0.14364332602502505
+    },
+    "b": {
+      "stat_column": "Asian %",
+      "question": "higher % of people who are Asian",
+      "longname_a": "Maine, USA",
+      "longname_b": "Montana, USA",
+      "stat_a": 0.012233976170725082,
+      "stat_b": 0.007449560746155087
+    },
+    "a_ease": 0.30247933884297523,
+    "b_ease": 0.7066408768536429
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Mean sunny hours",
+      "question": "!FULL Which has more hours of sun per day on average? (population weighted)!TOOLTIP Population weighted weather statistics are calculated by computing the weather statistic for each person in the region and then averaging the results.",
+      "longname_a": "Kansas, USA",
+      "longname_b": "Mississippi, USA",
+      "stat_a": 6.052484723173713,
+      "stat_b": 5.619887750859648
+    },
+    "b": {
+      "stat_column": "Rainfall",
+      "question": "higher rainfall (population weighted)!TOOLTIP Population weighted weather statistics are calculated by computing the weather statistic for each person in the region and then averaging the results.",
+      "longname_a": "Davenport-Moline-Rock Island MSA, IA-IL, USA",
+      "longname_b": "Hartford-West Hartford-East Hartford MSA, CT, USA",
+      "stat_a": 0.8777977757601093,
+      "stat_b": 1.0233176220304685
+    },
+    "a_ease": 0.35826558265582653,
+    "b_ease": 0.7965440356744704
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Household Income > $100k %",
+      "question": "higher % of households who have household income over $100k",
+      "longname_a": "Washington city, District of Columbia, USA",
+      "longname_b": "Buffalo city, New York, USA",
+      "stat_a": 0.47172180265162644,
+      "stat_b": 0.16989777337364806
+    },
+    "b": {
+      "stat_column": "Electricity heating %",
+      "question": "!FULL Which has a larger % of homes heated using electricity?",
+      "longname_a": "FL-14, USA",
+      "longname_b": "IL-09, USA",
+      "stat_a": 0.9208522513542353,
+      "stat_b": 0.17159857958199728
+    },
+    "a_ease": 0.8989958653278204,
+    "b_ease": 0.4959349593495935
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Population [GHS-POP]",
+      "question": "higher population",
+      "longname_a": "Bengaluru Urban Center, India",
+      "longname_b": "Mbuji-Mayi Urban Center, Congo, The Democratic Republic of the",
+      "stat_a": 13128328.0,
+      "stat_b": 3233267.75
+    },
+    "b": {
+      "stat_column": "Retail trade %",
+      "question": "higher % of workers employed in the retail trade industry!TOOLTIP retailers of all kinds of goods, including stores, gas stations, florists, etc.",
+      "longname_a": "Washington city, District of Columbia, USA",
+      "longname_b": "Lexington-Fayette urban county, Kentucky, USA",
+      "stat_a": 0.04524003484018434,
+      "stat_b": 0.12378801887016097
+    },
+    "a_ease": 0.9576365663322185,
+    "b_ease": 0.5533807829181495
+  }
+]

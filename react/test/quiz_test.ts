@@ -4,9 +4,9 @@ import { promisify } from 'util'
 
 import { RequestHook, Selector } from 'testcafe'
 
-import { TARGET, screencap } from './test_utils'
+import { TARGET, screencap, urbanstatsFixture } from './test_utils'
 
-async function quiz_screencap(t: TestController, name: string): Promise<void> {
+async function quiz_screencap(t: TestController): Promise<void> {
     await t.eval(() => {
         const elem = document.getElementById('quiz-timer')
         if (elem) {
@@ -14,7 +14,7 @@ async function quiz_screencap(t: TestController, name: string): Promise<void> {
         }
     })
     await t.wait(1000)
-    await screencap(t, name)
+    await screencap(t)
 }
 
 export class ProxyPersistent extends RequestHook {
@@ -25,7 +25,6 @@ export class ProxyPersistent extends RequestHook {
             e.requestOptions.protocol = 'http:'
             e.requestOptions.path = e.requestOptions.path.replace('https://persistent.urbanstats.org', 'localhost:54579')
             e.requestOptions.host = 'localhost:54579'
-            // console.log(e)
         }
     }
 
@@ -49,24 +48,21 @@ function retrostat_table(): Promise<string> {
 }
 
 function quiz_fixture(fix_name: string, url: string, new_localstorage: Record<string, string>, sql_statements: string): void {
-    fixture(fix_name)
-        .page(url)
-    // no local storage
-        .beforeEach(async (t) => {
-            // create a temporary file
-            const tempfile = `/tmp/quiz_test_${Math.floor(Math.random() * 1000000)}.sql`
-            // write the sql statements to the temporary file
-            writeFileSync(tempfile, sql_statements)
-            await promisify(exec)(`rm -f ../urbanstats-persistent-data/db.sqlite3; cd ../urbanstats-persistent-data; cat ${tempfile} | sqlite3 db.sqlite3; cd -`)
-            exec('bash ../urbanstats-persistent-data/run_for_test.sh')
-            await t.wait(2000)
-            await t.eval(() => {
-                localStorage.clear()
-                for (const k of Object.keys(new_localstorage)) {
-                    localStorage.setItem(k, new_localstorage[k])
-                }
-            }, { dependencies: { new_localstorage } })
-        })
+    urbanstatsFixture(fix_name, url, async (t) => {
+        // create a temporary file
+        const tempfile = `/tmp/quiz_test_${Math.floor(Math.random() * 1000000)}.sql`
+        // write the sql statements to the temporary file
+        writeFileSync(tempfile, sql_statements)
+        await promisify(exec)(`rm -f ../urbanstats-persistent-data/db.sqlite3; cd ../urbanstats-persistent-data; cat ${tempfile} | sqlite3 db.sqlite3; cd -`)
+        exec('bash ../urbanstats-persistent-data/run_for_test.sh')
+        await t.wait(2000)
+        await t.eval(() => {
+            localStorage.clear()
+            for (const k of Object.keys(new_localstorage)) {
+                localStorage.setItem(k, new_localstorage[k])
+            }
+        }, { dependencies: { new_localstorage } })
+    })
         .afterEach(async (t) => {
             exec('killall gunicorn')
             await t.wait(1000)
@@ -122,21 +118,21 @@ quiz_fixture(
 test('quiz-clickthrough-test', async (t) => {
     await click_button(t, 'a')
     await t.wait(2000)
-    await quiz_screencap(t, 'quiz/clickthrough-1')
+    await quiz_screencap(t)
     await click_button(t, 'b')
     await t.wait(2000)
-    await quiz_screencap(t, 'quiz/clickthrough-2')
+    await quiz_screencap(t)
     await click_button(t, 'a')
     await t.wait(2000)
-    await quiz_screencap(t, 'quiz/clickthrough-3')
+    await quiz_screencap(t)
     await click_button(t, 'b')
     await t.wait(2000)
-    await quiz_screencap(t, 'quiz/clickthrough-4')
+    await quiz_screencap(t)
     await click_button(t, 'a')
     await t.wait(2000)
     await t.eval(() => { document.getElementById('quiz-timer')!.remove() })
     await t.wait(3000)
-    await quiz_screencap(t, 'quiz/clickthrough-5')
+    await quiz_screencap(t)
     const quiz_history: unknown = await t.eval(() => {
         return JSON.stringify(JSON.parse(localStorage.getItem('quiz_history')!))
     })
@@ -215,7 +211,7 @@ quiz_fixture(
 test('quiz-percentage-correct', async (t) => {
     await t.eval(() => { location.reload() })
     await click_buttons(t, ['a', 'a', 'a', 'a', 'a'])
-    await quiz_screencap(t, 'quiz/percentage-correct')
+    await quiz_screencap(t)
     await t.expect(await juxtastat_table()).eql(
         `${Array.from(Array(30).keys()).map(i => `${i + 30}|99|101`).join('\n')}\n` + `7|99|15\n`,
     )
@@ -228,7 +224,7 @@ test('quiz-percentage-correct', async (t) => {
     })
     await t.eval(() => { location.reload() })
     await click_buttons(t, ['a', 'a', 'a', 'a', 'a'])
-    await quiz_screencap(t, 'quiz/percentage-correct-2')
+    await quiz_screencap(t)
     await t.expect(await juxtastat_table()).eql(
         `${Array.from(Array(30).keys()).map(i => `${i + 30}|99|101`).join('\n')}\n` + `7|99|15\n` + `8|99|15\n`,
     )
@@ -317,15 +313,11 @@ test('quiz-retrostat-retrostat-reporting', async (t) => {
     await t.expect(await retrostat_table()).eql('7|30|0\n7|31|15\n7|32|7\n7|33|23\n7|38|20\n')
 })
 
-fixture('quiz result test')
-    .page(`${TARGET}/quiz.html?date=100`)
-// very specific local storage
-    .beforeEach(async (t) => {
-        await t.eval(() => {
-            localStorage.clear()
-            localStorage.setItem('quiz_history', JSON.stringify(example_quiz_history(2, 100)))
-        }, { dependencies: { example_quiz_history } })
-    })
+urbanstatsFixture('quiz result test', `${TARGET}/quiz.html?date=100`, async (t) => {
+    await t.eval(() => {
+        localStorage.setItem('quiz_history', JSON.stringify(example_quiz_history(2, 100)))
+    }, { dependencies: { example_quiz_history } })
+})
 
 async function check_text(t: TestController, words: string, emoji: string): Promise<void> {
     const text = await Selector('#quiz-result-summary-words').innerText
@@ -339,48 +331,44 @@ test('quiz-results-test', async (t) => {
     await t.eval(() => { location.reload() })
     await t.wait(1000)
     await t.eval(() => { location.reload() })
-    await quiz_screencap(t, 'quiz/results-page')
+    await quiz_screencap(t)
     await check_text(t, 'Excellent! 😊 4/5', '🟩🟩🟩🟩🟥')
 })
 
-fixture('several quiz results')
-    .page(`${TARGET}/quiz.html?date=90`)
-// very specific local storage
-    .beforeEach(async (t) => {
-        await t.eval(() => {
-            localStorage.clear()
-            localStorage.setItem('quiz_history', JSON.stringify({
-                90: {
-                    choices: ['A', 'A', 'A', 'A', 'A'],
-                    correct_pattern: [true, true, true, true, false],
-                },
-                91: {
-                    choices: ['A', 'A', 'A', 'A', 'A'],
-                    correct_pattern: [true, false, true, false, true],
-                },
-                92: {
-                    choices: ['A', 'A', 'A', 'A', 'A'],
-                    correct_pattern: [true, true, true, true, true],
-                },
-                93: {
-                    choices: ['A', 'A', 'A', 'A', 'A'],
-                    correct_pattern: [false, false, false, false, false],
-                },
-                94: {
-                    choices: ['A', 'A', 'A', 'A', 'A'],
-                    correct_pattern: [false, false, false, true, true],
-                },
-                95: {
-                    choices: ['A', 'A', 'A', 'A', 'A'],
-                    correct_pattern: [true, true, true, true, false],
-                },
-            }))
-        }, { dependencies: { example_quiz_history } })
-    })
+urbanstatsFixture('several quiz results', `${TARGET}/quiz.html?date=90`, async (t) => {
+    await t.eval(() => {
+        localStorage.setItem('quiz_history', JSON.stringify({
+            90: {
+                choices: ['A', 'A', 'A', 'A', 'A'],
+                correct_pattern: [true, true, true, true, false],
+            },
+            91: {
+                choices: ['A', 'A', 'A', 'A', 'A'],
+                correct_pattern: [true, false, true, false, true],
+            },
+            92: {
+                choices: ['A', 'A', 'A', 'A', 'A'],
+                correct_pattern: [true, true, true, true, true],
+            },
+            93: {
+                choices: ['A', 'A', 'A', 'A', 'A'],
+                correct_pattern: [false, false, false, false, false],
+            },
+            94: {
+                choices: ['A', 'A', 'A', 'A', 'A'],
+                correct_pattern: [false, false, false, true, true],
+            },
+            95: {
+                choices: ['A', 'A', 'A', 'A', 'A'],
+                correct_pattern: [true, true, true, true, false],
+            },
+        }))
+    }, { dependencies: { example_quiz_history } })
+})
 
 test('several-quiz-results-test', async (t) => {
     await t.eval(() => { location.reload() })
-    await quiz_screencap(t, 'quiz/results-page-several')
+    await quiz_screencap(t)
     // true true true true false
     await check_text(t, 'Excellent! 😊 4/5', '🟩🟩🟩🟩🟥')
     // go to the next quiz via changing the href

@@ -1,4 +1,7 @@
-from census_blocks import RADII
+from permacache import permacache
+
+from census_blocks import RADII, all_densities_gpd, housing_units, racial_demographics
+from urbanstats.geometry.census_aggregation import aggregate_by_census_block
 from urbanstats.statistics.extra_statistics import HistogramSpec
 from urbanstats.statistics.statistic_collection import (
     ORDER_CATEGORY_MAIN,
@@ -10,107 +13,151 @@ from .census_basics import DENSITY_EXPLANATION_PW, CensusBasics, ad
 from .race_census import RaceCensus
 
 
-class Census2010(CensusStatisticsColection):
+class CensusForPreviousYear(CensusStatisticsColection):
     def name_for_each_statistic(self):
-        ad_2010 = {f"{k}_2010": f"{v} (2010)" for k, v in ad.items()}
+        year = self.year()
+        ad_for_year = {f"{k}_{year}": f"{v} ({year})" for k, v in ad.items()}
         ad_change = {
-            f"{k}_change_2010": f"{v} Change (2010-2020)" for k, v in ad.items()
+            f"{k}_change_{year}": f"{v} Change ({year}-2020)" for k, v in ad.items()
         }
 
         return {
-            "population_2010": "Population (2010)",
-            "population_change_2010": "Population Change (2010-2020)",
-            **{"ad_1_2010": ad_2010["ad_1_2010"]},
-            **{"ad_1_change_2010": ad_change["ad_1_change_2010"]},
-            "sd_2010": "AW Density (2010)",
+            f"population_{year}": f"Population ({year})",
+            f"population_change_{year}": f"Population Change ({year}-2020)",
+            **{f"ad_1_{year}": ad_for_year[f"ad_1_{year}"]},
+            **{f"ad_1_change_{year}": ad_change[f"ad_1_change_{year}"]},
+            f"sd_{year}": f"AW Density ({year})",
             **{
-                f"{k}_2010": f"{v} (2010)"
+                f"{k}_{year}": f"{v} ({year})"
                 for k, v in RaceCensus().name_for_each_statistic().items()
             },
-            "housing_per_pop_2010": "Housing Units per Adult (2010)",
-            "vacancy_2010": "Vacancy % (2010)",
-            **{k: ad_2010[k] for k in ad_2010 if k != "ad_1_2010"},
-            **{k: ad_change[k] for k in ad_change if k != "ad_1_change_2010"},
+            f"housing_per_pop_{year}": f"Housing Units per Adult ({year})",
+            f"vacancy_{year}": f"Vacancy % ({year})",
+            **{k: ad_for_year[k] for k in ad_for_year if k != f"ad_1_{year}"},
+            **{k: ad_change[k] for k in ad_change if k != f"ad_1_change_{year}"},
         }
 
     def order_category_for_each_statistic(self):
         return CensusBasics.order_category_for_each_statistic(self)
 
     def category_for_each_statistic(self):
-        return self.same_for_each_name("2010")
+        return self.same_for_each_name(str(self.year()))
 
     def explanation_page_for_each_statistic(self):
-        return self.same_for_each_name("2010")
+        return self.same_for_each_name(str(self.year()))
 
     def quiz_question_names(self):
+        year = self.year()
         return {
-            "population_change_2010": "higher % increase in population from 2010 to 2020",
-            "ad_1_change_2010": "higher % increase in population-weighted density (r=1km) from 2010 to 2020"
+            f"population_change_{year}": f"higher % increase in population from {year} to 2020",
+            f"ad_1_change_{year}": f"higher % increase in population-weighted density (r=1km) from {year} to 2020"
             + DENSITY_EXPLANATION_PW,
         }
 
     def quiz_question_unused(self):
+        year = self.year()
         return [
-            "ad_0.5_change_2010",
-            "ad_4_change_2010",
-            "ad_0.25_change_2010",
-            "ad_2_change_2010",
-            # direct 2010 statistics_tables
-            "population_2010",
-            "sd_2010",
-            "ad_0.25_2010",
-            "ad_0.5_2010",
-            "ad_1_2010",
-            "ad_2_2010",
-            "ad_4_2010",
-            "housing_per_pop_2010",
-            "asian_2010",
-            "other / mixed_2010",
-            "native_2010",
-            "white_2010",
-            "vacancy_2010",
-            "hispanic_2010",
-            "black_2010",
-            "hawaiian_pi_2010",
+            f"{x}_{year}"
+            for x in [
+                "ad_0.5_change",
+                "ad_4_change",
+                "ad_0.25_change",
+                "ad_2_change",
+                # direct copy of the 2020 statistics_tables
+                "population",
+                "sd",
+                "ad_0.25",
+                "ad_0.5",
+                "ad_1",
+                "ad_2",
+                "ad_4",
+                "housing_per_pop",
+                "asian",
+                "other / mixed",
+                "native",
+                "white",
+                "vacancy",
+                "hispanic",
+                "black",
+                "hawaiian_pi",
+            ]
         ]
+
+    def compute_statistics(self, shapefile, statistics_table, shapefile_table):
+        table = aggregate_basics_of_year(shapefile, self.year())
+        for k in table:
+            statistics_table[k] = table[k]
+
+        self.mutate_statistic_table(statistics_table, shapefile_table)
 
     def mutate_statistic_table(self, statistics_table, shapefile_table):
         from census_blocks import racial_demographics
         from stats_for_shapefile import density_metrics
 
-        statistics_table["population_change_2010"] = (
-            statistics_table["population"] - statistics_table["population_2010"]
-        ) / statistics_table["population_2010"]
+        year = self.year()
+
+        statistics_table[f"population_change_{year}"] = (
+            statistics_table["population"] - statistics_table[f"population_{year}"]
+        ) / statistics_table[f"population_{year}"]
         for k in density_metrics:
-            statistics_table[f"{k}_2010"] /= statistics_table["population_2010"]
-            statistics_table[f"{k}_change_2010"] = (
-                statistics_table[k] - statistics_table[f"{k}_2010"]
-            ) / statistics_table[f"{k}_2010"]
-        statistics_table["sd_2010"] = (
-            statistics_table["population_2010"] / statistics_table["area"]
+            statistics_table[f"{k}_{year}"] /= statistics_table[f"population_{year}"]
+            statistics_table[f"{k}_change_{year}"] = (
+                statistics_table[k] - statistics_table[f"{k}_{year}"]
+            ) / statistics_table[f"{k}_{year}"]
+        statistics_table[f"sd_{year}"] = (
+            statistics_table[f"population_{year}"] / statistics_table["area"]
         )
         for k in racial_demographics:
-            statistics_table[k + "_2010"] /= statistics_table["population_2010"]
-        statistics_table["other / mixed_2010"] = (
-            statistics_table["other_2010"] + statistics_table["mixed_2010"]
+            statistics_table[f"{k}_{year}"] /= statistics_table[f"population_{year}"]
+        statistics_table[f"other / mixed_{year}"] = (
+            statistics_table[f"other_{year}"] + statistics_table[f"mixed_{year}"]
         )
-        del statistics_table["other_2010"]
-        del statistics_table["mixed_2010"]
-        statistics_table["housing_per_pop_2010"] = (
-            statistics_table["total_2010"] / statistics_table["population_18_2010"]
+        del statistics_table[f"other_{year}"]
+        del statistics_table[f"mixed_{year}"]
+        statistics_table[f"housing_per_pop_{year}"] = (
+            statistics_table[f"total_{year}"]
+            / statistics_table[f"population_18_{year}"]
         )
-        statistics_table["vacancy_2010"] = (
-            statistics_table["vacant_2010"] / statistics_table["total_2010"]
+        statistics_table[f"vacancy_{year}"] = (
+            statistics_table[f"vacant_{year}"] / statistics_table[f"total_{year}"]
         )
 
-        del statistics_table["vacant_2010"]
-        del statistics_table["total_2010"]
-        del statistics_table["occupied_2010"]
+        del statistics_table[f"vacant_{year}"]
+        del statistics_table[f"total_{year}"]
+        del statistics_table[f"occupied_{year}"]
 
     def extra_stats(self):
+        year = self.year()
         return {
-            f"ad_{d}_2010": HistogramSpec(
-                0, 0.1, f"pw_density_histogram_{d}_2010", "population"
+            f"ad_{d}_{year}": HistogramSpec(
+                0, 0.1, f"pw_density_histogram_{d}_{year}", "population"
             )
             for d in RADII
         }
+
+
+class Census2010(CensusForPreviousYear):
+    version = 2
+    def year(self):
+        return 2010
+
+
+@permacache(
+    "urbanstats/statistics/collections/aggregate_basics_of_year",
+    key_function=dict(shapefile=lambda x: x.hash_key),
+)
+def aggregate_basics_of_year(shapefile, year):
+    from stats_for_shapefile import density_metrics
+
+    print("aggregating basics of", year, "for", shapefile.hash_key)
+    sum_keys = [
+        "population",
+        "population_18",
+        *[f"{k}" for k in racial_demographics],
+        *[f"{k}" for k in housing_units],
+        *[f"{k}" for k in density_metrics],
+    ]
+    sum_keys = [f"{k}_{year}" for k in sum_keys]
+    t = all_densities_gpd(year).copy()
+    t.columns = [f"{k}_{year}" for k in t.columns]
+    return aggregate_by_census_block(year, shapefile, t[sum_keys])

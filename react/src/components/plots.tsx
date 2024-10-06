@@ -104,7 +104,8 @@ function Histogram(props: { histograms: HistogramProps[], screenshot_mode: boole
                 width: 1000,
                 style: {
                     fontSize: '1em',
-                    fontFamily: 'Jost',
+                    // font-family: 'Jost', 'Arial', sans-serif;
+                    fontFamily: 'Jost|Arial|sans-serif',
                 },
                 marginTop: 80,
                 marginBottom: 40,

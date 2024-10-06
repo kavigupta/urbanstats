@@ -63,11 +63,11 @@
 }
 
 .serif {
-    font-family: "Jost";
+    font-family: 'Jost', 'Arial', sans-serif;
 }
 
 .centered_text {
-    font-family: "Jost";
+    font-family: 'Jost', 'Arial', sans-serif;
     text-align: center;
 }
 

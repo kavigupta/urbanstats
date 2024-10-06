@@ -6,7 +6,7 @@ import geopandas as gpd
 import numpy as np
 import pandas as pd
 import tqdm
-from permacache import drop_if_equal, permacache
+from permacache import drop_if_equal, permacache, stable_hash
 
 from shapefiles import shapefiles_for_stats
 
@@ -449,6 +449,15 @@ def can_border(x, y):
 
 
 def full_relationships(long_to_type):
+    return relationships_for_list(long_to_type, shapefiles_for_stats)
+
+@permacache(
+    "relationship/relationships_for_list",
+    key_function=dict(long_to_type=stable_hash, shapefiles_to_use=lambda shapefiles_to_use: stable_hash({
+        k: v.hash_key for k, v in shapefiles_to_use.items()
+    })),
+)
+def relationships_for_list(long_to_type, shapefiles_to_use):
     contains, contained_by, intersects, borders = (
         defaultdict(set),
         defaultdict(set),
@@ -462,8 +471,8 @@ def full_relationships(long_to_type):
                 continue
             d[x].add(y)
 
-    for k1 in shapefiles_for_stats:
-        for k2 in shapefiles_for_stats:
+    for k1 in shapefiles_to_use:
+        for k2 in shapefiles_to_use:
             print(k1, k2)
             if k1 < k2:
                 continue
@@ -491,7 +500,7 @@ def full_relationships(long_to_type):
                 b_contains_a,
                 a_intersects_b,
                 a_borders_b,
-            ) = fn(shapefiles_for_stats[k1], shapefiles_for_stats[k2])
+            ) = fn(shapefiles_to_use[k1], shapefiles_to_use[k2])
 
             add(contains, a_contains_b)
             add(contains, [(big, small) for small, big in b_contains_a])
@@ -500,8 +509,8 @@ def full_relationships(long_to_type):
             add(intersects, a_intersects_b)
             add(intersects, [(big, small) for small, big in a_intersects_b])
             if can_border(
-                shapefiles_for_stats[k1].meta["type"],
-                shapefiles_for_stats[k2].meta["type"],
+                shapefiles_to_use[k1].meta["type"],
+                shapefiles_to_use[k2].meta["type"],
             ):
                 add(borders, a_borders_b)
                 add(borders, [(big, small) for small, big in a_borders_b])

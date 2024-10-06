@@ -8,6 +8,7 @@ import reactPlugin from "eslint-plugin-react"
 import preferFC from 'eslint-plugin-react-prefer-function-component/config'
 import reactHooks from 'eslint-plugin-react-hooks'
 import noOnlyTests from 'eslint-plugin-no-only-tests'
+import jest from 'eslint-plugin-jest'
 
 export default tseslint.config(
     ...tseslint.configs.strictTypeChecked,
@@ -114,6 +115,12 @@ export default tseslint.config(
         },
         rules: {
             'no-only-tests/no-only-tests': 'error'
+        }
+    },
+    jest.configs['flat/style'],
+    {
+        rules: {
+            'jest/no-identical-title': 'error' // Prevent default screencap names
         }
     }
 )
