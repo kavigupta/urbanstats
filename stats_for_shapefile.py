@@ -11,7 +11,6 @@ from more_itertools import chunked
 from permacache import drop_if_equal, permacache, stable_hash
 
 from census_blocks import all_densities_gpd, housing_units, racial_demographics
-from urbanstats.census_2010.blocks_2010 import block_level_data_2010
 from urbanstats.features.extract_data import feature_data
 from urbanstats.features.feature import feature_columns
 from urbanstats.osm.parks import park_overlap_percentages_all
@@ -213,15 +212,6 @@ sum_keys_2020 = [
     *USWeatherStatistics().name_for_each_statistic(),
 ]
 sum_keys_2020 = sorted(sum_keys_2020, key=str)
-sum_keys_2010 = [
-    "population_2010",
-    "population_18_2010",
-    *[f"{k}_2010" for k in racial_demographics],
-    *[f"{k}_2010" for k in housing_units],
-    *[f"{k}_2010" for k in density_metrics],
-    *CDCStatistics().name_for_each_statistic(),
-]
-sum_keys_2010 = sorted(sum_keys_2010, key=str)
 COLUMNS_PER_JOIN = 33
 
 
@@ -247,8 +237,7 @@ def block_level_data_2020():
 def block_level_data(year):
     if year == 2020:
         return block_level_data_2020()
-    assert year == 2010
-    return block_level_data_2010()
+    raise ValueError(f"Should not be manually aggregating for {year}")
 
 
 @permacache(
@@ -298,23 +287,20 @@ def compute_summed_shapefile_all_keys(sf, sum_keys, year=2020):
 
 @permacache(
     "population_density/stats_for_shapefile/compute_statistics_for_shapefile_24",
-    key_function=dict(sf=lambda x: x.hash_key, sum_keys=stable_hash, statistic_collections=stable_hash),
+    key_function=dict(
+        sf=lambda x: x.hash_key, sum_keys=stable_hash, statistic_collections=stable_hash
+    ),
     multiprocess_safe=True,
 )
 def compute_statistics_for_shapefile(
-    sf, sum_keys_2020=sum_keys_2020, sum_keys_2010=sum_keys_2010, statistic_collections=statistic_collections
+    sf,
+    sum_keys_2020=sum_keys_2020,
+    statistic_collections=statistic_collections,
 ):
     sf_fr = sf.load_file()
     print(sf)
     result_2020 = compute_summed_shapefile_all_keys(sf, sum_keys_2020, year=2020).copy()
-    result_2010 = compute_summed_shapefile_all_keys(sf, sum_keys_2010, year=2010).copy()
-    assert (result_2020.longname == result_2010.longname).all()
-    # drop columns longname, shortname, area
-    result_2010 = result_2010.drop(columns=["longname", "shortname", "area"])
-    # assert no columns are in both result_2020 and result_2010
-    overlap_cols = set(result_2020.columns) & set(result_2010.columns)
-    assert not overlap_cols
-    result = pd.concat([result_2020, result_2010], axis=1)
+    result = result_2020
     assert (result.longname == sf_fr.longname).all()
     for k in sf.meta:
         result[k] = sf.meta[k]
@@ -330,6 +316,7 @@ def compute_grouped_stats(blocks_gdf, s, sum_keys):
     joined = crosswalk(blocks_gdf, s, sum_keys)
     grouped_stats = pd.DataFrame(joined[sum_keys]).groupby(joined.index).sum()
     return grouped_stats
+
 
 def crosswalk(blocks_gdf, s, sum_keys):
     return s.sjoin(
