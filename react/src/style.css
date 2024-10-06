@@ -113,3 +113,11 @@ select {
 .button_related_mobile {
     font-size: 12pt;
 }
+
+.party_result_D {
+    color: #5a7dc3;
+}
+
+.party_result_R {
+    color: #f96d6d;
+}
