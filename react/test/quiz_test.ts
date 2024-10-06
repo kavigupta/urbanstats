@@ -2,6 +2,7 @@ import { exec } from 'child_process'
 import { writeFileSync } from 'fs'
 import { promisify } from 'util'
 
+import { execa } from 'execa'
 import { RequestHook, Selector } from 'testcafe'
 
 import { TARGET, screencap, urbanstatsFixture } from './test_utils'
@@ -54,7 +55,7 @@ function quiz_fixture(fix_name: string, url: string, new_localstorage: Record<st
         // write the sql statements to the temporary file
         writeFileSync(tempfile, sql_statements)
         await promisify(exec)(`rm -f ../urbanstats-persistent-data/db.sqlite3; cd ../urbanstats-persistent-data; cat ${tempfile} | sqlite3 db.sqlite3; cd -`)
-        exec('bash ../urbanstats-persistent-data/run_for_test.sh')
+        void execa('bash', ['../urbanstats-persistent-data/run_for_test.sh'], { stdio: 'inherit' })
         await t.wait(2000)
         await t.eval(() => {
             localStorage.clear()
@@ -62,6 +63,9 @@ function quiz_fixture(fix_name: string, url: string, new_localstorage: Record<st
                 localStorage.setItem(k, new_localstorage[k])
             }
         }, { dependencies: { new_localstorage } })
+        await t.eval(() => {
+            localStorage.setItem('testHostname', 'urbanstats.org')
+        })
     })
         .afterEach(async (t) => {
             exec('killall gunicorn')
@@ -221,6 +225,7 @@ test('quiz-percentage-correct', async (t) => {
     await t.eval(() => {
         localStorage.clear()
         localStorage.setItem('persistent_id', '000000000000008')
+        localStorage.setItem('testHostname', 'urbanstats.org')
     })
     await t.eval(() => { location.reload() })
     await click_buttons(t, ['a', 'a', 'a', 'a', 'a'])
@@ -328,8 +333,6 @@ async function check_text(t: TestController, words: string, emoji: string): Prom
 
 test('quiz-results-test', async (t) => {
     await t.resizeWindow(1400, 800)
-    await t.eval(() => { location.reload() })
-    await t.wait(1000)
     await t.eval(() => { location.reload() })
     await quiz_screencap(t)
     await check_text(t, 'Excellent! 😊 4/5', '🟩🟩🟩🟩🟥')
