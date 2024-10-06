@@ -5,7 +5,7 @@ import { article_link } from '../navigation/links'
 import { relationship_key, useSetting } from '../page_template/settings'
 import { useUniverse } from '../universe'
 import { lighten } from '../utils/color'
-import { mobileLayout } from '../utils/responsive'
+import { useMobileLayout } from '../utils/responsive'
 
 import { CheckboxSetting } from './sidebar'
 
@@ -41,12 +41,12 @@ function RelatedButton(props: { region: Region }): ReactNode {
     const type_category = type_to_type_category[props.region.rowType]
 
     let classes = `serif button_related`
-    if (mobileLayout()) {
+    if (useMobileLayout()) {
         classes += ' button_related_mobile'
     }
     const color = colorsEach[type_category]
     return (
-        <li className={`linklistel${mobileLayout() ? ' linklistel_mobile' : ''}`}>
+        <li className={`linklistel${useMobileLayout() ? ' linklistel_mobile' : ''}`}>
             <a
                 className={classes}
                 style={{ color: 'black', backgroundColor: lighten(color, 0.7) }}
@@ -70,6 +70,7 @@ function RelatedList(props: { articleType: string, buttonType: string, regions: 
     }
 
     const checkId = useId()
+    const mobileLayout = useMobileLayout()
 
     return (
         <li className="list_of_lists">
@@ -91,10 +92,10 @@ function RelatedList(props: { articleType: string, buttonType: string, regions: 
                             return (
                                 <ul key={j} className="linklist">
                                     <li
-                                        className={`serif linklistel${mobileLayout() ? ' linklistel_mobile' : ''}`}
+                                        className={`serif linklistel${mobileLayout ? ' linklistel_mobile' : ''}`}
                                         style={{
                                             fontSize:
-                                                mobileLayout() ? '12pt' : '10pt',
+                                                mobileLayout ? '12pt' : '10pt',
                                             paddingTop: '1pt', fontWeight: 500,
                                         }}
                                     >

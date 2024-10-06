@@ -5,7 +5,7 @@ import ReactDOM from 'react-dom/client'
 import './style.css'
 import './common.css'
 import { PageTemplate } from './page_template/template'
-import { headerTextClass } from './utils/responsive'
+import { useHeaderTextClass } from './utils/responsive'
 
 const industry_occupation_table = require('./data/explanation_industry_occupation_table.json') as { industry: [string, string][], occupation: [string, string][] }
 
@@ -63,11 +63,12 @@ function NRef({ children, name, h: Header = 'h2' }: { children: React.ReactNode,
 }
 
 function DataCreditPanel(): ReactNode {
+    const textHeaderClass = useHeaderTextClass()
     return (
         <PageTemplate>
             {() => (
                 <div className="serif">
-                    <div className={headerTextClass()}>Credits</div>
+                    <div className={textHeaderClass}>Credits</div>
 
                     <h1>Code contributors</h1>
                     <p>

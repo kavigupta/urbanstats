@@ -3,18 +3,18 @@ import React, { ReactNode, useId } from 'react'
 import '../style.css'
 import './sidebar.css'
 import { SettingsDictionary, useSetting, useStatisticCategoryMetadataCheckboxes } from '../page_template/settings'
-import { mobileLayout } from '../utils/responsive'
+import { useMobileLayout } from '../utils/responsive'
 
 export function Sidebar(): ReactNode {
     const statistic_category_metadata_checkboxes = useStatisticCategoryMetadataCheckboxes()
     let sidebar_section_content = 'sidebar-section-content'
     let sidebar_section_title = 'sidebar-section-title'
-    if (mobileLayout()) {
+    if (useMobileLayout()) {
         sidebar_section_content += ' sidebar-section-content_mobile'
         sidebar_section_title += ' sidebar-section-title_mobile'
     }
     return (
-        <div className={`serif sidebar${mobileLayout() ? '_mobile' : ''}`}>
+        <div className={`serif sidebar${useMobileLayout() ? '_mobile' : ''}`}>
             <div className="sidebar-section">
                 <div className={sidebar_section_title}>Main Menu</div>
                 <ul className={sidebar_section_content}>
