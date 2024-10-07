@@ -3,7 +3,7 @@ import { createContext, useContext, useEffect, useState } from 'react'
 import { DefaultMap } from '../utils/DefaultMap'
 
 export type StatisticSettingKey = `show_statistic_${string}`
-export type StatisticCategoryKey = `show_category_statistic_${string}`
+export type StatisticCategorySavedIndeterminateKey = `statistic_category_saved_indeterminate_${string}`
 export type RelationshipKey = `related__${string}__${string}`
 export type RowExpandedKey = `expanded__${string}`
 export type HistogramType = 'Bar' | 'Line' | 'Line (cumulative)'
@@ -11,7 +11,7 @@ export type HistogramType = 'Bar' | 'Line' | 'Line (cumulative)'
 export interface SettingsDictionary {
     [relationshipKey: RelationshipKey]: boolean
     [showStatisticKey: StatisticSettingKey]: boolean
-    [showStatisticCategoryKey: StatisticCategoryKey]: boolean | 'indeterminate'
+    [savedIndeterminateKey: StatisticCategorySavedIndeterminateKey]: string[] // array of statistic keys
     [rowExpandedKey: RowExpandedKey]: boolean
     show_historical_cds: boolean
     simple_ordinals: boolean
@@ -72,9 +72,9 @@ export function load_settings(): SettingsDictionary {
     }
 
     for (const category of categoryMetadata) {
-        const key = `show_category_statistic_${category.key}` as const
+        const key = `statistic_category_saved_indeterminate_${category.key}` as const
         if (!(key in settings)) {
-            settings[key] = category.default
+            settings[key] = []
         }
     }
 
@@ -98,11 +98,11 @@ export class Settings {
 
     useSettings<K extends keyof SettingsDictionary>(keys: K[]): Pick<SettingsDictionary, K> {
         // eslint-disable-next-line react-hooks/rules-of-hooks -- This is a custom hook
-        const [result, setResult] = useState(this.get(keys))
+        const [result, setResult] = useState(this.getMultiple(keys))
         // eslint-disable-next-line react-hooks/rules-of-hooks -- This is a custom hook
         useEffect(() => {
-            setResult(this.get(keys)) // So that if `key` changes we change our result immediately
-            const observer = (): void => { setResult(this.get(keys)) }
+            setResult(this.getMultiple(keys)) // So that if `key` changes we change our result immediately
+            const observer = (): void => { setResult(this.getMultiple(keys)) }
             keys.forEach(key => this.observers.get(key).add(observer))
             return () => {
                 keys.forEach(key => this.observers.get(key).delete(observer))
@@ -117,7 +117,15 @@ export class Settings {
         this.observers.get(key).forEach((observer) => { observer() })
     }
 
-    get<K extends keyof SettingsDictionary>(keys: K[]): Pick<SettingsDictionary, K> {
+    updateSetting<K extends keyof SettingsDictionary>(key: K, makeNewValue: (oldValue: SettingsDictionary[K]) => SettingsDictionary[K]): void {
+        this.setSetting(key, makeNewValue(this.get(key)))
+    }
+
+    get<K extends keyof SettingsDictionary>(key: K): SettingsDictionary[K] {
+        return this.settings[key]
+    }
+
+    getMultiple<K extends keyof SettingsDictionary>(keys: K[]): Pick<SettingsDictionary, K> {
         return Object.fromEntries(keys.map(key => [key, this.settings[key]])) as Pick<SettingsDictionary, K>
     }
 
@@ -130,25 +138,17 @@ export function useSetting<K extends keyof SettingsDictionary>(key: K): [Setting
     return [settings.useSettings([key])[key], (value) => { settings.setSetting(key, value) }]
 }
 
+export function useSettings<K extends keyof SettingsDictionary>(keys: K[]): Pick<SettingsDictionary, K> {
+    const settings = useContext(Settings.Context)
+    return settings.useSettings(keys)
+}
+
 export type TableCheckboxSettings = Record<StatisticSettingKey, boolean>
 
 export type BooleanSettings = { [K in keyof SettingsDictionary as SettingsDictionary[K] extends boolean ? K : never]: boolean }
 
 export function tableCheckboxKeys(partialStatistics: typeof statistics = statistics): StatisticSettingKey[] {
     return partialStatistics.map(statistic => `show_statistic_${statistic.key}` as const)
-}
-
-/**
- * Integrate the category and indiviual settings heirarchically
- */
-export function useStatisticsSettings(): Map<string, boolean> {
-    const categories = useContext(Settings.Context).useSettings(categoryMetadata.map(meta => `show_category_statistic_${meta.key}` as const))
-    const statisticsChecked = useContext(Settings.Context).useSettings(statistics.map(stat => `show_statistic_${stat.key}` as const))
-
-    return new Map<string, boolean>(statistics.map((statistic) => {
-        const categoryValue = categories[`show_category_statistic_${statistic.category.key}`]
-        return [statistic.key, categoryValue === 'indeterminate' ? statisticsChecked[`show_statistic_${statistic.key}`] : categoryValue]
-    }))
 }
 
 export function relatedSettingsKeys(article_type_this: string): RelationshipKey[] {

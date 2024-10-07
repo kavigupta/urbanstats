@@ -1,10 +1,10 @@
 import '../common.css'
 import './article.css'
 
-import React, { ReactNode, useContext, useRef } from 'react'
+import React, { ReactNode, useRef } from 'react'
 
 import { article_link, comparison_link, sanitize } from '../navigation/links'
-import { Settings, tableCheckboxKeys, useSetting } from '../page_template/settings'
+import { tableCheckboxKeys, useSetting, useSettings } from '../page_template/settings'
 import { PageTemplate } from '../page_template/template'
 import { longname_is_exclusively_american, useUniverse } from '../universe'
 import { Article, IRelatedButtons } from '../utils/protos'
@@ -110,7 +110,7 @@ function StatisticRowHeader(props: { screenshot_mode: boolean }): ReactNode {
 
 function ArticlePanelRows(props: { article_row: Article, longname: string, shortname: string, screenshot_mode: boolean }): ReactNode {
     const curr_universe = useUniverse()
-    const settings = useContext(Settings.Context).useSettings(tableCheckboxKeys())
+    const settings = useSettings(tableCheckboxKeys())
     const [simple_ordinals] = useSetting('simple_ordinals')
     const [filtered_rows] = load_article(curr_universe, props.article_row, settings,
         longname_is_exclusively_american(props.longname))
