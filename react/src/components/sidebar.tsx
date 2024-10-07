@@ -1,12 +1,11 @@
-import React, { ReactNode, useId } from 'react'
+import React, { ReactNode, useContext, useEffect, useId, useRef } from 'react'
 
 import '../style.css'
 import './sidebar.css'
-import { SettingsDictionary, useSetting, useStatisticCategoryMetadataCheckboxes } from '../page_template/settings'
+import { Settings, SettingsDictionary, statisticCategoryTree, tableCheckboxKeys, useSetting } from '../page_template/settings'
 import { useMobileLayout } from '../utils/responsive'
 
 export function Sidebar(): ReactNode {
-    const statistic_category_metadata_checkboxes = useStatisticCategoryMetadataCheckboxes()
     let sidebar_section_content = 'sidebar-section-content'
     let sidebar_section_title = 'sidebar-section-title'
     if (useMobileLayout()) {
@@ -83,15 +82,7 @@ export function Sidebar(): ReactNode {
             <div className="sidebar-section">
                 <div className={sidebar_section_title}>Statistic Categories</div>
                 <ul className={sidebar_section_content}>
-                    {statistic_category_metadata_checkboxes.map((checkbox, i) => (
-                        <li key={i}>
-                            <CheckboxSetting
-                                name={checkbox.name}
-                                setting_key={checkbox.setting_key}
-                            />
-                        </li>
-                    ),
-                    )}
+                    <StatisticCategoryTree />
                 </ul>
             </div>
         </div>
@@ -101,42 +92,95 @@ export function Sidebar(): ReactNode {
 // type representing a key of SettingsDictionary that have boolean values
 type BooleanSettingKey = keyof { [K in keyof SettingsDictionary as SettingsDictionary[K] extends boolean ? K : never]: boolean }
 
-export function CheckboxSetting<K extends BooleanSettingKey>(props: { name: string, setting_key: K, classNameToUse?: string, id?: string }): ReactNode {
+export function CheckboxSetting(props: { name: string, setting_key: BooleanSettingKey, classNameToUse?: string, id?: string }): ReactNode {
     const [checked, setChecked] = useSetting(props.setting_key)
 
     return (
         <CheckboxSettingCustom
             name={props.name}
-            setting_key={props.setting_key}
-            settings={{ [props.setting_key]: checked } as Record<K, boolean>}
-            set_setting={(key, value) => {
-                if (key === props.setting_key) {
-                    setChecked(value)
-                }
-                else {
-                    throw new Error(`Invalid key: ${key}`)
-                }
-            }}
+            checked={checked}
+            onChange={setChecked}
             classNameToUse={props.classNameToUse}
             id={props.id}
         />
     )
 };
 
-export function CheckboxSettingCustom<K extends string>(props: { name: string, setting_key: K, settings: Record<K, boolean>, set_setting: (key: K, value: boolean) => void, classNameToUse?: string, id?: string }): ReactNode {
+export function CheckboxSettingCustom(props: { name: string, checked: boolean, indeterminate?: boolean, onChange: (checked: boolean) => void, classNameToUse?: string, id?: string }): ReactNode {
     // like CheckboxSetting, but doesn't use useSetting, instead using the callbacks
     const id = useId()
     const inputId = props.id ?? id
+
+    const checkboxRef = useRef<HTMLInputElement>(null)
+
+    useEffect(() => {
+        checkboxRef.current!.indeterminate = props.indeterminate ?? false
+    }, [props.indeterminate])
+
     return (
         <div className={props.classNameToUse ?? 'checkbox-setting'}>
             <input
                 id={inputId}
                 type="checkbox"
-                checked={props.settings[props.setting_key] || false}
-                onChange={(e) => { props.set_setting(props.setting_key, e.target.checked) }}
+                checked={props.checked}
+                onChange={(e) => { props.onChange(e.target.checked) }}
                 style={{ accentColor: '#5a7dc3' }}
+                ref={checkboxRef}
             />
             <label htmlFor={inputId}>{props.name}</label>
         </div>
     )
 };
+
+function StatisticCategoryTree(): ReactNode {
+    return statisticCategoryTree.filter(node => node.category.show_checkbox).map(node => <StatisticCategoryTreeCategory key={node.category.key} node={node} />)
+}
+
+function StatisticCategoryTreeCategory({ node: { category, statistics } }: { node: typeof statisticCategoryTree[number] }): ReactNode {
+    const settings = useContext(Settings.Context)
+    const statisticSettings = Object.entries(settings.useSettings(tableCheckboxKeys(statistics)))
+    const totalStatistics = statisticSettings.length
+    const totalCheckedStatistics = statisticSettings.filter(([, checked]) => checked).length
+
+    const [categoryStatus, setCategoryStatus] = useSetting(`show_category_statistic_${category.key}`)
+
+    return (
+        <li>
+            <CheckboxSettingCustom
+                name={category.name}
+                checked={categoryStatus === true}
+                indeterminate={categoryStatus === 'indeterminate'}
+                onChange={() => {
+                    switch (categoryStatus) {
+                        case 'indeterminate':
+                            setCategoryStatus(true)
+                            break
+                        case true:
+                            setCategoryStatus(false)
+                            break
+                        case false:
+                            setCategoryStatus('indeterminate')
+                    }
+                }}
+            />
+            <ul>
+                {
+                    statistics.map(statistic => <StatisticCategoryTreeStatistic key={statistic.key} statistic={statistic} />)
+                }
+            </ul>
+        </li>
+    )
+}
+
+function StatisticCategoryTreeStatistic({ statistic }: { statistic: typeof statisticCategoryTree[number]['statistics'][number] }): ReactNode {
+    const [checked, setChecked] = useSetting(`show_statistic_${statistic.key}`)
+    return (
+        <li>
+            <CheckboxSettingCustom
+                name={statistic.name}
+                checked={checked}
+                onChange={setChecked}
+            />
+        </li>
+    )
+}

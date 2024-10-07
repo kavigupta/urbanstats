@@ -128,7 +128,9 @@ export function load_article(universe: string, data: Article, settings: TableChe
                 return false
             }
         }
-        return settings[`show_statistic_${row.statistic_category}`]
+        const settingsKey = `show_statistic_${row.statpath}` as const
+        console.log({ settings, settingsKey })
+        return settings[settingsKey]
     })
 
     const filtered_indices = filtered_rows.map(x => x._index)

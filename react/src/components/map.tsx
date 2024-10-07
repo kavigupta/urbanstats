@@ -2,12 +2,12 @@ import './map.css'
 
 import { GeoJSON2SVG } from 'geojson2svg'
 import L from 'leaflet'
-import React, { ReactNode } from 'react'
+import React, { ReactNode, useContext } from 'react'
 
 import { loadProtobuf } from '../load_json'
 import { Basemap } from '../mapper/settings'
 import { article_link, shape_link } from '../navigation/links'
-import { relationship_key, useRelatedCheckboxSettings, useSetting } from '../page_template/settings'
+import { relatedSettingsKeys, relationship_key, Settings, useSetting } from '../page_template/settings'
 import { UNIVERSE_CONTEXT } from '../universe'
 import { random_color } from '../utils/color'
 import { is_historical_cd } from '../utils/is_historical'
@@ -357,7 +357,7 @@ interface ArticleMapProps extends MapProps {
 export { MapComponent as Map }
 function MapComponent(props: MapProps): ReactNode {
     const [show_historical_cds] = useSetting('show_historical_cds')
-    const related_checkbox_settings = useRelatedCheckboxSettings(props.article_type)
+    const related_checkbox_settings = useContext(Settings.Context).useSettings(relatedSettingsKeys(props.article_type))
     return (
         <ArticleMap
             {...props}
