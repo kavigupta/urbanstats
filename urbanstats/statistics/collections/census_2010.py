@@ -41,7 +41,18 @@ class CensusForPreviousYear(CensusStatisticsColection):
         return CensusBasics.order_category_for_each_statistic(self)
 
     def category_for_each_statistic(self):
-        return self.same_for_each_name(str(self.year()))
+        def parent_category(k):
+            if k.startswith("population") or k.startswith("sd") or k.startswith("ad_1"):
+                return "main"
+            if k.startswith("ad_"):
+                return "other_densities"
+            if k.startswith("housing_per_pop") or k.startswith("vacancy"):
+                return "housing"
+            if any(k.startswith(x) for x in racial_demographics):
+                return "race"
+            raise ValueError(f"unknown category for {k}")
+            
+        return {k: (parent_category(k), str(self.year())) for k in self.name_for_each_statistic()}
 
     def explanation_page_for_each_statistic(self):
         return self.same_for_each_name(str(self.year()))

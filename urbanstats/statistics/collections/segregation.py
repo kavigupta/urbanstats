@@ -27,7 +27,7 @@ class SegregationStatistics(CensusStatisticsColection):
 
     def category_for_each_statistic(self):
         return {
-            k: "race" if "2020" in k else "2010" for k in self.name_for_each_statistic()
+            k: "race" if "2020" in k else ("race", "2010",) for k in self.name_for_each_statistic()
         }
 
     def explanation_page_for_each_statistic(self):

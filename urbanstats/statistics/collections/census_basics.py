@@ -49,7 +49,7 @@ class CensusBasics(CensusStatisticsColection):
 
     def category_for_each_statistic(self):
         return {
-            k: "main" if v == ORDER_CATEGORY_MAIN else "other_densities"
+            k: ("main",) if v == ORDER_CATEGORY_MAIN else ("other_densities",)
             for k, v in self.order_category_for_each_statistic().items()
         }
 
