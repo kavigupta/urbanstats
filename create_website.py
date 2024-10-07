@@ -180,7 +180,12 @@ def create_page_jsons(site_folder, full, ordering):
 
 def output_categories():
     assert set(internal_statistic_names()) == set(get_statistic_categories())
-    assert set(get_statistic_categories().values()) == set(category_metadata)
+    assert set(get_statistic_categories().values()) - set(category_metadata) == set(), (
+        set(get_statistic_categories().values()) - set(category_metadata)
+    )
+    assert set(category_metadata) - set(get_statistic_categories().values()) == set(), (
+        set(category_metadata) - set(get_statistic_categories().values())
+    )
     return [dict(key=k, **v) for k, v in category_metadata.items()]
 
 

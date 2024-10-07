@@ -140,7 +140,7 @@ def get_statistic_categories():
     result = {}
 
     for statistic_collection in statistic_collections:
-        result.update(statistic_collection.category_for_each_statistic())
+        result.update({k : v if isinstance(v, tuple) else (v,) for k, v in statistic_collection.category_for_each_statistic().items()})
 
     result = {k: result[k] for k in statistic_internal_to_display_name()}
     return result
@@ -167,12 +167,15 @@ def extra_stats():
 
 category_metadata = {
     "main": dict(name="Main", show_checkbox=False, default=True),
+    ("main", "2010"): dict(name="2010", show_checkbox=False, default=False),
     "race": dict(name="Race", show_checkbox=True, default=True),
+    ("race", "2010"): dict(name="2010", show_checkbox=True, default=False),
     "national_origin": dict(name="National Origin", show_checkbox=True, default=False),
     "education": dict(name="Education", show_checkbox=True, default=False),
     "generation": dict(name="Generation", show_checkbox=True, default=False),
     "income": dict(name="Income", show_checkbox=True, default=False),
     "housing": dict(name="Housing", show_checkbox=True, default=False),
+    ("housing", "2010"): dict(name="2010", show_checkbox=True, default=False),
     "transportation": dict(name="Transportation", show_checkbox=True, default=False),
     "health": dict(name="Health", show_checkbox=True, default=False),
     "climate": dict(name="Climate Change", show_checkbox=True, default=False),
@@ -186,5 +189,8 @@ category_metadata = {
     "other_densities": dict(
         name="Other Density Metrics", show_checkbox=True, default=False
     ),
-    "2010": dict(name="2010 Census", show_checkbox=True, default=False),
+    ("other_densities", "2010"): dict(
+        name="2010", show_checkbox=True, default=False
+    ),
 }
+category_metadata = {k if isinstance(k, tuple) else (k,): v for k, v in category_metadata.items()}
