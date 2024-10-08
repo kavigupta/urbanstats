@@ -2,8 +2,30 @@ import { createContext, useContext, useEffect, useState } from 'react'
 
 import { DefaultMap } from '../utils/DefaultMap'
 
-export type StatisticSettingKey = `show_statistic_${string}`
-export type StatisticCategorySavedIndeterminateKey = `statistic_category_saved_indeterminate_${string}`
+type StatisticIdentifier = string & { __statisticIdentifier: true }
+type StatisticCategoryIdentifier = string & { __statisticCategoryIdentifier: true }
+
+export interface Category {
+    kind: 'category'
+    identifier: StatisticCategoryIdentifier
+    name: string
+    show_checkbox: boolean
+    default: boolean
+    children: (Category | Statistic)[]
+    leaves: Statistic[]
+}
+
+export interface Statistic {
+    kind: 'statistic'
+    identifier: StatisticIdentifier
+    name: string
+    parents: Category[]
+}
+
+export type Tree = Category[]
+
+export type StatisticSettingKey = `show_statistic_${StatisticIdentifier}`
+export type StatisticCategorySavedIndeterminateKey = `statistic_category_saved_indeterminate_${StatisticCategoryIdentifier}`
 export type RelationshipKey = `related__${string}__${string}`
 export type RowExpandedKey = `expanded__${string}`
 export type HistogramType = 'Bar' | 'Line' | 'Line (cumulative)'
@@ -11,7 +33,7 @@ export type HistogramType = 'Bar' | 'Line' | 'Line (cumulative)'
 export interface SettingsDictionary {
     [relationshipKey: RelationshipKey]: boolean
     [showStatisticKey: StatisticSettingKey]: boolean
-    [savedIndeterminateKey: StatisticCategorySavedIndeterminateKey]: string[] // array of statistic keys
+    [savedIndeterminateKey: StatisticCategorySavedIndeterminateKey]: StatisticIdentifier[] // array of child keys
     [rowExpandedKey: RowExpandedKey]: boolean
     show_historical_cds: boolean
     simple_ordinals: boolean
@@ -28,13 +50,13 @@ export function row_expanded_key(row_statname: string): RowExpandedKey {
     return `expanded__${row_statname}`
 }
 
-const categoryMetadata = require('../data/statistic_category_metadata.json') as { key: string, name: string, show_checkbox: boolean, default: boolean }[]
+const categoryMetadata = require('../data/statistic_category_metadata.json') as { key: string[], name: string, show_checkbox: boolean, default: boolean }[]
 const categoryMetadataByKey = new Map(categoryMetadata.map(category => [category.key, category]))
 
 const statisticKeys = require('../data/statistic_list.json') as string[]
-const statisticCategories = require('../data/statistic_category_list.json') as string[]
+const statisticCategories = require('../data/statistic_category_list.json') as string[][]
 const statisticNames = require('../data/statistic_name_list.json') as string[]
-const statistics = statisticKeys.map((key, i) => ({
+const statistics: Statistic[] = statisticKeys.map((key, i) => ({
     key,
     name: statisticNames[i],
     category: categoryMetadataByKey.get(statisticCategories[i])!,
@@ -49,7 +71,7 @@ const statisticsByCategoryKey = (() => {
 })()
 
 // The statistics as grouped by category in order
-export const statisticCategoryTree = categoryMetadata.map(category => ({
+export const statisticCategoryTree: Tree = categoryMetadata.map(category => ({
     category,
     statistics: statisticsByCategoryKey.get(category.key),
 }))
@@ -74,7 +96,7 @@ export function load_settings(): SettingsDictionary {
     for (const category of categoryMetadata) {
         const key = `statistic_category_saved_indeterminate_${category.key}` as const
         if (!(key in settings)) {
-            settings[key] = []
+            settings[key] = 
         }
     }
 
@@ -147,8 +169,8 @@ export type TableCheckboxSettings = Record<StatisticSettingKey, boolean>
 
 export type BooleanSettings = { [K in keyof SettingsDictionary as SettingsDictionary[K] extends boolean ? K : never]: boolean }
 
-export function tableCheckboxKeys(partialStatistics: typeof statistics = statistics): StatisticSettingKey[] {
-    return partialStatistics.map(statistic => `show_statistic_${statistic.key}` as const)
+export function tableCheckboxKeys(partialStatistics: Statistic[] = statistics): StatisticSettingKey[] {
+    return partialStatistics.map(statistic => `show_statistic_${statistic.identifier}` as const)
 }
 
 export function relatedSettingsKeys(article_type_this: string): RelationshipKey[] {

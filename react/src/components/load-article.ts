@@ -76,7 +76,7 @@ export function load_article(universe: string, data: Article, settings: TableChe
     const universe_index = data.universes.indexOf(universe)
     const article_type = data.articleType
 
-    const categories = require('../data/statistic_category_list.json') as string[]
+    const categories = require('../data/statistic_category_list.json') as string[][]
     const names = require('../data/statistic_name_list.json') as string[]
     const paths = require('../data/statistic_path_list.json') as string[]
     const stats = require('../data/statistic_list.json') as string[]
