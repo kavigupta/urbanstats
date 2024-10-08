@@ -1,4 +1,5 @@
 import { TableCheckboxSettings } from '../page_template/settings'
+import { StatisticIdentifier } from '../page_template/statistic-settings'
 import { universe_is_american } from '../universe'
 import { Article, IExtraStatistic } from '../utils/protos'
 
@@ -12,7 +13,7 @@ export interface ArticleRow {
     ordinal: number
     overallOrdinal: number
     percentile_by_population: number
-    statistic_category: string
+    statistic_category: string[]
     statcol: string
     statname: string
     statpath: string
@@ -128,8 +129,7 @@ export function load_article(universe: string, data: Article, settings: TableChe
                 return false
             }
         }
-        const settingsKey = `show_statistic_${row.statpath}` as const
-        console.log({ settings, settingsKey })
+        const settingsKey = `show_statistic_${row.statpath as StatisticIdentifier}` as const
         return settings[settingsKey]
     })
 

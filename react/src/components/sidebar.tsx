@@ -2,7 +2,8 @@ import React, { ReactNode, useContext, useEffect, useId, useRef } from 'react'
 
 import '../style.css'
 import './sidebar.css'
-import { Category, Settings, SettingsDictionary, Statistic, statisticCategoryTree, tableCheckboxKeys, useSetting, useSettings } from '../page_template/settings'
+import { Settings, SettingsDictionary, tableCheckboxKeys, useSetting, useSettings } from '../page_template/settings'
+import { Category, changeCategorySetting, changeStatisticSetting, getCategoryStatus, Statistic, statisticCategoryTree } from '../page_template/statistic-settings'
 import { useMobileLayout } from '../utils/responsive'
 
 export function Sidebar(): ReactNode {
@@ -136,28 +137,6 @@ function StatisticCategoryTree(): ReactNode {
     return statisticCategoryTree.filter(category => category.show_checkbox).map(category => <StatisticCategoryTreeCategory key={category.identifier} category={category} />)
 }
 
-function getCategoryStatus(statistics: Record<string, boolean>): boolean | 'indeterminate' {
-    const statisticSettings = Object.entries(statistics)
-    const totalStatistics = statisticSettings.length
-    const totalCheckedStatistics = statisticSettings.filter(([, checked]) => checked).length
-
-    let result: boolean | 'indeterminate'
-
-    switch (totalCheckedStatistics) {
-        case 0:
-            result = false
-            break
-        case totalStatistics:
-            result = true
-            break
-        default:
-            result = 'indeterminate'
-            break
-    }
-
-    return result
-}
-
 function StatisticCategoryTreeCategory({ category }: { category: Category }): ReactNode {
     const settings = useContext(Settings.Context)
     const categoryStatus = getCategoryStatus(useSettings(tableCheckboxKeys(category.leaves)))
@@ -168,39 +147,16 @@ function StatisticCategoryTreeCategory({ category }: { category: Category }): Re
                 name={category.name}
                 checked={categoryStatus === true}
                 indeterminate={categoryStatus === 'indeterminate'}
-                onChange={() => {
-                    /**
-                     * State machine:
-                     *
-                     * indeterminate -> checked -> unchecked -(if nonempty saved indeterminate)-> indeterminate
-                     *                                       -(if empty saved indeterminate)-> checked
-                     */
-                    switch (categoryStatus) {
-                        case 'indeterminate':
-                            category.leaves.forEach((statistic) => { settings.setSetting(`show_statistic_${statistic.identifier}`, true) })
-                            break
-                        case true:
-                            category.leaves.forEach((statistic) => { settings.setSetting(`show_statistic_${statistic.identifier}`, false) })
-                            break
-                        case false:
-                            const savedDeterminate = new Set(settings.get(`statistic_category_saved_indeterminate_${category.identifier}`))
-                            if (savedDeterminate.size === 0) {
-                                category.leaves.forEach((statistic) => { settings.setSetting(`show_statistic_${statistic.identifier}`, true) })
-                            }
-                            else {
-                                category.leaves.forEach((statistic) => { settings.setSetting(`show_statistic_${statistic.identifier}`, savedDeterminate.has(statistic.identifier)) })
-                            }
-                    }
-                }}
+                onChange={() => { changeCategorySetting(settings, category) }}
             />
             <ul>
                 {
                     category.children.map((child) => {
                         switch (child.kind) {
                             case 'category':
-                                return <StatisticCategoryTreeCategory category={child} />
+                                return <StatisticCategoryTreeCategory key={child.identifier} category={child} />
                             case 'statistic':
-                                return <StatisticCategoryTreeStatistic statistic={child} />
+                                return <StatisticCategoryTreeStatistic key={child.identifier} statistic={child} />
                         }
                     })
                 }
@@ -211,44 +167,13 @@ function StatisticCategoryTreeCategory({ category }: { category: Category }): Re
 
 function StatisticCategoryTreeStatistic({ statistic }: { statistic: Statistic }): ReactNode {
     const settings = useContext(Settings.Context)
-    const [checked, setSetting] = useSetting(`show_statistic_${statistic.identifier}`)
-    const setChecked = (newValue: boolean): void => {
-        setSetting(newValue)
-
-        for (const category of statistic.parents) {
-            const categoryStatus = getCategoryStatus(settings.getMultiple(tableCheckboxKeys(category.leaves)))
-
-            /**
-             * If we would cause the category to be in an indeterminate state, we should save that state
-             */
-            const savedIndeterminateKey = `statistic_category_saved_indeterminate_${category.identifier}` as const
-            switch (true) {
-                case categoryStatus === false && !newValue:
-                    break
-                case categoryStatus === false && newValue:
-                    settings.setSetting(savedIndeterminateKey, [statistic.identifier])
-                    break
-                case categoryStatus === 'indeterminate' && !newValue:
-                    settings.updateSetting(savedIndeterminateKey, indeterminate => indeterminate.filter(key => key !== statistic.identifier))
-                    break
-                case categoryStatus === 'indeterminate' && newValue:
-                    settings.updateSetting(savedIndeterminateKey, indeterminate => [...indeterminate, statistic.identifier])
-                    break
-                case categoryStatus === true && !newValue:
-                    settings.setSetting(savedIndeterminateKey, category.leaves.map(stat => stat.identifier).filter(key => key !== statistic.identifier))
-                    break
-                case categoryStatus === true && newValue:
-                    break
-            }
-        }
-    }
-
+    const [checked] = useSetting(`show_statistic_${statistic.identifier}`)
     return (
         <li>
             <CheckboxSettingCustom
                 name={statistic.name}
                 checked={checked}
-                onChange={setChecked}
+                onChange={(newValue) => { changeStatisticSetting(settings, statistic, newValue) }}
             />
         </li>
     )

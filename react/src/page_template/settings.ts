@@ -2,33 +2,14 @@ import { createContext, useContext, useEffect, useState } from 'react'
 
 import { DefaultMap } from '../utils/DefaultMap'
 
-type StatisticIdentifier = string & { __statisticIdentifier: true }
-type StatisticCategoryIdentifier = string & { __statisticCategoryIdentifier: true }
+import { categories, CategoryIdentifier, Statistic, StatisticIdentifier, statistics } from './statistic-settings'
 
-export interface Category {
-    kind: 'category'
-    identifier: StatisticCategoryIdentifier
-    name: string
-    show_checkbox: boolean
-    default: boolean
-    children: (Category | Statistic)[]
-    leaves: Statistic[]
-}
-
-export interface Statistic {
-    kind: 'statistic'
-    identifier: StatisticIdentifier
-    name: string
-    parents: Category[]
-}
-
-export type Tree = Category[]
-
-export type StatisticSettingKey = `show_statistic_${StatisticIdentifier}`
-export type StatisticCategorySavedIndeterminateKey = `statistic_category_saved_indeterminate_${StatisticCategoryIdentifier}`
 export type RelationshipKey = `related__${string}__${string}`
 export type RowExpandedKey = `expanded__${string}`
 export type HistogramType = 'Bar' | 'Line' | 'Line (cumulative)'
+
+export type StatisticSettingKey = `show_statistic_${StatisticIdentifier}`
+export type StatisticCategorySavedIndeterminateKey = `statistic_category_saved_indeterminate_${CategoryIdentifier}`
 
 export interface SettingsDictionary {
     [relationshipKey: RelationshipKey]: boolean
@@ -50,32 +31,6 @@ export function row_expanded_key(row_statname: string): RowExpandedKey {
     return `expanded__${row_statname}`
 }
 
-const categoryMetadata = require('../data/statistic_category_metadata.json') as { key: string[], name: string, show_checkbox: boolean, default: boolean }[]
-const categoryMetadataByKey = new Map(categoryMetadata.map(category => [category.key, category]))
-
-const statisticKeys = require('../data/statistic_list.json') as string[]
-const statisticCategories = require('../data/statistic_category_list.json') as string[][]
-const statisticNames = require('../data/statistic_name_list.json') as string[]
-const statistics: Statistic[] = statisticKeys.map((key, i) => ({
-    key,
-    name: statisticNames[i],
-    category: categoryMetadataByKey.get(statisticCategories[i])!,
-}))
-
-const statisticsByCategoryKey = (() => {
-    const result = new DefaultMap<string, typeof statistics>(() => [])
-    for (const statistic of statistics) {
-        result.get(statistic.category.key).push(statistic)
-    }
-    return result
-})()
-
-// The statistics as grouped by category in order
-export const statisticCategoryTree: Tree = categoryMetadata.map(category => ({
-    category,
-    statistics: statisticsByCategoryKey.get(category.key),
-}))
-
 export function load_settings(): SettingsDictionary {
     const settings = JSON.parse(localStorage.getItem('settings') ?? '{}') as Partial<SettingsDictionary>
     const map_relationship = require('../data/map_relationship.json') as [string, string][]
@@ -87,16 +42,16 @@ export function load_settings(): SettingsDictionary {
     }
 
     for (const statistic of statistics) {
-        const setting_key = `show_statistic_${statistic.key}` as const
+        const setting_key = `show_statistic_${statistic.identifier}` as const
         if (!(setting_key in settings)) {
-            settings[setting_key] = false
+            settings[setting_key] = statistic.parents[0].default
         }
     }
 
-    for (const category of categoryMetadata) {
-        const key = `statistic_category_saved_indeterminate_${category.key}` as const
+    for (const category of categories) {
+        const key = `statistic_category_saved_indeterminate_${category.identifier}` as const
         if (!(key in settings)) {
-            settings[key] = 
+            settings[key] = []
         }
     }
 
