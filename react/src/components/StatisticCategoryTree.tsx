@@ -26,7 +26,7 @@ function CategoryComponent({ category }: { category: Category }): ReactNode {
                 name={category.name}
                 checked={categoryStatus === true}
                 indeterminate={categoryStatus === 'indeterminate'}
-                onChange={() => { changeCategorySetting(settings, category, isExpanded) }}
+                onChange={() => { changeCategorySetting(settings, category) }}
             />
             <CategoryContents key={category.identifier} category={category} isExpanded={isExpanded} />
         </li>
