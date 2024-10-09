@@ -10,11 +10,13 @@ export type HistogramType = 'Bar' | 'Line' | 'Line (cumulative)'
 
 export type StatisticSettingKey = `show_statistic_${StatisticIdentifier}`
 export type StatisticCategorySavedIndeterminateKey = `statistic_category_saved_indeterminate_${CategoryIdentifier}`
+export type StatisticCategoryExpandedKey = `statistic_category_expanded_${CategoryIdentifier}`
 
 export interface SettingsDictionary {
     [relationshipKey: RelationshipKey]: boolean
     [showStatisticKey: StatisticSettingKey]: boolean
     [savedIndeterminateKey: StatisticCategorySavedIndeterminateKey]: StatisticIdentifier[] // array of child keys
+    [expandedKey: StatisticCategoryExpandedKey]: boolean
     [rowExpandedKey: RowExpandedKey]: boolean
     show_historical_cds: boolean
     simple_ordinals: boolean
@@ -49,10 +51,12 @@ export function load_settings(): SettingsDictionary {
     }
 
     for (const category of categories) {
-        const key = `statistic_category_saved_indeterminate_${category.identifier}` as const
-        if (!(key in settings)) {
-            settings[key] = []
+        const indeterminateKey = `statistic_category_saved_indeterminate_${category.identifier}` as const
+        if (!(indeterminateKey in settings)) {
+            settings[indeterminateKey] = []
         }
+        const expandedKey = `statistic_category_expanded_${category.identifier}` as const
+        settings[expandedKey] = settings[expandedKey] ?? false
     }
 
     settings.show_historical_cds = settings.show_historical_cds ?? false

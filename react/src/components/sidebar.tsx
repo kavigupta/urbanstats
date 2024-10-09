@@ -1,4 +1,4 @@
-import React, { ReactNode, useContext, useEffect, useId, useRef, useState } from 'react'
+import React, { ReactNode, useContext, useEffect, useId, useLayoutEffect, useRef, useState } from 'react'
 
 import '../style.css'
 import './sidebar.css'
@@ -144,19 +144,24 @@ function StatisticCategoryTree(): ReactNode {
     return statisticCategoryTree.filter(category => category.show_checkbox).map(category => <StatisticCategoryTreeCategory key={category.identifier} category={category} />)
 }
 
-function StatisticCategoryTreeCategoryContents({ category, animationStage }: { category: Category, animationStage: AnimationStage }): ReactNode {
+function StatisticCategoryTreeCategoryContents({ category, isExpanded }: { category: Category, isExpanded: boolean }): ReactNode {
     const { sidebar_section_content } = useSidebarClasses()
-    const [height, setHeight] = useState(0)
+    const [height, setHeight] = useState(10000) // start high so we don't animate initially
     let maxHeight = `${height}px` // 31 is an approximation
     let marginTop = '0.5em'
-    if (animationStage === 'mount' || animationStage === 'remove') {
+    if (!isExpanded) {
         maxHeight = '0px'
         marginTop = '0px'
     }
     return (
         <>
             <OffscreenCategoryTreeCategoryContents category={category} heightCallback={setHeight} />
-            <ul className={sidebar_section_content} style={{ maxHeight, marginTop }}>
+            <ul
+                // @ts-expect-error -- inert is not in the type definitions yet
+                inert={isExpanded ? undefined : ''}
+                className={sidebar_section_content}
+                style={{ maxHeight, marginTop, opacity: 1 }}
+            >
                 <CategoryTreeCategoryCoreContents category={category} />
             </ul>
         </>
@@ -167,7 +172,7 @@ function StatisticCategoryTreeCategoryContents({ category, animationStage }: { c
 function OffscreenCategoryTreeCategoryContents({ category, heightCallback }: { category: Category, heightCallback: (height: number) => void }): ReactNode {
     const { sidebar_section_content } = useSidebarClasses()
     const listRef = useRef<HTMLUListElement>(null)
-    useEffect(() => {
+    useLayoutEffect(() => {
         const resizeObserver = new ResizeObserver(() => {
             heightCallback(listRef.current!.getBoundingClientRect().height)
         })
@@ -179,7 +184,7 @@ function OffscreenCategoryTreeCategoryContents({ category, heightCallback }: { c
         <ul
             // @ts-expect-error -- inert is not in the type definitions yet
             inert=""
-            className={sidebar_section_content}
+            className={`${sidebar_section_content} hidden`}
             style={{ opacity: 0, position: 'absolute' }}
             ref={listRef}
         >
@@ -202,21 +207,11 @@ function CategoryTreeCategoryCoreContents({ category }: { category: Category }):
 function StatisticCategoryTreeCategory({ category }: { category: Category }): ReactNode {
     const settings = useContext(Settings.Context)
     const categoryStatus = getCategoryStatus(useSettings(tableCheckboxKeys(category.leaves)))
-    const [isExpanded, setIsExpanded] = useState(false)
-
-    const expandedContents: Renderer[] = isExpanded
-        ? [
-                {
-                    key: 'children',
-                    render: animationStage => <StatisticCategoryTreeCategoryContents key={category.identifier} category={category} animationStage={animationStage} />,
-                    duration: () => 250,
-                },
-            ]
-        : []
+    const [isExpanded, setIsExpanded] = useSetting(`statistic_category_expanded_${category.identifier}`)
     return (
         <li>
             <button
-                onClick={() => { setIsExpanded(e => !e) }}
+                onClick={() => { setIsExpanded(!isExpanded) }}
                 className="expandButton"
                 style={{ transform: isExpanded ? 'rotate(90deg)' : 'rotate(0deg)' }}
             >
@@ -228,7 +223,7 @@ function StatisticCategoryTreeCategory({ category }: { category: Category }): Re
                 indeterminate={categoryStatus === 'indeterminate'}
                 onChange={() => { changeCategorySetting(settings, category) }}
             />
-            <Animations renderers={expandedContents} />
+            <StatisticCategoryTreeCategoryContents key={category.identifier} category={category} isExpanded={isExpanded} />
         </li>
     )
 }
