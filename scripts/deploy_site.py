@@ -25,7 +25,7 @@ def synchronize():
     )
 
 
-def update_scripts():
+def update_scripts(branch):
     """
     Copy the files from the local repo to the site folder, then add a commit
     and push to the remote repo.
@@ -41,7 +41,7 @@ def update_scripts():
         text=True,
     ).stdout.strip()
     subprocess.run(["git", "commit", "-m", local_commit_message], cwd=PATH)
-    subprocess.run(["git", "push", "origin", "master"], cwd=PATH)
+    subprocess.run(["git", "push", "origin", branch], cwd=PATH)
 
 
 def update_all():
@@ -92,6 +92,7 @@ def main():
     s = p.add_subparsers(dest="command")
     p_update = s.add_parser("update")
     p_update.add_argument("--target", choices=["scripts", "all"])
+    p_update.add_argument("branch", type=str)
     # command push to new branch
     p_push_nb = s.add_parser("push-to-new-branch")
     p_push_nb.add_argument("branch", type=str)
@@ -101,8 +102,9 @@ def main():
     args = p.parse_args()
     if args.command == "update":
         if args.target == "scripts":
-            update_scripts()
+            update_scripts(args.branch)
         elif args.target == "all":
+            assert args.branch == "master"
             update_all()
     elif args.command == "push-to-new-branch":
         push_to_new_branch(args.branch)
