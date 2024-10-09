@@ -15,7 +15,7 @@ import { ScreencapElements, create_screenshot } from '../components/screenshot'
 import { Sidebar } from '../components/sidebar'
 import '../common.css'
 import '../components/article.css'
-import { mobileLayout } from '../utils/responsive'
+import { useMobileLayout } from '../utils/responsive'
 
 export function PageTemplate({
     screencap_elements = undefined,
@@ -55,8 +55,8 @@ export function PageTemplate({
 
     return (
         <Fragment>
-            <meta name="viewport" content="width=600" />
-            <div className={mobileLayout() ? 'main_panel_mobile' : 'main_panel'}>
+            <meta name="viewport" content="width=device-width, initial-scale=0.75, shrink-to-fit=no, maximum-scale=0.75" />
+            <div className={useMobileLayout() ? 'main_panel_mobile' : 'main_panel'}>
                 <Header
                     hamburger_open={hamburger_open}
                     set_hamburger_open={set_hamburger_open}
@@ -94,11 +94,11 @@ function TemplateFooter(): ReactNode {
 }
 
 function Version(): ReactNode {
-    return <span id="current-version">17.4.0</span>
+    return <span id="current-version">17.5.0</span>
 }
 
 function LastUpdated(): ReactNode {
-    return <span id="last-updated">2024-10-04</span>
+    return <span id="last-updated">2024-10-09</span>
 }
 
 function MainCredits(): ReactNode {
@@ -116,13 +116,15 @@ function OtherCredits(): ReactNode {
 }
 
 function BodyPanel({ hamburger_open, main_content }: { hamburger_open: boolean, main_content: React.ReactNode }): ReactNode {
+    const mobileLayout = useMobileLayout()
+
     if (hamburger_open) {
         return <LeftPanel />
     }
     return (
         <div className="body_panel">
-            {mobileLayout() ? undefined : <LeftPanel />}
-            <div className={mobileLayout() ? 'content_panel_mobile' : 'right_panel'}>
+            {mobileLayout ? undefined : <LeftPanel />}
+            <div className={mobileLayout ? 'content_panel_mobile' : 'right_panel'}>
                 {main_content}
                 <div className="gap"></div>
                 <TemplateFooter />
@@ -133,7 +135,7 @@ function BodyPanel({ hamburger_open, main_content }: { hamburger_open: boolean, 
 
 function LeftPanel(): ReactNode {
     return (
-        <div className={mobileLayout() ? 'left_panel_mobile' : 'left_panel'}>
+        <div className={useMobileLayout() ? 'left_panel_mobile' : 'left_panel'}>
             <Sidebar />
         </div>
     )

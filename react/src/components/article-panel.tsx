@@ -8,7 +8,7 @@ import { useSetting, useTableCheckboxSettings } from '../page_template/settings'
 import { PageTemplate } from '../page_template/template'
 import { longname_is_exclusively_american, useUniverse } from '../universe'
 import { Article, IRelatedButtons } from '../utils/protos'
-import { comparisonHeadStyle, headerTextClass, subHeaderTextClass } from '../utils/responsive'
+import { useComparisonHeadStyle, useHeaderTextClass, useSubHeaderTextClass } from '../utils/responsive'
 import { NormalizeProto } from '../utils/types'
 
 import { load_article } from './load-article'
@@ -29,13 +29,17 @@ export function ArticlePanel({ article }: { article: Article }): ReactNode {
         elements_to_render: [headers_ref.current!, table_ref.current!, map_ref.current!],
     })
 
+    const headerTextClass = useHeaderTextClass()
+    const subHeaderTextClass = useSubHeaderTextClass()
+    const comparisonHeadStyle = useComparisonHeadStyle('right')
+
     return (
         <PageTemplate screencap_elements={screencap_elements} has_universe_selector={true} universes={article.universes}>
             {template_info => (
                 <div>
                     <div ref={headers_ref}>
-                        <div className={headerTextClass()}>{article.shortname}</div>
-                        <div className={subHeaderTextClass()}>{article.longname}</div>
+                        <div className={headerTextClass}>{article.shortname}</div>
+                        <div className={subHeaderTextClass}>{article.longname}</div>
                     </div>
                     <div style={{ marginBlockEnd: '16px' }}></div>
 
@@ -64,7 +68,7 @@ export function ArticlePanel({ article }: { article: Article }): ReactNode {
 
                     <div style={{ display: 'flex', alignItems: 'center' }}>
                         <div style={{ width: '30%', marginRight: '1em' }}>
-                            <div className="serif" style={comparisonHeadStyle('right')}>Compare to: </div>
+                            <div className="serif" style={comparisonHeadStyle}>Compare to: </div>
                         </div>
                         <div style={{ width: '70%' }}>
                             <ComparisonSearchBox longname={article.longname} />
@@ -87,7 +91,7 @@ function ComparisonSearchBox({ longname }: { longname: string }): ReactNode {
     const curr_universe = useUniverse()
     return (
         <SearchBox
-            style={{ ...comparisonHeadStyle(), width: '100%' }}
+            style={{ ...useComparisonHeadStyle(), width: '100%' }}
             placeholder="Other region..."
             on_change={(x) => {
                 document.location.href = comparison_link(
