@@ -67,18 +67,6 @@ select {
     padding: 0;
 }
 
-.quiztext_nested {
-    font-size: 20px;
-    margin: 0;
-    padding: 0;
-}
-
-.quiztext_mobile_nested {
-    font-size: 15px;
-    margin: 0;
-    padding: 0;
-}
-
 .value {
     font-size: 18px;
     font-weight: 500;
@@ -124,42 +112,6 @@ select {
 
 .button_related_mobile {
     font-size: 12pt;
-}
-
-.button_random {
-    display: block;
-    height: 100%;
-}
-
-.searchresults {
-    /* Remove default list styling */
-    list-style-type: none;
-    padding: 0;
-    margin: 0;
-}
-
-.searchresults li a {
-    border: 1px solid #ddd;
-    /* Add a border to all links */
-    margin-top: -1px;
-    /* Prevent double borders */
-    background-color: #fff8f0;
-    /* Grey background color */
-    padding: 12px;
-    /* Add some padding */
-    text-decoration: none;
-    /* Remove default text underline */
-    font-size: 18px;
-    /* Increase the font-size */
-    color: black;
-    /* Add a black text color */
-    display: block;
-    /* Make it into a block element to fill the whole list */
-}
-
-.searchresults li a:hover:not(.header) {
-    background-color: #eee;
-    /* Add a hover effect to all links, except for headers */
 }
 
 .party_result_D {

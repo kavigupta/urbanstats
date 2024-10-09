@@ -9,11 +9,10 @@ import { ENDPOINT, JuxtaQuestion, QuizDescriptor, QuizQuestion, RetroQuestion, a
 import { Header, UserId } from './quiz-components'
 import { render_question } from './quiz-question'
 import { AudienceStatistics, QuizStatistics } from './quiz-statistics'
-import { History } from './statistics'
+import { History, reportToServer, reportToServerRetro } from './statistics'
 
 interface QuizResultProps {
     quizDescriptor: QuizDescriptor
-    get_per_question: Promise<Response> | undefined
     today_name: string
     history: {
         correct_pattern: boolean[]
@@ -31,13 +30,35 @@ export function QuizResult(props: QuizResultProps): ReactNode {
 
     useEffect(() => {
         void (async () => {
-            if (props.get_per_question !== undefined) {
-                const responseJson = await props.get_per_question.then(response => response.json() as Promise<{ total: number, per_question: number[] }>)
+            let response: Response | undefined
+            if (props.quizDescriptor.kind === 'juxtastat') {
+                void reportToServer(props.whole_history)
+                // POST to endpoint /juxtastat/get_per_question_stats with the current day
+                response = await fetch(`${ENDPOINT}/juxtastat/get_per_question_stats`, {
+                    method: 'POST',
+                    body: JSON.stringify({ day: props.quizDescriptor.name }),
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                })
+            }
+            if (props.quizDescriptor.kind === 'retrostat') {
+                void reportToServerRetro(props.whole_history)
+                response = await fetch(`${ENDPOINT}/retrostat/get_per_question_stats`, {
+                    method: 'POST',
+                    body: JSON.stringify({ week: parseInt(props.quizDescriptor.name.substring(1)) }),
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                })
+            }
+            if (response !== undefined) {
+                const responseJson = await response.json() as { total: number, per_question: number[] }
                 setTotal(responseJson.total)
                 set_per_question(responseJson.per_question)
             }
         })()
-    }, [props.get_per_question])
+    }, [props.whole_history, props.quizDescriptor.kind, props.quizDescriptor.name])
 
     const today_name = props.today_name
     const correct_pattern = props.history.correct_pattern

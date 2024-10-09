@@ -5,7 +5,7 @@ import React, { ReactNode } from 'react'
 import { isFirefox } from 'react-device-detect'
 
 import { MapGeneric, MapGenericProps, Polygons } from '../components/map'
-import { mobileLayout } from '../utils/responsive'
+import { useMobileLayout } from '../utils/responsive'
 
 import { JuxtaQuestion, RetroQuestion, a_correct } from './quiz'
 import { Footer, Header, Help } from './quiz-components'
@@ -79,7 +79,7 @@ function QuizQuestion(props: QuizQuestionProps & {
 
     const row_style = { display: 'flex', justifyContent: 'center', width: '90%', margin: 'auto' }
 
-    let quiztext_css = mobileLayout() ? 'quiztext_mobile' : 'quiztext'
+    let quiztext_css = useMobileLayout() ? 'quiztext_mobile' : 'quiztext'
     if (props.nested) {
         quiztext_css += '_nested'
     }

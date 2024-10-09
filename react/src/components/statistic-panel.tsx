@@ -6,7 +6,7 @@ import { PageTemplate } from '../page_template/template'
 import '../common.css'
 import './article.css'
 import { useUniverse } from '../universe'
-import { headerTextClass, subHeaderTextClass } from '../utils/responsive'
+import { useHeaderTextClass, useSubHeaderTextClass } from '../utils/responsive'
 import { display_type } from '../utils/text'
 
 import { Percentile, Statistic } from './table'
@@ -97,6 +97,8 @@ export function StatisticPanel(props: {
         return result
     }
 
+    const textHeaderClass = useHeaderTextClass()
+
     return (
         <PageTemplate
             screencap_elements={() => ({
@@ -110,7 +112,7 @@ export function StatisticPanel(props: {
             {() => (
                 <div>
                     <div ref={headers_ref}>
-                        <div className={headerTextClass()}>{props.rendered_statname}</div>
+                        <div className={textHeaderClass}>{props.rendered_statname}</div>
                         {/* // TODO plural */}
                         <StatisticPanelSubhead
                             article_type={props.article_type}
@@ -374,7 +376,7 @@ function ArticleLink(props: { longname: string }): ReactNode {
 function StatisticPanelSubhead(props: { article_type: string, rendered_order: string }): ReactNode {
     const curr_universe = useUniverse()
     return (
-        <div className={subHeaderTextClass()}>
+        <div className={useSubHeaderTextClass()}>
             {display_type(curr_universe, props.article_type)}
             {' '}
             (
