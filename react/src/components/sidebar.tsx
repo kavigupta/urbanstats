@@ -2,7 +2,6 @@ import React, { ReactNode, useContext, useEffect, useId, useLayoutEffect, useRef
 
 import '../style.css'
 import './sidebar.css'
-import { Animations, AnimationStage, Renderer } from 'simple-react-transition'
 
 import { Settings, SettingsDictionary, tableCheckboxKeys, useSetting, useSettings } from '../page_template/settings'
 import { Category, changeCategorySetting, changeStatisticSetting, getCategoryStatus, Statistic, statisticCategoryTree } from '../page_template/statistic-settings'
@@ -221,7 +220,7 @@ function StatisticCategoryTreeCategory({ category }: { category: Category }): Re
                 name={category.name}
                 checked={categoryStatus === true}
                 indeterminate={categoryStatus === 'indeterminate'}
-                onChange={() => { changeCategorySetting(settings, category) }}
+                onChange={() => { changeCategorySetting(settings, category, isExpanded) }}
             />
             <StatisticCategoryTreeCategoryContents key={category.identifier} category={category} isExpanded={isExpanded} />
         </li>

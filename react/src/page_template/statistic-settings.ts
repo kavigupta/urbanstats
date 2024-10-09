@@ -126,7 +126,7 @@ function saveIndeterminateStateIfNecessary(settings: Settings, node: Statistic |
     }
 }
 
-export function changeCategorySetting(settings: Settings, category: Category): void {
+export function changeCategorySetting(settings: Settings, category: Category, isExpanded: boolean): void {
     const categoryStatus = getCategoryStatus(settings.getMultiple(tableCheckboxKeys(category.leaves)))
     /**
      * State machine:
@@ -143,7 +143,7 @@ export function changeCategorySetting(settings: Settings, category: Category): v
             break
         case false:
             const savedDeterminate = new Set(settings.get(`statistic_category_saved_indeterminate_${category.identifier}`))
-            if (savedDeterminate.size === 0) {
+            if (savedDeterminate.size === 0 || !isExpanded) {
                 category.leaves.forEach((statistic) => { settings.setSetting(`show_statistic_${statistic.identifier}`, true) })
             }
             else {
