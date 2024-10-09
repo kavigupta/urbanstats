@@ -1,13 +1,14 @@
-import React, { ReactNode, useContext, useEffect, useId, useLayoutEffect, useRef, useState } from 'react'
+import React, { ReactNode, useEffect, useId, useRef } from 'react'
 
 import '../style.css'
 import './sidebar.css'
 
-import { Settings, SettingsDictionary, tableCheckboxKeys, useSetting, useSettings } from '../page_template/settings'
-import { Category, changeCategorySetting, changeStatisticSetting, getCategoryStatus, Statistic, statisticCategoryTree } from '../page_template/statistic-settings'
+import { SettingsDictionary, useSetting } from '../page_template/settings'
 import { useMobileLayout } from '../utils/responsive'
 
-function useSidebarClasses(): { sidebar_section_content: string, sidebar_section_title: string } {
+import { StatisticCategoryTree } from './StatisticCategoryTree'
+
+export function useSidebarClasses(): { sidebar_section_content: string, sidebar_section_title: string } {
     let sidebar_section_content = 'sidebar-section-content'
     let sidebar_section_title = 'sidebar-section-title'
     if (useMobileLayout()) {
@@ -138,105 +139,3 @@ export function CheckboxSettingCustom(props: { name: string, checked: boolean, i
         </div>
     )
 };
-
-function StatisticCategoryTree(): ReactNode {
-    return statisticCategoryTree.filter(category => category.show_checkbox).map(category => <StatisticCategoryTreeCategory key={category.identifier} category={category} />)
-}
-
-function StatisticCategoryTreeCategoryContents({ category, isExpanded }: { category: Category, isExpanded: boolean }): ReactNode {
-    const { sidebar_section_content } = useSidebarClasses()
-    const [height, setHeight] = useState(10000) // start high so we don't animate initially
-    let maxHeight = `${height}px` // 31 is an approximation
-    let marginTop = '0.5em'
-    if (!isExpanded) {
-        maxHeight = '0px'
-        marginTop = '0px'
-    }
-    return (
-        <>
-            <OffscreenCategoryTreeCategoryContents category={category} heightCallback={setHeight} />
-            <ul
-                // @ts-expect-error -- inert is not in the type definitions yet
-                inert={isExpanded ? undefined : ''}
-                className={sidebar_section_content}
-                style={{ maxHeight, marginTop, opacity: 1 }}
-            >
-                <CategoryTreeCategoryCoreContents category={category} />
-            </ul>
-        </>
-    )
-}
-
-// Used for calculating size during animations
-function OffscreenCategoryTreeCategoryContents({ category, heightCallback }: { category: Category, heightCallback: (height: number) => void }): ReactNode {
-    const { sidebar_section_content } = useSidebarClasses()
-    const listRef = useRef<HTMLUListElement>(null)
-    useLayoutEffect(() => {
-        const resizeObserver = new ResizeObserver(() => {
-            heightCallback(listRef.current!.getBoundingClientRect().height)
-        })
-        resizeObserver.observe(listRef.current!)
-        heightCallback(listRef.current!.getBoundingClientRect().height)
-        return () => { resizeObserver.disconnect() }
-    }, [])
-    return (
-        <ul
-            // @ts-expect-error -- inert is not in the type definitions yet
-            inert=""
-            className={`${sidebar_section_content} hidden`}
-            style={{ opacity: 0, position: 'absolute' }}
-            ref={listRef}
-        >
-            <CategoryTreeCategoryCoreContents category={category} />
-        </ul>
-    )
-}
-
-function CategoryTreeCategoryCoreContents({ category }: { category: Category }): ReactNode {
-    return category.children.map((child) => {
-        switch (child.kind) {
-            case 'category':
-                return <StatisticCategoryTreeCategory key={child.identifier} category={child} />
-            case 'statistic':
-                return <StatisticCategoryTreeStatistic key={child.identifier} statistic={child} />
-        }
-    })
-}
-
-function StatisticCategoryTreeCategory({ category }: { category: Category }): ReactNode {
-    const settings = useContext(Settings.Context)
-    const categoryStatus = getCategoryStatus(useSettings(tableCheckboxKeys(category.leaves)))
-    const [isExpanded, setIsExpanded] = useSetting(`statistic_category_expanded_${category.identifier}`)
-    return (
-        <li>
-            <button
-                onClick={() => { setIsExpanded(!isExpanded) }}
-                className="expandButton"
-                style={{ transform: isExpanded ? 'rotate(90deg)' : 'rotate(0deg)' }}
-            >
-                ▶
-            </button>
-            <CheckboxSettingCustom
-                name={category.name}
-                checked={categoryStatus === true}
-                indeterminate={categoryStatus === 'indeterminate'}
-                onChange={() => { changeCategorySetting(settings, category, isExpanded) }}
-            />
-            <StatisticCategoryTreeCategoryContents key={category.identifier} category={category} isExpanded={isExpanded} />
-        </li>
-    )
-}
-
-function StatisticCategoryTreeStatistic({ statistic }: { statistic: Statistic }): ReactNode {
-    const settings = useContext(Settings.Context)
-    const [checked] = useSetting(`show_statistic_${statistic.identifier}`)
-    return (
-        <li>
-            <CheckboxSettingCustom
-                name={statistic.name}
-                checked={checked}
-                onChange={(newValue) => { changeStatisticSetting(settings, statistic, newValue) }}
-            />
-        </li>
-    )
-}
