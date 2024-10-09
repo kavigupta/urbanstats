@@ -13,7 +13,7 @@ class SegregationStatistics(CensusStatisticsColection):
     version = 3
 
     base_stats = {
-        "homogeneity_250": "Racial Homogenity",
+        "homogeneity_250": "Racial Homogeneity",
         "segregation_250": "Segregation",
         "segregation_250_10": "Mean Local Segregation",
     }
