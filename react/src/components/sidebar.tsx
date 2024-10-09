@@ -6,13 +6,18 @@ import { Settings, SettingsDictionary, tableCheckboxKeys, useSetting, useSetting
 import { Category, changeCategorySetting, changeStatisticSetting, getCategoryStatus, Statistic, statisticCategoryTree } from '../page_template/statistic-settings'
 import { useMobileLayout } from '../utils/responsive'
 
-export function Sidebar(): ReactNode {
+function useSidebarClasses(): { sidebar_section_content: string, sidebar_section_title: string } {
     let sidebar_section_content = 'sidebar-section-content'
     let sidebar_section_title = 'sidebar-section-title'
     if (useMobileLayout()) {
         sidebar_section_content += ' sidebar-section-content_mobile'
         sidebar_section_title += ' sidebar-section-title_mobile'
     }
+    return { sidebar_section_content, sidebar_section_title }
+}
+
+export function Sidebar(): ReactNode {
+    const { sidebar_section_content, sidebar_section_title } = useSidebarClasses()
     return (
         <div className={`serif sidebar${useMobileLayout() ? '_mobile' : ''}`}>
             <div className="sidebar-section">
@@ -140,7 +145,7 @@ function StatisticCategoryTree(): ReactNode {
 function StatisticCategoryTreeCategory({ category }: { category: Category }): ReactNode {
     const settings = useContext(Settings.Context)
     const categoryStatus = getCategoryStatus(useSettings(tableCheckboxKeys(category.leaves)))
-
+    const { sidebar_section_content } = useSidebarClasses()
     return (
         <li>
             <CheckboxSettingCustom
@@ -149,7 +154,7 @@ function StatisticCategoryTreeCategory({ category }: { category: Category }): Re
                 indeterminate={categoryStatus === 'indeterminate'}
                 onChange={() => { changeCategorySetting(settings, category) }}
             />
-            <ul>
+            <ul className={sidebar_section_content}>
                 {
                     category.children.map((child) => {
                         switch (child.kind) {

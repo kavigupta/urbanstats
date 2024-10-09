@@ -93,3 +93,8 @@
         transform: rotate(360deg);
     }
 }
+
+.checkbox-setting label {
+    position: relative;
+    top: -1px
+}

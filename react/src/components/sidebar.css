@@ -20,10 +20,14 @@
 }
 
 .sidebar-section-content {
-   margin-left: 1rem;
     list-style-type: none;
     padding: 0;
     margin: 0;
+}
+
+.sidebar-section-content .sidebar-section-content {
+    margin-left: 1rem;
+    margin-top: 0.5rem;
 }
 
 .sidebar-section-content a {
