@@ -78,7 +78,7 @@ def local_segregation_by_block(year, radius_small, radius_large):
 
 
 @permacache(
-    "urbanstats/geometry/segregation/compute_homogenity_info_by_shapefile_3",
+    "urbanstats/geometry/segregation/compute_homogenity_info_by_shapefile_4",
     key_function=dict(shapefile=lambda x: x.hash_key),
 )
 def compute_homogenity_info_by_shapefile(year, radius_small, radius_large, shapefile):
