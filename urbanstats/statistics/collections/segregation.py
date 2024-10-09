@@ -26,7 +26,7 @@ class SegregationStatistics(CensusStatisticsColection):
                 result[f"{k}_diff_{year}"] = f"{v} Change ({year}-2020)"
             for year in (2020,):
                 result[f"{k}_{year}"] = f"{v}"
-        return result
+        return {k: v + " %" for k, v in result.items()}
 
     def category_for_each_statistic(self):
         def category(k):

@@ -137,8 +137,6 @@ class CensusForPreviousYear(CensusStatisticsColection):
         del statistics_table[f"total_{year}"]
         del statistics_table[f"occupied_{year}"]
 
-
-
     def extra_stats(self):
         year = self.year()
         return {
