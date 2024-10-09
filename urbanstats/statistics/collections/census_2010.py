@@ -1,3 +1,4 @@
+import numpy as np
 from permacache import permacache
 
 from census_blocks import RADII, all_densities_gpd, housing_units, racial_demographics
@@ -84,11 +85,21 @@ class CensusForPreviousYear(CensusStatisticsColection):
         ]
 
     def compute_statistics(self, shapefile, statistics_table, shapefile_table):
-        table = aggregate_basics_of_year(shapefile, self.year())
+        from urbanstats.data.census_histogram import census_histogram
+
+        year = self.year()
+        table = aggregate_basics_of_year(shapefile, year)
         for k in table:
             statistics_table[k] = table[k]
 
         self.mutate_statistic_table(statistics_table, shapefile_table)
+
+        hists_year = census_histogram(shapefile, year)
+        for dens in RADII:
+            statistics_table[f"pw_density_histogram_{dens}_{year}"] = [
+                hists_year[x][f"ad_{dens}"] if x in hists_year else np.nan
+                for x in statistics_table.longname
+            ]
 
     def mutate_statistic_table(self, statistics_table, shapefile_table):
         from census_blocks import racial_demographics
@@ -137,13 +148,21 @@ class CensusForPreviousYear(CensusStatisticsColection):
 
 
 class Census2010(CensusForPreviousYear):
-    version = 2
+    version = 4
+
     def year(self):
         return 2010
 
 
+class Census2000(CensusForPreviousYear):
+    version = 5
+
+    def year(self):
+        return 2000
+
+
 @permacache(
-    "urbanstats/statistics/collections/aggregate_basics_of_year",
+    "urbanstats/statistics/collections/aggregate_basics_of_year_3",
     key_function=dict(shapefile=lambda x: x.hash_key),
 )
 def aggregate_basics_of_year(shapefile, year):

@@ -187,4 +187,5 @@ category_metadata = {
         name="Other Density Metrics", show_checkbox=True, default=False
     ),
     "2010": dict(name="2010 Census", show_checkbox=True, default=False),
+    "2000": dict(name="2000 Census", show_checkbox=True, default=False),
 }
