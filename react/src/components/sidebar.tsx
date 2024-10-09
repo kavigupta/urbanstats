@@ -1,7 +1,9 @@
-import React, { ReactNode, useContext, useEffect, useId, useRef } from 'react'
+import React, { ReactNode, useContext, useEffect, useId, useRef, useState } from 'react'
 
 import '../style.css'
 import './sidebar.css'
+import { Animations, AnimationStage, Renderer } from 'simple-react-transition'
+
 import { Settings, SettingsDictionary, tableCheckboxKeys, useSetting, useSettings } from '../page_template/settings'
 import { Category, changeCategorySetting, changeStatisticSetting, getCategoryStatus, Statistic, statisticCategoryTree } from '../page_template/statistic-settings'
 import { useMobileLayout } from '../utils/responsive'
@@ -142,30 +144,91 @@ function StatisticCategoryTree(): ReactNode {
     return statisticCategoryTree.filter(category => category.show_checkbox).map(category => <StatisticCategoryTreeCategory key={category.identifier} category={category} />)
 }
 
+function StatisticCategoryTreeCategoryContents({ category, animationStage }: { category: Category, animationStage: AnimationStage }): ReactNode {
+    const { sidebar_section_content } = useSidebarClasses()
+    const [height, setHeight] = useState(0)
+    let maxHeight = `${height}px` // 31 is an approximation
+    let marginTop = '0.5em'
+    if (animationStage === 'mount' || animationStage === 'remove') {
+        maxHeight = '0px'
+        marginTop = '0px'
+    }
+    return (
+        <>
+            <OffscreenCategoryTreeCategoryContents category={category} heightCallback={setHeight} />
+            <ul className={sidebar_section_content} style={{ maxHeight, marginTop }}>
+                <CategoryTreeCategoryCoreContents category={category} />
+            </ul>
+        </>
+    )
+}
+
+// Used for calculating size during animations
+function OffscreenCategoryTreeCategoryContents({ category, heightCallback }: { category: Category, heightCallback: (height: number) => void }): ReactNode {
+    const { sidebar_section_content } = useSidebarClasses()
+    const listRef = useRef<HTMLUListElement>(null)
+    useEffect(() => {
+        const resizeObserver = new ResizeObserver(() => {
+            heightCallback(listRef.current!.getBoundingClientRect().height)
+        })
+        resizeObserver.observe(listRef.current!)
+        heightCallback(listRef.current!.getBoundingClientRect().height)
+        return () => { resizeObserver.disconnect() }
+    }, [])
+    return (
+        <ul
+            // @ts-expect-error -- inert is not in the type definitions yet
+            inert=""
+            className={sidebar_section_content}
+            style={{ opacity: 0, position: 'absolute' }}
+            ref={listRef}
+        >
+            <CategoryTreeCategoryCoreContents category={category} />
+        </ul>
+    )
+}
+
+function CategoryTreeCategoryCoreContents({ category }: { category: Category }): ReactNode {
+    return category.children.map((child) => {
+        switch (child.kind) {
+            case 'category':
+                return <StatisticCategoryTreeCategory key={child.identifier} category={child} />
+            case 'statistic':
+                return <StatisticCategoryTreeStatistic key={child.identifier} statistic={child} />
+        }
+    })
+}
+
 function StatisticCategoryTreeCategory({ category }: { category: Category }): ReactNode {
     const settings = useContext(Settings.Context)
     const categoryStatus = getCategoryStatus(useSettings(tableCheckboxKeys(category.leaves)))
-    const { sidebar_section_content } = useSidebarClasses()
+    const [isExpanded, setIsExpanded] = useState(false)
+
+    const expandedContents: Renderer[] = isExpanded
+        ? [
+                {
+                    key: 'children',
+                    render: animationStage => <StatisticCategoryTreeCategoryContents key={category.identifier} category={category} animationStage={animationStage} />,
+                    duration: () => 250,
+                },
+            ]
+        : []
     return (
         <li>
+            <button
+                onClick={() => { setIsExpanded(e => !e) }}
+                className="expandButton"
+                style={{ transform: isExpanded ? 'rotate(90deg)' : 'rotate(0deg)' }}
+            >
+                ▶
+            </button>
             <CheckboxSettingCustom
                 name={category.name}
                 checked={categoryStatus === true}
                 indeterminate={categoryStatus === 'indeterminate'}
                 onChange={() => { changeCategorySetting(settings, category) }}
             />
-            <ul className={sidebar_section_content}>
-                {
-                    category.children.map((child) => {
-                        switch (child.kind) {
-                            case 'category':
-                                return <StatisticCategoryTreeCategory key={child.identifier} category={child} />
-                            case 'statistic':
-                                return <StatisticCategoryTreeStatistic key={child.identifier} statistic={child} />
-                        }
-                    })
-                }
-            </ul>
+            <Animations renderers={expandedContents} />
         </li>
     )
 }
