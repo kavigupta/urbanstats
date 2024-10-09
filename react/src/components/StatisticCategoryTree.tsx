@@ -82,7 +82,7 @@ function OffscreenCategoryContents({ category, heightCallback }: { category: Cat
         resizeObserver.observe(listRef.current!)
         heightCallback(listRef.current!.getBoundingClientRect().height)
         return () => { resizeObserver.disconnect() }
-    }, [])
+    }, [heightCallback])
     return (
         <ul
             // @ts-expect-error -- inert is not in the type definitions yet

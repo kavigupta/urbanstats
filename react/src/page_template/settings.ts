@@ -88,6 +88,7 @@ export class Settings {
             return () => {
                 keys.forEach(key => this.observers.get(key).delete(observer))
             }
+        // eslint-disable-next-line react-hooks/exhaustive-deps -- Our dependencies are the keys
         }, keys)
         return result
     }
