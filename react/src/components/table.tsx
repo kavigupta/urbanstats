@@ -4,7 +4,7 @@ import ContentEditable, { ContentEditableEvent } from 'react-contenteditable'
 import { load_ordering } from '../load_json'
 import { article_link, statistic_link } from '../navigation/links'
 import './table.css'
-import { row_expanded_key, useSetting } from '../page_template/settings'
+import { row_expanded_key, useColors, useSetting } from '../page_template/settings'
 import { useUniverse } from '../universe'
 import { is_historical_cd } from '../utils/is_historical'
 import { display_type } from '../utils/text'
@@ -638,6 +638,7 @@ function PointerButtonsIndex(props: { ordinal: number, statpath: string, type: s
 
 function PointerButtonIndex(props: { text: string, get_data: () => Promise<string[]>, original_pos: number, direction: number, total: number, show_historical_cds: boolean }): ReactNode {
     const curr_universe = useUniverse()
+    const colors = useColors()
     const out_of_bounds = (pos: number): boolean => pos < 0 || pos >= props.total
     const onClick = async (pos: number): Promise<void> => {
         {
@@ -659,13 +660,13 @@ function PointerButtonIndex(props: { text: string, get_data: () => Promise<strin
         fontSize: '8pt',
         fontWeight: 500,
         textDecoration: 'none',
-        color: '#222',
+        color: colors.textPointer,
         padding: '2px 6px 2px 6px',
         borderRadius: '5px',
-        borderTop: '1px solid #CCCCCC',
-        borderRight: '1px solid #333333',
-        borderBottom: '1px solid #333333',
-        borderLeft: '1px solid #CCCCCC',
+        borderTop: `1px solid ${colors.borderNonShadow}`,
+        borderRight: `1px solid ${colors.borderShadow}`,
+        borderBottom: `1px solid ${colors.borderShadow}`,
+        borderLeft: `1px solid ${colors.borderNonShadow}`,
     }
 
     const pos = props.original_pos - 1 + +props.direction
