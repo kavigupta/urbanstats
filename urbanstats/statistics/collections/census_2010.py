@@ -216,14 +216,14 @@ class Census2020(CensusForPreviousYear):
 
 
 class Census2010(CensusForPreviousYear):
-    version = 4
+    version = 5
 
     def year(self):
         return 2010
 
 
 class Census2000(CensusForPreviousYear):
-    version = 5
+    version = 6
 
     def year(self):
         return 2000
