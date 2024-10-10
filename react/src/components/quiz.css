@@ -5,14 +5,6 @@
   --quiz-incorrect: #f96d6d;
 }
 
-.text_quiz_correct {
-  color: var(--quiz-correct);
-}
-
-.text_quiz_incorrect {
-  color: var(--quiz-incorrect);
-}
-
 .quiz_clickable {
   display: block;
   border-radius: 1em;
