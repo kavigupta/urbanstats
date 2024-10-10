@@ -4,7 +4,7 @@ import ContentEditable, { ContentEditableEvent } from 'react-contenteditable'
 import { load_ordering } from '../load_json'
 import { article_link, statistic_link } from '../navigation/links'
 import './table.css'
-import { row_expanded_key, useSetting } from '../page_template/settings'
+import { row_expanded_key, useColors, useSetting } from '../page_template/settings'
 import { useUniverse } from '../universe'
 import { is_historical_cd } from '../utils/is_historical'
 import { display_type } from '../utils/text'
@@ -638,6 +638,7 @@ function PointerButtonsIndex(props: { ordinal: number, statpath: string, type: s
 
 function PointerButtonIndex(props: { text: string, get_data: () => Promise<string[]>, original_pos: number, direction: number, total: number, show_historical_cds: boolean }): ReactNode {
     const curr_universe = useUniverse()
+    const colors = useColors()
     const out_of_bounds = (pos: number): boolean => pos < 0 || pos >= props.total
     const onClick = async (pos: number): Promise<void> => {
         {
@@ -653,13 +654,28 @@ function PointerButtonIndex(props: { text: string, get_data: () => Promise<strin
             }
         }
     }
+
+    const buttonStyle: React.CSSProperties = {
+        fontFamily: 'Jost, Arial, sans-serif',
+        fontSize: '8pt',
+        fontWeight: 500,
+        textDecoration: 'none',
+        color: colors.textPointer,
+        padding: '2px 6px 2px 6px',
+        borderRadius: '5px',
+        borderTop: `1px solid ${colors.borderNonShadow}`,
+        borderRight: `1px solid ${colors.borderShadow}`,
+        borderBottom: `1px solid ${colors.borderShadow}`,
+        borderLeft: `1px solid ${colors.borderNonShadow}`,
+    }
+
     const pos = props.original_pos - 1 + +props.direction
     if (out_of_bounds(pos) || props.original_pos > props.total) {
-        return <span className="button">&nbsp;&nbsp;</span>
+        return <span style={buttonStyle}>&nbsp;&nbsp;</span>
     }
     else {
         return (
-            <a href="#" className="button" onClick={() => onClick(pos)}>{props.text}</a>
+            <a href="#" style={buttonStyle} onClick={() => onClick(pos)}>{props.text}</a>
         )
     }
 }
