@@ -40,6 +40,7 @@ export interface Colors {
     textPointer: string
     borderShadow: string
     borderNonShadow: string
+    ordinalTextColor: string
 }
 
 export const colorThemes: Record<Theme, Colors> = {
@@ -50,6 +51,7 @@ export const colorThemes: Record<Theme, Colors> = {
         textPointer: '#222222',
         borderShadow: '#333333',
         borderNonShadow: '#cccccc',
+        ordinalTextColor: '#444444',
     },
     'Dark Mode': {
         background: '#1e1e1e',
@@ -58,6 +60,7 @@ export const colorThemes: Record<Theme, Colors> = {
         textPointer: '#ffffff',
         borderShadow: '#cccccc',
         borderNonShadow: '#333333',
+        ordinalTextColor: '#cccccc',
     },
 }
 

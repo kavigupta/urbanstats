@@ -52,6 +52,13 @@ export function StatisticRowRawCellContents(props: StatisticRowRawProps & {
     screenshot_mode: boolean
 }): React.JSX.Element[] {
     const curr_universe = useUniverse()
+    const colors = useColors()
+    const ordinal_style: React.CSSProperties = {
+        fontSize: '14px',
+        fontWeight: 400,
+        color: colors.ordinalTextColor,
+        margin: 0,
+    }
     const alignStyle: React.CSSProperties = { textAlign: props.is_header ? 'center' : 'right' }
     let value_columns: [number, string, React.ReactNode][] = [
         [15,
@@ -123,7 +130,7 @@ export function StatisticRowRawCellContents(props: StatisticRowRawProps & {
         [
             props.simple ? 7 : 17,
             'statistic_percentile',
-            <span className="serif ordinal" key="ordinal">
+            <span className="serif" key="ordinal" style={ordinal_style}>
                 {
                     props.is_header
                         ? (props.simple ? right_align('%ile') : 'Percentile')
@@ -141,7 +148,7 @@ export function StatisticRowRawCellContents(props: StatisticRowRawProps & {
         [
             props.simple ? 8 : 25,
             'statistic_ordinal',
-            <span className="serif ordinal" key="statistic_ordinal">
+            <span className="serif" key="statistic_ordinal" style={ordinal_style}>
                 {
                     props.is_header
                         ? (props.simple ? right_align('Ord') : 'Ordinal')
@@ -161,9 +168,9 @@ export function StatisticRowRawCellContents(props: StatisticRowRawProps & {
         [8,
             'pointer_in_class',
             props.is_header
-                ? <span className="serif ordinal">Within Type</span>
+                ? <span className="serif" style={ordinal_style}>Within Type</span>
                 : (
-                        <span className="serif ordinal" style={{ display: 'flex' }}>
+                        <span className="serif" style={{ display: 'flex', ...ordinal_style }}>
                             <PointerButtonsIndex
                                 ordinal={props.ordinal}
                                 statpath={props.statpath}
@@ -176,9 +183,9 @@ export function StatisticRowRawCellContents(props: StatisticRowRawProps & {
         [8,
             'pointer_overall',
             props.is_header
-                ? <span className="serif ordinal">Overall</span>
+                ? <span className="serif" style={ordinal_style}>Overall</span>
                 : (
-                        <span className="serif ordinal" style={{ display: 'flex' }}>
+                        <span className="serif" style={{ display: 'flex', ...ordinal_style }}>
                             <PointerButtonsIndex
                                 ordinal={props.overallOrdinal}
                                 statpath={props.statpath}
