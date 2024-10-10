@@ -1,3 +1,4 @@
+from abc import abstractmethod
 import numpy as np
 from permacache import permacache
 
@@ -15,6 +16,13 @@ from .race_census import RaceCensus
 
 
 class CensusForPreviousYear(CensusStatisticsColection):
+    @abstractmethod
+    def year(self):
+        pass
+
+    def include_change(self):
+        return True
+
     def name_for_each_statistic(self):
         year = self.year()
         ad_for_year = {f"{k}_{year}": f"{v} ({year})" for k, v in ad.items()}
@@ -22,21 +30,44 @@ class CensusForPreviousYear(CensusStatisticsColection):
             f"{k}_change_{year}": f"{v} Change ({year}-2020)" for k, v in ad.items()
         }
 
-        return {
-            f"population_{year}": f"Population ({year})",
-            f"population_change_{year}": f"Population Change ({year}-2020)",
-            **{f"ad_1_{year}": ad_for_year[f"ad_1_{year}"]},
-            **{f"ad_1_change_{year}": ad_change[f"ad_1_change_{year}"]},
-            f"sd_{year}": f"AW Density ({year})",
-            **{
-                f"{k}_{year}": f"{v} ({year})"
-                for k, v in RaceCensus().name_for_each_statistic().items()
-            },
-            f"housing_per_pop_{year}": f"Housing Units per Adult ({year})",
-            f"vacancy_{year}": f"Vacancy % ({year})",
-            **{k: ad_for_year[k] for k in ad_for_year if k != f"ad_1_{year}"},
-            **{k: ad_change[k] for k in ad_change if k != f"ad_1_change_{year}"},
-        }
+        result = {}
+        result.update({f"population_{year}": f"Population ({year})"})
+        if self.include_change():
+            result.update(
+                {f"population_change_{year}": f"Population Change ({year}-2020)"}
+            )
+        result.update(
+            {
+                **{f"ad_1_{year}": ad_for_year[f"ad_1_{year}"]},
+            }
+        )
+        if self.include_change():
+            result.update(
+                {
+                    **{f"ad_1_change_{year}": ad_change[f"ad_1_change_{year}"]},
+                }
+            )
+        result.update(
+            {
+                f"sd_{year}": f"AW Density ({year})",
+                **{
+                    f"{k}_{year}": f"{v} ({year})"
+                    for k, v in RaceCensus().name_for_each_statistic().items()
+                },
+                f"housing_per_pop_{year}": f"Housing Units per Adult ({year})",
+                f"vacancy_{year}": f"Vacancy % ({year})",
+                **{k: ad_for_year[k] for k in ad_for_year if k != f"ad_1_{year}"},
+            }
+        )
+        if self.include_change():
+            result.update(
+                {
+                    **{
+                        k: ad_change[k] for k in ad_change if k != f"ad_1_change_{year}"
+                    },
+                }
+            )
+        return result
 
     def order_category_for_each_statistic(self):
         return CensusBasics.order_category_for_each_statistic(self)
@@ -49,6 +80,9 @@ class CensusForPreviousYear(CensusStatisticsColection):
 
     def quiz_question_names(self):
         year = self.year()
+        assert (
+            self.include_change()
+        ), "if you overwrite include_change, you must also overwrite quiz_question_names"
         return {
             f"population_change_{year}": f"higher % increase in population from {year} to 2020",
             f"ad_1_change_{year}": f"higher % increase in population-weighted density (r=1km) from {year} to 2020"
@@ -57,6 +91,9 @@ class CensusForPreviousYear(CensusStatisticsColection):
 
     def quiz_question_unused(self):
         year = self.year()
+        assert (
+            self.include_change()
+        ), "if you overwrite include_change, you must also overwrite quiz_question_unused"
         return [
             f"{x}_{year}"
             for x in [
@@ -107,14 +144,16 @@ class CensusForPreviousYear(CensusStatisticsColection):
 
         year = self.year()
 
-        statistics_table[f"population_change_{year}"] = (
-            statistics_table["population"] - statistics_table[f"population_{year}"]
-        ) / statistics_table[f"population_{year}"]
+        if self.include_change():
+            statistics_table[f"population_change_{year}"] = (
+                statistics_table["population"] - statistics_table[f"population_{year}"]
+            ) / statistics_table[f"population_{year}"]
         for k in density_metrics:
             statistics_table[f"{k}_{year}"] /= statistics_table[f"population_{year}"]
-            statistics_table[f"{k}_change_{year}"] = (
-                statistics_table[k] - statistics_table[f"{k}_{year}"]
-            ) / statistics_table[f"{k}_{year}"]
+            if self.include_change():
+                statistics_table[f"{k}_change_{year}"] = (
+                    statistics_table[k] - statistics_table[f"{k}_{year}"]
+                ) / statistics_table[f"{k}_{year}"]
         statistics_table[f"sd_{year}"] = (
             statistics_table[f"population_{year}"] / statistics_table["area"]
         )
