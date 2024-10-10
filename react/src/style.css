@@ -65,13 +65,6 @@ body {
     padding: 0;
 }
 
-.ordinal {
-    font-size: 14px;
-    font-weight: 400;
-    color: #444;
-    margin: 0;
-}
-
 .tableheader {
     border-top: 1pt solid black;
     border-bottom: 1pt solid black;
