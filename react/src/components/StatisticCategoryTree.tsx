@@ -55,7 +55,7 @@ function CategoryContents({ category, isExpanded }: { category: Category, isExpa
     const { sidebar_section_content } = useSidebarClasses()
     const [height, setHeight] = useState(10000) // start high so we don't animate initially
     let maxHeight = `${height}px`
-    let marginTop = useMobileLayout() ? '1em' : '0.5em'
+    let marginTop = '0.5em'
     let padding = '1px 0' // Need 1px padding so checkboxes don't get clipped on iPhone
     if (!isExpanded) {
         maxHeight = '0px'

@@ -10,7 +10,7 @@
     /*add some space to the left*/
     background-color: #eee;
     padding: 2rem;
-    font-size: 20pt;
+    font-size: 27px;
 }
 
 .sidebar-section-title {
@@ -34,6 +34,10 @@
 .sidebar-section-content .sidebar-section-content {
     margin-left: 0.75em;
     font-size: 15px;
+}
+
+.sidebar-section-content .sidebar-section-content_mobile {
+    font-size: 25px;
 }
 
 .sidebar-section-content a {
@@ -90,5 +94,5 @@
 .sidebar-section-content .sidebar-section-content.sidebar-section-content_mobile .expandButton {
     font-size: 25px;
     left: unset;
-    right: 5px;
+    right: 0px;
 }
