@@ -15,19 +15,21 @@ function CategoryComponent({ category }: { category: Category }): ReactNode {
     const [isExpanded, setIsExpanded] = useSetting(`statistic_category_expanded_${category.identifier}`)
     return (
         <li>
-            <button
-                onClick={() => { setIsExpanded(!isExpanded) }}
-                className="expandButton"
-                style={{ transform: isExpanded ? 'rotate(90deg)' : 'rotate(0deg)' }}
-            >
-                ▶
-            </button>
-            <CheckboxSettingCustom
-                name={category.name}
-                checked={categoryStatus === true}
-                indeterminate={categoryStatus === 'indeterminate'}
-                onChange={() => { changeCategorySetting(settings, category) }}
-            />
+            <div style={{ position: 'relative' }}>
+                <button
+                    onClick={() => { setIsExpanded(!isExpanded) }}
+                    className="expandButton"
+                    style={{ transform: isExpanded ? 'rotate(90deg)' : 'rotate(0deg)' }}
+                >
+                    ▶
+                </button>
+                <CheckboxSettingCustom
+                    name={category.name}
+                    checked={categoryStatus === true}
+                    indeterminate={categoryStatus === 'indeterminate'}
+                    onChange={() => { changeCategorySetting(settings, category) }}
+                />
+            </div>
             <CategoryContents key={category.identifier} category={category} isExpanded={isExpanded} />
         </li>
     )

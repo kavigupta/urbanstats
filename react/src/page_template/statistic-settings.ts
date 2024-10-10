@@ -114,15 +114,12 @@ export function getCategoryStatus(statisticSettingValues: Record<string, boolean
 
 export function changeStatisticSetting(settings: Settings, statistic: Statistic, newValue: boolean): void {
     settings.setSetting(`show_statistic_${statistic.identifier}`, newValue)
-    saveIndeterminateStateIfNecessary(settings, statistic)
+    saveIndeterminateState(settings, statistic)
 }
 
-function saveIndeterminateStateIfNecessary(settings: Settings, node: Statistic | Category): void {
+function saveIndeterminateState(settings: Settings, node: Statistic | Category): void {
     for (const category of node.parents) {
-        const categoryStatus = getCategoryStatus(settings.getMultiple(tableCheckboxKeys(category.leaves)))
-        if (categoryStatus === 'indeterminate') {
-            settings.setSetting(`statistic_category_saved_indeterminate_${category.identifier}`, category.leaves.map(statistic => statistic.identifier).filter(identifer => settings.get(`show_statistic_${identifer}`)))
-        }
+        settings.setSetting(`statistic_category_saved_indeterminate_${category.identifier}`, category.leaves.map(statistic => statistic.identifier).filter(identifer => settings.get(`show_statistic_${identifer}`)))
     }
 }
 
@@ -151,5 +148,5 @@ export function changeCategorySetting(settings: Settings, category: Category): v
             }
             break
     }
-    saveIndeterminateStateIfNecessary(settings, category)
+    saveIndeterminateState(settings, category)
 }

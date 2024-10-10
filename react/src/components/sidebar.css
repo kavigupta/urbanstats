@@ -69,9 +69,9 @@
     background: none;
     position: absolute;
     top: 0;
+    bottom: 0;
     left: -18px;
-    width: 22px;
-    height: 22px;
+    aspect-ratio: 1 / 1;
     color: #444;
     transition: transform 0.25s;
 }
