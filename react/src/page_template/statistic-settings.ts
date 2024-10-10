@@ -1,4 +1,4 @@
-import { Settings, tableCheckboxKeys } from './settings'
+import { Settings } from './settings'
 
 export type StatisticIdentifier = string & { __statisticIdentifier: true }
 export type CategoryIdentifier = string & { __statisticCategoryIdentifier: true }
