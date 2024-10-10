@@ -1,5 +1,7 @@
 import React, { ReactNode } from 'react'
 
+import { useColors } from '../page_template/settings'
+
 import { QuizDescriptor } from './quiz'
 import { History, parse_time_identifier } from './statistics'
 
@@ -9,6 +11,7 @@ interface QuizStatisticsProps {
 }
 
 export function QuizStatistics(props: QuizStatisticsProps): ReactNode {
+    const colors = useColors()
     const history = (i: number): History[string] | undefined => {
         switch (props.quiz.kind) {
             case 'juxtastat':
@@ -85,7 +88,7 @@ export function QuizStatistics(props: QuizStatisticsProps): ReactNode {
                                 /5
                             </td>
                             <td className="quiz_bar_td serif">
-                                <span className="quiz_bar" style={{ width: `${amt / total_freq * 20}em` }}>
+                                <span className="quiz_bar" style={{ width: `${amt / total_freq * 20}em`, backgroundColor: colors.hueColors.blue }}>
                                 </span>
                                 {amt > 0
                                     ? (
