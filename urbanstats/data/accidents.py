@@ -8,7 +8,7 @@ import geopandas as gpd
 from permacache import permacache
 import tqdm.auto as tqdm
 
-accident_years = list(range(2001, 2022 + 1))
+accident_years = list(range(2010, 2022 + 1))
 
 
 @permacache("urbanstats/data/accidents/accidents_dataframe_for_year_1")
