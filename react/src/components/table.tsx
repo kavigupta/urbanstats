@@ -35,12 +35,13 @@ export type StatisticRowRawProps = {
     )
 
 export function StatisticRowRaw(props: StatisticRowRawProps & { index: number, longname?: string, shortname?: string, screenshot_mode: boolean }): ReactNode {
+    const colors = useColors()
     const [expanded] = useSetting(row_expanded_key(props.is_header ? 'header' : props.statname))
 
     const cell_contents = StatisticRowRawCellContents({ ...props, total_width: 100, screenshot_mode: props.screenshot_mode })
 
     return (
-        <WithPlot plot_props={[{ ...props, color: '#5a7dc3', shortname: props.shortname }]} expanded={expanded} screenshot_mode={props.screenshot_mode}>
+        <WithPlot plot_props={[{ ...props, color: colors.hueColors.blue, shortname: props.shortname }]} expanded={expanded} screenshot_mode={props.screenshot_mode}>
             <StatisticRow is_header={props.is_header} index={props.index} contents={cell_contents} />
         </WithPlot>
     )
