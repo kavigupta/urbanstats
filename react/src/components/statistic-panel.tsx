@@ -1,7 +1,7 @@
 import React, { CSSProperties, ReactNode, useMemo, useRef } from 'react'
 
 import { article_link, explanation_page_link, sanitize, statistic_link } from '../navigation/links'
-import { useSetting } from '../page_template/settings'
+import { useColors, useSetting } from '../page_template/settings'
 import { PageTemplate } from '../page_template/template'
 import '../common.css'
 import './article.css'
@@ -39,6 +39,7 @@ export function StatisticPanel(props: {
     }
     explanation_page: string
 }): ReactNode {
+    const colors = useColors()
     const headers_ref = useRef<HTMLDivElement>(null)
     const table_ref = useRef<HTMLDivElement>(null)
 
@@ -81,7 +82,7 @@ export function StatisticPanel(props: {
         if (row_idx % 2 === 1) {
             return '#f7f1e8'
         }
-        return '#fff8f0'
+        return colors.background
     }
 
     const style = (col_idx: number, row_idx: number): CSSProperties => {
@@ -286,10 +287,12 @@ function PerPageSelector(props: {
     change_amount: (curr_universe: string | undefined, targetValue: string) => void
 }): ReactNode {
     const curr_universe = useUniverse()
+    const colors = useColors()
     return (
         <div style={{ margin: 'auto', textAlign: 'center' }}>
             <span>
                 <select
+                    style={{ backgroundColor: colors.background }}
                     defaultValue={
                         props.per_page === props.total ? 'All' : props.per_page
                     }
@@ -326,6 +329,7 @@ function SelectPage(props: {
     }
 
     const curr_universe = useUniverse()
+    const colors = useColors()
     return (
         <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
             <button onClick={() => { props.change_start(curr_universe, props.prev_page) }} className="serif" style={button_style}>&lt;</button>
@@ -334,7 +338,7 @@ function SelectPage(props: {
                 <input
                     type="string"
                     pattern="[0-9]*"
-                    style={{ width: '3em', textAlign: 'right' }}
+                    style={{ width: '3em', textAlign: 'right', backgroundColor: colors.background }}
                     className="serif"
                     defaultValue={props.current_page}
                     onKeyDown={(e) => {

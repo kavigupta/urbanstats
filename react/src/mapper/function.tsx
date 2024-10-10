@@ -2,6 +2,7 @@ import { Parser, Value } from 'expr-eval'
 import React, { ReactNode } from 'react'
 
 import { CheckboxSettingCustom } from '../components/sidebar'
+import { useColors } from '../page_template/settings'
 
 import { DataListSelector } from './DataListSelector'
 import { Regression } from './regression'
@@ -51,11 +52,12 @@ export class FunctionColorStat implements ColorStat {
 const operator_style: React.CSSProperties = { width: '2em', minWidth: '2em', textAlign: 'center' }
 
 function VariableNameSelector({ variable_name, set_variable_name, placeholder }: { variable_name: string, set_variable_name: (newValue: string) => void, placeholder: string }): ReactNode {
+    const colors = useColors()
     // freeform input for variable name
     return (
         <input
             type="text"
-            style={{ width: '100%' }}
+            style={{ width: '100%', backgroundColor: colors.background }}
             placeholder={`e.g., "${placeholder}"`}
             value={variable_name}
             onChange={(e) => { set_variable_name(e.target.value) }}
@@ -253,6 +255,7 @@ function RegressionSelector(props: { regression: RegressionDescriptor, set_regre
 }
 
 function VariableSelector(props: { variable: VariableDescriptor, set_variable: (newValue: VariableDescriptor) => void, delete_variable: () => void, names: string[] }): ReactNode {
+    const colors = useColors()
     const variable = props.variable
     const names_full = ['', ...props.names]
     const initial_value = variable.expr !== undefined && names_full.includes(variable.expr.value) ? variable.expr.value : ''
@@ -266,7 +269,7 @@ function VariableSelector(props: { variable: VariableDescriptor, set_variable: (
             <div style={{ width: '50%' }}>
                 <input
                     type="text"
-                    style={{ width: '100%' }}
+                    style={{ width: '100%', backgroundColor: colors.background }}
                     placeholder='Name, e.g., "a"'
                     value={variable.name}
                     onChange={(e) => {
@@ -289,7 +292,7 @@ function VariableSelector(props: { variable: VariableDescriptor, set_variable: (
                         },
                     })
                 }}
-                style={{ width: '100%' }}
+                style={{ width: '100%', backgroundColor: colors.background }}
                 value={initial_value}
             >
                 {
@@ -303,6 +306,7 @@ function VariableSelector(props: { variable: VariableDescriptor, set_variable: (
 }
 
 export function FunctionSelector(props: { function: ColorStatDescriptor, set_function: (newValue: ColorStatDescriptor) => void, names: string[], simple?: boolean, no_name_field?: boolean, placeholder?: string }): ReactNode {
+    const colors = useColors()
     const func = props.function
     if (func.variables === undefined) {
         func.variables = []
@@ -310,7 +314,7 @@ export function FunctionSelector(props: { function: ColorStatDescriptor, set_fun
     const expression = (
         <input
             type="text"
-            style={{ width: '100%' }}
+            style={{ width: '100%', backgroundColor: colors.background }}
             placeholder={props.placeholder ?? 'Expression, e.g., "a + b"'}
             value={func.expression}
             onChange={(e) => {
@@ -334,7 +338,7 @@ export function FunctionSelector(props: { function: ColorStatDescriptor, set_fun
                     : (
                             <input
                                 type="text"
-                                style={{ width: '100%' }}
+                                style={{ width: '100%', backgroundColor: colors.background }}
                                 placeholder="Name for this function"
                                 value={func.name}
                                 onChange={(e) => {
@@ -442,6 +446,7 @@ function RegressionsSelector({ get_regressions, set_regressions, names }: { get_
 }
 
 export function FilterSelector(props: { filter: FilterSettings, set_filter: (newValue: FilterSettings) => void, names: string[] }): ReactNode {
+    const colors = useColors()
     const filter = props.filter
     // like FunctionSelector, but has a checkmark for whether the filter is enabled
     return (
@@ -456,6 +461,7 @@ export function FilterSelector(props: { filter: FilterSettings, set_filter: (new
                             enabled: e.target.checked,
                         })
                     }}
+                    style={{ backgroundColor: colors.background }}
                 />
                 {' '}
                 Enable Filter?

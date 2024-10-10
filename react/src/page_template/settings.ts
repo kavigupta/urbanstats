@@ -6,6 +6,7 @@ export type StatisticSettingKey = `show_statistic_${string}`
 export type RelationshipKey = `related__${string}__${string}`
 export type RowExpandedKey = `expanded__${string}`
 export type HistogramType = 'Bar' | 'Line' | 'Line (cumulative)'
+export type Theme = 'Light Mode' | 'Dark Mode'
 
 interface StatisticCategoryMetadataCheckbox {
     setting_key: StatisticSettingKey
@@ -21,6 +22,7 @@ export interface SettingsDictionary {
     use_imperial: boolean
     histogram_type: HistogramType
     histogram_relative: boolean
+    theme: Theme
 }
 
 export function relationship_key(article_type: string, other_type: string): RelationshipKey {
@@ -29,6 +31,19 @@ export function relationship_key(article_type: string, other_type: string): Rela
 
 export function row_expanded_key(row_statname: string): RowExpandedKey {
     return `expanded__${row_statname}`
+}
+
+export interface Colors {
+    background: string
+}
+
+export const colorThemes: Record<Theme, Colors> = {
+    'Light Mode': {
+        background: '#fff8f0',
+    },
+    'Dark Mode': {
+        background: '#1e1e1e',
+    },
 }
 
 export function load_settings(): [SettingsDictionary, StatisticCategoryMetadataCheckbox[]] {
@@ -59,6 +74,7 @@ export function load_settings(): [SettingsDictionary, StatisticCategoryMetadataC
     settings.use_imperial = settings.use_imperial ?? false
     settings.histogram_type = settings.histogram_type ?? 'Line'
     settings.histogram_relative = settings.histogram_relative ?? true
+    settings.theme = settings.theme ?? 'Light Mode'
 
     return [settings as SettingsDictionary, statistic_category_metadata_checkboxes]
 }
@@ -135,3 +151,8 @@ export function useStatisticCategoryMetadataCheckboxes(): StatisticCategoryMetad
     return settings.statistic_category_metadata_checkboxes
 }
 /* eslint-enable react-hooks/rules-of-hooks */
+
+export function useColors(): Colors {
+    const [theme] = useSetting('theme')
+    return colorThemes[theme]
+}

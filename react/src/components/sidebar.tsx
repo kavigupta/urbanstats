@@ -2,7 +2,7 @@ import React, { ReactNode, useId } from 'react'
 
 import '../style.css'
 import './sidebar.css'
-import { SettingsDictionary, useSetting, useStatisticCategoryMetadataCheckboxes } from '../page_template/settings'
+import { SettingsDictionary, Theme, useColors, useSetting, useStatisticCategoryMetadataCheckboxes } from '../page_template/settings'
 import { useMobileLayout } from '../utils/responsive'
 
 export function Sidebar(): ReactNode {
@@ -94,6 +94,14 @@ export function Sidebar(): ReactNode {
                     )}
                 </ul>
             </div>
+            {/* <div className="sidebar-section">
+                <div className={sidebar_section_title}>Appearance</div>
+                <ul className={sidebar_section_content}>
+                    <li>
+                        <ColorThemeSetting />
+                    </li>
+                </ul>
+            </div> */}
         </div>
     )
 }
@@ -123,7 +131,29 @@ export function CheckboxSetting<K extends BooleanSettingKey>(props: { name: stri
     )
 };
 
+// represents the color theme setting, which sets it to either 'light' or 'dark'
+export function ColorThemeSetting(): ReactNode {
+    const [theme, setTheme] = useSetting('theme')
+    const colors = useColors()
+
+    return (
+        <div className="theme-setting">
+            <label>{'Theme '}</label>
+            <select
+                className="serif"
+                style={{ backgroundColor: colors.background }}
+                value={theme}
+                onChange={(e: React.ChangeEvent<HTMLSelectElement>) => { setTheme(e.target.value as Theme) }}
+            >
+                <option value="Light Mode">Light Mode</option>
+                <option value="Dark Mode">Dark Mode</option>
+            </select>
+        </div>
+    )
+};
+
 export function CheckboxSettingCustom<K extends string>(props: { name: string, setting_key: K, settings: Record<K, boolean>, set_setting: (key: K, value: boolean) => void, classNameToUse?: string, id?: string }): ReactNode {
+    const colors = useColors()
     // like CheckboxSetting, but doesn't use useSetting, instead using the callbacks
     const id = useId()
     const inputId = props.id ?? id
@@ -134,7 +164,7 @@ export function CheckboxSettingCustom<K extends string>(props: { name: string, s
                 type="checkbox"
                 checked={props.settings[props.setting_key] || false}
                 onChange={(e) => { props.set_setting(props.setting_key, e.target.checked) }}
-                style={{ accentColor: '#5a7dc3' }}
+                style={{ accentColor: '#5a7dc3', backgroundColor: colors.background }}
             />
             <label htmlFor={inputId}>{props.name}</label>
         </div>

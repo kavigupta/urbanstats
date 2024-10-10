@@ -4,7 +4,7 @@ import './article.css'
 import React, { ReactNode, useRef } from 'react'
 
 import { article_link, sanitize } from '../navigation/links'
-import { row_expanded_key, useSetting, useTableCheckboxSettings } from '../page_template/settings'
+import { row_expanded_key, useColors, useSetting, useTableCheckboxSettings } from '../page_template/settings'
 import { PageTemplate } from '../page_template/template'
 import { longname_is_exclusively_american, useUniverse } from '../universe'
 import { lighten } from '../utils/color'
@@ -300,6 +300,7 @@ function ComparisonRow({ names, params, datas, screenshot_mode }: {
     datas: Article[]
     screenshot_mode: boolean
 }): ReactNode {
+    const colors = useColors()
     const row_overall = []
     const param_vals = Array.from(Array(datas.length).keys()).map(params)
 
@@ -322,7 +323,7 @@ function ComparisonRow({ names, params, datas, screenshot_mode }: {
             }}
         >
             <div style={{
-                backgroundColor: highlight_idx === -1 ? '#fff8f0' : color(highlight_idx),
+                backgroundColor: highlight_idx === -1 ? colors.background : color(highlight_idx),
                 height: '100%',
                 width: '50%',
                 margin: 'auto',
@@ -460,20 +461,7 @@ function insert_missing(rows: ArticleRow[][], idxs: number[][]): ArticleRow[][] 
 // eslint-disable-next-line prefer-function-component/prefer-function-component -- TODO: Maps don't support function components yet.
 class ComparisonMap extends MapGeneric<MapGenericProps & { longnames: string[], colors: string[] }> {
     override buttons(): ReactNode {
-        return (
-            <div style={{
-                display: 'flex', backgroundColor: '#fff8f0', padding: '0.5em', borderRadius: '0.5em',
-                alignItems: 'center',
-            }}
-            >
-                <span className="serif" style={{ fontSize: '15px', fontWeight: 500 }}>Zoom to:</span>
-                <div style={{ width: '0.25em' }} />
-                {this.zoom_button(-1, 'black', () => { this.zoom_to_all() })}
-                {this.props.longnames.map((longname, i) => {
-                    return this.zoom_button(i, this.props.colors[i], () => { this.zoom_to(longname) })
-                })}
-            </div>
-        )
+        return <ComparisonMapButtons map={this} />
     }
 
     zoom_button(i: number, buttonColor: string, onClick: () => void): ReactNode {
@@ -510,4 +498,22 @@ class ComparisonMap extends MapGeneric<MapGenericProps & { longnames: string[], 
         this.zoom_to_all()
         return Promise.resolve()
     }
+}
+
+export function ComparisonMapButtons(props: { map: ComparisonMap }): ReactNode {
+    const colors = useColors()
+    return (
+        <div style={{
+            display: 'flex', backgroundColor: colors.background, padding: '0.5em', borderRadius: '0.5em',
+            alignItems: 'center',
+        }}
+        >
+            <span className="serif" style={{ fontSize: '15px', fontWeight: 500 }}>Zoom to:</span>
+            <div style={{ width: '0.25em' }} />
+            {props.map.zoom_button(-1, 'black', () => { props.map.zoom_to_all() })}
+            {props.map.props.longnames.map((longname, i) => {
+                return props.map.zoom_button(i, props.map.props.colors[i], () => { props.map.zoom_to(longname) })
+            })}
+        </div>
+    )
 }
