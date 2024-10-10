@@ -35,14 +35,17 @@ export function row_expanded_key(row_statname: string): RowExpandedKey {
 
 export interface Colors {
     background: string
+    highlight: string
 }
 
 export const colorThemes: Record<Theme, Colors> = {
     'Light Mode': {
         background: '#fff8f0',
+        highlight: '#d4b5e2',
     },
     'Dark Mode': {
         background: '#1e1e1e',
+        highlight: '#d4b5e2',
     },
 }
 

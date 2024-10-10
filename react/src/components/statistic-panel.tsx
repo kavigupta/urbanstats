@@ -76,7 +76,7 @@ export function StatisticPanel(props: {
         if (row_idx > 0) {
             const name_at_idx = props.article_names[index_range[row_idx - 1]]
             if (name_at_idx === props.highlight) {
-                return '#d4b5e2'
+                return colors.highlight
             }
         }
         if (row_idx % 2 === 1) {

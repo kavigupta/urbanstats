@@ -4,6 +4,7 @@ import ReactDOM from 'react-dom/client'
 
 import './style.css'
 import './common.css'
+import { useColors } from './page_template/settings'
 import { PageTemplate } from './page_template/template'
 import { useHeaderTextClass } from './utils/responsive'
 
@@ -49,6 +50,7 @@ function ExplanationTable(props: { name: string, link: string, table: [string, s
 }
 
 function NRef({ children, name, h: Header = 'h2' }: { children: React.ReactNode, name: string, h?: 'h1' | 'h2' }): ReactNode {
+    const colors = useColors()
     const ref = useRef<HTMLHeadingElement>(null)
 
     const highlighted = window.location.hash.substring(1) === `explanation_${name}`
@@ -59,7 +61,9 @@ function NRef({ children, name, h: Header = 'h2' }: { children: React.ReactNode,
         }
     }, [highlighted])
 
-    return <Header ref={ref} className={highlighted ? 'highlighted_header' : undefined}>{children}</Header>
+    const style = highlighted ? { backgroundColor: colors.highlight } : {}
+
+    return <Header ref={ref} style={style}>{children}</Header>
 }
 
 function DataCreditPanel(): ReactNode {
