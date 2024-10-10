@@ -1,4 +1,4 @@
-import { Settings } from './settings'
+import { Settings, StatisticSettingKey } from './settings'
 
 export type StatisticIdentifier = string & { __statisticIdentifier: true }
 export type CategoryIdentifier = string & { __statisticCategoryIdentifier: true }
