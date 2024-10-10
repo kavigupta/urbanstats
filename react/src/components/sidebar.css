@@ -74,10 +74,20 @@
     aspect-ratio: 1 / 1;
     color: #444;
     transition: transform 0.25s;
+    font-size: 12px;
+    vertical-align: middle;
 }
 
 .sidebar-section-content .sidebar-section-content .expandButton {
-    height: 20px;
-    width: 20px;
     left: -16px;
+}
+
+.sidebar-section-content_mobile .expandButton {
+    left: -36px;
+    font-size: 18px;
+}
+
+.sidebar-section-content .sidebar-section-content.sidebar-section-content_mobile .expandButton {
+    left: -22px;
+    font-size: 18px;
 }
