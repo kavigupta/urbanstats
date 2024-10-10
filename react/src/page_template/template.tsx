@@ -8,7 +8,7 @@ import '@fontsource/jost/700.css'
 import '@fontsource/jost/800.css'
 import '@fontsource/jost/900.css'
 
-import React, { Fragment, ReactNode, useState } from 'react'
+import React, { Fragment, ReactNode, useEffect, useState } from 'react'
 
 import { Header } from '../components/header'
 import { ScreencapElements, create_screenshot } from '../components/screenshot'
@@ -34,7 +34,9 @@ export function PageTemplate({
     const [screenshot_mode, set_screenshot_mode] = useState(false)
     const colors = useColors()
 
-    document.body.style.backgroundColor = colors.background
+    useEffect(() => {
+        document.body.style.backgroundColor = colors.background
+    }, [colors.background])
 
     const has_screenshot_button = screencap_elements !== undefined
 
