@@ -39,6 +39,7 @@ from urbanstats.statistics.collections.segregation import SegregationStatistics
 from urbanstats.statistics.collections.sexual_orientation_and_relationship_status import (
     SexualOrientationRelationshipStatusStatistics,
 )
+from urbanstats.statistics.collections.trafifc_accidents import NHTSAAccidentStatistics
 from urbanstats.statistics.collections.transportation_commute_time import (
     TransportationCommuteTimeStatistics,
 )
@@ -77,6 +78,7 @@ statistic_collections = (
     TransportationModeStatistics(),
     TransportationCommuteTimeStatistics(),
     TransportationVehicleOwnershipStatistics(),
+    NHTSAAccidentStatistics(),
     CDCStatistics(),
     HouseHeating(),
     IndustryStatistics(),

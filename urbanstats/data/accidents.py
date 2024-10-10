@@ -42,10 +42,10 @@ def accidents_dataframe_for_year(year):
     "urbanstats/data/accidents/accidents_by_region_1",
     key_function=dict(shapefile=lambda x: x.hash_key),
 )
-def accidents_by_region(shapefile):
+def accidents_by_region(shapefile, years=accident_years):
     sf = shapefile.load_file().reset_index(drop=True)
     result = {}
-    for year in tqdm.tqdm(accident_years, desc="aggregating accidents"):
+    for year in tqdm.tqdm(years, desc="aggregating accidents"):
         joined = gpd.sjoin(sf[["geometry"]], accidents_dataframe_for_year(year))[
             ["fatals"]
         ]
