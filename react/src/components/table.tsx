@@ -653,13 +653,28 @@ function PointerButtonIndex(props: { text: string, get_data: () => Promise<strin
             }
         }
     }
+
+    const buttonStyle: React.CSSProperties = {
+        fontFamily: 'Jost, Arial, sans-serif',
+        fontSize: '8pt',
+        fontWeight: 500,
+        textDecoration: 'none',
+        color: '#222',
+        padding: '2px 6px 2px 6px',
+        borderRadius: '5px',
+        borderTop: '1px solid #CCCCCC',
+        borderRight: '1px solid #333333',
+        borderBottom: '1px solid #333333',
+        borderLeft: '1px solid #CCCCCC',
+    }
+
     const pos = props.original_pos - 1 + +props.direction
     if (out_of_bounds(pos) || props.original_pos > props.total) {
-        return <span className="button">&nbsp;&nbsp;</span>
+        return <span style={buttonStyle}>&nbsp;&nbsp;</span>
     }
     else {
         return (
-            <a href="#" className="button" onClick={() => onClick(pos)}>{props.text}</a>
+            <a href="#" style={buttonStyle} onClick={() => onClick(pos)}>{props.text}</a>
         )
     }
 }
