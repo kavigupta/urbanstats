@@ -3,7 +3,7 @@
     /*add some space to the left*/
     background-color: #f7f1e8;
     padding: 2rem;
-    font-size: 12pt;
+    font-size: 16px;
 }
 
 .sidebar_mobile {
@@ -23,7 +23,7 @@
     list-style-type: none;
     padding: 0;
     margin: 0;
-    transition: max-height 0.25s, margin 0.25s;
+    transition: max-height 0.25s, margin 0.25s, padding 0.25s;
     overflow-y: clip;
 }
 
@@ -33,8 +33,7 @@
 
 .sidebar-section-content .sidebar-section-content {
     margin-left: 0.75em;
-    margin-top: 0.5em;
-    font-size: 11pt;
+    font-size: 15px;
 }
 
 .sidebar-section-content a {
@@ -48,7 +47,7 @@
 }
 
 .sidebar-section-content_mobile li {
-    margin-bottom: 0.75rem;
+    margin-bottom: 1rem;
 }
 
 .sidebar-section-title_mobile {
@@ -83,11 +82,13 @@
 }
 
 .sidebar-section-content_mobile .expandButton {
-    left: -36px;
-    font-size: 18px;
+    right: 0;
+    left: unset;
+    font-size: 30px;
 }
 
 .sidebar-section-content .sidebar-section-content.sidebar-section-content_mobile .expandButton {
-    left: -22px;
-    font-size: 18px;
+    font-size: 25px;
+    left: unset;
+    right: 5px;
 }

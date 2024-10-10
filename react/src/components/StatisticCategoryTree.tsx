@@ -2,6 +2,7 @@ import React, { ReactNode, useContext, useLayoutEffect, useRef, useState } from 
 
 import { Settings, tableCheckboxKeys, useSetting, useSettings } from '../page_template/settings'
 import { statisticCategoryTree, Category, changeCategorySetting, changeStatisticSetting, getCategoryStatus, Statistic } from '../page_template/statistic-settings'
+import { useMobileLayout } from '../utils/responsive'
 
 import { CheckboxSettingCustom, useSidebarClasses } from './sidebar'
 
@@ -13,15 +14,16 @@ function CategoryComponent({ category }: { category: Category }): ReactNode {
     const settings = useContext(Settings.Context)
     const categoryStatus = getCategoryStatus(useSettings(tableCheckboxKeys(category.leaves)))
     const [isExpanded, setIsExpanded] = useSetting(`statistic_category_expanded_${category.identifier}`)
+    const isMobileLayout = useMobileLayout()
     return (
         <li>
             <div style={{ position: 'relative' }}>
                 <button
                     onClick={() => { setIsExpanded(!isExpanded) }}
                     className="expandButton"
-                    style={{ transform: isExpanded ? 'rotate(90deg)' : 'rotate(0deg)' }}
+                    style={{ transform: isExpanded ? `rotate(${isMobileLayout ? -90 : 90}deg)` : 'rotate(0deg)' }}
                 >
-                    ▶
+                    {isMobileLayout ? '◀' : '▶' /* Arrows are on the right on mobile to be used with both thumbs */}
                 </button>
                 <CheckboxSettingCustom
                     name={category.name}
@@ -52,11 +54,13 @@ function StatisticComponent({ statistic }: { statistic: Statistic }): ReactNode 
 function CategoryContents({ category, isExpanded }: { category: Category, isExpanded: boolean }): ReactNode {
     const { sidebar_section_content } = useSidebarClasses()
     const [height, setHeight] = useState(10000) // start high so we don't animate initially
-    let maxHeight = `${height}px` // 31 is an approximation
-    let marginTop = '0.5em'
+    let maxHeight = `${height}px`
+    let marginTop = useMobileLayout() ? '1em' : '0.5em'
+    let padding = '1px 0' // Need 1px padding so checkboxes don't get clipped on iPhone
     if (!isExpanded) {
         maxHeight = '0px'
         marginTop = '0px'
+        padding = '0px'
     }
     return (
         <>
@@ -65,7 +69,7 @@ function CategoryContents({ category, isExpanded }: { category: Category, isExpa
                 // @ts-expect-error -- inert is not in the type definitions yet
                 inert={isExpanded ? undefined : ''}
                 className={sidebar_section_content}
-                style={{ maxHeight, marginTop, opacity: 1 }}
+                style={{ maxHeight, marginTop, opacity: 1, padding }}
             >
                 <CategoryCoreContents category={category} />
             </ul>
