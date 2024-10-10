@@ -478,6 +478,7 @@ export function Statistic(props: { style?: React.CSSProperties, statname: string
 }
 
 function ElectionResult(props: { value: number }): ReactNode {
+    const colors = useColors()
     // check if value is NaN
     if (props.value !== props.value) {
         return <span>N/A</span>
@@ -486,8 +487,9 @@ function ElectionResult(props: { value: number }): ReactNode {
     const places = value > 10 ? 1 : value > 1 ? 2 : value > 0.1 ? 3 : 4
     const text = value.toFixed(places)
     const party = props.value > 0 ? 'D' : 'R'
+    const party_color = props.value > 0 ? colors.hueColors.blue : colors.hueColors.red
     return (
-        <span className={`party_result_${party}`}>
+        <span style={{ color: party_color }}>
             {party}
             +
             {text}
