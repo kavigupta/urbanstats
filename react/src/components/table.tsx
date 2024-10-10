@@ -35,12 +35,13 @@ export type StatisticRowRawProps = {
     )
 
 export function StatisticRowRaw(props: StatisticRowRawProps & { index: number, longname?: string, shortname?: string, screenshot_mode: boolean }): ReactNode {
+    const colors = useColors()
     const [expanded] = useSetting(row_expanded_key(props.is_header ? 'header' : props.statname))
 
     const cell_contents = StatisticRowRawCellContents({ ...props, total_width: 100, screenshot_mode: props.screenshot_mode })
 
     return (
-        <WithPlot plot_props={[{ ...props, color: '#5a7dc3', shortname: props.shortname }]} expanded={expanded} screenshot_mode={props.screenshot_mode}>
+        <WithPlot plot_props={[{ ...props, color: colors.hueColors.blue, shortname: props.shortname }]} expanded={expanded} screenshot_mode={props.screenshot_mode}>
             <StatisticRow is_header={props.is_header} index={props.index} contents={cell_contents} />
         </WithPlot>
     )
@@ -478,6 +479,7 @@ export function Statistic(props: { style?: React.CSSProperties, statname: string
 }
 
 function ElectionResult(props: { value: number }): ReactNode {
+    const colors = useColors()
     // check if value is NaN
     if (props.value !== props.value) {
         return <span>N/A</span>
@@ -486,8 +488,9 @@ function ElectionResult(props: { value: number }): ReactNode {
     const places = value > 10 ? 1 : value > 1 ? 2 : value > 0.1 ? 3 : 4
     const text = value.toFixed(places)
     const party = props.value > 0 ? 'D' : 'R'
+    const party_color = props.value > 0 ? colors.hueColors.blue : colors.hueColors.red
     return (
-        <span className={`party_result_${party}`}>
+        <span style={{ color: party_color }}>
             {party}
             +
             {text}

@@ -4,7 +4,7 @@ import './article.css'
 import React, { ReactNode, useRef } from 'react'
 
 import { article_link, sanitize } from '../navigation/links'
-import { row_expanded_key, useColors, useSetting, useTableCheckboxSettings } from '../page_template/settings'
+import { HueColors, row_expanded_key, useColors, useSetting, useTableCheckboxSettings } from '../page_template/settings'
 import { PageTemplate } from '../page_template/template'
 import { longname_is_exclusively_american, useUniverse } from '../universe'
 import { lighten } from '../utils/color'
@@ -24,18 +24,8 @@ const left_bar_margin = 0.02
 const left_margin_pct = 0.18
 const bar_height = '5px'
 
-const COLOR_CYCLE = [
-    '#5a7dc3', // blue
-    '#f7aa41', // orange
-    '#975ac3', // purple
-    '#f96d6d', // red
-    '#8e8e8e', // grey
-    '#c767b0', // pink
-    '#b8a32f', // yellow
-    '#8ac35a', // green
-]
-
 export function ComparisonPanel(props: { joined_string: string, universes: string[], names: string[], datas: Article[] }): ReactNode {
+    const colors = useColors()
     const table_ref = useRef<HTMLDivElement>(null)
     const map_ref = useRef(null)
 
@@ -76,7 +66,7 @@ export function ComparisonPanel(props: { joined_string: string, universes: strin
                             style={{
                                 width: `${each(props.datas)}%`,
                                 height: bar_height,
-                                backgroundColor: color(i),
+                                backgroundColor: color(colors.hueColors, i),
                             }}
                         />
                     ),
@@ -173,7 +163,7 @@ export function ComparisonPanel(props: { joined_string: string, universes: strin
                     <div ref={map_ref}>
                         <ComparisonMap
                             longnames={props.datas.map(x => x.longname)}
-                            colors={props.datas.map((_, i) => color(i))}
+                            colors={props.datas.map((_, i) => color(colors.hueColors, i))}
                             basemap={{ type: 'osm' }}
                         />
                     </div>
@@ -183,8 +173,18 @@ export function ComparisonPanel(props: { joined_string: string, universes: strin
     )
 }
 
-function color(i: number): string {
-    return COLOR_CYCLE[i % COLOR_CYCLE.length]
+function color(colors: HueColors, i: number): string {
+    const color_cycle = [
+        colors.blue,
+        colors.orange,
+        colors.purple,
+        colors.red,
+        colors.grey,
+        colors.pink,
+        colors.yellow,
+        colors.green,
+    ]
+    return color_cycle[i % color_cycle.length]
 }
 
 function on_change(names: string[] | undefined, i: number, x: string): void {
@@ -273,6 +273,7 @@ function ComparisonRowBody({ rows, row_idx, datas, names, screenshot_mode }: {
     names: string[]
     screenshot_mode: boolean
 }): ReactNode {
+    const colors = useColors()
     const [expanded] = useSetting(row_expanded_key(rows[0][row_idx].statname))
     const contents = (
         <ComparisonRow
@@ -286,7 +287,7 @@ function ComparisonRowBody({ rows, row_idx, datas, names, screenshot_mode }: {
             screenshot_mode={screenshot_mode}
         />
     )
-    const plot_props = rows.map((row, data_idx) => ({ ...row[row_idx], color: color(data_idx), shortname: datas[data_idx].shortname }))
+    const plot_props = rows.map((row, data_idx) => ({ ...row[row_idx], color: color(colors.hueColors, data_idx), shortname: datas[data_idx].shortname }))
     return (
         <WithPlot plot_props={plot_props} expanded={expanded} key={row_idx} screenshot_mode={screenshot_mode}>
             <StatisticRow key={row_idx} is_header={false} index={row_idx} contents={contents} />
@@ -323,7 +324,7 @@ function ComparisonRow({ names, params, datas, screenshot_mode }: {
             }}
         >
             <div style={{
-                backgroundColor: highlight_idx === -1 ? colors.background : color(highlight_idx),
+                backgroundColor: highlight_idx === -1 ? colors.background : color(colors.hueColors, highlight_idx),
                 height: '100%',
                 width: '50%',
                 margin: 'auto',
@@ -345,7 +346,7 @@ function ComparisonRow({ names, params, datas, screenshot_mode }: {
         row_overall.push(...StatisticRowRawCellContents(
             {
                 ...param_vals[i], only_columns, _idx: i, simple: true,
-                statistic_style: highlight_idx === i ? { backgroundColor: lighten(color(i), 0.7) } : {},
+                statistic_style: highlight_idx === i ? { backgroundColor: lighten(color(colors.hueColors, i), 0.7) } : {},
                 onReplace: (x) => { on_change(names, i, x) },
                 total_width: each(datas),
                 screenshot_mode,

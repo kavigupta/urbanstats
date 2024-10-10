@@ -3,6 +3,7 @@ import { isFirefox, isMobile } from 'react-device-detect'
 
 import { Statistic } from '../components/table'
 import { article_link } from '../navigation/links'
+import { useColors } from '../page_template/settings'
 
 import { render_time_remaining } from './dates'
 import { ENDPOINT, JuxtaQuestion, QuizDescriptor, QuizQuestion, RetroQuestion, a_correct, nameOfQuizKind } from './quiz'
@@ -163,6 +164,7 @@ function ShareButton({ button_ref, parameters, today_name, correct_pattern, tota
 }
 
 function Timer({ quiz }: { quiz: QuizDescriptor }): ReactNode {
+    const colors = useColors()
     const [, setTime] = useState(0)
     useEffect(() => {
         const interval = setInterval(() => { setTime(time => time + 1) }, 1000)
@@ -171,7 +173,7 @@ function Timer({ quiz }: { quiz: QuizDescriptor }): ReactNode {
 
     const w = quiz.kind === 'juxtastat' ? '5em' : '6.5em'
     return (
-        <div className="serif quiz_next" style={{ width: w, margin: 0 }} id="quiz-timer">
+        <div className="serif quiz_next" style={{ width: w, margin: 0, backgroundColor: colors.hueColors.blue }} id="quiz-timer">
             <span>{render_time_remaining(quiz)}</span>
         </div>
     )
