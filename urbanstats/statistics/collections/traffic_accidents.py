@@ -40,16 +40,18 @@ class NHTSAAccidentStatistics(USAStatistics):
         pop = population_by_year(shapefile)
         acc_per_cap = {y: acc_raw[y] / compute_population(pop, y) for y in acc_raw}
         last_decade = sorted(acc_raw)[-10:]
-        shapefile["traffic_fatalities_last_decade"] = sum(
-            acc_per_cap[y] for y in last_decade
+        statistics_table["traffic_fatalities_last_decade"] = sum(
+            acc_raw[y] for y in last_decade
         )
-        shapefile["traffic_fatalities_last_decade_per_capita"] = sum(
+        statistics_table["traffic_fatalities_last_decade_per_capita"] = sum(
             acc_per_cap[y] for y in last_decade
         ) / len(last_decade)
-        shapefile["traffic_fatalities_by_year"] = list(np.array(pd.DataFrame(acc_raw)))
-        shapefile["traffic_fatalities_per_capita_by_year"] = list(
-            np.array(pd.DataFrame(acc_per_cap))
+        statistics_table["traffic_fatalities_by_year"] = pd.DataFrame(acc_raw).apply(
+            list, axis=1
         )
+        statistics_table["traffic_fatalities_per_capita_by_year"] = pd.DataFrame(
+            acc_per_cap
+        ).apply(list, axis=1)
 
     def mutate_statistic_table(self, statistics_table, shapefile_table):
         raise NotImplementedError
