@@ -90,6 +90,10 @@ function populateStatisticCategoryTree(): void {
 
 populateStatisticCategoryTree()
 
+export function tableCheckboxKeys(partialStatistics: Statistic[] = statistics): StatisticSettingKey[] {
+    return partialStatistics.map(statistic => `show_statistic_${statistic.identifier}` as const)
+}
+
 export function getCategoryStatus(statisticSettingValues: Record<string, boolean>): boolean | 'indeterminate' {
     const statisticSettings = Object.entries(statisticSettingValues)
     const totalStatistics = statisticSettings.length

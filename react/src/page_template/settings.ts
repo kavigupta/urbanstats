@@ -2,7 +2,7 @@ import { createContext, useContext, useEffect, useState } from 'react'
 
 import { DefaultMap } from '../utils/DefaultMap'
 
-import { categories, CategoryIdentifier, Statistic, StatisticIdentifier, statistics } from './statistic-settings'
+import { categories, CategoryIdentifier, StatisticIdentifier, statistics } from './statistic-settings'
 
 export type RelationshipKey = `related__${string}__${string}`
 export type RowExpandedKey = `expanded__${string}`
@@ -126,12 +126,6 @@ export function useSettings<K extends keyof SettingsDictionary>(keys: K[]): Pick
 }
 
 export type TableCheckboxSettings = Record<StatisticSettingKey, boolean>
-
-export type BooleanSettings = { [K in keyof SettingsDictionary as SettingsDictionary[K] extends boolean ? K : never]: boolean }
-
-export function tableCheckboxKeys(partialStatistics: Statistic[] = statistics): StatisticSettingKey[] {
-    return partialStatistics.map(statistic => `show_statistic_${statistic.identifier}` as const)
-}
 
 export function relatedSettingsKeys(article_type_this: string): RelationshipKey[] {
     const article_types_other = require('../data/type_to_type_category.json') as Record<string, string>

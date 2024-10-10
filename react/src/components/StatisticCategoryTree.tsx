@@ -1,7 +1,7 @@
 import React, { ReactNode, useContext, useLayoutEffect, useRef, useState } from 'react'
 
-import { Settings, tableCheckboxKeys, useSetting, useSettings } from '../page_template/settings'
-import { statisticCategoryTree, Category, changeCategorySetting, changeStatisticSetting, getCategoryStatus, Statistic } from '../page_template/statistic-settings'
+import { Settings, useSetting, useSettings } from '../page_template/settings'
+import { statisticCategoryTree, Category, changeCategorySetting, changeStatisticSetting, getCategoryStatus, Statistic, tableCheckboxKeys } from '../page_template/statistic-settings'
 import { useMobileLayout } from '../utils/responsive'
 
 import { CheckboxSettingCustom, useSidebarClasses } from './sidebar'
