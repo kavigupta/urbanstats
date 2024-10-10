@@ -4,7 +4,7 @@ import '../common.css'
 import './header.css'
 import { article_link, universe_path } from '../navigation/links'
 import { set_universe, useUniverse } from '../universe'
-import { mobileLayout } from '../utils/responsive'
+import { useMobileLayout } from '../utils/responsive'
 
 import { Nav } from './hamburger'
 import { ScreenshotButton } from './screenshot'
@@ -34,7 +34,7 @@ export function Header(props: {
             <div className="right_panel_top" style={{ height: HEADER_BAR_SIZE }}>
                 {/* flex but stretch to fill */}
                 <div style={{ display: 'flex', flexDirection: 'row', height: '100%' }}>
-                    {!mobileLayout() && props.has_universe_selector
+                    {!useMobileLayout() && props.has_universe_selector
                         ? (
                                 <div style={{ paddingRight: '0.5em' }}>
                                     <UniverseSelector
@@ -87,7 +87,7 @@ function TopLeft(props: {
     has_universe_selector: boolean
     all_universes: string[]
 }): ReactNode {
-    if (mobileLayout()) {
+    if (useMobileLayout()) {
         return (
             <div className="left_panel_top">
                 <Nav hamburger_open={props.hamburger_open} set_hamburger_open={props.set_hamburger_open} />
@@ -114,13 +114,13 @@ function TopLeft(props: {
 }
 
 function HeaderImage(): ReactNode {
-    const path = mobileLayout() ? '/thumbnail.png' : '/banner.png'
+    const path = useMobileLayout() ? '/thumbnail.png' : '/banner.png'
     return (
         <a href="/index.html">
             <img
                 src={path}
                 style={{
-                    height: mobileLayout() ? HEADER_BAR_SIZE : HEADER_BAR_SIZE_DESKTOP,
+                    height: useMobileLayout() ? HEADER_BAR_SIZE : HEADER_BAR_SIZE_DESKTOP,
                 }}
                 alt="Urban Stats Logo"
             />

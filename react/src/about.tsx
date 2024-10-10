@@ -4,14 +4,16 @@ import ReactDOM from 'react-dom/client'
 import './style.css'
 import './common.css'
 import { PageTemplate } from './page_template/template'
-import { headerTextClass } from './utils/responsive'
+import { useHeaderTextClass } from './utils/responsive'
 
 function AboutPanel(): ReactNode {
+    const headerTextClass = useHeaderTextClass()
+
     return (
         <PageTemplate>
             {() => (
                 <div className="serif">
-                    <div className={headerTextClass()}>About</div>
+                    <div className={headerTextClass}>About</div>
 
                     <p>
                         Urban Stats is a database of various statistics, computed largely from Census Data for United States

@@ -9,7 +9,7 @@ import { PageTemplate } from '../page_template/template'
 import { longname_is_exclusively_american, useUniverse } from '../universe'
 import { lighten } from '../utils/color'
 import { Article } from '../utils/protos'
-import { comparisonHeadStyle, headerTextClass, mobileLayout, subHeaderTextClass } from '../utils/responsive'
+import { useComparisonHeadStyle, useHeaderTextClass, useMobileLayout, useSubHeaderTextClass } from '../utils/responsive'
 
 import { ArticleRow, load_article } from './load-article'
 import { MapGeneric, MapGenericProps, Polygons } from './map'
@@ -85,8 +85,10 @@ export function ComparisonPanel(props: { joined_string: string, universes: strin
         )
     }
 
+    const mobileLayout = useMobileLayout()
+
     const max_columns = (): number => {
-        return mobileLayout() ? 4 : 6
+        return mobileLayout ? 4 : 6
     }
 
     const width_columns = (): number => {
@@ -108,22 +110,27 @@ export function ComparisonPanel(props: { joined_string: string, universes: strin
         return contents
     }
 
+    const headerTextClass = useHeaderTextClass()
+    const subHeaderTextClass = useSubHeaderTextClass()
+    const comparisonRightStyle = useComparisonHeadStyle('right')
+    const searchComparisonStyle = useComparisonHeadStyle()
+
     return (
         <PageTemplate screencap_elements={screencap_elements} has_universe_selector={true} universes={props.universes}>
             { template_info => (
                 <div>
-                    <div className={headerTextClass()}>Comparison</div>
-                    <div className={subHeaderTextClass()}>{props.joined_string}</div>
+                    <div className={headerTextClass}>Comparison</div>
+                    <div className={subHeaderTextClass}>{props.joined_string}</div>
                     <div style={{ marginBlockEnd: '16px' }}></div>
 
                     <div style={{ display: 'flex' }}>
                         <div style={{ width: `${100 * left_margin_pct}%` }} />
                         <div style={{ width: `${50 * (1 - left_margin_pct)}%`, marginRight: '1em' }}>
-                            <div className="serif" style={comparisonHeadStyle('right')}>Add another region:</div>
+                            <div className="serif" style={comparisonRightStyle}>Add another region:</div>
                         </div>
                         <div style={{ width: `${50 * (1 - left_margin_pct)}%` }}>
                             <SearchBox
-                                style={{ ...comparisonHeadStyle(), width: '100%' }}
+                                style={{ ...searchComparisonStyle, width: '100%' }}
                                 placeholder="Name"
                                 on_change={(x) => { add_new(props.names, x) }}
                                 autoFocus={false}
@@ -373,6 +380,7 @@ function ManipulationButton({ color: buttonColor, on_click, text }: { color: str
 function HeadingDisplay({ longname, include_delete, on_click, on_change: on_search_change, screenshot_mode }: { longname: string, include_delete: boolean, on_click: () => void, on_change: (q: string) => void, screenshot_mode: boolean }): ReactNode {
     const [is_editing, set_is_editing] = React.useState(false)
     const curr_universe = useUniverse()
+    const comparisonHeadStyle = useComparisonHeadStyle()
 
     const manipulation_buttons = (
         <div style={{ height: manipulation_button_height }}>
@@ -395,12 +403,12 @@ function HeadingDisplay({ longname, include_delete, on_click, on_change: on_sear
         <div>
             {screenshot_mode ? undefined : manipulation_buttons}
             <div style={{ height: '5px' }} />
-            <a className="serif" href={article_link(curr_universe, longname)} style={{ textDecoration: 'none' }}><div style={comparisonHeadStyle()}>{longname}</div></a>
+            <a className="serif" href={article_link(curr_universe, longname)} style={{ textDecoration: 'none' }}><div style={useComparisonHeadStyle()}>{longname}</div></a>
             {is_editing
                 ? (
                         <SearchBox
                             autoFocus={true}
-                            style={{ ...comparisonHeadStyle(), width: '100%' }}
+                            style={{ ...comparisonHeadStyle, width: '100%' }}
                             placeholder="Replacement"
                             on_change={on_search_change}
                         />

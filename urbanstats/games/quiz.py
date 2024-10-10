@@ -60,6 +60,7 @@ difficulties = {
     "generation": 2,
     "housing": 1.5,
     "2010": 1.5,
+    "2000": 1.5,
     "health": 1.5,
     "climate": 1.5,
     "relationships": 0.5,
