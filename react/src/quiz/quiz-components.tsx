@@ -2,6 +2,7 @@ import React, { ReactNode } from 'react'
 
 import '../common.css'
 import '../components/quiz.css'
+import { useColors } from '../page_template/settings'
 import { useHeaderTextClass } from '../utils/responsive'
 
 import { nameOfQuizKind } from './quiz'
@@ -16,18 +17,19 @@ export function Header({ quiz }: { quiz: { kind: 'juxtastat' | 'retrostat', name
 }
 
 export function Footer(props: { length: number, history: History[string] }): ReactNode {
-    const choices: `quiz_${'green' | 'red' | 'blank'}`[] = props.history.correct_pattern.map(
-        correct => correct ? 'quiz_green' : 'quiz_red',
+    const colors = useColors()
+    const footerColors: string[] = props.history.correct_pattern.map(
+        correct => correct ? colors.hueColors.green : colors.hueColors.red,
     )
-    while (choices.length < props.length) {
-        choices.push('quiz_blank')
+    while (footerColors.length < props.length) {
+        footerColors.push(colors.unselectedButton)
     }
     return (
         <table className="quiz_footer">
             <tbody>
                 <tr>
-                    {choices.map((x, i) =>
-                        <td key={i} className={x}></td>,
+                    {footerColors.map((x, i) =>
+                        <td key={i} style={{ backgroundColor: x }}></td>,
                     )}
                 </tr>
             </tbody>
