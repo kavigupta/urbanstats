@@ -1,7 +1,6 @@
 import numpy as np
 import pandas as pd
-from urbanstats.census_2010.cdc import aggregated_cdc_table
-from urbanstats.data.accidents import accidents_by_region
+from urbanstats.data.accidents import accidents_by_region, accident_years
 from urbanstats.statistics.collections.census_2010 import (
     compute_population,
     population_by_year,
@@ -55,3 +54,15 @@ class NHTSAAccidentStatistics(USAStatistics):
 
     def mutate_statistic_table(self, statistics_table, shapefile_table):
         raise NotImplementedError
+
+    def extra_stats(self):
+        return {
+            "traffic_fatalities_last_decade": TimeSeriesSpec(
+                accident_years, "Traffic Fatalities", "traffic_fatalities_by_year"
+            ),
+            "traffic_fatalities_last_decade_per_capita": TimeSeriesSpec(
+                accident_years,
+                "Traffic Fatalities Per Capita",
+                "traffic_fatalities_per_capita_by_year",
+            ),
+        }
