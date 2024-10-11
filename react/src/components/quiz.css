@@ -66,20 +66,6 @@
   margin: 0 auto;
 }
 
-.quiz_next {
-  text-align: center;
-  font-size: 2em;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  flex-direction: row;
-  margin: 0 auto;
-  padding: 0.25em 0.25em;
-  border-radius: 0.25em;
-  border: none;
-  color: #fff;
-}
-
 .quiz_footer {
   table-layout: fixed;
   width: 40%;

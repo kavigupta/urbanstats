@@ -188,7 +188,25 @@ function Timer({ quiz }: { quiz: QuizDescriptor }): ReactNode {
 
     const w = quiz.kind === 'juxtastat' ? '5em' : '6.5em'
     return (
-        <div className="serif quiz_next" style={{ width: w, margin: 0, backgroundColor: colors.hueColors.blue }} id="quiz-timer">
+        <div
+            className="serif"
+            style={{
+                width: w,
+                margin: 0,
+                backgroundColor: colors.hueColors.blue,
+                textAlign: 'center',
+                fontSize: '2em',
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+                flexDirection: 'row',
+                padding: '0.25em 0.25em',
+                borderRadius: '0.25em',
+                border: 'none',
+                color: '#fff',
+            }}
+            id="quiz-timer"
+        >
             <span>{render_time_remaining(quiz)}</span>
         </div>
     )
