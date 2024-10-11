@@ -53,6 +53,7 @@ function QuizQuestion(props: QuizQuestionProps & {
     get_option: (letter: 'a' | 'b') => ReactNode
     get_demo: (letter: 'a' | 'b') => ReactNode
 }): ReactNode {
+    const colors = useColors()
     let button_a = 'quiz_clickable'
     let button_b = 'quiz_clickable'
     if (props.waiting) {
@@ -87,49 +88,87 @@ function QuizQuestion(props: QuizQuestionProps & {
     }
 
     return (
-        <div>
-            {props.no_header ? undefined : <Header quiz={props.quiz} />}
-            <div className={`centered_text ${quiztext_css}`}>
-                {question}
-            </div>
-            <div className="gap"></div>
-            <div style={row_style}>
-                <div style={{ width: '50%', padding: '0.5em' }}>
-                    <div role="button" id="quiz-answer-button-a" className={button_a} onClick={() => { props.on_select('A') }} style={button_style}>
-                        <span style={{ margin: 'auto' }}>
-                            <div className={`centered_text ${quiztext_css}`}>
-                                {props.get_option('a')}
-                            </div>
-                        </span>
+        <>
+            <div>
+                {props.no_header ? undefined : <Header quiz={props.quiz} />}
+                <div className={`centered_text ${quiztext_css}`}>
+                    {question}
+                </div>
+                <div className="gap"></div>
+                <div style={row_style}>
+                    <div style={{ width: '50%', padding: '0.5em' }}>
+                        <div role="button" id="quiz-answer-button-a" className={button_a} onClick={() => { props.on_select('A') }} style={button_style}>
+                            <span style={{ margin: 'auto' }}>
+                                <div className={`centered_text ${quiztext_css}`}>
+                                    {props.get_option('a')}
+                                </div>
+                            </span>
+                        </div>
+                    </div>
+                    <div style={{ width: '50%', padding: '0.5em' }}>
+                        <div role="button" id="quiz-answer-button-b" className={button_b} onClick={() => { props.on_select('B') }} style={button_style}>
+                            <span style={{ margin: 'auto' }}>
+                                <div className={`centered_text ${quiztext_css}`}>
+                                    {props.get_option('b')}
+                                </div>
+                            </span>
+                        </div>
                     </div>
                 </div>
-                <div style={{ width: '50%', padding: '0.5em' }}>
-                    <div role="button" id="quiz-answer-button-b" className={button_b} onClick={() => { props.on_select('B') }} style={button_style}>
-                        <span style={{ margin: 'auto' }}>
-                            <div className={`centered_text ${quiztext_css}`}>
-                                {props.get_option('b')}
-                            </div>
-                        </span>
+                <div style={row_style}>
+                    <div style={{ width: '50%', padding: '0.5em' }}>
+                        {props.get_demo('a')}
+                    </div>
+                    <div style={{ width: '50%', padding: '0.5em' }}>
+                        {props.get_demo('b')}
                     </div>
                 </div>
+                {props.no_footer
+                    ? undefined
+                    : (
+                            <>
+                                <Footer history={props.history} length={props.length} />
+                                <Help quiz_kind={props.quiz.kind} />
+                            </>
+                        )}
             </div>
-            <div style={row_style}>
-                <div style={{ width: '50%', padding: '0.5em' }}>
-                    {props.get_demo('a')}
-                </div>
-                <div style={{ width: '50%', padding: '0.5em' }}>
-                    {props.get_demo('b')}
-                </div>
-            </div>
-            {props.no_footer
-                ? undefined
-                : (
-                        <>
-                            <Footer history={props.history} length={props.length} />
-                            <Help quiz_kind={props.quiz.kind} />
-                        </>
-                    )}
-        </div>
+            <style>
+                {`
+                    .quiz_clickable {
+                        display: block;
+                        border-radius: 1em;
+                        background-color: ${colors.unselectedButton};
+                        margin: 0.25em;
+                        height: 100%;
+                    }
+
+                    @media (hover: hover) and (pointer: fine) {
+                        .quiz_clickable:hover {
+                            background-color: ${colors.selectedButton};
+                            color: ${colors.selectedButtonText};
+                        }
+                    }
+
+                    .quiz_correct {
+                        background-color: ${colors.hueColors.green};
+                    }
+
+                    .quiz_correct:hover {
+                        background-color: ${colors.hueColors.green};
+                        color: ${colors.textMain};
+                    }
+
+                    .quiz_incorrect {
+                        background-color: ${colors.hueColors.red};
+                    }
+
+                    .quiz_incorrect:hover {
+                        background-color: ${colors.hueColors.red};
+                        color: ${colors.textMain};
+                    }
+            `}
+            </style>
+        </>
     )
 }
 

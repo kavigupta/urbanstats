@@ -5,39 +5,6 @@
   --quiz-incorrect: #f96d6d;
 }
 
-.quiz_clickable {
-  display: block;
-  border-radius: 1em;
-  background-color: var(--quiz-plain-bg);
-  margin: 0.25em;
-  height: 100%;
-}
-
-@media (hover: hover) and (pointer: fine) {
-  .quiz_clickable:hover {
-    background-color: var(--quiz-selected-bg);
-    color: #fff;
-  }
-}
-
-.quiz_correct {
-  background-color: var(--quiz-correct);
-}
-
-.quiz_correct:hover {
-  background-color: var(--quiz-correct);
-  color: #000;
-}
-
-.quiz_incorrect {
-  background-color: var(--quiz-incorrect);
-}
-
-.quiz_incorrect:hover {
-  background-color: var(--quiz-incorrect);
-  color: #000;
-}
-
 .quiz_red {
   background-color: var(--quiz-incorrect);
 }
