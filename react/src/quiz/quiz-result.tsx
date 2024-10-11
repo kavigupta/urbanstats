@@ -124,13 +124,28 @@ interface ShareButtonProps {
 }
 
 function ShareButton({ button_ref, parameters, today_name, correct_pattern, total_correct, quiz_kind }: ShareButtonProps): ReactNode {
+    const colors = useColors()
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- We need to check the condition for browser compatibility.
     const can_share = navigator.canShare?.({ url: 'https://juxtastat.org', text: 'test' }) ?? false
     const is_share = isMobile && can_share && !isFirefox
 
     return (
         <button
-            className="serif quiz_copy_button"
+            className="serif"
+            style={{
+                textAlign: 'center',
+                fontSize: '2em',
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+                flexDirection: 'row',
+                margin: '0 auto',
+                padding: '0.25em 1em',
+                backgroundColor: colors.hueColors.green,
+                borderRadius: '0.25em',
+                border: 'none',
+                color: '#fff',
+            }}
             ref={button_ref}
             onClick={async () => {
                 const [text, url] = await summary(today_name, correct_pattern, total_correct, parameters, quiz_kind)
