@@ -286,27 +286,39 @@ interface GenericQuizResultRowProps extends QuizResultRowProps {
 }
 
 export function GenericQuizResultRow(props: GenericQuizResultRowProps): ReactNode {
+    const colors = useColors()
     const comparison = a_correct(props.question)
         ? (<span>&gt;</span>)
         : (<span>&lt;</span>)
-    let first = 'serif quiz_result_name_left'
-    let second = 'serif quiz_result_name_right'
+    let firstStyle: React.CSSProperties = {}
+    let secondStyle: React.CSSProperties = {}
 
     if (props.choice === 'A') {
-        first += ' quiz_selected'
+        firstStyle = { backgroundColor: colors.selectedButton, color: colors.selectedButtonText }
     }
     else {
-        second += ' quiz_selected'
+        secondStyle = { backgroundColor: colors.selectedButton, color: colors.selectedButtonText }
     }
     const result = props.correct ? '🟩' : '🟥'
 
     return (
         <div key={props.index}>
             {props.get_label()}
-            <table className="stats_table quiz_results_table">
+            <table
+                className="stats_table"
+                style={{
+                    width: '80%',
+                    marginLeft: '10%',
+                    marginRight: '10%',
+                    borderCollapse: 'separate',
+                    borderSpacing: '0.1em',
+                    fontSize: '1.25em',
+                    backgroundColor: colors.unselectedButton,
+                }}
+            >
                 <tbody>
                     <tr>
-                        <td className={first}>
+                        <td className="serif quiz_result_name_left" style={firstStyle}>
                             {props.get_option('a')}
                         </td>
                         <td style={{ fontWeight: 400 }} className="serif quiz_result_value_left">
@@ -318,7 +330,7 @@ export function GenericQuizResultRow(props: GenericQuizResultRowProps): ReactNod
                         <td style={{ fontWeight: 400 }} className="serif quiz_result_value_right">
                             {props.get_stat('b')}
                         </td>
-                        <td className={second}>
+                        <td className="serif quiz_result_name_right" style={secondStyle}>
                             {props.get_option('b')}
                         </td>
                         <td className="serif quiz_result_symbol">

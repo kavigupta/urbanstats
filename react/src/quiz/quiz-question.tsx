@@ -133,6 +133,7 @@ function QuizQuestion(props: QuizQuestionProps & {
                         )}
             </div>
             <style>
+                {/* This is necessary because of hover */}
                 {`
                     .quiz_clickable {
                         display: block;

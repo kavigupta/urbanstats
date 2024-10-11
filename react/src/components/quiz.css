@@ -18,11 +18,6 @@
 }
 
 
-.quiz_selected {
-  background-color: var(--quiz-selected-bg);
-  color: #fff;
-}
-
 .quiz_results_question {
   text-align: center;
   display: table;
@@ -30,15 +25,6 @@
   font-size: 1.25em;
 }
 
-.quiz_results_table {
-  width: 80%;
-  margin-left: 10%;
-  margin-right: 10%;
-  border-collapse: separate;
-  border-spacing: 0.1em;
-  font-size: 1.25em;
-  background-color: var(--quiz-plain-bg);
-}
 
 .quiz_result_name_left {
   width: 35%;
