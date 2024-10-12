@@ -40,6 +40,7 @@ class HistogramSpec(ExtraStatistic):
         from produce_html_page import statistic_internal_to_display_name
 
         return dict(
+            type="histogram",
             universe_total_idx=list(statistic_internal_to_display_name()).index(
                 self.universe_column
             )
