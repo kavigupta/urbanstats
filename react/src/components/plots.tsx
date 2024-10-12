@@ -28,14 +28,14 @@ export function WithPlot(props: { children: React.ReactNode, plot_props: PlotPro
 }
 
 function RenderedPlot({ plot_props, screenshot_mode }: { plot_props: PlotProps[], screenshot_mode: boolean }): ReactNode {
-    if (plot_props.some(p => p.extra_stat?.stat.histogram)) {
-        plot_props = plot_props.filter(p => p.extra_stat?.stat.histogram)
+    if (plot_props.some(p => p.extra_stat?.type === 'histogram')) {
+        plot_props = plot_props.filter(p => p.extra_stat?.type === 'histogram')
         return (
             <Histogram
                 histograms={plot_props.map(
                     props => ({
                         shortname: props.shortname!,
-                        histogram: props.extra_stat!.stat.histogram!,
+                        histogram: props.extra_stat!,
                         color: props.color,
                         universe_total: props.extra_stat!.universe_total,
                     }),
