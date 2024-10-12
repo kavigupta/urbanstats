@@ -1,11 +1,15 @@
 import { TableCheckboxSettings } from '../page_template/settings'
 import { universe_is_american } from '../universe'
-import { Article, IExtraStatistic } from '../utils/protos'
+import { Article, Histogram } from '../utils/protos'
 
-export interface ExtraStat {
-    stat: IExtraStatistic
+export interface HistogramExtraStat {
+    bin_min: number
+    bin_size: number
+    counts: number[]
     universe_total: number
 }
+
+type ExtraStat = HistogramExtraStat
 
 export interface ArticleRow {
     statval: number
@@ -95,9 +99,9 @@ export function load_article(universe: string, data: Article, settings: TableChe
             const extra_stat_idx = extra_stat_idx_to_col.indexOf(i)
             const [, universe_total_idx] = extra_stats[extra_stat_idx]
             extra_stat = {
-                stat: data.extraStats[extra_stat_idx],
+                ...data.extraStats[extra_stat_idx],
                 universe_total: data.rows.find((_, universe_row_index) => indices[universe_row_index] === universe_total_idx)!.statval!,
-            }
+            } as HistogramExtraStat
         }
         return {
             statval: row_original.statval!,
