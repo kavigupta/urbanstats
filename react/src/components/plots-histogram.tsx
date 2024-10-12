@@ -1,5 +1,5 @@
 import * as Plot from '@observablehq/plot'
-import React, { ReactNode, useEffect, useRef } from 'react'
+import React, { ReactElement, ReactNode, useEffect, useRef } from 'react'
 
 // imort Observable plot
 import { HistogramType, useColors, useSetting } from '../page_template/settings'
@@ -18,14 +18,18 @@ interface HistogramProps {
     universe_total: number
 }
 
+// interface DetailedPlotSpec {
+//     marks: Plot.Markish[]
+//     xlabel: string
+//     ylabel: string
+//     ydomain?: [number, number]
+//     legend?: { legend: boolean, range: string[], domain: string[] }
+// }
+
 export function Histogram(props: { histograms: HistogramProps[], screenshot_mode: boolean }): ReactNode {
     const [histogram_type] = useSetting('histogram_type')
     const [use_imperial] = useSetting('use_imperial')
     const [relative] = useSetting('histogram_relative')
-    // series for each histogram. Each series is a list of [x, y] pairs
-    // x start at histogram.binMin and goes up by histogram.binSize
-    // y is histogram.counts
-    // assert all the histograms have the same binMin and binSize
     const binMin = props.histograms[0].histogram.binMin!
     const binSize = props.histograms[0].histogram.binSize!
     for (const histogram of props.histograms) {
@@ -33,8 +37,9 @@ export function Histogram(props: { histograms: HistogramProps[], screenshot_mode
             throw new Error('histograms have different binMin or binSize')
         }
     }
-    // get the length of the x values
-    // get the x values
+    const settings_element = (plot_ref: React.RefObject<HTMLDivElement>): ReactElement => (
+        <HistogramSettings plot_ref={plot_ref} shortnames={props.histograms.map(h => h.shortname)} />
+    )
 
     const plot_ref = useRef<HTMLDivElement>(null)
     const title = props.histograms.length === 1 ? props.histograms[0].shortname : ''
@@ -51,18 +56,24 @@ export function Histogram(props: { histograms: HistogramProps[], screenshot_mode
             marks.push(
                 ...x_axis_marks,
                 ...y_axis(max_value),
-                Plot.text([title], { frameAnchor: 'top', dy: -40 }),
             )
+            marks.push(Plot.text([title], { frameAnchor: 'top', dy: -40 }))
+            const xlabel = `Density (/${use_imperial ? 'mi' : 'km'}²)`
+            const ylabel = relative ? '% of total' : 'Population'
+            const ydomain = [max_value * (-Y_PAD), max_value * (1 + Y_PAD)]
+            const legend = props.histograms.length === 1
+                ? undefined
+                : { legend: true, range: colors, domain: shortnames }
             // y grid marks
             // marks.push(Plot.gridY([0, 25, 50, 75, 100]));
             const plot_config = {
                 marks,
                 x: {
-                    label: `Density (/${use_imperial ? 'mi' : 'km'}²)`,
+                    label: xlabel,
                 },
                 y: {
-                    label: relative ? '% of total' : 'Population',
-                    domain: [max_value * (-Y_PAD), max_value * (1 + Y_PAD)],
+                    label: ylabel,
+                    domain: ydomain,
                 },
                 grid: false,
                 width: 1000,
@@ -74,9 +85,7 @@ export function Histogram(props: { histograms: HistogramProps[], screenshot_mode
                 marginTop: 80,
                 marginBottom: 40,
                 marginLeft: 80,
-                color: props.histograms.length === 1
-                    ? undefined
-                    : { legend: true, range: colors, domain: shortnames },
+                color: legend,
             }
             const plot = Plot.plot(plot_config)
             plot_ref.current.innerHTML = ''
@@ -101,7 +110,7 @@ export function Histogram(props: { histograms: HistogramProps[], screenshot_mode
                 ? undefined
                 : (
                         <div style={{ zIndex: 1000, position: 'absolute', top: 0, right: 0 }}>
-                            <HistogramSettings plot_ref={plot_ref} shortnames={props.histograms.map(h => h.shortname)} />
+                            {settings_element(plot_ref)}
                         </div>
                     )}
         </div>
