@@ -2,6 +2,13 @@ import { TableCheckboxSettings } from '../page_template/settings'
 import { universe_is_american } from '../universe'
 import { Article } from '../utils/protos'
 
+interface HistogramExtraStatSpec {
+    type: 'histogram'
+    universe_total_idx: number
+}
+
+type ExtraStatSpec = HistogramExtraStatSpec
+
 export interface HistogramExtraStat {
     type: 'histogram'
     binMin: number
@@ -87,7 +94,7 @@ export function load_article(universe: string, data: Article, settings: TableChe
     const stats = require('../data/statistic_list.json') as string[]
     const explanation_page = require('../data/explanation_page.json') as string[]
 
-    const extra_stats = require('../data/extra_stats.json') as [number, number][]
+    const extra_stats = require('../data/extra_stats.json') as [number, ExtraStatSpec][]
     const extra_stat_idx_to_col = extra_stats.map(xy => xy[0])
 
     const indices = compute_indices(data.longname, article_type)
@@ -98,15 +105,22 @@ export function load_article(universe: string, data: Article, settings: TableChe
         let extra_stat: ExtraStat | undefined = undefined
         if (extra_stat_idx_to_col.includes(i)) {
             const extra_stat_idx = extra_stat_idx_to_col.indexOf(i)
-            const [, universe_total_idx] = extra_stats[extra_stat_idx]
-            const histogram = data.extraStats[extra_stat_idx].histogram!
-            extra_stat = {
-                type: 'histogram',
-                binMin: histogram.binMin,
-                binSize: histogram.binSize,
-                counts: histogram.counts,
-                universe_total: data.rows.find((_, universe_row_index) => indices[universe_row_index] === universe_total_idx)!.statval!,
-            } as HistogramExtraStat
+            const [, spec] = extra_stats[extra_stat_idx]
+            // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- this is for future proofing
+            if (spec.type === 'histogram') {
+                const universe_total_idx = spec.universe_total_idx
+                const histogram = data.extraStats[extra_stat_idx].histogram!
+                extra_stat = {
+                    type: 'histogram',
+                    binMin: histogram.binMin,
+                    binSize: histogram.binSize,
+                    counts: histogram.counts,
+                    universe_total: data.rows.find((_, universe_row_index) => indices[universe_row_index] === universe_total_idx)!.statval!,
+                } as HistogramExtraStat
+            }
+            else {
+                throw new Error('Unknown extra stat type')
+            }
         }
         return {
             statval: row_original.statval!,

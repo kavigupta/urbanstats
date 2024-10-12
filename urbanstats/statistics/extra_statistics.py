@@ -9,6 +9,10 @@ class ExtraStatistic(ABC):
     def create(self, data_row):
         pass
 
+    @abstractmethod
+    def extra_stat_spec(self):
+        pass
+
 
 @dataclass
 class HistogramSpec(ExtraStatistic):
@@ -31,3 +35,12 @@ class HistogramSpec(ExtraStatistic):
         histogram = histogram.round().astype(int)
         result.histogram.counts.extend(histogram)
         return result
+
+    def extra_stat_spec(self):
+        from produce_html_page import statistic_internal_to_display_name
+
+        return dict(
+            universe_total_idx=list(statistic_internal_to_display_name()).index(
+                self.universe_column
+            )
+        )

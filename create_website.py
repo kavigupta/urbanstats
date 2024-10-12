@@ -336,7 +336,7 @@ def main(
     with open("react/src/data/extra_stats.json", "w") as f:
         json.dump(
             [
-                (k, list(statistic_internal_to_display_name()).index(v.universe_column))
+                (k, v.extra_stat_spec())
                 for k, v in sorted(extra_stats().items())
             ],
             f,
