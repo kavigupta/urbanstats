@@ -99,7 +99,7 @@ export function load_article(universe: string, data: Article, settings: TableChe
         if (extra_stat_idx_to_col.includes(i)) {
             const extra_stat_idx = extra_stat_idx_to_col.indexOf(i)
             const [, universe_total_idx] = extra_stats[extra_stat_idx]
-            const histogram = data.extraStats[extra_stat_idx].histogram!;
+            const histogram = data.extraStats[extra_stat_idx].histogram!
             extra_stat = {
                 type: 'histogram',
                 binMin: histogram.binMin,
