@@ -1,5 +1,6 @@
 import React, { ReactNode } from 'react'
 
+import { useColors } from '../page_template/settings'
 import { interpolate_color } from '../utils/color'
 
 import { ColorMap, EncodedColorMap, RAMPS, RampDescriptor, parse_custom_colormap } from './ramps'
@@ -8,6 +9,8 @@ import { setting_sub_name_style } from './style'
 export function RampColormapSelector(props: { ramp: RampDescriptor, set_ramp: (newValue: RampDescriptor) => void, name?: string }): ReactNode {
     // dropdown selector for either a custom ramp or a ramp from a list of presets
     // if custom ramp, then add a text box for the ramp
+
+    const colors = useColors()
 
     const colormap = props.ramp.colormap
 
@@ -61,7 +64,7 @@ export function RampColormapSelector(props: { ramp: RampDescriptor, set_ramp: (n
             </div>
             <select
                 onChange={(e) => { set_selected(e.target.value) }}
-                style={{ width: '100%' }}
+                style={{ width: '100%', backgroundColor: colors.background }}
                 value={colormapSelection}
             >
                 {
@@ -87,6 +90,7 @@ export function RampColormapSelector(props: { ramp: RampDescriptor, set_ramp: (n
 }
 
 function SinglePointSelector({ value, color, cell, set_cell, remove_cell }: { value: number, color: string, cell: [number, string], set_cell: (newValue: [number, string]) => void, remove_cell: () => void }): ReactNode {
+    const colors = useColors()
     return (
         <div
             style={{
@@ -107,11 +111,12 @@ function SinglePointSelector({ value, color, cell, set_cell, remove_cell }: { va
                         e.target.value,
                     ])
                 }}
+                style={{ backgroundColor: colors.background }}
             />
             <input
                 type="number"
                 value={value}
-                style={{ width: '4em' }}
+                style={{ width: '4em', backgroundColor: colors.background }}
                 onChange={(e) => {
                     set_cell([
                         parseFloat(e.target.value),
@@ -133,6 +138,7 @@ function CustomColormapSelector(props: { colormap: string, set_colormap: (newVal
     // each color tab is a vertical flexbox containing a color picker and a text box
     // at the end there is a plus button to add a new color tab
     // each color tab has a minus button to remove itself
+    const colors = useColors()
     let colormap_text = props.colormap
     const parsed_colormap = parse_custom_colormap(colormap_text)
     let colormap: ColorMap
@@ -218,7 +224,7 @@ function CustomColormapSelector(props: { colormap: string, set_colormap: (newVal
     const input_textbox = (
         <input
             type="text"
-            style={{ width: '100%' }}
+            style={{ width: '100%', backgroundColor: colors.background }}
             placeholder='Custom map, e.g., [[0, "#ff0000"], [1, "#0000ff"]]'
             value={colormap_text}
             onChange={(e) => { props.set_colormap(e.target.value) }}

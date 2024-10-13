@@ -80,10 +80,6 @@
     font-size: 1em;
 }
 
-.highlighted_header {
-    background-color: #d4b5e2;
-}
-
 @keyframes spin {
     0% {
         transform: rotate(0deg);

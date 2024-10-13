@@ -8,7 +8,7 @@ import '@fontsource/jost/700.css'
 import '@fontsource/jost/800.css'
 import '@fontsource/jost/900.css'
 
-import React, { Fragment, ReactNode, useState } from 'react'
+import React, { Fragment, ReactNode, useEffect, useState } from 'react'
 
 import { Header } from '../components/header'
 import { ScreencapElements, create_screenshot } from '../components/screenshot'
@@ -16,6 +16,8 @@ import { Sidebar } from '../components/sidebar'
 import '../common.css'
 import '../components/article.css'
 import { useMobileLayout } from '../utils/responsive'
+
+import { useColors } from './settings'
 
 export function PageTemplate({
     screencap_elements = undefined,
@@ -30,6 +32,11 @@ export function PageTemplate({
 }): ReactNode {
     const [hamburger_open, set_hamburger_open] = useState(false)
     const [screenshot_mode, set_screenshot_mode] = useState(false)
+    const colors = useColors()
+
+    useEffect(() => {
+        document.body.style.backgroundColor = colors.background
+    }, [colors.background])
 
     const has_screenshot_button = screencap_elements !== undefined
 
@@ -38,7 +45,7 @@ export function PageTemplate({
             return
         }
         try {
-            await create_screenshot(screencap_elements(), has_universe_selector ? curr_universe : undefined)
+            await create_screenshot(screencap_elements(), has_universe_selector ? curr_universe : undefined, colors)
         }
         catch (e) {
             console.error(e)
@@ -56,7 +63,7 @@ export function PageTemplate({
     return (
         <Fragment>
             <meta name="viewport" content="width=device-width, initial-scale=0.75, shrink-to-fit=no, maximum-scale=0.75" />
-            <div className={useMobileLayout() ? 'main_panel_mobile' : 'main_panel'}>
+            <div className={useMobileLayout() ? 'main_panel_mobile' : 'main_panel'} style={{ backgroundColor: colors.background }}>
                 <Header
                     hamburger_open={hamburger_open}
                     set_hamburger_open={set_hamburger_open}

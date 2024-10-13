@@ -3,16 +3,7 @@
 }
 
 body {
-    background-color: #fff8f0;
     font-family: 'Jost', 'Arial', sans-serif;
-}
-
-input {
-    background-color: #fff8f0;
-}
-
-select {
-    background-color: #fff8f0;
 }
 
 .fill {
@@ -74,31 +65,10 @@ select {
     padding: 0;
 }
 
-.ordinal {
-    font-size: 14px;
-    font-weight: 400;
-    color: #444;
-    margin: 0;
-}
-
 .tableheader {
     border-top: 1pt solid black;
     border-bottom: 1pt solid black;
     font-weight: 500;
-}
-
-.button {
-    font-family: 'Jost', 'Arial', sans-serif;
-    font-size: 8pt;
-    font-weight: 500;
-    text-decoration: none;
-    color: #222;
-    padding: 2px 6px 2px 6px;
-    border-radius: 5px;
-    border-top: 1px solid #CCCCCC;
-    border-right: 1px solid #333333;
-    border-bottom: 1px solid #333333;
-    border-left: 1px solid #CCCCCC;
 }
 
 .button_related {

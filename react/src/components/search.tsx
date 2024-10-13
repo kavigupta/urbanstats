@@ -1,7 +1,7 @@
 import React, { CSSProperties, ReactNode } from 'react'
 
 import { loadProtobuf } from '../load_json'
-import { useSetting } from '../page_template/settings'
+import { useColors, useSetting } from '../page_template/settings'
 import { is_historical_cd } from '../utils/is_historical'
 import '../common.css'
 import { SearchIndex } from '../utils/protos'
@@ -19,6 +19,7 @@ export const SearchBox = (props: {
     const [indexCacheUninitialized, setIndexCacheUninitialized] = React.useState(true)
     const [firstCharacter, setFirstCharacter] = React.useState<string | undefined>(undefined)
     const [focused, setFocused] = React.useState(0)
+    const colors = useColors()
 
     const form = React.useRef<HTMLFormElement>(null)
     const textbox = React.useRef<HTMLInputElement>(null)
@@ -137,7 +138,7 @@ export const SearchBox = (props: {
                 id="searchbox"
                 type="text"
                 className="serif"
-                style={{ backgroundColor: '#fff8f0', borderWidth: '0.1em', ...props.style }}
+                style={{ backgroundColor: colors.background, borderWidth: '0.1em', ...props.style }}
                 placeholder={props.placeholder}
                 onKeyUp={onTextBoxKeyUp}
             />

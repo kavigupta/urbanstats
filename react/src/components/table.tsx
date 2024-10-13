@@ -4,7 +4,7 @@ import ContentEditable, { ContentEditableEvent } from 'react-contenteditable'
 import { load_ordering } from '../load_json'
 import { article_link, statistic_link } from '../navigation/links'
 import './table.css'
-import { row_expanded_key, useSetting } from '../page_template/settings'
+import { row_expanded_key, useColors, useSetting } from '../page_template/settings'
 import { useUniverse } from '../universe'
 import { is_historical_cd } from '../utils/is_historical'
 import { display_type } from '../utils/text'
@@ -52,6 +52,13 @@ export function StatisticRowRawCellContents(props: StatisticRowRawProps & {
     screenshot_mode: boolean
 }): React.JSX.Element[] {
     const curr_universe = useUniverse()
+    const colors = useColors()
+    const ordinal_style: React.CSSProperties = {
+        fontSize: '14px',
+        fontWeight: 400,
+        color: colors.ordinalTextColor,
+        margin: 0,
+    }
     const alignStyle: React.CSSProperties = { textAlign: props.is_header ? 'center' : 'right' }
     let value_columns: [number, string, React.ReactNode][] = [
         [15,
@@ -123,7 +130,7 @@ export function StatisticRowRawCellContents(props: StatisticRowRawProps & {
         [
             props.simple ? 7 : 17,
             'statistic_percentile',
-            <span className="serif ordinal" key="ordinal">
+            <span className="serif" key="ordinal" style={ordinal_style}>
                 {
                     props.is_header
                         ? (props.simple ? right_align('%ile') : 'Percentile')
@@ -141,7 +148,7 @@ export function StatisticRowRawCellContents(props: StatisticRowRawProps & {
         [
             props.simple ? 8 : 25,
             'statistic_ordinal',
-            <span className="serif ordinal" key="statistic_ordinal">
+            <span className="serif" key="statistic_ordinal" style={ordinal_style}>
                 {
                     props.is_header
                         ? (props.simple ? right_align('Ord') : 'Ordinal')
@@ -161,9 +168,9 @@ export function StatisticRowRawCellContents(props: StatisticRowRawProps & {
         [8,
             'pointer_in_class',
             props.is_header
-                ? <span className="serif ordinal">Within Type</span>
+                ? <span className="serif" style={ordinal_style}>Within Type</span>
                 : (
-                        <span className="serif ordinal" style={{ display: 'flex' }}>
+                        <span className="serif" style={{ display: 'flex', ...ordinal_style }}>
                             <PointerButtonsIndex
                                 ordinal={props.ordinal}
                                 statpath={props.statpath}
@@ -176,9 +183,9 @@ export function StatisticRowRawCellContents(props: StatisticRowRawProps & {
         [8,
             'pointer_overall',
             props.is_header
-                ? <span className="serif ordinal">Overall</span>
+                ? <span className="serif" style={ordinal_style}>Overall</span>
                 : (
-                        <span className="serif ordinal" style={{ display: 'flex' }}>
+                        <span className="serif" style={{ display: 'flex', ...ordinal_style }}>
                             <PointerButtonsIndex
                                 ordinal={props.overallOrdinal}
                                 statpath={props.statpath}
@@ -638,6 +645,7 @@ function PointerButtonsIndex(props: { ordinal: number, statpath: string, type: s
 
 function PointerButtonIndex(props: { text: string, get_data: () => Promise<string[]>, original_pos: number, direction: number, total: number, show_historical_cds: boolean }): ReactNode {
     const curr_universe = useUniverse()
+    const colors = useColors()
     const out_of_bounds = (pos: number): boolean => pos < 0 || pos >= props.total
     const onClick = async (pos: number): Promise<void> => {
         {
@@ -653,13 +661,28 @@ function PointerButtonIndex(props: { text: string, get_data: () => Promise<strin
             }
         }
     }
+
+    const buttonStyle: React.CSSProperties = {
+        fontFamily: 'Jost, Arial, sans-serif',
+        fontSize: '8pt',
+        fontWeight: 500,
+        textDecoration: 'none',
+        color: colors.textPointer,
+        padding: '2px 6px 2px 6px',
+        borderRadius: '5px',
+        borderTop: `1px solid ${colors.borderNonShadow}`,
+        borderRight: `1px solid ${colors.borderShadow}`,
+        borderBottom: `1px solid ${colors.borderShadow}`,
+        borderLeft: `1px solid ${colors.borderNonShadow}`,
+    }
+
     const pos = props.original_pos - 1 + +props.direction
     if (out_of_bounds(pos) || props.original_pos > props.total) {
-        return <span className="button">&nbsp;&nbsp;</span>
+        return <span style={buttonStyle}>&nbsp;&nbsp;</span>
     }
     else {
         return (
-            <a href="#" className="button" onClick={() => onClick(pos)}>{props.text}</a>
+            <a href="#" style={buttonStyle} onClick={() => onClick(pos)}>{props.text}</a>
         )
     }
 }

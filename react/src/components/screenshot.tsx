@@ -3,6 +3,7 @@ import { saveAs } from 'file-saver'
 import React, { ReactNode } from 'react'
 
 import { universe_path } from '../navigation/links'
+import { Colors } from '../page_template/settings'
 
 export function ScreenshotButton(props: { screenshot_mode: boolean, onClick: () => void }): ReactNode {
     const screencap_button = (
@@ -67,14 +68,14 @@ export interface ScreencapElements {
     height_multiplier?: number
 }
 
-export async function create_screenshot(config: ScreencapElements, universe: string | undefined): Promise<void> {
+export async function create_screenshot(config: ScreencapElements, universe: string | undefined, colors: Colors): Promise<void> {
     const overall_width = config.overall_width
     const height_multiplier = config.height_multiplier ?? 1
 
     async function screencap_element(ref: HTMLElement): Promise<[string, number]> {
         const scale_factor = overall_width / ref.offsetWidth
         const link = await domtoimage.toPng(ref, {
-            bgcolor: '#fff8f0',
+            bgcolor: colors.background,
             height: ref.offsetHeight * scale_factor * height_multiplier,
             width: ref.offsetWidth * scale_factor,
             style: {
@@ -123,7 +124,7 @@ export async function create_screenshot(config: ScreencapElements, universe: str
         img.src = png_link
         imgs.push(img)
     }
-    ctx.fillStyle = '#fff8f0'
+    ctx.fillStyle = colors.background
     ctx.fillRect(0, 0, canvas.width, canvas.height)
 
     for (const img of imgs) {
