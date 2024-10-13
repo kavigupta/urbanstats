@@ -35,12 +35,13 @@ export type StatisticRowRawProps = {
     )
 
 export function StatisticRowRaw(props: StatisticRowRawProps & { index: number, longname?: string, shortname?: string, screenshot_mode: boolean }): ReactNode {
+    const colors = useColors()
     const [expanded] = useSetting(row_expanded_key(props.is_header ? 'header' : props.statname))
 
     const cell_contents = StatisticRowRawCellContents({ ...props, total_width: 100, screenshot_mode: props.screenshot_mode })
 
     return (
-        <WithPlot plot_props={[{ ...props, color: '#5a7dc3', shortname: props.shortname }]} expanded={expanded} screenshot_mode={props.screenshot_mode}>
+        <WithPlot plot_props={[{ ...props, color: colors.hueColors.blue, shortname: props.shortname }]} expanded={expanded} screenshot_mode={props.screenshot_mode}>
             <StatisticRow is_header={props.is_header} index={props.index} contents={cell_contents} />
         </WithPlot>
     )
@@ -52,6 +53,13 @@ export function StatisticRowRawCellContents(props: StatisticRowRawProps & {
     screenshot_mode: boolean
 }): React.JSX.Element[] {
     const curr_universe = useUniverse()
+    const colors = useColors()
+    const ordinal_style: React.CSSProperties = {
+        fontSize: '14px',
+        fontWeight: 400,
+        color: colors.ordinalTextColor,
+        margin: 0,
+    }
     const alignStyle: React.CSSProperties = { textAlign: props.is_header ? 'center' : 'right' }
     let value_columns: [number, string, React.ReactNode][] = [
         [15,
@@ -123,7 +131,7 @@ export function StatisticRowRawCellContents(props: StatisticRowRawProps & {
         [
             props.simple ? 7 : 17,
             'statistic_percentile',
-            <span className="serif ordinal" key="ordinal">
+            <span className="serif" key="ordinal" style={ordinal_style}>
                 {
                     props.is_header
                         ? (props.simple ? right_align('%ile') : 'Percentile')
@@ -141,7 +149,7 @@ export function StatisticRowRawCellContents(props: StatisticRowRawProps & {
         [
             props.simple ? 8 : 25,
             'statistic_ordinal',
-            <span className="serif ordinal" key="statistic_ordinal">
+            <span className="serif" key="statistic_ordinal" style={ordinal_style}>
                 {
                     props.is_header
                         ? (props.simple ? right_align('Ord') : 'Ordinal')
@@ -161,9 +169,9 @@ export function StatisticRowRawCellContents(props: StatisticRowRawProps & {
         [8,
             'pointer_in_class',
             props.is_header
-                ? <span className="serif ordinal">Within Type</span>
+                ? <span className="serif" style={ordinal_style}>Within Type</span>
                 : (
-                        <span className="serif ordinal" style={{ display: 'flex' }}>
+                        <span className="serif" style={{ display: 'flex', ...ordinal_style }}>
                             <PointerButtonsIndex
                                 ordinal={props.ordinal}
                                 statpath={props.statpath}
@@ -176,9 +184,9 @@ export function StatisticRowRawCellContents(props: StatisticRowRawProps & {
         [8,
             'pointer_overall',
             props.is_header
-                ? <span className="serif ordinal">Overall</span>
+                ? <span className="serif" style={ordinal_style}>Overall</span>
                 : (
-                        <span className="serif ordinal" style={{ display: 'flex' }}>
+                        <span className="serif" style={{ display: 'flex', ...ordinal_style }}>
                             <PointerButtonsIndex
                                 ordinal={props.overallOrdinal}
                                 statpath={props.statpath}
@@ -471,6 +479,7 @@ export function Statistic(props: { style?: React.CSSProperties, statname: string
 }
 
 function ElectionResult(props: { value: number }): ReactNode {
+    const colors = useColors()
     // check if value is NaN
     if (props.value !== props.value) {
         return <span>N/A</span>
@@ -479,8 +488,9 @@ function ElectionResult(props: { value: number }): ReactNode {
     const places = value > 10 ? 1 : value > 1 ? 2 : value > 0.1 ? 3 : 4
     const text = value.toFixed(places)
     const party = props.value > 0 ? 'D' : 'R'
+    const party_color = props.value > 0 ? colors.hueColors.blue : colors.hueColors.red
     return (
-        <span className={`party_result_${party}`}>
+        <span style={{ color: party_color }}>
             {party}
             +
             {text}
