@@ -38,24 +38,6 @@
   color: #000;
 }
 
-.quiz_red {
-  background-color: var(--quiz-incorrect);
-}
-
-.quiz_green {
-  background-color: var(--quiz-correct);
-}
-
-.quiz_blank {
-  background-color: var(--quiz-plain-bg);
-}
-
-
-.quiz_selected {
-  background-color: var(--quiz-selected-bg);
-  color: #fff;
-}
-
 .quiz_results_question {
   text-align: center;
   display: table;
