@@ -36,7 +36,11 @@ export function PageTemplate({
 
     useEffect(() => {
         document.body.style.backgroundColor = colors.background
-    }, [colors.background])
+        document.documentElement.style.setProperty('--quiz-plain-bg', colors.unselectedButton)
+        document.documentElement.style.setProperty('--quiz-selected-bg', colors.selectedButton)
+        document.documentElement.style.setProperty('--quiz-correct', colors.hueColors.green)
+        document.documentElement.style.setProperty('--quiz-incorrect', colors.hueColors.red)
+    }, [colors.background, colors.unselectedButton, colors.selectedButton, colors.hueColors])
 
     const has_screenshot_button = screencap_elements !== undefined
 

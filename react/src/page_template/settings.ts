@@ -55,6 +55,9 @@ export interface Colors {
     borderShadow: string
     borderNonShadow: string
     ordinalTextColor: string
+    unselectedButton: string
+    selectedButton: string
+    selectedButtonText: string
     hueColors: HueColors
 }
 
@@ -81,6 +84,9 @@ export const colorThemes: Record<Theme, Colors> = {
         borderShadow: '#333333',
         borderNonShadow: '#cccccc',
         ordinalTextColor: '#444444',
+        unselectedButton: '#e6e9ef',
+        selectedButton: '#4e525a',
+        selectedButtonText: '#ffffff',
         hueColors: defaultHueColors,
     },
     'Dark Mode': {
@@ -91,6 +97,9 @@ export const colorThemes: Record<Theme, Colors> = {
         borderShadow: '#cccccc',
         borderNonShadow: '#333333',
         ordinalTextColor: '#cccccc',
+        unselectedButton: '#333333',
+        selectedButton: '#cccccc',
+        selectedButtonText: '#000000',
         hueColors: defaultHueColors,
     },
 }
