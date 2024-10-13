@@ -30,7 +30,7 @@ export class ProxyPersistent extends RequestHook {
     }
 
     // eslint-disable-next-line @typescript-eslint/no-empty-function -- TestCafe complains if we don't have this
-    override onResponse(): void {}
+    override onResponse(): void { }
 }
 
 async function run_query(query: string): Promise<string> {
@@ -318,11 +318,12 @@ test('quiz-retrostat-retrostat-reporting', async (t) => {
     await t.expect(await retrostat_table()).eql('7|30|0\n7|31|15\n7|32|7\n7|33|23\n7|38|20\n')
 })
 
-urbanstatsFixture('quiz result test', `${TARGET}/quiz.html?date=100`, async (t) => {
-    await t.eval(() => {
-        localStorage.setItem('quiz_history', JSON.stringify(example_quiz_history(2, 100)))
-    }, { dependencies: { example_quiz_history } })
-})
+quiz_fixture(
+    'quiz result test',
+    `${TARGET}/quiz.html?date=100`,
+    { quiz_history: JSON.stringify(example_quiz_history(2, 100)) },
+    '',
+)
 
 async function check_text(t: TestController, words: string, emoji: string): Promise<void> {
     const text = await Selector('#quiz-result-summary-words').innerText
@@ -338,9 +339,9 @@ test('quiz-results-test', async (t) => {
     await check_text(t, 'Excellent! 😊 4/5', '🟩🟩🟩🟩🟥')
 })
 
-urbanstatsFixture('several quiz results', `${TARGET}/quiz.html?date=90`, async (t) => {
-    await t.eval(() => {
-        localStorage.setItem('quiz_history', JSON.stringify({
+quiz_fixture('several quiz results', `${TARGET}/quiz.html?date=90`,
+    {
+        quiz_history: JSON.stringify({
             90: {
                 choices: ['A', 'A', 'A', 'A', 'A'],
                 correct_pattern: [true, true, true, true, false],
@@ -365,9 +366,10 @@ urbanstatsFixture('several quiz results', `${TARGET}/quiz.html?date=90`, async (
                 choices: ['A', 'A', 'A', 'A', 'A'],
                 correct_pattern: [true, true, true, true, false],
             },
-        }))
-    }, { dependencies: { example_quiz_history } })
-})
+        }),
+    },
+    '',
+)
 
 test('several-quiz-results-test', async (t) => {
     await t.eval(() => { location.reload() })
