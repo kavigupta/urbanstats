@@ -164,7 +164,7 @@ export function CheckboxSettingCustom<K extends string>(props: { name: string, s
                 type="checkbox"
                 checked={props.settings[props.setting_key] || false}
                 onChange={(e) => { props.set_setting(props.setting_key, e.target.checked) }}
-                style={{ accentColor: '#5a7dc3', backgroundColor: colors.background }}
+                style={{ accentColor: colors.hueColors.blue, backgroundColor: colors.background }}
             />
             <label htmlFor={inputId}>{props.name}</label>
         </div>
