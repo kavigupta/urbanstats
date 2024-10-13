@@ -1,11 +1,12 @@
 import * as Plot from '@observablehq/plot'
-import React, { ReactElement, ReactNode, useEffect, useRef } from 'react'
+import React, { ReactElement, ReactNode, useMemo } from 'react'
 
 // imort Observable plot
 import { HistogramType, useColors, useSetting } from '../page_template/settings'
 import { useUniverse } from '../universe'
 import { IHistogram } from '../utils/protos'
 
+import { PlotComponent } from './plots-general'
 import { create_screenshot } from './screenshot'
 import { CheckboxSetting } from './sidebar'
 
@@ -17,14 +18,6 @@ interface HistogramProps {
     color: string
     universe_total: number
 }
-
-// interface DetailedPlotSpec {
-//     marks: Plot.Markish[]
-//     xlabel: string
-//     ylabel: string
-//     ydomain?: [number, number]
-//     legend?: { legend: boolean, range: string[], domain: string[] }
-// }
 
 export function Histogram(props: { histograms: HistogramProps[], screenshot_mode: boolean }): ReactNode {
     const [histogram_type] = useSetting('histogram_type')
@@ -41,10 +34,9 @@ export function Histogram(props: { histograms: HistogramProps[], screenshot_mode
         <HistogramSettings plot_ref={plot_ref} shortnames={props.histograms.map(h => h.shortname)} />
     )
 
-    const plot_ref = useRef<HTMLDivElement>(null)
-    const title = props.histograms.length === 1 ? props.histograms[0].shortname : ''
-    useEffect(() => {
-        if (plot_ref.current) {
+    const plot_spec = useMemo(
+        () => {
+            const title = props.histograms.length === 1 ? props.histograms[0].shortname : ''
             const colors = props.histograms.map(h => h.color)
             const shortnames = props.histograms.map(h => h.shortname)
             const render_y = relative ? (y: number) => `${y.toFixed(2)}%` : (y: number) => render_number_highly_rounded(y, 2)
@@ -60,60 +52,21 @@ export function Histogram(props: { histograms: HistogramProps[], screenshot_mode
             marks.push(Plot.text([title], { frameAnchor: 'top', dy: -40 }))
             const xlabel = `Density (/${use_imperial ? 'mi' : 'km'}²)`
             const ylabel = relative ? '% of total' : 'Population'
-            const ydomain = [max_value * (-Y_PAD), max_value * (1 + Y_PAD)]
+            const ydomain: [number, number] = [max_value * (-Y_PAD), max_value * (1 + Y_PAD)]
             const legend = props.histograms.length === 1
                 ? undefined
                 : { legend: true, range: colors, domain: shortnames }
-            // y grid marks
-            // marks.push(Plot.gridY([0, 25, 50, 75, 100]));
-            const plot_config = {
-                marks,
-                x: {
-                    label: xlabel,
-                },
-                y: {
-                    label: ylabel,
-                    domain: ydomain,
-                },
-                grid: false,
-                width: 1000,
-                style: {
-                    fontSize: '1em',
-                    // font-family: 'Jost', 'Arial', sans-serif;
-                    fontFamily: 'Jost|Arial|sans-serif',
-                },
-                marginTop: 80,
-                marginBottom: 40,
-                marginLeft: 80,
-                color: legend,
-            }
-            const plot = Plot.plot(plot_config)
-            plot_ref.current.innerHTML = ''
-            plot_ref.current.appendChild(plot)
-        }
-    }, [histogram_type, use_imperial, relative, binMin, binSize, props.histograms, title])
-    // put a button panel in the top right corner
+            return { marks, xlabel, ylabel, ydomain, legend }
+        },
+        [props.histograms, binMin, binSize, relative, histogram_type, use_imperial],
+    )
+
     return (
-        <div style={{ width: '100%', position: 'relative' }}>
-            <div
-                className="histogram-svg-panel"
-                ref={plot_ref}
-                style={
-                    {
-                        width: '100%',
-                        // height: "20em"
-                    }
-                }
-            >
-            </div>
-            {props.screenshot_mode
-                ? undefined
-                : (
-                        <div style={{ zIndex: 1000, position: 'absolute', top: 0, right: 0 }}>
-                            {settings_element(plot_ref)}
-                        </div>
-                    )}
-        </div>
+        <PlotComponent
+            plot_spec={plot_spec}
+            screenshot_mode={props.screenshot_mode}
+            settings_element={settings_element}
+        />
     )
 }
 
