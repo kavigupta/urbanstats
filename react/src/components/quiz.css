@@ -1,10 +1,3 @@
-:root {
-  --quiz-plain-bg: #e6e9ef;
-  --quiz-selected-bg: #4e525a;
-  --quiz-correct: #8ac35a;
-  --quiz-incorrect: #f96d6d;
-}
-
 .quiz_clickable {
   display: block;
   border-radius: 1em;
