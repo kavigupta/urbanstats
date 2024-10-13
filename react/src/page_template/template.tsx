@@ -38,8 +38,8 @@ export function PageTemplate({
         document.body.style.backgroundColor = colors.background
         document.documentElement.style.setProperty('--quiz-plain-bg', colors.unselectedButton)
         document.documentElement.style.setProperty('--quiz-selected-bg', colors.selectedButton)
-        document.documentElement.style.setProperty('--quiz-correct-bg', colors.hueColors.green)
-        document.documentElement.style.setProperty('--quiz-incorrect-bg', colors.hueColors.red)
+        document.documentElement.style.setProperty('--quiz-correct', colors.hueColors.green)
+        document.documentElement.style.setProperty('--quiz-incorrect', colors.hueColors.red)
     }, [colors.background, colors.unselectedButton, colors.selectedButton, colors.hueColors])
 
     const has_screenshot_button = screencap_elements !== undefined
