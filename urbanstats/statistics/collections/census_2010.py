@@ -250,25 +250,44 @@ def aggregate_basics_of_year(shapefile, year):
     return aggregate_by_census_block(year, shapefile, t[sum_keys])
 
 
+def extract_state_fips_from_geoid(geoid):
+    prefix = "7500000US"
+    assert geoid.startswith(prefix)
+    return geoid[len(prefix) :][:2]
+
+
 @permacache(
-    "urbanstats/statistics/collections/population_by_year",
-    key_function=dict(shapefile=lambda x: x.hash_key, census_years=stable_hash),
+    "urbanstats/statistics/collections/compute_population_for_year_3",
+    key_function=dict(shapefile=lambda x: x.hash_key),
 )
-def population_by_year(
-    shapefile, census_years=[Census2020(), Census2010(), Census2000()]
-):
+def compute_population_for_year(shapefile, *, no_pr):
+    """
+    Compute the population for a shapefile for a given year
+    """
+    t = all_densities_gpd(2020)[["geoid", "population"]].copy()
+    if no_pr:
+        mask = t.geoid.apply(lambda x: extract_state_fips_from_geoid(x)) == "72"
+        t.loc[mask, "population"] = 0
+    t = t[["population"]]
+    agg = aggregate_by_census_block(2020, shapefile, t)
+    return agg["population"]
+
+
+@permacache(
+    "urbanstats/statistics/collections/population_by_year_4",
+    key_function=dict(shapefile=lambda x: x.hash_key),
+)
+def population_by_year(shapefile, *, no_pr):
+    """
+    If no_pr is True, then Puerto Rico is not included in the population statistics
+    """
     shapefile_table = shapefile.load_file()
     statistics_table = shapefile_table[["longname"]].copy()
-    statistics_table[
-        "area"
-    ] = np.nan  # this makes standard density a nan, but we don't need it
-    for census_year in census_years:
-        census_year.compute_statistics(shapefile, statistics_table, shapefile_table)
-    populations = statistics_table[["population", "population_2010", "population_2000"]]
-    populations = populations.rename(
-        columns={"population": 2020, "population_2010": 2010, "population_2000": 2000}
-    )
-    return populations
+    for year in [2000, 2010, 2020]:
+        statistics_table[year] = compute_population_for_year(
+            shapefile, no_pr=no_pr
+        )
+    return statistics_table[[2000, 2010, 2020]]
 
 
 def compute_population(pop_by_year, year):

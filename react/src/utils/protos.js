@@ -1,15 +1,16 @@
-/* eslint-disable block-scoped-var, id-length, no-control-regex, no-magic-numbers, no-prototype-builtins, no-redeclare, no-shadow, no-var, sort-vars */
-'use strict'
+/*eslint-disable block-scoped-var, id-length, no-control-regex, no-magic-numbers, no-prototype-builtins, no-redeclare, no-shadow, no-var, sort-vars*/
+"use strict";
 
-var $protobuf = require('protobufjs/minimal')
+var $protobuf = require("protobufjs/minimal");
 
 // Common aliases
-var $Reader = $protobuf.Reader, $Writer = $protobuf.Writer, $util = $protobuf.util
+var $Reader = $protobuf.Reader, $Writer = $protobuf.Writer, $util = $protobuf.util;
 
 // Exported root namespace
-var $root = $protobuf.roots.default || ($protobuf.roots.default = {})
+var $root = $protobuf.roots["default"] || ($protobuf.roots["default"] = {});
 
-$root.StatisticRow = (function () {
+$root.StatisticRow = (function() {
+
     /**
      * Properties of a StatisticRow.
      * @exports IStatisticRow
@@ -29,13 +30,13 @@ $root.StatisticRow = (function () {
      * @param {IStatisticRow=} [properties] Properties to set
      */
     function StatisticRow(properties) {
-        this.ordinalByUniverse = []
-        this.overallOrdinalByUniverse = []
-        this.percentileByPopulationByUniverse = []
+        this.ordinalByUniverse = [];
+        this.overallOrdinalByUniverse = [];
+        this.percentileByPopulationByUniverse = [];
         if (properties)
             for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
                 if (properties[keys[i]] != null)
-                    this[keys[i]] = properties[keys[i]]
+                    this[keys[i]] = properties[keys[i]];
     }
 
     /**
@@ -44,7 +45,7 @@ $root.StatisticRow = (function () {
      * @memberof StatisticRow
      * @instance
      */
-    StatisticRow.prototype.statval = 0
+    StatisticRow.prototype.statval = 0;
 
     /**
      * StatisticRow ordinalByUniverse.
@@ -52,7 +53,7 @@ $root.StatisticRow = (function () {
      * @memberof StatisticRow
      * @instance
      */
-    StatisticRow.prototype.ordinalByUniverse = $util.emptyArray
+    StatisticRow.prototype.ordinalByUniverse = $util.emptyArray;
 
     /**
      * StatisticRow overallOrdinalByUniverse.
@@ -60,7 +61,7 @@ $root.StatisticRow = (function () {
      * @memberof StatisticRow
      * @instance
      */
-    StatisticRow.prototype.overallOrdinalByUniverse = $util.emptyArray
+    StatisticRow.prototype.overallOrdinalByUniverse = $util.emptyArray;
 
     /**
      * StatisticRow percentileByPopulationByUniverse.
@@ -68,7 +69,7 @@ $root.StatisticRow = (function () {
      * @memberof StatisticRow
      * @instance
      */
-    StatisticRow.prototype.percentileByPopulationByUniverse = $util.emptyArray
+    StatisticRow.prototype.percentileByPopulationByUniverse = $util.emptyArray;
 
     /**
      * Creates a new StatisticRow instance using the specified properties.
@@ -79,8 +80,8 @@ $root.StatisticRow = (function () {
      * @returns {StatisticRow} StatisticRow instance
      */
     StatisticRow.create = function create(properties) {
-        return new StatisticRow(properties)
-    }
+        return new StatisticRow(properties);
+    };
 
     /**
      * Encodes the specified StatisticRow message. Does not implicitly {@link StatisticRow.verify|verify} messages.
@@ -93,29 +94,29 @@ $root.StatisticRow = (function () {
      */
     StatisticRow.encode = function encode(message, writer) {
         if (!writer)
-            writer = $Writer.create()
-        if (message.statval != null && Object.hasOwnProperty.call(message, 'statval'))
-            writer.uint32(/* id 1, wireType 5 = */13).float(message.statval)
-        if (message.ordinalByUniverse?.length) {
-            writer.uint32(/* id 2, wireType 2 = */18).fork()
+            writer = $Writer.create();
+        if (message.statval != null && Object.hasOwnProperty.call(message, "statval"))
+            writer.uint32(/* id 1, wireType 5 =*/13).float(message.statval);
+        if (message.ordinalByUniverse != null && message.ordinalByUniverse.length) {
+            writer.uint32(/* id 2, wireType 2 =*/18).fork();
             for (var i = 0; i < message.ordinalByUniverse.length; ++i)
-                writer.int32(message.ordinalByUniverse[i])
-            writer.ldelim()
+                writer.int32(message.ordinalByUniverse[i]);
+            writer.ldelim();
         }
-        if (message.overallOrdinalByUniverse?.length) {
-            writer.uint32(/* id 3, wireType 2 = */26).fork()
+        if (message.overallOrdinalByUniverse != null && message.overallOrdinalByUniverse.length) {
+            writer.uint32(/* id 3, wireType 2 =*/26).fork();
             for (var i = 0; i < message.overallOrdinalByUniverse.length; ++i)
-                writer.int32(message.overallOrdinalByUniverse[i])
-            writer.ldelim()
+                writer.int32(message.overallOrdinalByUniverse[i]);
+            writer.ldelim();
         }
-        if (message.percentileByPopulationByUniverse?.length) {
-            writer.uint32(/* id 4, wireType 2 = */34).fork()
+        if (message.percentileByPopulationByUniverse != null && message.percentileByPopulationByUniverse.length) {
+            writer.uint32(/* id 4, wireType 2 =*/34).fork();
             for (var i = 0; i < message.percentileByPopulationByUniverse.length; ++i)
-                writer.float(message.percentileByPopulationByUniverse[i])
-            writer.ldelim()
+                writer.float(message.percentileByPopulationByUniverse[i]);
+            writer.ldelim();
         }
-        return writer
-    }
+        return writer;
+    };
 
     /**
      * Encodes the specified StatisticRow message, length delimited. Does not implicitly {@link StatisticRow.verify|verify} messages.
@@ -127,8 +128,8 @@ $root.StatisticRow = (function () {
      * @returns {$protobuf.Writer} Writer
      */
     StatisticRow.encodeDelimited = function encodeDelimited(message, writer) {
-        return this.encode(message, writer).ldelim()
-    }
+        return this.encode(message, writer).ldelim();
+    };
 
     /**
      * Decodes a StatisticRow message from the specified reader or buffer.
@@ -143,58 +144,55 @@ $root.StatisticRow = (function () {
      */
     StatisticRow.decode = function decode(reader, length) {
         if (!(reader instanceof $Reader))
-            reader = $Reader.create(reader)
-        var end = length === undefined ? reader.len : reader.pos + length, message = new $root.StatisticRow()
+            reader = $Reader.create(reader);
+        var end = length === undefined ? reader.len : reader.pos + length, message = new $root.StatisticRow();
         while (reader.pos < end) {
-            var tag = reader.uint32()
+            var tag = reader.uint32();
             switch (tag >>> 3) {
-                case 1: {
-                    message.statval = reader.float()
-                    break
+            case 1: {
+                    message.statval = reader.float();
+                    break;
                 }
-                case 2: {
-                    if (!(message.ordinalByUniverse?.length))
-                        message.ordinalByUniverse = []
+            case 2: {
+                    if (!(message.ordinalByUniverse && message.ordinalByUniverse.length))
+                        message.ordinalByUniverse = [];
                     if ((tag & 7) === 2) {
-                        var end2 = reader.uint32() + reader.pos
+                        var end2 = reader.uint32() + reader.pos;
                         while (reader.pos < end2)
-                            message.ordinalByUniverse.push(reader.int32())
-                    }
-                    else
-                        message.ordinalByUniverse.push(reader.int32())
-                    break
+                            message.ordinalByUniverse.push(reader.int32());
+                    } else
+                        message.ordinalByUniverse.push(reader.int32());
+                    break;
                 }
-                case 3: {
-                    if (!(message.overallOrdinalByUniverse?.length))
-                        message.overallOrdinalByUniverse = []
+            case 3: {
+                    if (!(message.overallOrdinalByUniverse && message.overallOrdinalByUniverse.length))
+                        message.overallOrdinalByUniverse = [];
                     if ((tag & 7) === 2) {
-                        var end2 = reader.uint32() + reader.pos
+                        var end2 = reader.uint32() + reader.pos;
                         while (reader.pos < end2)
-                            message.overallOrdinalByUniverse.push(reader.int32())
-                    }
-                    else
-                        message.overallOrdinalByUniverse.push(reader.int32())
-                    break
+                            message.overallOrdinalByUniverse.push(reader.int32());
+                    } else
+                        message.overallOrdinalByUniverse.push(reader.int32());
+                    break;
                 }
-                case 4: {
-                    if (!(message.percentileByPopulationByUniverse?.length))
-                        message.percentileByPopulationByUniverse = []
+            case 4: {
+                    if (!(message.percentileByPopulationByUniverse && message.percentileByPopulationByUniverse.length))
+                        message.percentileByPopulationByUniverse = [];
                     if ((tag & 7) === 2) {
-                        var end2 = reader.uint32() + reader.pos
+                        var end2 = reader.uint32() + reader.pos;
                         while (reader.pos < end2)
-                            message.percentileByPopulationByUniverse.push(reader.float())
-                    }
-                    else
-                        message.percentileByPopulationByUniverse.push(reader.float())
-                    break
+                            message.percentileByPopulationByUniverse.push(reader.float());
+                    } else
+                        message.percentileByPopulationByUniverse.push(reader.float());
+                    break;
                 }
-                default:
-                    reader.skipType(tag & 7)
-                    break
+            default:
+                reader.skipType(tag & 7);
+                break;
             }
         }
-        return message
-    }
+        return message;
+    };
 
     /**
      * Decodes a StatisticRow message from the specified reader or buffer, length delimited.
@@ -208,9 +206,9 @@ $root.StatisticRow = (function () {
      */
     StatisticRow.decodeDelimited = function decodeDelimited(reader) {
         if (!(reader instanceof $Reader))
-            reader = new $Reader(reader)
-        return this.decode(reader, reader.uint32())
-    }
+            reader = new $Reader(reader);
+        return this.decode(reader, reader.uint32());
+    };
 
     /**
      * Verifies a StatisticRow message.
@@ -221,34 +219,34 @@ $root.StatisticRow = (function () {
      * @returns {string|null} `null` if valid, otherwise the reason why it is not
      */
     StatisticRow.verify = function verify(message) {
-        if (typeof message !== 'object' || message === null)
-            return 'object expected'
-        if (message.statval != null && message.hasOwnProperty('statval'))
-            if (typeof message.statval !== 'number')
-                return 'statval: number expected'
-        if (message.ordinalByUniverse != null && message.hasOwnProperty('ordinalByUniverse')) {
+        if (typeof message !== "object" || message === null)
+            return "object expected";
+        if (message.statval != null && message.hasOwnProperty("statval"))
+            if (typeof message.statval !== "number")
+                return "statval: number expected";
+        if (message.ordinalByUniverse != null && message.hasOwnProperty("ordinalByUniverse")) {
             if (!Array.isArray(message.ordinalByUniverse))
-                return 'ordinalByUniverse: array expected'
+                return "ordinalByUniverse: array expected";
             for (var i = 0; i < message.ordinalByUniverse.length; ++i)
                 if (!$util.isInteger(message.ordinalByUniverse[i]))
-                    return 'ordinalByUniverse: integer[] expected'
+                    return "ordinalByUniverse: integer[] expected";
         }
-        if (message.overallOrdinalByUniverse != null && message.hasOwnProperty('overallOrdinalByUniverse')) {
+        if (message.overallOrdinalByUniverse != null && message.hasOwnProperty("overallOrdinalByUniverse")) {
             if (!Array.isArray(message.overallOrdinalByUniverse))
-                return 'overallOrdinalByUniverse: array expected'
+                return "overallOrdinalByUniverse: array expected";
             for (var i = 0; i < message.overallOrdinalByUniverse.length; ++i)
                 if (!$util.isInteger(message.overallOrdinalByUniverse[i]))
-                    return 'overallOrdinalByUniverse: integer[] expected'
+                    return "overallOrdinalByUniverse: integer[] expected";
         }
-        if (message.percentileByPopulationByUniverse != null && message.hasOwnProperty('percentileByPopulationByUniverse')) {
+        if (message.percentileByPopulationByUniverse != null && message.hasOwnProperty("percentileByPopulationByUniverse")) {
             if (!Array.isArray(message.percentileByPopulationByUniverse))
-                return 'percentileByPopulationByUniverse: array expected'
+                return "percentileByPopulationByUniverse: array expected";
             for (var i = 0; i < message.percentileByPopulationByUniverse.length; ++i)
-                if (typeof message.percentileByPopulationByUniverse[i] !== 'number')
-                    return 'percentileByPopulationByUniverse: number[] expected'
+                if (typeof message.percentileByPopulationByUniverse[i] !== "number")
+                    return "percentileByPopulationByUniverse: number[] expected";
         }
-        return null
-    }
+        return null;
+    };
 
     /**
      * Creates a StatisticRow message from a plain object. Also converts values to their respective internal types.
@@ -260,33 +258,33 @@ $root.StatisticRow = (function () {
      */
     StatisticRow.fromObject = function fromObject(object) {
         if (object instanceof $root.StatisticRow)
-            return object
-        var message = new $root.StatisticRow()
+            return object;
+        var message = new $root.StatisticRow();
         if (object.statval != null)
-            message.statval = Number(object.statval)
+            message.statval = Number(object.statval);
         if (object.ordinalByUniverse) {
             if (!Array.isArray(object.ordinalByUniverse))
-                throw TypeError('.StatisticRow.ordinalByUniverse: array expected')
-            message.ordinalByUniverse = []
+                throw TypeError(".StatisticRow.ordinalByUniverse: array expected");
+            message.ordinalByUniverse = [];
             for (var i = 0; i < object.ordinalByUniverse.length; ++i)
-                message.ordinalByUniverse[i] = object.ordinalByUniverse[i] | 0
+                message.ordinalByUniverse[i] = object.ordinalByUniverse[i] | 0;
         }
         if (object.overallOrdinalByUniverse) {
             if (!Array.isArray(object.overallOrdinalByUniverse))
-                throw TypeError('.StatisticRow.overallOrdinalByUniverse: array expected')
-            message.overallOrdinalByUniverse = []
+                throw TypeError(".StatisticRow.overallOrdinalByUniverse: array expected");
+            message.overallOrdinalByUniverse = [];
             for (var i = 0; i < object.overallOrdinalByUniverse.length; ++i)
-                message.overallOrdinalByUniverse[i] = object.overallOrdinalByUniverse[i] | 0
+                message.overallOrdinalByUniverse[i] = object.overallOrdinalByUniverse[i] | 0;
         }
         if (object.percentileByPopulationByUniverse) {
             if (!Array.isArray(object.percentileByPopulationByUniverse))
-                throw TypeError('.StatisticRow.percentileByPopulationByUniverse: array expected')
-            message.percentileByPopulationByUniverse = []
+                throw TypeError(".StatisticRow.percentileByPopulationByUniverse: array expected");
+            message.percentileByPopulationByUniverse = [];
             for (var i = 0; i < object.percentileByPopulationByUniverse.length; ++i)
-                message.percentileByPopulationByUniverse[i] = Number(object.percentileByPopulationByUniverse[i])
+                message.percentileByPopulationByUniverse[i] = Number(object.percentileByPopulationByUniverse[i]);
         }
-        return message
-    }
+        return message;
+    };
 
     /**
      * Creates a plain object from a StatisticRow message. Also converts values to other types if specified.
@@ -299,34 +297,34 @@ $root.StatisticRow = (function () {
      */
     StatisticRow.toObject = function toObject(message, options) {
         if (!options)
-            options = {}
-        var object = {}
+            options = {};
+        var object = {};
         if (options.arrays || options.defaults) {
-            object.ordinalByUniverse = []
-            object.overallOrdinalByUniverse = []
-            object.percentileByPopulationByUniverse = []
+            object.ordinalByUniverse = [];
+            object.overallOrdinalByUniverse = [];
+            object.percentileByPopulationByUniverse = [];
         }
         if (options.defaults)
-            object.statval = 0
-        if (message.statval != null && message.hasOwnProperty('statval'))
-            object.statval = options.json && !isFinite(message.statval) ? String(message.statval) : message.statval
+            object.statval = 0;
+        if (message.statval != null && message.hasOwnProperty("statval"))
+            object.statval = options.json && !isFinite(message.statval) ? String(message.statval) : message.statval;
         if (message.ordinalByUniverse && message.ordinalByUniverse.length) {
-            object.ordinalByUniverse = []
+            object.ordinalByUniverse = [];
             for (var j = 0; j < message.ordinalByUniverse.length; ++j)
-                object.ordinalByUniverse[j] = message.ordinalByUniverse[j]
+                object.ordinalByUniverse[j] = message.ordinalByUniverse[j];
         }
         if (message.overallOrdinalByUniverse && message.overallOrdinalByUniverse.length) {
-            object.overallOrdinalByUniverse = []
+            object.overallOrdinalByUniverse = [];
             for (var j = 0; j < message.overallOrdinalByUniverse.length; ++j)
-                object.overallOrdinalByUniverse[j] = message.overallOrdinalByUniverse[j]
+                object.overallOrdinalByUniverse[j] = message.overallOrdinalByUniverse[j];
         }
         if (message.percentileByPopulationByUniverse && message.percentileByPopulationByUniverse.length) {
-            object.percentileByPopulationByUniverse = []
+            object.percentileByPopulationByUniverse = [];
             for (var j = 0; j < message.percentileByPopulationByUniverse.length; ++j)
-                object.percentileByPopulationByUniverse[j] = options.json && !isFinite(message.percentileByPopulationByUniverse[j]) ? String(message.percentileByPopulationByUniverse[j]) : message.percentileByPopulationByUniverse[j]
+                object.percentileByPopulationByUniverse[j] = options.json && !isFinite(message.percentileByPopulationByUniverse[j]) ? String(message.percentileByPopulationByUniverse[j]) : message.percentileByPopulationByUniverse[j];
         }
-        return object
-    }
+        return object;
+    };
 
     /**
      * Converts this StatisticRow to JSON.
@@ -336,8 +334,8 @@ $root.StatisticRow = (function () {
      * @returns {Object.<string,*>} JSON object
      */
     StatisticRow.prototype.toJSON = function toJSON() {
-        return this.constructor.toObject(this, $protobuf.util.toJSONOptions)
-    }
+        return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+    };
 
     /**
      * Gets the default type url for StatisticRow
@@ -349,15 +347,16 @@ $root.StatisticRow = (function () {
      */
     StatisticRow.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
         if (typeUrlPrefix === undefined) {
-            typeUrlPrefix = 'type.googleapis.com'
+            typeUrlPrefix = "type.googleapis.com";
         }
-        return `${typeUrlPrefix}/StatisticRow`
-    }
+        return typeUrlPrefix + "/StatisticRow";
+    };
 
-    return StatisticRow
-})()
+    return StatisticRow;
+})();
 
-$root.RelatedButton = (function () {
+$root.RelatedButton = (function() {
+
     /**
      * Properties of a RelatedButton.
      * @exports IRelatedButton
@@ -379,7 +378,7 @@ $root.RelatedButton = (function () {
         if (properties)
             for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
                 if (properties[keys[i]] != null)
-                    this[keys[i]] = properties[keys[i]]
+                    this[keys[i]] = properties[keys[i]];
     }
 
     /**
@@ -388,7 +387,7 @@ $root.RelatedButton = (function () {
      * @memberof RelatedButton
      * @instance
      */
-    RelatedButton.prototype.longname = ''
+    RelatedButton.prototype.longname = "";
 
     /**
      * RelatedButton shortname.
@@ -396,7 +395,7 @@ $root.RelatedButton = (function () {
      * @memberof RelatedButton
      * @instance
      */
-    RelatedButton.prototype.shortname = ''
+    RelatedButton.prototype.shortname = "";
 
     /**
      * RelatedButton rowType.
@@ -404,7 +403,7 @@ $root.RelatedButton = (function () {
      * @memberof RelatedButton
      * @instance
      */
-    RelatedButton.prototype.rowType = ''
+    RelatedButton.prototype.rowType = "";
 
     /**
      * Creates a new RelatedButton instance using the specified properties.
@@ -415,8 +414,8 @@ $root.RelatedButton = (function () {
      * @returns {RelatedButton} RelatedButton instance
      */
     RelatedButton.create = function create(properties) {
-        return new RelatedButton(properties)
-    }
+        return new RelatedButton(properties);
+    };
 
     /**
      * Encodes the specified RelatedButton message. Does not implicitly {@link RelatedButton.verify|verify} messages.
@@ -429,15 +428,15 @@ $root.RelatedButton = (function () {
      */
     RelatedButton.encode = function encode(message, writer) {
         if (!writer)
-            writer = $Writer.create()
-        if (message.longname != null && Object.hasOwnProperty.call(message, 'longname'))
-            writer.uint32(/* id 1, wireType 2 = */10).string(message.longname)
-        if (message.shortname != null && Object.hasOwnProperty.call(message, 'shortname'))
-            writer.uint32(/* id 2, wireType 2 = */18).string(message.shortname)
-        if (message.rowType != null && Object.hasOwnProperty.call(message, 'rowType'))
-            writer.uint32(/* id 3, wireType 2 = */26).string(message.rowType)
-        return writer
-    }
+            writer = $Writer.create();
+        if (message.longname != null && Object.hasOwnProperty.call(message, "longname"))
+            writer.uint32(/* id 1, wireType 2 =*/10).string(message.longname);
+        if (message.shortname != null && Object.hasOwnProperty.call(message, "shortname"))
+            writer.uint32(/* id 2, wireType 2 =*/18).string(message.shortname);
+        if (message.rowType != null && Object.hasOwnProperty.call(message, "rowType"))
+            writer.uint32(/* id 3, wireType 2 =*/26).string(message.rowType);
+        return writer;
+    };
 
     /**
      * Encodes the specified RelatedButton message, length delimited. Does not implicitly {@link RelatedButton.verify|verify} messages.
@@ -449,8 +448,8 @@ $root.RelatedButton = (function () {
      * @returns {$protobuf.Writer} Writer
      */
     RelatedButton.encodeDelimited = function encodeDelimited(message, writer) {
-        return this.encode(message, writer).ldelim()
-    }
+        return this.encode(message, writer).ldelim();
+    };
 
     /**
      * Decodes a RelatedButton message from the specified reader or buffer.
@@ -465,30 +464,30 @@ $root.RelatedButton = (function () {
      */
     RelatedButton.decode = function decode(reader, length) {
         if (!(reader instanceof $Reader))
-            reader = $Reader.create(reader)
-        var end = length === undefined ? reader.len : reader.pos + length, message = new $root.RelatedButton()
+            reader = $Reader.create(reader);
+        var end = length === undefined ? reader.len : reader.pos + length, message = new $root.RelatedButton();
         while (reader.pos < end) {
-            var tag = reader.uint32()
+            var tag = reader.uint32();
             switch (tag >>> 3) {
-                case 1: {
-                    message.longname = reader.string()
-                    break
+            case 1: {
+                    message.longname = reader.string();
+                    break;
                 }
-                case 2: {
-                    message.shortname = reader.string()
-                    break
+            case 2: {
+                    message.shortname = reader.string();
+                    break;
                 }
-                case 3: {
-                    message.rowType = reader.string()
-                    break
+            case 3: {
+                    message.rowType = reader.string();
+                    break;
                 }
-                default:
-                    reader.skipType(tag & 7)
-                    break
+            default:
+                reader.skipType(tag & 7);
+                break;
             }
         }
-        return message
-    }
+        return message;
+    };
 
     /**
      * Decodes a RelatedButton message from the specified reader or buffer, length delimited.
@@ -502,9 +501,9 @@ $root.RelatedButton = (function () {
      */
     RelatedButton.decodeDelimited = function decodeDelimited(reader) {
         if (!(reader instanceof $Reader))
-            reader = new $Reader(reader)
-        return this.decode(reader, reader.uint32())
-    }
+            reader = new $Reader(reader);
+        return this.decode(reader, reader.uint32());
+    };
 
     /**
      * Verifies a RelatedButton message.
@@ -515,19 +514,19 @@ $root.RelatedButton = (function () {
      * @returns {string|null} `null` if valid, otherwise the reason why it is not
      */
     RelatedButton.verify = function verify(message) {
-        if (typeof message !== 'object' || message === null)
-            return 'object expected'
-        if (message.longname != null && message.hasOwnProperty('longname'))
+        if (typeof message !== "object" || message === null)
+            return "object expected";
+        if (message.longname != null && message.hasOwnProperty("longname"))
             if (!$util.isString(message.longname))
-                return 'longname: string expected'
-        if (message.shortname != null && message.hasOwnProperty('shortname'))
+                return "longname: string expected";
+        if (message.shortname != null && message.hasOwnProperty("shortname"))
             if (!$util.isString(message.shortname))
-                return 'shortname: string expected'
-        if (message.rowType != null && message.hasOwnProperty('rowType'))
+                return "shortname: string expected";
+        if (message.rowType != null && message.hasOwnProperty("rowType"))
             if (!$util.isString(message.rowType))
-                return 'rowType: string expected'
-        return null
-    }
+                return "rowType: string expected";
+        return null;
+    };
 
     /**
      * Creates a RelatedButton message from a plain object. Also converts values to their respective internal types.
@@ -539,16 +538,16 @@ $root.RelatedButton = (function () {
      */
     RelatedButton.fromObject = function fromObject(object) {
         if (object instanceof $root.RelatedButton)
-            return object
-        var message = new $root.RelatedButton()
+            return object;
+        var message = new $root.RelatedButton();
         if (object.longname != null)
-            message.longname = String(object.longname)
+            message.longname = String(object.longname);
         if (object.shortname != null)
-            message.shortname = String(object.shortname)
+            message.shortname = String(object.shortname);
         if (object.rowType != null)
-            message.rowType = String(object.rowType)
-        return message
-    }
+            message.rowType = String(object.rowType);
+        return message;
+    };
 
     /**
      * Creates a plain object from a RelatedButton message. Also converts values to other types if specified.
@@ -561,21 +560,21 @@ $root.RelatedButton = (function () {
      */
     RelatedButton.toObject = function toObject(message, options) {
         if (!options)
-            options = {}
-        var object = {}
+            options = {};
+        var object = {};
         if (options.defaults) {
-            object.longname = ''
-            object.shortname = ''
-            object.rowType = ''
+            object.longname = "";
+            object.shortname = "";
+            object.rowType = "";
         }
-        if (message.longname != null && message.hasOwnProperty('longname'))
-            object.longname = message.longname
-        if (message.shortname != null && message.hasOwnProperty('shortname'))
-            object.shortname = message.shortname
-        if (message.rowType != null && message.hasOwnProperty('rowType'))
-            object.rowType = message.rowType
-        return object
-    }
+        if (message.longname != null && message.hasOwnProperty("longname"))
+            object.longname = message.longname;
+        if (message.shortname != null && message.hasOwnProperty("shortname"))
+            object.shortname = message.shortname;
+        if (message.rowType != null && message.hasOwnProperty("rowType"))
+            object.rowType = message.rowType;
+        return object;
+    };
 
     /**
      * Converts this RelatedButton to JSON.
@@ -585,8 +584,8 @@ $root.RelatedButton = (function () {
      * @returns {Object.<string,*>} JSON object
      */
     RelatedButton.prototype.toJSON = function toJSON() {
-        return this.constructor.toObject(this, $protobuf.util.toJSONOptions)
-    }
+        return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+    };
 
     /**
      * Gets the default type url for RelatedButton
@@ -598,15 +597,16 @@ $root.RelatedButton = (function () {
      */
     RelatedButton.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
         if (typeUrlPrefix === undefined) {
-            typeUrlPrefix = 'type.googleapis.com'
+            typeUrlPrefix = "type.googleapis.com";
         }
-        return `${typeUrlPrefix}/RelatedButton`
-    }
+        return typeUrlPrefix + "/RelatedButton";
+    };
 
-    return RelatedButton
-})()
+    return RelatedButton;
+})();
 
-$root.RelatedButtons = (function () {
+$root.RelatedButtons = (function() {
+
     /**
      * Properties of a RelatedButtons.
      * @exports IRelatedButtons
@@ -624,11 +624,11 @@ $root.RelatedButtons = (function () {
      * @param {IRelatedButtons=} [properties] Properties to set
      */
     function RelatedButtons(properties) {
-        this.buttons = []
+        this.buttons = [];
         if (properties)
             for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
                 if (properties[keys[i]] != null)
-                    this[keys[i]] = properties[keys[i]]
+                    this[keys[i]] = properties[keys[i]];
     }
 
     /**
@@ -637,7 +637,7 @@ $root.RelatedButtons = (function () {
      * @memberof RelatedButtons
      * @instance
      */
-    RelatedButtons.prototype.relationshipType = ''
+    RelatedButtons.prototype.relationshipType = "";
 
     /**
      * RelatedButtons buttons.
@@ -645,7 +645,7 @@ $root.RelatedButtons = (function () {
      * @memberof RelatedButtons
      * @instance
      */
-    RelatedButtons.prototype.buttons = $util.emptyArray
+    RelatedButtons.prototype.buttons = $util.emptyArray;
 
     /**
      * Creates a new RelatedButtons instance using the specified properties.
@@ -656,8 +656,8 @@ $root.RelatedButtons = (function () {
      * @returns {RelatedButtons} RelatedButtons instance
      */
     RelatedButtons.create = function create(properties) {
-        return new RelatedButtons(properties)
-    }
+        return new RelatedButtons(properties);
+    };
 
     /**
      * Encodes the specified RelatedButtons message. Does not implicitly {@link RelatedButtons.verify|verify} messages.
@@ -670,14 +670,14 @@ $root.RelatedButtons = (function () {
      */
     RelatedButtons.encode = function encode(message, writer) {
         if (!writer)
-            writer = $Writer.create()
-        if (message.relationshipType != null && Object.hasOwnProperty.call(message, 'relationshipType'))
-            writer.uint32(/* id 1, wireType 2 = */10).string(message.relationshipType)
-        if (message.buttons?.length)
+            writer = $Writer.create();
+        if (message.relationshipType != null && Object.hasOwnProperty.call(message, "relationshipType"))
+            writer.uint32(/* id 1, wireType 2 =*/10).string(message.relationshipType);
+        if (message.buttons != null && message.buttons.length)
             for (var i = 0; i < message.buttons.length; ++i)
-                $root.RelatedButton.encode(message.buttons[i], writer.uint32(/* id 2, wireType 2 = */18).fork()).ldelim()
-        return writer
-    }
+                $root.RelatedButton.encode(message.buttons[i], writer.uint32(/* id 2, wireType 2 =*/18).fork()).ldelim();
+        return writer;
+    };
 
     /**
      * Encodes the specified RelatedButtons message, length delimited. Does not implicitly {@link RelatedButtons.verify|verify} messages.
@@ -689,8 +689,8 @@ $root.RelatedButtons = (function () {
      * @returns {$protobuf.Writer} Writer
      */
     RelatedButtons.encodeDelimited = function encodeDelimited(message, writer) {
-        return this.encode(message, writer).ldelim()
-    }
+        return this.encode(message, writer).ldelim();
+    };
 
     /**
      * Decodes a RelatedButtons message from the specified reader or buffer.
@@ -705,28 +705,28 @@ $root.RelatedButtons = (function () {
      */
     RelatedButtons.decode = function decode(reader, length) {
         if (!(reader instanceof $Reader))
-            reader = $Reader.create(reader)
-        var end = length === undefined ? reader.len : reader.pos + length, message = new $root.RelatedButtons()
+            reader = $Reader.create(reader);
+        var end = length === undefined ? reader.len : reader.pos + length, message = new $root.RelatedButtons();
         while (reader.pos < end) {
-            var tag = reader.uint32()
+            var tag = reader.uint32();
             switch (tag >>> 3) {
-                case 1: {
-                    message.relationshipType = reader.string()
-                    break
+            case 1: {
+                    message.relationshipType = reader.string();
+                    break;
                 }
-                case 2: {
-                    if (!(message.buttons?.length))
-                        message.buttons = []
-                    message.buttons.push($root.RelatedButton.decode(reader, reader.uint32()))
-                    break
+            case 2: {
+                    if (!(message.buttons && message.buttons.length))
+                        message.buttons = [];
+                    message.buttons.push($root.RelatedButton.decode(reader, reader.uint32()));
+                    break;
                 }
-                default:
-                    reader.skipType(tag & 7)
-                    break
+            default:
+                reader.skipType(tag & 7);
+                break;
             }
         }
-        return message
-    }
+        return message;
+    };
 
     /**
      * Decodes a RelatedButtons message from the specified reader or buffer, length delimited.
@@ -740,9 +740,9 @@ $root.RelatedButtons = (function () {
      */
     RelatedButtons.decodeDelimited = function decodeDelimited(reader) {
         if (!(reader instanceof $Reader))
-            reader = new $Reader(reader)
-        return this.decode(reader, reader.uint32())
-    }
+            reader = new $Reader(reader);
+        return this.decode(reader, reader.uint32());
+    };
 
     /**
      * Verifies a RelatedButtons message.
@@ -753,22 +753,22 @@ $root.RelatedButtons = (function () {
      * @returns {string|null} `null` if valid, otherwise the reason why it is not
      */
     RelatedButtons.verify = function verify(message) {
-        if (typeof message !== 'object' || message === null)
-            return 'object expected'
-        if (message.relationshipType != null && message.hasOwnProperty('relationshipType'))
+        if (typeof message !== "object" || message === null)
+            return "object expected";
+        if (message.relationshipType != null && message.hasOwnProperty("relationshipType"))
             if (!$util.isString(message.relationshipType))
-                return 'relationshipType: string expected'
-        if (message.buttons != null && message.hasOwnProperty('buttons')) {
+                return "relationshipType: string expected";
+        if (message.buttons != null && message.hasOwnProperty("buttons")) {
             if (!Array.isArray(message.buttons))
-                return 'buttons: array expected'
+                return "buttons: array expected";
             for (var i = 0; i < message.buttons.length; ++i) {
-                var error = $root.RelatedButton.verify(message.buttons[i])
+                var error = $root.RelatedButton.verify(message.buttons[i]);
                 if (error)
-                    return `buttons.${error}`
+                    return "buttons." + error;
             }
         }
-        return null
-    }
+        return null;
+    };
 
     /**
      * Creates a RelatedButtons message from a plain object. Also converts values to their respective internal types.
@@ -780,22 +780,22 @@ $root.RelatedButtons = (function () {
      */
     RelatedButtons.fromObject = function fromObject(object) {
         if (object instanceof $root.RelatedButtons)
-            return object
-        var message = new $root.RelatedButtons()
+            return object;
+        var message = new $root.RelatedButtons();
         if (object.relationshipType != null)
-            message.relationshipType = String(object.relationshipType)
+            message.relationshipType = String(object.relationshipType);
         if (object.buttons) {
             if (!Array.isArray(object.buttons))
-                throw TypeError('.RelatedButtons.buttons: array expected')
-            message.buttons = []
+                throw TypeError(".RelatedButtons.buttons: array expected");
+            message.buttons = [];
             for (var i = 0; i < object.buttons.length; ++i) {
-                if (typeof object.buttons[i] !== 'object')
-                    throw TypeError('.RelatedButtons.buttons: object expected')
-                message.buttons[i] = $root.RelatedButton.fromObject(object.buttons[i])
+                if (typeof object.buttons[i] !== "object")
+                    throw TypeError(".RelatedButtons.buttons: object expected");
+                message.buttons[i] = $root.RelatedButton.fromObject(object.buttons[i]);
             }
         }
-        return message
-    }
+        return message;
+    };
 
     /**
      * Creates a plain object from a RelatedButtons message. Also converts values to other types if specified.
@@ -808,21 +808,21 @@ $root.RelatedButtons = (function () {
      */
     RelatedButtons.toObject = function toObject(message, options) {
         if (!options)
-            options = {}
-        var object = {}
+            options = {};
+        var object = {};
         if (options.arrays || options.defaults)
-            object.buttons = []
+            object.buttons = [];
         if (options.defaults)
-            object.relationshipType = ''
-        if (message.relationshipType != null && message.hasOwnProperty('relationshipType'))
-            object.relationshipType = message.relationshipType
+            object.relationshipType = "";
+        if (message.relationshipType != null && message.hasOwnProperty("relationshipType"))
+            object.relationshipType = message.relationshipType;
         if (message.buttons && message.buttons.length) {
-            object.buttons = []
+            object.buttons = [];
             for (var j = 0; j < message.buttons.length; ++j)
-                object.buttons[j] = $root.RelatedButton.toObject(message.buttons[j], options)
+                object.buttons[j] = $root.RelatedButton.toObject(message.buttons[j], options);
         }
-        return object
-    }
+        return object;
+    };
 
     /**
      * Converts this RelatedButtons to JSON.
@@ -832,8 +832,8 @@ $root.RelatedButtons = (function () {
      * @returns {Object.<string,*>} JSON object
      */
     RelatedButtons.prototype.toJSON = function toJSON() {
-        return this.constructor.toObject(this, $protobuf.util.toJSONOptions)
-    }
+        return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+    };
 
     /**
      * Gets the default type url for RelatedButtons
@@ -845,15 +845,16 @@ $root.RelatedButtons = (function () {
      */
     RelatedButtons.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
         if (typeUrlPrefix === undefined) {
-            typeUrlPrefix = 'type.googleapis.com'
+            typeUrlPrefix = "type.googleapis.com";
         }
-        return `${typeUrlPrefix}/RelatedButtons`
-    }
+        return typeUrlPrefix + "/RelatedButtons";
+    };
 
-    return RelatedButtons
-})()
+    return RelatedButtons;
+})();
 
-$root.Histogram = (function () {
+$root.Histogram = (function() {
+
     /**
      * Properties of a Histogram.
      * @exports IHistogram
@@ -872,11 +873,11 @@ $root.Histogram = (function () {
      * @param {IHistogram=} [properties] Properties to set
      */
     function Histogram(properties) {
-        this.counts = []
+        this.counts = [];
         if (properties)
             for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
                 if (properties[keys[i]] != null)
-                    this[keys[i]] = properties[keys[i]]
+                    this[keys[i]] = properties[keys[i]];
     }
 
     /**
@@ -885,7 +886,7 @@ $root.Histogram = (function () {
      * @memberof Histogram
      * @instance
      */
-    Histogram.prototype.binMin = 0
+    Histogram.prototype.binMin = 0;
 
     /**
      * Histogram binSize.
@@ -893,7 +894,7 @@ $root.Histogram = (function () {
      * @memberof Histogram
      * @instance
      */
-    Histogram.prototype.binSize = 0
+    Histogram.prototype.binSize = 0;
 
     /**
      * Histogram counts.
@@ -901,7 +902,7 @@ $root.Histogram = (function () {
      * @memberof Histogram
      * @instance
      */
-    Histogram.prototype.counts = $util.emptyArray
+    Histogram.prototype.counts = $util.emptyArray;
 
     /**
      * Creates a new Histogram instance using the specified properties.
@@ -912,8 +913,8 @@ $root.Histogram = (function () {
      * @returns {Histogram} Histogram instance
      */
     Histogram.create = function create(properties) {
-        return new Histogram(properties)
-    }
+        return new Histogram(properties);
+    };
 
     /**
      * Encodes the specified Histogram message. Does not implicitly {@link Histogram.verify|verify} messages.
@@ -926,19 +927,19 @@ $root.Histogram = (function () {
      */
     Histogram.encode = function encode(message, writer) {
         if (!writer)
-            writer = $Writer.create()
-        if (message.binMin != null && Object.hasOwnProperty.call(message, 'binMin'))
-            writer.uint32(/* id 1, wireType 5 = */13).float(message.binMin)
-        if (message.binSize != null && Object.hasOwnProperty.call(message, 'binSize'))
-            writer.uint32(/* id 2, wireType 5 = */21).float(message.binSize)
-        if (message.counts?.length) {
-            writer.uint32(/* id 3, wireType 2 = */26).fork()
+            writer = $Writer.create();
+        if (message.binMin != null && Object.hasOwnProperty.call(message, "binMin"))
+            writer.uint32(/* id 1, wireType 5 =*/13).float(message.binMin);
+        if (message.binSize != null && Object.hasOwnProperty.call(message, "binSize"))
+            writer.uint32(/* id 2, wireType 5 =*/21).float(message.binSize);
+        if (message.counts != null && message.counts.length) {
+            writer.uint32(/* id 3, wireType 2 =*/26).fork();
             for (var i = 0; i < message.counts.length; ++i)
-                writer.int32(message.counts[i])
-            writer.ldelim()
+                writer.int32(message.counts[i]);
+            writer.ldelim();
         }
-        return writer
-    }
+        return writer;
+    };
 
     /**
      * Encodes the specified Histogram message, length delimited. Does not implicitly {@link Histogram.verify|verify} messages.
@@ -950,8 +951,8 @@ $root.Histogram = (function () {
      * @returns {$protobuf.Writer} Writer
      */
     Histogram.encodeDelimited = function encodeDelimited(message, writer) {
-        return this.encode(message, writer).ldelim()
-    }
+        return this.encode(message, writer).ldelim();
+    };
 
     /**
      * Decodes a Histogram message from the specified reader or buffer.
@@ -966,38 +967,37 @@ $root.Histogram = (function () {
      */
     Histogram.decode = function decode(reader, length) {
         if (!(reader instanceof $Reader))
-            reader = $Reader.create(reader)
-        var end = length === undefined ? reader.len : reader.pos + length, message = new $root.Histogram()
+            reader = $Reader.create(reader);
+        var end = length === undefined ? reader.len : reader.pos + length, message = new $root.Histogram();
         while (reader.pos < end) {
-            var tag = reader.uint32()
+            var tag = reader.uint32();
             switch (tag >>> 3) {
-                case 1: {
-                    message.binMin = reader.float()
-                    break
+            case 1: {
+                    message.binMin = reader.float();
+                    break;
                 }
-                case 2: {
-                    message.binSize = reader.float()
-                    break
+            case 2: {
+                    message.binSize = reader.float();
+                    break;
                 }
-                case 3: {
-                    if (!(message.counts?.length))
-                        message.counts = []
+            case 3: {
+                    if (!(message.counts && message.counts.length))
+                        message.counts = [];
                     if ((tag & 7) === 2) {
-                        var end2 = reader.uint32() + reader.pos
+                        var end2 = reader.uint32() + reader.pos;
                         while (reader.pos < end2)
-                            message.counts.push(reader.int32())
-                    }
-                    else
-                        message.counts.push(reader.int32())
-                    break
+                            message.counts.push(reader.int32());
+                    } else
+                        message.counts.push(reader.int32());
+                    break;
                 }
-                default:
-                    reader.skipType(tag & 7)
-                    break
+            default:
+                reader.skipType(tag & 7);
+                break;
             }
         }
-        return message
-    }
+        return message;
+    };
 
     /**
      * Decodes a Histogram message from the specified reader or buffer, length delimited.
@@ -1011,9 +1011,9 @@ $root.Histogram = (function () {
      */
     Histogram.decodeDelimited = function decodeDelimited(reader) {
         if (!(reader instanceof $Reader))
-            reader = new $Reader(reader)
-        return this.decode(reader, reader.uint32())
-    }
+            reader = new $Reader(reader);
+        return this.decode(reader, reader.uint32());
+    };
 
     /**
      * Verifies a Histogram message.
@@ -1024,23 +1024,23 @@ $root.Histogram = (function () {
      * @returns {string|null} `null` if valid, otherwise the reason why it is not
      */
     Histogram.verify = function verify(message) {
-        if (typeof message !== 'object' || message === null)
-            return 'object expected'
-        if (message.binMin != null && message.hasOwnProperty('binMin'))
-            if (typeof message.binMin !== 'number')
-                return 'binMin: number expected'
-        if (message.binSize != null && message.hasOwnProperty('binSize'))
-            if (typeof message.binSize !== 'number')
-                return 'binSize: number expected'
-        if (message.counts != null && message.hasOwnProperty('counts')) {
+        if (typeof message !== "object" || message === null)
+            return "object expected";
+        if (message.binMin != null && message.hasOwnProperty("binMin"))
+            if (typeof message.binMin !== "number")
+                return "binMin: number expected";
+        if (message.binSize != null && message.hasOwnProperty("binSize"))
+            if (typeof message.binSize !== "number")
+                return "binSize: number expected";
+        if (message.counts != null && message.hasOwnProperty("counts")) {
             if (!Array.isArray(message.counts))
-                return 'counts: array expected'
+                return "counts: array expected";
             for (var i = 0; i < message.counts.length; ++i)
                 if (!$util.isInteger(message.counts[i]))
-                    return 'counts: integer[] expected'
+                    return "counts: integer[] expected";
         }
-        return null
-    }
+        return null;
+    };
 
     /**
      * Creates a Histogram message from a plain object. Also converts values to their respective internal types.
@@ -1052,21 +1052,21 @@ $root.Histogram = (function () {
      */
     Histogram.fromObject = function fromObject(object) {
         if (object instanceof $root.Histogram)
-            return object
-        var message = new $root.Histogram()
+            return object;
+        var message = new $root.Histogram();
         if (object.binMin != null)
-            message.binMin = Number(object.binMin)
+            message.binMin = Number(object.binMin);
         if (object.binSize != null)
-            message.binSize = Number(object.binSize)
+            message.binSize = Number(object.binSize);
         if (object.counts) {
             if (!Array.isArray(object.counts))
-                throw TypeError('.Histogram.counts: array expected')
-            message.counts = []
+                throw TypeError(".Histogram.counts: array expected");
+            message.counts = [];
             for (var i = 0; i < object.counts.length; ++i)
-                message.counts[i] = object.counts[i] | 0
+                message.counts[i] = object.counts[i] | 0;
         }
-        return message
-    }
+        return message;
+    };
 
     /**
      * Creates a plain object from a Histogram message. Also converts values to other types if specified.
@@ -1079,25 +1079,25 @@ $root.Histogram = (function () {
      */
     Histogram.toObject = function toObject(message, options) {
         if (!options)
-            options = {}
-        var object = {}
+            options = {};
+        var object = {};
         if (options.arrays || options.defaults)
-            object.counts = []
+            object.counts = [];
         if (options.defaults) {
-            object.binMin = 0
-            object.binSize = 0
+            object.binMin = 0;
+            object.binSize = 0;
         }
-        if (message.binMin != null && message.hasOwnProperty('binMin'))
-            object.binMin = options.json && !isFinite(message.binMin) ? String(message.binMin) : message.binMin
-        if (message.binSize != null && message.hasOwnProperty('binSize'))
-            object.binSize = options.json && !isFinite(message.binSize) ? String(message.binSize) : message.binSize
+        if (message.binMin != null && message.hasOwnProperty("binMin"))
+            object.binMin = options.json && !isFinite(message.binMin) ? String(message.binMin) : message.binMin;
+        if (message.binSize != null && message.hasOwnProperty("binSize"))
+            object.binSize = options.json && !isFinite(message.binSize) ? String(message.binSize) : message.binSize;
         if (message.counts && message.counts.length) {
-            object.counts = []
+            object.counts = [];
             for (var j = 0; j < message.counts.length; ++j)
-                object.counts[j] = message.counts[j]
+                object.counts[j] = message.counts[j];
         }
-        return object
-    }
+        return object;
+    };
 
     /**
      * Converts this Histogram to JSON.
@@ -1107,8 +1107,8 @@ $root.Histogram = (function () {
      * @returns {Object.<string,*>} JSON object
      */
     Histogram.prototype.toJSON = function toJSON() {
-        return this.constructor.toObject(this, $protobuf.util.toJSONOptions)
-    }
+        return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+    };
 
     /**
      * Gets the default type url for Histogram
@@ -1120,20 +1120,249 @@ $root.Histogram = (function () {
      */
     Histogram.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
         if (typeUrlPrefix === undefined) {
-            typeUrlPrefix = 'type.googleapis.com'
+            typeUrlPrefix = "type.googleapis.com";
         }
-        return `${typeUrlPrefix}/Histogram`
+        return typeUrlPrefix + "/Histogram";
+    };
+
+    return Histogram;
+})();
+
+$root.TimeSeries = (function() {
+
+    /**
+     * Properties of a TimeSeries.
+     * @exports ITimeSeries
+     * @interface ITimeSeries
+     * @property {Array.<number>|null} [values] TimeSeries values
+     */
+
+    /**
+     * Constructs a new TimeSeries.
+     * @exports TimeSeries
+     * @classdesc Represents a TimeSeries.
+     * @implements ITimeSeries
+     * @constructor
+     * @param {ITimeSeries=} [properties] Properties to set
+     */
+    function TimeSeries(properties) {
+        this.values = [];
+        if (properties)
+            for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                if (properties[keys[i]] != null)
+                    this[keys[i]] = properties[keys[i]];
     }
 
-    return Histogram
-})()
+    /**
+     * TimeSeries values.
+     * @member {Array.<number>} values
+     * @memberof TimeSeries
+     * @instance
+     */
+    TimeSeries.prototype.values = $util.emptyArray;
 
-$root.ExtraStatistic = (function () {
+    /**
+     * Creates a new TimeSeries instance using the specified properties.
+     * @function create
+     * @memberof TimeSeries
+     * @static
+     * @param {ITimeSeries=} [properties] Properties to set
+     * @returns {TimeSeries} TimeSeries instance
+     */
+    TimeSeries.create = function create(properties) {
+        return new TimeSeries(properties);
+    };
+
+    /**
+     * Encodes the specified TimeSeries message. Does not implicitly {@link TimeSeries.verify|verify} messages.
+     * @function encode
+     * @memberof TimeSeries
+     * @static
+     * @param {ITimeSeries} message TimeSeries message or plain object to encode
+     * @param {$protobuf.Writer} [writer] Writer to encode to
+     * @returns {$protobuf.Writer} Writer
+     */
+    TimeSeries.encode = function encode(message, writer) {
+        if (!writer)
+            writer = $Writer.create();
+        if (message.values != null && message.values.length) {
+            writer.uint32(/* id 1, wireType 2 =*/10).fork();
+            for (var i = 0; i < message.values.length; ++i)
+                writer.float(message.values[i]);
+            writer.ldelim();
+        }
+        return writer;
+    };
+
+    /**
+     * Encodes the specified TimeSeries message, length delimited. Does not implicitly {@link TimeSeries.verify|verify} messages.
+     * @function encodeDelimited
+     * @memberof TimeSeries
+     * @static
+     * @param {ITimeSeries} message TimeSeries message or plain object to encode
+     * @param {$protobuf.Writer} [writer] Writer to encode to
+     * @returns {$protobuf.Writer} Writer
+     */
+    TimeSeries.encodeDelimited = function encodeDelimited(message, writer) {
+        return this.encode(message, writer).ldelim();
+    };
+
+    /**
+     * Decodes a TimeSeries message from the specified reader or buffer.
+     * @function decode
+     * @memberof TimeSeries
+     * @static
+     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+     * @param {number} [length] Message length if known beforehand
+     * @returns {TimeSeries} TimeSeries
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    TimeSeries.decode = function decode(reader, length) {
+        if (!(reader instanceof $Reader))
+            reader = $Reader.create(reader);
+        var end = length === undefined ? reader.len : reader.pos + length, message = new $root.TimeSeries();
+        while (reader.pos < end) {
+            var tag = reader.uint32();
+            switch (tag >>> 3) {
+            case 1: {
+                    if (!(message.values && message.values.length))
+                        message.values = [];
+                    if ((tag & 7) === 2) {
+                        var end2 = reader.uint32() + reader.pos;
+                        while (reader.pos < end2)
+                            message.values.push(reader.float());
+                    } else
+                        message.values.push(reader.float());
+                    break;
+                }
+            default:
+                reader.skipType(tag & 7);
+                break;
+            }
+        }
+        return message;
+    };
+
+    /**
+     * Decodes a TimeSeries message from the specified reader or buffer, length delimited.
+     * @function decodeDelimited
+     * @memberof TimeSeries
+     * @static
+     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+     * @returns {TimeSeries} TimeSeries
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    TimeSeries.decodeDelimited = function decodeDelimited(reader) {
+        if (!(reader instanceof $Reader))
+            reader = new $Reader(reader);
+        return this.decode(reader, reader.uint32());
+    };
+
+    /**
+     * Verifies a TimeSeries message.
+     * @function verify
+     * @memberof TimeSeries
+     * @static
+     * @param {Object.<string,*>} message Plain object to verify
+     * @returns {string|null} `null` if valid, otherwise the reason why it is not
+     */
+    TimeSeries.verify = function verify(message) {
+        if (typeof message !== "object" || message === null)
+            return "object expected";
+        if (message.values != null && message.hasOwnProperty("values")) {
+            if (!Array.isArray(message.values))
+                return "values: array expected";
+            for (var i = 0; i < message.values.length; ++i)
+                if (typeof message.values[i] !== "number")
+                    return "values: number[] expected";
+        }
+        return null;
+    };
+
+    /**
+     * Creates a TimeSeries message from a plain object. Also converts values to their respective internal types.
+     * @function fromObject
+     * @memberof TimeSeries
+     * @static
+     * @param {Object.<string,*>} object Plain object
+     * @returns {TimeSeries} TimeSeries
+     */
+    TimeSeries.fromObject = function fromObject(object) {
+        if (object instanceof $root.TimeSeries)
+            return object;
+        var message = new $root.TimeSeries();
+        if (object.values) {
+            if (!Array.isArray(object.values))
+                throw TypeError(".TimeSeries.values: array expected");
+            message.values = [];
+            for (var i = 0; i < object.values.length; ++i)
+                message.values[i] = Number(object.values[i]);
+        }
+        return message;
+    };
+
+    /**
+     * Creates a plain object from a TimeSeries message. Also converts values to other types if specified.
+     * @function toObject
+     * @memberof TimeSeries
+     * @static
+     * @param {TimeSeries} message TimeSeries
+     * @param {$protobuf.IConversionOptions} [options] Conversion options
+     * @returns {Object.<string,*>} Plain object
+     */
+    TimeSeries.toObject = function toObject(message, options) {
+        if (!options)
+            options = {};
+        var object = {};
+        if (options.arrays || options.defaults)
+            object.values = [];
+        if (message.values && message.values.length) {
+            object.values = [];
+            for (var j = 0; j < message.values.length; ++j)
+                object.values[j] = options.json && !isFinite(message.values[j]) ? String(message.values[j]) : message.values[j];
+        }
+        return object;
+    };
+
+    /**
+     * Converts this TimeSeries to JSON.
+     * @function toJSON
+     * @memberof TimeSeries
+     * @instance
+     * @returns {Object.<string,*>} JSON object
+     */
+    TimeSeries.prototype.toJSON = function toJSON() {
+        return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+    };
+
+    /**
+     * Gets the default type url for TimeSeries
+     * @function getTypeUrl
+     * @memberof TimeSeries
+     * @static
+     * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns {string} The default type url
+     */
+    TimeSeries.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+        if (typeUrlPrefix === undefined) {
+            typeUrlPrefix = "type.googleapis.com";
+        }
+        return typeUrlPrefix + "/TimeSeries";
+    };
+
+    return TimeSeries;
+})();
+
+$root.ExtraStatistic = (function() {
+
     /**
      * Properties of an ExtraStatistic.
      * @exports IExtraStatistic
      * @interface IExtraStatistic
      * @property {IHistogram|null} [histogram] ExtraStatistic histogram
+     * @property {ITimeSeries|null} [timeseries] ExtraStatistic timeseries
      */
 
     /**
@@ -1148,7 +1377,7 @@ $root.ExtraStatistic = (function () {
         if (properties)
             for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
                 if (properties[keys[i]] != null)
-                    this[keys[i]] = properties[keys[i]]
+                    this[keys[i]] = properties[keys[i]];
     }
 
     /**
@@ -1157,10 +1386,18 @@ $root.ExtraStatistic = (function () {
      * @memberof ExtraStatistic
      * @instance
      */
-    ExtraStatistic.prototype.histogram = null
+    ExtraStatistic.prototype.histogram = null;
+
+    /**
+     * ExtraStatistic timeseries.
+     * @member {ITimeSeries|null|undefined} timeseries
+     * @memberof ExtraStatistic
+     * @instance
+     */
+    ExtraStatistic.prototype.timeseries = null;
 
     // OneOf field names bound to virtual getters and setters
-    var $oneOfFields
+    var $oneOfFields;
 
     /**
      * ExtraStatistic _histogram.
@@ -1168,10 +1405,21 @@ $root.ExtraStatistic = (function () {
      * @memberof ExtraStatistic
      * @instance
      */
-    Object.defineProperty(ExtraStatistic.prototype, '_histogram', {
-        get: $util.oneOfGetter($oneOfFields = ['histogram']),
-        set: $util.oneOfSetter($oneOfFields),
-    })
+    Object.defineProperty(ExtraStatistic.prototype, "_histogram", {
+        get: $util.oneOfGetter($oneOfFields = ["histogram"]),
+        set: $util.oneOfSetter($oneOfFields)
+    });
+
+    /**
+     * ExtraStatistic _timeseries.
+     * @member {"timeseries"|undefined} _timeseries
+     * @memberof ExtraStatistic
+     * @instance
+     */
+    Object.defineProperty(ExtraStatistic.prototype, "_timeseries", {
+        get: $util.oneOfGetter($oneOfFields = ["timeseries"]),
+        set: $util.oneOfSetter($oneOfFields)
+    });
 
     /**
      * Creates a new ExtraStatistic instance using the specified properties.
@@ -1182,8 +1430,8 @@ $root.ExtraStatistic = (function () {
      * @returns {ExtraStatistic} ExtraStatistic instance
      */
     ExtraStatistic.create = function create(properties) {
-        return new ExtraStatistic(properties)
-    }
+        return new ExtraStatistic(properties);
+    };
 
     /**
      * Encodes the specified ExtraStatistic message. Does not implicitly {@link ExtraStatistic.verify|verify} messages.
@@ -1196,11 +1444,13 @@ $root.ExtraStatistic = (function () {
      */
     ExtraStatistic.encode = function encode(message, writer) {
         if (!writer)
-            writer = $Writer.create()
-        if (message.histogram != null && Object.hasOwnProperty.call(message, 'histogram'))
-            $root.Histogram.encode(message.histogram, writer.uint32(/* id 1, wireType 2 = */10).fork()).ldelim()
-        return writer
-    }
+            writer = $Writer.create();
+        if (message.histogram != null && Object.hasOwnProperty.call(message, "histogram"))
+            $root.Histogram.encode(message.histogram, writer.uint32(/* id 1, wireType 2 =*/10).fork()).ldelim();
+        if (message.timeseries != null && Object.hasOwnProperty.call(message, "timeseries"))
+            $root.TimeSeries.encode(message.timeseries, writer.uint32(/* id 2, wireType 2 =*/18).fork()).ldelim();
+        return writer;
+    };
 
     /**
      * Encodes the specified ExtraStatistic message, length delimited. Does not implicitly {@link ExtraStatistic.verify|verify} messages.
@@ -1212,8 +1462,8 @@ $root.ExtraStatistic = (function () {
      * @returns {$protobuf.Writer} Writer
      */
     ExtraStatistic.encodeDelimited = function encodeDelimited(message, writer) {
-        return this.encode(message, writer).ldelim()
-    }
+        return this.encode(message, writer).ldelim();
+    };
 
     /**
      * Decodes an ExtraStatistic message from the specified reader or buffer.
@@ -1228,22 +1478,26 @@ $root.ExtraStatistic = (function () {
      */
     ExtraStatistic.decode = function decode(reader, length) {
         if (!(reader instanceof $Reader))
-            reader = $Reader.create(reader)
-        var end = length === undefined ? reader.len : reader.pos + length, message = new $root.ExtraStatistic()
+            reader = $Reader.create(reader);
+        var end = length === undefined ? reader.len : reader.pos + length, message = new $root.ExtraStatistic();
         while (reader.pos < end) {
-            var tag = reader.uint32()
+            var tag = reader.uint32();
             switch (tag >>> 3) {
-                case 1: {
-                    message.histogram = $root.Histogram.decode(reader, reader.uint32())
-                    break
+            case 1: {
+                    message.histogram = $root.Histogram.decode(reader, reader.uint32());
+                    break;
                 }
-                default:
-                    reader.skipType(tag & 7)
-                    break
+            case 2: {
+                    message.timeseries = $root.TimeSeries.decode(reader, reader.uint32());
+                    break;
+                }
+            default:
+                reader.skipType(tag & 7);
+                break;
             }
         }
-        return message
-    }
+        return message;
+    };
 
     /**
      * Decodes an ExtraStatistic message from the specified reader or buffer, length delimited.
@@ -1257,9 +1511,9 @@ $root.ExtraStatistic = (function () {
      */
     ExtraStatistic.decodeDelimited = function decodeDelimited(reader) {
         if (!(reader instanceof $Reader))
-            reader = new $Reader(reader)
-        return this.decode(reader, reader.uint32())
-    }
+            reader = new $Reader(reader);
+        return this.decode(reader, reader.uint32());
+    };
 
     /**
      * Verifies an ExtraStatistic message.
@@ -1270,19 +1524,27 @@ $root.ExtraStatistic = (function () {
      * @returns {string|null} `null` if valid, otherwise the reason why it is not
      */
     ExtraStatistic.verify = function verify(message) {
-        if (typeof message !== 'object' || message === null)
-            return 'object expected'
-        var properties = {}
-        if (message.histogram != null && message.hasOwnProperty('histogram')) {
-            properties._histogram = 1
+        if (typeof message !== "object" || message === null)
+            return "object expected";
+        var properties = {};
+        if (message.histogram != null && message.hasOwnProperty("histogram")) {
+            properties._histogram = 1;
             {
-                var error = $root.Histogram.verify(message.histogram)
+                var error = $root.Histogram.verify(message.histogram);
                 if (error)
-                    return `histogram.${error}`
+                    return "histogram." + error;
             }
         }
-        return null
-    }
+        if (message.timeseries != null && message.hasOwnProperty("timeseries")) {
+            properties._timeseries = 1;
+            {
+                var error = $root.TimeSeries.verify(message.timeseries);
+                if (error)
+                    return "timeseries." + error;
+            }
+        }
+        return null;
+    };
 
     /**
      * Creates an ExtraStatistic message from a plain object. Also converts values to their respective internal types.
@@ -1294,15 +1556,20 @@ $root.ExtraStatistic = (function () {
      */
     ExtraStatistic.fromObject = function fromObject(object) {
         if (object instanceof $root.ExtraStatistic)
-            return object
-        var message = new $root.ExtraStatistic()
+            return object;
+        var message = new $root.ExtraStatistic();
         if (object.histogram != null) {
-            if (typeof object.histogram !== 'object')
-                throw TypeError('.ExtraStatistic.histogram: object expected')
-            message.histogram = $root.Histogram.fromObject(object.histogram)
+            if (typeof object.histogram !== "object")
+                throw TypeError(".ExtraStatistic.histogram: object expected");
+            message.histogram = $root.Histogram.fromObject(object.histogram);
         }
-        return message
-    }
+        if (object.timeseries != null) {
+            if (typeof object.timeseries !== "object")
+                throw TypeError(".ExtraStatistic.timeseries: object expected");
+            message.timeseries = $root.TimeSeries.fromObject(object.timeseries);
+        }
+        return message;
+    };
 
     /**
      * Creates a plain object from an ExtraStatistic message. Also converts values to other types if specified.
@@ -1315,15 +1582,20 @@ $root.ExtraStatistic = (function () {
      */
     ExtraStatistic.toObject = function toObject(message, options) {
         if (!options)
-            options = {}
-        var object = {}
-        if (message.histogram != null && message.hasOwnProperty('histogram')) {
-            object.histogram = $root.Histogram.toObject(message.histogram, options)
+            options = {};
+        var object = {};
+        if (message.histogram != null && message.hasOwnProperty("histogram")) {
+            object.histogram = $root.Histogram.toObject(message.histogram, options);
             if (options.oneofs)
-                object._histogram = 'histogram'
+                object._histogram = "histogram";
         }
-        return object
-    }
+        if (message.timeseries != null && message.hasOwnProperty("timeseries")) {
+            object.timeseries = $root.TimeSeries.toObject(message.timeseries, options);
+            if (options.oneofs)
+                object._timeseries = "timeseries";
+        }
+        return object;
+    };
 
     /**
      * Converts this ExtraStatistic to JSON.
@@ -1333,8 +1605,8 @@ $root.ExtraStatistic = (function () {
      * @returns {Object.<string,*>} JSON object
      */
     ExtraStatistic.prototype.toJSON = function toJSON() {
-        return this.constructor.toObject(this, $protobuf.util.toJSONOptions)
-    }
+        return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+    };
 
     /**
      * Gets the default type url for ExtraStatistic
@@ -1346,15 +1618,16 @@ $root.ExtraStatistic = (function () {
      */
     ExtraStatistic.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
         if (typeUrlPrefix === undefined) {
-            typeUrlPrefix = 'type.googleapis.com'
+            typeUrlPrefix = "type.googleapis.com";
         }
-        return `${typeUrlPrefix}/ExtraStatistic`
-    }
+        return typeUrlPrefix + "/ExtraStatistic";
+    };
 
-    return ExtraStatistic
-})()
+    return ExtraStatistic;
+})();
 
-$root.Article = (function () {
+$root.Article = (function() {
+
     /**
      * Properties of an Article.
      * @exports IArticle
@@ -1378,14 +1651,14 @@ $root.Article = (function () {
      * @param {IArticle=} [properties] Properties to set
      */
     function Article(properties) {
-        this.rows = []
-        this.related = []
-        this.universes = []
-        this.extraStats = []
+        this.rows = [];
+        this.related = [];
+        this.universes = [];
+        this.extraStats = [];
         if (properties)
             for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
                 if (properties[keys[i]] != null)
-                    this[keys[i]] = properties[keys[i]]
+                    this[keys[i]] = properties[keys[i]];
     }
 
     /**
@@ -1394,7 +1667,7 @@ $root.Article = (function () {
      * @memberof Article
      * @instance
      */
-    Article.prototype.shortname = ''
+    Article.prototype.shortname = "";
 
     /**
      * Article longname.
@@ -1402,7 +1675,7 @@ $root.Article = (function () {
      * @memberof Article
      * @instance
      */
-    Article.prototype.longname = ''
+    Article.prototype.longname = "";
 
     /**
      * Article source.
@@ -1410,7 +1683,7 @@ $root.Article = (function () {
      * @memberof Article
      * @instance
      */
-    Article.prototype.source = ''
+    Article.prototype.source = "";
 
     /**
      * Article articleType.
@@ -1418,7 +1691,7 @@ $root.Article = (function () {
      * @memberof Article
      * @instance
      */
-    Article.prototype.articleType = ''
+    Article.prototype.articleType = "";
 
     /**
      * Article rows.
@@ -1426,7 +1699,7 @@ $root.Article = (function () {
      * @memberof Article
      * @instance
      */
-    Article.prototype.rows = $util.emptyArray
+    Article.prototype.rows = $util.emptyArray;
 
     /**
      * Article related.
@@ -1434,7 +1707,7 @@ $root.Article = (function () {
      * @memberof Article
      * @instance
      */
-    Article.prototype.related = $util.emptyArray
+    Article.prototype.related = $util.emptyArray;
 
     /**
      * Article universes.
@@ -1442,7 +1715,7 @@ $root.Article = (function () {
      * @memberof Article
      * @instance
      */
-    Article.prototype.universes = $util.emptyArray
+    Article.prototype.universes = $util.emptyArray;
 
     /**
      * Article extraStats.
@@ -1450,7 +1723,7 @@ $root.Article = (function () {
      * @memberof Article
      * @instance
      */
-    Article.prototype.extraStats = $util.emptyArray
+    Article.prototype.extraStats = $util.emptyArray;
 
     /**
      * Creates a new Article instance using the specified properties.
@@ -1461,8 +1734,8 @@ $root.Article = (function () {
      * @returns {Article} Article instance
      */
     Article.create = function create(properties) {
-        return new Article(properties)
-    }
+        return new Article(properties);
+    };
 
     /**
      * Encodes the specified Article message. Does not implicitly {@link Article.verify|verify} messages.
@@ -1475,29 +1748,29 @@ $root.Article = (function () {
      */
     Article.encode = function encode(message, writer) {
         if (!writer)
-            writer = $Writer.create()
-        if (message.shortname != null && Object.hasOwnProperty.call(message, 'shortname'))
-            writer.uint32(/* id 1, wireType 2 = */10).string(message.shortname)
-        if (message.longname != null && Object.hasOwnProperty.call(message, 'longname'))
-            writer.uint32(/* id 2, wireType 2 = */18).string(message.longname)
-        if (message.source != null && Object.hasOwnProperty.call(message, 'source'))
-            writer.uint32(/* id 3, wireType 2 = */26).string(message.source)
-        if (message.articleType != null && Object.hasOwnProperty.call(message, 'articleType'))
-            writer.uint32(/* id 4, wireType 2 = */34).string(message.articleType)
-        if (message.rows?.length)
+            writer = $Writer.create();
+        if (message.shortname != null && Object.hasOwnProperty.call(message, "shortname"))
+            writer.uint32(/* id 1, wireType 2 =*/10).string(message.shortname);
+        if (message.longname != null && Object.hasOwnProperty.call(message, "longname"))
+            writer.uint32(/* id 2, wireType 2 =*/18).string(message.longname);
+        if (message.source != null && Object.hasOwnProperty.call(message, "source"))
+            writer.uint32(/* id 3, wireType 2 =*/26).string(message.source);
+        if (message.articleType != null && Object.hasOwnProperty.call(message, "articleType"))
+            writer.uint32(/* id 4, wireType 2 =*/34).string(message.articleType);
+        if (message.rows != null && message.rows.length)
             for (var i = 0; i < message.rows.length; ++i)
-                $root.StatisticRow.encode(message.rows[i], writer.uint32(/* id 5, wireType 2 = */42).fork()).ldelim()
-        if (message.related?.length)
+                $root.StatisticRow.encode(message.rows[i], writer.uint32(/* id 5, wireType 2 =*/42).fork()).ldelim();
+        if (message.related != null && message.related.length)
             for (var i = 0; i < message.related.length; ++i)
-                $root.RelatedButtons.encode(message.related[i], writer.uint32(/* id 6, wireType 2 = */50).fork()).ldelim()
-        if (message.universes?.length)
+                $root.RelatedButtons.encode(message.related[i], writer.uint32(/* id 6, wireType 2 =*/50).fork()).ldelim();
+        if (message.universes != null && message.universes.length)
             for (var i = 0; i < message.universes.length; ++i)
-                writer.uint32(/* id 7, wireType 2 = */58).string(message.universes[i])
-        if (message.extraStats?.length)
+                writer.uint32(/* id 7, wireType 2 =*/58).string(message.universes[i]);
+        if (message.extraStats != null && message.extraStats.length)
             for (var i = 0; i < message.extraStats.length; ++i)
-                $root.ExtraStatistic.encode(message.extraStats[i], writer.uint32(/* id 8, wireType 2 = */66).fork()).ldelim()
-        return writer
-    }
+                $root.ExtraStatistic.encode(message.extraStats[i], writer.uint32(/* id 8, wireType 2 =*/66).fork()).ldelim();
+        return writer;
+    };
 
     /**
      * Encodes the specified Article message, length delimited. Does not implicitly {@link Article.verify|verify} messages.
@@ -1509,8 +1782,8 @@ $root.Article = (function () {
      * @returns {$protobuf.Writer} Writer
      */
     Article.encodeDelimited = function encodeDelimited(message, writer) {
-        return this.encode(message, writer).ldelim()
-    }
+        return this.encode(message, writer).ldelim();
+    };
 
     /**
      * Decodes an Article message from the specified reader or buffer.
@@ -1525,58 +1798,58 @@ $root.Article = (function () {
      */
     Article.decode = function decode(reader, length) {
         if (!(reader instanceof $Reader))
-            reader = $Reader.create(reader)
-        var end = length === undefined ? reader.len : reader.pos + length, message = new $root.Article()
+            reader = $Reader.create(reader);
+        var end = length === undefined ? reader.len : reader.pos + length, message = new $root.Article();
         while (reader.pos < end) {
-            var tag = reader.uint32()
+            var tag = reader.uint32();
             switch (tag >>> 3) {
-                case 1: {
-                    message.shortname = reader.string()
-                    break
+            case 1: {
+                    message.shortname = reader.string();
+                    break;
                 }
-                case 2: {
-                    message.longname = reader.string()
-                    break
+            case 2: {
+                    message.longname = reader.string();
+                    break;
                 }
-                case 3: {
-                    message.source = reader.string()
-                    break
+            case 3: {
+                    message.source = reader.string();
+                    break;
                 }
-                case 4: {
-                    message.articleType = reader.string()
-                    break
+            case 4: {
+                    message.articleType = reader.string();
+                    break;
                 }
-                case 5: {
-                    if (!(message.rows?.length))
-                        message.rows = []
-                    message.rows.push($root.StatisticRow.decode(reader, reader.uint32()))
-                    break
+            case 5: {
+                    if (!(message.rows && message.rows.length))
+                        message.rows = [];
+                    message.rows.push($root.StatisticRow.decode(reader, reader.uint32()));
+                    break;
                 }
-                case 6: {
-                    if (!(message.related?.length))
-                        message.related = []
-                    message.related.push($root.RelatedButtons.decode(reader, reader.uint32()))
-                    break
+            case 6: {
+                    if (!(message.related && message.related.length))
+                        message.related = [];
+                    message.related.push($root.RelatedButtons.decode(reader, reader.uint32()));
+                    break;
                 }
-                case 7: {
-                    if (!(message.universes?.length))
-                        message.universes = []
-                    message.universes.push(reader.string())
-                    break
+            case 7: {
+                    if (!(message.universes && message.universes.length))
+                        message.universes = [];
+                    message.universes.push(reader.string());
+                    break;
                 }
-                case 8: {
-                    if (!(message.extraStats?.length))
-                        message.extraStats = []
-                    message.extraStats.push($root.ExtraStatistic.decode(reader, reader.uint32()))
-                    break
+            case 8: {
+                    if (!(message.extraStats && message.extraStats.length))
+                        message.extraStats = [];
+                    message.extraStats.push($root.ExtraStatistic.decode(reader, reader.uint32()));
+                    break;
                 }
-                default:
-                    reader.skipType(tag & 7)
-                    break
+            default:
+                reader.skipType(tag & 7);
+                break;
             }
         }
-        return message
-    }
+        return message;
+    };
 
     /**
      * Decodes an Article message from the specified reader or buffer, length delimited.
@@ -1590,9 +1863,9 @@ $root.Article = (function () {
      */
     Article.decodeDelimited = function decodeDelimited(reader) {
         if (!(reader instanceof $Reader))
-            reader = new $Reader(reader)
-        return this.decode(reader, reader.uint32())
-    }
+            reader = new $Reader(reader);
+        return this.decode(reader, reader.uint32());
+    };
 
     /**
      * Verifies an Article message.
@@ -1603,56 +1876,56 @@ $root.Article = (function () {
      * @returns {string|null} `null` if valid, otherwise the reason why it is not
      */
     Article.verify = function verify(message) {
-        if (typeof message !== 'object' || message === null)
-            return 'object expected'
-        if (message.shortname != null && message.hasOwnProperty('shortname'))
+        if (typeof message !== "object" || message === null)
+            return "object expected";
+        if (message.shortname != null && message.hasOwnProperty("shortname"))
             if (!$util.isString(message.shortname))
-                return 'shortname: string expected'
-        if (message.longname != null && message.hasOwnProperty('longname'))
+                return "shortname: string expected";
+        if (message.longname != null && message.hasOwnProperty("longname"))
             if (!$util.isString(message.longname))
-                return 'longname: string expected'
-        if (message.source != null && message.hasOwnProperty('source'))
+                return "longname: string expected";
+        if (message.source != null && message.hasOwnProperty("source"))
             if (!$util.isString(message.source))
-                return 'source: string expected'
-        if (message.articleType != null && message.hasOwnProperty('articleType'))
+                return "source: string expected";
+        if (message.articleType != null && message.hasOwnProperty("articleType"))
             if (!$util.isString(message.articleType))
-                return 'articleType: string expected'
-        if (message.rows != null && message.hasOwnProperty('rows')) {
+                return "articleType: string expected";
+        if (message.rows != null && message.hasOwnProperty("rows")) {
             if (!Array.isArray(message.rows))
-                return 'rows: array expected'
+                return "rows: array expected";
             for (var i = 0; i < message.rows.length; ++i) {
-                var error = $root.StatisticRow.verify(message.rows[i])
+                var error = $root.StatisticRow.verify(message.rows[i]);
                 if (error)
-                    return `rows.${error}`
+                    return "rows." + error;
             }
         }
-        if (message.related != null && message.hasOwnProperty('related')) {
+        if (message.related != null && message.hasOwnProperty("related")) {
             if (!Array.isArray(message.related))
-                return 'related: array expected'
+                return "related: array expected";
             for (var i = 0; i < message.related.length; ++i) {
-                var error = $root.RelatedButtons.verify(message.related[i])
+                var error = $root.RelatedButtons.verify(message.related[i]);
                 if (error)
-                    return `related.${error}`
+                    return "related." + error;
             }
         }
-        if (message.universes != null && message.hasOwnProperty('universes')) {
+        if (message.universes != null && message.hasOwnProperty("universes")) {
             if (!Array.isArray(message.universes))
-                return 'universes: array expected'
+                return "universes: array expected";
             for (var i = 0; i < message.universes.length; ++i)
                 if (!$util.isString(message.universes[i]))
-                    return 'universes: string[] expected'
+                    return "universes: string[] expected";
         }
-        if (message.extraStats != null && message.hasOwnProperty('extraStats')) {
+        if (message.extraStats != null && message.hasOwnProperty("extraStats")) {
             if (!Array.isArray(message.extraStats))
-                return 'extraStats: array expected'
+                return "extraStats: array expected";
             for (var i = 0; i < message.extraStats.length; ++i) {
-                var error = $root.ExtraStatistic.verify(message.extraStats[i])
+                var error = $root.ExtraStatistic.verify(message.extraStats[i]);
                 if (error)
-                    return `extraStats.${error}`
+                    return "extraStats." + error;
             }
         }
-        return null
-    }
+        return null;
+    };
 
     /**
      * Creates an Article message from a plain object. Also converts values to their respective internal types.
@@ -1664,55 +1937,55 @@ $root.Article = (function () {
      */
     Article.fromObject = function fromObject(object) {
         if (object instanceof $root.Article)
-            return object
-        var message = new $root.Article()
+            return object;
+        var message = new $root.Article();
         if (object.shortname != null)
-            message.shortname = String(object.shortname)
+            message.shortname = String(object.shortname);
         if (object.longname != null)
-            message.longname = String(object.longname)
+            message.longname = String(object.longname);
         if (object.source != null)
-            message.source = String(object.source)
+            message.source = String(object.source);
         if (object.articleType != null)
-            message.articleType = String(object.articleType)
+            message.articleType = String(object.articleType);
         if (object.rows) {
             if (!Array.isArray(object.rows))
-                throw TypeError('.Article.rows: array expected')
-            message.rows = []
+                throw TypeError(".Article.rows: array expected");
+            message.rows = [];
             for (var i = 0; i < object.rows.length; ++i) {
-                if (typeof object.rows[i] !== 'object')
-                    throw TypeError('.Article.rows: object expected')
-                message.rows[i] = $root.StatisticRow.fromObject(object.rows[i])
+                if (typeof object.rows[i] !== "object")
+                    throw TypeError(".Article.rows: object expected");
+                message.rows[i] = $root.StatisticRow.fromObject(object.rows[i]);
             }
         }
         if (object.related) {
             if (!Array.isArray(object.related))
-                throw TypeError('.Article.related: array expected')
-            message.related = []
+                throw TypeError(".Article.related: array expected");
+            message.related = [];
             for (var i = 0; i < object.related.length; ++i) {
-                if (typeof object.related[i] !== 'object')
-                    throw TypeError('.Article.related: object expected')
-                message.related[i] = $root.RelatedButtons.fromObject(object.related[i])
+                if (typeof object.related[i] !== "object")
+                    throw TypeError(".Article.related: object expected");
+                message.related[i] = $root.RelatedButtons.fromObject(object.related[i]);
             }
         }
         if (object.universes) {
             if (!Array.isArray(object.universes))
-                throw TypeError('.Article.universes: array expected')
-            message.universes = []
+                throw TypeError(".Article.universes: array expected");
+            message.universes = [];
             for (var i = 0; i < object.universes.length; ++i)
-                message.universes[i] = String(object.universes[i])
+                message.universes[i] = String(object.universes[i]);
         }
         if (object.extraStats) {
             if (!Array.isArray(object.extraStats))
-                throw TypeError('.Article.extraStats: array expected')
-            message.extraStats = []
+                throw TypeError(".Article.extraStats: array expected");
+            message.extraStats = [];
             for (var i = 0; i < object.extraStats.length; ++i) {
-                if (typeof object.extraStats[i] !== 'object')
-                    throw TypeError('.Article.extraStats: object expected')
-                message.extraStats[i] = $root.ExtraStatistic.fromObject(object.extraStats[i])
+                if (typeof object.extraStats[i] !== "object")
+                    throw TypeError(".Article.extraStats: object expected");
+                message.extraStats[i] = $root.ExtraStatistic.fromObject(object.extraStats[i]);
             }
         }
-        return message
-    }
+        return message;
+    };
 
     /**
      * Creates a plain object from an Article message. Also converts values to other types if specified.
@@ -1725,50 +1998,50 @@ $root.Article = (function () {
      */
     Article.toObject = function toObject(message, options) {
         if (!options)
-            options = {}
-        var object = {}
+            options = {};
+        var object = {};
         if (options.arrays || options.defaults) {
-            object.rows = []
-            object.related = []
-            object.universes = []
-            object.extraStats = []
+            object.rows = [];
+            object.related = [];
+            object.universes = [];
+            object.extraStats = [];
         }
         if (options.defaults) {
-            object.shortname = ''
-            object.longname = ''
-            object.source = ''
-            object.articleType = ''
+            object.shortname = "";
+            object.longname = "";
+            object.source = "";
+            object.articleType = "";
         }
-        if (message.shortname != null && message.hasOwnProperty('shortname'))
-            object.shortname = message.shortname
-        if (message.longname != null && message.hasOwnProperty('longname'))
-            object.longname = message.longname
-        if (message.source != null && message.hasOwnProperty('source'))
-            object.source = message.source
-        if (message.articleType != null && message.hasOwnProperty('articleType'))
-            object.articleType = message.articleType
+        if (message.shortname != null && message.hasOwnProperty("shortname"))
+            object.shortname = message.shortname;
+        if (message.longname != null && message.hasOwnProperty("longname"))
+            object.longname = message.longname;
+        if (message.source != null && message.hasOwnProperty("source"))
+            object.source = message.source;
+        if (message.articleType != null && message.hasOwnProperty("articleType"))
+            object.articleType = message.articleType;
         if (message.rows && message.rows.length) {
-            object.rows = []
+            object.rows = [];
             for (var j = 0; j < message.rows.length; ++j)
-                object.rows[j] = $root.StatisticRow.toObject(message.rows[j], options)
+                object.rows[j] = $root.StatisticRow.toObject(message.rows[j], options);
         }
         if (message.related && message.related.length) {
-            object.related = []
+            object.related = [];
             for (var j = 0; j < message.related.length; ++j)
-                object.related[j] = $root.RelatedButtons.toObject(message.related[j], options)
+                object.related[j] = $root.RelatedButtons.toObject(message.related[j], options);
         }
         if (message.universes && message.universes.length) {
-            object.universes = []
+            object.universes = [];
             for (var j = 0; j < message.universes.length; ++j)
-                object.universes[j] = message.universes[j]
+                object.universes[j] = message.universes[j];
         }
         if (message.extraStats && message.extraStats.length) {
-            object.extraStats = []
+            object.extraStats = [];
             for (var j = 0; j < message.extraStats.length; ++j)
-                object.extraStats[j] = $root.ExtraStatistic.toObject(message.extraStats[j], options)
+                object.extraStats[j] = $root.ExtraStatistic.toObject(message.extraStats[j], options);
         }
-        return object
-    }
+        return object;
+    };
 
     /**
      * Converts this Article to JSON.
@@ -1778,8 +2051,8 @@ $root.Article = (function () {
      * @returns {Object.<string,*>} JSON object
      */
     Article.prototype.toJSON = function toJSON() {
-        return this.constructor.toObject(this, $protobuf.util.toJSONOptions)
-    }
+        return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+    };
 
     /**
      * Gets the default type url for Article
@@ -1791,15 +2064,16 @@ $root.Article = (function () {
      */
     Article.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
         if (typeUrlPrefix === undefined) {
-            typeUrlPrefix = 'type.googleapis.com'
+            typeUrlPrefix = "type.googleapis.com";
         }
-        return `${typeUrlPrefix}/Article`
-    }
+        return typeUrlPrefix + "/Article";
+    };
 
-    return Article
-})()
+    return Article;
+})();
 
-$root.Coordinate = (function () {
+$root.Coordinate = (function() {
+
     /**
      * Properties of a Coordinate.
      * @exports ICoordinate
@@ -1820,7 +2094,7 @@ $root.Coordinate = (function () {
         if (properties)
             for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
                 if (properties[keys[i]] != null)
-                    this[keys[i]] = properties[keys[i]]
+                    this[keys[i]] = properties[keys[i]];
     }
 
     /**
@@ -1829,7 +2103,7 @@ $root.Coordinate = (function () {
      * @memberof Coordinate
      * @instance
      */
-    Coordinate.prototype.lon = 0
+    Coordinate.prototype.lon = 0;
 
     /**
      * Coordinate lat.
@@ -1837,7 +2111,7 @@ $root.Coordinate = (function () {
      * @memberof Coordinate
      * @instance
      */
-    Coordinate.prototype.lat = 0
+    Coordinate.prototype.lat = 0;
 
     /**
      * Creates a new Coordinate instance using the specified properties.
@@ -1848,8 +2122,8 @@ $root.Coordinate = (function () {
      * @returns {Coordinate} Coordinate instance
      */
     Coordinate.create = function create(properties) {
-        return new Coordinate(properties)
-    }
+        return new Coordinate(properties);
+    };
 
     /**
      * Encodes the specified Coordinate message. Does not implicitly {@link Coordinate.verify|verify} messages.
@@ -1862,13 +2136,13 @@ $root.Coordinate = (function () {
      */
     Coordinate.encode = function encode(message, writer) {
         if (!writer)
-            writer = $Writer.create()
-        if (message.lon != null && Object.hasOwnProperty.call(message, 'lon'))
-            writer.uint32(/* id 1, wireType 5 = */13).float(message.lon)
-        if (message.lat != null && Object.hasOwnProperty.call(message, 'lat'))
-            writer.uint32(/* id 2, wireType 5 = */21).float(message.lat)
-        return writer
-    }
+            writer = $Writer.create();
+        if (message.lon != null && Object.hasOwnProperty.call(message, "lon"))
+            writer.uint32(/* id 1, wireType 5 =*/13).float(message.lon);
+        if (message.lat != null && Object.hasOwnProperty.call(message, "lat"))
+            writer.uint32(/* id 2, wireType 5 =*/21).float(message.lat);
+        return writer;
+    };
 
     /**
      * Encodes the specified Coordinate message, length delimited. Does not implicitly {@link Coordinate.verify|verify} messages.
@@ -1880,8 +2154,8 @@ $root.Coordinate = (function () {
      * @returns {$protobuf.Writer} Writer
      */
     Coordinate.encodeDelimited = function encodeDelimited(message, writer) {
-        return this.encode(message, writer).ldelim()
-    }
+        return this.encode(message, writer).ldelim();
+    };
 
     /**
      * Decodes a Coordinate message from the specified reader or buffer.
@@ -1896,26 +2170,26 @@ $root.Coordinate = (function () {
      */
     Coordinate.decode = function decode(reader, length) {
         if (!(reader instanceof $Reader))
-            reader = $Reader.create(reader)
-        var end = length === undefined ? reader.len : reader.pos + length, message = new $root.Coordinate()
+            reader = $Reader.create(reader);
+        var end = length === undefined ? reader.len : reader.pos + length, message = new $root.Coordinate();
         while (reader.pos < end) {
-            var tag = reader.uint32()
+            var tag = reader.uint32();
             switch (tag >>> 3) {
-                case 1: {
-                    message.lon = reader.float()
-                    break
+            case 1: {
+                    message.lon = reader.float();
+                    break;
                 }
-                case 2: {
-                    message.lat = reader.float()
-                    break
+            case 2: {
+                    message.lat = reader.float();
+                    break;
                 }
-                default:
-                    reader.skipType(tag & 7)
-                    break
+            default:
+                reader.skipType(tag & 7);
+                break;
             }
         }
-        return message
-    }
+        return message;
+    };
 
     /**
      * Decodes a Coordinate message from the specified reader or buffer, length delimited.
@@ -1929,9 +2203,9 @@ $root.Coordinate = (function () {
      */
     Coordinate.decodeDelimited = function decodeDelimited(reader) {
         if (!(reader instanceof $Reader))
-            reader = new $Reader(reader)
-        return this.decode(reader, reader.uint32())
-    }
+            reader = new $Reader(reader);
+        return this.decode(reader, reader.uint32());
+    };
 
     /**
      * Verifies a Coordinate message.
@@ -1942,16 +2216,16 @@ $root.Coordinate = (function () {
      * @returns {string|null} `null` if valid, otherwise the reason why it is not
      */
     Coordinate.verify = function verify(message) {
-        if (typeof message !== 'object' || message === null)
-            return 'object expected'
-        if (message.lon != null && message.hasOwnProperty('lon'))
-            if (typeof message.lon !== 'number')
-                return 'lon: number expected'
-        if (message.lat != null && message.hasOwnProperty('lat'))
-            if (typeof message.lat !== 'number')
-                return 'lat: number expected'
-        return null
-    }
+        if (typeof message !== "object" || message === null)
+            return "object expected";
+        if (message.lon != null && message.hasOwnProperty("lon"))
+            if (typeof message.lon !== "number")
+                return "lon: number expected";
+        if (message.lat != null && message.hasOwnProperty("lat"))
+            if (typeof message.lat !== "number")
+                return "lat: number expected";
+        return null;
+    };
 
     /**
      * Creates a Coordinate message from a plain object. Also converts values to their respective internal types.
@@ -1963,14 +2237,14 @@ $root.Coordinate = (function () {
      */
     Coordinate.fromObject = function fromObject(object) {
         if (object instanceof $root.Coordinate)
-            return object
-        var message = new $root.Coordinate()
+            return object;
+        var message = new $root.Coordinate();
         if (object.lon != null)
-            message.lon = Number(object.lon)
+            message.lon = Number(object.lon);
         if (object.lat != null)
-            message.lat = Number(object.lat)
-        return message
-    }
+            message.lat = Number(object.lat);
+        return message;
+    };
 
     /**
      * Creates a plain object from a Coordinate message. Also converts values to other types if specified.
@@ -1983,18 +2257,18 @@ $root.Coordinate = (function () {
      */
     Coordinate.toObject = function toObject(message, options) {
         if (!options)
-            options = {}
-        var object = {}
+            options = {};
+        var object = {};
         if (options.defaults) {
-            object.lon = 0
-            object.lat = 0
+            object.lon = 0;
+            object.lat = 0;
         }
-        if (message.lon != null && message.hasOwnProperty('lon'))
-            object.lon = options.json && !isFinite(message.lon) ? String(message.lon) : message.lon
-        if (message.lat != null && message.hasOwnProperty('lat'))
-            object.lat = options.json && !isFinite(message.lat) ? String(message.lat) : message.lat
-        return object
-    }
+        if (message.lon != null && message.hasOwnProperty("lon"))
+            object.lon = options.json && !isFinite(message.lon) ? String(message.lon) : message.lon;
+        if (message.lat != null && message.hasOwnProperty("lat"))
+            object.lat = options.json && !isFinite(message.lat) ? String(message.lat) : message.lat;
+        return object;
+    };
 
     /**
      * Converts this Coordinate to JSON.
@@ -2004,8 +2278,8 @@ $root.Coordinate = (function () {
      * @returns {Object.<string,*>} JSON object
      */
     Coordinate.prototype.toJSON = function toJSON() {
-        return this.constructor.toObject(this, $protobuf.util.toJSONOptions)
-    }
+        return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+    };
 
     /**
      * Gets the default type url for Coordinate
@@ -2017,15 +2291,16 @@ $root.Coordinate = (function () {
      */
     Coordinate.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
         if (typeUrlPrefix === undefined) {
-            typeUrlPrefix = 'type.googleapis.com'
+            typeUrlPrefix = "type.googleapis.com";
         }
-        return `${typeUrlPrefix}/Coordinate`
-    }
+        return typeUrlPrefix + "/Coordinate";
+    };
 
-    return Coordinate
-})()
+    return Coordinate;
+})();
 
-$root.Ring = (function () {
+$root.Ring = (function() {
+
     /**
      * Properties of a Ring.
      * @exports IRing
@@ -2042,11 +2317,11 @@ $root.Ring = (function () {
      * @param {IRing=} [properties] Properties to set
      */
     function Ring(properties) {
-        this.coords = []
+        this.coords = [];
         if (properties)
             for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
                 if (properties[keys[i]] != null)
-                    this[keys[i]] = properties[keys[i]]
+                    this[keys[i]] = properties[keys[i]];
     }
 
     /**
@@ -2055,7 +2330,7 @@ $root.Ring = (function () {
      * @memberof Ring
      * @instance
      */
-    Ring.prototype.coords = $util.emptyArray
+    Ring.prototype.coords = $util.emptyArray;
 
     /**
      * Creates a new Ring instance using the specified properties.
@@ -2066,8 +2341,8 @@ $root.Ring = (function () {
      * @returns {Ring} Ring instance
      */
     Ring.create = function create(properties) {
-        return new Ring(properties)
-    }
+        return new Ring(properties);
+    };
 
     /**
      * Encodes the specified Ring message. Does not implicitly {@link Ring.verify|verify} messages.
@@ -2080,12 +2355,12 @@ $root.Ring = (function () {
      */
     Ring.encode = function encode(message, writer) {
         if (!writer)
-            writer = $Writer.create()
-        if (message.coords?.length)
+            writer = $Writer.create();
+        if (message.coords != null && message.coords.length)
             for (var i = 0; i < message.coords.length; ++i)
-                $root.Coordinate.encode(message.coords[i], writer.uint32(/* id 1, wireType 2 = */10).fork()).ldelim()
-        return writer
-    }
+                $root.Coordinate.encode(message.coords[i], writer.uint32(/* id 1, wireType 2 =*/10).fork()).ldelim();
+        return writer;
+    };
 
     /**
      * Encodes the specified Ring message, length delimited. Does not implicitly {@link Ring.verify|verify} messages.
@@ -2097,8 +2372,8 @@ $root.Ring = (function () {
      * @returns {$protobuf.Writer} Writer
      */
     Ring.encodeDelimited = function encodeDelimited(message, writer) {
-        return this.encode(message, writer).ldelim()
-    }
+        return this.encode(message, writer).ldelim();
+    };
 
     /**
      * Decodes a Ring message from the specified reader or buffer.
@@ -2113,24 +2388,24 @@ $root.Ring = (function () {
      */
     Ring.decode = function decode(reader, length) {
         if (!(reader instanceof $Reader))
-            reader = $Reader.create(reader)
-        var end = length === undefined ? reader.len : reader.pos + length, message = new $root.Ring()
+            reader = $Reader.create(reader);
+        var end = length === undefined ? reader.len : reader.pos + length, message = new $root.Ring();
         while (reader.pos < end) {
-            var tag = reader.uint32()
+            var tag = reader.uint32();
             switch (tag >>> 3) {
-                case 1: {
-                    if (!(message.coords?.length))
-                        message.coords = []
-                    message.coords.push($root.Coordinate.decode(reader, reader.uint32()))
-                    break
+            case 1: {
+                    if (!(message.coords && message.coords.length))
+                        message.coords = [];
+                    message.coords.push($root.Coordinate.decode(reader, reader.uint32()));
+                    break;
                 }
-                default:
-                    reader.skipType(tag & 7)
-                    break
+            default:
+                reader.skipType(tag & 7);
+                break;
             }
         }
-        return message
-    }
+        return message;
+    };
 
     /**
      * Decodes a Ring message from the specified reader or buffer, length delimited.
@@ -2144,9 +2419,9 @@ $root.Ring = (function () {
      */
     Ring.decodeDelimited = function decodeDelimited(reader) {
         if (!(reader instanceof $Reader))
-            reader = new $Reader(reader)
-        return this.decode(reader, reader.uint32())
-    }
+            reader = new $Reader(reader);
+        return this.decode(reader, reader.uint32());
+    };
 
     /**
      * Verifies a Ring message.
@@ -2157,19 +2432,19 @@ $root.Ring = (function () {
      * @returns {string|null} `null` if valid, otherwise the reason why it is not
      */
     Ring.verify = function verify(message) {
-        if (typeof message !== 'object' || message === null)
-            return 'object expected'
-        if (message.coords != null && message.hasOwnProperty('coords')) {
+        if (typeof message !== "object" || message === null)
+            return "object expected";
+        if (message.coords != null && message.hasOwnProperty("coords")) {
             if (!Array.isArray(message.coords))
-                return 'coords: array expected'
+                return "coords: array expected";
             for (var i = 0; i < message.coords.length; ++i) {
-                var error = $root.Coordinate.verify(message.coords[i])
+                var error = $root.Coordinate.verify(message.coords[i]);
                 if (error)
-                    return `coords.${error}`
+                    return "coords." + error;
             }
         }
-        return null
-    }
+        return null;
+    };
 
     /**
      * Creates a Ring message from a plain object. Also converts values to their respective internal types.
@@ -2181,20 +2456,20 @@ $root.Ring = (function () {
      */
     Ring.fromObject = function fromObject(object) {
         if (object instanceof $root.Ring)
-            return object
-        var message = new $root.Ring()
+            return object;
+        var message = new $root.Ring();
         if (object.coords) {
             if (!Array.isArray(object.coords))
-                throw TypeError('.Ring.coords: array expected')
-            message.coords = []
+                throw TypeError(".Ring.coords: array expected");
+            message.coords = [];
             for (var i = 0; i < object.coords.length; ++i) {
-                if (typeof object.coords[i] !== 'object')
-                    throw TypeError('.Ring.coords: object expected')
-                message.coords[i] = $root.Coordinate.fromObject(object.coords[i])
+                if (typeof object.coords[i] !== "object")
+                    throw TypeError(".Ring.coords: object expected");
+                message.coords[i] = $root.Coordinate.fromObject(object.coords[i]);
             }
         }
-        return message
-    }
+        return message;
+    };
 
     /**
      * Creates a plain object from a Ring message. Also converts values to other types if specified.
@@ -2207,17 +2482,17 @@ $root.Ring = (function () {
      */
     Ring.toObject = function toObject(message, options) {
         if (!options)
-            options = {}
-        var object = {}
+            options = {};
+        var object = {};
         if (options.arrays || options.defaults)
-            object.coords = []
+            object.coords = [];
         if (message.coords && message.coords.length) {
-            object.coords = []
+            object.coords = [];
             for (var j = 0; j < message.coords.length; ++j)
-                object.coords[j] = $root.Coordinate.toObject(message.coords[j], options)
+                object.coords[j] = $root.Coordinate.toObject(message.coords[j], options);
         }
-        return object
-    }
+        return object;
+    };
 
     /**
      * Converts this Ring to JSON.
@@ -2227,8 +2502,8 @@ $root.Ring = (function () {
      * @returns {Object.<string,*>} JSON object
      */
     Ring.prototype.toJSON = function toJSON() {
-        return this.constructor.toObject(this, $protobuf.util.toJSONOptions)
-    }
+        return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+    };
 
     /**
      * Gets the default type url for Ring
@@ -2240,15 +2515,16 @@ $root.Ring = (function () {
      */
     Ring.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
         if (typeUrlPrefix === undefined) {
-            typeUrlPrefix = 'type.googleapis.com'
+            typeUrlPrefix = "type.googleapis.com";
         }
-        return `${typeUrlPrefix}/Ring`
-    }
+        return typeUrlPrefix + "/Ring";
+    };
 
-    return Ring
-})()
+    return Ring;
+})();
 
-$root.Polygon = (function () {
+$root.Polygon = (function() {
+
     /**
      * Properties of a Polygon.
      * @exports IPolygon
@@ -2265,11 +2541,11 @@ $root.Polygon = (function () {
      * @param {IPolygon=} [properties] Properties to set
      */
     function Polygon(properties) {
-        this.rings = []
+        this.rings = [];
         if (properties)
             for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
                 if (properties[keys[i]] != null)
-                    this[keys[i]] = properties[keys[i]]
+                    this[keys[i]] = properties[keys[i]];
     }
 
     /**
@@ -2278,7 +2554,7 @@ $root.Polygon = (function () {
      * @memberof Polygon
      * @instance
      */
-    Polygon.prototype.rings = $util.emptyArray
+    Polygon.prototype.rings = $util.emptyArray;
 
     /**
      * Creates a new Polygon instance using the specified properties.
@@ -2289,8 +2565,8 @@ $root.Polygon = (function () {
      * @returns {Polygon} Polygon instance
      */
     Polygon.create = function create(properties) {
-        return new Polygon(properties)
-    }
+        return new Polygon(properties);
+    };
 
     /**
      * Encodes the specified Polygon message. Does not implicitly {@link Polygon.verify|verify} messages.
@@ -2303,12 +2579,12 @@ $root.Polygon = (function () {
      */
     Polygon.encode = function encode(message, writer) {
         if (!writer)
-            writer = $Writer.create()
-        if (message.rings?.length)
+            writer = $Writer.create();
+        if (message.rings != null && message.rings.length)
             for (var i = 0; i < message.rings.length; ++i)
-                $root.Ring.encode(message.rings[i], writer.uint32(/* id 1, wireType 2 = */10).fork()).ldelim()
-        return writer
-    }
+                $root.Ring.encode(message.rings[i], writer.uint32(/* id 1, wireType 2 =*/10).fork()).ldelim();
+        return writer;
+    };
 
     /**
      * Encodes the specified Polygon message, length delimited. Does not implicitly {@link Polygon.verify|verify} messages.
@@ -2320,8 +2596,8 @@ $root.Polygon = (function () {
      * @returns {$protobuf.Writer} Writer
      */
     Polygon.encodeDelimited = function encodeDelimited(message, writer) {
-        return this.encode(message, writer).ldelim()
-    }
+        return this.encode(message, writer).ldelim();
+    };
 
     /**
      * Decodes a Polygon message from the specified reader or buffer.
@@ -2336,24 +2612,24 @@ $root.Polygon = (function () {
      */
     Polygon.decode = function decode(reader, length) {
         if (!(reader instanceof $Reader))
-            reader = $Reader.create(reader)
-        var end = length === undefined ? reader.len : reader.pos + length, message = new $root.Polygon()
+            reader = $Reader.create(reader);
+        var end = length === undefined ? reader.len : reader.pos + length, message = new $root.Polygon();
         while (reader.pos < end) {
-            var tag = reader.uint32()
+            var tag = reader.uint32();
             switch (tag >>> 3) {
-                case 1: {
-                    if (!(message.rings?.length))
-                        message.rings = []
-                    message.rings.push($root.Ring.decode(reader, reader.uint32()))
-                    break
+            case 1: {
+                    if (!(message.rings && message.rings.length))
+                        message.rings = [];
+                    message.rings.push($root.Ring.decode(reader, reader.uint32()));
+                    break;
                 }
-                default:
-                    reader.skipType(tag & 7)
-                    break
+            default:
+                reader.skipType(tag & 7);
+                break;
             }
         }
-        return message
-    }
+        return message;
+    };
 
     /**
      * Decodes a Polygon message from the specified reader or buffer, length delimited.
@@ -2367,9 +2643,9 @@ $root.Polygon = (function () {
      */
     Polygon.decodeDelimited = function decodeDelimited(reader) {
         if (!(reader instanceof $Reader))
-            reader = new $Reader(reader)
-        return this.decode(reader, reader.uint32())
-    }
+            reader = new $Reader(reader);
+        return this.decode(reader, reader.uint32());
+    };
 
     /**
      * Verifies a Polygon message.
@@ -2380,19 +2656,19 @@ $root.Polygon = (function () {
      * @returns {string|null} `null` if valid, otherwise the reason why it is not
      */
     Polygon.verify = function verify(message) {
-        if (typeof message !== 'object' || message === null)
-            return 'object expected'
-        if (message.rings != null && message.hasOwnProperty('rings')) {
+        if (typeof message !== "object" || message === null)
+            return "object expected";
+        if (message.rings != null && message.hasOwnProperty("rings")) {
             if (!Array.isArray(message.rings))
-                return 'rings: array expected'
+                return "rings: array expected";
             for (var i = 0; i < message.rings.length; ++i) {
-                var error = $root.Ring.verify(message.rings[i])
+                var error = $root.Ring.verify(message.rings[i]);
                 if (error)
-                    return `rings.${error}`
+                    return "rings." + error;
             }
         }
-        return null
-    }
+        return null;
+    };
 
     /**
      * Creates a Polygon message from a plain object. Also converts values to their respective internal types.
@@ -2404,20 +2680,20 @@ $root.Polygon = (function () {
      */
     Polygon.fromObject = function fromObject(object) {
         if (object instanceof $root.Polygon)
-            return object
-        var message = new $root.Polygon()
+            return object;
+        var message = new $root.Polygon();
         if (object.rings) {
             if (!Array.isArray(object.rings))
-                throw TypeError('.Polygon.rings: array expected')
-            message.rings = []
+                throw TypeError(".Polygon.rings: array expected");
+            message.rings = [];
             for (var i = 0; i < object.rings.length; ++i) {
-                if (typeof object.rings[i] !== 'object')
-                    throw TypeError('.Polygon.rings: object expected')
-                message.rings[i] = $root.Ring.fromObject(object.rings[i])
+                if (typeof object.rings[i] !== "object")
+                    throw TypeError(".Polygon.rings: object expected");
+                message.rings[i] = $root.Ring.fromObject(object.rings[i]);
             }
         }
-        return message
-    }
+        return message;
+    };
 
     /**
      * Creates a plain object from a Polygon message. Also converts values to other types if specified.
@@ -2430,17 +2706,17 @@ $root.Polygon = (function () {
      */
     Polygon.toObject = function toObject(message, options) {
         if (!options)
-            options = {}
-        var object = {}
+            options = {};
+        var object = {};
         if (options.arrays || options.defaults)
-            object.rings = []
+            object.rings = [];
         if (message.rings && message.rings.length) {
-            object.rings = []
+            object.rings = [];
             for (var j = 0; j < message.rings.length; ++j)
-                object.rings[j] = $root.Ring.toObject(message.rings[j], options)
+                object.rings[j] = $root.Ring.toObject(message.rings[j], options);
         }
-        return object
-    }
+        return object;
+    };
 
     /**
      * Converts this Polygon to JSON.
@@ -2450,8 +2726,8 @@ $root.Polygon = (function () {
      * @returns {Object.<string,*>} JSON object
      */
     Polygon.prototype.toJSON = function toJSON() {
-        return this.constructor.toObject(this, $protobuf.util.toJSONOptions)
-    }
+        return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+    };
 
     /**
      * Gets the default type url for Polygon
@@ -2463,15 +2739,16 @@ $root.Polygon = (function () {
      */
     Polygon.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
         if (typeUrlPrefix === undefined) {
-            typeUrlPrefix = 'type.googleapis.com'
+            typeUrlPrefix = "type.googleapis.com";
         }
-        return `${typeUrlPrefix}/Polygon`
-    }
+        return typeUrlPrefix + "/Polygon";
+    };
 
-    return Polygon
-})()
+    return Polygon;
+})();
 
-$root.MultiPolygon = (function () {
+$root.MultiPolygon = (function() {
+
     /**
      * Properties of a MultiPolygon.
      * @exports IMultiPolygon
@@ -2488,11 +2765,11 @@ $root.MultiPolygon = (function () {
      * @param {IMultiPolygon=} [properties] Properties to set
      */
     function MultiPolygon(properties) {
-        this.polygons = []
+        this.polygons = [];
         if (properties)
             for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
                 if (properties[keys[i]] != null)
-                    this[keys[i]] = properties[keys[i]]
+                    this[keys[i]] = properties[keys[i]];
     }
 
     /**
@@ -2501,7 +2778,7 @@ $root.MultiPolygon = (function () {
      * @memberof MultiPolygon
      * @instance
      */
-    MultiPolygon.prototype.polygons = $util.emptyArray
+    MultiPolygon.prototype.polygons = $util.emptyArray;
 
     /**
      * Creates a new MultiPolygon instance using the specified properties.
@@ -2512,8 +2789,8 @@ $root.MultiPolygon = (function () {
      * @returns {MultiPolygon} MultiPolygon instance
      */
     MultiPolygon.create = function create(properties) {
-        return new MultiPolygon(properties)
-    }
+        return new MultiPolygon(properties);
+    };
 
     /**
      * Encodes the specified MultiPolygon message. Does not implicitly {@link MultiPolygon.verify|verify} messages.
@@ -2526,12 +2803,12 @@ $root.MultiPolygon = (function () {
      */
     MultiPolygon.encode = function encode(message, writer) {
         if (!writer)
-            writer = $Writer.create()
-        if (message.polygons?.length)
+            writer = $Writer.create();
+        if (message.polygons != null && message.polygons.length)
             for (var i = 0; i < message.polygons.length; ++i)
-                $root.Polygon.encode(message.polygons[i], writer.uint32(/* id 1, wireType 2 = */10).fork()).ldelim()
-        return writer
-    }
+                $root.Polygon.encode(message.polygons[i], writer.uint32(/* id 1, wireType 2 =*/10).fork()).ldelim();
+        return writer;
+    };
 
     /**
      * Encodes the specified MultiPolygon message, length delimited. Does not implicitly {@link MultiPolygon.verify|verify} messages.
@@ -2543,8 +2820,8 @@ $root.MultiPolygon = (function () {
      * @returns {$protobuf.Writer} Writer
      */
     MultiPolygon.encodeDelimited = function encodeDelimited(message, writer) {
-        return this.encode(message, writer).ldelim()
-    }
+        return this.encode(message, writer).ldelim();
+    };
 
     /**
      * Decodes a MultiPolygon message from the specified reader or buffer.
@@ -2559,24 +2836,24 @@ $root.MultiPolygon = (function () {
      */
     MultiPolygon.decode = function decode(reader, length) {
         if (!(reader instanceof $Reader))
-            reader = $Reader.create(reader)
-        var end = length === undefined ? reader.len : reader.pos + length, message = new $root.MultiPolygon()
+            reader = $Reader.create(reader);
+        var end = length === undefined ? reader.len : reader.pos + length, message = new $root.MultiPolygon();
         while (reader.pos < end) {
-            var tag = reader.uint32()
+            var tag = reader.uint32();
             switch (tag >>> 3) {
-                case 1: {
-                    if (!(message.polygons?.length))
-                        message.polygons = []
-                    message.polygons.push($root.Polygon.decode(reader, reader.uint32()))
-                    break
+            case 1: {
+                    if (!(message.polygons && message.polygons.length))
+                        message.polygons = [];
+                    message.polygons.push($root.Polygon.decode(reader, reader.uint32()));
+                    break;
                 }
-                default:
-                    reader.skipType(tag & 7)
-                    break
+            default:
+                reader.skipType(tag & 7);
+                break;
             }
         }
-        return message
-    }
+        return message;
+    };
 
     /**
      * Decodes a MultiPolygon message from the specified reader or buffer, length delimited.
@@ -2590,9 +2867,9 @@ $root.MultiPolygon = (function () {
      */
     MultiPolygon.decodeDelimited = function decodeDelimited(reader) {
         if (!(reader instanceof $Reader))
-            reader = new $Reader(reader)
-        return this.decode(reader, reader.uint32())
-    }
+            reader = new $Reader(reader);
+        return this.decode(reader, reader.uint32());
+    };
 
     /**
      * Verifies a MultiPolygon message.
@@ -2603,19 +2880,19 @@ $root.MultiPolygon = (function () {
      * @returns {string|null} `null` if valid, otherwise the reason why it is not
      */
     MultiPolygon.verify = function verify(message) {
-        if (typeof message !== 'object' || message === null)
-            return 'object expected'
-        if (message.polygons != null && message.hasOwnProperty('polygons')) {
+        if (typeof message !== "object" || message === null)
+            return "object expected";
+        if (message.polygons != null && message.hasOwnProperty("polygons")) {
             if (!Array.isArray(message.polygons))
-                return 'polygons: array expected'
+                return "polygons: array expected";
             for (var i = 0; i < message.polygons.length; ++i) {
-                var error = $root.Polygon.verify(message.polygons[i])
+                var error = $root.Polygon.verify(message.polygons[i]);
                 if (error)
-                    return `polygons.${error}`
+                    return "polygons." + error;
             }
         }
-        return null
-    }
+        return null;
+    };
 
     /**
      * Creates a MultiPolygon message from a plain object. Also converts values to their respective internal types.
@@ -2627,20 +2904,20 @@ $root.MultiPolygon = (function () {
      */
     MultiPolygon.fromObject = function fromObject(object) {
         if (object instanceof $root.MultiPolygon)
-            return object
-        var message = new $root.MultiPolygon()
+            return object;
+        var message = new $root.MultiPolygon();
         if (object.polygons) {
             if (!Array.isArray(object.polygons))
-                throw TypeError('.MultiPolygon.polygons: array expected')
-            message.polygons = []
+                throw TypeError(".MultiPolygon.polygons: array expected");
+            message.polygons = [];
             for (var i = 0; i < object.polygons.length; ++i) {
-                if (typeof object.polygons[i] !== 'object')
-                    throw TypeError('.MultiPolygon.polygons: object expected')
-                message.polygons[i] = $root.Polygon.fromObject(object.polygons[i])
+                if (typeof object.polygons[i] !== "object")
+                    throw TypeError(".MultiPolygon.polygons: object expected");
+                message.polygons[i] = $root.Polygon.fromObject(object.polygons[i]);
             }
         }
-        return message
-    }
+        return message;
+    };
 
     /**
      * Creates a plain object from a MultiPolygon message. Also converts values to other types if specified.
@@ -2653,17 +2930,17 @@ $root.MultiPolygon = (function () {
      */
     MultiPolygon.toObject = function toObject(message, options) {
         if (!options)
-            options = {}
-        var object = {}
+            options = {};
+        var object = {};
         if (options.arrays || options.defaults)
-            object.polygons = []
+            object.polygons = [];
         if (message.polygons && message.polygons.length) {
-            object.polygons = []
+            object.polygons = [];
             for (var j = 0; j < message.polygons.length; ++j)
-                object.polygons[j] = $root.Polygon.toObject(message.polygons[j], options)
+                object.polygons[j] = $root.Polygon.toObject(message.polygons[j], options);
         }
-        return object
-    }
+        return object;
+    };
 
     /**
      * Converts this MultiPolygon to JSON.
@@ -2673,8 +2950,8 @@ $root.MultiPolygon = (function () {
      * @returns {Object.<string,*>} JSON object
      */
     MultiPolygon.prototype.toJSON = function toJSON() {
-        return this.constructor.toObject(this, $protobuf.util.toJSONOptions)
-    }
+        return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+    };
 
     /**
      * Gets the default type url for MultiPolygon
@@ -2686,15 +2963,16 @@ $root.MultiPolygon = (function () {
      */
     MultiPolygon.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
         if (typeUrlPrefix === undefined) {
-            typeUrlPrefix = 'type.googleapis.com'
+            typeUrlPrefix = "type.googleapis.com";
         }
-        return `${typeUrlPrefix}/MultiPolygon`
-    }
+        return typeUrlPrefix + "/MultiPolygon";
+    };
 
-    return MultiPolygon
-})()
+    return MultiPolygon;
+})();
 
-$root.Feature = (function () {
+$root.Feature = (function() {
+
     /**
      * Properties of a Feature.
      * @exports IFeature
@@ -2714,11 +2992,11 @@ $root.Feature = (function () {
      * @param {IFeature=} [properties] Properties to set
      */
     function Feature(properties) {
-        this.zones = []
+        this.zones = [];
         if (properties)
             for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
                 if (properties[keys[i]] != null)
-                    this[keys[i]] = properties[keys[i]]
+                    this[keys[i]] = properties[keys[i]];
     }
 
     /**
@@ -2727,7 +3005,7 @@ $root.Feature = (function () {
      * @memberof Feature
      * @instance
      */
-    Feature.prototype.polygon = null
+    Feature.prototype.polygon = null;
 
     /**
      * Feature multipolygon.
@@ -2735,7 +3013,7 @@ $root.Feature = (function () {
      * @memberof Feature
      * @instance
      */
-    Feature.prototype.multipolygon = null
+    Feature.prototype.multipolygon = null;
 
     /**
      * Feature zones.
@@ -2743,7 +3021,7 @@ $root.Feature = (function () {
      * @memberof Feature
      * @instance
      */
-    Feature.prototype.zones = $util.emptyArray
+    Feature.prototype.zones = $util.emptyArray;
 
     /**
      * Feature centerLon.
@@ -2751,10 +3029,10 @@ $root.Feature = (function () {
      * @memberof Feature
      * @instance
      */
-    Feature.prototype.centerLon = 0
+    Feature.prototype.centerLon = 0;
 
     // OneOf field names bound to virtual getters and setters
-    var $oneOfFields
+    var $oneOfFields;
 
     /**
      * Feature geometry.
@@ -2762,10 +3040,10 @@ $root.Feature = (function () {
      * @memberof Feature
      * @instance
      */
-    Object.defineProperty(Feature.prototype, 'geometry', {
-        get: $util.oneOfGetter($oneOfFields = ['polygon', 'multipolygon']),
-        set: $util.oneOfSetter($oneOfFields),
-    })
+    Object.defineProperty(Feature.prototype, "geometry", {
+        get: $util.oneOfGetter($oneOfFields = ["polygon", "multipolygon"]),
+        set: $util.oneOfSetter($oneOfFields)
+    });
 
     /**
      * Creates a new Feature instance using the specified properties.
@@ -2776,8 +3054,8 @@ $root.Feature = (function () {
      * @returns {Feature} Feature instance
      */
     Feature.create = function create(properties) {
-        return new Feature(properties)
-    }
+        return new Feature(properties);
+    };
 
     /**
      * Encodes the specified Feature message. Does not implicitly {@link Feature.verify|verify} messages.
@@ -2790,21 +3068,21 @@ $root.Feature = (function () {
      */
     Feature.encode = function encode(message, writer) {
         if (!writer)
-            writer = $Writer.create()
-        if (message.polygon != null && Object.hasOwnProperty.call(message, 'polygon'))
-            $root.Polygon.encode(message.polygon, writer.uint32(/* id 1, wireType 2 = */10).fork()).ldelim()
-        if (message.multipolygon != null && Object.hasOwnProperty.call(message, 'multipolygon'))
-            $root.MultiPolygon.encode(message.multipolygon, writer.uint32(/* id 2, wireType 2 = */18).fork()).ldelim()
-        if (message.zones?.length) {
-            writer.uint32(/* id 3, wireType 2 = */26).fork()
+            writer = $Writer.create();
+        if (message.polygon != null && Object.hasOwnProperty.call(message, "polygon"))
+            $root.Polygon.encode(message.polygon, writer.uint32(/* id 1, wireType 2 =*/10).fork()).ldelim();
+        if (message.multipolygon != null && Object.hasOwnProperty.call(message, "multipolygon"))
+            $root.MultiPolygon.encode(message.multipolygon, writer.uint32(/* id 2, wireType 2 =*/18).fork()).ldelim();
+        if (message.zones != null && message.zones.length) {
+            writer.uint32(/* id 3, wireType 2 =*/26).fork();
             for (var i = 0; i < message.zones.length; ++i)
-                writer.int32(message.zones[i])
-            writer.ldelim()
+                writer.int32(message.zones[i]);
+            writer.ldelim();
         }
-        if (message.centerLon != null && Object.hasOwnProperty.call(message, 'centerLon'))
-            writer.uint32(/* id 4, wireType 5 = */37).float(message.centerLon)
-        return writer
-    }
+        if (message.centerLon != null && Object.hasOwnProperty.call(message, "centerLon"))
+            writer.uint32(/* id 4, wireType 5 =*/37).float(message.centerLon);
+        return writer;
+    };
 
     /**
      * Encodes the specified Feature message, length delimited. Does not implicitly {@link Feature.verify|verify} messages.
@@ -2816,8 +3094,8 @@ $root.Feature = (function () {
      * @returns {$protobuf.Writer} Writer
      */
     Feature.encodeDelimited = function encodeDelimited(message, writer) {
-        return this.encode(message, writer).ldelim()
-    }
+        return this.encode(message, writer).ldelim();
+    };
 
     /**
      * Decodes a Feature message from the specified reader or buffer.
@@ -2832,42 +3110,41 @@ $root.Feature = (function () {
      */
     Feature.decode = function decode(reader, length) {
         if (!(reader instanceof $Reader))
-            reader = $Reader.create(reader)
-        var end = length === undefined ? reader.len : reader.pos + length, message = new $root.Feature()
+            reader = $Reader.create(reader);
+        var end = length === undefined ? reader.len : reader.pos + length, message = new $root.Feature();
         while (reader.pos < end) {
-            var tag = reader.uint32()
+            var tag = reader.uint32();
             switch (tag >>> 3) {
-                case 1: {
-                    message.polygon = $root.Polygon.decode(reader, reader.uint32())
-                    break
+            case 1: {
+                    message.polygon = $root.Polygon.decode(reader, reader.uint32());
+                    break;
                 }
-                case 2: {
-                    message.multipolygon = $root.MultiPolygon.decode(reader, reader.uint32())
-                    break
+            case 2: {
+                    message.multipolygon = $root.MultiPolygon.decode(reader, reader.uint32());
+                    break;
                 }
-                case 3: {
-                    if (!(message.zones?.length))
-                        message.zones = []
+            case 3: {
+                    if (!(message.zones && message.zones.length))
+                        message.zones = [];
                     if ((tag & 7) === 2) {
-                        var end2 = reader.uint32() + reader.pos
+                        var end2 = reader.uint32() + reader.pos;
                         while (reader.pos < end2)
-                            message.zones.push(reader.int32())
-                    }
-                    else
-                        message.zones.push(reader.int32())
-                    break
+                            message.zones.push(reader.int32());
+                    } else
+                        message.zones.push(reader.int32());
+                    break;
                 }
-                case 4: {
-                    message.centerLon = reader.float()
-                    break
+            case 4: {
+                    message.centerLon = reader.float();
+                    break;
                 }
-                default:
-                    reader.skipType(tag & 7)
-                    break
+            default:
+                reader.skipType(tag & 7);
+                break;
             }
         }
-        return message
-    }
+        return message;
+    };
 
     /**
      * Decodes a Feature message from the specified reader or buffer, length delimited.
@@ -2881,9 +3158,9 @@ $root.Feature = (function () {
      */
     Feature.decodeDelimited = function decodeDelimited(reader) {
         if (!(reader instanceof $Reader))
-            reader = new $Reader(reader)
-        return this.decode(reader, reader.uint32())
-    }
+            reader = new $Reader(reader);
+        return this.decode(reader, reader.uint32());
+    };
 
     /**
      * Verifies a Feature message.
@@ -2894,39 +3171,39 @@ $root.Feature = (function () {
      * @returns {string|null} `null` if valid, otherwise the reason why it is not
      */
     Feature.verify = function verify(message) {
-        if (typeof message !== 'object' || message === null)
-            return 'object expected'
-        var properties = {}
-        if (message.polygon != null && message.hasOwnProperty('polygon')) {
-            properties.geometry = 1
+        if (typeof message !== "object" || message === null)
+            return "object expected";
+        var properties = {};
+        if (message.polygon != null && message.hasOwnProperty("polygon")) {
+            properties.geometry = 1;
             {
-                var error = $root.Polygon.verify(message.polygon)
+                var error = $root.Polygon.verify(message.polygon);
                 if (error)
-                    return `polygon.${error}`
+                    return "polygon." + error;
             }
         }
-        if (message.multipolygon != null && message.hasOwnProperty('multipolygon')) {
+        if (message.multipolygon != null && message.hasOwnProperty("multipolygon")) {
             if (properties.geometry === 1)
-                return 'geometry: multiple values'
-            properties.geometry = 1
+                return "geometry: multiple values";
+            properties.geometry = 1;
             {
-                var error = $root.MultiPolygon.verify(message.multipolygon)
+                var error = $root.MultiPolygon.verify(message.multipolygon);
                 if (error)
-                    return `multipolygon.${error}`
+                    return "multipolygon." + error;
             }
         }
-        if (message.zones != null && message.hasOwnProperty('zones')) {
+        if (message.zones != null && message.hasOwnProperty("zones")) {
             if (!Array.isArray(message.zones))
-                return 'zones: array expected'
+                return "zones: array expected";
             for (var i = 0; i < message.zones.length; ++i)
                 if (!$util.isInteger(message.zones[i]))
-                    return 'zones: integer[] expected'
+                    return "zones: integer[] expected";
         }
-        if (message.centerLon != null && message.hasOwnProperty('centerLon'))
-            if (typeof message.centerLon !== 'number')
-                return 'centerLon: number expected'
-        return null
-    }
+        if (message.centerLon != null && message.hasOwnProperty("centerLon"))
+            if (typeof message.centerLon !== "number")
+                return "centerLon: number expected";
+        return null;
+    };
 
     /**
      * Creates a Feature message from a plain object. Also converts values to their respective internal types.
@@ -2938,29 +3215,29 @@ $root.Feature = (function () {
      */
     Feature.fromObject = function fromObject(object) {
         if (object instanceof $root.Feature)
-            return object
-        var message = new $root.Feature()
+            return object;
+        var message = new $root.Feature();
         if (object.polygon != null) {
-            if (typeof object.polygon !== 'object')
-                throw TypeError('.Feature.polygon: object expected')
-            message.polygon = $root.Polygon.fromObject(object.polygon)
+            if (typeof object.polygon !== "object")
+                throw TypeError(".Feature.polygon: object expected");
+            message.polygon = $root.Polygon.fromObject(object.polygon);
         }
         if (object.multipolygon != null) {
-            if (typeof object.multipolygon !== 'object')
-                throw TypeError('.Feature.multipolygon: object expected')
-            message.multipolygon = $root.MultiPolygon.fromObject(object.multipolygon)
+            if (typeof object.multipolygon !== "object")
+                throw TypeError(".Feature.multipolygon: object expected");
+            message.multipolygon = $root.MultiPolygon.fromObject(object.multipolygon);
         }
         if (object.zones) {
             if (!Array.isArray(object.zones))
-                throw TypeError('.Feature.zones: array expected')
-            message.zones = []
+                throw TypeError(".Feature.zones: array expected");
+            message.zones = [];
             for (var i = 0; i < object.zones.length; ++i)
-                message.zones[i] = object.zones[i] | 0
+                message.zones[i] = object.zones[i] | 0;
         }
         if (object.centerLon != null)
-            message.centerLon = Number(object.centerLon)
-        return message
-    }
+            message.centerLon = Number(object.centerLon);
+        return message;
+    };
 
     /**
      * Creates a plain object from a Feature message. Also converts values to other types if specified.
@@ -2973,31 +3250,31 @@ $root.Feature = (function () {
      */
     Feature.toObject = function toObject(message, options) {
         if (!options)
-            options = {}
-        var object = {}
+            options = {};
+        var object = {};
         if (options.arrays || options.defaults)
-            object.zones = []
+            object.zones = [];
         if (options.defaults)
-            object.centerLon = 0
-        if (message.polygon != null && message.hasOwnProperty('polygon')) {
-            object.polygon = $root.Polygon.toObject(message.polygon, options)
+            object.centerLon = 0;
+        if (message.polygon != null && message.hasOwnProperty("polygon")) {
+            object.polygon = $root.Polygon.toObject(message.polygon, options);
             if (options.oneofs)
-                object.geometry = 'polygon'
+                object.geometry = "polygon";
         }
-        if (message.multipolygon != null && message.hasOwnProperty('multipolygon')) {
-            object.multipolygon = $root.MultiPolygon.toObject(message.multipolygon, options)
+        if (message.multipolygon != null && message.hasOwnProperty("multipolygon")) {
+            object.multipolygon = $root.MultiPolygon.toObject(message.multipolygon, options);
             if (options.oneofs)
-                object.geometry = 'multipolygon'
+                object.geometry = "multipolygon";
         }
         if (message.zones && message.zones.length) {
-            object.zones = []
+            object.zones = [];
             for (var j = 0; j < message.zones.length; ++j)
-                object.zones[j] = message.zones[j]
+                object.zones[j] = message.zones[j];
         }
-        if (message.centerLon != null && message.hasOwnProperty('centerLon'))
-            object.centerLon = options.json && !isFinite(message.centerLon) ? String(message.centerLon) : message.centerLon
-        return object
-    }
+        if (message.centerLon != null && message.hasOwnProperty("centerLon"))
+            object.centerLon = options.json && !isFinite(message.centerLon) ? String(message.centerLon) : message.centerLon;
+        return object;
+    };
 
     /**
      * Converts this Feature to JSON.
@@ -3007,8 +3284,8 @@ $root.Feature = (function () {
      * @returns {Object.<string,*>} JSON object
      */
     Feature.prototype.toJSON = function toJSON() {
-        return this.constructor.toObject(this, $protobuf.util.toJSONOptions)
-    }
+        return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+    };
 
     /**
      * Gets the default type url for Feature
@@ -3020,15 +3297,16 @@ $root.Feature = (function () {
      */
     Feature.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
         if (typeUrlPrefix === undefined) {
-            typeUrlPrefix = 'type.googleapis.com'
+            typeUrlPrefix = "type.googleapis.com";
         }
-        return `${typeUrlPrefix}/Feature`
-    }
+        return typeUrlPrefix + "/Feature";
+    };
 
-    return Feature
-})()
+    return Feature;
+})();
 
-$root.StringList = (function () {
+$root.StringList = (function() {
+
     /**
      * Properties of a StringList.
      * @exports IStringList
@@ -3045,11 +3323,11 @@ $root.StringList = (function () {
      * @param {IStringList=} [properties] Properties to set
      */
     function StringList(properties) {
-        this.elements = []
+        this.elements = [];
         if (properties)
             for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
                 if (properties[keys[i]] != null)
-                    this[keys[i]] = properties[keys[i]]
+                    this[keys[i]] = properties[keys[i]];
     }
 
     /**
@@ -3058,7 +3336,7 @@ $root.StringList = (function () {
      * @memberof StringList
      * @instance
      */
-    StringList.prototype.elements = $util.emptyArray
+    StringList.prototype.elements = $util.emptyArray;
 
     /**
      * Creates a new StringList instance using the specified properties.
@@ -3069,8 +3347,8 @@ $root.StringList = (function () {
      * @returns {StringList} StringList instance
      */
     StringList.create = function create(properties) {
-        return new StringList(properties)
-    }
+        return new StringList(properties);
+    };
 
     /**
      * Encodes the specified StringList message. Does not implicitly {@link StringList.verify|verify} messages.
@@ -3083,12 +3361,12 @@ $root.StringList = (function () {
      */
     StringList.encode = function encode(message, writer) {
         if (!writer)
-            writer = $Writer.create()
-        if (message.elements?.length)
+            writer = $Writer.create();
+        if (message.elements != null && message.elements.length)
             for (var i = 0; i < message.elements.length; ++i)
-                writer.uint32(/* id 1, wireType 2 = */10).string(message.elements[i])
-        return writer
-    }
+                writer.uint32(/* id 1, wireType 2 =*/10).string(message.elements[i]);
+        return writer;
+    };
 
     /**
      * Encodes the specified StringList message, length delimited. Does not implicitly {@link StringList.verify|verify} messages.
@@ -3100,8 +3378,8 @@ $root.StringList = (function () {
      * @returns {$protobuf.Writer} Writer
      */
     StringList.encodeDelimited = function encodeDelimited(message, writer) {
-        return this.encode(message, writer).ldelim()
-    }
+        return this.encode(message, writer).ldelim();
+    };
 
     /**
      * Decodes a StringList message from the specified reader or buffer.
@@ -3116,24 +3394,24 @@ $root.StringList = (function () {
      */
     StringList.decode = function decode(reader, length) {
         if (!(reader instanceof $Reader))
-            reader = $Reader.create(reader)
-        var end = length === undefined ? reader.len : reader.pos + length, message = new $root.StringList()
+            reader = $Reader.create(reader);
+        var end = length === undefined ? reader.len : reader.pos + length, message = new $root.StringList();
         while (reader.pos < end) {
-            var tag = reader.uint32()
+            var tag = reader.uint32();
             switch (tag >>> 3) {
-                case 1: {
-                    if (!(message.elements?.length))
-                        message.elements = []
-                    message.elements.push(reader.string())
-                    break
+            case 1: {
+                    if (!(message.elements && message.elements.length))
+                        message.elements = [];
+                    message.elements.push(reader.string());
+                    break;
                 }
-                default:
-                    reader.skipType(tag & 7)
-                    break
+            default:
+                reader.skipType(tag & 7);
+                break;
             }
         }
-        return message
-    }
+        return message;
+    };
 
     /**
      * Decodes a StringList message from the specified reader or buffer, length delimited.
@@ -3147,9 +3425,9 @@ $root.StringList = (function () {
      */
     StringList.decodeDelimited = function decodeDelimited(reader) {
         if (!(reader instanceof $Reader))
-            reader = new $Reader(reader)
-        return this.decode(reader, reader.uint32())
-    }
+            reader = new $Reader(reader);
+        return this.decode(reader, reader.uint32());
+    };
 
     /**
      * Verifies a StringList message.
@@ -3160,17 +3438,17 @@ $root.StringList = (function () {
      * @returns {string|null} `null` if valid, otherwise the reason why it is not
      */
     StringList.verify = function verify(message) {
-        if (typeof message !== 'object' || message === null)
-            return 'object expected'
-        if (message.elements != null && message.hasOwnProperty('elements')) {
+        if (typeof message !== "object" || message === null)
+            return "object expected";
+        if (message.elements != null && message.hasOwnProperty("elements")) {
             if (!Array.isArray(message.elements))
-                return 'elements: array expected'
+                return "elements: array expected";
             for (var i = 0; i < message.elements.length; ++i)
                 if (!$util.isString(message.elements[i]))
-                    return 'elements: string[] expected'
+                    return "elements: string[] expected";
         }
-        return null
-    }
+        return null;
+    };
 
     /**
      * Creates a StringList message from a plain object. Also converts values to their respective internal types.
@@ -3182,17 +3460,17 @@ $root.StringList = (function () {
      */
     StringList.fromObject = function fromObject(object) {
         if (object instanceof $root.StringList)
-            return object
-        var message = new $root.StringList()
+            return object;
+        var message = new $root.StringList();
         if (object.elements) {
             if (!Array.isArray(object.elements))
-                throw TypeError('.StringList.elements: array expected')
-            message.elements = []
+                throw TypeError(".StringList.elements: array expected");
+            message.elements = [];
             for (var i = 0; i < object.elements.length; ++i)
-                message.elements[i] = String(object.elements[i])
+                message.elements[i] = String(object.elements[i]);
         }
-        return message
-    }
+        return message;
+    };
 
     /**
      * Creates a plain object from a StringList message. Also converts values to other types if specified.
@@ -3205,17 +3483,17 @@ $root.StringList = (function () {
      */
     StringList.toObject = function toObject(message, options) {
         if (!options)
-            options = {}
-        var object = {}
+            options = {};
+        var object = {};
         if (options.arrays || options.defaults)
-            object.elements = []
+            object.elements = [];
         if (message.elements && message.elements.length) {
-            object.elements = []
+            object.elements = [];
             for (var j = 0; j < message.elements.length; ++j)
-                object.elements[j] = message.elements[j]
+                object.elements[j] = message.elements[j];
         }
-        return object
-    }
+        return object;
+    };
 
     /**
      * Converts this StringList to JSON.
@@ -3225,8 +3503,8 @@ $root.StringList = (function () {
      * @returns {Object.<string,*>} JSON object
      */
     StringList.prototype.toJSON = function toJSON() {
-        return this.constructor.toObject(this, $protobuf.util.toJSONOptions)
-    }
+        return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+    };
 
     /**
      * Gets the default type url for StringList
@@ -3238,15 +3516,16 @@ $root.StringList = (function () {
      */
     StringList.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
         if (typeUrlPrefix === undefined) {
-            typeUrlPrefix = 'type.googleapis.com'
+            typeUrlPrefix = "type.googleapis.com";
         }
-        return `${typeUrlPrefix}/StringList`
-    }
+        return typeUrlPrefix + "/StringList";
+    };
 
-    return StringList
-})()
+    return StringList;
+})();
 
-$root.SearchIndex = (function () {
+$root.SearchIndex = (function() {
+
     /**
      * Properties of a SearchIndex.
      * @exports ISearchIndex
@@ -3264,12 +3543,12 @@ $root.SearchIndex = (function () {
      * @param {ISearchIndex=} [properties] Properties to set
      */
     function SearchIndex(properties) {
-        this.elements = []
-        this.priorities = []
+        this.elements = [];
+        this.priorities = [];
         if (properties)
             for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
                 if (properties[keys[i]] != null)
-                    this[keys[i]] = properties[keys[i]]
+                    this[keys[i]] = properties[keys[i]];
     }
 
     /**
@@ -3278,7 +3557,7 @@ $root.SearchIndex = (function () {
      * @memberof SearchIndex
      * @instance
      */
-    SearchIndex.prototype.elements = $util.emptyArray
+    SearchIndex.prototype.elements = $util.emptyArray;
 
     /**
      * SearchIndex priorities.
@@ -3286,7 +3565,7 @@ $root.SearchIndex = (function () {
      * @memberof SearchIndex
      * @instance
      */
-    SearchIndex.prototype.priorities = $util.emptyArray
+    SearchIndex.prototype.priorities = $util.emptyArray;
 
     /**
      * Creates a new SearchIndex instance using the specified properties.
@@ -3297,8 +3576,8 @@ $root.SearchIndex = (function () {
      * @returns {SearchIndex} SearchIndex instance
      */
     SearchIndex.create = function create(properties) {
-        return new SearchIndex(properties)
-    }
+        return new SearchIndex(properties);
+    };
 
     /**
      * Encodes the specified SearchIndex message. Does not implicitly {@link SearchIndex.verify|verify} messages.
@@ -3311,18 +3590,18 @@ $root.SearchIndex = (function () {
      */
     SearchIndex.encode = function encode(message, writer) {
         if (!writer)
-            writer = $Writer.create()
-        if (message.elements?.length)
+            writer = $Writer.create();
+        if (message.elements != null && message.elements.length)
             for (var i = 0; i < message.elements.length; ++i)
-                writer.uint32(/* id 1, wireType 2 = */10).string(message.elements[i])
-        if (message.priorities?.length) {
-            writer.uint32(/* id 2, wireType 2 = */18).fork()
+                writer.uint32(/* id 1, wireType 2 =*/10).string(message.elements[i]);
+        if (message.priorities != null && message.priorities.length) {
+            writer.uint32(/* id 2, wireType 2 =*/18).fork();
             for (var i = 0; i < message.priorities.length; ++i)
-                writer.uint32(message.priorities[i])
-            writer.ldelim()
+                writer.uint32(message.priorities[i]);
+            writer.ldelim();
         }
-        return writer
-    }
+        return writer;
+    };
 
     /**
      * Encodes the specified SearchIndex message, length delimited. Does not implicitly {@link SearchIndex.verify|verify} messages.
@@ -3334,8 +3613,8 @@ $root.SearchIndex = (function () {
      * @returns {$protobuf.Writer} Writer
      */
     SearchIndex.encodeDelimited = function encodeDelimited(message, writer) {
-        return this.encode(message, writer).ldelim()
-    }
+        return this.encode(message, writer).ldelim();
+    };
 
     /**
      * Decodes a SearchIndex message from the specified reader or buffer.
@@ -3350,36 +3629,35 @@ $root.SearchIndex = (function () {
      */
     SearchIndex.decode = function decode(reader, length) {
         if (!(reader instanceof $Reader))
-            reader = $Reader.create(reader)
-        var end = length === undefined ? reader.len : reader.pos + length, message = new $root.SearchIndex()
+            reader = $Reader.create(reader);
+        var end = length === undefined ? reader.len : reader.pos + length, message = new $root.SearchIndex();
         while (reader.pos < end) {
-            var tag = reader.uint32()
+            var tag = reader.uint32();
             switch (tag >>> 3) {
-                case 1: {
-                    if (!(message.elements?.length))
-                        message.elements = []
-                    message.elements.push(reader.string())
-                    break
+            case 1: {
+                    if (!(message.elements && message.elements.length))
+                        message.elements = [];
+                    message.elements.push(reader.string());
+                    break;
                 }
-                case 2: {
-                    if (!(message.priorities?.length))
-                        message.priorities = []
+            case 2: {
+                    if (!(message.priorities && message.priorities.length))
+                        message.priorities = [];
                     if ((tag & 7) === 2) {
-                        var end2 = reader.uint32() + reader.pos
+                        var end2 = reader.uint32() + reader.pos;
                         while (reader.pos < end2)
-                            message.priorities.push(reader.uint32())
-                    }
-                    else
-                        message.priorities.push(reader.uint32())
-                    break
+                            message.priorities.push(reader.uint32());
+                    } else
+                        message.priorities.push(reader.uint32());
+                    break;
                 }
-                default:
-                    reader.skipType(tag & 7)
-                    break
+            default:
+                reader.skipType(tag & 7);
+                break;
             }
         }
-        return message
-    }
+        return message;
+    };
 
     /**
      * Decodes a SearchIndex message from the specified reader or buffer, length delimited.
@@ -3393,9 +3671,9 @@ $root.SearchIndex = (function () {
      */
     SearchIndex.decodeDelimited = function decodeDelimited(reader) {
         if (!(reader instanceof $Reader))
-            reader = new $Reader(reader)
-        return this.decode(reader, reader.uint32())
-    }
+            reader = new $Reader(reader);
+        return this.decode(reader, reader.uint32());
+    };
 
     /**
      * Verifies a SearchIndex message.
@@ -3406,24 +3684,24 @@ $root.SearchIndex = (function () {
      * @returns {string|null} `null` if valid, otherwise the reason why it is not
      */
     SearchIndex.verify = function verify(message) {
-        if (typeof message !== 'object' || message === null)
-            return 'object expected'
-        if (message.elements != null && message.hasOwnProperty('elements')) {
+        if (typeof message !== "object" || message === null)
+            return "object expected";
+        if (message.elements != null && message.hasOwnProperty("elements")) {
             if (!Array.isArray(message.elements))
-                return 'elements: array expected'
+                return "elements: array expected";
             for (var i = 0; i < message.elements.length; ++i)
                 if (!$util.isString(message.elements[i]))
-                    return 'elements: string[] expected'
+                    return "elements: string[] expected";
         }
-        if (message.priorities != null && message.hasOwnProperty('priorities')) {
+        if (message.priorities != null && message.hasOwnProperty("priorities")) {
             if (!Array.isArray(message.priorities))
-                return 'priorities: array expected'
+                return "priorities: array expected";
             for (var i = 0; i < message.priorities.length; ++i)
                 if (!$util.isInteger(message.priorities[i]))
-                    return 'priorities: integer[] expected'
+                    return "priorities: integer[] expected";
         }
-        return null
-    }
+        return null;
+    };
 
     /**
      * Creates a SearchIndex message from a plain object. Also converts values to their respective internal types.
@@ -3435,24 +3713,24 @@ $root.SearchIndex = (function () {
      */
     SearchIndex.fromObject = function fromObject(object) {
         if (object instanceof $root.SearchIndex)
-            return object
-        var message = new $root.SearchIndex()
+            return object;
+        var message = new $root.SearchIndex();
         if (object.elements) {
             if (!Array.isArray(object.elements))
-                throw TypeError('.SearchIndex.elements: array expected')
-            message.elements = []
+                throw TypeError(".SearchIndex.elements: array expected");
+            message.elements = [];
             for (var i = 0; i < object.elements.length; ++i)
-                message.elements[i] = String(object.elements[i])
+                message.elements[i] = String(object.elements[i]);
         }
         if (object.priorities) {
             if (!Array.isArray(object.priorities))
-                throw TypeError('.SearchIndex.priorities: array expected')
-            message.priorities = []
+                throw TypeError(".SearchIndex.priorities: array expected");
+            message.priorities = [];
             for (var i = 0; i < object.priorities.length; ++i)
-                message.priorities[i] = object.priorities[i] >>> 0
+                message.priorities[i] = object.priorities[i] >>> 0;
         }
-        return message
-    }
+        return message;
+    };
 
     /**
      * Creates a plain object from a SearchIndex message. Also converts values to other types if specified.
@@ -3465,24 +3743,24 @@ $root.SearchIndex = (function () {
      */
     SearchIndex.toObject = function toObject(message, options) {
         if (!options)
-            options = {}
-        var object = {}
+            options = {};
+        var object = {};
         if (options.arrays || options.defaults) {
-            object.elements = []
-            object.priorities = []
+            object.elements = [];
+            object.priorities = [];
         }
         if (message.elements && message.elements.length) {
-            object.elements = []
+            object.elements = [];
             for (var j = 0; j < message.elements.length; ++j)
-                object.elements[j] = message.elements[j]
+                object.elements[j] = message.elements[j];
         }
         if (message.priorities && message.priorities.length) {
-            object.priorities = []
+            object.priorities = [];
             for (var j = 0; j < message.priorities.length; ++j)
-                object.priorities[j] = message.priorities[j]
+                object.priorities[j] = message.priorities[j];
         }
-        return object
-    }
+        return object;
+    };
 
     /**
      * Converts this SearchIndex to JSON.
@@ -3492,8 +3770,8 @@ $root.SearchIndex = (function () {
      * @returns {Object.<string,*>} JSON object
      */
     SearchIndex.prototype.toJSON = function toJSON() {
-        return this.constructor.toObject(this, $protobuf.util.toJSONOptions)
-    }
+        return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+    };
 
     /**
      * Gets the default type url for SearchIndex
@@ -3505,15 +3783,16 @@ $root.SearchIndex = (function () {
      */
     SearchIndex.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
         if (typeUrlPrefix === undefined) {
-            typeUrlPrefix = 'type.googleapis.com'
+            typeUrlPrefix = "type.googleapis.com";
         }
-        return `${typeUrlPrefix}/SearchIndex`
-    }
+        return typeUrlPrefix + "/SearchIndex";
+    };
 
-    return SearchIndex
-})()
+    return SearchIndex;
+})();
 
-$root.OrderList = (function () {
+$root.OrderList = (function() {
+
     /**
      * Properties of an OrderList.
      * @exports IOrderList
@@ -3530,11 +3809,11 @@ $root.OrderList = (function () {
      * @param {IOrderList=} [properties] Properties to set
      */
     function OrderList(properties) {
-        this.orderIdxs = []
+        this.orderIdxs = [];
         if (properties)
             for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
                 if (properties[keys[i]] != null)
-                    this[keys[i]] = properties[keys[i]]
+                    this[keys[i]] = properties[keys[i]];
     }
 
     /**
@@ -3543,7 +3822,7 @@ $root.OrderList = (function () {
      * @memberof OrderList
      * @instance
      */
-    OrderList.prototype.orderIdxs = $util.emptyArray
+    OrderList.prototype.orderIdxs = $util.emptyArray;
 
     /**
      * Creates a new OrderList instance using the specified properties.
@@ -3554,8 +3833,8 @@ $root.OrderList = (function () {
      * @returns {OrderList} OrderList instance
      */
     OrderList.create = function create(properties) {
-        return new OrderList(properties)
-    }
+        return new OrderList(properties);
+    };
 
     /**
      * Encodes the specified OrderList message. Does not implicitly {@link OrderList.verify|verify} messages.
@@ -3568,15 +3847,15 @@ $root.OrderList = (function () {
      */
     OrderList.encode = function encode(message, writer) {
         if (!writer)
-            writer = $Writer.create()
-        if (message.orderIdxs?.length) {
-            writer.uint32(/* id 1, wireType 2 = */10).fork()
+            writer = $Writer.create();
+        if (message.orderIdxs != null && message.orderIdxs.length) {
+            writer.uint32(/* id 1, wireType 2 =*/10).fork();
             for (var i = 0; i < message.orderIdxs.length; ++i)
-                writer.int32(message.orderIdxs[i])
-            writer.ldelim()
+                writer.int32(message.orderIdxs[i]);
+            writer.ldelim();
         }
-        return writer
-    }
+        return writer;
+    };
 
     /**
      * Encodes the specified OrderList message, length delimited. Does not implicitly {@link OrderList.verify|verify} messages.
@@ -3588,8 +3867,8 @@ $root.OrderList = (function () {
      * @returns {$protobuf.Writer} Writer
      */
     OrderList.encodeDelimited = function encodeDelimited(message, writer) {
-        return this.encode(message, writer).ldelim()
-    }
+        return this.encode(message, writer).ldelim();
+    };
 
     /**
      * Decodes an OrderList message from the specified reader or buffer.
@@ -3604,30 +3883,29 @@ $root.OrderList = (function () {
      */
     OrderList.decode = function decode(reader, length) {
         if (!(reader instanceof $Reader))
-            reader = $Reader.create(reader)
-        var end = length === undefined ? reader.len : reader.pos + length, message = new $root.OrderList()
+            reader = $Reader.create(reader);
+        var end = length === undefined ? reader.len : reader.pos + length, message = new $root.OrderList();
         while (reader.pos < end) {
-            var tag = reader.uint32()
+            var tag = reader.uint32();
             switch (tag >>> 3) {
-                case 1: {
-                    if (!(message.orderIdxs?.length))
-                        message.orderIdxs = []
+            case 1: {
+                    if (!(message.orderIdxs && message.orderIdxs.length))
+                        message.orderIdxs = [];
                     if ((tag & 7) === 2) {
-                        var end2 = reader.uint32() + reader.pos
+                        var end2 = reader.uint32() + reader.pos;
                         while (reader.pos < end2)
-                            message.orderIdxs.push(reader.int32())
-                    }
-                    else
-                        message.orderIdxs.push(reader.int32())
-                    break
+                            message.orderIdxs.push(reader.int32());
+                    } else
+                        message.orderIdxs.push(reader.int32());
+                    break;
                 }
-                default:
-                    reader.skipType(tag & 7)
-                    break
+            default:
+                reader.skipType(tag & 7);
+                break;
             }
         }
-        return message
-    }
+        return message;
+    };
 
     /**
      * Decodes an OrderList message from the specified reader or buffer, length delimited.
@@ -3641,9 +3919,9 @@ $root.OrderList = (function () {
      */
     OrderList.decodeDelimited = function decodeDelimited(reader) {
         if (!(reader instanceof $Reader))
-            reader = new $Reader(reader)
-        return this.decode(reader, reader.uint32())
-    }
+            reader = new $Reader(reader);
+        return this.decode(reader, reader.uint32());
+    };
 
     /**
      * Verifies an OrderList message.
@@ -3654,17 +3932,17 @@ $root.OrderList = (function () {
      * @returns {string|null} `null` if valid, otherwise the reason why it is not
      */
     OrderList.verify = function verify(message) {
-        if (typeof message !== 'object' || message === null)
-            return 'object expected'
-        if (message.orderIdxs != null && message.hasOwnProperty('orderIdxs')) {
+        if (typeof message !== "object" || message === null)
+            return "object expected";
+        if (message.orderIdxs != null && message.hasOwnProperty("orderIdxs")) {
             if (!Array.isArray(message.orderIdxs))
-                return 'orderIdxs: array expected'
+                return "orderIdxs: array expected";
             for (var i = 0; i < message.orderIdxs.length; ++i)
                 if (!$util.isInteger(message.orderIdxs[i]))
-                    return 'orderIdxs: integer[] expected'
+                    return "orderIdxs: integer[] expected";
         }
-        return null
-    }
+        return null;
+    };
 
     /**
      * Creates an OrderList message from a plain object. Also converts values to their respective internal types.
@@ -3676,17 +3954,17 @@ $root.OrderList = (function () {
      */
     OrderList.fromObject = function fromObject(object) {
         if (object instanceof $root.OrderList)
-            return object
-        var message = new $root.OrderList()
+            return object;
+        var message = new $root.OrderList();
         if (object.orderIdxs) {
             if (!Array.isArray(object.orderIdxs))
-                throw TypeError('.OrderList.orderIdxs: array expected')
-            message.orderIdxs = []
+                throw TypeError(".OrderList.orderIdxs: array expected");
+            message.orderIdxs = [];
             for (var i = 0; i < object.orderIdxs.length; ++i)
-                message.orderIdxs[i] = object.orderIdxs[i] | 0
+                message.orderIdxs[i] = object.orderIdxs[i] | 0;
         }
-        return message
-    }
+        return message;
+    };
 
     /**
      * Creates a plain object from an OrderList message. Also converts values to other types if specified.
@@ -3699,17 +3977,17 @@ $root.OrderList = (function () {
      */
     OrderList.toObject = function toObject(message, options) {
         if (!options)
-            options = {}
-        var object = {}
+            options = {};
+        var object = {};
         if (options.arrays || options.defaults)
-            object.orderIdxs = []
+            object.orderIdxs = [];
         if (message.orderIdxs && message.orderIdxs.length) {
-            object.orderIdxs = []
+            object.orderIdxs = [];
             for (var j = 0; j < message.orderIdxs.length; ++j)
-                object.orderIdxs[j] = message.orderIdxs[j]
+                object.orderIdxs[j] = message.orderIdxs[j];
         }
-        return object
-    }
+        return object;
+    };
 
     /**
      * Converts this OrderList to JSON.
@@ -3719,8 +3997,8 @@ $root.OrderList = (function () {
      * @returns {Object.<string,*>} JSON object
      */
     OrderList.prototype.toJSON = function toJSON() {
-        return this.constructor.toObject(this, $protobuf.util.toJSONOptions)
-    }
+        return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+    };
 
     /**
      * Gets the default type url for OrderList
@@ -3732,15 +4010,16 @@ $root.OrderList = (function () {
      */
     OrderList.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
         if (typeUrlPrefix === undefined) {
-            typeUrlPrefix = 'type.googleapis.com'
+            typeUrlPrefix = "type.googleapis.com";
         }
-        return `${typeUrlPrefix}/OrderList`
-    }
+        return typeUrlPrefix + "/OrderList";
+    };
 
-    return OrderList
-})()
+    return OrderList;
+})();
 
-$root.DataList = (function () {
+$root.DataList = (function() {
+
     /**
      * Properties of a DataList.
      * @exports IDataList
@@ -3758,12 +4037,12 @@ $root.DataList = (function () {
      * @param {IDataList=} [properties] Properties to set
      */
     function DataList(properties) {
-        this.value = []
-        this.populationPercentile = []
+        this.value = [];
+        this.populationPercentile = [];
         if (properties)
             for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
                 if (properties[keys[i]] != null)
-                    this[keys[i]] = properties[keys[i]]
+                    this[keys[i]] = properties[keys[i]];
     }
 
     /**
@@ -3772,7 +4051,7 @@ $root.DataList = (function () {
      * @memberof DataList
      * @instance
      */
-    DataList.prototype.value = $util.emptyArray
+    DataList.prototype.value = $util.emptyArray;
 
     /**
      * DataList populationPercentile.
@@ -3780,7 +4059,7 @@ $root.DataList = (function () {
      * @memberof DataList
      * @instance
      */
-    DataList.prototype.populationPercentile = $util.emptyArray
+    DataList.prototype.populationPercentile = $util.emptyArray;
 
     /**
      * Creates a new DataList instance using the specified properties.
@@ -3791,8 +4070,8 @@ $root.DataList = (function () {
      * @returns {DataList} DataList instance
      */
     DataList.create = function create(properties) {
-        return new DataList(properties)
-    }
+        return new DataList(properties);
+    };
 
     /**
      * Encodes the specified DataList message. Does not implicitly {@link DataList.verify|verify} messages.
@@ -3805,21 +4084,21 @@ $root.DataList = (function () {
      */
     DataList.encode = function encode(message, writer) {
         if (!writer)
-            writer = $Writer.create()
-        if (message.value?.length) {
-            writer.uint32(/* id 1, wireType 2 = */10).fork()
+            writer = $Writer.create();
+        if (message.value != null && message.value.length) {
+            writer.uint32(/* id 1, wireType 2 =*/10).fork();
             for (var i = 0; i < message.value.length; ++i)
-                writer.float(message.value[i])
-            writer.ldelim()
+                writer.float(message.value[i]);
+            writer.ldelim();
         }
-        if (message.populationPercentile?.length) {
-            writer.uint32(/* id 2, wireType 2 = */18).fork()
+        if (message.populationPercentile != null && message.populationPercentile.length) {
+            writer.uint32(/* id 2, wireType 2 =*/18).fork();
             for (var i = 0; i < message.populationPercentile.length; ++i)
-                writer.float(message.populationPercentile[i])
-            writer.ldelim()
+                writer.float(message.populationPercentile[i]);
+            writer.ldelim();
         }
-        return writer
-    }
+        return writer;
+    };
 
     /**
      * Encodes the specified DataList message, length delimited. Does not implicitly {@link DataList.verify|verify} messages.
@@ -3831,8 +4110,8 @@ $root.DataList = (function () {
      * @returns {$protobuf.Writer} Writer
      */
     DataList.encodeDelimited = function encodeDelimited(message, writer) {
-        return this.encode(message, writer).ldelim()
-    }
+        return this.encode(message, writer).ldelim();
+    };
 
     /**
      * Decodes a DataList message from the specified reader or buffer.
@@ -3847,42 +4126,40 @@ $root.DataList = (function () {
      */
     DataList.decode = function decode(reader, length) {
         if (!(reader instanceof $Reader))
-            reader = $Reader.create(reader)
-        var end = length === undefined ? reader.len : reader.pos + length, message = new $root.DataList()
+            reader = $Reader.create(reader);
+        var end = length === undefined ? reader.len : reader.pos + length, message = new $root.DataList();
         while (reader.pos < end) {
-            var tag = reader.uint32()
+            var tag = reader.uint32();
             switch (tag >>> 3) {
-                case 1: {
-                    if (!(message.value?.length))
-                        message.value = []
+            case 1: {
+                    if (!(message.value && message.value.length))
+                        message.value = [];
                     if ((tag & 7) === 2) {
-                        var end2 = reader.uint32() + reader.pos
+                        var end2 = reader.uint32() + reader.pos;
                         while (reader.pos < end2)
-                            message.value.push(reader.float())
-                    }
-                    else
-                        message.value.push(reader.float())
-                    break
+                            message.value.push(reader.float());
+                    } else
+                        message.value.push(reader.float());
+                    break;
                 }
-                case 2: {
-                    if (!(message.populationPercentile?.length))
-                        message.populationPercentile = []
+            case 2: {
+                    if (!(message.populationPercentile && message.populationPercentile.length))
+                        message.populationPercentile = [];
                     if ((tag & 7) === 2) {
-                        var end2 = reader.uint32() + reader.pos
+                        var end2 = reader.uint32() + reader.pos;
                         while (reader.pos < end2)
-                            message.populationPercentile.push(reader.float())
-                    }
-                    else
-                        message.populationPercentile.push(reader.float())
-                    break
+                            message.populationPercentile.push(reader.float());
+                    } else
+                        message.populationPercentile.push(reader.float());
+                    break;
                 }
-                default:
-                    reader.skipType(tag & 7)
-                    break
+            default:
+                reader.skipType(tag & 7);
+                break;
             }
         }
-        return message
-    }
+        return message;
+    };
 
     /**
      * Decodes a DataList message from the specified reader or buffer, length delimited.
@@ -3896,9 +4173,9 @@ $root.DataList = (function () {
      */
     DataList.decodeDelimited = function decodeDelimited(reader) {
         if (!(reader instanceof $Reader))
-            reader = new $Reader(reader)
-        return this.decode(reader, reader.uint32())
-    }
+            reader = new $Reader(reader);
+        return this.decode(reader, reader.uint32());
+    };
 
     /**
      * Verifies a DataList message.
@@ -3909,24 +4186,24 @@ $root.DataList = (function () {
      * @returns {string|null} `null` if valid, otherwise the reason why it is not
      */
     DataList.verify = function verify(message) {
-        if (typeof message !== 'object' || message === null)
-            return 'object expected'
-        if (message.value != null && message.hasOwnProperty('value')) {
+        if (typeof message !== "object" || message === null)
+            return "object expected";
+        if (message.value != null && message.hasOwnProperty("value")) {
             if (!Array.isArray(message.value))
-                return 'value: array expected'
+                return "value: array expected";
             for (var i = 0; i < message.value.length; ++i)
-                if (typeof message.value[i] !== 'number')
-                    return 'value: number[] expected'
+                if (typeof message.value[i] !== "number")
+                    return "value: number[] expected";
         }
-        if (message.populationPercentile != null && message.hasOwnProperty('populationPercentile')) {
+        if (message.populationPercentile != null && message.hasOwnProperty("populationPercentile")) {
             if (!Array.isArray(message.populationPercentile))
-                return 'populationPercentile: array expected'
+                return "populationPercentile: array expected";
             for (var i = 0; i < message.populationPercentile.length; ++i)
-                if (typeof message.populationPercentile[i] !== 'number')
-                    return 'populationPercentile: number[] expected'
+                if (typeof message.populationPercentile[i] !== "number")
+                    return "populationPercentile: number[] expected";
         }
-        return null
-    }
+        return null;
+    };
 
     /**
      * Creates a DataList message from a plain object. Also converts values to their respective internal types.
@@ -3938,24 +4215,24 @@ $root.DataList = (function () {
      */
     DataList.fromObject = function fromObject(object) {
         if (object instanceof $root.DataList)
-            return object
-        var message = new $root.DataList()
+            return object;
+        var message = new $root.DataList();
         if (object.value) {
             if (!Array.isArray(object.value))
-                throw TypeError('.DataList.value: array expected')
-            message.value = []
+                throw TypeError(".DataList.value: array expected");
+            message.value = [];
             for (var i = 0; i < object.value.length; ++i)
-                message.value[i] = Number(object.value[i])
+                message.value[i] = Number(object.value[i]);
         }
         if (object.populationPercentile) {
             if (!Array.isArray(object.populationPercentile))
-                throw TypeError('.DataList.populationPercentile: array expected')
-            message.populationPercentile = []
+                throw TypeError(".DataList.populationPercentile: array expected");
+            message.populationPercentile = [];
             for (var i = 0; i < object.populationPercentile.length; ++i)
-                message.populationPercentile[i] = Number(object.populationPercentile[i])
+                message.populationPercentile[i] = Number(object.populationPercentile[i]);
         }
-        return message
-    }
+        return message;
+    };
 
     /**
      * Creates a plain object from a DataList message. Also converts values to other types if specified.
@@ -3968,24 +4245,24 @@ $root.DataList = (function () {
      */
     DataList.toObject = function toObject(message, options) {
         if (!options)
-            options = {}
-        var object = {}
+            options = {};
+        var object = {};
         if (options.arrays || options.defaults) {
-            object.value = []
-            object.populationPercentile = []
+            object.value = [];
+            object.populationPercentile = [];
         }
         if (message.value && message.value.length) {
-            object.value = []
+            object.value = [];
             for (var j = 0; j < message.value.length; ++j)
-                object.value[j] = options.json && !isFinite(message.value[j]) ? String(message.value[j]) : message.value[j]
+                object.value[j] = options.json && !isFinite(message.value[j]) ? String(message.value[j]) : message.value[j];
         }
         if (message.populationPercentile && message.populationPercentile.length) {
-            object.populationPercentile = []
+            object.populationPercentile = [];
             for (var j = 0; j < message.populationPercentile.length; ++j)
-                object.populationPercentile[j] = options.json && !isFinite(message.populationPercentile[j]) ? String(message.populationPercentile[j]) : message.populationPercentile[j]
+                object.populationPercentile[j] = options.json && !isFinite(message.populationPercentile[j]) ? String(message.populationPercentile[j]) : message.populationPercentile[j];
         }
-        return object
-    }
+        return object;
+    };
 
     /**
      * Converts this DataList to JSON.
@@ -3995,8 +4272,8 @@ $root.DataList = (function () {
      * @returns {Object.<string,*>} JSON object
      */
     DataList.prototype.toJSON = function toJSON() {
-        return this.constructor.toObject(this, $protobuf.util.toJSONOptions)
-    }
+        return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+    };
 
     /**
      * Gets the default type url for DataList
@@ -4008,15 +4285,16 @@ $root.DataList = (function () {
      */
     DataList.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
         if (typeUrlPrefix === undefined) {
-            typeUrlPrefix = 'type.googleapis.com'
+            typeUrlPrefix = "type.googleapis.com";
         }
-        return `${typeUrlPrefix}/DataList`
-    }
+        return typeUrlPrefix + "/DataList";
+    };
 
-    return DataList
-})()
+    return DataList;
+})();
 
-$root.OrderLists = (function () {
+$root.OrderLists = (function() {
+
     /**
      * Properties of an OrderLists.
      * @exports IOrderLists
@@ -4034,12 +4312,12 @@ $root.OrderLists = (function () {
      * @param {IOrderLists=} [properties] Properties to set
      */
     function OrderLists(properties) {
-        this.statnames = []
-        this.orderLists = []
+        this.statnames = [];
+        this.orderLists = [];
         if (properties)
             for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
                 if (properties[keys[i]] != null)
-                    this[keys[i]] = properties[keys[i]]
+                    this[keys[i]] = properties[keys[i]];
     }
 
     /**
@@ -4048,7 +4326,7 @@ $root.OrderLists = (function () {
      * @memberof OrderLists
      * @instance
      */
-    OrderLists.prototype.statnames = $util.emptyArray
+    OrderLists.prototype.statnames = $util.emptyArray;
 
     /**
      * OrderLists orderLists.
@@ -4056,7 +4334,7 @@ $root.OrderLists = (function () {
      * @memberof OrderLists
      * @instance
      */
-    OrderLists.prototype.orderLists = $util.emptyArray
+    OrderLists.prototype.orderLists = $util.emptyArray;
 
     /**
      * Creates a new OrderLists instance using the specified properties.
@@ -4067,8 +4345,8 @@ $root.OrderLists = (function () {
      * @returns {OrderLists} OrderLists instance
      */
     OrderLists.create = function create(properties) {
-        return new OrderLists(properties)
-    }
+        return new OrderLists(properties);
+    };
 
     /**
      * Encodes the specified OrderLists message. Does not implicitly {@link OrderLists.verify|verify} messages.
@@ -4081,15 +4359,15 @@ $root.OrderLists = (function () {
      */
     OrderLists.encode = function encode(message, writer) {
         if (!writer)
-            writer = $Writer.create()
-        if (message.statnames?.length)
+            writer = $Writer.create();
+        if (message.statnames != null && message.statnames.length)
             for (var i = 0; i < message.statnames.length; ++i)
-                writer.uint32(/* id 1, wireType 2 = */10).string(message.statnames[i])
-        if (message.orderLists?.length)
+                writer.uint32(/* id 1, wireType 2 =*/10).string(message.statnames[i]);
+        if (message.orderLists != null && message.orderLists.length)
             for (var i = 0; i < message.orderLists.length; ++i)
-                $root.OrderList.encode(message.orderLists[i], writer.uint32(/* id 2, wireType 2 = */18).fork()).ldelim()
-        return writer
-    }
+                $root.OrderList.encode(message.orderLists[i], writer.uint32(/* id 2, wireType 2 =*/18).fork()).ldelim();
+        return writer;
+    };
 
     /**
      * Encodes the specified OrderLists message, length delimited. Does not implicitly {@link OrderLists.verify|verify} messages.
@@ -4101,8 +4379,8 @@ $root.OrderLists = (function () {
      * @returns {$protobuf.Writer} Writer
      */
     OrderLists.encodeDelimited = function encodeDelimited(message, writer) {
-        return this.encode(message, writer).ldelim()
-    }
+        return this.encode(message, writer).ldelim();
+    };
 
     /**
      * Decodes an OrderLists message from the specified reader or buffer.
@@ -4117,30 +4395,30 @@ $root.OrderLists = (function () {
      */
     OrderLists.decode = function decode(reader, length) {
         if (!(reader instanceof $Reader))
-            reader = $Reader.create(reader)
-        var end = length === undefined ? reader.len : reader.pos + length, message = new $root.OrderLists()
+            reader = $Reader.create(reader);
+        var end = length === undefined ? reader.len : reader.pos + length, message = new $root.OrderLists();
         while (reader.pos < end) {
-            var tag = reader.uint32()
+            var tag = reader.uint32();
             switch (tag >>> 3) {
-                case 1: {
-                    if (!(message.statnames?.length))
-                        message.statnames = []
-                    message.statnames.push(reader.string())
-                    break
+            case 1: {
+                    if (!(message.statnames && message.statnames.length))
+                        message.statnames = [];
+                    message.statnames.push(reader.string());
+                    break;
                 }
-                case 2: {
-                    if (!(message.orderLists?.length))
-                        message.orderLists = []
-                    message.orderLists.push($root.OrderList.decode(reader, reader.uint32()))
-                    break
+            case 2: {
+                    if (!(message.orderLists && message.orderLists.length))
+                        message.orderLists = [];
+                    message.orderLists.push($root.OrderList.decode(reader, reader.uint32()));
+                    break;
                 }
-                default:
-                    reader.skipType(tag & 7)
-                    break
+            default:
+                reader.skipType(tag & 7);
+                break;
             }
         }
-        return message
-    }
+        return message;
+    };
 
     /**
      * Decodes an OrderLists message from the specified reader or buffer, length delimited.
@@ -4154,9 +4432,9 @@ $root.OrderLists = (function () {
      */
     OrderLists.decodeDelimited = function decodeDelimited(reader) {
         if (!(reader instanceof $Reader))
-            reader = new $Reader(reader)
-        return this.decode(reader, reader.uint32())
-    }
+            reader = new $Reader(reader);
+        return this.decode(reader, reader.uint32());
+    };
 
     /**
      * Verifies an OrderLists message.
@@ -4167,26 +4445,26 @@ $root.OrderLists = (function () {
      * @returns {string|null} `null` if valid, otherwise the reason why it is not
      */
     OrderLists.verify = function verify(message) {
-        if (typeof message !== 'object' || message === null)
-            return 'object expected'
-        if (message.statnames != null && message.hasOwnProperty('statnames')) {
+        if (typeof message !== "object" || message === null)
+            return "object expected";
+        if (message.statnames != null && message.hasOwnProperty("statnames")) {
             if (!Array.isArray(message.statnames))
-                return 'statnames: array expected'
+                return "statnames: array expected";
             for (var i = 0; i < message.statnames.length; ++i)
                 if (!$util.isString(message.statnames[i]))
-                    return 'statnames: string[] expected'
+                    return "statnames: string[] expected";
         }
-        if (message.orderLists != null && message.hasOwnProperty('orderLists')) {
+        if (message.orderLists != null && message.hasOwnProperty("orderLists")) {
             if (!Array.isArray(message.orderLists))
-                return 'orderLists: array expected'
+                return "orderLists: array expected";
             for (var i = 0; i < message.orderLists.length; ++i) {
-                var error = $root.OrderList.verify(message.orderLists[i])
+                var error = $root.OrderList.verify(message.orderLists[i]);
                 if (error)
-                    return `orderLists.${error}`
+                    return "orderLists." + error;
             }
         }
-        return null
-    }
+        return null;
+    };
 
     /**
      * Creates an OrderLists message from a plain object. Also converts values to their respective internal types.
@@ -4198,27 +4476,27 @@ $root.OrderLists = (function () {
      */
     OrderLists.fromObject = function fromObject(object) {
         if (object instanceof $root.OrderLists)
-            return object
-        var message = new $root.OrderLists()
+            return object;
+        var message = new $root.OrderLists();
         if (object.statnames) {
             if (!Array.isArray(object.statnames))
-                throw TypeError('.OrderLists.statnames: array expected')
-            message.statnames = []
+                throw TypeError(".OrderLists.statnames: array expected");
+            message.statnames = [];
             for (var i = 0; i < object.statnames.length; ++i)
-                message.statnames[i] = String(object.statnames[i])
+                message.statnames[i] = String(object.statnames[i]);
         }
         if (object.orderLists) {
             if (!Array.isArray(object.orderLists))
-                throw TypeError('.OrderLists.orderLists: array expected')
-            message.orderLists = []
+                throw TypeError(".OrderLists.orderLists: array expected");
+            message.orderLists = [];
             for (var i = 0; i < object.orderLists.length; ++i) {
-                if (typeof object.orderLists[i] !== 'object')
-                    throw TypeError('.OrderLists.orderLists: object expected')
-                message.orderLists[i] = $root.OrderList.fromObject(object.orderLists[i])
+                if (typeof object.orderLists[i] !== "object")
+                    throw TypeError(".OrderLists.orderLists: object expected");
+                message.orderLists[i] = $root.OrderList.fromObject(object.orderLists[i]);
             }
         }
-        return message
-    }
+        return message;
+    };
 
     /**
      * Creates a plain object from an OrderLists message. Also converts values to other types if specified.
@@ -4231,24 +4509,24 @@ $root.OrderLists = (function () {
      */
     OrderLists.toObject = function toObject(message, options) {
         if (!options)
-            options = {}
-        var object = {}
+            options = {};
+        var object = {};
         if (options.arrays || options.defaults) {
-            object.statnames = []
-            object.orderLists = []
+            object.statnames = [];
+            object.orderLists = [];
         }
         if (message.statnames && message.statnames.length) {
-            object.statnames = []
+            object.statnames = [];
             for (var j = 0; j < message.statnames.length; ++j)
-                object.statnames[j] = message.statnames[j]
+                object.statnames[j] = message.statnames[j];
         }
         if (message.orderLists && message.orderLists.length) {
-            object.orderLists = []
+            object.orderLists = [];
             for (var j = 0; j < message.orderLists.length; ++j)
-                object.orderLists[j] = $root.OrderList.toObject(message.orderLists[j], options)
+                object.orderLists[j] = $root.OrderList.toObject(message.orderLists[j], options);
         }
-        return object
-    }
+        return object;
+    };
 
     /**
      * Converts this OrderLists to JSON.
@@ -4258,8 +4536,8 @@ $root.OrderLists = (function () {
      * @returns {Object.<string,*>} JSON object
      */
     OrderLists.prototype.toJSON = function toJSON() {
-        return this.constructor.toObject(this, $protobuf.util.toJSONOptions)
-    }
+        return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+    };
 
     /**
      * Gets the default type url for OrderLists
@@ -4271,15 +4549,16 @@ $root.OrderLists = (function () {
      */
     OrderLists.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
         if (typeUrlPrefix === undefined) {
-            typeUrlPrefix = 'type.googleapis.com'
+            typeUrlPrefix = "type.googleapis.com";
         }
-        return `${typeUrlPrefix}/OrderLists`
-    }
+        return typeUrlPrefix + "/OrderLists";
+    };
 
-    return OrderLists
-})()
+    return OrderLists;
+})();
 
-$root.DataLists = (function () {
+$root.DataLists = (function() {
+
     /**
      * Properties of a DataLists.
      * @exports IDataLists
@@ -4297,12 +4576,12 @@ $root.DataLists = (function () {
      * @param {IDataLists=} [properties] Properties to set
      */
     function DataLists(properties) {
-        this.statnames = []
-        this.dataLists = []
+        this.statnames = [];
+        this.dataLists = [];
         if (properties)
             for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
                 if (properties[keys[i]] != null)
-                    this[keys[i]] = properties[keys[i]]
+                    this[keys[i]] = properties[keys[i]];
     }
 
     /**
@@ -4311,7 +4590,7 @@ $root.DataLists = (function () {
      * @memberof DataLists
      * @instance
      */
-    DataLists.prototype.statnames = $util.emptyArray
+    DataLists.prototype.statnames = $util.emptyArray;
 
     /**
      * DataLists dataLists.
@@ -4319,7 +4598,7 @@ $root.DataLists = (function () {
      * @memberof DataLists
      * @instance
      */
-    DataLists.prototype.dataLists = $util.emptyArray
+    DataLists.prototype.dataLists = $util.emptyArray;
 
     /**
      * Creates a new DataLists instance using the specified properties.
@@ -4330,8 +4609,8 @@ $root.DataLists = (function () {
      * @returns {DataLists} DataLists instance
      */
     DataLists.create = function create(properties) {
-        return new DataLists(properties)
-    }
+        return new DataLists(properties);
+    };
 
     /**
      * Encodes the specified DataLists message. Does not implicitly {@link DataLists.verify|verify} messages.
@@ -4344,15 +4623,15 @@ $root.DataLists = (function () {
      */
     DataLists.encode = function encode(message, writer) {
         if (!writer)
-            writer = $Writer.create()
-        if (message.statnames?.length)
+            writer = $Writer.create();
+        if (message.statnames != null && message.statnames.length)
             for (var i = 0; i < message.statnames.length; ++i)
-                writer.uint32(/* id 1, wireType 2 = */10).string(message.statnames[i])
-        if (message.dataLists?.length)
+                writer.uint32(/* id 1, wireType 2 =*/10).string(message.statnames[i]);
+        if (message.dataLists != null && message.dataLists.length)
             for (var i = 0; i < message.dataLists.length; ++i)
-                $root.DataList.encode(message.dataLists[i], writer.uint32(/* id 2, wireType 2 = */18).fork()).ldelim()
-        return writer
-    }
+                $root.DataList.encode(message.dataLists[i], writer.uint32(/* id 2, wireType 2 =*/18).fork()).ldelim();
+        return writer;
+    };
 
     /**
      * Encodes the specified DataLists message, length delimited. Does not implicitly {@link DataLists.verify|verify} messages.
@@ -4364,8 +4643,8 @@ $root.DataLists = (function () {
      * @returns {$protobuf.Writer} Writer
      */
     DataLists.encodeDelimited = function encodeDelimited(message, writer) {
-        return this.encode(message, writer).ldelim()
-    }
+        return this.encode(message, writer).ldelim();
+    };
 
     /**
      * Decodes a DataLists message from the specified reader or buffer.
@@ -4380,30 +4659,30 @@ $root.DataLists = (function () {
      */
     DataLists.decode = function decode(reader, length) {
         if (!(reader instanceof $Reader))
-            reader = $Reader.create(reader)
-        var end = length === undefined ? reader.len : reader.pos + length, message = new $root.DataLists()
+            reader = $Reader.create(reader);
+        var end = length === undefined ? reader.len : reader.pos + length, message = new $root.DataLists();
         while (reader.pos < end) {
-            var tag = reader.uint32()
+            var tag = reader.uint32();
             switch (tag >>> 3) {
-                case 1: {
-                    if (!(message.statnames?.length))
-                        message.statnames = []
-                    message.statnames.push(reader.string())
-                    break
+            case 1: {
+                    if (!(message.statnames && message.statnames.length))
+                        message.statnames = [];
+                    message.statnames.push(reader.string());
+                    break;
                 }
-                case 2: {
-                    if (!(message.dataLists?.length))
-                        message.dataLists = []
-                    message.dataLists.push($root.DataList.decode(reader, reader.uint32()))
-                    break
+            case 2: {
+                    if (!(message.dataLists && message.dataLists.length))
+                        message.dataLists = [];
+                    message.dataLists.push($root.DataList.decode(reader, reader.uint32()));
+                    break;
                 }
-                default:
-                    reader.skipType(tag & 7)
-                    break
+            default:
+                reader.skipType(tag & 7);
+                break;
             }
         }
-        return message
-    }
+        return message;
+    };
 
     /**
      * Decodes a DataLists message from the specified reader or buffer, length delimited.
@@ -4417,9 +4696,9 @@ $root.DataLists = (function () {
      */
     DataLists.decodeDelimited = function decodeDelimited(reader) {
         if (!(reader instanceof $Reader))
-            reader = new $Reader(reader)
-        return this.decode(reader, reader.uint32())
-    }
+            reader = new $Reader(reader);
+        return this.decode(reader, reader.uint32());
+    };
 
     /**
      * Verifies a DataLists message.
@@ -4430,26 +4709,26 @@ $root.DataLists = (function () {
      * @returns {string|null} `null` if valid, otherwise the reason why it is not
      */
     DataLists.verify = function verify(message) {
-        if (typeof message !== 'object' || message === null)
-            return 'object expected'
-        if (message.statnames != null && message.hasOwnProperty('statnames')) {
+        if (typeof message !== "object" || message === null)
+            return "object expected";
+        if (message.statnames != null && message.hasOwnProperty("statnames")) {
             if (!Array.isArray(message.statnames))
-                return 'statnames: array expected'
+                return "statnames: array expected";
             for (var i = 0; i < message.statnames.length; ++i)
                 if (!$util.isString(message.statnames[i]))
-                    return 'statnames: string[] expected'
+                    return "statnames: string[] expected";
         }
-        if (message.dataLists != null && message.hasOwnProperty('dataLists')) {
+        if (message.dataLists != null && message.hasOwnProperty("dataLists")) {
             if (!Array.isArray(message.dataLists))
-                return 'dataLists: array expected'
+                return "dataLists: array expected";
             for (var i = 0; i < message.dataLists.length; ++i) {
-                var error = $root.DataList.verify(message.dataLists[i])
+                var error = $root.DataList.verify(message.dataLists[i]);
                 if (error)
-                    return `dataLists.${error}`
+                    return "dataLists." + error;
             }
         }
-        return null
-    }
+        return null;
+    };
 
     /**
      * Creates a DataLists message from a plain object. Also converts values to their respective internal types.
@@ -4461,27 +4740,27 @@ $root.DataLists = (function () {
      */
     DataLists.fromObject = function fromObject(object) {
         if (object instanceof $root.DataLists)
-            return object
-        var message = new $root.DataLists()
+            return object;
+        var message = new $root.DataLists();
         if (object.statnames) {
             if (!Array.isArray(object.statnames))
-                throw TypeError('.DataLists.statnames: array expected')
-            message.statnames = []
+                throw TypeError(".DataLists.statnames: array expected");
+            message.statnames = [];
             for (var i = 0; i < object.statnames.length; ++i)
-                message.statnames[i] = String(object.statnames[i])
+                message.statnames[i] = String(object.statnames[i]);
         }
         if (object.dataLists) {
             if (!Array.isArray(object.dataLists))
-                throw TypeError('.DataLists.dataLists: array expected')
-            message.dataLists = []
+                throw TypeError(".DataLists.dataLists: array expected");
+            message.dataLists = [];
             for (var i = 0; i < object.dataLists.length; ++i) {
-                if (typeof object.dataLists[i] !== 'object')
-                    throw TypeError('.DataLists.dataLists: object expected')
-                message.dataLists[i] = $root.DataList.fromObject(object.dataLists[i])
+                if (typeof object.dataLists[i] !== "object")
+                    throw TypeError(".DataLists.dataLists: object expected");
+                message.dataLists[i] = $root.DataList.fromObject(object.dataLists[i]);
             }
         }
-        return message
-    }
+        return message;
+    };
 
     /**
      * Creates a plain object from a DataLists message. Also converts values to other types if specified.
@@ -4494,24 +4773,24 @@ $root.DataLists = (function () {
      */
     DataLists.toObject = function toObject(message, options) {
         if (!options)
-            options = {}
-        var object = {}
+            options = {};
+        var object = {};
         if (options.arrays || options.defaults) {
-            object.statnames = []
-            object.dataLists = []
+            object.statnames = [];
+            object.dataLists = [];
         }
         if (message.statnames && message.statnames.length) {
-            object.statnames = []
+            object.statnames = [];
             for (var j = 0; j < message.statnames.length; ++j)
-                object.statnames[j] = message.statnames[j]
+                object.statnames[j] = message.statnames[j];
         }
         if (message.dataLists && message.dataLists.length) {
-            object.dataLists = []
+            object.dataLists = [];
             for (var j = 0; j < message.dataLists.length; ++j)
-                object.dataLists[j] = $root.DataList.toObject(message.dataLists[j], options)
+                object.dataLists[j] = $root.DataList.toObject(message.dataLists[j], options);
         }
-        return object
-    }
+        return object;
+    };
 
     /**
      * Converts this DataLists to JSON.
@@ -4521,8 +4800,8 @@ $root.DataLists = (function () {
      * @returns {Object.<string,*>} JSON object
      */
     DataLists.prototype.toJSON = function toJSON() {
-        return this.constructor.toObject(this, $protobuf.util.toJSONOptions)
-    }
+        return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+    };
 
     /**
      * Gets the default type url for DataLists
@@ -4534,15 +4813,16 @@ $root.DataLists = (function () {
      */
     DataLists.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
         if (typeUrlPrefix === undefined) {
-            typeUrlPrefix = 'type.googleapis.com'
+            typeUrlPrefix = "type.googleapis.com";
         }
-        return `${typeUrlPrefix}/DataLists`
-    }
+        return typeUrlPrefix + "/DataLists";
+    };
 
-    return DataLists
-})()
+    return DataLists;
+})();
 
-$root.AllStats = (function () {
+$root.AllStats = (function() {
+
     /**
      * Properties of an AllStats.
      * @exports IAllStats
@@ -4559,11 +4839,11 @@ $root.AllStats = (function () {
      * @param {IAllStats=} [properties] Properties to set
      */
     function AllStats(properties) {
-        this.stats = []
+        this.stats = [];
         if (properties)
             for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
                 if (properties[keys[i]] != null)
-                    this[keys[i]] = properties[keys[i]]
+                    this[keys[i]] = properties[keys[i]];
     }
 
     /**
@@ -4572,7 +4852,7 @@ $root.AllStats = (function () {
      * @memberof AllStats
      * @instance
      */
-    AllStats.prototype.stats = $util.emptyArray
+    AllStats.prototype.stats = $util.emptyArray;
 
     /**
      * Creates a new AllStats instance using the specified properties.
@@ -4583,8 +4863,8 @@ $root.AllStats = (function () {
      * @returns {AllStats} AllStats instance
      */
     AllStats.create = function create(properties) {
-        return new AllStats(properties)
-    }
+        return new AllStats(properties);
+    };
 
     /**
      * Encodes the specified AllStats message. Does not implicitly {@link AllStats.verify|verify} messages.
@@ -4597,15 +4877,15 @@ $root.AllStats = (function () {
      */
     AllStats.encode = function encode(message, writer) {
         if (!writer)
-            writer = $Writer.create()
-        if (message.stats?.length) {
-            writer.uint32(/* id 1, wireType 2 = */10).fork()
+            writer = $Writer.create();
+        if (message.stats != null && message.stats.length) {
+            writer.uint32(/* id 1, wireType 2 =*/10).fork();
             for (var i = 0; i < message.stats.length; ++i)
-                writer.float(message.stats[i])
-            writer.ldelim()
+                writer.float(message.stats[i]);
+            writer.ldelim();
         }
-        return writer
-    }
+        return writer;
+    };
 
     /**
      * Encodes the specified AllStats message, length delimited. Does not implicitly {@link AllStats.verify|verify} messages.
@@ -4617,8 +4897,8 @@ $root.AllStats = (function () {
      * @returns {$protobuf.Writer} Writer
      */
     AllStats.encodeDelimited = function encodeDelimited(message, writer) {
-        return this.encode(message, writer).ldelim()
-    }
+        return this.encode(message, writer).ldelim();
+    };
 
     /**
      * Decodes an AllStats message from the specified reader or buffer.
@@ -4633,30 +4913,29 @@ $root.AllStats = (function () {
      */
     AllStats.decode = function decode(reader, length) {
         if (!(reader instanceof $Reader))
-            reader = $Reader.create(reader)
-        var end = length === undefined ? reader.len : reader.pos + length, message = new $root.AllStats()
+            reader = $Reader.create(reader);
+        var end = length === undefined ? reader.len : reader.pos + length, message = new $root.AllStats();
         while (reader.pos < end) {
-            var tag = reader.uint32()
+            var tag = reader.uint32();
             switch (tag >>> 3) {
-                case 1: {
-                    if (!(message.stats?.length))
-                        message.stats = []
+            case 1: {
+                    if (!(message.stats && message.stats.length))
+                        message.stats = [];
                     if ((tag & 7) === 2) {
-                        var end2 = reader.uint32() + reader.pos
+                        var end2 = reader.uint32() + reader.pos;
                         while (reader.pos < end2)
-                            message.stats.push(reader.float())
-                    }
-                    else
-                        message.stats.push(reader.float())
-                    break
+                            message.stats.push(reader.float());
+                    } else
+                        message.stats.push(reader.float());
+                    break;
                 }
-                default:
-                    reader.skipType(tag & 7)
-                    break
+            default:
+                reader.skipType(tag & 7);
+                break;
             }
         }
-        return message
-    }
+        return message;
+    };
 
     /**
      * Decodes an AllStats message from the specified reader or buffer, length delimited.
@@ -4670,9 +4949,9 @@ $root.AllStats = (function () {
      */
     AllStats.decodeDelimited = function decodeDelimited(reader) {
         if (!(reader instanceof $Reader))
-            reader = new $Reader(reader)
-        return this.decode(reader, reader.uint32())
-    }
+            reader = new $Reader(reader);
+        return this.decode(reader, reader.uint32());
+    };
 
     /**
      * Verifies an AllStats message.
@@ -4683,17 +4962,17 @@ $root.AllStats = (function () {
      * @returns {string|null} `null` if valid, otherwise the reason why it is not
      */
     AllStats.verify = function verify(message) {
-        if (typeof message !== 'object' || message === null)
-            return 'object expected'
-        if (message.stats != null && message.hasOwnProperty('stats')) {
+        if (typeof message !== "object" || message === null)
+            return "object expected";
+        if (message.stats != null && message.hasOwnProperty("stats")) {
             if (!Array.isArray(message.stats))
-                return 'stats: array expected'
+                return "stats: array expected";
             for (var i = 0; i < message.stats.length; ++i)
-                if (typeof message.stats[i] !== 'number')
-                    return 'stats: number[] expected'
+                if (typeof message.stats[i] !== "number")
+                    return "stats: number[] expected";
         }
-        return null
-    }
+        return null;
+    };
 
     /**
      * Creates an AllStats message from a plain object. Also converts values to their respective internal types.
@@ -4705,17 +4984,17 @@ $root.AllStats = (function () {
      */
     AllStats.fromObject = function fromObject(object) {
         if (object instanceof $root.AllStats)
-            return object
-        var message = new $root.AllStats()
+            return object;
+        var message = new $root.AllStats();
         if (object.stats) {
             if (!Array.isArray(object.stats))
-                throw TypeError('.AllStats.stats: array expected')
-            message.stats = []
+                throw TypeError(".AllStats.stats: array expected");
+            message.stats = [];
             for (var i = 0; i < object.stats.length; ++i)
-                message.stats[i] = Number(object.stats[i])
+                message.stats[i] = Number(object.stats[i]);
         }
-        return message
-    }
+        return message;
+    };
 
     /**
      * Creates a plain object from an AllStats message. Also converts values to other types if specified.
@@ -4728,17 +5007,17 @@ $root.AllStats = (function () {
      */
     AllStats.toObject = function toObject(message, options) {
         if (!options)
-            options = {}
-        var object = {}
+            options = {};
+        var object = {};
         if (options.arrays || options.defaults)
-            object.stats = []
+            object.stats = [];
         if (message.stats && message.stats.length) {
-            object.stats = []
+            object.stats = [];
             for (var j = 0; j < message.stats.length; ++j)
-                object.stats[j] = options.json && !isFinite(message.stats[j]) ? String(message.stats[j]) : message.stats[j]
+                object.stats[j] = options.json && !isFinite(message.stats[j]) ? String(message.stats[j]) : message.stats[j];
         }
-        return object
-    }
+        return object;
+    };
 
     /**
      * Converts this AllStats to JSON.
@@ -4748,8 +5027,8 @@ $root.AllStats = (function () {
      * @returns {Object.<string,*>} JSON object
      */
     AllStats.prototype.toJSON = function toJSON() {
-        return this.constructor.toObject(this, $protobuf.util.toJSONOptions)
-    }
+        return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+    };
 
     /**
      * Gets the default type url for AllStats
@@ -4761,15 +5040,16 @@ $root.AllStats = (function () {
      */
     AllStats.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
         if (typeUrlPrefix === undefined) {
-            typeUrlPrefix = 'type.googleapis.com'
+            typeUrlPrefix = "type.googleapis.com";
         }
-        return `${typeUrlPrefix}/AllStats`
-    }
+        return typeUrlPrefix + "/AllStats";
+    };
 
-    return AllStats
-})()
+    return AllStats;
+})();
 
-$root.ConsolidatedShapes = (function () {
+$root.ConsolidatedShapes = (function() {
+
     /**
      * Properties of a ConsolidatedShapes.
      * @exports IConsolidatedShapes
@@ -4787,12 +5067,12 @@ $root.ConsolidatedShapes = (function () {
      * @param {IConsolidatedShapes=} [properties] Properties to set
      */
     function ConsolidatedShapes(properties) {
-        this.longnames = []
-        this.shapes = []
+        this.longnames = [];
+        this.shapes = [];
         if (properties)
             for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
                 if (properties[keys[i]] != null)
-                    this[keys[i]] = properties[keys[i]]
+                    this[keys[i]] = properties[keys[i]];
     }
 
     /**
@@ -4801,7 +5081,7 @@ $root.ConsolidatedShapes = (function () {
      * @memberof ConsolidatedShapes
      * @instance
      */
-    ConsolidatedShapes.prototype.longnames = $util.emptyArray
+    ConsolidatedShapes.prototype.longnames = $util.emptyArray;
 
     /**
      * ConsolidatedShapes shapes.
@@ -4809,7 +5089,7 @@ $root.ConsolidatedShapes = (function () {
      * @memberof ConsolidatedShapes
      * @instance
      */
-    ConsolidatedShapes.prototype.shapes = $util.emptyArray
+    ConsolidatedShapes.prototype.shapes = $util.emptyArray;
 
     /**
      * Creates a new ConsolidatedShapes instance using the specified properties.
@@ -4820,8 +5100,8 @@ $root.ConsolidatedShapes = (function () {
      * @returns {ConsolidatedShapes} ConsolidatedShapes instance
      */
     ConsolidatedShapes.create = function create(properties) {
-        return new ConsolidatedShapes(properties)
-    }
+        return new ConsolidatedShapes(properties);
+    };
 
     /**
      * Encodes the specified ConsolidatedShapes message. Does not implicitly {@link ConsolidatedShapes.verify|verify} messages.
@@ -4834,15 +5114,15 @@ $root.ConsolidatedShapes = (function () {
      */
     ConsolidatedShapes.encode = function encode(message, writer) {
         if (!writer)
-            writer = $Writer.create()
-        if (message.longnames?.length)
+            writer = $Writer.create();
+        if (message.longnames != null && message.longnames.length)
             for (var i = 0; i < message.longnames.length; ++i)
-                writer.uint32(/* id 1, wireType 2 = */10).string(message.longnames[i])
-        if (message.shapes?.length)
+                writer.uint32(/* id 1, wireType 2 =*/10).string(message.longnames[i]);
+        if (message.shapes != null && message.shapes.length)
             for (var i = 0; i < message.shapes.length; ++i)
-                $root.Feature.encode(message.shapes[i], writer.uint32(/* id 2, wireType 2 = */18).fork()).ldelim()
-        return writer
-    }
+                $root.Feature.encode(message.shapes[i], writer.uint32(/* id 2, wireType 2 =*/18).fork()).ldelim();
+        return writer;
+    };
 
     /**
      * Encodes the specified ConsolidatedShapes message, length delimited. Does not implicitly {@link ConsolidatedShapes.verify|verify} messages.
@@ -4854,8 +5134,8 @@ $root.ConsolidatedShapes = (function () {
      * @returns {$protobuf.Writer} Writer
      */
     ConsolidatedShapes.encodeDelimited = function encodeDelimited(message, writer) {
-        return this.encode(message, writer).ldelim()
-    }
+        return this.encode(message, writer).ldelim();
+    };
 
     /**
      * Decodes a ConsolidatedShapes message from the specified reader or buffer.
@@ -4870,30 +5150,30 @@ $root.ConsolidatedShapes = (function () {
      */
     ConsolidatedShapes.decode = function decode(reader, length) {
         if (!(reader instanceof $Reader))
-            reader = $Reader.create(reader)
-        var end = length === undefined ? reader.len : reader.pos + length, message = new $root.ConsolidatedShapes()
+            reader = $Reader.create(reader);
+        var end = length === undefined ? reader.len : reader.pos + length, message = new $root.ConsolidatedShapes();
         while (reader.pos < end) {
-            var tag = reader.uint32()
+            var tag = reader.uint32();
             switch (tag >>> 3) {
-                case 1: {
-                    if (!(message.longnames?.length))
-                        message.longnames = []
-                    message.longnames.push(reader.string())
-                    break
+            case 1: {
+                    if (!(message.longnames && message.longnames.length))
+                        message.longnames = [];
+                    message.longnames.push(reader.string());
+                    break;
                 }
-                case 2: {
-                    if (!(message.shapes?.length))
-                        message.shapes = []
-                    message.shapes.push($root.Feature.decode(reader, reader.uint32()))
-                    break
+            case 2: {
+                    if (!(message.shapes && message.shapes.length))
+                        message.shapes = [];
+                    message.shapes.push($root.Feature.decode(reader, reader.uint32()));
+                    break;
                 }
-                default:
-                    reader.skipType(tag & 7)
-                    break
+            default:
+                reader.skipType(tag & 7);
+                break;
             }
         }
-        return message
-    }
+        return message;
+    };
 
     /**
      * Decodes a ConsolidatedShapes message from the specified reader or buffer, length delimited.
@@ -4907,9 +5187,9 @@ $root.ConsolidatedShapes = (function () {
      */
     ConsolidatedShapes.decodeDelimited = function decodeDelimited(reader) {
         if (!(reader instanceof $Reader))
-            reader = new $Reader(reader)
-        return this.decode(reader, reader.uint32())
-    }
+            reader = new $Reader(reader);
+        return this.decode(reader, reader.uint32());
+    };
 
     /**
      * Verifies a ConsolidatedShapes message.
@@ -4920,26 +5200,26 @@ $root.ConsolidatedShapes = (function () {
      * @returns {string|null} `null` if valid, otherwise the reason why it is not
      */
     ConsolidatedShapes.verify = function verify(message) {
-        if (typeof message !== 'object' || message === null)
-            return 'object expected'
-        if (message.longnames != null && message.hasOwnProperty('longnames')) {
+        if (typeof message !== "object" || message === null)
+            return "object expected";
+        if (message.longnames != null && message.hasOwnProperty("longnames")) {
             if (!Array.isArray(message.longnames))
-                return 'longnames: array expected'
+                return "longnames: array expected";
             for (var i = 0; i < message.longnames.length; ++i)
                 if (!$util.isString(message.longnames[i]))
-                    return 'longnames: string[] expected'
+                    return "longnames: string[] expected";
         }
-        if (message.shapes != null && message.hasOwnProperty('shapes')) {
+        if (message.shapes != null && message.hasOwnProperty("shapes")) {
             if (!Array.isArray(message.shapes))
-                return 'shapes: array expected'
+                return "shapes: array expected";
             for (var i = 0; i < message.shapes.length; ++i) {
-                var error = $root.Feature.verify(message.shapes[i])
+                var error = $root.Feature.verify(message.shapes[i]);
                 if (error)
-                    return `shapes.${error}`
+                    return "shapes." + error;
             }
         }
-        return null
-    }
+        return null;
+    };
 
     /**
      * Creates a ConsolidatedShapes message from a plain object. Also converts values to their respective internal types.
@@ -4951,27 +5231,27 @@ $root.ConsolidatedShapes = (function () {
      */
     ConsolidatedShapes.fromObject = function fromObject(object) {
         if (object instanceof $root.ConsolidatedShapes)
-            return object
-        var message = new $root.ConsolidatedShapes()
+            return object;
+        var message = new $root.ConsolidatedShapes();
         if (object.longnames) {
             if (!Array.isArray(object.longnames))
-                throw TypeError('.ConsolidatedShapes.longnames: array expected')
-            message.longnames = []
+                throw TypeError(".ConsolidatedShapes.longnames: array expected");
+            message.longnames = [];
             for (var i = 0; i < object.longnames.length; ++i)
-                message.longnames[i] = String(object.longnames[i])
+                message.longnames[i] = String(object.longnames[i]);
         }
         if (object.shapes) {
             if (!Array.isArray(object.shapes))
-                throw TypeError('.ConsolidatedShapes.shapes: array expected')
-            message.shapes = []
+                throw TypeError(".ConsolidatedShapes.shapes: array expected");
+            message.shapes = [];
             for (var i = 0; i < object.shapes.length; ++i) {
-                if (typeof object.shapes[i] !== 'object')
-                    throw TypeError('.ConsolidatedShapes.shapes: object expected')
-                message.shapes[i] = $root.Feature.fromObject(object.shapes[i])
+                if (typeof object.shapes[i] !== "object")
+                    throw TypeError(".ConsolidatedShapes.shapes: object expected");
+                message.shapes[i] = $root.Feature.fromObject(object.shapes[i]);
             }
         }
-        return message
-    }
+        return message;
+    };
 
     /**
      * Creates a plain object from a ConsolidatedShapes message. Also converts values to other types if specified.
@@ -4984,24 +5264,24 @@ $root.ConsolidatedShapes = (function () {
      */
     ConsolidatedShapes.toObject = function toObject(message, options) {
         if (!options)
-            options = {}
-        var object = {}
+            options = {};
+        var object = {};
         if (options.arrays || options.defaults) {
-            object.longnames = []
-            object.shapes = []
+            object.longnames = [];
+            object.shapes = [];
         }
         if (message.longnames && message.longnames.length) {
-            object.longnames = []
+            object.longnames = [];
             for (var j = 0; j < message.longnames.length; ++j)
-                object.longnames[j] = message.longnames[j]
+                object.longnames[j] = message.longnames[j];
         }
         if (message.shapes && message.shapes.length) {
-            object.shapes = []
+            object.shapes = [];
             for (var j = 0; j < message.shapes.length; ++j)
-                object.shapes[j] = $root.Feature.toObject(message.shapes[j], options)
+                object.shapes[j] = $root.Feature.toObject(message.shapes[j], options);
         }
-        return object
-    }
+        return object;
+    };
 
     /**
      * Converts this ConsolidatedShapes to JSON.
@@ -5011,8 +5291,8 @@ $root.ConsolidatedShapes = (function () {
      * @returns {Object.<string,*>} JSON object
      */
     ConsolidatedShapes.prototype.toJSON = function toJSON() {
-        return this.constructor.toObject(this, $protobuf.util.toJSONOptions)
-    }
+        return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+    };
 
     /**
      * Gets the default type url for ConsolidatedShapes
@@ -5024,15 +5304,16 @@ $root.ConsolidatedShapes = (function () {
      */
     ConsolidatedShapes.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
         if (typeUrlPrefix === undefined) {
-            typeUrlPrefix = 'type.googleapis.com'
+            typeUrlPrefix = "type.googleapis.com";
         }
-        return `${typeUrlPrefix}/ConsolidatedShapes`
-    }
+        return typeUrlPrefix + "/ConsolidatedShapes";
+    };
 
-    return ConsolidatedShapes
-})()
+    return ConsolidatedShapes;
+})();
 
-$root.ConsolidatedStatistics = (function () {
+$root.ConsolidatedStatistics = (function() {
+
     /**
      * Properties of a ConsolidatedStatistics.
      * @exports IConsolidatedStatistics
@@ -5051,13 +5332,13 @@ $root.ConsolidatedStatistics = (function () {
      * @param {IConsolidatedStatistics=} [properties] Properties to set
      */
     function ConsolidatedStatistics(properties) {
-        this.longnames = []
-        this.shortnames = []
-        this.stats = []
+        this.longnames = [];
+        this.shortnames = [];
+        this.stats = [];
         if (properties)
             for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
                 if (properties[keys[i]] != null)
-                    this[keys[i]] = properties[keys[i]]
+                    this[keys[i]] = properties[keys[i]];
     }
 
     /**
@@ -5066,7 +5347,7 @@ $root.ConsolidatedStatistics = (function () {
      * @memberof ConsolidatedStatistics
      * @instance
      */
-    ConsolidatedStatistics.prototype.longnames = $util.emptyArray
+    ConsolidatedStatistics.prototype.longnames = $util.emptyArray;
 
     /**
      * ConsolidatedStatistics shortnames.
@@ -5074,7 +5355,7 @@ $root.ConsolidatedStatistics = (function () {
      * @memberof ConsolidatedStatistics
      * @instance
      */
-    ConsolidatedStatistics.prototype.shortnames = $util.emptyArray
+    ConsolidatedStatistics.prototype.shortnames = $util.emptyArray;
 
     /**
      * ConsolidatedStatistics stats.
@@ -5082,7 +5363,7 @@ $root.ConsolidatedStatistics = (function () {
      * @memberof ConsolidatedStatistics
      * @instance
      */
-    ConsolidatedStatistics.prototype.stats = $util.emptyArray
+    ConsolidatedStatistics.prototype.stats = $util.emptyArray;
 
     /**
      * Creates a new ConsolidatedStatistics instance using the specified properties.
@@ -5093,8 +5374,8 @@ $root.ConsolidatedStatistics = (function () {
      * @returns {ConsolidatedStatistics} ConsolidatedStatistics instance
      */
     ConsolidatedStatistics.create = function create(properties) {
-        return new ConsolidatedStatistics(properties)
-    }
+        return new ConsolidatedStatistics(properties);
+    };
 
     /**
      * Encodes the specified ConsolidatedStatistics message. Does not implicitly {@link ConsolidatedStatistics.verify|verify} messages.
@@ -5107,18 +5388,18 @@ $root.ConsolidatedStatistics = (function () {
      */
     ConsolidatedStatistics.encode = function encode(message, writer) {
         if (!writer)
-            writer = $Writer.create()
-        if (message.longnames?.length)
+            writer = $Writer.create();
+        if (message.longnames != null && message.longnames.length)
             for (var i = 0; i < message.longnames.length; ++i)
-                writer.uint32(/* id 1, wireType 2 = */10).string(message.longnames[i])
-        if (message.shortnames?.length)
+                writer.uint32(/* id 1, wireType 2 =*/10).string(message.longnames[i]);
+        if (message.shortnames != null && message.shortnames.length)
             for (var i = 0; i < message.shortnames.length; ++i)
-                writer.uint32(/* id 2, wireType 2 = */18).string(message.shortnames[i])
-        if (message.stats?.length)
+                writer.uint32(/* id 2, wireType 2 =*/18).string(message.shortnames[i]);
+        if (message.stats != null && message.stats.length)
             for (var i = 0; i < message.stats.length; ++i)
-                $root.AllStats.encode(message.stats[i], writer.uint32(/* id 3, wireType 2 = */26).fork()).ldelim()
-        return writer
-    }
+                $root.AllStats.encode(message.stats[i], writer.uint32(/* id 3, wireType 2 =*/26).fork()).ldelim();
+        return writer;
+    };
 
     /**
      * Encodes the specified ConsolidatedStatistics message, length delimited. Does not implicitly {@link ConsolidatedStatistics.verify|verify} messages.
@@ -5130,8 +5411,8 @@ $root.ConsolidatedStatistics = (function () {
      * @returns {$protobuf.Writer} Writer
      */
     ConsolidatedStatistics.encodeDelimited = function encodeDelimited(message, writer) {
-        return this.encode(message, writer).ldelim()
-    }
+        return this.encode(message, writer).ldelim();
+    };
 
     /**
      * Decodes a ConsolidatedStatistics message from the specified reader or buffer.
@@ -5146,36 +5427,36 @@ $root.ConsolidatedStatistics = (function () {
      */
     ConsolidatedStatistics.decode = function decode(reader, length) {
         if (!(reader instanceof $Reader))
-            reader = $Reader.create(reader)
-        var end = length === undefined ? reader.len : reader.pos + length, message = new $root.ConsolidatedStatistics()
+            reader = $Reader.create(reader);
+        var end = length === undefined ? reader.len : reader.pos + length, message = new $root.ConsolidatedStatistics();
         while (reader.pos < end) {
-            var tag = reader.uint32()
+            var tag = reader.uint32();
             switch (tag >>> 3) {
-                case 1: {
-                    if (!(message.longnames?.length))
-                        message.longnames = []
-                    message.longnames.push(reader.string())
-                    break
+            case 1: {
+                    if (!(message.longnames && message.longnames.length))
+                        message.longnames = [];
+                    message.longnames.push(reader.string());
+                    break;
                 }
-                case 2: {
-                    if (!(message.shortnames?.length))
-                        message.shortnames = []
-                    message.shortnames.push(reader.string())
-                    break
+            case 2: {
+                    if (!(message.shortnames && message.shortnames.length))
+                        message.shortnames = [];
+                    message.shortnames.push(reader.string());
+                    break;
                 }
-                case 3: {
-                    if (!(message.stats?.length))
-                        message.stats = []
-                    message.stats.push($root.AllStats.decode(reader, reader.uint32()))
-                    break
+            case 3: {
+                    if (!(message.stats && message.stats.length))
+                        message.stats = [];
+                    message.stats.push($root.AllStats.decode(reader, reader.uint32()));
+                    break;
                 }
-                default:
-                    reader.skipType(tag & 7)
-                    break
+            default:
+                reader.skipType(tag & 7);
+                break;
             }
         }
-        return message
-    }
+        return message;
+    };
 
     /**
      * Decodes a ConsolidatedStatistics message from the specified reader or buffer, length delimited.
@@ -5189,9 +5470,9 @@ $root.ConsolidatedStatistics = (function () {
      */
     ConsolidatedStatistics.decodeDelimited = function decodeDelimited(reader) {
         if (!(reader instanceof $Reader))
-            reader = new $Reader(reader)
-        return this.decode(reader, reader.uint32())
-    }
+            reader = new $Reader(reader);
+        return this.decode(reader, reader.uint32());
+    };
 
     /**
      * Verifies a ConsolidatedStatistics message.
@@ -5202,33 +5483,33 @@ $root.ConsolidatedStatistics = (function () {
      * @returns {string|null} `null` if valid, otherwise the reason why it is not
      */
     ConsolidatedStatistics.verify = function verify(message) {
-        if (typeof message !== 'object' || message === null)
-            return 'object expected'
-        if (message.longnames != null && message.hasOwnProperty('longnames')) {
+        if (typeof message !== "object" || message === null)
+            return "object expected";
+        if (message.longnames != null && message.hasOwnProperty("longnames")) {
             if (!Array.isArray(message.longnames))
-                return 'longnames: array expected'
+                return "longnames: array expected";
             for (var i = 0; i < message.longnames.length; ++i)
                 if (!$util.isString(message.longnames[i]))
-                    return 'longnames: string[] expected'
+                    return "longnames: string[] expected";
         }
-        if (message.shortnames != null && message.hasOwnProperty('shortnames')) {
+        if (message.shortnames != null && message.hasOwnProperty("shortnames")) {
             if (!Array.isArray(message.shortnames))
-                return 'shortnames: array expected'
+                return "shortnames: array expected";
             for (var i = 0; i < message.shortnames.length; ++i)
                 if (!$util.isString(message.shortnames[i]))
-                    return 'shortnames: string[] expected'
+                    return "shortnames: string[] expected";
         }
-        if (message.stats != null && message.hasOwnProperty('stats')) {
+        if (message.stats != null && message.hasOwnProperty("stats")) {
             if (!Array.isArray(message.stats))
-                return 'stats: array expected'
+                return "stats: array expected";
             for (var i = 0; i < message.stats.length; ++i) {
-                var error = $root.AllStats.verify(message.stats[i])
+                var error = $root.AllStats.verify(message.stats[i]);
                 if (error)
-                    return `stats.${error}`
+                    return "stats." + error;
             }
         }
-        return null
-    }
+        return null;
+    };
 
     /**
      * Creates a ConsolidatedStatistics message from a plain object. Also converts values to their respective internal types.
@@ -5240,34 +5521,34 @@ $root.ConsolidatedStatistics = (function () {
      */
     ConsolidatedStatistics.fromObject = function fromObject(object) {
         if (object instanceof $root.ConsolidatedStatistics)
-            return object
-        var message = new $root.ConsolidatedStatistics()
+            return object;
+        var message = new $root.ConsolidatedStatistics();
         if (object.longnames) {
             if (!Array.isArray(object.longnames))
-                throw TypeError('.ConsolidatedStatistics.longnames: array expected')
-            message.longnames = []
+                throw TypeError(".ConsolidatedStatistics.longnames: array expected");
+            message.longnames = [];
             for (var i = 0; i < object.longnames.length; ++i)
-                message.longnames[i] = String(object.longnames[i])
+                message.longnames[i] = String(object.longnames[i]);
         }
         if (object.shortnames) {
             if (!Array.isArray(object.shortnames))
-                throw TypeError('.ConsolidatedStatistics.shortnames: array expected')
-            message.shortnames = []
+                throw TypeError(".ConsolidatedStatistics.shortnames: array expected");
+            message.shortnames = [];
             for (var i = 0; i < object.shortnames.length; ++i)
-                message.shortnames[i] = String(object.shortnames[i])
+                message.shortnames[i] = String(object.shortnames[i]);
         }
         if (object.stats) {
             if (!Array.isArray(object.stats))
-                throw TypeError('.ConsolidatedStatistics.stats: array expected')
-            message.stats = []
+                throw TypeError(".ConsolidatedStatistics.stats: array expected");
+            message.stats = [];
             for (var i = 0; i < object.stats.length; ++i) {
-                if (typeof object.stats[i] !== 'object')
-                    throw TypeError('.ConsolidatedStatistics.stats: object expected')
-                message.stats[i] = $root.AllStats.fromObject(object.stats[i])
+                if (typeof object.stats[i] !== "object")
+                    throw TypeError(".ConsolidatedStatistics.stats: object expected");
+                message.stats[i] = $root.AllStats.fromObject(object.stats[i]);
             }
         }
-        return message
-    }
+        return message;
+    };
 
     /**
      * Creates a plain object from a ConsolidatedStatistics message. Also converts values to other types if specified.
@@ -5280,30 +5561,30 @@ $root.ConsolidatedStatistics = (function () {
      */
     ConsolidatedStatistics.toObject = function toObject(message, options) {
         if (!options)
-            options = {}
-        var object = {}
+            options = {};
+        var object = {};
         if (options.arrays || options.defaults) {
-            object.longnames = []
-            object.shortnames = []
-            object.stats = []
+            object.longnames = [];
+            object.shortnames = [];
+            object.stats = [];
         }
         if (message.longnames && message.longnames.length) {
-            object.longnames = []
+            object.longnames = [];
             for (var j = 0; j < message.longnames.length; ++j)
-                object.longnames[j] = message.longnames[j]
+                object.longnames[j] = message.longnames[j];
         }
         if (message.shortnames && message.shortnames.length) {
-            object.shortnames = []
+            object.shortnames = [];
             for (var j = 0; j < message.shortnames.length; ++j)
-                object.shortnames[j] = message.shortnames[j]
+                object.shortnames[j] = message.shortnames[j];
         }
         if (message.stats && message.stats.length) {
-            object.stats = []
+            object.stats = [];
             for (var j = 0; j < message.stats.length; ++j)
-                object.stats[j] = $root.AllStats.toObject(message.stats[j], options)
+                object.stats[j] = $root.AllStats.toObject(message.stats[j], options);
         }
-        return object
-    }
+        return object;
+    };
 
     /**
      * Converts this ConsolidatedStatistics to JSON.
@@ -5313,8 +5594,8 @@ $root.ConsolidatedStatistics = (function () {
      * @returns {Object.<string,*>} JSON object
      */
     ConsolidatedStatistics.prototype.toJSON = function toJSON() {
-        return this.constructor.toObject(this, $protobuf.util.toJSONOptions)
-    }
+        return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+    };
 
     /**
      * Gets the default type url for ConsolidatedStatistics
@@ -5326,12 +5607,12 @@ $root.ConsolidatedStatistics = (function () {
      */
     ConsolidatedStatistics.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
         if (typeUrlPrefix === undefined) {
-            typeUrlPrefix = 'type.googleapis.com'
+            typeUrlPrefix = "type.googleapis.com";
         }
-        return `${typeUrlPrefix}/ConsolidatedStatistics`
-    }
+        return typeUrlPrefix + "/ConsolidatedStatistics";
+    };
 
-    return ConsolidatedStatistics
-})()
+    return ConsolidatedStatistics;
+})();
 
-module.exports = $root
+module.exports = $root;
