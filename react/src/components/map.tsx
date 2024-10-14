@@ -358,11 +358,13 @@ interface MapProps extends MapGenericProps {
 interface ArticleMapProps extends MapProps {
     show_historical_cds: boolean
     settings: Record<string, unknown>
+    color: string
 }
 
 // eslint-disable-next-line no-restricted-syntax -- Don't want to overwrite the JS Map
 export { MapComponent as Map }
 function MapComponent(props: MapProps): ReactNode {
+    const colors = useColors()
     const [show_historical_cds] = useSetting('show_historical_cds')
     const related_checkbox_settings = useRelatedCheckboxSettings(props.article_type)
     return (
@@ -370,6 +372,7 @@ function MapComponent(props: MapProps): ReactNode {
             {...props}
             show_historical_cds={show_historical_cds}
             settings={related_checkbox_settings}
+            color={colors.hueColors.blue}
         />
     )
 }
@@ -389,7 +392,7 @@ class ArticleMap extends MapGeneric<ArticleMapProps> {
         const styles = []
 
         names.push(this.props.longname)
-        styles.push({ interactive: false, fillOpacity: 0.5, weight: 1, color: '#5a7dc3', fillColor: '#5a7dc3' })
+        styles.push({ interactive: false, fillOpacity: 0.5, weight: 1, color: this.props.color, fillColor: this.props.color })
 
         const [related_names, related_styles] = this.related_polygons(relateds)
         names.push(...related_names)

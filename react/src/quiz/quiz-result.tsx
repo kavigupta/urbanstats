@@ -3,6 +3,7 @@ import { isFirefox, isMobile } from 'react-device-detect'
 
 import { Statistic } from '../components/table'
 import { article_link } from '../navigation/links'
+import { useColors } from '../page_template/settings'
 
 import { render_time_remaining } from './dates'
 import { ENDPOINT, JuxtaQuestion, QuizDescriptor, QuizQuestion, RetroQuestion, a_correct, nameOfQuizKind } from './quiz'
@@ -123,13 +124,28 @@ interface ShareButtonProps {
 }
 
 function ShareButton({ button_ref, parameters, today_name, correct_pattern, total_correct, quiz_kind }: ShareButtonProps): ReactNode {
+    const colors = useColors()
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- We need to check the condition for browser compatibility.
     const can_share = navigator.canShare?.({ url: 'https://juxtastat.org', text: 'test' }) ?? false
     const is_share = isMobile && can_share && !isFirefox
 
     return (
         <button
-            className="serif quiz_copy_button"
+            className="serif"
+            style={{
+                textAlign: 'center',
+                fontSize: '2em',
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+                flexDirection: 'row',
+                margin: '0 auto',
+                padding: '0.25em 1em',
+                backgroundColor: colors.hueColors.green,
+                borderRadius: '0.25em',
+                border: 'none',
+                color: '#fff',
+            }}
             ref={button_ref}
             onClick={async () => {
                 const [text, url] = await summary(today_name, correct_pattern, total_correct, parameters, quiz_kind)
@@ -163,6 +179,7 @@ function ShareButton({ button_ref, parameters, today_name, correct_pattern, tota
 }
 
 function Timer({ quiz }: { quiz: QuizDescriptor }): ReactNode {
+    const colors = useColors()
     const [, setTime] = useState(0)
     useEffect(() => {
         const interval = setInterval(() => { setTime(time => time + 1) }, 1000)
@@ -171,7 +188,25 @@ function Timer({ quiz }: { quiz: QuizDescriptor }): ReactNode {
 
     const w = quiz.kind === 'juxtastat' ? '5em' : '6.5em'
     return (
-        <div className="serif quiz_next" style={{ width: w, margin: 0 }} id="quiz-timer">
+        <div
+            className="serif"
+            style={{
+                width: w,
+                margin: 0,
+                backgroundColor: colors.hueColors.blue,
+                textAlign: 'center',
+                fontSize: '2em',
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+                flexDirection: 'row',
+                padding: '0.25em 0.25em',
+                borderRadius: '0.25em',
+                border: 'none',
+                color: '#fff',
+            }}
+            id="quiz-timer"
+        >
             <span>{render_time_remaining(quiz)}</span>
         </div>
     )
@@ -284,27 +319,39 @@ interface GenericQuizResultRowProps extends QuizResultRowProps {
 }
 
 export function GenericQuizResultRow(props: GenericQuizResultRowProps): ReactNode {
+    const colors = useColors()
     const comparison = a_correct(props.question)
         ? (<span>&gt;</span>)
         : (<span>&lt;</span>)
-    let first = 'serif quiz_result_name_left'
-    let second = 'serif quiz_result_name_right'
+    let firstStyle: React.CSSProperties = {}
+    let secondStyle: React.CSSProperties = {}
 
     if (props.choice === 'A') {
-        first += ' quiz_selected'
+        firstStyle = { backgroundColor: colors.selectedButton, color: colors.selectedButtonText }
     }
     else {
-        second += ' quiz_selected'
+        secondStyle = { backgroundColor: colors.selectedButton, color: colors.selectedButtonText }
     }
     const result = props.correct ? '🟩' : '🟥'
 
     return (
         <div key={props.index}>
             {props.get_label()}
-            <table className="stats_table quiz_results_table">
+            <table
+                className="stats_table"
+                style={{
+                    width: '80%',
+                    marginLeft: '10%',
+                    marginRight: '10%',
+                    borderCollapse: 'separate',
+                    borderSpacing: '0.1em',
+                    fontSize: '1.25em',
+                    backgroundColor: colors.unselectedButton,
+                }}
+            >
                 <tbody>
                     <tr>
-                        <td className={first}>
+                        <td className="serif quiz_result_name_left" style={firstStyle}>
                             {props.get_option('a')}
                         </td>
                         <td style={{ fontWeight: 400 }} className="serif quiz_result_value_left">
@@ -316,7 +363,7 @@ export function GenericQuizResultRow(props: GenericQuizResultRowProps): ReactNod
                         <td style={{ fontWeight: 400 }} className="serif quiz_result_value_right">
                             {props.get_stat('b')}
                         </td>
-                        <td className={second}>
+                        <td className="serif quiz_result_name_right" style={secondStyle}>
                             {props.get_option('b')}
                         </td>
                         <td className="serif quiz_result_symbol">
