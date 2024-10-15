@@ -12,15 +12,7 @@ import tqdm.auto as tqdm
 from census_blocks import RADII
 from election_data import vest_elections
 from output_geometry import produce_all_geometry_json
-from produce_html_page import (
-    category_metadata,
-    create_page_json,
-    extra_stats,
-    get_explanation_page,
-    get_statistic_categories,
-    internal_statistic_names,
-    statistic_internal_to_display_name,
-)
+from produce_html_page import create_page_json, extra_stats
 from relationship import full_relationships, map_relationships_by_type
 from relationship import ordering_idx as type_ordering_idx
 from relationship import type_to_type_category
@@ -42,6 +34,10 @@ from urbanstats.special_cases.simplified_country import all_simplified_countries
 from urbanstats.statistics.collections.industry import IndustryStatistics
 from urbanstats.statistics.collections.occupation import OccupationStatistics
 from urbanstats.statistics.collections_list import statistic_collections
+from urbanstats.statistics.output_statistics_metadata import (
+    internal_statistic_names,
+    output_statistics_metadata,
+)
 from urbanstats.universe.annotate_universes import (
     all_universes,
     attach_intl_universes,
@@ -173,18 +169,6 @@ def create_page_jsons(site_folder, full, ordering):
         )
 
 
-def output_categories():
-    assert set(internal_statistic_names()) == set(get_statistic_categories())
-    assert set(get_statistic_categories().values()) == set(category_metadata)
-    return [dict(key=k, **v) for k, v in category_metadata.items()]
-
-
-def get_statistic_column_path(column):
-    if isinstance(column, tuple):
-        column = "-".join(str(x) for x in column)
-    return column.replace("/", " slash ")
-
-
 @lru_cache(maxsize=None)
 def get_index_lists():
     real_names = internal_statistic_names()
@@ -302,26 +286,8 @@ def main(
     with open("react/src/data/type_ordering_idx.json", "w") as f:
         json.dump(type_ordering_idx, f)
 
-    with open(f"react/src/data/statistic_category_metadata.json", "w") as f:
-        json.dump(output_categories(), f)
-    with open(f"react/src/data/statistic_category_list.json", "w") as f:
-        json.dump(list(get_statistic_categories().values()), f)
-    with open(f"react/src/data/statistic_name_list.json", "w") as f:
-        json.dump(list(statistic_internal_to_display_name().values()), f)
-    with open(f"react/src/data/statistic_path_list.json", "w") as f:
-        json.dump(
-            list(
-                [
-                    get_statistic_column_path(name)
-                    for name in statistic_internal_to_display_name()
-                ]
-            ),
-            f,
-        )
-    with open(f"react/src/data/statistic_list.json", "w") as f:
-        json.dump(list([name for name in statistic_internal_to_display_name()]), f)
-    with open(f"react/src/data/explanation_page.json", "w") as f:
-        json.dump(list([name for name in get_explanation_page().values()]), f)
+    output_statistics_metadata()
+
     with open(f"react/src/data/universes_ordered.json", "w") as f:
         json.dump(list([name for name in all_universes()]), f)
     with open(f"react/src/data/explanation_industry_occupation_table.json", "w") as f:
@@ -335,10 +301,7 @@ def main(
 
     with open("react/src/data/extra_stats.json", "w") as f:
         json.dump(
-            [
-                (k, v.extra_stat_spec())
-                for k, v in sorted(extra_stats().items())
-            ],
+            [(k, v.extra_stat_spec()) for k, v in sorted(extra_stats().items())],
             f,
         )
 

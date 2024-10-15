@@ -7,8 +7,7 @@ import tqdm.auto as tqdm
 from scipy.sparse import csc_matrix
 from permacache import permacache, stable_hash
 
-from produce_html_page import internal_statistic_names
-from urbanstats.universe.annotate_universes import all_universes
+from urbanstats.statistics.output_statistics_metadata import internal_statistic_names
 
 
 @dataclass

@@ -1,9 +1,12 @@
 import json
 import tqdm.auto as tqdm
-from produce_html_page import internal_statistic_names
 from urbanstats.ordinals.compress_counts import compress_counts, mapify
 from urbanstats.protobuf import data_files_pb2
 from urbanstats.protobuf.utils import save_string_list, write_gzip
+from urbanstats.statistics.output_statistics_metadata import (
+    internal_statistic_names,
+    get_statistic_column_path,
+)
 from urbanstats.universe.annotate_universes import all_universes
 
 
@@ -42,8 +45,6 @@ class ProtobufOutputter:
 
 
 def output_order_files(order_info, site_folder, universe, typ):
-    from create_website import get_statistic_column_path
-    from produce_html_page import internal_statistic_names
 
     outputter = ProtobufOutputter(
         data_files_pb2.OrderLists,
@@ -65,9 +66,6 @@ def output_order_files(order_info, site_folder, universe, typ):
 
 
 def output_data_files(order_info, site_folder, universe, typ):
-    from create_website import get_statistic_column_path
-    from produce_html_page import internal_statistic_names
-
     # data_lists = data_files_pb2.DataLists()
     outputter = ProtobufOutputter(
         data_files_pb2.DataLists,
