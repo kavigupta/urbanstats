@@ -63,4 +63,4 @@ class TimeSeriesSpec(ExtraStatistic):
         return result
 
     def extra_stat_spec(self):
-        return dict(type="time_series")
+        return dict(type="time_series", years=self.years, name=self.name)
