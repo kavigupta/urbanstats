@@ -1,6 +1,6 @@
 import React, { ReactNode } from 'react'
 
-import { useColors } from '../page_template/settings'
+import { useColors } from '../page_template/colors'
 
 import { setting_name_style } from './style'
 

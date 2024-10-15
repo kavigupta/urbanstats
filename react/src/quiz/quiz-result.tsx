@@ -3,7 +3,7 @@ import { isFirefox, isMobile } from 'react-device-detect'
 
 import { Statistic } from '../components/table'
 import { article_link } from '../navigation/links'
-import { useColors } from '../page_template/settings'
+import { useColors } from '../page_template/colors'
 
 import { render_time_remaining } from './dates'
 import { ENDPOINT, JuxtaQuestion, QuizDescriptor, QuizQuestion, RetroQuestion, a_correct, nameOfQuizKind } from './quiz'

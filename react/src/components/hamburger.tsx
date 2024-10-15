@@ -3,7 +3,7 @@
 import React, { ReactNode } from 'react'
 
 import '../common.css'
-import { useColors } from '../page_template/settings'
+import { useColors } from '../page_template/colors'
 
 function Hamburger({ isOpen }: { isOpen: boolean }): ReactNode {
     return (

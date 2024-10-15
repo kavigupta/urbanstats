@@ -1,7 +1,8 @@
 import React, { CSSProperties, ReactNode } from 'react'
 
 import { loadProtobuf } from '../load_json'
-import { useColors, useSetting } from '../page_template/settings'
+import { useColors } from '../page_template/colors'
+import { useSetting } from '../page_template/settings'
 import { is_historical_cd } from '../utils/is_historical'
 import '../common.css'
 import { SearchIndex } from '../utils/protos'

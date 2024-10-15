@@ -2,7 +2,8 @@ import * as Plot from '@observablehq/plot'
 import React, { ReactElement, ReactNode, useMemo } from 'react'
 
 // imort Observable plot
-import { HistogramType, useColors, useSetting } from '../page_template/settings'
+import { useColors } from '../page_template/colors'
+import { HistogramType, useSetting } from '../page_template/settings'
 import { useUniverse } from '../universe'
 import { IHistogram } from '../utils/protos'
 

@@ -1,6 +1,6 @@
 import React, { ReactNode } from 'react'
 
-import { useColors } from '../page_template/settings'
+import { useColors } from '../page_template/colors'
 
 import { QuizDescriptor } from './quiz'
 import { History, parse_time_identifier } from './statistics'

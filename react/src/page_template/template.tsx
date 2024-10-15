@@ -17,7 +17,7 @@ import '../common.css'
 import '../components/article.css'
 import { useMobileLayout } from '../utils/responsive'
 
-import { useColors } from './settings'
+import { useColors } from './colors'
 
 export function PageTemplate({
     screencap_elements = undefined,

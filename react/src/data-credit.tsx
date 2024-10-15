@@ -4,7 +4,7 @@ import ReactDOM from 'react-dom/client'
 
 import './style.css'
 import './common.css'
-import { useColors } from './page_template/settings'
+import { useColors } from './page_template/colors'
 import { PageTemplate } from './page_template/template'
 import { useHeaderTextClass } from './utils/responsive'
 

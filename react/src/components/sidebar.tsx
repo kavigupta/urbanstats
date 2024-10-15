@@ -2,7 +2,9 @@ import React, { ReactNode, useId } from 'react'
 
 import '../style.css'
 import './sidebar.css'
-import { SettingsDictionary, Theme, useColors, useSetting, useStatisticCategoryMetadataCheckboxes } from '../page_template/settings'
+
+import { Theme, useColors } from '../page_template/colors'
+import { SettingsDictionary, useSetting, useStatisticCategoryMetadataCheckboxes } from '../page_template/settings'
 import { useMobileLayout } from '../utils/responsive'
 
 export function Sidebar(): ReactNode {

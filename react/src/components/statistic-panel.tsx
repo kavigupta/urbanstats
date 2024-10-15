@@ -1,7 +1,8 @@
 import React, { CSSProperties, ReactNode, useMemo, useRef } from 'react'
 
 import { article_link, explanation_page_link, sanitize, statistic_link } from '../navigation/links'
-import { useColors, useSetting } from '../page_template/settings'
+import { useColors } from '../page_template/colors'
+import { useSetting } from '../page_template/settings'
 import { PageTemplate } from '../page_template/template'
 import '../common.css'
 import './article.css'

@@ -1,6 +1,6 @@
 import React, { ReactNode } from 'react'
 
-import { useColors } from '../page_template/settings'
+import { useColors } from '../page_template/colors'
 import { interpolate_color } from '../utils/color'
 
 import { ColorMap, EncodedColorMap, RAMPS, RampDescriptor, parse_custom_colormap } from './ramps'

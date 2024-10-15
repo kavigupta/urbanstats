@@ -3,7 +3,7 @@ import { saveAs } from 'file-saver'
 import React, { createContext, ReactNode, useContext } from 'react'
 
 import { universe_path } from '../navigation/links'
-import { Colors } from '../page_template/settings'
+import { Colors } from '../page_template/colors'
 
 export function ScreenshotButton(props: { onClick: () => void }): ReactNode {
     const screencap_button = (
