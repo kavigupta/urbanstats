@@ -1,5 +1,7 @@
 from functools import lru_cache
 import json
+
+from .statistics_tree import statistics_tree
 from .collections_list import statistic_collections
 
 
@@ -127,3 +129,10 @@ def output_statistics_metadata():
 
     with open(f"react/src/data/explanation_page.json", "w") as f:
         json.dump(list([name for name in get_explanation_page().values()]), f)
+
+    with open(f"react/src/data/statistics_tree.json", "w") as f:
+        json.dump(flatten_statistic_tree(), f)
+
+def flatten_statistic_tree():
+    print(statistics_tree)
+    1/0
