@@ -6,6 +6,7 @@ from relationship import ordering_idx
 from urbanstats.protobuf import data_files_pb2
 from urbanstats.protobuf.utils import write_gzip
 from urbanstats.statistics.collections_list import statistic_collections
+from urbanstats.statistics.output_statistics_metadata import internal_statistic_names
 from urbanstats.statistics.statistic_collection import ORDER_CATEGORY_MAIN
 
 
@@ -112,48 +113,6 @@ def create_filename(x, ext):
     x = x.replace("/", " slash ")
     a, b = shard_bytes(x)
     return f"{a}/{b}/{x}." + ext
-
-
-def statistic_internal_to_display_name():
-    internal_to_display = {}
-
-    order_zones = {}
-
-    for statistic_collection in statistic_collections:
-        internal_to_display.update(statistic_collection.name_for_each_statistic())
-        order_zones.update(statistic_collection.order_category_for_each_statistic())
-
-    # reorder by order_zones
-    key_to_order = {k: (order_zones[k], i) for i, k in enumerate(internal_to_display)}
-
-    return {
-        k: internal_to_display[k]
-        for k in sorted(internal_to_display, key=lambda x: key_to_order[x])
-    }
-
-
-def internal_statistic_names():
-    return list(statistic_internal_to_display_name())
-
-
-def get_statistic_categories():
-    result = {}
-
-    for statistic_collection in statistic_collections:
-        result.update(statistic_collection.category_for_each_statistic())
-
-    result = {k: result[k] for k in statistic_internal_to_display_name()}
-    return result
-
-
-def get_explanation_page():
-    result = {}
-
-    for statistic_collection in statistic_collections:
-        result.update(statistic_collection.explanation_page_for_each_statistic())
-
-    result = {k: result[k] for k in statistic_internal_to_display_name()}
-    return result
 
 
 def extra_stats():
