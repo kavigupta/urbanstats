@@ -2,7 +2,7 @@ import React, { ReactNode } from 'react'
 
 import '../common.css'
 import '../components/quiz.css'
-import { useColors } from '../page_template/settings'
+import { useColors } from '../page_template/colors'
 import { useHeaderTextClass } from '../utils/responsive'
 
 import { nameOfQuizKind } from './quiz'

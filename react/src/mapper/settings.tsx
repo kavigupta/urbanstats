@@ -1,6 +1,6 @@
 import React, { ReactNode } from 'react'
 
-import { useColors } from '../page_template/settings'
+import { useColors } from '../page_template/colors'
 
 import { DataListSelector } from './DataListSelector'
 import { FilterSelector, FunctionColorStat, StatisticSelector } from './function'

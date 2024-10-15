@@ -2,7 +2,7 @@ import { Parser, Value } from 'expr-eval'
 import React, { ReactNode } from 'react'
 
 import { CheckboxSettingCustom } from '../components/sidebar'
-import { useColors } from '../page_template/settings'
+import { useColors } from '../page_template/colors'
 
 import { DataListSelector } from './DataListSelector'
 import { Regression } from './regression'
