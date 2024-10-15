@@ -5,7 +5,8 @@ import React, { ReactNode, useRef } from 'react'
 
 import { article_link, sanitize } from '../navigation/links'
 import { HueColors, useColors } from '../page_template/colors'
-import { row_expanded_key, useSetting, useTableCheckboxSettings } from '../page_template/settings'
+import { row_expanded_key, useSetting, useSettings } from '../page_template/settings'
+import { tableCheckboxKeys } from '../page_template/statistic-settings'
 import { PageTemplate } from '../page_template/template'
 import { longname_is_exclusively_american, useUniverse } from '../universe'
 import { lighten } from '../utils/color'
@@ -224,7 +225,7 @@ function ComparsionPageRows({ names, datas }: { names: string[], datas: Article[
     let rows: ArticleRow[][] = []
     const idxs: number[][] = []
     const exclusively_american = datas.every(x => longname_is_exclusively_american(x.longname))
-    const settings = useTableCheckboxSettings()
+    const settings = useSettings(tableCheckboxKeys())
     for (const i of datas.keys()) {
         const [r, idx] = load_article(curr_universe, datas[i], settings,
             exclusively_american)

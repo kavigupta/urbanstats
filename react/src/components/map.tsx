@@ -8,7 +8,7 @@ import { loadProtobuf } from '../load_json'
 import { Basemap } from '../mapper/settings'
 import { article_link, shape_link } from '../navigation/links'
 import { useColors } from '../page_template/colors'
-import { relationship_key, useSetting, useRelatedCheckboxSettings } from '../page_template/settings'
+import { relatedSettingsKeys, relationship_key, useSetting, useSettings } from '../page_template/settings'
 import { UNIVERSE_CONTEXT } from '../universe'
 import { random_color } from '../utils/color'
 import { is_historical_cd } from '../utils/is_historical'
@@ -367,7 +367,7 @@ export { MapComponent as Map }
 function MapComponent(props: MapProps): ReactNode {
     const colors = useColors()
     const [show_historical_cds] = useSetting('show_historical_cds')
-    const related_checkbox_settings = useRelatedCheckboxSettings(props.article_type)
+    const related_checkbox_settings = useSettings(relatedSettingsKeys(props.article_type))
     return (
         <ArticleMap
             {...props}

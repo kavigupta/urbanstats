@@ -3,20 +3,21 @@ import { createContext, useContext, useEffect, useState } from 'react'
 import { DefaultMap } from '../utils/DefaultMap'
 
 import { Theme } from './colors'
+import { categories, CategoryIdentifier, StatisticIdentifier, statistics } from './statistic-settings'
 
-export type StatisticSettingKey = `show_statistic_${string}`
 export type RelationshipKey = `related__${string}__${string}`
 export type RowExpandedKey = `expanded__${string}`
 export type HistogramType = 'Bar' | 'Line' | 'Line (cumulative)'
 
-interface StatisticCategoryMetadataCheckbox {
-    setting_key: StatisticSettingKey
-    name: string
-}
+export type StatisticSettingKey = `show_statistic_${StatisticIdentifier}`
+export type StatisticCategorySavedIndeterminateKey = `statistic_category_saved_indeterminate_${CategoryIdentifier}`
+export type StatisticCategoryExpandedKey = `statistic_category_expanded_${CategoryIdentifier}`
 
 export interface SettingsDictionary {
     [relationshipKey: RelationshipKey]: boolean
     [showStatisticKey: StatisticSettingKey]: boolean
+    [savedIndeterminateKey: StatisticCategorySavedIndeterminateKey]: StatisticIdentifier[] // array of child keys
+    [expandedKey: StatisticCategoryExpandedKey]: boolean
     [rowExpandedKey: RowExpandedKey]: boolean
     show_historical_cds: boolean
     simple_ordinals: boolean
@@ -34,8 +35,7 @@ export function row_expanded_key(row_statname: string): RowExpandedKey {
     return `expanded__${row_statname}`
 }
 
-export function load_settings(): [SettingsDictionary, StatisticCategoryMetadataCheckbox[]] {
-    // backed by local storage
+export function load_settings(): SettingsDictionary {
     const settings = JSON.parse(localStorage.getItem('settings') ?? '{}') as Partial<SettingsDictionary>
     const map_relationship = require('../data/map_relationship.json') as [string, string][]
     for (const [article_type, other_type] of map_relationship) {
@@ -44,17 +44,21 @@ export function load_settings(): [SettingsDictionary, StatisticCategoryMetadataC
             settings[key] = true
         }
     }
-    const statistic_category_metadata = require('../data/statistic_category_metadata.json') as { key: string, name: string, show_checkbox: boolean, default: boolean }[]
-    // list of {key, name, show_checkbox, default}
-    const statistic_category_metadata_checkboxes: StatisticCategoryMetadataCheckbox[] = []
-    for (const { key, default: defaultSetting, show_checkbox, name } of statistic_category_metadata) {
-        const setting_key = `show_statistic_${key}` as const
+
+    for (const statistic of statistics) {
+        const setting_key = `show_statistic_${statistic.identifier}` as const
         if (!(setting_key in settings)) {
-            settings[setting_key] = defaultSetting
+            settings[setting_key] = statistic.parents[0].default
         }
-        if (show_checkbox) {
-            statistic_category_metadata_checkboxes.push({ setting_key, name })
+    }
+
+    for (const category of categories) {
+        const indeterminateKey = `statistic_category_saved_indeterminate_${category.identifier}` as const
+        if (!(indeterminateKey in settings)) {
+            settings[indeterminateKey] = []
         }
+        const expandedKey = `statistic_category_expanded_${category.identifier}` as const
+        settings[expandedKey] = settings[expandedKey] ?? false
     }
 
     settings.show_historical_cds = settings.show_historical_cds ?? false
@@ -64,32 +68,31 @@ export function load_settings(): [SettingsDictionary, StatisticCategoryMetadataC
     settings.histogram_relative = settings.histogram_relative ?? true
     settings.theme = settings.theme ?? 'Light Mode'
 
-    return [settings as SettingsDictionary, statistic_category_metadata_checkboxes]
+    return settings as SettingsDictionary
 }
 
-export type BooleanSettings = { [K in keyof SettingsDictionary as SettingsDictionary[K] extends boolean ? K : never]: boolean }
-
-/* eslint-disable react-hooks/rules-of-hooks -- We do kind of hacky things with hooks and iteration. But they mostly work because the keys don't change.  */
 export class Settings {
     private readonly settings: SettingsDictionary
-    readonly statistic_category_metadata_checkboxes: StatisticCategoryMetadataCheckbox[]
 
     constructor() {
-        [this.settings, this.statistic_category_metadata_checkboxes] = load_settings()
+        this.settings = load_settings()
     }
 
     private readonly observers = new DefaultMap<keyof SettingsDictionary, Set<() => void>>(() => new Set())
 
-    useSetting<K extends keyof SettingsDictionary>(key: K): SettingsDictionary[K] {
-        const [result, setResult] = useState(this.settings[key])
+    useSettings<K extends keyof SettingsDictionary>(keys: K[]): Pick<SettingsDictionary, K> {
+        // eslint-disable-next-line react-hooks/rules-of-hooks -- This is a custom hook
+        const [result, setResult] = useState(this.getMultiple(keys))
+        // eslint-disable-next-line react-hooks/rules-of-hooks -- This is a custom hook
         useEffect(() => {
-            setResult(this.settings[key]) // So that if `key` changes we change our result immediately
-            const observer = (): void => { setResult(this.settings[key]) }
-            this.observers.get(key).add(observer)
+            setResult(this.getMultiple(keys)) // So that if `key` changes we change our result immediately
+            const observer = (): void => { setResult(this.getMultiple(keys)) }
+            keys.forEach(key => this.observers.get(key).add(observer))
             return () => {
-                this.observers.get(key).delete(observer)
+                keys.forEach(key => this.observers.get(key).delete(observer))
             }
-        }, [key])
+        // eslint-disable-next-line react-hooks/exhaustive-deps -- Our dependencies are the keys
+        }, keys)
         return result
     }
 
@@ -99,8 +102,16 @@ export class Settings {
         this.observers.get(key).forEach((observer) => { observer() })
     }
 
+    updateSetting<K extends keyof SettingsDictionary>(key: K, makeNewValue: (oldValue: SettingsDictionary[K]) => SettingsDictionary[K]): void {
+        this.setSetting(key, makeNewValue(this.get(key)))
+    }
+
     get<K extends keyof SettingsDictionary>(key: K): SettingsDictionary[K] {
         return this.settings[key]
+    }
+
+    getMultiple<K extends keyof SettingsDictionary>(keys: K[]): Pick<SettingsDictionary, K> {
+        return Object.fromEntries(keys.map(key => [key, this.settings[key]])) as Pick<SettingsDictionary, K>
     }
 
     // Singular settings means we can use observers
@@ -109,33 +120,17 @@ export class Settings {
 
 export function useSetting<K extends keyof SettingsDictionary>(key: K): [SettingsDictionary[K], (newValue: SettingsDictionary[K]) => void] {
     const settings = useContext(Settings.Context)
-    return [settings.useSetting(key), (value) => { settings.setSetting(key, value) }]
+    return [settings.useSettings([key])[key], (value) => { settings.setSetting(key, value) }]
+}
+
+export function useSettings<K extends keyof SettingsDictionary>(keys: K[]): Pick<SettingsDictionary, K> {
+    const settings = useContext(Settings.Context)
+    return settings.useSettings(keys)
 }
 
 export type TableCheckboxSettings = Record<StatisticSettingKey, boolean>
 
-export function useTableCheckboxSettings(): BooleanSettings {
-    const categories = require('../data/statistic_category_list.json') as string[]
-    const result = {} as BooleanSettings
-    for (const category of categories) {
-        const key = `show_statistic_${category}` as const
-        result[key] = useSetting(key)[0]
-    }
-    return result
-}
-
-export function useRelatedCheckboxSettings(article_type_this: string): Record<RelationshipKey, boolean> {
+export function relatedSettingsKeys(article_type_this: string): RelationshipKey[] {
     const article_types_other = require('../data/type_to_type_category.json') as Record<string, string>
-    const result = {} as Record<RelationshipKey, boolean>
-    for (const article_type_other of Object.keys(article_types_other)) {
-        const key = relationship_key(article_type_this, article_type_other)
-        result[key] = useSetting(key)[0]
-    }
-    return result
+    return Object.keys(article_types_other).map(article_type_other => relationship_key(article_type_this, article_type_other))
 }
-
-export function useStatisticCategoryMetadataCheckboxes(): StatisticCategoryMetadataCheckbox[] {
-    const settings = useContext(Settings.Context)
-    return settings.statistic_category_metadata_checkboxes
-}
-/* eslint-enable react-hooks/rules-of-hooks */

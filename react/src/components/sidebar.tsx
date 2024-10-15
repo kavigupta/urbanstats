@@ -1,20 +1,26 @@
-import React, { ReactNode, useId } from 'react'
+import React, { ReactNode, useEffect, useId, useRef } from 'react'
 
 import '../style.css'
 import './sidebar.css'
 
 import { Theme, useColors } from '../page_template/colors'
-import { SettingsDictionary, useSetting, useStatisticCategoryMetadataCheckboxes } from '../page_template/settings'
+import { SettingsDictionary, useSetting } from '../page_template/settings'
 import { useMobileLayout } from '../utils/responsive'
 
-export function Sidebar(): ReactNode {
-    const statistic_category_metadata_checkboxes = useStatisticCategoryMetadataCheckboxes()
+import { StatisticCategoryTree } from './StatisticCategoryTree'
+
+export function useSidebarClasses(): { sidebar_section_content: string, sidebar_section_title: string } {
     let sidebar_section_content = 'sidebar-section-content'
     let sidebar_section_title = 'sidebar-section-title'
     if (useMobileLayout()) {
         sidebar_section_content += ' sidebar-section-content_mobile'
         sidebar_section_title += ' sidebar-section-title_mobile'
     }
+    return { sidebar_section_content, sidebar_section_title }
+}
+
+export function Sidebar(): ReactNode {
+    const { sidebar_section_content, sidebar_section_title } = useSidebarClasses()
     return (
         <div className={`serif sidebar${useMobileLayout() ? '_mobile' : ''}`}>
             <div className="sidebar-section">
@@ -85,15 +91,7 @@ export function Sidebar(): ReactNode {
             <div className="sidebar-section">
                 <div className={sidebar_section_title}>Statistic Categories</div>
                 <ul className={sidebar_section_content}>
-                    {statistic_category_metadata_checkboxes.map((checkbox, i) => (
-                        <li key={i}>
-                            <CheckboxSetting
-                                name={checkbox.name}
-                                setting_key={checkbox.setting_key}
-                            />
-                        </li>
-                    ),
-                    )}
+                    <StatisticCategoryTree />
                 </ul>
             </div>
             {/* <div className="sidebar-section">
@@ -111,22 +109,14 @@ export function Sidebar(): ReactNode {
 // type representing a key of SettingsDictionary that have boolean values
 type BooleanSettingKey = keyof { [K in keyof SettingsDictionary as SettingsDictionary[K] extends boolean ? K : never]: boolean }
 
-export function CheckboxSetting<K extends BooleanSettingKey>(props: { name: string, setting_key: K, classNameToUse?: string, id?: string }): ReactNode {
+export function CheckboxSetting(props: { name: string, setting_key: BooleanSettingKey, classNameToUse?: string, id?: string }): ReactNode {
     const [checked, setChecked] = useSetting(props.setting_key)
 
     return (
         <CheckboxSettingCustom
             name={props.name}
-            setting_key={props.setting_key}
-            settings={{ [props.setting_key]: checked } as Record<K, boolean>}
-            set_setting={(key, value) => {
-                if (key === props.setting_key) {
-                    setChecked(value)
-                }
-                else {
-                    throw new Error(`Invalid key: ${key}`)
-                }
-            }}
+            checked={checked}
+            onChange={setChecked}
             classNameToUse={props.classNameToUse}
             id={props.id}
         />
@@ -154,18 +144,26 @@ export function ColorThemeSetting(): ReactNode {
     )
 };
 
-export function CheckboxSettingCustom<K extends string>(props: { name: string, setting_key: K, settings: Record<K, boolean>, set_setting: (key: K, value: boolean) => void, classNameToUse?: string, id?: string }): ReactNode {
+export function CheckboxSettingCustom(props: { name: string, checked: boolean, indeterminate?: boolean, onChange: (checked: boolean) => void, classNameToUse?: string, id?: string }): ReactNode {
     const colors = useColors()
-    // like CheckboxSetting, but doesn't use useSetting, instead using the callbacks
+
     const id = useId()
     const inputId = props.id ?? id
+
+    const checkboxRef = useRef<HTMLInputElement>(null)
+
+    useEffect(() => {
+        checkboxRef.current!.indeterminate = props.indeterminate ?? false
+    }, [props.indeterminate])
+
     return (
         <div className={props.classNameToUse ?? 'checkbox-setting'}>
             <input
                 id={inputId}
                 type="checkbox"
-                checked={props.settings[props.setting_key] || false}
-                onChange={(e) => { props.set_setting(props.setting_key, e.target.checked) }}
+                checked={props.checked}
+                onChange={(e) => { props.onChange(e.target.checked) }}
+                ref={checkboxRef}
                 style={{ accentColor: colors.hueColors.blue, backgroundColor: colors.background }}
             />
             <label htmlFor={inputId}>{props.name}</label>

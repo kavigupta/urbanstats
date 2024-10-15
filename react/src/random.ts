@@ -7,7 +7,7 @@ import { load_settings } from './page_template/settings'
 async function main(): Promise<void> {
     const window_info = new URLSearchParams(window.location.search)
 
-    const [settings] = load_settings()
+    const settings = load_settings()
 
     const sampleby = window_info.get('sampleby')
 

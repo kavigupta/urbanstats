@@ -4,7 +4,8 @@ import './article.css'
 import React, { ReactNode, useRef } from 'react'
 
 import { article_link, comparison_link, sanitize } from '../navigation/links'
-import { useSetting, useTableCheckboxSettings } from '../page_template/settings'
+import { useSetting, useSettings } from '../page_template/settings'
+import { tableCheckboxKeys } from '../page_template/statistic-settings'
 import { PageTemplate } from '../page_template/template'
 import { longname_is_exclusively_american, useUniverse } from '../universe'
 import { Article, IRelatedButtons } from '../utils/protos'
@@ -107,7 +108,7 @@ function StatisticRowHeader(): ReactNode {
 
 function ArticlePanelRows(props: { article_row: Article, longname: string, shortname: string }): ReactNode {
     const curr_universe = useUniverse()
-    const settings = useTableCheckboxSettings()
+    const settings = useSettings(tableCheckboxKeys())
     const [simple_ordinals] = useSetting('simple_ordinals')
     const [filtered_rows] = load_article(curr_universe, props.article_row, settings,
         longname_is_exclusively_american(props.longname))

@@ -1,4 +1,5 @@
 import { TableCheckboxSettings } from '../page_template/settings'
+import { StatisticIdentifier } from '../page_template/statistic-settings'
 import { universe_is_american } from '../universe'
 import { Article } from '../utils/protos'
 
@@ -24,8 +25,8 @@ export interface ArticleRow {
     ordinal: number
     overallOrdinal: number
     percentile_by_population: number
-    statistic_category: string
-    statcol: string
+    statistic_category: string[]
+    statcol: string | string[]
     statname: string
     statpath: string
     explanation_page: string
@@ -57,9 +58,9 @@ function lookup_in_compressed_sequence(seq: [number, number][], idx: number): nu
     throw new Error('Index out of bounds')
 }
 
-export function for_type(universe: string, statcol: string, typ: string): number {
-    const statnames = require('../data/statistic_list.json') as string[]
-    const idx = statnames.indexOf(statcol)
+export function for_type(universe: string, statcol: string | string[], typ: string): number {
+    const statnames = require('../data/statistic_list.json') as (string | string[])[]
+    const idx = statnames.indexOf(statcol) // Works because `require` is global
     const counts_by_universe = require('../data/counts_by_article_type.json') as Record<string, Record<string, [number, number][]>>
     const counts_by_type = counts_by_universe[universe][typ]
 
@@ -88,10 +89,10 @@ export function load_article(universe: string, data: Article, settings: TableChe
     const universe_index = data.universes.indexOf(universe)
     const article_type = data.articleType
 
-    const categories = require('../data/statistic_category_list.json') as string[]
+    const categories = require('../data/statistic_category_list.json') as string[][]
     const names = require('../data/statistic_name_list.json') as string[]
     const paths = require('../data/statistic_path_list.json') as string[]
-    const stats = require('../data/statistic_list.json') as string[]
+    const stats = require('../data/statistic_list.json') as (string | string[])[]
     const explanation_page = require('../data/explanation_page.json') as string[]
 
     const extra_stats = require('../data/extra_stats.json') as [number, ExtraStatSpec][]
@@ -151,7 +152,8 @@ export function load_article(universe: string, data: Article, settings: TableChe
                 return false
             }
         }
-        return settings[`show_statistic_${row.statistic_category}`]
+        const settingsKey = `show_statistic_${row.statpath as StatisticIdentifier}` as const
+        return settings[settingsKey]
     })
 
     const filtered_indices = filtered_rows.map(x => x._index)
