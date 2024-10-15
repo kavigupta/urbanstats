@@ -105,6 +105,8 @@ export function StatisticRowRawCellContents(props: StatisticRowRawProps & {
         value_columns = [value_columns[0]]
     }
 
+    const screenshotMode = useScreenshotMode()
+
     const cells: [number, string, React.ReactNode][] = [
         [31,
             'statname',
@@ -165,36 +167,40 @@ export function StatisticRowRawCellContents(props: StatisticRowRawProps & {
                 }
             </span>,
         ],
-        [8,
-            'pointer_in_class',
-            props.is_header
-                ? <span className="serif" style={ordinal_style}>Within Type</span>
-                : (
-                        <span className="serif" style={{ display: 'flex', ...ordinal_style }}>
-                            <PointerButtonsIndex
-                                ordinal={props.ordinal}
-                                statpath={props.statpath}
-                                type={props.article_type}
-                                total={props.total_count_in_class}
-                            />
-                        </span>
-                    ),
-        ],
-        [8,
-            'pointer_overall',
-            props.is_header
-                ? <span className="serif" style={ordinal_style}>Overall</span>
-                : (
-                        <span className="serif" style={{ display: 'flex', ...ordinal_style }}>
-                            <PointerButtonsIndex
-                                ordinal={props.overallOrdinal}
-                                statpath={props.statpath}
-                                type="overall"
-                                total={props.total_count_overall}
-                            />
-                        </span>
-                    ),
-        ],
+        ...(screenshotMode
+            ? []
+            : [
+                [8,
+                    'pointer_in_class',
+                    props.is_header
+                        ? <span className="serif" style={ordinal_style}>Within Type</span>
+                        : (
+                                <span className="serif" style={{ display: 'flex', ...ordinal_style }}>
+                                    <PointerButtonsIndex
+                                        ordinal={props.ordinal}
+                                        statpath={props.statpath}
+                                        type={props.article_type}
+                                        total={props.total_count_in_class}
+                                    />
+                                </span>
+                            ),
+                ],
+                [8,
+                    'pointer_overall',
+                    props.is_header
+                        ? <span className="serif" style={ordinal_style}>Overall</span>
+                        : (
+                                <span className="serif" style={{ display: 'flex', ...ordinal_style }}>
+                                    <PointerButtonsIndex
+                                        ordinal={props.overallOrdinal}
+                                        statpath={props.statpath}
+                                        type="overall"
+                                        total={props.total_count_overall}
+                                    />
+                                </span>
+                            ),
+                ],
+            ] satisfies [number, string, ReactNode][]),
     ]
     const cell_percentages: number[] = []
     const cell_contents = []
