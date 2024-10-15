@@ -2,7 +2,7 @@ import fire
 import tqdm.auto as tqdm
 
 from create_website import shapefile_without_ordinals
-from produce_html_page import (
+from urbanstats.statistics.output_statistics_metadata import (
     get_statistic_categories,
     statistic_internal_to_display_name,
 )

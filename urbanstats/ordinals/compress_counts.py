@@ -1,4 +1,4 @@
-from produce_html_page import statistic_internal_to_display_name
+from urbanstats.statistics.output_statistics_metadata import internal_statistic_names
 
 
 def compress_counts_sequence(counts):
@@ -16,7 +16,7 @@ def compress_counts_sequence(counts):
 
 
 def compress_counts(counts):
-    statcols = list(statistic_internal_to_display_name())
+    statcols = list(internal_statistic_names())
     counts_new = {}
     for k in counts:
         counts_for_universe = {}

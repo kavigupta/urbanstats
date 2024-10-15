@@ -6,6 +6,7 @@ from relationship import ordering_idx
 from urbanstats.protobuf import data_files_pb2
 from urbanstats.protobuf.utils import write_gzip
 from urbanstats.statistics.collections_list import statistic_collections
+from urbanstats.statistics.output_statistics_metadata import internal_statistic_names
 from urbanstats.statistics.statistic_collection import ORDER_CATEGORY_MAIN
 
 
@@ -114,48 +115,6 @@ def create_filename(x, ext):
     return f"{a}/{b}/{x}." + ext
 
 
-def statistic_internal_to_display_name():
-    internal_to_display = {}
-
-    order_zones = {}
-
-    for statistic_collection in statistic_collections:
-        internal_to_display.update(statistic_collection.name_for_each_statistic())
-        order_zones.update(statistic_collection.order_category_for_each_statistic())
-
-    # reorder by order_zones
-    key_to_order = {k: (order_zones[k], i) for i, k in enumerate(internal_to_display)}
-
-    return {
-        k: internal_to_display[k]
-        for k in sorted(internal_to_display, key=lambda x: key_to_order[x])
-    }
-
-
-def internal_statistic_names():
-    return list(statistic_internal_to_display_name())
-
-
-def get_statistic_categories():
-    result = {}
-
-    for statistic_collection in statistic_collections:
-        result.update(statistic_collection.category_for_each_statistic())
-
-    result = {k: result[k] for k in statistic_internal_to_display_name()}
-    return result
-
-
-def get_explanation_page():
-    result = {}
-
-    for statistic_collection in statistic_collections:
-        result.update(statistic_collection.explanation_page_for_each_statistic())
-
-    result = {k: result[k] for k in statistic_internal_to_display_name()}
-    return result
-
-
 def extra_stats():
     result = {}
     for statistic_collection in statistic_collections:
@@ -163,29 +122,3 @@ def extra_stats():
     name_to_idx = {name: idx for idx, name in enumerate(internal_statistic_names())}
     extra = {name_to_idx[k]: v for k, v in result.items()}
     return extra
-
-
-category_metadata = {
-    "main": dict(name="Main", show_checkbox=False, default=True),
-    "race": dict(name="Race", show_checkbox=True, default=True),
-    "national_origin": dict(name="National Origin", show_checkbox=True, default=False),
-    "education": dict(name="Education", show_checkbox=True, default=False),
-    "generation": dict(name="Generation", show_checkbox=True, default=False),
-    "income": dict(name="Income", show_checkbox=True, default=False),
-    "housing": dict(name="Housing", show_checkbox=True, default=False),
-    "transportation": dict(name="Transportation", show_checkbox=True, default=False),
-    "health": dict(name="Health", show_checkbox=True, default=False),
-    "climate": dict(name="Climate Change", show_checkbox=True, default=False),
-    "industry": dict(name="Industry", show_checkbox=True, default=False),
-    "occupation": dict(name="Occupation", show_checkbox=True, default=False),
-    "relationships": dict(name="Relationships", show_checkbox=True, default=False),
-    "election": dict(name="Election", show_checkbox=True, default=True),
-    "feature": dict(name="Proximity to Features", show_checkbox=True, default=False),
-    "weather": dict(name="Weather", show_checkbox=True, default=False),
-    "misc": dict(name="Miscellaneous", show_checkbox=True, default=False),
-    "other_densities": dict(
-        name="Other Density Metrics", show_checkbox=True, default=False
-    ),
-    "2010": dict(name="2010 Census", show_checkbox=True, default=False),
-    "2000": dict(name="2000 Census", show_checkbox=True, default=False),
-}
