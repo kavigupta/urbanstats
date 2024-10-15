@@ -10,21 +10,21 @@
           {
             "year": 2020,
             "stats": [
-              "population"
+              0
             ]
           },
           {
             "year": 2010,
             "stats": [
-              "population_2010",
-              "population_change_2010"
+              3,
+              4
             ]
           },
           {
             "year": 2000,
             "stats": [
-              "population_2000",
-              "population_change_2000"
+              17,
+              18
             ]
           }
         ]
@@ -36,21 +36,21 @@
           {
             "year": 2020,
             "stats": [
-              "ad_1"
+              1
             ]
           },
           {
             "year": 2010,
             "stats": [
-              "ad_1_2010",
-              "ad_1_change_2010"
+              5,
+              6
             ]
           },
           {
             "year": 2000,
             "stats": [
-              "ad_1_2000",
-              "ad_1_change_2000"
+              19,
+              20
             ]
           }
         ]
@@ -62,19 +62,19 @@
           {
             "year": 2020,
             "stats": [
-              "sd"
+              2
             ]
           },
           {
             "year": 2010,
             "stats": [
-              "sd_2010"
+              7
             ]
           },
           {
             "year": 2000,
             "stats": [
-              "sd_2000"
+              21
             ]
           }
         ]
@@ -86,7 +86,7 @@
           {
             "year": null,
             "stats": [
-              "area"
+              36
             ]
           }
         ]
@@ -98,7 +98,7 @@
           {
             "year": null,
             "stats": [
-              "compactness"
+              37
             ]
           }
         ]
@@ -110,7 +110,7 @@
           {
             "year": 2020,
             "stats": [
-              "gpw_population"
+              31
             ]
           }
         ]
@@ -122,7 +122,7 @@
           {
             "year": 2020,
             "stats": [
-              "gpw_pw_density_1"
+              32
             ]
           }
         ]
@@ -134,7 +134,7 @@
           {
             "year": 2020,
             "stats": [
-              "gpw_aw_density"
+              35
             ]
           }
         ]
@@ -152,19 +152,19 @@
           {
             "year": 2020,
             "stats": [
-              "white"
+              38
             ]
           },
           {
             "year": 2010,
             "stats": [
-              "white_2010"
+              8
             ]
           },
           {
             "year": 2000,
             "stats": [
-              "white_2000"
+              22
             ]
           }
         ]
@@ -176,19 +176,19 @@
           {
             "year": 2020,
             "stats": [
-              "hispanic"
+              39
             ]
           },
           {
             "year": 2010,
             "stats": [
-              "hispanic_2010"
+              9
             ]
           },
           {
             "year": 2000,
             "stats": [
-              "hispanic_2000"
+              23
             ]
           }
         ]
@@ -200,19 +200,19 @@
           {
             "year": 2020,
             "stats": [
-              "black"
+              40
             ]
           },
           {
             "year": 2010,
             "stats": [
-              "black_2010"
+              10
             ]
           },
           {
             "year": 2000,
             "stats": [
-              "black_2000"
+              24
             ]
           }
         ]
@@ -224,19 +224,19 @@
           {
             "year": 2020,
             "stats": [
-              "asian"
+              41
             ]
           },
           {
             "year": 2010,
             "stats": [
-              "asian_2010"
+              11
             ]
           },
           {
             "year": 2000,
             "stats": [
-              "asian_2000"
+              25
             ]
           }
         ]
@@ -248,19 +248,19 @@
           {
             "year": 2020,
             "stats": [
-              "native"
+              42
             ]
           },
           {
             "year": 2010,
             "stats": [
-              "native_2010"
+              12
             ]
           },
           {
             "year": 2000,
             "stats": [
-              "native_2000"
+              26
             ]
           }
         ]
@@ -272,19 +272,19 @@
           {
             "year": 2020,
             "stats": [
-              "hawaiian_pi"
+              43
             ]
           },
           {
             "year": 2010,
             "stats": [
-              "hawaiian_pi_2010"
+              13
             ]
           },
           {
             "year": 2000,
             "stats": [
-              "hawaiian_pi_2000"
+              27
             ]
           }
         ]
@@ -296,19 +296,19 @@
           {
             "year": 2020,
             "stats": [
-              "other / mixed"
+              44
             ]
           },
           {
             "year": 2010,
             "stats": [
-              "other / mixed_2010"
+              14
             ]
           },
           {
             "year": 2000,
             "stats": [
-              "other / mixed_2000"
+              28
             ]
           }
         ]
@@ -320,21 +320,21 @@
           {
             "year": 2000,
             "stats": [
-              "homogeneity_250_2000",
-              "homogeneity_250_diff_2000"
+              45,
+              46
             ]
           },
           {
             "year": 2010,
             "stats": [
-              "homogeneity_250_2010",
-              "homogeneity_250_diff_2010"
+              47,
+              48
             ]
           },
           {
             "year": 2020,
             "stats": [
-              "homogeneity_250_2020"
+              49
             ]
           }
         ]
@@ -346,21 +346,21 @@
           {
             "year": 2000,
             "stats": [
-              "segregation_250_2000",
-              "segregation_250_diff_2000"
+              50,
+              51
             ]
           },
           {
             "year": 2010,
             "stats": [
-              "segregation_250_2010",
-              "segregation_250_diff_2010"
+              52,
+              53
             ]
           },
           {
             "year": 2020,
             "stats": [
-              "segregation_250_2020"
+              54
             ]
           }
         ]
@@ -372,21 +372,21 @@
           {
             "year": 2000,
             "stats": [
-              "segregation_250_10_2000",
-              "segregation_250_10_diff_2000"
+              55,
+              56
             ]
           },
           {
             "year": 2010,
             "stats": [
-              "segregation_250_10_2010",
-              "segregation_250_10_diff_2010"
+              57,
+              58
             ]
           },
           {
             "year": 2020,
             "stats": [
-              "segregation_250_10_2020"
+              59
             ]
           }
         ]
@@ -404,7 +404,7 @@
           {
             "year": 2020,
             "stats": [
-              "citizenship_citizen_by_birth"
+              60
             ]
           }
         ]
@@ -416,7 +416,7 @@
           {
             "year": 2020,
             "stats": [
-              "citizenship_citizen_by_naturalization"
+              61
             ]
           }
         ]
@@ -428,7 +428,7 @@
           {
             "year": 2020,
             "stats": [
-              "citizenship_not_citizen"
+              62
             ]
           }
         ]
@@ -440,7 +440,7 @@
           {
             "year": 2020,
             "stats": [
-              "birthplace_non_us"
+              63
             ]
           }
         ]
@@ -452,7 +452,7 @@
           {
             "year": 2020,
             "stats": [
-              "birthplace_us_not_state"
+              64
             ]
           }
         ]
@@ -464,7 +464,7 @@
           {
             "year": 2020,
             "stats": [
-              "birthplace_us_state"
+              65
             ]
           }
         ]
@@ -476,7 +476,7 @@
           {
             "year": 2020,
             "stats": [
-              "language_english_only"
+              66
             ]
           }
         ]
@@ -488,7 +488,7 @@
           {
             "year": 2020,
             "stats": [
-              "language_spanish"
+              67
             ]
           }
         ]
@@ -500,7 +500,7 @@
           {
             "year": 2020,
             "stats": [
-              "language_other"
+              68
             ]
           }
         ]
@@ -518,7 +518,7 @@
           {
             "year": 2020,
             "stats": [
-              "education_high_school"
+              69
             ]
           }
         ]
@@ -530,7 +530,7 @@
           {
             "year": 2020,
             "stats": [
-              "education_ugrad"
+              70
             ]
           }
         ]
@@ -542,7 +542,7 @@
           {
             "year": 2020,
             "stats": [
-              "education_grad"
+              71
             ]
           }
         ]
@@ -554,7 +554,7 @@
           {
             "year": 2020,
             "stats": [
-              "education_field_stem"
+              72
             ]
           }
         ]
@@ -566,7 +566,7 @@
           {
             "year": 2020,
             "stats": [
-              "education_field_humanities"
+              73
             ]
           }
         ]
@@ -578,7 +578,7 @@
           {
             "year": 2020,
             "stats": [
-              "education_field_business"
+              74
             ]
           }
         ]
@@ -590,7 +590,7 @@
           {
             "year": 2020,
             "stats": [
-              "female_hs_gap_4"
+              75
             ]
           }
         ]
@@ -602,7 +602,7 @@
           {
             "year": 2020,
             "stats": [
-              "female_ugrad_gap_4"
+              76
             ]
           }
         ]
@@ -614,7 +614,7 @@
           {
             "year": 2020,
             "stats": [
-              "female_grad_gap_4"
+              77
             ]
           }
         ]
@@ -632,7 +632,7 @@
           {
             "year": 2020,
             "stats": [
-              "generation_silent"
+              78
             ]
           }
         ]
@@ -644,7 +644,7 @@
           {
             "year": 2020,
             "stats": [
-              "generation_boomer"
+              79
             ]
           }
         ]
@@ -656,7 +656,7 @@
           {
             "year": 2020,
             "stats": [
-              "generation_genx"
+              80
             ]
           }
         ]
@@ -668,7 +668,7 @@
           {
             "year": 2020,
             "stats": [
-              "generation_millenial"
+              81
             ]
           }
         ]
@@ -680,7 +680,7 @@
           {
             "year": 2020,
             "stats": [
-              "generation_genz"
+              82
             ]
           }
         ]
@@ -692,7 +692,7 @@
           {
             "year": 2020,
             "stats": [
-              "generation_genalpha"
+              83
             ]
           }
         ]
@@ -710,7 +710,7 @@
           {
             "year": 2020,
             "stats": [
-              "poverty_below_line"
+              84
             ]
           }
         ]
@@ -722,7 +722,7 @@
           {
             "year": 2020,
             "stats": [
-              "household_income_under_50k"
+              85
             ]
           }
         ]
@@ -734,7 +734,7 @@
           {
             "year": 2020,
             "stats": [
-              "household_income_50k_to_100k"
+              86
             ]
           }
         ]
@@ -746,7 +746,7 @@
           {
             "year": 2020,
             "stats": [
-              "household_income_over_100k"
+              87
             ]
           }
         ]
@@ -758,7 +758,7 @@
           {
             "year": 2020,
             "stats": [
-              "individual_income_under_50k"
+              88
             ]
           }
         ]
@@ -770,7 +770,7 @@
           {
             "year": 2020,
             "stats": [
-              "individual_income_50k_to_100k"
+              89
             ]
           }
         ]
@@ -782,7 +782,7 @@
           {
             "year": 2020,
             "stats": [
-              "individual_income_over_100k"
+              90
             ]
           }
         ]
@@ -800,19 +800,19 @@
           {
             "year": 2020,
             "stats": [
-              "housing_per_pop"
+              91
             ]
           },
           {
             "year": 2010,
             "stats": [
-              "housing_per_pop_2010"
+              15
             ]
           },
           {
             "year": 2000,
             "stats": [
-              "housing_per_pop_2000"
+              29
             ]
           }
         ]
@@ -824,19 +824,19 @@
           {
             "year": 2020,
             "stats": [
-              "vacancy"
+              92
             ]
           },
           {
             "year": 2010,
             "stats": [
-              "vacancy_2010"
+              16
             ]
           },
           {
             "year": 2000,
             "stats": [
-              "vacancy_2000"
+              30
             ]
           }
         ]
@@ -848,7 +848,7 @@
           {
             "year": 2020,
             "stats": [
-              "rent_burden_under_20"
+              94
             ]
           }
         ]
@@ -860,7 +860,7 @@
           {
             "year": 2020,
             "stats": [
-              "rent_burden_20_to_40"
+              95
             ]
           }
         ]
@@ -872,7 +872,7 @@
           {
             "year": 2020,
             "stats": [
-              "rent_burden_over_40"
+              96
             ]
           }
         ]
@@ -884,7 +884,7 @@
           {
             "year": 2020,
             "stats": [
-              "rent_1br_under_750"
+              97
             ]
           }
         ]
@@ -896,7 +896,7 @@
           {
             "year": 2020,
             "stats": [
-              "rent_1br_750_to_1500"
+              98
             ]
           }
         ]
@@ -908,7 +908,7 @@
           {
             "year": 2020,
             "stats": [
-              "rent_1br_over_1500"
+              99
             ]
           }
         ]
@@ -920,7 +920,7 @@
           {
             "year": 2020,
             "stats": [
-              "rent_2br_under_750"
+              100
             ]
           }
         ]
@@ -932,7 +932,7 @@
           {
             "year": 2020,
             "stats": [
-              "rent_2br_750_to_1500"
+              101
             ]
           }
         ]
@@ -944,7 +944,7 @@
           {
             "year": 2020,
             "stats": [
-              "rent_2br_over_1500"
+              102
             ]
           }
         ]
@@ -956,7 +956,7 @@
           {
             "year": 2020,
             "stats": [
-              "year_built_1969_or_earlier"
+              103
             ]
           }
         ]
@@ -968,7 +968,7 @@
           {
             "year": 2020,
             "stats": [
-              "year_built_1970_to_1979"
+              104
             ]
           }
         ]
@@ -980,7 +980,7 @@
           {
             "year": 2020,
             "stats": [
-              "year_built_1980_to_1989"
+              105
             ]
           }
         ]
@@ -992,7 +992,7 @@
           {
             "year": 2020,
             "stats": [
-              "year_built_1990_to_1999"
+              106
             ]
           }
         ]
@@ -1004,7 +1004,7 @@
           {
             "year": 2020,
             "stats": [
-              "year_built_2000_to_2009"
+              107
             ]
           }
         ]
@@ -1016,7 +1016,7 @@
           {
             "year": 2020,
             "stats": [
-              "year_built_2010_or_later"
+              108
             ]
           }
         ]
@@ -1028,7 +1028,7 @@
           {
             "year": 2020,
             "stats": [
-              "rent_or_own_rent"
+              93
             ]
           }
         ]
@@ -1046,7 +1046,7 @@
           {
             "year": 2020,
             "stats": [
-              "transportation_means_car"
+              109
             ]
           }
         ]
@@ -1058,7 +1058,7 @@
           {
             "year": 2020,
             "stats": [
-              "transportation_means_bike"
+              110
             ]
           }
         ]
@@ -1070,7 +1070,7 @@
           {
             "year": 2020,
             "stats": [
-              "transportation_means_walk"
+              111
             ]
           }
         ]
@@ -1082,7 +1082,7 @@
           {
             "year": 2020,
             "stats": [
-              "transportation_means_transit"
+              112
             ]
           }
         ]
@@ -1094,7 +1094,7 @@
           {
             "year": 2020,
             "stats": [
-              "transportation_means_worked_at_home"
+              113
             ]
           }
         ]
@@ -1106,7 +1106,7 @@
           {
             "year": 2020,
             "stats": [
-              "transportation_commute_time_under_15"
+              114
             ]
           }
         ]
@@ -1118,7 +1118,7 @@
           {
             "year": 2020,
             "stats": [
-              "transportation_commute_time_15_to_29"
+              115
             ]
           }
         ]
@@ -1130,7 +1130,7 @@
           {
             "year": 2020,
             "stats": [
-              "transportation_commute_time_30_to_59"
+              116
             ]
           }
         ]
@@ -1142,7 +1142,7 @@
           {
             "year": 2020,
             "stats": [
-              "transportation_commute_time_over_60"
+              117
             ]
           }
         ]
@@ -1154,7 +1154,7 @@
           {
             "year": 2020,
             "stats": [
-              "vehicle_ownership_none"
+              118
             ]
           }
         ]
@@ -1166,7 +1166,7 @@
           {
             "year": 2020,
             "stats": [
-              "vehicle_ownership_at_least_1"
+              119
             ]
           }
         ]
@@ -1178,7 +1178,7 @@
           {
             "year": 2020,
             "stats": [
-              "vehicle_ownership_at_least_2"
+              120
             ]
           }
         ]
@@ -1196,7 +1196,7 @@
           {
             "year": 2020,
             "stats": [
-              "GHLTH_cdc_2"
+              121
             ]
           }
         ]
@@ -1208,7 +1208,7 @@
           {
             "year": 2020,
             "stats": [
-              "PHLTH_cdc_2"
+              122
             ]
           }
         ]
@@ -1220,7 +1220,7 @@
           {
             "year": 2020,
             "stats": [
-              "ARTHRITIS_cdc_2"
+              123
             ]
           }
         ]
@@ -1232,7 +1232,7 @@
           {
             "year": 2020,
             "stats": [
-              "CASTHMA_cdc_2"
+              124
             ]
           }
         ]
@@ -1244,7 +1244,7 @@
           {
             "year": 2020,
             "stats": [
-              "BPHIGH_cdc_2"
+              125
             ]
           }
         ]
@@ -1256,7 +1256,7 @@
           {
             "year": 2020,
             "stats": [
-              "CANCER_cdc_2"
+              126
             ]
           }
         ]
@@ -1268,7 +1268,7 @@
           {
             "year": 2020,
             "stats": [
-              "KIDNEY_cdc_2"
+              127
             ]
           }
         ]
@@ -1280,7 +1280,7 @@
           {
             "year": 2020,
             "stats": [
-              "COPD_cdc_2"
+              128
             ]
           }
         ]
@@ -1292,7 +1292,7 @@
           {
             "year": 2020,
             "stats": [
-              "CHD_cdc_2"
+              129
             ]
           }
         ]
@@ -1304,7 +1304,7 @@
           {
             "year": 2020,
             "stats": [
-              "DIABETES_cdc_2"
+              130
             ]
           }
         ]
@@ -1316,7 +1316,7 @@
           {
             "year": 2020,
             "stats": [
-              "OBESITY_cdc_2"
+              131
             ]
           }
         ]
@@ -1328,7 +1328,7 @@
           {
             "year": 2020,
             "stats": [
-              "STROKE_cdc_2"
+              132
             ]
           }
         ]
@@ -1340,7 +1340,7 @@
           {
             "year": 2020,
             "stats": [
-              "DISABILITY_cdc_2"
+              133
             ]
           }
         ]
@@ -1352,7 +1352,7 @@
           {
             "year": 2020,
             "stats": [
-              "HEARING_cdc_2"
+              134
             ]
           }
         ]
@@ -1364,7 +1364,7 @@
           {
             "year": 2020,
             "stats": [
-              "VISION_cdc_2"
+              135
             ]
           }
         ]
@@ -1376,7 +1376,7 @@
           {
             "year": 2020,
             "stats": [
-              "COGNITION_cdc_2"
+              136
             ]
           }
         ]
@@ -1388,7 +1388,7 @@
           {
             "year": 2020,
             "stats": [
-              "MOBILITY_cdc_2"
+              137
             ]
           }
         ]
@@ -1400,7 +1400,7 @@
           {
             "year": 2020,
             "stats": [
-              "SELFCARE_cdc_2"
+              138
             ]
           }
         ]
@@ -1412,7 +1412,7 @@
           {
             "year": 2020,
             "stats": [
-              "INDEPLIVE_cdc_2"
+              139
             ]
           }
         ]
@@ -1424,7 +1424,7 @@
           {
             "year": 2020,
             "stats": [
-              "BINGE_cdc_2"
+              140
             ]
           }
         ]
@@ -1436,7 +1436,7 @@
           {
             "year": 2020,
             "stats": [
-              "CSMOKING_cdc_2"
+              141
             ]
           }
         ]
@@ -1448,7 +1448,7 @@
           {
             "year": 2020,
             "stats": [
-              "LPA_cdc_2"
+              142
             ]
           }
         ]
@@ -1460,7 +1460,7 @@
           {
             "year": 2020,
             "stats": [
-              "SLEEP_cdc_2"
+              143
             ]
           }
         ]
@@ -1472,7 +1472,7 @@
           {
             "year": 2020,
             "stats": [
-              "CHECKUP_cdc_2"
+              144
             ]
           }
         ]
@@ -1484,7 +1484,7 @@
           {
             "year": 2020,
             "stats": [
-              "DENTAL_cdc_2"
+              145
             ]
           }
         ]
@@ -1496,7 +1496,7 @@
           {
             "year": 2020,
             "stats": [
-              "CHOLSCREEN_cdc_2"
+              146
             ]
           }
         ]
@@ -1514,7 +1514,7 @@
           {
             "year": 2020,
             "stats": [
-              "heating_utility_gas"
+              147
             ]
           }
         ]
@@ -1526,7 +1526,7 @@
           {
             "year": 2020,
             "stats": [
-              "heating_electricity"
+              148
             ]
           }
         ]
@@ -1538,7 +1538,7 @@
           {
             "year": 2020,
             "stats": [
-              "heating_bottled_tank_lp_gas"
+              149
             ]
           }
         ]
@@ -1550,7 +1550,7 @@
           {
             "year": 2020,
             "stats": [
-              "heating_feul_oil_kerosene"
+              150
             ]
           }
         ]
@@ -1562,7 +1562,7 @@
           {
             "year": 2020,
             "stats": [
-              "heating_other"
+              151
             ]
           }
         ]
@@ -1574,7 +1574,7 @@
           {
             "year": 2020,
             "stats": [
-              "heating_no"
+              152
             ]
           }
         ]
@@ -1592,7 +1592,7 @@
           {
             "year": 2020,
             "stats": [
-              "industry_agriculture,_forestry,_fishing_and_hunting"
+              153
             ]
           }
         ]
@@ -1604,7 +1604,7 @@
           {
             "year": 2020,
             "stats": [
-              "industry_mining,_quarrying,_and_oil_and_gas_extraction"
+              154
             ]
           }
         ]
@@ -1616,7 +1616,7 @@
           {
             "year": 2020,
             "stats": [
-              "industry_accommodation_and_food_services"
+              155
             ]
           }
         ]
@@ -1628,7 +1628,7 @@
           {
             "year": 2020,
             "stats": [
-              "industry_arts,_entertainment,_and_recreation"
+              156
             ]
           }
         ]
@@ -1640,7 +1640,7 @@
           {
             "year": 2020,
             "stats": [
-              "industry_construction"
+              157
             ]
           }
         ]
@@ -1652,7 +1652,7 @@
           {
             "year": 2020,
             "stats": [
-              "industry_educational_services"
+              158
             ]
           }
         ]
@@ -1664,7 +1664,7 @@
           {
             "year": 2020,
             "stats": [
-              "industry_health_care_and_social_assistance"
+              159
             ]
           }
         ]
@@ -1676,7 +1676,7 @@
           {
             "year": 2020,
             "stats": [
-              "industry_finance_and_insurance"
+              160
             ]
           }
         ]
@@ -1688,7 +1688,7 @@
           {
             "year": 2020,
             "stats": [
-              "industry_real_estate_and_rental_and_leasing"
+              161
             ]
           }
         ]
@@ -1700,7 +1700,7 @@
           {
             "year": 2020,
             "stats": [
-              "industry_information"
+              162
             ]
           }
         ]
@@ -1712,7 +1712,7 @@
           {
             "year": 2020,
             "stats": [
-              "industry_manufacturing"
+              163
             ]
           }
         ]
@@ -1724,7 +1724,7 @@
           {
             "year": 2020,
             "stats": [
-              "industry_other_services,_except_public_administration"
+              164
             ]
           }
         ]
@@ -1736,7 +1736,7 @@
           {
             "year": 2020,
             "stats": [
-              "industry_administrative_and_support_and_waste_management_services"
+              165
             ]
           }
         ]
@@ -1748,7 +1748,7 @@
           {
             "year": 2020,
             "stats": [
-              "industry_management_of_companies_and_enterprises"
+              166
             ]
           }
         ]
@@ -1760,7 +1760,7 @@
           {
             "year": 2020,
             "stats": [
-              "industry_professional,_scientific,_and_technical_services"
+              167
             ]
           }
         ]
@@ -1772,7 +1772,7 @@
           {
             "year": 2020,
             "stats": [
-              "industry_public_administration"
+              168
             ]
           }
         ]
@@ -1784,7 +1784,7 @@
           {
             "year": 2020,
             "stats": [
-              "industry_retail_trade"
+              169
             ]
           }
         ]
@@ -1796,7 +1796,7 @@
           {
             "year": 2020,
             "stats": [
-              "industry_transportation_and_warehousing"
+              170
             ]
           }
         ]
@@ -1808,7 +1808,7 @@
           {
             "year": 2020,
             "stats": [
-              "industry_utilities"
+              171
             ]
           }
         ]
@@ -1820,7 +1820,7 @@
           {
             "year": 2020,
             "stats": [
-              "industry_wholesale_trade"
+              172
             ]
           }
         ]
@@ -1838,7 +1838,7 @@
           {
             "year": 2020,
             "stats": [
-              "occupation_architecture_and_engineering_occupations"
+              173
             ]
           }
         ]
@@ -1850,7 +1850,7 @@
           {
             "year": 2020,
             "stats": [
-              "occupation_computer_and_mathematical_occupations"
+              174
             ]
           }
         ]
@@ -1862,7 +1862,7 @@
           {
             "year": 2020,
             "stats": [
-              "occupation_life,_physical,_and_social_science_occupations"
+              175
             ]
           }
         ]
@@ -1874,7 +1874,7 @@
           {
             "year": 2020,
             "stats": [
-              "occupation_arts,_design,_entertainment,_sports,_and_media_occupations"
+              176
             ]
           }
         ]
@@ -1886,7 +1886,7 @@
           {
             "year": 2020,
             "stats": [
-              "occupation_community_and_social_service_occupations"
+              177
             ]
           }
         ]
@@ -1898,7 +1898,7 @@
           {
             "year": 2020,
             "stats": [
-              "occupation_educational_instruction,_and_library_occupations"
+              178
             ]
           }
         ]
@@ -1910,7 +1910,7 @@
           {
             "year": 2020,
             "stats": [
-              "occupation_legal_occupations"
+              179
             ]
           }
         ]
@@ -1922,7 +1922,7 @@
           {
             "year": 2020,
             "stats": [
-              "occupation_health_diagnosing_and_treating_practitioners_and_other_technical_occupations"
+              180
             ]
           }
         ]
@@ -1934,7 +1934,7 @@
           {
             "year": 2020,
             "stats": [
-              "occupation_health_technologists_and_technicians"
+              181
             ]
           }
         ]
@@ -1946,7 +1946,7 @@
           {
             "year": 2020,
             "stats": [
-              "occupation_business_and_financial_operations_occupations"
+              182
             ]
           }
         ]
@@ -1958,7 +1958,7 @@
           {
             "year": 2020,
             "stats": [
-              "occupation_management_occupations"
+              183
             ]
           }
         ]
@@ -1970,7 +1970,7 @@
           {
             "year": 2020,
             "stats": [
-              "occupation_construction_and_extraction_occupations"
+              184
             ]
           }
         ]
@@ -1982,7 +1982,7 @@
           {
             "year": 2020,
             "stats": [
-              "occupation_farming,_fishing,_and_forestry_occupations"
+              185
             ]
           }
         ]
@@ -1994,7 +1994,7 @@
           {
             "year": 2020,
             "stats": [
-              "occupation_installation,_maintenance,_and_repair_occupations"
+              186
             ]
           }
         ]
@@ -2006,7 +2006,7 @@
           {
             "year": 2020,
             "stats": [
-              "occupation_material_moving_occupations"
+              187
             ]
           }
         ]
@@ -2018,7 +2018,7 @@
           {
             "year": 2020,
             "stats": [
-              "occupation_production_occupations"
+              188
             ]
           }
         ]
@@ -2030,7 +2030,7 @@
           {
             "year": 2020,
             "stats": [
-              "occupation_transportation_occupations"
+              189
             ]
           }
         ]
@@ -2042,7 +2042,7 @@
           {
             "year": 2020,
             "stats": [
-              "occupation_office_and_administrative_support_occupations"
+              190
             ]
           }
         ]
@@ -2054,7 +2054,7 @@
           {
             "year": 2020,
             "stats": [
-              "occupation_sales_and_related_occupations"
+              191
             ]
           }
         ]
@@ -2066,7 +2066,7 @@
           {
             "year": 2020,
             "stats": [
-              "occupation_building_and_grounds_cleaning_and_maintenance_occupations"
+              192
             ]
           }
         ]
@@ -2078,7 +2078,7 @@
           {
             "year": 2020,
             "stats": [
-              "occupation_food_preparation_and_serving_related_occupations"
+              193
             ]
           }
         ]
@@ -2090,7 +2090,7 @@
           {
             "year": 2020,
             "stats": [
-              "occupation_healthcare_support_occupations"
+              194
             ]
           }
         ]
@@ -2102,7 +2102,7 @@
           {
             "year": 2020,
             "stats": [
-              "occupation_personal_care_and_service_occupations"
+              195
             ]
           }
         ]
@@ -2114,7 +2114,7 @@
           {
             "year": 2020,
             "stats": [
-              "occupation_firefighting_and_prevention,_and_other_protective_service_workers_including_supervisors"
+              196
             ]
           }
         ]
@@ -2126,7 +2126,7 @@
           {
             "year": 2020,
             "stats": [
-              "occupation_law_enforcement_workers_including_supervisors"
+              197
             ]
           }
         ]
@@ -2144,7 +2144,7 @@
           {
             "year": 2020,
             "stats": [
-              "sors_unpartnered_householder"
+              198
             ]
           }
         ]
@@ -2156,7 +2156,7 @@
           {
             "year": 2020,
             "stats": [
-              "sors_cohabiting_partnered_gay"
+              199
             ]
           }
         ]
@@ -2168,7 +2168,7 @@
           {
             "year": 2020,
             "stats": [
-              "sors_cohabiting_partnered_straight"
+              200
             ]
           }
         ]
@@ -2180,7 +2180,7 @@
           {
             "year": 2020,
             "stats": [
-              "sors_child"
+              201
             ]
           }
         ]
@@ -2192,7 +2192,7 @@
           {
             "year": 2020,
             "stats": [
-              "sors_other"
+              202
             ]
           }
         ]
@@ -2204,7 +2204,7 @@
           {
             "year": 2020,
             "stats": [
-              "marriage_never_married"
+              240
             ]
           }
         ]
@@ -2216,7 +2216,7 @@
           {
             "year": 2020,
             "stats": [
-              "marriage_married_not_divorced"
+              241
             ]
           }
         ]
@@ -2228,7 +2228,7 @@
           {
             "year": 2020,
             "stats": [
-              "marriage_divorced"
+              242
             ]
           }
         ]
@@ -2246,10 +2246,7 @@
           {
             "year": 2020,
             "stats": [
-              [
-                "2020 Presidential Election",
-                "margin"
-              ]
+              203
             ]
           }
         ]
@@ -2261,10 +2258,7 @@
           {
             "year": 2020,
             "stats": [
-              [
-                "2016 Presidential Election",
-                "margin"
-              ]
+              204
             ]
           }
         ]
@@ -2276,10 +2270,7 @@
           {
             "year": 2020,
             "stats": [
-              [
-                "2016-2020 Swing",
-                "margin"
-              ]
+              205
             ]
           }
         ]
@@ -2297,7 +2288,7 @@
           {
             "year": 2020,
             "stats": [
-              "park_percent_1km_v2"
+              206
             ]
           }
         ]
@@ -2309,7 +2300,7 @@
           {
             "year": 2020,
             "stats": [
-              "within_Hospital_10"
+              207
             ]
           }
         ]
@@ -2321,7 +2312,7 @@
           {
             "year": 2020,
             "stats": [
-              "mean_dist_Hospital_updated"
+              208
             ]
           }
         ]
@@ -2333,7 +2324,7 @@
           {
             "year": 2020,
             "stats": [
-              "within_Public School_2"
+              209
             ]
           }
         ]
@@ -2345,7 +2336,7 @@
           {
             "year": 2020,
             "stats": [
-              "mean_dist_Public School_updated"
+              210
             ]
           }
         ]
@@ -2357,7 +2348,7 @@
           {
             "year": 2020,
             "stats": [
-              "within_Airport_30"
+              211
             ]
           }
         ]
@@ -2369,7 +2360,7 @@
           {
             "year": 2020,
             "stats": [
-              "mean_dist_Airport_updated"
+              212
             ]
           }
         ]
@@ -2381,7 +2372,7 @@
           {
             "year": 2020,
             "stats": [
-              "within_Active Superfund Site_10"
+              213
             ]
           }
         ]
@@ -2393,7 +2384,7 @@
           {
             "year": 2020,
             "stats": [
-              "mean_dist_Active Superfund Site_updated"
+              214
             ]
           }
         ]
@@ -2405,7 +2396,7 @@
           {
             "year": 2020,
             "stats": [
-              "lapophalfshare_usda_fra_1"
+              215
             ]
           }
         ]
@@ -2417,7 +2408,7 @@
           {
             "year": 2020,
             "stats": [
-              "lapop1share_usda_fra_1"
+              216
             ]
           }
         ]
@@ -2429,7 +2420,7 @@
           {
             "year": 2020,
             "stats": [
-              "lapop10share_usda_fra_1"
+              217
             ]
           }
         ]
@@ -2441,7 +2432,7 @@
           {
             "year": 2020,
             "stats": [
-              "lapop20share_usda_fra_1"
+              218
             ]
           }
         ]
@@ -2459,7 +2450,7 @@
           {
             "year": 2020,
             "stats": [
-              "mean_high_temp_4"
+              219
             ]
           }
         ]
@@ -2471,7 +2462,7 @@
           {
             "year": 2020,
             "stats": [
-              "mean_high_heat_index_4"
+              220
             ]
           }
         ]
@@ -2483,7 +2474,7 @@
           {
             "year": 2020,
             "stats": [
-              "mean_high_dewpoint_4"
+              221
             ]
           }
         ]
@@ -2495,7 +2486,7 @@
           {
             "year": 2020,
             "stats": [
-              "days_above_90_4"
+              222
             ]
           }
         ]
@@ -2507,7 +2498,7 @@
           {
             "year": 2020,
             "stats": [
-              "days_between_40_and_90_4"
+              223
             ]
           }
         ]
@@ -2519,7 +2510,7 @@
           {
             "year": 2020,
             "stats": [
-              "days_below_40_4"
+              224
             ]
           }
         ]
@@ -2531,7 +2522,7 @@
           {
             "year": 2020,
             "stats": [
-              "days_dewpoint_70_inf_4"
+              225
             ]
           }
         ]
@@ -2543,7 +2534,7 @@
           {
             "year": 2020,
             "stats": [
-              "days_dewpoint_50_70_4"
+              226
             ]
           }
         ]
@@ -2555,7 +2546,7 @@
           {
             "year": 2020,
             "stats": [
-              "days_dewpoint_-inf_50_4"
+              227
             ]
           }
         ]
@@ -2567,7 +2558,7 @@
           {
             "year": 2020,
             "stats": [
-              "hours_sunny_4"
+              228
             ]
           }
         ]
@@ -2579,7 +2570,7 @@
           {
             "year": 2020,
             "stats": [
-              "rainfall_4"
+              229
             ]
           }
         ]
@@ -2591,7 +2582,7 @@
           {
             "year": 2020,
             "stats": [
-              "snowfall_4"
+              230
             ]
           }
         ]
@@ -2603,7 +2594,7 @@
           {
             "year": 2020,
             "stats": [
-              "wind_speed_over_10mph_4"
+              231
             ]
           }
         ]
@@ -2615,7 +2606,7 @@
           {
             "year": 2020,
             "stats": [
-              "mean_high_temp_summer_4"
+              232
             ]
           }
         ]
@@ -2627,7 +2618,7 @@
           {
             "year": 2020,
             "stats": [
-              "mean_high_temp_winter_4"
+              233
             ]
           }
         ]
@@ -2639,7 +2630,7 @@
           {
             "year": 2020,
             "stats": [
-              "mean_high_temp_fall_4"
+              234
             ]
           }
         ]
@@ -2651,7 +2642,7 @@
           {
             "year": 2020,
             "stats": [
-              "mean_high_temp_spring_4"
+              235
             ]
           }
         ]
@@ -2669,7 +2660,7 @@
           {
             "year": 2020,
             "stats": [
-              "internet_no_access"
+              236
             ]
           }
         ]
@@ -2681,7 +2672,7 @@
           {
             "year": 2020,
             "stats": [
-              "insurance_coverage_none"
+              237
             ]
           }
         ]
@@ -2693,7 +2684,7 @@
           {
             "year": 2020,
             "stats": [
-              "insurance_coverage_govt"
+              238
             ]
           }
         ]
@@ -2705,7 +2696,7 @@
           {
             "year": 2020,
             "stats": [
-              "insurance_coverage_private"
+              239
             ]
           }
         ]
@@ -2723,21 +2714,21 @@
           {
             "year": 2020,
             "stats": [
-              "ad_0.25"
+              243
             ]
           },
           {
             "year": 2010,
             "stats": [
-              "ad_0.25_2010",
-              "ad_0.25_change_2010"
+              247,
+              251
             ]
           },
           {
             "year": 2000,
             "stats": [
-              "ad_0.25_2000",
-              "ad_0.25_change_2000"
+              255,
+              259
             ]
           }
         ]
@@ -2749,21 +2740,21 @@
           {
             "year": 2020,
             "stats": [
-              "ad_0.5"
+              244
             ]
           },
           {
             "year": 2010,
             "stats": [
-              "ad_0.5_2010",
-              "ad_0.5_change_2010"
+              248,
+              252
             ]
           },
           {
             "year": 2000,
             "stats": [
-              "ad_0.5_2000",
-              "ad_0.5_change_2000"
+              256,
+              260
             ]
           }
         ]
@@ -2775,21 +2766,21 @@
           {
             "year": 2020,
             "stats": [
-              "ad_2"
+              245
             ]
           },
           {
             "year": 2010,
             "stats": [
-              "ad_2_2010",
-              "ad_2_change_2010"
+              249,
+              253
             ]
           },
           {
             "year": 2000,
             "stats": [
-              "ad_2_2000",
-              "ad_2_change_2000"
+              257,
+              261
             ]
           }
         ]
@@ -2801,21 +2792,21 @@
           {
             "year": 2020,
             "stats": [
-              "ad_4"
+              246
             ]
           },
           {
             "year": 2010,
             "stats": [
-              "ad_4_2010",
-              "ad_4_change_2010"
+              250,
+              254
             ]
           },
           {
             "year": 2000,
             "stats": [
-              "ad_4_2000",
-              "ad_4_change_2000"
+              258,
+              262
             ]
           }
         ]
@@ -2827,7 +2818,7 @@
           {
             "year": 2020,
             "stats": [
-              "gpw_pw_density_2"
+              33
             ]
           }
         ]
@@ -2839,7 +2830,7 @@
           {
             "year": 2020,
             "stats": [
-              "gpw_pw_density_4"
+              34
             ]
           }
         ]
