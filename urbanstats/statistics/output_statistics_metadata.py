@@ -1,5 +1,7 @@
 from functools import lru_cache
 import json
+
+from .statistics_tree import statistics_tree
 from .collections_list import statistic_collections
 
 
@@ -68,48 +70,8 @@ def get_statistic_column_path(column):
         column = "-".join(str(x) for x in column)
     return column.replace("/", " slash ")
 
-
-category_metadata = {
-    "main": dict(name="Main", show_checkbox=False, default=True),
-    "race": dict(name="Race", show_checkbox=True, default=True),
-    "national_origin": dict(name="National Origin", show_checkbox=True, default=False),
-    "education": dict(name="Education", show_checkbox=True, default=False),
-    "generation": dict(name="Generation", show_checkbox=True, default=False),
-    "income": dict(name="Income", show_checkbox=True, default=False),
-    "housing": dict(name="Housing", show_checkbox=True, default=False),
-    "transportation": dict(name="Transportation", show_checkbox=True, default=False),
-    "health": dict(name="Health", show_checkbox=True, default=False),
-    "climate": dict(name="Climate Change", show_checkbox=True, default=False),
-    "industry": dict(name="Industry", show_checkbox=True, default=False),
-    "occupation": dict(name="Occupation", show_checkbox=True, default=False),
-    "relationships": dict(name="Relationships", show_checkbox=True, default=False),
-    "election": dict(name="Election", show_checkbox=True, default=True),
-    "feature": dict(name="Proximity to Features", show_checkbox=True, default=False),
-    "weather": dict(name="Weather", show_checkbox=True, default=False),
-    "misc": dict(name="Miscellaneous", show_checkbox=True, default=False),
-    "other_densities": dict(
-        name="Other Density Metrics", show_checkbox=True, default=False
-    ),
-    "2010": dict(name="2010 Census", show_checkbox=True, default=False),
-    "2000": dict(name="2000 Census", show_checkbox=True, default=False),
-}
-
-
-def output_categories():
-    """
-    Produces a flat list of dictionaries, each containing the key, name, and category of a statistic.
-    """
-    assert set(internal_statistic_names()) == set(get_statistic_categories())
-    assert set(get_statistic_categories().values()) == set(category_metadata)
-    return [dict(key=k, **v) for k, v in category_metadata.items()]
-
-
 def output_statistics_metadata():
 
-    with open(f"react/src/data/statistic_category_metadata.json", "w") as f:
-        json.dump(output_categories(), f)
-    with open(f"react/src/data/statistic_category_list.json", "w") as f:
-        json.dump(list(get_statistic_categories().values()), f)
     with open(f"react/src/data/statistic_name_list.json", "w") as f:
         json.dump(list(statistic_internal_to_display_name().values()), f)
     with open(f"react/src/data/statistic_path_list.json", "w") as f:
@@ -127,3 +89,72 @@ def output_statistics_metadata():
 
     with open(f"react/src/data/explanation_page.json", "w") as f:
         json.dump(list([name for name in get_explanation_page().values()]), f)
+
+    fst = flatten_statistic_tree()
+    with open(f"react/src/data/statistics_tree.json", "w") as f:
+        json.dump(fst, f, indent=2)
+
+
+def flatten_statistic_tree():
+    all_stats = {
+        stat
+        for category in statistics_tree.values()
+        for group in category["contents"].values()
+        for stats in group["contents"].values()
+        for stat in stats
+    }
+    print(all_stats)
+    extra_in_tree = all_stats - set(internal_statistic_names())
+    if extra_in_tree:
+        raise ValueError(f"Extra stats in tree: {extra_in_tree}")
+    extra_in_list = set(internal_statistic_names()) - all_stats
+    if extra_in_list:
+        raise ValueError(
+            f"Missing stats in tree: {[x for x in internal_statistic_names() if x in extra_in_list]}"
+        )
+
+    return [
+        flatten_category(category_id, category)
+        for category_id, category in statistics_tree.items()
+    ]
+
+
+def flatten_category(category_id, category):
+    return {
+        "id": category_id,
+        "name": category["name"],
+        "contents": [
+            flatten_group(group_id, group)
+            for group_id, group in category["contents"].items()
+        ],
+    }
+
+
+def flatten_group(group_id, group):
+    assert "contents" in group, group
+    group_name = group.get("name", None)
+    if group_name is None:
+        year = None if None in group["contents"] else max(group["contents"])
+        short_statcol = group["contents"][year][0]
+        group_name = statistic_internal_to_display_name()[short_statcol]
+        if len(group["contents"]) > 1:
+            assert not (
+                str(year) in group_name
+            ), f"Group name should not contain year, but got: {group_name}"
+
+    return {
+        "id": group_id,
+        "name": group_name,
+        "contents": [
+            flatten_year(year, stats) for year, stats in group["contents"].items()
+        ],
+    }
+
+
+def flatten_year(year, stats):
+    assert isinstance(year, int) or year is None, year
+    assert all(isinstance(stat, (str, tuple)) for stat in stats), stats
+    return {
+        "year": year,
+        "stats": stats,
+    }
