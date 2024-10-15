@@ -6,21 +6,23 @@ def census_basics(col_name, *, change):
         results[year] = [f"{col_name}_{year}"]
         if change:
             results[year].append(f"{col_name}_change_{year}")
-    return {col_name: {}}
+    return {col_name: dict(contents=results)}
 
 
 def census_segregation(col_name):
     return {
-        col_name: {
-            2000: [f"{col_name}_2000", f"{col_name}_diff_2000"],
-            2010: [f"{col_name}_2010", f"{col_name}_diff_2010"],
-            2020: [f"{col_name}_2020"],
-        }
+        col_name: dict(
+            contents={
+                2000: [f"{col_name}_2000", f"{col_name}_diff_2000"],
+                2010: [f"{col_name}_2010", f"{col_name}_diff_2010"],
+                2020: [f"{col_name}_2020"],
+            }
+        )
     }
 
 
 def just_2020(*col_names):
-    return {col_name: {2020: [col_name]} for col_name in col_names}
+    return {col_name: dict(contents={2020: [col_name]}) for col_name in col_names}
 
 
 def just_2020_category(cat_key, cat_name, *col_names):
@@ -39,8 +41,8 @@ statistics_tree = {
             **census_basics("population", change=True),
             **census_basics("ad_1", change=True),
             **census_basics("sd", change=False),
-            "area": {None: ["area"]},
-            "compactness": {None: ["compactness"]},
+            "area": dict(contents={None: ["area"]}),
+            "compactness": dict(contents={None: ["compactness"]}),
             **just_2020(
                 "gpw_population",
                 "gpw_pw_density_1",
@@ -79,15 +81,15 @@ statistics_tree = {
     **just_2020_category(
         "education",
         "Education",
-        "citizenship_citizen_by_birth",
-        "citizenship_citizen_by_naturalization",
-        "citizenship_not_citizen",
-        "birthplace_non_us",
-        "birthplace_us_not_state",
-        "birthplace_us_state",
-        "language_english_only",
-        "language_spanish",
-        "language_other",
+        "education_high_school",
+        "education_ugrad",
+        "education_grad",
+        "education_field_stem",
+        "education_field_humanities",
+        "education_field_business",
+        "female_hs_gap_4",
+        "female_ugrad_gap_4",
+        "female_grad_gap_4",
     ),
     **just_2020_category(
         "generation",
@@ -259,9 +261,9 @@ statistics_tree = {
     **just_2020_category(
         "election",
         "Election",
-        ["2020 Presidential Election", "margin"],
-        ["2016 Presidential Election", "margin"],
-        ["2016-2020 Swing", "margin"],
+        ("2020 Presidential Election", "margin"),
+        ("2016 Presidential Election", "margin"),
+        ("2016-2020 Swing", "margin"),
     ),
     **just_2020_category(
         "distance_from_features",
