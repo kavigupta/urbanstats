@@ -19,7 +19,7 @@ interface HistogramProps {
     universe_total: number
 }
 
-export function Histogram(props: { histograms: HistogramProps[], screenshot_mode: boolean }): ReactNode {
+export function Histogram(props: { histograms: HistogramProps[] }): ReactNode {
     const [histogram_type] = useSetting('histogram_type')
     const [use_imperial] = useSetting('use_imperial')
     const [relative] = useSetting('histogram_relative')
@@ -64,7 +64,6 @@ export function Histogram(props: { histograms: HistogramProps[], screenshot_mode
     return (
         <PlotComponent
             plot_spec={plot_spec}
-            screenshot_mode={props.screenshot_mode}
             settings_element={settings_element}
         />
     )

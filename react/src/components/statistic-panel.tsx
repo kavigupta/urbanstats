@@ -110,75 +110,73 @@ export function StatisticPanel(props: {
             has_universe_selector={true}
             universes={require('../data/universes_ordered.json') as string[]}
         >
-            {() => (
-                <div>
-                    <div ref={headers_ref}>
-                        <div className={textHeaderClass}>{props.rendered_statname}</div>
-                        {/* // TODO plural */}
-                        <StatisticPanelSubhead
-                            article_type={props.article_type}
-                            rendered_order={props.ordering}
-                        />
-                    </div>
-                    <div style={{ marginBlockEnd: '16px' }}></div>
-                    <div className="serif" ref={table_ref}>
-                        <div style={{ display: 'flex' }}>
-                            {column_names.map((name, i) => {
-                                if (i === 0) {
-                                    return (
-                                        <div key={name} style={{ ...style(i, 0), display: 'flex', justifyContent: 'space-between', flexDirection: 'row' }}>
-                                            <div>{name}</div>
-                                            <AscendingVsDescending on_click={(curr_universe) => { swap_ascending_descending(curr_universe) }} is_ascending={is_ascending} />
-                                        </div>
-                                    )
-                                }
-                                return <div key={name} style={style(i, 0)}>{name}</div>
-                            })}
-                        </div>
-                        {
-                            index_range.map((i, row_idx) => (
-                                <div
-                                    key={i}
-                                    style={{
-                                        display: 'flex', alignItems: 'baseline', backgroundColor: background_color(row_idx + 1),
-                                    }}
-                                >
-                                    <div style={style(0, row_idx + 1)}>{i + 1}</div>
-                                    <div style={style(1, row_idx + 1)}>
-                                        <ArticleLink longname={props.article_names[i]} />
-                                    </div>
-                                    <div style={style(2, row_idx + 1)} className="value">
-                                        <Statistic
-                                            statname={props.statname}
-                                            value={props.data.value[i]}
-                                            is_unit={false}
-                                        />
-                                    </div>
-                                    <div style={style(3, row_idx + 1)} className="value_unit value">
-                                        <Statistic
-                                            statname={props.statname}
-                                            value={props.data.value[i]}
-                                            is_unit={true}
-                                        />
-                                    </div>
-                                    <div style={style(4, row_idx + 1)}>
-                                        <AutoPercentile
-                                            ordinal={0}
-                                            total_count_in_class={0}
-                                            data={props.data}
-                                            i={i}
-                                        />
-                                    </div>
-                                </div>
-                            ))
-                        }
-                    </div>
-                    <div style={{ marginBlockEnd: '1em' }}></div>
-                    <Pagination
-                        {...props}
+            <div>
+                <div ref={headers_ref}>
+                    <div className={textHeaderClass}>{props.rendered_statname}</div>
+                    {/* // TODO plural */}
+                    <StatisticPanelSubhead
+                        article_type={props.article_type}
+                        rendered_order={props.ordering}
                     />
                 </div>
-            )}
+                <div style={{ marginBlockEnd: '16px' }}></div>
+                <div className="serif" ref={table_ref}>
+                    <div style={{ display: 'flex' }}>
+                        {column_names.map((name, i) => {
+                            if (i === 0) {
+                                return (
+                                    <div key={name} style={{ ...style(i, 0), display: 'flex', justifyContent: 'space-between', flexDirection: 'row' }}>
+                                        <div>{name}</div>
+                                        <AscendingVsDescending on_click={(curr_universe) => { swap_ascending_descending(curr_universe) }} is_ascending={is_ascending} />
+                                    </div>
+                                )
+                            }
+                            return <div key={name} style={style(i, 0)}>{name}</div>
+                        })}
+                    </div>
+                    {
+                        index_range.map((i, row_idx) => (
+                            <div
+                                key={i}
+                                style={{
+                                    display: 'flex', alignItems: 'baseline', backgroundColor: background_color(row_idx + 1),
+                                }}
+                            >
+                                <div style={style(0, row_idx + 1)}>{i + 1}</div>
+                                <div style={style(1, row_idx + 1)}>
+                                    <ArticleLink longname={props.article_names[i]} />
+                                </div>
+                                <div style={style(2, row_idx + 1)} className="value">
+                                    <Statistic
+                                        statname={props.statname}
+                                        value={props.data.value[i]}
+                                        is_unit={false}
+                                    />
+                                </div>
+                                <div style={style(3, row_idx + 1)} className="value_unit value">
+                                    <Statistic
+                                        statname={props.statname}
+                                        value={props.data.value[i]}
+                                        is_unit={true}
+                                    />
+                                </div>
+                                <div style={style(4, row_idx + 1)}>
+                                    <AutoPercentile
+                                        ordinal={0}
+                                        total_count_in_class={0}
+                                        data={props.data}
+                                        i={i}
+                                    />
+                                </div>
+                            </div>
+                        ))
+                    }
+                </div>
+                <div style={{ marginBlockEnd: '1em' }}></div>
+                <Pagination
+                    {...props}
+                />
+            </div>
         </PageTemplate>
     )
 }

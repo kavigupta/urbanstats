@@ -358,23 +358,21 @@ export function MapperPanel(): ReactNode {
 
     return (
         <PageTemplate>
-            {() => (
-                <div>
-                    <div className={headerTextClass}>Urban Stats Mapper (beta)</div>
-                    <MapperSettings
-                        names={names}
-                        valid_geographies={valid_geographies}
-                        map_settings={map_settings}
-                        set_map_settings={set_map_settings}
-                    />
-                    <Export
-                        map_ref={map_ref}
-                    />
-                    {
-                        mapper_panel(undefined) // use default height
-                    }
-                </div>
-            )}
+            <div>
+                <div className={headerTextClass}>Urban Stats Mapper (beta)</div>
+                <MapperSettings
+                    names={names}
+                    valid_geographies={valid_geographies}
+                    map_settings={map_settings}
+                    set_map_settings={set_map_settings}
+                />
+                <Export
+                    map_ref={map_ref}
+                />
+                {
+                    mapper_panel(undefined) // use default height
+                }
+            </div>
         </PageTemplate>
     )
 }
