@@ -3,22 +3,23 @@ import { createContext, useContext, useEffect, useState } from 'react'
 import { DefaultMap } from '../utils/DefaultMap'
 
 import { Theme } from './colors'
-import { categories, CategoryIdentifier, StatisticIdentifier, statistics } from './statistic-settings'
+import { allGroups, CategoryIdentifier, GroupIdentifier, statsTree } from './statistic-settings'
 
 export type RelationshipKey = `related__${string}__${string}`
 export type RowExpandedKey = `expanded__${string}`
 export type HistogramType = 'Bar' | 'Line' | 'Line (cumulative)'
 
-export type StatisticSettingKey = `show_statistic_${StatisticIdentifier}`
-export type StatisticCategorySavedIndeterminateKey = `statistic_category_saved_indeterminate_${CategoryIdentifier}`
-export type StatisticCategoryExpandedKey = `statistic_category_expanded_${CategoryIdentifier}`
+export type StatGroupSettingKey = `show_stat_group_${GroupIdentifier}`
+export type StatCategorySavedIndeterminateKey = `stat_category_saved_indeterminate_${CategoryIdentifier}`
+export type StatCategoryExpandedKey = `stat_category_expanded_${CategoryIdentifier}`
 
 export interface SettingsDictionary {
     [relationshipKey: RelationshipKey]: boolean
-    [showStatisticKey: StatisticSettingKey]: boolean
-    [savedIndeterminateKey: StatisticCategorySavedIndeterminateKey]: StatisticIdentifier[] // array of child keys
-    [expandedKey: StatisticCategoryExpandedKey]: boolean
+    [showStatisticKey: StatGroupSettingKey]: boolean
+    [savedIndeterminateKey: StatCategorySavedIndeterminateKey]: GroupIdentifier[] // array of child keys
+    [expandedKey: StatCategoryExpandedKey]: boolean
     [rowExpandedKey: RowExpandedKey]: boolean
+    selectedYears: number[]
     show_historical_cds: boolean
     simple_ordinals: boolean
     use_imperial: boolean
@@ -35,40 +36,39 @@ export function row_expanded_key(row_statname: string): RowExpandedKey {
     return `expanded__${row_statname}`
 }
 
+const defaultCategorySelections = new Set(
+    [
+        'main',
+        'race',
+        'election',
+    ] as CategoryIdentifier[],
+)
+
+const map_relationship = require('../data/map_relationship.json') as [string, string][]
+
+// Having a default settings object allows us to statically check that we have default values for all settings
+// It also makes visualizing the default setings easier
+const defaultSettings = {
+    ...Object.fromEntries(
+        map_relationship.map(
+            ([article_type, other_type]) => [relationship_key(article_type, other_type), true],
+        ),
+    ),
+    ...Object.fromEntries(allGroups.map(group => [`show_stat_group_${group.id}` as const, defaultCategorySelections.has(group.parent.id)])),
+    ...Object.fromEntries(statsTree.map(category => [`stat_category_saved_indeterminate_${category.id}`, []])),
+    ...Object.fromEntries(statsTree.map(category => [`stat_category_expanded_${category.id}`, false])),
+    show_historical_cds: false,
+    simple_ordinals: false,
+    use_imperial: false,
+    histogram_type: 'Line',
+    histogram_relative: true,
+    theme: 'Light Mode',
+    selectedYears: [2020],
+} satisfies SettingsDictionary
+
 export function load_settings(): SettingsDictionary {
     const settings = JSON.parse(localStorage.getItem('settings') ?? '{}') as Partial<SettingsDictionary>
-    const map_relationship = require('../data/map_relationship.json') as [string, string][]
-    for (const [article_type, other_type] of map_relationship) {
-        const key = relationship_key(article_type, other_type)
-        if (!(key in settings)) {
-            settings[key] = true
-        }
-    }
-
-    for (const statistic of statistics) {
-        const setting_key = `show_statistic_${statistic.identifier}` as const
-        if (!(setting_key in settings)) {
-            settings[setting_key] = statistic.parents[0].default
-        }
-    }
-
-    for (const category of categories) {
-        const indeterminateKey = `statistic_category_saved_indeterminate_${category.identifier}` as const
-        if (!(indeterminateKey in settings)) {
-            settings[indeterminateKey] = []
-        }
-        const expandedKey = `statistic_category_expanded_${category.identifier}` as const
-        settings[expandedKey] = settings[expandedKey] ?? false
-    }
-
-    settings.show_historical_cds = settings.show_historical_cds ?? false
-    settings.simple_ordinals = settings.simple_ordinals ?? false
-    settings.use_imperial = settings.use_imperial ?? false
-    settings.histogram_type = settings.histogram_type ?? 'Line'
-    settings.histogram_relative = settings.histogram_relative ?? true
-    settings.theme = settings.theme ?? 'Light Mode'
-
-    return settings as SettingsDictionary
+    return { ...defaultSettings, ...settings }
 }
 
 export class Settings {
@@ -128,7 +128,7 @@ export function useSettings<K extends keyof SettingsDictionary>(keys: K[]): Pick
     return settings.useSettings(keys)
 }
 
-export type TableCheckboxSettings = Record<StatisticSettingKey, boolean>
+export type TableCheckboxSettings = Record<StatGroupSettingKey, boolean>
 
 export function relatedSettingsKeys(article_type_this: string): RelationshipKey[] {
     const article_types_other = require('../data/type_to_type_category.json') as Record<string, string>

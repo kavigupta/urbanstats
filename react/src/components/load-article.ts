@@ -25,7 +25,6 @@ export interface ArticleRow {
     ordinal: number
     overallOrdinal: number
     percentile_by_population: number
-    statistic_category: string[]
     statcol: string | string[]
     statname: string
     statpath: string
@@ -89,7 +88,6 @@ export function load_article(universe: string, data: Article, settings: TableChe
     const universe_index = data.universes.indexOf(universe)
     const article_type = data.articleType
 
-    const categories = require('../data/statistic_category_list.json') as string[][]
     const names = require('../data/statistic_name_list.json') as string[]
     const paths = require('../data/statistic_path_list.json') as string[]
     const stats = require('../data/statistic_list.json') as (string | string[])[]
@@ -128,7 +126,6 @@ export function load_article(universe: string, data: Article, settings: TableChe
             ordinal: row_original.ordinalByUniverse![universe_index],
             overallOrdinal: row_original.overallOrdinalByUniverse![universe_index],
             percentile_by_population: row_original.percentileByPopulationByUniverse![universe_index],
-            statistic_category: categories[i],
             statcol: stats[i],
             statname: names[i],
             statpath: paths[i],

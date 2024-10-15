@@ -1,7 +1,7 @@
 import React, { ReactNode, useContext, useLayoutEffect, useRef, useState } from 'react'
 
 import { Settings, useSetting, useSettings } from '../page_template/settings'
-import { statisticCategoryTree, Category, changeCategorySetting, changeStatisticSetting, getCategoryStatus, Statistic, tableCheckboxKeys } from '../page_template/statistic-settings'
+import { statisticCategoryTree, Category, changeCategorySetting, changeStatGroupSetting, getCategoryStatus, Statistic, groupKeys } from '../page_template/statistic-settings'
 import { useMobileLayout } from '../utils/responsive'
 
 import { CheckboxSettingCustom, useSidebarClasses } from './sidebar'
@@ -12,7 +12,7 @@ export function StatisticCategoryTree(): ReactNode {
 
 function CategoryComponent({ category }: { category: Category }): ReactNode {
     const settings = useContext(Settings.Context)
-    const categoryStatus = getCategoryStatus(useSettings(tableCheckboxKeys(category.leaves)))
+    const categoryStatus = getCategoryStatus(useSettings(groupKeys(category.leaves)))
     const [isExpanded, setIsExpanded] = useSetting(`statistic_category_expanded_${category.identifier}`)
     const isMobileLayout = useMobileLayout()
     return (
@@ -46,7 +46,7 @@ function StatisticComponent({ statistic }: { statistic: Statistic }): ReactNode 
             <CheckboxSettingCustom
                 name={statistic.name}
                 checked={checked}
-                onChange={(newValue) => { changeStatisticSetting(settings, statistic, newValue) }}
+                onChange={(newValue) => { changeStatGroupSetting(settings, statistic, newValue) }}
             />
         </li>
     )
