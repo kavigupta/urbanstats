@@ -70,8 +70,8 @@ def get_statistic_column_path(column):
         column = "-".join(str(x) for x in column)
     return column.replace("/", " slash ")
 
-def output_statistics_metadata():
 
+def output_statistics_metadata():
     with open(f"react/src/data/statistic_name_list.json", "w") as f:
         json.dump(list(statistic_internal_to_display_name().values()), f)
     with open(f"react/src/data/statistic_path_list.json", "w") as f:
@@ -142,6 +142,7 @@ def flatten_group(group_id, group):
                 str(year) in group_name
             ), f"Group name should not contain year, but got: {group_name}"
 
+    group_id = get_statistic_column_path(group_id)
     return {
         "id": group_id,
         "name": group_name,

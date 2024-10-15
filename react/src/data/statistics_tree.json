@@ -290,7 +290,7 @@
         ]
       },
       {
-        "id": "other / mixed",
+        "id": "other  slash  mixed",
         "name": "Other / Mixed %",
         "contents": [
           {
@@ -2240,10 +2240,7 @@
     "name": "Election",
     "contents": [
       {
-        "id": [
-          "2020 Presidential Election",
-          "margin"
-        ],
+        "id": "2020 Presidential Election-margin",
         "name": "2020 Presidential Election",
         "contents": [
           {
@@ -2258,10 +2255,7 @@
         ]
       },
       {
-        "id": [
-          "2016 Presidential Election",
-          "margin"
-        ],
+        "id": "2016 Presidential Election-margin",
         "name": "2016 Presidential Election",
         "contents": [
           {
@@ -2276,10 +2270,7 @@
         ]
       },
       {
-        "id": [
-          "2016-2020 Swing",
-          "margin"
-        ],
+        "id": "2016-2020 Swing-margin",
         "name": "2016-2020 Swing",
         "contents": [
           {
