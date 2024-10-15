@@ -3,23 +3,24 @@ import { createContext, useContext, useEffect, useState } from 'react'
 import { DefaultMap } from '../utils/DefaultMap'
 
 import { Theme } from './colors'
-import { allGroups, CategoryIdentifier, GroupIdentifier, statsTree } from './statistic-settings'
+import { allGroups, allYears, CategoryIdentifier, GroupIdentifier, statsTree } from './statistic-settings'
 
 export type RelationshipKey = `related__${string}__${string}`
 export type RowExpandedKey = `expanded__${string}`
 export type HistogramType = 'Bar' | 'Line' | 'Line (cumulative)'
 
-export type StatGroupSettingKey = `show_stat_group_${GroupIdentifier}`
+export type StatGroupKey = `show_stat_group_${GroupIdentifier}`
 export type StatCategorySavedIndeterminateKey = `stat_category_saved_indeterminate_${CategoryIdentifier}`
 export type StatCategoryExpandedKey = `stat_category_expanded_${CategoryIdentifier}`
+export type StatYearKey = `show_stat_year_${number}`
 
 export interface SettingsDictionary {
     [relationshipKey: RelationshipKey]: boolean
-    [showStatisticKey: StatGroupSettingKey]: boolean
+    [showStatisticKey: StatGroupKey]: boolean
     [savedIndeterminateKey: StatCategorySavedIndeterminateKey]: GroupIdentifier[] // array of child keys
     [expandedKey: StatCategoryExpandedKey]: boolean
     [rowExpandedKey: RowExpandedKey]: boolean
-    selectedYears: number[]
+    [statYearKey: StatYearKey]: boolean
     show_historical_cds: boolean
     simple_ordinals: boolean
     use_imperial: boolean
@@ -44,6 +45,10 @@ const defaultCategorySelections = new Set(
     ] as CategoryIdentifier[],
 )
 
+const defaultEnabledYears = new Set(
+    [2020],
+)
+
 const map_relationship = require('../data/map_relationship.json') as [string, string][]
 
 // Having a default settings object allows us to statically check that we have default values for all settings
@@ -57,13 +62,13 @@ const defaultSettings = {
     ...Object.fromEntries(allGroups.map(group => [`show_stat_group_${group.id}` as const, defaultCategorySelections.has(group.parent.id)])),
     ...Object.fromEntries(statsTree.map(category => [`stat_category_saved_indeterminate_${category.id}`, []])),
     ...Object.fromEntries(statsTree.map(category => [`stat_category_expanded_${category.id}`, false])),
+    ...Object.fromEntries(allYears.map(year => [`show_stat_year_${year}`, defaultEnabledYears.has(year)])),
     show_historical_cds: false,
     simple_ordinals: false,
     use_imperial: false,
     histogram_type: 'Line',
     histogram_relative: true,
     theme: 'Light Mode',
-    selectedYears: [2020],
 } satisfies SettingsDictionary
 
 export function load_settings(): SettingsDictionary {
@@ -127,8 +132,6 @@ export function useSettings<K extends keyof SettingsDictionary>(keys: K[]): Pick
     const settings = useContext(Settings.Context)
     return settings.useSettings(keys)
 }
-
-export type TableCheckboxSettings = Record<StatGroupSettingKey, boolean>
 
 export function relatedSettingsKeys(article_type_this: string): RelationshipKey[] {
     const article_types_other = require('../data/type_to_type_category.json') as Record<string, string>

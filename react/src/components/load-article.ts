@@ -1,5 +1,4 @@
-import { TableCheckboxSettings } from '../page_template/settings'
-import { StatisticIdentifier } from '../page_template/statistic-settings'
+import { StatIdentifier, StatGroupSettings, statIsEnabled } from '../page_template/statistic-settings'
 import { universe_is_american } from '../universe'
 import { Article } from '../utils/protos'
 
@@ -27,7 +26,7 @@ export interface ArticleRow {
     percentile_by_population: number
     statcol: string | string[]
     statname: string
-    statpath: string
+    statpath: StatIdentifier
     explanation_page: string
     article_type: string
     total_count_in_class: number
@@ -83,13 +82,13 @@ function compute_indices(longname: string, typ: string): number[] {
     return result.sort((a, b) => a - b)
 }
 
-export function load_article(universe: string, data: Article, settings: TableCheckboxSettings, exclusively_american: boolean): readonly [ArticleRow[], number[]] {
+export function load_article(universe: string, data: Article, settings: StatGroupSettings, exclusively_american: boolean): readonly [ArticleRow[], number[]] {
     // index of universe in data.universes
     const universe_index = data.universes.indexOf(universe)
     const article_type = data.articleType
 
     const names = require('../data/statistic_name_list.json') as string[]
-    const paths = require('../data/statistic_path_list.json') as string[]
+    const paths = require('../data/statistic_path_list.json') as StatIdentifier[]
     const stats = require('../data/statistic_list.json') as (string | string[])[]
     const explanation_page = require('../data/explanation_page.json') as string[]
 
@@ -149,8 +148,7 @@ export function load_article(universe: string, data: Article, settings: TableChe
                 return false
             }
         }
-        const settingsKey = `show_statistic_${row.statpath as StatisticIdentifier}` as const
-        return settings[settingsKey]
+        return statIsEnabled(row.statpath, settings)
     })
 
     const filtered_indices = filtered_rows.map(x => x._index)

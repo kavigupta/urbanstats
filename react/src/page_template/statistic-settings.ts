@@ -1,8 +1,8 @@
-import { Settings, StatGroupSettingKey } from './settings'
+import { Settings, StatGroupKey, StatYearKey } from './settings'
 
 export type CategoryIdentifier = string & { __categoryIdentifier: true }
 export type GroupIdentifier = string & { __groupIdentifier: true }
-export type StatisticIdentifier = string & { __statisticIdentifier: true }
+export type StatIdentifier = string & { __statisticIdentifier: true }
 
 export type StatisticsTree = Category[]
 export interface Category {
@@ -16,7 +16,7 @@ export interface Group {
     name: string
     contents: {
         year: number
-        stats: StatisticIdentifier[]
+        stats: StatIdentifier[]
     }[]
     parent: Category // Not present in the JSON, but built below
 }
@@ -31,12 +31,34 @@ for (const category of statsTree) {
 }
 
 export const allGroups = statsTree.flatMap(category => category.contents)
+export const allYears = allGroups.flatMap(group => group.contents.map(({ year }) => year)).sort((a, b) => a - b)
 
-export function groupKeys(partialGroups: Group[] = allGroups): StatGroupSettingKey[] {
+const statParents = new Map<StatIdentifier, { group: Group, year: number }>(
+    allGroups
+        .flatMap(group => group.contents
+            .flatMap(({ year, stats }) => stats
+                .map(statId => [statId, { group, year }]))),
+)
+
+export type StatGroupSettings = Record<StatGroupKey | StatYearKey, boolean>
+
+export function statIsEnabled(statId: StatIdentifier, settings: StatGroupSettings): boolean {
+    const { group, year } = statParents.get(statId)!
+    return settings[`show_stat_group_${group.id}`] && settings[`show_stat_year_${year}`]
+}
+
+export function groupKeys(partialGroups: Group[]): StatGroupKey[] {
     return partialGroups.map(group => `show_stat_group_${group.id}` as const)
 }
 
-export function getCategoryStatus(groupSettingsValues: Record<StatGroupSettingKey, boolean>): boolean | 'indeterminate' {
+export function groupYearKeys(): (keyof StatGroupSettings)[] {
+    return [
+        ...groupKeys(allGroups),
+        ...allYears.map(year => `show_stat_year_${year}` as const),
+    ]
+}
+
+export function getCategoryStatus(groupSettingsValues: Record<StatGroupKey, boolean>): boolean | 'indeterminate' {
     const statisticSettings = Object.entries(groupSettingsValues)
     const totalStatistics = statisticSettings.length
     const totalCheckedStatistics = statisticSettings.filter(([, checked]) => checked).length
