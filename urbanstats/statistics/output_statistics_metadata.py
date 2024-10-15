@@ -154,8 +154,9 @@ def flatten_group(group_id, group):
 
 def flatten_year(year, stats):
     assert isinstance(year, int) or year is None, year
-    assert all(isinstance(stat, (str, tuple)) for stat in stats), stats
-    return {
-        "year": year,
-        "stats": stats,
-    }
+    stats_processed = []
+    for stat in stats:
+        assert stat in internal_statistic_names(), stat
+        stats_processed.append(internal_statistic_names().index(stat))
+
+    return {"year": year, "stats": stats_processed}
