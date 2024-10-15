@@ -163,29 +163,3 @@ def extra_stats():
     name_to_idx = {name: idx for idx, name in enumerate(internal_statistic_names())}
     extra = {name_to_idx[k]: v for k, v in result.items()}
     return extra
-
-
-category_metadata = {
-    "main": dict(name="Main", show_checkbox=False, default=True),
-    "race": dict(name="Race", show_checkbox=True, default=True),
-    "national_origin": dict(name="National Origin", show_checkbox=True, default=False),
-    "education": dict(name="Education", show_checkbox=True, default=False),
-    "generation": dict(name="Generation", show_checkbox=True, default=False),
-    "income": dict(name="Income", show_checkbox=True, default=False),
-    "housing": dict(name="Housing", show_checkbox=True, default=False),
-    "transportation": dict(name="Transportation", show_checkbox=True, default=False),
-    "health": dict(name="Health", show_checkbox=True, default=False),
-    "climate": dict(name="Climate Change", show_checkbox=True, default=False),
-    "industry": dict(name="Industry", show_checkbox=True, default=False),
-    "occupation": dict(name="Occupation", show_checkbox=True, default=False),
-    "relationships": dict(name="Relationships", show_checkbox=True, default=False),
-    "election": dict(name="Election", show_checkbox=True, default=True),
-    "feature": dict(name="Proximity to Features", show_checkbox=True, default=False),
-    "weather": dict(name="Weather", show_checkbox=True, default=False),
-    "misc": dict(name="Miscellaneous", show_checkbox=True, default=False),
-    "other_densities": dict(
-        name="Other Density Metrics", show_checkbox=True, default=False
-    ),
-    "2010": dict(name="2010 Census", show_checkbox=True, default=False),
-    "2000": dict(name="2000 Census", show_checkbox=True, default=False),
-}

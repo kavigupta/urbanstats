@@ -334,19 +334,6 @@ def generate_quiz_info_for_website(site_folder):
     with open(f"{folder}/types.json", "w") as f:
         json.dump(types, f)
 
-    with open(f"{folder}/category_to_stats.json", "w") as f:
-        json.dump(
-            {
-                category: [
-                    get_statistic_column_path(stat)
-                    for stat in stats
-                    if get_statistic_categories()[stat] == category
-                ]
-                for category in categories
-            },
-            f,
-        )
-
     with open(f"{folder}/stat_to_question.json", "w") as f:
         json.dump(
             {get_statistic_column_path(k): v for k, v in stats_to_display.items()}, f
