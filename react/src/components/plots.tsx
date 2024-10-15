@@ -9,16 +9,16 @@ interface PlotProps {
     color: string
 }
 
-export function WithPlot(props: { children: React.ReactNode, plot_props: PlotProps[], expanded: boolean, screenshot_mode: boolean }): ReactNode {
+export function WithPlot(props: { children: React.ReactNode, plot_props: PlotProps[], expanded: boolean }): ReactNode {
     return (
         <div className="plot">
             {props.children}
-            {props.expanded ? <RenderedPlot plot_props={props.plot_props} screenshot_mode={props.screenshot_mode} /> : null}
+            {props.expanded ? <RenderedPlot plot_props={props.plot_props} /> : null}
         </div>
     )
 }
 
-function RenderedPlot({ plot_props, screenshot_mode }: { plot_props: PlotProps[], screenshot_mode: boolean }): ReactNode {
+function RenderedPlot({ plot_props }: { plot_props: PlotProps[] }): ReactNode {
     if (plot_props.some(p => p.extra_stat?.type === 'histogram')) {
         plot_props = plot_props.filter(p => p.extra_stat?.type === 'histogram')
         return (
@@ -31,7 +31,6 @@ function RenderedPlot({ plot_props, screenshot_mode }: { plot_props: PlotProps[]
                         universe_total: props.extra_stat!.universe_total,
                     }),
                 )}
-                screenshot_mode={screenshot_mode}
             />
         )
     }

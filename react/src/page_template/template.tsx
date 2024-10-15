@@ -8,10 +8,10 @@ import '@fontsource/jost/700.css'
 import '@fontsource/jost/800.css'
 import '@fontsource/jost/900.css'
 
-import React, { Fragment, ReactNode, useEffect, useState } from 'react'
+import React, { ReactNode, useEffect, useState } from 'react'
 
 import { Header } from '../components/header'
-import { ScreencapElements, create_screenshot } from '../components/screenshot'
+import { ScreencapElements, ScreenshotContext, create_screenshot } from '../components/screenshot'
 import { Sidebar } from '../components/sidebar'
 import '../common.css'
 import '../components/article.css'
@@ -28,7 +28,7 @@ export function PageTemplate({
     screencap_elements?: () => ScreencapElements
     has_universe_selector?: boolean
     universes?: string[]
-    children: ({ screenshot_mode }: { screenshot_mode: boolean }) => React.ReactNode
+    children: React.ReactNode
 }): ReactNode {
     const [hamburger_open, set_hamburger_open] = useState(false)
     const [screenshot_mode, set_screenshot_mode] = useState(false)
@@ -65,7 +65,7 @@ export function PageTemplate({
     }
 
     return (
-        <Fragment>
+        <ScreenshotContext.Provider value={screenshot_mode}>
             <meta name="viewport" content="width=device-width, initial-scale=0.75, shrink-to-fit=no, maximum-scale=0.75" />
             <div className={useMobileLayout() ? 'main_panel_mobile' : 'main_panel'} style={{ backgroundColor: colors.background }}>
                 <Header
@@ -74,16 +74,15 @@ export function PageTemplate({
                     has_screenshot={has_screenshot_button}
                     has_universe_selector={has_universe_selector}
                     all_universes={universes}
-                    screenshot_mode={screenshot_mode}
                     initiate_screenshot={(curr_universe) => { initiate_screenshot(curr_universe) }}
                 />
                 <div style={{ marginBlockEnd: '16px' }}></div>
                 <BodyPanel
                     hamburger_open={hamburger_open}
-                    main_content={children({ screenshot_mode })}
+                    main_content={children}
                 />
             </div>
-        </Fragment>
+        </ScreenshotContext.Provider>
     )
 }
 

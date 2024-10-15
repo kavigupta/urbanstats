@@ -1,11 +1,11 @@
 import domtoimage from 'dom-to-image-more'
 import { saveAs } from 'file-saver'
-import React, { ReactNode } from 'react'
+import React, { createContext, ReactNode, useContext } from 'react'
 
 import { universe_path } from '../navigation/links'
 import { Colors } from '../page_template/settings'
 
-export function ScreenshotButton(props: { screenshot_mode: boolean, onClick: () => void }): ReactNode {
+export function ScreenshotButton(props: { onClick: () => void }): ReactNode {
     const screencap_button = (
         <div
             onClick={props.onClick}
@@ -18,7 +18,7 @@ export function ScreenshotButton(props: { screenshot_mode: boolean, onClick: () 
         </div>
     )
     // if screenshot mode is on, put a loading circle over the image
-    if (props.screenshot_mode) {
+    if (useScreenshotMode()) {
         const pad = 10 // pct
         const loading_circle = (
             <div style={{
@@ -158,4 +158,10 @@ export async function create_screenshot(config: ScreencapElements, universe: str
     canvas.toBlob(function (blob) {
         saveAs(blob!, config.path)
     })
+}
+
+export const ScreenshotContext = createContext(false)
+
+export function useScreenshotMode(): boolean {
+    return useContext(ScreenshotContext)
 }

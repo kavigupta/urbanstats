@@ -19,7 +19,6 @@ export function Header(props: {
     has_universe_selector: boolean
     all_universes: string[]
     has_screenshot: boolean
-    screenshot_mode: boolean
     initiate_screenshot: (curr_universe: string) => void
 }): ReactNode {
     const curr_universe = useUniverse()
@@ -47,7 +46,6 @@ export function Header(props: {
                         props.has_screenshot
                             ? (
                                     <ScreenshotButton
-                                        screenshot_mode={props.screenshot_mode}
                                         onClick={() => { props.initiate_screenshot(curr_universe) }}
                                     />
                                 )
