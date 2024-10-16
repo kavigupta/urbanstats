@@ -1,13 +1,14 @@
 import React, { ReactNode } from 'react'
 
-import { Category, Group, sortYears, useAnachronisticSelectedGroups, useSelectedGroups } from '../page_template/statistic-settings'
+import { Category, Group, useGroupsMissingYearData, useGroupsMissingYearSelection, useSelectedGroups } from '../page_template/statistic-settings'
 
 import { useScreenshotMode } from './screenshot'
 
 export function ArticleWarnings(): ReactNode {
     const screenshotMode = useScreenshotMode()
     const selectedGroups = useSelectedGroups()
-    const anachronisticSelectedGroups = useAnachronisticSelectedGroups()
+    const groupsMissingYearSelection = useGroupsMissingYearSelection()
+    const groupsMissingYearData = useGroupsMissingYearData()
 
     if (screenshotMode) {
         return null
@@ -19,22 +20,22 @@ export function ArticleWarnings(): ReactNode {
                 </>,
             ]
         : [
-                ...anachronisticSelectedGroups.map(groupOrCategory => (
+                ...groupsMissingYearSelection.map(groupOrCategory => (
                     <>
-                        No data for
+                        No year selected for
                         {' '}
                         <b><HierarchicalName groupOrCategory={groupOrCategory} /></b>
-                        {' '}
-                        is part of the selected years. Select one of Year
-                        {' '}
-                        {Array.from(groupOrCategory.years).filter(year => year !== null).sort(sortYears).map((year, key, years) => (
-                            <>
-                                <b key={key}>{year}</b>
-                                {key === years.length - 1 ? null : ', '}
-                            </>
-                        ))}
                     </>
                 )),
+                ...groupsMissingYearData.flatMap(({ year, groups }) => groups.map(group => (
+                    <>
+                        <b><HierarchicalName groupOrCategory={group} /></b>
+                        {' '}
+                        is missing data for the year
+                        {' '}
+                        <b>{year}</b>
+                    </>
+                ))),
             ]
 
     if (warnings.length === 0) {
