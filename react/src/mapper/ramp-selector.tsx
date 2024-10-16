@@ -4,7 +4,7 @@ import { useColors } from '../page_template/colors'
 import { interpolate_color } from '../utils/color'
 
 import { ColorMap, EncodedColorMap, RAMPS, RampDescriptor, parse_custom_colormap } from './ramps'
-import { setting_sub_name_style } from './style'
+import { useSettingSubNameStyle } from './style'
 
 export function RampColormapSelector(props: { ramp: RampDescriptor, set_ramp: (newValue: RampDescriptor) => void, name?: string }): ReactNode {
     // dropdown selector for either a custom ramp or a ramp from a list of presets
@@ -59,7 +59,7 @@ export function RampColormapSelector(props: { ramp: RampDescriptor, set_ramp: (n
 
     return (
         <div>
-            <div style={setting_sub_name_style}>
+            <div style={useSettingSubNameStyle()}>
                 {props.name}
             </div>
             <select
@@ -232,7 +232,7 @@ function CustomColormapSelector(props: { colormap: string, set_colormap: (newVal
     )
     return (
         <div>
-            <div style={setting_sub_name_style}>
+            <div style={useSettingSubNameStyle()}>
                 Custom Colormap
             </div>
             {color_tabs}

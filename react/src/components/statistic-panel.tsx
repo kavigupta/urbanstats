@@ -90,7 +90,7 @@ export function StatisticPanel(props: {
         let result: CSSProperties = { ...table_style }
         if (row_idx === 0) {
             // header, add a line at the bottom
-            result.borderBottom = '1px solid #000'
+            result.borderBottom = `1px solid ${colors.textMain}`
             result.fontWeight = 500
         }
         result.backgroundColor = background_color(row_idx)
@@ -323,7 +323,7 @@ function SelectPage(props: {
     const colors = useColors()
     const button_style = {
         backgroundColor: colors.slightlyDifferentBackground,
-        border: '1px solid #000',
+        border: `1px solid ${  colors.textMain}`,
         padding: '0 0.5em',
         margin: '0.5em',
     }

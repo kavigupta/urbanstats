@@ -7,7 +7,7 @@ import { FilterSelector, FunctionColorStat, StatisticSelector } from './function
 import { RampColormapSelector } from './ramp-selector'
 import { ConstantRampDescriptor, RampDescriptor } from './ramps'
 import { Regression } from './regression'
-import { setting_name_style, setting_sub_name_style } from './style'
+import { setting_name_style, useSettingSubNameStyle() } from './style'
 
 export type StatisticsForGeography = { stats: number[] }[]
 
@@ -169,7 +169,7 @@ function ConstantParametersSelector({ ramp, set_ramp }: { ramp: ConstantRampDesc
     const colors = useColors()
     return (
         <div style={{ display: 'flex' }}>
-            <div style={setting_sub_name_style}>
+            <div style={useSettingSubNameStyle()}>
                 Lower Bound:
             </div>
             <input
@@ -184,7 +184,7 @@ function ConstantParametersSelector({ ramp, set_ramp }: { ramp: ConstantRampDesc
                 }}
             />
             <div style={{ width: '0.5em' }} />
-            <div style={setting_sub_name_style}>
+            <div style={useSettingSubNameStyle()}>
                 Upper Bound:
             </div>
             <input
@@ -217,7 +217,7 @@ function RampSelector(props: { ramp: RampDescriptor, set_ramp: (newValue: RampDe
                 overall_name="Ramp Type:"
                 names={['linear', 'constant', 'geometric'] as const}
                 no_neutral={true}
-                header_style={setting_sub_name_style}
+                header_style={useSettingSubNameStyle()}
                 initial_value={props.ramp.type}
                 onChange={(name) => {
                     props.set_ramp({
@@ -237,7 +237,7 @@ function RampSelector(props: { ramp: RampDescriptor, set_ramp: (newValue: RampDe
                     : <div></div>
             }
             <div style={{ display: 'flex' }}>
-                <div style={setting_sub_name_style}>
+                <div style={useSettingSubNameStyle()}>
                     Reversed:
                 </div>
                 <input
@@ -264,7 +264,7 @@ function LineStyleSelector(props: { line_style: LineStyle, set_line_style: (newV
                 Line Style:
             </div>
             <div style={{ display: 'flex' }}>
-                <div style={setting_sub_name_style}>
+                <div style={useSettingSubNameStyle()}>
                     Color:
                 </div>
                 <input
@@ -280,7 +280,7 @@ function LineStyleSelector(props: { line_style: LineStyle, set_line_style: (newV
                 />
             </div>
             <div style={{ display: 'flex' }}>
-                <div style={setting_sub_name_style}>
+                <div style={useSettingSubNameStyle()}>
                     Weight:
                 </div>
                 <input
@@ -308,7 +308,7 @@ function BaseMapSelector({ basemap, set_basemap }: { basemap: Basemap, set_basem
                 Basemap:
             </div>
             <div style={{ display: 'flex' }}>
-                <div style={setting_sub_name_style}>
+                <div style={useSettingSubNameStyle()}>
                     OSM:
                 </div>
                 <input
