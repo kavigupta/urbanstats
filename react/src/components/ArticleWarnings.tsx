@@ -1,5 +1,6 @@
 import React, { ReactNode } from 'react'
 
+import { useColors } from '../page_template/colors'
 import { Category, Group, useGroupsMissingYearData, useGroupsMissingYearSelection, useSelectedGroups } from '../page_template/statistic-settings'
 
 import { useScreenshotMode } from './screenshot'
@@ -46,13 +47,19 @@ export function ArticleWarnings(): ReactNode {
 }
 
 function WarningBox({ warnings }: { warnings: ReactNode[] }): ReactNode {
-    const warningStyle: React.CSSProperties = {
-
-    }
+    const colors = useColors()
 
     return (
-        <div style={warningStyle}>
-            <ul>
+        <div style={{
+            backgroundColor: colors.slightlyDifferentBackgroundFocused,
+            borderRadius: '5px',
+        }}
+        >
+            <ul style={{
+                paddingTop: '1em',
+                paddingBottom: '1em',
+            }}
+            >
                 {
                     warnings.map(
                         (warning, key) => (
