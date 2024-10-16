@@ -82,7 +82,7 @@ function HistogramSettings(props: {
         <div
             className="serif"
             style={{
-                backgroundColor: colors.background, padding: '0.5em', border: '1px solid black',
+                backgroundColor: colors.background, padding: '0.5em', border: `1px solid ${colors.textMain}`,
                 display: 'flex', gap: '0.5em',
             }}
         >

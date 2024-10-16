@@ -64,7 +64,7 @@ export function RampColormapSelector(props: { ramp: RampDescriptor, set_ramp: (n
             </div>
             <select
                 onChange={(e) => { set_selected(e.target.value) }}
-                style={{ width: '100%', backgroundColor: colors.background }}
+                style={{ width: '100%', backgroundColor: colors.background, color: colors.textMain }}
                 value={colormapSelection}
             >
                 {
@@ -111,12 +111,12 @@ function SinglePointSelector({ value, color, cell, set_cell, remove_cell }: { va
                         e.target.value,
                     ])
                 }}
-                style={{ backgroundColor: colors.background }}
+                style={{ backgroundColor: colors.background, color: colors.textMain }}
             />
             <input
                 type="number"
                 value={value}
-                style={{ width: '4em', backgroundColor: colors.background }}
+                style={{ width: '4em', backgroundColor: colors.background, color: colors.textMain }}
                 onChange={(e) => {
                     set_cell([
                         parseFloat(e.target.value),
@@ -224,7 +224,7 @@ function CustomColormapSelector(props: { colormap: string, set_colormap: (newVal
     const input_textbox = (
         <input
             type="text"
-            style={{ width: '100%', backgroundColor: colors.background }}
+            style={{ width: '100%', backgroundColor: colors.background, color: colors.textMain }}
             placeholder='Custom map, e.g., [[0, "#ff0000"], [1, "#0000ff"]]'
             value={colormap_text}
             onChange={(e) => { props.set_colormap(e.target.value) }}

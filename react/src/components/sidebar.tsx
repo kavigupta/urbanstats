@@ -108,14 +108,14 @@ export function Sidebar(): ReactNode {
                     )}
                 </ul>
             </div>
-            {/* <div className="sidebar-section">
-                <div className={sidebar_section_title}>Appearance</div>
+            <div className="sidebar-section">
+                <div style={sidebar_section_title}>Appearance</div>
                 <ul className={sidebar_section_content}>
                     <li>
                         <ColorThemeSetting />
                     </li>
                 </ul>
-            </div> */}
+            </div>
         </div>
     )
 }
@@ -155,7 +155,7 @@ export function ColorThemeSetting(): ReactNode {
             <label>{'Theme '}</label>
             <select
                 className="serif"
-                style={{ backgroundColor: colors.background }}
+                style={{ backgroundColor: colors.background, color: colors.textMain }}
                 value={theme}
                 onChange={(e: React.ChangeEvent<HTMLSelectElement>) => { setTheme(e.target.value as Theme) }}
             >
