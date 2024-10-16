@@ -9,6 +9,7 @@ import { useMobileLayout } from '../utils/responsive'
 import { Nav } from './hamburger'
 import { ScreenshotButton } from './screenshot'
 import { SearchBox } from './search'
+import { useColors } from '../page_template/colors'
 
 export const HEADER_BAR_SIZE = '48px'
 const HEADER_BAR_SIZE_DESKTOP = '60px'
@@ -193,13 +194,14 @@ function UniverseSelector(
 function UniverseDropdown(
     { all_universes, flag_size }: { all_universes: string[], flag_size: string },
 ): ReactNode {
+    const colors = useColors()
     return (
         <div>
             <div
                 className="serif"
                 style={{
                     fontWeight: 500,
-                    backgroundColor: '#f7f1e8',
+                    backgroundColor: colors.slightlyDifferentBackground,
                 }}
             >
                 Select universe for statistics

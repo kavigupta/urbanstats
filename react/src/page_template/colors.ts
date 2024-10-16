@@ -16,6 +16,7 @@ export interface HueColors {
 
 export interface Colors {
     background: string
+    slightlyDifferentBackground: string
     highlight: string
     textMain: string
     textPointer: string
@@ -47,6 +48,7 @@ export type Theme = 'Light Mode' | 'Dark Mode'
 export const colorThemes: Record<Theme, Colors> = {
     'Light Mode': {
         background: '#fff8f0',
+        slightlyDifferentBackground: '#f7f1e8',
         highlight: '#d4b5e2',
         textMain: '#000000',
         textPointer: '#222222',
@@ -60,6 +62,7 @@ export const colorThemes: Record<Theme, Colors> = {
     },
     'Dark Mode': {
         background: '#1e1e1e',
+        slightlyDifferentBackground: '#333333',
         highlight: '#d4b5e2',
         textMain: '#ffffff',
         textPointer: '#ffffff',

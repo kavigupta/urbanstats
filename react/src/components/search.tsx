@@ -152,7 +152,7 @@ export const SearchBox = (props: {
                         width: '100%',
                         maxHeight: '20em',
                         overflowY: 'auto',
-                        backgroundColor: '#f7f1e8',
+                        backgroundColor: colors.slightlyDifferentBackground,
                         borderRadius: '0.25em',
                         zIndex: '1',
                     }

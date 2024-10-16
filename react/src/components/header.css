@@ -1,5 +1,5 @@
 .hoverable_elements {
-    background-color: #f7f1e8;
+    background-color: var(--slightly-different-background);
 }
 
 .hoverable_elements:hover {
