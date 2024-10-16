@@ -12,6 +12,7 @@ import { Article, IRelatedButtons } from '../utils/protos'
 import { useComparisonHeadStyle, useHeaderTextClass, useSubHeaderTextClass } from '../utils/responsive'
 import { NormalizeProto } from '../utils/types'
 
+import { ArticleWarnings } from './ArticleWarnings'
 import { load_article } from './load-article'
 import { Map } from './map'
 import { Related } from './related-button'
@@ -127,6 +128,7 @@ function ArticlePanelRows(props: { article_row: Article, longname: string, short
                     shortname={props.shortname}
                 />
             ))}
+            <ArticleWarnings />
         </>
     )
 }

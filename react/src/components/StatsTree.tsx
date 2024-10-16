@@ -17,7 +17,7 @@ function CategoryComponent({ category }: { category: Category }): ReactNode {
     const isMobileLayout = useMobileLayout()
     return (
         // Move the category left half of the indent since it's not really a child
-        <li style={{ left: '-0.375em' }}>
+        <li>
             <div style={{ position: 'relative' }}>
                 <button
                     onClick={() => { setIsExpanded(!isExpanded) }}

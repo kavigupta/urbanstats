@@ -8,6 +8,7 @@ import { SettingsDictionary, useSetting } from '../page_template/settings'
 import { useMobileLayout } from '../utils/responsive'
 
 import { StatsTree } from './StatsTree'
+import { Years } from './Years'
 
 export function useSidebarClasses(): { sidebar_section_content: string, sidebar_section_title: string } {
     let sidebar_section_content = 'sidebar-section-content'
@@ -86,6 +87,12 @@ export function Sidebar(): ReactNode {
                             setting_key="simple_ordinals"
                         />
                     </li>
+                </ul>
+            </div>
+            <div className="sidebar-section">
+                <div className={sidebar_section_title}>Years</div>
+                <ul className={sidebar_section_content}>
+                    <Years />
                 </ul>
             </div>
             <div className="sidebar-section">
