@@ -41,7 +41,8 @@ export function PageTemplate({
         document.documentElement.style.setProperty('--quiz-correct', colors.hueColors.green)
         document.documentElement.style.setProperty('--quiz-incorrect', colors.hueColors.red)
         document.documentElement.style.setProperty('--slightly-different-background', colors.slightlyDifferentBackground)
-    }, [colors.background, colors.unselectedButton, colors.selectedButton, colors.hueColors, colors.slightlyDifferentBackground])
+        document.documentElement.style.setProperty('--slightly-different-background-focused', colors.slightlyDifferentBackgroundFocused)
+    }, [colors])
 
     const has_screenshot_button = screencap_elements !== undefined
 

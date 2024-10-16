@@ -3,5 +3,5 @@
 }
 
 .hoverable_elements:hover {
-    background-color: #ffe0e0;
+    background-color: var(--slightly-different-background-focused);
 }
