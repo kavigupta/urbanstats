@@ -295,7 +295,7 @@ export function StatisticRow({ is_header, index, contents }: { is_header: boolea
         style.borderBottom = '1pt solid black'
         style.fontWeight = 500
     }
- else if (index % 2 === 1) {
+    else if (index % 2 === 1) {
         style.backgroundColor = colors.slightlyDifferentBackground
     }
     return (
