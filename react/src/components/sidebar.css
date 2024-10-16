@@ -1,24 +1,4 @@
 
-.sidebar {
-    /*add some space to the left*/
-    background-color: #f7f1e8;
-    padding: 2rem;
-    font-size: 16px;
-}
-
-.sidebar_mobile {
-    /*add some space to the left*/
-    background-color: #eee;
-    padding: 2rem;
-    font-size: 27px;
-}
-
-.sidebar-section-title {
-    margin-bottom: 0.5rem;
-    border-bottom: 1px solid #ccc;
-    color: #444;
-}
-
 .sidebar-section-content {
     list-style-type: none;
     padding: 0;
@@ -41,7 +21,6 @@
 }
 
 .sidebar-section-content a {
-    color: #22f;
     text-decoration: none;
 }
 
@@ -83,16 +62,4 @@
 
 .sidebar-section-content .sidebar-section-content .expandButton {
     left: -16px;
-}
-
-.sidebar-section-content_mobile .expandButton {
-    right: 0;
-    left: unset;
-    font-size: 30px;
-}
-
-.sidebar-section-content .sidebar-section-content.sidebar-section-content_mobile .expandButton {
-    font-size: 25px;
-    left: unset;
-    right: 0px;
 }

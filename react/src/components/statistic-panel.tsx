@@ -81,7 +81,7 @@ export function StatisticPanel(props: {
             }
         }
         if (row_idx % 2 === 1) {
-            return '#f7f1e8'
+            return colors.slightlyDifferentBackground
         }
         return colors.background
     }
@@ -90,7 +90,7 @@ export function StatisticPanel(props: {
         let result: CSSProperties = { ...table_style }
         if (row_idx === 0) {
             // header, add a line at the bottom
-            result.borderBottom = '1px solid #000'
+            result.borderBottom = `1px solid ${colors.textMain}`
             result.fontWeight = 500
         }
         result.backgroundColor = background_color(row_idx)
@@ -320,15 +320,15 @@ function SelectPage(props: {
     next_page: number
 }): ReactNode {
     // low-key style for the buttons
+    const colors = useColors()
     const button_style = {
-        backgroundColor: '#f7f1e8',
-        border: '1px solid #000',
+        backgroundColor: colors.slightlyDifferentBackground,
+        border: `1px solid ${colors.textMain}`,
         padding: '0 0.5em',
         margin: '0.5em',
     }
 
     const curr_universe = useUniverse()
-    const colors = useColors()
     return (
         <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
             <button onClick={() => { props.change_start(curr_universe, props.prev_page) }} className="serif" style={button_style}>&lt;</button>

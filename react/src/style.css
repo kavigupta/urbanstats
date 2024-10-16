@@ -65,12 +65,6 @@ body {
     padding: 0;
 }
 
-.tableheader {
-    border-top: 1pt solid black;
-    border-bottom: 1pt solid black;
-    font-weight: 500;
-}
-
 .button_related {
     text-decoration: none;
     padding: 2px 6px 2px 6px;

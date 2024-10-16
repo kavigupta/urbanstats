@@ -366,6 +366,7 @@ function ManipulationButton({ color: buttonColor, on_click, text }: { color: str
 }
 
 function HeadingDisplay({ longname, include_delete, on_click, on_change: on_search_change }: { longname: string, include_delete: boolean, on_click: () => void, on_change: (q: string) => void }): ReactNode {
+    const colors = useColors()
     const [is_editing, set_is_editing] = React.useState(false)
     const curr_universe = useUniverse()
     const comparisonHeadStyle = useComparisonHeadStyle()
@@ -373,13 +374,13 @@ function HeadingDisplay({ longname, include_delete, on_click, on_change: on_sear
     const manipulation_buttons = (
         <div style={{ height: manipulation_button_height }}>
             <div style={{ display: 'flex', justifyContent: 'flex-end', height: '100%' }}>
-                <ManipulationButton color="#e6e9ef" on_click={() => { set_is_editing(!is_editing) }} text="replace" />
+                <ManipulationButton color={colors.unselectedButton} on_click={() => { set_is_editing(!is_editing) }} text="replace" />
                 {!include_delete
                     ? null
                     : (
                             <>
                                 <div style={{ width: '5px' }} />
-                                <ManipulationButton color="#e6e9ef" on_click={on_click} text="delete" />
+                                <ManipulationButton color={colors.unselectedButton} on_click={on_click} text="delete" />
                             </>
                         )}
                 <div style={{ width: '5px' }} />

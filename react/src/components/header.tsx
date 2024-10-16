@@ -3,6 +3,7 @@ import React, { ReactNode } from 'react'
 import '../common.css'
 import './header.css'
 import { article_link, universe_path } from '../navigation/links'
+import { useColors } from '../page_template/colors'
 import { set_universe, useUniverse } from '../universe'
 import { useMobileLayout } from '../utils/responsive'
 
@@ -22,6 +23,7 @@ export function Header(props: {
     initiate_screenshot: (curr_universe: string) => void
 }): ReactNode {
     const curr_universe = useUniverse()
+    const colors = useColors()
     return (
         <div className="top_panel">
             <TopLeft
@@ -64,7 +66,7 @@ export function Header(props: {
                             placeholder="Search Urban Stats"
                             style={{
                                 fontSize: '30px',
-                                border: '1px solid #444',
+                                border: `1px solid ${colors.ordinalTextColor}`,
                                 paddingLeft: '1em',
                                 width: '100%',
                                 verticalAlign: 'middle',
@@ -193,13 +195,14 @@ function UniverseSelector(
 function UniverseDropdown(
     { all_universes, flag_size }: { all_universes: string[], flag_size: string },
 ): ReactNode {
+    const colors = useColors()
     return (
         <div>
             <div
                 className="serif"
                 style={{
                     fontWeight: 500,
-                    backgroundColor: '#f7f1e8',
+                    backgroundColor: colors.slightlyDifferentBackground,
                 }}
             >
                 Select universe for statistics

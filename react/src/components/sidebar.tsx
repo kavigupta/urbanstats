@@ -11,64 +11,79 @@ import { useMobileLayout } from '../utils/responsive'
 import { StatsTree } from './StatsTree'
 import { Years } from './Years'
 
-export function useSidebarClasses(): { sidebar_section_content: string, sidebar_section_title: string } {
+export function useSidebarSectionContentClassName(): string {
     let sidebar_section_content = 'sidebar-section-content'
-    let sidebar_section_title = 'sidebar-section-title'
     if (useMobileLayout()) {
         sidebar_section_content += ' sidebar-section-content_mobile'
-        sidebar_section_title += ' sidebar-section-title_mobile'
     }
-    return { sidebar_section_content, sidebar_section_title }
+    return sidebar_section_content
 }
 
 export function Sidebar(): ReactNode {
-    const { sidebar_section_content, sidebar_section_title } = useSidebarClasses()
+    const colors = useColors()
+    const link_style = { color: colors.hueColors.blueLink }
+
+    const sidebar_section_title: React.CSSProperties = {
+        marginBottom: useMobileLayout() ? '0.75rem' : '0.5rem',
+        borderBottom: `1px solid ${colors.borderNonShadow}`,
+        color: colors.ordinalTextColor,
+    }
+
+    const sidebar_section_content = useSidebarSectionContentClassName()
+
     return (
-        <div className={`serif sidebar${useMobileLayout() ? '_mobile' : ''}`}>
+        <div
+            className="serif"
+            style={{
+                backgroundColor: colors.slightlyDifferentBackground,
+                padding: '2rem',
+                fontSize: useMobileLayout() ? '27px' : '16px',
+            }}
+        >
             <div className="sidebar-section">
-                <div className={sidebar_section_title}>Main Menu</div>
+                <div style={sidebar_section_title}>Main Menu</div>
                 <ul className={sidebar_section_content}>
                     <li>
-                        <a href="/">Home</a>
+                        <a style={link_style} href="/">Home</a>
                     </li>
                     <li>
-                        <a href="/about.html">About Urban Stats</a>
+                        <a style={link_style} href="/about.html">About Urban Stats</a>
                     </li>
                     <li>
-                        <a href="/data-credit.html">Data Credit</a>
+                        <a style={link_style} href="/data-credit.html">Data Credit</a>
                     </li>
                     <li>
-                        <a href="/mapper.html">Mapper (beta)</a>
+                        <a style={link_style} href="/mapper.html">Mapper (beta)</a>
                     </li>
                 </ul>
             </div>
             <div className="sidebar-section">
-                <div className={sidebar_section_title}>Random</div>
+                <div style={sidebar_section_title}>Random</div>
                 <ul className={sidebar_section_content}>
                     <li>
-                        <a href="/random.html">Unweighted</a>
+                        <a style={link_style} href="/random.html">Unweighted</a>
                     </li>
                     <li>
-                        <a href="/random.html?sampleby=population&us_only=false">Weighted by Population</a>
+                        <a style={link_style} href="/random.html?sampleby=population&us_only=false">Weighted by Population</a>
                     </li>
                     <li>
-                        <a href="/random.html?sampleby=population&us_only=true">Weighted by Population (US only)</a>
+                        <a style={link_style} href="/random.html?sampleby=population&us_only=true">Weighted by Population (US only)</a>
                     </li>
                 </ul>
             </div>
             <div className="sidebar-section">
-                <div className={sidebar_section_title}>Games</div>
+                <div style={sidebar_section_title}>Games</div>
                 <ul className={sidebar_section_content}>
                     <li>
-                        <a href="/quiz.html">Juxtastat</a>
+                        <a style={link_style} href="/quiz.html">Juxtastat</a>
                     </li>
                     <li>
-                        <a href="/quiz.html?mode=retro">Retrostat</a>
+                        <a style={link_style} href="/quiz.html?mode=retro">Retrostat</a>
                     </li>
                 </ul>
             </div>
             <div className="sidebar-section">
-                <div className={sidebar_section_title}>Settings</div>
+                <div style={sidebar_section_title}>Settings</div>
                 <ul className={sidebar_section_content}>
                     <li>
                         <CheckboxSetting
@@ -94,13 +109,13 @@ export function Sidebar(): ReactNode {
                 ? (
                         <>
                             <div className="sidebar-section">
-                                <div className={sidebar_section_title}>Years</div>
+                                <div style={sidebar_section_title}>Years</div>
                                 <ul className={sidebar_section_content}>
                                     <Years />
                                 </ul>
                             </div>
                             <div className="sidebar-section">
-                                <div className={sidebar_section_title}>Statistic Categories</div>
+                                <div style={sidebar_section_title}>Statistic Categories</div>
                                 <ul className={sidebar_section_content}>
                                     <StatsTree />
                                 </ul>

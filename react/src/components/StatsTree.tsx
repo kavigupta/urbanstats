@@ -4,7 +4,7 @@ import { Settings, useSetting } from '../page_template/settings'
 import { Category, changeStatGroupSetting, Group, useAvailableCategories, useAvailableGroups, useCategoryStatus, useChangeCategorySetting } from '../page_template/statistic-settings'
 import { useMobileLayout } from '../utils/responsive'
 
-import { CheckboxSettingCustom, useSidebarClasses } from './sidebar'
+import { CheckboxSettingCustom, useSidebarSectionContentClassName } from './sidebar'
 
 export function StatsTree(): ReactNode {
     return useAvailableCategories().map(category => <CategoryComponent key={category.id} category={category} />)
@@ -53,7 +53,7 @@ function GroupComponent({ group }: { group: Group }): ReactNode {
 }
 
 function CategoryContents({ category, isExpanded }: { category: Category, isExpanded: boolean }): ReactNode {
-    const { sidebar_section_content } = useSidebarClasses()
+    const sidebar_section_content = useSidebarSectionContentClassName()
     const [height, setHeight] = useState(10000) // start high so we don't animate initially
     let maxHeight = `${height}px`
     let marginTop = '0.5em'
@@ -80,7 +80,7 @@ function CategoryContents({ category, isExpanded }: { category: Category, isExpa
 
 // Used for calculating size during animations
 function OffscreenCategoryContents({ category, heightCallback }: { category: Category, heightCallback: (height: number) => void }): ReactNode {
-    const { sidebar_section_content } = useSidebarClasses()
+    const sidebar_section_content = useSidebarSectionContentClassName()
     const listRef = useRef<HTMLUListElement>(null)
     useLayoutEffect(() => {
         const resizeObserver = new ResizeObserver(() => {

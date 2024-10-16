@@ -1,5 +1,7 @@
 import { useSyncExternalStore } from 'react'
 
+import { useColors } from '../page_template/colors'
+
 export function useMobileLayout(): boolean {
     return useSyncExternalStore((listener) => {
         const myListener = (): void => {
@@ -24,6 +26,7 @@ export function useSubHeaderTextClass(): string {
 export function useComparisonHeadStyle(
     align: React.CSSProperties['textAlign'] = 'center',
 ): React.CSSProperties {
+    const colors = useColors()
     // bold
     return {
         fontSize: useMobileLayout() ? '15px' : '20px',
@@ -32,6 +35,6 @@ export function useComparisonHeadStyle(
         padding: '0',
         textAlign: align,
         verticalAlign: 'bottom',
-        color: '#000000',
+        color: colors.textMain,
     }
 }

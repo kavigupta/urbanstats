@@ -288,11 +288,20 @@ export function StatisticName(props: {
 }
 
 export function StatisticRow({ is_header, index, contents }: { is_header: boolean, index: number, contents: React.ReactNode }): React.ReactNode {
+    const colors = useColors()
+    const style = { ...table_row_style }
+    if (is_header) {
+        style.borderTop = '1pt solid black'
+        style.borderBottom = '1pt solid black'
+        style.fontWeight = 500
+    }
+    else if (index % 2 === 1) {
+        style.backgroundColor = colors.slightlyDifferentBackground
+    }
     return (
         <div
             key={index}
-            className={is_header ? 'tableheader' : index % 2 === 1 ? 'oddrow' : ''}
-            style={{ alignItems: is_header ? 'center' : 'last baseline', ...table_row_style }}
+            style={{ alignItems: is_header ? 'center' : 'last baseline', ...style }}
         >
             {contents}
         </div>
