@@ -43,7 +43,7 @@ function RelatedButton(props: { region: Region }): ReactNode {
         <li className={`linklistel${useMobileLayout() ? ' linklistel_mobile' : ''}`}>
             <a
                 className={classes}
-                style={{ color: colors.textMain, backgroundColor: lighten(color, 0.7) }}
+                style={{ color: colors.textMain, backgroundColor: lighten(color, 0.7, colors.background) }}
                 href={article_link(curr_universe, props.region.longname)}
             >
                 {props.region.shortname}

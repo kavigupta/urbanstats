@@ -107,7 +107,7 @@ function HistogramSettings(props: {
             />
             <select
                 value={histogram_type}
-                style={{ backgroundColor: colors.background }}
+                style={{ backgroundColor: colors.background, color: colors.textMain }}
                 onChange={(e) => { setHistogramType(e.target.value as HistogramType) }}
                 className="serif"
             >

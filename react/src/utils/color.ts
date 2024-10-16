@@ -58,10 +58,10 @@ export function interpolate_color(ramp: Keypoints, item: number): string {
     return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`
 }
 
-export function lighten(color: string, fraction: number): string {
+export function lighten(color: string, fraction: number, mixWith = '#ffffff'): string {
     if (!(typeof color === 'string')) {
         throw new Error('color is not a string')
     }
-    const ramp: [number, string][] = [[0, color], [1, '#ffffff']]
+    const ramp: [number, string][] = [[0, color], [1, mixWith]]
     return interpolate_color(ramp, fraction)
 }
