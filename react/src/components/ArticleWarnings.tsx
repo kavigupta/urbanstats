@@ -15,9 +15,9 @@ export function ArticleWarnings(): ReactNode {
     }
     const warnings = selectedGroups.length === 0
         ? [
-                <>
+                <b key="noneSelected">
                     No Statistic Categories are selected
-                </>,
+                </b>,
             ]
         : [
                 ...groupsMissingYearSelection.map(groupOrCategory => (
@@ -31,7 +31,7 @@ export function ArticleWarnings(): ReactNode {
                     <>
                         <b><HierarchicalName groupOrCategory={group} /></b>
                         {' '}
-                        is missing data for the year
+                        is missing for the year
                         {' '}
                         <b>{year}</b>
                     </>

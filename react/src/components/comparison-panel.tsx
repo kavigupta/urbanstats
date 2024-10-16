@@ -6,13 +6,14 @@ import React, { ReactNode, useRef } from 'react'
 import { article_link, sanitize } from '../navigation/links'
 import { HueColors, useColors } from '../page_template/colors'
 import { row_expanded_key, useSetting, useSettings } from '../page_template/settings'
-import { groupYearKeys } from '../page_template/statistic-settings'
+import { groupYearKeys, StatPath, StatPathsContext } from '../page_template/statistic-settings'
 import { PageTemplate } from '../page_template/template'
 import { longname_is_exclusively_american, useUniverse } from '../universe'
 import { lighten } from '../utils/color'
 import { Article } from '../utils/protos'
 import { useComparisonHeadStyle, useHeaderTextClass, useMobileLayout, useSubHeaderTextClass } from '../utils/responsive'
 
+import { ArticleWarnings } from './ArticleWarnings'
 import { ArticleRow, load_article } from './load-article'
 import { MapGeneric, MapGenericProps, Polygons } from './map'
 import { WithPlot } from './plots'
@@ -107,67 +108,104 @@ export function ComparisonPanel(props: { joined_string: string, universes: strin
     const comparisonRightStyle = useComparisonHeadStyle('right')
     const searchComparisonStyle = useComparisonHeadStyle()
 
+    const curr_universe = useUniverse()
+    let rows: ArticleRow[][] = []
+    const idxs: number[][] = []
+    const exclusively_american = props.datas.every(x => longname_is_exclusively_american(x.longname))
+    const settings = useSettings(groupYearKeys())
+    const statPaths = new Set<StatPath>()
+    for (const i of props.datas.keys()) {
+        const { result: [r, idx], availableStatPaths } = load_article(curr_universe, props.datas[i], settings,
+            exclusively_american)
+        rows.push(r)
+        idxs.push(idx)
+        availableStatPaths.forEach(path => statPaths.add(path)) // TODO: Maybe this should be an intersection?
+    }
+
+    rows = insert_missing(rows, idxs)
+
+    const header_row = (
+        <ComparisonRow
+            params={() => { return { is_header: true } }}
+            datas={props.datas}
+            names={props.names}
+        />
+    )
+
     return (
-        <PageTemplate screencap_elements={screencap_elements} has_universe_selector={true} universes={props.universes}>
-            <div>
-                <div className={headerTextClass}>Comparison</div>
-                <div className={subHeaderTextClass}>{props.joined_string}</div>
-                <div style={{ marginBlockEnd: '16px' }}></div>
+        <StatPathsContext.Provider value={Array.from(statPaths)}>
+            <PageTemplate screencap_elements={screencap_elements} has_universe_selector={true} universes={props.universes}>
+                <div>
+                    <div className={headerTextClass}>Comparison</div>
+                    <div className={subHeaderTextClass}>{props.joined_string}</div>
+                    <div style={{ marginBlockEnd: '16px' }}></div>
 
-                <div style={{ display: 'flex' }}>
-                    <div style={{ width: `${100 * left_margin_pct}%` }} />
-                    <div style={{ width: `${50 * (1 - left_margin_pct)}%`, marginRight: '1em' }}>
-                        <div className="serif" style={comparisonRightStyle}>Add another region:</div>
-                    </div>
-                    <div style={{ width: `${50 * (1 - left_margin_pct)}%` }}>
-                        <SearchBox
-                            style={{ ...searchComparisonStyle, width: '100%' }}
-                            placeholder="Name"
-                            on_change={(x) => { add_new(props.names, x) }}
-                            autoFocus={false}
-                        />
-                    </div>
-                </div>
-
-                <div style={{ marginBlockEnd: '1em' }}></div>
-
-                {maybe_scroll(
-                    <div ref={table_ref}>
-                        {bars()}
-                        <div style={{ display: 'flex' }}>
-                            {cell(true, 0, <div></div>)}
-                            {props.datas.map(
-                                (data, i) => cell(false, i,
-                                    <div>
-                                        <HeadingDisplay
-                                            longname={data.longname}
-                                            include_delete={props.datas.length > 1}
-                                            on_click={() => { on_delete(props.names, i) }}
-                                            on_change={(x) => { on_change(props.names, i, x) }}
-                                        />
-                                    </div>,
-                                ),
-                            )}
+                    <div style={{ display: 'flex' }}>
+                        <div style={{ width: `${100 * left_margin_pct}%` }} />
+                        <div style={{ width: `${50 * (1 - left_margin_pct)}%`, marginRight: '1em' }}>
+                            <div className="serif" style={comparisonRightStyle}>Add another region:</div>
                         </div>
-                        {bars()}
+                        <div style={{ width: `${50 * (1 - left_margin_pct)}%` }}>
+                            <SearchBox
+                                style={{ ...searchComparisonStyle, width: '100%' }}
+                                placeholder="Name"
+                                on_change={(x) => { add_new(props.names, x) }}
+                                autoFocus={false}
+                            />
+                        </div>
+                    </div>
 
-                        <ComparsionPageRows
-                            names={props.names}
-                            datas={props.datas}
+                    <div style={{ marginBlockEnd: '1em' }}></div>
+
+                    {maybe_scroll(
+                        <div ref={table_ref}>
+                            {bars()}
+                            <div style={{ display: 'flex' }}>
+                                {cell(true, 0, <div></div>)}
+                                {props.datas.map(
+                                    (data, i) => cell(false, i,
+                                        <div>
+                                            <HeadingDisplay
+                                                longname={data.longname}
+                                                include_delete={props.datas.length > 1}
+                                                on_click={() => { on_delete(props.names, i) }}
+                                                on_change={(x) => { on_change(props.names, i, x) }}
+                                            />
+                                        </div>,
+                                    ),
+                                )}
+                            </div>
+                            {bars()}
+
+                            <StatisticRow is_header={true} index={0} contents={header_row} />
+
+                            {
+                                rows[0].map((_, row_idx) => (
+                                    <ComparisonRowBody
+                                        key={row_idx}
+                                        rows={rows}
+                                        row_idx={row_idx}
+                                        datas={props.datas}
+                                        names={props.names}
+                                    />
+                                ),
+                                )
+                            }
+                            <ArticleWarnings />
+                        </div>,
+                    )}
+                    <div className="gap"></div>
+
+                    <div ref={map_ref}>
+                        <ComparisonMap
+                            longnames={props.datas.map(x => x.longname)}
+                            colors={props.datas.map((_, i) => color(colors.hueColors, i))}
+                            basemap={{ type: 'osm' }}
                         />
-                    </div>,
-                )}
-                <div className="gap"></div>
-
-                <div ref={map_ref}>
-                    <ComparisonMap
-                        longnames={props.datas.map(x => x.longname)}
-                        colors={props.datas.map((_, i) => color(colors.hueColors, i))}
-                        basemap={{ type: 'osm' }}
-                    />
+                    </div>
                 </div>
-            </div>
-        </PageTemplate>
+            </PageTemplate>
+        </StatPathsContext.Provider>
     )
 }
 
@@ -218,48 +256,6 @@ function each(datas: Article[]): number {
 
 function all_data_types_same(datas: Article[]): boolean {
     return datas.every(x => x.articleType === datas[0].articleType)
-}
-
-function ComparsionPageRows({ names, datas }: { names: string[], datas: Article[] }): ReactNode {
-    const curr_universe = useUniverse()
-    let rows: ArticleRow[][] = []
-    const idxs: number[][] = []
-    const exclusively_american = datas.every(x => longname_is_exclusively_american(x.longname))
-    const settings = useSettings(groupYearKeys())
-    for (const i of datas.keys()) {
-        const { result: [r, idx] } = load_article(curr_universe, datas[i], settings,
-            exclusively_american)
-        rows.push(r)
-        idxs.push(idx)
-    }
-
-    rows = insert_missing(rows, idxs)
-
-    const header_row = (
-        <ComparisonRow
-            params={() => { return { is_header: true } }}
-            datas={datas}
-            names={names}
-        />
-    )
-    return (
-        <>
-            <StatisticRow is_header={true} index={0} contents={header_row} />
-
-            {
-                rows[0].map((_, row_idx) => (
-                    <ComparisonRowBody
-                        key={row_idx}
-                        rows={rows}
-                        row_idx={row_idx}
-                        datas={datas}
-                        names={names}
-                    />
-                ),
-                )
-            }
-        </>
-    )
 }
 
 function ComparisonRowBody({ rows, row_idx, datas, names }: {

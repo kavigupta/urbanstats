@@ -5,7 +5,7 @@ import React, { ReactNode, useRef } from 'react'
 
 import { article_link, comparison_link, sanitize } from '../navigation/links'
 import { useSetting, useSettings } from '../page_template/settings'
-import { groupYearKeys, StatsPathsContext } from '../page_template/statistic-settings'
+import { groupYearKeys, StatPathsContext } from '../page_template/statistic-settings'
 import { PageTemplate } from '../page_template/template'
 import { longname_is_exclusively_american, useUniverse } from '../universe'
 import { Article, IRelatedButtons } from '../utils/protos'
@@ -42,7 +42,7 @@ export function ArticlePanel({ article }: { article: Article }): ReactNode {
         longname_is_exclusively_american(article.longname))
 
     return (
-        <StatsPathsContext.Provider value={availableStatPaths}>
+        <StatPathsContext.Provider value={availableStatPaths}>
             <PageTemplate screencap_elements={screencap_elements} has_universe_selector={true} universes={article.universes}>
                 <div>
                     <div ref={headers_ref}>
@@ -99,7 +99,7 @@ export function ArticlePanel({ article }: { article: Article }): ReactNode {
                     />
                 </div>
             </PageTemplate>
-        </StatsPathsContext.Provider>
+        </StatPathsContext.Provider>
     )
 }
 
