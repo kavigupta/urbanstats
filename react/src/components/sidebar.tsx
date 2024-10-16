@@ -1,10 +1,11 @@
-import React, { ReactNode, useEffect, useId, useRef } from 'react'
+import React, { ReactNode, useContext, useEffect, useId, useRef } from 'react'
 
 import '../style.css'
 import './sidebar.css'
 
 import { Theme, useColors } from '../page_template/colors'
 import { SettingsDictionary, useSetting } from '../page_template/settings'
+import { StatPathsContext } from '../page_template/statistic-settings'
 import { useMobileLayout } from '../utils/responsive'
 
 import { StatsTree } from './StatsTree'
@@ -89,18 +90,24 @@ export function Sidebar(): ReactNode {
                     </li>
                 </ul>
             </div>
-            <div className="sidebar-section">
-                <div className={sidebar_section_title}>Years</div>
-                <ul className={sidebar_section_content}>
-                    <Years />
-                </ul>
-            </div>
-            <div className="sidebar-section">
-                <div className={sidebar_section_title}>Statistic Categories</div>
-                <ul className={sidebar_section_content}>
-                    <StatsTree />
-                </ul>
-            </div>
+            { useContext(StatPathsContext) !== undefined
+                ? (
+                        <>
+                            <div className="sidebar-section">
+                                <div className={sidebar_section_title}>Years</div>
+                                <ul className={sidebar_section_content}>
+                                    <Years />
+                                </ul>
+                            </div>
+                            <div className="sidebar-section">
+                                <div className={sidebar_section_title}>Statistic Categories</div>
+                                <ul className={sidebar_section_content}>
+                                    <StatsTree />
+                                </ul>
+                            </div>
+                        </>
+                    )
+                : null}
             {/* <div className="sidebar-section">
                 <div className={sidebar_section_title}>Appearance</div>
                 <ul className={sidebar_section_content}>
