@@ -7,7 +7,7 @@ import { FilterSelector, FunctionColorStat, StatisticSelector } from './function
 import { RampColormapSelector } from './ramp-selector'
 import { ConstantRampDescriptor, RampDescriptor } from './ramps'
 import { Regression } from './regression'
-import { setting_name_style, useSettingSubNameStyle() } from './style'
+import { setting_name_style, useSettingSubNameStyle } from './style'
 
 export type StatisticsForGeography = { stats: number[] }[]
 

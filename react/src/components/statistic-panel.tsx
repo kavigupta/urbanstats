@@ -323,7 +323,7 @@ function SelectPage(props: {
     const colors = useColors()
     const button_style = {
         backgroundColor: colors.slightlyDifferentBackground,
-        border: `1px solid ${  colors.textMain}`,
+        border: `1px solid ${colors.textMain}`,
         padding: '0 0.5em',
         margin: '0.5em',
     }

@@ -1,4 +1,5 @@
 import { useSyncExternalStore } from 'react'
+
 import { useColors } from '../page_template/colors'
 
 export function useMobileLayout(): boolean {
