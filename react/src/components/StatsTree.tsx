@@ -1,19 +1,19 @@
 import React, { ReactNode, useContext, useLayoutEffect, useRef, useState } from 'react'
 
 import { Settings, useSetting, useSettings } from '../page_template/settings'
-import { statisticCategoryTree, Category, changeCategorySetting, changeStatGroupSetting, getCategoryStatus, Statistic, groupYearKeys, groupKeys } from '../page_template/statistic-settings'
+import { statsTree, Category, changeCategorySetting, changeStatGroupSetting, getCategoryStatus, groupKeys, Group } from '../page_template/statistic-settings'
 import { useMobileLayout } from '../utils/responsive'
 
 import { CheckboxSettingCustom, useSidebarClasses } from './sidebar'
 
-export function StatisticCategoryTree(): ReactNode {
-    return statisticCategoryTree.filter(category => category.show_checkbox).map(category => <CategoryComponent key={category.identifier} category={category} />)
+export function StatsTree(): ReactNode {
+    return statsTree.map(category => <CategoryComponent key={category.id} category={category} />)
 }
 
 function CategoryComponent({ category }: { category: Category }): ReactNode {
     const settings = useContext(Settings.Context)
-    const categoryStatus = getCategoryStatus(useSettings(groupKeys(category.leaves)))
-    const [isExpanded, setIsExpanded] = useSetting(`statistic_category_expanded_${category.identifier}`)
+    const categoryStatus = getCategoryStatus(useSettings(groupKeys(category.contents)))
+    const [isExpanded, setIsExpanded] = useSetting(`stat_category_expanded_${category.id}`)
     const isMobileLayout = useMobileLayout()
     return (
         // Move the category left half of the indent since it's not really a child
@@ -33,20 +33,20 @@ function CategoryComponent({ category }: { category: Category }): ReactNode {
                     onChange={() => { changeCategorySetting(settings, category) }}
                 />
             </div>
-            <CategoryContents key={category.identifier} category={category} isExpanded={isExpanded} />
+            <CategoryContents key={category.id} category={category} isExpanded={isExpanded} />
         </li>
     )
 }
 
-function StatisticComponent({ statistic }: { statistic: Statistic }): ReactNode {
+function GroupComponent({ group }: { group: Group }): ReactNode {
     const settings = useContext(Settings.Context)
-    const [checked] = useSetting(`show_statistic_${statistic.identifier}`)
+    const [checked] = useSetting(`show_stat_group_${group.id}`)
     return (
         <li>
             <CheckboxSettingCustom
-                name={statistic.name}
+                name={group.name}
                 checked={checked}
-                onChange={(newValue) => { changeStatGroupSetting(settings, statistic, newValue) }}
+                onChange={(newValue) => { changeStatGroupSetting(settings, group, newValue) }}
             />
         </li>
     )
@@ -104,12 +104,5 @@ function OffscreenCategoryContents({ category, heightCallback }: { category: Cat
 }
 
 function CategoryCoreContents({ category }: { category: Category }): ReactNode {
-    return category.children.map((child) => {
-        switch (child.kind) {
-            case 'category':
-                return <CategoryComponent key={child.identifier} category={child} />
-            case 'statistic':
-                return <StatisticComponent key={child.identifier} statistic={child} />
-        }
-    })
+    return category.contents.map(group => <GroupComponent key={group.id} group={group} />)
 }

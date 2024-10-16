@@ -7,7 +7,7 @@ import { Theme, useColors } from '../page_template/colors'
 import { SettingsDictionary, useSetting } from '../page_template/settings'
 import { useMobileLayout } from '../utils/responsive'
 
-import { StatisticCategoryTree } from './StatisticCategoryTree'
+import { StatsTree } from './StatsTree'
 
 export function useSidebarClasses(): { sidebar_section_content: string, sidebar_section_title: string } {
     let sidebar_section_content = 'sidebar-section-content'
@@ -91,7 +91,7 @@ export function Sidebar(): ReactNode {
             <div className="sidebar-section">
                 <div className={sidebar_section_title}>Statistic Categories</div>
                 <ul className={sidebar_section_content}>
-                    <StatisticCategoryTree />
+                    <StatsTree />
                 </ul>
             </div>
             {/* <div className="sidebar-section">
