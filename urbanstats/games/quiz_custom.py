@@ -1,7 +1,9 @@
 from functools import lru_cache
 
 from create_website import shapefile_without_ordinals
-from produce_html_page import statistic_internal_to_display_name
+from urbanstats.statistics.output_statistics_metadata import (
+    statistic_internal_to_display_name,
+)
 
 from .quiz import stats_to_display
 

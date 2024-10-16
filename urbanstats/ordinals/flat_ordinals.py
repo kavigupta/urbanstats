@@ -3,7 +3,7 @@ from dataclasses import dataclass
 import numpy as np
 import tqdm.auto as tqdm
 
-from produce_html_page import statistic_internal_to_display_name
+from urbanstats.statistics.output_statistics_metadata import internal_statistic_names
 
 
 @dataclass
@@ -44,7 +44,7 @@ def compute_flat_ordinals(full, ordering):
     ordinals_flat = np.array(
         [
             np.array(ordering.by_column[k].ordinal[idx_in_sorted, ut_idxs])[0]
-            for k in tqdm.tqdm(statistic_internal_to_display_name())
+            for k in tqdm.tqdm(internal_statistic_names())
         ]
     )
     percentiles_flat = np.array(
