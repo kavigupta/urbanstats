@@ -337,7 +337,17 @@ const MapBody = (props: { id: string, height: string | undefined, buttons: React
     const colors = useColors()
     return (
         <div className="map-container-for-testing">
-            <div id={props.id} className="map" style={{ background: colors.background, height: props.height ?? 400 }}>
+            <div
+                id={props.id}
+                style={{
+                    background: colors.background,
+                    height: props.height ?? 400,
+                    width: '100%',
+                    position: 'relative',
+                    border: `1px solid ${colors.borderNonShadow}`,
+
+                }}
+            >
                 {/* place this on the right of the map */}
                 <div style={
                     { zIndex: 1000, position: 'absolute', right: 0, top: 0, padding: '1em' }

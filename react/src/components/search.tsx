@@ -30,7 +30,7 @@ export const SearchBox = (props: {
         return {
             padding: '0.5em',
             cursor: 'pointer',
-            backgroundColor: (focused === idx) ? '#ffe0e0' : undefined,
+            backgroundColor: (focused === idx) ? colors.slightlyDifferentBackgroundFocused : undefined,
         }
     }
 
@@ -152,7 +152,7 @@ export const SearchBox = (props: {
                         width: '100%',
                         maxHeight: '20em',
                         overflowY: 'auto',
-                        backgroundColor: '#f7f1e8',
+                        backgroundColor: colors.slightlyDifferentBackground,
                         borderRadius: '0.25em',
                         zIndex: '1',
                     }

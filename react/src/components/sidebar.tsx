@@ -8,6 +8,7 @@ import { SettingsDictionary, useSetting, useStatisticCategoryMetadataCheckboxes 
 import { useMobileLayout } from '../utils/responsive'
 
 export function Sidebar(): ReactNode {
+    const colors = useColors()
     const statistic_category_metadata_checkboxes = useStatisticCategoryMetadataCheckboxes()
     let sidebar_section_content = 'sidebar-section-content'
     let sidebar_section_title = 'sidebar-section-title'
@@ -16,7 +17,14 @@ export function Sidebar(): ReactNode {
         sidebar_section_title += ' sidebar-section-title_mobile'
     }
     return (
-        <div className={`serif sidebar${useMobileLayout() ? '_mobile' : ''}`}>
+        <div
+            className="serif"
+            style={{
+                backgroundColor: useMobileLayout() ? '#eee' : colors.slightlyDifferentBackground,
+                padding: '2rem',
+                fontSize: useMobileLayout() ? '20pt' : '12pt',
+            }}
+        >
             <div className="sidebar-section">
                 <div className={sidebar_section_title}>Main Menu</div>
                 <ul className={sidebar_section_content}>
