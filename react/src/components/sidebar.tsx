@@ -11,10 +11,13 @@ export function Sidebar(): ReactNode {
     const colors = useColors()
     const statistic_category_metadata_checkboxes = useStatisticCategoryMetadataCheckboxes()
     let sidebar_section_content = 'sidebar-section-content'
-    let sidebar_section_title = 'sidebar-section-title'
+    const sidebar_section_title: React.CSSProperties = {
+        marginBottom: useMobileLayout() ? '0.75rem' : '0.5rem',
+        borderBottom: `1px solid ${colors.borderNonShadow}`,
+        color: colors.ordinalTextColor,
+    }
     if (useMobileLayout()) {
         sidebar_section_content += ' sidebar-section-content_mobile'
-        sidebar_section_title += ' sidebar-section-title_mobile'
     }
     return (
         <div
@@ -26,7 +29,7 @@ export function Sidebar(): ReactNode {
             }}
         >
             <div className="sidebar-section">
-                <div className={sidebar_section_title}>Main Menu</div>
+                <div style={sidebar_section_title}>Main Menu</div>
                 <ul className={sidebar_section_content}>
                     <li>
                         <a href="/">Home</a>
@@ -43,7 +46,7 @@ export function Sidebar(): ReactNode {
                 </ul>
             </div>
             <div className="sidebar-section">
-                <div className={sidebar_section_title}>Random</div>
+                <div style={sidebar_section_title}>Random</div>
                 <ul className={sidebar_section_content}>
                     <li>
                         <a href="/random.html">Unweighted</a>
@@ -57,7 +60,7 @@ export function Sidebar(): ReactNode {
                 </ul>
             </div>
             <div className="sidebar-section">
-                <div className={sidebar_section_title}>Games</div>
+                <div style={sidebar_section_title}>Games</div>
                 <ul className={sidebar_section_content}>
                     <li>
                         <a href="/quiz.html">Juxtastat</a>
@@ -68,7 +71,7 @@ export function Sidebar(): ReactNode {
                 </ul>
             </div>
             <div className="sidebar-section">
-                <div className={sidebar_section_title}>Settings</div>
+                <div style={sidebar_section_title}>Settings</div>
                 <ul className={sidebar_section_content}>
                     <li>
                         <CheckboxSetting
@@ -91,7 +94,7 @@ export function Sidebar(): ReactNode {
                 </ul>
             </div>
             <div className="sidebar-section">
-                <div className={sidebar_section_title}>Statistic Categories</div>
+                <div style={sidebar_section_title}>Statistic Categories</div>
                 <ul className={sidebar_section_content}>
                     {statistic_category_metadata_checkboxes.map((checkbox, i) => (
                         <li key={i}>

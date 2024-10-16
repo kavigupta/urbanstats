@@ -2,6 +2,7 @@ import { useSetting } from './settings'
 
 export interface HueColors {
     blue: string
+    blueLink: string
     orange: string
     darkOrange: string
     purple: string
@@ -32,6 +33,7 @@ export interface Colors {
 
 const defaultHueColors: HueColors = {
     blue: '#5a7dc3',
+    blueLink: '#22f',
     orange: '#f7aa41',
     darkOrange: '#af6707',
     purple: '#975ac3',
