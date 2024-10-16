@@ -2,9 +2,10 @@ import { Settings, StatGroupKey, StatYearKey } from './settings'
 
 export type CategoryIdentifier = string & { __categoryIdentifier: true }
 export type GroupIdentifier = string & { __groupIdentifier: true }
-export type StatIdentifier = string & { __statisticIdentifier: true }
+export type StatPath = string & { __statPath: true }
+export type StatIndex = number & { __statIndex: true }
 
-export type StatisticsTree = Category[]
+export type StatsTree = Category[]
 export interface Category {
     id: CategoryIdentifier
     name: string
@@ -16,12 +17,38 @@ export interface Group {
     name: string
     contents: {
         year: number
-        stats: StatIdentifier[]
+        stats: StatPath[]
     }[]
     parent: Category // Not present in the JSON, but built below
 }
 
-export const statsTree = require('../data/statistics_tree.json') as StatisticsTree
+export const rawStatsTree = require('../data/statistics_tree.json') as {
+    id: CategoryIdentifier
+    name: string
+    contents: {
+        id: GroupIdentifier
+        name: string
+        contents: {
+            year: number
+            stats: StatIndex[]
+        }[]
+    }[] }[]
+
+const statPaths = require('../data/statistic_path_list.json') as StatPath[]
+
+export const statsTree: StatsTree = rawStatsTree.map(category => (
+    {
+        ...category,
+        contents: category.contents.map(group => ({
+            ...group,
+            contents: group.contents.map(({ year, stats }) => ({
+                year,
+                stats: stats.map(statIndex => statPaths[statIndex]),
+            })),
+            parent: undefined as unknown as Category, // set after
+        })),
+    }
+))
 
 // Build references
 for (const category of statsTree) {
@@ -33,7 +60,7 @@ for (const category of statsTree) {
 export const allGroups = statsTree.flatMap(category => category.contents)
 export const allYears = allGroups.flatMap(group => group.contents.map(({ year }) => year)).sort((a, b) => a - b)
 
-const statParents = new Map<StatIdentifier, { group: Group, year: number }>(
+const statParents = new Map<StatPath, { group: Group, year: number }>(
     allGroups
         .flatMap(group => group.contents
             .flatMap(({ year, stats }) => stats
@@ -42,7 +69,7 @@ const statParents = new Map<StatIdentifier, { group: Group, year: number }>(
 
 export type StatGroupSettings = Record<StatGroupKey | StatYearKey, boolean>
 
-export function statIsEnabled(statId: StatIdentifier, settings: StatGroupSettings): boolean {
+export function statIsEnabled(statId: StatPath, settings: StatGroupSettings): boolean {
     const { group, year } = statParents.get(statId)!
     return settings[`show_stat_group_${group.id}`] && settings[`show_stat_year_${year}`]
 }

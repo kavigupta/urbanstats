@@ -1,4 +1,4 @@
-import { StatIdentifier, StatGroupSettings, statIsEnabled } from '../page_template/statistic-settings'
+import { StatPath, StatGroupSettings, statIsEnabled } from '../page_template/statistic-settings'
 import { universe_is_american } from '../universe'
 import { Article } from '../utils/protos'
 
@@ -26,7 +26,7 @@ export interface ArticleRow {
     percentile_by_population: number
     statcol: string | string[]
     statname: string
-    statpath: StatIdentifier
+    statpath: StatPath
     explanation_page: string
     article_type: string
     total_count_in_class: number
@@ -88,7 +88,7 @@ export function load_article(universe: string, data: Article, settings: StatGrou
     const article_type = data.articleType
 
     const names = require('../data/statistic_name_list.json') as string[]
-    const paths = require('../data/statistic_path_list.json') as StatIdentifier[]
+    const paths = require('../data/statistic_path_list.json') as StatPath[]
     const stats = require('../data/statistic_list.json') as (string | string[])[]
     const explanation_page = require('../data/explanation_page.json') as string[]
 
