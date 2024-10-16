@@ -227,7 +227,7 @@ function ComparsionPageRows({ names, datas }: { names: string[], datas: Article[
     const exclusively_american = datas.every(x => longname_is_exclusively_american(x.longname))
     const settings = useSettings(groupYearKeys())
     for (const i of datas.keys()) {
-        const [r, idx] = load_article(curr_universe, datas[i], settings,
+        const { result: [r, idx] } = load_article(curr_universe, datas[i], settings,
             exclusively_american)
         rows.push(r)
         idxs.push(idx)

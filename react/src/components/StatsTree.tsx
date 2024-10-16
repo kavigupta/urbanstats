@@ -1,20 +1,20 @@
 import React, { ReactNode, useContext, useLayoutEffect, useRef, useState } from 'react'
 
-import { Settings, useSetting, useSettings } from '../page_template/settings'
-import { statsTree, Category, changeCategorySetting, changeStatGroupSetting, getCategoryStatus, groupKeys, Group } from '../page_template/statistic-settings'
+import { Settings, useSetting } from '../page_template/settings'
+import { Category, changeStatGroupSetting, Group, useAvailableCategories, useAvailableGroups, useCategoryStatus, useChangeCategorySetting } from '../page_template/statistic-settings'
 import { useMobileLayout } from '../utils/responsive'
 
 import { CheckboxSettingCustom, useSidebarClasses } from './sidebar'
 
 export function StatsTree(): ReactNode {
-    return statsTree.map(category => <CategoryComponent key={category.id} category={category} />)
+    return useAvailableCategories().map(category => <CategoryComponent key={category.id} category={category} />)
 }
 
 function CategoryComponent({ category }: { category: Category }): ReactNode {
-    const settings = useContext(Settings.Context)
-    const categoryStatus = getCategoryStatus(useSettings(groupKeys(category.contents)))
+    const categoryStatus = useCategoryStatus(category)
     const [isExpanded, setIsExpanded] = useSetting(`stat_category_expanded_${category.id}`)
     const isMobileLayout = useMobileLayout()
+    const changeCategorySetting = useChangeCategorySetting(category)
     return (
         // Move the category left half of the indent since it's not really a child
         <li>
@@ -30,7 +30,7 @@ function CategoryComponent({ category }: { category: Category }): ReactNode {
                     name={category.name}
                     checked={categoryStatus === true}
                     indeterminate={categoryStatus === 'indeterminate'}
-                    onChange={() => { changeCategorySetting(settings, category) }}
+                    onChange={changeCategorySetting}
                 />
             </div>
             <CategoryContents key={category.id} category={category} isExpanded={isExpanded} />
@@ -104,5 +104,5 @@ function OffscreenCategoryContents({ category, heightCallback }: { category: Cat
 }
 
 function CategoryCoreContents({ category }: { category: Category }): ReactNode {
-    return category.contents.map(group => <GroupComponent key={group.id} group={group} />)
+    return useAvailableGroups(category).map(group => <GroupComponent key={group.id} group={group} />)
 }

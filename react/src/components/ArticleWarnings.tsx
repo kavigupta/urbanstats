@@ -1,6 +1,6 @@
 import React, { ReactNode } from 'react'
 
-import { sortYears, useAnachronisticSelectedGroups, useSelectedGroups } from '../page_template/statistic-settings'
+import { Category, Group, sortYears, useAnachronisticSelectedGroups, useSelectedGroups } from '../page_template/statistic-settings'
 
 import { useScreenshotMode } from './screenshot'
 
@@ -19,15 +19,15 @@ export function ArticleWarnings(): ReactNode {
                 </>,
             ]
         : [
-                ...anachronisticSelectedGroups.map(group => (
+                ...anachronisticSelectedGroups.map(groupOrCategory => (
                     <>
                         No data for
                         {' '}
-                        <b>{group.hierarchicalName}</b>
+                        <b><HierarchicalName groupOrCategory={groupOrCategory} /></b>
                         {' '}
                         is part of the selected years. Select one of Year
                         {' '}
-                        {Array.from(group.years).filter(year => year !== null).sort(sortYears).map((year, key, years) => (
+                        {Array.from(groupOrCategory.years).filter(year => year !== null).sort(sortYears).map((year, key, years) => (
                             <>
                                 <b key={key}>{year}</b>
                                 {key === years.length - 1 ? null : ', '}
@@ -64,4 +64,13 @@ function WarningBox({ warnings }: { warnings: ReactNode[] }): ReactNode {
             </ul>
         </div>
     )
+}
+
+function HierarchicalName({ groupOrCategory }: { groupOrCategory: Group | Category }): ReactNode {
+    switch (groupOrCategory.kind) {
+        case 'Group':
+            return `${groupOrCategory.parent.name} > ${groupOrCategory.name}`
+        case 'Category':
+            return groupOrCategory.name
+    }
 }

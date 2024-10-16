@@ -1,3 +1,5 @@
+import { createContext, useContext } from 'react'
+
 import { Settings, StatGroupKey, StatYearKey, useSettings } from './settings'
 
 export type CategoryIdentifier = string & { __categoryIdentifier: true }
@@ -7,20 +9,22 @@ export type StatIndex = number & { __statIndex: true }
 
 export type StatsTree = Category[]
 export interface Category {
+    kind: 'Category'
     id: CategoryIdentifier
     name: string
     contents: Group[]
     years: Set<number | null> // for which years does this category have data
-    hierarchicalName: string
+    statPaths: Set<StatPath> // which StatPaths does this category contain
 }
 
 export interface Group {
+    kind: 'Group'
     id: GroupIdentifier
     name: string
     contents: GroupYear[]
     parent: Category
     years: Set<number | null> // for which years does this group have data
-    hierarchicalName: `${string} > ${string}`
+    statPaths: Set<StatPath> // which StatPaths does this group contain
 }
 
 export interface GroupYear {
@@ -52,11 +56,11 @@ const statNames = require('../data/statistic_name_list.json') as string[]
 
 export const statsTree: StatsTree = rawStatsTree.map(category => (
     {
+        kind: 'Category',
         ...category,
-        hierarchicalName: category.name,
         contents: category.contents.map(group => ({
+            kind: 'Group',
             ...group,
-            hierarchicalName: `${category.name} > ${group.name}`,
             contents: group.contents.map(({ year, stats }) => ({
                 year,
                 stats: stats.map(statIndex => ({
@@ -68,8 +72,10 @@ export const statsTree: StatsTree = rawStatsTree.map(category => (
             } satisfies GroupYear)),
             parent: undefined as unknown as Category, // set below
             years: new Set(group.contents.map(({ year }) => year)),
+            statPaths: new Set(), // set below
         } satisfies Group)),
-        years: new Set(),
+        years: new Set(), // set below
+        statPaths: new Set(), // set below
     } satisfies Category
 ))
 
@@ -81,6 +87,8 @@ for (const category of statsTree) {
             yearGroup.parent = group
             for (const stat of yearGroup.stats) {
                 stat.parent = yearGroup
+                group.statPaths.add(stat.path)
+                category.statPaths.add(stat.path)
             }
             category.years.add(yearGroup.year)
         }
@@ -128,18 +136,18 @@ export function groupYearKeys(): (keyof StatGroupSettings)[] {
     ]
 }
 
-export function getCategoryStatus(groupSettingsValues: Record<StatGroupKey, boolean>): boolean | 'indeterminate' {
-    const statisticSettings = Object.entries(groupSettingsValues)
-    const totalStatistics = statisticSettings.length
-    const totalCheckedStatistics = statisticSettings.filter(([, checked]) => checked).length
+export function useCategoryStatus(category: Category): boolean | 'indeterminate' {
+    const groups = useAvailableGroups(category)
+    const settingsValues = useSettings(groupKeys(groups))
+    const checkedGroups = groups.filter(group => settingsValues[`show_stat_group_${group.id}`]).length
 
     let result: boolean | 'indeterminate'
 
-    switch (totalCheckedStatistics) {
+    switch (checkedGroups) {
         case 0:
             result = false
             break
-        case totalStatistics:
+        case groups.length:
             result = true
             break
         default:
@@ -164,36 +172,39 @@ function saveIndeterminateState(settings: Settings, category: Category): void {
     )
 }
 
-export function changeCategorySetting(settings: Settings, category: Category): void {
-    const categoryStatus = getCategoryStatus(settings.getMultiple(groupKeys(category.contents)))
-    /**
+export function useChangeCategorySetting(category: Category): () => void {
+    const categoryStatus = useCategoryStatus(category)
+    const settings = useContext(Settings.Context)
+    return () => {
+        /**
      * State machine:
      *
      * indeterminate -> checked -> unchecked -(if nonempty saved indeterminate)-> indeterminate
      *                                       -(if empty saved indeterminate)-> checked
      */
-    switch (categoryStatus) {
-        case 'indeterminate':
-            category.contents.forEach((group) => { settings.setSetting(`show_stat_group_${group.id}`, true) })
-            break
-        case true:
-            category.contents.forEach((group) => { settings.setSetting(`show_stat_group_${group.id}`, false) })
-            break
-        case false:
-            const savedDeterminate = new Set(settings.get(`stat_category_saved_indeterminate_${category.id}`))
-            if (savedDeterminate.size === 0) {
+        switch (categoryStatus) {
+            case 'indeterminate':
                 category.contents.forEach((group) => { settings.setSetting(`show_stat_group_${group.id}`, true) })
-            }
-            else {
-                category.contents.forEach((group) => { settings.setSetting(`show_stat_group_${group.id}`, savedDeterminate.has(group.id)) })
-            }
-            break
+                break
+            case true:
+                category.contents.forEach((group) => { settings.setSetting(`show_stat_group_${group.id}`, false) })
+                break
+            case false:
+                const savedDeterminate = new Set(settings.get(`stat_category_saved_indeterminate_${category.id}`))
+                if (savedDeterminate.size === 0) {
+                    category.contents.forEach((group) => { settings.setSetting(`show_stat_group_${group.id}`, true) })
+                }
+                else {
+                    category.contents.forEach((group) => { settings.setSetting(`show_stat_group_${group.id}`, savedDeterminate.has(group.id)) })
+                }
+                break
+        }
     }
 }
 
 export function useSelectedGroups(): Group[] {
     const settingsValues = useSettings(groupKeys(allGroups))
-    return allGroups.filter(group => settingsValues[`show_stat_group_${group.id}`])
+    return useAvailableGroups().filter(group => settingsValues[`show_stat_group_${group.id}`])
 }
 
 /**
@@ -239,4 +250,24 @@ function consolidateGroups(groups: Group[]): (Group | Category)[] {
     }
     result.push(...groups.slice(indexOfGroup))
     return result
+}
+
+export const StatsPathsContext = createContext<StatPath[] | undefined>(undefined)
+
+function useStatPaths(): StatPath[] {
+    return useContext(StatsPathsContext) ?? (() => { throw new Error('Using Statistics settings without at StatPaths context') })()
+}
+
+export function useAvailableGroups(category?: Category): Group[] {
+    const contextStatPaths = useStatPaths()
+    // Find the intersection between the stat paths we have loaded in the context and the groups that are available
+    // This is so we can show the user only the groups that will actually show up
+    return (category?.contents ?? allGroups).filter(group => contextStatPaths.some(statPath => group.statPaths.has(statPath)))
+}
+
+export function useAvailableCategories(): Category[] {
+    const contextStatPaths = useStatPaths()
+    // Find the intersection between the stat paths we have loaded in the context and the categories that are available
+    // This is so we can show the user only the categories that will actually show up
+    return statsTree.filter(category => contextStatPaths.some(statPath => category.statPaths.has(statPath)))
 }
