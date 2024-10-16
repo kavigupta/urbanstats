@@ -240,15 +240,3 @@ function consolidateGroups(groups: Group[]): (Group | Category)[] {
     result.push(...groups.slice(indexOfGroup))
     return result
 }
-
-/**
- * Which years are selected, but aren't showing any statistics because of group settings.
- */
-export function useEmptyYears(): number[] {
-    const selectedGroups = useSelectedGroups()
-    const yearSettings = useSettings(yearKeys(allYears))
-    return allYears.filter(year =>
-        yearSettings[`show_stat_year_${year}`]
-        && !selectedGroups.some(group => group.years.has(year)),
-    )
-}

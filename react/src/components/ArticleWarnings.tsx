@@ -1,12 +1,11 @@
 import React, { ReactNode } from 'react'
 
-import { sortYears, useAnachronisticSelectedGroups, useEmptyYears, useSelectedGroups } from '../page_template/statistic-settings'
+import { sortYears, useAnachronisticSelectedGroups, useSelectedGroups } from '../page_template/statistic-settings'
 
 import { useScreenshotMode } from './screenshot'
 
 export function ArticleWarnings(): ReactNode {
     const screenshotMode = useScreenshotMode()
-    const emptyYears = useEmptyYears()
     const selectedGroups = useSelectedGroups()
     const anachronisticSelectedGroups = useAnachronisticSelectedGroups()
 
@@ -20,13 +19,6 @@ export function ArticleWarnings(): ReactNode {
                 </>,
             ]
         : [
-                ...emptyYears.map(year => (
-                    <>
-                        No Statistic Categories are selected which have data for Year
-                        {' '}
-                        <b>{year}</b>
-                    </>
-                )),
                 ...anachronisticSelectedGroups.map(group => (
                     <>
                         No data for
