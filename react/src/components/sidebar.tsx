@@ -20,7 +20,7 @@ export function Sidebar(): ReactNode {
         <div
             className="serif"
             style={{
-                backgroundColor: useMobileLayout() ? colors.slightlyDifferentBackground : '#eee',
+                backgroundColor: useMobileLayout() ? '#eee' : colors.slightlyDifferentBackground,
                 padding: '2rem',
                 fontSize: useMobileLayout() ? '20pt' : '12pt',
             }}
