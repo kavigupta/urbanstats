@@ -291,6 +291,13 @@ function useConsolidateGroups(): (groups: Group[]) => (Group | Category)[] {
     }
 }
 
+/**
+ * Provides information about what stat paths can be loaded for whatever we're viewing.
+ *
+ * This way, we can reason about groups and categories based on what is available to the user in this context.
+ *
+ * This allows us to not show the user checkboxes that do nothing.
+ */
 export const StatPathsContext = createContext<StatPath[] | undefined>(undefined)
 
 function useStatPaths(): StatPath[] {
