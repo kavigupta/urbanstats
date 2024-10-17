@@ -100,7 +100,7 @@ def convert_continent_icons():
         out = f"{flags_folder}{continent}.png"
         if os.path.exists(out):
             continue
-        run_conversion(out, f"continent-flags/{continent}.svg")
+        run_conversion(out, f"icons/continent-flags/{continent}.svg")
 
 
 def download_all_icons():

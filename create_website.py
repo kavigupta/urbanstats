@@ -270,12 +270,12 @@ def main(
     shutil.copy("html_templates/mapper.html", f"{site_folder}/")
     shutil.copy("html_templates/quiz.html", f"{site_folder}")
 
-    shutil.copy("thumbnail.png", f"{site_folder}/")
-    shutil.copy("banner.png", f"{site_folder}/")
-    shutil.copy("screenshot_footer.svg", f"{site_folder}/")
-    shutil.copy("share.png", f"{site_folder}/")
-    shutil.copy("screenshot.png", f"{site_folder}/")
-    shutil.copy("assets/download.png", f"{site_folder}/")
+    shutil.copy("icons/main/thumbnail.png", f"{site_folder}/")
+    shutil.copy("icons/main/banner.png", f"{site_folder}/")
+    shutil.copy("icons/main/screenshot_footer.svg", f"{site_folder}/")
+    shutil.copy("icons/main/share.png", f"{site_folder}/")
+    shutil.copy("icons/main/screenshot.png", f"{site_folder}/")
+    shutil.copy("icons/main/download.png", f"{site_folder}/")
 
     with open("react/src/data/map_relationship.json", "w") as f:
         json.dump(map_relationships_by_type, f)
