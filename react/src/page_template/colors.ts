@@ -2,7 +2,6 @@ import { useSetting } from './settings'
 
 export interface HueColors {
     blue: string
-    blueLink: string
     orange: string
     darkOrange: string
     purple: string
@@ -28,12 +27,12 @@ export interface Colors {
     unselectedButton: string
     selectedButton: string
     selectedButtonText: string
+    blueLink: string
     hueColors: HueColors
 }
 
 const defaultHueColors: HueColors = {
     blue: '#5a7dc3',
-    blueLink: '#22f',
     orange: '#f7aa41',
     darkOrange: '#af6707',
     purple: '#975ac3',
@@ -62,6 +61,7 @@ export const colorThemes: Record<Theme, Colors> = {
         unselectedButton: '#e6e9ef',
         selectedButton: '#4e525a',
         selectedButtonText: '#ffffff',
+        blueLink: '#22f',
         hueColors: defaultHueColors,
     },
     'Dark Mode': {
@@ -77,6 +77,7 @@ export const colorThemes: Record<Theme, Colors> = {
         unselectedButton: '#333333',
         selectedButton: '#cccccc',
         selectedButtonText: '#000000',
+        blueLink: '#88f',
         hueColors: defaultHueColors,
     },
 }
