@@ -30,6 +30,7 @@ export interface Colors {
     selectedButtonText: string
     blueLink: string
     bannerURL: string
+    mixPct: number
     hueColors: HueColors
 }
 
@@ -66,24 +67,26 @@ export const colorThemes: Record<Theme, Colors> = {
         selectedButtonText: '#ffffff',
         blueLink: '#22f',
         bannerURL: '/banner.png',
+        mixPct: 70,
         hueColors: defaultHueColors,
     },
     'Dark Mode': {
-        background: '#1e1e1e',
-        slightlyDifferentBackground: '#333333',
-        slightlyDifferentBackgroundFocused: '#444444',
-        highlight: '#d4b5e2',
+        background: '#081000',
+        slightlyDifferentBackground: '#101808',
+        slightlyDifferentBackgroundFocused: '#181000',
+        highlight: '#3b1d49',
         textMain: '#ffffff',
         textMainOpposite: '#000000',
-        textPointer: '#ffffff',
+        textPointer: '#dddddd',
         borderShadow: '#cccccc',
         borderNonShadow: '#333333',
-        ordinalTextColor: '#cccccc',
-        unselectedButton: '#333333',
-        selectedButton: '#cccccc',
+        ordinalTextColor: '#bbbbbb',
+        unselectedButton: '#303030',
+        selectedButton: '#a2a6ae',
         selectedButtonText: '#000000',
-        blueLink: '#88f',
+        blueLink: '#aaaaff',
         bannerURL: '/banner-dark.png',
+        mixPct: 50,
         hueColors: defaultHueColors,
     },
 }
