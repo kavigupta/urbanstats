@@ -63,3 +63,15 @@
 .sidebar-section-content .sidebar-section-content .expandButton {
     left: -16px;
 }
+
+.sidebar-section-content_mobile .expandButton {
+    right: 0;
+    left: unset;
+    font-size: 27px;
+}
+
+.sidebar-section-content .sidebar-section-content.sidebar-section-content_mobile .expandButton {
+    font-size: 25px;
+    left: unset;
+    right: 0px;
+}
