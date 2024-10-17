@@ -36,6 +36,7 @@ export function PageTemplate({
 
     useEffect(() => {
         document.body.style.backgroundColor = colors.background
+        document.body.style.color = colors.textMain
         document.documentElement.style.setProperty('--quiz-plain-bg', colors.unselectedButton)
         document.documentElement.style.setProperty('--quiz-selected-bg', colors.selectedButton)
         document.documentElement.style.setProperty('--quiz-correct', colors.hueColors.green)

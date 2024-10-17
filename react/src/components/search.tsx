@@ -142,6 +142,7 @@ export const SearchBox = (props: {
                 style={{
                     backgroundColor: colors.background,
                     borderWidth: '0.1em',
+                    color: colors.textMain,
                     borderRadius: '5px',
                     ...props.style }}
                 placeholder={props.placeholder}

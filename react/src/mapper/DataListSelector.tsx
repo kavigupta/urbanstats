@@ -11,7 +11,7 @@ export function DataListSelector<T extends string>({ overall_name, initial_value
     const actual_selector = (
         <select
             onChange={(e) => { onChange(e.target.value as T) }}
-            style={{ width: '100%', backgroundColor: colors.background }}
+            style={{ width: '100%', backgroundColor: colors.background, color: colors.textMain }}
             value={set_initial ? initial_value : ''}
         >
             {names_full.map((name, i) => (

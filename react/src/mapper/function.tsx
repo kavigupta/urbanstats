@@ -57,7 +57,7 @@ function VariableNameSelector({ variable_name, set_variable_name, placeholder }:
     return (
         <input
             type="text"
-            style={{ width: '100%', backgroundColor: colors.background }}
+            style={{ width: '100%', backgroundColor: colors.background, color: colors.textMain }}
             placeholder={`e.g., "${placeholder}"`}
             value={variable_name}
             onChange={(e) => { set_variable_name(e.target.value) }}
@@ -269,7 +269,7 @@ function VariableSelector(props: { variable: VariableDescriptor, set_variable: (
             <div style={{ width: '50%' }}>
                 <input
                     type="text"
-                    style={{ width: '100%', backgroundColor: colors.background }}
+                    style={{ width: '100%', backgroundColor: colors.background, color: colors.textMain }}
                     placeholder='Name, e.g., "a"'
                     value={variable.name}
                     onChange={(e) => {
@@ -292,7 +292,7 @@ function VariableSelector(props: { variable: VariableDescriptor, set_variable: (
                         },
                     })
                 }}
-                style={{ width: '100%', backgroundColor: colors.background }}
+                style={{ width: '100%', backgroundColor: colors.background, color: colors.textMain }}
                 value={initial_value}
             >
                 {
@@ -314,7 +314,7 @@ export function FunctionSelector(props: { function: ColorStatDescriptor, set_fun
     const expression = (
         <input
             type="text"
-            style={{ width: '100%', backgroundColor: colors.background }}
+            style={{ width: '100%', backgroundColor: colors.background, color: colors.textMain }}
             placeholder={props.placeholder ?? 'Expression, e.g., "a + b"'}
             value={func.expression}
             onChange={(e) => {
@@ -338,7 +338,7 @@ export function FunctionSelector(props: { function: ColorStatDescriptor, set_fun
                     : (
                             <input
                                 type="text"
-                                style={{ width: '100%', backgroundColor: colors.background }}
+                                style={{ width: '100%', backgroundColor: colors.background, color: colors.textMain }}
                                 placeholder="Name for this function"
                                 value={func.name}
                                 onChange={(e) => {
@@ -461,7 +461,7 @@ export function FilterSelector(props: { filter: FilterSettings, set_filter: (new
                             enabled: e.target.checked,
                         })
                     }}
-                    style={{ backgroundColor: colors.background }}
+                    style={{ backgroundColor: colors.background, color: colors.textMain }}
                 />
                 {' '}
                 Enable Filter?
