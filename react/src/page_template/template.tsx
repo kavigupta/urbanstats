@@ -42,6 +42,7 @@ export function PageTemplate({
         document.documentElement.style.setProperty('--quiz-incorrect', colors.hueColors.red)
         document.documentElement.style.setProperty('--slightly-different-background', colors.slightlyDifferentBackground)
         document.documentElement.style.setProperty('--slightly-different-background-focused', colors.slightlyDifferentBackgroundFocused)
+        document.documentElement.style.setProperty('--blue-link', colors.blueLink)
     }, [colors])
 
     const has_screenshot_button = screencap_elements !== undefined

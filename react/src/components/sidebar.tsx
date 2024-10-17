@@ -9,7 +9,7 @@ import { useMobileLayout } from '../utils/responsive'
 
 export function Sidebar(): ReactNode {
     const colors = useColors()
-    const link_style = { color: colors.hueColors.blueLink }
+    const link_style = { color: colors.blueLink }
     const statistic_category_metadata_checkboxes = useStatisticCategoryMetadataCheckboxes()
     let sidebar_section_content = 'sidebar-section-content'
     const sidebar_section_title: React.CSSProperties = {
