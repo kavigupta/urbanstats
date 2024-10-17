@@ -8,7 +8,7 @@ import { HueColors, useColors } from '../page_template/colors'
 import { row_expanded_key, useSetting, useTableCheckboxSettings } from '../page_template/settings'
 import { PageTemplate } from '../page_template/template'
 import { longname_is_exclusively_american, useUniverse } from '../universe'
-import { lighten } from '../utils/color'
+import { mixWithBackground } from '../utils/color'
 import { Article } from '../utils/protos'
 import { useComparisonHeadStyle, useHeaderTextClass, useMobileLayout, useSubHeaderTextClass } from '../utils/responsive'
 
@@ -337,7 +337,7 @@ function ComparisonRow({ names, params, datas }: {
         row_overall.push(...StatisticRowRawCellContents(
             {
                 ...param_vals[i], only_columns, _idx: i, simple: true,
-                statistic_style: highlight_idx === i ? { backgroundColor: lighten(color(colors.hueColors, i), 0.7, colors.background) } : {},
+                statistic_style: highlight_idx === i ? { backgroundColor: mixWithBackground(color(colors.hueColors, i), 0.7, colors.background) } : {},
                 onReplace: (x) => { on_change(names, i, x) },
                 total_width: each(datas),
             },
