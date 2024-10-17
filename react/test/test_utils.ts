@@ -22,7 +22,7 @@ export async function check_textboxes(t: TestController, txts: string[]): Promis
         await t.click(hamburgerMenu)
     }
     for (const txt of txts) {
-        const checkbox = Selector('div').withAttribute('class', 'checkbox-setting')
+        const checkbox = Selector('div.checkbox-setting:not([inert] *)')
         // filter for label
             .filter(node => node.querySelector('label')!.innerText === txt, { txt })
         // find checkbox
@@ -39,7 +39,7 @@ export async function check_all_category_boxes(t: TestController): Promise<void>
     if (await hamburgerMenu.exists) {
         await t.click(hamburgerMenu)
     }
-    const checkboxes = Selector('div').withAttribute('class', 'checkbox-setting')
+    const checkboxes = Selector('div.checkbox-setting:not([inert] *)')
         .filter((node) => {
             const label = node.querySelector('label')!.innerText
             return (
@@ -48,6 +48,8 @@ export async function check_all_category_boxes(t: TestController): Promise<void>
                 && label !== 'Simple Ordinals'
                 && label !== 'Race'
                 && label !== 'Election'
+                && label !== '2020'
+                && label !== 'Main'
             )
         }).find('input')
     for (let i = 0; i < await checkboxes.count; i++) {
