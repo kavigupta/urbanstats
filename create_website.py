@@ -272,6 +272,7 @@ def main(
 
     shutil.copy("icons/main/thumbnail.png", f"{site_folder}/")
     shutil.copy("icons/main/banner.png", f"{site_folder}/")
+    shutil.copy("icons/main/banner-dark.png", f"{site_folder}/")
     shutil.copy("icons/main/screenshot_footer.svg", f"{site_folder}/")
     shutil.copy("icons/main/share.png", f"{site_folder}/")
     shutil.copy("icons/main/screenshot.png", f"{site_folder}/")

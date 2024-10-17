@@ -15,6 +15,7 @@
 
 .quiz_correct {
   background-color: var(--quiz-correct);
+  color: #000;
 }
 
 .quiz_correct:hover {
@@ -24,6 +25,7 @@
 
 .quiz_incorrect {
   background-color: var(--quiz-incorrect);
+  color: #000;
 }
 
 .quiz_incorrect:hover {
