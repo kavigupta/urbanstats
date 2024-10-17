@@ -225,16 +225,13 @@ function RegressionSelector(props: { regression: RegressionDescriptor, set_regre
                 {rhs_stack}
                 <CheckboxSettingCustom
                     name="Weighted by Population"
-                    setting_key="weight_by_population"
-                    settings={props.regression}
-                    set_setting={
-                        (key, value) => {
-                            props.set_regression({
-                                ...props.regression,
-                                [key]: value,
-                            })
-                        }
-                    }
+                    checked={props.regression.weight_by_population}
+                    onChange={(value) => {
+                        props.set_regression({
+                            ...props.regression,
+                            weight_by_population: value,
+                        })
+                    }}
                 />
             </div>
         </div>

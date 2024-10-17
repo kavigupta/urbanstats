@@ -26,7 +26,7 @@ async function loadPage(): Promise<void> {
     const names = require('./data/statistic_name_list.json') as string[]
     const paths = require('./data/statistic_path_list.json') as string[]
     const explanation_pages = require('./data/explanation_page.json') as string[]
-    const stats = require('./data/statistic_list.json') as string[]
+    const stats = require('./data/statistic_list.json') as (string | string[])[]
     const statpath = paths[names.indexOf(statname)]
     const explanation_page = explanation_pages[names.indexOf(statname)]
     const statcol = stats[names.indexOf(statname)]

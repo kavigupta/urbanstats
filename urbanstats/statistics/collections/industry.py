@@ -7,7 +7,7 @@ from urbanstats.statistics.utils import fractionalize
 class IndustryStatistics(ACSStatisticsColection):
     def __init__(self):
         super().__init__()
-        assert set(self.category_for_each_statistic()) == set(
+        assert set(self.name_for_each_statistic()) == set(
             self.industry_name_to_description()
         )
 
