@@ -1,7 +1,7 @@
 import React, { ReactNode } from 'react'
 
 import { useColors } from '../page_template/colors'
-import { Category, Group, useGroupsMissingYearData, useGroupsMissingYearSelection, useSelectedGroups } from '../page_template/statistic-settings'
+import { Category, Group, sortYears, useGroupsMissingYearSelection, useSelectedGroups } from '../page_template/statistic-settings'
 
 import { useScreenshotMode } from './screenshot'
 
@@ -9,7 +9,6 @@ export function ArticleWarnings(): ReactNode {
     const screenshotMode = useScreenshotMode()
     const selectedGroups = useSelectedGroups()
     const groupsMissingYearSelection = useGroupsMissingYearSelection()
-    const groupsMissingYearData = useGroupsMissingYearData()
 
     if (screenshotMode) {
         return null
@@ -23,20 +22,14 @@ export function ArticleWarnings(): ReactNode {
         : [
                 ...groupsMissingYearSelection.map(groupOrCategory => (
                     <>
-                        No year selected for
+                        To see
                         {' '}
                         <b><HierarchicalName groupOrCategory={groupOrCategory} /></b>
+                        {' statistics, select '}
+                        <YearList years={Array.from(groupOrCategory.years).filter(year => year !== null).sort(sortYears)} />
+                        .
                     </>
                 )),
-                ...groupsMissingYearData.flatMap(({ year, groups }) => groups.map(group => (
-                    <>
-                        <b><HierarchicalName groupOrCategory={group} /></b>
-                        {' '}
-                        is missing for the year
-                        {' '}
-                        <b>{year}</b>
-                    </>
-                ))),
             ]
 
     if (warnings.length === 0) {
@@ -80,5 +73,40 @@ function HierarchicalName({ groupOrCategory }: { groupOrCategory: Group | Catego
             return `${groupOrCategory.parent.name} > ${groupOrCategory.name}`
         case 'Category':
             return groupOrCategory.name
+    }
+}
+
+function YearList({ years }: { years: number[] }): ReactNode {
+    switch (years.length) {
+        case 0:
+            return null
+        case 1:
+            return <b>{years[0]}</b>
+        case 2:
+            return (
+                <>
+                    <b>{years[0]}</b>
+                    {' or '}
+                    <b>{years[1]}</b>
+                </>
+            )
+        case 3:
+            return (
+                <>
+                    <b>{years[0]}</b>
+                    {', '}
+                    <b>{years[1]}</b>
+                    {', or '}
+                    <b>{years[2]}</b>
+                </>
+            )
+        default:
+            return (
+                <>
+                    <b>{years[0]}</b>
+                    {', '}
+                    <YearList years={years.slice(1)} />
+                </>
+            )
     }
 }

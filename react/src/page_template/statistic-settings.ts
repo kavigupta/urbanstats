@@ -223,35 +223,13 @@ function useSelectedYears(): number[] {
 }
 
 /**
- * Which groups are selected, but are not showing any statistics because no years are selected.
+ * Which groups are selected, but are not showing any statistics because no intersecting years are selected.
  */
 export function useGroupsMissingYearSelection(): (Group | Category)[] {
     const selectedGroups = useSelectedGroups()
     const selectedYears = useSelectedYears()
-    const consolidateGroups = useConsolidateGroups()
-    if (selectedYears.length > 0) {
-        return []
-    }
-    const groupsThatNeedAYear = selectedGroups.filter(group => !group.years.has(null))
-    return consolidateGroups(groupsThatNeedAYear)
-}
-
-/**
- * For each year, what groups are selected that don't have data for that year.
- *
- * Don't include years with no problems
- */
-export function useGroupsMissingYearData(): {
-    year: number
-    groups: (Group | Category)[]
-}[] {
-    const selectedGroups = useSelectedGroups()
-    const selectedYears = useSelectedYears()
-    const consolidateGroups = useConsolidateGroups()
-    return selectedYears.map(year => ({
-        year,
-        groups: consolidateGroups(selectedGroups.filter(group => !group.years.has(year) && !group.years.has(null))),
-    })).filter(({ groups }) => groups.length > 0)
+    const groupsMissingYears = selectedGroups.filter(group => !group.years.has(null) && selectedYears.every(year => !group.years.has(year)))
+    return useConsolidateGroups()(groupsMissingYears)
 }
 
 /**
@@ -320,5 +298,7 @@ export function useAvailableCategories(): Category[] {
 
 export function useAvailableYears(): number[] {
     const contextStatPaths = useStatPaths()
+    // Find the intersection between the stat paths we have loaded in the context and the years that are available
+    // This is so we can show the user only the years that will actually show up
     return allYears.filter(year => contextStatPaths.some(statPath => yearStatPaths.get(year).has(statPath)))
 }

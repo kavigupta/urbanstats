@@ -119,7 +119,7 @@ export function ComparisonPanel(props: { joined_string: string, universes: strin
             exclusively_american)
         rows.push(r)
         idxs.push(idx)
-        availableStatPaths.forEach(path => statPaths.add(path)) // TODO: Maybe this should be an intersection?
+        availableStatPaths.forEach(path => statPaths.add(path))
     }
 
     rows = insert_missing(rows, idxs)
