@@ -345,7 +345,7 @@ const MapBody = (props: { id: string, height: string | undefined, buttons: React
                     width: '100%',
                     position: 'relative',
                     border: `1px solid ${colors.borderNonShadow}`,
-
+                    borderRadius: '5px',
                 }}
             >
                 {/* place this on the right of the map */}
