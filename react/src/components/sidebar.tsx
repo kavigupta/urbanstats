@@ -156,7 +156,7 @@ export function ColorThemeSetting(): ReactNode {
             <label>{'Theme '}</label>
             <select
                 className="serif"
-                style={{ backgroundColor: colors.background }}
+                style={{ backgroundColor: colors.background, color: colors.textMain }}
                 value={theme}
                 onChange={(e: React.ChangeEvent<HTMLSelectElement>) => { setTheme(e.target.value as Theme) }}
             >
