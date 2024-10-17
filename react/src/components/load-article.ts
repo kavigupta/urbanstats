@@ -1,4 +1,5 @@
-import { StatPath, StatGroupSettings, statIsEnabled } from '../page_template/statistic-settings'
+import { StatGroupSettings, statIsEnabled } from '../page_template/statistic-settings'
+import { StatPath } from '../page_template/statistic-tree'
 import { universe_is_american } from '../universe'
 import { Article } from '../utils/protos'
 

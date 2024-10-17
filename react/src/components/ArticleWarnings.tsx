@@ -1,7 +1,8 @@
 import React, { ReactNode } from 'react'
 
 import { useColors } from '../page_template/colors'
-import { Category, Group, sortYears, useGroupsMissingYearSelection, useSelectedGroups } from '../page_template/statistic-settings'
+import { useGroupsMissingYearSelection, useSelectedGroups } from '../page_template/statistic-settings'
+import { Category, Group, sortYears } from '../page_template/statistic-tree'
 
 import { useScreenshotMode } from './screenshot'
 

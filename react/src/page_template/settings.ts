@@ -3,7 +3,7 @@ import { createContext, useContext, useEffect, useState } from 'react'
 import { DefaultMap } from '../utils/DefaultMap'
 
 import { Theme } from './colors'
-import { allGroups, allYears, CategoryIdentifier, GroupIdentifier, statsTree } from './statistic-settings'
+import { allGroups, allYears, CategoryIdentifier, GroupIdentifier, statsTree } from './statistic-tree'
 
 export type RelationshipKey = `related__${string}__${string}`
 export type RowExpandedKey = `expanded__${string}`
