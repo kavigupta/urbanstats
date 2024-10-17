@@ -75,7 +75,7 @@ export const colorThemes: Record<Theme, Colors> = {
         slightlyDifferentBackground: '#101808',
         slightlyDifferentBackgroundFocused: '#181000',
         highlight: '#3b1d49',
-        textMain: '#ffffff',
+        textMain: '#dddddd',
         textMainOpposite: '#000000',
         textPointer: '#dddddd',
         borderShadow: '#cccccc',

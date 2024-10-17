@@ -9,7 +9,7 @@
    id="svg5"
    inkscape:version="1.1.2 (0a00cf5339, 2022-02-04)"
    sodipodi:docname="banner-dark.svg"
-   inkscape:export-filename="banner.png"
+   inkscape:export-filename="banner-dark.png"
    inkscape:export-xdpi="149.75999"
    inkscape:export-ydpi="149.75999"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
@@ -73,26 +73,26 @@
       <g
          id="g2059"
          transform="translate(10.583333)"
-         style="fill:#ffffff">
+         style="fill:#dddddd;fill-opacity:1">
         <text
            xml:space="preserve"
-           style="font-weight:bold;font-size:50.3879px;line-height:125%;font-family:Cantarell;-inkscape-font-specification:'Cantarell Bold';letter-spacing:0px;word-spacing:0px;fill:#ffffff;stroke:none;stroke-width:1.25971px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+           style="font-weight:bold;font-size:50.3879px;line-height:125%;font-family:Cantarell;-inkscape-font-specification:'Cantarell Bold';letter-spacing:0px;word-spacing:0px;fill:#dddddd;stroke:none;stroke-width:1.25971px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;fill-opacity:1"
            x="195.76126"
            y="82.109428"
            id="text1362"><tspan
              sodipodi:role="line"
-             style="font-style:normal;font-variant:normal;font-weight:600;font-stretch:normal;font-family:'Jost*';-inkscape-font-specification:'Jost* Semi-Bold';fill:#ffffff;stroke:none;stroke-width:1.25971px"
+             style="font-style:normal;font-variant:normal;font-weight:600;font-stretch:normal;font-family:'Jost*';-inkscape-font-specification:'Jost* Semi-Bold';fill:#dddddd;stroke:none;stroke-width:1.25971px;fill-opacity:1"
              x="195.76126"
              y="82.109428"
              id="tspan3653">Urban Stats</tspan></text>
         <text
            xml:space="preserve"
-           style="font-weight:bold;font-size:27.1554px;line-height:125%;font-family:Cantarell;-inkscape-font-specification:'Cantarell Bold';letter-spacing:0px;word-spacing:0px;fill:#ffffff;stroke:none;stroke-width:0.678891px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+           style="font-weight:bold;font-size:27.1554px;line-height:125%;font-family:Cantarell;-inkscape-font-specification:'Cantarell Bold';letter-spacing:0px;word-spacing:0px;fill:#dddddd;stroke:none;stroke-width:0.678891px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;fill-opacity:1"
            x="271.42712"
            y="115.65909"
            id="text1362-3"><tspan
              sodipodi:role="line"
-             style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:'Jost*';-inkscape-font-specification:'Jost*';fill:#ffffff;stroke:none;stroke-width:0.678891px"
+             style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:'Jost*';-inkscape-font-specification:'Jost*';fill:#dddddd;stroke:none;stroke-width:0.678891px;fill-opacity:1"
              x="271.42712"
              y="115.65909"
              id="tspan3653-6">for an urbanist age</tspan></text>
