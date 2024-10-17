@@ -20,6 +20,7 @@ export interface Colors {
     slightlyDifferentBackgroundFocused: string
     highlight: string
     textMain: string
+    textMainOpposite: string
     textPointer: string
     borderShadow: string
     borderNonShadow: string
@@ -28,6 +29,8 @@ export interface Colors {
     selectedButton: string
     selectedButtonText: string
     blueLink: string
+    bannerURL: string
+    mixPct: number
     hueColors: HueColors
 }
 
@@ -54,6 +57,7 @@ export const colorThemes: Record<Theme, Colors> = {
         slightlyDifferentBackgroundFocused: '#ffe0e0',
         highlight: '#d4b5e2',
         textMain: '#000000',
+        textMainOpposite: '#ffffff',
         textPointer: '#222222',
         borderShadow: '#333333',
         borderNonShadow: '#cccccc',
@@ -62,6 +66,8 @@ export const colorThemes: Record<Theme, Colors> = {
         selectedButton: '#4e525a',
         selectedButtonText: '#ffffff',
         blueLink: '#22f',
+        bannerURL: '/banner.png',
+        mixPct: 70,
         hueColors: defaultHueColors,
     },
     'Dark Mode': {
@@ -70,6 +76,7 @@ export const colorThemes: Record<Theme, Colors> = {
         slightlyDifferentBackgroundFocused: '#444444',
         highlight: '#d4b5e2',
         textMain: '#ffffff',
+        textMainOpposite: '#000000',
         textPointer: '#ffffff',
         borderShadow: '#cccccc',
         borderNonShadow: '#333333',
@@ -78,6 +85,8 @@ export const colorThemes: Record<Theme, Colors> = {
         selectedButton: '#cccccc',
         selectedButtonText: '#000000',
         blueLink: '#88f',
+        bannerURL: '/banner_dark.png',
+        mixPct: 50,
         hueColors: defaultHueColors,
     },
 }

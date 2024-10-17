@@ -337,7 +337,7 @@ function ComparisonRow({ names, params, datas }: {
         row_overall.push(...StatisticRowRawCellContents(
             {
                 ...param_vals[i], only_columns, _idx: i, simple: true,
-                statistic_style: highlight_idx === i ? { backgroundColor: mixWithBackground(color(colors.hueColors, i), 0.7, colors.background) } : {},
+                statistic_style: highlight_idx === i ? { backgroundColor: mixWithBackground(color(colors.hueColors, i), colors.mixPct / 100, colors.background) } : {},
                 onReplace: (x) => { on_change(names, i, x) },
                 total_width: each(datas),
             },
