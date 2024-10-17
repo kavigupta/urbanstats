@@ -76,3 +76,7 @@ body {
 .button_related_mobile {
     font-size: 12pt;
 }
+
+a {
+    color: var(--blue-link);
+}

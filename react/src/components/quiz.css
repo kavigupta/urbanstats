@@ -9,7 +9,7 @@
 @media (hover: hover) and (pointer: fine) {
   .quiz_clickable:hover {
     background-color: var(--quiz-selected-bg);
-    color: #fff;
+    color: var(--text-main-opposite);
   }
 }
 
