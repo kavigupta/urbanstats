@@ -76,7 +76,7 @@ test('lr-buttons', async (t) => {
 })
 
 test('san-marino-2010-health', async (t) => {
-    await check_textboxes(t, ['2010 Census', 'Health'])
+    await check_textboxes(t, ['2010', 'Health'])
     await screencap(t)
 })
 
