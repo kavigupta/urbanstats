@@ -27,6 +27,7 @@ export function Sidebar(): ReactNode {
                 backgroundColor: colors.slightlyDifferentBackground,
                 padding: '2rem',
                 fontSize: useMobileLayout() ? '20pt' : '12pt',
+                borderRadius: '5px',
             }}
         >
             <div className="sidebar-section">
