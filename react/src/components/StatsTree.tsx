@@ -16,7 +16,6 @@ function CategoryComponent({ category }: { category: Category }): ReactNode {
     const isMobileLayout = useMobileLayout()
     const changeCategorySetting = useChangeCategorySetting(category)
     return (
-        // Move the category left half of the indent since it's not really a child
         <li>
             <div style={{ position: 'relative' }}>
                 <button
