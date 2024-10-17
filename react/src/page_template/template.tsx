@@ -44,6 +44,7 @@ export function PageTemplate({
         document.documentElement.style.setProperty('--slightly-different-background', colors.slightlyDifferentBackground)
         document.documentElement.style.setProperty('--slightly-different-background-focused', colors.slightlyDifferentBackgroundFocused)
         document.documentElement.style.setProperty('--blue-link', colors.blueLink)
+        document.documentElement.style.setProperty('--text-main-opposite', colors.textMainOpposite)
     }, [colors])
 
     const has_screenshot_button = screencap_elements !== undefined

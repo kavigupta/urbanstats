@@ -20,6 +20,7 @@ export interface Colors {
     slightlyDifferentBackgroundFocused: string
     highlight: string
     textMain: string
+    textMainOpposite: string
     textPointer: string
     borderShadow: string
     borderNonShadow: string
@@ -54,6 +55,7 @@ export const colorThemes: Record<Theme, Colors> = {
         slightlyDifferentBackgroundFocused: '#ffe0e0',
         highlight: '#d4b5e2',
         textMain: '#000000',
+        textMainOpposite: '#ffffff',
         textPointer: '#222222',
         borderShadow: '#333333',
         borderNonShadow: '#cccccc',
@@ -70,6 +72,7 @@ export const colorThemes: Record<Theme, Colors> = {
         slightlyDifferentBackgroundFocused: '#444444',
         highlight: '#d4b5e2',
         textMain: '#ffffff',
+        textMainOpposite: '#000000',
         textPointer: '#ffffff',
         borderShadow: '#cccccc',
         borderNonShadow: '#333333',
