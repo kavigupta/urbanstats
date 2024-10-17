@@ -139,7 +139,11 @@ export const SearchBox = (props: {
                 id="searchbox"
                 type="text"
                 className="serif"
-                style={{ backgroundColor: colors.background, borderWidth: '0.1em', ...props.style }}
+                style={{
+                    backgroundColor: colors.background,
+                    borderWidth: '0.1em',
+                    borderRadius: '5px',
+                    ...props.style }}
                 placeholder={props.placeholder}
                 onKeyUp={onTextBoxKeyUp}
             />
