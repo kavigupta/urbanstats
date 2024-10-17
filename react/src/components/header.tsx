@@ -114,7 +114,8 @@ function TopLeft(props: {
 }
 
 function HeaderImage(): ReactNode {
-    const path = useMobileLayout() ? '/thumbnail.png' : '/banner.png'
+    const colors = useColors()
+    const path = useMobileLayout() ? '/thumbnail.png' : colors.bannerURL
     return (
         <a href="/index.html">
             <img

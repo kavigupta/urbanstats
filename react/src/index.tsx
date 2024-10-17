@@ -3,14 +3,16 @@ import ReactDOM from 'react-dom/client'
 import './style.css'
 import './common.css'
 
+import { useColors } from './page_template/colors'
 import { PageTemplate } from './page_template/template'
 
 function IndexPanel(): ReactNode {
+    const colors = useColors()
     return (
         <PageTemplate>
             <div>
                 <div>
-                    <img src="/banner.png" alt="Urban Stats Logo" width="100%" />
+                    <img src={colors.bannerURL} alt="Urban Stats Logo" width="100%" />
                 </div>
 
                 <div className="centered_text" style={{ textAlign: 'left' }}>

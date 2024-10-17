@@ -29,6 +29,7 @@ export interface Colors {
     selectedButton: string
     selectedButtonText: string
     blueLink: string
+    bannerURL: string
     mixPct: number
     hueColors: HueColors
 }
@@ -65,6 +66,7 @@ export const colorThemes: Record<Theme, Colors> = {
         selectedButton: '#4e525a',
         selectedButtonText: '#ffffff',
         blueLink: '#22f',
+        bannerURL: '/banner.png',
         mixPct: 70,
         hueColors: defaultHueColors,
     },
@@ -83,6 +85,7 @@ export const colorThemes: Record<Theme, Colors> = {
         selectedButton: '#cccccc',
         selectedButtonText: '#000000',
         blueLink: '#88f',
+        bannerURL: '/banner_dark.png',
         mixPct: 50,
         hueColors: defaultHueColors,
     },
