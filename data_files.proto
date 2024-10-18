@@ -27,8 +27,13 @@ message Histogram {
     repeated int32 counts = 3;
 }
 
+message TimeSeries {
+    repeated float values = 1;
+}
+
 message ExtraStatistic {
     optional Histogram histogram = 1;
+    optional TimeSeries timeseries = 2;
 }
 
 message Article {
