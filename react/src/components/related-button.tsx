@@ -2,9 +2,10 @@ import React, { ReactNode, useId } from 'react'
 
 import './related.css'
 import { article_link } from '../navigation/links'
-import { HueColors, relationship_key, useColors, useSetting } from '../page_template/settings'
+import { HueColors, useColors } from '../page_template/colors'
+import { relationship_key, useSetting } from '../page_template/settings'
 import { useUniverse } from '../universe'
-import { lighten } from '../utils/color'
+import { mixWithBackground } from '../utils/color'
 import { useMobileLayout } from '../utils/responsive'
 
 import { CheckboxSetting } from './sidebar'
@@ -42,7 +43,7 @@ function RelatedButton(props: { region: Region }): ReactNode {
         <li className={`linklistel${useMobileLayout() ? ' linklistel_mobile' : ''}`}>
             <a
                 className={classes}
-                style={{ color: 'black', backgroundColor: lighten(color, 0.7) }}
+                style={{ color: colors.textMain, backgroundColor: mixWithBackground(color, colors.mixPct / 100, colors.background) }}
                 href={article_link(curr_universe, props.region.longname)}
             >
                 {props.region.shortname}

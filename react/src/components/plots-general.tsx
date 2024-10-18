@@ -1,6 +1,8 @@
 import * as Plot from '@observablehq/plot'
 import React, { ReactElement, useEffect, useRef } from 'react'
 
+import { useScreenshotMode } from './screenshot'
+
 interface DetailedPlotSpec {
     marks: Plot.Markish[]
     xlabel: string
@@ -11,7 +13,6 @@ interface DetailedPlotSpec {
 
 export function PlotComponent(props: {
     plot_spec: DetailedPlotSpec
-    screenshot_mode: boolean
     settings_element: (plot_ref: React.RefObject<HTMLDivElement>) => ReactElement
 }): ReactElement {
     const plot_ref = useRef<HTMLDivElement>(null)
@@ -46,6 +47,9 @@ export function PlotComponent(props: {
             plot_ref.current.appendChild(plot)
         }
     }, [props.plot_spec])
+
+    const screenshotMode = useScreenshotMode()
+
     // put a button panel in the top right corner
     return (
         <div style={{ width: '100%', position: 'relative' }}>
@@ -60,7 +64,7 @@ export function PlotComponent(props: {
                 }
             >
             </div>
-            {props.screenshot_mode
+            {screenshotMode
                 ? undefined
                 : (
                         <div style={{ zIndex: 1000, position: 'absolute', top: 0, right: 0 }}>

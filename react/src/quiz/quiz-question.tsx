@@ -5,7 +5,7 @@ import React, { ReactNode } from 'react'
 import { isFirefox } from 'react-device-detect'
 
 import { MapGeneric, MapGenericProps, Polygons } from '../components/map'
-import { useColors } from '../page_template/settings'
+import { useColors } from '../page_template/colors'
 import { useMobileLayout } from '../utils/responsive'
 
 import { JuxtaQuestion, RetroQuestion, a_correct } from './quiz'

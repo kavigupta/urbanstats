@@ -38,11 +38,14 @@ class HistogramSpec(ExtraStatistic):
         return result
 
     def extra_stat_spec(self):
-        from produce_html_page import statistic_internal_to_display_name
+
+        from urbanstats.statistics.output_statistics_metadata import (
+            internal_statistic_names,
+        )
 
         return dict(
             type="histogram",
-            universe_total_idx=list(statistic_internal_to_display_name()).index(
+            universe_total_idx=list(internal_statistic_names()).index(
                 self.universe_column
             ),
         )

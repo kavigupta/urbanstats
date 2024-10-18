@@ -3,9 +3,10 @@
 import React, { ReactNode } from 'react'
 
 import '../common.css'
-import { useColors } from '../page_template/settings'
+import { useColors } from '../page_template/colors'
 
 function Hamburger({ isOpen }: { isOpen: boolean }): ReactNode {
+    const colors = useColors()
     return (
         <>
             <div className="hamburger">
@@ -29,7 +30,7 @@ function Hamburger({ isOpen }: { isOpen: boolean }): ReactNode {
                     width: 2rem;
                     height: 0.25rem;
                     border-radius: 10px;
-                    background-color: black;
+                    background-color: ${colors.textMain};
                     transform-origin: 1px;
                     transition: all 0.3s linear;
                 }

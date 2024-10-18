@@ -3,7 +3,7 @@ import { isFirefox, isMobile } from 'react-device-detect'
 
 import { Statistic } from '../components/table'
 import { article_link } from '../navigation/links'
-import { useColors } from '../page_template/settings'
+import { useColors } from '../page_template/colors'
 
 import { render_time_remaining } from './dates'
 import { ENDPOINT, JuxtaQuestion, QuizDescriptor, QuizQuestion, RetroQuestion, a_correct, nameOfQuizKind } from './quiz'
@@ -349,7 +349,7 @@ export function GenericQuizResultRow(props: GenericQuizResultRowProps): ReactNod
                     backgroundColor: colors.unselectedButton,
                 }}
             >
-                <tbody>
+                <tbody style={{ color: colors.textMain }}>
                     <tr>
                         <td className="serif quiz_result_name_left" style={firstStyle}>
                             {props.get_option('a')}

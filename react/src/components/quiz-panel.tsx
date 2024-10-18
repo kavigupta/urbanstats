@@ -56,7 +56,7 @@ export function QuizPanel(props: { quizDescriptor: QuizDescriptor, today_name: s
 
     return (
         <PageTemplate>
-            {() => {
+            {(() => {
                 const quiz = props.todays_quiz
                 const history = todays_quiz_history
 
@@ -91,7 +91,7 @@ export function QuizPanel(props: { quizDescriptor: QuizDescriptor, today_name: s
                         no_footer={false}
                     />
                 )
-            }}
+            })()}
         </PageTemplate>
     )
 }

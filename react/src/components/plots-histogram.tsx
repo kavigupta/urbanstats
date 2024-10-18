@@ -2,7 +2,8 @@ import * as Plot from '@observablehq/plot'
 import React, { ReactElement, ReactNode, useMemo } from 'react'
 
 // imort Observable plot
-import { HistogramType, useColors, useSetting } from '../page_template/settings'
+import { useColors } from '../page_template/colors'
+import { HistogramType, useSetting } from '../page_template/settings'
 import { useUniverse } from '../universe'
 import { IHistogram } from '../utils/protos'
 
@@ -19,7 +20,7 @@ interface HistogramProps {
     universe_total: number
 }
 
-export function Histogram(props: { histograms: HistogramProps[], screenshot_mode: boolean }): ReactNode {
+export function Histogram(props: { histograms: HistogramProps[] }): ReactNode {
     const [histogram_type] = useSetting('histogram_type')
     const [use_imperial] = useSetting('use_imperial')
     const [relative] = useSetting('histogram_relative')
@@ -64,7 +65,6 @@ export function Histogram(props: { histograms: HistogramProps[], screenshot_mode
     return (
         <PlotComponent
             plot_spec={plot_spec}
-            screenshot_mode={props.screenshot_mode}
             settings_element={settings_element}
         />
     )
@@ -82,7 +82,7 @@ function HistogramSettings(props: {
         <div
             className="serif"
             style={{
-                backgroundColor: colors.background, padding: '0.5em', border: '1px solid black',
+                backgroundColor: colors.background, padding: '0.5em', border: `1px solid ${colors.textMain}`,
                 display: 'flex', gap: '0.5em',
             }}
         >
@@ -107,7 +107,7 @@ function HistogramSettings(props: {
             />
             <select
                 value={histogram_type}
-                style={{ backgroundColor: colors.background }}
+                style={{ backgroundColor: colors.background, color: colors.textMain }}
                 onChange={(e) => { setHistogramType(e.target.value as HistogramType) }}
                 className="serif"
             >

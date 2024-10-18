@@ -1,5 +1,3 @@
-import './map.css'
-
 import { GeoJSON2SVG } from 'geojson2svg'
 import L from 'leaflet'
 import React, { ReactNode } from 'react'
@@ -7,7 +5,8 @@ import React, { ReactNode } from 'react'
 import { loadProtobuf } from '../load_json'
 import { Basemap } from '../mapper/settings'
 import { article_link, shape_link } from '../navigation/links'
-import { relationship_key, useColors, useRelatedCheckboxSettings, useSetting } from '../page_template/settings'
+import { useColors } from '../page_template/colors'
+import { relationship_key, useSetting, useRelatedCheckboxSettings } from '../page_template/settings'
 import { UNIVERSE_CONTEXT } from '../universe'
 import { random_color } from '../utils/color'
 import { is_historical_cd } from '../utils/is_historical'
@@ -336,7 +335,17 @@ const MapBody = (props: { id: string, height: string | undefined, buttons: React
     const colors = useColors()
     return (
         <div className="map-container-for-testing">
-            <div id={props.id} className="map" style={{ background: colors.background, height: props.height ?? 400 }}>
+            <div
+                id={props.id}
+                style={{
+                    background: colors.background,
+                    height: props.height ?? 400,
+                    width: '100%',
+                    position: 'relative',
+                    border: `1px solid ${colors.borderNonShadow}`,
+                    borderRadius: '5px',
+                }}
+            >
                 {/* place this on the right of the map */}
                 <div style={
                     { zIndex: 1000, position: 'absolute', right: 0, top: 0, padding: '1em' }

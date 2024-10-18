@@ -1,6 +1,6 @@
 import React, { ReactNode } from 'react'
 
-import { useColors } from '../page_template/settings'
+import { useColors } from '../page_template/colors'
 
 import { QuizDescriptor } from './quiz'
 import { History, parse_time_identifier } from './statistics'
@@ -83,7 +83,7 @@ export function QuizStatistics(props: QuizStatisticsProps): ReactNode {
                 <tbody>
                     {frequencies.map((amt, i) => (
                         <tr key={i}>
-                            <td className="quiz_bar_td serif">
+                            <td className="quiz_bar_td serif" style={{ color: colors.textMain }}>
                                 {i}
                                 /5
                             </td>
@@ -92,7 +92,7 @@ export function QuizStatistics(props: QuizStatisticsProps): ReactNode {
                                 </span>
                                 {amt > 0
                                     ? (
-                                            <span className="quiz_stat">
+                                            <span className="quiz_stat" style={{ color: colors.textMain }}>
                                                 {amt}
                                                 {' '}
                                                 (

@@ -1,7 +1,8 @@
 import React, { CSSProperties, ReactNode } from 'react'
 
 import { loadProtobuf } from '../load_json'
-import { useColors, useSetting } from '../page_template/settings'
+import { useColors } from '../page_template/colors'
+import { useSetting } from '../page_template/settings'
 import { is_historical_cd } from '../utils/is_historical'
 import '../common.css'
 import { SearchIndex } from '../utils/protos'
@@ -29,7 +30,7 @@ export const SearchBox = (props: {
         return {
             padding: '0.5em',
             cursor: 'pointer',
-            backgroundColor: (focused === idx) ? '#ffe0e0' : undefined,
+            backgroundColor: (focused === idx) ? colors.slightlyDifferentBackgroundFocused : undefined,
         }
     }
 
@@ -138,7 +139,13 @@ export const SearchBox = (props: {
                 id="searchbox"
                 type="text"
                 className="serif"
-                style={{ backgroundColor: colors.background, borderWidth: '0.1em', ...props.style }}
+                style={{
+                    backgroundColor: colors.background,
+                    borderWidth: '0.1em',
+                    color: colors.textMain,
+                    borderRadius: '5px',
+                    border: `1px solid ${colors.ordinalTextColor}`,
+                    ...props.style }}
                 placeholder={props.placeholder}
                 onKeyUp={onTextBoxKeyUp}
             />
@@ -151,7 +158,7 @@ export const SearchBox = (props: {
                         width: '100%',
                         maxHeight: '20em',
                         overflowY: 'auto',
-                        backgroundColor: '#f7f1e8',
+                        backgroundColor: colors.slightlyDifferentBackground,
                         borderRadius: '0.25em',
                         zIndex: '1',
                     }

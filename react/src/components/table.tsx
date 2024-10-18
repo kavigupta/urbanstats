@@ -4,13 +4,15 @@ import ContentEditable, { ContentEditableEvent } from 'react-contenteditable'
 import { load_ordering } from '../load_json'
 import { article_link, statistic_link } from '../navigation/links'
 import './table.css'
-import { row_expanded_key, useColors, useSetting } from '../page_template/settings'
+import { useColors } from '../page_template/colors'
+import { row_expanded_key, useSetting } from '../page_template/settings'
 import { useUniverse } from '../universe'
 import { is_historical_cd } from '../utils/is_historical'
 import { display_type } from '../utils/text'
 
 import { ArticleRow } from './load-article'
 import { WithPlot } from './plots'
+import { useScreenshotMode } from './screenshot'
 
 const table_row_style: React.CSSProperties = {
     display: 'flex',
@@ -34,14 +36,14 @@ export type StatisticRowRawProps = {
         }
     )
 
-export function StatisticRowRaw(props: StatisticRowRawProps & { index: number, longname?: string, shortname?: string, screenshot_mode: boolean }): ReactNode {
+export function StatisticRowRaw(props: StatisticRowRawProps & { index: number, longname?: string, shortname?: string }): ReactNode {
     const colors = useColors()
     const [expanded] = useSetting(row_expanded_key(props.is_header ? 'header' : props.statname))
 
-    const cell_contents = StatisticRowRawCellContents({ ...props, total_width: 100, screenshot_mode: props.screenshot_mode })
+    const cell_contents = StatisticRowRawCellContents({ ...props, total_width: 100 })
 
     return (
-        <WithPlot plot_props={[{ ...props, color: colors.hueColors.blue, shortname: props.shortname }]} expanded={expanded} screenshot_mode={props.screenshot_mode}>
+        <WithPlot plot_props={[{ ...props, color: colors.hueColors.blue, shortname: props.shortname }]} expanded={expanded}>
             <StatisticRow is_header={props.is_header} index={props.index} contents={cell_contents} />
         </WithPlot>
     )
@@ -50,7 +52,6 @@ export function StatisticRowRaw(props: StatisticRowRawProps & { index: number, l
 export function StatisticRowRawCellContents(props: StatisticRowRawProps & {
     total_width: number
     longname?: string
-    screenshot_mode: boolean
 }): React.JSX.Element[] {
     const curr_universe = useUniverse()
     const colors = useColors()
@@ -105,6 +106,8 @@ export function StatisticRowRawCellContents(props: StatisticRowRawProps & {
         value_columns = [value_columns[0]]
     }
 
+    const screenshotMode = useScreenshotMode()
+
     const cells: [number, string, React.ReactNode][] = [
         [31,
             'statname',
@@ -121,7 +124,6 @@ export function StatisticRowRawCellContents(props: StatisticRowRawProps & {
                                     rendered_statname={props.rendered_statname}
                                     curr_universe={curr_universe}
                                     use_toggle={props.extra_stat !== undefined}
-                                    screenshot_mode={props.screenshot_mode}
                                 />
                             )
                 }
@@ -166,36 +168,40 @@ export function StatisticRowRawCellContents(props: StatisticRowRawProps & {
                 }
             </span>,
         ],
-        [8,
-            'pointer_in_class',
-            props.is_header
-                ? <span className="serif" style={ordinal_style}>Within Type</span>
-                : (
-                        <span className="serif" style={{ display: 'flex', ...ordinal_style }}>
-                            <PointerButtonsIndex
-                                ordinal={props.ordinal}
-                                statpath={props.statpath}
-                                type={props.article_type}
-                                total={props.total_count_in_class}
-                            />
-                        </span>
-                    ),
-        ],
-        [8,
-            'pointer_overall',
-            props.is_header
-                ? <span className="serif" style={ordinal_style}>Overall</span>
-                : (
-                        <span className="serif" style={{ display: 'flex', ...ordinal_style }}>
-                            <PointerButtonsIndex
-                                ordinal={props.overallOrdinal}
-                                statpath={props.statpath}
-                                type="overall"
-                                total={props.total_count_overall}
-                            />
-                        </span>
-                    ),
-        ],
+        ...(screenshotMode
+            ? []
+            : [
+                [8,
+                    'pointer_in_class',
+                    props.is_header
+                        ? <span className="serif" style={ordinal_style}>Within Type</span>
+                        : (
+                                <span className="serif" style={{ display: 'flex', ...ordinal_style }}>
+                                    <PointerButtonsIndex
+                                        ordinal={props.ordinal}
+                                        statpath={props.statpath}
+                                        type={props.article_type}
+                                        total={props.total_count_in_class}
+                                    />
+                                </span>
+                            ),
+                ],
+                [8,
+                    'pointer_overall',
+                    props.is_header
+                        ? <span className="serif" style={ordinal_style}>Overall</span>
+                        : (
+                                <span className="serif" style={{ display: 'flex', ...ordinal_style }}>
+                                    <PointerButtonsIndex
+                                        ordinal={props.overallOrdinal}
+                                        statpath={props.statpath}
+                                        type="overall"
+                                        total={props.total_count_overall}
+                                    />
+                                </span>
+                            ),
+                ],
+            ] satisfies [number, string, ReactNode][]),
     ]
     const cell_percentages: number[] = []
     const cell_contents = []
@@ -236,12 +242,12 @@ export function StatisticName(props: {
     rendered_statname: string
     curr_universe: string
     use_toggle: boolean
-    screenshot_mode: boolean
 }): ReactNode {
     const [expanded, setExpanded] = useSetting(row_expanded_key(props.statname))
+    const colors = useColors()
     const link = (
         <a
-            className="statname_no_link"
+            style={{ textDecoration: 'none', color: colors.textMain }}
             href={
                 statistic_link(
                     props.curr_universe,
@@ -253,7 +259,8 @@ export function StatisticName(props: {
             {props.rendered_statname}
         </a>
     )
-    if (props.use_toggle && !props.screenshot_mode) {
+    const screenshot_mode = useScreenshotMode()
+    if (props.use_toggle && !screenshot_mode) {
         return (
             <span style={{
                 display: 'flex',
@@ -267,7 +274,7 @@ export function StatisticName(props: {
                     className="expand-toggle"
                     onClick={() => { setExpanded(!expanded) }}
                     style={{
-                        cursor: 'pointer', border: '1px solid black',
+                        cursor: 'pointer', border: `1px solid ${colors.textMain}`,
                         padding: 0, borderRadius: '3px', fontSize: '75%',
                         minWidth: '1.5em', minHeight: '1.5em', textAlign: 'center',
                         lineHeight: '1.2em',
@@ -282,11 +289,20 @@ export function StatisticName(props: {
 }
 
 export function StatisticRow({ is_header, index, contents }: { is_header: boolean, index: number, contents: React.ReactNode }): React.ReactNode {
+    const colors = useColors()
+    const style = { ...table_row_style }
+    if (is_header) {
+        style.borderTop = `1pt solid ${colors.textMain}`
+        style.borderBottom = `1pt solid ${colors.textMain}`
+        style.fontWeight = 500
+    }
+    else if (index % 2 === 1) {
+        style.backgroundColor = colors.slightlyDifferentBackground
+    }
     return (
         <div
             key={index}
-            className={is_header ? 'tableheader' : index % 2 === 1 ? 'oddrow' : ''}
-            style={{ alignItems: is_header ? 'center' : 'last baseline', ...table_row_style }}
+            style={{ alignItems: is_header ? 'center' : 'last baseline', ...style }}
         >
             {contents}
         </div>

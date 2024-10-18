@@ -35,54 +35,51 @@ export function ArticlePanel({ article }: { article: Article }): ReactNode {
 
     return (
         <PageTemplate screencap_elements={screencap_elements} has_universe_selector={true} universes={article.universes}>
-            {template_info => (
-                <div>
-                    <div ref={headers_ref}>
-                        <div className={headerTextClass}>{article.shortname}</div>
-                        <div className={subHeaderTextClass}>{article.longname}</div>
-                    </div>
-                    <div style={{ marginBlockEnd: '16px' }}></div>
+            <div>
+                <div ref={headers_ref}>
+                    <div className={headerTextClass}>{article.shortname}</div>
+                    <div className={subHeaderTextClass}>{article.longname}</div>
+                </div>
+                <div style={{ marginBlockEnd: '16px' }}></div>
 
-                    <div className="stats_table" ref={table_ref}>
-                        <StatisticRowHeader screenshot_mode={template_info.screenshot_mode} />
-                        <ArticlePanelRows
-                            longname={article.longname}
-                            shortname={article.shortname}
-                            article_row={article}
-                            screenshot_mode={template_info.screenshot_mode}
-                        />
-                    </div>
-
-                    <p></p>
-
-                    <div ref={map_ref}>
-                        <Map
-                            longname={article.longname}
-                            related={article.related as NormalizeProto<IRelatedButtons>[]}
-                            article_type={article.articleType}
-                            basemap={{ type: 'osm' }}
-                        />
-                    </div>
-
-                    <div style={{ marginBlockEnd: '1em' }}></div>
-
-                    <div style={{ display: 'flex', alignItems: 'center' }}>
-                        <div style={{ width: '30%', marginRight: '1em' }}>
-                            <div className="serif" style={comparisonHeadStyle}>Compare to: </div>
-                        </div>
-                        <div style={{ width: '70%' }}>
-                            <ComparisonSearchBox longname={article.longname} />
-                        </div>
-                    </div>
-
-                    <script src="/scripts/map.js"></script>
-
-                    <Related
-                        related={article.related as NormalizeProto<IRelatedButtons>[]}
-                        article_type={article.articleType}
+                <div className="stats_table" ref={table_ref}>
+                    <StatisticRowHeader />
+                    <ArticlePanelRows
+                        longname={article.longname}
+                        shortname={article.shortname}
+                        article_row={article}
                     />
                 </div>
-            )}
+
+                <p></p>
+
+                <div ref={map_ref}>
+                    <Map
+                        longname={article.longname}
+                        related={article.related as NormalizeProto<IRelatedButtons>[]}
+                        article_type={article.articleType}
+                        basemap={{ type: 'osm' }}
+                    />
+                </div>
+
+                <div style={{ marginBlockEnd: '1em' }}></div>
+
+                <div style={{ display: 'flex', alignItems: 'center' }}>
+                    <div style={{ width: '30%', marginRight: '1em' }}>
+                        <div className="serif" style={comparisonHeadStyle}>Compare to: </div>
+                    </div>
+                    <div style={{ width: '70%' }}>
+                        <ComparisonSearchBox longname={article.longname} />
+                    </div>
+                </div>
+
+                <script src="/scripts/map.js"></script>
+
+                <Related
+                    related={article.related as NormalizeProto<IRelatedButtons>[]}
+                    article_type={article.articleType}
+                />
+            </div>
         </PageTemplate>
     )
 }
@@ -103,12 +100,12 @@ function ComparisonSearchBox({ longname }: { longname: string }): ReactNode {
     )
 }
 
-function StatisticRowHeader(props: { screenshot_mode: boolean }): ReactNode {
+function StatisticRowHeader(): ReactNode {
     const [simple_ordinals] = useSetting('simple_ordinals')
-    return <StatisticRowRaw index={0} _idx={-1} is_header={true} simple={simple_ordinals} screenshot_mode={props.screenshot_mode} />
+    return <StatisticRowRaw index={0} _idx={-1} is_header={true} simple={simple_ordinals} />
 }
 
-function ArticlePanelRows(props: { article_row: Article, longname: string, shortname: string, screenshot_mode: boolean }): ReactNode {
+function ArticlePanelRows(props: { article_row: Article, longname: string, shortname: string }): ReactNode {
     const curr_universe = useUniverse()
     const settings = useTableCheckboxSettings()
     const [simple_ordinals] = useSetting('simple_ordinals')
@@ -127,7 +124,6 @@ function ArticlePanelRows(props: { article_row: Article, longname: string, short
                     simple={simple_ordinals}
                     longname={props.longname}
                     shortname={props.shortname}
-                    screenshot_mode={props.screenshot_mode}
                 />
             ))}
         </>
