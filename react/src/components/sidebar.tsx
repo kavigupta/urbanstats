@@ -160,6 +160,7 @@ export function ColorThemeSetting(): ReactNode {
                 value={theme}
                 onChange={(e: React.ChangeEvent<HTMLSelectElement>) => { setTheme(e.target.value as Theme) }}
             >
+                <option value="System Theme">System Theme</option>
                 <option value="Light Mode">Light Mode</option>
                 <option value="Dark Mode">Dark Mode</option>
             </select>
