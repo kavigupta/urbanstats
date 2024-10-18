@@ -71,21 +71,21 @@ export const colorThemes: Record<Theme, Colors> = {
         hueColors: defaultHueColors,
     },
     'Dark Mode': {
-        background: '#1e1e1e',
-        slightlyDifferentBackground: '#333333',
-        slightlyDifferentBackgroundFocused: '#444444',
-        highlight: '#d4b5e2',
-        textMain: '#ffffff',
+        background: '#081000',
+        slightlyDifferentBackground: '#101808',
+        slightlyDifferentBackgroundFocused: '#181000',
+        highlight: '#3b1d49',
+        textMain: '#dddddd',
         textMainOpposite: '#000000',
-        textPointer: '#ffffff',
+        textPointer: '#dddddd',
         borderShadow: '#cccccc',
         borderNonShadow: '#333333',
-        ordinalTextColor: '#cccccc',
-        unselectedButton: '#333333',
-        selectedButton: '#cccccc',
+        ordinalTextColor: '#bbbbbb',
+        unselectedButton: '#303030',
+        selectedButton: '#a2a6ae',
         selectedButtonText: '#000000',
-        blueLink: '#88f',
-        bannerURL: '/banner_dark.png',
+        blueLink: '#aaaaff',
+        bannerURL: '/banner-dark.png',
         mixPct: 50,
         hueColors: defaultHueColors,
     },
@@ -93,5 +93,9 @@ export const colorThemes: Record<Theme, Colors> = {
 
 export function useColors(): Colors {
     const [theme] = useSetting('theme')
+    if (theme === 'System Theme') {
+        const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'Dark Mode' : 'Light Mode'
+        return colorThemes[systemTheme]
+    }
     return colorThemes[theme]
 }
