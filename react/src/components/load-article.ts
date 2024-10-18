@@ -130,7 +130,8 @@ export function load_article(universe: string, data: Article, settings: TableChe
                     counts: histogram.counts,
                     universe_total: data.rows.find((_, universe_row_index) => indices[universe_row_index] === universe_total_idx)!.statval!,
                 } as HistogramExtraStat
-            } else {
+            }
+            else {
                 const years = spec.years
                 const name = spec.name
                 const time_series = data.extraStats[extra_stat_idx].timeseries!
