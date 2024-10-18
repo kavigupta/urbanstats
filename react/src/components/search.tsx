@@ -144,6 +144,7 @@ export const SearchBox = (props: {
                     borderWidth: '0.1em',
                     color: colors.textMain,
                     borderRadius: '5px',
+                    border: `1px solid ${colors.ordinalTextColor}`,
                     ...props.style }}
                 placeholder={props.placeholder}
                 onKeyUp={onTextBoxKeyUp}
