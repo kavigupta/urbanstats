@@ -42,23 +42,20 @@ function RenderedPlot({ plot_props }: { plot_props: PlotProps[] }): ReactNode {
             />
         )
     }
-    else if (type === 'time_series') {
-        return (
-            <TimeSeriesPlot
-                stats={plot_props.map(
-                    (props) => {
-                        if (props.extra_stat?.type !== 'time_series') {
-                            throw new Error('expected time_series')
-                        }
-                        return {
-                            shortname: props.shortname!,
-                            stat: props.extra_stat,
-                            color: props.color,
-                        }
-                    },
-                )}
-            />
-        )
-    }
-    throw new Error(`plot not recognized: ${JSON.stringify(plot_props)}`)
+    return (
+        <TimeSeriesPlot
+            stats={plot_props.map(
+                (props) => {
+                    if (props.extra_stat?.type !== 'time_series') {
+                        throw new Error('expected time_series')
+                    }
+                    return {
+                        shortname: props.shortname!,
+                        stat: props.extra_stat,
+                        color: props.color,
+                    }
+                },
+            )}
+        />
+    )
 }

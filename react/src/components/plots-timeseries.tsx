@@ -12,7 +12,7 @@ export interface TimeSeriesPlotProps {
     shortname: string
 }
 
-export function TimeSeriesPlot(props: { stats: TimeSeriesPlotProps[], screenshot_mode: boolean }): ReactNode {
+export function TimeSeriesPlot(props: { stats: TimeSeriesPlotProps[] }): ReactNode {
     const settings_element = (): ReactElement => <div></div>
 
     const plot_spec = useMemo(
@@ -43,7 +43,7 @@ export function TimeSeriesPlot(props: { stats: TimeSeriesPlotProps[], screenshot
                 return Plot.line(
                     x.map((xval, i) => [xval, y[i]]),
                     { stroke: stat.color, strokeWidth: 2 },
-                ) as Plot.Mark
+                ) as Plot.Markish
             })
             marks.push(
                 Plot.axisX({
@@ -63,7 +63,6 @@ export function TimeSeriesPlot(props: { stats: TimeSeriesPlotProps[], screenshot
     return (
         <PlotComponent
             plot_spec={plot_spec}
-            screenshot_mode={props.screenshot_mode}
             settings_element={settings_element}
         />
     )
