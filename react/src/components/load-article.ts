@@ -7,7 +7,13 @@ interface HistogramExtraStatSpec {
     universe_total_idx: number
 }
 
-type ExtraStatSpec = HistogramExtraStatSpec
+interface TimeSeriesExtraStatSpec {
+    type: 'time_series'
+    years: number[]
+    name: string
+}
+
+type ExtraStatSpec = HistogramExtraStatSpec | TimeSeriesExtraStatSpec
 
 export interface HistogramExtraStat {
     type: 'histogram'
@@ -17,7 +23,14 @@ export interface HistogramExtraStat {
     universe_total: number
 }
 
-export type ExtraStat = HistogramExtraStat
+export interface TimeSeriesExtraStat {
+    type: 'time_series'
+    name: string
+    years: number[]
+    time_series: number[]
+}
+
+export type ExtraStat = HistogramExtraStat | TimeSeriesExtraStat
 
 export interface ArticleRow {
     statval: number
@@ -117,9 +130,16 @@ export function load_article(universe: string, data: Article, settings: TableChe
                     counts: histogram.counts,
                     universe_total: data.rows.find((_, universe_row_index) => indices[universe_row_index] === universe_total_idx)!.statval!,
                 } as HistogramExtraStat
-            }
-            else {
-                throw new Error('Unknown extra stat type')
+            } else {
+                const years = spec.years
+                const name = spec.name
+                const time_series = data.extraStats[extra_stat_idx].timeseries!
+                extra_stat = {
+                    type: 'time_series',
+                    years,
+                    name,
+                    time_series: time_series.values!,
+                } as TimeSeriesExtraStat
             }
         }
         return {
