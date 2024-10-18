@@ -1,6 +1,6 @@
 from abc import abstractmethod
 import numpy as np
-from permacache import permacache
+from permacache import permacache, stable_hash
 
 from census_blocks import RADII, all_densities_gpd, housing_units, racial_demographics
 from urbanstats.geometry.census_aggregation import aggregate_by_census_block
@@ -186,6 +186,35 @@ class CensusForPreviousYear(CensusStatisticsColection):
         }
 
 
+class Census2020(CensusForPreviousYear):
+    # This isn't actually used for 2020, but it is used to just quickly source the 2020 data
+    # for computing other statistics
+    version = 0
+
+    def year(self):
+        return 2020
+
+    def include_change(self):
+        return False
+
+    def quiz_question_names(self):
+        # TODO this is a hack to avoid a crash. We need to fix this when we migrate to
+        # using this for 2020 data
+        return {}
+
+    def quiz_question_unused(self):
+        # TODO this is a hack to avoid a crash. We need to fix this when we migrate to
+        # using this for 2020 data
+        return list(self.name_for_each_statistic().keys())
+
+    def compute_statistics(self, shapefile, statistics_table, shapefile_table):
+        super().compute_statistics(shapefile, statistics_table, shapefile_table)
+        for k in statistics_table:
+            if k.endswith("_2020"):
+                statistics_table[k.replace("_2020", "")] = statistics_table[k]
+                del statistics_table[k]
+
+
 class Census2010(CensusForPreviousYear):
     version = 5
 
@@ -219,3 +248,59 @@ def aggregate_basics_of_year(shapefile, year):
     t = all_densities_gpd(year).copy()
     t.columns = [f"{k}_{year}" for k in t.columns]
     return aggregate_by_census_block(year, shapefile, t[sum_keys])
+
+
+def extract_state_fips_from_geoid(geoid):
+    prefix = "7500000US"
+    assert geoid.startswith(prefix)
+    return geoid[len(prefix) :][:2]
+
+
+@permacache(
+    "urbanstats/statistics/collections/compute_population_for_year_3",
+    key_function=dict(shapefile=lambda x: x.hash_key),
+)
+def compute_population_for_year(shapefile, *, no_pr):
+    """
+    Compute the population for a shapefile for a given year
+    """
+    t = all_densities_gpd(2020)[["geoid", "population"]].copy()
+    if no_pr:
+        mask = t.geoid.apply(lambda x: extract_state_fips_from_geoid(x)) == "72"
+        t.loc[mask, "population"] = 0
+    t = t[["population"]]
+    agg = aggregate_by_census_block(2020, shapefile, t)
+    return agg["population"]
+
+
+@permacache(
+    "urbanstats/statistics/collections/population_by_year_4",
+    key_function=dict(shapefile=lambda x: x.hash_key),
+)
+def population_by_year(shapefile, *, no_pr):
+    """
+    If no_pr is True, then Puerto Rico is not included in the population statistics
+    """
+    shapefile_table = shapefile.load_file()
+    statistics_table = shapefile_table[["longname"]].copy()
+    for year in [2000, 2010, 2020]:
+        statistics_table[year] = compute_population_for_year(
+            shapefile, no_pr=no_pr
+        )
+    return statistics_table[[2000, 2010, 2020]]
+
+
+def compute_population(pop_by_year, year):
+    if year in pop_by_year.columns:
+        return pop_by_year[year]
+    lower = [y for y in pop_by_year.columns if y < year]
+    higher = [y for y in pop_by_year.columns if y > year]
+    if not lower:
+        return pop_by_year[min(higher)]
+    if not higher:
+        return pop_by_year[max(lower)]
+    year_lower, year_higher = max(lower), min(higher)
+    pop_before, pop_after = pop_by_year[year_lower], pop_by_year[year_higher]
+    coeff_before = (year_higher - year) / (year_higher - year_lower)
+    coeff_after = 1 - coeff_before
+    return pop_before * coeff_before + pop_after * coeff_after
