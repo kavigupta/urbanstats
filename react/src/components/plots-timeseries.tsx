@@ -43,7 +43,7 @@ export function TimeSeriesPlot(props: { stats: TimeSeriesPlotProps[], screenshot
                 return Plot.line(
                     x.map((xval, i) => [xval, y[i]]),
                     { stroke: stat.color, strokeWidth: 2 },
-                )
+                ) as Plot.Mark
             })
             marks.push(
                 Plot.axisX({
