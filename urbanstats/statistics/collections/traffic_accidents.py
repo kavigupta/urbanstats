@@ -10,7 +10,7 @@ from urbanstats.statistics.statistic_collection import USAStatistics
 
 
 class NHTSAAccidentStatistics(USAStatistics):
-    version = 4
+    version = 5
 
     def name_for_each_statistic(self):
         return {
@@ -66,24 +66,9 @@ class NHTSAAccidentStatistics(USAStatistics):
             statistics_table[f"{prefix}_last_decade_per_capita"] = np.array(
                 sum(acc_per_cap[y] for y in last_decade) / len(last_decade)
             )
-            statistics_table[f"{prefix}_by_year"] = list(
-                pd.DataFrame(acc_raw).apply(list, axis=1)
-            )
-            statistics_table[f"{prefix}_per_capita_by_year"] = list(
-                pd.DataFrame(acc_per_cap).apply(list, axis=1)
-            )
 
     def mutate_statistic_table(self, statistics_table, shapefile_table):
         raise NotImplementedError
 
     def extra_stats(self):
-        return {
-            "traffic_fatalities_last_decade": TimeSeriesSpec(
-                accident_years, "Traffic Fatalities", "traffic_fatalities_by_year"
-            ),
-            "traffic_fatalities_last_decade_per_capita": TimeSeriesSpec(
-                accident_years,
-                "Traffic Fatalities Per Capita",
-                "traffic_fatalities_per_capita_by_year",
-            ),
-        }
+        return {}
