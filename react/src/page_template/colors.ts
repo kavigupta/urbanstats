@@ -94,7 +94,6 @@ export const colorThemes: Record<Theme, Colors> = {
 export function useColors(): Colors {
     const [theme] = useSetting('theme')
     if (theme === 'System Theme') {
-        console.log(window.matchMedia('(prefers-color-scheme: dark)'))
         const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'Dark Mode' : 'Light Mode'
         return colorThemes[systemTheme]
     }
