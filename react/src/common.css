@@ -89,3 +89,12 @@
         transform: rotate(360deg);
     }
 }
+
+.checkbox-setting label {
+    position: relative;
+    vertical-align: middle;
+}
+
+input[type=checkbox] {
+    vertical-align: middle;
+}
