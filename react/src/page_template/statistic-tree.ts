@@ -37,7 +37,7 @@ export interface Statistic {
     parent: GroupYear
 }
 
-export const rawStatsTree = require('../data/statistics_tree.json') as {
+const rawStatsTree = require('../data/statistics_tree.json') as {
     id: CategoryIdentifier
     name: string
     contents: {
@@ -99,7 +99,7 @@ for (const category of statsTree) {
     }
 }
 
-export function sortYears(year1: number, year2: number): number {
+function sortYears(year1: number, year2: number): number {
     return year2 - year1
 }
 

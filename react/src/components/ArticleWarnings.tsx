@@ -1,8 +1,8 @@
 import React, { ReactNode } from 'react'
 
 import { useColors } from '../page_template/colors'
-import { useGroupsMissingYearSelection, useSelectedGroups } from '../page_template/statistic-settings'
-import { Category, Group, sortYears } from '../page_template/statistic-tree'
+import { useAvailableYears, useGroupsMissingYearSelection, useSelectedGroups } from '../page_template/statistic-settings'
+import { Category, Group } from '../page_template/statistic-tree'
 
 import { useScreenshotMode } from './screenshot'
 
@@ -10,6 +10,7 @@ export function ArticleWarnings(): ReactNode {
     const screenshotMode = useScreenshotMode()
     const selectedGroups = useSelectedGroups()
     const groupsMissingYearSelection = useGroupsMissingYearSelection()
+    const availableYears = useAvailableYears()
 
     if (screenshotMode) {
         return null
@@ -27,7 +28,7 @@ export function ArticleWarnings(): ReactNode {
                         {' '}
                         <b><HierarchicalName groupOrCategory={groupOrCategory} /></b>
                         {' statistics, select '}
-                        <YearList years={Array.from(groupOrCategory.years).filter(year => year !== null).sort(sortYears)} />
+                        <YearList years={availableYears.filter(year => groupOrCategory.years.has(year))} />
                         .
                     </>
                 )),
