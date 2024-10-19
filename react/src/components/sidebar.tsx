@@ -138,7 +138,7 @@ export function Sidebar(): ReactNode {
 // type representing a key of SettingsDictionary that have boolean values
 type BooleanSettingKey = keyof { [K in keyof SettingsDictionary as SettingsDictionary[K] extends boolean | undefined ? K : never]: boolean }
 
-export function CheckboxSetting(props: { name: string, setting_key: BooleanSettingKey, classNameToUse?: string, id?: string }): ReactNode {
+export function CheckboxSetting(props: { name: string, setting_key: BooleanSettingKey, classNameToUse?: string, id?: string, testId?: string }): ReactNode {
     const [checked, setChecked] = useSetting(props.setting_key)
 
     return (
@@ -148,6 +148,7 @@ export function CheckboxSetting(props: { name: string, setting_key: BooleanSetti
             onChange={setChecked}
             classNameToUse={props.classNameToUse}
             id={props.id}
+            testId={props.testId}
         />
     )
 };
@@ -174,7 +175,7 @@ export function ColorThemeSetting(): ReactNode {
     )
 };
 
-export function CheckboxSettingCustom(props: { name: string, checked: boolean, indeterminate?: boolean, onChange: (checked: boolean) => void, classNameToUse?: string, id?: string }): ReactNode {
+export function CheckboxSettingCustom(props: { name: string, checked: boolean, indeterminate?: boolean, onChange: (checked: boolean) => void, classNameToUse?: string, id?: string, testId?: string }): ReactNode {
     const colors = useColors()
 
     const id = useId()
@@ -195,6 +196,7 @@ export function CheckboxSettingCustom(props: { name: string, checked: boolean, i
                 onChange={(e) => { props.onChange(e.target.checked) }}
                 ref={checkboxRef}
                 style={{ accentColor: colors.hueColors.blue, backgroundColor: colors.background }}
+                data-test-id={props.testId}
             />
             <label htmlFor={inputId}>{props.name}</label>
         </div>

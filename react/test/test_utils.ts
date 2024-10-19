@@ -175,3 +175,7 @@ export function urbanstatsFixture(name: string, url: string, beforeEach: undefin
             }
         })
 }
+
+export async function arrayFromSelector(selector: Selector): Promise<Selector[]> {
+    return Array.from({ length: await selector.count }, (_, n) => selector.nth(n))
+}

@@ -20,6 +20,7 @@ function CategoryComponent({ category }: { category: Category }): ReactNode {
         <li>
             <div style={{ position: 'relative' }}>
                 <button
+                    data-category-id={category.id}
                     onClick={() => { setIsExpanded(!isExpanded) }}
                     className="expandButton"
                     style={{ transform: isExpanded ? `rotate(${isMobileLayout ? -90 : 90}deg)` : 'rotate(0deg)' }}
@@ -31,6 +32,7 @@ function CategoryComponent({ category }: { category: Category }): ReactNode {
                     checked={categoryStatus === true}
                     indeterminate={categoryStatus === 'indeterminate'}
                     onChange={changeCategorySetting}
+                    testId={`category_${category.id}`}
                 />
             </div>
             <CategoryContents key={category.id} category={category} isExpanded={isExpanded} />
@@ -47,6 +49,7 @@ function GroupComponent({ group }: { group: Group }): ReactNode {
                 name={group.name}
                 checked={checked}
                 onChange={(newValue) => { changeStatGroupSetting(settings, group, newValue) }}
+                testId={`group_${group.id}`}
             />
         </li>
     )
