@@ -322,6 +322,18 @@ export function Statistic(props: { style?: React.CSSProperties, statname: string
                 }
                 return <span>{(value * 100).toFixed(2)}</span>
             }
+            else if (name.includes('Total') && name.includes('Fatalities')) {
+                if (is_unit) {
+                    return <span>&nbsp;</span>
+                }
+                return <span>{value.toFixed(0)}</span>
+            }
+            else if (name.includes('Fatalities Per Capita')) {
+                if (is_unit) {
+                    return <span>/100k</span>
+                }
+                return <span>{(100_000 * value).toFixed(2)}</span>
+            }
             else if (name.includes('Density')) {
                 const is_imperial = use_imperial
                 let unit_name = 'km'
