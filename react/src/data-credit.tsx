@@ -210,27 +210,27 @@ function DataCreditPanel(): ReactNode {
                         </p>
                         <p>
                             Technical details follow, but as a TLDR, the three metrics we compute are
-                            <ul>
-                                <li>
-                                    Homogenity: the mean probability that a person will encounter someone
-                                    of the same race if they randomly select a person in the 250m circle
-                                    centered around them.
-                                </li>
-                                <li>
-                                    Segregation: the homogenity metric normalized to be between 0 and 1,
-                                    where 0 is if the region of interest had its population perfectly
-                                    equally distributed by race, and 1 is if the region of interest
-                                    was perfectly segregated (homogenity 100%).
-                                </li>
-                                <li>
-                                    Local Segregation: the segregation metric in a 10km circle around
-                                    each block, averaged over all blocks. This metric is included to
-                                    reflect more local patterns of segregation and not penalize, e.g.,
-                                    states that have Native American reservations or large states with
-                                    far apart cities with distinct racial distributions.
-                                </li>
-                            </ul>
                         </p>
+                        <ul>
+                            <li>
+                                Homogenity: the mean probability that a person will encounter someone
+                                of the same race if they randomly select a person in the 250m circle
+                                centered around them.
+                            </li>
+                            <li>
+                                Segregation: the homogenity metric normalized to be between 0 and 1,
+                                where 0 is if the region of interest had its population perfectly
+                                equally distributed by race, and 1 is if the region of interest
+                                was perfectly segregated (homogenity 100%).
+                            </li>
+                            <li>
+                                Local Segregation: the segregation metric in a 10km circle around
+                                each block, averaged over all blocks. This metric is included to
+                                reflect more local patterns of segregation and not penalize, e.g.,
+                                states that have Native American reservations or large states with
+                                far apart cities with distinct racial distributions.
+                            </li>
+                        </ul>
                         <p>
                             Massey and Denton use the following metric of isolation:
                             <MathJax>
@@ -598,6 +598,20 @@ function DataCreditPanel(): ReactNode {
                     {' '}
                     for
                     helping process the park data.
+                </div>
+                <NRef name="nhtsa_accidents" h="h1">Traffic Fatality Data</NRef>
+                <div>
+                    We compute the number of traffic fatalities in a region based on the
+                    {' '}
+                    <a href="https://www.nhtsa.gov/research-data/fatality-analysis-reporting-system-fars">NHTSA FARS dataset</a>
+                    . We use the decade 2013-2022. Raw numbers for each geography are provided because this is the most accurate
+                    information. We then compute a per capita number for each year by dividing the number of fatalities by the
+                    population for that year (interpolating between census years).
+                    {' '}
+                    <b>
+                        Note that this is not a perfect measure
+                        because the fatalities are not necessarily residents of the geography in which they occur.
+                    </b>
                 </div>
                 <h1>Distance from Features</h1>
                 <div>
