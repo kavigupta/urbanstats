@@ -43,7 +43,7 @@ export function StatisticRowRaw(props: StatisticRowRawProps & { index: number, l
     const cell_contents = StatisticRowRawCellContents({ ...props, total_width: 100 })
 
     return (
-        <WithPlot plot_props={[{ ...props, color: colors.hueColors.blue, shortname: props.shortname }]} expanded={expanded}>
+        <WithPlot plot_props={[{ ...props, color: colors.hueColors.blue, shortname: props.shortname }]} expanded={expanded ?? false}>
             <StatisticRow is_header={props.is_header} index={props.index} contents={cell_contents} />
         </WithPlot>
     )

@@ -136,7 +136,7 @@ export function Sidebar(): ReactNode {
 }
 
 // type representing a key of SettingsDictionary that have boolean values
-type BooleanSettingKey = keyof { [K in keyof SettingsDictionary as SettingsDictionary[K] extends boolean ? K : never]: boolean }
+type BooleanSettingKey = keyof { [K in keyof SettingsDictionary as SettingsDictionary[K] extends boolean | undefined ? K : never]: boolean }
 
 export function CheckboxSetting(props: { name: string, setting_key: BooleanSettingKey, classNameToUse?: string, id?: string }): ReactNode {
     const [checked, setChecked] = useSetting(props.setting_key)
@@ -144,7 +144,7 @@ export function CheckboxSetting(props: { name: string, setting_key: BooleanSetti
     return (
         <CheckboxSettingCustom
             name={props.name}
-            checked={checked}
+            checked={checked ?? false}
             onChange={setChecked}
             classNameToUse={props.classNameToUse}
             id={props.id}

@@ -15,11 +15,11 @@ export type StatCategoryExpandedKey = `stat_category_expanded_${CategoryIdentifi
 export type StatYearKey = `show_stat_year_${number}`
 
 export interface SettingsDictionary {
-    [relationshipKey: RelationshipKey]: boolean
+    [relationshipKey: RelationshipKey]: boolean | undefined
     [showStatisticKey: StatGroupKey]: boolean
     [savedIndeterminateKey: StatCategorySavedIndeterminateKey]: GroupIdentifier[] // array of child keys
     [expandedKey: StatCategoryExpandedKey]: boolean
-    [rowExpandedKey: RowExpandedKey]: boolean
+    [rowExpandedKey: RowExpandedKey]: boolean | undefined
     [statYearKey: StatYearKey]: boolean
     show_historical_cds: boolean
     simple_ordinals: boolean
