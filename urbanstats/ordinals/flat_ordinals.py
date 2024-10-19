@@ -50,7 +50,7 @@ def compute_flat_ordinals(full, ordering):
     percentiles_flat = np.array(
         [
             np.array(ordering.by_column[k].percentile[idx_in_sorted, ut_idxs])[0]
-            for k in tqdm.tqdm(statistic_internal_to_display_name())
+            for k in tqdm.tqdm(internal_statistic_names())
         ]
     )
     return FlatOrdinals(
