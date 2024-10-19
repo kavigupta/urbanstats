@@ -21,7 +21,7 @@ export function useSidebarSectionContentClassName(): string {
 
 export function Sidebar(): ReactNode {
     const colors = useColors()
-    const link_style = { color: colors.hueColors.blue }
+    const link_style = { color: colors.blueLink }
     const sidebar_section_title: React.CSSProperties = {
         marginBottom: useMobileLayout() ? '0.75rem' : '0.5rem',
         borderBottom: `1px solid ${colors.borderNonShadow}`,
