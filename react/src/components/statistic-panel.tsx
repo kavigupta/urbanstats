@@ -291,7 +291,7 @@ function PerPageSelector(props: {
         <div style={{ margin: 'auto', textAlign: 'center' }}>
             <span>
                 <select
-                    style={{ backgroundColor: colors.background }}
+                    style={{ backgroundColor: colors.background, color: colors.textMain }}
                     defaultValue={
                         props.per_page === props.total ? 'All' : props.per_page
                     }
@@ -326,6 +326,7 @@ function SelectPage(props: {
         border: `1px solid ${colors.textMain}`,
         padding: '0 0.5em',
         margin: '0.5em',
+        color: colors.textMain,
     }
 
     const curr_universe = useUniverse()
@@ -337,7 +338,7 @@ function SelectPage(props: {
                 <input
                     type="string"
                     pattern="[0-9]*"
-                    style={{ width: '3em', textAlign: 'right', backgroundColor: colors.background }}
+                    style={{ width: '3em', textAlign: 'right', backgroundColor: colors.background, color: colors.textMain }}
                     className="serif"
                     defaultValue={props.current_page}
                     onKeyDown={(e) => {
@@ -366,10 +367,11 @@ function SelectPage(props: {
 
 function ArticleLink(props: { longname: string }): ReactNode {
     const curr_universe = useUniverse()
+    const colors = useColors()
     return (
         <a
             href={article_link(curr_universe, props.longname)}
-            style={{ fontWeight: 500, color: 'black', textDecoration: 'none' }}
+            style={{ fontWeight: 500, color: colors.textMain, textDecoration: 'none' }}
         >
             {props.longname}
         </a>

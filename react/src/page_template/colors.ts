@@ -2,7 +2,6 @@ import { useSetting } from './settings'
 
 export interface HueColors {
     blue: string
-    blueLink: string
     orange: string
     darkOrange: string
     purple: string
@@ -21,6 +20,7 @@ export interface Colors {
     slightlyDifferentBackgroundFocused: string
     highlight: string
     textMain: string
+    textMainOpposite: string
     textPointer: string
     borderShadow: string
     borderNonShadow: string
@@ -28,12 +28,14 @@ export interface Colors {
     unselectedButton: string
     selectedButton: string
     selectedButtonText: string
+    blueLink: string
+    bannerURL: string
+    mixPct: number
     hueColors: HueColors
 }
 
 const defaultHueColors: HueColors = {
     blue: '#5a7dc3',
-    blueLink: '#22f',
     orange: '#f7aa41',
     darkOrange: '#af6707',
     purple: '#975ac3',
@@ -55,6 +57,7 @@ export const colorThemes: Record<Theme, Colors> = {
         slightlyDifferentBackgroundFocused: '#ffe0e0',
         highlight: '#d4b5e2',
         textMain: '#000000',
+        textMainOpposite: '#ffffff',
         textPointer: '#222222',
         borderShadow: '#333333',
         borderNonShadow: '#cccccc',
@@ -62,26 +65,37 @@ export const colorThemes: Record<Theme, Colors> = {
         unselectedButton: '#e6e9ef',
         selectedButton: '#4e525a',
         selectedButtonText: '#ffffff',
+        blueLink: '#22f',
+        bannerURL: '/banner.png',
+        mixPct: 70,
         hueColors: defaultHueColors,
     },
     'Dark Mode': {
-        background: '#1e1e1e',
-        slightlyDifferentBackground: '#333333',
-        slightlyDifferentBackgroundFocused: '#444444',
-        highlight: '#d4b5e2',
-        textMain: '#ffffff',
-        textPointer: '#ffffff',
+        background: '#081000',
+        slightlyDifferentBackground: '#101808',
+        slightlyDifferentBackgroundFocused: '#181000',
+        highlight: '#3b1d49',
+        textMain: '#dddddd',
+        textMainOpposite: '#000000',
+        textPointer: '#dddddd',
         borderShadow: '#cccccc',
         borderNonShadow: '#333333',
-        ordinalTextColor: '#cccccc',
-        unselectedButton: '#333333',
-        selectedButton: '#cccccc',
+        ordinalTextColor: '#bbbbbb',
+        unselectedButton: '#303030',
+        selectedButton: '#a2a6ae',
         selectedButtonText: '#000000',
+        blueLink: '#aaaaff',
+        bannerURL: '/banner-dark.png',
+        mixPct: 50,
         hueColors: defaultHueColors,
     },
 }
 
 export function useColors(): Colors {
     const [theme] = useSetting('theme')
+    if (theme === 'System Theme') {
+        const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'Dark Mode' : 'Light Mode'
+        return colorThemes[systemTheme]
+    }
     return colorThemes[theme]
 }

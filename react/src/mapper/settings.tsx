@@ -174,7 +174,7 @@ function ConstantParametersSelector({ ramp, set_ramp }: { ramp: ConstantRampDesc
             </div>
             <input
                 type="number"
-                style={{ width: '5em', backgroundColor: colors.background }}
+                style={{ width: '5em', backgroundColor: colors.background, color: colors.textMain }}
                 value={ramp.lower_bound}
                 onChange={(e) => {
                     set_ramp({
@@ -189,7 +189,7 @@ function ConstantParametersSelector({ ramp, set_ramp }: { ramp: ConstantRampDesc
             </div>
             <input
                 type="number"
-                style={{ width: '5em', backgroundColor: colors.background }}
+                style={{ width: '5em', backgroundColor: colors.background, color: colors.textMain }}
                 value={ramp.upper_bound}
                 onChange={(e) => {
                     set_ramp({
@@ -242,7 +242,7 @@ function RampSelector(props: { ramp: RampDescriptor, set_ramp: (newValue: RampDe
                 </div>
                 <input
                     type="checkbox"
-                    style={{ backgroundColor: colors.background }}
+                    style={{ backgroundColor: colors.background, color: colors.textMain }}
                     checked={props.ramp.reversed ?? false}
                     onChange={(e) => {
                         props.set_ramp({
@@ -269,7 +269,7 @@ function LineStyleSelector(props: { line_style: LineStyle, set_line_style: (newV
                 </div>
                 <input
                     type="color"
-                    style={{ backgroundColor: colors.background }}
+                    style={{ backgroundColor: colors.background, color: colors.textMain }}
                     value={props.line_style.color}
                     onChange={(e) => {
                         props.set_line_style({
@@ -285,7 +285,7 @@ function LineStyleSelector(props: { line_style: LineStyle, set_line_style: (newV
                 </div>
                 <input
                     type="number"
-                    style={{ width: '5em', backgroundColor: colors.background }}
+                    style={{ width: '5em', backgroundColor: colors.background, color: colors.textMain }}
                     value={props.line_style.weight}
                     onChange={(e) => {
                         props.set_line_style({
@@ -313,7 +313,7 @@ function BaseMapSelector({ basemap, set_basemap }: { basemap: Basemap, set_basem
                 </div>
                 <input
                     type="checkbox"
-                    style={{ backgroundColor: colors.background }}
+                    style={{ backgroundColor: colors.background, color: colors.textMain }}
                     checked={basemap.type !== 'none'}
                     onChange={(e) => {
                         set_basemap({

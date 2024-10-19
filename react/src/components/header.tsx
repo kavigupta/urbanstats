@@ -23,7 +23,6 @@ export function Header(props: {
     initiate_screenshot: (curr_universe: string) => void
 }): ReactNode {
     const curr_universe = useUniverse()
-    const colors = useColors()
     return (
         <div className="top_panel">
             <TopLeft
@@ -66,7 +65,6 @@ export function Header(props: {
                             placeholder="Search Urban Stats"
                             style={{
                                 fontSize: '30px',
-                                border: `1px solid ${colors.ordinalTextColor}`,
                                 paddingLeft: '1em',
                                 width: '100%',
                                 verticalAlign: 'middle',
@@ -114,7 +112,8 @@ function TopLeft(props: {
 }
 
 function HeaderImage(): ReactNode {
-    const path = useMobileLayout() ? '/thumbnail.png' : '/banner.png'
+    const colors = useColors()
+    const path = useMobileLayout() ? '/thumbnail.png' : colors.bannerURL
     return (
         <a href="/index.html">
             <img

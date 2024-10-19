@@ -2,6 +2,7 @@ import React, { ReactNode } from 'react'
 
 import { ExtraStat } from './load-article'
 import { Histogram } from './plots-histogram'
+import { TimeSeriesPlot } from './plots-timeseries'
 
 interface PlotProps {
     shortname?: string
@@ -19,20 +20,42 @@ export function WithPlot(props: { children: React.ReactNode, plot_props: PlotPro
 }
 
 function RenderedPlot({ plot_props }: { plot_props: PlotProps[] }): ReactNode {
-    if (plot_props.some(p => p.extra_stat?.type === 'histogram')) {
-        plot_props = plot_props.filter(p => p.extra_stat?.type === 'histogram')
+    const type = plot_props[0].extra_stat?.type
+    if (type === 'histogram') {
         return (
             <Histogram
-                histograms={plot_props.map(
-                    props => ({
-                        shortname: props.shortname!,
-                        histogram: props.extra_stat!,
-                        color: props.color,
-                        universe_total: props.extra_stat!.universe_total,
-                    }),
+                histograms={plot_props.flatMap(
+                    (props) => {
+                        if (props.extra_stat?.type !== 'histogram') {
+                            return []
+                        }
+                        return [
+                            {
+                                shortname: props.shortname!,
+                                histogram: props.extra_stat,
+                                color: props.color,
+                                universe_total: props.extra_stat.universe_total,
+                            },
+                        ]
+                    },
                 )}
             />
         )
     }
-    throw new Error(`plot not recognized: ${JSON.stringify(plot_props)}`)
+    return (
+        <TimeSeriesPlot
+            stats={plot_props.map(
+                (props) => {
+                    if (props.extra_stat?.type !== 'time_series') {
+                        throw new Error('expected time_series')
+                    }
+                    return {
+                        shortname: props.shortname!,
+                        stat: props.extra_stat,
+                        color: props.color,
+                    }
+                },
+            )}
+        />
+    )
 }

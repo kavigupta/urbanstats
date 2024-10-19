@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
+from typing import List
 
 from urbanstats.protobuf import data_files_pb2
 
@@ -48,3 +49,21 @@ class HistogramSpec(ExtraStatistic):
                 self.universe_column
             ),
         )
+
+
+@dataclass
+class TimeSeriesSpec(ExtraStatistic):
+    years: List[int]
+    name: str
+    key: str
+
+    def create(self, data_row):
+        result = data_files_pb2.ExtraStatistic()
+        if isinstance(data_row[self.key], float):
+            assert data_row[self.key] != data_row[self.key]
+            return result
+        result.timeseries.values.extend(data_row[self.key])
+        return result
+
+    def extra_stat_spec(self):
+        return dict(type="time_series", years=self.years, name=self.name)

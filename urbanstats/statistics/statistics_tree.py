@@ -152,6 +152,10 @@ statistics_tree = {
         "vehicle_ownership_none",
         "vehicle_ownership_at_least_1",
         "vehicle_ownership_at_least_2",
+        "traffic_fatalities_last_decade_per_capita",
+        "traffic_fatalities_ped_last_decade_per_capita",
+        "traffic_fatalities_last_decade",
+        "traffic_fatalities_ped_last_decade",
     ),
     **just_2020_category(
         "health",

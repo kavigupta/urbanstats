@@ -244,9 +244,10 @@ export function StatisticName(props: {
     use_toggle: boolean
 }): ReactNode {
     const [expanded, setExpanded] = useSetting(row_expanded_key(props.statname))
+    const colors = useColors()
     const link = (
         <a
-            className="statname_no_link"
+            style={{ textDecoration: 'none', color: colors.textMain }}
             href={
                 statistic_link(
                     props.curr_universe,
@@ -273,7 +274,7 @@ export function StatisticName(props: {
                     className="expand-toggle"
                     onClick={() => { setExpanded(!expanded) }}
                     style={{
-                        cursor: 'pointer', border: '1px solid black',
+                        cursor: 'pointer', border: `1px solid ${colors.textMain}`,
                         padding: 0, borderRadius: '3px', fontSize: '75%',
                         minWidth: '1.5em', minHeight: '1.5em', textAlign: 'center',
                         lineHeight: '1.2em',
@@ -291,8 +292,8 @@ export function StatisticRow({ is_header, index, contents }: { is_header: boolea
     const colors = useColors()
     const style = { ...table_row_style }
     if (is_header) {
-        style.borderTop = '1pt solid black'
-        style.borderBottom = '1pt solid black'
+        style.borderTop = `1pt solid ${colors.textMain}`
+        style.borderBottom = `1pt solid ${colors.textMain}`
         style.fontWeight = 500
     }
     else if (index % 2 === 1) {
@@ -320,6 +321,18 @@ export function Statistic(props: { style?: React.CSSProperties, statname: string
                     return <span>%</span>
                 }
                 return <span>{(value * 100).toFixed(2)}</span>
+            }
+            else if (name.includes('Total') && name.includes('Fatalities')) {
+                if (is_unit) {
+                    return <span>&nbsp;</span>
+                }
+                return <span>{value.toFixed(0)}</span>
+            }
+            else if (name.includes('Fatalities Per Capita')) {
+                if (is_unit) {
+                    return <span>/100k</span>
+                }
+                return <span>{(100_000 * value).toFixed(2)}</span>
             }
             else if (name.includes('Density')) {
                 const is_imperial = use_imperial

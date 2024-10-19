@@ -26,7 +26,7 @@ export interface SettingsDictionary {
     use_imperial: boolean
     histogram_type: HistogramType
     histogram_relative: boolean
-    theme: Theme
+    theme: Theme | 'System Theme'
 }
 
 export function relationship_key(article_type: string, other_type: string): RelationshipKey {
@@ -68,7 +68,7 @@ const defaultSettings = {
     use_imperial: false,
     histogram_type: 'Line',
     histogram_relative: true,
-    theme: 'Light Mode',
+    theme: 'System Theme',
 } satisfies SettingsDictionary
 
 export function load_settings(): SettingsDictionary {

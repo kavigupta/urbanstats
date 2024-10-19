@@ -1,5 +1,3 @@
-import './map.css'
-
 import { GeoJSON2SVG } from 'geojson2svg'
 import L from 'leaflet'
 import React, { ReactNode } from 'react'

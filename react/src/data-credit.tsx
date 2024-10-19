@@ -11,6 +11,7 @@ import { useHeaderTextClass } from './utils/responsive'
 const industry_occupation_table = require('./data/explanation_industry_occupation_table.json') as { industry: [string, string][], occupation: [string, string][] }
 
 function ExplanationTable(props: { name: string, link: string, table: [string, string][] }): ReactNode {
+    const colors = useColors()
     return (
         <div>
             Details on the
@@ -22,14 +23,14 @@ function ExplanationTable(props: { name: string, link: string, table: [string, s
             <a href={props.link}>here</a>
             ,
             a summary is provided below:
-            <div style={{ marginLeft: '1em', marginTop: '1em', marginBottom: '1em', border: '1px solid black' }}>
+            <div style={{ marginLeft: '1em', marginTop: '1em', marginBottom: '1em', border: `1px solid ${colors.textMain}` }}>
                 <div>
                     {
                         props.table.map(([name, description], i) => (
                             <div
                                 style={{
                                     display: 'flex', flexDirection: 'row',
-                                    borderTop: i === 0 ? 'none' : '1px solid black',
+                                    borderTop: i === 0 ? 'none' : `1px solid ${colors.textMain}`,
                                 }}
                                 key={i}
                             >

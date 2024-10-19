@@ -10,7 +10,7 @@ import { groupYearKeys, StatPathsContext } from '../page_template/statistic-sett
 import { StatPath } from '../page_template/statistic-tree'
 import { PageTemplate } from '../page_template/template'
 import { longname_is_exclusively_american, useUniverse } from '../universe'
-import { lighten } from '../utils/color'
+import { mixWithBackground } from '../utils/color'
 import { Article } from '../utils/protos'
 import { useComparisonHeadStyle, useHeaderTextClass, useMobileLayout, useSubHeaderTextClass } from '../utils/responsive'
 
@@ -335,7 +335,7 @@ function ComparisonRow({ names, params, datas }: {
         row_overall.push(...StatisticRowRawCellContents(
             {
                 ...param_vals[i], only_columns, _idx: i, simple: true,
-                statistic_style: highlight_idx === i ? { backgroundColor: lighten(color(colors.hueColors, i), 0.7) } : {},
+                statistic_style: highlight_idx === i ? { backgroundColor: mixWithBackground(color(colors.hueColors, i), colors.mixPct / 100, colors.background) } : {},
                 onReplace: (x) => { on_change(names, i, x) },
                 total_width: each(datas),
             },
@@ -502,7 +502,7 @@ export function ComparisonMapButtons(props: { map: ComparisonMap }): ReactNode {
         >
             <span className="serif" style={{ fontSize: '15px', fontWeight: 500 }}>Zoom to:</span>
             <div style={{ width: '0.25em' }} />
-            {props.map.zoom_button(-1, 'black', () => { props.map.zoom_to_all() })}
+            {props.map.zoom_button(-1, colors.textMain, () => { props.map.zoom_to_all() })}
             {props.map.props.longnames.map((longname, i) => {
                 return props.map.zoom_button(i, props.map.props.colors[i], () => { props.map.zoom_to(longname) })
             })}

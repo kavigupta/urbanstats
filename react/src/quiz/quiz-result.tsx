@@ -349,7 +349,7 @@ export function GenericQuizResultRow(props: GenericQuizResultRowProps): ReactNod
                     backgroundColor: colors.unselectedButton,
                 }}
             >
-                <tbody>
+                <tbody style={{ color: colors.textMain }}>
                     <tr>
                         <td className="serif quiz_result_name_left" style={firstStyle}>
                             {props.get_option('a')}

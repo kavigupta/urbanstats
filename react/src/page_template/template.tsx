@@ -36,12 +36,15 @@ export function PageTemplate({
 
     useEffect(() => {
         document.body.style.backgroundColor = colors.background
+        document.body.style.color = colors.textMain
         document.documentElement.style.setProperty('--quiz-plain-bg', colors.unselectedButton)
         document.documentElement.style.setProperty('--quiz-selected-bg', colors.selectedButton)
         document.documentElement.style.setProperty('--quiz-correct', colors.hueColors.green)
         document.documentElement.style.setProperty('--quiz-incorrect', colors.hueColors.red)
         document.documentElement.style.setProperty('--slightly-different-background', colors.slightlyDifferentBackground)
         document.documentElement.style.setProperty('--slightly-different-background-focused', colors.slightlyDifferentBackgroundFocused)
+        document.documentElement.style.setProperty('--blue-link', colors.blueLink)
+        document.documentElement.style.setProperty('--text-main-opposite', colors.textMainOpposite)
     }, [colors])
 
     const has_screenshot_button = screencap_elements !== undefined
@@ -106,11 +109,11 @@ function TemplateFooter(): ReactNode {
 }
 
 function Version(): ReactNode {
-    return <span id="current-version">17.5.0</span>
+    return <span id="current-version">18.0.0</span>
 }
 
 function LastUpdated(): ReactNode {
-    return <span id="last-updated">2024-10-09</span>
+    return <span id="last-updated">2024-10-18</span>
 }
 
 function MainCredits(): ReactNode {
