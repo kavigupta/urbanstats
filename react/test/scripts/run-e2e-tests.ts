@@ -30,6 +30,12 @@ async function main(): Promise<void> {
     }).parse(process.argv.slice(2))
 
     const testFiles = globSync(options.test)
+
+    if (testFiles.length === 0) {
+        console.error(`No test files found for ${options.test}`)
+        process.exit(1)
+    }
+
     const tests = testFiles.map(file => /test\/(.+)\.ts/.exec(file)![1])
 
     if (options.headless) {
