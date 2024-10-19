@@ -47,7 +47,7 @@ test('statistics-navigation-right', async (t) => {
 
 test('statistics-navigation-amount', async (t) => {
     // take the select field that currently says 20 and make it say 50
-    const amount = Selector('select').nth(0)
+    const amount = Selector('select').withText('20').nth(0)
     await t
         .click(amount)
         .click(Selector('option').withText('50'))
