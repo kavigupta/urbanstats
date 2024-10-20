@@ -6,6 +6,12 @@ Currently lives at [urbanstats.org](https://urbanstats.org/).
 
 # Build instructions
 
+Install
+
+```
+sudo apt-get install libhdf5-serial-dev netcdf-bin libnetcdf-dev
+```
+
 Install `direnv`, and add it to your shell. https://direnv.net
 
 Install `virtualenv`, https://virtualenv.pypa.io/en/latest/installation.html
