@@ -7,7 +7,7 @@ const mainExpand = '.expandButton[data-category-id=main]'
 const populationCheck = 'input[data-test-id=group_population]:not([inert] *)' // Need :not([inert] *) because groups are rerendered offscreen
 
 export function statsTreeTest(platform: 'mobile' | 'desktop'): void {
-    urbanstatsFixture('stats tree test', `${TARGET}/article.html?longname=San+Francisco+city%2C+California%2C+USA`).beforeEach(async (t) => {
+    urbanstatsFixture('stats tree test', `${TARGET}/article.html?longname=San+Francisco+city%2C+California%2C+USA`, async (t) => {
         switch (platform) {
             case 'mobile':
                 await t.resizeWindow(800, 800)
