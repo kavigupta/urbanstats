@@ -360,17 +360,23 @@ export function Statistic(props: { style?: React.CSSProperties, statname: string
                 return <span>{value.toFixed(places)}</span>
             }
             else if (name.startsWith('Population')) {
+                if (value > 1e9) {
+                    if (is_unit) {
+                        return <span>B</span>
+                    }
+                    return <span>{(value / 1e9).toPrecision(3)}</span>
+                }
                 if (value > 1e6) {
                     if (is_unit) {
                         return <span>m</span>
                     }
-                    return <span>{(value / 1e6).toFixed(1)}</span>
+                    return <span>{(value / 1e6).toPrecision(3)}</span>
                 }
-                else if (value > 1e3) {
+                else if (value > 1e4) {
                     if (is_unit) {
                         return <span>k</span>
                     }
-                    return <span>{(value / 1e3).toFixed(1)}</span>
+                    return <span>{(value / 1e3).toPrecision(3)}</span>
                 }
                 else {
                     if (is_unit) {
