@@ -1,4 +1,5 @@
 import { mixWithBackground } from '../utils/color'
+
 import { useSetting } from './settings'
 
 export interface HueColors {
