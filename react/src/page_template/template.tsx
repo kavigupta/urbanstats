@@ -8,14 +8,16 @@ import '@fontsource/jost/700.css'
 import '@fontsource/jost/800.css'
 import '@fontsource/jost/900.css'
 
-import React, { Fragment, ReactNode, useState } from 'react'
+import React, { ReactNode, useEffect, useState } from 'react'
 
 import { Header } from '../components/header'
-import { ScreencapElements, create_screenshot } from '../components/screenshot'
+import { ScreencapElements, ScreenshotContext, create_screenshot } from '../components/screenshot'
 import { Sidebar } from '../components/sidebar'
 import '../common.css'
 import '../components/article.css'
-import { mobileLayout } from '../utils/responsive'
+import { useMobileLayout } from '../utils/responsive'
+
+import { useColors } from './colors'
 
 export function PageTemplate({
     screencap_elements = undefined,
@@ -26,10 +28,24 @@ export function PageTemplate({
     screencap_elements?: () => ScreencapElements
     has_universe_selector?: boolean
     universes?: string[]
-    children: ({ screenshot_mode }: { screenshot_mode: boolean }) => React.ReactNode
+    children: React.ReactNode
 }): ReactNode {
     const [hamburger_open, set_hamburger_open] = useState(false)
     const [screenshot_mode, set_screenshot_mode] = useState(false)
+    const colors = useColors()
+
+    useEffect(() => {
+        document.body.style.backgroundColor = colors.background
+        document.body.style.color = colors.textMain
+        document.documentElement.style.setProperty('--quiz-plain-bg', colors.unselectedButton)
+        document.documentElement.style.setProperty('--quiz-selected-bg', colors.selectedButton)
+        document.documentElement.style.setProperty('--quiz-correct', colors.hueColors.green)
+        document.documentElement.style.setProperty('--quiz-incorrect', colors.hueColors.red)
+        document.documentElement.style.setProperty('--slightly-different-background', colors.slightlyDifferentBackground)
+        document.documentElement.style.setProperty('--slightly-different-background-focused', colors.slightlyDifferentBackgroundFocused)
+        document.documentElement.style.setProperty('--blue-link', colors.blueLink)
+        document.documentElement.style.setProperty('--text-main-opposite', colors.textMainOpposite)
+    }, [colors])
 
     const has_screenshot_button = screencap_elements !== undefined
 
@@ -38,7 +54,7 @@ export function PageTemplate({
             return
         }
         try {
-            await create_screenshot(screencap_elements(), has_universe_selector ? curr_universe : undefined)
+            await create_screenshot(screencap_elements(), has_universe_selector ? curr_universe : undefined, colors)
         }
         catch (e) {
             console.error(e)
@@ -54,25 +70,24 @@ export function PageTemplate({
     }
 
     return (
-        <Fragment>
-            <meta name="viewport" content="width=600" />
-            <div className={mobileLayout() ? 'main_panel_mobile' : 'main_panel'}>
+        <ScreenshotContext.Provider value={screenshot_mode}>
+            <meta name="viewport" content="width=device-width, initial-scale=0.75, shrink-to-fit=no, maximum-scale=0.75" />
+            <div className={useMobileLayout() ? 'main_panel_mobile' : 'main_panel'} style={{ backgroundColor: colors.background }}>
                 <Header
                     hamburger_open={hamburger_open}
                     set_hamburger_open={set_hamburger_open}
                     has_screenshot={has_screenshot_button}
                     has_universe_selector={has_universe_selector}
                     all_universes={universes}
-                    screenshot_mode={screenshot_mode}
                     initiate_screenshot={(curr_universe) => { initiate_screenshot(curr_universe) }}
                 />
                 <div style={{ marginBlockEnd: '16px' }}></div>
                 <BodyPanel
                     hamburger_open={hamburger_open}
-                    main_content={children({ screenshot_mode })}
+                    main_content={children}
                 />
             </div>
-        </Fragment>
+        </ScreenshotContext.Provider>
     )
 }
 
@@ -94,11 +109,11 @@ function TemplateFooter(): ReactNode {
 }
 
 function Version(): ReactNode {
-    return <span id="current-version">17.1.0</span>
+    return <span id="current-version">18.0.0</span>
 }
 
 function LastUpdated(): ReactNode {
-    return <span id="last-updated">2024-09-16</span>
+    return <span id="last-updated">2024-10-18</span>
 }
 
 function MainCredits(): ReactNode {
@@ -116,13 +131,15 @@ function OtherCredits(): ReactNode {
 }
 
 function BodyPanel({ hamburger_open, main_content }: { hamburger_open: boolean, main_content: React.ReactNode }): ReactNode {
+    const mobileLayout = useMobileLayout()
+
     if (hamburger_open) {
         return <LeftPanel />
     }
     return (
         <div className="body_panel">
-            {mobileLayout() ? undefined : <LeftPanel />}
-            <div className={mobileLayout() ? 'content_panel_mobile' : 'right_panel'}>
+            {mobileLayout ? undefined : <LeftPanel />}
+            <div className={mobileLayout ? 'content_panel_mobile' : 'right_panel'}>
                 {main_content}
                 <div className="gap"></div>
                 <TemplateFooter />
@@ -133,7 +150,7 @@ function BodyPanel({ hamburger_open, main_content }: { hamburger_open: boolean, 
 
 function LeftPanel(): ReactNode {
     return (
-        <div className={mobileLayout() ? 'left_panel_mobile' : 'left_panel'}>
+        <div className={useMobileLayout() ? 'left_panel_mobile' : 'left_panel'}>
             <Sidebar />
         </div>
     )

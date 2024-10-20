@@ -2,6 +2,7 @@ import { exec } from 'child_process'
 import { writeFileSync } from 'fs'
 import { promisify } from 'util'
 
+import { execa } from 'execa'
 import { RequestHook, Selector } from 'testcafe'
 
 import { TARGET, screencap, urbanstatsFixture } from './test_utils'
@@ -29,7 +30,7 @@ export class ProxyPersistent extends RequestHook {
     }
 
     // eslint-disable-next-line @typescript-eslint/no-empty-function -- TestCafe complains if we don't have this
-    override onResponse(): void {}
+    override onResponse(): void { }
 }
 
 async function run_query(query: string): Promise<string> {
@@ -54,7 +55,7 @@ function quiz_fixture(fix_name: string, url: string, new_localstorage: Record<st
         // write the sql statements to the temporary file
         writeFileSync(tempfile, sql_statements)
         await promisify(exec)(`rm -f ../urbanstats-persistent-data/db.sqlite3; cd ../urbanstats-persistent-data; cat ${tempfile} | sqlite3 db.sqlite3; cd -`)
-        exec('bash ../urbanstats-persistent-data/run_for_test.sh')
+        void execa('bash', ['../urbanstats-persistent-data/run_for_test.sh'], { stdio: 'inherit' })
         await t.wait(2000)
         await t.eval(() => {
             localStorage.clear()
@@ -62,6 +63,9 @@ function quiz_fixture(fix_name: string, url: string, new_localstorage: Record<st
                 localStorage.setItem(k, new_localstorage[k])
             }
         }, { dependencies: { new_localstorage } })
+        await t.eval(() => {
+            localStorage.setItem('testHostname', 'urbanstats.org')
+        })
     })
         .afterEach(async (t) => {
             exec('killall gunicorn')
@@ -221,6 +225,7 @@ test('quiz-percentage-correct', async (t) => {
     await t.eval(() => {
         localStorage.clear()
         localStorage.setItem('persistent_id', '000000000000008')
+        localStorage.setItem('testHostname', 'urbanstats.org')
     })
     await t.eval(() => { location.reload() })
     await click_buttons(t, ['a', 'a', 'a', 'a', 'a'])
@@ -313,11 +318,12 @@ test('quiz-retrostat-retrostat-reporting', async (t) => {
     await t.expect(await retrostat_table()).eql('7|30|0\n7|31|15\n7|32|7\n7|33|23\n7|38|20\n')
 })
 
-urbanstatsFixture('quiz result test', `${TARGET}/quiz.html?date=100`, async (t) => {
-    await t.eval(() => {
-        localStorage.setItem('quiz_history', JSON.stringify(example_quiz_history(2, 100)))
-    }, { dependencies: { example_quiz_history } })
-})
+quiz_fixture(
+    'quiz result test',
+    `${TARGET}/quiz.html?date=100`,
+    { quiz_history: JSON.stringify(example_quiz_history(2, 100)) },
+    '',
+)
 
 async function check_text(t: TestController, words: string, emoji: string): Promise<void> {
     const text = await Selector('#quiz-result-summary-words').innerText
@@ -329,15 +335,13 @@ async function check_text(t: TestController, words: string, emoji: string): Prom
 test('quiz-results-test', async (t) => {
     await t.resizeWindow(1400, 800)
     await t.eval(() => { location.reload() })
-    await t.wait(1000)
-    await t.eval(() => { location.reload() })
     await quiz_screencap(t)
     await check_text(t, 'Excellent! 😊 4/5', '🟩🟩🟩🟩🟥')
 })
 
-urbanstatsFixture('several quiz results', `${TARGET}/quiz.html?date=90`, async (t) => {
-    await t.eval(() => {
-        localStorage.setItem('quiz_history', JSON.stringify({
+quiz_fixture('several quiz results', `${TARGET}/quiz.html?date=90`,
+    {
+        quiz_history: JSON.stringify({
             90: {
                 choices: ['A', 'A', 'A', 'A', 'A'],
                 correct_pattern: [true, true, true, true, false],
@@ -362,9 +366,10 @@ urbanstatsFixture('several quiz results', `${TARGET}/quiz.html?date=90`, async (
                 choices: ['A', 'A', 'A', 'A', 'A'],
                 correct_pattern: [true, true, true, true, false],
             },
-        }))
-    }, { dependencies: { example_quiz_history } })
-})
+        }),
+    },
+    '',
+)
 
 test('several-quiz-results-test', async (t) => {
     await t.eval(() => { location.reload() })

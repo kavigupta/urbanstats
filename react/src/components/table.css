@@ -3,16 +3,7 @@
     padding-right: 1em;
 }
 
-.oddrow {
-    background-color: #f7f1e8;
-}
-
 .editable_number {
     min-width: 2em;
     display: inline-block;
-}
-
-.statname_no_link {
-    text-decoration: none;
-    color: black;
 }

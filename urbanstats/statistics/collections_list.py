@@ -1,5 +1,5 @@
 from urbanstats.statistics.collections.cdc_statistics import CDCStatistics
-from urbanstats.statistics.collections.census_2010 import Census2010
+from urbanstats.statistics.collections.census_2010 import Census2000, Census2010
 from urbanstats.statistics.collections.census_basics import CensusBasics
 from urbanstats.statistics.collections.education_gender_gap import (
     EducationGenderGapStatistics,
@@ -35,6 +35,11 @@ from urbanstats.statistics.collections.national_origin_language import (
 )
 from urbanstats.statistics.collections.occupation import OccupationStatistics
 from urbanstats.statistics.collections.race_census import RaceCensus
+from urbanstats.statistics.collections.segregation import SegregationStatistics
+from urbanstats.statistics.collections.sexual_orientation_and_relationship_status import (
+    SexualOrientationRelationshipStatusStatistics,
+)
+from urbanstats.statistics.collections.traffic_accidents import NHTSAAccidentStatistics
 from urbanstats.statistics.collections.transportation_commute_time import (
     TransportationCommuteTimeStatistics,
 )
@@ -45,14 +50,17 @@ from urbanstats.statistics.collections.transportation_vehicle_ownership import (
     TransportationVehicleOwnershipStatistics,
 )
 from urbanstats.statistics.collections.us_election import USElectionStatistics
+from urbanstats.statistics.collections.usda_fra_statistics import USDAFRAStatistics
 from urbanstats.statistics.collections.weather import USWeatherStatistics
 
 statistic_collections = (
     CensusBasics(),
     Census2010(),
+    Census2000(),
     GPWStatistics(),
     AreaAndCompactnessStatistics(),
     RaceCensus(),
+    SegregationStatistics(),
     NationalOriginCitizenshipStatistics(),
     NationalOriginBirthplaceStatistics(),
     NationalOriginLanguageStatistics(),
@@ -70,12 +78,15 @@ statistic_collections = (
     TransportationModeStatistics(),
     TransportationCommuteTimeStatistics(),
     TransportationVehicleOwnershipStatistics(),
+    NHTSAAccidentStatistics(),
     CDCStatistics(),
     HouseHeating(),
     IndustryStatistics(),
     OccupationStatistics(),
+    SexualOrientationRelationshipStatusStatistics(),
     USElectionStatistics(),
     USFeatureDistanceStatistics(),
+    USDAFRAStatistics(),
     USWeatherStatistics(),
     InternetAccessStatistics(),
     InsuranceTypeStatistics(),

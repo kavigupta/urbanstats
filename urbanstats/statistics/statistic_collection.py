@@ -1,5 +1,13 @@
 from abc import ABC, abstractmethod
 
+from urbanstats.acs.load import (
+    aggregated_acs_data,
+    aggregated_acs_data_us_pr,
+    get_acs_data,
+)
+from urbanstats.census_2010.usda_food_research_atlas import aggregated_usda_fra
+from urbanstats.geometry.census_aggregation import aggregate_by_census_block
+
 ORDER_CATEGORY_MAIN = 0
 ORDER_CATEGORY_OTHER_DENSITIES = 1
 
@@ -42,6 +50,9 @@ class StatisticCollection(ABC):
     def quiz_question_unused(self):
         return ()
 
+    def compute_statistics(self, shapefile, statistics_table, shapefile_table):
+        self.mutate_statistic_table(statistics_table, shapefile_table)
+
     @abstractmethod
     def mutate_statistic_table(self, statistics_table, shapefile_table):
         pass
@@ -63,6 +74,9 @@ class StatisticCollection(ABC):
     def extra_stats(self):
         return {}
 
+    def __permacache_hash__(self):
+        return (self.__class__.__name__, getattr(self, "version", None))
+
 
 class GeographicStatistics(StatisticCollection):
     def for_america(self):
@@ -78,6 +92,14 @@ class InternationalStatistics(StatisticCollection):
 
     def for_international(self):
         return True
+
+class USAStatistics(StatisticCollection):
+    def for_america(self):
+        return True
+
+    def for_international(self):
+        return False
+
 
 
 class CensusStatisticsColection(StatisticCollection):
@@ -98,7 +120,26 @@ class CDCStatisticsCollection(StatisticCollection):
         return False
 
 
+class USDAFRAStatisticsCollection(StatisticCollection):
+    # TODO we should probably have this actually pull the USDA FRA data, it currently does not.
+    def for_america(self):
+        return True
+
+    def for_international(self):
+        return False
+
+    def compute_statistics(self, shapefile, statistics_table, shapefile_table):
+        t = aggregated_usda_fra(shapefile)
+        for column in t.columns:
+            statistics_table[column] = t[column]
+
+        self.mutate_statistic_table(statistics_table, shapefile_table)
+
+
 class ACSStatisticsColection(StatisticCollection):
+    def year(self):
+        return 2020
+
     @abstractmethod
     def acs_name(self):
         pass
@@ -116,8 +157,18 @@ class ACSStatisticsColection(StatisticCollection):
     def for_international(self):
         return False
 
+    def compute_statistics(self, shapefile, statistics_table, shapefile_table):
+        for entity in self.acs_entity_dict().values():
+            acs_data = aggregated_acs_data(self.year(), entity, shapefile)
+            for column in acs_data.columns:
+                statistics_table[column] = acs_data[column]
+        self.mutate_statistic_table(statistics_table, shapefile_table)
+
 
 class ACSUSPRStatisticsColection(StatisticCollection):
+    def year(self):
+        return 2020
+
     @abstractmethod
     def acs_name(self):
         pass
@@ -134,6 +185,15 @@ class ACSUSPRStatisticsColection(StatisticCollection):
 
     def for_international(self):
         return False
+
+    def compute_statistics(self, shapefile, statistics_table, shapefile_table):
+        for entity_us, entity_pr in self.acs_entity_dict().values():
+            acs_data = aggregated_acs_data_us_pr(
+                self.year(), entity_us, entity_pr, shapefile
+            )
+            for column in acs_data.columns:
+                statistics_table[column] = acs_data[column]
+        self.mutate_statistic_table(statistics_table, shapefile_table)
 
 
 class USElectionStatisticsCollection(StatisticCollection):

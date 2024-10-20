@@ -13,27 +13,26 @@ import pytz
 import tqdm.auto as tqdm
 from permacache import permacache, stable_hash
 
-from create_website import (
-    get_index_lists,
-    shapefile_without_ordinals,
-    statistic_internal_to_display_name,
-)
-from produce_html_page import (
-    create_filename,
-    get_statistic_categories,
-    indices,
-    internal_statistic_names,
-)
+from create_website import shapefile_without_ordinals
+from produce_html_page import create_filename, indices
 from relationship import states_for_all
 from shapefiles import american_to_international, filter_table_for_type
 from urbanstats.shortener import shorten
 from urbanstats.statistics.collections_list import statistic_collections
+from urbanstats.statistics.output_statistics_metadata import (
+    get_statistic_categories,
+    internal_statistic_names,
+    statistic_internal_to_display_name,
+    get_statistic_column_path,
+)
 
 from .fixed import juxtastat as fixed_up_to
 
 min_pop = 250_000
 min_pop_international = 2_500_000
-version = 64
+version_numeric = 65
+
+version = str(version_numeric) + stable_hash(statistic_collections)
 
 # ranges = [
 #     (0.7, 1),
@@ -58,8 +57,10 @@ difficulties = {
     "generation": 2,
     "housing": 1.5,
     "2010": 1.5,
+    "2000": 1.5,
     "health": 1.5,
     "climate": 1.5,
+    "relationships": 0.5,
     "income": 0.6,
     "main": 0.25,
     "misc": 2,
@@ -281,6 +282,7 @@ def quiz_is_guaranteed_past(number):
         return None
     return fractional_days
 
+
 def compute_fractional_days(tz):
     now = datetime.now(pytz.timezone(tz))
     beginning = pytz.timezone(tz).localize(datetime(2023, 9, 2))
@@ -310,7 +312,6 @@ def generate_quizzes(folder):
 
 
 def generate_quiz_info_for_website(site_folder):
-    from create_website import get_statistic_column_path
 
     folder = "react/src/data/quiz"
     try:
@@ -486,10 +487,8 @@ for collection in statistic_collections:
 stats = sorted(stats_to_display, key=str)
 categories = sorted({get_statistic_categories()[x] for x in stats})
 
-unrecognized = (set(stats) | set(not_included)) - set(
-    statistic_internal_to_display_name()
-)
+unrecognized = (set(stats) | set(not_included)) - set(internal_statistic_names())
 assert not unrecognized, unrecognized
 
-extras = set(statistic_internal_to_display_name()) - (set(stats) | set(not_included))
+extras = set(internal_statistic_names()) - (set(stats) | set(not_included))
 assert not extras, extras

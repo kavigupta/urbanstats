@@ -12,15 +12,7 @@ import tqdm.auto as tqdm
 from census_blocks import RADII
 from election_data import vest_elections
 from output_geometry import produce_all_geometry_json
-from produce_html_page import (
-    category_metadata,
-    create_page_json,
-    extra_stats,
-    get_explanation_page,
-    get_statistic_categories,
-    internal_statistic_names,
-    statistic_internal_to_display_name,
-)
+from produce_html_page import create_page_json, extra_stats
 from relationship import full_relationships, map_relationships_by_type
 from relationship import ordering_idx as type_ordering_idx
 from relationship import type_to_type_category
@@ -33,7 +25,8 @@ from urbanstats.consolidated_data.produce_consolidated_data import (
 from urbanstats.data.census_histogram import census_histogram
 from urbanstats.data.gpw import compute_gpw_data_for_shapefile_table
 from urbanstats.mapper.ramp import output_ramps
-from urbanstats.ordinals.compute_ordinals import compute_all_ordinals
+from urbanstats.ordinals.flat_ordinals import compute_flat_ordinals
+from urbanstats.ordinals.ordinal_info import fully_complete_ordinals
 from urbanstats.special_cases.merge_international import (
     merge_international_and_domestic,
 )
@@ -41,6 +34,10 @@ from urbanstats.special_cases.simplified_country import all_simplified_countries
 from urbanstats.statistics.collections.industry import IndustryStatistics
 from urbanstats.statistics.collections.occupation import OccupationStatistics
 from urbanstats.statistics.collections_list import statistic_collections
+from urbanstats.statistics.output_statistics_metadata import (
+    internal_statistic_names,
+    output_statistics_metadata,
+)
 from urbanstats.universe.annotate_universes import (
     all_universes,
     attach_intl_universes,
@@ -59,28 +56,15 @@ def american_shapefile():
         t = compute_statistics_for_shapefile(shapefiles_for_stats[k])
 
         hists = census_histogram(shapefiles_for_stats[k], 2020)
-        hists_2010 = census_histogram(shapefiles_for_stats[k], 2010)
         for dens in RADII:
             t[f"pw_density_histogram_{dens}"] = [
                 hists[x][f"ad_{dens}"] if x in hists else np.nan for x in t.longname
-            ]
-            t[f"pw_density_histogram_{dens}_2010"] = [
-                hists_2010[x][f"ad_{dens}"] if x in hists_2010 else np.nan
-                for x in t.longname
             ]
 
         full.append(t)
 
     full = pd.concat(full)
     full = full.reset_index(drop=True)
-    for elect in vest_elections:
-        full[elect.name, "margin"] = (
-            full[elect.name, "dem"] - full[elect.name, "gop"]
-        ) / full[elect.name, "total"]
-    full[("2016-2020 Swing", "margin")] = (
-        full[("2020 Presidential Election", "margin")]
-        - full[("2016 Presidential Election", "margin")]
-    )
     # Simply abolish local government tbh. How is this a thing.
     # https://www.openstreetmap.org/user/Minh%20Nguyen/diary/398893#:~:text=An%20administrative%20area%E2%80%99s%20name%20is%20unique%20within%20its%20immediate%20containing%20area%20%E2%80%93%20false
     # Ban both of these from the database
@@ -121,9 +105,18 @@ def shapefile_without_ordinals():
 @lru_cache(maxsize=None)
 def all_ordinals():
     full = shapefile_without_ordinals()
-    keys = internal_statistic_names()
-    all_ords = compute_all_ordinals(full, keys)
-    return all_ords
+
+    full["index_order"] = np.arange(len(full))
+    sorted_by_name = full.sort_values("longname")[::-1].reset_index(drop=True)
+    universe_typ = {
+        (u, t)
+        for us, t in zip(sorted_by_name.universes, sorted_by_name.type)
+        for u in us
+    }
+    universe_typ |= {(u, "overall") for u, _ in universe_typ}
+    universe_typ = sorted(universe_typ)
+    ordinal_info = fully_complete_ordinals(sorted_by_name, universe_typ)
+    return ordinal_info
 
 
 def next_prev(full):
@@ -157,6 +150,9 @@ def create_page_jsons(site_folder, full, ordering):
     long_to_short = dict(zip(full.longname, full.shortname))
     long_to_pop = dict(zip(full.longname, full.population))
     long_to_type = dict(zip(full.longname, full.type))
+    long_to_idx = {x: i for i, x in enumerate(full.longname)}
+
+    flat_ords = compute_flat_ordinals(full, ordering)
 
     relationships = full_relationships(long_to_type)
     for i in tqdm.trange(full.shape[0], desc="creating pages"):
@@ -168,20 +164,9 @@ def create_page_jsons(site_folder, full, ordering):
             long_to_short,
             long_to_pop,
             long_to_type,
-            ordering,
+            long_to_idx,
+            flat_ords,
         )
-
-
-def output_categories():
-    assert set(internal_statistic_names()) == set(get_statistic_categories())
-    assert set(get_statistic_categories().values()) == set(category_metadata)
-    return [dict(key=k, **v) for k, v in category_metadata.items()]
-
-
-def get_statistic_column_path(column):
-    if isinstance(column, tuple):
-        column = "-".join(str(x) for x in column)
-    return column.replace("/", " slash ")
 
 
 @lru_cache(maxsize=None)
@@ -269,7 +254,7 @@ def main(
         if not no_index:
             export_index(shapefile_without_ordinals(), site_folder)
 
-        from urbanstats.ordinals.output_ordering import output_ordering
+        from urbanstats.ordinals.ordering_info_outputter import output_ordering
 
         output_ordering(site_folder, all_ordinals())
 
@@ -285,12 +270,13 @@ def main(
     shutil.copy("html_templates/mapper.html", f"{site_folder}/")
     shutil.copy("html_templates/quiz.html", f"{site_folder}")
 
-    shutil.copy("thumbnail.png", f"{site_folder}/")
-    shutil.copy("banner.png", f"{site_folder}/")
-    shutil.copy("screenshot_footer.svg", f"{site_folder}/")
-    shutil.copy("share.png", f"{site_folder}/")
-    shutil.copy("screenshot.png", f"{site_folder}/")
-    shutil.copy("assets/download.png", f"{site_folder}/")
+    shutil.copy("icons/main/thumbnail.png", f"{site_folder}/")
+    shutil.copy("icons/main/banner.png", f"{site_folder}/")
+    shutil.copy("icons/main/banner-dark.png", f"{site_folder}/")
+    shutil.copy("icons/main/screenshot_footer.svg", f"{site_folder}/")
+    shutil.copy("icons/main/share.png", f"{site_folder}/")
+    shutil.copy("icons/main/screenshot.png", f"{site_folder}/")
+    shutil.copy("icons/main/download.png", f"{site_folder}/")
 
     with open("react/src/data/map_relationship.json", "w") as f:
         json.dump(map_relationships_by_type, f)
@@ -301,26 +287,8 @@ def main(
     with open("react/src/data/type_ordering_idx.json", "w") as f:
         json.dump(type_ordering_idx, f)
 
-    with open(f"react/src/data/statistic_category_metadata.json", "w") as f:
-        json.dump(output_categories(), f)
-    with open(f"react/src/data/statistic_category_list.json", "w") as f:
-        json.dump(list(get_statistic_categories().values()), f)
-    with open(f"react/src/data/statistic_name_list.json", "w") as f:
-        json.dump(list(statistic_internal_to_display_name().values()), f)
-    with open(f"react/src/data/statistic_path_list.json", "w") as f:
-        json.dump(
-            list(
-                [
-                    get_statistic_column_path(name)
-                    for name in statistic_internal_to_display_name()
-                ]
-            ),
-            f,
-        )
-    with open(f"react/src/data/statistic_list.json", "w") as f:
-        json.dump(list([name for name in statistic_internal_to_display_name()]), f)
-    with open(f"react/src/data/explanation_page.json", "w") as f:
-        json.dump(list([name for name in get_explanation_page().values()]), f)
+    output_statistics_metadata()
+
     with open(f"react/src/data/universes_ordered.json", "w") as f:
         json.dump(list([name for name in all_universes()]), f)
     with open(f"react/src/data/explanation_industry_occupation_table.json", "w") as f:
@@ -334,10 +302,7 @@ def main(
 
     with open("react/src/data/extra_stats.json", "w") as f:
         json.dump(
-            [
-                (k, list(statistic_internal_to_display_name()).index(v.universe_column))
-                for k, v in sorted(extra_stats().items())
-            ],
+            [(k, v.extra_stat_spec()) for k, v in sorted(extra_stats().items())],
             f,
         )
 

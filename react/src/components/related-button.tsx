@@ -2,10 +2,11 @@ import React, { ReactNode, useId } from 'react'
 
 import './related.css'
 import { article_link } from '../navigation/links'
+import { HueColors, useColors } from '../page_template/colors'
 import { relationship_key, useSetting } from '../page_template/settings'
 import { useUniverse } from '../universe'
-import { lighten } from '../utils/color'
-import { mobileLayout } from '../utils/responsive'
+import { mixWithBackground } from '../utils/color'
+import { useMobileLayout } from '../utils/responsive'
 
 import { CheckboxSetting } from './sidebar'
 
@@ -14,42 +15,35 @@ const type_to_type_category = require('../data/type_to_type_category.json') as R
 
 interface Region { rowType: string, longname: string, shortname: string }
 
-const RED = '#f96d6d'
-const BLUE = '#5a7dc3'
-const ORANGE = '#af6707'
-const PURPLE = '#975ac3'
-const DARK_GRAY = '#4e525a'
-const PINK = '#c767b0'
-const GREEN = '#8ac35a'
-const YELLOW = '#b8a32f'
-const CYAN = '#07a5af'
-
-const colorsEach: Record<string, string> = {
-    'International': RED,
-    'US Subdivision': BLUE,
-    'Census': CYAN,
-    'Political': PURPLE,
-    'Oddball': DARK_GRAY,
-    'Kavi': ORANGE,
-    'School': YELLOW,
-    'Small': PINK,
-    'Native': GREEN,
+function colorsEach(colors: HueColors): Record<string, string> {
+    return {
+        'International': colors.red,
+        'US Subdivision': colors.blue,
+        'Census': colors.cyan,
+        'Political': colors.purple,
+        'Oddball': colors.darkGrey,
+        'Kavi': colors.darkOrange,
+        'School': colors.yellow,
+        'Small': colors.pink,
+        'Native': colors.green,
+    }
 }
 
 function RelatedButton(props: { region: Region }): ReactNode {
     const curr_universe = useUniverse()
+    const colors = useColors()
     const type_category = type_to_type_category[props.region.rowType]
 
     let classes = `serif button_related`
-    if (mobileLayout()) {
+    if (useMobileLayout()) {
         classes += ' button_related_mobile'
     }
-    const color = colorsEach[type_category]
+    const color = colorsEach(colors.hueColors)[type_category]
     return (
-        <li className={`linklistel${mobileLayout() ? ' linklistel_mobile' : ''}`}>
+        <li className={`linklistel${useMobileLayout() ? ' linklistel_mobile' : ''}`}>
             <a
                 className={classes}
-                style={{ color: 'black', backgroundColor: lighten(color, 0.7) }}
+                style={{ color: colors.textMain, backgroundColor: mixWithBackground(color, colors.mixPct / 100, colors.background) }}
                 href={article_link(curr_universe, props.region.longname)}
             >
                 {props.region.shortname}
@@ -70,6 +64,7 @@ function RelatedList(props: { articleType: string, buttonType: string, regions: 
     }
 
     const checkId = useId()
+    const mobileLayout = useMobileLayout()
 
     return (
         <li className="list_of_lists">
@@ -91,10 +86,10 @@ function RelatedList(props: { articleType: string, buttonType: string, regions: 
                             return (
                                 <ul key={j} className="linklist">
                                     <li
-                                        className={`serif linklistel${mobileLayout() ? ' linklistel_mobile' : ''}`}
+                                        className={`serif linklistel${mobileLayout ? ' linklistel_mobile' : ''}`}
                                         style={{
                                             fontSize:
-                                                mobileLayout() ? '12pt' : '10pt',
+                                                mobileLayout ? '12pt' : '10pt',
                                             paddingTop: '1pt', fontWeight: 500,
                                         }}
                                     >

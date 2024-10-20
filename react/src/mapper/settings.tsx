@@ -1,11 +1,13 @@
 import React, { ReactNode } from 'react'
 
+import { useColors } from '../page_template/colors'
+
 import { DataListSelector } from './DataListSelector'
 import { FilterSelector, FunctionColorStat, StatisticSelector } from './function'
 import { RampColormapSelector } from './ramp-selector'
 import { ConstantRampDescriptor, RampDescriptor } from './ramps'
 import { Regression } from './regression'
-import { setting_name_style, setting_sub_name_style } from './style'
+import { setting_name_style, useSettingSubNameStyle } from './style'
 
 export type StatisticsForGeography = { stats: number[] }[]
 
@@ -164,14 +166,15 @@ class InvalidColorStat implements ColorStat {
 }
 
 function ConstantParametersSelector({ ramp, set_ramp }: { ramp: ConstantRampDescriptor, set_ramp: (newValue: ConstantRampDescriptor) => void }): ReactNode {
+    const colors = useColors()
     return (
         <div style={{ display: 'flex' }}>
-            <div style={setting_sub_name_style}>
+            <div style={useSettingSubNameStyle()}>
                 Lower Bound:
             </div>
             <input
                 type="number"
-                style={{ width: '5em' }}
+                style={{ width: '5em', backgroundColor: colors.background, color: colors.textMain }}
                 value={ramp.lower_bound}
                 onChange={(e) => {
                     set_ramp({
@@ -181,12 +184,12 @@ function ConstantParametersSelector({ ramp, set_ramp }: { ramp: ConstantRampDesc
                 }}
             />
             <div style={{ width: '0.5em' }} />
-            <div style={setting_sub_name_style}>
+            <div style={useSettingSubNameStyle()}>
                 Upper Bound:
             </div>
             <input
                 type="number"
-                style={{ width: '5em' }}
+                style={{ width: '5em', backgroundColor: colors.background, color: colors.textMain }}
                 value={ramp.upper_bound}
                 onChange={(e) => {
                     set_ramp({
@@ -200,6 +203,7 @@ function ConstantParametersSelector({ ramp, set_ramp }: { ramp: ConstantRampDesc
 }
 
 function RampSelector(props: { ramp: RampDescriptor, set_ramp: (newValue: RampDescriptor) => void }): ReactNode {
+    const colors = useColors()
     return (
         <div>
             <div style={setting_name_style}>
@@ -213,7 +217,7 @@ function RampSelector(props: { ramp: RampDescriptor, set_ramp: (newValue: RampDe
                 overall_name="Ramp Type:"
                 names={['linear', 'constant', 'geometric'] as const}
                 no_neutral={true}
-                header_style={setting_sub_name_style}
+                header_style={useSettingSubNameStyle()}
                 initial_value={props.ramp.type}
                 onChange={(name) => {
                     props.set_ramp({
@@ -233,11 +237,12 @@ function RampSelector(props: { ramp: RampDescriptor, set_ramp: (newValue: RampDe
                     : <div></div>
             }
             <div style={{ display: 'flex' }}>
-                <div style={setting_sub_name_style}>
+                <div style={useSettingSubNameStyle()}>
                     Reversed:
                 </div>
                 <input
                     type="checkbox"
+                    style={{ backgroundColor: colors.background, color: colors.textMain }}
                     checked={props.ramp.reversed ?? false}
                     onChange={(e) => {
                         props.set_ramp({
@@ -252,17 +257,19 @@ function RampSelector(props: { ramp: RampDescriptor, set_ramp: (newValue: RampDe
 }
 
 function LineStyleSelector(props: { line_style: LineStyle, set_line_style: (newValue: LineStyle) => void }): ReactNode {
+    const colors = useColors()
     return (
         <div>
             <div style={setting_name_style}>
                 Line Style:
             </div>
             <div style={{ display: 'flex' }}>
-                <div style={setting_sub_name_style}>
+                <div style={useSettingSubNameStyle()}>
                     Color:
                 </div>
                 <input
                     type="color"
+                    style={{ backgroundColor: colors.background, color: colors.textMain }}
                     value={props.line_style.color}
                     onChange={(e) => {
                         props.set_line_style({
@@ -273,12 +280,12 @@ function LineStyleSelector(props: { line_style: LineStyle, set_line_style: (newV
                 />
             </div>
             <div style={{ display: 'flex' }}>
-                <div style={setting_sub_name_style}>
+                <div style={useSettingSubNameStyle()}>
                     Weight:
                 </div>
                 <input
                     type="number"
-                    style={{ width: '5em' }}
+                    style={{ width: '5em', backgroundColor: colors.background, color: colors.textMain }}
                     value={props.line_style.weight}
                     onChange={(e) => {
                         props.set_line_style({
@@ -294,17 +301,19 @@ function LineStyleSelector(props: { line_style: LineStyle, set_line_style: (newV
 
 function BaseMapSelector({ basemap, set_basemap }: { basemap: Basemap, set_basemap: (newValue: Basemap) => void }): ReactNode {
     // just a checkbox for now
+    const colors = useColors()
     return (
         <div>
             <div style={setting_name_style}>
                 Basemap:
             </div>
             <div style={{ display: 'flex' }}>
-                <div style={setting_sub_name_style}>
+                <div style={useSettingSubNameStyle()}>
                     OSM:
                 </div>
                 <input
                     type="checkbox"
+                    style={{ backgroundColor: colors.background, color: colors.textMain }}
                     checked={basemap.type !== 'none'}
                     onChange={(e) => {
                         set_basemap({

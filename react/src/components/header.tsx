@@ -3,8 +3,9 @@ import React, { ReactNode } from 'react'
 import '../common.css'
 import './header.css'
 import { article_link, universe_path } from '../navigation/links'
+import { useColors } from '../page_template/colors'
 import { set_universe, useUniverse } from '../universe'
-import { mobileLayout } from '../utils/responsive'
+import { useMobileLayout } from '../utils/responsive'
 
 import { Nav } from './hamburger'
 import { ScreenshotButton } from './screenshot'
@@ -19,7 +20,6 @@ export function Header(props: {
     has_universe_selector: boolean
     all_universes: string[]
     has_screenshot: boolean
-    screenshot_mode: boolean
     initiate_screenshot: (curr_universe: string) => void
 }): ReactNode {
     const curr_universe = useUniverse()
@@ -34,7 +34,7 @@ export function Header(props: {
             <div className="right_panel_top" style={{ height: HEADER_BAR_SIZE }}>
                 {/* flex but stretch to fill */}
                 <div style={{ display: 'flex', flexDirection: 'row', height: '100%' }}>
-                    {!mobileLayout() && props.has_universe_selector
+                    {!useMobileLayout() && props.has_universe_selector
                         ? (
                                 <div style={{ paddingRight: '0.5em' }}>
                                     <UniverseSelector
@@ -47,7 +47,6 @@ export function Header(props: {
                         props.has_screenshot
                             ? (
                                     <ScreenshotButton
-                                        screenshot_mode={props.screenshot_mode}
                                         onClick={() => { props.initiate_screenshot(curr_universe) }}
                                     />
                                 )
@@ -66,7 +65,6 @@ export function Header(props: {
                             placeholder="Search Urban Stats"
                             style={{
                                 fontSize: '30px',
-                                border: '1px solid #444',
                                 paddingLeft: '1em',
                                 width: '100%',
                                 verticalAlign: 'middle',
@@ -87,7 +85,7 @@ function TopLeft(props: {
     has_universe_selector: boolean
     all_universes: string[]
 }): ReactNode {
-    if (mobileLayout()) {
+    if (useMobileLayout()) {
         return (
             <div className="left_panel_top">
                 <Nav hamburger_open={props.hamburger_open} set_hamburger_open={props.set_hamburger_open} />
@@ -114,13 +112,14 @@ function TopLeft(props: {
 }
 
 function HeaderImage(): ReactNode {
-    const path = mobileLayout() ? '/thumbnail.png' : '/banner.png'
+    const colors = useColors()
+    const path = useMobileLayout() ? '/thumbnail.png' : colors.bannerURL
     return (
         <a href="/index.html">
             <img
                 src={path}
                 style={{
-                    height: mobileLayout() ? HEADER_BAR_SIZE : HEADER_BAR_SIZE_DESKTOP,
+                    height: useMobileLayout() ? HEADER_BAR_SIZE : HEADER_BAR_SIZE_DESKTOP,
                 }}
                 alt="Urban Stats Logo"
             />
@@ -195,13 +194,14 @@ function UniverseSelector(
 function UniverseDropdown(
     { all_universes, flag_size }: { all_universes: string[], flag_size: string },
 ): ReactNode {
+    const colors = useColors()
     return (
         <div>
             <div
                 className="serif"
                 style={{
                     fontWeight: 500,
-                    backgroundColor: '#f7f1e8',
+                    backgroundColor: colors.slightlyDifferentBackground,
                 }}
             >
                 Select universe for statistics

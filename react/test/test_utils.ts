@@ -60,6 +60,13 @@ export async function check_all_category_boxes(t: TestController): Promise<void>
     await t.eval(() => { location.reload() })
 }
 
+export async function waitForMapLoad(t: TestController): Promise<void> {
+    while (await Selector('.map-container-loading-for-testing').exists) {
+        await t.wait(1000)
+    }
+    await t.wait(1000) // Wait for map to finish rendering
+}
+
 async function prep_for_image(t: TestController): Promise<void> {
     await t.wait(1000)
     await t.eval(() => {
@@ -81,27 +88,14 @@ async function prep_for_image(t: TestController): Promise<void> {
         document.querySelectorAll('input[type=text]').forEach((element) => { element.setAttribute('style', `${element.getAttribute('style')} caret-color: transparent;`) })
     })
     // Wait for the map to finish loading
-    while (await Selector('.map-container-loading-for-testing').exists) {
-        await t.wait(1000)
-    }
-    await t.wait(1000) // Wait for map to finish rendering
-}
-
-function test_file_name(): string {
-    for (const arg of process.argv) {
-        const match = /^test\/(.+)\.ts$/.exec(arg)
-        if (match) {
-            return match[1]
-        }
-    }
-    throw new Error(`Test file not found in args: ${process.argv}`)
+    await waitForMapLoad(t)
 }
 
 let screenshot_number = 0
 
 function screenshot_path(t: TestController): string {
     screenshot_number++
-    return `${test_file_name()}/${t.browser.name}/${t.test.name}-${screenshot_number}.png`
+    return `${t.browser.name}/${t.test.name}-${screenshot_number}.png`
 }
 
 export async function screencap(t: TestController): Promise<void> {
@@ -140,7 +134,9 @@ export function most_recent_download_path(): string {
 
 function copy_most_recent_file(t: TestController): void {
     // copy the file to the screenshots folder
-    const screenshotsFolder = path.join(__dirname, '..', 'screenshots')
+    // @ts-expect-error -- TestCafe doesn't have a public API for the screenshots folder
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access -- TestCafe doesn't have a public API for the screenshots folder
+    const screenshotsFolder: string = t.testRun.opts.screenshots.path ?? (() => { throw new Error() })()
     fs.copyFileSync(most_recent_download_path(), path.join(screenshotsFolder, screenshot_path(t)))
 }
 
@@ -172,7 +168,6 @@ export function urbanstatsFixture(name: string, url: string, beforeEach: undefin
             screenshot_number = 0
             await t.eval(() => { localStorage.clear() })
             await t.resizeWindow(1400, 800)
-            await t.eval(() => { location.reload() })
             if (beforeEach !== undefined) {
                 await beforeEach(t)
             }

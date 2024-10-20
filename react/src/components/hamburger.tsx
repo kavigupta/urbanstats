@@ -3,8 +3,10 @@
 import React, { ReactNode } from 'react'
 
 import '../common.css'
+import { useColors } from '../page_template/colors'
 
 function Hamburger({ isOpen }: { isOpen: boolean }): ReactNode {
+    const colors = useColors()
     return (
         <>
             <div className="hamburger">
@@ -28,7 +30,7 @@ function Hamburger({ isOpen }: { isOpen: boolean }): ReactNode {
                     width: 2rem;
                     height: 0.25rem;
                     border-radius: 10px;
-                    background-color: black;
+                    background-color: ${colors.textMain};
                     transform-origin: 1px;
                     transition: all 0.3s linear;
                 }
@@ -52,6 +54,7 @@ function Hamburger({ isOpen }: { isOpen: boolean }): ReactNode {
 }
 
 export function Nav({ hamburger_open, set_hamburger_open }: { hamburger_open: boolean, set_hamburger_open: (newValue: boolean) => void }): ReactNode {
+    const colors = useColors()
     const toggleHamburger = (): void => {
         set_hamburger_open(!hamburger_open)
     }
@@ -97,7 +100,7 @@ export function Nav({ hamburger_open, set_hamburger_open }: { hamburger_open: bo
                 
                 .navigation-entry {
                     display: ${hamburger_open ? 'inline' : 'none'};
-                    background-color: #fff8f0;
+                    background-color: ${colors.background};
                     min-height: 100vh;
                     width: 75vw;
                     margin-top: 50px;

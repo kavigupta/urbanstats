@@ -19,7 +19,7 @@ async function loadPage(): Promise<void> {
         params_string,
     )
     if (urlParams.has('short')) {
-    // look up short url
+        // look up short url
         const short = urlParams.get('short')
         // POST to endpoint
         const responseJson = await fetch(`${ENDPOINT}/lengthen`, {
@@ -35,6 +35,33 @@ async function loadPage(): Promise<void> {
     let todays_quiz
     let today_name: string
     let descriptor: QuizDescriptor
+    if (mode === 'upload') {
+        document.title = 'Upload'
+        // this is a bit of a hack, we should probably have a well designed page for this
+        // and also tests
+        root.render(
+            <input
+                type="file"
+                accept=".json"
+                onChange={async (e) => {
+                    const file = e.target.files![0]
+                    const text = await file.text()
+                    const upload = JSON.parse(text) as { quiz_history: [string, boolean[]][], persistent_id: string }
+                    const updated_quizzes = upload.quiz_history
+                    // updated_quizzes is an array of (date, outcome) pairs
+                    const quiz_history = JSON.parse(localStorage.getItem('quiz_history') ?? '{}') as Record<string, { choices: string[], correct_pattern: boolean[] }>
+                    for (const [date, outcome] of updated_quizzes) {
+                        quiz_history[date] = { choices: ['A', 'A', 'A', 'A', 'A'], correct_pattern: outcome }
+                    }
+                    localStorage.setItem('quiz_history', JSON.stringify(quiz_history))
+                    localStorage.setItem('persistent_id', upload.persistent_id)
+                    // navigate to the page with no mode set
+                    window.location.href = window.location.origin + window.location.pathname
+                }}
+            />,
+        )
+        return
+    }
     if (mode === 'retro') {
         document.title = 'Retrostat'
         let retro = get_retrostat_offset_number()
@@ -49,7 +76,7 @@ async function loadPage(): Promise<void> {
         todays_quiz = (loadJSON(`/retrostat/${retro}`) as RetroQuestionJSON[]).map(load_retro)
     }
     else {
-    // daily quiz
+        // daily quiz
         let today: number
         if (urlParams.has('date')) {
             today = parseInt(urlParams.get('date')!)

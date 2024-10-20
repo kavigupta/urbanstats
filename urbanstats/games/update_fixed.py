@@ -2,6 +2,8 @@ import ast
 import os
 import shutil
 
+import requests
+
 current = __file__
 fixed_py_file = os.path.join(os.path.dirname(current), "fixed.py")
 
@@ -29,7 +31,7 @@ def save_fixed_py(fixed):
             f.write(f"{key} = {value}\n")
 
 
-def copy_up_to(site_folder, key, new_up_to):
+def copy_up_to(key, new_up_to):
     source_folder = {
         "juxtastat": "quiz",
         "retrostat": "retrostat",
@@ -40,10 +42,12 @@ def copy_up_to(site_folder, key, new_up_to):
     }[key]
     fixed_py = load_fixed_py()
     for retrostat_week in range(fixed_py[key], new_up_to + 1):
-        source = os.path.join(site_folder, source_folder, str(retrostat_week))
+        source = os.path.join("https://urbanstats.org", source_folder, str(retrostat_week))
         dest = os.path.join(dest_folder, str(retrostat_week))
         print(f"Copying {source} to {dest}")
-        shutil.copyfile(source, dest)
+        data = requests.get(source).content
+        with open(dest, "wb") as f:
+            f.write(data)       
     fixed_py[key] = new_up_to
     save_fixed_py(fixed_py)
     os.system(f"git add {dest_folder} {fixed_py_file}")

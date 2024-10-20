@@ -2,32 +2,34 @@ import React, { ReactNode } from 'react'
 
 import '../common.css'
 import '../components/quiz.css'
-import { headerTextClass } from '../utils/responsive'
+import { useColors } from '../page_template/colors'
+import { useHeaderTextClass } from '../utils/responsive'
 
 import { nameOfQuizKind } from './quiz'
-import { History } from './statistics'
+import { History, unique_persistent_id } from './statistics'
 
 export function Header({ quiz }: { quiz: { kind: 'juxtastat' | 'retrostat', name: string | number } }): ReactNode {
     let text = nameOfQuizKind(quiz.kind)
     if (typeof quiz.name !== 'number') {
         text += ` ${quiz.name}`
     }
-    return (<div className={headerTextClass()}>{text}</div>)
+    return (<div className={useHeaderTextClass()}>{text}</div>)
 }
 
 export function Footer(props: { length: number, history: History[string] }): ReactNode {
-    const choices: `quiz_${'green' | 'red' | 'blank'}`[] = props.history.correct_pattern.map(
-        correct => correct ? 'quiz_green' : 'quiz_red',
+    const colors = useColors()
+    const footerColors: string[] = props.history.correct_pattern.map(
+        correct => correct ? colors.hueColors.green : colors.hueColors.red,
     )
-    while (choices.length < props.length) {
-        choices.push('quiz_blank')
+    while (footerColors.length < props.length) {
+        footerColors.push(colors.unselectedButton)
     }
     return (
         <table className="quiz_footer">
             <tbody>
                 <tr>
-                    {choices.map((x, i) =>
-                        <td key={i} className={x}></td>,
+                    {footerColors.map((x, i) =>
+                        <td key={i} style={{ backgroundColor: x }}></td>,
                     )}
                 </tr>
             </tbody>
@@ -55,16 +57,10 @@ export function Help(props: { quiz_kind: 'juxtastat' | 'retrostat' }): ReactNode
 }
 
 export function UserId(): ReactNode {
-    const user_id = localStorage.getItem('persistent_id')
-    if (user_id === null) {
-        return ''
-    }
-    else {
-        return (
-            <div>
-                {'Your user id is '}
-                <span className="juxtastat-user-id">{user_id}</span>
-            </div>
-        )
-    }
+    return (
+        <div>
+            {'Your user id is '}
+            <span className="juxtastat-user-id">{unique_persistent_id()}</span>
+        </div>
+    )
 }

@@ -12,7 +12,7 @@ import { consolidated_shape_link, consolidated_stats_link } from '../navigation/
 import { PageTemplate } from '../page_template/template'
 import { interpolate_color } from '../utils/color'
 import { ConsolidatedShapes, ConsolidatedStatistics, Feature, IAllStats } from '../utils/protos'
-import { headerTextClass } from '../utils/responsive'
+import { useHeaderTextClass } from '../utils/responsive'
 import { NormalizeProto } from '../utils/types'
 
 import { MapGeneric, MapGenericProps, Polygons } from './map'
@@ -350,29 +350,29 @@ export function MapperPanel(): ReactNode {
                 )
     }
 
+    const headerTextClass = useHeaderTextClass()
+
     if (new URLSearchParams(window.location.search).get('view') === 'true') {
         return mapper_panel('100%')
     }
 
     return (
         <PageTemplate>
-            {() => (
-                <div>
-                    <div className={headerTextClass()}>Urban Stats Mapper (beta)</div>
-                    <MapperSettings
-                        names={names}
-                        valid_geographies={valid_geographies}
-                        map_settings={map_settings}
-                        set_map_settings={set_map_settings}
-                    />
-                    <Export
-                        map_ref={map_ref}
-                    />
-                    {
-                        mapper_panel(undefined) // use default height
-                    }
-                </div>
-            )}
+            <div>
+                <div className={headerTextClass}>Urban Stats Mapper (beta)</div>
+                <MapperSettings
+                    names={names}
+                    valid_geographies={valid_geographies}
+                    map_settings={map_settings}
+                    set_map_settings={set_map_settings}
+                />
+                <Export
+                    map_ref={map_ref}
+                />
+                {
+                    mapper_panel(undefined) // use default height
+                }
+            </div>
         </PageTemplate>
     )
 }

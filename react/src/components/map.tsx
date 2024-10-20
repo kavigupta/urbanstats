@@ -1,5 +1,3 @@
-import './map.css'
-
 import { GeoJSON2SVG } from 'geojson2svg'
 import L from 'leaflet'
 import React, { ReactNode } from 'react'
@@ -7,7 +5,8 @@ import React, { ReactNode } from 'react'
 import { loadProtobuf } from '../load_json'
 import { Basemap } from '../mapper/settings'
 import { article_link, shape_link } from '../navigation/links'
-import { relationship_key, useRelatedCheckboxSettings, useSetting } from '../page_template/settings'
+import { useColors } from '../page_template/colors'
+import { relationship_key, useSetting, useRelatedCheckboxSettings } from '../page_template/settings'
 import { UNIVERSE_CONTEXT } from '../universe'
 import { random_color } from '../utils/color'
 import { is_historical_cd } from '../utils/is_historical'
@@ -45,17 +44,7 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
 
     override render(): ReactNode {
         return (
-            <div className={`map-container-for-testing${this.state.loading ? ' map-container-loading-for-testing' : ''}`}>
-                <div id={this.id} className="map" style={{ background: '#fff8f0', height: this.props.height ?? 400 }}>
-                    {/* place this on the right of the map */}
-                    <div style={
-                        { zIndex: 1000, position: 'absolute', right: 0, top: 0, padding: '1em' }
-                    }
-                    >
-                        {this.buttons()}
-                    </div>
-                </div>
-            </div>
+            <MapBody id={this.id} height={this.props.height} buttons={this.buttons()} />
         )
     }
 
@@ -342,6 +331,33 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
     declare context: React.ContextType<typeof UNIVERSE_CONTEXT>
 }
 
+const MapBody = (props: { id: string, height: string | undefined, buttons: ReactNode }): ReactNode => {
+    const colors = useColors()
+    return (
+        <div className="map-container-for-testing">
+            <div
+                id={props.id}
+                style={{
+                    background: colors.background,
+                    height: props.height ?? 400,
+                    width: '100%',
+                    position: 'relative',
+                    border: `1px solid ${colors.borderNonShadow}`,
+                    borderRadius: '5px',
+                }}
+            >
+                {/* place this on the right of the map */}
+                <div style={
+                    { zIndex: 1000, position: 'absolute', right: 0, top: 0, padding: '1em' }
+                }
+                >
+                    {props.buttons}
+                </div>
+            </div>
+        </div>
+    )
+}
+
 interface MapProps extends MapGenericProps {
     longname: string
     related: NormalizeProto<IRelatedButtons>[]
@@ -351,11 +367,13 @@ interface MapProps extends MapGenericProps {
 interface ArticleMapProps extends MapProps {
     show_historical_cds: boolean
     settings: Record<string, unknown>
+    color: string
 }
 
 // eslint-disable-next-line no-restricted-syntax -- Don't want to overwrite the JS Map
 export { MapComponent as Map }
 function MapComponent(props: MapProps): ReactNode {
+    const colors = useColors()
     const [show_historical_cds] = useSetting('show_historical_cds')
     const related_checkbox_settings = useRelatedCheckboxSettings(props.article_type)
     return (
@@ -363,6 +381,7 @@ function MapComponent(props: MapProps): ReactNode {
             {...props}
             show_historical_cds={show_historical_cds}
             settings={related_checkbox_settings}
+            color={colors.hueColors.blue}
         />
     )
 }
@@ -382,7 +401,7 @@ class ArticleMap extends MapGeneric<ArticleMapProps> {
         const styles = []
 
         names.push(this.props.longname)
-        styles.push({ interactive: false, fillOpacity: 0.5, weight: 1, color: '#5a7dc3', fillColor: '#5a7dc3' })
+        styles.push({ interactive: false, fillOpacity: 0.5, weight: 1, color: this.props.color, fillColor: this.props.color })
 
         const [related_names, related_styles] = this.related_polygons(relateds)
         names.push(...related_names)

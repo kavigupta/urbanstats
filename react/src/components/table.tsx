@@ -4,6 +4,7 @@ import ContentEditable, { ContentEditableEvent } from 'react-contenteditable'
 import { load_ordering } from '../load_json'
 import { article_link, statistic_link } from '../navigation/links'
 import './table.css'
+import { useColors } from '../page_template/colors'
 import { row_expanded_key, useSetting } from '../page_template/settings'
 import { useUniverse } from '../universe'
 import { is_historical_cd } from '../utils/is_historical'
@@ -11,6 +12,7 @@ import { display_type } from '../utils/text'
 
 import { ArticleRow } from './load-article'
 import { WithPlot } from './plots'
+import { useScreenshotMode } from './screenshot'
 
 const table_row_style: React.CSSProperties = {
     display: 'flex',
@@ -34,13 +36,14 @@ export type StatisticRowRawProps = {
         }
     )
 
-export function StatisticRowRaw(props: StatisticRowRawProps & { index: number, longname?: string, shortname?: string, screenshot_mode: boolean }): ReactNode {
+export function StatisticRowRaw(props: StatisticRowRawProps & { index: number, longname?: string, shortname?: string }): ReactNode {
+    const colors = useColors()
     const [expanded] = useSetting(row_expanded_key(props.is_header ? 'header' : props.statname))
 
-    const cell_contents = StatisticRowRawCellContents({ ...props, total_width: 100, screenshot_mode: props.screenshot_mode })
+    const cell_contents = StatisticRowRawCellContents({ ...props, total_width: 100 })
 
     return (
-        <WithPlot plot_props={[{ ...props, color: '#5a7dc3', shortname: props.shortname }]} expanded={expanded} screenshot_mode={props.screenshot_mode}>
+        <WithPlot plot_props={[{ ...props, color: colors.hueColors.blue, shortname: props.shortname }]} expanded={expanded}>
             <StatisticRow is_header={props.is_header} index={props.index} contents={cell_contents} />
         </WithPlot>
     )
@@ -49,9 +52,15 @@ export function StatisticRowRaw(props: StatisticRowRawProps & { index: number, l
 export function StatisticRowRawCellContents(props: StatisticRowRawProps & {
     total_width: number
     longname?: string
-    screenshot_mode: boolean
 }): React.JSX.Element[] {
     const curr_universe = useUniverse()
+    const colors = useColors()
+    const ordinal_style: React.CSSProperties = {
+        fontSize: '14px',
+        fontWeight: 400,
+        color: colors.ordinalTextColor,
+        margin: 0,
+    }
     const alignStyle: React.CSSProperties = { textAlign: props.is_header ? 'center' : 'right' }
     let value_columns: [number, string, React.ReactNode][] = [
         [15,
@@ -97,6 +106,8 @@ export function StatisticRowRawCellContents(props: StatisticRowRawProps & {
         value_columns = [value_columns[0]]
     }
 
+    const screenshotMode = useScreenshotMode()
+
     const cells: [number, string, React.ReactNode][] = [
         [31,
             'statname',
@@ -113,7 +124,6 @@ export function StatisticRowRawCellContents(props: StatisticRowRawProps & {
                                     rendered_statname={props.rendered_statname}
                                     curr_universe={curr_universe}
                                     use_toggle={props.extra_stat !== undefined}
-                                    screenshot_mode={props.screenshot_mode}
                                 />
                             )
                 }
@@ -123,7 +133,7 @@ export function StatisticRowRawCellContents(props: StatisticRowRawProps & {
         [
             props.simple ? 7 : 17,
             'statistic_percentile',
-            <span className="serif ordinal" key="ordinal">
+            <span className="serif" key="ordinal" style={ordinal_style}>
                 {
                     props.is_header
                         ? (props.simple ? right_align('%ile') : 'Percentile')
@@ -141,7 +151,7 @@ export function StatisticRowRawCellContents(props: StatisticRowRawProps & {
         [
             props.simple ? 8 : 25,
             'statistic_ordinal',
-            <span className="serif ordinal" key="statistic_ordinal">
+            <span className="serif" key="statistic_ordinal" style={ordinal_style}>
                 {
                     props.is_header
                         ? (props.simple ? right_align('Ord') : 'Ordinal')
@@ -158,36 +168,40 @@ export function StatisticRowRawCellContents(props: StatisticRowRawProps & {
                 }
             </span>,
         ],
-        [8,
-            'pointer_in_class',
-            props.is_header
-                ? <span className="serif ordinal">Within Type</span>
-                : (
-                        <span className="serif ordinal" style={{ display: 'flex' }}>
-                            <PointerButtonsIndex
-                                ordinal={props.ordinal}
-                                statpath={props.statpath}
-                                type={props.article_type}
-                                total={props.total_count_in_class}
-                            />
-                        </span>
-                    ),
-        ],
-        [8,
-            'pointer_overall',
-            props.is_header
-                ? <span className="serif ordinal">Overall</span>
-                : (
-                        <span className="serif ordinal" style={{ display: 'flex' }}>
-                            <PointerButtonsIndex
-                                ordinal={props.overallOrdinal}
-                                statpath={props.statpath}
-                                type="overall"
-                                total={props.total_count_overall}
-                            />
-                        </span>
-                    ),
-        ],
+        ...(screenshotMode
+            ? []
+            : [
+                [8,
+                    'pointer_in_class',
+                    props.is_header
+                        ? <span className="serif" style={ordinal_style}>Within Type</span>
+                        : (
+                                <span className="serif" style={{ display: 'flex', ...ordinal_style }}>
+                                    <PointerButtonsIndex
+                                        ordinal={props.ordinal}
+                                        statpath={props.statpath}
+                                        type={props.article_type}
+                                        total={props.total_count_in_class}
+                                    />
+                                </span>
+                            ),
+                ],
+                [8,
+                    'pointer_overall',
+                    props.is_header
+                        ? <span className="serif" style={ordinal_style}>Overall</span>
+                        : (
+                                <span className="serif" style={{ display: 'flex', ...ordinal_style }}>
+                                    <PointerButtonsIndex
+                                        ordinal={props.overallOrdinal}
+                                        statpath={props.statpath}
+                                        type="overall"
+                                        total={props.total_count_overall}
+                                    />
+                                </span>
+                            ),
+                ],
+            ] satisfies [number, string, ReactNode][]),
     ]
     const cell_percentages: number[] = []
     const cell_contents = []
@@ -228,12 +242,12 @@ export function StatisticName(props: {
     rendered_statname: string
     curr_universe: string
     use_toggle: boolean
-    screenshot_mode: boolean
 }): ReactNode {
     const [expanded, setExpanded] = useSetting(row_expanded_key(props.statname))
+    const colors = useColors()
     const link = (
         <a
-            className="statname_no_link"
+            style={{ textDecoration: 'none', color: colors.textMain }}
             href={
                 statistic_link(
                     props.curr_universe,
@@ -245,7 +259,8 @@ export function StatisticName(props: {
             {props.rendered_statname}
         </a>
     )
-    if (props.use_toggle && !props.screenshot_mode) {
+    const screenshot_mode = useScreenshotMode()
+    if (props.use_toggle && !screenshot_mode) {
         return (
             <span style={{
                 display: 'flex',
@@ -259,7 +274,7 @@ export function StatisticName(props: {
                     className="expand-toggle"
                     onClick={() => { setExpanded(!expanded) }}
                     style={{
-                        cursor: 'pointer', border: '1px solid black',
+                        cursor: 'pointer', border: `1px solid ${colors.textMain}`,
                         padding: 0, borderRadius: '3px', fontSize: '75%',
                         minWidth: '1.5em', minHeight: '1.5em', textAlign: 'center',
                         lineHeight: '1.2em',
@@ -274,11 +289,20 @@ export function StatisticName(props: {
 }
 
 export function StatisticRow({ is_header, index, contents }: { is_header: boolean, index: number, contents: React.ReactNode }): React.ReactNode {
+    const colors = useColors()
+    const style = { ...table_row_style }
+    if (is_header) {
+        style.borderTop = `1pt solid ${colors.textMain}`
+        style.borderBottom = `1pt solid ${colors.textMain}`
+        style.fontWeight = 500
+    }
+    else if (index % 2 === 1) {
+        style.backgroundColor = colors.slightlyDifferentBackground
+    }
     return (
         <div
             key={index}
-            className={is_header ? 'tableheader' : index % 2 === 1 ? 'oddrow' : ''}
-            style={{ alignItems: is_header ? 'center' : 'last baseline', ...table_row_style }}
+            style={{ alignItems: is_header ? 'center' : 'last baseline', ...style }}
         >
             {contents}
         </div>
@@ -297,6 +321,18 @@ export function Statistic(props: { style?: React.CSSProperties, statname: string
                     return <span>%</span>
                 }
                 return <span>{(value * 100).toFixed(2)}</span>
+            }
+            else if (name.includes('Total') && name.includes('Fatalities')) {
+                if (is_unit) {
+                    return <span>&nbsp;</span>
+                }
+                return <span>{value.toFixed(0)}</span>
+            }
+            else if (name.includes('Fatalities Per Capita')) {
+                if (is_unit) {
+                    return <span>/100k</span>
+                }
+                return <span>{(100_000 * value).toFixed(2)}</span>
             }
             else if (name.includes('Density')) {
                 const is_imperial = use_imperial
@@ -471,6 +507,7 @@ export function Statistic(props: { style?: React.CSSProperties, statname: string
 }
 
 function ElectionResult(props: { value: number }): ReactNode {
+    const colors = useColors()
     // check if value is NaN
     if (props.value !== props.value) {
         return <span>N/A</span>
@@ -479,8 +516,9 @@ function ElectionResult(props: { value: number }): ReactNode {
     const places = value > 10 ? 1 : value > 1 ? 2 : value > 0.1 ? 3 : 4
     const text = value.toFixed(places)
     const party = props.value > 0 ? 'D' : 'R'
+    const party_color = props.value > 0 ? colors.hueColors.blue : colors.hueColors.red
     return (
-        <span className={`party_result_${party}`}>
+        <span style={{ color: party_color }}>
             {party}
             +
             {text}
@@ -638,6 +676,7 @@ function PointerButtonsIndex(props: { ordinal: number, statpath: string, type: s
 
 function PointerButtonIndex(props: { text: string, get_data: () => Promise<string[]>, original_pos: number, direction: number, total: number, show_historical_cds: boolean }): ReactNode {
     const curr_universe = useUniverse()
+    const colors = useColors()
     const out_of_bounds = (pos: number): boolean => pos < 0 || pos >= props.total
     const onClick = async (pos: number): Promise<void> => {
         {
@@ -653,13 +692,28 @@ function PointerButtonIndex(props: { text: string, get_data: () => Promise<strin
             }
         }
     }
+
+    const buttonStyle: React.CSSProperties = {
+        fontFamily: 'Jost, Arial, sans-serif',
+        fontSize: '8pt',
+        fontWeight: 500,
+        textDecoration: 'none',
+        color: colors.textPointer,
+        padding: '2px 6px 2px 6px',
+        borderRadius: '5px',
+        borderTop: `1px solid ${colors.borderNonShadow}`,
+        borderRight: `1px solid ${colors.borderShadow}`,
+        borderBottom: `1px solid ${colors.borderShadow}`,
+        borderLeft: `1px solid ${colors.borderNonShadow}`,
+    }
+
     const pos = props.original_pos - 1 + +props.direction
     if (out_of_bounds(pos) || props.original_pos > props.total) {
-        return <span className="button">&nbsp;&nbsp;</span>
+        return <span style={buttonStyle}>&nbsp;&nbsp;</span>
     }
     else {
         return (
-            <a href="#" className="button" onClick={() => onClick(pos)}>{props.text}</a>
+            <a href="#" style={buttonStyle} onClick={() => onClick(pos)}>{props.text}</a>
         )
     }
 }

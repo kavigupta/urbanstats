@@ -5,7 +5,8 @@ import React, { ReactNode } from 'react'
 import { isFirefox } from 'react-device-detect'
 
 import { MapGeneric, MapGenericProps, Polygons } from '../components/map'
-import { mobileLayout } from '../utils/responsive'
+import { useColors } from '../page_template/colors'
+import { useMobileLayout } from '../utils/responsive'
 
 import { JuxtaQuestion, RetroQuestion, a_correct } from './quiz'
 import { Footer, Header, Help } from './quiz-components'
@@ -13,11 +14,12 @@ import { History } from './statistics'
 
 interface MapProps extends MapGenericProps {
     longname: string
+    color: string
 }
 
 class Map extends MapGeneric<MapProps> {
     override compute_polygons(): Promise<Polygons> {
-        const style = { interactive: false, fillOpacity: 0.5, weight: 1, color: '#5a7dc3', fillColor: '#5a7dc3' }
+        const style = { interactive: false, fillOpacity: 0.5, weight: 1, color: this.props.color, fillColor: this.props.color }
         return Promise.resolve([[this.props.longname], [style], [{}], 0])
     }
 }
@@ -79,7 +81,7 @@ function QuizQuestion(props: QuizQuestionProps & {
 
     const row_style = { display: 'flex', justifyContent: 'center', width: '90%', margin: 'auto' }
 
-    let quiztext_css = mobileLayout() ? 'quiztext_mobile' : 'quiztext'
+    let quiztext_css = useMobileLayout() ? 'quiztext_mobile' : 'quiztext'
     if (props.nested) {
         quiztext_css += '_nested'
     }
@@ -164,6 +166,7 @@ function RetroQuizQuestion(props: QuizQuestionProps & { question: RetroQuestion 
 function JuxtastatQuizQuestion(props: QuizQuestionProps & {
     question: JuxtaQuestion
 }): ReactNode {
+    const colors = useColors()
     return (
         <QuizQuestion
             {...props}
@@ -173,6 +176,7 @@ function JuxtastatQuizQuestion(props: QuizQuestionProps & {
                 <Map
                     longname={props.question[`longname_${letter}`]}
                     basemap={{ type: 'osm' }}
+                    color={colors.hueColors.blue}
                 />
             )}
         />

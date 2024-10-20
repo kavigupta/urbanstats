@@ -1,5 +1,7 @@
 import React, { ReactNode } from 'react'
 
+import { useColors } from '../page_template/colors'
+
 import { QuizDescriptor } from './quiz'
 import { History, parse_time_identifier } from './statistics'
 
@@ -9,6 +11,7 @@ interface QuizStatisticsProps {
 }
 
 export function QuizStatistics(props: QuizStatisticsProps): ReactNode {
+    const colors = useColors()
     const history = (i: number): History[string] | undefined => {
         switch (props.quiz.kind) {
             case 'juxtastat':
@@ -80,16 +83,16 @@ export function QuizStatistics(props: QuizStatisticsProps): ReactNode {
                 <tbody>
                     {frequencies.map((amt, i) => (
                         <tr key={i}>
-                            <td className="quiz_bar_td serif">
+                            <td className="quiz_bar_td serif" style={{ color: colors.textMain }}>
                                 {i}
                                 /5
                             </td>
                             <td className="quiz_bar_td serif">
-                                <span className="quiz_bar" style={{ width: `${amt / total_freq * 20}em` }}>
+                                <span className="quiz_bar" style={{ width: `${amt / total_freq * 20}em`, backgroundColor: colors.hueColors.blue }}>
                                 </span>
                                 {amt > 0
                                     ? (
-                                            <span className="quiz_stat">
+                                            <span className="quiz_stat" style={{ color: colors.textMain }}>
                                                 {amt}
                                                 {' '}
                                                 (
@@ -108,6 +111,7 @@ export function QuizStatistics(props: QuizStatisticsProps): ReactNode {
     )
 }
 export function AudienceStatistics({ total, per_question }: { total: number, per_question: number[] }): ReactNode {
+    const colors = useColors()
     // two flexboxes of the scores for each
     return (
         <div id="quiz-audience-statistics">
@@ -116,7 +120,8 @@ export function AudienceStatistics({ total, per_question }: { total: number, per
                 return {
                     name: `Q${i + 1} Correct`,
                     value: `${(x / total * 100).toFixed(0)}%`,
-                    addtl_class: `${x / total > 0.5 ? 'text_quiz_correct' : 'text_quiz_incorrect'} quiz-audience-statistics-displayed`,
+                    addtl_class: 'quiz-audience-statistics-displayed',
+                    color: x / total > 0.5 ? colors.hueColors.green : colors.hueColors.red,
                 }
             },
             )}
@@ -124,7 +129,7 @@ export function AudienceStatistics({ total, per_question }: { total: number, per
         </div>
     )
 }
-export function DisplayedStats({ statistics }: { statistics: { value: string, name: string, addtl_class?: string }[] }): ReactNode {
+export function DisplayedStats({ statistics }: { statistics: { value: string, name: string, addtl_class?: string, color?: string }[] }): ReactNode {
     return (
         <div
             className="serif"
@@ -133,16 +138,16 @@ export function DisplayedStats({ statistics }: { statistics: { value: string, na
                 display: 'flex', flexWrap: 'wrap', justifyContent: 'center',
             }}
         >
-            {statistics.map((stat, i) => <DisplayedStat key={i} number={stat.value} name={stat.name} addtl_class={stat.addtl_class} />,
+            {statistics.map((stat, i) => <DisplayedStat key={i} number={stat.value} name={stat.name} addtl_class={stat.addtl_class} color={stat.color} />,
             )}
         </div>
     )
 }
-export function DisplayedStat({ number, name, addtl_class }: { number: string, name: string, addtl_class?: string }): ReactNode {
+export function DisplayedStat({ number, name, addtl_class, color }: { number: string, name: string, addtl_class?: string, color?: string }): ReactNode {
     // large font for numbers, small for names. Center-aligned using flexbox
     return (
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '0.3em' }}>
-            <div className={`serif ${addtl_class ?? ''}`} style={{ fontSize: '1.5em' }}>{number}</div>
+            <div className={`serif ${addtl_class ?? ''}`} style={{ fontSize: '1.5em', color }}>{number}</div>
             <div className="serif" style={{ fontSize: '0.5em' }}>{name}</div>
         </div>
     )

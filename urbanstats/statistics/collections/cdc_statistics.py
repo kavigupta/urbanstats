@@ -1,3 +1,4 @@
+from urbanstats.census_2010.cdc import aggregated_cdc_table
 from urbanstats.statistics.statistic_collection import CDCStatisticsCollection
 
 
@@ -98,6 +99,12 @@ class CDCStatistics(CDCStatisticsCollection):
             "PHLTH_cdc_2",
             "DENTAL_cdc_2",
         ]
+
+    def compute_statistics(self, shapefile, statistics_table, shapefile_table):
+        cdc_table = aggregated_cdc_table(shapefile)
+        for cdc in self.name_for_each_statistic():
+            statistics_table[cdc] = cdc_table[cdc]
+        self.mutate_statistic_table(statistics_table, shapefile_table)
 
     def mutate_statistic_table(self, statistics_table, shapefile_table):
         for cdc in self.name_for_each_statistic():

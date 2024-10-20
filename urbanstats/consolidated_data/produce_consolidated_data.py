@@ -43,7 +43,9 @@ dont_use = [
 
 
 def produce_results(row_geo, row):
-    from produce_html_page import internal_statistic_names
+    from urbanstats.statistics.output_statistics_metadata import (
+        internal_statistic_names,
+    )
 
     res = row_geo.geometry.simplify(0.01)
     geo = convert_to_protobuf(res)

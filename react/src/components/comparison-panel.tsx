@@ -4,17 +4,18 @@ import './article.css'
 import React, { ReactNode, useRef } from 'react'
 
 import { article_link, sanitize } from '../navigation/links'
+import { HueColors, useColors } from '../page_template/colors'
 import { row_expanded_key, useSetting, useTableCheckboxSettings } from '../page_template/settings'
 import { PageTemplate } from '../page_template/template'
 import { longname_is_exclusively_american, useUniverse } from '../universe'
-import { lighten } from '../utils/color'
+import { mixWithBackground } from '../utils/color'
 import { Article } from '../utils/protos'
-import { comparisonHeadStyle, headerTextClass, mobileLayout, subHeaderTextClass } from '../utils/responsive'
+import { useComparisonHeadStyle, useHeaderTextClass, useMobileLayout, useSubHeaderTextClass } from '../utils/responsive'
 
 import { ArticleRow, load_article } from './load-article'
 import { MapGeneric, MapGenericProps, Polygons } from './map'
 import { WithPlot } from './plots'
-import { ScreencapElements } from './screenshot'
+import { ScreencapElements, useScreenshotMode } from './screenshot'
 import { SearchBox } from './search'
 import { StatisticRow, StatisticRowRawCellContents } from './table'
 
@@ -24,18 +25,8 @@ const left_bar_margin = 0.02
 const left_margin_pct = 0.18
 const bar_height = '5px'
 
-const COLOR_CYCLE = [
-    '#5a7dc3', // blue
-    '#f7aa41', // orange
-    '#975ac3', // purple
-    '#f96d6d', // red
-    '#8e8e8e', // grey
-    '#c767b0', // pink
-    '#b8a32f', // yellow
-    '#8ac35a', // green
-]
-
 export function ComparisonPanel(props: { joined_string: string, universes: string[], names: string[], datas: Article[] }): ReactNode {
+    const colors = useColors()
     const table_ref = useRef<HTMLDivElement>(null)
     const map_ref = useRef(null)
 
@@ -76,7 +67,7 @@ export function ComparisonPanel(props: { joined_string: string, universes: strin
                             style={{
                                 width: `${each(props.datas)}%`,
                                 height: bar_height,
-                                backgroundColor: color(i),
+                                backgroundColor: color(colors.hueColors, i),
                             }}
                         />
                     ),
@@ -85,8 +76,10 @@ export function ComparisonPanel(props: { joined_string: string, universes: strin
         )
     }
 
+    const mobileLayout = useMobileLayout()
+
     const max_columns = (): number => {
-        return mobileLayout() ? 4 : 6
+        return mobileLayout ? 4 : 6
     }
 
     const width_columns = (): number => {
@@ -108,76 +101,87 @@ export function ComparisonPanel(props: { joined_string: string, universes: strin
         return contents
     }
 
+    const headerTextClass = useHeaderTextClass()
+    const subHeaderTextClass = useSubHeaderTextClass()
+    const comparisonRightStyle = useComparisonHeadStyle('right')
+    const searchComparisonStyle = useComparisonHeadStyle()
+
     return (
         <PageTemplate screencap_elements={screencap_elements} has_universe_selector={true} universes={props.universes}>
-            { template_info => (
-                <div>
-                    <div className={headerTextClass()}>Comparison</div>
-                    <div className={subHeaderTextClass()}>{props.joined_string}</div>
-                    <div style={{ marginBlockEnd: '16px' }}></div>
+            <div>
+                <div className={headerTextClass}>Comparison</div>
+                <div className={subHeaderTextClass}>{props.joined_string}</div>
+                <div style={{ marginBlockEnd: '16px' }}></div>
 
-                    <div style={{ display: 'flex' }}>
-                        <div style={{ width: `${100 * left_margin_pct}%` }} />
-                        <div style={{ width: `${50 * (1 - left_margin_pct)}%`, marginRight: '1em' }}>
-                            <div className="serif" style={comparisonHeadStyle('right')}>Add another region:</div>
-                        </div>
-                        <div style={{ width: `${50 * (1 - left_margin_pct)}%` }}>
-                            <SearchBox
-                                style={{ ...comparisonHeadStyle(), width: '100%' }}
-                                placeholder="Name"
-                                on_change={(x) => { add_new(props.names, x) }}
-                                autoFocus={false}
-                            />
-                        </div>
+                <div style={{ display: 'flex' }}>
+                    <div style={{ width: `${100 * left_margin_pct}%` }} />
+                    <div style={{ width: `${50 * (1 - left_margin_pct)}%`, marginRight: '1em' }}>
+                        <div className="serif" style={comparisonRightStyle}>Add another region:</div>
                     </div>
-
-                    <div style={{ marginBlockEnd: '1em' }}></div>
-
-                    {maybe_scroll(
-                        <div ref={table_ref}>
-                            {bars()}
-                            <div style={{ display: 'flex' }}>
-                                {cell(true, 0, <div></div>)}
-                                {props.datas.map(
-                                    (data, i) => cell(false, i,
-                                        <div>
-                                            <HeadingDisplay
-                                                longname={data.longname}
-                                                include_delete={props.datas.length > 1}
-                                                on_click={() => { on_delete(props.names, i) }}
-                                                on_change={(x) => { on_change(props.names, i, x) }}
-                                                screenshot_mode={template_info.screenshot_mode}
-                                            />
-                                        </div>,
-                                    ),
-                                )}
-                            </div>
-                            {bars()}
-
-                            <ComparsionPageRows
-                                names={props.names}
-                                datas={props.datas}
-                                screenshot_mode={template_info.screenshot_mode}
-                            />
-                        </div>,
-                    )}
-                    <div className="gap"></div>
-
-                    <div ref={map_ref}>
-                        <ComparisonMap
-                            longnames={props.datas.map(x => x.longname)}
-                            colors={props.datas.map((_, i) => color(i))}
-                            basemap={{ type: 'osm' }}
+                    <div style={{ width: `${50 * (1 - left_margin_pct)}%` }}>
+                        <SearchBox
+                            style={{ ...searchComparisonStyle, width: '100%' }}
+                            placeholder="Name"
+                            on_change={(x) => { add_new(props.names, x) }}
+                            autoFocus={false}
                         />
                     </div>
                 </div>
-            )}
+
+                <div style={{ marginBlockEnd: '1em' }}></div>
+
+                {maybe_scroll(
+                    <div ref={table_ref}>
+                        {bars()}
+                        <div style={{ display: 'flex' }}>
+                            {cell(true, 0, <div></div>)}
+                            {props.datas.map(
+                                (data, i) => cell(false, i,
+                                    <div>
+                                        <HeadingDisplay
+                                            longname={data.longname}
+                                            include_delete={props.datas.length > 1}
+                                            on_click={() => { on_delete(props.names, i) }}
+                                            on_change={(x) => { on_change(props.names, i, x) }}
+                                        />
+                                    </div>,
+                                ),
+                            )}
+                        </div>
+                        {bars()}
+
+                        <ComparsionPageRows
+                            names={props.names}
+                            datas={props.datas}
+                        />
+                    </div>,
+                )}
+                <div className="gap"></div>
+
+                <div ref={map_ref}>
+                    <ComparisonMap
+                        longnames={props.datas.map(x => x.longname)}
+                        colors={props.datas.map((_, i) => color(colors.hueColors, i))}
+                        basemap={{ type: 'osm' }}
+                    />
+                </div>
+            </div>
         </PageTemplate>
     )
 }
 
-function color(i: number): string {
-    return COLOR_CYCLE[i % COLOR_CYCLE.length]
+function color(colors: HueColors, i: number): string {
+    const color_cycle = [
+        colors.blue,
+        colors.orange,
+        colors.purple,
+        colors.red,
+        colors.grey,
+        colors.pink,
+        colors.yellow,
+        colors.green,
+    ]
+    return color_cycle[i % color_cycle.length]
 }
 
 function on_change(names: string[] | undefined, i: number, x: string): void {
@@ -215,7 +219,7 @@ function all_data_types_same(datas: Article[]): boolean {
     return datas.every(x => x.articleType === datas[0].articleType)
 }
 
-function ComparsionPageRows({ names, datas, screenshot_mode }: { names: string[], datas: Article[], screenshot_mode: boolean }): ReactNode {
+function ComparsionPageRows({ names, datas }: { names: string[], datas: Article[] }): ReactNode {
     const curr_universe = useUniverse()
     let rows: ArticleRow[][] = []
     const idxs: number[][] = []
@@ -235,7 +239,6 @@ function ComparsionPageRows({ names, datas, screenshot_mode }: { names: string[]
             params={() => { return { is_header: true } }}
             datas={datas}
             names={names}
-            screenshot_mode={screenshot_mode}
         />
     )
     return (
@@ -250,7 +253,6 @@ function ComparsionPageRows({ names, datas, screenshot_mode }: { names: string[]
                         row_idx={row_idx}
                         datas={datas}
                         names={names}
-                        screenshot_mode={screenshot_mode}
                     />
                 ),
                 )
@@ -259,13 +261,13 @@ function ComparsionPageRows({ names, datas, screenshot_mode }: { names: string[]
     )
 }
 
-function ComparisonRowBody({ rows, row_idx, datas, names, screenshot_mode }: {
+function ComparisonRowBody({ rows, row_idx, datas, names }: {
     rows: ArticleRow[][]
     row_idx: number
     datas: Article[]
     names: string[]
-    screenshot_mode: boolean
 }): ReactNode {
+    const colors = useColors()
     const [expanded] = useSetting(row_expanded_key(rows[0][row_idx].statname))
     const contents = (
         <ComparisonRow
@@ -276,23 +278,22 @@ function ComparisonRowBody({ rows, row_idx, datas, names, screenshot_mode }: {
             }}
             datas={datas}
             names={names}
-            screenshot_mode={screenshot_mode}
         />
     )
-    const plot_props = rows.map((row, data_idx) => ({ ...row[row_idx], color: color(data_idx), shortname: datas[data_idx].shortname }))
+    const plot_props = rows.map((row, data_idx) => ({ ...row[row_idx], color: color(colors.hueColors, data_idx), shortname: datas[data_idx].shortname }))
     return (
-        <WithPlot plot_props={plot_props} expanded={expanded} key={row_idx} screenshot_mode={screenshot_mode}>
+        <WithPlot plot_props={plot_props} expanded={expanded} key={row_idx}>
             <StatisticRow key={row_idx} is_header={false} index={row_idx} contents={contents} />
         </WithPlot>
     )
 }
 
-function ComparisonRow({ names, params, datas, screenshot_mode }: {
+function ComparisonRow({ names, params, datas }: {
     names: string[]
     params: (i: number) => { is_header: true } | ({ is_header: false, key: number, index: number } & ArticleRow)
     datas: Article[]
-    screenshot_mode: boolean
 }): ReactNode {
+    const colors = useColors()
     const row_overall = []
     const param_vals = Array.from(Array(datas.length).keys()).map(params)
 
@@ -315,7 +316,7 @@ function ComparisonRow({ names, params, datas, screenshot_mode }: {
             }}
         >
             <div style={{
-                backgroundColor: highlight_idx === -1 ? '#fff8f0' : color(highlight_idx),
+                backgroundColor: highlight_idx === -1 ? colors.background : color(colors.hueColors, highlight_idx),
                 height: '100%',
                 width: '50%',
                 margin: 'auto',
@@ -328,7 +329,6 @@ function ComparisonRow({ names, params, datas, screenshot_mode }: {
         {
             ...param_vals[0], only_columns: ['statname'], _idx: -1, simple: true, longname: datas[0].longname,
             total_width: 100 * (left_margin_pct - left_bar_margin),
-            screenshot_mode,
         },
     ))
     const only_columns = all_data_types_same(datas) ? main_columns : main_columns_across_types
@@ -337,10 +337,9 @@ function ComparisonRow({ names, params, datas, screenshot_mode }: {
         row_overall.push(...StatisticRowRawCellContents(
             {
                 ...param_vals[i], only_columns, _idx: i, simple: true,
-                statistic_style: highlight_idx === i ? { backgroundColor: lighten(color(i), 0.7) } : {},
+                statistic_style: highlight_idx === i ? { backgroundColor: mixWithBackground(color(colors.hueColors, i), colors.mixPct / 100, colors.background) } : {},
                 onReplace: (x) => { on_change(names, i, x) },
                 total_width: each(datas),
-                screenshot_mode,
             },
         ))
     }
@@ -369,20 +368,22 @@ function ManipulationButton({ color: buttonColor, on_click, text }: { color: str
     )
 }
 
-function HeadingDisplay({ longname, include_delete, on_click, on_change: on_search_change, screenshot_mode }: { longname: string, include_delete: boolean, on_click: () => void, on_change: (q: string) => void, screenshot_mode: boolean }): ReactNode {
+function HeadingDisplay({ longname, include_delete, on_click, on_change: on_search_change }: { longname: string, include_delete: boolean, on_click: () => void, on_change: (q: string) => void }): ReactNode {
+    const colors = useColors()
     const [is_editing, set_is_editing] = React.useState(false)
     const curr_universe = useUniverse()
+    const comparisonHeadStyle = useComparisonHeadStyle()
 
     const manipulation_buttons = (
         <div style={{ height: manipulation_button_height }}>
             <div style={{ display: 'flex', justifyContent: 'flex-end', height: '100%' }}>
-                <ManipulationButton color="#e6e9ef" on_click={() => { set_is_editing(!is_editing) }} text="replace" />
+                <ManipulationButton color={colors.unselectedButton} on_click={() => { set_is_editing(!is_editing) }} text="replace" />
                 {!include_delete
                     ? null
                     : (
                             <>
                                 <div style={{ width: '5px' }} />
-                                <ManipulationButton color="#e6e9ef" on_click={on_click} text="delete" />
+                                <ManipulationButton color={colors.unselectedButton} on_click={on_click} text="delete" />
                             </>
                         )}
                 <div style={{ width: '5px' }} />
@@ -390,16 +391,18 @@ function HeadingDisplay({ longname, include_delete, on_click, on_change: on_sear
         </div>
     )
 
+    const screenshot_mode = useScreenshotMode()
+
     return (
         <div>
             {screenshot_mode ? undefined : manipulation_buttons}
             <div style={{ height: '5px' }} />
-            <a className="serif" href={article_link(curr_universe, longname)} style={{ textDecoration: 'none' }}><div style={comparisonHeadStyle()}>{longname}</div></a>
+            <a className="serif" href={article_link(curr_universe, longname)} style={{ textDecoration: 'none' }}><div style={useComparisonHeadStyle()}>{longname}</div></a>
             {is_editing
                 ? (
                         <SearchBox
                             autoFocus={true}
-                            style={{ ...comparisonHeadStyle(), width: '100%' }}
+                            style={{ ...comparisonHeadStyle, width: '100%' }}
                             placeholder="Replacement"
                             on_change={on_search_change}
                         />
@@ -452,20 +455,7 @@ function insert_missing(rows: ArticleRow[][], idxs: number[][]): ArticleRow[][] 
 // eslint-disable-next-line prefer-function-component/prefer-function-component -- TODO: Maps don't support function components yet.
 class ComparisonMap extends MapGeneric<MapGenericProps & { longnames: string[], colors: string[] }> {
     override buttons(): ReactNode {
-        return (
-            <div style={{
-                display: 'flex', backgroundColor: '#fff8f0', padding: '0.5em', borderRadius: '0.5em',
-                alignItems: 'center',
-            }}
-            >
-                <span className="serif" style={{ fontSize: '15px', fontWeight: 500 }}>Zoom to:</span>
-                <div style={{ width: '0.25em' }} />
-                {this.zoom_button(-1, 'black', () => { this.zoom_to_all() })}
-                {this.props.longnames.map((longname, i) => {
-                    return this.zoom_button(i, this.props.colors[i], () => { this.zoom_to(longname) })
-                })}
-            </div>
-        )
+        return <ComparisonMapButtons map={this} />
     }
 
     zoom_button(i: number, buttonColor: string, onClick: () => void): ReactNode {
@@ -502,4 +492,22 @@ class ComparisonMap extends MapGeneric<MapGenericProps & { longnames: string[], 
         this.zoom_to_all()
         return Promise.resolve()
     }
+}
+
+export function ComparisonMapButtons(props: { map: ComparisonMap }): ReactNode {
+    const colors = useColors()
+    return (
+        <div style={{
+            display: 'flex', backgroundColor: colors.background, padding: '0.5em', borderRadius: '0.5em',
+            alignItems: 'center',
+        }}
+        >
+            <span className="serif" style={{ fontSize: '15px', fontWeight: 500 }}>Zoom to:</span>
+            <div style={{ width: '0.25em' }} />
+            {props.map.zoom_button(-1, colors.textMain, () => { props.map.zoom_to_all() })}
+            {props.map.props.longnames.map((longname, i) => {
+                return props.map.zoom_button(i, props.map.props.colors[i], () => { props.map.zoom_to(longname) })
+            })}
+        </div>
+    )
 }

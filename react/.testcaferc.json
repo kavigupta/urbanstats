@@ -1,5 +1,8 @@
 {
     "compilerOptions": {
         "typescript": { "configPath": "tsconfig.json"}
-   }
+    },
+    "screenshots": {
+        "thumbnails": false
+    }
 }

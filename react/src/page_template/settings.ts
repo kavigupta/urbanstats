@@ -2,6 +2,8 @@ import { createContext, useContext, useEffect, useState } from 'react'
 
 import { DefaultMap } from '../utils/DefaultMap'
 
+import { Theme } from './colors'
+
 export type StatisticSettingKey = `show_statistic_${string}`
 export type RelationshipKey = `related__${string}__${string}`
 export type RowExpandedKey = `expanded__${string}`
@@ -21,6 +23,7 @@ export interface SettingsDictionary {
     use_imperial: boolean
     histogram_type: HistogramType
     histogram_relative: boolean
+    theme: Theme | 'System Theme'
 }
 
 export function relationship_key(article_type: string, other_type: string): RelationshipKey {
@@ -59,6 +62,7 @@ export function load_settings(): [SettingsDictionary, StatisticCategoryMetadataC
     settings.use_imperial = settings.use_imperial ?? false
     settings.histogram_type = settings.histogram_type ?? 'Line'
     settings.histogram_relative = settings.histogram_relative ?? true
+    settings.theme = settings.theme ?? 'System Theme'
 
     return [settings as SettingsDictionary, statistic_category_metadata_checkboxes]
 }

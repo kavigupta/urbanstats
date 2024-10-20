@@ -7,7 +7,8 @@
     "dev": "webpack --mode=development",
     "prod": "export NODE_ENV=production && webpack --mode=production",
     "watch": "./watch.sh",
-    "lint": "npx eslint . --fix"
+    "lint": "npx eslint . --fix",
+    "test:e2e": "tsx test/scripts/run-e2e-tests.ts"
   },
   "keywords": [],
   "author": "",
@@ -41,19 +42,23 @@
     "eslint-plugin-react": "^7.35.2",
     "eslint-plugin-react-hooks": "^4.6.2",
     "eslint-plugin-react-prefer-function-component": "^3.3.0",
+    "execa": "npm:@esm2cjs/execa@^6.1.1-cjs.1",
     "express": "^4.19.2",
     "express-http-proxy": "^2.1.1",
+    "glob": "^11.0.0",
     "protobufjs-cli": "^1.1.1",
     "source-map-loader": "^4.0.1",
     "style-loader": "^3.3.1",
     "testcafe": "^3.5.0",
     "ts-loader": "^9.4.2",
-    "ts-node": "^10.9.2",
+    "tsx": "^4.19.1",
     "typescript": "^5.5.4",
     "typescript-eslint": "^8.0.1",
     "webpack": "^5.88.2",
     "webpack-cli": "^5.1.4",
-    "webpack-dev-server": "^4.15.1"
+    "webpack-dev-server": "^4.15.1",
+    "zod": "^3.23.8",
+    "zodcli": "^0.0.4"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.0.6",
@@ -61,6 +66,7 @@
     "@fontsource/jost": "^5.0.18",
     "@observablehq/plot": "^0.6.16",
     "@types/google-protobuf": "^3.15.12",
+    "better-react-mathjax": "^2.0.3",
     "dom-to-image-more": "^3.3.0",
     "expr-eval": "^2.0.2",
     "file-saver": "^2.0.5",

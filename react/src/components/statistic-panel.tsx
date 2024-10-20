@@ -1,12 +1,13 @@
 import React, { CSSProperties, ReactNode, useMemo, useRef } from 'react'
 
 import { article_link, explanation_page_link, sanitize, statistic_link } from '../navigation/links'
+import { useColors } from '../page_template/colors'
 import { useSetting } from '../page_template/settings'
 import { PageTemplate } from '../page_template/template'
 import '../common.css'
 import './article.css'
 import { useUniverse } from '../universe'
-import { headerTextClass, subHeaderTextClass } from '../utils/responsive'
+import { useHeaderTextClass, useSubHeaderTextClass } from '../utils/responsive'
 import { display_type } from '../utils/text'
 
 import { Percentile, Statistic } from './table'
@@ -39,6 +40,7 @@ export function StatisticPanel(props: {
     }
     explanation_page: string
 }): ReactNode {
+    const colors = useColors()
     const headers_ref = useRef<HTMLDivElement>(null)
     const table_ref = useRef<HTMLDivElement>(null)
 
@@ -75,20 +77,20 @@ export function StatisticPanel(props: {
         if (row_idx > 0) {
             const name_at_idx = props.article_names[index_range[row_idx - 1]]
             if (name_at_idx === props.highlight) {
-                return '#d4b5e2'
+                return colors.highlight
             }
         }
         if (row_idx % 2 === 1) {
-            return '#f7f1e8'
+            return colors.slightlyDifferentBackground
         }
-        return '#fff8f0'
+        return colors.background
     }
 
     const style = (col_idx: number, row_idx: number): CSSProperties => {
         let result: CSSProperties = { ...table_style }
         if (row_idx === 0) {
             // header, add a line at the bottom
-            result.borderBottom = '1px solid #000'
+            result.borderBottom = `1px solid ${colors.textMain}`
             result.fontWeight = 500
         }
         result.backgroundColor = background_color(row_idx)
@@ -96,6 +98,8 @@ export function StatisticPanel(props: {
         result = { ...result, ...column_styles[col_idx] }
         return result
     }
+
+    const textHeaderClass = useHeaderTextClass()
 
     return (
         <PageTemplate
@@ -107,75 +111,73 @@ export function StatisticPanel(props: {
             has_universe_selector={true}
             universes={require('../data/universes_ordered.json') as string[]}
         >
-            {() => (
-                <div>
-                    <div ref={headers_ref}>
-                        <div className={headerTextClass()}>{props.rendered_statname}</div>
-                        {/* // TODO plural */}
-                        <StatisticPanelSubhead
-                            article_type={props.article_type}
-                            rendered_order={props.ordering}
-                        />
-                    </div>
-                    <div style={{ marginBlockEnd: '16px' }}></div>
-                    <div className="serif" ref={table_ref}>
-                        <div style={{ display: 'flex' }}>
-                            {column_names.map((name, i) => {
-                                if (i === 0) {
-                                    return (
-                                        <div key={name} style={{ ...style(i, 0), display: 'flex', justifyContent: 'space-between', flexDirection: 'row' }}>
-                                            <div>{name}</div>
-                                            <AscendingVsDescending on_click={(curr_universe) => { swap_ascending_descending(curr_universe) }} is_ascending={is_ascending} />
-                                        </div>
-                                    )
-                                }
-                                return <div key={name} style={style(i, 0)}>{name}</div>
-                            })}
-                        </div>
-                        {
-                            index_range.map((i, row_idx) => (
-                                <div
-                                    key={i}
-                                    style={{
-                                        display: 'flex', alignItems: 'baseline', backgroundColor: background_color(row_idx + 1),
-                                    }}
-                                >
-                                    <div style={style(0, row_idx + 1)}>{i + 1}</div>
-                                    <div style={style(1, row_idx + 1)}>
-                                        <ArticleLink longname={props.article_names[i]} />
-                                    </div>
-                                    <div style={style(2, row_idx + 1)} className="value">
-                                        <Statistic
-                                            statname={props.statname}
-                                            value={props.data.value[i]}
-                                            is_unit={false}
-                                        />
-                                    </div>
-                                    <div style={style(3, row_idx + 1)} className="value_unit value">
-                                        <Statistic
-                                            statname={props.statname}
-                                            value={props.data.value[i]}
-                                            is_unit={true}
-                                        />
-                                    </div>
-                                    <div style={style(4, row_idx + 1)}>
-                                        <AutoPercentile
-                                            ordinal={0}
-                                            total_count_in_class={0}
-                                            data={props.data}
-                                            i={i}
-                                        />
-                                    </div>
-                                </div>
-                            ))
-                        }
-                    </div>
-                    <div style={{ marginBlockEnd: '1em' }}></div>
-                    <Pagination
-                        {...props}
+            <div>
+                <div ref={headers_ref}>
+                    <div className={textHeaderClass}>{props.rendered_statname}</div>
+                    {/* // TODO plural */}
+                    <StatisticPanelSubhead
+                        article_type={props.article_type}
+                        rendered_order={props.ordering}
                     />
                 </div>
-            )}
+                <div style={{ marginBlockEnd: '16px' }}></div>
+                <div className="serif" ref={table_ref}>
+                    <div style={{ display: 'flex' }}>
+                        {column_names.map((name, i) => {
+                            if (i === 0) {
+                                return (
+                                    <div key={name} style={{ ...style(i, 0), display: 'flex', justifyContent: 'space-between', flexDirection: 'row' }}>
+                                        <div>{name}</div>
+                                        <AscendingVsDescending on_click={(curr_universe) => { swap_ascending_descending(curr_universe) }} is_ascending={is_ascending} />
+                                    </div>
+                                )
+                            }
+                            return <div key={name} style={style(i, 0)}>{name}</div>
+                        })}
+                    </div>
+                    {
+                        index_range.map((i, row_idx) => (
+                            <div
+                                key={i}
+                                style={{
+                                    display: 'flex', alignItems: 'baseline', backgroundColor: background_color(row_idx + 1),
+                                }}
+                            >
+                                <div style={style(0, row_idx + 1)}>{i + 1}</div>
+                                <div style={style(1, row_idx + 1)}>
+                                    <ArticleLink longname={props.article_names[i]} />
+                                </div>
+                                <div style={style(2, row_idx + 1)} className="value">
+                                    <Statistic
+                                        statname={props.statname}
+                                        value={props.data.value[i]}
+                                        is_unit={false}
+                                    />
+                                </div>
+                                <div style={style(3, row_idx + 1)} className="value_unit value">
+                                    <Statistic
+                                        statname={props.statname}
+                                        value={props.data.value[i]}
+                                        is_unit={true}
+                                    />
+                                </div>
+                                <div style={style(4, row_idx + 1)}>
+                                    <AutoPercentile
+                                        ordinal={0}
+                                        total_count_in_class={0}
+                                        data={props.data}
+                                        i={i}
+                                    />
+                                </div>
+                            </div>
+                        ))
+                    }
+                </div>
+                <div style={{ marginBlockEnd: '1em' }}></div>
+                <Pagination
+                    {...props}
+                />
+            </div>
         </PageTemplate>
     )
 }
@@ -284,10 +286,12 @@ function PerPageSelector(props: {
     change_amount: (curr_universe: string | undefined, targetValue: string) => void
 }): ReactNode {
     const curr_universe = useUniverse()
+    const colors = useColors()
     return (
         <div style={{ margin: 'auto', textAlign: 'center' }}>
             <span>
                 <select
+                    style={{ backgroundColor: colors.background, color: colors.textMain }}
                     defaultValue={
                         props.per_page === props.total ? 'All' : props.per_page
                     }
@@ -316,11 +320,13 @@ function SelectPage(props: {
     next_page: number
 }): ReactNode {
     // low-key style for the buttons
+    const colors = useColors()
     const button_style = {
-        backgroundColor: '#f7f1e8',
-        border: '1px solid #000',
+        backgroundColor: colors.slightlyDifferentBackground,
+        border: `1px solid ${colors.textMain}`,
         padding: '0 0.5em',
         margin: '0.5em',
+        color: colors.textMain,
     }
 
     const curr_universe = useUniverse()
@@ -332,7 +338,7 @@ function SelectPage(props: {
                 <input
                     type="string"
                     pattern="[0-9]*"
-                    style={{ width: '3em', textAlign: 'right' }}
+                    style={{ width: '3em', textAlign: 'right', backgroundColor: colors.background, color: colors.textMain }}
                     className="serif"
                     defaultValue={props.current_page}
                     onKeyDown={(e) => {
@@ -361,10 +367,11 @@ function SelectPage(props: {
 
 function ArticleLink(props: { longname: string }): ReactNode {
     const curr_universe = useUniverse()
+    const colors = useColors()
     return (
         <a
             href={article_link(curr_universe, props.longname)}
-            style={{ fontWeight: 500, color: 'black', textDecoration: 'none' }}
+            style={{ fontWeight: 500, color: colors.textMain, textDecoration: 'none' }}
         >
             {props.longname}
         </a>
@@ -374,7 +381,7 @@ function ArticleLink(props: { longname: string }): ReactNode {
 function StatisticPanelSubhead(props: { article_type: string, rendered_order: string }): ReactNode {
     const curr_universe = useUniverse()
     return (
-        <div className={subHeaderTextClass()}>
+        <div className={useSubHeaderTextClass()}>
             {display_type(curr_universe, props.article_type)}
             {' '}
             (

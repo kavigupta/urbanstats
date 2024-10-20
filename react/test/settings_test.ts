@@ -28,7 +28,6 @@ test('check-settings-loaded', async (t) => {
 test('check-settings-loaded-desktop', async (t) => {
     // screenshot path: images/first_test.png
     await t.resizeWindow(1400, 800)
-    await t.eval(() => { location.reload() })
     await screencap(t)
 })
 
