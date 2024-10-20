@@ -37,6 +37,7 @@ export interface Colors {
 interface JuxtastatColors {
     correct: string
     incorrect: string
+    correctEmoji: string
 }
 
 const defaultHueColors: HueColors = {
@@ -107,8 +108,9 @@ export function useColors(): Colors {
 
 export function useJuxtastatColors(): JuxtastatColors {
     const colors = useColors()
+    const [colorblind_mode] = useSetting('colorblind_mode')
     return {
-        correct: colors.hueColors.green,
-        incorrect: colors.hueColors.red,
+        correct: colorblind_mode ? colors.hueColors.blue : colors.hueColors.green,
+        incorrect: colorblind_mode ? colors.hueColors.darkOrange : colors.hueColors.red,
     }
 }
