@@ -57,14 +57,17 @@ function GroupComponent({ group }: { group: Group }): ReactNode {
 
 function CategoryContents({ category, isExpanded }: { category: Category, isExpanded: boolean }): ReactNode {
     const sidebar_section_content = useSidebarSectionContentClassName()
-    const [height, setHeight] = useState(10000) // start high so we don't animate initially
+    /*
+     * start high so we don't animate initially
+     *
+     * If padding is nonzero in the element which this max height is applied to, there will be some visual jumping on load
+     */
+    const [height, setHeight] = useState(10000)
     let maxHeight = `${height}px`
     let marginTop = '0.5em'
-    let padding = '1px 0' // Need 1px padding so checkboxes don't get clipped on iPhone
     if (!isExpanded) {
         maxHeight = '0px'
         marginTop = '0px'
-        padding = '0px'
     }
     return (
         <>
@@ -73,7 +76,7 @@ function CategoryContents({ category, isExpanded }: { category: Category, isExpa
                 // @ts-expect-error -- inert is not in the type definitions yet
                 inert={isExpanded ? undefined : ''}
                 className={sidebar_section_content}
-                style={{ maxHeight, marginTop, opacity: 1, padding }}
+                style={{ maxHeight, marginTop, opacity: 1, padding: 0 }}
             >
                 <CategoryCoreContents category={category} />
             </ul>
