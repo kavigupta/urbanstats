@@ -17,51 +17,55 @@ export function comparison_page(locations: string[]): string {
 }
 
 export async function check_textboxes(t: TestController, txts: string[]): Promise<void> {
+    await withHamburgerMenu(t, async () => {
+        for (const txt of txts) {
+            const checkbox = Selector('div.checkbox-setting:not([inert] *)')
+            // filter for label
+                .filter(node => node.querySelector('label')!.innerText === txt, { txt })
+            // find checkbox
+                .find('input')
+            await t.click(checkbox)
+        }
+    })
+}
+
+export async function withHamburgerMenu(t: TestController, block: () => Promise<void>): Promise<void> {
     const hamburgerMenu = Selector('div').withAttribute('class', 'hamburgermenu')
     if (await hamburgerMenu.exists) {
         await t.click(hamburgerMenu)
     }
-    for (const txt of txts) {
-        const checkbox = Selector('div').withAttribute('class', 'checkbox-setting')
-        // filter for label
-            .filter(node => node.querySelector('label')!.innerText === txt, { txt })
-        // find checkbox
-            .find('input')
-        await t.click(checkbox)
-    }
+    await block()
     if (await hamburgerMenu.exists) {
         await t.click(hamburgerMenu)
     }
 }
 
 export async function check_all_category_boxes(t: TestController): Promise<void> {
-    const hamburgerMenu = Selector('div').withAttribute('class', 'hamburgermenu')
-    if (await hamburgerMenu.exists) {
-        await t.click(hamburgerMenu)
-    }
-    const checkboxes = Selector('div').withAttribute('class', 'checkbox-setting')
-        .filter((node) => {
-            const label = node.querySelector('label')!.innerText
-            return (
-                label !== 'Use Imperial Units'
-                && label !== 'Include Historical Districts'
-                && label !== 'Simple Ordinals'
-                && label !== 'Race'
-                && label !== 'Election'
-            )
-        }).find('input')
-    for (let i = 0; i < await checkboxes.count; i++) {
-        await t.click(checkboxes.nth(i))
-    }
-    if (await hamburgerMenu.exists) {
-        await t.click(hamburgerMenu)
-    }
+    await withHamburgerMenu(t, async () => {
+        const checkboxes = Selector('div.checkbox-setting:not([inert] *)')
+            .filter((node) => {
+                const label = node.querySelector('label')!.innerText
+                return (
+                    label !== 'Use Imperial Units'
+                    && label !== 'Include Historical Districts'
+                    && label !== 'Simple Ordinals'
+                    && label !== 'Race'
+                    && label !== 'Election'
+                    && label !== '2020'
+                    && label !== 'Main'
+                )
+            }).find('input')
+        for (let i = 0; i < await checkboxes.count; i++) {
+            await t.click(checkboxes.nth(i))
+        }
+    })
     // reload
     await t.eval(() => { location.reload() })
 }
 
-export async function waitForMapLoad(t: TestController): Promise<void> {
-    while (await Selector('.map-container-loading-for-testing').exists) {
+export async function waitForLoading(t: TestController): Promise<void> {
+    // Wait for various components that need to load
+    while (await Selector('[data-test-loading=true]').exists) {
         await t.wait(1000)
     }
     await t.wait(1000) // Wait for map to finish rendering
@@ -78,8 +82,14 @@ async function prep_for_image(t: TestController): Promise<void> {
             const style = 'border-style: solid; border-color: #abcdef'
             x.setAttribute('style', style)
         }
-        document.getElementById('current-version')!.innerHTML = '&lt;VERSION&gt;'
-        document.getElementById('last-updated')!.innerHTML = '&lt;LAST UPDATED&gt;'
+        const currentVersion = document.getElementById('current-version')
+        if (currentVersion !== null) {
+            currentVersion.innerHTML = '&lt;VERSION&gt;'
+        }
+        const lastUpdated = document.getElementById('last-updated')
+        if (lastUpdated !== null) {
+            lastUpdated.innerHTML = '&lt;LAST UPDATED&gt;'
+        }
         for (const x of Array.from(document.getElementsByClassName('juxtastat-user-id'))) {
             x.innerHTML = '&lt;USER ID&gt;'
         }
@@ -88,7 +98,7 @@ async function prep_for_image(t: TestController): Promise<void> {
         document.querySelectorAll('input[type=text]').forEach((element) => { element.setAttribute('style', `${element.getAttribute('style')} caret-color: transparent;`) })
     })
     // Wait for the map to finish loading
-    await waitForMapLoad(t)
+    await waitForLoading(t)
 }
 
 let screenshot_number = 0
@@ -172,4 +182,8 @@ export function urbanstatsFixture(name: string, url: string, beforeEach: undefin
                 await beforeEach(t)
             }
         })
+}
+
+export async function arrayFromSelector(selector: Selector): Promise<Selector[]> {
+    return Array.from({ length: await selector.count }, (_, n) => selector.nth(n))
 }

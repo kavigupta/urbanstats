@@ -1,4 +1,5 @@
-import { TableCheckboxSettings } from '../page_template/settings'
+import { StatGroupSettings, statIsEnabled } from '../page_template/statistic-settings'
+import { StatPath } from '../page_template/statistic-tree'
 import { universe_is_american } from '../universe'
 import { Article } from '../utils/protos'
 
@@ -37,10 +38,9 @@ export interface ArticleRow {
     ordinal: number
     overallOrdinal: number
     percentile_by_population: number
-    statistic_category: string
     statcol: string | string[]
     statname: string
-    statpath: string
+    statpath: StatPath
     explanation_page: string
     article_type: string
     total_count_in_class: number
@@ -96,14 +96,16 @@ function compute_indices(longname: string, typ: string): number[] {
     return result.sort((a, b) => a - b)
 }
 
-export function load_article(universe: string, data: Article, settings: TableCheckboxSettings, exclusively_american: boolean): readonly [ArticleRow[], number[]] {
+export function load_article(universe: string, data: Article, settings: StatGroupSettings, exclusively_american: boolean): {
+    result: readonly [ArticleRow[], number[]]
+    availableStatPaths: StatPath[]
+} {
     // index of universe in data.universes
     const universe_index = data.universes.indexOf(universe)
     const article_type = data.articleType
 
-    const categories = require('../data/statistic_category_list.json') as string[]
     const names = require('../data/statistic_name_list.json') as string[]
-    const paths = require('../data/statistic_path_list.json') as string[]
+    const paths = require('../data/statistic_path_list.json') as StatPath[]
     const stats = require('../data/statistic_list.json') as (string | string[])[]
     const explanation_page = require('../data/explanation_page.json') as string[]
 
@@ -148,7 +150,6 @@ export function load_article(universe: string, data: Article, settings: TableChe
             ordinal: row_original.ordinalByUniverse![universe_index],
             overallOrdinal: row_original.overallOrdinalByUniverse![universe_index],
             percentile_by_population: row_original.percentileByPopulationByUniverse![universe_index],
-            statistic_category: categories[i],
             statcol: stats[i],
             statname: names[i],
             statpath: paths[i],
@@ -161,7 +162,7 @@ export function load_article(universe: string, data: Article, settings: TableChe
             extra_stat,
         } satisfies ArticleRow
     })
-    const filtered_rows = modified_rows.filter((row) => {
+    const availableRows = modified_rows.filter((row) => {
         if (universe_is_american(universe)) {
             if (index_list_info.index_lists.gpw.includes(indices[row._index])) {
                 return false
@@ -172,12 +173,16 @@ export function load_article(universe: string, data: Article, settings: TableChe
                 return false
             }
         }
-        return settings[`show_statistic_${row.statistic_category}`]
+        return true
     })
+    const filtered_rows = availableRows.filter(row => statIsEnabled(row.statpath, settings))
 
     const filtered_indices = filtered_rows.map(x => x._index)
 
-    return [filtered_rows, filtered_indices] as const
+    return {
+        result: [filtered_rows, filtered_indices] as const,
+        availableStatPaths: availableRows.map(row => row.statpath),
+    }
 }
 
 export function render_statname(statindex: number, statname: string, exclusively_american: boolean): string {
