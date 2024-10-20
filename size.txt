@@ -297,3 +297,14 @@ added segregation data
 1510	order
 1834	data
 4591	total
+
+added traffic accident data
+
+11      consolidated
+25      quiz_sample_info
+27      scripts
+28      index
+1154    shape
+1718    order
+2048    data
+5017    total
