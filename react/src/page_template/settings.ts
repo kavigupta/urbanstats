@@ -27,6 +27,7 @@ export interface SettingsDictionary {
     histogram_type: HistogramType
     histogram_relative: boolean
     theme: Theme | 'System Theme'
+    colorblind_mode: boolean
 }
 
 export function relationship_key(article_type: string, other_type: string): RelationshipKey {
@@ -69,6 +70,7 @@ const defaultSettings = {
     histogram_type: 'Line',
     histogram_relative: true,
     theme: 'System Theme',
+    colorblind_mode: false,
 } satisfies SettingsDictionary
 
 export function load_settings(): SettingsDictionary {

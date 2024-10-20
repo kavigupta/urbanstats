@@ -129,6 +129,12 @@ export function Sidebar(): ReactNode {
                     <li>
                         <ColorThemeSetting />
                     </li>
+                    <li>
+                        <CheckboxSetting
+                            name="Colorblind Mode"
+                            setting_key="colorblind_mode"
+                        />
+                    </li>
                 </ul>
             </div>
         </div>

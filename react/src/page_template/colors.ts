@@ -1,3 +1,5 @@
+import { mixWithBackground } from '../utils/color'
+
 import { useSetting } from './settings'
 
 export interface HueColors {
@@ -32,6 +34,13 @@ export interface Colors {
     bannerURL: string
     mixPct: number
     hueColors: HueColors
+}
+
+export interface JuxtastatColors {
+    correct: string
+    incorrect: string
+    correctEmoji: string
+    incorrectEmoji: string
 }
 
 const defaultHueColors: HueColors = {
@@ -98,4 +107,15 @@ export function useColors(): Colors {
         return colorThemes[systemTheme]
     }
     return colorThemes[theme]
+}
+
+export function useJuxtastatColors(): JuxtastatColors {
+    const colors = useColors()
+    const [colorblind_mode] = useSetting('colorblind_mode')
+    return {
+        correct: colorblind_mode ? '#65fe08' : colors.hueColors.green,
+        incorrect: colorblind_mode ? mixWithBackground(colors.hueColors.red, 0.3, '#000000') : colors.hueColors.red,
+        correctEmoji: '🟩',
+        incorrectEmoji: '🟥',
+    }
 }
