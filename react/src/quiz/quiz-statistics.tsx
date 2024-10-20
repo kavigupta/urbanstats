@@ -1,6 +1,6 @@
 import React, { ReactNode } from 'react'
 
-import { useColors } from '../page_template/colors'
+import { useColors, useJuxtastatColors } from '../page_template/colors'
 
 import { QuizDescriptor } from './quiz'
 import { History, parse_time_identifier } from './statistics'
@@ -111,7 +111,7 @@ export function QuizStatistics(props: QuizStatisticsProps): ReactNode {
     )
 }
 export function AudienceStatistics({ total, per_question }: { total: number, per_question: number[] }): ReactNode {
-    const colors = useColors()
+    const juxtaColors = useJuxtastatColors()
     // two flexboxes of the scores for each
     return (
         <div id="quiz-audience-statistics">
@@ -121,7 +121,7 @@ export function AudienceStatistics({ total, per_question }: { total: number, per
                     name: `Q${i + 1} Correct`,
                     value: `${(x / total * 100).toFixed(0)}%`,
                     addtl_class: 'quiz-audience-statistics-displayed',
-                    color: x / total > 0.5 ? colors.hueColors.green : colors.hueColors.red,
+                    color: x / total > 0.5 ? juxtaColors.correct : juxtaColors.incorrect,
                 }
             },
             )}
