@@ -113,7 +113,7 @@ export function useJuxtastatColors(): JuxtastatColors {
     const colors = useColors()
     const [colorblind_mode] = useSetting('colorblind_mode')
     return {
-        correct: colorblind_mode ? mixWithBackground(colors.hueColors.green, 0.3, '#ffffff') : colors.hueColors.green,
+        correct: colorblind_mode ? '#65fe08' : colors.hueColors.green,
         incorrect: colorblind_mode ? mixWithBackground(colors.hueColors.red, 0.3, '#000000') : colors.hueColors.red,
         correctEmoji: '🟩',
         incorrectEmoji: '🟥',
