@@ -1,6 +1,6 @@
 import { Selector } from 'testcafe'
 
-import { TARGET, check_textboxes, comparison_page, download_histogram, download_image, download_or_check_string, screencap, urbanstatsFixture, waitForMapLoad } from './test_utils'
+import { TARGET, check_textboxes, comparison_page, download_histogram, download_image, download_or_check_string, screencap, urbanstatsFixture, waitForLoading } from './test_utils'
 
 export const upper_sgv = 'Upper San Gabriel Valley CCD [CCD], Los Angeles County, California, USA'
 export const pasadena = 'Pasadena CCD [CCD], Los Angeles County, California, USA'
@@ -18,7 +18,7 @@ async function download_or_check_histogram(t: TestController, name: string): Pro
 urbanstatsFixture('article check and uncheck test', `${TARGET}/article.html?longname=New+York+Urban+Center%2C+USA&universe=world`)
 
 test('histogram-article-check-uncheck', async (t) => {
-    await waitForMapLoad(t) // Need to avoid a race condition between map loading and page resizing
+    await waitForLoading(t) // Need to avoid a race condition between map loading and page resizing
     await t.resizeWindow(800, 800)
     // count the number of `histogram-svg-panel` elements
     await t.expect(Selector('.histogram-svg-panel').count).eql(0)
@@ -31,7 +31,7 @@ test('histogram-article-check-uncheck', async (t) => {
 urbanstatsFixture('article test', `${TARGET}/article.html?longname=Germany&universe=world`)
 
 test('histogram-basic-article', async (t) => {
-    await waitForMapLoad(t) // Need to avoid a race condition between map loading and page resizing
+    await waitForLoading(t) // Need to avoid a race condition between map loading and page resizing
     await t.resizeWindow(800, 800)
     await t.click(Selector('.expand-toggle'))
     await download_or_check_histogram(t, 'histogram-basic-article')
@@ -39,7 +39,7 @@ test('histogram-basic-article', async (t) => {
 })
 
 test('histogram-basic-article-multi', async (t) => {
-    await waitForMapLoad(t) // Need to avoid a race condition between map loading and page resizing
+    await waitForLoading(t) // Need to avoid a race condition between map loading and page resizing
     await t.resizeWindow(800, 800)
     await check_textboxes(t, ['Other Density Metrics'])
     const count = await Selector('.expand-toggle').count
@@ -55,7 +55,7 @@ test('histogram-basic-article-multi', async (t) => {
 urbanstatsFixture('comparison test heterogenous', comparison_page(['San Marino city, California, USA', pasadena, sw_sgv]))
 
 test('histogram-basic-comparison', async (t) => {
-    await waitForMapLoad(t) // Need to avoid a race condition between map loading and page resizing
+    await waitForLoading(t) // Need to avoid a race condition between map loading and page resizing
     await t.resizeWindow(800, 800)
     // select element with class name `expand-toggle`
     await t.click(Selector('.expand-toggle'))
@@ -66,7 +66,7 @@ test('histogram-basic-comparison', async (t) => {
 urbanstatsFixture('comparison test heterogenous with nan', comparison_page(['India', 'China', pasadena]))
 
 test('histogram-basic-comparison-nan', async (t) => {
-    await waitForMapLoad(t) // Need to avoid a race condition between map loading and page resizing
+    await waitForLoading(t) // Need to avoid a race condition between map loading and page resizing
     await t.resizeWindow(800, 800)
     // select element with class name `expand-toggle`
     await t.click(Selector('.expand-toggle'))
@@ -77,7 +77,7 @@ test('histogram-basic-comparison-nan', async (t) => {
 urbanstatsFixture('comparison test heterogenous with nan in the middle', comparison_page(['India', pasadena, 'China']))
 
 test('histogram-basic-comparison-nan-middle', async (t) => {
-    await waitForMapLoad(t) // Need to avoid a race condition between map loading and page resizing
+    await waitForLoading(t) // Need to avoid a race condition between map loading and page resizing
     await t.resizeWindow(800, 800)
     // select element with class name `expand-toggle`
     await t.click(Selector('.expand-toggle'))

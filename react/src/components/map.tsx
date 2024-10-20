@@ -44,7 +44,10 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
 
     override render(): ReactNode {
         return (
-            <MapBody id={this.id} height={this.props.height} buttons={this.buttons()} />
+            <>
+                <input type="hidden" data-test-loading={this.state.loading} />
+                <MapBody id={this.id} height={this.props.height} buttons={this.buttons()} />
+            </>
         )
     }
 
