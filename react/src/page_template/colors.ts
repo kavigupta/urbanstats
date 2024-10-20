@@ -37,7 +37,6 @@ export interface Colors {
 interface JuxtastatColors {
     correct: string
     incorrect: string
-    correctEmoji: string
 }
 
 const defaultHueColors: HueColors = {
