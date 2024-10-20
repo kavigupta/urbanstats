@@ -34,6 +34,13 @@ export interface Colors {
     hueColors: HueColors
 }
 
+export interface JuxtastatColors {
+    correct: string
+    incorrect: string
+    correctEmoji: string
+    incorrectEmoji: string
+}
+
 const defaultHueColors: HueColors = {
     blue: '#5a7dc3',
     orange: '#f7aa41',
@@ -98,4 +105,14 @@ export function useColors(): Colors {
         return colorThemes[systemTheme]
     }
     return colorThemes[theme]
+}
+
+export function useJuxtastatColors(): JuxtastatColors {
+    const colors = useColors()
+    return {
+        correct: colors.hueColors.green,
+        incorrect: colors.hueColors.red,
+        correctEmoji: '🟩',
+        incorrectEmoji: '🟥',
+    }
 }

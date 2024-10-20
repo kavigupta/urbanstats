@@ -2,7 +2,7 @@ import React, { ReactNode } from 'react'
 
 import '../common.css'
 import '../components/quiz.css'
-import { useColors } from '../page_template/colors'
+import { useColors, useJuxtastatColors } from '../page_template/colors'
 import { useHeaderTextClass } from '../utils/responsive'
 
 import { nameOfQuizKind } from './quiz'
@@ -18,8 +18,9 @@ export function Header({ quiz }: { quiz: { kind: 'juxtastat' | 'retrostat', name
 
 export function Footer(props: { length: number, history: History[string] }): ReactNode {
     const colors = useColors()
+    const juxtaColors = useJuxtastatColors()
     const footerColors: string[] = props.history.correct_pattern.map(
-        correct => correct ? colors.hueColors.green : colors.hueColors.red,
+        correct => correct ? juxtaColors.correct : juxtaColors.incorrect,
     )
     while (footerColors.length < props.length) {
         footerColors.push(colors.unselectedButton)
