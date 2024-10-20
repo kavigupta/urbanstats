@@ -24,6 +24,7 @@ export interface SettingsDictionary {
     histogram_type: HistogramType
     histogram_relative: boolean
     theme: Theme | 'System Theme'
+    colorblind_mode: boolean
 }
 
 export function relationship_key(article_type: string, other_type: string): RelationshipKey {
@@ -63,6 +64,7 @@ export function load_settings(): [SettingsDictionary, StatisticCategoryMetadataC
     settings.histogram_type = settings.histogram_type ?? 'Line'
     settings.histogram_relative = settings.histogram_relative ?? true
     settings.theme = settings.theme ?? 'System Theme'
+    settings.colorblind_mode = settings.colorblind_mode ?? false
 
     return [settings as SettingsDictionary, statistic_category_metadata_checkboxes]
 }

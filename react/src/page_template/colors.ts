@@ -109,10 +109,11 @@ export function useColors(): Colors {
 
 export function useJuxtastatColors(): JuxtastatColors {
     const colors = useColors()
+    const [colorblind_mode] = useSetting('colorblind_mode')
     return {
-        correct: colors.hueColors.green,
-        incorrect: colors.hueColors.red,
-        correctEmoji: '🟩',
-        incorrectEmoji: '🟥',
+        correct: colorblind_mode ? colors.hueColors.blue : colors.hueColors.green,
+        incorrect: colorblind_mode ? colors.hueColors.darkOrange : colors.hueColors.red,
+        correctEmoji: colorblind_mode ? '🟦' : '🟩',
+        incorrectEmoji: colorblind_mode ? '🟫' : '🟥',
     }
 }
