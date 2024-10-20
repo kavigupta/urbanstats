@@ -1,5 +1,6 @@
 from functools import lru_cache
 import tempfile
+import time
 from urllib.error import HTTPError
 
 from permacache import permacache
@@ -188,5 +189,10 @@ def aggregated_hilliness(lat_min, lon_min):
 if __name__ == "__main__":
     lat_lons = [(lat, lon) for lon in range(-180, 180) for lat in range(-90, 90)]
     for lat, lon in tqdm.tqdm(lat_lons):
-        aggregated_elevation(lat, lon)
-        aggregated_hilliness(lat, lon)
+        try:
+            aggregated_elevation(lat, lon)
+            aggregated_hilliness(lat, lon)
+        except Exception as e:
+            print(lat, lon, e)
+            time.sleep(10)
+            continue
