@@ -58,33 +58,6 @@ def load_elevation_data_with_surrounding(lat_min, lon_min):
     return result
 
 
-def compute_grade(y_min, x_min):
-    cell = load_elevation_data(y_min, x_min)
-    neighborhood = load_elevation_data_with_surrounding(y_min, x_min)
-    ys_deg = y_min + np.linspace(0, 1, PER_CELL + 1)[:-1][::-1]
-    # r_earth_x = r_earth * np.cos(latitude)
-    rad_x_blocks = PER_CELL * np.rad2deg(
-        hilliness_dist / (r_earth * np.cos(np.deg2rad(ys_deg)))
-    )
-    rad_y_blocks = PER_CELL * np.rad2deg(hilliness_dist / r_earth)
-    x_loc = (
-        np.arange(PER_CELL)[None, :, None]
-        + rad_x_blocks[None, :, None] * np.cos(angles)[None, None, :]
-    )
-    y_loc = (
-        np.arange(PER_CELL)[:, None, None]
-        + rad_y_blocks * np.sin(angles)[None, None, :]
-    )
-    at_radius = interpolate(neighborhood, x_loc + PER_CELL, y_loc + PER_CELL)
-    # delta_ratio = tan(theta) = rise / baseline
-    # grade = rise / run = rise / sqrt(rise ** 2 + baseline ** 2)
-    #       = (rise / baseline) / sqrt(1 + (rise / baseline)**2)
-    delta_ratio = np.abs(at_radius - cell[:, :, None]) / (1000 * hilliness_dist)
-    grade = delta_ratio / (delta_ratio**2 + 1) ** 0.5
-    grade = np.mean(grade, axis=-1)
-    return grade
-
-
 def compute_grade_aligned(y_min, x_min):
     cell = load_elevation_data(y_min, x_min)
     if cell is None:
@@ -132,38 +105,6 @@ def compute_grade_aligned(y_min, x_min):
     delta_ratio = np.abs(results - cell) / (1000 * hilliness_dist)
     grade = delta_ratio / (delta_ratio**2 + 1) ** 0.5
     return grade.mean(axis=0)
-
-
-def interpolate(arr, xidx, yidx):
-    """
-    Compute the value of the array at the given points.
-
-    :param arr: The array to interpolate. This should be a 2D array.
-    :param xidx: The x indices of the points. This can be an arbitrary shape.
-    :param yidx: The y indices of the points. This must have the same shape as xidx.
-
-    :return: The interpolated values.
-    """
-
-    assert (xidx >= 0).all() and (xidx <= arr.shape[1] - 1).all()
-    assert (yidx >= 0).all() and (yidx <= arr.shape[0] - 1).all()
-
-    xidx_floor = np.floor(xidx).astype(np.uint32)
-    xidx_ceil = np.ceil(xidx).astype(np.uint32)
-    yidx_floor = np.floor(yidx).astype(np.uint32)
-    yidx_ceil = np.ceil(yidx).astype(np.uint32)
-
-    xfrac = xidx - xidx_floor
-    yfrac = yidx - yidx_floor
-
-    # bilinear interpolation
-
-    # first, interpolate in the x direction
-    a = arr[yidx_floor, xidx_floor] * (1 - xfrac) + arr[yidx_floor, xidx_ceil] * xfrac
-    b = arr[yidx_ceil, xidx_floor] * (1 - xfrac) + arr[yidx_ceil, xidx_ceil] * xfrac
-
-    # then, interpolate in the y direction
-    return a * (1 - yfrac) + b * yfrac
 
 
 def chunk_mean(arr):
