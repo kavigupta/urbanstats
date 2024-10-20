@@ -32,7 +32,7 @@ export function Sidebar(): ReactNode {
 
     return (
         <div
-            className="serif"
+            className={`serif ${useMobileLayout() ? 'sidebar_mobile' : ''}`}
             style={{
                 backgroundColor: colors.slightlyDifferentBackground,
                 padding: '2rem',
