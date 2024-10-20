@@ -3,7 +3,7 @@ import { isFirefox, isMobile } from 'react-device-detect'
 
 import { Statistic } from '../components/table'
 import { article_link } from '../navigation/links'
-import { useColors } from '../page_template/colors'
+import { JuxtastatColors, useColors, useJuxtastatColors } from '../page_template/colors'
 
 import { render_time_remaining } from './dates'
 import { ENDPOINT, JuxtaQuestion, QuizDescriptor, QuizQuestion, RetroQuestion, a_correct, nameOfQuizKind } from './quiz'
@@ -125,6 +125,7 @@ interface ShareButtonProps {
 
 function ShareButton({ button_ref, parameters, today_name, correct_pattern, total_correct, quiz_kind }: ShareButtonProps): ReactNode {
     const colors = useColors()
+    const juxtaColors = useJuxtastatColors()
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- We need to check the condition for browser compatibility.
     const can_share = navigator.canShare?.({ url: 'https://juxtastat.org', text: 'test' }) ?? false
     const is_share = isMobile && can_share && !isFirefox
@@ -148,7 +149,7 @@ function ShareButton({ button_ref, parameters, today_name, correct_pattern, tota
             }}
             ref={button_ref}
             onClick={async () => {
-                const [text, url] = await summary(today_name, correct_pattern, total_correct, parameters, quiz_kind)
+                const [text, url] = await summary(juxtaColors, today_name, correct_pattern, total_correct, parameters, quiz_kind)
 
                 async function copy_to_clipboard(): Promise<void> {
                     await navigator.clipboard.writeText(`${text}\n${url}`)
@@ -232,6 +233,7 @@ function TimeToNextQuiz({ quiz }: { quiz: QuizDescriptor }): ReactNode {
 }
 
 export function Summary(props: { total_correct: number, total: number, correct_pattern: boolean[] }): ReactNode {
+    const juxtaColors = useJuxtastatColors()
     let show = 'error'
     // let frac = this.props.total_correct / this.props.total_correct;
     const correct = props.total_correct
@@ -259,19 +261,19 @@ export function Summary(props: { total_correct: number, total: number, correct_p
     return (
         <div>
             <span className="serif quiz_summary" id="quiz-result-summary-words">{show}</span>
-            <span className="serif quiz_summary" id="quiz-result-summary-emoji">{red_and_green_squares(props.correct_pattern)}</span>
+            <span className="serif quiz_summary" id="quiz-result-summary-emoji">{red_and_green_squares(juxtaColors, props.correct_pattern)}</span>
         </div>
     )
 }
 
-export async function summary(today_name: string, correct_pattern: boolean[], total_correct: number, parameters: string, quiz_kind: 'juxtastat' | 'retrostat'): Promise<[string, string]> {
+export async function summary(juxtaColors: JuxtastatColors, today_name: string, correct_pattern: boolean[], total_correct: number, parameters: string, quiz_kind: 'juxtastat' | 'retrostat'): Promise<[string, string]> {
     // wordle-style summary
     let text = `${nameOfQuizKind(quiz_kind)} ${today_name} ${total_correct}/${correct_pattern.length}`
 
     text += '\n'
     text += '\n'
 
-    text += red_and_green_squares(correct_pattern)
+    text += red_and_green_squares(juxtaColors, correct_pattern)
 
     text += '\n'
 
@@ -320,6 +322,7 @@ interface GenericQuizResultRowProps extends QuizResultRowProps {
 
 export function GenericQuizResultRow(props: GenericQuizResultRowProps): ReactNode {
     const colors = useColors()
+    const juxtaColors = useJuxtastatColors()
     const comparison = a_correct(props.question)
         ? (<span>&gt;</span>)
         : (<span>&lt;</span>)
@@ -332,7 +335,7 @@ export function GenericQuizResultRow(props: GenericQuizResultRowProps): ReactNod
     else {
         secondStyle = { backgroundColor: colors.selectedButton, color: colors.selectedButtonText }
     }
-    const result = props.correct ? '🟩' : '🟥'
+    const result = props.correct ? juxtaColors.correctEmoji : juxtaColors.incorrectEmoji
 
     return (
         <div key={props.index}>
@@ -457,9 +460,9 @@ export function Clickable({ longname }: { longname: string }): ReactNode {
         </a>
     )
 }
-export function red_and_green_squares(correct_pattern: boolean[]): string {
+export function red_and_green_squares(juxtaColors: JuxtastatColors, correct_pattern: boolean[]): string {
     return correct_pattern.map(function (x) {
     // red square emoji for wrong, green for right
-        return x ? '🟩' : '🟥'
+        return x ? juxtaColors.correctEmoji : juxtaColors.incorrectEmoji
     }).join('')
 }
