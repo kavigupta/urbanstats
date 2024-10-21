@@ -4,10 +4,11 @@ import '../style.css'
 import './sidebar.css'
 
 import { Theme, useColors } from '../page_template/colors'
-import { SettingsDictionary, useSetting } from '../page_template/settings'
+import { SettingsDictionary, useSetting, useSettingInfo, useStagedSettingKeys } from '../page_template/settings'
 import { StatPathsContext } from '../page_template/statistic-settings'
 import { useMobileLayout } from '../utils/responsive'
 
+import { StagingControls } from './StagingControls'
 import { StatsTree } from './StatsTree'
 import { Years } from './Years'
 
@@ -82,6 +83,18 @@ export function Sidebar(): ReactNode {
                     </li>
                 </ul>
             </div>
+            {
+                useStagedSettingKeys() === undefined
+                    ? null
+                    : (
+                            <div className="sidebar-section">
+                                <div style={sidebar_section_title}>Staging</div>
+                                <ul className={sidebar_section_content}>
+                                    <StagingControls />
+                                </ul>
+                            </div>
+                        )
+            }
             <div className="sidebar-section">
                 <div style={sidebar_section_title}>Settings</div>
                 <ul className={sidebar_section_content}>
@@ -146,10 +159,19 @@ type BooleanSettingKey = keyof { [K in keyof SettingsDictionary as SettingsDicti
 
 export function CheckboxSetting(props: { name: string, setting_key: BooleanSettingKey, classNameToUse?: string, id?: string, testId?: string }): ReactNode {
     const [checked, setChecked] = useSetting(props.setting_key)
+    const info = useSettingInfo(props.setting_key)
+
+    let name = props.name
+    if ('stagedValue' in info) {
+        name += ' (Staged)'
+        if (info.stagedValue !== info.persistedValue) {
+            name += ' (Changed)'
+        }
+    }
 
     return (
         <CheckboxSettingCustom
-            name={props.name}
+            name={name}
             checked={checked ?? false}
             onChange={setChecked}
             classNameToUse={props.classNameToUse}

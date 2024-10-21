@@ -269,3 +269,8 @@ export function useSettingsInfo<K extends keyof SettingsDictionary>(keys: K[]): 
     const settings = useContext(Settings.Context)
     return settings.useSettingsInfo(keys)
 }
+
+export function useStagedSettingKeys(): (keyof SettingsDictionary)[] | undefined {
+    const settings = useContext(Settings.Context)
+    return settings.useStagedKeys()
+}
