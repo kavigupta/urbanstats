@@ -79,6 +79,7 @@
     "prng": "^0.0.1",
     "protobufjs": "^7.2.4",
     "react": "^18.2.0",
+    "react-a11y-footnotes": "^0.7.0",
     "react-contenteditable": "^3.3.7",
     "react-device-detect": "^2.2.3",
     "react-dom": "^18.2.0",
