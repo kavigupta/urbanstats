@@ -5,6 +5,7 @@ import './common.css'
 
 import { for_type, render_statname } from './components/load-article'
 import { StatisticPanel } from './components/statistic-panel'
+import { discordFix } from './discord-fix'
 import { load_ordering, load_ordering_protobuf } from './load_json'
 import { UNIVERSE_CONTEXT, get_universe, longname_is_exclusively_american, remove_universe_if_default } from './universe'
 import { IDataList } from './utils/protos'
@@ -64,4 +65,5 @@ async function loadPage(): Promise<void> {
     )
 }
 
+discordFix()
 void loadPage()
