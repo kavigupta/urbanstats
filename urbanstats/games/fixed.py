@@ -1,3 +1,3 @@
 
 juxtastat = 417
-retrostat = 47
+retrostat = 52

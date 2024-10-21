@@ -1,0 +1,107 @@
+[
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "2BR Rent > $1500 %",
+      "question": "higher % of units with 2br rent over $1500",
+      "longname_a": "Little Rock [Urban Area], AR, USA",
+      "longname_b": "Columbus [Urban Area], GA-AL, USA",
+      "stat_a": 0.04052605615909663,
+      "stat_b": 0.016610687525666697
+    },
+    "b": {
+      "stat_column": "Cognitive disability %",
+      "question": "higher % of adults with a cognitive disability",
+      "longname_a": "Westchester County, New York, USA",
+      "longname_b": "McLennan County, Texas, USA",
+      "stat_a": 0.10479990486914653,
+      "stat_b": 0.17066550817916468
+    },
+    "a_ease": 0.2987551867219917,
+    "b_ease": 0.7016087182148417
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Rainfall",
+      "question": "higher rainfall (population weighted)!TOOLTIP Population weighted weather statistics are calculated by computing the weather statistic for each person in the region and then averaging the results.",
+      "longname_a": "CT-01, USA",
+      "longname_b": "IN-02, USA",
+      "stat_a": 1.0216557607778471,
+      "stat_b": 0.922845447651444
+    },
+    "b": {
+      "stat_column": "Health diagnosing and treating practitioners and other technical occupations %",
+      "question": "higher % of workers employed in health diagnosing and treating practitioners and other technical occupations!TOOLTIP doctors, registered nurses, physical therapists, pharmacists, dietitians, veterinarians, paramedics, etc.",
+      "longname_a": "Arlington city, Texas, USA",
+      "longname_b": "New Orleans city, Louisiana, USA",
+      "stat_a": 0.028034089920549236,
+      "stat_b": 0.052560608560585836
+    },
+    "a_ease": 0.6872586872586872,
+    "b_ease": 0.25189786059351277
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "PW Density (r=1km) Change (2010-2020)",
+      "question": "higher % increase in population-weighted density (r=1km) from 2010 to 2020!TOOLTIP Population-weighted density is computed by computing the density within the given radius for each person in the region and then averaging the results. This is a better measure of the density that people actually experience.",
+      "longname_a": "KY-05, USA",
+      "longname_b": "MO-07, USA",
+      "stat_a": -0.01867016134974801,
+      "stat_b": 0.058910945048171834
+    },
+    "b": {
+      "stat_column": "PW Density (r=4km) [GHS-POP]",
+      "question": "higher population-weighted density (r=4km)!TOOLTIP Population-weighted density is computed by computing the density within the given radius for each person in the region and then averaging the results. This is a better measure of the density that people actually experience.",
+      "longname_a": "Suzhou (Jiangsu Sheng) Urban Center, China",
+      "longname_b": "Surat Urban Center, India",
+      "stat_a": 9381.837890625,
+      "stat_b": 52661.58984375
+    },
+    "a_ease": 0.6410115448048378,
+    "b_ease": 0.22374931280923585
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Farming, fishing, and forestry occupations %",
+      "question": "higher % of workers employed in farming, fishing, and forestry occupations!TOOLTIP farmers, ranchers, fishers, loggers, forest workers, etc.",
+      "longname_a": "Minnesota, USA",
+      "longname_b": "Rhode Island, USA",
+      "stat_a": 0.0066723211614750704,
+      "stat_b": 0.0018807749315651358
+    },
+    "b": {
+      "stat_column": "Commute Time < 15 min %",
+      "question": "higher % of people who have commute time under 15 min",
+      "longname_a": "Anchorage municipality, Alaska, USA",
+      "longname_b": "Aurora city, Colorado, USA",
+      "stat_a": 0.35958230866714436,
+      "stat_b": 0.13875971282299124
+    },
+    "a_ease": 0.7974371611631346,
+    "b_ease": 0.3834401182848694
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Commute Walk %",
+      "question": "higher % of people who commute by walking",
+      "longname_a": "Syracuse MSA, NY, USA",
+      "longname_b": "Huntsville MSA, AL, USA",
+      "stat_a": 0.03709431161706449,
+      "stat_b": 0.007153470973344429
+    },
+    "b": {
+      "stat_column": "Spanish at Home %",
+      "question": "higher % of people who speak spanish at home",
+      "longname_a": "NJ-11, USA",
+      "longname_b": "VA-08, USA",
+      "stat_a": 0.11695937739587269,
+      "stat_b": 0.16273657489798682
+    },
+    "a_ease": 0.8247066942719117,
+    "b_ease": 0.40096618357487923
+  }
+]
