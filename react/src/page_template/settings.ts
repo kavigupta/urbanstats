@@ -54,7 +54,7 @@ const map_relationship = require('../data/map_relationship.json') as [string, st
 
 // Having a default settings object allows us to statically check that we have default values for all settings
 // It also makes visualizing the default setings easier
-const defaultSettings = {
+const defaultSettings: SettingsDictionary = {
     ...Object.fromEntries(
         map_relationship.map(
             ([article_type, other_type]) => [relationship_key(article_type, other_type), true],
@@ -71,11 +71,11 @@ const defaultSettings = {
     histogram_relative: true,
     theme: 'System Theme',
     colorblind_mode: false,
-} satisfies SettingsDictionary
+}
 
 export function load_settings(): SettingsDictionary {
     const settings = JSON.parse(localStorage.getItem('settings') ?? '{}') as Partial<SettingsDictionary>
-    return { ...defaultSettings, ...settings }
+    return { ...defaultSettings, ...settings } as SettingsDictionary
 }
 
 export interface SettingInfo<K extends keyof SettingsDictionary> {
@@ -238,8 +238,10 @@ export class Settings {
             setResult(this.getSettingsInfo(keys)) // So that if `key` changes we change our result immediately
             const observer = (): void => { setResult(this.getSettingsInfo(keys)) }
             keys.forEach(key => this.settingValueObservers.get(key).add(observer))
+            this.stagedKeysObservers.add(observer)
             return () => {
                 keys.forEach(key => this.settingValueObservers.get(key).delete(observer))
+                this.stagedKeysObservers.delete(observer)
             }
         // eslint-disable-next-line react-hooks/exhaustive-deps -- Our dependencies are the keys
         }, keys)

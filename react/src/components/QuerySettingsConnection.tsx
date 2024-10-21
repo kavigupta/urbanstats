@@ -4,11 +4,11 @@ import { Settings, SettingsDictionary, useSettings } from '../page_template/sett
 
 /**
  * - Query Params -> Settings
- *   Reads specified settings keys from the query params, filling in any blanks with persisted settings values.
+ *   Reads specified settings keys from the query params, filling in any blanks with current settings.
  *   If any read values are different, launches the settings into staged mode for those keys.
  *
  * - Settings -> Query Params
- *   Watches settings keys and reflects in query params
+ *   Watches settings keys and reflects in query params. Must include all settings
  */
 
 export function QuerySettingsConnection({ settingsKeys }: { settingsKeys: (keyof SettingsDictionary)[] }): null {
@@ -18,8 +18,8 @@ export function QuerySettingsConnection({ settingsKeys }: { settingsKeys: (keyof
     // Query Params -> Settings
     useEffect(() => {
         const queryParams = new URLSearchParams(window.location.search)
-        const settingsFromQueryParams = Object.fromEntries(settingsKeys.map(key => [key, decodeQueryParamValue(queryParams.get(key)) ?? settings.get(key)])) as Partial<SettingsDictionary>
-        if (settingsKeys.some(key => settingsFromQueryParams[key] !== settings.get(key))) {
+        const settingsFromQueryParams = Object.fromEntries(settingsKeys.map(key => [key, JSON.parse(queryParams.get(key) ?? 'null') ?? settings.get(key)])) as Partial<SettingsDictionary>
+        if (settingsKeys.some(key => JSON.stringify(settingsFromQueryParams[key]) !== JSON.stringify(settings.get(key)))) {
             settings.enterStagedMode(settingsFromQueryParams)
         }
     }, [])
@@ -28,9 +28,7 @@ export function QuerySettingsConnection({ settingsKeys }: { settingsKeys: (keyof
     useEffect(() => {
         const url = new URL(window.location.toString())
         for (const [key, value] of Object.entries(settingsValues)) {
-            if (value !== undefined) {
-                url.searchParams.set(key, value.toString())
-            }
+            url.searchParams.set(key, JSON.stringify(value))
         }
         if (url.searchParams.toString().toString() !== window.location.search) {
             history.replaceState(null, '', url)
@@ -39,22 +37,11 @@ export function QuerySettingsConnection({ settingsKeys }: { settingsKeys: (keyof
         // If we're in staged mode, our monitored settings are the same as persisted, exit staged mode
         if (settings.getStagedKeys() !== undefined && settingsKeys.every((key) => {
             const info = settings.getSettingInfo(key)
-            return info.persistedValue === info.stagedValue
+            return JSON.stringify(info.persistedValue) === JSON.stringify(info.stagedValue)
         })) {
             settings.exitStagedMode('discard')
         }
     }, [settingsValues])
 
     return null
-}
-
-function decodeQueryParamValue(value: string | null): unknown {
-    switch (value) {
-        case 'true':
-            return true
-        case 'false':
-            return false
-        default:
-            return value
-    }
 }
