@@ -4,8 +4,8 @@ import './article.css'
 import React, { ReactNode, useRef } from 'react'
 
 import { article_link, comparison_link, sanitize } from '../navigation/links'
-import { useSetting, useSettings } from '../page_template/settings'
-import { groupYearKeys, StatPathsContext } from '../page_template/statistic-settings'
+import { useSetting, useSettings, SettingsDictionary } from '../page_template/settings'
+import { groupYearKeys, StatPathsContext, useAvailableGroups, useAvailableYears } from '../page_template/statistic-settings'
 import { PageTemplate } from '../page_template/template'
 import { longname_is_exclusively_american, useUniverse } from '../universe'
 import { Article, IRelatedButtons } from '../utils/protos'
@@ -13,6 +13,7 @@ import { useComparisonHeadStyle, useHeaderTextClass, useSubHeaderTextClass } fro
 import { NormalizeProto } from '../utils/types'
 
 import { ArticleWarnings } from './ArticleWarnings'
+import { QuerySettingsConnection } from './QuerySettingsConnection'
 import { load_article } from './load-article'
 import { Map } from './map'
 import { Related } from './related-button'
@@ -43,6 +44,7 @@ export function ArticlePanel({ article }: { article: Article }): ReactNode {
 
     return (
         <StatPathsContext.Provider value={availableStatPaths}>
+            <ArticleQuerySettingsConnection />
             <PageTemplate screencap_elements={screencap_elements} has_universe_selector={true} universes={article.universes}>
                 <div>
                     <div ref={headers_ref}>
@@ -122,4 +124,16 @@ function ComparisonSearchBox({ longname }: { longname: string }): ReactNode {
 function StatisticRowHeader(): ReactNode {
     const [simple_ordinals] = useSetting('simple_ordinals')
     return <StatisticRowRaw index={0} _idx={-1} is_header={true} simple={simple_ordinals} />
+}
+
+function ArticleQuerySettingsConnection(): ReactNode {
+    const settingsKeys: (keyof SettingsDictionary)[] = [
+        'use_imperial',
+        'show_historical_cds',
+        'simple_ordinals',
+        ...useAvailableYears().map(year => `show_stat_year_${year}` as const),
+        ...useAvailableGroups().map(group => `show_stat_group_${group.id}` as const),
+    ]
+
+    return <QuerySettingsConnection settingsKeys={settingsKeys} />
 }
