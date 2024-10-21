@@ -208,15 +208,6 @@ def usda_county_type():
     return regions
 
 
-def iso3_to_country(iso):
-    if iso == "USA":
-        return "USA"
-    c = pycountry.countries.get(alpha_3=iso)
-    if c is None:
-        return None
-    return c.name
-
-
 def iso_to_country(iso):
     if iso == "US":
         return "USA"
