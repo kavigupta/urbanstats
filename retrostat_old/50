@@ -1,0 +1,107 @@
+[
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Transportation and warehousing %",
+      "question": "higher % of workers employed in the transportation and warehousing industry!TOOLTIP transportation by all means, taxis, buses, sightseeing transportation, warehousing, etc.",
+      "longname_a": "Laredo [Urban Area], TX, USA",
+      "longname_b": "Myrtle Beach-North Myrtle Beach [Urban Area], SC-NC, USA",
+      "stat_a": 0.14427931418979026,
+      "stat_b": 0.0249493213002857
+    },
+    "b": {
+      "stat_column": "Born outside US %",
+      "question": "higher % of people who were born outside the US",
+      "longname_a": "Lubbock County, Texas, USA",
+      "longname_b": "Lake County, Illinois, USA",
+      "stat_a": 0.06289454922548478,
+      "stat_b": 0.1865346179900457
+    },
+    "a_ease": 0.7698368036015757,
+    "b_ease": 0.3611859838274933
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Mean distance to nearest Hospital",
+      "question": "!FULL Which has less access to hospitals (higher population-weighted mean distance)?",
+      "longname_a": "DC Circuit, USA",
+      "longname_b": "2nd Circuit, USA",
+      "stat_a": 1.7705686727253025,
+      "stat_b": 4.960800526936217
+    },
+    "b": {
+      "stat_column": "Mean distance to nearest Public School",
+      "question": "!FULL Which has less access to public schools (higher population-weighted mean distance)?",
+      "longname_a": "Des Moines-West Des Moines MSA, IA, USA",
+      "longname_b": "Utica-Rome MSA, NY, USA",
+      "stat_a": 1.3598142506712347,
+      "stat_b": 2.2424283591423597
+    },
+    "a_ease": 0.8846370287000562,
+    "b_ease": 0.4788732394366197
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Mean distance to nearest Hospital",
+      "question": "!FULL Which has less access to hospitals (higher population-weighted mean distance)?",
+      "longname_a": "Miami-Ft. Lauderdale FL Media Market, USA",
+      "longname_b": "Dothan AL Media Market, USA",
+      "stat_a": 3.0213237851954555,
+      "stat_b": 8.95881213369664
+    },
+    "b": {
+      "stat_column": "Health diagnosing and treating practitioners and other technical occupations %",
+      "question": "higher % of workers employed in health diagnosing and treating practitioners and other technical occupations!TOOLTIP doctors, registered nurses, physical therapists, pharmacists, dietitians, veterinarians, paramedics, etc.",
+      "longname_a": "Kissimmee-St. Cloud [Urban Area], FL, USA",
+      "longname_b": "Toledo [Urban Area], OH-MI, USA",
+      "stat_a": 0.03150676387084481,
+      "stat_b": 0.05796772601342263
+    },
+    "a_ease": 0.894979079497908,
+    "b_ease": 0.45714285714285713
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Mean distance to nearest Active Superfund Site",
+      "question": "!FULL Which has less exposure to active EPA superfund sites (higher population-weighted mean distance)?!TOOLTIP EPA superfund sites are hazardous waste sites identified by the Environmental Protection Agency.",
+      "longname_a": "CA-26, USA",
+      "longname_b": "FL-07, USA",
+      "stat_a": 15.974390274911572,
+      "stat_b": 12.278615929726703
+    },
+    "b": {
+      "stat_column": "White %",
+      "question": "higher % of people who are White",
+      "longname_a": "New York city, New York, USA",
+      "longname_b": "Louisville/Jefferson County metro government (balance), Kentucky, USA",
+      "stat_a": 0.3089286016496507,
+      "stat_b": 0.648528711600563
+    },
+    "a_ease": 0.5117808219178083,
+    "b_ease": 0.9138998311761396
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Population Change (2010-2020)",
+      "question": "higher % increase in population from 2010 to 2020",
+      "longname_a": "Santa Maria-Santa Barbara MSA, CA, USA",
+      "longname_b": "Tuscaloosa MSA, AL, USA",
+      "stat_a": 0.05725830038966308,
+      "stat_b": 0.13374058271999723
+    },
+    "b": {
+      "stat_column": "PW Mean % of parkland within 1km",
+      "question": "!FULL Which has more access to parks (higher % of area within 1km of a park, population weighted)?",
+      "longname_a": "5th Circuit, USA",
+      "longname_b": "2nd Circuit, USA",
+      "stat_a": 0.018167758271123526,
+      "stat_b": 0.04049224910862084
+    },
+    "a_ease": 0.45502298095863425,
+    "b_ease": 0.8970350404312668
+  }
+]
