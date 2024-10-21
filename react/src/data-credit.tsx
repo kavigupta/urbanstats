@@ -217,14 +217,12 @@ function DataCreditPanel(): ReactNode {
                                             </a>
                                             {' '}
                                             Social forces 67.2 (1988): 281-315.
-                                            <a href="https://www.jstor.org/stable/2579183">JSTOR</a>
                                         </span>
                                     )}
                                 >
                                     Massey and Denton
                                 </FootnoteRef>
-                                {' '}
-                                by Douglas Massey and Nancy Denton. Our variant attempts to update this metric
+                                . Our variant attempts to update this metric
                                 to work for more than two groups and be geography independent.
                             </p>
                             <p>
