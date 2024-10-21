@@ -1,5 +1,6 @@
 import React, { ReactNode, useContext, useLayoutEffect, useRef, useState } from 'react'
 
+import { useColors } from '../page_template/colors'
 import { Settings, useSetting } from '../page_template/settings'
 import { changeStatGroupSetting, useAvailableCategories, useAvailableGroups, useCategoryStatus, useChangeCategorySetting } from '../page_template/statistic-settings'
 import { Category, Group } from '../page_template/statistic-tree'
@@ -16,6 +17,7 @@ function CategoryComponent({ category }: { category: Category }): ReactNode {
     const [isExpanded, setIsExpanded] = useSetting(`stat_category_expanded_${category.id}`)
     const isMobileLayout = useMobileLayout()
     const changeCategorySetting = useChangeCategorySetting(category)
+    const colors = useColors()
     return (
         <li>
             <div style={{ position: 'relative' }}>
@@ -23,7 +25,7 @@ function CategoryComponent({ category }: { category: Category }): ReactNode {
                     data-category-id={category.id}
                     onClick={() => { setIsExpanded(!isExpanded) }}
                     className="expandButton"
-                    style={{ transform: isExpanded ? `rotate(${isMobileLayout ? -90 : 90}deg)` : 'rotate(0deg)' }}
+                    style={{ transform: isExpanded ? `rotate(${isMobileLayout ? -90 : 90}deg)` : 'rotate(0deg)', color: colors.ordinalTextColor }}
                 >
                     {isMobileLayout ? '◀' : '▶' /* Arrows are on the right on mobile to be used with both thumbs */}
                 </button>

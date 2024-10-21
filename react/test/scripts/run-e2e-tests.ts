@@ -83,11 +83,15 @@ async function main(): Promise<void> {
     const testsFailed = (await Promise.all(Array.from({ length: options.parallel }).map(runTest))).reduce((a, n) => a + n, 0)
 
     if (options.compare) {
-        await Promise.all(tests.map(test => execa('python', ['tests/check_images.py', `--test=${test}`], {
+        const comparisonResults = await Promise.all(tests.map(test => execa('python', ['tests/check_images.py', `--test=${test}`], {
             cwd: '..',
             stdio: 'inherit',
             reject: false,
         })))
+
+        if (comparisonResults.some(result => result.failed)) {
+            process.exit(1)
+        }
     }
 
     if (testsFailed > 0) {

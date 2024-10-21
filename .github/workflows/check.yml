@@ -100,7 +100,7 @@ jobs:
             --parallel=1 \
             --headless=true \
             --video=true \
-            --compare=false
+            --compare=true
         working-directory: react
       - uses: actions/upload-artifact@v4
         if: "!cancelled()"
@@ -112,26 +112,6 @@ jobs:
         with:
           name: videos-${{ matrix.test-file }}
           path: react/videos
-
-  check-screenshots:
-    runs-on: ubuntu-22.04
-    needs: [build-and-push-image, list-e2e-tests, run-e2e-tests]
-    if: ${{ !cancelled() && needs.build-and-push-image.result == 'success' && needs.list-e2e-tests.result == 'success' }} # Should run even if e2e tests fail
-    container:
-      image: ghcr.io/${{ needs.build-and-push-image.outputs.image_tag }}
-    strategy:
-      fail-fast: false
-      matrix:
-        test-file: ${{ fromJson(needs.list-e2e-tests.outputs.matrix) }}
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/download-artifact@v4
-        with:
-          name: screenshots-${{ matrix.test-file }}
-          path: react/screenshots
-        continue-on-error: true
-      - name: Check screenshots
-        run: python3 tests/check_images.py --test=${{ matrix.test-file }}
       - uses: actions/upload-artifact@v4
         if: "!cancelled()"
         with:
@@ -145,7 +125,7 @@ jobs:
 
   merge-screenshots:
     runs-on: ubuntu-22.04
-    needs: [run-e2e-tests, check-screenshots]
+    needs: [run-e2e-tests]
     if: "!cancelled()"
     steps:
       - uses: actions/upload-artifact/merge@v4
