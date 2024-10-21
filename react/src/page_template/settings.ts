@@ -199,12 +199,14 @@ export class Settings {
         const [result, setResult] = useState(this.getStagedKeys())
         // eslint-disable-next-line react-hooks/rules-of-hooks -- This is a custom hook
         useEffect(() => {
-            const observer = (): void => { setResult(this.getStagedKeys()) }
+            setResult(this.getStagedKeys())
+            const observer = (): void => {
+                setResult(this.getStagedKeys())
+            }
             this.stagedKeysObservers.add(observer)
             return () => {
                 this.stagedKeysObservers.delete(observer)
             }
-            // eslint-disable-next-line react-hooks/exhaustive-deps -- Our dependencies are the keys
         }, [])
         return result
     }

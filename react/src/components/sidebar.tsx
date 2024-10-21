@@ -88,7 +88,7 @@ export function Sidebar(): ReactNode {
                     ? null
                     : (
                             <div className="sidebar-section">
-                                <div style={sidebar_section_title}>Staging</div>
+                                <div style={sidebar_section_title}>Pasted Settings</div>
                                 <ul className={sidebar_section_content}>
                                     <StagingControls />
                                 </ul>
@@ -162,11 +162,8 @@ export function CheckboxSetting(props: { name: string, setting_key: BooleanSetti
     const info = useSettingInfo(props.setting_key)
 
     let name = props.name
-    if ('stagedValue' in info) {
-        name += ' (Staged)'
-        if (info.stagedValue !== info.persistedValue) {
-            name += ' (Changed)'
-        }
+    if ('stagedValue' in info && info.stagedValue !== info.persistedValue) {
+        name += ' (Changed)'
     }
 
     return (

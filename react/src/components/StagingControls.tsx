@@ -7,6 +7,7 @@ export function StagingControls(): ReactNode {
 
     return (
         <>
+            These settings are different than the ones you have saved...
             <button onClick={() => { settings.exitStagedMode('discard') }}>Discard</button>
             <button onClick={() => { settings.exitStagedMode('apply') }}>Apply</button>
         </>
