@@ -49,6 +49,7 @@ export default tseslint.config(
             }],
             'import/no-named-as-default-member': 'off',
             'import/namespace': 'off',
+            'import/named': 'off',
         },
         settings: {
             'import/resolver': {
