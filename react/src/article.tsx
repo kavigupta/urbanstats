@@ -1,9 +1,10 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
+
 import './style.css'
 import './common.css'
-
 import { ArticlePanel } from './components/article-panel'
+import { discordFix } from './discord-fix'
 import { loadProtobuf } from './load_json'
 import { data_link } from './navigation/links'
 import { UNIVERSE_CONTEXT, default_article_universe, get_universe, remove_universe_if_default, remove_universe_if_not_in } from './universe'
@@ -25,4 +26,5 @@ async function loadPage(): Promise<void> {
     )
 }
 
+discordFix()
 void loadPage()

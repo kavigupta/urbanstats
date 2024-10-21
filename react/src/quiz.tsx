@@ -4,6 +4,7 @@ import './style.css'
 import './common.css'
 
 import { QuizPanel } from './components/quiz-panel'
+import { discordFix } from './discord-fix'
 import { loadJSON } from './load_json'
 import { get_daily_offset_number, get_retrostat_offset_number } from './quiz/dates'
 import { JuxtaQuestionJSON, QuizDescriptor, RetroQuestionJSON, load_juxta, load_retro } from './quiz/quiz'
@@ -98,4 +99,5 @@ async function loadPage(): Promise<void> {
     )
 }
 
+discordFix()
 void loadPage()
