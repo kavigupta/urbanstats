@@ -34,6 +34,7 @@ export function PageTemplate({
     const [screenshot_mode, set_screenshot_mode] = useState(false)
     const colors = useColors()
     const juxtaColors = useJuxtastatColors()
+    const mobileLayout = useMobileLayout()
 
     useEffect(() => {
         document.body.style.backgroundColor = colors.background
@@ -47,6 +48,12 @@ export function PageTemplate({
         document.documentElement.style.setProperty('--blue-link', colors.blueLink)
         document.documentElement.style.setProperty('--text-main-opposite', colors.textMainOpposite)
     }, [colors, juxtaColors])
+
+    useEffect(() => {
+        if (!mobileLayout && hamburger_open) {
+            set_hamburger_open(false)
+        }
+    }, [hamburger_open, mobileLayout])
 
     const has_screenshot_button = screencap_elements !== undefined
 
@@ -73,7 +80,7 @@ export function PageTemplate({
     return (
         <ScreenshotContext.Provider value={screenshot_mode}>
             <meta name="viewport" content="width=device-width, initial-scale=0.75, shrink-to-fit=no, maximum-scale=0.75" />
-            <div className={useMobileLayout() ? 'main_panel_mobile' : 'main_panel'} style={{ backgroundColor: colors.background }}>
+            <div className={mobileLayout ? 'main_panel_mobile' : 'main_panel'} style={{ backgroundColor: colors.background }}>
                 <Header
                     hamburger_open={hamburger_open}
                     set_hamburger_open={set_hamburger_open}

@@ -4,6 +4,7 @@ import './style.css'
 import './common.css'
 
 import { ComparisonPanel } from './components/comparison-panel'
+import { discordFix } from './discord-fix'
 import { loadProtobuf } from './load_json'
 import { data_link } from './navigation/links'
 import { UNIVERSE_CONTEXT, default_comparison_universe, get_universe, remove_universe_if_default, remove_universe_if_not_in } from './universe'
@@ -29,4 +30,5 @@ async function loadPage(): Promise<void> {
     )
 }
 
+discordFix()
 void loadPage()

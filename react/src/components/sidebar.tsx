@@ -166,10 +166,10 @@ export function ColorThemeSetting(): ReactNode {
 
     return (
         <div className="theme-setting">
-            <label>{'Theme '}</label>
+            <label style={{ verticalAlign: 'middle' }}>{'Theme '}</label>
             <select
                 className="serif"
-                style={{ backgroundColor: colors.background, color: colors.textMain }}
+                style={{ backgroundColor: colors.background, color: colors.textMain, verticalAlign: 'middle' }}
                 value={theme}
                 onChange={(e: React.ChangeEvent<HTMLSelectElement>) => { setTheme(e.target.value as Theme) }}
             >
