@@ -41,7 +41,7 @@ export function Sidebar(): ReactNode {
             }}
         >
             <div className="sidebar-section">
-                <div style={sidebar_section_title}>Main Menu</div>
+                <div style={sidebar_section_title}>Main Menú</div>
                 <ul className={sidebar_section_content}>
                     <li>
                         <a style={link_style} href="/">Home</a>
