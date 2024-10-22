@@ -22,13 +22,14 @@ def compute_population_overlay(shapefile, frame):
 
     countries = shapefile.load_file()[["longname", "geometry"]]
     overlays = gpd.overlay(frame, countries)
-    overlays["population"], _ = compute_gpw_data_for_shapefile.function(
+    res, _ = compute_gpw_data_for_shapefile.function(
         SimpleNamespace(
             load_file=lambda: overlays, hash_key="overlays " + uuid.uuid4().hex
         ),
         collect_density=False,
         log=False,
-    )["gpw_population"]
+    )
+    overlays["population"] = res["gpw_population"]
     return overlays
 
 

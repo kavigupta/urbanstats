@@ -436,13 +436,14 @@ def attach_urban_centers_to_frame(frame):
     urban_center_shapefile = shapefiles["urban_centers"].load_file()
     urban_center_shapefile.index = urban_center_shapefile.longname
     overlays = gpd.overlay(frame, urban_center_shapefile)
-    overlays["population"], _ = compute_gpw_data_for_shapefile.function(
+    res, _ = compute_gpw_data_for_shapefile.function(
         SimpleNamespace(
             load_file=lambda: overlays, hash_key="overlays " + uuid.uuid4().hex
         ),
         collect_density=False,
         log=False,
-    )["gpw_population"]
+    )
+    overlays["population"] = res["gpw_population"]
 
     circle_id_to_overlays = defaultdict(list)
     for circle_id, index in zip(overlays.id, overlays.index):
@@ -764,7 +765,7 @@ def circle_shapefile_object(country_shapefile, population, just_usa):
         prefix = "us_"
     else:
         prefix = ""
-    version = 25
+    version = 26
     if population == 1e7:
         # just special case for 10M, since there was some weird caching issue.
         version += 0.1
