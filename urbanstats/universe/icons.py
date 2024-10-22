@@ -18,25 +18,9 @@ flags_folder = "icons/flags/"
 
 
 internal_country_to_wikipedia = {
-    # "Bolivia, Plurinational State of": "Bolivia",
     "Bouvet Island": "Norway",
-    # "Congo, The Democratic Republic of the": "Democratic_Republic_of_the_Congo",
-    # "Falkland Islands (Malvinas)": "Falkland_Islands",
-    # "Micronesia, Federated States of": "Federated_States_of_Micronesia",
     "Heard Island and McDonald Islands": "Australia",
-    # "Iran, Islamic Republic of": "Iran",
-    # "Korea, Democratic People's Republic of": "North_Korea",
-    # "Korea, Republic of": "South_Korea",
-    # "Lao People's Democratic Republic": "Laos",
-    # "Moldova, Republic of": "Moldova",
-    # "Palestine, State of": "Palestine",
-    # "Syrian Arab Republic": "Syria",
-    # "Tanzania, United Republic of": "Tanzania",
     "United States Minor Outlying Islands": "United_States",
-    # "Holy See (Vatican City State)": "Vatican_City",
-    # "Venezuela, Bolivarian Republic of": "Venezuela",
-    # "Virgin Islands, British": "British_Virgin_Islands",
-    # "Viet Nam": "Vietnam",
 }
 
 
