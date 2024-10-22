@@ -1,4 +1,5 @@
 import ast
+import json
 import os
 import shutil
 
@@ -31,7 +32,7 @@ def save_fixed_py(fixed):
             f.write(f"{key} = {value}\n")
 
 
-def copy_up_to(key, new_up_to):
+def copy_up_to(key, new_up_to, folder=None):
     source_folder = {
         "juxtastat": "quiz",
         "retrostat": "retrostat",
@@ -45,7 +46,19 @@ def copy_up_to(key, new_up_to):
         source = os.path.join("https://urbanstats.org", source_folder, str(retrostat_week))
         dest = os.path.join(dest_folder, str(retrostat_week))
         print(f"Copying {source} to {dest}")
-        data = requests.get(source).content
+        response = requests.get(source)
+        if response.status_code == 200:
+            data = response.content
+        else:
+            print(f"Failed to get {source}")
+            print("finding locally")
+            assert folder is not None, "Must provide folder"
+            source = os.path.join(folder, source_folder, str(retrostat_week))
+            with open(source, "rb") as f:
+                data = f.read()
+        assert data, f"Somehow, {source} is empty"
+        # check that it's valid json
+        _ = json.loads(data.decode("utf-8"))
         with open(dest, "wb") as f:
             f.write(data)       
     fixed_py[key] = new_up_to
