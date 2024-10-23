@@ -2,7 +2,7 @@
  * When we save settings, we put them in a bit vector
  */
 
-import * as base64 from 'base64-js'
+import * as base58 from 'base58-js'
 
 import { Settings, SettingsDictionary, useSettings } from './settings'
 import { GroupIdentifier } from './statistic-tree'
@@ -238,11 +238,11 @@ export function useVector(): string {
         const bit = i % 8
         result[byte] |= (booleans[i] ? 1 : 0) << bit
     }
-    return base64.fromByteArray(result)
+    return base58.binary_to_base58(result)
 }
 
 export function fromVector(vector: string, settings: Settings): Record<BooleanSettingKey, boolean> {
-    const array = base64.toByteArray(vector)
+    const array = base58.base58_to_binary(vector)
     return Object.fromEntries(settingsVector.map((setting, i) => {
         const byte = Math.floor(i / 8)
         const bit = i % 8
