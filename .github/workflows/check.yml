@@ -22,7 +22,6 @@ jobs:
 
   build-frontend:
     runs-on: ubuntu-22.04
-    needs: build-and-push-image
     container:
       image: ${{ inputs.test-image }}
     steps:
@@ -45,7 +44,7 @@ jobs:
 
   run-e2e-tests:
     runs-on: ubuntu-22.04
-    needs: [build-and-push-image, build-frontend, list-e2e-tests]
+    needs: [build-frontend, list-e2e-tests]
     container:
       image: ${{ inputs.test-image }}
     strategy:
