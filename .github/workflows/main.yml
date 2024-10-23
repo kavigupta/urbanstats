@@ -56,11 +56,11 @@ jobs:
     needs: build-and-push-image
     uses: ./.github/workflows/check.yml
     with:
-      test-image: ${{ env.REGISTRY }}/${{ needs.build-and-push-image.outputs.image_tag }}
+      test-image: ghcr.io/${{ needs.build-and-push-image.outputs.image_tag }}
 
   run-checks-main-image:
     needs: check-dockerfile-changes
     if: needs.check-dockerfile-changes.changed == 'false'
     uses: ./.github/workflows/check.yml
     with:
-      test-image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.event.repository.default_branch }}
+      test-image: ghcr.io/${{ env.IMAGE_NAME }}:${{ github.event.repository.default_branch }}
