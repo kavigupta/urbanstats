@@ -1,8 +1,5 @@
 name: main
 on: [push]
-env:
-  REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository }}/e2e
 jobs:
   check-dockerfile-changes:
     runs-on: ubuntu-22.04
@@ -31,7 +28,7 @@ jobs:
       - name: Log in to the Container registry
         uses: docker/login-action@v3
         with:
-          registry: ${{ env.REGISTRY }}
+          registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
@@ -39,7 +36,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          images: ghcr.io/${{ github.repository }}/e2e
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v6
@@ -63,4 +60,4 @@ jobs:
     if: needs.check-dockerfile-changes.changed == 'false'
     uses: ./.github/workflows/check.yml
     with:
-      test-image: ghcr.io/${{ env.IMAGE_NAME }}:${{ github.event.repository.default_branch }}
+      test-image: ghcr.io/${{ github.repository }}/e2e:${{ github.event.repository.default_branch }}
