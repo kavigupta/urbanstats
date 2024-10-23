@@ -27,6 +27,7 @@ from urbanstats.data.gpw import compute_gpw_data_for_shapefile_table
 from urbanstats.mapper.ramp import output_ramps
 from urbanstats.ordinals.flat_ordinals import compute_flat_ordinals
 from urbanstats.ordinals.ordinal_info import fully_complete_ordinals
+from urbanstats.special_cases import symlinks
 from urbanstats.special_cases.merge_international import (
     merge_international_and_domestic,
 )
@@ -325,6 +326,9 @@ def main(
 
     with open(f"react/src/data/american_to_international.json", "w") as f:
         json.dump(american_to_international, f)
+
+    with open(f"react/src/data/symlinks.json", "w") as f:
+        json.dump(symlinks.symlinks, f)
 
     os.system(
         f"cd react; npm {'i' if dev else 'ci'}; npm run {'dev' if dev else 'prod'}"

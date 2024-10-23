@@ -8,7 +8,7 @@ function symlink_test(name: string, link: string, expected: string | undefined =
 
     test(name, async (t) => {
         await screencap(t)
-        await t.expect(getLocation()).eql(`${TARGET}/${expected}`)
+        await t.expect(getLocation()).eql(`${TARGET}${expected}`)
     })
 }
 
@@ -21,3 +21,11 @@ symlink_test(
     'comparison',
     '/comparison.html?longnames=%5B"Pyongyang+5MPC%2C+Korea%2C+Democratic+People%27s+Republic+of"%2C"Tehran+%28Outer%29+5MPC%2C+Iran%2C+Islamic+Republic+of"%5D',
 )
+
+symlink_test(
+    'usa-test',
+    '/article.html?longname=United+States+of+America',
+    '/article.html?longname=USA',
+)
+
+symlink_test('usa-comparison', '/comparison.html?longnames=%5B%United+States+of+America%22%2C%22Canada%22%5D', '/comparison.html?longnames=%5B%22USA%22%2C%22Canada%22%5D')
