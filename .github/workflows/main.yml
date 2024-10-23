@@ -1,0 +1,65 @@
+name: main
+on: [push]
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}/e2e
+jobs:
+  check-dockerfile-changes:
+    outputs:
+      changed: ${{ steps.get-changed-files.outputs.any_changed }}
+    steps:
+      - id: get-changed-files
+        uses: tj-actions/changed-files@v45
+        with:
+          files: |
+            react/test/Dockerfile
+
+  build-and-push-image:
+    runs-on: ubuntu-22.04
+    needs: check-dockerfile-changes
+    if: needs.check-dockerfile-changes.changed == 'true'
+    outputs:
+      image_tag: ${{ steps.meta.outputs.tags }}
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Log in to the Container registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata (tags, labels) for Docker
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: react/test/Dockerfile
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=registry,ref=${{ steps.meta.outputs.tags }}
+          cache-to: type=inline
+
+  run-checks-built-image:
+    needs: build-and-push-image
+    uses: ./.github/workflows/check.yml
+    with:
+      test-image: ${{ env.REGISTRY }}/${{ needs.build-and-push-image.outputs.image_tag }}
+
+  run-checks-main-image:
+    needs: check-dockerfile-changes
+    if: needs.check-dockerfile-changes.changed == 'false'
+    uses: ./.github/workflows/check.yml
+    with:
+      test-image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.event.repository.default_branch }}
