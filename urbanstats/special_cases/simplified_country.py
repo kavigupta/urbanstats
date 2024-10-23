@@ -13,14 +13,14 @@ def countries():
     return shapefiles["countries"].load_file()
 
 
-@permacache("urbanstats/special_cases/simplified_country/row_for_country")
+@permacache("urbanstats/special_cases/simplified_country/row_for_country_2")
 def row_for_country(name):
     c = countries()
     row = c[c.longname == name].iloc[0]
     return row
 
 
-@permacache("urbanstats/special_cases/simplified_country/get_simplified_country")
+@permacache("urbanstats/special_cases/simplified_country/get_simplified_country_2")
 def get_simplified_country(name):
     r = row_for_country(name)
     r = copy.deepcopy(r)

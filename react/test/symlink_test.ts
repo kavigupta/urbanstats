@@ -12,14 +12,31 @@ function symlink_test(name: string, link: string, expected: string | undefined =
     })
 }
 
-symlink_test('national', '/article.html?longname=Timor-Leste')
-symlink_test('subnational', '/article.html?longname=Haut-Lomami%2C+Congo%2C+The+Democratic+Republic+of+the')
-symlink_test('urban center', '/article.html?longname=Tehr%C4%81n%2C+Iran%2C+Islamic+Republic+of')
-symlink_test('5mpc', '/article.html?longname=Pyongyang+5MPC%2C+Korea%2C+Democratic+People%27s+Republic+of')
+symlink_test(
+    'national',
+    '/article.html?longname=Timor-Leste',
+    '/article.html?longname=East+Timor',
+)
+symlink_test(
+    'subnational',
+    '/article.html?longname=Haut-Lomami%2C+Congo%2C+The+Democratic+Republic+of+the',
+    '/article.html?longname=Haut-Lomami%2C+Democratic+Republic+of+the+Congo',
+)
+symlink_test(
+    'urban center',
+    '/article.html?longname=Tehr%C4%81n%2C+Iran%2C+Islamic+Republic+of',
+    '/article.html?longname=Tehr%C4%81n%2C+Iran',
+)
+symlink_test(
+    '5mpc',
+    '/article.html?longname=Pyongyang+5MPC%2C+Korea%2C+Democratic+People%27s+Republic+of',
+    '/article.html?longname=Pyongyang+5MPC%2C+North+Korea',
+)
 
 symlink_test(
     'comparison',
     '/comparison.html?longnames=%5B%22Pyongyang+5MPC%2C+Korea%2C+Democratic+People%27s+Republic+of%22%2C%22Tehran+%28Outer%29+5MPC%2C+Iran%2C+Islamic+Republic+of%22%5D',
+    '/comparison.html?longnames=%5B%22Pyongyang+5MPC%2C+North+Korea%22%2C%22Tehran+%28Outer%29+5MPC%2C+Iran%22%5D',
 )
 
 symlink_test(
