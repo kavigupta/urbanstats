@@ -8,11 +8,18 @@ import { discordFix } from './discord-fix'
 import { loadProtobuf } from './load_json'
 import { data_link } from './navigation/links'
 import { UNIVERSE_CONTEXT, default_comparison_universe, get_universe, remove_universe_if_default, remove_universe_if_not_in } from './universe'
+import { followSymlinks } from './utils/symlinks'
 
 async function loadPage(): Promise<void> {
     const window_info = new URLSearchParams(window.location.search)
 
-    const names = JSON.parse(window_info.get('longnames')!) as string[]
+    let names = JSON.parse(window_info.get('longnames')!) as string[]
+    const [new_names, changed] = followSymlinks(names)
+    if (changed) {
+        names = new_names
+        window_info.set('longnames', JSON.stringify(names))
+        window.history.replaceState(null, '', `${window.location.pathname}?${window_info.toString()}`)
+    }
     const datas = await Promise.all(names.map(name => loadProtobuf(data_link(name), 'Article')))
 
     const joined_string = datas.map(x => x.shortname).join(' vs ')
