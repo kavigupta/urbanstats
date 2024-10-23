@@ -1,8 +1,8 @@
 name: check
 on: [push]
 env:
-  REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository }}/e2e
+  DOCKER_REGISTRY: ghcr.io
+  DOCKER_REPOSITORY: ${{ github.repository }}/e2e
   BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
 jobs:
   lint:
@@ -20,7 +20,7 @@ jobs:
   build-and-push-image:
     runs-on: ubuntu-22.04
     outputs:
-      image_tag: ${{ steps.meta.outputs.tags }}
+      image: ${{ steps.image.outputs }}
     permissions:
       contents: read
       packages: write
@@ -28,35 +28,44 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Create the tag by hashing react/test/Dockerfile
+        id: tag
+        run: echo "$(shasum -a 256 react/test/Dockerfile | cut -d ' ' -f 1)" >> $GITHUB_OUTPUT
+
+      - id: image
+        run: echo "$DOCKER_REPOSITORY:${{ steps.tag.outputs }}"
+
       - name: Log in to the Container registry
         uses: docker/login-action@v3
         with:
-          registry: ${{ env.REGISTRY }}
+          registry: ${{ env.DOCKER_REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Extract metadata (tags, labels) for Docker
-        id: meta
-        uses: docker/metadata-action@v5
+      - name: Check for existing image
+        id: existing-image
+        uses: javajawa/check-registry-for-image@v3
         with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          registry: ${{ env.DOCKER_REGISTRY }} # e.g. https://aws_account_id.dkr.ecr.us-west-2.amazonaws.com
+          repository: ${{ env.DOCKER_REPOSITORY }} # my-awesome-project/server
+          tag: ${{ steps.tag.outputs }}
 
       - name: Build and push Docker image
+        if: ${{ steps.existing-image.outputs.exists == 'false' }}
         uses: docker/build-push-action@v6
         with:
           context: .
           file: react/test/Dockerfile
           push: true
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=registry,ref=${{ steps.meta.outputs.tags }}
+          tags: ${{ steps.image.outputs }}
+          cache-from: type=registry,ref=${{ steps.image.outputs }}
           cache-to: type=inline
 
   build-frontend:
     runs-on: ubuntu-22.04
     needs: build-and-push-image
     container:
-      image: ghcr.io/${{ needs.build-and-push-image.outputs.image_tag }}
+      image: ${{ needs.build-and-push-image.outputs.image }}
     steps:
       - uses: actions/checkout@v4
       - run: python3 create_website.py react/test/density-db --no-data --no-geo --no-juxta
@@ -79,7 +88,7 @@ jobs:
     runs-on: ubuntu-22.04
     needs: [build-and-push-image, build-frontend, list-e2e-tests]
     container:
-      image: ghcr.io/${{ needs.build-and-push-image.outputs.image_tag }}
+      image: ${{ needs.build-and-push-image.outputs.image }}
     strategy:
       fail-fast: false
       matrix:
