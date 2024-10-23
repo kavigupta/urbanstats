@@ -1,6 +1,7 @@
 import { useContext, useEffect } from 'react'
 
-import { Settings, SettingsDictionary, useSettings } from '../page_template/settings'
+import { Settings } from '../page_template/settings'
+import { BooleanSettingKey, fromVector, useVector } from '../page_template/settings-vector'
 
 /**
  * - Query Params -> Settings
@@ -11,26 +12,29 @@ import { Settings, SettingsDictionary, useSettings } from '../page_template/sett
  *   Watches settings keys and reflects in query params. Must include all settings
  */
 
-export function QuerySettingsConnection({ settingsKeys }: { settingsKeys: (keyof SettingsDictionary)[] }): null {
-    const settingsValues = useSettings(settingsKeys)
+export function QuerySettingsConnection({ settingsKeys }: { settingsKeys: BooleanSettingKey[] }): null {
     const settings = useContext(Settings.Context)
 
     // Query Params -> Settings
     useEffect(() => {
         const queryParams = new URLSearchParams(window.location.search)
-        const settingsFromQueryParams = Object.fromEntries(settingsKeys.map(key => [key, JSON.parse(queryParams.get(key) ?? 'null') ?? settings.get(key)])) as Partial<SettingsDictionary>
+        const settingsVector = queryParams.get('s')
+        if (settingsVector === null) {
+            return
+        }
+        const settingsFromQueryParams = fromVector(settingsVector, settings)
         if (settingsKeys.some(key => JSON.stringify(settingsFromQueryParams[key]) !== JSON.stringify(settings.get(key)))) {
             settings.enterStagedMode(settingsFromQueryParams)
         }
     }, [])
 
     // Settings -> Query Params
+    const settingsVector = useVector()
+
     useEffect(() => {
         const url = new URL(window.location.toString())
-        for (const [key, value] of Object.entries(settingsValues)) {
-            url.searchParams.set(key, JSON.stringify(value))
-        }
-        if (url.searchParams.toString().toString() !== window.location.search) {
+        url.searchParams.set('s', settingsVector)
+        if (url.searchParams.toString() !== window.location.search) {
             history.replaceState(null, '', url)
         }
 
@@ -41,7 +45,7 @@ export function QuerySettingsConnection({ settingsKeys }: { settingsKeys: (keyof
         })) {
             settings.exitStagedMode('discard')
         }
-    }, [settingsValues])
+    }, [settingsVector])
 
     return null
 }

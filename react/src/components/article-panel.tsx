@@ -4,7 +4,8 @@ import './article.css'
 import React, { ReactNode, useRef } from 'react'
 
 import { article_link, comparison_link, sanitize } from '../navigation/links'
-import { useSetting, useSettings, SettingsDictionary } from '../page_template/settings'
+import { useSetting, useSettings } from '../page_template/settings'
+import { BooleanSettingKey } from '../page_template/settings-vector'
 import { groupYearKeys, StatPathsContext, useAvailableGroups, useAvailableYears } from '../page_template/statistic-settings'
 import { PageTemplate } from '../page_template/template'
 import { longname_is_exclusively_american, useUniverse } from '../universe'
@@ -127,7 +128,7 @@ function StatisticRowHeader(): ReactNode {
 }
 
 function ArticleQuerySettingsConnection(): ReactNode {
-    const settingsKeys: (keyof SettingsDictionary)[] = [
+    const settingsKeys: BooleanSettingKey[] = [
         'use_imperial',
         'show_historical_cds',
         'simple_ordinals',
