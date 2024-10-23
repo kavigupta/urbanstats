@@ -1,5 +1,8 @@
 name: main
-on: [push]
+on:
+  pull_request:
+    branches:
+      - main
 jobs:
   check-dockerfile-changes:
     runs-on: ubuntu-22.04
@@ -16,7 +19,7 @@ jobs:
   build-and-push-image:
     runs-on: ubuntu-22.04
     needs: check-dockerfile-changes
-    if: needs.check-dockerfile-changes.changed == 'true'
+    if: needs.check-dockerfile-changes.outputs.changed == 'true'
     outputs:
       image_tag: ${{ steps.meta.outputs.tags }}
     permissions:
@@ -50,12 +53,6 @@ jobs:
           cache-from: type=registry,ref=${{ steps.meta.outputs.tags }}
           cache-to: type=inline
 
-  output-changes:
-    runs-on: ubuntu-22.04
-    needs: check-dockerfile-changes
-    steps:
-      - run: echo ${{ needs.check-dockerfile-changes.changed }}
-
   run-checks-built-image:
     needs: build-and-push-image
     uses: ./.github/workflows/check.yml
@@ -64,7 +61,7 @@ jobs:
 
   run-checks-main-image:
     needs: check-dockerfile-changes
-    if: needs.check-dockerfile-changes.changed == 'false'
+    if: needs.check-dockerfile-changes.outputs.changed == 'false'
     uses: ./.github/workflows/check.yml
     with:
       test-image: ghcr.io/${{ github.repository }}/e2e:${{ github.event.repository.default_branch }}
