@@ -9,6 +9,7 @@ for that change (which only changes 1983 names) but might not scale well in futu
 symlinks = {}
 
 symlinks.update(
+    # Just for testing purposes. Harmless, but unnecessary
     {
         "United States of America": "USA",
     }
