@@ -5,6 +5,7 @@ env:
   IMAGE_NAME: ${{ github.repository }}/e2e
 jobs:
   check-dockerfile-changes:
+    runs-on: ubuntu-22.04
     outputs:
       changed: ${{ steps.get-changed-files.outputs.any_changed }}
     steps:
