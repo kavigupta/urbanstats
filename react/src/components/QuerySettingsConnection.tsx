@@ -1,6 +1,6 @@
 import { useContext, useEffect } from 'react'
 
-import { Settings } from '../page_template/settings'
+import { Settings, SettingsDictionary } from '../page_template/settings'
 import { BooleanSettingKey, fromVector, useVector } from '../page_template/settings-vector'
 
 /**
@@ -24,7 +24,7 @@ export function QuerySettingsConnection({ settingsKeys }: { settingsKeys: Boolea
         }
         const settingsFromQueryParams = fromVector(settingsVector, settings)
         if (settingsKeys.some(key => JSON.stringify(settingsFromQueryParams[key]) !== JSON.stringify(settings.get(key)))) {
-            settings.enterStagedMode(settingsFromQueryParams)
+            settings.enterStagedMode(Object.fromEntries(settingsKeys.map(key => [key, settingsFromQueryParams[key]])) as unknown as Partial<SettingsDictionary>)
         }
     }, [])
 
@@ -45,7 +45,7 @@ export function QuerySettingsConnection({ settingsKeys }: { settingsKeys: Boolea
         })) {
             settings.exitStagedMode('discard')
         }
-    }, [settingsVector])
+    }, [settingsVector, settingsKeys, settings])
 
     return null
 }
