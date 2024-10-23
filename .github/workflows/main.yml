@@ -1,8 +1,9 @@
 name: main
 on:
   pull_request:
+  push:
     branches:
-      - ${{ github.event.repository.default_branch }}
+      - master
 jobs:
   check-dockerfile-changes:
     runs-on: ubuntu-22.04
@@ -61,7 +62,14 @@ jobs:
 
   run-checks-main-image:
     needs: check-dockerfile-changes
-    if: needs.check-dockerfile-changes.outputs.changed == 'false'
+    if: needs.check-dockerfile-changes.outputs.changed == 'false' && github.event_name == 'push'
     uses: ./.github/workflows/check.yml
     with:
       test-image: ghcr.io/${{ github.repository }}/e2e:${{ github.event.repository.default_branch }}
+
+  run-checks-base-image:
+    needs: check-dockerfile-changes
+    if: needs.check-dockerfile-changes.outputs.changed == 'false' && github.event_name == 'pull_request'
+    uses: ./.github/workflows/check.yml
+    with:
+      test-image: ghcr.io/${{ github.repository }}/e2e:${{ github.event.pull_request.base.ref }}
