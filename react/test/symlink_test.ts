@@ -1,11 +1,14 @@
-import { screencap, urbanstatsFixture } from './test_utils'
+import { screencap, urbanstatsFixture, TARGET, getLocation } from './test_utils'
 
-function symlink_test(name: string, link: string): void {
+function symlink_test(name: string, link: string, expected: string | undefined = undefined): void {
+    if (expected === undefined) {
+        expected = link
+    }
     urbanstatsFixture(name, link)
 
     test(name, async (t) => {
-        // screenshot path: images/first_test.png
         await screencap(t)
+        await t.expect(getLocation()).eql(`${TARGET}/${expected}`)
     })
 }
 
