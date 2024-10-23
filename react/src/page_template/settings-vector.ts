@@ -9,6 +9,11 @@ import { GroupIdentifier } from './statistic-tree'
 
 export type BooleanSettingKey = keyof { [K in keyof SettingsDictionary as SettingsDictionary[K] extends boolean ? K : never]: boolean }
 
+/**
+ * DO NOT REORDER, ONLY ADD
+ *
+ * This vector represents setting values encoded as bit vectors in hyperlinks.
+ */
 const settingsVector = [
     `show_stat_group_${'population' as GroupIdentifier}`,
     `show_stat_group_${'ad_1' as GroupIdentifier}`,
@@ -232,21 +237,67 @@ const settingsVector = [
 export function useVector(): string {
     const settings = useSettings(settingsVector)
     const booleans = settingsVector.map(setting => settings[setting])
-    const result = new Uint8Array(Math.ceil(booleans.length / 8))
-    for (let i = 0; i < booleans.length; i++) {
-        const byte = Math.floor(i / 8)
-        const bit = i % 8
-        result[byte] |= (booleans[i] ? 1 : 0) << bit
-    }
-    return base58.binary_to_base58(result)
+    return base58.binary_to_base58(compressBooleans(booleans))
 }
 
 export function fromVector(vector: string, settings: Settings): Record<BooleanSettingKey, boolean> {
-    const array = base58.base58_to_binary(vector)
+    const array = decompressBooleans(base58.base58_to_binary(vector))
     return Object.fromEntries(settingsVector.map((setting, i) => {
-        const byte = Math.floor(i / 8)
-        const bit = i % 8
-        const value = byte < array.length ? ((array[byte] >> bit) & 1) === 1 : settings.get(setting)
+        const value = i < array.length ? array[i] : settings.get(setting)
         return [setting, value]
     })) as Record<BooleanSettingKey, boolean>
+}
+
+/*
+ * Compression encoding (little endian):
+ * Byte that starts with 0 represents 7 bits in sequence (the rest of the the byte)
+ * Byte that starts with 1 represents x bits with value v, where v is the second bit of the byte, and x is the number made out of the last 6 bits
+ */
+function compressBooleans(booleans: boolean[]): number[] {
+    const result: number[] = []
+    const paddedBooleans = [...booleans, true] // Add a true to the end so we know when to stop when decompressing
+    let i = 0
+    let bit = 8
+    while (i < paddedBooleans.length) {
+        if (bit === 8) {
+            const value = paddedBooleans[i]
+            let run = i + 1
+            while (paddedBooleans[run] === value && run - i < 63) {
+                run++
+            }
+            if (run - i > 7) {
+                result.push(1 | ((value ? 1 : 0) << 1) | (run - i) << 2)
+                i = run
+                continue
+            }
+        }
+
+        if (bit === 8) {
+            result.push(0)
+            bit = 1 // since this is a heterogeneous byte that starts with 0
+        }
+        result[result.length - 1] |= (paddedBooleans[i] ? 1 : 0) << bit
+        i++
+        bit++
+    }
+    return result
+}
+
+function decompressBooleans(bytes: Uint8Array): boolean[] {
+    const result: boolean[] = []
+    for (const byte of bytes) {
+        if ((byte & 1) === 1) {
+            const value = ((byte >> 1) & 1) === 1
+            const num = byte >> 2
+            for (let i = 0; i < num; i++) {
+                result.push(value)
+            }
+        }
+        else {
+            for (let bit = 1; bit < 8; bit++) {
+                result.push(((byte >> bit) & 1) === 1)
+            }
+        }
+    }
+    return result.slice(0, result.lastIndexOf(true))
 }
