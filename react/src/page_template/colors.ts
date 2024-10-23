@@ -18,7 +18,9 @@ export interface HueColors {
 
 export interface Colors {
     background: string
+    cleanBackground: string
     slightlyDifferentBackground: string
+    cleanSlightlyDifferentBackground: string
     slightlyDifferentBackgroundFocused: string
     highlight: string
     textMain: string
@@ -62,7 +64,9 @@ export type Theme = 'Light Mode' | 'Dark Mode'
 export const colorThemes: Record<Theme, Colors> = {
     'Light Mode': {
         background: '#fff8f0',
+        cleanBackground: '#ffffff',
         slightlyDifferentBackground: '#f7f1e8',
+        cleanSlightlyDifferentBackground: '#faf7f2',
         slightlyDifferentBackgroundFocused: '#ffe0e0',
         highlight: '#d4b5e2',
         textMain: '#000000',
@@ -81,7 +85,9 @@ export const colorThemes: Record<Theme, Colors> = {
     },
     'Dark Mode': {
         background: '#00060f',
+        cleanBackground: '#000000',
         slightlyDifferentBackground: '#080e17',
+        cleanSlightlyDifferentBackground: '#080e17',
         slightlyDifferentBackgroundFocused: '#181000',
         highlight: '#3b1d49',
         textMain: '#dddddd',
@@ -100,13 +106,23 @@ export const colorThemes: Record<Theme, Colors> = {
     },
 }
 
-export function useColors(): Colors {
+export function useCurrentTheme(): Theme {
     const [theme] = useSetting('theme')
     if (theme === 'System Theme') {
-        const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'Dark Mode' : 'Light Mode'
-        return colorThemes[systemTheme]
+        return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'Dark Mode' : 'Light Mode'
     }
-    return colorThemes[theme]
+    return theme
+}
+
+export function useColors(): Colors {
+    const theme = useCurrentTheme()
+    const [clean_background] = useSetting('clean_background')
+    const themeDict = { ...colorThemes[theme] }
+    if (clean_background) {
+        themeDict.background = themeDict.cleanBackground
+        themeDict.slightlyDifferentBackground = themeDict.cleanSlightlyDifferentBackground
+    }
+    return themeDict
 }
 
 export function useJuxtastatColors(): JuxtastatColors {
