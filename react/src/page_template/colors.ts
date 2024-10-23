@@ -80,8 +80,8 @@ export const colorThemes: Record<Theme, Colors> = {
         hueColors: defaultHueColors,
     },
     'Dark Mode': {
-        background: '#081000',
-        slightlyDifferentBackground: '#101808',
+        background: '#00060f',
+        slightlyDifferentBackground: '#080e17',
         slightlyDifferentBackgroundFocused: '#181000',
         highlight: '#3b1d49',
         textMain: '#dddddd',
