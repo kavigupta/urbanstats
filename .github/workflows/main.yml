@@ -50,6 +50,12 @@ jobs:
           cache-from: type=registry,ref=${{ steps.meta.outputs.tags }}
           cache-to: type=inline
 
+  output-changes:
+    runs-on: ubuntu-22.04
+    needs: check-dockerfile-changes
+    steps:
+      - run: echo ${{ needs.check-dockerfile-changes.changed }}
+
   run-checks-built-image:
     needs: build-and-push-image
     uses: ./.github/workflows/check.yml
