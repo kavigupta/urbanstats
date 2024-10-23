@@ -5,8 +5,9 @@ import numpy as np
 from permacache import permacache
 
 from urbanstats.special_cases.country import subnational_regions
+from urbanstats.special_cases.country_names import iso_to_country
 
-version = 8
+version = 9
 
 
 def classify_areas_by_subnational_region(snr, areas):
@@ -45,10 +46,9 @@ def gsl_urban_center_longname_to_subnational_codes():
 
 
 @permacache(
-    f"urbanstats/special_cases/ghsl_urban_center/load_ghsl_urban_center_no_names_2"
+    f"urbanstats/special_cases/ghsl_urban_center/load_ghsl_urban_center_no_names_3"
 )
 def load_ghsl_urban_center_no_names():
-    from shapefiles import iso_to_country
 
     areas = gpd.read_file(
         "named_region_shapefiles/GHS_STAT_UCDB2015MT_GLOBE_R2019A_V1_2.gpkg"

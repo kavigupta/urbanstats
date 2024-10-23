@@ -3,7 +3,6 @@ from collections import Counter
 
 import geopandas as gpd
 import pandas as pd
-import pycountry
 import tqdm.auto as tqdm
 import us
 from permacache import permacache
@@ -11,6 +10,7 @@ from permacache import permacache
 from stats_for_shapefile import Shapefile
 from urbanstats.data.circle import circle_shapefile_object, named_populations
 from urbanstats.special_cases.country import continents, countries, subnational_regions
+from urbanstats.special_cases.country_names import iso_to_country
 from urbanstats.special_cases.ghsl_urban_center import load_ghsl_urban_center
 
 
@@ -206,12 +206,6 @@ def usda_county_type():
 
     regions = counties.dissolve(counties.GEOID.apply(lambda x: typology_codes[x]))
     return regions
-
-
-def iso_to_country(iso):
-    if iso == "US":
-        return "USA"
-    return pycountry.countries.get(alpha_2=iso).name
 
 
 def hrr_shortname(x, suffix="HRR"):
@@ -417,7 +411,7 @@ shapefiles = dict(
         ),
     ),
     continents=Shapefile(
-        hash_key="continents_1",
+        hash_key="continents_2",
         path=continents,
         shortname_extractor=lambda x: x.name_1,
         longname_extractor=lambda x: x.name_1,
@@ -430,7 +424,7 @@ shapefiles = dict(
         chunk_size=1,
     ),
     countries=Shapefile(
-        hash_key="countries_8",
+        hash_key="countries_9",
         path=countries,
         shortname_extractor=lambda x: iso_to_country(x.ISO_CC),
         longname_extractor=lambda x: iso_to_country(x.ISO_CC),
@@ -441,7 +435,7 @@ shapefiles = dict(
         chunk_size=1,
     ),
     subnational_regions=Shapefile(
-        hash_key="subnational_regions_9",
+        hash_key="subnational_regions_10",
         path=subnational_regions,
         shortname_extractor=lambda x: x["NAME"],
         longname_extractor=lambda x: x["fullname"],
@@ -453,7 +447,7 @@ shapefiles = dict(
         include_in_gpw=True,
     ),
     urban_centers=Shapefile(
-        hash_key="urban_centers_3",
+        hash_key="urban_centers_4",
         path=lambda: load_ghsl_urban_center(),
         shortname_extractor=lambda x: x["shortname"],
         longname_extractor=lambda x: x["longname"],
@@ -485,7 +479,7 @@ shapefiles_for_stats = dict(
         meta=dict(type="State", source="Census", type_category="US Subdivision"),
     ),
     us_urban_centers=Shapefile(
-        hash_key="us_urban_centers_3",
+        hash_key="us_urban_centers_4",
         path=lambda: load_ghsl_urban_center(),
         shortname_extractor=lambda x: x["shortname"],
         longname_extractor=lambda x: x["longname"],
