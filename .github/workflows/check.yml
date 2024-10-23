@@ -56,8 +56,6 @@ jobs:
           file: react/test/Dockerfile
           push: true
           tags: ${{ steps.image.outputs.image }}
-          cache-from: type=registry,ref=${{ steps.image.outputs.image }}
-          cache-to: type=inline
 
   build-frontend:
     runs-on: ubuntu-22.04
