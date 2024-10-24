@@ -3,7 +3,7 @@ import os
 import shutil
 
 from urbanstats.website_data.output_geometry import produce_all_geometry_json
-from produce_html_page import create_article_gzips, extra_stats
+from urbanstats.website_data.create_article_gzips import create_article_gzips, extra_stats
 from relationship import map_relationships_by_type, ordering_idx as type_ordering_idx, type_to_type_category
 from shapefiles import american_to_international
 from urbanstats.consolidated_data.produce_consolidated_data import full_consolidated_data, output_names
