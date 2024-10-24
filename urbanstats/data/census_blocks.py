@@ -6,7 +6,7 @@ import geopandas as gpd
 import numpy as np
 import pandas as pd
 
-from geometry import locate_blocks
+from urbanstats.geometry.ellipse import locate_blocks
 
 RADII = (0.25, 0.5, 1, 2, 4)
 
