@@ -3,7 +3,7 @@ import React, { CSSProperties, ReactNode, useContext, useEffect, useId, useRef }
 import '../style.css'
 import './sidebar.css'
 
-import { Theme, useColors } from '../page_template/colors'
+import { Theme, useColors, useCurrentTheme } from '../page_template/colors'
 import { SettingsDictionary, useSetting, useSettingInfo, useStagedSettingKeys } from '../page_template/settings'
 import { StatPathsContext } from '../page_template/statistic-settings'
 import { useMobileLayout } from '../utils/responsive'
@@ -22,6 +22,7 @@ export function useSidebarSectionContentClassName(): string {
 
 export function Sidebar(): ReactNode {
     const colors = useColors()
+    const currentTheme = useCurrentTheme()
     const link_style = { color: colors.blueLink }
     const sidebar_section_title: React.CSSProperties = {
         marginBottom: useMobileLayout() ? '0.75rem' : '0.5rem',
@@ -146,6 +147,12 @@ export function Sidebar(): ReactNode {
                         <CheckboxSetting
                             name="Colorblind Mode"
                             setting_key="colorblind_mode"
+                        />
+                    </li>
+                    <li>
+                        <CheckboxSetting
+                            name={`${currentTheme === 'Dark Mode' ? 'Black' : 'White'} Background`}
+                            setting_key="clean_background"
                         />
                     </li>
                 </ul>

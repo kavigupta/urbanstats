@@ -28,6 +28,7 @@ export interface SettingsDictionary {
     histogram_relative: boolean
     theme: Theme | 'System Theme'
     colorblind_mode: boolean
+    clean_background: boolean
 }
 
 export function relationship_key(article_type: string, other_type: string): RelationshipKey {
@@ -54,7 +55,7 @@ const map_relationship = require('../data/map_relationship.json') as [string, st
 
 // Having a default settings object allows us to statically check that we have default values for all settings
 // It also makes visualizing the default setings easier
-const defaultSettings: SettingsDictionary = {
+const defaultSettings = {
     ...Object.fromEntries(
         map_relationship.map(
             ([article_type, other_type]) => [relationship_key(article_type, other_type), true],
@@ -71,11 +72,12 @@ const defaultSettings: SettingsDictionary = {
     histogram_relative: true,
     theme: 'System Theme',
     colorblind_mode: false,
-}
+    clean_background: false,
+} satisfies SettingsDictionary
 
 export function load_settings(): SettingsDictionary {
     const settings = JSON.parse(localStorage.getItem('settings') ?? '{}') as Partial<SettingsDictionary>
-    return { ...defaultSettings, ...settings } as SettingsDictionary
+    return { ...defaultSettings, ...settings }
 }
 
 export interface SettingInfo<K extends keyof SettingsDictionary> {
