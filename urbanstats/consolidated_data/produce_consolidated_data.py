@@ -71,7 +71,7 @@ def produce_all_results_from_tables(geo_table, data_table):
 
 
 def produce_results_for_type(folder, typ):
-    from create_website import shapefile_without_ordinals
+    from urbanstats.website_data.table import shapefile_without_ordinals
 
     print(typ)
     folder = f"{folder}/consolidated/"

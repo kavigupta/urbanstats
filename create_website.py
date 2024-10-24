@@ -1,36 +1,24 @@
 import json
 import os
 import shutil
-from collections import Counter
 from functools import lru_cache
 
 import fire
-import numpy as np
-import pandas as pd
 import tqdm.auto as tqdm
 
-from urbanstats.data.census_blocks import RADII
-from election_data import vest_elections
 from output_geometry import produce_all_geometry_json
 from produce_html_page import create_page_json, extra_stats
 from relationship import full_relationships, map_relationships_by_type
 from relationship import ordering_idx as type_ordering_idx
 from relationship import type_to_type_category
-from shapefiles import american_to_international, shapefiles, shapefiles_for_stats
-from stats_for_shapefile import compute_statistics_for_shapefile
+from shapefiles import american_to_international, shapefiles
 from urbanstats.consolidated_data.produce_consolidated_data import (
     full_consolidated_data,
     output_names,
 )
-from urbanstats.data.census_histogram import census_histogram
-from urbanstats.data.gpw import compute_gpw_data_for_shapefile_table
 from urbanstats.mapper.ramp import output_ramps
 from urbanstats.ordinals.flat_ordinals import compute_flat_ordinals
-from urbanstats.ordinals.ordinal_info import fully_complete_ordinals
 from urbanstats.special_cases import symlinks
-from urbanstats.special_cases.merge_international import (
-    merge_international_and_domestic,
-)
 from urbanstats.special_cases.simplified_country import all_simplified_countries
 from urbanstats.statistics.collections.industry import IndustryStatistics
 from urbanstats.statistics.collections.occupation import OccupationStatistics
@@ -41,83 +29,11 @@ from urbanstats.statistics.output_statistics_metadata import (
 )
 from urbanstats.universe.annotate_universes import (
     all_universes,
-    attach_intl_universes,
-    attach_usa_universes,
 )
 from urbanstats.universe.icons import place_icons_in_site_folder
 from urbanstats.website_data.index import export_index
-
-
-def american_shapefile():
-    full = []
-    for k in tqdm.tqdm(shapefiles_for_stats, desc="computing statistics"):
-        if not shapefiles_for_stats[k].american:
-            continue
-
-        t = compute_statistics_for_shapefile(shapefiles_for_stats[k])
-
-        hists = census_histogram(shapefiles_for_stats[k], 2020)
-        for dens in RADII:
-            t[f"pw_density_histogram_{dens}"] = [
-                hists[x][f"ad_{dens}"] if x in hists else np.nan for x in t.longname
-            ]
-
-        full.append(t)
-
-    full = pd.concat(full)
-    full = full.reset_index(drop=True)
-    # Simply abolish local government tbh. How is this a thing.
-    # https://www.openstreetmap.org/user/Minh%20Nguyen/diary/398893#:~:text=An%20administrative%20area%E2%80%99s%20name%20is%20unique%20within%20its%20immediate%20containing%20area%20%E2%80%93%20false
-    # Ban both of these from the database
-    full = full[full.longname != "Washington township [CCD], Union County, Ohio, USA"]
-    full = full[full.population > 0].copy()
-    duplicates = {k: v for k, v in Counter(full.longname).items() if v > 1}
-    assert not duplicates, str(duplicates)
-    return full
-
-
-def international_shapefile():
-    ts = []
-    for s in shapefiles_for_stats.values():
-        if s.include_in_gpw:
-            t, hist = compute_gpw_data_for_shapefile_table(s)
-            for k in s.meta:
-                t[k] = s.meta[k]
-            for k in hist:
-                t[k] = hist[k]
-            ts.append(t)
-    intl = pd.concat(ts)
-    # intl = intl[intl.area > 10].copy()
-    intl = intl[intl.gpw_population > 0].copy()
-    intl = intl.reset_index(drop=True)
-    return intl
-
-
-@lru_cache(maxsize=None)
-def shapefile_without_ordinals():
-    usa = american_shapefile()
-    attach_usa_universes(usa)
-    intl = international_shapefile()
-    attach_intl_universes(intl)
-    full = merge_international_and_domestic(intl, usa)
-    return full
-
-
-@lru_cache(maxsize=None)
-def all_ordinals():
-    full = shapefile_without_ordinals()
-
-    full["index_order"] = np.arange(len(full))
-    sorted_by_name = full.sort_values("longname")[::-1].reset_index(drop=True)
-    universe_typ = {
-        (u, t)
-        for us, t in zip(sorted_by_name.universes, sorted_by_name.type)
-        for u in us
-    }
-    universe_typ |= {(u, "overall") for u, _ in universe_typ}
-    universe_typ = sorted(universe_typ)
-    ordinal_info = fully_complete_ordinals(sorted_by_name, universe_typ)
-    return ordinal_info
+from urbanstats.website_data.ordinals import all_ordinals
+from urbanstats.website_data.table import shapefile_without_ordinals
 
 
 def next_prev(full):
@@ -146,8 +62,6 @@ def next_prev_within_type(full):
 
 
 def create_page_jsons(site_folder, full, ordering):
-    # ptrs_overall = next_prev(full)
-    # ptrs_within_type = next_prev_within_type(full)
     long_to_short = dict(zip(full.longname, full.shortname))
     long_to_pop = dict(zip(full.longname, full.population))
     long_to_type = dict(zip(full.longname, full.type))

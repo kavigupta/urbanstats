@@ -13,7 +13,7 @@ import pytz
 import tqdm.auto as tqdm
 from permacache import permacache, stable_hash
 
-from create_website import shapefile_without_ordinals
+from urbanstats.website_data.table import shapefile_without_ordinals
 from produce_html_page import create_filename, indices
 from relationship import states_for_all
 from shapefiles import american_to_international, filter_table_for_type

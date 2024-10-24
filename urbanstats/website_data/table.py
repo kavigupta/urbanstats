@@ -1,0 +1,73 @@
+from functools import lru_cache
+from shapefiles import shapefiles_for_stats
+from stats_for_shapefile import compute_statistics_for_shapefile
+from urbanstats.data.census_blocks import RADII
+from urbanstats.data.census_histogram import census_histogram
+
+
+import numpy as np
+import pandas as pd
+import tqdm.auto as tqdm
+
+
+from collections import Counter
+
+from urbanstats.data.gpw import compute_gpw_data_for_shapefile_table
+from urbanstats.special_cases.merge_international import merge_international_and_domestic
+from urbanstats.universe.annotate_universes import attach_intl_universes, attach_usa_universes
+
+
+
+def american_shapefile():
+    full = []
+    for k in tqdm.tqdm(shapefiles_for_stats, desc="computing statistics"):
+        if not shapefiles_for_stats[k].american:
+            continue
+
+        t = compute_statistics_for_shapefile(shapefiles_for_stats[k])
+
+        hists = census_histogram(shapefiles_for_stats[k], 2020)
+        for dens in RADII:
+            t[f"pw_density_histogram_{dens}"] = [
+                hists[x][f"ad_{dens}"] if x in hists else np.nan for x in t.longname
+            ]
+
+        full.append(t)
+
+    full = pd.concat(full)
+    full = full.reset_index(drop=True)
+    # Simply abolish local government tbh. How is this a thing.
+    # https://www.openstreetmap.org/user/Minh%20Nguyen/diary/398893#:~:text=An%20administrative%20area%E2%80%99s%20name%20is%20unique%20within%20its%20immediate%20containing%20area%20%E2%80%93%20false
+    # Ban both of these from the database
+    full = full[full.longname != "Washington township [CCD], Union County, Ohio, USA"]
+    full = full[full.population > 0].copy()
+    duplicates = {k: v for k, v in Counter(full.longname).items() if v > 1}
+    assert not duplicates, str(duplicates)
+    return full
+
+
+def international_shapefile():
+    ts = []
+    for s in shapefiles_for_stats.values():
+        if s.include_in_gpw:
+            t, hist = compute_gpw_data_for_shapefile_table(s)
+            for k in s.meta:
+                t[k] = s.meta[k]
+            for k in hist:
+                t[k] = hist[k]
+            ts.append(t)
+    intl = pd.concat(ts)
+    # intl = intl[intl.area > 10].copy()
+    intl = intl[intl.gpw_population > 0].copy()
+    intl = intl.reset_index(drop=True)
+    return intl
+
+
+@lru_cache(maxsize=None)
+def shapefile_without_ordinals():
+    usa = american_shapefile()
+    attach_usa_universes(usa)
+    intl = international_shapefile()
+    attach_intl_universes(intl)
+    full = merge_international_and_domestic(intl, usa)
+    return full
