@@ -1,4 +1,4 @@
-from election_data import (
+from urbanstats.data.election_data import (
     aggregated_election_results,
     vest_elections,
 )

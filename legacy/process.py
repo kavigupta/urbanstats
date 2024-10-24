@@ -3,7 +3,7 @@ from types import SimpleNamespace
 import numpy as np
 from permacache import permacache
 
-from geometry import locate_blocks
+from urbanstats.geometry.ellipse import locate_blocks
 from load_data import load_blocks
 
 

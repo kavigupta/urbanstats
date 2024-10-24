@@ -60,7 +60,7 @@ const index_list_info = require('../data/index_lists.json') as {
 }
 
 function lookup_in_compressed_sequence(seq: [number, number][], idx: number): number {
-    // translation of produce_html_page.py::lookup_in_compressed_sequence
+    // translation of sharding.py::lookup_in_compressed_sequence
     for (const [value, length] of seq) {
         if (idx < length) {
             return value
@@ -80,7 +80,7 @@ export function for_type(universe: string, statcol: string | string[], typ: stri
 }
 
 function compute_indices(longname: string, typ: string): number[] {
-    // translation of produce_html_page.py::indices
+    // translation of statistic_index_lists.py::indices
 
     const lists = index_list_info.index_lists
     let result: number[] = []

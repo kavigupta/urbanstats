@@ -10,7 +10,7 @@ import tqdm.auto as tqdm
 from more_itertools import chunked
 from permacache import drop_if_equal, permacache, stable_hash
 
-from census_blocks import all_densities_gpd, housing_units, racial_demographics
+from urbanstats.data.census_blocks import all_densities_gpd, housing_units, racial_demographics
 from urbanstats.features.extract_data import feature_data
 from urbanstats.features.feature import feature_columns
 from urbanstats.osm.parks import park_overlap_percentages_all

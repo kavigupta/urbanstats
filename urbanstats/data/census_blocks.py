@@ -6,7 +6,7 @@ import geopandas as gpd
 import numpy as np
 import pandas as pd
 
-from geometry import locate_blocks
+from urbanstats.geometry.ellipse import locate_blocks
 
 RADII = (0.25, 0.5, 1, 2, 4)
 
@@ -93,10 +93,3 @@ def all_densities_gpd(year=2020):
         geometry=gpd.points_from_xy(coordinates[:, 1], coordinates[:, 0]),
         crs="EPSG:4326",
     )
-
-
-if __name__ == "__main__":
-    # all_densities_gpd()
-    load_raw_census(2020)
-    load_raw_census(2010)
-    pass

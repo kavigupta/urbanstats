@@ -1,4 +1,4 @@
-from census_blocks import RADII
+from urbanstats.data.census_blocks import RADII
 from urbanstats.statistics.extra_statistics import HistogramSpec
 from urbanstats.statistics.statistic_collection import (
     ORDER_CATEGORY_MAIN,
