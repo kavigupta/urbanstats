@@ -7,7 +7,7 @@ import us
 from cached_property import cached_property
 from permacache import permacache, stable_hash
 
-from census_blocks import all_densities_gpd
+from urbanstats.data.census_blocks import all_densities_gpd
 from urbanstats.geometry.census_aggregation import aggregate_by_census_block
 
 TRACT_PREFIX_COUNT = 2 + 3 + 6  # state + county + tract

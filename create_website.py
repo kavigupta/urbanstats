@@ -9,7 +9,7 @@ import numpy as np
 import pandas as pd
 import tqdm.auto as tqdm
 
-from census_blocks import RADII
+from urbanstats.data.census_blocks import RADII
 from election_data import vest_elections
 from output_geometry import produce_all_geometry_json
 from produce_html_page import create_page_json, extra_stats

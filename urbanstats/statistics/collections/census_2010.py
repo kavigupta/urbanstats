@@ -2,7 +2,7 @@ from abc import abstractmethod
 import numpy as np
 from permacache import permacache
 
-from census_blocks import RADII, all_densities_gpd, housing_units, racial_demographics
+from urbanstats.data.census_blocks import RADII, all_densities_gpd, housing_units, racial_demographics
 from urbanstats.geometry.census_aggregation import aggregate_by_census_block
 from urbanstats.statistics.extra_statistics import HistogramSpec
 from urbanstats.statistics.statistic_collection import (

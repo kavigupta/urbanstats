@@ -31,7 +31,7 @@ import numpy as np
 import pandas as pd
 from permacache import permacache
 
-from census_blocks import all_densities_gpd, load_raw_census
+from urbanstats.data.census_blocks import all_densities_gpd, load_raw_census
 from geometry import locate_blocks
 from urbanstats.geometry.census_aggregation import aggregate_by_census_block
 from urbanstats.statistics.collections.race_census import RaceCensus

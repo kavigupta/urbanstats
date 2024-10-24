@@ -6,7 +6,7 @@ import pandas as pd
 from permacache import permacache
 import tqdm
 
-from census_blocks import all_densities_gpd
+from urbanstats.data.census_blocks import all_densities_gpd
 
 
 @dataclass
