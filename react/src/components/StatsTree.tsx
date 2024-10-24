@@ -1,8 +1,8 @@
 import React, { ReactNode, useContext, useLayoutEffect, useRef, useState } from 'react'
 
 import { useColors } from '../page_template/colors'
-import { Settings, useSetting } from '../page_template/settings'
-import { changeStatGroupSetting, useAvailableCategories, useAvailableGroups, useCategoryStatus, useChangeCategorySetting } from '../page_template/statistic-settings'
+import { Settings, useSetting, useSettingInfo, useSettingsInfo } from '../page_template/settings'
+import { changeStatGroupSetting, groupKeys, useAvailableCategories, useAvailableGroups, useCategoryStatus, useChangeCategorySetting } from '../page_template/statistic-settings'
 import { Category, Group } from '../page_template/statistic-tree'
 import { useMobileLayout } from '../utils/responsive'
 
@@ -18,6 +18,11 @@ function CategoryComponent({ category }: { category: Category }): ReactNode {
     const isMobileLayout = useMobileLayout()
     const changeCategorySetting = useChangeCategorySetting(category)
     const colors = useColors()
+
+    const groups = useAvailableGroups(category)
+    const settingsInfo = useSettingsInfo(groupKeys(groups))
+    const highlight = Object.values(settingsInfo).some(info => 'stagedValue' in info && info.stagedValue !== info.persistedValue)
+
     return (
         <li>
             <div style={{ position: 'relative' }}>
@@ -35,6 +40,7 @@ function CategoryComponent({ category }: { category: Category }): ReactNode {
                     indeterminate={categoryStatus === 'indeterminate'}
                     onChange={changeCategorySetting}
                     testId={`category_${category.id}`}
+                    highlight={highlight}
                 />
             </div>
             <CategoryContents key={category.id} category={category} isExpanded={isExpanded} />
@@ -45,6 +51,7 @@ function CategoryComponent({ category }: { category: Category }): ReactNode {
 function GroupComponent({ group }: { group: Group }): ReactNode {
     const settings = useContext(Settings.Context)
     const [checked] = useSetting(`show_stat_group_${group.id}`)
+    const info = useSettingInfo(`show_stat_group_${group.id}`)
     return (
         <li>
             <CheckboxSettingCustom
@@ -52,6 +59,7 @@ function GroupComponent({ group }: { group: Group }): ReactNode {
                 checked={checked}
                 onChange={(newValue) => { changeStatGroupSetting(settings, group, newValue) }}
                 testId={`group_${group.id}`}
+                highlight={'stagedValue' in info && info.stagedValue !== info.persistedValue}
             />
         </li>
     )
