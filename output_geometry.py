@@ -52,7 +52,9 @@ def produce_all_geometry_json(path, valid_names):
         for i in tqdm.trange(table.shape[0]):
             if table.iloc[i].longname in valid_names:
                 produce_geometry_json(path, table.iloc[i])
-    all_simplified_countries(shapefile_without_ordinals(), path)
+
+    for row in all_simplified_countries(shapefile_without_ordinals()):
+        produce_geometry_json(path, row)
 
 
 def to_protobuf_polygon(f_python):
