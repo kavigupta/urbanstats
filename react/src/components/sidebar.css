@@ -41,6 +41,10 @@
     transform: scale(1.6);
 }
 
+.sidebar_mobile button {
+    transform: scale(1.6);
+}
+
 .sidebar_mobile select {
     transform: scale(1.6);
     transform-origin: left;

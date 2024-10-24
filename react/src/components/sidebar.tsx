@@ -88,7 +88,7 @@ export function Sidebar(): ReactNode {
                     ? null
                     : (
                             <div className="sidebar-section">
-                                <div style={sidebar_section_title}>Pasted Settings</div>
+                                <div style={sidebar_section_title}>Link Settings</div>
                                 <ul className={sidebar_section_content}>
                                     <StagingControls />
                                 </ul>
