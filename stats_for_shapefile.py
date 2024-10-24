@@ -16,9 +16,7 @@ from urbanstats.features.feature import feature_columns
 from urbanstats.osm.parks import park_overlap_percentages_all
 from urbanstats.statistics.collections.cdc_statistics import CDCStatistics
 from urbanstats.statistics.collections.census_basics import density_metrics
-from urbanstats.statistics.collections.weather import USWeatherStatistics
 from urbanstats.statistics.collections_list import statistic_collections
-from urbanstats.weather.to_blocks import weather_block_statistics
 
 
 @attr.s
@@ -207,7 +205,6 @@ sum_keys_2020 = [
     *racial_demographics,
     *housing_units,
     *density_metrics,
-    *USWeatherStatistics().name_for_each_statistic(),
 ]
 sum_keys_2020 = sorted(sum_keys_2020, key=str)
 COLUMNS_PER_JOIN = 33
@@ -216,11 +213,6 @@ COLUMNS_PER_JOIN = 33
 @lru_cache(None)
 def block_level_data_2020():
     blocks_gdf = all_densities_gpd()
-    weather_block = weather_block_statistics()
-    for k in weather_block:
-        assert k not in blocks_gdf
-        assert blocks_gdf.shape[0] == weather_block[k].shape[0]
-        blocks_gdf[k] = weather_block[k] * blocks_gdf.population
     return blocks_gdf
 
 
