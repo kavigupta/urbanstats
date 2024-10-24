@@ -1,4 +1,4 @@
-import React, { ReactNode, useContext, useEffect, useId, useRef } from 'react'
+import React, { CSSProperties, ReactNode, useContext, useEffect, useId, useRef } from 'react'
 
 import '../style.css'
 import './sidebar.css'
@@ -161,19 +161,15 @@ export function CheckboxSetting(props: { name: string, setting_key: BooleanSetti
     const [checked, setChecked] = useSetting(props.setting_key)
     const info = useSettingInfo(props.setting_key)
 
-    let name = props.name
-    if ('stagedValue' in info && info.stagedValue !== info.persistedValue) {
-        name += ' (Changed)'
-    }
-
     return (
         <CheckboxSettingCustom
-            name={name}
+            name={props.name}
             checked={checked ?? false}
             onChange={setChecked}
             classNameToUse={props.classNameToUse}
             id={props.id}
             testId={props.testId}
+            highlight={'stagedValue' in info && info.stagedValue !== info.persistedValue}
         />
     )
 };
@@ -200,7 +196,18 @@ export function ColorThemeSetting(): ReactNode {
     )
 };
 
-export function CheckboxSettingCustom(props: { name: string, checked: boolean, indeterminate?: boolean, onChange: (checked: boolean) => void, classNameToUse?: string, id?: string, testId?: string }): ReactNode {
+interface CheckboxSettingCustomProps {
+    name: string
+    checked: boolean
+    indeterminate?: boolean
+    onChange: (checked: boolean) => void
+    classNameToUse?: string
+    id?: string
+    testId?: string
+    highlight?: boolean
+}
+
+export function CheckboxSettingCustom(props: CheckboxSettingCustomProps): ReactNode {
     const colors = useColors()
 
     const id = useId()
@@ -212,8 +219,13 @@ export function CheckboxSettingCustom(props: { name: string, checked: boolean, i
         checkboxRef.current!.indeterminate = props.indeterminate ?? false
     }, [props.indeterminate])
 
+    const divStyle: CSSProperties = {
+        backgroundColor: props.highlight ? colors.slightlyDifferentBackgroundFocused : undefined,
+        borderRadius: '5px',
+    }
+
     return (
-        <div className={props.classNameToUse ?? 'checkbox-setting'}>
+        <div className={props.classNameToUse ?? 'checkbox-setting'} style={divStyle}>
             <input
                 id={inputId}
                 type="checkbox"
