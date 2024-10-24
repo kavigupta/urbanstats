@@ -70,7 +70,14 @@ class CensusForPreviousYear(CensusStatisticsColection):
         return result
 
     def order_category_for_each_statistic(self):
-        return CensusBasics.order_category_for_each_statistic(self)
+        return {
+            k: (
+                ORDER_CATEGORY_OTHER_DENSITIES
+                if k.startswith("ad_") and not k.startswith("ad_1")
+                else ORDER_CATEGORY_MAIN
+            )
+            for k in self.name_for_each_statistic()
+        }
 
     def category_for_each_statistic(self):
         return self.same_for_each_name(str(self.year()))
@@ -207,6 +214,12 @@ class Census2020(CensusForPreviousYear):
         # using this for 2020 data
         return list(self.name_for_each_statistic().keys())
 
+    def explanation_page_for_each_statistic(self):
+        return {
+            k: "population" if k == "population" else "density"
+            for k in self.name_for_each_statistic()
+        }
+
     def compute_statistics(self, shapefile, statistics_table, shapefile_table):
         super().compute_statistics(shapefile, statistics_table, shapefile_table)
         for k in statistics_table:
@@ -284,9 +297,7 @@ def population_by_year(shapefile, *, no_pr):
     shapefile_table = shapefile.load_file()
     statistics_table = shapefile_table[["longname"]].copy()
     for year in [2000, 2010, 2020]:
-        statistics_table[year] = compute_population_for_year(
-            shapefile, no_pr=no_pr
-        )
+        statistics_table[year] = compute_population_for_year(shapefile, no_pr=no_pr)
     return statistics_table[[2000, 2010, 2020]]
 
 

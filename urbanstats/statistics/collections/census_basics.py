@@ -37,27 +37,23 @@ class CensusBasics(CensusStatisticsColection):
             "sd": "AW Density",
         }
 
+    def year(self):
+        return 2020
+
     def order_category_for_each_statistic(self):
-        return {
-            k: (
-                ORDER_CATEGORY_OTHER_DENSITIES
-                if k.startswith("ad_") and not k.startswith("ad_1")
-                else ORDER_CATEGORY_MAIN
-            )
-            for k in self.name_for_each_statistic()
-        }
+        from urbanstats.statistics.collections.census_2010 import Census2020
+
+        return Census2020.order_category_for_each_statistic(self)
 
     def category_for_each_statistic(self):
-        return {
-            k: "main" if v == ORDER_CATEGORY_MAIN else "other_densities"
-            for k, v in self.order_category_for_each_statistic().items()
-        }
+        from urbanstats.statistics.collections.census_2010 import Census2020
+
+        return Census2020.category_for_each_statistic(self)
 
     def explanation_page_for_each_statistic(self):
-        return {
-            k: "population" if k == "population" else "density"
-            for k in self.name_for_each_statistic()
-        }
+        from urbanstats.statistics.collections.census_2010 import Census2020
+
+        return Census2020.explanation_page_for_each_statistic(self)
 
     def quiz_question_names(self):
         return {
