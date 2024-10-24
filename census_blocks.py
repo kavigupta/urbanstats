@@ -93,10 +93,3 @@ def all_densities_gpd(year=2020):
         geometry=gpd.points_from_xy(coordinates[:, 1], coordinates[:, 0]),
         crs="EPSG:4326",
     )
-
-
-if __name__ == "__main__":
-    # all_densities_gpd()
-    load_raw_census(2020)
-    load_raw_census(2010)
-    pass
