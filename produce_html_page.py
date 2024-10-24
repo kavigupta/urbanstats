@@ -1,6 +1,5 @@
 import re
 
-import numpy as np
 import tqdm.auto as tqdm
 
 from relationship import full_relationships, ordering_idx
@@ -9,30 +8,11 @@ from urbanstats.protobuf import data_files_pb2
 from urbanstats.protobuf.utils import write_gzip
 from urbanstats.statistics.collections_list import statistic_collections
 from urbanstats.statistics.output_statistics_metadata import internal_statistic_names
-from urbanstats.statistics.statistic_collection import ORDER_CATEGORY_MAIN
+from urbanstats.website_data.sharding import create_filename
+from urbanstats.website_data.statistic_index_lists import index_list_for_longname
 
 
-def ord_or_zero(x):
-    return 0 if np.isnan(x) else int(x)
-
-
-def indices(longname, typ, strict_display=False):
-    from urbanstats.website_data.statistic_index_lists import get_index_lists
-
-    lists = get_index_lists()["index_lists"]
-    result = []
-    result += lists["universal"]
-    is_american = "USA" in longname
-    if get_index_lists()["type_to_has_gpw"][typ]:
-        if not strict_display or not is_american:
-            result += lists["gpw"]
-    # else:
-    if is_american:
-        result += lists["usa"]
-    return sorted(result)
-
-
-def create_page_json(
+def create_article_gzip(
     folder,
     row,
     relationships,
@@ -43,7 +23,7 @@ def create_page_json(
     flat_ords,
 ):
     statistic_names = internal_statistic_names()
-    idxs_by_type = indices(row.longname, row.type)
+    idxs_by_type = index_list_for_longname(row.longname, row.type)
     data = data_files_pb2.Article()
     data.shortname = row.shortname
     data.longname = row.longname
@@ -101,7 +81,7 @@ def create_article_gzips(site_folder, full, ordering):
     relationships = full_relationships(long_to_type)
     for i in tqdm.trange(full.shape[0], desc="creating pages"):
         row = full.iloc[i]
-        create_page_json(
+        create_article_gzip(
             f"{site_folder}/data",
             row,
             relationships,
@@ -120,25 +100,6 @@ def order_key_for_relatioships(longname, typ):
         end_congress = int(parsed.group(1))
         processed_longname = -end_congress, longname
     return ordering_idx[typ], processed_longname
-
-
-def shard_bytes(longname):
-    """translation of links.ts::shardBytes"""
-    bytes_ = longname.encode("utf-8")
-    hash_ = 0
-    for i in range(len(bytes_)):
-        hash_ = (hash_ * 31 + bytes_[i]) & 0xFFFFFFFF
-    string = ""
-    for i in range(4):
-        string += hex(hash_ & 0xF)[2:]
-        hash_ >>= 4
-    return string[0:2], string[2:3]
-
-
-def create_filename(x, ext):
-    x = x.replace("/", " slash ")
-    a, b = shard_bytes(x)
-    return f"{a}/{b}/{x}." + ext
 
 
 def extra_stats():
