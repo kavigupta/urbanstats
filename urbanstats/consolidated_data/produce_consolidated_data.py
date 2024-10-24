@@ -4,7 +4,7 @@ import os
 import shapely.geometry
 import tqdm.auto as tqdm
 
-from output_geometry import convert_to_protobuf
+from urbanstats.website_data.output_geometry import convert_to_protobuf
 from shapefiles import filter_table_for_type, load_file_for_type, shapefiles
 from urbanstats.protobuf import data_files_pb2
 from urbanstats.protobuf.utils import write_gzip

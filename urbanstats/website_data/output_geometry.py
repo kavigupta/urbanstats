@@ -14,20 +14,10 @@ from urbanstats.special_cases.simplified_country import all_simplified_countries
 from urbanstats.website_data.table import shapefile_without_ordinals
 
 
-def round_floats(obj):
-    if isinstance(obj, float):
-        return round(obj, 6)
-    elif isinstance(obj, dict):
-        return dict((k, round_floats(v)) for k, v in obj.items())
-    elif isinstance(obj, (list, tuple)):
-        return list(map(round_floats, obj))
-    return obj
-
-
-def produce_geometry_json(folder, r):
+def produce_shape_gzip(folder, r):
     fname = create_filename(r.longname, "gz")
     path = f"{folder}/{fname}"
-    produce_geometry_json_cached(r, path)
+    produce_shape_gzip_cached(r, path)
 
 
 @permacache(
@@ -40,7 +30,7 @@ def produce_geometry_json(folder, r):
     ),
     out_file=["path"],
 )
-def produce_geometry_json_cached(r, path):
+def produce_shape_gzip_cached(r, path):
     res = convert_to_protobuf(r.geometry)
     write_gzip(res, path)
 
@@ -51,10 +41,10 @@ def produce_all_geometry_json(path, valid_names):
         table = shapefiles[k].load_file()
         for i in tqdm.trange(table.shape[0]):
             if table.iloc[i].longname in valid_names:
-                produce_geometry_json(path, table.iloc[i])
+                produce_shape_gzip(path, table.iloc[i])
 
     for row in all_simplified_countries(shapefile_without_ordinals()):
-        produce_geometry_json(path, row)
+        produce_shape_gzip(path, row)
 
 
 def to_protobuf_polygon(f_python):
