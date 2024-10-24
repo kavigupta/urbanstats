@@ -1,8 +1,10 @@
 import re
 
 import numpy as np
+import tqdm.auto as tqdm
 
-from relationship import ordering_idx
+from relationship import full_relationships, ordering_idx
+from urbanstats.ordinals.flat_ordinals import compute_flat_ordinals
 from urbanstats.protobuf import data_files_pb2
 from urbanstats.protobuf.utils import write_gzip
 from urbanstats.statistics.collections_list import statistic_collections
@@ -15,7 +17,7 @@ def ord_or_zero(x):
 
 
 def indices(longname, typ, strict_display=False):
-    from create_website import get_index_lists
+    from urbanstats.website_data.statistic_index_lists import get_index_lists
 
     lists = get_index_lists()["index_lists"]
     result = []
@@ -85,6 +87,30 @@ def create_page_json(
     name = create_filename(row.longname, "gz")
     write_gzip(data, f"{folder}/{name}")
     return name
+
+
+
+def create_article_gzips(site_folder, full, ordering):
+    long_to_short = dict(zip(full.longname, full.shortname))
+    long_to_pop = dict(zip(full.longname, full.population))
+    long_to_type = dict(zip(full.longname, full.type))
+    long_to_idx = {x: i for i, x in enumerate(full.longname)}
+
+    flat_ords = compute_flat_ordinals(full, ordering)
+
+    relationships = full_relationships(long_to_type)
+    for i in tqdm.trange(full.shape[0], desc="creating pages"):
+        row = full.iloc[i]
+        create_page_json(
+            f"{site_folder}/data",
+            row,
+            relationships,
+            long_to_short,
+            long_to_pop,
+            long_to_type,
+            long_to_idx,
+            flat_ords,
+        )
 
 
 def order_key_for_relatioships(longname, typ):

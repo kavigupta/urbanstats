@@ -10,6 +10,8 @@ from shapefiles import shapefiles
 from urbanstats.geometry.classify_coordinate_zone import classify_coordinate_zone
 from urbanstats.protobuf import data_files_pb2
 from urbanstats.protobuf.utils import write_gzip
+from urbanstats.special_cases.simplified_country import all_simplified_countries
+from urbanstats.website_data.table import shapefile_without_ordinals
 
 
 def round_floats(obj):
@@ -50,6 +52,7 @@ def produce_all_geometry_json(path, valid_names):
         for i in tqdm.trange(table.shape[0]):
             if table.iloc[i].longname in valid_names:
                 produce_geometry_json(path, table.iloc[i])
+    all_simplified_countries(shapefile_without_ordinals(), path)
 
 
 def to_protobuf_polygon(f_python):
