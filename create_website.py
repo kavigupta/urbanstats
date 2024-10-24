@@ -120,34 +120,7 @@ def all_ordinals():
     return ordinal_info
 
 
-def next_prev(full):
-    statistic_names = internal_statistic_names()
-    by_statistic = {k: {} for k in statistic_names}
-    for statistic in tqdm.tqdm(statistic_names, desc="next_prev"):
-        s_full = full.sort_values("longname").sort_values(
-            statistic, ascending=False, kind="stable"
-        )
-        names = list(s_full.longname)
-        for prev, current, next in zip([None, *names[:-1]], names, [*names[1:], None]):
-            by_statistic[statistic][current] = prev, next
-
-    return by_statistic
-
-
-def next_prev_within_type(full):
-    statistic_names = internal_statistic_names()
-    by_statistic = {k: {} for k in statistic_names}
-    for type in sorted(set(full.type)):
-        result = next_prev(full[full.type == type])
-        for statistic in statistic_names:
-            by_statistic[statistic].update(result[statistic])
-
-    return by_statistic
-
-
 def create_page_jsons(site_folder, full, ordering):
-    # ptrs_overall = next_prev(full)
-    # ptrs_within_type = next_prev_within_type(full)
     long_to_short = dict(zip(full.longname, full.shortname))
     long_to_pop = dict(zip(full.longname, full.population))
     long_to_type = dict(zip(full.longname, full.type))
