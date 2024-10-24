@@ -207,8 +207,6 @@ sum_keys_2020 = [
     *racial_demographics,
     *housing_units,
     *density_metrics,
-    *feature_columns,
-    "park_percent_1km_v2",
     *USWeatherStatistics().name_for_each_statistic(),
 ]
 sum_keys_2020 = sorted(sum_keys_2020, key=str)
@@ -218,14 +216,6 @@ COLUMNS_PER_JOIN = 33
 @lru_cache(None)
 def block_level_data_2020():
     blocks_gdf = all_densities_gpd()
-    feats = feature_data()
-    [sh] = {x.shape for x in feats.values()}
-    assert sh == (blocks_gdf.shape[0],)
-    for k, v in feats.items():
-        blocks_gdf[k] = v
-    blocks_gdf["park_percent_1km_v2"] = (
-        park_overlap_percentages_all(r=1) * blocks_gdf.population
-    )
     weather_block = weather_block_statistics()
     for k in weather_block:
         assert k not in blocks_gdf
