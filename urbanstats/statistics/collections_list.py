@@ -55,11 +55,12 @@ from urbanstats.statistics.collections.weather import USWeatherStatistics
 
 statistic_collections = (
     CensusBasics(),
+    RaceCensus(),
+    HousingCensus(),
     Census2010(),
     Census2000(),
     GPWStatistics(),
     AreaAndCompactnessStatistics(),
-    RaceCensus(),
     SegregationStatistics(),
     NationalOriginCitizenshipStatistics(),
     NationalOriginBirthplaceStatistics(),
@@ -70,7 +71,6 @@ statistic_collections = (
     IncomePoverty(),
     IncomeFamily(),
     IncomeIndividual(),
-    HousingCensus(),
     HousingRentOrOwn(),
     HousingRentBurden(),
     HousingRent(),
