@@ -183,6 +183,20 @@ class Census2020(CensusForPreviousYear):
     def ysn(self, name):
         return name
 
+    def explanation_page_for_statistic(self, k):
+        if k == "population":
+            return "population"
+        if k == "sd" or k.startswith("ad_"):
+            return "density"
+        if k in ["housing_per_pop", "vacancy"]:
+            return "housing-census"
+        if k in RaceCensus().name_for_each_statistic():
+            return "race"
+        raise NotImplementedError(k)
+
+    def explanation_page_for_each_statistic(self):
+        return {k: self.explanation_page_for_statistic(k) for k in self.name_for_each_statistic()}
+
     def quiz_question_names(self):
         # TODO this is a hack to avoid a crash. We need to fix this when we migrate to
         # using this for 2020 data
