@@ -20,24 +20,33 @@ class CensusForPreviousYear(CensusStatisticsColection):
     def year(self):
         pass
 
+    def ysk(self, key):
+        """
+        Year suffix for key
+        """
+        return f"{key}_{self.year()}"
+
+    def ysn(self, name):
+        """
+        Year suffix for name
+        """
+        return f"{name} ({self.year()})"
+
     def name_for_each_statistic(self):
         year = self.year()
 
         result = {}
-        result.update({f"population_{year}": f"Population ({year})"})
-        result.update({f"{k}_{year}": f"{v} ({year})" for k, v in ad.items()})
+        result.update({"population": "Population"})
+        result.update(ad)
         result.update(
             {
-                f"sd_{year}": f"AW Density ({year})",
-                **{
-                    f"{k}_{year}": f"{v} ({year})"
-                    for k, v in RaceCensus().name_for_each_statistic().items()
-                },
-                f"housing_per_pop_{year}": f"Housing Units per Adult ({year})",
-                f"vacancy_{year}": f"Vacancy % ({year})",
+                "sd": "AW Density",
+                **RaceCensus().name_for_each_statistic(),
+                "housing_per_pop": "Housing Units per Adult",
+                "vacancy": "Vacancy %",
             }
         )
-        return result
+        return {self.ysk(k): self.ysn(v) for k, v in result.items()}
 
     def category_for_each_statistic(self):
         return self.same_for_each_name(str(self.year()))
@@ -63,7 +72,7 @@ class CensusForPreviousYear(CensusStatisticsColection):
 
         hists_year = census_histogram(shapefile, year)
         for dens in RADII:
-            statistics_table[f"pw_density_histogram_{dens}_{year}"] = [
+            statistics_table[self.ysk(f"pw_density_histogram_{dens}")] = [
                 hists_year[x][f"ad_{dens}"] if x in hists_year else np.nan
                 for x in statistics_table.longname
             ]
@@ -72,37 +81,35 @@ class CensusForPreviousYear(CensusStatisticsColection):
         from census_blocks import racial_demographics
         from stats_for_shapefile import density_metrics
 
-        year = self.year()
-
         for k in density_metrics:
-            statistics_table[f"{k}_{year}"] /= statistics_table[f"population_{year}"]
-        statistics_table[f"sd_{year}"] = (
-            statistics_table[f"population_{year}"] / statistics_table["area"]
+            statistics_table[self.ysk(k)] /= statistics_table[self.ysk("population")]
+        statistics_table[self.ysk("sd")] = (
+            statistics_table[self.ysk("population")] / statistics_table["area"]
         )
         for k in racial_demographics:
-            statistics_table[f"{k}_{year}"] /= statistics_table[f"population_{year}"]
-        statistics_table[f"other / mixed_{year}"] = (
-            statistics_table[f"other_{year}"] + statistics_table[f"mixed_{year}"]
+            statistics_table[self.ysk(k)] /= statistics_table[self.ysk("population")]
+        statistics_table[self.ysk("other / mixed")] = (
+            statistics_table[self.ysk("other")] + statistics_table[self.ysk("mixed")]
         )
-        del statistics_table[f"other_{year}"]
-        del statistics_table[f"mixed_{year}"]
-        statistics_table[f"housing_per_pop_{year}"] = (
-            statistics_table[f"total_{year}"]
-            / statistics_table[f"population_18_{year}"]
+        del statistics_table[self.ysk("other")]
+        del statistics_table[self.ysk("mixed")]
+        statistics_table[self.ysk("housing_per_pop")] = (
+            statistics_table[self.ysk("total")]
+            / statistics_table[self.ysk("population_18")]
         )
-        statistics_table[f"vacancy_{year}"] = (
-            statistics_table[f"vacant_{year}"] / statistics_table[f"total_{year}"]
+        statistics_table[self.ysk("vacancy")] = (
+            statistics_table[self.ysk("vacant")] / statistics_table[self.ysk("total")]
         )
 
-        del statistics_table[f"vacant_{year}"]
-        del statistics_table[f"total_{year}"]
-        del statistics_table[f"occupied_{year}"]
+        del statistics_table[self.ysk("vacant")]
+        del statistics_table[self.ysk("total")]
+        del statistics_table[self.ysk("occupied")]
 
     def extra_stats(self):
         year = self.year()
         return {
-            f"ad_{d}_{year}": HistogramSpec(
-                0, 0.1, f"pw_density_histogram_{d}_{year}", "population"
+            self.ysk(f"ad_{d}"): HistogramSpec(
+                0, 0.1, self.ysk(f"pw_density_histogram_{d}"), "population"
             )
             for d in RADII
         }
@@ -172,6 +179,12 @@ class Census2020(CensusForPreviousYear):
 
     def year(self):
         return 2020
+    
+    def ysk(self, key):
+        return key
+
+    def ysn(self, name):
+        return name
 
     def quiz_question_names(self):
         # TODO this is a hack to avoid a crash. We need to fix this when we migrate to
