@@ -13,19 +13,19 @@ def statistic_internal_to_display_name():
     """
     internal_to_display = {}
 
-    order_zones = {}
-
     for statistic_collection in statistic_collections:
         internal_to_display.update(statistic_collection.name_for_each_statistic())
-        order_zones.update(statistic_collection.order_category_for_each_statistic())
 
-    # reorder by order_zones
-    key_to_order = {k: (order_zones[k], i) for i, k in enumerate(internal_to_display)}
-
-    return {
-        k: internal_to_display[k]
-        for k in sorted(internal_to_display, key=lambda x: key_to_order[x])
-    }
+    all_stats = set(internal_to_display.keys())
+    extra_in_this_list = all_stats - set(internal_statistic_names())
+    if extra_in_this_list:
+        raise ValueError(f"Missing stats in tree: {extra_in_this_list}")
+    extra_in_tree = set(internal_statistic_names()) - all_stats
+    if extra_in_tree:
+        raise ValueError(
+            f"Extra stats in tree: {[x for x in internal_statistic_names() if x in extra_in_tree]}"
+        )
+    return {k: internal_to_display[k] for k in internal_statistic_names()}
 
 
 @lru_cache(maxsize=1)
@@ -33,7 +33,13 @@ def internal_statistic_names():
     """
     List of internal statistic names in the order they are stored in the database.
     """
-    return list(statistic_internal_to_display_name())
+    return [
+        stat
+        for category in statistics_tree.values()
+        for group in category["contents"].values()
+        for stats in group["contents"].values()
+        for stat in stats
+    ]
 
 
 def get_statistic_categories():
@@ -96,23 +102,6 @@ def output_statistics_metadata():
 
 
 def flatten_statistic_tree():
-    all_stats = {
-        stat
-        for category in statistics_tree.values()
-        for group in category["contents"].values()
-        for stats in group["contents"].values()
-        for stat in stats
-    }
-    print(all_stats)
-    extra_in_tree = all_stats - set(internal_statistic_names())
-    if extra_in_tree:
-        raise ValueError(f"Extra stats in tree: {extra_in_tree}")
-    extra_in_list = set(internal_statistic_names()) - all_stats
-    if extra_in_list:
-        raise ValueError(
-            f"Missing stats in tree: {[x for x in internal_statistic_names() if x in extra_in_list]}"
-        )
-
     return [
         flatten_category(category_id, category)
         for category_id, category in statistics_tree.items()

@@ -41,13 +41,13 @@ statistics_tree = {
             **census_basics("population", change=True),
             **census_basics("ad_1", change=True),
             **census_basics("sd", change=False),
-            "area": dict(contents={None: ["area"]}),
-            "compactness": dict(contents={None: ["compactness"]}),
             **just_2020(
                 "gpw_population",
                 "gpw_pw_density_1",
                 "gpw_aw_density",
             ),
+            "area": dict(contents={None: ["area"]}),
+            "compactness": dict(contents={None: ["compactness"]}),
         },
     ),
     "race": dict(
