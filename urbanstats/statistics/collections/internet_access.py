@@ -9,9 +9,6 @@ class InternetAccessStatistics(ACSStatisticsColection):
             "internet_no_access": "No internet access %",
         }
 
-    def category_for_each_statistic(self):
-        return self.same_for_each_name("misc")
-
     def explanation_page_for_each_statistic(self):
         return self.same_for_each_name("internet")
 

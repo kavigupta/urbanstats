@@ -14,9 +14,6 @@ class HousingYearBuiltStatistics(ACSStatisticsColection):
             "year_built_2010_or_later": "% units built in 2010s+",
         }
 
-    def category_for_each_statistic(self):
-        return self.same_for_each_name("housing")
-
     def explanation_page_for_each_statistic(self):
         return self.same_for_each_name("housing-acs")
 

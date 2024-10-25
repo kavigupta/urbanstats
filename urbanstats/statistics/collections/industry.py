@@ -14,9 +14,6 @@ class IndustryStatistics(ACSStatisticsColection):
     def name_for_each_statistic(self):
         return industry.industry_display
 
-    def category_for_each_statistic(self):
-        return self.same_for_each_name("industry")
-
     def explanation_page_for_each_statistic(self):
         return self.same_for_each_name("industry_and_occupation")
 

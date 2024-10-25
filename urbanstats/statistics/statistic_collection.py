@@ -36,10 +36,6 @@ class StatisticCollection(ABC):
         pass
 
     @abstractmethod
-    def category_for_each_statistic(self):
-        pass
-
-    @abstractmethod
     def explanation_page_for_each_statistic(self):
         pass
 
