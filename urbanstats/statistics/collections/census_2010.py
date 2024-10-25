@@ -69,8 +69,6 @@ class CensusForPreviousYear(CensusStatisticsColection):
             )
         return result
 
-    def order_category_for_each_statistic(self):
-        return CensusBasics.order_category_for_each_statistic(self)
 
     def category_for_each_statistic(self):
         return self.same_for_each_name(str(self.year()))
