@@ -37,20 +37,14 @@ class CensusBasics(CensusStatisticsColection):
             "sd": "AW Density",
         }
 
-    def order_category_for_each_statistic(self):
-        return {
-            k: (
-                ORDER_CATEGORY_OTHER_DENSITIES
-                if k.startswith("ad_") and not k.startswith("ad_1")
-                else ORDER_CATEGORY_MAIN
-            )
-            for k in self.name_for_each_statistic()
-        }
-
     def category_for_each_statistic(self):
         return {
-            k: "main" if v == ORDER_CATEGORY_MAIN else "other_densities"
-            for k, v in self.order_category_for_each_statistic().items()
+            k: (
+                "other_densities"
+                if k.startswith("ad_") and not k.startswith("ad_1")
+                else "main"
+            )
+            for k in self.name_for_each_statistic()
         }
 
     def explanation_page_for_each_statistic(self):
