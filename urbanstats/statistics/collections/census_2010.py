@@ -22,14 +22,14 @@ DENSITY_EXPLANATION_PW = (
 )
 
 race_names = {
-            "white": "White %",
-            "hispanic": "Hispanic %",
-            "black": "Black %",
-            "asian": "Asian %",
-            "native": "Native %",
-            "hawaiian_pi": "Hawaiian / PI %",
-            "other / mixed": "Other / Mixed %",
-        }
+    "white": "White %",
+    "hispanic": "Hispanic %",
+    "black": "Black %",
+    "asian": "Asian %",
+    "native": "Native %",
+    "hawaiian_pi": "Hawaiian / PI %",
+    "other / mixed": "Other / Mixed %",
+}
 
 
 def format_radius(x):
@@ -42,8 +42,6 @@ def format_radius(x):
 
 ad = {f"ad_{k}": f"PW Density (r={format_radius(k)})" for k in RADII}
 density_metrics = [f"ad_{k}" for k in RADII]
-
-
 
 
 class CensusForPreviousYear(CensusStatisticsColection):
@@ -226,17 +224,38 @@ class Census2020(CensusForPreviousYear):
         raise NotImplementedError(k)
 
     def explanation_page_for_each_statistic(self):
-        return {k: self.explanation_page_for_statistic(k) for k in self.name_for_each_statistic()}
+        return {
+            k: self.explanation_page_for_statistic(k)
+            for k in self.name_for_each_statistic()
+        }
 
     def quiz_question_names(self):
-        # TODO this is a hack to avoid a crash. We need to fix this when we migrate to
-        # using this for 2020 data
-        return {}
+        return {
+            "population": "higher population",
+            "ad_1": "higher population-weighted density (r=1km)"
+            + DENSITY_EXPLANATION_PW,
+            "white": "higher % of people who are White",
+            "hispanic": "higher % of people who are Hispanic",
+            "black": "higher % of people who are Black",
+            "asian": "higher % of people who are Asian",
+            "housing_per_pop": "higher number of housing units per adult",
+            "vacancy": "higher % of units that are vacant",
+        }
 
     def quiz_question_unused(self):
-        # TODO this is a hack to avoid a crash. We need to fix this when we migrate to
-        # using this for 2020 data
-        return list(self.name_for_each_statistic().keys())
+        return [
+            # no sd because it's antithetical to the purpose of this site
+            "sd",
+            # duplicate
+            "ad_0.25",
+            "ad_0.5",
+            "ad_2",
+            "ad_4",
+            # too small
+            "native",
+            "hawaiian_pi",
+            "other / mixed",
+        ]
 
 
 class Census2010(CensusForPreviousYear):
