@@ -1,5 +1,4 @@
-from urbanstats.statistics.collections.census_basics import (
-    DENSITY_EXPLANATION_AW,
+from urbanstats.statistics.collections.census_2010 import (
     DENSITY_EXPLANATION_PW,
 )
 from urbanstats.statistics.extra_statistics import HistogramSpec

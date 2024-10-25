@@ -11,8 +11,39 @@ from urbanstats.statistics.statistic_collection import (
     CensusStatisticsColection,
 )
 
-from .census_basics import DENSITY_EXPLANATION_PW, ad
-from .race_census import RaceCensus
+DENSITY_EXPLANATION_AW = (
+    "!TOOLTIP Area-weighted density is the total population divided by the total area."
+)
+
+DENSITY_EXPLANATION_PW = (
+    "!TOOLTIP Population-weighted density is computed by computing the density"
+    " within the given radius for each person in the region and then averaging the results."
+    " This is a better measure of the density that people actually experience."
+)
+
+race_names = {
+            "white": "White %",
+            "hispanic": "Hispanic %",
+            "black": "Black %",
+            "asian": "Asian %",
+            "native": "Native %",
+            "hawaiian_pi": "Hawaiian / PI %",
+            "other / mixed": "Other / Mixed %",
+        }
+
+
+def format_radius(x):
+    if x < 1:
+        return f"{x * 1000:.0f}m"
+    else:
+        assert x == int(x)
+        return f"{x:.0f}km"
+
+
+ad = {f"ad_{k}": f"PW Density (r={format_radius(k)})" for k in RADII}
+density_metrics = [f"ad_{k}" for k in RADII]
+
+
 
 
 class CensusForPreviousYear(CensusStatisticsColection):
@@ -41,7 +72,7 @@ class CensusForPreviousYear(CensusStatisticsColection):
         result.update(
             {
                 "sd": "AW Density",
-                **RaceCensus().name_for_each_statistic(),
+                **race_names,
                 "housing_per_pop": "Housing Units per Adult",
                 "vacancy": "Vacancy %",
             }
@@ -190,7 +221,7 @@ class Census2020(CensusForPreviousYear):
             return "density"
         if k in ["housing_per_pop", "vacancy"]:
             return "housing-census"
-        if k in RaceCensus().name_for_each_statistic():
+        if k in race_names:
             return "race"
         raise NotImplementedError(k)
 
