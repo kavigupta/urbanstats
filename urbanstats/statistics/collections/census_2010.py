@@ -11,7 +11,7 @@ from urbanstats.statistics.statistic_collection import (
     CensusStatisticsColection,
 )
 
-from .census_basics import DENSITY_EXPLANATION_PW, CensusBasics, ad
+from .census_basics import DENSITY_EXPLANATION_PW, ad
 from .race_census import RaceCensus
 
 
@@ -26,27 +26,14 @@ class CensusForPreviousYear(CensusStatisticsColection):
     def name_for_each_statistic(self):
         year = self.year()
         ad_for_year = {f"{k}_{year}": f"{v} ({year})" for k, v in ad.items()}
-        ad_change = {
-            f"{k}_change_{year}": f"{v} Change ({year}-2020)" for k, v in ad.items()
-        }
 
         result = {}
         result.update({f"population_{year}": f"Population ({year})"})
-        if self.include_change():
-            result.update(
-                {f"population_change_{year}": f"Population Change ({year}-2020)"}
-            )
         result.update(
             {
                 **{f"ad_1_{year}": ad_for_year[f"ad_1_{year}"]},
             }
         )
-        if self.include_change():
-            result.update(
-                {
-                    **{f"ad_1_change_{year}": ad_change[f"ad_1_change_{year}"]},
-                }
-            )
         result.update(
             {
                 f"sd_{year}": f"AW Density ({year})",
@@ -59,16 +46,7 @@ class CensusForPreviousYear(CensusStatisticsColection):
                 **{k: ad_for_year[k] for k in ad_for_year if k != f"ad_1_{year}"},
             }
         )
-        if self.include_change():
-            result.update(
-                {
-                    **{
-                        k: ad_change[k] for k in ad_change if k != f"ad_1_change_{year}"
-                    },
-                }
-            )
         return result
-
 
     def category_for_each_statistic(self):
         return self.same_for_each_name(str(self.year()))
@@ -77,47 +55,10 @@ class CensusForPreviousYear(CensusStatisticsColection):
         return self.same_for_each_name(str(self.year()))
 
     def quiz_question_names(self):
-        year = self.year()
-        assert (
-            self.include_change()
-        ), "if you overwrite include_change, you must also overwrite quiz_question_names"
-        return {
-            f"population_change_{year}": f"higher % increase in population from {year} to 2020",
-            f"ad_1_change_{year}": f"higher % increase in population-weighted density (r=1km) from {year} to 2020"
-            + DENSITY_EXPLANATION_PW,
-        }
+        return {}
 
     def quiz_question_unused(self):
-        year = self.year()
-        assert (
-            self.include_change()
-        ), "if you overwrite include_change, you must also overwrite quiz_question_unused"
-        return [
-            f"{x}_{year}"
-            for x in [
-                "ad_0.5_change",
-                "ad_4_change",
-                "ad_0.25_change",
-                "ad_2_change",
-                # direct copy of the 2020 statistics_tables
-                "population",
-                "sd",
-                "ad_0.25",
-                "ad_0.5",
-                "ad_1",
-                "ad_2",
-                "ad_4",
-                "housing_per_pop",
-                "asian",
-                "other / mixed",
-                "native",
-                "white",
-                "vacancy",
-                "hispanic",
-                "black",
-                "hawaiian_pi",
-            ]
-        ]
+        return list(self.name_for_each_statistic().keys())
 
     def compute_statistics(self, shapefile, statistics_table, shapefile_table):
         from urbanstats.data.census_histogram import census_histogram
@@ -142,16 +83,8 @@ class CensusForPreviousYear(CensusStatisticsColection):
 
         year = self.year()
 
-        if self.include_change():
-            statistics_table[f"population_change_{year}"] = (
-                statistics_table["population"] - statistics_table[f"population_{year}"]
-            ) / statistics_table[f"population_{year}"]
         for k in density_metrics:
             statistics_table[f"{k}_{year}"] /= statistics_table[f"population_{year}"]
-            if self.include_change():
-                statistics_table[f"{k}_change_{year}"] = (
-                    statistics_table[k] - statistics_table[f"{k}_{year}"]
-                ) / statistics_table[f"{k}_{year}"]
         statistics_table[f"sd_{year}"] = (
             statistics_table[f"population_{year}"] / statistics_table["area"]
         )
@@ -184,6 +117,63 @@ class CensusForPreviousYear(CensusStatisticsColection):
         }
 
 
+class CensusChange(CensusStatisticsColection):
+    @abstractmethod
+    def year(self):
+        pass
+
+    def name_for_each_statistic(self):
+        year = self.year()
+        ad_change = {
+            f"{k}_change_{year}": f"{v} Change ({year}-2020)" for k, v in ad.items()
+        }
+
+        result = {}
+        result.update({f"population_change_{year}": f"Population Change ({year}-2020)"})
+        result.update({f"ad_1_change_{year}": ad_change[f"ad_1_change_{year}"]})
+        result.update(
+            {k: ad_change[k] for k in ad_change if k != f"ad_1_change_{year}"}
+        )
+        return result
+
+    def category_for_each_statistic(self):
+        return self.same_for_each_name(str(self.year()))
+
+    def explanation_page_for_each_statistic(self):
+        return self.same_for_each_name(str(self.year()))
+
+    def quiz_question_names(self):
+        year = self.year()
+        return {
+            f"population_change_{year}": f"higher % increase in population from {year} to 2020",
+            f"ad_1_change_{year}": f"higher % increase in population-weighted density (r=1km) from {year} to 2020"
+            + DENSITY_EXPLANATION_PW,
+        }
+
+    def quiz_question_unused(self):
+        year = self.year()
+        return [
+            f"{x}_{year}"
+            for x in ["ad_0.5_change", "ad_4_change", "ad_0.25_change", "ad_2_change"]
+        ]
+
+    def mutate_statistic_table(self, statistics_table, shapefile_table):
+        from stats_for_shapefile import density_metrics
+
+        year = self.year()
+
+        statistics_table[f"population_change_{year}"] = (
+            statistics_table["population"] - statistics_table[f"population_{year}"]
+        ) / statistics_table[f"population_{year}"]
+        for k in density_metrics:
+            statistics_table[f"{k}_change_{year}"] = (
+                statistics_table[k] - statistics_table[f"{k}_{year}"]
+            ) / statistics_table[f"{k}_{year}"]
+
+    def extra_stats(self):
+        return {}
+
+
 class Census2020(CensusForPreviousYear):
     # This isn't actually used for 2020, but it is used to just quickly source the 2020 data
     # for computing other statistics
@@ -214,18 +204,29 @@ class Census2020(CensusForPreviousYear):
 
 
 class Census2010(CensusForPreviousYear):
-    version = 5
+    version = 6
 
     def year(self):
         return 2010
 
 
 class Census2000(CensusForPreviousYear):
-    version = 6
+    version = 7
 
     def year(self):
         return 2000
 
+class CensusChange2010(CensusChange):
+    version = 0
+
+    def year(self):
+        return 2010
+
+class CensusChange2000(CensusChange):
+    version = 0
+
+    def year(self):
+        return 2000
 
 @permacache(
     "urbanstats/statistics/collections/aggregate_basics_of_year_3",
@@ -282,9 +283,7 @@ def population_by_year(shapefile, *, no_pr):
     shapefile_table = shapefile.load_file()
     statistics_table = shapefile_table[["longname"]].copy()
     for year in [2000, 2010, 2020]:
-        statistics_table[year] = compute_population_for_year(
-            shapefile, no_pr=no_pr
-        )
+        statistics_table[year] = compute_population_for_year(shapefile, no_pr=no_pr)
     return statistics_table[[2000, 2010, 2020]]
 
 

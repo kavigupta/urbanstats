@@ -1,5 +1,5 @@
 from urbanstats.statistics.collections.cdc_statistics import CDCStatistics
-from urbanstats.statistics.collections.census_2010 import Census2000, Census2010
+from urbanstats.statistics.collections.census_2010 import Census2000, Census2010, CensusChange2000, CensusChange2010
 from urbanstats.statistics.collections.census_basics import CensusBasics
 from urbanstats.statistics.collections.education_gender_gap import (
     EducationGenderGapStatistics,
@@ -58,7 +58,9 @@ statistic_collections = (
     RaceCensus(),
     HousingCensus(),
     Census2010(),
+    CensusChange2010(),
     Census2000(),
+    CensusChange2000(),
     GPWStatistics(),
     AreaAndCompactnessStatistics(),
     SegregationStatistics(),
