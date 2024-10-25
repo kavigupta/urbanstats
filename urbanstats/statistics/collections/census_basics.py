@@ -1,3 +1,5 @@
+from typing import Union
+from attr import dataclass
 from census_blocks import RADII
 from urbanstats.statistics.extra_statistics import HistogramSpec
 from urbanstats.statistics.statistic_collection import (
@@ -29,47 +31,56 @@ ad = {f"ad_{k}": f"PW Density (r={format_radius(k)})" for k in RADII}
 density_metrics = [f"ad_{k}" for k in RADII]
 
 
+@dataclass
+class S:
+    key: str
+    name: str
+    category: str
+    explanation: str
+    quiz_q: Union[str, None] = None
+
+
+census_basics = [
+    S("population", "Population", "main", "population", "higher population"),
+    *[
+        S(
+            k,
+            ad[k],
+            "main",
+            "density",
+            "higher population-weighted density (r=1km)" + DENSITY_EXPLANATION_PW
+            if k == "ad_1"
+            else None,
+        )
+        for k in density_metrics
+    ],
+    # no sd quiz q because it's antithetical to the purpose of this site
+    S("sd", "AW Density", "main", "density"),
+]
+
+census_race = [
+    S("white", "White %", "race", "race", "higher % of people who are White"),
+    S("hispanic", "Hispanic %", "race",
+]
+
+census_stats = census_basics
+
+
 class CensusBasics(CensusStatisticsColection):
     def name_for_each_statistic(self):
-        return {
-            "population": "Population",
-            **ad,
-            "sd": "AW Density",
-        }
+        return {s.key: s.name for s in census_stats}
 
     def category_for_each_statistic(self):
-        return {
-            k: (
-                "other_densities"
-                if k.startswith("ad_") and not k.startswith("ad_1")
-                else "main"
-            )
-            for k in self.name_for_each_statistic()
-        }
+        return {s.key: s.category for s in census_stats}
 
     def explanation_page_for_each_statistic(self):
-        return {
-            k: "population" if k == "population" else "density"
-            for k in self.name_for_each_statistic()
-        }
+        return {s.key: s.explanation for s in census_stats}
 
     def quiz_question_names(self):
-        return {
-            "population": "higher population",
-            "ad_1": "higher population-weighted density (r=1km)"
-            + DENSITY_EXPLANATION_PW,
-        }
+        return {s.key: s.quiz_q for s in census_stats if s.quiz_q is not None}
 
     def quiz_question_unused(self):
-        return [
-            # no sd because it's antithetical to the purpose of this site
-            "sd",
-            # duplicate
-            "ad_0.25",
-            "ad_0.5",
-            "ad_2",
-            "ad_4",
-        ]
+        return [s.key for s in census_stats if s.quiz_q is None]
 
     def mutate_statistic_table(self, statistics_table, shapefile_table):
         for k in density_metrics:
@@ -83,3 +94,49 @@ class CensusBasics(CensusStatisticsColection):
             f"ad_{d}": HistogramSpec(0, 0.1, f"pw_density_histogram_{d}", "population")
             for d in RADII
         }
+
+# from urbanstats.statistics.statistic_collection import CensusStatisticsColection
+
+
+# class RaceCensus(CensusStatisticsColection):
+#     def name_for_each_statistic(self):
+#         return {
+#             "white": "White %",
+#             "hispanic": "Hispanic %",
+#             "black": "Black %",
+#             "asian": "Asian %",
+#             "native": "Native %",
+#             "hawaiian_pi": "Hawaiian / PI %",
+#             "other / mixed": "Other / Mixed %",
+#         }
+
+#     def category_for_each_statistic(self):
+#         return self.same_for_each_name("race")
+
+#     def explanation_page_for_each_statistic(self):
+#         return self.same_for_each_name("race")
+
+#     def quiz_question_names(self):
+#         return {
+#             "white": "higher % of people who are White",
+#             "hispanic": "higher % of people who are Hispanic",
+#             "black": "higher % of people who are Black",
+#             "asian": "higher % of people who are Asian",
+#         }
+
+#     def quiz_question_unused(self):
+#         return [
+#             "native",
+#             "hawaiian_pi",
+#             "other / mixed",
+#         ]
+
+#     def mutate_statistic_table(self, statistics_table, shapefile_table):
+#         statistics_table["other / mixed"] = (
+#             statistics_table["other"] + statistics_table["mixed"]
+#         )
+#         for k in self.name_for_each_statistic():
+#             statistics_table[k] /= statistics_table["population"]
+
+#         del statistics_table["other"]
+#         del statistics_table["mixed"]
