@@ -20,9 +20,6 @@ class CensusForPreviousYear(CensusStatisticsColection):
     def year(self):
         pass
 
-    def include_change(self):
-        return True
-
     def name_for_each_statistic(self):
         year = self.year()
 
@@ -175,9 +172,6 @@ class Census2020(CensusForPreviousYear):
 
     def year(self):
         return 2020
-
-    def include_change(self):
-        return False
 
     def quiz_question_names(self):
         # TODO this is a hack to avoid a crash. We need to fix this when we migrate to
