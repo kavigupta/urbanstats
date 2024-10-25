@@ -9,9 +9,6 @@ class HousingRentOrOwn(ACSStatisticsColection):
             "rent_or_own_rent": "Renter %",
         }
 
-    def category_for_each_statistic(self):
-        return self.same_for_each_name("housing")
-
     def explanation_page_for_each_statistic(self):
         return self.same_for_each_name("housing-acs")
 

@@ -11,9 +11,6 @@ class IncomeIndividual(ACSStatisticsColection):
             "individual_income_over_100k": "Individual Income > $100k %",
         }
 
-    def category_for_each_statistic(self):
-        return self.same_for_each_name("income")
-
     def explanation_page_for_each_statistic(self):
         return self.same_for_each_name("income")
 

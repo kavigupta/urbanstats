@@ -46,13 +46,22 @@ def get_statistic_categories():
     """
     Map from internal statistic names to categories.
     """
-    result = {}
-
-    for statistic_collection in statistic_collections:
-        result.update(statistic_collection.category_for_each_statistic())
-
-    result = {k: result[k] for k in statistic_internal_to_display_name()}
-    return result
+    # TODO make it so you don't need to make `distance_from_features` and `climate_change` special cases
+    # also maybe we need to handle 2010 and 2000 better.
+    # currently this is only used for CSV export and juxtastat.
+    category_by_tree = {}
+    for category_id, category in statistics_tree.items():
+        for _, group in category["contents"].items():
+            for year, stats in group["contents"].items():
+                for stat in stats:
+                    category_id_to_use = {
+                        "distance_from_features": "feature",
+                        "climate_change": "climate",
+                    }.get(category_id, category_id)
+                    category_by_tree[stat] = (
+                        category_id_to_use if year in {2020, None} else str(year)
+                    )
+    return category_by_tree
 
 
 def get_explanation_page():

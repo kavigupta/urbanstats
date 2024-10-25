@@ -20,9 +20,6 @@ class NHTSAAccidentStatistics(USAStatistics):
             "traffic_fatalities_ped_last_decade": "Total Pedestrian/Cyclist Fatalities In Last Decade",
         }
 
-    def category_for_each_statistic(self):
-        return self.same_for_each_name("transportation")
-
     def explanation_page_for_each_statistic(self):
         return self.same_for_each_name("nhtsa_accidents")
 

@@ -13,9 +13,6 @@ class USDAFRAStatistics(USDAFRAStatisticsCollection):
             "lapop20share_usda_fra_1": "Within 20mi of a grocery store %",
         }
 
-    def category_for_each_statistic(self):
-        return self.same_for_each_name("feature")
-
     def explanation_page_for_each_statistic(self):
         return self.same_for_each_name("usda_fra")
 
