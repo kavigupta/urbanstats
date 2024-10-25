@@ -179,7 +179,7 @@ class Census2020(CensusForPreviousYear):
 
     def year(self):
         return 2020
-    
+
     def ysk(self, key):
         return key
 
@@ -195,13 +195,6 @@ class Census2020(CensusForPreviousYear):
         # TODO this is a hack to avoid a crash. We need to fix this when we migrate to
         # using this for 2020 data
         return list(self.name_for_each_statistic().keys())
-
-    def compute_statistics(self, shapefile, statistics_table, shapefile_table):
-        super().compute_statistics(shapefile, statistics_table, shapefile_table)
-        for k in statistics_table:
-            if k.endswith("_2020"):
-                statistics_table[k.replace("_2020", "")] = statistics_table[k]
-                del statistics_table[k]
 
 
 class Census2010(CensusForPreviousYear):
