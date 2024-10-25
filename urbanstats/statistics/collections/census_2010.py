@@ -25,15 +25,10 @@ class CensusForPreviousYear(CensusStatisticsColection):
 
     def name_for_each_statistic(self):
         year = self.year()
-        ad_for_year = {f"{k}_{year}": f"{v} ({year})" for k, v in ad.items()}
 
         result = {}
         result.update({f"population_{year}": f"Population ({year})"})
-        result.update(
-            {
-                **{f"ad_1_{year}": ad_for_year[f"ad_1_{year}"]},
-            }
-        )
+        result.update({f"{k}_{year}": f"{v} ({year})" for k, v in ad.items()})
         result.update(
             {
                 f"sd_{year}": f"AW Density ({year})",
@@ -43,7 +38,6 @@ class CensusForPreviousYear(CensusStatisticsColection):
                 },
                 f"housing_per_pop_{year}": f"Housing Units per Adult ({year})",
                 f"vacancy_{year}": f"Vacancy % ({year})",
-                **{k: ad_for_year[k] for k in ad_for_year if k != f"ad_1_{year}"},
             }
         )
         return result
@@ -216,17 +210,20 @@ class Census2000(CensusForPreviousYear):
     def year(self):
         return 2000
 
+
 class CensusChange2010(CensusChange):
     version = 0
 
     def year(self):
         return 2010
 
+
 class CensusChange2000(CensusChange):
     version = 0
 
     def year(self):
         return 2000
+
 
 @permacache(
     "urbanstats/statistics/collections/aggregate_basics_of_year_3",
