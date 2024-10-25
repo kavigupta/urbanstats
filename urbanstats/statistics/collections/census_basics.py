@@ -40,11 +40,6 @@ class CensusBasics(CensusStatisticsColection):
     def year(self):
         return 2020
 
-    def order_category_for_each_statistic(self):
-        from urbanstats.statistics.collections.census_2010 import Census2020
-
-        return Census2020.order_category_for_each_statistic(self)
-
     def category_for_each_statistic(self):
         from urbanstats.statistics.collections.census_2010 import Census2020
 

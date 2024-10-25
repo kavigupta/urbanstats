@@ -69,16 +69,6 @@ class CensusForPreviousYear(CensusStatisticsColection):
             )
         return result
 
-    def order_category_for_each_statistic(self):
-        return {
-            k: (
-                ORDER_CATEGORY_OTHER_DENSITIES
-                if k.startswith("ad_") and not k.startswith("ad_1")
-                else ORDER_CATEGORY_MAIN
-            )
-            for k in self.name_for_each_statistic()
-        }
-
     def category_for_each_statistic(self):
         return self.same_for_each_name(str(self.year()))
 
