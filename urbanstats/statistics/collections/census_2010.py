@@ -48,9 +48,6 @@ class CensusForPreviousYear(CensusStatisticsColection):
         )
         return {self.ysk(k): self.ysn(v) for k, v in result.items()}
 
-    def category_for_each_statistic(self):
-        return self.same_for_each_name(str(self.year()))
-
     def explanation_page_for_each_statistic(self):
         return self.same_for_each_name(str(self.year()))
 

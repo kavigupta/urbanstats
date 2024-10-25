@@ -59,9 +59,6 @@ class CDCStatistics(CDCStatisticsCollection):
         out = {f"{k}_cdc_2": v for k, v in cdc_columns.items()}
         return out
 
-    def category_for_each_statistic(self):
-        return self.same_for_each_name("health")
-
     def explanation_page_for_each_statistic(self):
         return self.same_for_each_name("health")
 

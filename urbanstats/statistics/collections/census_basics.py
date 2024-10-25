@@ -37,16 +37,6 @@ class CensusBasics(CensusStatisticsColection):
             "sd": "AW Density",
         }
 
-    def category_for_each_statistic(self):
-        return {
-            k: (
-                "other_densities"
-                if k.startswith("ad_") and not k.startswith("ad_1")
-                else "main"
-            )
-            for k in self.name_for_each_statistic()
-        }
-
     def explanation_page_for_each_statistic(self):
         return {
             k: "population" if k == "population" else "density"
