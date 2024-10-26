@@ -34,12 +34,12 @@ from permacache import permacache
 from census_blocks import all_densities_gpd, load_raw_census
 from geometry import locate_blocks
 from urbanstats.geometry.census_aggregation import aggregate_by_census_block
-from urbanstats.statistics.collections.race_census import RaceCensus
+from urbanstats.statistics.collections.census_2010 import race_names
 
 
 @lru_cache(None)
 def race_columns():
-    return list(RaceCensus().name_for_each_statistic())
+    return list(race_names)
 
 
 @lru_cache(None)
