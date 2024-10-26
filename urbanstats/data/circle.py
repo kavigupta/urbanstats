@@ -7,6 +7,8 @@ from typing import List
 
 import geopandas as gpd
 import numpy as np
+import shapely
+import shapely.affinity
 import shapely.geometry
 import tqdm.auto as tqdm
 from matplotlib import patches
@@ -375,10 +377,6 @@ def chunk(population_map, chunk_size):
 
 
 def to_shapely_ellipse(map_shape, r_pixels, y_pixels, x_pixels):
-    import shapely
-    import shapely.affinity
-    import shapely.geometry
-
     r = r_pixels / map_shape[1] * 360
     x = x_pixels / map_shape[1] * 360 - 180
     y = 90 - y_pixels / map_shape[0] * 180
@@ -391,7 +389,6 @@ def to_shapely_ellipse(map_shape, r_pixels, y_pixels, x_pixels):
 
 
 def to_basic_geopandas_frame(map_shape, circles):
-    import geopandas as gpd
 
     ellipses = []
     for r, (y, x) in tqdm.tqdm(circles):
@@ -431,9 +428,9 @@ manual_circle_names = [
 
 
 def attach_urban_centers_to_frame(frame):
-    from urbanstats.geometry.shapefiles.shapefiles_list import shapefiles
+    from urbanstats.geometry.shapefiles.shapefiles.urban_centers import URBAN_CENTERS
 
-    urban_center_shapefile = shapefiles["urban_centers"].load_file()
+    urban_center_shapefile = URBAN_CENTERS.load_file()
     urban_center_shapefile.index = urban_center_shapefile.longname
     overlays = gpd.overlay(frame, urban_center_shapefile)
     res, _ = compute_gpw_data_for_shapefile.function(

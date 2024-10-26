@@ -3,14 +3,12 @@ from collections import defaultdict
 from functools import lru_cache
 
 import numpy as np
-import pandas as pd
 import shapely
 import tqdm.auto as tqdm
 from geotiff import GeoTiff
 from permacache import drop_if_equal, permacache, stable_hash
 
 from urbanstats.features.within_distance import xy_to_radius
-from urbanstats.statistics.collections_list import statistic_collections
 from urbanstats.utils import compute_bins
 
 GPW_PATH = (
@@ -393,24 +391,3 @@ def compute_gpw_data_for_shapefile(shapefile, collect_density=True, log=True):
             result_hists[k].append(v)
 
     return result, result_hists
-
-
-@permacache(
-    "urbanstats/data/gpw/compute_gpw_data_for_shapefile_table_8",
-    key_function=dict(shapefile=lambda x: x.hash_key),
-)
-def compute_gpw_data_for_shapefile_table(shapefile):
-    shapes = shapefile.load_file()
-    result, hists = compute_gpw_data_for_shapefile(shapefile)
-    result = pd.DataFrame(result)
-    print(shapefile.hash_key, len(result), len(shapes))
-    result.index = shapes.index
-    result["area"] = shapes.to_crs({"proj": "cea"}).area / 1e6
-    for collection in statistic_collections:
-        if collection.for_international():
-            collection.compute_statistics(shapefile, result, shapes)
-
-    result["longname"] = shapes.longname
-    result["shortname"] = shapes.shortname
-
-    return result, hists

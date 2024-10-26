@@ -9,7 +9,9 @@ from urbanstats.geometry.shapefiles.shapefiles_list import (
 )
 from urbanstats.protobuf import data_files_pb2
 from urbanstats.protobuf.utils import write_gzip
+from urbanstats.statistics.output_statistics_metadata import internal_statistic_names
 from urbanstats.website_data.output_geometry import convert_to_protobuf
+from urbanstats.website_data.table import shapefile_without_ordinals
 
 use = [
     "State",
@@ -45,9 +47,6 @@ dont_use = [
 
 
 def produce_results(row_geo, row):
-    from urbanstats.statistics.output_statistics_metadata import (
-        internal_statistic_names,
-    )
 
     res = row_geo.geometry.simplify(0.01)
     geo = convert_to_protobuf(res)
@@ -73,8 +72,6 @@ def produce_all_results_from_tables(geo_table, data_table):
 
 
 def produce_results_for_type(folder, typ):
-    from urbanstats.website_data.table import shapefile_without_ordinals
-
     print(typ)
     folder = f"{folder}/consolidated/"
     try:
