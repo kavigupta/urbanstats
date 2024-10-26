@@ -2,6 +2,8 @@ from urbanstats.acs.every_subcategory import produce_subcategories
 
 from .load import ACSDataEntity
 
+# pylint: disable=line-too-long
+
 list_of_occupations_female = [
     "Estimate!!Total:",
     "Estimate!!Total:!!Female:",

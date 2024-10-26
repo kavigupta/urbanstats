@@ -436,9 +436,13 @@ disable=raw-checker-failed,
         use-symbolic-message-instead,
         use-implicit-booleaness-not-comparison-to-string,
         use-implicit-booleaness-not-comparison-to-zero,
-        ## added by us
-        # documentation isn't required for every module/function
-        missing-module-docstring,missing-function-docstring,
+        # added by us
+        ## documentation isn't required for every module/function
+        missing-module-docstring,missing-function-docstring,missing-class-docstring,
+        ## I like dict() over {}
+        use-dict-literal,
+        ## this one is just stupid. why would I not specify the encoding?
+        unspecified-encoding
 
 # Enable the message, report, category or checker with the given id(s). You can
 # either give multiple identifier separated by comma (,) or put this option
