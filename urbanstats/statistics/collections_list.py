@@ -1,5 +1,11 @@
 from urbanstats.statistics.collections.cdc_statistics import CDCStatistics
-from urbanstats.statistics.collections.census_2010 import Census2000, Census2010, Census2020, CensusChange2000, CensusChange2010
+from urbanstats.statistics.collections.census_2010 import (
+    Census2000,
+    Census2010,
+    Census2020,
+    CensusChange2000,
+    CensusChange2010,
+)
 from urbanstats.statistics.collections.education_gender_gap import (
     EducationGenderGapStatistics,
 )

@@ -1,6 +1,5 @@
 from urbanstats.geometry.shapefiles.shapefile import Shapefile
 
-
 CCDs = Shapefile(
     hash_key="census_cousub_8",
     path="named_region_shapefiles/cb_2022_us_cousub_500k.zip",

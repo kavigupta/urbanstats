@@ -1,22 +1,23 @@
+from collections import Counter
 from functools import lru_cache
-
-from permacache import permacache, stable_hash
-from urbanstats.geometry.shapefiles.shapefiles_list import shapefiles_for_stats
-from urbanstats.data.census_blocks import RADII
-from urbanstats.data.census_histogram import census_histogram
-
 
 import numpy as np
 import pandas as pd
 import tqdm.auto as tqdm
+from permacache import permacache, stable_hash
 
-
-from collections import Counter
-
+from urbanstats.data.census_blocks import RADII
+from urbanstats.data.census_histogram import census_histogram
 from urbanstats.data.gpw import compute_gpw_data_for_shapefile_table
-from urbanstats.special_cases.merge_international import merge_international_and_domestic
+from urbanstats.geometry.shapefiles.shapefiles_list import shapefiles_for_stats
+from urbanstats.special_cases.merge_international import (
+    merge_international_and_domestic,
+)
 from urbanstats.statistics.collections_list import statistic_collections
-from urbanstats.universe.annotate_universes import attach_intl_universes, attach_usa_universes
+from urbanstats.universe.annotate_universes import (
+    attach_intl_universes,
+    attach_usa_universes,
+)
 
 
 @permacache(
@@ -38,7 +39,6 @@ def compute_statistics_for_shapefile(sf, statistic_collections=statistic_collect
             collection.compute_statistics(sf, result, sf_fr)
 
     return result
-
 
 
 def american_shapefile():

@@ -10,6 +10,7 @@ from permacache import drop_if_equal, permacache, stable_hash
 
 from urbanstats.geometry.shapefiles.shapefiles_list import shapefiles_for_stats
 
+
 def skippable_edge_case(k):
     # no clue what this is
     return k == "Historical Congressional District DC-98, 103rd-117th Congress, USA"
@@ -450,11 +451,15 @@ def can_border(x, y):
 def full_relationships(long_to_type):
     return relationships_for_list(long_to_type, shapefiles_for_stats)
 
+
 @permacache(
     "relationship/relationships_for_list",
-    key_function=dict(long_to_type=stable_hash, shapefiles_to_use=lambda shapefiles_to_use: stable_hash({
-        k: v.hash_key for k, v in shapefiles_to_use.items()
-    })),
+    key_function=dict(
+        long_to_type=stable_hash,
+        shapefiles_to_use=lambda shapefiles_to_use: stable_hash(
+            {k: v.hash_key for k, v in shapefiles_to_use.items()}
+        ),
+    ),
 )
 def relationships_for_list(long_to_type, shapefiles_to_use):
     contains, contained_by, intersects, borders = (

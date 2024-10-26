@@ -14,15 +14,16 @@ named_users = dict(
     kavi=225074120239201340,
     guava=533487794723891791,
     parth=232188494395851367,
-#     gus=65416843712317322,
+    #     gus=65416843712317322,
     adiastra=727538863697858149,
     ellie=691958428450574907,
     sleepy=19800660824996662,
     antifa=1128140214864259863,
-#     ashjubilee=846814263642105530,
-    april=0x1d2efe90871f22b,
-    violetncs=0x523ff09c66f52f4,
+    #     ashjubilee=846814263642105530,
+    april=0x1D2EFE90871F22B,
+    violetncs=0x523FF09C66F52F4,
 )
+
 
 def get_full_statistics(*, after_problem, debug=False):
     with open(os.path.expanduser("~/.juxtastat-persistent-token")) as f:
@@ -67,6 +68,7 @@ def get_full_statistics(*, after_problem, debug=False):
         result = result[result.host == "urbanstats.org"]
     result = result.copy().reset_index(drop=True)
     return result
+
 
 def get_dau(after_problem=49, radius=14):
     result = get_full_statistics(after_problem=after_problem, debug=False)

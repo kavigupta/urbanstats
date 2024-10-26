@@ -1,12 +1,10 @@
-from urbanstats.special_cases.deduplicate_longnames import drop_duplicate
-
+import pickle
 
 import attr
 import geopandas as gpd
 import pandas as pd
 
-
-import pickle
+from urbanstats.special_cases.deduplicate_longnames import drop_duplicate
 
 
 @attr.s

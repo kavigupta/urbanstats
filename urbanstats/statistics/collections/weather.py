@@ -1,5 +1,6 @@
 import pandas as pd
 from permacache import permacache
+
 from urbanstats.data.census_blocks import all_densities_gpd
 from urbanstats.geometry.census_aggregation import aggregate_by_census_block
 from urbanstats.statistics.statistic_collection import USWeatherStatisticsCollection

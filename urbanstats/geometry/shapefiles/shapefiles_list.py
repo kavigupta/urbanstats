@@ -1,24 +1,30 @@
-
 from urbanstats.geometry.shapefiles.shapefile import Shapefile
 from urbanstats.geometry.shapefiles.shapefiles.ccds import CCDs
 from urbanstats.geometry.shapefiles.shapefiles.cities import CITIES
 from urbanstats.geometry.shapefiles.shapefiles.continents import CONTINENTS
 from urbanstats.geometry.shapefiles.shapefiles.counties import COUNTIES
-from urbanstats.geometry.shapefiles.shapefiles.countries import COUNTRIES
-from urbanstats.geometry.shapefiles.shapefiles.countries import COUNTRY_USA
+from urbanstats.geometry.shapefiles.shapefiles.countries import COUNTRIES, COUNTRY_USA
 from urbanstats.geometry.shapefiles.shapefiles.county_cross_cd import COUNTY_CROSS_CD
 from urbanstats.geometry.shapefiles.shapefiles.csas import CSAs
 from urbanstats.geometry.shapefiles.shapefiles.districts import district_shapefiles
-from urbanstats.geometry.shapefiles.shapefiles.historical_congressional import HISTORICAL_CONGRESSIONAL
+from urbanstats.geometry.shapefiles.shapefiles.historical_congressional import (
+    HISTORICAL_CONGRESSIONAL,
+)
 from urbanstats.geometry.shapefiles.shapefiles.hospital import hospital_shapefiles
 from urbanstats.geometry.shapefiles.shapefiles.judicial import judicial_shapefiles
 from urbanstats.geometry.shapefiles.shapefiles.media_markets import MEDIA_MARKETS
 from urbanstats.geometry.shapefiles.shapefiles.msas import MSAs
 from urbanstats.geometry.shapefiles.shapefiles.native import native_shapefiles
 from urbanstats.geometry.shapefiles.shapefiles.neighborhoods import NEIGHBORHOODS
-from urbanstats.geometry.shapefiles.shapefiles.population_circle import population_circles_shapefiles, population_circles_usa_shapefiles, population_circles_usa_to_international
+from urbanstats.geometry.shapefiles.shapefiles.population_circle import (
+    population_circles_shapefiles,
+    population_circles_usa_shapefiles,
+    population_circles_usa_to_international,
+)
 from urbanstats.geometry.shapefiles.shapefiles.school_districts import SCHOOL_DISTRICTS
-from urbanstats.geometry.shapefiles.shapefiles.subnational_regions import SUBNATIONAL_REGIONS
+from urbanstats.geometry.shapefiles.shapefiles.subnational_regions import (
+    SUBNATIONAL_REGIONS,
+)
 from urbanstats.geometry.shapefiles.shapefiles.urban_areas import URBAN_AREAS
 from urbanstats.geometry.shapefiles.shapefiles.urban_centers import URBAN_CENTERS
 from urbanstats.geometry.shapefiles.shapefiles.usda_county_type import USDA_COUNTY_TYPE
@@ -51,24 +57,24 @@ shapefiles = dict(
 )
 
 STATES_USA = Shapefile(
-        hash_key="census_states_3",
-        path="named_region_shapefiles/cb_2022_us_state_500k.zip",
-        shortname_extractor=lambda x: x["NAME"],
-        longname_extractor=lambda x: x["NAME"] + ", USA",
-        filter=lambda x: True,
-        meta=dict(type="State", source="Census", type_category="US Subdivision"),
-    )
+    hash_key="census_states_3",
+    path="named_region_shapefiles/cb_2022_us_state_500k.zip",
+    shortname_extractor=lambda x: x["NAME"],
+    longname_extractor=lambda x: x["NAME"] + ", USA",
+    filter=lambda x: True,
+    meta=dict(type="State", source="Census", type_category="US Subdivision"),
+)
 
 URBAN_CENTERS_USA = Shapefile(
-        hash_key="us_urban_centers_4",
-        path=lambda: load_ghsl_urban_center(),
-        shortname_extractor=lambda x: x["shortname"],
-        longname_extractor=lambda x: x["longname"],
-        meta=dict(type="Urban Center", source="GHSL", type_category="International"),
-        filter=lambda x: "USA" in x.suffix,
-        american=True,
-        include_in_gpw=False,
-    )
+    hash_key="us_urban_centers_4",
+    path=lambda: load_ghsl_urban_center(),
+    shortname_extractor=lambda x: x["shortname"],
+    longname_extractor=lambda x: x["longname"],
+    meta=dict(type="Urban Center", source="GHSL", type_category="International"),
+    filter=lambda x: "USA" in x.suffix,
+    american=True,
+    include_in_gpw=False,
+)
 
 shapefiles_for_stats = dict(
     **shapefiles,
@@ -84,6 +90,7 @@ american_to_international = {
     "US Urban Center": "Urban Center",
     **population_circles_usa_to_international,
 }
+
 
 def filter_table_for_type(table, typ):
     is_internationalized = typ in american_to_international

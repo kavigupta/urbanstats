@@ -1,8 +1,9 @@
 import geopandas as gpd
 import pandas as pd
-import us
 import tqdm.auto as tqdm
+import us
 from permacache import permacache
+
 from urbanstats.geometry.shapefiles.shapefile import Shapefile
 from urbanstats.geometry.shapefiles.shapefiles.counties import COUNTIES
 from urbanstats.geometry.shapefiles.shapefiles.districts import CONGRESSIONAL_DISTRICTS

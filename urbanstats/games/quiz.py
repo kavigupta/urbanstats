@@ -13,19 +13,22 @@ import pytz
 import tqdm.auto as tqdm
 from permacache import permacache, stable_hash
 
-from urbanstats.website_data.statistic_index_lists import index_list_for_longname
-from urbanstats.website_data.table import shapefile_without_ordinals
-from urbanstats.website_data.sharding import create_filename
 from urbanstats.geometry.relationship import states_for_all
-from urbanstats.geometry.shapefiles.shapefiles_list import american_to_international, filter_table_for_type
+from urbanstats.geometry.shapefiles.shapefiles_list import (
+    american_to_international,
+    filter_table_for_type,
+)
 from urbanstats.shortener import shorten
 from urbanstats.statistics.collections_list import statistic_collections
 from urbanstats.statistics.output_statistics_metadata import (
     get_statistic_categories,
+    get_statistic_column_path,
     internal_statistic_names,
     statistic_internal_to_display_name,
-    get_statistic_column_path,
 )
+from urbanstats.website_data.sharding import create_filename
+from urbanstats.website_data.statistic_index_lists import index_list_for_longname
+from urbanstats.website_data.table import shapefile_without_ordinals
 
 from .fixed import juxtastat as fixed_up_to
 

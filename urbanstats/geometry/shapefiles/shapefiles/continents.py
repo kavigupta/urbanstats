@@ -1,7 +1,6 @@
 from urbanstats.geometry.shapefiles.shapefile import Shapefile
 from urbanstats.special_cases.country import continents
 
-
 CONTINENTS = Shapefile(
     hash_key="continents_2",
     path=continents,

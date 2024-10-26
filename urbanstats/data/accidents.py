@@ -1,13 +1,12 @@
 import io
-import numpy as np
-import requests
 import zipfile
 
-import pandas as pd
 import geopandas as gpd
-
-from permacache import permacache
+import numpy as np
+import pandas as pd
+import requests
 import tqdm.auto as tqdm
+from permacache import permacache
 
 accident_years = list(range(2010, 2022 + 1))
 

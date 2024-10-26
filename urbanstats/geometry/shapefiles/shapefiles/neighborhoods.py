@@ -1,8 +1,6 @@
-from urbanstats.geometry.shapefiles.shapefile import Shapefile
-
-
 import us
 
+from urbanstats.geometry.shapefiles.shapefile import Shapefile
 
 NEIGHBORHOODS = Shapefile(
     hash_key="zillow_neighborhoods_6",

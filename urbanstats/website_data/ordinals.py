@@ -1,11 +1,9 @@
-from urbanstats.ordinals.ordinal_info import fully_complete_ordinals
-from urbanstats.website_data.table import shapefile_without_ordinals
-
+from functools import lru_cache
 
 import numpy as np
 
-
-from functools import lru_cache
+from urbanstats.ordinals.ordinal_info import fully_complete_ordinals
+from urbanstats.website_data.table import shapefile_without_ordinals
 
 
 @lru_cache(maxsize=None)

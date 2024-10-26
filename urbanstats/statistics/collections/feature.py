@@ -1,5 +1,6 @@
 import pandas as pd
 from permacache import permacache
+
 from urbanstats.data.census_blocks import all_densities_gpd
 from urbanstats.features.extract_data import feature_data
 from urbanstats.features.feature import feature_columns

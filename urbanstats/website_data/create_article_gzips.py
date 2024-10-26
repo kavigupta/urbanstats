@@ -69,7 +69,6 @@ def create_article_gzip(
     return name
 
 
-
 def create_article_gzips(site_folder, full, ordering):
     long_to_short = dict(zip(full.longname, full.shortname))
     long_to_pop = dict(zip(full.longname, full.population))
