@@ -1,14 +1,12 @@
 from abc import abstractmethod
 import numpy as np
-from permacache import permacache, stable_hash
+from permacache import permacache
 
-from census_blocks import RADII, all_densities_gpd, housing_units, racial_demographics
+from urbanstats.data.census_blocks import RADII, all_densities_gpd, housing_units, racial_demographics
 from urbanstats.geometry.census_aggregation import aggregate_by_census_block
 from urbanstats.statistics.extra_statistics import HistogramSpec
 from urbanstats.statistics.statistic_collection import (
-    ORDER_CATEGORY_MAIN,
-    ORDER_CATEGORY_OTHER_DENSITIES,
-    CensusStatisticsColection,
+    CensusStatisticsColection
 )
 
 DENSITY_EXPLANATION_AW = (
@@ -108,7 +106,6 @@ class CensusForPreviousYear(CensusStatisticsColection):
             ]
 
     def mutate_statistic_table(self, statistics_table, shapefile_table):
-        from census_blocks import racial_demographics
 
         for k in density_metrics:
             statistics_table[self.ysk(k)] /= statistics_table[self.ysk("population")]

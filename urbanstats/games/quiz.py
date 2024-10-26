@@ -13,10 +13,11 @@ import pytz
 import tqdm.auto as tqdm
 from permacache import permacache, stable_hash
 
-from create_website import shapefile_without_ordinals
-from produce_html_page import create_filename, indices
-from relationship import states_for_all
-from shapefiles import american_to_international, filter_table_for_type
+from urbanstats.website_data.statistic_index_lists import index_list_for_longname
+from urbanstats.website_data.table import shapefile_without_ordinals
+from urbanstats.website_data.sharding import create_filename
+from urbanstats.geometry.relationship import states_for_all
+from urbanstats.geometry.shapefiles.shapefiles_list import american_to_international, filter_table_for_type
 from urbanstats.shortener import shorten
 from urbanstats.statistics.collections_list import statistic_collections
 from urbanstats.statistics.output_statistics_metadata import (
@@ -193,7 +194,7 @@ def filter_for_pop(type):
         "longname"
     )
     # make sure to only include the appropriate columns
-    idxs = indices(
+    idxs = index_list_for_longname(
         "" if is_international(type) else "USA",
         american_to_international.get(type, type),
         strict_display=True,

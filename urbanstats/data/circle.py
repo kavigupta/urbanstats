@@ -431,7 +431,7 @@ manual_circle_names = [
 
 
 def attach_urban_centers_to_frame(frame):
-    from shapefiles import shapefiles
+    from urbanstats.geometry.shapefiles.shapefiles_list import shapefiles
 
     urban_center_shapefile = shapefiles["urban_centers"].load_file()
     urban_center_shapefile.index = urban_center_shapefile.longname
@@ -757,7 +757,7 @@ def produce_image(population):
 
 
 def circle_shapefile_object(country_shapefile, population, just_usa):
-    from stats_for_shapefile import Shapefile
+    from urbanstats.geometry.shapefiles.shapefile import Shapefile
 
     name = named_populations[population] + " Person Circle"
     if just_usa:

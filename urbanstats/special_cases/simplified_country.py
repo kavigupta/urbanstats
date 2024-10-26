@@ -4,8 +4,7 @@ from functools import lru_cache
 import geopandas as gpd
 from permacache import permacache
 
-from output_geometry import produce_geometry_json
-from shapefiles import shapefiles
+from urbanstats.geometry.shapefiles.shapefiles_list import shapefiles
 
 
 @lru_cache(None)
@@ -28,10 +27,11 @@ def get_simplified_country(name):
     return r
 
 
-def all_simplified_countries(full, path):
+def all_simplified_countries(full):
+    results = []
     names = set(full.longname)
     for name in countries().longname:
         if name not in names:
             continue
-        print(name)
-        produce_geometry_json(path, get_simplified_country(name))
+        results.append(get_simplified_country(name))
+    return results

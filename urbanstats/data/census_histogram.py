@@ -2,7 +2,7 @@ import tqdm.auto as tqdm
 import geopandas as gpd
 import numpy as np
 from permacache import permacache
-from census_blocks import all_densities_gpd
+from urbanstats.data.census_blocks import all_densities_gpd
 from urbanstats.data.gpw import produce_histogram
 
 

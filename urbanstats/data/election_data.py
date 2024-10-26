@@ -9,7 +9,7 @@ import tqdm.auto as tqdm
 import us
 from permacache import permacache
 
-from census_blocks import all_densities_gpd
+from urbanstats.data.census_blocks import all_densities_gpd
 from urbanstats.geometry.census_aggregation import aggregate_by_census_block
 
 
