@@ -18,6 +18,7 @@ class IndustryStatistics(ACSStatisticsColection):
         return self.same_for_each_name("industry_and_occupation")
 
     def quiz_question_names(self):
+        # pylint: disable=line-too-long
         quick_names = {
             "industry_agriculture,_forestry,_fishing_and_hunting": "higher % of workers employed in the agriculture, forestry, fishing, and hunting industries",
             "industry_mining,_quarrying,_and_oil_and_gas_extraction": "higher % of workers employed in the mining, quarrying, and oil/gas extraction industries",

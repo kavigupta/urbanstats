@@ -34,6 +34,7 @@ class USFeatureDistanceStatistics(USFeatureDistanceStatisticsCollection):
         }
 
     def quiz_question_names(self):
+        # pylint: disable=line-too-long
         return {
             "park_percent_1km_v2": "!FULL Which has more access to parks (higher % of area within 1km of a park, population weighted)?",
             "mean_dist_Hospital_updated": "!FULL Which has less access to hospitals (higher population-weighted mean distance)?",
