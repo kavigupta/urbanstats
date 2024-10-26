@@ -5,7 +5,7 @@ HISTORICAL_CONGRESSIONAL = Shapefile(
     hash_key="historical_congressional_5",
     path="named_region_shapefiles/congressional_districts/combo/historical.pkl",
     shortname_extractor=lambda x: f'{x["state"]}-{int(x["district"]):02d} [{render_start_and_end(x)} Congress]',
-    longname_extractor=lambda x: f"Historical Congressional District"
+    longname_extractor=lambda x: "Historical Congressional District"
     + f" {x['state']}-{x['district']}, {render_start_and_end(x)} Congress, USA",
     filter=lambda x: True,
     meta=dict(

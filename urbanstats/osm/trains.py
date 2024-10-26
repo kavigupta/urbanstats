@@ -2,7 +2,7 @@ from .query import query_to_geopandas
 
 
 def national_stations():
-    query = f"""
+    query = """
     [out:json][timeout:25];
     area(id:3600148838)->.searchArea;
     (

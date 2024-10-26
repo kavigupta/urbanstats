@@ -54,9 +54,9 @@ def create_react_jsons():
 
     output_statistics_metadata()
 
-    with open(f"react/src/data/universes_ordered.json", "w") as f:
+    with open("react/src/data/universes_ordered.json", "w") as f:
         json.dump(list([name for name in all_universes()]), f)
-    with open(f"react/src/data/explanation_industry_occupation_table.json", "w") as f:
+    with open("react/src/data/explanation_industry_occupation_table.json", "w") as f:
         json.dump(
             {
                 "industry": IndustryStatistics().table(),
@@ -74,13 +74,13 @@ def create_react_jsons():
     output_names()
     output_ramps()
 
-    with open(f"react/src/data/index_lists.json", "w") as f:
+    with open("react/src/data/index_lists.json", "w") as f:
         json.dump(get_index_lists(), f)
 
-    with open(f"react/src/data/american_to_international.json", "w") as f:
+    with open("react/src/data/american_to_international.json", "w") as f:
         json.dump(american_to_international, f)
 
-    with open(f"react/src/data/symlinks.json", "w") as f:
+    with open("react/src/data/symlinks.json", "w") as f:
         json.dump(symlinks.symlinks, f)
 
 
