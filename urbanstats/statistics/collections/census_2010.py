@@ -92,7 +92,11 @@ class CensusForPreviousYear(CensusStatisticsColection):
         year = self.year()
         table = aggregate_basics_of_year(shapefile, year)
         for k in table:
-            statistics_table[k] = table[k]
+            suffix = f"_{year}"
+            assert k.endswith(suffix)
+            k_fixed = self.ysk(k[:-len(suffix)])
+
+            statistics_table[k_fixed] = table[k]
 
         self.mutate_statistic_table(statistics_table, shapefile_table)
 
@@ -105,7 +109,6 @@ class CensusForPreviousYear(CensusStatisticsColection):
 
     def mutate_statistic_table(self, statistics_table, shapefile_table):
         from census_blocks import racial_demographics
-        from stats_for_shapefile import density_metrics
 
         for k in density_metrics:
             statistics_table[self.ysk(k)] /= statistics_table[self.ysk("population")]
@@ -182,7 +185,6 @@ class CensusChange(CensusStatisticsColection):
         ]
 
     def mutate_statistic_table(self, statistics_table, shapefile_table):
-        from stats_for_shapefile import density_metrics
 
         year = self.year()
 
@@ -291,7 +293,6 @@ class CensusChange2000(CensusChange):
     key_function=dict(shapefile=lambda x: x.hash_key),
 )
 def aggregate_basics_of_year(shapefile, year):
-    from stats_for_shapefile import density_metrics
 
     print("aggregating basics of", year, "for", shapefile.hash_key)
     sum_keys = [
