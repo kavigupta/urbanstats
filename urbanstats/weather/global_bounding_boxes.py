@@ -52,11 +52,7 @@ def plot_bounding_boxes():
     import matplotlib.pyplot as plt
     from matplotlib.patches import Rectangle
 
-    from urbanstats.data.gpw import load_full
-
-    mask = load_full() > 0
-    fig, ax = plt.subplots(figsize=(10, 5))
-    # ax.imshow(mask)
+    _, ax = plt.subplots(figsize=(10, 5))
     for box in global_bounding_boxes():
         lon_min, lat_min, lon_max, lat_max = box
         ax.add_patch(
