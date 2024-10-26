@@ -64,8 +64,6 @@ class CensusForPreviousYear(CensusStatisticsColection):
         return f"{name} ({self.year()})"
 
     def name_for_each_statistic(self):
-        year = self.year()
-
         result = {}
         result.update({"population": "Population"})
         result.update(ad)
@@ -136,7 +134,6 @@ class CensusForPreviousYear(CensusStatisticsColection):
         del statistics_table[self.ysk("occupied")]
 
     def extra_stats(self):
-        year = self.year()
         return {
             self.ysk(f"ad_{d}"): HistogramSpec(
                 0, 0.1, self.ysk(f"pw_density_histogram_{d}"), "population"
@@ -325,7 +322,7 @@ def compute_population_for_year(shapefile, *, no_pr):
     """
     t = all_densities_gpd(2020)[["geoid", "population"]].copy()
     if no_pr:
-        mask = t.geoid.apply(lambda x: extract_state_fips_from_geoid(x)) == "72"
+        mask = t.geoid.apply(extract_state_fips_from_geoid) == "72"
         t.loc[mask, "population"] = 0
     t = t[["population"]]
     agg = aggregate_by_census_block(2020, shapefile, t)
