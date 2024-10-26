@@ -31,6 +31,16 @@ def update_scripts(branch):
     and push to the remote repo.
     """
     synchronize()
+    # if the branch isn't the same as the current branch, checkout to the branch
+    current_branch = subprocess.run(
+        ["git", "rev-parse", "--abbrev-ref", "HEAD"],
+        cwd=PATH,
+        capture_output=True,
+        text=True,
+    ).stdout.strip()
+    if current_branch != branch:
+        # create a new branch if it doesn't exist
+        subprocess.run(["git", "checkout", "-b", branch], cwd=PATH)
     # add the files to the git repo
     subprocess.run(["git", "add", "."], cwd=PATH)
     # commit the changes, using the commit message corresponding to the one in the local repo
