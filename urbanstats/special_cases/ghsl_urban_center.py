@@ -46,7 +46,7 @@ def gsl_urban_center_longname_to_subnational_codes():
 
 
 @permacache(
-    f"urbanstats/special_cases/ghsl_urban_center/load_ghsl_urban_center_no_names_3"
+    "urbanstats/special_cases/ghsl_urban_center/load_ghsl_urban_center_no_names_3"
 )
 def load_ghsl_urban_center_no_names():
 

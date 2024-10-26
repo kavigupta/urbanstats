@@ -87,9 +87,9 @@ def get_statistic_column_path(column):
 
 
 def output_statistics_metadata():
-    with open(f"react/src/data/statistic_name_list.json", "w") as f:
+    with open("react/src/data/statistic_name_list.json", "w") as f:
         json.dump(list(statistic_internal_to_display_name().values()), f)
-    with open(f"react/src/data/statistic_path_list.json", "w") as f:
+    with open("react/src/data/statistic_path_list.json", "w") as f:
         json.dump(
             list(
                 [
@@ -99,14 +99,14 @@ def output_statistics_metadata():
             ),
             f,
         )
-    with open(f"react/src/data/statistic_list.json", "w") as f:
+    with open("react/src/data/statistic_list.json", "w") as f:
         json.dump(list([name for name in internal_statistic_names()]), f)
 
-    with open(f"react/src/data/explanation_page.json", "w") as f:
+    with open("react/src/data/explanation_page.json", "w") as f:
         json.dump(list([name for name in get_explanation_page().values()]), f)
 
     fst = flatten_statistic_tree()
-    with open(f"react/src/data/statistics_tree.json", "w") as f:
+    with open("react/src/data/statistics_tree.json", "w") as f:
         json.dump(fst, f, indent=2)
 
 

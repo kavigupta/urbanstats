@@ -169,7 +169,7 @@ def output_ordering(site_folder, ordinal_info):
         order_map_all += order_map
         data_map_all += data_map
     output_order(ordinal_info)
-    with open(f"react/src/data/order_links.json", "w") as f:
+    with open("react/src/data/order_links.json", "w") as f:
         json.dump(mapify(order_map_all), f)
-    with open(f"react/src/data/data_links.json", "w") as f:
+    with open("react/src/data/data_links.json", "w") as f:
         json.dump(mapify(data_map_all), f)
