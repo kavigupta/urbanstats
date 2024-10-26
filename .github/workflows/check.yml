@@ -17,24 +17,6 @@ jobs:
       - run: npx eslint .
         working-directory: react
 
-  lint-python:
-    runs-on: ubuntu-22.04
-
-    steps:
-      - uses: actions/checkout@v3
-      - name: Set up Python 3.10
-        uses: actions/setup-python@v4
-        with:
-          python-version: "3.10"
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
-      - name: Lint with pylint
-        run: python -m pylint urbanstats
-      - name: Check black
-        run: isort urbanstats; black urbanstats; bash -c '[ $(git status --porcelain --untracked-files=no | wc -c) -eq 0 ]  || (git status; git diff; exit 1)'
-
   build-and-push-image:
     runs-on: ubuntu-22.04
     outputs:
@@ -76,6 +58,24 @@ jobs:
           file: react/test/Dockerfile
           push: true
           tags: ${{ steps.image.outputs.image }}
+
+  lint-python:
+    runs-on: ubuntu-22.04
+
+    needs: build-and-push-image
+    container:
+      image: ${{ needs.build-and-push-image.outputs.image }}
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+      - name: Lint with pylint
+        run: python -m pylint --prefer-stubs=true urbanstats
+      - name: Check black
+        run: isort urbanstats; black urbanstats; bash -c '[ $(git status --porcelain --untracked-files=no | wc -c) -eq 0 ]  || (git status; git diff; exit 1)'
 
   build-frontend:
     runs-on: ubuntu-22.04
