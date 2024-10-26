@@ -256,7 +256,7 @@ def get_rgb_circles(circles, circle_map):
         [hsv_to_rgb(hue, sat, val) for hue, sat, val in zip(hues, sats, vals)]
     )
     rgb = (rgb * 255).astype(np.uint8)
-    for i, (r, (y, x)) in enumerate(tqdm.tqdm(circles, desc="Stamping circles")):
+    for i, _ in enumerate(tqdm.tqdm(circles, desc="Stamping circles")):
         circle_rgb[circle_map == i + 1] = (*rgb[i], 100)
     return circle_rgb
 
