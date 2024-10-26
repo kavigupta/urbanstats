@@ -7,7 +7,7 @@ import pandas as pd
 import shapely
 import tqdm.auto as tqdm
 from geotiff import GeoTiff
-from permacache import drop_if, drop_if_equal, permacache, stable_hash
+from permacache import drop_if_equal, permacache, stable_hash
 
 from urbanstats.features.within_distance import xy_to_radius
 from urbanstats.statistics.collections_list import statistic_collections

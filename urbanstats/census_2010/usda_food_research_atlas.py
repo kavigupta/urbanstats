@@ -1,6 +1,6 @@
 import numpy as np
 import pandas as pd
-from permacache import permacache, stable_hash
+from permacache import permacache
 
 from urbanstats.census_2010.cdc import disaggregate_to_2010
 from urbanstats.data.census_blocks import all_densities_gpd

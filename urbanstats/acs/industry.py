@@ -1,7 +1,5 @@
 from urbanstats.acs.every_subcategory import produce_subcategories
 
-from .load import ACSDataEntity
-
 list_of_industries_female = [
     "Estimate!!Total:",
     "Estimate!!Total:!!Female:",
