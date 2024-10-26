@@ -4,7 +4,7 @@ from functools import lru_cache
 import us
 from permacache import permacache
 
-from relationship import continents_for_all, non_us_countries_for_all, states_for_all
+from urbanstats.geometry.relationship import continents_for_all, non_us_countries_for_all, states_for_all
 from urbanstats.data.circle import pc_types
 from urbanstats.special_cases.country import continent_names
 

@@ -2,7 +2,7 @@ import re
 
 import tqdm.auto as tqdm
 
-from relationship import full_relationships, ordering_idx
+from urbanstats.geometry.relationship import full_relationships, ordering_idx
 from urbanstats.ordinals.flat_ordinals import compute_flat_ordinals
 from urbanstats.protobuf import data_files_pb2
 from urbanstats.protobuf.utils import write_gzip

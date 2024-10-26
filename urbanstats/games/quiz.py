@@ -16,7 +16,7 @@ from permacache import permacache, stable_hash
 from urbanstats.website_data.statistic_index_lists import index_list_for_longname
 from urbanstats.website_data.table import shapefile_without_ordinals
 from urbanstats.website_data.sharding import create_filename
-from relationship import states_for_all
+from urbanstats.geometry.relationship import states_for_all
 from urbanstats.geometry.shapefiles.shapefiles_list import american_to_international, filter_table_for_type
 from urbanstats.shortener import shorten
 from urbanstats.statistics.collections_list import statistic_collections
