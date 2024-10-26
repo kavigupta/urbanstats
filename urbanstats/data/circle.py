@@ -757,7 +757,7 @@ def produce_image(population):
 
 
 def circle_shapefile_object(country_shapefile, population, just_usa):
-    from stats_for_shapefile import Shapefile
+    from urbanstats.geometry.shapefile import Shapefile
 
     name = named_populations[population] + " Person Circle"
     if just_usa:

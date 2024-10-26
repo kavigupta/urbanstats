@@ -7,7 +7,7 @@ import tqdm.auto as tqdm
 import us
 from permacache import permacache
 
-from stats_for_shapefile import Shapefile
+from urbanstats.geometry.shapefile import Shapefile
 from urbanstats.data.circle import circle_shapefile_object, named_populations
 from urbanstats.special_cases.country import continents, countries, subnational_regions
 from urbanstats.special_cases.country_names import iso_to_country
