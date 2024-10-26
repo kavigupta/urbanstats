@@ -10,7 +10,13 @@ from urbanstats.geometry.relationship import (
     non_us_countries_for_all,
     states_for_all,
 )
+from urbanstats.geometry.shapefiles.shapefiles.countries import (
+    COUNTRIES as COUNTRIES_SHAPEFILE,
+)
 from urbanstats.special_cases.country import continent_names
+from urbanstats.special_cases.ghsl_urban_center import (
+    gsl_urban_center_longname_to_subnational_codes,
+)
 
 from .universe_constants import CONTINENTS, COUNTRIES
 
@@ -41,10 +47,6 @@ def compute_intl_universes(longname, long_to_type):
         result += ["USA"]
     if longname == "USA":
         return result
-    from urbanstats.special_cases.ghsl_urban_center import (
-        gsl_urban_center_longname_to_subnational_codes,
-    )
-
     if longname in gsl_urban_center_longname_to_subnational_codes():
         codes = gsl_urban_center_longname_to_subnational_codes()[longname]
         codes = [code[2:] for code in codes if code.startswith("US")]
@@ -70,11 +72,7 @@ def attach_intl_universes(intl):
 
 @permacache("urbanstats/universe/annotate_universes/country_names_3")
 def country_names():
-    from urbanstats.geometry.shapefiles.shapefiles_list import shapefiles
-
-    # TODO update references
-
-    return list(shapefiles["countries"].load_file().longname)
+    return list(COUNTRIES_SHAPEFILE.load_file().longname)
 
 
 def get_universe_name_for_state(state):

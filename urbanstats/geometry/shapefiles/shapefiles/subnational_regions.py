@@ -11,3 +11,11 @@ SUBNATIONAL_REGIONS = Shapefile(
     american=False,
     include_in_gpw=True,
 )
+STATES_USA = Shapefile(
+    hash_key="census_states_3",
+    path="named_region_shapefiles/cb_2022_us_state_500k.zip",
+    shortname_extractor=lambda x: x["NAME"],
+    longname_extractor=lambda x: x["NAME"] + ", USA",
+    filter=lambda x: True,
+    meta=dict(type="State", source="Census", type_category="US Subdivision"),
+)

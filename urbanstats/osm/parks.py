@@ -7,6 +7,7 @@ import us
 from permacache import permacache
 
 from ..features.within_distance import census_block_coordinates, point_to_radius
+from ..geometry.deduplicate import deduplicate_polygons
 from .query import query_to_geopandas
 
 
@@ -57,8 +58,6 @@ def parks():
 
 @permacache("urbanstats/osm/query/parks_exploded_2")
 def parks_exploded():
-    from ..geometry.deduplicate import deduplicate_polygons
-
     return deduplicate_polygons(parks().geometry)
 
 

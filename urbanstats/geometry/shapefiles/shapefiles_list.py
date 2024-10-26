@@ -23,6 +23,7 @@ from urbanstats.geometry.shapefiles.shapefiles.population_circle import (
 )
 from urbanstats.geometry.shapefiles.shapefiles.school_districts import SCHOOL_DISTRICTS
 from urbanstats.geometry.shapefiles.shapefiles.subnational_regions import (
+    STATES_USA,
     SUBNATIONAL_REGIONS,
 )
 from urbanstats.geometry.shapefiles.shapefiles.urban_areas import URBAN_AREAS
@@ -54,15 +55,6 @@ shapefiles = dict(
     subnational_regions=SUBNATIONAL_REGIONS,
     urban_centers=URBAN_CENTERS,
     **population_circles_shapefiles,
-)
-
-STATES_USA = Shapefile(
-    hash_key="census_states_3",
-    path="named_region_shapefiles/cb_2022_us_state_500k.zip",
-    shortname_extractor=lambda x: x["NAME"],
-    longname_extractor=lambda x: x["NAME"] + ", USA",
-    filter=lambda x: True,
-    meta=dict(type="State", source="Census", type_category="US Subdivision"),
 )
 
 URBAN_CENTERS_USA = Shapefile(

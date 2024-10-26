@@ -34,7 +34,6 @@ def get_index_lists():
 
 
 def index_list_for_longname(longname, typ, strict_display=False):
-    from urbanstats.website_data.statistic_index_lists import get_index_lists
 
     lists = get_index_lists()["index_lists"]
     result = []
