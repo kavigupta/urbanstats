@@ -7,18 +7,9 @@ import attr
 import geopandas as gpd
 import pandas as pd
 import tqdm.auto as tqdm
-from more_itertools import chunked
-from permacache import drop_if_equal, permacache, stable_hash
+from permacache import permacache, stable_hash
 
-from census_blocks import all_densities_gpd, housing_units, racial_demographics
-from urbanstats.features.extract_data import feature_data
-from urbanstats.features.feature import feature_columns
-from urbanstats.osm.parks import park_overlap_percentages_all
-from urbanstats.statistics.collections.cdc_statistics import CDCStatistics
-from urbanstats.statistics.collections.census_2010 import density_metrics
-from urbanstats.statistics.collections.weather import USWeatherStatistics
 from urbanstats.statistics.collections_list import statistic_collections
-from urbanstats.weather.to_blocks import weather_block_statistics
 
 
 @attr.s
@@ -201,106 +192,16 @@ def strip_suffix(name):
     raise ValueError(f"Unknown suffix in {name}")
 
 
-sum_keys_2020 = [
-    "population",
-    "population_18",
-    *racial_demographics,
-    *housing_units,
-    *density_metrics,
-    *feature_columns,
-    "park_percent_1km_v2",
-    *USWeatherStatistics().name_for_each_statistic(),
-]
-sum_keys_2020 = sorted(sum_keys_2020, key=str)
-COLUMNS_PER_JOIN = 33
-
-
-@lru_cache(None)
-def block_level_data_2020():
-    blocks_gdf = all_densities_gpd()
-    feats = feature_data()
-    [sh] = {x.shape for x in feats.values()}
-    assert sh == (blocks_gdf.shape[0],)
-    for k, v in feats.items():
-        blocks_gdf[k] = v
-    blocks_gdf["park_percent_1km_v2"] = (
-        park_overlap_percentages_all(r=1) * blocks_gdf.population
-    )
-    weather_block = weather_block_statistics()
-    for k in weather_block:
-        assert k not in blocks_gdf
-        assert blocks_gdf.shape[0] == weather_block[k].shape[0]
-        blocks_gdf[k] = weather_block[k] * blocks_gdf.population
-    return blocks_gdf
-
-
-def block_level_data(year):
-    if year == 2020:
-        return block_level_data_2020()
-    raise ValueError(f"Should not be manually aggregating for {year}")
-
-
-@permacache(
-    "population_density/stats_for_shapefile/compute_summed_shapefile_3",
-    key_function=dict(
-        sf=lambda x: x.hash_key, sum_keys=stable_hash, year=drop_if_equal(2020)
-    ),
-)
-def compute_summed_shapefile_few_keys(sf, sum_keys, year):
-    print(sf, sum_keys)
-    blocks_gdf = block_level_data(year)
-    s = sf.load_file()
-    area = s["geometry"].to_crs({"proj": "cea"}).area / 1e6
-    if sf.chunk_size is None:
-        grouped_stats = compute_grouped_stats(blocks_gdf, s, sum_keys)
-    else:
-        grouped_stats = []
-        for i in tqdm.trange(0, s.shape[0], sf.chunk_size):
-            grouped_stats.append(
-                compute_grouped_stats(
-                    blocks_gdf, s.iloc[i : i + sf.chunk_size], sum_keys
-                )
-            )
-        grouped_stats = pd.concat(grouped_stats)
-    result = pd.concat(
-        [s[["longname", "shortname"]], grouped_stats, pd.DataFrame(dict(area=area))],
-        axis=1,
-    )
-    return result
-
-
-@permacache(
-    "population_density/stats_for_shapefile/compute_summed_shapefile_all_keys_4",
-    key_function=dict(
-        sf=lambda x: x.hash_key, sum_keys=stable_hash, year=drop_if_equal(2020)
-    ),
-)
-def compute_summed_shapefile_all_keys(sf, sum_keys, year=2020):
-    print(sf)
-    result = {}
-    for keys in tqdm.tqdm(list(chunked(sum_keys, COLUMNS_PER_JOIN))):
-        frame = compute_summed_shapefile_few_keys(sf, keys, year)
-        for k in frame:
-            result[k] = frame[k]
-    return pd.DataFrame(result)
-
-
 @permacache(
     "population_density/stats_for_shapefile/compute_statistics_for_shapefile_24",
-    key_function=dict(
-        sf=lambda x: x.hash_key, sum_keys=stable_hash, statistic_collections=stable_hash
-    ),
+    key_function=dict(sf=lambda x: x.hash_key, statistic_collections=stable_hash),
     multiprocess_safe=True,
 )
-def compute_statistics_for_shapefile(
-    sf,
-    sum_keys_2020=sum_keys_2020,
-    statistic_collections=statistic_collections,
-):
+def compute_statistics_for_shapefile(sf, statistic_collections=statistic_collections):
     sf_fr = sf.load_file()
     print(sf)
-    result_2020 = compute_summed_shapefile_all_keys(sf, sum_keys_2020, year=2020).copy()
-    result = result_2020
+    result = sf_fr[["shortname", "longname"]].copy()
+    result["area"] = sf_fr["geometry"].to_crs({"proj": "cea"}).area / 1e6
     assert (result.longname == sf_fr.longname).all()
     for k in sf.meta:
         result[k] = sf.meta[k]
@@ -310,17 +211,3 @@ def compute_statistics_for_shapefile(
             collection.compute_statistics(sf, result, sf_fr)
 
     return result
-
-
-def compute_grouped_stats(blocks_gdf, s, sum_keys):
-    joined = crosswalk(blocks_gdf, s, sum_keys)
-    grouped_stats = pd.DataFrame(joined[sum_keys]).groupby(joined.index).sum()
-    return grouped_stats
-
-
-def crosswalk(blocks_gdf, s, sum_keys):
-    return s.sjoin(
-        blocks_gdf[[*sum_keys, "geometry"]].fillna(0),
-        how="inner",
-        predicate="intersects",
-    )
