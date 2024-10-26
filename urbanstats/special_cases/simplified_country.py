@@ -1,7 +1,6 @@
 import copy
 from functools import lru_cache
 
-import geopandas as gpd
 from permacache import permacache
 
 from urbanstats.geometry.shapefiles.shapefiles_list import shapefiles
