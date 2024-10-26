@@ -5,7 +5,7 @@ from urbanstats.statistics.output_statistics_metadata import (
 )
 from urbanstats.website_data.table import shapefile_without_ordinals
 
-from .quiz import stats_to_display
+from .quiz_columns import stats_to_display
 
 
 @lru_cache(maxsize=None)

@@ -8,7 +8,7 @@ from permacache import permacache, stable_hash
 
 from urbanstats.data.census_blocks import RADII
 from urbanstats.data.census_histogram import census_histogram
-from urbanstats.data.gpw import compute_gpw_data_for_shapefile_table
+from urbanstats.data.gpw import compute_gpw_data_for_shapefile
 from urbanstats.geometry.shapefiles.shapefiles_list import shapefiles_for_stats
 from urbanstats.special_cases.merge_international import (
     merge_international_and_domestic,
@@ -67,6 +67,27 @@ def american_shapefile():
     duplicates = {k: v for k, v in Counter(full.longname).items() if v > 1}
     assert not duplicates, str(duplicates)
     return full
+
+
+@permacache(
+    "urbanstats/data/gpw/compute_gpw_data_for_shapefile_table_8",
+    key_function=dict(shapefile=lambda x: x.hash_key),
+)
+def compute_gpw_data_for_shapefile_table(shapefile):
+    shapes = shapefile.load_file()
+    result, hists = compute_gpw_data_for_shapefile(shapefile)
+    result = pd.DataFrame(result)
+    print(shapefile.hash_key, len(result), len(shapes))
+    result.index = shapes.index
+    result["area"] = shapes.to_crs({"proj": "cea"}).area / 1e6
+    for collection in statistic_collections:
+        if collection.for_international():
+            collection.compute_statistics(shapefile, result, shapes)
+
+    result["longname"] = shapes.longname
+    result["shortname"] = shapes.shortname
+
+    return result, hists
 
 
 def international_shapefile():
