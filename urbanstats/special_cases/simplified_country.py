@@ -4,7 +4,7 @@ from functools import lru_cache
 import geopandas as gpd
 from permacache import permacache
 
-from shapefiles import shapefiles
+from urbanstats.geometry.shapefiles.shapefiles_list import shapefiles
 
 
 @lru_cache(None)

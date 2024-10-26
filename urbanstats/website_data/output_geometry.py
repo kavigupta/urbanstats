@@ -6,7 +6,7 @@ import tqdm.auto as tqdm
 from permacache import permacache, stable_hash
 
 from urbanstats.website_data.sharding import create_filename
-from shapefiles import shapefiles
+from urbanstats.geometry.shapefiles.shapefiles_list import shapefiles
 from urbanstats.geometry.classify_coordinate_zone import classify_coordinate_zone
 from urbanstats.protobuf import data_files_pb2
 from urbanstats.protobuf.utils import write_gzip

@@ -101,13 +101,13 @@ def drop_duplicate(s, duplicates, drop_dup_shapefile_key):
 
 @lru_cache(None)
 def load_shapefile_cached(drop_dup_shapefile_key):
-    from shapefiles import shapefiles
+    from urbanstats.geometry.shapefiles.shapefiles_list import shapefiles
 
     return shapefiles[drop_dup_shapefile_key].load_file()
 
 
 def shapefile_hash_key(sf_key):
-    from shapefiles import shapefiles
+    from urbanstats.geometry.shapefiles.shapefiles_list import shapefiles
 
     return shapefiles[sf_key].hash_key
 

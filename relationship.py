@@ -8,8 +8,7 @@ import pandas as pd
 import tqdm
 from permacache import drop_if_equal, permacache, stable_hash
 
-from shapefiles import shapefiles_for_stats
-
+from urbanstats.geometry.shapefiles.shapefiles_list import shapefiles_for_stats
 
 def skippable_edge_case(k):
     # no clue what this is

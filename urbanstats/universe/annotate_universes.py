@@ -66,7 +66,7 @@ def attach_intl_universes(intl):
 
 @permacache("urbanstats/universe/annotate_universes/country_names_3")
 def country_names():
-    from shapefiles import shapefiles
+    from urbanstats.geometry.shapefiles.shapefiles_list import shapefiles
     # TODO update references
 
     return list(shapefiles["countries"].load_file().longname)

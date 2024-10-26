@@ -17,7 +17,7 @@ from urbanstats.website_data.statistic_index_lists import index_list_for_longnam
 from urbanstats.website_data.table import shapefile_without_ordinals
 from urbanstats.website_data.sharding import create_filename
 from relationship import states_for_all
-from shapefiles import american_to_international, filter_table_for_type
+from urbanstats.geometry.shapefiles.shapefiles_list import american_to_international, filter_table_for_type
 from urbanstats.shortener import shorten
 from urbanstats.statistics.collections_list import statistic_collections
 from urbanstats.statistics.output_statistics_metadata import (

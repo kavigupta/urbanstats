@@ -1,7 +1,7 @@
 from functools import lru_cache
 
 from permacache import permacache, stable_hash
-from shapefiles import shapefiles_for_stats
+from urbanstats.geometry.shapefiles.shapefiles_list import shapefiles_for_stats
 from urbanstats.data.census_blocks import RADII
 from urbanstats.data.census_histogram import census_histogram
 
