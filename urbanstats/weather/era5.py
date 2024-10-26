@@ -10,7 +10,7 @@ import suncalc
 import tqdm
 import us
 import xarray as xr
-from permacache import permacache, stable_hash
+from permacache import permacache
 
 from urbanstats.weather.global_bounding_boxes import global_bounding_boxes
 

@@ -1,5 +1,3 @@
-import tqdm.auto as tqdm
-
 from .query import query_to_geopandas
 
 

@@ -1,5 +1,4 @@
 import numpy as np
-import shapely
 from permacache import stable_hash
 
 

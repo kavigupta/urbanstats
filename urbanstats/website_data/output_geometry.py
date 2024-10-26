@@ -1,6 +1,3 @@
-import json
-
-import numpy as np
 import shapely
 import tqdm.auto as tqdm
 from permacache import permacache, stable_hash
