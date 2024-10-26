@@ -31,9 +31,9 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
       - name: Lint with pylint
-          python -m pylint urbanstats
+        run: python -m pylint urbanstats
       - name: Check black
-          isort urbanstats; black urbanstats; bash -c '[ $(git status --porcelain --untracked-files=no | wc -c) -eq 0 ]  || (git status; git diff; exit 1)'
+        run: isort urbanstats; black urbanstats; bash -c '[ $(git status --porcelain --untracked-files=no | wc -c) -eq 0 ]  || (git status; git diff; exit 1)'
 
   build-and-push-image:
     runs-on: ubuntu-22.04
