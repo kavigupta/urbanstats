@@ -11,9 +11,6 @@ class MarriageStatistics(ACSStatisticsColection):
             "marriage_divorced": "Divorced %",
         }
 
-    def category_for_each_statistic(self):
-        return self.same_for_each_name("relationships")
-
     def explanation_page_for_each_statistic(self):
         return self.same_for_each_name("marriage")
 

@@ -36,10 +36,6 @@ class StatisticCollection(ABC):
         pass
 
     @abstractmethod
-    def category_for_each_statistic(self):
-        pass
-
-    @abstractmethod
     def explanation_page_for_each_statistic(self):
         pass
 
@@ -64,9 +60,6 @@ class StatisticCollection(ABC):
     @abstractmethod
     def for_international(self):
         pass
-
-    def order_category_for_each_statistic(self):
-        return self.same_for_each_name(ORDER_CATEGORY_MAIN)
 
     def same_for_each_name(self, value):
         return {name: value for name in self.name_for_each_statistic()}

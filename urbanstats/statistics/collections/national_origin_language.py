@@ -11,9 +11,6 @@ class NationalOriginLanguageStatistics(ACSStatisticsColection):
             "language_other": "Other at Home %",
         }
 
-    def category_for_each_statistic(self):
-        return self.same_for_each_name("national_origin")
-
     def explanation_page_for_each_statistic(self):
         return self.same_for_each_name("language")
 

@@ -1,5 +1,4 @@
-from urbanstats.statistics.collections.census_basics import (
-    DENSITY_EXPLANATION_AW,
+from urbanstats.statistics.collections.census_2010 import (
     DENSITY_EXPLANATION_PW,
 )
 from urbanstats.statistics.extra_statistics import HistogramSpec
@@ -15,15 +14,6 @@ class GPWStatistics(InternationalStatistics):
                 for k in (1, 2, 4)
             },
             "gpw_aw_density": "AW Density [GHS-POP]",
-        }
-
-    def category_for_each_statistic(self):
-        return {
-            "gpw_population": "main",
-            "gpw_pw_density_1": "main",
-            "gpw_pw_density_2": "other_densities",
-            "gpw_pw_density_4": "other_densities",
-            "gpw_aw_density": "main",
         }
 
     def explanation_page_for_each_statistic(self):

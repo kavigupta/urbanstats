@@ -19,9 +19,6 @@ class USWeatherStatistics(USWeatherStatisticsCollection):
     def name_for_each_statistic(self):
         return {k: stat.display_name for k, stat in era5_statistics.items()}
 
-    def category_for_each_statistic(self):
-        return self.same_for_each_name("weather")
-
     def explanation_page_for_each_statistic(self):
         return self.same_for_each_name("weather")
 

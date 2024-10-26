@@ -19,9 +19,6 @@ class USFeatureDistanceStatistics(USFeatureDistanceStatisticsCollection):
             **feature_columns,
         }
 
-    def category_for_each_statistic(self):
-        return self.same_for_each_name("feature")
-
     def explanation_page_for_each_statistic(self):
         return {
             "park_percent_1km_v2": "park",

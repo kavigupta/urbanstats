@@ -12,9 +12,6 @@ class USElectionStatistics(USElectionStatisticsCollection):
             ("2016-2020 Swing", "margin"): "2016-2020 Swing",
         }
 
-    def category_for_each_statistic(self):
-        return self.same_for_each_name("election")
-
     def explanation_page_for_each_statistic(self):
         return self.same_for_each_name("election")
 

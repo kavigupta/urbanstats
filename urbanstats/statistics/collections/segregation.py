@@ -28,16 +28,6 @@ class SegregationStatistics(CensusStatisticsColection):
                 result[f"{k}_{year}"] = f"{v}"
         return {k: v + " %" for k, v in result.items()}
 
-    def category_for_each_statistic(self):
-        def category(k):
-            if "2000" in k:
-                return "2000"
-            if "2010" in k:
-                return "2010"
-            return "race"
-
-        return {k: category(k) for k in self.name_for_each_statistic()}
-
     def explanation_page_for_each_statistic(self):
         return self.same_for_each_name("segregation")
 
