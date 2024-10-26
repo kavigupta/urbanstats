@@ -442,7 +442,9 @@ disable=raw-checker-failed,
         ## I like dict() over {}
         use-dict-literal,
         ## this one is just stupid. why would I not specify the encoding?
-        unspecified-encoding
+        unspecified-encoding,
+        ## let's not be too strict about naming
+        invalid-name,
 
 # Enable the message, report, category or checker with the given id(s). You can
 # either give multiple identifier separated by comma (,) or put this option
