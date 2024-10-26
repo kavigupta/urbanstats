@@ -4,6 +4,8 @@ from functools import lru_cache
 import tqdm.auto as tqdm
 from permacache import permacache, stable_hash
 
+from urbanstats.data.circle import naive_directions_for_rows_with_names
+
 
 def strip_suffix(name):
     if name in {
@@ -75,8 +77,6 @@ def remove_total_duplicates(s, indices):
 
 
 def drop_duplicate(s, duplicates, drop_dup_shapefile_key):
-    from urbanstats.data.circle import naive_directions_for_rows_with_names
-
     all_delete_indices = set()
     for longname, indices in tqdm.tqdm(list(duplicates.items())):
         indices, delete_indices = remove_total_duplicates(s, indices)

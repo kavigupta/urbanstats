@@ -3,6 +3,7 @@ import copy
 import gzip
 import json
 import os
+import shutil
 import urllib
 from datetime import datetime
 
@@ -12,6 +13,7 @@ import pytz
 import tqdm.auto as tqdm
 from permacache import permacache, stable_hash
 
+from urbanstats.games.quiz_columns import stats_to_display, types
 from urbanstats.geometry.relationship import states_for_all
 from urbanstats.geometry.shapefiles.shapefiles_list import (
     american_to_international,
@@ -30,6 +32,8 @@ from urbanstats.website_data.statistic_index_lists import index_list_for_longnam
 from urbanstats.website_data.table import shapefile_without_ordinals
 
 from .fixed import juxtastat as fixed_up_to
+from .quiz_columns import categories, stats, stats_to_display, types
+from .quiz_custom import get_custom_quizzes
 
 min_pop = 250_000
 min_pop_international = 2_500_000
@@ -227,8 +231,6 @@ def minimum_population(type):
 
 @permacache(f"urbanstats/games/quiz/generate_quiz_{version}")
 def generate_quiz(seed):
-    from .quiz_custom import get_custom_quizzes
-
     if isinstance(seed, tuple) and seed[0] == "daily":
         check_quiz_is_guaranteed_future(seed[1])
         cq = get_custom_quizzes()
@@ -305,8 +307,6 @@ def generate_quizzes(folder):
     path = lambda day: os.path.join(folder, f"{day}")
 
     for i in range(fixed_up_to + 1):
-        import shutil
-
         shutil.copy(f"quiz_old/{i}", path(i))
     for i in tqdm.trange(fixed_up_to + 1, 365 * 3):
         with open(path(i), "w") as f:
@@ -387,26 +387,6 @@ def type_ban_categorize(type):
     return type
 
 
-types = [
-    "City",
-    "County",
-    "MSA",
-    "State",
-    "Urban Area",
-    "Congressional District",
-    "Media Market",
-    "Judicial Circuit",
-    "Country",
-    "Subnational Region",
-    "Urban Center",
-]
-
-stats_to_display = {}
-
-
-for collection in statistic_collections:
-    stats_to_display.update(collection.quiz_question_names())
-
 renamed = {
     "higher housing units per adult": "housing_per_pop",
     "higher % of people who are born in the us outside their state of residence": "birthplace_us_not_state",
@@ -468,17 +448,3 @@ renamed = {
     "higher % of days with high temp under 40°F (population weighted)": "days_below_40_4",
     "higher % of people who were born in the us and born outside their state of residence": "birthplace_us_not_state",
 }
-
-not_included = set()
-
-for collection in statistic_collections:
-    not_included.update(collection.quiz_question_unused())
-
-stats = sorted(stats_to_display, key=str)
-categories = sorted({get_statistic_categories()[x] for x in stats})
-
-unrecognized = (set(stats) | set(not_included)) - set(internal_statistic_names())
-assert not unrecognized, unrecognized
-
-extras = set(internal_statistic_names()) - (set(stats) | set(not_included))
-assert not extras, extras

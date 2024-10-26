@@ -12,6 +12,7 @@ import us
 import xarray as xr
 from permacache import permacache
 
+from urbanstats.geometry.shapefiles.shapefiles.subnational_regions import STATES_USA
 from urbanstats.weather.global_bounding_boxes import global_bounding_boxes
 
 all_times = [
@@ -248,9 +249,7 @@ def precipitation_statistics(bounding_box, year, month):
 
 @permacache("urbanstats/weather/era5/bounding_boxes")
 def bounding_boxes():
-    from urbanstats.geometry.shapefiles.shapefiles_list import shapefiles
-
-    shape = shapefiles["states"].load_file().copy()
+    shape = STATES_USA.load_file().copy()
     shape["state"] = shape.shortname.apply(lambda x: us.states.lookup(x))
     shape = shape[shape.state != None]
     shape = shape[
