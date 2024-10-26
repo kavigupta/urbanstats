@@ -2,7 +2,6 @@ from urbanstats.geometry.shapefiles.shapefile import Shapefile
 from urbanstats.special_cases.country import countries
 from urbanstats.special_cases.country_names import iso_to_country
 
-
 COUNTRIES = Shapefile(
     hash_key="countries_9",
     path=countries,

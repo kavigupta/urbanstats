@@ -1,11 +1,12 @@
 from dataclasses import dataclass
-from cached_property import cached_property
 from typing import Dict, List, Tuple
+
 import numpy as np
 import pandas as pd
 import tqdm.auto as tqdm
-from scipy.sparse import csc_matrix
+from cached_property import cached_property
 from permacache import permacache, stable_hash
+from scipy.sparse import csc_matrix
 
 from urbanstats.statistics.output_statistics_metadata import internal_statistic_names
 
@@ -16,8 +17,6 @@ class OrdinalInfoForColumn:
     percentile: csc_matrix
     values: csc_matrix
 
-
-    
 
 @dataclass
 class OrdinalInfo:
@@ -93,6 +92,7 @@ class OrdinalInfo:
         row_idx = self.longname_to_idx[longname]
         col_idx = self.universe_type_to_idx[universe, typ]
         return self.by_column[col].percentile[row_idx, col_idx]
+
 
 def type_matches(table_type, t):
     if t == "overall":

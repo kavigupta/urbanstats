@@ -1,7 +1,5 @@
 from urbanstats.geometry.segregation import compute_homogenity_statistics
-from urbanstats.statistics.statistic_collection import (
-    CensusStatisticsColection,
-)
+from urbanstats.statistics.statistic_collection import CensusStatisticsColection
 
 homogeneity_explanation = (
     "!TOOLTIP We define racial homogeneity as the average probability a person selecing "

@@ -1,7 +1,6 @@
-from urbanstats.geometry.shapefiles.shapefile import Shapefile
-
-
 import us
+
+from urbanstats.geometry.shapefiles.shapefile import Shapefile
 
 
 def county_name(row):

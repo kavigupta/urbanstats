@@ -666,9 +666,11 @@ def compute_structure(rows):
         all_prev.extend(tier)
         result.update(
             {
-                j: relative(list(all_prev), tier_labels[i])
-                if len(tier) > 1
-                else constant(tier_labels[i])
+                j: (
+                    relative(list(all_prev), tier_labels[i])
+                    if len(tier) > 1
+                    else constant(tier_labels[i])
+                )
                 for j in tier
             }
         )

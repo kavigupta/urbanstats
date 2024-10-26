@@ -4,10 +4,14 @@ import os
 import shapely.geometry
 import tqdm.auto as tqdm
 
-from urbanstats.website_data.output_geometry import convert_to_protobuf
-from urbanstats.geometry.shapefiles.shapefiles_list import filter_table_for_type, load_file_for_type, shapefiles
+from urbanstats.geometry.shapefiles.shapefiles_list import (
+    filter_table_for_type,
+    load_file_for_type,
+    shapefiles,
+)
 from urbanstats.protobuf import data_files_pb2
 from urbanstats.protobuf.utils import write_gzip
+from urbanstats.website_data.output_geometry import convert_to_protobuf
 
 use = [
     "State",

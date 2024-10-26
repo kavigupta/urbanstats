@@ -1,9 +1,8 @@
+from collections import Counter
+
 import geopandas as gpd
 import pandas as pd
 from permacache import permacache
-
-
-from collections import Counter
 
 from urbanstats.geometry.shapefiles.shapefile import Shapefile
 from urbanstats.geometry.shapefiles.shapefiles.counties import COUNTIES

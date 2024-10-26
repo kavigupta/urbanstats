@@ -1,8 +1,7 @@
 import geopandas as gpd
-from urbanstats.geometry.shapefiles.shapefile import Shapefile
-
-
 import us
+
+from urbanstats.geometry.shapefiles.shapefile import Shapefile
 
 
 def render_ordinal(x):

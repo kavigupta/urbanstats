@@ -1,9 +1,8 @@
+from functools import lru_cache
+
 from urbanstats.geometry.shapefiles.shapefiles_list import shapefiles
 from urbanstats.statistics.collections_list import statistic_collections
 from urbanstats.statistics.output_statistics_metadata import internal_statistic_names
-
-
-from functools import lru_cache
 
 
 @lru_cache(maxsize=None)

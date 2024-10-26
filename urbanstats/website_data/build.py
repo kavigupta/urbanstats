@@ -2,27 +2,33 @@ import json
 import os
 import shutil
 
-from urbanstats.website_data.output_geometry import produce_all_geometry_json
-from urbanstats.website_data.create_article_gzips import create_article_gzips, extra_stats
-from urbanstats.geometry.relationship import map_relationships_by_type, ordering_idx as type_ordering_idx, type_to_type_category
+from urbanstats.consolidated_data.produce_consolidated_data import (
+    full_consolidated_data,
+    output_names,
+)
+from urbanstats.games.quiz import generate_quiz_info_for_website, generate_quizzes
+from urbanstats.games.retrostat import generate_retrostats
+from urbanstats.geometry.relationship import map_relationships_by_type
+from urbanstats.geometry.relationship import ordering_idx as type_ordering_idx
+from urbanstats.geometry.relationship import type_to_type_category
 from urbanstats.geometry.shapefiles.shapefiles_list import american_to_international
-from urbanstats.consolidated_data.produce_consolidated_data import full_consolidated_data, output_names
 from urbanstats.mapper.ramp import output_ramps
+from urbanstats.ordinals.ordering_info_outputter import output_ordering
 from urbanstats.special_cases import symlinks
 from urbanstats.statistics.collections.industry import IndustryStatistics
 from urbanstats.statistics.collections.occupation import OccupationStatistics
 from urbanstats.statistics.output_statistics_metadata import output_statistics_metadata
 from urbanstats.universe.annotate_universes import all_universes
 from urbanstats.universe.icons import place_icons_in_site_folder
+from urbanstats.website_data.create_article_gzips import (
+    create_article_gzips,
+    extra_stats,
+)
 from urbanstats.website_data.index import export_index
 from urbanstats.website_data.ordinals import all_ordinals
+from urbanstats.website_data.output_geometry import produce_all_geometry_json
 from urbanstats.website_data.statistic_index_lists import get_index_lists
 from urbanstats.website_data.table import shapefile_without_ordinals
-from urbanstats.games.quiz import generate_quizzes
-from urbanstats.games.retrostat import generate_retrostats
-from urbanstats.ordinals.ordering_info_outputter import output_ordering
-from urbanstats.games.quiz import generate_quiz_info_for_website
-
 
 
 def link_scripts_folder(site_folder, dev):
@@ -128,12 +134,13 @@ def build_urbanstats(
 
     if not no_data:
         if not no_data_jsons:
-            create_article_gzips(site_folder, shapefile_without_ordinals(), all_ordinals())
+            create_article_gzips(
+                site_folder, shapefile_without_ordinals(), all_ordinals()
+            )
 
         if not no_index:
             export_index(shapefile_without_ordinals(), site_folder)
 
-    
         output_ordering(site_folder, all_ordinals())
 
         full_consolidated_data(site_folder)
@@ -155,7 +162,6 @@ def build_urbanstats(
     shutil.copy("icons/main/share.png", f"{site_folder}/")
     shutil.copy("icons/main/screenshot.png", f"{site_folder}/")
     shutil.copy("icons/main/download.png", f"{site_folder}/")
-
 
     if not no_juxta:
         generate_quiz_info_for_website(site_folder)
