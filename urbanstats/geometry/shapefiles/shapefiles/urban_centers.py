@@ -1,4 +1,5 @@
 from urbanstats.geometry.shapefiles.shapefile import Shapefile
+from urbanstats.special_cases.ghsl_urban_center import load_ghsl_urban_center
 
 
 URBAN_CENTERS = Shapefile(

@@ -1,5 +1,6 @@
 import geopandas as gpd
 import pandas as pd
+import us
 import tqdm.auto as tqdm
 from permacache import permacache
 from urbanstats.geometry.shapefiles.shapefile import Shapefile

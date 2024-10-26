@@ -17,7 +17,7 @@ COUNTRIES = Shapefile(
 
 
 def countries_usa():
-    loaded_file = countries.load_file()
+    loaded_file = countries()
     loaded_file = loaded_file[loaded_file.longname.apply(lambda x: "USA" in x)]
     return loaded_file
 

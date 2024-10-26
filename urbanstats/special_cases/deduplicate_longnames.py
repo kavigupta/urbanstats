@@ -1,3 +1,4 @@
+import re
 from functools import lru_cache
 from permacache import permacache, stable_hash
 
