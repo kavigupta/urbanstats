@@ -1,8 +1,8 @@
-from functools import lru_cache
 import json
+from functools import lru_cache
 
-from .statistics_tree import statistics_tree
 from .collections_list import statistic_collections
+from .statistics_tree import statistics_tree
 
 
 @lru_cache(maxsize=1)

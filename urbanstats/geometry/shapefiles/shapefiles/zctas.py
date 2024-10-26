@@ -1,6 +1,5 @@
 from urbanstats.geometry.shapefiles.shapefile import Shapefile
 
-
 ZCTAs = Shapefile(
     hash_key="census_zctas",
     path="named_region_shapefiles/cb_2018_us_zcta510_500k.zip",

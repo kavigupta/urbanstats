@@ -26,14 +26,13 @@ E_x[v_x^T u_x] - E_x[v_x]^T E_x[u_x]
 
 from functools import lru_cache
 
-
 import numpy as np
 import pandas as pd
 from permacache import permacache
 
 from urbanstats.data.census_blocks import all_densities_gpd, load_raw_census
-from urbanstats.geometry.ellipse import locate_blocks
 from urbanstats.geometry.census_aggregation import aggregate_by_census_block
+from urbanstats.geometry.ellipse import locate_blocks
 from urbanstats.statistics.collections.census_2010 import race_names
 
 

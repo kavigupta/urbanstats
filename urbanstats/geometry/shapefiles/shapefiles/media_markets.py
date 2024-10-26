@@ -1,6 +1,5 @@
 from urbanstats.geometry.shapefiles.shapefile import Shapefile
 
-
 MEDIA_MARKETS = Shapefile(
     hash_key="media_markets_2",
     path="named_region_shapefiles/NatDMA.zip",

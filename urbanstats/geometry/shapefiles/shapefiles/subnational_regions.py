@@ -1,7 +1,6 @@
 from urbanstats.geometry.shapefiles.shapefile import Shapefile
 from urbanstats.special_cases.country import subnational_regions
 
-
 SUBNATIONAL_REGIONS = Shapefile(
     hash_key="subnational_regions_10",
     path=subnational_regions,

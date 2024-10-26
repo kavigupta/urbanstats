@@ -1,11 +1,11 @@
 import fire
 import tqdm.auto as tqdm
 
-from urbanstats.website_data.table import shapefile_without_ordinals
 from urbanstats.statistics.output_statistics_metadata import (
     get_statistic_categories,
     statistic_internal_to_display_name,
 )
+from urbanstats.website_data.table import shapefile_without_ordinals
 
 
 def csv_for(typ, category):

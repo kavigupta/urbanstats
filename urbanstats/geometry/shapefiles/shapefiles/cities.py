@@ -1,8 +1,6 @@
-from urbanstats.geometry.shapefiles.shapefile import Shapefile
-
-
 import us
 
+from urbanstats.geometry.shapefiles.shapefile import Shapefile
 
 CITIES = Shapefile(
     hash_key="census_places_6",

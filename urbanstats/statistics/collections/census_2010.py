@@ -1,13 +1,17 @@
 from abc import abstractmethod
+
 import numpy as np
 from permacache import permacache
 
-from urbanstats.data.census_blocks import RADII, all_densities_gpd, housing_units, racial_demographics
+from urbanstats.data.census_blocks import (
+    RADII,
+    all_densities_gpd,
+    housing_units,
+    racial_demographics,
+)
 from urbanstats.geometry.census_aggregation import aggregate_by_census_block
 from urbanstats.statistics.extra_statistics import HistogramSpec
-from urbanstats.statistics.statistic_collection import (
-    CensusStatisticsColection
-)
+from urbanstats.statistics.statistic_collection import CensusStatisticsColection
 
 DENSITY_EXPLANATION_AW = (
     "!TOOLTIP Area-weighted density is the total population divided by the total area."
@@ -92,7 +96,7 @@ class CensusForPreviousYear(CensusStatisticsColection):
         for k in table:
             suffix = f"_{year}"
             assert k.endswith(suffix)
-            k_fixed = self.ysk(k[:-len(suffix)])
+            k_fixed = self.ysk(k[: -len(suffix)])
 
             statistics_table[k_fixed] = table[k]
 

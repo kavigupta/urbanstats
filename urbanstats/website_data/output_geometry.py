@@ -5,12 +5,12 @@ import shapely
 import tqdm.auto as tqdm
 from permacache import permacache, stable_hash
 
-from urbanstats.website_data.sharding import create_filename
-from urbanstats.geometry.shapefiles.shapefiles_list import shapefiles
 from urbanstats.geometry.classify_coordinate_zone import classify_coordinate_zone
+from urbanstats.geometry.shapefiles.shapefiles_list import shapefiles
 from urbanstats.protobuf import data_files_pb2
 from urbanstats.protobuf.utils import write_gzip
 from urbanstats.special_cases.simplified_country import all_simplified_countries
+from urbanstats.website_data.sharding import create_filename
 from urbanstats.website_data.table import shapefile_without_ordinals
 
 

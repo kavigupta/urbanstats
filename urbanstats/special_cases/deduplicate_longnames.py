@@ -1,9 +1,8 @@
 import re
 from functools import lru_cache
-from permacache import permacache, stable_hash
-
 
 import tqdm.auto as tqdm
+from permacache import permacache, stable_hash
 
 
 def strip_suffix(name):

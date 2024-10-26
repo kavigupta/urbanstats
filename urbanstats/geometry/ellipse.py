@@ -1,4 +1,5 @@
 from collections import defaultdict
+
 import numpy as np
 import tqdm.auto as tqdm
 from permacache import permacache, stable_hash

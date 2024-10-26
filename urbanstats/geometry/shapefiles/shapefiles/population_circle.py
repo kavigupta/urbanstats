@@ -1,7 +1,6 @@
 from urbanstats.data.circle import circle_shapefile_object, named_populations
 from urbanstats.geometry.shapefiles.shapefiles.countries import COUNTRIES
 
-
 population_circles_shapefiles = {}
 population_circles_usa_shapefiles = {}
 population_circles_usa_to_international = {}

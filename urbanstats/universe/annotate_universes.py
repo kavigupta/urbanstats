@@ -4,8 +4,12 @@ from functools import lru_cache
 import us
 from permacache import permacache
 
-from urbanstats.geometry.relationship import continents_for_all, non_us_countries_for_all, states_for_all
 from urbanstats.data.circle import pc_types
+from urbanstats.geometry.relationship import (
+    continents_for_all,
+    non_us_countries_for_all,
+    states_for_all,
+)
 from urbanstats.special_cases.country import continent_names
 
 from .universe_constants import CONTINENTS, COUNTRIES
@@ -67,6 +71,7 @@ def attach_intl_universes(intl):
 @permacache("urbanstats/universe/annotate_universes/country_names_3")
 def country_names():
     from urbanstats.geometry.shapefiles.shapefiles_list import shapefiles
+
     # TODO update references
 
     return list(shapefiles["countries"].load_file().longname)

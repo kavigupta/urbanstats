@@ -1,5 +1,6 @@
 import geopandas as gpd
 from permacache import permacache
+
 from urbanstats.geometry.shapefiles.shapefile import Shapefile
 
 
