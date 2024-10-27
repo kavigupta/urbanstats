@@ -102,7 +102,7 @@ def light(time, latitude, longitude):
 
     date = np.array(time)
 
-    assert ((date[1:] - date[:-1]).astype(np.int) == hour).all()
+    assert ((date[1:] - date[:-1]).astype(np.int64) == hour).all()
 
     date, lat, lon = date_grid(latitude, longitude, date)
 
@@ -221,7 +221,7 @@ def precipitation_statistics(bounding_box, year, month):
         precipitation_type = np.array(ds.ptype)
 
         valid_time = np.array(ds.valid_time)
-        month_each = valid_time.astype("datetime64[M]").astype(np.int) % 12 + 1
+        month_each = valid_time.astype("datetime64[M]").astype(np.int64) % 12 + 1
         time_mask = month_each == int(month)
 
     total_precip = total_precip[time_mask]

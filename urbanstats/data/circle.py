@@ -203,6 +203,8 @@ def clear_location(map, r, y, x):
     tl_y = max(0, int(y - ry))
     br_x = min(map.shape[1], int(x + rx + 1))
     br_y = min(map.shape[0], int(y + ry + 1))
+    # no idea why this is necessary
+    # pylint: disable=unpacking-non-sequence
     xs, ys = np.meshgrid(
         np.arange(tl_x, br_x),
         np.arange(tl_y, br_y),

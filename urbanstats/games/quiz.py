@@ -446,7 +446,6 @@ renamed = {
     "!FULL Which has more hours of sun per day on average?": "hours_sunny_4",
     "higher rainfall": "rainfall_4",
     "higher mean daily high temperature": "mean_high_temp_4",
-    "!FULL Which has more hours of sun per day on average?": "hours_sunny_4",
     "higher % of days with high temp < 40": "days_below_40_4",
     "higher % of days with high temp under 40°F (population weighted)": "days_below_40_4",
     "higher % of people who were born in the us and born outside their state of residence": "birthplace_us_not_state",

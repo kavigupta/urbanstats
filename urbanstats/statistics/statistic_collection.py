@@ -175,7 +175,8 @@ class ACSUSPRStatisticsColection(StatisticCollection):
         return False
 
     def compute_statistics(self, shapefile, statistics_table, shapefile_table):
-        for entity_us, entity_pr in self.acs_entity_dict().values():
+        for entities in self.acs_entity_dict().values():
+            entity_us, entity_pr = entities
             acs_data = aggregated_acs_data_us_pr(
                 self.year(), entity_us, entity_pr, shapefile
             )

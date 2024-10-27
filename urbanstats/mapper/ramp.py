@@ -38,6 +38,7 @@ def ramp_obj_to_list(ramp_obj):
     The float is the position in the colormap, and the tuple is the RGBA value
     at that position.
     """
+    # pylint: disable=protected-access
     assert isinstance(ramp_obj, mpl.colors.LinearSegmentedColormap)
 
     if callable(ramp_obj._segmentdata["red"]) or len(ramp_obj._segmentdata["red"]) < 10:
@@ -70,7 +71,7 @@ def interpolate_ramp(ramp, relative_pos):
     # pylint: disable=consider-using-f-string
     return "#%02x%02x%02x" % tuple(
         ((y1 * (x2 - relative_pos) + y2 * (relative_pos - x1)) / (x2 - x1)).astype(
-            np.int
+            np.int64
         )
     )
 

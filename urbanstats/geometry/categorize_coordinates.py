@@ -4,4 +4,4 @@ GRANULARITY = 0.05
 
 
 def categorize(coordinates):
-    return (coordinates // GRANULARITY).astype(np.int)
+    return (coordinates // GRANULARITY).astype(np.int64)
