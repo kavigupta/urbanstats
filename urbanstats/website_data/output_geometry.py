@@ -33,9 +33,9 @@ def produce_shape_gzip_cached(r, path):
 
 
 def produce_all_geometry_json(path, valid_names):
-    for k in shapefiles:
+    for k, sf_k in shapefiles.items():
         print(k)
-        table = shapefiles[k].load_file()
+        table = sf_k.load_file()
         for i in tqdm.trange(table.shape[0]):
             if table.iloc[i].longname in valid_names:
                 produce_shape_gzip(path, table.iloc[i])

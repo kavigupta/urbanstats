@@ -45,10 +45,10 @@ class NHTSAAccidentStatistics(USAStatistics):
         pop = population_by_year(shapefile, no_pr=True)
         acc_per_cap_all = {
             y: {
-                k: acc_raw_all[y][k] / compute_population(pop, y)
-                for k in acc_raw_all[y]
+                k: for_year_and_key / compute_population(pop, y)
+                for k, for_year_and_key in for_year.items()
             }
-            for y in acc_raw_all
+            for y, for_year in acc_raw_all.items()
         }
         last_decade = sorted(acc_raw_all)[-10:]
         for prefix, key in [

@@ -73,12 +73,12 @@ def continents_for_all():
                 v = ["North America"]
             if k == "HI-HD051, USA":
                 v = ["Oceania"]
-            if (
-                k == "ME-HD119, USA"
-                or k == "OH-HD013, USA"
-                or k == "Inalik ANVSA, USA"
-                or k == "Lesnoi ANVSA, USA"
-            ):
+            if k in [
+                "ME-HD119, USA",
+                "OH-HD013, USA",
+                "Inalik ANVSA, USA",
+                "Lesnoi ANVSA, USA",
+            ]:
                 v = ["North America"]
             if k == "Venice Urban Center, Italy":
                 v = ["Europe"]
@@ -386,7 +386,7 @@ type_category_order = {
 
 is_american = {k: v.american for k, v in shapefiles_for_stats.items()}
 
-key_to_type = {x: shapefiles_for_stats[x].meta["type"] for x in shapefiles_for_stats}
+key_to_type = {x: sf.meta["type"] for x, sf in shapefiles_for_stats.items()}
 
 map_relationships = [
     ("states", "counties"),

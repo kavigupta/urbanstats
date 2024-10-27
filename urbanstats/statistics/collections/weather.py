@@ -76,7 +76,7 @@ def weather_by_region(shapefile):
 
     weather_block = weather_block_statistics()
     result = {}
-    for k in weather_block:
-        result[k] = weather_block[k] * popu
+    for k, wb_k in weather_block.items():
+        result[k] = wb_k * popu
 
     return aggregate_by_census_block(2020, shapefile, pd.DataFrame(result))

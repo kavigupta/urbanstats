@@ -13,7 +13,7 @@ def county_name(row):
 COUNTIES = Shapefile(
     hash_key="census_counties_7",
     path="named_region_shapefiles/cb_2022_us_county_500k.zip",
-    shortname_extractor=lambda x: county_name(x),
+    shortname_extractor=county_name,
     longname_extractor=lambda x: county_name(x)
     + ", "
     + us.states.lookup(x["STATEFP"]).name

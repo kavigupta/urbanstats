@@ -95,7 +95,7 @@ def generate_retrostat(retrostat_week):
                 "b_ease": qdata[j]["ease"],
             }
         )
-        qdata = [x for idx, x in enumerate(qdata) if idx != i and idx != j]
+        qdata = [x for idx, x in enumerate(qdata) if idx not in [i, j]]
     return out
 
 
