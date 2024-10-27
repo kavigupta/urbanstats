@@ -17,7 +17,10 @@ from urbanstats.ordinals.ordering_info_outputter import output_ordering
 from urbanstats.special_cases import symlinks
 from urbanstats.statistics.collections.industry import IndustryStatistics
 from urbanstats.statistics.collections.occupation import OccupationStatistics
-from urbanstats.statistics.output_statistics_metadata import output_statistics_metadata
+from urbanstats.statistics.output_statistics_metadata import (
+    internal_statistic_names,
+    output_statistics_metadata,
+)
 from urbanstats.universe.annotate_universes import all_universes
 from urbanstats.universe.icons import place_icons_in_site_folder
 from urbanstats.website_data.create_article_gzips import (
@@ -67,7 +70,10 @@ def create_react_jsons():
 
     with open("react/src/data/extra_stats.json", "w") as f:
         json.dump(
-            [(k, v.extra_stat_spec()) for k, v in sorted(extra_stats().items())],
+            [
+                (k, v.extra_stat_spec(list(internal_statistic_names())))
+                for k, v in sorted(extra_stats().items())
+            ],
             f,
         )
 
