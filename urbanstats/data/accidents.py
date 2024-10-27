@@ -85,18 +85,19 @@ def pedestrian_fatalities_by_case(year):
 
 
 def pull_data(year, substr):
-    f = io.BytesIO(
+    bytes_f = io.BytesIO(
         requests.get(
             f"https://static.nhtsa.gov/nhtsa/downloads/FARS/{year}/National/FARS{year}NationalCSV.zip"
         ).content
     )
-    f = zipfile.ZipFile(f)
-    paths = [x for x in f.namelist() if substr in x.lower()]
-    if len(paths) == 1:
-        accident_path = paths[0]
-    else:
-        raise ValueError(f"Could not find {substr} file in {paths}")
-    acc = pd.read_csv(f.open(accident_path), encoding="latin-1")
+    with zipfile.ZipFile(bytes_f) as zipf:
+        paths = [x for x in zipf.namelist() if substr in x.lower()]
+        if len(paths) == 1:
+            accident_path = paths[0]
+        else:
+            raise ValueError(f"Could not find {substr} file in {paths}")
+        with zipf.open(accident_path) as f:
+            acc = pd.read_csv(f, encoding="latin-1")
     return acc
 
 

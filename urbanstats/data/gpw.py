@@ -24,9 +24,7 @@ GPW_LAND_PATH = (
 
 @lru_cache(maxsize=None)
 def load_file(prefix, path, tag):
-    with zipfile.ZipFile(path) as f:
-        x = f.open(f"{prefix}{tag}.asc").read().decode("utf-8")
-        x = x.split("\r\n")
+    x = read_asc_file(prefix, path, tag)
 
     assert x.pop(-1) == ""
 
@@ -57,6 +55,14 @@ def load_file(prefix, path, tag):
         cellsize=cellsize,
         data=data,
     )
+
+
+def read_asc_file(prefix, path, tag):
+    with zipfile.ZipFile(path) as zipf:
+        with zipf.open(f"{prefix}{tag}.asc") as f:
+            x = f.read().decode("utf-8")
+        x = x.split("\r\n")
+    return x
 
 
 def load(prefix, path):

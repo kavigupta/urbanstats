@@ -55,7 +55,7 @@ def create_react_jsons():
     output_statistics_metadata()
 
     with open("react/src/data/universes_ordered.json", "w") as f:
-        json.dump(list([name for name in all_universes()]), f)
+        json.dump(list(all_universes()), f)
     with open("react/src/data/explanation_industry_occupation_table.json", "w") as f:
         json.dump(
             {

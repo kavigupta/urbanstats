@@ -159,7 +159,7 @@ class ACSDataEntity:
         used_labels = {x for xs in self._categories.values() for x in xs}
         assert all_labels - used_labels == set(), sorted(all_labels - used_labels)
         assert used_labels - all_labels == set(), sorted(used_labels - all_labels)
-        return {k: v for k, v in var_for_concept.items()}
+        return dict(var_for_concept.items())
 
     @property
     def categories(self):

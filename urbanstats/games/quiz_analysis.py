@@ -73,7 +73,10 @@ def get_full_statistics(*, after_problem, debug=False):
 def get_dau(after_problem=49, radius=14):
     result = get_full_statistics(after_problem=after_problem, debug=False)
     num_users_by_problem = result.groupby("problem").count().user_id
-    is_valid_day = lambda x: quiz_is_guaranteed_past(x) is None and x > after_problem
+
+    def is_valid_day(x):
+        return quiz_is_guaranteed_past(x) is None and x > after_problem
+
     mask = [is_valid_day(x) for x in num_users_by_problem.index]
     xs, ys = num_users_by_problem.index[mask], num_users_by_problem[mask]
     ys_rolling = [ys[(x - radius <= xs) & (xs <= x + radius)].median() for x in xs]

@@ -22,7 +22,7 @@ NATIVE_STATISTICAL_AREAS = Shapefile(
     path="named_region_shapefiles/cb_2022_us_aiannh_500k.zip",
     shortname_extractor=lambda x: f"{x.NAMELSAD}",
     longname_extractor=lambda x: f"{x.NAMELSAD}, USA",
-    filter=lambda x: is_native_statistical_area(x),
+    filter=is_native_statistical_area,
     meta=dict(type="Native Statistical Area", source="Census", type_category="Native"),
 )
 NATIVE_SUBDIVISIONS = Shapefile(
