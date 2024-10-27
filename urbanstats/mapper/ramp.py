@@ -1,5 +1,4 @@
 import json
-import os
 
 import matplotlib as mpl
 import matplotlib.pyplot as plt
@@ -82,11 +81,6 @@ def plot_ramp(y, ramp, segments=101):
     plt.scatter(xs, [y for _ in colors], c=colors, s=100)
 
 
-def output_ramps():
-    mapper_folder = "react/src/data/mapper"
-    try:
-        os.makedirs(mapper_folder)
-    except FileExistsError:
-        pass
+def output_ramps(mapper_folder):
     with open(f"{mapper_folder}/ramps.json", "w") as f:
         json.dump(get_all_ramps(), f)

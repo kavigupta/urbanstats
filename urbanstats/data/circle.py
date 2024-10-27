@@ -1,8 +1,6 @@
-import uuid
 from collections import Counter, defaultdict
 from colorsys import hsv_to_rgb
 from dataclasses import dataclass
-from types import SimpleNamespace
 from typing import List
 
 import geopandas as gpd
@@ -16,8 +14,8 @@ from matplotlib import pyplot as plt
 from permacache import drop_if_equal, permacache, stable_hash
 from PIL import Image
 
-from urbanstats.data.gpw import compute_gpw_data_for_shapefile, load_full_ghs
-from urbanstats.data.population_overlays import relevant_regions
+from urbanstats.data.gpw import load_full_ghs
+from urbanstats.data.population_overlays import direct_population_overlay, relevant_regions
 
 
 class MapDataset:
@@ -433,15 +431,7 @@ def attach_urban_centers_to_frame(frame):
 
     urban_center_shapefile = URBAN_CENTERS.load_file()
     urban_center_shapefile.index = urban_center_shapefile.longname
-    overlays = gpd.overlay(frame, urban_center_shapefile)
-    res, _ = compute_gpw_data_for_shapefile.function(
-        SimpleNamespace(
-            load_file=lambda: overlays, hash_key="overlays " + uuid.uuid4().hex
-        ),
-        collect_density=False,
-        log=False,
-    )
-    overlays["population"] = res["gpw_population"]
+    overlays = direct_population_overlay(frame, urban_center_shapefile)
 
     circle_id_to_overlays = defaultdict(list)
     for circle_id, index in zip(overlays.id, overlays.index):

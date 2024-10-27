@@ -71,8 +71,14 @@ def create_react_jsons():
             f,
         )
 
-    output_names()
-    output_ramps()
+    mapper_folder = "react/src/data/mapper"
+    try:
+        os.makedirs(mapper_folder)
+    except FileExistsError:
+        pass
+
+    output_names(mapper_folder)
+    output_ramps(mapper_folder)
 
     with open("react/src/data/index_lists.json", "w") as f:
         json.dump(get_index_lists(), f)

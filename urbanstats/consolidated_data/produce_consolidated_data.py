@@ -96,11 +96,6 @@ def full_consolidated_data(folder):
         produce_results_for_type(folder, typ)
 
 
-def output_names():
-    mapper_folder = "react/src/data/mapper"
-    try:
-        os.makedirs(mapper_folder)
-    except FileExistsError:
-        pass
+def output_names(mapper_folder):
     with open(f"{mapper_folder}/used_geographies.json", "w") as f:
         json.dump(use, f)
