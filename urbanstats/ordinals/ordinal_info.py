@@ -201,7 +201,12 @@ def fully_complete_ordinals(sorted_by_name, universe_typ):
             stat_col: compute_ordinal_info(
                 universe_type_masks,
                 universe_typ,
-                sorted_by_name[[stat_col, "best_population_estimate"]],
+                pd.DataFrame(
+                    {
+                        stat_col: sorted_by_name[stat_col],
+                        "best_population_estimate": sorted_by_name.best_population_estimate,
+                    }
+                ),
                 stat_col,
             )
             for stat_col in tqdm.tqdm(internal_statistic_names())
