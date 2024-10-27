@@ -448,7 +448,7 @@ disable=raw-checker-failed,
         ## i like using classes as namespaces/structs
         too-few-public-methods,too-many-instance-attributes,
         ## these need to be fixed at some point. here to make the build pass
-        cyclic-import,R0801,import-outside-toplevel,unnecessary-comprehension,
+        cyclic-import,R0801,import-outside-toplevel,
         no-else-return,missing-timeout,fixme,
         subprocess-run-check,unsubscriptable-object,redefined-builtin,
         singleton-comparison,redefined-outer-name,dangerous-default-value,unnecessary-lambda-assignment,

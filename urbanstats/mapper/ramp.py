@@ -21,9 +21,7 @@ def get_pyplot_ramps():
         ramp_name = ramp_name[0].upper() + ramp_name[1:]
         pyplot_ramps[ramp_name] = ramp_obj_to_list(ramp_obj)
 
-    pyplot_ramps = {
-        k: v for k, v in sorted(pyplot_ramps.items(), key=lambda x: x[0].lower())
-    }
+    pyplot_ramps = dict(sorted(pyplot_ramps.items(), key=lambda x: x[0].lower()))
     return pyplot_ramps
 
 
