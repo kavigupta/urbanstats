@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from typing import Dict, List, Tuple
 
 import numpy as np
+import pandas as pd
 import tqdm.auto as tqdm
 from cached_property import cached_property
 from permacache import permacache, stable_hash
