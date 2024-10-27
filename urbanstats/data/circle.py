@@ -1,8 +1,6 @@
-import uuid
 from collections import Counter, defaultdict
 from colorsys import hsv_to_rgb
 from dataclasses import dataclass
-from types import SimpleNamespace
 from typing import List
 
 import geopandas as gpd
@@ -16,8 +14,8 @@ from matplotlib import pyplot as plt
 from permacache import drop_if_equal, permacache, stable_hash
 from PIL import Image
 
-from urbanstats.data.gpw import compute_gpw_data_for_shapefile, load_full_ghs
-from urbanstats.data.population_overlays import relevant_regions
+from urbanstats.data.gpw import load_full_ghs
+from urbanstats.data.population_overlays import direct_population_overlay, relevant_regions
 
 
 class MapDataset:
@@ -64,6 +62,7 @@ class MapDataset:
                     pop[ban_each > 0] = -np.inf
             if pop.max() > P:
                 return (y, pop.argmax())
+        return None
 
     def binary_search(self, P, low, high=None, *, eps=0.25):
         value = (low + high) / 2 if high else low * 2
@@ -204,6 +203,8 @@ def clear_location(map, r, y, x):
     tl_y = max(0, int(y - ry))
     br_x = min(map.shape[1], int(x + rx + 1))
     br_y = min(map.shape[0], int(y + ry + 1))
+    # no idea why this is necessary
+    # pylint: disable=unpacking-non-sequence
     xs, ys = np.meshgrid(
         np.arange(tl_x, br_x),
         np.arange(tl_y, br_y),
@@ -432,19 +433,28 @@ def attach_urban_centers_to_frame(frame):
 
     urban_center_shapefile = URBAN_CENTERS.load_file()
     urban_center_shapefile.index = urban_center_shapefile.longname
-    overlays = gpd.overlay(frame, urban_center_shapefile)
-    res, _ = compute_gpw_data_for_shapefile.function(
-        SimpleNamespace(
-            load_file=lambda: overlays, hash_key="overlays " + uuid.uuid4().hex
-        ),
-        collect_density=False,
-        log=False,
-    )
-    overlays["population"] = res["gpw_population"]
+    overlays = direct_population_overlay(frame, urban_center_shapefile)
 
     circle_id_to_overlays = defaultdict(list)
     for circle_id, index in zip(overlays.id, overlays.index):
         circle_id_to_overlays[circle_id].append(index)
+    by_circle_id, bad = compute_names_for_each_circle(
+        frame, overlays, circle_id_to_overlays
+    )
+
+    assert not bad, bad
+
+    frame["name"] = by_circle_id
+
+    long_to_short = dict(
+        zip(urban_center_shapefile.longname, urban_center_shapefile.shortname)
+    )
+    for _, _, manual_name in manual_circle_names:
+        long_to_short[manual_name] = manual_name
+    return frame, long_to_short
+
+
+def compute_names_for_each_circle(frame, overlays, circle_id_to_overlays):
     used = set()
     by_circle_id = []
     bad = []
@@ -471,17 +481,7 @@ def attach_urban_centers_to_frame(frame):
             name = overlays.longname.iloc[overlay_idxs[0]]
         used.add(name)
         by_circle_id.append(name)
-
-    assert not bad, bad
-
-    frame["name"] = by_circle_id
-
-    long_to_short = dict(
-        zip(urban_center_shapefile.longname, urban_center_shapefile.shortname)
-    )
-    for _, _, manual_name in manual_circle_names:
-        long_to_short[manual_name] = manual_name
-    return frame, long_to_short
+    return by_circle_id, bad
 
 
 def specify_duplicates(frame, long_to_short):

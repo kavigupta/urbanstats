@@ -5,8 +5,8 @@ population_circles_shapefiles = {}
 population_circles_usa_shapefiles = {}
 population_circles_usa_to_international = {}
 
-for population in named_populations:
-    key = f"population_circle_{named_populations[population]}"
+for population, name in named_populations.items():
+    key = f"population_circle_{name}"
     intl = circle_shapefile_object(COUNTRIES, population, just_usa=False)
     population_circles_shapefiles[key] = intl
     us = circle_shapefile_object(COUNTRIES, population, just_usa=True)

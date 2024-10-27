@@ -1,3 +1,4 @@
+# pylint: disable=line-too-long,too-many-lines
 symlinks_from_country_rename = {
     "Ab Pakhsh Urban Center, Iran, Islamic Republic of": "Ab Pakhsh Urban Center, Iran",
     "Abadan Urban Center, Iran, Islamic Republic of": "Abadan Urban Center, Iran",

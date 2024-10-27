@@ -76,15 +76,7 @@ def query_acs_for_state(keys, state_fips, geography_level):
 def query_acs(
     keys, categories, var_for_concept, geography_level, *, replace_negatives_with_nan
 ):
-    all_data = []
-    for state in tqdm.tqdm(us.states.STATES + [us.states.DC, us.states.PR]):
-        all_data.append(query_acs_for_state(keys, state.fips, geography_level))
-    header = all_data[0][0]
-    for data in all_data:
-        assert data[0] == header
-    data = pd.DataFrame([row for data in all_data for row in data[1:]], columns=header)
-    for key in keys:
-        data[key] = pd.to_numeric(data[key])
+    data = query_acs_direct(keys, geography_level)
 
     label_to_column = {v["label"]: k for k, v in var_for_concept.items()}
     result = {col: data[col] for col in data if col not in keys}
@@ -97,6 +89,20 @@ def query_acs(
             for_category += for_key
         result[category] = for_category
     return pd.DataFrame(result)
+
+
+def query_acs_direct(keys, geography_level):
+    all_data = []
+    for state in tqdm.tqdm(us.states.STATES + [us.states.DC, us.states.PR]):
+        all_data.append(query_acs_for_state(keys, state.fips, geography_level))
+    header = all_data[0][0]
+    for data in all_data:
+        assert data[0] == header
+    data = pd.DataFrame([row for data in all_data for row in data[1:]], columns=header)
+    for key in keys:
+        data[key] = pd.to_numeric(data[key])
+
+    return data
 
 
 def disaggregate_to_blocks(
@@ -153,7 +159,7 @@ class ACSDataEntity:
         used_labels = {x for xs in self._categories.values() for x in xs}
         assert all_labels - used_labels == set(), sorted(all_labels - used_labels)
         assert used_labels - all_labels == set(), sorted(used_labels - all_labels)
-        return {k: v for k, v in var_for_concept.items()}
+        return dict(var_for_concept.items())
 
     @property
     def categories(self):

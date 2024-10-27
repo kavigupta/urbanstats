@@ -55,7 +55,7 @@ def create_react_jsons():
     output_statistics_metadata()
 
     with open("react/src/data/universes_ordered.json", "w") as f:
-        json.dump(list([name for name in all_universes()]), f)
+        json.dump(list(all_universes()), f)
     with open("react/src/data/explanation_industry_occupation_table.json", "w") as f:
         json.dump(
             {
@@ -71,8 +71,14 @@ def create_react_jsons():
             f,
         )
 
-    output_names()
-    output_ramps()
+    mapper_folder = "react/src/data/mapper"
+    try:
+        os.makedirs(mapper_folder)
+    except FileExistsError:
+        pass
+
+    output_names(mapper_folder)
+    output_ramps(mapper_folder)
 
     with open("react/src/data/index_lists.json", "w") as f:
         json.dump(get_index_lists(), f)
@@ -96,6 +102,7 @@ def build_react_site(site_folder, dev):
 
 def build_urbanstats(
     site_folder,
+    *,
     no_geo=False,
     no_data=False,
     no_juxta=False,

@@ -12,7 +12,7 @@ def csv_for(typ, category):
     result = shapefile_without_ordinals().set_index("longname")
     stats_to_use = [x for x, y in get_statistic_categories().items() if y == category]
     result_for_type = result[result.type == typ]
-    return result_for_type[[x for x in stats_to_use]].rename(
+    return result_for_type[stats_to_use].rename(
         columns={x: statistic_internal_to_display_name()[x] for x in stats_to_use}
     )
 

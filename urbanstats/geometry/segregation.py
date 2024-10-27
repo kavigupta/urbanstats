@@ -81,6 +81,7 @@ def local_segregation_by_block(year, radius_small, radius_large):
     key_function=dict(shapefile=lambda x: x.hash_key),
 )
 def compute_homogenity_info_by_shapefile(year, radius_small, radius_large, shapefile):
+    # pylint: disable=too-many-locals
     census_pop = all_densities_gpd(year).population
 
     print("Aggregating homogenity info", shapefile.hash_key)

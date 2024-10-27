@@ -68,6 +68,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+      - name: Lint with pylint
+        run: python -m pylint --prefer-stubs=true urbanstats
       - name: Check black
         run: python -m isort urbanstats; python -m black urbanstats; bash -c '[ $(git status --porcelain --untracked-files=no | wc -c) -eq 0 ]  || (git status; git diff; exit 1)'
 

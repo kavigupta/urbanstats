@@ -32,21 +32,18 @@ def states_for_all():
         "PA-HD001, USA": "Pennsylvania, USA",
         "RI-HD075, USA": "Rhode Island, USA",
     }
-    for u in shapefiles_for_stats:
-        for k, v in states_for(shapefiles_for_stats[u]).items():
+    for u, u_shapefile in shapefiles_for_stats.items():
+        for k, v in states_for(u_shapefile).items():
             if skippable_edge_case(k):
                 continue
             if k in one_offs:
                 systematics[k] = [one_offs[k]]
             else:
                 systematics[k] = v
-            if (
-                shapefiles_for_stats[u].american
-                and not shapefiles_for_stats[u].tolerate_no_state
-            ):
+            if u_shapefile.american and not u_shapefile.tolerate_no_state:
                 if len(systematics[k]) == 0:
                     print("Error on ", k, " in ", u)
-                    print("shapefile: ", shapefiles_for_stats[u])
+                    print("shapefile: ", u_shapefile)
                     print("systematics: ", systematics[k])
                     raise ValueError
                 assert len(systematics[k]) >= 1, (u, k)
@@ -56,9 +53,9 @@ def states_for_all():
 @lru_cache(maxsize=1)
 def continents_for_all():
     systematics = {}
-    for u in shapefiles_for_stats:
+    for _, u_shapefile in shapefiles_for_stats.items():
         for k, v in contained_in(
-            shapefiles_for_stats[u],
+            u_shapefile,
             shapefiles_for_stats["continents"],
             only_american=False,
             only_nonamerican=False,
@@ -76,12 +73,12 @@ def continents_for_all():
                 v = ["North America"]
             if k == "HI-HD051, USA":
                 v = ["Oceania"]
-            if (
-                k == "ME-HD119, USA"
-                or k == "OH-HD013, USA"
-                or k == "Inalik ANVSA, USA"
-                or k == "Lesnoi ANVSA, USA"
-            ):
+            if k in [
+                "ME-HD119, USA",
+                "OH-HD013, USA",
+                "Inalik ANVSA, USA",
+                "Lesnoi ANVSA, USA",
+            ]:
                 v = ["North America"]
             if k == "Venice Urban Center, Italy":
                 v = ["Europe"]
@@ -101,9 +98,9 @@ def continents_for_all():
 @lru_cache(maxsize=1)
 def non_us_countries_for_all():
     systematics = {}
-    for u in shapefiles_for_stats:
+    for _, u_shapefile in shapefiles_for_stats.items():
         for k, v in contained_in(
-            shapefiles_for_stats[u],
+            u_shapefile,
             shapefiles_for_stats["countries"],
             only_american=False,
             only_nonamerican=True,
@@ -200,12 +197,7 @@ def create_relationships(x, y):
     """
     Get the relationships between the two shapefiles x and y
     """
-    a = x.load_file()
-    b = y.load_file()
-    over = overlays(a, b, x.chunk_size, y.chunk_size)
-    a_area = dict(zip(a.longname, a.geometry.to_crs("EPSG:2163").area))
-    b_area = dict(zip(b.longname, b.geometry.to_crs("EPSG:2163").area))
-    over_area = over["area"]
+    over = compute_overlays_with_areas(x, y)
 
     a_contains_b = set()
     b_contains_a = set()
@@ -213,21 +205,18 @@ def create_relationships(x, y):
     borders = set()
     for i in range(over.shape[0]):
         row = over.iloc[i]
-        area_1 = a_area[row.longname_1]
-        area_2 = b_area[row.longname_2]
-        area_over = over_area[i]
-        # print(row.longname_1, row.longname_2, area_over / area_1, area_over / area_2)
+        area_over = over.area[i]
         contains = False
         tolerance = 0.05
-        if area_over >= area_2 * (1 - tolerance):
+        if area_over >= row.b_area * (1 - tolerance):
             contains = True
             a_contains_b.add((row.longname_1, row.longname_2))
-        if area_over >= area_1 * (1 - tolerance):
+        if area_over >= row.a_area * (1 - tolerance):
             contains = True
             b_contains_a.add((row.longname_1, row.longname_2))
         if contains:
             pass
-        elif area_over >= min(area_1, area_2) * tolerance:
+        elif area_over >= min(row.a_area, row.b_area) * tolerance:
             intersects.add((row.longname_1, row.longname_2))
         else:
             borders.add((row.longname_1, row.longname_2))
@@ -238,6 +227,17 @@ def create_relationships(x, y):
     borders = sorted(borders)
 
     return a_contains_b, b_contains_a, intersects, borders
+
+
+def compute_overlays_with_areas(x, y):
+    a = x.load_file()
+    b = y.load_file()
+    over = overlays(a, b, x.chunk_size, y.chunk_size)
+    a_area = dict(zip(a.longname, a.geometry.to_crs("EPSG:2163").area))
+    b_area = dict(zip(b.longname, b.geometry.to_crs("EPSG:2163").area))
+    over["a_area"] = over.longname_1.map(lambda x: a_area[x])
+    over["b_area"] = over.longname_2.map(lambda x: b_area[x])
+    return over
 
 
 @permacache(
@@ -305,18 +305,13 @@ def create_relationships_historical_cd(x, y):
     borders = set()
     for i in tqdm.trange(len(related)):
         row = related.iloc[i]
-        left_cong = re.match(".*\[(.*)\]", row.shortname_left).group(1)
-        right_cong = re.match(".*\[(.*)\]", row.shortname_right).group(1)
+        left_cong = re.match(r".*\[(.*)\]", row.shortname_left).group(1)
+        right_cong = re.match(r".*\[(.*)\]", row.shortname_right).group(1)
         if left_cong == right_cong:
             borders.add((row.longname_left, row.longname_right))
         else:
             intersects.add((row.longname_left, row.longname_right))
     return set(), set(), intersects, borders
-
-
-def add(d, edges):
-    for x, y in edges:
-        d[x].add(y)
 
 
 tiers = [
@@ -391,7 +386,7 @@ type_category_order = {
 
 is_american = {k: v.american for k, v in shapefiles_for_stats.items()}
 
-key_to_type = {x: shapefiles_for_stats[x].meta["type"] for x in shapefiles_for_stats}
+key_to_type = {x: sf.meta["type"] for x, sf in shapefiles_for_stats.items()}
 
 map_relationships = [
     ("states", "counties"),
@@ -462,62 +457,9 @@ def full_relationships(long_to_type):
     ),
 )
 def relationships_for_list(long_to_type, shapefiles_to_use):
-    contains, contained_by, intersects, borders = (
-        defaultdict(set),
-        defaultdict(set),
-        defaultdict(set),
-        defaultdict(set),
+    contains, contained_by, intersects, borders = compute_all_relationships(
+        long_to_type, shapefiles_to_use
     )
-
-    def add(d, edges):
-        for x, y in edges:
-            if x not in long_to_type or y not in long_to_type:
-                continue
-            d[x].add(y)
-
-    for k1 in shapefiles_to_use:
-        for k2 in shapefiles_to_use:
-            print(k1, k2)
-            if k1 < k2:
-                continue
-
-            if is_american[k1] != is_american[k2]:
-                continue
-
-            fn = {
-                (
-                    "historical_congressional",
-                    "historical_congressional",
-                ): create_relationships_historical_cd,
-                ("countries", "countries"): create_overlays_only_borders,
-                (
-                    "countries",
-                    "subnational_regions",
-                ): create_relationships_countries_subnationals,
-                (
-                    "subnational_regions",
-                    "countries",
-                ): lambda x, y: create_relationships_countries_subnationals(y, x),
-            }.get((k1, k2), create_relationships)
-            (
-                a_contains_b,
-                b_contains_a,
-                a_intersects_b,
-                a_borders_b,
-            ) = fn(shapefiles_to_use[k1], shapefiles_to_use[k2])
-
-            add(contains, a_contains_b)
-            add(contains, [(big, small) for small, big in b_contains_a])
-            add(contained_by, b_contains_a)
-            add(contained_by, [(big, small) for small, big in a_contains_b])
-            add(intersects, a_intersects_b)
-            add(intersects, [(big, small) for small, big in a_intersects_b])
-            if can_border(
-                shapefiles_to_use[k1].meta["type"],
-                shapefiles_to_use[k2].meta["type"],
-            ):
-                add(borders, a_borders_b)
-                add(borders, [(big, small) for small, big in a_borders_b])
 
     same_geography = defaultdict(set)
     for k in contained_by:
@@ -556,3 +498,71 @@ def relationships_for_list(long_to_type, shapefiles_to_use):
         k: {k2: sorted(list(v2 - {k2})) for k2, v2 in v.items()}
         for k, v in results.items()
     }
+
+
+def compute_all_relationships(long_to_type, shapefiles_to_use):
+    contains, contained_by, intersects, borders = (
+        defaultdict(set),
+        defaultdict(set),
+        defaultdict(set),
+        defaultdict(set),
+    )
+
+    def add(d, edges):
+        for x, y in edges:
+            if x not in long_to_type or y not in long_to_type:
+                continue
+            d[x].add(y)
+
+    for k1 in shapefiles_to_use:
+        for k2 in shapefiles_to_use:
+            print(k1, k2)
+            if k1 < k2:
+                continue
+
+            if is_american[k1] != is_american[k2]:
+                continue
+
+            a_contains_b, b_contains_a, a_intersects_b, a_borders_b = (
+                create_relationships_dispatch(shapefiles_to_use, k1, k2)
+            )
+
+            add(contains, a_contains_b)
+            add(contains, [(big, small) for small, big in b_contains_a])
+            add(contained_by, b_contains_a)
+            add(contained_by, [(big, small) for small, big in a_contains_b])
+            add(intersects, a_intersects_b)
+            add(intersects, [(big, small) for small, big in a_intersects_b])
+            if can_border(
+                shapefiles_to_use[k1].meta["type"],
+                shapefiles_to_use[k2].meta["type"],
+            ):
+                add(borders, a_borders_b)
+                add(borders, [(big, small) for small, big in a_borders_b])
+    return contains, contained_by, intersects, borders
+
+
+def create_relationships_dispatch(shapefiles_to_use, k1, k2):
+    fn = {
+        (
+            "historical_congressional",
+            "historical_congressional",
+        ): create_relationships_historical_cd,
+        ("countries", "countries"): create_overlays_only_borders,
+        (
+            "countries",
+            "subnational_regions",
+        ): create_relationships_countries_subnationals,
+        (
+            "subnational_regions",
+            "countries",
+        ): lambda x, y: create_relationships_countries_subnationals(y, x),
+    }.get((k1, k2), create_relationships)
+    (
+        a_contains_b,
+        b_contains_a,
+        a_intersects_b,
+        a_borders_b,
+    ) = fn(shapefiles_to_use[k1], shapefiles_to_use[k2])
+
+    return a_contains_b, b_contains_a, a_intersects_b, a_borders_b

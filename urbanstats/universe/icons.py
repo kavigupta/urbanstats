@@ -54,7 +54,8 @@ def run_conversion(png_path, svg_path):
             "--export-filename=" + png_path,
             "-w",
             "400",
-        ]
+        ],
+        check=True,
     )
 
 
@@ -98,7 +99,7 @@ def download_all_icons():
 
     convert_continent_icons()
 
-    missing = set([x + ".png" for x in all_universes()]) - set(os.listdir(flags_folder))
+    missing = {x + ".png" for x in all_universes()} - set(os.listdir(flags_folder))
     assert not missing, missing
 
 
