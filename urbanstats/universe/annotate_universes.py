@@ -91,7 +91,7 @@ def universe_by_universe_type():
         "country": COUNTRIES,
         "state": [
             get_universe_name_for_state(x)
-            for x in us.states.STATES_AND_TERRITORIES + [us.states.DC]
+            for x in us.states.STATES_AND_TERRITORIES
         ],
     }
 
