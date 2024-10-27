@@ -47,7 +47,7 @@ def copy_up_to(key, new_up_to, folder=None):
         )
         dest = os.path.join(dest_folder, str(retrostat_week))
         print(f"Copying {source} to {dest}")
-        response = requests.get(source)
+        response = requests.get(source, timeout=10)
         if response.status_code == 200:
             data = response.content
         else:

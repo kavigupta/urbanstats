@@ -13,7 +13,9 @@ from urbanstats.geometry.shapefiles.shapefiles_list import shapefiles_for_stats
 from urbanstats.special_cases.merge_international import (
     merge_international_and_domestic,
 )
-from urbanstats.statistics.collections_list import statistic_collections
+from urbanstats.statistics.collections_list import (
+    statistic_collections as statistic_collections_list,
+)
 from urbanstats.universe.annotate_universes import (
     attach_intl_universes,
     attach_usa_universes,
@@ -25,7 +27,9 @@ from urbanstats.universe.annotate_universes import (
     key_function=dict(sf=lambda x: x.hash_key, statistic_collections=stable_hash),
     multiprocess_safe=True,
 )
-def compute_statistics_for_shapefile(sf, statistic_collections=statistic_collections):
+def compute_statistics_for_shapefile(
+    sf, statistic_collections=statistic_collections_list
+):
     sf_fr = sf.load_file()
     print(sf)
     result = sf_fr[["shortname", "longname"]].copy()
@@ -74,13 +78,14 @@ def american_shapefile():
     key_function=dict(shapefile=lambda x: x.hash_key),
 )
 def compute_gpw_data_for_shapefile_table(shapefile):
+    # TODO statistic_collections_list as an argument
     shapes = shapefile.load_file()
     result, hists = compute_gpw_data_for_shapefile(shapefile)
     result = pd.DataFrame(result)
     print(shapefile.hash_key, len(result), len(shapes))
     result.index = shapes.index
     result["area"] = shapes.to_crs({"proj": "cea"}).area / 1e6
-    for collection in statistic_collections:
+    for collection in statistic_collections_list:
         if collection.for_international():
             collection.compute_statistics(shapefile, result, shapes)
 
