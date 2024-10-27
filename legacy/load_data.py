@@ -78,7 +78,7 @@ def load_subcounties_geojson():
 
 
 def get_fips_to_state():
-    return {x.fips: x.abbr for x in us.states.STATES_AND_TERRITORIES + [us.states.DC]}
+    return {x.fips: x.abbr for x in us.states.STATES_AND_TERRITORIES}
 
 
 @permacache("population_density/get_fips_to_counties")
