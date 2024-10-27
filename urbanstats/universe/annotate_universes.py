@@ -41,6 +41,7 @@ def compute_intl_universes(longname, long_to_type):
     if longname in continent_names():
         return result
     result += non_us_countries_for_all()[longname]
+    # FIXME better framework for indices for more than just international/USA
     if "USA" not in longname:
         return result
     if "USA" not in result:
@@ -90,8 +91,7 @@ def universe_by_universe_type():
         "continent": CONTINENTS,
         "country": COUNTRIES,
         "state": [
-            get_universe_name_for_state(x)
-            for x in us.states.STATES_AND_TERRITORIES
+            get_universe_name_for_state(x) for x in us.states.STATES_AND_TERRITORIES
         ],
     }
 

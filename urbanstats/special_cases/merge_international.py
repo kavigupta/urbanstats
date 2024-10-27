@@ -65,6 +65,7 @@ def merge_international(table):
 
 
 def merge_international_and_domestic(intl, usa):
+    # FIXME better framework for indices for more than just international/USA
     intl = tag_international_duplicates(intl)
     full = pd.concat([usa, intl]).reset_index(drop=True)
     full = merge_international(full)

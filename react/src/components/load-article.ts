@@ -80,6 +80,7 @@ export function for_type(universe: string, statcol: string | string[], typ: stri
 }
 
 function compute_indices(longname: string, typ: string): number[] {
+    // FIXME better framework for indices for more than just international/USA
     // translation of statistic_index_lists.py::indices
 
     const lists = index_list_info.index_lists

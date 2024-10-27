@@ -246,5 +246,6 @@ function normalize(a: string): string {
 
 function is_international_duplicate(x: string): boolean {
     // ends with [SN], USA
+    // FIXME better framework for indices for more than just international/USA
     return x.endsWith(' [SN], USA')
 }

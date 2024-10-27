@@ -1,5 +1,7 @@
 import { createContext, useContext } from 'react'
 
+// FIXME better framework for indices for more than just international/USA
+
 export const UNIVERSE_CONTEXT = createContext<string | undefined>(undefined)
 
 export function useUniverse(): string {

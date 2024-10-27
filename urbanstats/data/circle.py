@@ -780,6 +780,7 @@ def circle_shapefile_object(country_shapefile, population, just_usa):
         shortname_extractor=lambda x: x["shortname"],
         longname_extractor=lambda x: x["longname"],
         meta=dict(type=name, source="GHSL", type_category="Kavi"),
+        # FIXME better framework for indices for more than just international/USA
         filter=(lambda x: "USA" in x.longname) if just_usa else lambda x: True,
         american=just_usa,
         include_in_gpw=not just_usa,

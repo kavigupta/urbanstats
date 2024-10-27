@@ -68,6 +68,7 @@ URBAN_CENTERS_USA = Shapefile(
     include_in_gpw=False,
 )
 
+# FIXME better framework for indices for more than just international/USA
 shapefiles_for_stats = dict(
     **shapefiles,
     usa_only=COUNTRY_USA,
@@ -76,6 +77,7 @@ shapefiles_for_stats = dict(
     **population_circles_usa_shapefiles,
 )
 
+# FIXME better framework for indices for more than just international/USA
 american_to_international = {
     "USA": "Country",
     "State": "Subnational Region",
@@ -85,6 +87,7 @@ american_to_international = {
 
 
 def filter_table_for_type(table, typ):
+    # FIXME better framework for indices for more than just international/USA
     is_internationalized = typ in american_to_international
     if is_internationalized:
         typ = american_to_international[typ]
@@ -95,6 +98,7 @@ def filter_table_for_type(table, typ):
 
 
 def load_file_for_type(typ):
+    # FIXME better framework for indices for more than just international/USA
     is_internationalized = typ in american_to_international
     if is_internationalized:
         typ = american_to_international[typ]

@@ -197,6 +197,7 @@ def filter_for_pop(typ):
     at_pop = filt[filt.best_population_estimate >= minimum_population(typ)].set_index(
         "longname"
     )
+    # FIXME better framework for indices for more than just international/USA
     # make sure to only include the appropriate columns
     idxs = index_list_for_longname(
         "" if is_international(typ) else "USA",
