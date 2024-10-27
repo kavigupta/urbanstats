@@ -40,6 +40,7 @@ class TransportationCommuteTimeStatistics(ACSStatisticsColection):
         return "transportation_commute_time"
 
     def acs_entity(self):
+        # pylint: disable=line-too-long
         return ACSDataEntity(
             "MEANS OF TRANSPORTATION TO WORK BY TRAVEL TIME TO WORK",
             "population_18",

@@ -200,12 +200,7 @@ def create_relationships(x, y):
     """
     Get the relationships between the two shapefiles x and y
     """
-    a = x.load_file()
-    b = y.load_file()
-    over = overlays(a, b, x.chunk_size, y.chunk_size)
-    a_area = dict(zip(a.longname, a.geometry.to_crs("EPSG:2163").area))
-    b_area = dict(zip(b.longname, b.geometry.to_crs("EPSG:2163").area))
-    over_area = over["area"]
+    over = compute_overlays_with_areas(x, y)
 
     a_contains_b = set()
     b_contains_a = set()
@@ -213,21 +208,18 @@ def create_relationships(x, y):
     borders = set()
     for i in range(over.shape[0]):
         row = over.iloc[i]
-        area_1 = a_area[row.longname_1]
-        area_2 = b_area[row.longname_2]
-        area_over = over_area[i]
-        # print(row.longname_1, row.longname_2, area_over / area_1, area_over / area_2)
+        area_over = over.area[i]
         contains = False
         tolerance = 0.05
-        if area_over >= area_2 * (1 - tolerance):
+        if area_over >= row.b_area * (1 - tolerance):
             contains = True
             a_contains_b.add((row.longname_1, row.longname_2))
-        if area_over >= area_1 * (1 - tolerance):
+        if area_over >= row.a_area * (1 - tolerance):
             contains = True
             b_contains_a.add((row.longname_1, row.longname_2))
         if contains:
             pass
-        elif area_over >= min(area_1, area_2) * tolerance:
+        elif area_over >= min(row.a_area, row.b_area) * tolerance:
             intersects.add((row.longname_1, row.longname_2))
         else:
             borders.add((row.longname_1, row.longname_2))
@@ -238,6 +230,17 @@ def create_relationships(x, y):
     borders = sorted(borders)
 
     return a_contains_b, b_contains_a, intersects, borders
+
+
+def compute_overlays_with_areas(x, y):
+    a = x.load_file()
+    b = y.load_file()
+    over = overlays(a, b, x.chunk_size, y.chunk_size)
+    a_area = dict(zip(a.longname, a.geometry.to_crs("EPSG:2163").area))
+    b_area = dict(zip(b.longname, b.geometry.to_crs("EPSG:2163").area))
+    over["a_area"] = over.longname_1.map(lambda x: a_area[x])
+    over["b_area"] = over.longname_2.map(lambda x: b_area[x])
+    return over
 
 
 @permacache(
@@ -462,62 +465,9 @@ def full_relationships(long_to_type):
     ),
 )
 def relationships_for_list(long_to_type, shapefiles_to_use):
-    contains, contained_by, intersects, borders = (
-        defaultdict(set),
-        defaultdict(set),
-        defaultdict(set),
-        defaultdict(set),
+    contains, contained_by, intersects, borders = compute_all_relationships(
+        long_to_type, shapefiles_to_use
     )
-
-    def add(d, edges):
-        for x, y in edges:
-            if x not in long_to_type or y not in long_to_type:
-                continue
-            d[x].add(y)
-
-    for k1 in shapefiles_to_use:
-        for k2 in shapefiles_to_use:
-            print(k1, k2)
-            if k1 < k2:
-                continue
-
-            if is_american[k1] != is_american[k2]:
-                continue
-
-            fn = {
-                (
-                    "historical_congressional",
-                    "historical_congressional",
-                ): create_relationships_historical_cd,
-                ("countries", "countries"): create_overlays_only_borders,
-                (
-                    "countries",
-                    "subnational_regions",
-                ): create_relationships_countries_subnationals,
-                (
-                    "subnational_regions",
-                    "countries",
-                ): lambda x, y: create_relationships_countries_subnationals(y, x),
-            }.get((k1, k2), create_relationships)
-            (
-                a_contains_b,
-                b_contains_a,
-                a_intersects_b,
-                a_borders_b,
-            ) = fn(shapefiles_to_use[k1], shapefiles_to_use[k2])
-
-            add(contains, a_contains_b)
-            add(contains, [(big, small) for small, big in b_contains_a])
-            add(contained_by, b_contains_a)
-            add(contained_by, [(big, small) for small, big in a_contains_b])
-            add(intersects, a_intersects_b)
-            add(intersects, [(big, small) for small, big in a_intersects_b])
-            if can_border(
-                shapefiles_to_use[k1].meta["type"],
-                shapefiles_to_use[k2].meta["type"],
-            ):
-                add(borders, a_borders_b)
-                add(borders, [(big, small) for small, big in a_borders_b])
 
     same_geography = defaultdict(set)
     for k in contained_by:
@@ -556,3 +506,71 @@ def relationships_for_list(long_to_type, shapefiles_to_use):
         k: {k2: sorted(list(v2 - {k2})) for k2, v2 in v.items()}
         for k, v in results.items()
     }
+
+
+def compute_all_relationships(long_to_type, shapefiles_to_use):
+    contains, contained_by, intersects, borders = (
+        defaultdict(set),
+        defaultdict(set),
+        defaultdict(set),
+        defaultdict(set),
+    )
+
+    def add(d, edges):
+        for x, y in edges:
+            if x not in long_to_type or y not in long_to_type:
+                continue
+            d[x].add(y)
+
+    for k1 in shapefiles_to_use:
+        for k2 in shapefiles_to_use:
+            print(k1, k2)
+            if k1 < k2:
+                continue
+
+            if is_american[k1] != is_american[k2]:
+                continue
+
+            a_contains_b, b_contains_a, a_intersects_b, a_borders_b = (
+                create_relationships_dispatch(shapefiles_to_use, k1, k2)
+            )
+
+            add(contains, a_contains_b)
+            add(contains, [(big, small) for small, big in b_contains_a])
+            add(contained_by, b_contains_a)
+            add(contained_by, [(big, small) for small, big in a_contains_b])
+            add(intersects, a_intersects_b)
+            add(intersects, [(big, small) for small, big in a_intersects_b])
+            if can_border(
+                shapefiles_to_use[k1].meta["type"],
+                shapefiles_to_use[k2].meta["type"],
+            ):
+                add(borders, a_borders_b)
+                add(borders, [(big, small) for small, big in a_borders_b])
+    return contains, contained_by, intersects, borders
+
+
+def create_relationships_dispatch(shapefiles_to_use, k1, k2):
+    fn = {
+        (
+            "historical_congressional",
+            "historical_congressional",
+        ): create_relationships_historical_cd,
+        ("countries", "countries"): create_overlays_only_borders,
+        (
+            "countries",
+            "subnational_regions",
+        ): create_relationships_countries_subnationals,
+        (
+            "subnational_regions",
+            "countries",
+        ): lambda x, y: create_relationships_countries_subnationals(y, x),
+    }.get((k1, k2), create_relationships)
+    (
+        a_contains_b,
+        b_contains_a,
+        a_intersects_b,
+        a_borders_b,
+    ) = fn(shapefiles_to_use[k1], shapefiles_to_use[k2])
+
+    return a_contains_b, b_contains_a, a_intersects_b, a_borders_b

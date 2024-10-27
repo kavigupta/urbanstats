@@ -1,3 +1,5 @@
+# pylint: disable=line-too-long
+
 from urbanstats.acs.every_subcategory import produce_subcategories
 
 list_of_industries_female = [
