@@ -5,6 +5,7 @@ import tqdm.auto as tqdm
 from permacache import permacache, stable_hash
 
 from urbanstats.data.circle import naive_directions_for_rows_with_names
+from urbanstats.geometry.shapefiles.shapefiles_list import shapefiles
 
 
 def strip_suffix(name):
@@ -101,14 +102,10 @@ def drop_duplicate(s, duplicates, drop_dup_shapefile_key):
 
 @lru_cache(None)
 def load_shapefile_cached(drop_dup_shapefile_key):
-    from urbanstats.geometry.shapefiles.shapefiles_list import shapefiles
-
     return shapefiles[drop_dup_shapefile_key].load_file()
 
 
 def shapefile_hash_key(sf_key):
-    from urbanstats.geometry.shapefiles.shapefiles_list import shapefiles
-
     return shapefiles[sf_key].hash_key
 
 
