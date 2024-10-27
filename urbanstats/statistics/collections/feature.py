@@ -6,12 +6,10 @@ from urbanstats.features.extract_data import feature_data
 from urbanstats.features.feature import feature_columns
 from urbanstats.geometry.census_aggregation import aggregate_by_census_block
 from urbanstats.osm.parks import park_overlap_percentages_all
-from urbanstats.statistics.statistic_collection import (
-    USFeatureDistanceStatisticsCollection,
-)
+from urbanstats.statistics.statistic_collection import USAStatistics
 
 
-class USFeatureDistanceStatistics(USFeatureDistanceStatisticsCollection):
+class USFeatureDistanceStatistics(USAStatistics):
     version = 2
 
     def name_for_each_statistic(self):

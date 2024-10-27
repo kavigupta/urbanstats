@@ -11,7 +11,7 @@ from urbanstats.data.census_blocks import (
 )
 from urbanstats.geometry.census_aggregation import aggregate_by_census_block
 from urbanstats.statistics.extra_statistics import HistogramSpec
-from urbanstats.statistics.statistic_collection import CensusStatisticsColection
+from urbanstats.statistics.statistic_collection import USAStatistics
 from urbanstats.data.census_histogram import census_histogram
 
 DENSITY_EXPLANATION_AW = (
@@ -46,7 +46,7 @@ ad = {f"ad_{k}": f"PW Density (r={format_radius(k)})" for k in RADII}
 density_metrics = [f"ad_{k}" for k in RADII]
 
 
-class CensusForPreviousYear(CensusStatisticsColection):
+class CensusForPreviousYear(USAStatistics):
     @abstractmethod
     def year(self):
         pass
@@ -140,7 +140,7 @@ class CensusForPreviousYear(CensusStatisticsColection):
         }
 
 
-class CensusChange(CensusStatisticsColection):
+class CensusChange(USAStatistics):
     @abstractmethod
     def year(self):
         pass

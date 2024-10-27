@@ -1,7 +1,8 @@
-from urbanstats.statistics.statistic_collection import USDAFRAStatisticsCollection
+from urbanstats.census_2010.usda_food_research_atlas import aggregated_usda_fra
+from urbanstats.statistics.statistic_collection import USAStatistics
 
 
-class USDAFRAStatistics(USDAFRAStatisticsCollection):
+class USDAFRAStatistics(USAStatistics):
     version = 4
     tooltip = "!TOOLTIP The USDA defines a grocery store as a 'supermarket, supercenter, or large grocery store.'"
 
@@ -30,6 +31,13 @@ class USDAFRAStatistics(USDAFRAStatisticsCollection):
             "lapop10share_usda_fra_1",
             "lapop20share_usda_fra_1",
         ]
+
+    def compute_statistics(self, shapefile, statistics_table, shapefile_table):
+        t = aggregated_usda_fra(shapefile)
+        for column in t.columns:
+            statistics_table[column] = t[column]
+
+        self.mutate_statistic_table(statistics_table, shapefile_table)
 
     def mutate_statistic_table(self, statistics_table, shapefile_table):
         for cdc in self.name_for_each_statistic():
