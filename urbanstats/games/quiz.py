@@ -204,7 +204,6 @@ def filter_for_pop(typ):
         strict_display=True,
     )
     stats_filter = {internal_statistic_names()[i] for i in idxs}
-    # at_pop = at_pop[[s for s in stats if s in stats_filter]]
     at_pop = pd.DataFrame(
         {s: at_pop[s] for s in stats if s in stats_filter}
     )
