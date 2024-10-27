@@ -447,16 +447,16 @@ disable=raw-checker-failed,
         invalid-name,
         ## i like using classes as namespaces/structs
         too-few-public-methods,too-many-instance-attributes,
+        ## this trips way too frequently inaccurately to be useful. e.g., on ndarrays
+        unsubscriptable-object,
         ## these need to be fixed at some point. here to make the build pass
         cyclic-import,import-outside-toplevel,
         missing-timeout,fixme,
-        unsubscriptable-object,redefined-builtin,
+        redefined-builtin,
         singleton-comparison,redefined-outer-name,dangerous-default-value,
-        wrong-import-position,cell-var-from-loop,duplicate-key,broad-exception-raised,
+        wrong-import-position,cell-var-from-loop,broad-exception-raised,
         unused-argument,
-        comparison-with-itself,
-        unbalanced-dict-unpacking,
-        c-extension-no-member,unpacking-non-sequence,protected-access,not-an-iterable
+        comparison-with-itself
 
 # Enable the message, report, category or checker with the given id(s). You can
 # either give multiple identifier separated by comma (,) or put this option

@@ -273,6 +273,8 @@ def lattice_cells_contained(glo, polygon):
     row_idxs = np.arange(max(0, int(row_min)), min(int(row_max) + 1, glo.shape[0]))
     col_idxs = np.arange(max(0, int(col_min)), min(int(col_max) + 1, glo.shape[1]))
     # product
+    # no idea why this is necessary
+    # pylint: disable=unpacking-non-sequence
     row_idxs, col_idxs = np.meshgrid(row_idxs, col_idxs)
     # filter
     glo_vals = glo[row_idxs, col_idxs]
