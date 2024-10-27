@@ -2,6 +2,8 @@
 # the one exception is "United States" which we consistently render "USA"
 import pycountry
 
+from urbanstats.universe.universe_constants import COUNTRIES
+
 pycountry_name_to_short_name = {
     "Bahamas": "The Bahamas",
     "Bolivia, Plurinational State of": "Bolivia",
@@ -29,6 +31,7 @@ pycountry_name_to_short_name = {
     "Venezuela, Bolivarian Republic of": "Venezuela",
     "Viet Nam": "Vietnam",
     "Virgin Islands, British": "British Virgin Islands",
+    "Türkiye": "Turkey",
 }
 
 
@@ -37,4 +40,5 @@ def iso_to_country(iso):
         return "USA"
     name = pycountry.countries.get(alpha_2=iso).name
     name = pycountry_name_to_short_name.get(name, name)
+    assert name in COUNTRIES
     return name

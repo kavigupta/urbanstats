@@ -74,7 +74,7 @@ def american_shapefile():
 
 
 @permacache(
-    "urbanstats/data/gpw/compute_gpw_data_for_shapefile_table_9",
+    "urbanstats/data/gpw/compute_gpw_data_for_shapefile_table_10",
     key_function=dict(
         shapefile=lambda x: x.hash_key, statistic_collections=stable_hash
     ),
