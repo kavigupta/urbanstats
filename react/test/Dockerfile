@@ -26,6 +26,7 @@ RUN apt-get -y install xdg-user-dirs
 RUN apt-get -y install ffmpeg
 
 COPY ./requirements.txt ./
+RUN pip3 install --upgrade pip
 RUN pip3 install --break-system-packages -r requirements.txt
 
 ENTRYPOINT [ "/bin/bash" ] 
