@@ -1,3 +1,4 @@
+# pylint: disable=duplicate-code
 from urbanstats.acs.load import ACSDataEntity
 from urbanstats.statistics.statistic_collection import ACSStatisticsColection
 from urbanstats.statistics.utils import fractionalize

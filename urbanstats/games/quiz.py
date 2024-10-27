@@ -353,6 +353,8 @@ def generate_quiz_info_for_website(site_folder):
     for loc in table:
         path = f"{site_folder}/quiz_sample_info/{create_filename(loc, 'json')}"
         folder = os.path.dirname(path)
+        # this should just be a library function but whatever
+        # pylint: disable=duplicate-code
         try:
             os.makedirs(folder)
         except FileExistsError:
