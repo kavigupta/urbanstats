@@ -177,7 +177,8 @@ def compute_ordinal_info(universe_type_masks, universe_typ, table, stat_col):
         filt_table = table.iloc[mask]
 
         cum_pop = np.cumsum(filt_table.best_population_estimate.array[::-1])[::-1]
-        cum_pop /= cum_pop[0]
+        if cum_pop.shape[0]:
+            cum_pop /= cum_pop[0]
 
         ut_idx = np.zeros(len(filt_table), dtype=np.int64) + ut_idx
 
@@ -219,7 +220,13 @@ def fully_complete_ordinals(sorted_by_name, universe_typ):
 
 
 def sort_by_column(sorted_by_name, stat_col):
-    relevant = sorted_by_name[[stat_col, "best_population_estimate"]]
+    # relevant = sorted_by_name[[stat_col, "best_population_estimate"]]
+    relevant = pd.DataFrame(
+        {
+            stat_col: sorted_by_name[stat_col],
+            "best_population_estimate": sorted_by_name.best_population_estimate,
+        }
+    )
     selected_and_sorted = relevant.loc[
         np.argsort(np.array(sorted_by_name[stat_col]), kind="stable")
     ]
