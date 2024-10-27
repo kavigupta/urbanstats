@@ -52,7 +52,7 @@ class Ellipse:
         ) ** 2 < 1
         return indices[mask]
 
-    def find_neighbors(self, categorization, coordinates):
+    def find_neighbors(self, categorization):
         return np.concatenate(
             [
                 self.apply_to_coordinates(categorization[block])
@@ -81,7 +81,7 @@ def locate_blocks(*, coordinates, population, radius=1):
     }
     return np.array(
         [
-            population[Ellipse(radius, *coord).find_neighbors(result, coordinates)].sum(
+            population[Ellipse(radius, *coord).find_neighbors(result)].sum(
                 0
             )
             for coord in tqdm.tqdm(coordinates)
