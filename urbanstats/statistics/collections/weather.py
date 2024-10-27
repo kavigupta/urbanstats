@@ -3,7 +3,7 @@ from permacache import permacache
 
 from urbanstats.data.census_blocks import all_densities_gpd
 from urbanstats.geometry.census_aggregation import aggregate_by_census_block
-from urbanstats.statistics.statistic_collection import USWeatherStatisticsCollection
+from urbanstats.statistics.statistic_collection import USAStatistics
 from urbanstats.weather.stats import era5_statistics
 from urbanstats.weather.to_blocks import weather_block_statistics
 
@@ -14,7 +14,7 @@ POPULATION_WEIGHTED_EXPLANATION = (
 )
 
 
-class USWeatherStatistics(USWeatherStatisticsCollection):
+class USWeatherStatistics(USAStatistics):
     version = 3
 
     def name_for_each_statistic(self):

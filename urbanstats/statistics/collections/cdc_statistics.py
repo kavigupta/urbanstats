@@ -1,8 +1,8 @@
 from urbanstats.census_2010.cdc import aggregated_cdc_table
-from urbanstats.statistics.statistic_collection import CDCStatisticsCollection
+from urbanstats.statistics.statistic_collection import USAStatistics
 
 
-class CDCStatistics(CDCStatisticsCollection):
+class CDCStatistics(USAStatistics):
     def name_for_each_statistic(self):
         # pylint: disable=line-too-long
         cdc_columns = {
