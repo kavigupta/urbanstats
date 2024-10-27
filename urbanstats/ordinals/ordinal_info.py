@@ -157,7 +157,7 @@ def compute_universe_type_masks(table, universe_type):
 
 
 @permacache(
-    "urbanstats/ordinals/ordinal_info/compute_ordinal_info_4",
+    "urbanstats/ordinals/ordinal_info/compute_ordinal_info_5",
     key_function=dict(
         universe_type_masks=lambda universe_type_masks: stable_hash(
             (universe_type_masks.indices, universe_type_masks.shape)
@@ -177,8 +177,7 @@ def compute_ordinal_info(universe_type_masks, universe_typ, table, stat_col):
         filt_table = table.iloc[mask]
 
         cum_pop = np.cumsum(filt_table.best_population_estimate.array[::-1])[::-1]
-        if cum_pop.shape[0]:
-            cum_pop /= cum_pop[0]
+        cum_pop /= cum_pop[0]
 
         ut_idx = np.zeros(len(filt_table), dtype=np.int64) + ut_idx
 
@@ -233,7 +232,12 @@ def sort_by_column(sorted_by_name, stat_col):
     [nan_idxs] = np.where(np.isnan(np.array(selected_and_sorted[stat_col])))
     if nan_idxs.size:
         first_nan_idx = nan_idxs[0]
-        selected_and_sorted = selected_and_sorted[:first_nan_idx]
+        selected_and_sorted = pd.concat(
+            [
+                selected_and_sorted[first_nan_idx:],
+                selected_and_sorted[:first_nan_idx],
+            ]
+        )
     selected_and_sorted = selected_and_sorted[::-1]
     return selected_and_sorted
 
