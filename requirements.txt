@@ -8,8 +8,8 @@ protobuf==4.24.4
 geotiff
 imagecodecs
 fire
-us==2.0.2
-jellyfish==0.6.1
+git+https://github.com/kavigupta/python-us.git
+jellyfish==1.1.0
 pycountry
 geopandas==0.10.2
 # pygeos being installed is ABSOLUTELY NECESSARY if you want
