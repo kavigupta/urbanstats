@@ -54,7 +54,8 @@ def run_conversion(png_path, svg_path):
             "--export-filename=" + png_path,
             "-w",
             "400",
-        ]
+        ],
+        check=True,
     )
 
 

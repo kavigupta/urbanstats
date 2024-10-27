@@ -13,6 +13,7 @@ def merge_ring(a, b):
         return b[::-1] + a[1:]
     if a[-1].id == b[-1].id:
         return a[:-1] + b[::-1]
+    return None
 
 
 def consolidate_rings_single(original):
@@ -60,7 +61,7 @@ def polygon_for_relation(relation):
         way = way.resolve(resolve_missing=True)
         if way is None or isinstance(way, overpy.Node):
             continue
-        elif isinstance(way, overpy.Relation):
+        if isinstance(way, overpy.Relation):
             queue += way.members
         else:
             members[role].append(way.get_nodes(resolve_missing=True))

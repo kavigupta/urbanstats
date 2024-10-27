@@ -51,7 +51,8 @@ def load_raw_census(year=2020, filter_zero_pop=True):
                 "750",
                 "--year",
                 str(year),
-            ]
+            ],
+            check=True,
         )
     raw_census = pd.read_csv(census_blocks)
     if filter_zero_pop:

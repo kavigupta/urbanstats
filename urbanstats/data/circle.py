@@ -64,6 +64,7 @@ class MapDataset:
                     pop[ban_each > 0] = -np.inf
             if pop.max() > P:
                 return (y, pop.argmax())
+        return None
 
     def binary_search(self, P, low, high=None, *, eps=0.25):
         value = (low + high) / 2 if high else low * 2

@@ -449,12 +449,12 @@ disable=raw-checker-failed,
         too-few-public-methods,too-many-instance-attributes,
         ## these need to be fixed at some point. here to make the build pass
         cyclic-import,R0801,import-outside-toplevel,
-        no-else-return,missing-timeout,fixme,
-        subprocess-run-check,unsubscriptable-object,redefined-builtin,
+        missing-timeout,fixme,
+        unsubscriptable-object,redefined-builtin,
         singleton-comparison,redefined-outer-name,dangerous-default-value,
         wrong-import-position,cell-var-from-loop,duplicate-key,broad-exception-raised,
-        inconsistent-return-statements,unused-argument,
-        no-else-continue,comparison-with-itself,
+        unused-argument,
+        comparison-with-itself,
         unbalanced-dict-unpacking,
         c-extension-no-member,unpacking-non-sequence,protected-access,not-an-iterable
 
