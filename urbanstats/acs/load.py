@@ -26,7 +26,7 @@ def extract_block_group_geoid(geoid):
 def acs_variables():
     url = "https://api.census.gov/data/2021/acs/acs5/variables.json"
 
-    r = requests.get(url)
+    r = requests.get(url, timeout=1000)
     r.raise_for_status()
     res = r.json()
     assert res.keys() == {"variables"}
@@ -50,7 +50,7 @@ def query_acs_for_state_direct(keys, state_fips, geography_level):
         "for": geography_level + ":*",
         "in": f"state:{state_fips} county:*",
     }
-    response = requests.get(url, params=params)
+    response = requests.get(url, params=params, timeout=1000)
     response.raise_for_status()
     return response.json()
 
@@ -188,10 +188,10 @@ def get_acs_data(acs_data_entity):
     )
 
 
-def combine_us_pr(us, pr):
-    us, pr = get_acs_data(us), get_acs_data(pr)
-    assert list(us) == list(pr) and (us.index == pr.index).all()
-    return us.fillna(0) + pr.fillna(0)
+def combine_us_pr(us_entity, pr_entity):
+    us_entity, pr_entity = get_acs_data(us_entity), get_acs_data(pr_entity)
+    assert list(us_entity) == list(pr_entity) and (us_entity.index == pr_entity.index).all()
+    return us_entity.fillna(0) + pr_entity.fillna(0)
 
 
 @permacache(

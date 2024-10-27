@@ -113,30 +113,30 @@ def sample_quiz(rng):
     if rng.uniform() < 0.5:
         banned_types.append("international")
     result = []
-    for range in ranges:
-        type, question = sample_quiz_question(
-            rng, banned_categories, banned_types, *range
+    for r in ranges:
+        typ, question = sample_quiz_question(
+            rng, banned_categories, banned_types, *r
         )
         banned_categories.append(
             get_statistic_categories()[question["stat_column_original"]]
         )
-        banned_types.append(type_ban_categorize(type))
+        banned_types.append(type_ban_categorize(typ))
         result.append(question)
     result = randomize_quiz(rng, result)
     return result
 
 
-def difficulty_multiplier(stat_column_original, type):
-    if is_international(type):
+def difficulty_multiplier(stat_column_original, typ):
+    if is_international(typ):
         return 4
     return difficulties[get_statistic_categories()[stat_column_original]]
 
 
-def compute_difficulty(stat_a, stat_b, stat_column_original, type):
+def compute_difficulty(stat_a, stat_b, stat_column_original, typ):
     diff = pct_diff(stat_a, stat_b)
     if diff > ranges[0][1]:
         return float("inf")
-    diff = diff / difficulty_multiplier(stat_column_original, type)
+    diff = diff / difficulty_multiplier(stat_column_original, typ)
     if "mean_high_temp" in stat_column_original:
         diff = diff / 0.25
     return diff
@@ -147,18 +147,18 @@ def same_state(a, b):
     return set(sfa[a]) & set(sfa[b]) != set()
 
 
-def is_international(type):
-    return type in {"Country", "Subnational Region", "Urban Center"}
+def is_international(typ):
+    return typ in {"Country", "Subnational Region", "Urban Center"}
 
 
 def sample_quiz_question(
     rng, banned_categories, banned_type_categories, distance_pct_bot, distance_pct_top
 ):
     while True:
-        type = rng.choice(types)
-        if type_ban_categorize(type) in banned_type_categories:
+        typ = rng.choice(types)
+        if type_ban_categorize(typ) in banned_type_categories:
             continue
-        at_pop = filter_for_pop(type)
+        at_pop = filter_for_pop(typ)
         stat_column_original = rng.choice(at_pop.columns)
         cat = get_statistic_categories()[stat_column_original]
         p_skip = skip_category_probs.get(cat, 0)
@@ -168,7 +168,7 @@ def sample_quiz_question(
             continue
         for _ in range(1000):
             a, b = rng.choice(at_pop.index, size=2)
-            if type == "State":
+            if typ == "State":
                 if "District of Columbia, USA" in (a, b):
                     continue
             if same_state(a, b):
@@ -180,29 +180,29 @@ def sample_quiz_question(
             stat_a, stat_b = float(stat_a), float(stat_b)
             if np.isnan(stat_a) or np.isnan(stat_b) or stat_a == 0 or stat_b == 0:
                 continue
-            diff = compute_difficulty(stat_a, stat_b, stat_column_original, type)
+            diff = compute_difficulty(stat_a, stat_b, stat_column_original, typ)
             if distance_pct_bot <= diff <= distance_pct_top:
-                return type, dict(
+                return typ, dict(
                     stat_column_original=stat_column_original,
                     longname_a=a,
                     longname_b=b,
                     stat_a=stat_a,
                     stat_b=stat_b,
                 )
-        print("FAILED", type, stat_column_original, distance_pct_bot, distance_pct_top)
+        print("FAILED", typ, stat_column_original, distance_pct_bot, distance_pct_top)
 
 
 @permacache(f"urbanstats/games/quiz/filter_for_pop_{version}")
-def filter_for_pop(type):
+def filter_for_pop(typ):
     full = shapefile_without_ordinals()
-    filt = filter_table_for_type(full, type)
-    at_pop = filt[filt.best_population_estimate >= minimum_population(type)].set_index(
+    filt = filter_table_for_type(full, typ)
+    at_pop = filt[filt.best_population_estimate >= minimum_population(typ)].set_index(
         "longname"
     )
     # make sure to only include the appropriate columns
     idxs = index_list_for_longname(
-        "" if is_international(type) else "USA",
-        american_to_international.get(type, type),
+        "" if is_international(typ) else "USA",
+        american_to_international.get(typ, typ),
         strict_display=True,
     )
     stats_filter = {internal_statistic_names()[i] for i in idxs}
@@ -223,8 +223,8 @@ def entire_table():
     )
 
 
-def minimum_population(type):
-    if is_international(type):
+def minimum_population(typ):
+    if is_international(typ):
         return min_pop_international
     return min_pop
 
@@ -276,7 +276,7 @@ def custom_quiz_link(seed, name, *, localhost):
 def check_quiz_is_guaranteed_future(number):
     fractional_days = compute_fractional_days("Pacific/Kiritimati")
     if number <= fractional_days:
-        raise Exception(
+        raise RuntimeError(
             f"Quiz {number} is in the past! It is currently {fractional_days} in Kiribati + 4 hours."
         )
 
@@ -298,7 +298,7 @@ def compute_fractional_days(tz):
 def check_quiz_is_guaranteed_past(number):
     fractional_days = quiz_is_guaranteed_past(number)
     if fractional_days is not None:
-        raise Exception(
+        raise RuntimeError(
             f"Quiz {number} is not necessarily yet done! It is currently {fractional_days} in Samoa"
         )
 
@@ -384,10 +384,10 @@ def discordify(quiz):
     return "\n\n".join(discordify_question(q) for q in quiz)
 
 
-def type_ban_categorize(type):
-    if is_international(type):
+def type_ban_categorize(typ):
+    if is_international(typ):
         return "international"
-    return type
+    return typ
 
 
 renamed = {

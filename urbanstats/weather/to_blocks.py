@@ -3,7 +3,7 @@ from permacache import permacache, stable_hash
 
 from urbanstats.data.census_blocks import load_raw_census
 from urbanstats.weather.era5 import bounding_boxes
-from urbanstats.weather.stats import era5_statistics
+from urbanstats.weather.stats import era5_statistics as era5_statistics_list
 from urbanstats.weather.weather_statistic import compute_statistics
 
 
@@ -118,8 +118,8 @@ def compute_all_weather_by_block(bounding_box_list, coordinates, data):
     "urbanstats/weather/era5/block_statistics",
     key_function=dict(era5_statistics=stable_hash),
 )
-def weather_block_statistics(era5_statistics=era5_statistics):
-    cstats = compute_statistics(era5_statistics, 1991)
+def weather_block_statistics(era5_statistics=tuple(era5_statistics_list)):
+    cstats = compute_statistics(list(era5_statistics), 1991)
     *_, coordinates = load_raw_census()
     bounding_box_l = list(bounding_boxes().items())
     weather_by_block = compute_all_weather_by_block(bounding_box_l, coordinates, cstats)

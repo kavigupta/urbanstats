@@ -254,6 +254,8 @@ def precipitation_statistics(bounding_box, year, month):
 def bounding_boxes():
     shape = STATES_USA.load_file().copy()
     shape["state"] = shape.shortname.apply(us.states.lookup)
+    # this is not a singleton comparison, it's a vectorized comparison
+    # pylint: disable=singleton-comparison
     shape = shape[shape.state != None]
     shape = shape[
         shape.state.apply(
@@ -303,17 +305,17 @@ def dates_in_month(year, month):
 
 # @permacache("urbanstats/weather/era5/all_results_2", key_function=dict(quiet=None))
 def all_results(
-    *, bounding_boxes=bounding_boxes, earliest_year=1990, regions=None, quiet=False
+    *, bboxes=bounding_boxes, earliest_year=1990, regions=None, quiet=False
 ):
     if regions is None:
-        regions = list(bounding_boxes().keys())
+        regions = list(bboxes().keys())
     dates = []
     results = {k: [] for k in regions}
     for year in range(2021, earliest_year - 1, -1):
         for month in range(1, 1 + 12):
             dates_this = dates_in_month(year, month)
             for k in tqdm.tqdm(results, desc=f"{year} {month}"):
-                bounds = bounding_boxes()[k]
+                bounds = bboxes()[k]
                 if not quiet:
                     print(year, month, k)
                 results[k].append(
@@ -333,4 +335,4 @@ def all_results(
 
 
 if __name__ == "__main__":
-    all_results(bounding_boxes=lambda: {k: k for k in global_bounding_boxes()})
+    all_results(bboxes=lambda: {k: k for k in global_bounding_boxes()})
