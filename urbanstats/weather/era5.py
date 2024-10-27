@@ -253,7 +253,7 @@ def precipitation_statistics(bounding_box, year, month):
 @permacache("urbanstats/weather/era5/bounding_boxes")
 def bounding_boxes():
     shape = STATES_USA.load_file().copy()
-    shape["state"] = shape.shortname.apply(lambda x: us.states.lookup(x))
+    shape["state"] = shape.shortname.apply(us.states.lookup)
     shape = shape[shape.state != None]
     shape = shape[
         shape.state.apply(

@@ -20,8 +20,7 @@ def render_start_and_end(row):
     start, end = row.start, row.end
     if start == end:
         return f"{render_ordinal(start)}"
-    else:
-        return f"{render_ordinal(start)}-{render_ordinal(end)}"
+    return f"{render_ordinal(start)}-{render_ordinal(end)}"
 
 
 def judicial_districts():

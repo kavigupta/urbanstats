@@ -102,6 +102,7 @@ def compute_mid_by_idx(areas, duplicates, code_to_name):
 
 
 def directions(areas, idx1, idx2):
+    # pylint: disable=no-else-return
     coord1, coord2 = areas.geometry[idx1].centroid, areas.geometry[idx2].centroid
     dlat, dlon = coord2.y - coord1.y, coord2.x - coord1.x
     if abs(dlat) > abs(dlon):
