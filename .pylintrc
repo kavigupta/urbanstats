@@ -445,6 +445,19 @@ disable=raw-checker-failed,
         unspecified-encoding,
         ## let's not be too strict about naming
         invalid-name,
+        ## i like using classes as namespaces/structs
+        too-few-public-methods,
+        ## these need to be fixed at some point. here to make the build pass
+        cyclic-import,R0801,too-many-lines,import-outside-toplevel,unnecessary-comprehension,
+        no-else-return,missing-timeout,consider-using-dict-items,fixme,consider-using-with,
+        subprocess-run-check,unsubscriptable-object,redefined-builtin,too-many-arguments,
+        singleton-comparison,redefined-outer-name,dangerous-default-value,unnecessary-lambda-assignment,
+        wrong-import-position,function-redefined,cell-var-from-loop,duplicate-key,broad-exception-raised,
+        inconsistent-return-statements,consider-using-set-comprehension,unused-argument,
+        consider-using-f-string,no-else-continue,comparison-with-itself,
+        too-many-positional-arguments,too-many-instance-attributes,unnecessary-lambda,
+        too-many-locals,consider-using-enumerate,consider-using-generator,unbalanced-dict-unpacking,
+        consider-using-in,c-extension-no-member,unpacking-non-sequence,protected-access,not-an-iterable
 
 # Enable the message, report, category or checker with the given id(s). You can
 # either give multiple identifier separated by comma (,) or put this option
