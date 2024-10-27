@@ -96,6 +96,7 @@ def build_react_site(site_folder, dev):
 
 def build_urbanstats(
     site_folder,
+    *,
     no_geo=False,
     no_data=False,
     no_juxta=False,

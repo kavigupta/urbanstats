@@ -18,6 +18,7 @@ class OccupationStatistics(ACSStatisticsColection):
         return self.same_for_each_name("industry_and_occupation")
 
     def quiz_question_names(self):
+        # pylint: disable=line-too-long
         quick_names = {
             "occupation_architecture_and_engineering_occupations": "higher % of workers employed as architects and engineers",
             "occupation_computer_and_mathematical_occupations": "higher % of workers employed in computer and mathematical occupations",

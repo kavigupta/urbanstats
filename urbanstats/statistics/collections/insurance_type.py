@@ -33,6 +33,7 @@ class InsuranceTypeStatistics(ACSStatisticsColection):
         return "insurance_coverage"
 
     def acs_entity(self):
+        # pylint: disable=line-too-long
         return ACSDataEntity(
             "HEALTH INSURANCE COVERAGE STATUS AND TYPE BY WORK EXPERIENCE",
             "population",

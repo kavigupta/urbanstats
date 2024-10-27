@@ -3,9 +3,7 @@ from permacache import stable_hash
 
 
 def hash_full_table(sh):
-    non_float_columns = [
-        x for x in sh if sh[x].dtype != np.float64 and sh[x].dtype != np.float32
-    ]
+    non_float_columns = [x for x in sh if sh[x].dtype not in {np.float64, np.float32}]
     return stable_hash(
         (
             stable_hash([sh[x] for x in non_float_columns]),
@@ -24,7 +22,7 @@ def compute_bins_slow(data, weight, *, bin_size=0.1):
     bins = idxs * bin_size
     return [
         weight[
-            [idx == min(idxs, key=lambda idx: abs(bins[idx] - x)) for x in data]
+            [idx == min(idxs, key=lambda idx, x=x: abs(bins[idx] - x)) for x in data]
         ].sum()
         for idx in range(len(bins))
     ]

@@ -104,6 +104,27 @@ def light(time, latitude, longitude):
 
     assert ((date[1:] - date[:-1]).astype(np.int) == hour).all()
 
+    date, lat, lon = date_grid(latitude, longitude, date)
+
+    azimuth_begin = suncalc.get_position(date, lon, lat)["altitude"]
+    azimuth_end = suncalc.get_position(date + hour, lon, lat)["altitude"]
+    day = (azimuth_begin > 0) & (azimuth_end > 0)
+    sunrise = (azimuth_begin < 0) & (azimuth_end > 0)
+    sunset = (azimuth_begin > 0) & (azimuth_end < 0)
+
+    overall = np.zeros(day.shape)
+    overall[day] = 1
+    overall[sunrise] = azimuth_end[sunrise] / (
+        azimuth_end[sunrise] - azimuth_begin[sunrise]
+    )
+    overall[sunset] = (0 - azimuth_begin[sunset]) / (
+        azimuth_end[sunset] - azimuth_begin[sunset]
+    )
+
+    return overall
+
+
+def date_grid(latitude, longitude, date):
     lat = np.array(latitude)
     lon = np.array(longitude)
 
@@ -114,25 +135,7 @@ def light(time, latitude, longitude):
     date = np.repeat(np.repeat(date[:, None, None], nlat, axis=1), nlon, axis=2)
     lat = np.repeat(np.repeat(lat[None, :, None], ndate, axis=0), nlon, axis=2)
     lon = np.repeat(np.repeat(lon[None, None, :], ndate, axis=0), nlat, axis=1)
-
-    azimuth_begin = suncalc.get_position(date, lon, lat)["altitude"]
-    azimuth_end = suncalc.get_position(date + hour, lon, lat)["altitude"]
-    day = (azimuth_begin > 0) & (azimuth_end > 0)
-    sunrise = (azimuth_begin < 0) & (azimuth_end > 0)
-    sunset = (azimuth_begin > 0) & (azimuth_end < 0)
-
-    frac_sunrise = azimuth_end[sunrise] / (
-        azimuth_end[sunrise] - azimuth_begin[sunrise]
-    )
-    frac_sunset = (0 - azimuth_begin[sunset]) / (
-        azimuth_end[sunset] - azimuth_begin[sunset]
-    )
-    overall = np.zeros(day.shape)
-    overall[day] = 1
-    overall[sunrise] = frac_sunrise
-    overall[sunset] = frac_sunset
-
-    return overall
+    return date, lat, lon
 
 
 def collect_main_statistics(ds):
