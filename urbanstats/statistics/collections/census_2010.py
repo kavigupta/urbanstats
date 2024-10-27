@@ -9,10 +9,10 @@ from urbanstats.data.census_blocks import (
     housing_units,
     racial_demographics,
 )
+from urbanstats.data.census_histogram import census_histogram
 from urbanstats.geometry.census_aggregation import aggregate_by_census_block
 from urbanstats.statistics.extra_statistics import HistogramSpec
 from urbanstats.statistics.statistic_collection import USAStatistics
-from urbanstats.data.census_histogram import census_histogram
 
 DENSITY_EXPLANATION_AW = (
     "!TOOLTIP Area-weighted density is the total population divided by the total area."

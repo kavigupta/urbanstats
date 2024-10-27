@@ -124,7 +124,9 @@ def compute_universe_type_masks(table, universe_type):
     }
     for i, (u, t) in enumerate(tqdm.tqdm(universe_type)):
         idxs_for_t = idxs_by_type[t]
-        mask_within_idxs = table.iloc[idxs_for_t].universes.apply(lambda us, u=u: u in us)
+        mask_within_idxs = table.iloc[idxs_for_t].universes.apply(
+            lambda us, u=u: u in us
+        )
         idxs_relevant = idxs_for_t[mask_within_idxs]
         universe_type_mask[idxs_relevant, i] = 1
     return universe_type_mask

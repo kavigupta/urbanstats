@@ -114,9 +114,7 @@ def sample_quiz(rng):
         banned_types.append("international")
     result = []
     for r in ranges:
-        typ, question = sample_quiz_question(
-            rng, banned_categories, banned_types, *r
-        )
+        typ, question = sample_quiz_question(rng, banned_categories, banned_types, *r)
         banned_categories.append(
             get_statistic_categories()[question["stat_column_original"]]
         )
