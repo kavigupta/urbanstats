@@ -219,7 +219,6 @@ def fully_complete_ordinals(sorted_by_name, universe_typ):
 
 
 def sort_by_column(sorted_by_name, stat_col):
-    # relevant = sorted_by_name[[stat_col, "best_population_estimate"]]
     relevant = pd.DataFrame(
         {
             stat_col: sorted_by_name[stat_col],
