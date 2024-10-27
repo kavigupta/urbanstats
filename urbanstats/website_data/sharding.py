@@ -5,7 +5,7 @@ def shard_bytes(longname):
     for b in bytes_:
         hash_ = (hash_ * 31 + b) & 0xFFFFFFFF
     string = ""
-    for i in range(4):
+    for _ in range(4):
         string += hex(hash_ & 0xF)[2:]
         hash_ >>= 4
     return string[0:2], string[2:3]
