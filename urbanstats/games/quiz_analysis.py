@@ -31,6 +31,7 @@ def get_full_statistics(*, after_problem, debug=False):
     response = requests.post(
         "https://persistent.urbanstats.org/juxtastat/get_full_database",
         data=dict(token=token),
+        timeout=1000,
     )
     result = response.json()
     result = pd.DataFrame(
@@ -47,7 +48,7 @@ def get_full_statistics(*, after_problem, debug=False):
         lambda x: np.array([x // 2**i % 2 for i in range(5)])
     )
     for i, q in enumerate(questions):
-        result[q] = result.pattern.apply(lambda x: x[i])
+        result[q] = result.pattern.apply(lambda x, i=i: x[i])
     result["score"] = result.pattern.apply(sum)
     # time in ms to datetime in Eastern time
     result.time = (

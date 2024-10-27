@@ -449,14 +449,11 @@ disable=raw-checker-failed,
         too-few-public-methods,too-many-instance-attributes,
         ## this trips way too frequently inaccurately to be useful. e.g., on ndarrays
         unsubscriptable-object,
+        ## incompatible with black
+        wrong-import-position,
         ## these need to be fixed at some point. here to make the build pass
         cyclic-import,import-outside-toplevel,
-        missing-timeout,fixme,
-        redefined-builtin,
-        singleton-comparison,redefined-outer-name,dangerous-default-value,
-        wrong-import-position,cell-var-from-loop,broad-exception-raised,
-        unused-argument,
-        comparison-with-itself
+        fixme,
 
 # Enable the message, report, category or checker with the given id(s). You can
 # either give multiple identifier separated by comma (,) or put this option

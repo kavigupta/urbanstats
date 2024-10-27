@@ -42,6 +42,7 @@ class StatisticCollection(ABC):
         return ()
 
     def compute_statistics(self, shapefile, statistics_table, shapefile_table):
+        del shapefile
         self.mutate_statistic_table(statistics_table, shapefile_table)
 
     @abstractmethod

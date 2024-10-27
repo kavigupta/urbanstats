@@ -29,6 +29,8 @@ class HistogramSpec(ExtraStatistic):
         histogram = data_row[self.key]
         # nan values are inserted when no histogram is available
         if isinstance(histogram, float):
+            # this is a check for nan
+            # pylint: disable=comparison-with-itself
             assert histogram != histogram
             return result
         histogram = histogram / histogram.sum()

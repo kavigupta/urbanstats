@@ -35,7 +35,7 @@ def download_and_convert_flag(wikipedia_page, out_path):
         pass
     url = "http://commons.wikimedia.org/wiki/Special:FilePath/" + wikipedia_page
     print(url)
-    r = requests.get(url)
+    r = requests.get(url, timeout=100)
 
     content = re.sub(b'inkscape:label="[^"]*"', b"", r.content)
 
