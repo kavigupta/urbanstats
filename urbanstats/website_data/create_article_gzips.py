@@ -15,6 +15,7 @@ from urbanstats.website_data.statistic_index_lists import index_list_for_longnam
 def create_article_gzip(
     folder,
     row,
+    *,
     relationships,
     long_to_short,
     long_to_population,
@@ -22,6 +23,7 @@ def create_article_gzip(
     long_to_idx,
     flat_ords,
 ):
+    # pylint: disable=too-many-locals,too-many-arguments
     statistic_names = internal_statistic_names()
     idxs_by_type = index_list_for_longname(row.longname, row.type)
     data = data_files_pb2.Article()
@@ -83,12 +85,12 @@ def create_article_gzips(site_folder, full, ordering):
         create_article_gzip(
             f"{site_folder}/data",
             row,
-            relationships,
-            long_to_short,
-            long_to_pop,
-            long_to_type,
-            long_to_idx,
-            flat_ords,
+            relationships=relationships,
+            long_to_short=long_to_short,
+            long_to_population=long_to_pop,
+            long_to_type=long_to_type,
+            long_to_idx=long_to_idx,
+            flat_ords=flat_ords,
         )
 
 

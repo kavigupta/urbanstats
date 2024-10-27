@@ -445,6 +445,23 @@ def attach_urban_centers_to_frame(frame):
     circle_id_to_overlays = defaultdict(list)
     for circle_id, index in zip(overlays.id, overlays.index):
         circle_id_to_overlays[circle_id].append(index)
+    by_circle_id, bad = compute_names_for_each_circle(
+        frame, overlays, circle_id_to_overlays
+    )
+
+    assert not bad, bad
+
+    frame["name"] = by_circle_id
+
+    long_to_short = dict(
+        zip(urban_center_shapefile.longname, urban_center_shapefile.shortname)
+    )
+    for _, _, manual_name in manual_circle_names:
+        long_to_short[manual_name] = manual_name
+    return frame, long_to_short
+
+
+def compute_names_for_each_circle(frame, overlays, circle_id_to_overlays):
     used = set()
     by_circle_id = []
     bad = []
@@ -471,17 +488,7 @@ def attach_urban_centers_to_frame(frame):
             name = overlays.longname.iloc[overlay_idxs[0]]
         used.add(name)
         by_circle_id.append(name)
-
-    assert not bad, bad
-
-    frame["name"] = by_circle_id
-
-    long_to_short = dict(
-        zip(urban_center_shapefile.longname, urban_center_shapefile.shortname)
-    )
-    for _, _, manual_name in manual_circle_names:
-        long_to_short[manual_name] = manual_name
-    return frame, long_to_short
+    return by_circle_id, bad
 
 
 def specify_duplicates(frame, long_to_short):
