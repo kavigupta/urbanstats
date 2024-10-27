@@ -102,11 +102,11 @@ def polygon_for_relation(relation):
         k: unary_union(
             [
                 polygon_for_nodes(ring)
-                for ring in consolidate_rings_single(members[k])
+                for ring in consolidate_rings_single(members_k)
                 if len(ring) >= 3
             ]
         )
-        for k in members
+        for k, members_k in members.items()
     }
     return difference(members["outer"], members["inner"])
 
