@@ -76,6 +76,7 @@ def country_names():
 
 
 def get_universe_name_for_state(state):
+    assert state is not None
     name = state.name
     if name == "Virgin Islands":
         name = "US Virgin Islands"
