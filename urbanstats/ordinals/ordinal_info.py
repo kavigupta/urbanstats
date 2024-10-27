@@ -157,7 +157,7 @@ def compute_universe_type_masks(table, universe_type):
 
 
 @permacache(
-    "urbanstats/ordinals/ordinal_info/compute_ordinal_info_3",
+    "urbanstats/ordinals/ordinal_info/compute_ordinal_info_5",
     key_function=dict(
         universe_type_masks=lambda universe_type_masks: stable_hash(
             (universe_type_masks.indices, universe_type_masks.shape)
@@ -233,7 +233,6 @@ def sort_by_column(sorted_by_name, stat_col):
         first_nan_idx = nan_idxs[0]
         selected_and_sorted = pd.concat(
             [
-                # TODO just delete the NaNs
                 selected_and_sorted[first_nan_idx:],
                 selected_and_sorted[:first_nan_idx],
             ]
