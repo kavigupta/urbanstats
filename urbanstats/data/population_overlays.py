@@ -23,6 +23,7 @@ def compute_population_overlay(shapefile, frame):
     countries = shapefile.load_file()[["longname", "geometry"]]
     return direct_population_overlay(frame, countries)
 
+
 def direct_population_overlay(frame, sh):
     overlays = gpd.overlay(frame, sh)
     res, _ = compute_gpw_data_for_shapefile.function(

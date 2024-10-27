@@ -17,9 +17,13 @@ def county_cross_cd():
 
     db_all = []
     for state in tqdm.tqdm(us.STATES, desc="cross county CD"):
-        cds_state = cds[cds.longname.apply(lambda x, state=state: x.startswith(state.abbr))]
+        cds_state = cds[
+            cds.longname.apply(lambda x, state=state: x.startswith(state.abbr))
+        ]
         counties_state = counties[
-            counties.longname.apply(lambda x, state=state: x.endswith(state.name + ", USA"))
+            counties.longname.apply(
+                lambda x, state=state: x.endswith(state.name + ", USA")
+            )
         ]
         db_state = gpd.overlay(
             cds_state, counties_state, keep_geom_type=True

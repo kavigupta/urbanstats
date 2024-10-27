@@ -15,7 +15,10 @@ from permacache import drop_if_equal, permacache, stable_hash
 from PIL import Image
 
 from urbanstats.data.gpw import load_full_ghs
-from urbanstats.data.population_overlays import direct_population_overlay, relevant_regions
+from urbanstats.data.population_overlays import (
+    direct_population_overlay,
+    relevant_regions,
+)
 from urbanstats.geometry.shapefiles.shapefile import Shapefile
 from urbanstats.geometry.shapefiles.shapefiles.urban_centers import URBAN_CENTERS
 
@@ -314,7 +317,8 @@ class MapCumulativeSum:
     @classmethod
     def from_map(cls, map_arr):
         return cls(
-            cumulative_sum_horizontally(cumulative_sum_vertically(map_arr)), *map_arr.shape
+            cumulative_sum_horizontally(cumulative_sum_vertically(map_arr)),
+            *map_arr.shape,
         )
 
     def compute_range(self, y1, y2, x1, x2):
