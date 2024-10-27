@@ -71,7 +71,7 @@ jobs:
       - name: Lint with pylint
         run: python -m pylint --prefer-stubs=true urbanstats
       - name: Check black
-        run: isort urbanstats; black urbanstats; bash -c '[ $(git status --porcelain --untracked-files=no | wc -c) -eq 0 ]  || (git status; git diff; exit 1)'
+        run: python -m isort urbanstats; python -m black urbanstats; bash -c '[ $(git status --porcelain --untracked-files=no | wc -c) -eq 0 ]  || (git status; git diff; exit 1)'
 
   build-frontend:
     runs-on: ubuntu-22.04
