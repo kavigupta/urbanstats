@@ -86,9 +86,9 @@ def compute_weather_by_block(
     bounding_box_l, coordinates, which_box, index_fractions, data
 ):
     result = np.zeros(coordinates.shape[0]) + np.nan
-    for i in range(len(index_fractions)):
+    for i, index_fractions_i in enumerate(index_fractions):
         result[which_box == i] = interpolate(
-            index_fractions[i], data[bounding_box_l[i][0]]
+            index_fractions_i, data[bounding_box_l[i][0]]
         )
     assert not np.isnan(result).any()
     return result

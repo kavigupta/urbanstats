@@ -2,8 +2,8 @@ def shard_bytes(longname):
     """translation of links.ts::shardBytes"""
     bytes_ = longname.encode("utf-8")
     hash_ = 0
-    for i in range(len(bytes_)):
-        hash_ = (hash_ * 31 + bytes_[i]) & 0xFFFFFFFF
+    for b in bytes_:
+        hash_ = (hash_ * 31 + b) & 0xFFFFFFFF
     string = ""
     for i in range(4):
         string += hex(hash_ & 0xF)[2:]

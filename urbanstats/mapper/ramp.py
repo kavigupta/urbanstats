@@ -49,6 +49,7 @@ def ramp_obj_to_list(ramp_obj):
         xs = sorted(
             {x for segment in ramp_obj._segmentdata.values() for x, _, _ in segment}
         )
+    # pylint: disable=consider-using-f-string
     return [
         (x, "#%02x%02x%02x" % tuple(int(255 * y) for y in ramp_obj(x))[:-1]) for x in xs
     ]
@@ -69,6 +70,7 @@ def interpolate_ramp(ramp, relative_pos):
     y1, y2 = np.array(
         [[int(y[1:][a:b], 16) for a, b in [(0, 2), (2, 4), (4, 6)]] for y in [y1, y2]]
     )
+    # pylint: disable=consider-using-f-string
     return "#%02x%02x%02x" % tuple(
         ((y1 * (x2 - relative_pos) + y2 * (relative_pos - x1)) / (x2 - x1)).astype(
             np.int

@@ -27,9 +27,9 @@ def compress_counts(counts):
             counts_for_universe[typ][column] = count
         counts_for_universe = {
             typ: compress_counts_sequence(
-                [counts_for_universe[typ][col] for col in statcols]
+                [counts_for_universe_for_typ[col] for col in statcols]
             )
-            for typ in counts_for_universe
+            for typ, counts_for_universe_for_typ in counts_for_universe.items()
         }
         counts_new[k] = counts_for_universe
     return counts_new
