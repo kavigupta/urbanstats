@@ -4,8 +4,6 @@ import attr
 import geopandas as gpd
 import pandas as pd
 
-from urbanstats.special_cases.deduplicate_longnames import drop_duplicate
-
 
 @attr.s
 class Shapefile:
@@ -22,6 +20,18 @@ class Shapefile:
     tolerate_no_state = attr.ib(default=False)
 
     def load_file(self):
+        """
+        Load the shapefile and apply the filters and extractors.
+
+        This has a circular dependency with the deduplicate_longnames module, which
+        needs to load other shapefiles to figure out how to disambiguate duplicated
+        longnames.
+
+        This should be the only circular dependency related to shapefiles.
+        """
+        # pylint: disable=import-outside-toplevel,cyclic-import
+        from urbanstats.special_cases.deduplicate_longnames import drop_duplicate
+
         if isinstance(self.path, list):
             s = gpd.GeoDataFrame(pd.concat([gpd.read_file(p) for p in self.path]))
             s = s.reset_index(drop=True)
