@@ -2,7 +2,6 @@ from dataclasses import dataclass
 from typing import Dict, List, Tuple
 
 import numpy as np
-import pandas as pd
 import tqdm.auto as tqdm
 from cached_property import cached_property
 from permacache import permacache, stable_hash
@@ -124,7 +123,9 @@ def compute_universe_type_masks(table, universe_type):
     }
     for i, (u, t) in enumerate(tqdm.tqdm(universe_type)):
         idxs_for_t = idxs_by_type[t]
-        mask_within_idxs = table.iloc[idxs_for_t].universes.apply(lambda us, u=u: u in us)
+        mask_within_idxs = table.iloc[idxs_for_t].universes.apply(
+            lambda us, u=u: u in us
+        )
         idxs_relevant = idxs_for_t[mask_within_idxs]
         universe_type_mask[idxs_relevant, i] = 1
     return universe_type_mask
@@ -155,7 +156,7 @@ def compute_universe_type_masks(table, universe_type):
 
 
 @permacache(
-    "urbanstats/ordinals/ordinal_info/compute_ordinal_info_3",
+    "urbanstats/ordinals/ordinal_info/compute_ordinal_info_4",
     key_function=dict(
         universe_type_masks=lambda universe_type_masks: stable_hash(
             (universe_type_masks.indices, universe_type_masks.shape)
@@ -219,13 +220,7 @@ def sort_by_column(sorted_by_name, stat_col):
     [nan_idxs] = np.where(np.isnan(np.array(selected_and_sorted[stat_col])))
     if nan_idxs.size:
         first_nan_idx = nan_idxs[0]
-        selected_and_sorted = pd.concat(
-            [
-                # TODO just delete the NaNs
-                selected_and_sorted[first_nan_idx:],
-                selected_and_sorted[:first_nan_idx],
-            ]
-        )
+        selected_and_sorted = selected_and_sorted[:first_nan_idx]
     selected_and_sorted = selected_and_sorted[::-1]
     return selected_and_sorted
 

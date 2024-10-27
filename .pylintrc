@@ -451,8 +451,6 @@ disable=raw-checker-failed,
         unsubscriptable-object,
         ## incompatible with black
         wrong-import-position,
-        ## these need to be fixed at some point. here to make the build pass
-        fixme,
 
 # Enable the message, report, category or checker with the given id(s). You can
 # either give multiple identifier separated by comma (,) or put this option

@@ -74,18 +74,21 @@ def american_shapefile():
 
 
 @permacache(
-    "urbanstats/data/gpw/compute_gpw_data_for_shapefile_table_8",
-    key_function=dict(shapefile=lambda x: x.hash_key),
+    "urbanstats/data/gpw/compute_gpw_data_for_shapefile_table_9",
+    key_function=dict(
+        shapefile=lambda x: x.hash_key, statistic_collections=stable_hash
+    ),
 )
-def compute_gpw_data_for_shapefile_table(shapefile):
-    # TODO statistic_collections_list as an argument
+def compute_gpw_data_for_shapefile_table(
+    shapefile, statistic_collections=statistic_collections_list
+):
     shapes = shapefile.load_file()
     result, hists = compute_gpw_data_for_shapefile(shapefile)
     result = pd.DataFrame(result)
     print(shapefile.hash_key, len(result), len(shapes))
     result.index = shapes.index
     result["area"] = shapes.to_crs({"proj": "cea"}).area / 1e6
-    for collection in statistic_collections_list:
+    for collection in statistic_collections:
         if collection.for_international():
             collection.compute_statistics(shapefile, result, shapes)
 
