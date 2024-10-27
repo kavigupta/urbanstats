@@ -40,10 +40,7 @@ def states_for_all():
                 systematics[k] = [one_offs[k]]
             else:
                 systematics[k] = v
-            if (
-                u_shapefile.american
-                and not u_shapefile.tolerate_no_state
-            ):
+            if u_shapefile.american and not u_shapefile.tolerate_no_state:
                 if len(systematics[k]) == 0:
                     print("Error on ", k, " in ", u)
                     print("shapefile: ", u_shapefile)
