@@ -81,9 +81,7 @@ def locate_blocks(*, coordinates, population, radius=1):
     }
     return np.array(
         [
-            population[Ellipse(radius, *coord).find_neighbors(result)].sum(
-                0
-            )
+            population[Ellipse(radius, *coord).find_neighbors(result)].sum(0)
             for coord in tqdm.tqdm(coordinates)
         ]
     )
