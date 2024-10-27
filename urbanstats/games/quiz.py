@@ -304,7 +304,8 @@ def check_quiz_is_guaranteed_past(number):
 
 
 def generate_quizzes(folder):
-    path = lambda day: os.path.join(folder, f"{day}")
+    def path(day):
+        return os.path.join(folder, f"{day}")
 
     for i in range(fixed_up_to + 1):
         shutil.copy(f"quiz_old/{i}", path(i))

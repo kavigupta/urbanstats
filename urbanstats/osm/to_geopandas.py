@@ -37,39 +37,6 @@ def consolidate_rings(rings):
         size = len(rings)
 
 
-def merge_ring(a, b):
-    if a[0].id == b[-1].id:
-        return b[:-1] + a
-    if a[-1].id == b[0].id:
-        return a + b[:1]
-    if a[0].id == b[0].id:
-        return b[::-1] + a[1:]
-    if a[-1].id == b[-1].id:
-        return a[:-1] + b[::-1]
-
-
-def consolidate_rings_single(original):
-    rings = []
-    for way in original:
-        for i, ring in enumerate(rings):
-            ring_new = merge_ring(ring, way)
-            if ring_new is not None:
-                rings[i] = ring_new
-                break
-        else:
-            rings.append(way)
-    return rings
-
-
-def consolidate_rings(rings):
-    size = len(rings)
-    while True:
-        rings = consolidate_rings_single(rings)
-        if len(rings) == size:
-            return rings
-        size = len(rings)
-
-
 def polygon_for_node(node):
     return Point(node.lon, node.lat)
 

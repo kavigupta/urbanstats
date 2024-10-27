@@ -451,11 +451,10 @@ disable=raw-checker-failed,
         cyclic-import,R0801,import-outside-toplevel,
         no-else-return,missing-timeout,fixme,
         subprocess-run-check,unsubscriptable-object,redefined-builtin,
-        singleton-comparison,redefined-outer-name,dangerous-default-value,unnecessary-lambda-assignment,
-        wrong-import-position,function-redefined,cell-var-from-loop,duplicate-key,broad-exception-raised,
+        singleton-comparison,redefined-outer-name,dangerous-default-value,
+        wrong-import-position,cell-var-from-loop,duplicate-key,broad-exception-raised,
         inconsistent-return-statements,unused-argument,
         no-else-continue,comparison-with-itself,
-        unnecessary-lambda,
         unbalanced-dict-unpacking,
         c-extension-no-member,unpacking-non-sequence,protected-access,not-an-iterable
 
