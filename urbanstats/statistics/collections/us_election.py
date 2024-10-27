@@ -1,8 +1,8 @@
 from urbanstats.data.election_data import aggregated_election_results, vest_elections
-from urbanstats.statistics.statistic_collection import USElectionStatisticsCollection
+from urbanstats.statistics.statistic_collection import USAStatistics
 
 
-class USElectionStatistics(USElectionStatisticsCollection):
+class USElectionStatistics(USAStatistics):
     def name_for_each_statistic(self):
         return {
             **{(elect.name, "margin"): elect.name for elect in vest_elections},

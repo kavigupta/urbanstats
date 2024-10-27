@@ -11,7 +11,8 @@ from urbanstats.data.census_blocks import (
 )
 from urbanstats.geometry.census_aggregation import aggregate_by_census_block
 from urbanstats.statistics.extra_statistics import HistogramSpec
-from urbanstats.statistics.statistic_collection import CensusStatisticsColection
+from urbanstats.statistics.statistic_collection import USAStatistics
+from urbanstats.data.census_histogram import census_histogram
 
 DENSITY_EXPLANATION_AW = (
     "!TOOLTIP Area-weighted density is the total population divided by the total area."
@@ -45,7 +46,7 @@ ad = {f"ad_{k}": f"PW Density (r={format_radius(k)})" for k in RADII}
 density_metrics = [f"ad_{k}" for k in RADII]
 
 
-class CensusForPreviousYear(CensusStatisticsColection):
+class CensusForPreviousYear(USAStatistics):
     @abstractmethod
     def year(self):
         pass
@@ -86,8 +87,6 @@ class CensusForPreviousYear(CensusStatisticsColection):
         return list(self.name_for_each_statistic().keys())
 
     def compute_statistics(self, shapefile, statistics_table, shapefile_table):
-        from urbanstats.data.census_histogram import census_histogram
-
         year = self.year()
         table = aggregate_basics_of_year(shapefile, year)
         for k in table:
@@ -141,7 +140,7 @@ class CensusForPreviousYear(CensusStatisticsColection):
         }
 
 
-class CensusChange(CensusStatisticsColection):
+class CensusChange(USAStatistics):
     @abstractmethod
     def year(self):
         pass

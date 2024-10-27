@@ -1,7 +1,6 @@
 from abc import ABC, abstractmethod
 
 from urbanstats.acs.load import aggregated_acs_data, aggregated_acs_data_us_pr
-from urbanstats.census_2010.usda_food_research_atlas import aggregated_usda_fra
 
 ORDER_CATEGORY_MAIN = 0
 ORDER_CATEGORY_OTHER_DENSITIES = 1
@@ -91,40 +90,6 @@ class USAStatistics(StatisticCollection):
         return False
 
 
-class CensusStatisticsColection(StatisticCollection):
-    # TODO we should probably have this actually pull the census data, it currently does not.
-    def for_america(self):
-        return True
-
-    def for_international(self):
-        return False
-
-
-class CDCStatisticsCollection(StatisticCollection):
-    # TODO we should probably have this actually pull the CDC data, it currently does not.
-    def for_america(self):
-        return True
-
-    def for_international(self):
-        return False
-
-
-class USDAFRAStatisticsCollection(StatisticCollection):
-    # TODO we should probably have this actually pull the USDA FRA data, it currently does not.
-    def for_america(self):
-        return True
-
-    def for_international(self):
-        return False
-
-    def compute_statistics(self, shapefile, statistics_table, shapefile_table):
-        t = aggregated_usda_fra(shapefile)
-        for column in t.columns:
-            statistics_table[column] = t[column]
-
-        self.mutate_statistic_table(statistics_table, shapefile_table)
-
-
 class ACSStatisticsColection(StatisticCollection):
     def year(self):
         return 2020
@@ -184,30 +149,3 @@ class ACSUSPRStatisticsColection(StatisticCollection):
             for column in acs_data.columns:
                 statistics_table[column] = acs_data[column]
         self.mutate_statistic_table(statistics_table, shapefile_table)
-
-
-class USElectionStatisticsCollection(StatisticCollection):
-    # TODO we should probably have this actually pull the election data, it currently does not.
-    def for_america(self):
-        return True
-
-    def for_international(self):
-        return False
-
-
-class USFeatureDistanceStatisticsCollection(StatisticCollection):
-    # TODO we should probably have this actually pull the feature data, it currently does not.
-    def for_america(self):
-        return True
-
-    def for_international(self):
-        return False
-
-
-class USWeatherStatisticsCollection(StatisticCollection):
-    # TODO we should probably have this actually pull the weather data, it currently does not.
-    def for_america(self):
-        return True
-
-    def for_international(self):
-        return False

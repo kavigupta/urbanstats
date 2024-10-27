@@ -16,6 +16,8 @@ from PIL import Image
 
 from urbanstats.data.gpw import load_full_ghs
 from urbanstats.data.population_overlays import direct_population_overlay, relevant_regions
+from urbanstats.geometry.shapefiles.shapefile import Shapefile
+from urbanstats.geometry.shapefiles.shapefiles.urban_centers import URBAN_CENTERS
 
 
 class MapDataset:
@@ -429,8 +431,6 @@ manual_circle_names = [
 
 
 def attach_urban_centers_to_frame(frame):
-    from urbanstats.geometry.shapefiles.shapefiles.urban_centers import URBAN_CENTERS
-
     urban_center_shapefile = URBAN_CENTERS.load_file()
     urban_center_shapefile.index = urban_center_shapefile.longname
     overlays = direct_population_overlay(frame, urban_center_shapefile)
@@ -756,7 +756,6 @@ def produce_image(population):
 
 
 def circle_shapefile_object(country_shapefile, population, just_usa):
-    from urbanstats.geometry.shapefiles.shapefile import Shapefile
 
     name = named_populations[population] + " Person Circle"
     if just_usa:
