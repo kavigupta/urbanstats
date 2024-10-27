@@ -190,7 +190,10 @@ def get_acs_data(acs_data_entity):
 
 def combine_us_pr(us_entity, pr_entity):
     us_entity, pr_entity = get_acs_data(us_entity), get_acs_data(pr_entity)
-    assert list(us_entity) == list(pr_entity) and (us_entity.index == pr_entity.index).all()
+    assert (
+        list(us_entity) == list(pr_entity)
+        and (us_entity.index == pr_entity.index).all()
+    )
     return us_entity.fillna(0) + pr_entity.fillna(0)
 
 
