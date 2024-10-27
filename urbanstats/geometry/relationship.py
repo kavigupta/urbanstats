@@ -32,21 +32,18 @@ def states_for_all():
         "PA-HD001, USA": "Pennsylvania, USA",
         "RI-HD075, USA": "Rhode Island, USA",
     }
-    for u in shapefiles_for_stats:
-        for k, v in states_for(shapefiles_for_stats[u]).items():
+    for u, u_shapefile in shapefiles_for_stats.items():
+        for k, v in states_for(u_shapefile).items():
             if skippable_edge_case(k):
                 continue
             if k in one_offs:
                 systematics[k] = [one_offs[k]]
             else:
                 systematics[k] = v
-            if (
-                shapefiles_for_stats[u].american
-                and not shapefiles_for_stats[u].tolerate_no_state
-            ):
+            if u_shapefile.american and not u_shapefile.tolerate_no_state:
                 if len(systematics[k]) == 0:
                     print("Error on ", k, " in ", u)
-                    print("shapefile: ", shapefiles_for_stats[u])
+                    print("shapefile: ", u_shapefile)
                     print("systematics: ", systematics[k])
                     raise ValueError
                 assert len(systematics[k]) >= 1, (u, k)
@@ -56,9 +53,9 @@ def states_for_all():
 @lru_cache(maxsize=1)
 def continents_for_all():
     systematics = {}
-    for u in shapefiles_for_stats:
+    for _, u_shapefile in shapefiles_for_stats.items():
         for k, v in contained_in(
-            shapefiles_for_stats[u],
+            u_shapefile,
             shapefiles_for_stats["continents"],
             only_american=False,
             only_nonamerican=False,
@@ -101,9 +98,9 @@ def continents_for_all():
 @lru_cache(maxsize=1)
 def non_us_countries_for_all():
     systematics = {}
-    for u in shapefiles_for_stats:
+    for _, u_shapefile in shapefiles_for_stats.items():
         for k, v in contained_in(
-            shapefiles_for_stats[u],
+            u_shapefile,
             shapefiles_for_stats["countries"],
             only_american=False,
             only_nonamerican=True,
@@ -308,18 +305,13 @@ def create_relationships_historical_cd(x, y):
     borders = set()
     for i in tqdm.trange(len(related)):
         row = related.iloc[i]
-        left_cong = re.match(".*\[(.*)\]", row.shortname_left).group(1)
-        right_cong = re.match(".*\[(.*)\]", row.shortname_right).group(1)
+        left_cong = re.match(r".*\[(.*)\]", row.shortname_left).group(1)
+        right_cong = re.match(r".*\[(.*)\]", row.shortname_right).group(1)
         if left_cong == right_cong:
             borders.add((row.longname_left, row.longname_right))
         else:
             intersects.add((row.longname_left, row.longname_right))
     return set(), set(), intersects, borders
-
-
-def add(d, edges):
-    for x, y in edges:
-        d[x].add(y)
 
 
 tiers = [
