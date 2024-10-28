@@ -18,7 +18,7 @@ def skippable_edge_case(k):
 
 @lru_cache(maxsize=1)
 def states_for_all():
-    systematics = {}
+    results = {}
     one_offs = {
         "Freeman Island Neighborhood, Long Beach City, California, USA": "California, USA",
         "Island Chaffee Neighborhood, Long Beach City, California, USA": "California, USA",
@@ -32,22 +32,33 @@ def states_for_all():
         "PA-HD001, USA": "Pennsylvania, USA",
         "RI-HD075, USA": "Rhode Island, USA",
     }
-    for u, u_shapefile in shapefiles_for_stats.items():
-        for k, v in states_for(u_shapefile).items():
-            if skippable_edge_case(k):
-                continue
-            if k in one_offs:
-                systematics[k] = [one_offs[k]]
-            else:
-                systematics[k] = v
-            if u_shapefile.american and not u_shapefile.tolerate_no_state:
-                if len(systematics[k]) == 0:
-                    print("Error on ", k, " in ", u)
-                    print("shapefile: ", u_shapefile)
-                    print("systematics: ", systematics[k])
-                    raise ValueError
-                assert len(systematics[k]) >= 1, (u, k)
-    return systematics
+    for _, u_shapefile in shapefiles_for_stats.items():
+        results.update(overlapping_states_for_shapefile(u_shapefile, one_offs))
+    return results
+
+
+def overlapping_states_for_shapefile(u_shapefile, one_offs):
+    states_for = contained_in(
+        u_shapefile,
+        shapefiles_for_stats["states"],
+        only_american=True,
+        only_nonamerican=False,
+    )
+    results = {}
+    for k, v in states_for.items():
+        if skippable_edge_case(k):
+            continue
+        if k in one_offs:
+            results[k] = [one_offs[k]]
+        else:
+            results[k] = v
+        if u_shapefile.american and not u_shapefile.tolerate_no_state:
+            if len(results[k]) == 0:
+                print("Error on ", k, " in ", u_shapefile.hash_key)
+                print("shapefile: ", u_shapefile)
+                print("systematics: ", results[k])
+                raise ValueError
+    return results
 
 
 @lru_cache(maxsize=1)
@@ -115,17 +126,6 @@ def non_us_countries_for_all():
             else:
                 systematics[k] = v
     return systematics
-
-
-@permacache(
-    "population_density/relationship/states_for_4",
-    key_function=dict(sh=lambda a: a.hash_key),
-)
-def states_for(sh):
-    print("states_for", sh.hash_key)
-    return contained_in(
-        sh, shapefiles_for_stats["states"], only_american=True, only_nonamerican=False
-    )
 
 
 @permacache(
