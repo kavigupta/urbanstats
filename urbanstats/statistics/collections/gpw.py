@@ -5,6 +5,9 @@ from urbanstats.statistics.statistic_collection import InternationalStatistics
 
 
 class GPWStatistics(InternationalStatistics):
+
+    version = 2
+
     def name_for_each_statistic(self):
         return {
             "gpw_population": "Population [GHS-POP]",
@@ -34,6 +37,7 @@ class GPWStatistics(InternationalStatistics):
             statistics_table[k] = rk
         for k, hk in hists.items():
             statistics_table[k] = hk
+        self.mutate_statistic_table(statistics_table, shapefile_table)
 
     def mutate_statistic_table(self, statistics_table, shapefile_table):
         assert (

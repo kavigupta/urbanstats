@@ -26,8 +26,8 @@ from urbanstats.universe.annotate_universes import (
 def compute_statistics_for_shapefile(
     sf, statistic_collections=statistic_collections_list
 ):
+    print("Computing statistics for", sf.hash_key)
     sf_fr = sf.load_file()
-    print(sf)
     result = sf_fr[["shortname", "longname"]].copy()
 
     for k in sf.meta:
