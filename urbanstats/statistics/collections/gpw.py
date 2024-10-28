@@ -1,4 +1,4 @@
-from urbanstats.statistics.collections.census_2010 import DENSITY_EXPLANATION_PW
+from urbanstats.statistics.collections.census import DENSITY_EXPLANATION_PW
 from urbanstats.statistics.extra_statistics import HistogramSpec
 from urbanstats.statistics.statistic_collection import InternationalStatistics
 

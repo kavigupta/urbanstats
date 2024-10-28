@@ -1,7 +1,7 @@
 import numpy as np
 
 from urbanstats.data.accidents import accidents_by_region
-from urbanstats.statistics.collections.census_2010 import (
+from urbanstats.statistics.collections.census import (
     compute_population,
     population_by_year,
 )

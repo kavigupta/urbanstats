@@ -1,5 +1,5 @@
 from urbanstats.statistics.collections.cdc_statistics import CDCStatistics
-from urbanstats.statistics.collections.census_2010 import (
+from urbanstats.statistics.collections.census import (
     Census2000,
     Census2010,
     Census2020,
