@@ -5,7 +5,6 @@ import pandas as pd
 import tqdm.auto as tqdm
 from permacache import permacache, stable_hash
 
-from urbanstats.data.gpw import compute_gpw_data_for_shapefile
 from urbanstats.geometry.shapefiles.shapefiles_list import shapefiles_for_stats
 from urbanstats.special_cases.merge_international import (
     merge_international_and_domestic,
@@ -20,7 +19,7 @@ from urbanstats.universe.annotate_universes import (
 
 
 @permacache(
-    "population_density/stats_for_shapefile/compute_statistics_for_shapefile_24",
+    "population_density/stats_for_shapefile/compute_statistics_for_shapefile_25",
     key_function=dict(sf=lambda x: x.hash_key, statistic_collections=stable_hash),
     multiprocess_safe=True,
 )
@@ -30,13 +29,14 @@ def compute_statistics_for_shapefile(
     sf_fr = sf.load_file()
     print(sf)
     result = sf_fr[["shortname", "longname"]].copy()
-    result["area"] = sf_fr["geometry"].to_crs({"proj": "cea"}).area / 1e6
-    assert (result.longname == sf_fr.longname).all()
+
     for k in sf.meta:
         result[k] = sf.meta[k]
 
     for collection in statistic_collections:
-        if collection.for_america():
+        passes = collection.for_america() and sf.american
+        passes = passes or (collection.for_international() and sf.include_in_gpw)
+        if passes:
             collection.compute_statistics(sf, result, sf_fr)
 
     return result
@@ -63,41 +63,11 @@ def american_shapefile():
     assert not duplicates, str(duplicates)
     return full
 
-
-@permacache(
-    "urbanstats/data/gpw/compute_gpw_data_for_shapefile_table_10",
-    key_function=dict(
-        shapefile=lambda x: x.hash_key, statistic_collections=stable_hash
-    ),
-)
-def compute_gpw_data_for_shapefile_table(
-    shapefile, statistic_collections=statistic_collections_list
-):
-    shapes = shapefile.load_file()
-    result, hists = compute_gpw_data_for_shapefile(shapefile)
-    result = pd.DataFrame(result)
-    print(shapefile.hash_key, len(result), len(shapes))
-    result.index = shapes.index
-    result["area"] = shapes.to_crs({"proj": "cea"}).area / 1e6
-    for collection in statistic_collections:
-        if collection.for_international():
-            collection.compute_statistics(shapefile, result, shapes)
-
-    result["longname"] = shapes.longname
-    result["shortname"] = shapes.shortname
-
-    return result, hists
-
-
 def international_shapefile():
     ts = []
     for s in shapefiles_for_stats.values():
         if s.include_in_gpw:
-            t, hist = compute_gpw_data_for_shapefile_table(s)
-            for k in s.meta:
-                t[k] = s.meta[k]
-            for k, hist_k in hist.items():
-                t[k] = hist_k
+            t = compute_statistics_for_shapefile(s)
             ts.append(t)
     intl = pd.concat(ts)
     # intl = intl[intl.area > 10].copy()
