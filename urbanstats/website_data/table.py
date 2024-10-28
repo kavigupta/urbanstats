@@ -1,13 +1,10 @@
 from collections import Counter
 from functools import lru_cache
 
-import numpy as np
 import pandas as pd
 import tqdm.auto as tqdm
 from permacache import permacache, stable_hash
 
-from urbanstats.data.census_blocks import RADII
-from urbanstats.data.census_histogram import census_histogram
 from urbanstats.data.gpw import compute_gpw_data_for_shapefile
 from urbanstats.geometry.shapefiles.shapefiles_list import shapefiles_for_stats
 from urbanstats.special_cases.merge_international import (
@@ -52,12 +49,6 @@ def american_shapefile():
             continue
 
         t = compute_statistics_for_shapefile(shapefiles_for_stats[k])
-
-        hists = census_histogram(shapefiles_for_stats[k], 2020)
-        for dens in RADII:
-            t[f"pw_density_histogram_{dens}"] = [
-                hists[x][f"ad_{dens}"] if x in hists else np.nan for x in t.longname
-            ]
 
         full.append(t)
 
