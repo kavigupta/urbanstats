@@ -6,9 +6,7 @@ from urbanstats.geometry.classify_coordinate_zone import classify_coordinate_zon
 from urbanstats.geometry.shapefiles.shapefiles_list import shapefiles
 from urbanstats.protobuf import data_files_pb2
 from urbanstats.protobuf.utils import write_gzip
-from urbanstats.special_cases.simplified_country import all_simplified_countries
 from urbanstats.website_data.sharding import create_filename
-from urbanstats.website_data.table import shapefile_without_ordinals
 
 
 def produce_shape_gzip(folder, r):
@@ -39,9 +37,6 @@ def produce_all_geometry_json(path, valid_names):
         for i in tqdm.trange(table.shape[0]):
             if table.iloc[i].longname in valid_names:
                 produce_shape_gzip(path, table.iloc[i])
-
-    for row in all_simplified_countries(shapefile_without_ordinals()):
-        produce_shape_gzip(path, row)
 
 
 def to_protobuf_polygon(f_python):
