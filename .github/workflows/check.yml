@@ -6,7 +6,7 @@ env:
   BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
 jobs:
   lint:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -18,7 +18,7 @@ jobs:
         working-directory: react
 
   build-and-push-image:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     outputs:
       image: ${{ steps.image.outputs.image }}
     permissions:
@@ -60,7 +60,7 @@ jobs:
           tags: ${{ steps.image.outputs.image }}
 
   lint-python:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
 
     needs: build-and-push-image
     container:
@@ -74,7 +74,7 @@ jobs:
         run: python -m isort urbanstats; python -m black urbanstats; bash -c '[ $(git status --porcelain --untracked-files=no | wc -c) -eq 0 ]  || (git status; git diff; exit 1)'
 
   build-frontend:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     needs: build-and-push-image
     container:
       image: ${{ needs.build-and-push-image.outputs.image }}
@@ -87,7 +87,7 @@ jobs:
           path: react/test/density-db
 
   list-e2e-tests:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
     steps:
@@ -97,7 +97,7 @@ jobs:
         working-directory: react/test
 
   run-e2e-tests:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     needs: [build-and-push-image, build-frontend, list-e2e-tests]
     container:
       image: ${{ needs.build-and-push-image.outputs.image }}
@@ -145,7 +145,7 @@ jobs:
           path: react/changed_screenshots
 
   merge-screenshots:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     needs: [run-e2e-tests]
     if: "!cancelled()"
     steps:
