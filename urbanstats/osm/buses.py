@@ -1,10 +1,8 @@
-import tqdm.auto as tqdm
-
 from .query import query_to_geopandas
 
 
 def national_stops():
-    query = f"""
+    query = """
     [out:json][timeout:1000];
     area(id:3600148838)->.searchArea;
     (

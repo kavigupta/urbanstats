@@ -1,12 +1,12 @@
 from dataclasses import dataclass
 from typing import List
+
 import numpy as np
-
 import pandas as pd
-from permacache import permacache
 import tqdm
+from permacache import permacache
 
-from census_blocks import all_densities_gpd
+from urbanstats.data.census_blocks import all_densities_gpd
 
 
 @dataclass

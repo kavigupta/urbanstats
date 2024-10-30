@@ -1,12 +1,6 @@
 from abc import ABC, abstractmethod
 
-from urbanstats.acs.load import (
-    aggregated_acs_data,
-    aggregated_acs_data_us_pr,
-    get_acs_data,
-)
-from urbanstats.census_2010.usda_food_research_atlas import aggregated_usda_fra
-from urbanstats.geometry.census_aggregation import aggregate_by_census_block
+from urbanstats.acs.load import aggregated_acs_data, aggregated_acs_data_us_pr
 
 ORDER_CATEGORY_MAIN = 0
 ORDER_CATEGORY_OTHER_DENSITIES = 1
@@ -36,10 +30,6 @@ class StatisticCollection(ABC):
         pass
 
     @abstractmethod
-    def category_for_each_statistic(self):
-        pass
-
-    @abstractmethod
     def explanation_page_for_each_statistic(self):
         pass
 
@@ -51,6 +41,7 @@ class StatisticCollection(ABC):
         return ()
 
     def compute_statistics(self, shapefile, statistics_table, shapefile_table):
+        del shapefile
         self.mutate_statistic_table(statistics_table, shapefile_table)
 
     @abstractmethod
@@ -64,9 +55,6 @@ class StatisticCollection(ABC):
     @abstractmethod
     def for_international(self):
         pass
-
-    def order_category_for_each_statistic(self):
-        return self.same_for_each_name(ORDER_CATEGORY_MAIN)
 
     def same_for_each_name(self, value):
         return {name: value for name in self.name_for_each_statistic()}
@@ -93,47 +81,13 @@ class InternationalStatistics(StatisticCollection):
     def for_international(self):
         return True
 
+
 class USAStatistics(StatisticCollection):
     def for_america(self):
         return True
 
     def for_international(self):
         return False
-
-
-
-class CensusStatisticsColection(StatisticCollection):
-    # TODO we should probably have this actually pull the census data, it currently does not.
-    def for_america(self):
-        return True
-
-    def for_international(self):
-        return False
-
-
-class CDCStatisticsCollection(StatisticCollection):
-    # TODO we should probably have this actually pull the CDC data, it currently does not.
-    def for_america(self):
-        return True
-
-    def for_international(self):
-        return False
-
-
-class USDAFRAStatisticsCollection(StatisticCollection):
-    # TODO we should probably have this actually pull the USDA FRA data, it currently does not.
-    def for_america(self):
-        return True
-
-    def for_international(self):
-        return False
-
-    def compute_statistics(self, shapefile, statistics_table, shapefile_table):
-        t = aggregated_usda_fra(shapefile)
-        for column in t.columns:
-            statistics_table[column] = t[column]
-
-        self.mutate_statistic_table(statistics_table, shapefile_table)
 
 
 class ACSStatisticsColection(StatisticCollection):
@@ -187,37 +141,11 @@ class ACSUSPRStatisticsColection(StatisticCollection):
         return False
 
     def compute_statistics(self, shapefile, statistics_table, shapefile_table):
-        for entity_us, entity_pr in self.acs_entity_dict().values():
+        for entities in self.acs_entity_dict().values():
+            entity_us, entity_pr = entities
             acs_data = aggregated_acs_data_us_pr(
                 self.year(), entity_us, entity_pr, shapefile
             )
             for column in acs_data.columns:
                 statistics_table[column] = acs_data[column]
         self.mutate_statistic_table(statistics_table, shapefile_table)
-
-
-class USElectionStatisticsCollection(StatisticCollection):
-    # TODO we should probably have this actually pull the election data, it currently does not.
-    def for_america(self):
-        return True
-
-    def for_international(self):
-        return False
-
-
-class USFeatureDistanceStatisticsCollection(StatisticCollection):
-    # TODO we should probably have this actually pull the feature data, it currently does not.
-    def for_america(self):
-        return True
-
-    def for_international(self):
-        return False
-
-
-class USWeatherStatisticsCollection(StatisticCollection):
-    # TODO we should probably have this actually pull the weather data, it currently does not.
-    def for_america(self):
-        return True
-
-    def for_international(self):
-        return False

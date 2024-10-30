@@ -1,12 +1,13 @@
-from urbanstats.statistics.collections.census_basics import (
-    DENSITY_EXPLANATION_AW,
-    DENSITY_EXPLANATION_PW,
-)
+from urbanstats.data.gpw import compute_gpw_data_for_shapefile
+from urbanstats.statistics.collections.census import DENSITY_EXPLANATION_PW
 from urbanstats.statistics.extra_statistics import HistogramSpec
 from urbanstats.statistics.statistic_collection import InternationalStatistics
 
 
 class GPWStatistics(InternationalStatistics):
+
+    version = 2
+
     def name_for_each_statistic(self):
         return {
             "gpw_population": "Population [GHS-POP]",
@@ -15,15 +16,6 @@ class GPWStatistics(InternationalStatistics):
                 for k in (1, 2, 4)
             },
             "gpw_aw_density": "AW Density [GHS-POP]",
-        }
-
-    def category_for_each_statistic(self):
-        return {
-            "gpw_population": "main",
-            "gpw_pw_density_1": "main",
-            "gpw_pw_density_2": "other_densities",
-            "gpw_pw_density_4": "other_densities",
-            "gpw_aw_density": "main",
         }
 
     def explanation_page_for_each_statistic(self):
@@ -38,6 +30,14 @@ class GPWStatistics(InternationalStatistics):
 
     def quiz_question_unused(self):
         return ["gpw_pw_density_2", "gpw_pw_density_1", "gpw_aw_density"]
+
+    def compute_statistics(self, shapefile, statistics_table, shapefile_table):
+        result, hists = compute_gpw_data_for_shapefile(shapefile)
+        for k, rk in result.items():
+            statistics_table[k] = rk
+        for k, hk in hists.items():
+            statistics_table[k] = hk
+        self.mutate_statistic_table(statistics_table, shapefile_table)
 
     def mutate_statistic_table(self, statistics_table, shapefile_table):
         assert (

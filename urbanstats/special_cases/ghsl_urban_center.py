@@ -46,7 +46,7 @@ def gsl_urban_center_longname_to_subnational_codes():
 
 
 @permacache(
-    f"urbanstats/special_cases/ghsl_urban_center/load_ghsl_urban_center_no_names_3"
+    "urbanstats/special_cases/ghsl_urban_center/load_ghsl_urban_center_no_names_3"
 )
 def load_ghsl_urban_center_no_names():
 
@@ -102,6 +102,7 @@ def compute_mid_by_idx(areas, duplicates, code_to_name):
 
 
 def directions(areas, idx1, idx2):
+    # pylint: disable=no-else-return
     coord1, coord2 = areas.geometry[idx1].centroid, areas.geometry[idx2].centroid
     dlat, dlon = coord2.y - coord1.y, coord2.x - coord1.x
     if abs(dlat) > abs(dlon):

@@ -1,15 +1,14 @@
 import io
-import numpy as np
-import requests
 import zipfile
 
-import pandas as pd
 import geopandas as gpd
-
-from permacache import permacache
+import numpy as np
+import pandas as pd
+import requests
 import tqdm.auto as tqdm
+from permacache import permacache
 
-accident_years = list(range(2010, 2022 + 1))
+accident_years = range(2010, 2022 + 1)
 
 car_occupant = {
     "Driver of a Motor Vehicle In-Transport",
@@ -86,24 +85,26 @@ def pedestrian_fatalities_by_case(year):
 
 
 def pull_data(year, substr):
-    f = io.BytesIO(
+    bytes_f = io.BytesIO(
         requests.get(
-            f"https://static.nhtsa.gov/nhtsa/downloads/FARS/{year}/National/FARS{year}NationalCSV.zip"
+            f"https://static.nhtsa.gov/nhtsa/downloads/FARS/{year}/National/FARS{year}NationalCSV.zip",
+            timeout=1000,
         ).content
     )
-    f = zipfile.ZipFile(f)
-    paths = [x for x in f.namelist() if substr in x.lower()]
-    if len(paths) == 1:
-        accident_path = paths[0]
-    else:
-        raise ValueError(f"Could not find {substr} file in {paths}")
-    acc = pd.read_csv(f.open(accident_path), encoding="latin-1")
+    with zipfile.ZipFile(bytes_f) as zipf:
+        paths = [x for x in zipf.namelist() if substr in x.lower()]
+        if len(paths) == 1:
+            accident_path = paths[0]
+        else:
+            raise ValueError(f"Could not find {substr} file in {paths}")
+        with zipf.open(accident_path) as f:
+            acc = pd.read_csv(f, encoding="latin-1")
     return acc
 
 
 @permacache(
     "urbanstats/data/accidents/accidents_by_region_4",
-    key_function=dict(shapefile=lambda x: x.hash_key),
+    key_function=dict(shapefile=lambda x: x.hash_key, years=list),
 )
 def accidents_by_region(shapefile, years=accident_years):
     sf = shapefile.load_file().reset_index(drop=True)

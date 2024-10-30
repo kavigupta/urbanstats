@@ -1,9 +1,9 @@
 import numpy as np
 from permacache import permacache, stable_hash
 
-from census_blocks import load_raw_census
+from urbanstats.data.census_blocks import load_raw_census
 from urbanstats.weather.era5 import bounding_boxes
-from urbanstats.weather.stats import era5_statistics
+from urbanstats.weather.stats import era5_statistics as era5_statistics_list
 from urbanstats.weather.weather_statistic import compute_statistics
 
 
@@ -86,9 +86,9 @@ def compute_weather_by_block(
     bounding_box_l, coordinates, which_box, index_fractions, data
 ):
     result = np.zeros(coordinates.shape[0]) + np.nan
-    for i in range(len(index_fractions)):
+    for i, index_fractions_i in enumerate(index_fractions):
         result[which_box == i] = interpolate(
-            index_fractions[i], data[bounding_box_l[i][0]]
+            index_fractions_i, data[bounding_box_l[i][0]]
         )
     assert not np.isnan(result).any()
     return result
@@ -118,8 +118,8 @@ def compute_all_weather_by_block(bounding_box_list, coordinates, data):
     "urbanstats/weather/era5/block_statistics",
     key_function=dict(era5_statistics=stable_hash),
 )
-def weather_block_statistics(era5_statistics=era5_statistics):
-    cstats = compute_statistics(era5_statistics, 1991)
+def weather_block_statistics(era5_statistics=tuple(era5_statistics_list)):
+    cstats = compute_statistics(list(era5_statistics), 1991)
     *_, coordinates = load_raw_census()
     bounding_box_l = list(bounding_boxes().items())
     weather_by_block = compute_all_weather_by_block(bounding_box_l, coordinates, cstats)

@@ -1,7 +1,6 @@
 import ast
 import json
 import os
-import shutil
 
 import requests
 
@@ -43,10 +42,12 @@ def copy_up_to(key, new_up_to, folder=None):
     }[key]
     fixed_py = load_fixed_py()
     for retrostat_week in range(fixed_py[key], new_up_to + 1):
-        source = os.path.join("https://urbanstats.org", source_folder, str(retrostat_week))
+        source = os.path.join(
+            "https://urbanstats.org", source_folder, str(retrostat_week)
+        )
         dest = os.path.join(dest_folder, str(retrostat_week))
         print(f"Copying {source} to {dest}")
-        response = requests.get(source)
+        response = requests.get(source, timeout=10)
         if response.status_code == 200:
             data = response.content
         else:
@@ -60,7 +61,7 @@ def copy_up_to(key, new_up_to, folder=None):
         # check that it's valid json
         _ = json.loads(data.decode("utf-8"))
         with open(dest, "wb") as f:
-            f.write(data)       
+            f.write(data)
     fixed_py[key] = new_up_to
     save_fixed_py(fixed_py)
     os.system(f"git add {dest_folder} {fixed_py_file}")

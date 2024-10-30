@@ -3,7 +3,7 @@ import re
 import unicodedata
 from collections import defaultdict
 
-from relationship import type_to_type_category
+from urbanstats.geometry.relationship import type_to_type_category
 from urbanstats.protobuf.utils import save_search_index, save_string_list
 
 # maps types to their search priority scores, which must fit into an uint32. Higher=less important

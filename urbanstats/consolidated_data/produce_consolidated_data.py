@@ -1,13 +1,17 @@
 import json
 import os
 
-import shapely.geometry
 import tqdm.auto as tqdm
 
-from output_geometry import convert_to_protobuf
-from shapefiles import filter_table_for_type, load_file_for_type, shapefiles
+from urbanstats.geometry.shapefiles.shapefiles_list import (
+    filter_table_for_type,
+    load_file_for_type,
+)
 from urbanstats.protobuf import data_files_pb2
 from urbanstats.protobuf.utils import write_gzip
+from urbanstats.statistics.output_statistics_metadata import internal_statistic_names
+from urbanstats.website_data.output_geometry import convert_to_protobuf
+from urbanstats.website_data.table import shapefile_without_ordinals
 
 use = [
     "State",
@@ -43,9 +47,6 @@ dont_use = [
 
 
 def produce_results(row_geo, row):
-    from urbanstats.statistics.output_statistics_metadata import (
-        internal_statistic_names,
-    )
 
     res = row_geo.geometry.simplify(0.01)
     geo = convert_to_protobuf(res)
@@ -71,8 +72,6 @@ def produce_all_results_from_tables(geo_table, data_table):
 
 
 def produce_results_for_type(folder, typ):
-    from create_website import shapefile_without_ordinals
-
     print(typ)
     folder = f"{folder}/consolidated/"
     try:
@@ -97,11 +96,6 @@ def full_consolidated_data(folder):
         produce_results_for_type(folder, typ)
 
 
-def output_names():
-    mapper_folder = "react/src/data/mapper"
-    try:
-        os.makedirs(mapper_folder)
-    except FileExistsError:
-        pass
+def output_names(mapper_folder):
     with open(f"{mapper_folder}/used_geographies.json", "w") as f:
         json.dump(use, f)

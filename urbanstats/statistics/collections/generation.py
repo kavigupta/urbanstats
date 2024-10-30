@@ -1,3 +1,4 @@
+# pylint: disable=duplicate-code
 from urbanstats.acs.load import ACSDataEntity
 from urbanstats.statistics.statistic_collection import ACSStatisticsColection
 from urbanstats.statistics.utils import fractionalize
@@ -13,9 +14,6 @@ class GenerationStatistics(ACSStatisticsColection):
             "generation_genz": "Gen Z %",
             "generation_genalpha": "Gen Alpha %",
         }
-
-    def category_for_each_statistic(self):
-        return self.same_for_each_name("generation")
 
     def explanation_page_for_each_statistic(self):
         return self.same_for_each_name("generation")

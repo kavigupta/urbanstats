@@ -1,18 +1,22 @@
+import pandas as pd
+from permacache import permacache
+
+from urbanstats.data.census_blocks import all_densities_gpd
+from urbanstats.features.extract_data import feature_data
 from urbanstats.features.feature import feature_columns
-from urbanstats.statistics.statistic_collection import (
-    USFeatureDistanceStatisticsCollection,
-)
+from urbanstats.geometry.census_aggregation import aggregate_by_census_block
+from urbanstats.osm.parks import park_overlap_percentages_all
+from urbanstats.statistics.statistic_collection import USAStatistics
 
 
-class USFeatureDistanceStatistics(USFeatureDistanceStatisticsCollection):
+class USFeatureDistanceStatistics(USAStatistics):
+    version = 2
+
     def name_for_each_statistic(self):
         return {
             "park_percent_1km_v2": "PW Mean % of parkland within 1km",
             **feature_columns,
         }
-
-    def category_for_each_statistic(self):
-        return self.same_for_each_name("feature")
 
     def explanation_page_for_each_statistic(self):
         return {
@@ -28,6 +32,7 @@ class USFeatureDistanceStatistics(USFeatureDistanceStatisticsCollection):
         }
 
     def quiz_question_names(self):
+        # pylint: disable=line-too-long
         return {
             "park_percent_1km_v2": "!FULL Which has more access to parks (higher % of area within 1km of a park, population weighted)?",
             "mean_dist_Hospital_updated": "!FULL Which has less access to hospitals (higher population-weighted mean distance)?",
@@ -46,6 +51,15 @@ class USFeatureDistanceStatistics(USFeatureDistanceStatisticsCollection):
             "within_Hospital_10",
         ]
 
+    def compute_statistics(self, shapefile, statistics_table, shapefile_table):
+        feats = features_by_region(shapefile)
+        for feat in feature_columns:
+            statistics_table[feat] = feats[feat]
+
+        statistics_table["park_percent_1km_v2"] = feats["park_percent_1km_v2"]
+
+        self.mutate_statistic_table(statistics_table, shapefile_table)
+
     def mutate_statistic_table(self, statistics_table, shapefile_table):
         for feat in feature_columns:
             statistics_table[feat] = (
@@ -53,3 +67,23 @@ class USFeatureDistanceStatistics(USFeatureDistanceStatisticsCollection):
             )
 
         statistics_table["park_percent_1km_v2"] /= statistics_table["population"]
+
+
+@permacache(
+    "urbanstats/statistics/collections/feature/features_by_region",
+    key_function=dict(shapefile=lambda x: x.hash_key),
+)
+def features_by_region(shapefile):
+    feats = feature_data()
+    blocks_gdf = all_densities_gpd()
+    return aggregate_by_census_block(
+        2020,
+        shapefile,
+        pd.DataFrame(
+            {
+                **feats,
+                "park_percent_1km_v2": park_overlap_percentages_all(r=1)
+                * blocks_gdf.population,
+            }
+        ),
+    )

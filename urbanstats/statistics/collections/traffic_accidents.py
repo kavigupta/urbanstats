@@ -1,11 +1,10 @@
 import numpy as np
-import pandas as pd
-from urbanstats.data.accidents import accidents_by_region, accident_years
-from urbanstats.statistics.collections.census_2010 import (
+
+from urbanstats.data.accidents import accidents_by_region
+from urbanstats.statistics.collections.census import (
     compute_population,
     population_by_year,
 )
-from urbanstats.statistics.extra_statistics import TimeSeriesSpec
 from urbanstats.statistics.statistic_collection import USAStatistics
 
 
@@ -19,9 +18,6 @@ class NHTSAAccidentStatistics(USAStatistics):
             "traffic_fatalities_last_decade": "Total Traffic Fatalities In Last Decade",
             "traffic_fatalities_ped_last_decade": "Total Pedestrian/Cyclist Fatalities In Last Decade",
         }
-
-    def category_for_each_statistic(self):
-        return self.same_for_each_name("transportation")
 
     def explanation_page_for_each_statistic(self):
         return self.same_for_each_name("nhtsa_accidents")
@@ -49,10 +45,10 @@ class NHTSAAccidentStatistics(USAStatistics):
         pop = population_by_year(shapefile, no_pr=True)
         acc_per_cap_all = {
             y: {
-                k: acc_raw_all[y][k] / compute_population(pop, y)
-                for k in acc_raw_all[y]
+                k: for_year_and_key / compute_population(pop, y)
+                for k, for_year_and_key in for_year.items()
             }
-            for y in acc_raw_all
+            for y, for_year in acc_raw_all.items()
         }
         last_decade = sorted(acc_raw_all)[-10:]
         for prefix, key in [

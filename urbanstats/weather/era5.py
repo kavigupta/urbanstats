@@ -10,8 +10,9 @@ import suncalc
 import tqdm
 import us
 import xarray as xr
-from permacache import permacache, stable_hash
+from permacache import permacache
 
+from urbanstats.geometry.shapefiles.shapefiles.subnational_regions import STATES_USA
 from urbanstats.weather.global_bounding_boxes import global_bounding_boxes
 
 all_times = [
@@ -101,8 +102,29 @@ def light(time, latitude, longitude):
 
     date = np.array(time)
 
-    assert ((date[1:] - date[:-1]).astype(np.int) == hour).all()
+    assert ((date[1:] - date[:-1]).astype(np.int64) == hour).all()
 
+    date, lat, lon = date_grid(latitude, longitude, date)
+
+    azimuth_begin = suncalc.get_position(date, lon, lat)["altitude"]
+    azimuth_end = suncalc.get_position(date + hour, lon, lat)["altitude"]
+    day = (azimuth_begin > 0) & (azimuth_end > 0)
+    sunrise = (azimuth_begin < 0) & (azimuth_end > 0)
+    sunset = (azimuth_begin > 0) & (azimuth_end < 0)
+
+    overall = np.zeros(day.shape)
+    overall[day] = 1
+    overall[sunrise] = azimuth_end[sunrise] / (
+        azimuth_end[sunrise] - azimuth_begin[sunrise]
+    )
+    overall[sunset] = (0 - azimuth_begin[sunset]) / (
+        azimuth_end[sunset] - azimuth_begin[sunset]
+    )
+
+    return overall
+
+
+def date_grid(latitude, longitude, date):
     lat = np.array(latitude)
     lon = np.array(longitude)
 
@@ -113,25 +135,7 @@ def light(time, latitude, longitude):
     date = np.repeat(np.repeat(date[:, None, None], nlat, axis=1), nlon, axis=2)
     lat = np.repeat(np.repeat(lat[None, :, None], ndate, axis=0), nlon, axis=2)
     lon = np.repeat(np.repeat(lon[None, None, :], ndate, axis=0), nlat, axis=1)
-
-    azimuth_begin = suncalc.get_position(date, lon, lat)["altitude"]
-    azimuth_end = suncalc.get_position(date + hour, lon, lat)["altitude"]
-    day = (azimuth_begin > 0) & (azimuth_end > 0)
-    sunrise = (azimuth_begin < 0) & (azimuth_end > 0)
-    sunset = (azimuth_begin > 0) & (azimuth_end < 0)
-
-    frac_sunrise = azimuth_end[sunrise] / (
-        azimuth_end[sunrise] - azimuth_begin[sunrise]
-    )
-    frac_sunset = (0 - azimuth_begin[sunset]) / (
-        azimuth_end[sunset] - azimuth_begin[sunset]
-    )
-    overall = np.zeros(day.shape)
-    overall[day] = 1
-    overall[sunrise] = frac_sunrise
-    overall[sunset] = frac_sunset
-
-    return overall
+    return date, lat, lon
 
 
 def collect_main_statistics(ds):
@@ -217,7 +221,7 @@ def precipitation_statistics(bounding_box, year, month):
         precipitation_type = np.array(ds.ptype)
 
         valid_time = np.array(ds.valid_time)
-        month_each = valid_time.astype("datetime64[M]").astype(np.int) % 12 + 1
+        month_each = valid_time.astype("datetime64[M]").astype(np.int64) % 12 + 1
         time_mask = month_each == int(month)
 
     total_precip = total_precip[time_mask]
@@ -248,10 +252,10 @@ def precipitation_statistics(bounding_box, year, month):
 
 @permacache("urbanstats/weather/era5/bounding_boxes")
 def bounding_boxes():
-    from shapefiles import shapefiles
-
-    shape = shapefiles["states"].load_file().copy()
-    shape["state"] = shape.shortname.apply(lambda x: us.states.lookup(x))
+    shape = STATES_USA.load_file().copy()
+    shape["state"] = shape.shortname.apply(us.states.lookup)
+    # this is not a singleton comparison, it's a vectorized comparison
+    # pylint: disable=singleton-comparison
     shape = shape[shape.state != None]
     shape = shape[
         shape.state.apply(
@@ -301,17 +305,17 @@ def dates_in_month(year, month):
 
 # @permacache("urbanstats/weather/era5/all_results_2", key_function=dict(quiet=None))
 def all_results(
-    *, bounding_boxes=bounding_boxes, earliest_year=1990, regions=None, quiet=False
+    *, bboxes=bounding_boxes, earliest_year=1990, regions=None, quiet=False
 ):
     if regions is None:
-        regions = list(bounding_boxes().keys())
+        regions = list(bboxes().keys())
     dates = []
     results = {k: [] for k in regions}
     for year in range(2021, earliest_year - 1, -1):
         for month in range(1, 1 + 12):
             dates_this = dates_in_month(year, month)
             for k in tqdm.tqdm(results, desc=f"{year} {month}"):
-                bounds = bounding_boxes()[k]
+                bounds = bboxes()[k]
                 if not quiet:
                     print(year, month, k)
                 results[k].append(
@@ -331,4 +335,4 @@ def all_results(
 
 
 if __name__ == "__main__":
-    all_results(bounding_boxes=lambda: {k: k for k in global_bounding_boxes()})
+    all_results(bboxes=lambda: {k: k for k in global_bounding_boxes()})

@@ -30,7 +30,7 @@ jobs:
 
       - name: Create the tag by hashing react/test/Dockerfile
         id: tag
-        run: echo "tag=$(shasum -a 256 react/test/Dockerfile | cut -d ' ' -f 1)" >> $GITHUB_OUTPUT
+        run: echo "tag=$(shasum -a 256 react/test/Dockerfile requirements.txt | shasum -a 256 | cut -d ' ' -f 1)" >> $GITHUB_OUTPUT
 
       - name: concat the Docker image name
         id: image
@@ -58,6 +58,20 @@ jobs:
           file: react/test/Dockerfile
           push: true
           tags: ${{ steps.image.outputs.image }}
+
+  lint-python:
+    runs-on: ubuntu-22.04
+
+    needs: build-and-push-image
+    container:
+      image: ${{ needs.build-and-push-image.outputs.image }}
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Lint with pylint
+        run: python -m pylint --prefer-stubs=true urbanstats
+      - name: Check black
+        run: python -m isort urbanstats; python -m black urbanstats; bash -c '[ $(git status --porcelain --untracked-files=no | wc -c) -eq 0 ]  || (git status; git diff; exit 1)'
 
   build-frontend:
     runs-on: ubuntu-22.04

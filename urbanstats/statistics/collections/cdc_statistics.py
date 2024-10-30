@@ -1,9 +1,10 @@
 from urbanstats.census_2010.cdc import aggregated_cdc_table
-from urbanstats.statistics.statistic_collection import CDCStatisticsCollection
+from urbanstats.statistics.statistic_collection import USAStatistics
 
 
-class CDCStatistics(CDCStatisticsCollection):
+class CDCStatistics(USAStatistics):
     def name_for_each_statistic(self):
+        # pylint: disable=line-too-long
         cdc_columns = {
             "GHLTH": "Fair or poor self-rated health status %",  # "GHLTH": "Fair or poor self-rated health status among adults aged >=18 years",
             "PHLTH": "Physical health not good for two weeks in last year %",  # "PHLTH": "Physical health not good for >=14 days among adults aged >=18 years",
@@ -58,9 +59,6 @@ class CDCStatistics(CDCStatisticsCollection):
         }
         out = {f"{k}_cdc_2": v for k, v in cdc_columns.items()}
         return out
-
-    def category_for_each_statistic(self):
-        return self.same_for_each_name("health")
 
     def explanation_page_for_each_statistic(self):
         return self.same_for_each_name("health")

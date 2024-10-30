@@ -11,9 +11,6 @@ class InsuranceTypeStatistics(ACSStatisticsColection):
             "insurance_coverage_private": "Private Insurance %",
         }
 
-    def category_for_each_statistic(self):
-        return self.same_for_each_name("misc")
-
     def explanation_page_for_each_statistic(self):
         return self.same_for_each_name("insurance")
 
@@ -36,6 +33,7 @@ class InsuranceTypeStatistics(ACSStatisticsColection):
         return "insurance_coverage"
 
     def acs_entity(self):
+        # pylint: disable=line-too-long
         return ACSDataEntity(
             "HEALTH INSURANCE COVERAGE STATUS AND TYPE BY WORK EXPERIENCE",
             "population",

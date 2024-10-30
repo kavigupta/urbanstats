@@ -5,7 +5,7 @@ import tqdm
 from permacache import permacache
 from scipy.spatial import cKDTree
 
-from census_blocks import load_raw_census
+from urbanstats.data.census_blocks import load_raw_census
 from urbanstats.geometry.ellipse import Ellipse
 
 
@@ -49,6 +49,8 @@ def census_block_coordinates():
     key_function=dict(feature=lambda x: x.hash_key),
 )
 def minimum_distance_by_block(feature):
+    # pylint: disable=too-many-locals
+
     print("Computing minimum distance by block", feature.name)
     census_blocks = census_block_coordinates()
     feats = feature.load_fn()

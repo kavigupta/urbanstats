@@ -7,20 +7,18 @@ from urbanstats.statistics.utils import fractionalize
 class OccupationStatistics(ACSStatisticsColection):
     def __init__(self):
         super().__init__()
-        assert set(self.category_for_each_statistic()) == set(
+        assert set(self.name_for_each_statistic()) == set(
             self.occupation_name_to_description()
         )
 
     def name_for_each_statistic(self):
         return occupation.occupation_display
 
-    def category_for_each_statistic(self):
-        return self.same_for_each_name("occupation")
-
     def explanation_page_for_each_statistic(self):
         return self.same_for_each_name("industry_and_occupation")
 
     def quiz_question_names(self):
+        # pylint: disable=line-too-long
         quick_names = {
             "occupation_architecture_and_engineering_occupations": "higher % of workers employed as architects and engineers",
             "occupation_computer_and_mathematical_occupations": "higher % of workers employed in computer and mathematical occupations",

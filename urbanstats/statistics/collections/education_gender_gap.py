@@ -1,3 +1,4 @@
+# pylint: disable=duplicate-code
 from urbanstats.acs.load import ACSDataEntity
 from urbanstats.statistics.statistic_collection import ACSStatisticsColection
 from urbanstats.statistics.utils import fractionalize
@@ -10,9 +11,6 @@ class EducationGenderGapStatistics(ACSStatisticsColection):
             "female_ugrad_gap_4": "% of women with undergraduate education - % of men with undergraduate education",
             "female_grad_gap_4": "% of women with graduate education - % of men with graduate education",
         }
-
-    def category_for_each_statistic(self):
-        return self.same_for_each_name("education")
 
     def explanation_page_for_each_statistic(self):
         return self.same_for_each_name("education")

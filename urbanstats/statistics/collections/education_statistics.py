@@ -1,6 +1,5 @@
 from urbanstats.acs.load import ACSDataEntity
 from urbanstats.statistics.statistic_collection import ACSStatisticsColection
-from urbanstats.statistics.utils import fractionalize
 
 
 class EducationStatistics(ACSStatisticsColection):
@@ -13,9 +12,6 @@ class EducationStatistics(ACSStatisticsColection):
             "education_field_humanities": "Undergrad Humanities %",
             "education_field_business": "Undergrad Business %",
         }
-
-    def category_for_each_statistic(self):
-        return self.same_for_each_name("education")
 
     def explanation_page_for_each_statistic(self):
         return self.same_for_each_name("education")

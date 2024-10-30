@@ -1,19 +1,13 @@
-from election_data import (
-    aggregated_election_results,
-    vest_elections,
-)
-from urbanstats.statistics.statistic_collection import USElectionStatisticsCollection
+from urbanstats.data.election_data import aggregated_election_results, vest_elections
+from urbanstats.statistics.statistic_collection import USAStatistics
 
 
-class USElectionStatistics(USElectionStatisticsCollection):
+class USElectionStatistics(USAStatistics):
     def name_for_each_statistic(self):
         return {
             **{(elect.name, "margin"): elect.name for elect in vest_elections},
             ("2016-2020 Swing", "margin"): "2016-2020 Swing",
         }
-
-    def category_for_each_statistic(self):
-        return self.same_for_each_name("election")
 
     def explanation_page_for_each_statistic(self):
         return self.same_for_each_name("election")

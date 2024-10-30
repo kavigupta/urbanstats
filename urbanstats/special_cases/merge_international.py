@@ -1,4 +1,3 @@
-import re
 from collections import Counter
 
 import numpy as np
@@ -44,7 +43,7 @@ def merge_international_row(row_international, row_domestic):
 
 
 def merge_international(table):
-    full_longname_to_idx = {name: idx for name, idx in zip(table.longname, table.index)}
+    full_longname_to_idx = dict(zip(table.longname, table.index))
     intl_mask = table.longname.apply(lambda x: "[SN]" in x)
     indices_to_remove = set()
     additional_rows = []

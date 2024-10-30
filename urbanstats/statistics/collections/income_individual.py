@@ -11,9 +11,6 @@ class IncomeIndividual(ACSStatisticsColection):
             "individual_income_over_100k": "Individual Income > $100k %",
         }
 
-    def category_for_each_statistic(self):
-        return self.same_for_each_name("income")
-
     def explanation_page_for_each_statistic(self):
         return self.same_for_each_name("income")
 
@@ -40,6 +37,7 @@ class IncomeIndividual(ACSStatisticsColection):
         return "household_income"
 
     def acs_entity(self):
+        # pylint: disable=line-too-long
         return ACSDataEntity(
             "SEX BY WORK EXPERIENCE IN THE PAST 12 MONTHS BY INCOME IN THE PAST 12 MONTHS (IN 2021 INFLATION-ADJUSTED DOLLARS) FOR THE POPULATION 15 YEARS AND OVER",
             "population_18",

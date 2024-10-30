@@ -3,8 +3,8 @@ import pandas as pd
 import tqdm.auto as tqdm
 from permacache import permacache
 
-from census_blocks import all_densities_gpd, load_raw_census
 from urbanstats.acs.load import extract_tract_geoid
+from urbanstats.data.census_blocks import all_densities_gpd, load_raw_census
 from urbanstats.geometry.census_aggregation import aggregate_by_census_block
 
 
