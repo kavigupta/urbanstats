@@ -26,6 +26,7 @@ export function QuerySettingsConnection({ settingsKeys }: { settingsKeys: Boolea
         if (settingsKeys.some(key => JSON.stringify(settingsFromQueryParams[key]) !== JSON.stringify(settings.get(key)))) {
             settings.enterStagedMode(Object.fromEntries(settingsKeys.map(key => [key, settingsFromQueryParams[key]])) as unknown as Partial<SettingsDictionary>)
         }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- We should only load params on first load.
     }, [])
 
     // Settings -> Query Params

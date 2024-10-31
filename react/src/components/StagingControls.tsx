@@ -23,7 +23,7 @@ export function StagingControls(): ReactNode {
             padding: '10px',
             textAlign: 'center',
             marginBottom: '10px',
-            paddingBottom: '5px'
+            paddingBottom: '5px',
         }}
         >
             <div>
