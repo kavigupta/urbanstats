@@ -66,11 +66,14 @@
     font-family: 'Jost', 'Arial', sans-serif;
 }
 
+button, select {
+    font-family: 'Jost', 'Arial', sans-serif;
+}
+
 .centered_text {
     font-family: 'Jost', 'Arial', sans-serif;
     text-align: center;
 }
-
 
 .h1 {
     font-size: 1.5em;
