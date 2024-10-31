@@ -233,7 +233,7 @@ test('article-universe-compare-different', async (t) => {
 
 urbanstatsFixture('article universe state test', `/article.html?longname=California%2C+USA`)
 
-test.only('article-universe-state-world', async (t) => {
+test('article-universe-state-world', async (t) => {
     // go to the world
     await t
         .click(Selector('img').withAttribute('class', 'universe-selector'))
