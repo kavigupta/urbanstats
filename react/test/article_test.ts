@@ -18,7 +18,7 @@ test('neighboring-state-test', async (t) => {
     await t
         .click(Selector('path').withAttribute('class', /tag-Arizona,_USA/))
     await t.expect(getLocation())
-        .eql(`${TARGET}/article.html?longname=Arizona%2C+USA`)
+        .eql(`${TARGET}/article.html?longname=Arizona%2C+USA&s=3t2X5xvsKo`)
 })
 
 urbanstatsFixture('shorter article test', `/article.html?longname=San+Marino+city%2C+California%2C+USA`)
@@ -38,7 +38,7 @@ test('editable-number', async (t) => {
         .pressKey('enter')
     await t.expect(editableNumber.innerText).eql('3')
     await t.expect(getLocation())
-        .eql(`${TARGET}/article.html?longname=Chicago+city%2C+Illinois%2C+USA`)
+        .eql(`${TARGET}/article.html?longname=Chicago+city%2C+Illinois%2C+USA&s=3t2X5xvsKo`)
 })
 
 test('lr-buttons', async (t) => {
@@ -50,29 +50,29 @@ test('lr-buttons', async (t) => {
     await t
         .click(prev)
     await t.expect(getLocation())
-        .eql(`${TARGET}/article.html?longname=Fortuna+city%2C+California%2C+USA`)
+        .eql(`${TARGET}/article.html?longname=Fortuna+city%2C+California%2C+USA&s=3t2X5xvsKo`)
     await t
         .click(next)
     await t.expect(getLocation())
-        .eql(`${TARGET}/article.html?longname=San+Marino+city%2C+California%2C+USA`)
+        .eql(`${TARGET}/article.html?longname=San+Marino+city%2C+California%2C+USA&s=3t2X5xvsKo`)
     await t
         .click(next)
     await t.expect(getLocation())
-        .eql(`${TARGET}/article.html?longname=Lakewood+Park+CDP%2C+Florida%2C+USA`)
+        .eql(`${TARGET}/article.html?longname=Lakewood+Park+CDP%2C+Florida%2C+USA&s=3t2X5xvsKo`)
     await t
         .click(prev)
     await t.expect(getLocation())
-        .eql(`${TARGET}/article.html?longname=San+Marino+city%2C+California%2C+USA`)
+        .eql(`${TARGET}/article.html?longname=San+Marino+city%2C+California%2C+USA&s=3t2X5xvsKo`)
 
     await t.click(prev_overall)
     await t.expect(getLocation())
-        .eql(`${TARGET}/article.html?longname=Havre+High+School+District%2C+Montana%2C+USA`)
+        .eql(`${TARGET}/article.html?longname=Havre+High+School+District%2C+Montana%2C+USA&s=3t2X5xvsKo`)
     await t.click(next_overall)
     await t.expect(getLocation())
-        .eql(`${TARGET}/article.html?longname=San+Marino+city%2C+California%2C+USA`)
+        .eql(`${TARGET}/article.html?longname=San+Marino+city%2C+California%2C+USA&s=3t2X5xvsKo`)
     await t.click(next_overall)
     await t.expect(getLocation())
-        .eql(`${TARGET}/article.html?longname=78225%2C+USA`)
+        .eql(`${TARGET}/article.html?longname=78225%2C+USA&s=3t2X5xvsKo`)
 })
 
 test('san-marino-2010-health', async (t) => {
@@ -137,7 +137,7 @@ test('article-universe-selector-test-california', async (t) => {
                 .withAttribute('class', 'universe-selector-option')
                 .withAttribute('alt', 'California, USA'))
     await t.expect(getLocation())
-        .eql(`${TARGET}/article.html?longname=San+Marino+city%2C+California%2C+USA&universe=California%2C+USA`)
+        .eql(`${TARGET}/article.html?longname=San+Marino+city%2C+California%2C+USA&s=3t2X5xvsKo&universe=California%2C+USA`)
 })
 
 urbanstatsFixture('article universe selector test international', `/article.html?longname=Delhi+%5BNew+Delhi%5D+Urban+Center%2C+India`)
@@ -152,7 +152,7 @@ test('article-universe-selector-test-india', async (t) => {
                 .withAttribute('class', 'universe-selector-option')
                 .withAttribute('alt', 'India'))
     await t.expect(getLocation())
-        .eql(`${TARGET}/article.html?longname=Delhi+%5BNew+Delhi%5D+Urban+Center%2C+India&universe=India`)
+        .eql(`${TARGET}/article.html?longname=Delhi+%5BNew+Delhi%5D+Urban+Center%2C+India&s=3t2X5xvsKo&universe=India`)
     await screencap(t)
 })
 
@@ -163,7 +163,7 @@ test('article-universe-right-arrow', async (t) => {
     await t
         .click(Selector('a').withText('>'))
     await t.expect(getLocation())
-        .eql(`${TARGET}/article.html?longname=Camp+Pendleton+South+CDP%2C+California%2C+USA&universe=California%2C+USA`)
+        .eql(`${TARGET}/article.html?longname=Camp+Pendleton+South+CDP%2C+California%2C+USA&universe=California%2C+USA&s=3t2X5xvsKo`)
 })
 
 test('article-universe-ordinal', async (t) => {
@@ -176,7 +176,7 @@ test('article-universe-ordinal', async (t) => {
         .typeText(editableNumber, '3')
         .pressKey('enter')
     await t.expect(getLocation())
-        .eql(`${TARGET}/article.html?longname=San+Jose+city%2C+California%2C+USA&universe=California%2C+USA`)
+        .eql(`${TARGET}/article.html?longname=San+Jose+city%2C+California%2C+USA&universe=California%2C+USA&s=3t2X5xvsKo`)
 })
 
 test('article-universe-statistic-page', async (t) => {
@@ -192,7 +192,7 @@ test('article-universe-related-button', async (t) => {
     await t
         .click(Selector('a').withText('Los Angeles County'))
     await t.expect(getLocation())
-        .eql(`${TARGET}/article.html?longname=Los+Angeles+County%2C+California%2C+USA&universe=California%2C+USA`)
+        .eql(`${TARGET}/article.html?longname=Los+Angeles+County%2C+California%2C+USA&universe=California%2C+USA&s=3t2X5xvsKo`)
 })
 
 test('article-universe-search', async (t) => {
@@ -202,7 +202,7 @@ test('article-universe-search', async (t) => {
     await t
         .pressKey('enter')
     await t.expect(getLocation())
-        .eql(`${TARGET}/article.html?longname=Chino+city%2C+California%2C+USA&universe=California%2C+USA`)
+        .eql(`${TARGET}/article.html?longname=Chino+city%2C+California%2C+USA&universe=California%2C+USA&s=3t2X5xvsKo`)
 })
 
 test('article-universe-compare', async (t) => {
@@ -233,7 +233,7 @@ test('article-universe-compare-different', async (t) => {
 
 urbanstatsFixture('article universe state test', `/article.html?longname=California%2C+USA`)
 
-test('article-universe-state-world', async (t) => {
+test.only('article-universe-state-world', async (t) => {
     // go to the world
     await t
         .click(Selector('img').withAttribute('class', 'universe-selector'))
@@ -243,7 +243,7 @@ test('article-universe-state-world', async (t) => {
                 .withAttribute('class', 'universe-selector-option')
                 .withAttribute('alt', 'world'))
     await t.expect(getLocation())
-        .eql(`${TARGET}/article.html?longname=California%2C+USA&universe=world`)
+        .eql(`${TARGET}/article.html?longname=California%2C+USA&s=3t2X5xvsKo&universe=world`)
     // screenshot
     await screencap(t)
 })
@@ -256,7 +256,7 @@ test('article-universe-state-from-subnational', async (t) => {
     await t
         .click(Selector('a').withText('>'))
     await t.expect(getLocation())
-        .eql(`${TARGET}/article.html?longname=California%2C+USA&universe=world`)
+        .eql(`${TARGET}/article.html?longname=California%2C+USA&universe=world&s=3t2X5xvsKo`)
     await screencap(t)
 })
 
