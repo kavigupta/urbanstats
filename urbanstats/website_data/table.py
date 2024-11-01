@@ -19,7 +19,7 @@ from urbanstats.universe.annotate_universes import (
 
 
 @permacache(
-    "population_density/stats_for_shapefile/compute_statistics_for_shapefile_25",
+    "population_density/stats_for_shapefile/compute_statistics_for_shapefile_26",
     key_function=dict(sf=lambda x: x.hash_key, statistic_collections=stable_hash),
     multiprocess_safe=True,
 )
