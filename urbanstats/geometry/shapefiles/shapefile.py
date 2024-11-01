@@ -72,5 +72,6 @@ class Shapefile:
         s = s.to_crs("EPSG:4326")
         return s
 
+
 class EmptyShapefileError(Exception):
     pass

@@ -101,5 +101,7 @@ def load_file_for_type(typ):
     [loaded_file] = [x for x in shapefiles.values() if x.meta["type"] == typ]
     loaded_file = loaded_file.load_file()
     if is_internationalized:
-        loaded_file = loaded_file[loaded_file.longname.apply(lambda x: x.endswith(", USA"))]
+        loaded_file = loaded_file[
+            loaded_file.longname.apply(lambda x: x.endswith(", USA"))
+        ]
     return loaded_file
