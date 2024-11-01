@@ -19,7 +19,7 @@ from urbanstats.universe.annotate_universes import (
 
 
 @permacache(
-    "population_density/stats_for_shapefile/compute_statistics_for_shapefile_25",
+    "population_density/stats_for_shapefile/compute_statistics_for_shapefile_28",
     key_function=dict(sf=lambda x: x.hash_key, statistic_collections=stable_hash),
     multiprocess_safe=True,
 )
@@ -33,12 +33,24 @@ def compute_statistics_for_shapefile(
     for k in sf.meta:
         result[k] = sf.meta[k]
 
+    statistics = {}
+
     for collection in statistic_collections:
         passes = collection.for_america() and sf.american
         passes = passes or (collection.for_international() and sf.include_in_gpw)
         if passes:
-            collection.compute_statistics(sf, result, sf_fr)
+            statistics.update(
+                collection.compute_statistics_dictionary(
+                    shapefile=sf,
+                    existing_statistics={
+                        k: statistics[k] for k in collection.dependencies()
+                    },
+                    shapefile_table=sf_fr,
+                )
+            )
 
+    statistics = pd.DataFrame(statistics)
+    result = pd.concat([result, statistics], axis=1)
     return result
 
 
@@ -62,6 +74,7 @@ def american_shapefile():
     duplicates = {k: v for k, v in Counter(full.longname).items() if v > 1}
     assert not duplicates, str(duplicates)
     return full
+
 
 def international_shapefile():
     ts = []

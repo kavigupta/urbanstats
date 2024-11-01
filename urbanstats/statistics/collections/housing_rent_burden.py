@@ -25,7 +25,7 @@ class HousingRentBurden(ACSStatisticsColection):
             "rent_burden_20_to_40",
         ]
 
-    def mutate_statistic_table(self, statistics_table, shapefile_table):
+    def mutate_acs_results(self, statistics_table):
         fractionalize(
             statistics_table,
             "rent_burden_under_20",

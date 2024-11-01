@@ -51,22 +51,27 @@ class USFeatureDistanceStatistics(USAStatistics):
             "within_Hospital_10",
         ]
 
-    def compute_statistics(self, shapefile, statistics_table, shapefile_table):
+    def dependencies(self):
+        return ["population"]
+
+    def compute_statistics_dictionary(
+        self, *, shapefile, existing_statistics, shapefile_table
+    ):
+        statistics_table = {}
         feats = features_by_region(shapefile)
         for feat in feature_columns:
             statistics_table[feat] = feats[feat]
 
         statistics_table["park_percent_1km_v2"] = feats["park_percent_1km_v2"]
 
-        self.mutate_statistic_table(statistics_table, shapefile_table)
-
-    def mutate_statistic_table(self, statistics_table, shapefile_table):
         for feat in feature_columns:
             statistics_table[feat] = (
-                statistics_table[feat] / statistics_table["population"]
+                statistics_table[feat] / existing_statistics["population"]
             )
 
-        statistics_table["park_percent_1km_v2"] /= statistics_table["population"]
+        statistics_table["park_percent_1km_v2"] /= existing_statistics["population"]
+
+        return statistics_table
 
 
 @permacache(

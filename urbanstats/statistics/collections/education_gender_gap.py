@@ -25,7 +25,7 @@ class EducationGenderGapStatistics(ACSStatisticsColection):
             "female_grad_gap_4",
         ]
 
-    def mutate_statistic_table(self, statistics_table, shapefile_table):
+    def mutate_acs_results(self, statistics_table):
         fractionalize(
             statistics_table,
             "female_none_4",
