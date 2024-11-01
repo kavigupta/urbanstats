@@ -79,6 +79,3 @@ class SegregationStatistics(USAStatistics):
         self.add_stats(statistics_table, stats_2020, None)
         self.add_stats(statistics_table, stats_2010, stats_2020)
         self.add_stats(statistics_table, stats_2000, stats_2020)
-
-    def mutate_statistic_table(self, statistics_table, shapefile_table):
-        raise NotImplementedError

@@ -37,9 +37,7 @@ class GPWStatistics(InternationalStatistics):
             statistics_table[k] = rk
         for k, hk in hists.items():
             statistics_table[k] = hk
-        self.mutate_statistic_table(statistics_table, shapefile_table)
 
-    def mutate_statistic_table(self, statistics_table, shapefile_table):
         assert (
             "area" in statistics_table
         ), "area not in statistics table. I know this should probably be creating it. I'll fix it later."

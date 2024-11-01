@@ -58,9 +58,6 @@ class USFeatureDistanceStatistics(USAStatistics):
 
         statistics_table["park_percent_1km_v2"] = feats["park_percent_1km_v2"]
 
-        self.mutate_statistic_table(statistics_table, shapefile_table)
-
-    def mutate_statistic_table(self, statistics_table, shapefile_table):
         for feat in feature_columns:
             statistics_table[feat] = (
                 statistics_table[feat] / statistics_table["population"]

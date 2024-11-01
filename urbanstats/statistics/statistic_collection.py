@@ -40,12 +40,8 @@ class StatisticCollection(ABC):
     def quiz_question_unused(self):
         return ()
 
-    def compute_statistics(self, shapefile, statistics_table, shapefile_table):
-        del shapefile
-        self.mutate_statistic_table(statistics_table, shapefile_table)
-
     @abstractmethod
-    def mutate_statistic_table(self, statistics_table, shapefile_table):
+    def compute_statistics(self, shapefile, statistics_table, shapefile_table):
         pass
 
     @abstractmethod
@@ -116,7 +112,11 @@ class ACSStatisticsColection(StatisticCollection):
             acs_data = aggregated_acs_data(self.year(), entity, shapefile)
             for column in acs_data.columns:
                 statistics_table[column] = acs_data[column]
-        self.mutate_statistic_table(statistics_table, shapefile_table)
+        self.mutate_acs_results(statistics_table)
+
+    @abstractmethod
+    def mutate_acs_results(self, statistics_table):
+        pass
 
 
 class ACSUSPRStatisticsColection(StatisticCollection):
@@ -148,4 +148,8 @@ class ACSUSPRStatisticsColection(StatisticCollection):
             )
             for column in acs_data.columns:
                 statistics_table[column] = acs_data[column]
-        self.mutate_statistic_table(statistics_table, shapefile_table)
+        self.mutate_acs_results(statistics_table)
+
+    @abstractmethod
+    def mutate_acs_results(self, statistics_table):
+        pass

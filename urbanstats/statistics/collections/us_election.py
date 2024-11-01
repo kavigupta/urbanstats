@@ -44,6 +44,3 @@ class USElectionStatistics(USAStatistics):
 
         for k in table.columns:
             statistics_table[k] = table[k]
-
-    def mutate_statistic_table(self, statistics_table, shapefile_table):
-        raise NotImplementedError

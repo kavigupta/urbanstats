@@ -102,8 +102,5 @@ class CDCStatistics(USAStatistics):
         cdc_table = aggregated_cdc_table(shapefile)
         for cdc in self.name_for_each_statistic():
             statistics_table[cdc] = cdc_table[cdc]
-        self.mutate_statistic_table(statistics_table, shapefile_table)
-
-    def mutate_statistic_table(self, statistics_table, shapefile_table):
         for cdc in self.name_for_each_statistic():
             statistics_table[cdc] /= statistics_table["population_18_2010"]

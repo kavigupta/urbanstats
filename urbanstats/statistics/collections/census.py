@@ -96,17 +96,6 @@ class CensusForPreviousYear(USAStatistics):
 
             statistics_table[k_fixed] = table[k]
 
-        self.mutate_statistic_table(statistics_table, shapefile_table)
-
-        hists_year = census_histogram(shapefile, year)
-        for dens in RADII:
-            statistics_table[self.ysk(f"pw_density_histogram_{dens}")] = [
-                hists_year[x][f"ad_{dens}"] if x in hists_year else np.nan
-                for x in statistics_table.longname
-            ]
-
-    def mutate_statistic_table(self, statistics_table, shapefile_table):
-
         for k in density_metrics:
             statistics_table[self.ysk(k)] /= statistics_table[self.ysk("population")]
         statistics_table[self.ysk("sd")] = (
@@ -130,6 +119,13 @@ class CensusForPreviousYear(USAStatistics):
         del statistics_table[self.ysk("vacant")]
         del statistics_table[self.ysk("total")]
         del statistics_table[self.ysk("occupied")]
+
+        hists_year = census_histogram(shapefile, year)
+        for dens in RADII:
+            statistics_table[self.ysk(f"pw_density_histogram_{dens}")] = [
+                hists_year[x][f"ad_{dens}"] if x in hists_year else np.nan
+                for x in statistics_table.longname
+            ]
 
     def extra_stats(self):
         return {
@@ -180,8 +176,7 @@ class CensusChange(USAStatistics):
             for x in ["ad_0.5_change", "ad_4_change", "ad_0.25_change", "ad_2_change"]
         ]
 
-    def mutate_statistic_table(self, statistics_table, shapefile_table):
-
+    def compute_statistics(self, shapefile, statistics_table, shapefile_table):
         year = self.year()
 
         statistics_table[f"population_change_{year}"] = (
@@ -289,7 +284,6 @@ class CensusChange2000(CensusChange):
     key_function=dict(shapefile=lambda x: x.hash_key),
 )
 def aggregate_basics_of_year(shapefile, year):
-
     print("aggregating basics of", year, "for", shapefile.hash_key)
     sum_keys = [
         "population",

@@ -4,7 +4,6 @@ from urbanstats.statistics.statistic_collection import GeographicStatistics
 
 
 class AreaAndCompactnessStatistics(GeographicStatistics):
-
     version = 2
 
     def name_for_each_statistic(self):
@@ -22,7 +21,7 @@ class AreaAndCompactnessStatistics(GeographicStatistics):
     def quiz_question_unused(self):
         return ["area", "compactness"]
 
-    def mutate_statistic_table(self, statistics_table, shapefile_table):
+    def compute_statistics(self, shapefile, statistics_table, shapefile_table):
         statistics_table["area"] = (
             shapefile_table.geometry.to_crs({"proj": "cea"}).area / 1e6
         )

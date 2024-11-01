@@ -58,9 +58,6 @@ class USWeatherStatistics(USAStatistics):
         for weather_stat in self.name_for_each_statistic():
             statistics_table[weather_stat] = by_region[weather_stat]
 
-        self.mutate_statistic_table(statistics_table, shapefile_table)
-
-    def mutate_statistic_table(self, statistics_table, shapefile_table):
         for weather_stat in self.name_for_each_statistic():
             statistics_table[weather_stat] = (
                 statistics_table[weather_stat] / statistics_table["population"]
