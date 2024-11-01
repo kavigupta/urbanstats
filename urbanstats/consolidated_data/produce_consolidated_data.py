@@ -47,7 +47,6 @@ dont_use = [
 
 
 def produce_results(row_geo, row):
-
     res = row_geo.geometry.simplify(0.01)
     geo = convert_to_protobuf(res)
     results = data_files_pb2.AllStats()
