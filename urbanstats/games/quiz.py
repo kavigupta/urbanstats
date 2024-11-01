@@ -1,5 +1,6 @@
 import base64
 import copy
+from functools import lru_cache
 import gzip
 import json
 import os
@@ -27,6 +28,7 @@ from urbanstats.statistics.output_statistics_metadata import (
     internal_statistic_names,
     statistic_internal_to_display_name,
 )
+from urbanstats.universe.annotate_universes import universe_by_universe_type
 from urbanstats.website_data.sharding import create_filename
 from urbanstats.website_data.statistic_index_lists import index_list_for_longname
 from urbanstats.website_data.table import shapefile_without_ordinals
@@ -37,7 +39,7 @@ from .quiz_custom import get_custom_quizzes
 
 min_pop = 250_000
 min_pop_international = 2_500_000
-version_numeric = 67
+version_numeric = 70
 
 version = str(version_numeric) + stable_hash(statistic_collections)
 
@@ -140,9 +142,14 @@ def compute_difficulty(stat_a, stat_b, stat_column_original, typ):
     return diff
 
 
+@lru_cache(maxsize=None)
+def state_universes():
+    return set(universe_by_universe_type()["state"])
+
+
 def same_state(a, b):
-    sfa = states_for_all()
-    return set(sfa[a]) & set(sfa[b]) != set()
+    shared_states = set(a) & set(b) & state_universes()
+    return bool(shared_states)
 
 
 def is_international(typ):
@@ -169,7 +176,7 @@ def sample_quiz_question(
             if typ == "State":
                 if "District of Columbia, USA" in (a, b):
                     continue
-            if same_state(a, b):
+            if same_state(at_pop.loc[a].universes, at_pop.loc[b].universes):
                 continue
             stat_a, stat_b = (
                 at_pop.loc[a][stat_column_original],
@@ -204,10 +211,11 @@ def filter_for_pop(typ):
         strict_display=True,
     )
     stats_filter = {internal_statistic_names()[i] for i in idxs}
+    universes = at_pop["universes"]
     at_pop = pd.DataFrame({s: at_pop[s] for s in stats if s in stats_filter})
     mask = ~at_pop.applymap(np.isnan).all()
     assert mask.all()
-    at_pop = at_pop.loc[:, mask]
+    at_pop["universes"] = universes
     return at_pop
 
 
