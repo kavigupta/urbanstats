@@ -5,7 +5,7 @@
 import * as base58 from 'base58-js'
 
 import { Settings, SettingsDictionary, useSettings } from './settings'
-import { GroupIdentifier } from './statistic-tree'
+import { allGroups, allYears, GroupIdentifier } from './statistic-tree'
 
 export type BooleanSettingKey = keyof { [K in keyof SettingsDictionary as SettingsDictionary[K] extends boolean ? K : never]: boolean }
 
@@ -226,13 +226,29 @@ const settingsVector = [
     `show_stat_group_${'ad_4' as GroupIdentifier}`,
     `show_stat_group_${'gpw_pw_density_2' as GroupIdentifier}`,
     `show_stat_group_${'gpw_pw_density_4' as GroupIdentifier}`,
-    'show_stat_year_2020',
-    'show_stat_year_2010',
-    'show_stat_year_2000',
+    `show_stat_year_${2020 as number}`,
+    `show_stat_year_${2010 as number}`,
+    `show_stat_year_${2000 as number}`,
     'show_historical_cds',
     'simple_ordinals',
     'use_imperial',
 ] satisfies BooleanSettingKey[]
+
+function sanityCheckVector(): void {
+    // Should include checks for very potential type parameter in the settings vector
+    const missingYears = allYears.filter(year => !settingsVector.includes(`show_stat_year_${year}`))
+    if (missingYears.length > 0) {
+        throw new Error(`Settings vector is missing years: ${missingYears.join(', ')}`)
+    }
+    const missingGroups = allGroups.filter(group => !settingsVector.includes(`show_stat_group_${group.id}`))
+    if (missingGroups.length > 0) {
+        throw new Error(`Settings vector is missing groups: ${missingGroups.map(group => group.id).join(', ')}`)
+    }
+}
+
+sanityCheckVector()
+
+export type VectorSettingKey = typeof settingsVector[number]
 
 export function useVector(): string {
     const settings = useSettings(settingsVector)
@@ -240,7 +256,7 @@ export function useVector(): string {
     return base58.binary_to_base58(compressBooleans(booleans))
 }
 
-export function fromVector(vector: string, settings: Settings): Record<BooleanSettingKey, boolean> {
+export function fromVector(vector: string, settings: Settings): Record<VectorSettingKey, boolean> {
     const array = decompressBooleans(base58.base58_to_binary(vector))
     return Object.fromEntries(settingsVector.map((setting, i) => {
         const value = i < array.length ? array[i] : settings.get(setting)
