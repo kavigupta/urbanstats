@@ -5,7 +5,6 @@ from urbanstats.statistics.statistic_collection import InternationalStatistics
 
 
 class GPWStatistics(InternationalStatistics):
-
     version = 2
 
     def name_for_each_statistic(self):
@@ -57,8 +56,3 @@ class GPWStatistics(InternationalStatistics):
                 0, 0.1, "gpw_pw_density_histogram_4", "gpw_population"
             ),
         }
-
-
-
-
-
