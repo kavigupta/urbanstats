@@ -118,6 +118,8 @@ def compute_all_weather_by_block(bounding_box_list, coordinates, data):
     "urbanstats/weather/era5/block_statistics",
     key_function=dict(era5_statistics=stable_hash),
 )
+# this could be a frozendict but whatever
+# pylint: disable=dangerous-default-value
 def weather_block_statistics(era5_statistics=era5_statistics_dict):
     cstats = compute_statistics(era5_statistics, 1991)
     *_, coordinates = load_raw_census()

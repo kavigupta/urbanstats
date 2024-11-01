@@ -7,7 +7,6 @@ RUN apt-get install -y nodejs
 
 RUN dpkg --add-architecture i386
 RUN apt-get -y update
-RUN apt-get -y install libgdal-dev
 
 RUN apt-get -y install chromium=130.*
 RUN apt-get -y install xvfb
@@ -22,11 +21,8 @@ RUN apt-get -y install fluxbox
 # needed for downloads directory in TestCafe
 RUN apt-get -y install xdg-user-dirs
 
-# needed for video recording in TestCafe
-RUN apt-get -y install ffmpeg
-
 COPY ./requirements.txt ./
 RUN pip3 install --upgrade pip
-RUN pip3 install --break-system-packages -r requirements.txt
+RUN pip3 install --break-system-packages -r requirements.txt && pip3 cache purge
 
 ENTRYPOINT [ "/bin/bash" ] 
