@@ -22,7 +22,7 @@ def countries_usa():
 
 
 COUNTRY_USA = Shapefile(
-    hash_key="usa_only_1",
+    hash_key="usa_only_2",
     path=countries_usa,
     shortname_extractor=lambda x: x["shortname"],
     longname_extractor=lambda x: x["longname"],

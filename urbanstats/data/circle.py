@@ -769,6 +769,8 @@ def circle_shapefile_object(country_shapefile, population, just_usa):
     if population == 1e7:
         # just special case for 10M, since there was some weird caching issue.
         version += 0.1
+    if just_usa:
+        version += 0.01
     return Shapefile(
         hash_key=prefix
         + f"population_circle_{named_populations[population]}_{version}",
