@@ -37,7 +37,7 @@ export function remove_universe_if_default(default_universe: string): void {
 
 export function default_article_universe(longname: string): 'USA' | 'world' {
     // if longname contains USA, then default to USA
-    if (longname.includes('USA')) {
+    if (longname.endsWith(', USA')) {
         return 'USA'
     }
     return 'world'
@@ -54,7 +54,7 @@ export function default_comparison_universe(longnames: string[]): 'USA' | 'world
 
 export function universe_is_american(universe: string): boolean {
     // if universe ends with USA, then it's American
-    return universe.includes('USA')
+    return universe.endsWith(', USA')
 }
 
 export function longname_is_exclusively_american(universe: string): boolean {

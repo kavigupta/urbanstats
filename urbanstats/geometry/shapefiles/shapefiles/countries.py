@@ -26,7 +26,7 @@ COUNTRY_USA = Shapefile(
     path=countries_usa,
     shortname_extractor=lambda x: x["shortname"],
     longname_extractor=lambda x: x["longname"],
-    filter=lambda x: "USA" in x.longname,
+    filter=lambda x: "USA" == x.longname,
     meta=dict(type="Country", source="OpenDataSoft", type_category="International"),
     american=True,
     include_in_gpw=False,
