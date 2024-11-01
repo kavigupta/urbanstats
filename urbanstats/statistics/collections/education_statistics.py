@@ -29,7 +29,7 @@ class EducationStatistics(ACSStatisticsColection):
     def quiz_question_unused(self):
         return []
 
-    def mutate_statistic_table(self, statistics_table, shapefile_table):
+    def mutate_acs_results(self, statistics_table, shapefile_table):
         education_denominator = (
             statistics_table.education_no
             + statistics_table.education_high_school

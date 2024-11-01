@@ -63,8 +63,5 @@ class NHTSAAccidentStatistics(USAStatistics):
                 sum(acc_per_cap[y] for y in last_decade) / len(last_decade)
             )
 
-    def mutate_statistic_table(self, statistics_table, shapefile_table):
-        raise NotImplementedError
-
     def extra_stats(self):
         return {}

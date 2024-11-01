@@ -17,7 +17,7 @@ class InternetAccessStatistics(ACSStatisticsColection):
             "internet_no_access": "higher % of people who have no internet access",
         }
 
-    def mutate_statistic_table(self, statistics_table, shapefile_table):
+    def mutate_acs_results(self, statistics_table, shapefile_table):
         fractionalize(
             statistics_table,
             "internet_access",

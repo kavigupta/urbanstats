@@ -37,9 +37,6 @@ class USDAFRAStatistics(USAStatistics):
         for column in t.columns:
             statistics_table[column] = t[column]
 
-        self.mutate_statistic_table(statistics_table, shapefile_table)
-
-    def mutate_statistic_table(self, statistics_table, shapefile_table):
         for cdc in self.name_for_each_statistic():
             statistics_table[cdc] /= statistics_table["population_2010"]
             # not having access to grocery stores -> having access to grocery stores

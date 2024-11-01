@@ -23,7 +23,7 @@ class NationalOriginLanguageStatistics(ACSStatisticsColection):
     def quiz_question_unused(self):
         return ["language_other"]
 
-    def mutate_statistic_table(self, statistics_table, shapefile_table):
+    def mutate_acs_results(self, statistics_table, shapefile_table):
         fractionalize(
             statistics_table,
             "language_english_only",

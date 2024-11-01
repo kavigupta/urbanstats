@@ -31,7 +31,7 @@ class HouseHeating(ACSStatisticsColection):
             "heating_no",
         ]
 
-    def mutate_statistic_table(self, statistics_table, shapefile_table):
+    def mutate_acs_results(self, statistics_table, shapefile_table):
         fractionalize(statistics_table, *self.name_for_each_statistic().keys())
 
     def acs_name(self):

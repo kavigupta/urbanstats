@@ -136,7 +136,7 @@ class OccupationStatistics(ACSStatisticsColection):
     def quiz_question_unused(self):
         return ["occupation_production_occupations"]
 
-    def mutate_statistic_table(self, statistics_table, shapefile_table):
+    def mutate_acs_results(self, statistics_table, shapefile_table):
         fractionalize(statistics_table, *self.name_for_each_statistic())
 
     def acs_name(self):

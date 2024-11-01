@@ -20,7 +20,7 @@ class HousingRentOrOwn(ACSStatisticsColection):
     def quiz_question_unused(self):
         return []
 
-    def mutate_statistic_table(self, statistics_table, shapefile_table):
+    def mutate_acs_results(self, statistics_table, shapefile_table):
         fractionalize(
             statistics_table,
             "rent_or_own_rent",
