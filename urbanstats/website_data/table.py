@@ -63,6 +63,7 @@ def american_shapefile():
     assert not duplicates, str(duplicates)
     return full
 
+
 def international_shapefile():
     ts = []
     for s in shapefiles_for_stats.values():
