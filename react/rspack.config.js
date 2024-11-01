@@ -22,11 +22,14 @@ module.exports = env => ({
     resolve: {
         // Add '.ts' and '.tsx' as resolvable extensions.
         extensions: ['', '.webpack.js', '.web.js', '.ts', '.tsx', '.js'],
+        extensionAlias: {
+            '.js': ['.ts', '.js'],
+        },
     },
     module: {
         rules: [
-            { test: /\.tsx?$/, loader: 'ts-loader' },
-            { test: /\.js$/, loader: 'babel-loader' },
+            { test: /\.tsx?$/, loader: 'builtin:swc-loader' },
+            { test: /\.js$/, loader: 'builtin:swc-loader' },
             {
                 test: /\.css$/i,
                 use: ['style-loader', 'css-loader'],
