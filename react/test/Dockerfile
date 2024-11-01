@@ -21,9 +21,6 @@ RUN apt-get -y install fluxbox
 # needed for downloads directory in TestCafe
 RUN apt-get -y install xdg-user-dirs
 
-# needed for video recording in TestCafe
-RUN apt-get -y install ffmpeg
-
 COPY ./requirements.txt ./
 RUN pip3 install --upgrade pip
 RUN pip3 install --break-system-packages -r requirements.txt
