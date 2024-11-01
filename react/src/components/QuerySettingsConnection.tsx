@@ -10,8 +10,10 @@ import { BooleanSettingKey, fromVector, useVector } from '../page_template/setti
  *
  * - Settings -> Query Params
  *   Watches settings keys and reflects in query params. Must include all settings
+ *
+ * CHECK THAT SETTINGS KEYS ARE PRESENT IN `settings-vector.ts`
+ * OTHERWISE SETTINGS SHARING WILL NOT WORK
  */
-
 export function QuerySettingsConnection({ settingsKeys }: { settingsKeys: BooleanSettingKey[] }): null {
     const settings = useContext(Settings.Context)
 
