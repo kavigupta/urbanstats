@@ -3,6 +3,7 @@ import { createContext, useContext, useEffect, useState } from 'react'
 import { DefaultMap } from '../utils/DefaultMap'
 
 import { Theme } from './colors'
+import { fromVector } from './settings-vector'
 import { allGroups, allYears, CategoryIdentifier, GroupIdentifier, statsTree } from './statistic-tree'
 
 export type RelationshipKey = `related__${string}__${string}`
@@ -75,11 +76,6 @@ const defaultSettings = {
     clean_background: false,
 } satisfies SettingsDictionary
 
-export function load_settings(): SettingsDictionary {
-    const settings = JSON.parse(localStorage.getItem('settings') ?? '{}') as Partial<SettingsDictionary>
-    return { ...defaultSettings, ...settings }
-}
-
 export interface SettingInfo<K extends keyof SettingsDictionary> {
     persistedValue: SettingsDictionary[K]
     stagedValue?: SettingsDictionary[K]
@@ -92,7 +88,22 @@ export class Settings {
     private readonly settings: SettingsDictionary
 
     constructor() {
-        this.settings = load_settings()
+        const savedSettings = localStorage.getItem('settings')
+        if (savedSettings === null) {
+            this.settings = { ...defaultSettings }
+            // Try loading from a link vector, if it exists
+            const settingsVector = new URL(window.location.href).searchParams.get('s')
+            if (settingsVector !== null) {
+                const settingsFromQueryParams = fromVector(settingsVector, this)
+                for (const [key, value] of Object.entries(settingsFromQueryParams)) {
+                    this.settings[key as keyof SettingsDictionary] = value as never
+                }
+            }
+        }
+        else {
+            const loadedSettings = JSON.parse(savedSettings) as Partial<SettingsDictionary>
+            this.settings = { ...defaultSettings, ...loadedSettings }
+        }
     }
 
     private readonly settingValueObservers = new DefaultMap<keyof SettingsDictionary, Set<() => void>>(() => new Set())
