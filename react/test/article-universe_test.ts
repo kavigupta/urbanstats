@@ -140,4 +140,3 @@ test('article-universe-state-from-subnational', async (t) => {
         .eql(`${TARGET}/article.html?longname=California%2C+USA&universe=world`)
     await screencap(t)
 })
-
