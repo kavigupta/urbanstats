@@ -318,14 +318,11 @@ tiers = [
     [
         "Continent",
         "1B Person Circle",
-        "US 1B Person Circle",
         "500M Person Circle",
-        "US 500M Person Circle",
     ],
     [
         "Country",
         "200M Person Circle",
-        "US 200M Person Circle",
         "100M Person Circle",
         "US 100M Person Circle",
     ],

@@ -44,6 +44,8 @@ class Shapefile:
         else:
             s = self.path()
         s = s[s.apply(self.filter, axis=1)]
+        if s.shape[0] == 0:
+            raise EmptyShapefileError
         s = gpd.GeoDataFrame(
             dict(
                 shortname=s.apply(self.shortname_extractor, axis=1),
@@ -69,3 +71,6 @@ class Shapefile:
             s.crs = "EPSG:4326"
         s = s.to_crs("EPSG:4326")
         return s
+
+class EmptyShapefileError(Exception):
+    pass
