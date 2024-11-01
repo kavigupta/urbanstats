@@ -314,7 +314,6 @@ def generate_quizzes(folder):
 
 
 def generate_quiz_info_for_website(site_folder):
-
     folder = "react/src/data/quiz"
     try:
         os.mkdir(folder)

@@ -523,9 +523,12 @@ def compute_all_relationships(long_to_type, shapefiles_to_use):
             if is_american[k1] != is_american[k2]:
                 continue
 
-            a_contains_b, b_contains_a, a_intersects_b, a_borders_b = (
-                create_relationships_dispatch(shapefiles_to_use, k1, k2)
-            )
+            (
+                a_contains_b,
+                b_contains_a,
+                a_intersects_b,
+                a_borders_b,
+            ) = create_relationships_dispatch(shapefiles_to_use, k1, k2)
 
             add(contains, a_contains_b)
             add(contains, [(big, small) for small, big in b_contains_a])

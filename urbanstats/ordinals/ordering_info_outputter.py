@@ -47,7 +47,6 @@ class ProtobufOutputter:
 
 
 def output_order_files(order_info, site_folder, universe, typ):
-
     outputter = ProtobufOutputter(
         data_files_pb2.OrderLists,
         "order_lists",

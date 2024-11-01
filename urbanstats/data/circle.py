@@ -396,7 +396,6 @@ def to_shapely_ellipse(map_shape, r_pixels, y_pixels, x_pixels):
 
 
 def to_basic_geopandas_frame(map_shape, circles):
-
     ellipses = []
     for r, (y, x) in tqdm.tqdm(circles):
         current = to_shapely_ellipse(map_shape, r, y, x)
@@ -760,7 +759,6 @@ def produce_image(population):
 
 
 def circle_shapefile_object(country_shapefile, population, just_usa):
-
     name = named_populations[population] + " Person Circle"
     if just_usa:
         name = "US " + name
