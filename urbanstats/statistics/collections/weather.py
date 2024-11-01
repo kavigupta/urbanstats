@@ -52,7 +52,7 @@ class USWeatherStatistics(USAStatistics):
             "days_dewpoint_70_inf_4",
             "days_dewpoint_-inf_50_4",
         ]
-    
+
     def dependencies(self):
         return ["population"]
 

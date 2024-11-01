@@ -97,7 +97,7 @@ class CDCStatistics(USAStatistics):
             "PHLTH_cdc_2",
             "DENTAL_cdc_2",
         ]
-    
+
     def dependencies(self):
         return ["population_18_2010"]
 

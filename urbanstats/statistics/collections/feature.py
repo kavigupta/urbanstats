@@ -50,7 +50,7 @@ class USFeatureDistanceStatistics(USAStatistics):
             "within_Public School_2",
             "within_Hospital_10",
         ]
-    
+
     def dependencies(self):
         return ["population"]
 

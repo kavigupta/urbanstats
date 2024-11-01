@@ -33,6 +33,6 @@ class AreaAndCompactnessStatistics(GeographicStatistics):
             shapefile_table.geometry.to_crs({"proj": "cea"}).length / 1e3
         )
         statistics_table["compactness"] = (
-            4 * np.pi * statistics_table["area"] / statistics_table["perimiter"]**2
+            4 * np.pi * statistics_table["area"] / statistics_table["perimiter"] ** 2
         )
         return statistics_table

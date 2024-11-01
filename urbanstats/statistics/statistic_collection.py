@@ -58,7 +58,6 @@ class StatisticCollection(ABC):
 
         :return: A dictionary of statistics to add to the existing statistics table.
         """
-        pass
 
     @abstractmethod
     def for_america(self):

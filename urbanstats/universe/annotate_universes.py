@@ -90,8 +90,7 @@ def universe_by_universe_type():
         "continent": CONTINENTS,
         "country": COUNTRIES,
         "state": [
-            get_universe_name_for_state(x)
-            for x in us.states.STATES_AND_TERRITORIES
+            get_universe_name_for_state(x) for x in us.states.STATES_AND_TERRITORIES
         ],
     }
 
