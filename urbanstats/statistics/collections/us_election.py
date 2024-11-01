@@ -28,7 +28,9 @@ class USElectionStatistics(USAStatistics):
             ): "!FULL Which swung towards Democrats more from 2016 to 2020?",
         }
 
-    def compute_statistics(self, shapefile, statistics_table, shapefile_table):
+    def compute_statistics_dictionary(
+        self, *, shapefile, existing_statistics, shapefile_table
+    ):
         table = aggregated_election_results(shapefile)
         for elect_k in vest_elections:
             table[elect_k.name, "margin"] = (
@@ -42,5 +44,4 @@ class USElectionStatistics(USAStatistics):
 
         table = table[[x for x in table.columns if x[1] == "margin"]]
 
-        for k in table.columns:
-            statistics_table[k] = table[k]
+        return {k: table[k] for k in table.columns}

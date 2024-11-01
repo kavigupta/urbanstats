@@ -86,7 +86,13 @@ class CensusForPreviousYear(USAStatistics):
     def quiz_question_unused(self):
         return list(self.name_for_each_statistic().keys())
 
-    def compute_statistics(self, shapefile, statistics_table, shapefile_table):
+    def dependencies(self):
+        return ["area"]
+
+    def compute_statistics_dictionary(
+        self, *, shapefile, existing_statistics, shapefile_table
+    ):
+        statistics_table = {}
         year = self.year()
         table = aggregate_basics_of_year(shapefile, year)
         for k in table:
@@ -99,7 +105,7 @@ class CensusForPreviousYear(USAStatistics):
         for k in density_metrics:
             statistics_table[self.ysk(k)] /= statistics_table[self.ysk("population")]
         statistics_table[self.ysk("sd")] = (
-            statistics_table[self.ysk("population")] / statistics_table["area"]
+            statistics_table[self.ysk("population")] / existing_statistics["area"]
         )
         for k in racial_demographics:
             statistics_table[self.ysk(k)] /= statistics_table[self.ysk("population")]
@@ -124,8 +130,9 @@ class CensusForPreviousYear(USAStatistics):
         for dens in RADII:
             statistics_table[self.ysk(f"pw_density_histogram_{dens}")] = [
                 hists_year[x][f"ad_{dens}"] if x in hists_year else np.nan
-                for x in statistics_table.longname
+                for x in shapefile_table.longname
             ]
+        return statistics_table
 
     def extra_stats(self):
         return {
@@ -176,16 +183,30 @@ class CensusChange(USAStatistics):
             for x in ["ad_0.5_change", "ad_4_change", "ad_0.25_change", "ad_2_change"]
         ]
 
-    def compute_statistics(self, shapefile, statistics_table, shapefile_table):
+    def dependencies(self):
+        return [
+            ky
+            for k in ["population", *density_metrics]
+            for ky in [k, f"{k}_{self.year()}"]
+        ]
+
+    def compute_statistics_dictionary(
+        self, *, shapefile, existing_statistics, shapefile_table
+    ):
         year = self.year()
 
+        statistics_table = {}
+
         statistics_table[f"population_change_{year}"] = (
-            statistics_table["population"] - statistics_table[f"population_{year}"]
-        ) / statistics_table[f"population_{year}"]
+            existing_statistics["population"]
+            - existing_statistics[f"population_{year}"]
+        ) / existing_statistics[f"population_{year}"]
         for k in density_metrics:
             statistics_table[f"{k}_change_{year}"] = (
-                statistics_table[k] - statistics_table[f"{k}_{year}"]
-            ) / statistics_table[f"{k}_{year}"]
+                existing_statistics[k] - existing_statistics[f"{k}_{year}"]
+            ) / existing_statistics[f"{k}_{year}"]
+
+        return statistics_table
 
     def extra_stats(self):
         return {}

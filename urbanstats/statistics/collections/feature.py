@@ -50,8 +50,14 @@ class USFeatureDistanceStatistics(USAStatistics):
             "within_Public School_2",
             "within_Hospital_10",
         ]
+    
+    def dependencies(self):
+        return ["population"]
 
-    def compute_statistics(self, shapefile, statistics_table, shapefile_table):
+    def compute_statistics_dictionary(
+        self, *, shapefile, existing_statistics, shapefile_table
+    ):
+        statistics_table = {}
         feats = features_by_region(shapefile)
         for feat in feature_columns:
             statistics_table[feat] = feats[feat]
@@ -60,10 +66,12 @@ class USFeatureDistanceStatistics(USAStatistics):
 
         for feat in feature_columns:
             statistics_table[feat] = (
-                statistics_table[feat] / statistics_table["population"]
+                statistics_table[feat] / existing_statistics["population"]
             )
 
-        statistics_table["park_percent_1km_v2"] /= statistics_table["population"]
+        statistics_table["park_percent_1km_v2"] /= existing_statistics["population"]
+
+        return statistics_table
 
 
 @permacache(

@@ -71,7 +71,10 @@ class SegregationStatistics(USAStatistics):
                 if not k.startswith("year"):
                     table[f"{k}_diff_{stats['year']}"] = stats_current[k] - stats[k]
 
-    def compute_statistics(self, shapefile, statistics_table, shapefile_table):
+    def compute_statistics_dictionary(
+        self, *, shapefile, existing_statistics, shapefile_table
+    ):
+        statistics_table = {}
         stats_2020 = self.compute_stats_for_year(2020, shapefile)
         stats_2010 = self.compute_stats_for_year(2010, shapefile)
         stats_2000 = self.compute_stats_for_year(2000, shapefile)
@@ -79,3 +82,4 @@ class SegregationStatistics(USAStatistics):
         self.add_stats(statistics_table, stats_2020, None)
         self.add_stats(statistics_table, stats_2010, stats_2020)
         self.add_stats(statistics_table, stats_2000, stats_2020)
+        return statistics_table

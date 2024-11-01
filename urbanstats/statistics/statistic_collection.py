@@ -1,5 +1,7 @@
 from abc import ABC, abstractmethod
 
+import pandas as pd
+
 from urbanstats.acs.load import aggregated_acs_data, aggregated_acs_data_us_pr
 
 ORDER_CATEGORY_MAIN = 0
@@ -40,8 +42,22 @@ class StatisticCollection(ABC):
     def quiz_question_unused(self):
         return ()
 
+    def dependencies(self):
+        return ()
+
     @abstractmethod
-    def compute_statistics(self, shapefile, statistics_table, shapefile_table):
+    def compute_statistics_dictionary(
+        self, *, shapefile, existing_statistics, shapefile_table
+    ):
+        """
+        Returns a dictionary of statistics to add to the existing statistics table.
+
+        :param shapefile: The shapefile to compute statistics for.
+        :param existing_statistics: A dictionary containing relevant existing statistics.
+        :param shapefile_table: The full shapefile table.
+
+        :return: A dictionary of statistics to add to the existing statistics table.
+        """
         pass
 
     @abstractmethod
@@ -107,12 +123,17 @@ class ACSStatisticsColection(StatisticCollection):
     def for_international(self):
         return False
 
-    def compute_statistics(self, shapefile, statistics_table, shapefile_table):
+    def compute_statistics_dictionary(
+        self, *, shapefile, existing_statistics, shapefile_table
+    ):
+        result = {}
         for entity in self.acs_entity_dict().values():
             acs_data = aggregated_acs_data(self.year(), entity, shapefile)
             for column in acs_data.columns:
-                statistics_table[column] = acs_data[column]
-        self.mutate_acs_results(statistics_table)
+                result[column] = acs_data[column]
+        result = pd.DataFrame(result)
+        self.mutate_acs_results(result)
+        return {name: result[name] for name in self.name_for_each_statistic()}
 
     @abstractmethod
     def mutate_acs_results(self, statistics_table):
@@ -140,15 +161,20 @@ class ACSUSPRStatisticsColection(StatisticCollection):
     def for_international(self):
         return False
 
-    def compute_statistics(self, shapefile, statistics_table, shapefile_table):
+    def compute_statistics_dictionary(
+        self, *, shapefile, existing_statistics, shapefile_table
+    ):
+        result = {}
         for entities in self.acs_entity_dict().values():
             entity_us, entity_pr = entities
             acs_data = aggregated_acs_data_us_pr(
                 self.year(), entity_us, entity_pr, shapefile
             )
             for column in acs_data.columns:
-                statistics_table[column] = acs_data[column]
-        self.mutate_acs_results(statistics_table)
+                result[column] = acs_data[column]
+        result = pd.DataFrame(result)
+        self.mutate_acs_results(result)
+        return {name: result[name] for name in self.name_for_each_statistic()}
 
     @abstractmethod
     def mutate_acs_results(self, statistics_table):
