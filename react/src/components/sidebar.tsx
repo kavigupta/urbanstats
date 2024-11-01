@@ -103,6 +103,7 @@ export function Sidebar(): ReactNode {
                         <CheckboxSetting
                             name="Use Imperial Units"
                             setting_key="use_imperial"
+                            testId="use_imperial"
                         />
                     </li>
                     <li>
@@ -241,6 +242,7 @@ export function CheckboxSettingCustom(props: CheckboxSettingCustomProps): ReactN
                 ref={checkboxRef}
                 style={{ accentColor: colors.hueColors.blue, backgroundColor: colors.background }}
                 data-test-id={props.testId}
+                data-test-highlight={props.highlight}
             />
             <label htmlFor={inputId}>{props.name}</label>
         </div>

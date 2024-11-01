@@ -17,14 +17,16 @@ export function StagingControls(): ReactNode {
     }
 
     return (
-        <div style={{
-            backgroundColor: colors.slightlyDifferentBackgroundFocused,
-            borderRadius: '5px',
-            padding: '10px',
-            textAlign: 'center',
-            marginBottom: '10px',
-            paddingBottom: '5px',
-        }}
+        <div
+            style={{
+                backgroundColor: colors.slightlyDifferentBackgroundFocused,
+                borderRadius: '5px',
+                padding: '10px',
+                textAlign: 'center',
+                marginBottom: '10px',
+                paddingBottom: '5px',
+            }}
+            data-test-id="staging_controls"
         >
             <div>
                 These settings are different than the ones you have saved...
@@ -34,8 +36,8 @@ export function StagingControls(): ReactNode {
                 justifyContent: 'space-evenly',
             }}
             >
-                <button style={buttonStyle} onClick={() => { settings.exitStagedMode('discard') }}>Discard</button>
-                <button style={buttonStyle} onClick={() => { settings.exitStagedMode('apply') }}>Apply</button>
+                <button data-test-id="discard" style={buttonStyle} onClick={() => { settings.exitStagedMode('discard') }}>Discard</button>
+                <button data-test-id="apply" style={buttonStyle} onClick={() => { settings.exitStagedMode('apply') }}>Apply</button>
             </div>
         </div>
     )
