@@ -40,7 +40,9 @@ class NHTSAAccidentStatistics(USAStatistics):
         # do not include the non-per-capita version in the quiz
         return ["traffic_fatalities_last_decade", "traffic_fatalities_ped_last_decade"]
 
-    def compute_statistics(self, shapefile, statistics_table, shapefile_table):
+    def compute_statistics_dictionary(
+        self, *, shapefile, existing_statistics, shapefile_table
+    ):
         acc_raw_all = accidents_by_region(shapefile)
         pop = population_by_year(shapefile, no_pr=True)
         acc_per_cap_all = {
@@ -51,6 +53,7 @@ class NHTSAAccidentStatistics(USAStatistics):
             for y, for_year in acc_raw_all.items()
         }
         last_decade = sorted(acc_raw_all)[-10:]
+        statistics_table = {}
         for prefix, key in [
             ("traffic_fatalities", "fatals"),
             ("traffic_fatalities_ped", "fatals_pedestrian_plus"),
@@ -62,6 +65,7 @@ class NHTSAAccidentStatistics(USAStatistics):
             statistics_table[f"{prefix}_last_decade_per_capita"] = np.array(
                 sum(acc_per_cap[y] for y in last_decade) / len(last_decade)
             )
+        return statistics_table
 
     def extra_stats(self):
         return {}

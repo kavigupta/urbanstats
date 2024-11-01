@@ -32,12 +32,21 @@ class USDAFRAStatistics(USAStatistics):
             "lapop20share_usda_fra_1",
         ]
 
-    def compute_statistics(self, shapefile, statistics_table, shapefile_table):
+    def dependencies(self):
+        return ["population_2010"]
+
+    def compute_statistics_dictionary(
+        self, *, shapefile, existing_statistics, shapefile_table
+    ):
+        statistics_table = {}
+
         t = aggregated_usda_fra(shapefile)
         for column in t.columns:
             statistics_table[column] = t[column]
 
         for cdc in self.name_for_each_statistic():
-            statistics_table[cdc] /= statistics_table["population_2010"]
+            statistics_table[cdc] /= existing_statistics["population_2010"]
             # not having access to grocery stores -> having access to grocery stores
             statistics_table[cdc] = 1 - statistics_table[cdc]
+
+        return statistics_table

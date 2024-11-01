@@ -98,9 +98,16 @@ class CDCStatistics(USAStatistics):
             "DENTAL_cdc_2",
         ]
 
-    def compute_statistics(self, shapefile, statistics_table, shapefile_table):
+    def dependencies(self):
+        return ["population_18_2010"]
+
+    def compute_statistics_dictionary(
+        self, *, shapefile, existing_statistics, shapefile_table
+    ):
+        result = {}
         cdc_table = aggregated_cdc_table(shapefile)
         for cdc in self.name_for_each_statistic():
-            statistics_table[cdc] = cdc_table[cdc]
+            result[cdc] = cdc_table[cdc]
         for cdc in self.name_for_each_statistic():
-            statistics_table[cdc] /= statistics_table["population_18_2010"]
+            result[cdc] /= existing_statistics["population_18_2010"]
+        return result
