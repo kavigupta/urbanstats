@@ -24,6 +24,7 @@ module.exports = env => ({
         extensions: ['', '.webpack.js', '.web.js', '.ts', '.tsx', '.js'],
         extensionAlias: {
             '.js': ['.ts', '.js'],
+            '.mjs': ['.mts', '.mjs']
         },
     },
     module: {
