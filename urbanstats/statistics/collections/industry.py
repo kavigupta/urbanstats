@@ -116,7 +116,7 @@ class IndustryStatistics(ACSStatisticsColection):
             " public finance activities, public order and safety activities, etc.",
         }
 
-    def mutate_acs_results(self, statistics_table, shapefile_table):
+    def mutate_acs_results(self, statistics_table):
         fractionalize(statistics_table, *self.name_for_each_statistic())
 
     def acs_name(self):

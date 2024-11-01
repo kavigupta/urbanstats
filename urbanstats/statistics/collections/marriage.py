@@ -22,7 +22,7 @@ class MarriageStatistics(ACSStatisticsColection):
     def quiz_question_unused(self):
         return ["marriage_married_not_divorced", "marriage_never_married"]
 
-    def mutate_acs_results(self, statistics_table, shapefile_table):
+    def mutate_acs_results(self, statistics_table):
         fractionalize(
             statistics_table,
             "marriage_never_married",

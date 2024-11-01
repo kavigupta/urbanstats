@@ -26,7 +26,7 @@ class TransportationModeStatistics(ACSStatisticsColection):
             "transportation_means_worked_at_home": "higher % of people who work from home",
         }
 
-    def mutate_acs_results(self, statistics_table, shapefile_table):
+    def mutate_acs_results(self, statistics_table):
         fractionalize(
             statistics_table,
             "transportation_means_car",

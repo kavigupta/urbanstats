@@ -32,7 +32,7 @@ class HousingYearBuiltStatistics(ACSStatisticsColection):
             "year_built_2000_to_2009",
         ]
 
-    def mutate_acs_results(self, statistics_table, shapefile_table):
+    def mutate_acs_results(self, statistics_table):
         fractionalize(
             statistics_table,
             "year_built_1969_or_earlier",
