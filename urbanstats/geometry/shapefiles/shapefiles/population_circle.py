@@ -15,29 +15,25 @@ excl = (
 def compute_circles():
     excluded = set(excl)
 
-    population_circles_shapefiles = {}
-    population_circles_usa_shapefiles = {}
-    population_circles_usa_to_international = {}
+    pc_shapefiles = {}
+    pc_usa_shapefiles = {}
+    pc_usa_to_intl = {}
 
     for population, name in named_populations.items():
         key = f"population_circle_{name}"
         intl = circle_shapefile_object(COUNTRIES, population, just_usa=False)
         if intl.hash_key not in excluded:
-            population_circles_shapefiles[key] = intl
+            pc_shapefiles[key] = intl
         else:
             excluded.remove(intl.hash_key)
         us = circle_shapefile_object(COUNTRIES, population, just_usa=True)
         if us.hash_key not in excluded:
-            population_circles_usa_shapefiles["us_" + key] = us
+            pc_usa_shapefiles["us_" + key] = us
         else:
             excluded.remove(us.hash_key)
-        population_circles_usa_to_international[us.meta["type"]] = intl.meta["type"]
+        pc_usa_to_intl[us.meta["type"]] = intl.meta["type"]
     assert not excluded, f"Shapefiles slated for exclusion not found: {excluded}"
-    return (
-        population_circles_shapefiles,
-        population_circles_usa_shapefiles,
-        population_circles_usa_to_international,
-    )
+    return (pc_shapefiles, pc_usa_shapefiles, pc_usa_to_intl)
 
 
 (
