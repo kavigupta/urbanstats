@@ -94,7 +94,7 @@ test('article-universe-compare', async (t) => {
         .pressKey('enter')
     await t.expect(getLocation())
         .eql(
-            `${TARGET}/comparison.html?longnames=%5B%22San+Marino+city%2C+California%2C+USA%22%2C%22San+Francisco+city%2C+California%2C+USA%22%5D&universe=California%2C+USA`,
+            `${TARGET}/comparison.html?longnames=%5B%22San+Marino+city%2C+California%2C+USA%22%2C%22San+Francisco+city%2C+California%2C+USA%22%5D&universe=California%2C+USA&s=3t2X5xvsKo`,
         )
     await screencap(t)
 })
@@ -107,7 +107,7 @@ test('article-universe-compare-different', async (t) => {
         .pressKey('enter')
     await t.expect(getLocation())
         .eql(
-            `${TARGET}/comparison.html?longnames=%5B%22San+Marino+city%2C+California%2C+USA%22%2C%22Chicago+city%2C+Illinois%2C+USA%22%5D`,
+            `${TARGET}/comparison.html?longnames=%5B%22San+Marino+city%2C+California%2C+USA%22%2C%22Chicago+city%2C+Illinois%2C+USA%22%5D&s=3t2X5xvsKo`,
         )
     await screencap(t)
 })
