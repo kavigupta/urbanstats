@@ -89,7 +89,7 @@ function compute_indices(longname: string, typ: string): number[] {
         result = result.concat(lists.gpw)
     }
     // else {
-    if (longname.includes('USA')) {
+    if (longname.endsWith(', USA') || longname === 'USA') {
         result = result.concat(lists.usa)
     }
     // sort result by numeric value
@@ -188,6 +188,7 @@ export function load_article(universe: string, data: Article, settings: StatGrou
 export function render_statname(statindex: number, statname: string, exclusively_american: boolean): string {
     const usa_stat = index_list_info.index_lists.usa.includes(statindex)
     if (!exclusively_american && usa_stat) {
+        // TODO I think we can probably remove this check
         return `${statname} (USA only)`
     }
     return statname
