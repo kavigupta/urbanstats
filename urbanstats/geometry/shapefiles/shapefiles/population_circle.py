@@ -33,7 +33,7 @@ def compute_circles():
             excluded.remove(us.hash_key)
         pc_usa_to_intl[us.meta["type"]] = intl.meta["type"]
     assert not excluded, f"Shapefiles slated for exclusion not found: {excluded}"
-    return (pc_shapefiles, pc_usa_shapefiles, pc_usa_to_intl)
+    return pc_shapefiles, pc_usa_shapefiles, pc_usa_to_intl
 
 
 (
