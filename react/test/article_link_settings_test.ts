@@ -2,10 +2,13 @@ import { Selector } from 'testcafe'
 
 import { arrayFromSelector, getLocation, screencap, TARGET, urbanstatsFixture } from './test_utils'
 
-urbanstatsFixture('generate link', '/article.html?longname=California%2C+USA', async (t) => {
+const baseLink = '/article.html?longname=California%2C+USA'
+
+urbanstatsFixture('generate link', baseLink, async (t) => {
     await t.click('.expandButton[data-category-id=main]')
 })
 
+const defaultLink = '/article.html?longname=California%2C+USA&s=3t2X5xvsKo'
 const expectedLink = '/article.html?longname=California%2C+USA&s=jBXza8t6SU9'
 
 test('formulates correct link', async (t) => {
@@ -17,9 +20,7 @@ test('formulates correct link', async (t) => {
         .eql(`${TARGET}${expectedLink}`)
 })
 
-urbanstatsFixture('paste link new visitor', expectedLink, async (t) => {
-    await t.click('.expandButton[data-category-id=main]')
-})
+urbanstatsFixture('paste link new visitor', expectedLink)
 
 async function expectInputTestIdValues(t: TestController, mapping: Record<string, boolean>): Promise<void> {
     for (const [testId, value] of Object.entries(mapping)) {
@@ -31,6 +32,7 @@ async function expectInputTestIdValues(t: TestController, mapping: Record<string
 
 test('settings are applied correctly to new visitor', async (t) => {
     // assuming localstorage is cleared (happens in the fixture)
+    await t.click('.expandButton[data-category-id=main]')
 
     // Should be no staging menu as this was first visit so we steal the settings from the vector
     await t.expect(Selector('[data-test-id=staging_controls]').exists).notOk()
@@ -43,7 +45,39 @@ test('settings are applied correctly to new visitor', async (t) => {
     await screencap(t)
 })
 
-urbanstatsFixture('paste link previous visitor', '/article.html?longname=California%2C+USA', async (t) => {
+test('settings are not saved for new visitor if they do not make any modifications', async (t) => {
+    await t.navigateTo(baseLink)
+
+    await t.click('.expandButton[data-category-id=main]')
+
+    await expectInputTestIdValues(t, {
+        use_imperial: false,
+        group_population: true,
+    })
+
+    await t.expect(getLocation())
+        .eql(`${TARGET}${defaultLink}`)
+
+    await screencap(t)
+})
+
+test('settings are saved for new visitor if they do make a modification', async (t) => {
+    await t.click('input[data-test-id=year_2010]')
+
+    await t.navigateTo(baseLink)
+
+    await t.click('.expandButton[data-category-id=main]')
+
+    await expectInputTestIdValues(t, {
+        use_imperial: true,
+        group_population: false,
+        year_2010: true,
+    })
+
+    await screencap(t)
+})
+
+urbanstatsFixture('paste link previous visitor', baseLink, async (t) => {
     await t.click('input[data-test-id=year_2010]') // change a setting so settings are saved
     await t.navigateTo(expectedLink)
     await t.click('.expandButton[data-category-id=main]')
