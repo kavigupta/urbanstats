@@ -21,6 +21,20 @@ test('neighboring-state-test', async (t) => {
         .eql(`${TARGET}/article.html?longname=Arizona%2C+USA&s=3t2X5xvsKo`)
 })
 
+urbanstatsFixture('cross-country test', '/article.html?longname=Tijuana+Urban+Center%2C+Mexico-USA')
+
+test('tijuana-article-test', async (t) => {
+    // screenshot path: images/first_test.png
+    await screencap(t)
+})
+
+urbanstatsFixture('cross-country test', '/article.html?longname=Los+Angeles+200MPC%2C+USA-Brazil-Mexico')
+
+test('200mpc-article-test', async (t) => {
+    // screenshot path: images/first_test.png
+    await screencap(t)
+})
+
 urbanstatsFixture('shorter article test', `/article.html?longname=San+Marino+city%2C+California%2C+USA`)
 
 test('san-marino-article-test', async (t) => {
