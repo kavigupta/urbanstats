@@ -120,6 +120,16 @@ test('apply staged settings', async (t) => {
         year_2010: false,
     })
 
+    await t.eval(() => { location.reload() })
+
+    // Settings persist after reload without staging
+    await t.expect(Selector('[data-test-id=staging_controls]').exists).notOk()
+    await expectInputTestIdValues(t, {
+        use_imperial: true,
+        group_population: false,
+        year_2010: false,
+    })
+
     await screencap(t)
 })
 

@@ -185,6 +185,7 @@ export class Settings {
                     this.settings[key as keyof SettingsDictionary] = value as never
                     // No need to update observers since these were already the values
                 }
+                localStorage.setItem('settings', JSON.stringify(this.settings))
                 this.stagedSettings = undefined
                 this.stagedKeysObservers.forEach((observer) => { observer() })
                 break
