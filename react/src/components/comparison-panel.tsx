@@ -15,6 +15,7 @@ import { Article } from '../utils/protos'
 import { useComparisonHeadStyle, useHeaderTextClass, useMobileLayout, useSubHeaderTextClass } from '../utils/responsive'
 
 import { ArticleWarnings } from './ArticleWarnings'
+import { ArticleComparisonQuerySettingsConnection } from './QuerySettingsConnection'
 import { ArticleRow, load_article } from './load-article'
 import { MapGeneric, MapGenericProps, Polygons } from './map'
 import { WithPlot } from './plots'
@@ -135,6 +136,7 @@ export function ComparisonPanel(props: { joined_string: string, universes: strin
 
     return (
         <StatPathsContext.Provider value={Array.from(statPaths)}>
+            <ArticleComparisonQuerySettingsConnection />
             <PageTemplate screencap_elements={screencap_elements} has_universe_selector={true} universes={props.universes}>
                 <div>
                     <div className={headerTextClass}>Comparison</div>

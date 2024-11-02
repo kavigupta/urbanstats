@@ -1,7 +1,8 @@
-import { useContext, useEffect } from 'react'
+import React, { ReactNode, useContext, useEffect } from 'react'
 
 import { Settings, SettingsDictionary } from '../page_template/settings'
 import { fromVector, useVector, VectorSettingKey } from '../page_template/settings-vector'
+import { useAvailableGroups, useAvailableYears } from '../page_template/statistic-settings'
 
 /**
  * - Query Params -> Settings
@@ -48,4 +49,16 @@ export function QuerySettingsConnection({ settingsKeys }: { settingsKeys: Vector
     }, [settingsVector, settingsKeys, settings])
 
     return null
+}
+
+export function ArticleComparisonQuerySettingsConnection(): ReactNode {
+    const settingsKeys: VectorSettingKey[] = [
+        'use_imperial',
+        'show_historical_cds',
+        'simple_ordinals',
+        ...useAvailableYears().map(year => `show_stat_year_${year}` as const),
+        ...useAvailableGroups().map(group => `show_stat_group_${group.id}` as const),
+    ]
+
+    return <QuerySettingsConnection settingsKeys={settingsKeys} />
 }
