@@ -34,7 +34,7 @@ export async function by_population(settings: { show_historical_cds: boolean }, 
 
         // this is specifically looking for stuff that's only in the US.
         // so it makes sense.
-        if (domestic_only && (!x!.endsWith(', USA'))) {
+        if (domestic_only && (!(x!.endsWith(', USA') || (x!) === 'USA'))) {
             continue
         }
 

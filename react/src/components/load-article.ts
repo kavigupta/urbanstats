@@ -89,7 +89,7 @@ function compute_indices(longname: string, typ: string): number[] {
         result = result.concat(lists.gpw)
     }
     // else {
-    if (longname.endsWith(', USA')) {
+    if (longname.endsWith(', USA') || longname === 'USA') {
         result = result.concat(lists.usa)
     }
     // sort result by numeric value
