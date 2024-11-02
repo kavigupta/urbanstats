@@ -16,7 +16,7 @@ async function loadPage(): Promise<void> {
 
     // TODO: Use zod to better parse these
     const article_type = window_info.get('article_type')!
-    const statname = window_info.get('statname')!
+    const statname = window_info.get('statname')!.replace('__PCT__', '%')
     const start = parseInt(window_info.get('start') ?? '1')
     const amount = window_info.get('amount')
     const order = (window_info.get('order') ?? 'descending') as 'ascending' | 'descending'
