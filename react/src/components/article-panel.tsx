@@ -13,6 +13,7 @@ import { useComparisonHeadStyle, useHeaderTextClass, useSubHeaderTextClass } fro
 import { NormalizeProto } from '../utils/types'
 
 import { ArticleWarnings } from './ArticleWarnings'
+import { ArticleComparisonQuerySettingsConnection } from './QuerySettingsConnection'
 import { load_article } from './load-article'
 import { Map } from './map'
 import { Related } from './related-button'
@@ -43,6 +44,7 @@ export function ArticlePanel({ article }: { article: Article }): ReactNode {
 
     return (
         <StatPathsContext.Provider value={availableStatPaths}>
+            <ArticleComparisonQuerySettingsConnection />
             <PageTemplate screencap_elements={screencap_elements} has_universe_selector={true} universes={article.universes}>
                 <div>
                     <div ref={headers_ref}>

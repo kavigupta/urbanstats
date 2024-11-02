@@ -1,13 +1,14 @@
-import React, { ReactNode, useContext, useEffect, useId, useRef } from 'react'
+import React, { CSSProperties, ReactNode, useContext, useEffect, useId, useRef } from 'react'
 
 import '../style.css'
 import './sidebar.css'
 
 import { Theme, useColors, useCurrentTheme } from '../page_template/colors'
-import { SettingsDictionary, useSetting } from '../page_template/settings'
+import { SettingsDictionary, useSetting, useSettingInfo, useStagedSettingKeys } from '../page_template/settings'
 import { StatPathsContext } from '../page_template/statistic-settings'
 import { useMobileLayout } from '../utils/responsive'
 
+import { StagingControls } from './StagingControls'
 import { StatsTree } from './StatsTree'
 import { Years } from './Years'
 
@@ -83,6 +84,18 @@ export function Sidebar(): ReactNode {
                     </li>
                 </ul>
             </div>
+            {
+                useStagedSettingKeys() === undefined
+                    ? null
+                    : (
+                            <div className="sidebar-section">
+                                <div style={sidebar_section_title}>Link Settings</div>
+                                <ul className={sidebar_section_content}>
+                                    <StagingControls />
+                                </ul>
+                            </div>
+                        )
+            }
             <div className="sidebar-section">
                 <div style={sidebar_section_title}>Settings</div>
                 <ul className={sidebar_section_content}>
@@ -90,6 +103,7 @@ export function Sidebar(): ReactNode {
                         <CheckboxSetting
                             name="Use Imperial Units"
                             setting_key="use_imperial"
+                            testId="use_imperial"
                         />
                     </li>
                     <li>
@@ -153,6 +167,7 @@ type BooleanSettingKey = keyof { [K in keyof SettingsDictionary as SettingsDicti
 
 export function CheckboxSetting(props: { name: string, setting_key: BooleanSettingKey, classNameToUse?: string, id?: string, testId?: string }): ReactNode {
     const [checked, setChecked] = useSetting(props.setting_key)
+    const info = useSettingInfo(props.setting_key)
 
     return (
         <CheckboxSettingCustom
@@ -162,6 +177,7 @@ export function CheckboxSetting(props: { name: string, setting_key: BooleanSetti
             classNameToUse={props.classNameToUse}
             id={props.id}
             testId={props.testId}
+            highlight={'stagedValue' in info && info.stagedValue !== info.persistedValue}
         />
     )
 };
@@ -188,7 +204,18 @@ export function ColorThemeSetting(): ReactNode {
     )
 };
 
-export function CheckboxSettingCustom(props: { name: string, checked: boolean, indeterminate?: boolean, onChange: (checked: boolean) => void, classNameToUse?: string, id?: string, testId?: string }): ReactNode {
+interface CheckboxSettingCustomProps {
+    name: string
+    checked: boolean
+    indeterminate?: boolean
+    onChange: (checked: boolean) => void
+    classNameToUse?: string
+    id?: string
+    testId?: string
+    highlight?: boolean
+}
+
+export function CheckboxSettingCustom(props: CheckboxSettingCustomProps): ReactNode {
     const colors = useColors()
 
     const id = useId()
@@ -200,8 +227,13 @@ export function CheckboxSettingCustom(props: { name: string, checked: boolean, i
         checkboxRef.current!.indeterminate = props.indeterminate ?? false
     }, [props.indeterminate])
 
+    const divStyle: CSSProperties = {
+        backgroundColor: props.highlight ? colors.slightlyDifferentBackgroundFocused : undefined,
+        borderRadius: '5px',
+    }
+
     return (
-        <div className={props.classNameToUse ?? 'checkbox-setting'}>
+        <div className={props.classNameToUse ?? 'checkbox-setting'} style={divStyle}>
             <input
                 id={inputId}
                 type="checkbox"
@@ -210,6 +242,7 @@ export function CheckboxSettingCustom(props: { name: string, checked: boolean, i
                 ref={checkboxRef}
                 style={{ accentColor: colors.hueColors.blue, backgroundColor: colors.background }}
                 data-test-id={props.testId}
+                data-test-highlight={props.highlight}
             />
             <label htmlFor={inputId}>{props.name}</label>
         </div>
