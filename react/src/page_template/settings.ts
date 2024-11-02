@@ -3,6 +3,7 @@ import { createContext, useContext, useEffect, useState } from 'react'
 import { DefaultMap } from '../utils/DefaultMap'
 
 import { Theme } from './colors'
+import { fromVector } from './settings-vector'
 import { allGroups, allYears, CategoryIdentifier, GroupIdentifier, statsTree } from './statistic-tree'
 
 export type RelationshipKey = `related__${string}__${string}`
@@ -75,19 +76,37 @@ const defaultSettings = {
     clean_background: false,
 } satisfies SettingsDictionary
 
-export function load_settings(): SettingsDictionary {
-    const settings = JSON.parse(localStorage.getItem('settings') ?? '{}') as Partial<SettingsDictionary>
-    return { ...defaultSettings, ...settings }
+export interface SettingInfo<K extends keyof SettingsDictionary> {
+    persistedValue: SettingsDictionary[K]
+    stagedValue?: SettingsDictionary[K]
 }
 
 export class Settings {
+    /**
+     * Basic Settings
+     */
     private readonly settings: SettingsDictionary
 
     constructor() {
-        this.settings = load_settings()
+        const savedSettings = localStorage.getItem('settings')
+        if (savedSettings === null) {
+            this.settings = { ...defaultSettings }
+            // Try loading from a link vector, if it exists
+            const settingsVector = new URL(window.location.href).searchParams.get('s')
+            if (settingsVector !== null) {
+                const settingsFromQueryParams = fromVector(settingsVector, this)
+                for (const [key, value] of Object.entries(settingsFromQueryParams)) {
+                    this.settings[key as keyof SettingsDictionary] = value as never
+                }
+            }
+        }
+        else {
+            const loadedSettings = JSON.parse(savedSettings) as Partial<SettingsDictionary>
+            this.settings = { ...defaultSettings, ...loadedSettings }
+        }
     }
 
-    private readonly observers = new DefaultMap<keyof SettingsDictionary, Set<() => void>>(() => new Set())
+    private readonly settingValueObservers = new DefaultMap<keyof SettingsDictionary, Set<() => void>>(() => new Set())
 
     useSettings<K extends keyof SettingsDictionary>(keys: K[]): Pick<SettingsDictionary, K> {
         // eslint-disable-next-line react-hooks/rules-of-hooks -- This is a custom hook
@@ -96,9 +115,9 @@ export class Settings {
         useEffect(() => {
             setResult(this.getMultiple(keys)) // So that if `key` changes we change our result immediately
             const observer = (): void => { setResult(this.getMultiple(keys)) }
-            keys.forEach(key => this.observers.get(key).add(observer))
+            keys.forEach(key => this.settingValueObservers.get(key).add(observer))
             return () => {
-                keys.forEach(key => this.observers.get(key).delete(observer))
+                keys.forEach(key => this.settingValueObservers.get(key).delete(observer))
             }
         // eslint-disable-next-line react-hooks/exhaustive-deps -- Our dependencies are the keys
         }, keys)
@@ -106,9 +125,14 @@ export class Settings {
     }
 
     setSetting<K extends keyof SettingsDictionary>(key: K, newValue: SettingsDictionary[K]): void {
-        this.settings[key] = newValue
-        localStorage.setItem('settings', JSON.stringify(this.settings))
-        this.observers.get(key).forEach((observer) => { observer() })
+        if (this.stagedSettings !== undefined && (key in this.stagedSettings)) {
+            this.stagedSettings[key] = newValue
+        }
+        else {
+            this.settings[key] = newValue
+            localStorage.setItem('settings', JSON.stringify(this.settings))
+        }
+        this.settingValueObservers.get(key).forEach((observer) => { observer() })
     }
 
     updateSetting<K extends keyof SettingsDictionary>(key: K, makeNewValue: (oldValue: SettingsDictionary[K]) => SettingsDictionary[K]): void {
@@ -116,15 +140,129 @@ export class Settings {
     }
 
     get<K extends keyof SettingsDictionary>(key: K): SettingsDictionary[K] {
+        if (this.stagedSettings !== undefined && (key in this.stagedSettings)) {
+            return this.stagedSettings[key]!
+        }
         return this.settings[key]
     }
 
     getMultiple<K extends keyof SettingsDictionary>(keys: K[]): Pick<SettingsDictionary, K> {
-        return Object.fromEntries(keys.map(key => [key, this.settings[key]])) as Pick<SettingsDictionary, K>
+        return Object.fromEntries(keys.map(key => [key, this.get(key)])) as Pick<SettingsDictionary, K>
     }
 
     // Singular settings means we can use observers
     static Context = createContext(new Settings())
+
+    /**
+     * Staged Mode
+     *
+     * Allows the settings to enter a temporary mode where a subset of settings are not saved, and can be diffed with the saved settings
+     */
+    private stagedSettings?: Partial<SettingsDictionary>
+
+    /**
+     * Starts a "staging" mode for a subset of keys that are contained in this object with the values from this object
+     */
+    enterStagedMode(stagedSettings: Partial<SettingsDictionary>): void {
+        if (this.stagedSettings !== undefined) {
+            throw new Error('Already in staged mode')
+        }
+        this.stagedSettings = { ...stagedSettings }
+        this.stagedKeysObservers.forEach((observer) => { observer() })
+        for (const key of Object.keys(stagedSettings)) {
+            // Need to update observers since the setting values have changed
+            this.settingValueObservers.get(key as keyof SettingsDictionary).forEach((observer) => { observer() })
+        }
+    }
+
+    exitStagedMode(action: 'apply' | 'discard'): void {
+        if (this.stagedSettings === undefined) {
+            throw new Error('Not in staged mode')
+        }
+        switch (action) {
+            case 'apply':
+                for (const [key, value] of Object.entries(this.stagedSettings)) {
+                    this.settings[key as keyof SettingsDictionary] = value as never
+                    // No need to update observers since these were already the values
+                }
+                localStorage.setItem('settings', JSON.stringify(this.settings))
+                this.stagedSettings = undefined
+                this.stagedKeysObservers.forEach((observer) => { observer() })
+                break
+            case 'discard':
+                const stagedSettings = this.stagedSettings
+                this.stagedSettings = undefined
+                this.stagedKeysObservers.forEach((observer) => { observer() })
+                for (const key of Object.keys(stagedSettings)) {
+                    // Need to update observers since the setting values have changed
+                    this.settingValueObservers.get(key as keyof SettingsDictionary).forEach((observer) => { observer() })
+                }
+                break
+        }
+    }
+
+    getStagedKeys(): (keyof SettingsDictionary)[] | undefined {
+        if (this.stagedSettings === undefined) {
+            return undefined
+        }
+        return Object.keys(this.stagedSettings) as (keyof SettingsDictionary)[]
+    }
+
+    private readonly stagedKeysObservers = new Set<() => void>()
+
+    useStagedKeys(): (keyof SettingsDictionary)[] | undefined {
+        // eslint-disable-next-line react-hooks/rules-of-hooks -- This is a custom hook
+        const [result, setResult] = useState(this.getStagedKeys())
+        // eslint-disable-next-line react-hooks/rules-of-hooks -- This is a custom hook
+        useEffect(() => {
+            setResult(this.getStagedKeys())
+            const observer = (): void => {
+                setResult(this.getStagedKeys())
+            }
+            this.stagedKeysObservers.add(observer)
+            return () => {
+                this.stagedKeysObservers.delete(observer)
+            }
+        }, [])
+        return result
+    }
+
+    getSettingInfo<K extends keyof SettingsDictionary>(key: K): SettingInfo<K> {
+        if (this.stagedSettings !== undefined && (key in this.stagedSettings)) {
+            return {
+                stagedValue: this.stagedSettings[key],
+                persistedValue: this.settings[key],
+            }
+        }
+        return {
+            persistedValue: this.settings[key],
+        }
+    }
+
+    getSettingsInfo<K extends keyof SettingsDictionary>(keys: K[]): { [T in K]: SettingInfo<T> } {
+        return Object.fromEntries(keys.map(key => [
+            key,
+            this.getSettingInfo(key),
+        ])) as { [T in K]: SettingInfo<T> }
+    }
+
+    useSettingsInfo<K extends keyof SettingsDictionary>(keys: K[]): { [T in K]: SettingInfo<T> } {
+        // eslint-disable-next-line react-hooks/rules-of-hooks -- This is a custom hook
+        const [result, setResult] = useState(this.getSettingsInfo(keys))
+        // eslint-disable-next-line react-hooks/rules-of-hooks -- This is a custom hook
+        useEffect(() => {
+            setResult(this.getSettingsInfo(keys)) // So that if `key` changes we change our result immediately
+            const observer = (): void => { setResult(this.getSettingsInfo(keys)) }
+            keys.forEach(key => this.settingValueObservers.get(key).add(observer))
+            this.stagedKeysObservers.add(observer)
+            return () => {
+                keys.forEach(key => this.settingValueObservers.get(key).delete(observer))
+                this.stagedKeysObservers.delete(observer)
+            }
+        // eslint-disable-next-line react-hooks/exhaustive-deps -- Our dependencies are the keys
+        }, keys)
+        return result
+    }
 }
 
 export function useSetting<K extends keyof SettingsDictionary>(key: K): [SettingsDictionary[K], (newValue: SettingsDictionary[K]) => void] {
@@ -140,4 +278,19 @@ export function useSettings<K extends keyof SettingsDictionary>(keys: K[]): Pick
 export function relatedSettingsKeys(article_type_this: string): RelationshipKey[] {
     const article_types_other = require('../data/type_to_type_category.json') as Record<string, string>
     return Object.keys(article_types_other).map(article_type_other => relationship_key(article_type_this, article_type_other))
+}
+
+export function useSettingInfo<K extends keyof SettingsDictionary>(key: K): SettingInfo<K> {
+    const settings = useContext(Settings.Context)
+    return settings.useSettingsInfo([key])[key]
+}
+
+export function useSettingsInfo<K extends keyof SettingsDictionary>(keys: K[]): { [T in K]: SettingInfo<T> } {
+    const settings = useContext(Settings.Context)
+    return settings.useSettingsInfo(keys)
+}
+
+export function useStagedSettingKeys(): (keyof SettingsDictionary)[] | undefined {
+    const settings = useContext(Settings.Context)
+    return settings.useStagedKeys()
 }
