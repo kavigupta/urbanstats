@@ -155,6 +155,8 @@ export class Settings {
 
     /**
      * Staged Mode
+     *
+     * Allows the settings to enter a temporary mode where a subset of settings are not saved, and can be diffed with the saved settings
      */
     private stagedSettings?: Partial<SettingsDictionary>
 
