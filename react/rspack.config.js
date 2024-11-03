@@ -1,6 +1,7 @@
 const path = require('path')
 
 const NodePolyfillPlugin = require('node-polyfill-webpack-plugin')
+const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin')
 
 module.exports = env => ({
     entry: {
@@ -41,6 +42,7 @@ module.exports = env => ({
     // devtool: 'inline-source-map',
     plugins: [
         new NodePolyfillPlugin(),
+        new ForkTsCheckerWebpackPlugin()
     ],
     devServer: {
         static: {
