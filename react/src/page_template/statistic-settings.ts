@@ -1,7 +1,7 @@
 import { createContext, useContext } from 'react'
 
 import { Settings, StatGroupKey, StatYearKey, useSettings } from './settings'
-import { allGroups, allYears, Category, Group, statParents, StatPath, statsTree, yearStatPaths } from './statistic-tree'
+import { allGroups, allYears, Category, Group, statParents, StatPath, statsTree, Year, yearStatPaths } from './statistic-tree'
 
 export type StatGroupSettings = Record<StatGroupKey | StatYearKey, boolean>
 
@@ -98,7 +98,7 @@ export function useSelectedGroups(): Group[] {
     return availableGroups.filter(group => settingsValues[`show_stat_group_${group.id}`])
 }
 
-function useSelectedYears(): number[] {
+function useSelectedYears(): Year[] {
     const availableYears = useAvailableYears()
     const settingsValues = useSettings(yearKeys(availableYears))
     return availableYears.filter(year => settingsValues[`show_stat_year_${year}`])
@@ -178,7 +178,7 @@ export function useAvailableCategories(): Category[] {
     return statsTree.filter(category => contextStatPaths.some(statPath => category.statPaths.has(statPath)))
 }
 
-export function useAvailableYears(): number[] {
+export function useAvailableYears(): Year[] {
     const contextStatPaths = useStatPaths()
     // Find the intersection between the stat paths we have loaded in the context and the years that are available
     // This is so we can show the user only the years that will actually show up
