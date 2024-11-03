@@ -54,14 +54,6 @@ const defaultEnabledYears = new Set(
 
 const map_relationship = require('../data/map_relationship.json') as [string, string][]
 
-const typeSafeObjectFromEntries = <
-    const T extends readonly (readonly [PropertyKey, unknown])[],
->(
-    entries: T,
-): { [K in T[number] as K[0]]: K[1] } => {
-    return Object.fromEntries(entries) as { [K in T[number] as K[0]]: K[1] }
-}
-
 // Having a default settings object allows us to statically check that we have default values for all settings
 // It also makes visualizing the default setings easier
 const defaultSettings = {
@@ -70,9 +62,9 @@ const defaultSettings = {
             ([article_type, other_type]) => [relationship_key(article_type, other_type), true],
         ),
     ),
-    ...typeSafeObjectFromEntries(allGroups.map(group => [`show_stat_group_${group.id}` as const, defaultCategorySelections.has(group.parent.id)])),
-    ...typeSafeObjectFromEntries(statsTree.map(category => [`stat_category_saved_indeterminate_${category.id}` as const, []])),
-    ...typeSafeObjectFromEntries(statsTree.map(category => [`stat_category_expanded_${category.id}` as const, false])),
+    ...Object.entries(allGroups.map(group => [`show_stat_group_${group.id}` as const, defaultCategorySelections.has(group.parent.id)])),
+    ...Object.entries(statsTree.map(category => [`stat_category_saved_indeterminate_${category.id}` as const, []])),
+    ...Object.entries(statsTree.map(category => [`stat_category_expanded_${category.id}` as const, false])),
     ...Object.fromEntries(allYears.map(year => [`show_stat_year_${year}`, defaultEnabledYears.has(year)])),
     show_historical_cds: false,
     simple_ordinals: false,
