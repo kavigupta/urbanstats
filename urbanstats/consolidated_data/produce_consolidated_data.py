@@ -1,4 +1,3 @@
-import json
 import os
 
 import tqdm.auto as tqdm
@@ -12,6 +11,7 @@ from urbanstats.protobuf.utils import write_gzip
 from urbanstats.statistics.output_statistics_metadata import internal_statistic_names
 from urbanstats.website_data.output_geometry import convert_to_protobuf
 from urbanstats.website_data.table import shapefile_without_ordinals
+
 from ..utils import output_typescript
 
 use = [
@@ -98,4 +98,4 @@ def full_consolidated_data(folder):
 
 def output_names(mapper_folder):
     with open(f"{mapper_folder}/used_geographies.ts", "w") as f:
-        output_typescript(use, f, type="string[]")
+        output_typescript(use, f, dataType="string[]")

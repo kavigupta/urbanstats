@@ -47,9 +47,9 @@ def compute_bins(data, weight, *, bin_size=0.1):
     return values
 
 
-def output_typescript(data, file, type="const"):
+def output_typescript(data, file, dataType="const"):
     content = json.dumps(data, indent=4)
-    if type == "const":
+    if dataType == "const":
         file.write(f"export default {content} as const")
     else:
-        file.write(f"const value: {type} = {content}\nexport default value")
+        file.write(f"const value: {dataType} = {content}\nexport default value")
