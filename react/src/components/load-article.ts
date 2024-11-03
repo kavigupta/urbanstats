@@ -1,3 +1,6 @@
+import explanation_page from '../data/explanation_page'
+import stats from '../data/statistic_list'
+import names from '../data/statistic_name_list'
 import paths from '../data/statistic_path_list'
 import { StatGroupSettings, statIsEnabled } from '../page_template/statistic-settings'
 import { StatPath } from '../page_template/statistic-tree'
@@ -34,12 +37,14 @@ export interface TimeSeriesExtraStat {
 
 export type ExtraStat = HistogramExtraStat | TimeSeriesExtraStat
 
+export type StatCol = (typeof stats)[number]
+
 export interface ArticleRow {
     statval: number
     ordinal: number
     overallOrdinal: number
     percentile_by_population: number
-    statcol: string | string[]
+    statcol: StatCol
     statname: string
     statpath: StatPath
     explanation_page: string
@@ -71,9 +76,8 @@ function lookup_in_compressed_sequence(seq: [number, number][], idx: number): nu
     throw new Error('Index out of bounds')
 }
 
-export function for_type(universe: string, statcol: string | string[], typ: string): number {
-    const statnames = require('../data/statistic_list.json') as (string | string[])[]
-    const idx = statnames.indexOf(statcol) // Works because `require` is global
+export function for_type(universe: string, statcol: StatCol, typ: string): number {
+    const idx = stats.indexOf(statcol) // Works because `require` is global
     const counts_by_universe = require('../data/counts_by_article_type.json') as Record<string, Record<string, [number, number][]>>
     const counts_by_type = counts_by_universe[universe][typ]
 
@@ -104,10 +108,6 @@ export function load_article(universe: string, data: Article, settings: StatGrou
     // index of universe in data.universes
     const universe_index = data.universes.indexOf(universe)
     const article_type = data.articleType
-
-    const names = require('../data/statistic_name_list.json') as string[]
-    const stats = require('../data/statistic_list.json') as (string | string[])[]
-    const explanation_page = require('../data/explanation_page.json') as string[]
 
     const extra_stats = require('../data/extra_stats.json') as [number, ExtraStatSpec][]
     const extra_stat_idx_to_col = extra_stats.map(xy => xy[0])

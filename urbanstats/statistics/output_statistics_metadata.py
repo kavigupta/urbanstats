@@ -60,8 +60,8 @@ def get_explanation_page():
 
 
 def output_statistics_metadata():
-    with open("react/src/data/statistic_name_list.json", "w") as f:
-        json.dump(list(statistic_internal_to_display_name().values()), f)
+    with open("react/src/data/statistic_name_list.ts", "w") as f:
+        output_typescript(list(statistic_internal_to_display_name().values()), f)
     with open("react/src/data/statistic_path_list.ts", "w") as f:
         output_typescript(
             [
@@ -70,17 +70,13 @@ def output_statistics_metadata():
             ],
             f,
         )
-    with open("react/src/data/statistic_list.json", "w") as f:
-        json.dump(list(internal_statistic_names()), f)
+    with open("react/src/data/statistic_list.ts", "w") as f:
+        output_typescript(list(internal_statistic_names()), f)
 
-    with open("react/src/data/explanation_page.json", "w") as f:
-        json.dump(list(get_explanation_page().values()), f)
+    with open("react/src/data/explanation_page.ts", "w") as f:
+        output_typescript(list(get_explanation_page().values()), f)
 
-    export_statistics_tree("react/src/data/statistics_tree.ts")
-
-
-def export_statistics_tree(path):
-    with open(path, "w") as f:
+    with open("react/src/data/statistics_tree.ts", "w") as f:
         output_typescript(
             statistics_tree.flatten(statistic_internal_to_display_name()), f
         )

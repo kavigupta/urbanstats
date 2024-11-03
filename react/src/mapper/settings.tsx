@@ -1,6 +1,7 @@
 import React, { ReactNode } from 'react'
 
 import { useColors } from '../page_template/colors'
+import { StatName } from '../statistic'
 
 import { DataListSelector } from './DataListSelector'
 import { FilterSelector, FunctionColorStat, StatisticSelector } from './function'
@@ -326,7 +327,7 @@ function BaseMapSelector({ basemap, set_basemap }: { basemap: Basemap, set_basem
     )
 }
 
-export function MapperSettings(props: { map_settings: MapSettings, valid_geographies: string[], set_map_settings: (newValue: MapSettings) => void, names: string[] }): ReactNode {
+export function MapperSettings(props: { map_settings: MapSettings, valid_geographies: string[], set_map_settings: (newValue: MapSettings) => void, names: readonly StatName[] }): ReactNode {
     return (
         <div>
             <DataListSelector

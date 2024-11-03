@@ -1,8 +1,7 @@
+import statNames from '../data/statistic_name_list'
 import statPaths from '../data/statistic_path_list'
 import rawStatsTree from '../data/statistics_tree'
 import { DefaultMap } from '../utils/DefaultMap'
-
-const statNames = require('../data/statistic_name_list.json') as string[]
 
 export type StatPath = (typeof statPaths)[number]
 
