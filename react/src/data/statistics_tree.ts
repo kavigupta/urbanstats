@@ -9,22 +9,62 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            0,
+                        stats_by_source: [
+                            {
+                                name: 'population',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 0,
+                                    },
+                                ],
+                            },
                         ],
                     },
                     {
                         year: 2010,
-                        stats: [
-                            1,
-                            2,
+                        stats_by_source: [
+                            {
+                                name: 'population_2010',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 1,
+                                    },
+                                ],
+                            },
+                            {
+                                name: 'population_change_2010',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 2,
+                                    },
+                                ],
+                            },
                         ],
                     },
                     {
                         year: 2000,
-                        stats: [
-                            3,
-                            4,
+                        stats_by_source: [
+                            {
+                                name: 'population_2000',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 3,
+                                    },
+                                ],
+                            },
+                            {
+                                name: 'population_change_2000',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 4,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -35,22 +75,62 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            5,
+                        stats_by_source: [
+                            {
+                                name: 'ad_1',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 5,
+                                    },
+                                ],
+                            },
                         ],
                     },
                     {
                         year: 2010,
-                        stats: [
-                            6,
-                            7,
+                        stats_by_source: [
+                            {
+                                name: 'ad_1_2010',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 6,
+                                    },
+                                ],
+                            },
+                            {
+                                name: 'ad_1_change_2010',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 7,
+                                    },
+                                ],
+                            },
                         ],
                     },
                     {
                         year: 2000,
-                        stats: [
-                            8,
-                            9,
+                        stats_by_source: [
+                            {
+                                name: 'ad_1_2000',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 8,
+                                    },
+                                ],
+                            },
+                            {
+                                name: 'ad_1_change_2000',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 9,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -61,20 +141,44 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            10,
+                        stats_by_source: [
+                            {
+                                name: 'sd',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 10,
+                                    },
+                                ],
+                            },
                         ],
                     },
                     {
                         year: 2010,
-                        stats: [
-                            11,
+                        stats_by_source: [
+                            {
+                                name: 'sd_2010',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 11,
+                                    },
+                                ],
+                            },
                         ],
                     },
                     {
                         year: 2000,
-                        stats: [
-                            12,
+                        stats_by_source: [
+                            {
+                                name: 'sd_2000',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 12,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -85,8 +189,16 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            13,
+                        stats_by_source: [
+                            {
+                                name: 'gpw_population',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 13,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -97,8 +209,16 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            14,
+                        stats_by_source: [
+                            {
+                                name: 'gpw_pw_density_1',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 14,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -109,8 +229,16 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            15,
+                        stats_by_source: [
+                            {
+                                name: 'gpw_aw_density',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 15,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -121,8 +249,16 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: null,
-                        stats: [
-                            16,
+                        stats_by_source: [
+                            {
+                                name: 'area',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 16,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -133,8 +269,16 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: null,
-                        stats: [
-                            17,
+                        stats_by_source: [
+                            {
+                                name: 'compactness',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 17,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -151,20 +295,44 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            18,
+                        stats_by_source: [
+                            {
+                                name: 'white',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 18,
+                                    },
+                                ],
+                            },
                         ],
                     },
                     {
                         year: 2010,
-                        stats: [
-                            19,
+                        stats_by_source: [
+                            {
+                                name: 'white_2010',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 19,
+                                    },
+                                ],
+                            },
                         ],
                     },
                     {
                         year: 2000,
-                        stats: [
-                            20,
+                        stats_by_source: [
+                            {
+                                name: 'white_2000',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 20,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -175,20 +343,44 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            21,
+                        stats_by_source: [
+                            {
+                                name: 'hispanic',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 21,
+                                    },
+                                ],
+                            },
                         ],
                     },
                     {
                         year: 2010,
-                        stats: [
-                            22,
+                        stats_by_source: [
+                            {
+                                name: 'hispanic_2010',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 22,
+                                    },
+                                ],
+                            },
                         ],
                     },
                     {
                         year: 2000,
-                        stats: [
-                            23,
+                        stats_by_source: [
+                            {
+                                name: 'hispanic_2000',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 23,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -199,20 +391,44 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            24,
+                        stats_by_source: [
+                            {
+                                name: 'black',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 24,
+                                    },
+                                ],
+                            },
                         ],
                     },
                     {
                         year: 2010,
-                        stats: [
-                            25,
+                        stats_by_source: [
+                            {
+                                name: 'black_2010',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 25,
+                                    },
+                                ],
+                            },
                         ],
                     },
                     {
                         year: 2000,
-                        stats: [
-                            26,
+                        stats_by_source: [
+                            {
+                                name: 'black_2000',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 26,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -223,20 +439,44 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            27,
+                        stats_by_source: [
+                            {
+                                name: 'asian',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 27,
+                                    },
+                                ],
+                            },
                         ],
                     },
                     {
                         year: 2010,
-                        stats: [
-                            28,
+                        stats_by_source: [
+                            {
+                                name: 'asian_2010',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 28,
+                                    },
+                                ],
+                            },
                         ],
                     },
                     {
                         year: 2000,
-                        stats: [
-                            29,
+                        stats_by_source: [
+                            {
+                                name: 'asian_2000',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 29,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -247,20 +487,44 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            30,
+                        stats_by_source: [
+                            {
+                                name: 'native',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 30,
+                                    },
+                                ],
+                            },
                         ],
                     },
                     {
                         year: 2010,
-                        stats: [
-                            31,
+                        stats_by_source: [
+                            {
+                                name: 'native_2010',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 31,
+                                    },
+                                ],
+                            },
                         ],
                     },
                     {
                         year: 2000,
-                        stats: [
-                            32,
+                        stats_by_source: [
+                            {
+                                name: 'native_2000',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 32,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -271,20 +535,44 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            33,
+                        stats_by_source: [
+                            {
+                                name: 'hawaiian_pi',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 33,
+                                    },
+                                ],
+                            },
                         ],
                     },
                     {
                         year: 2010,
-                        stats: [
-                            34,
+                        stats_by_source: [
+                            {
+                                name: 'hawaiian_pi_2010',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 34,
+                                    },
+                                ],
+                            },
                         ],
                     },
                     {
                         year: 2000,
-                        stats: [
-                            35,
+                        stats_by_source: [
+                            {
+                                name: 'hawaiian_pi_2000',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 35,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -295,20 +583,44 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            36,
+                        stats_by_source: [
+                            {
+                                name: 'other / mixed',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 36,
+                                    },
+                                ],
+                            },
                         ],
                     },
                     {
                         year: 2010,
-                        stats: [
-                            37,
+                        stats_by_source: [
+                            {
+                                name: 'other / mixed_2010',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 37,
+                                    },
+                                ],
+                            },
                         ],
                     },
                     {
                         year: 2000,
-                        stats: [
-                            38,
+                        stats_by_source: [
+                            {
+                                name: 'other / mixed_2000',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 38,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -319,22 +631,62 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2000,
-                        stats: [
-                            39,
-                            40,
+                        stats_by_source: [
+                            {
+                                name: 'homogeneity_250_2000',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 39,
+                                    },
+                                ],
+                            },
+                            {
+                                name: 'homogeneity_250_diff_2000',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 40,
+                                    },
+                                ],
+                            },
                         ],
                     },
                     {
                         year: 2010,
-                        stats: [
-                            41,
-                            42,
+                        stats_by_source: [
+                            {
+                                name: 'homogeneity_250_2010',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 41,
+                                    },
+                                ],
+                            },
+                            {
+                                name: 'homogeneity_250_diff_2010',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 42,
+                                    },
+                                ],
+                            },
                         ],
                     },
                     {
                         year: 2020,
-                        stats: [
-                            43,
+                        stats_by_source: [
+                            {
+                                name: 'homogeneity_250_2020',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 43,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -345,22 +697,62 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2000,
-                        stats: [
-                            44,
-                            45,
+                        stats_by_source: [
+                            {
+                                name: 'segregation_250_2000',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 44,
+                                    },
+                                ],
+                            },
+                            {
+                                name: 'segregation_250_diff_2000',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 45,
+                                    },
+                                ],
+                            },
                         ],
                     },
                     {
                         year: 2010,
-                        stats: [
-                            46,
-                            47,
+                        stats_by_source: [
+                            {
+                                name: 'segregation_250_2010',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 46,
+                                    },
+                                ],
+                            },
+                            {
+                                name: 'segregation_250_diff_2010',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 47,
+                                    },
+                                ],
+                            },
                         ],
                     },
                     {
                         year: 2020,
-                        stats: [
-                            48,
+                        stats_by_source: [
+                            {
+                                name: 'segregation_250_2020',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 48,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -371,22 +763,62 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2000,
-                        stats: [
-                            49,
-                            50,
+                        stats_by_source: [
+                            {
+                                name: 'segregation_250_10_2000',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 49,
+                                    },
+                                ],
+                            },
+                            {
+                                name: 'segregation_250_10_diff_2000',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 50,
+                                    },
+                                ],
+                            },
                         ],
                     },
                     {
                         year: 2010,
-                        stats: [
-                            51,
-                            52,
+                        stats_by_source: [
+                            {
+                                name: 'segregation_250_10_2010',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 51,
+                                    },
+                                ],
+                            },
+                            {
+                                name: 'segregation_250_10_diff_2010',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 52,
+                                    },
+                                ],
+                            },
                         ],
                     },
                     {
                         year: 2020,
-                        stats: [
-                            53,
+                        stats_by_source: [
+                            {
+                                name: 'segregation_250_10_2020',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 53,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -403,8 +835,16 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            54,
+                        stats_by_source: [
+                            {
+                                name: 'citizenship_citizen_by_birth',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 54,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -415,8 +855,16 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            55,
+                        stats_by_source: [
+                            {
+                                name: 'citizenship_citizen_by_naturalization',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 55,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -427,8 +875,16 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            56,
+                        stats_by_source: [
+                            {
+                                name: 'citizenship_not_citizen',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 56,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -439,8 +895,16 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            57,
+                        stats_by_source: [
+                            {
+                                name: 'birthplace_non_us',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 57,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -451,8 +915,16 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            58,
+                        stats_by_source: [
+                            {
+                                name: 'birthplace_us_not_state',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 58,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -463,8 +935,16 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            59,
+                        stats_by_source: [
+                            {
+                                name: 'birthplace_us_state',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 59,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -475,8 +955,16 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            60,
+                        stats_by_source: [
+                            {
+                                name: 'language_english_only',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 60,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -487,8 +975,16 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            61,
+                        stats_by_source: [
+                            {
+                                name: 'language_spanish',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 61,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -499,8 +995,16 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            62,
+                        stats_by_source: [
+                            {
+                                name: 'language_other',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 62,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -517,8 +1021,16 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            63,
+                        stats_by_source: [
+                            {
+                                name: 'education_high_school',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 63,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -529,8 +1041,16 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            64,
+                        stats_by_source: [
+                            {
+                                name: 'education_ugrad',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 64,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -541,8 +1061,16 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            65,
+                        stats_by_source: [
+                            {
+                                name: 'education_grad',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 65,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -553,8 +1081,16 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            66,
+                        stats_by_source: [
+                            {
+                                name: 'education_field_stem',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 66,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -565,8 +1101,16 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            67,
+                        stats_by_source: [
+                            {
+                                name: 'education_field_humanities',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 67,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -577,8 +1121,16 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            68,
+                        stats_by_source: [
+                            {
+                                name: 'education_field_business',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 68,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -589,8 +1141,16 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            69,
+                        stats_by_source: [
+                            {
+                                name: 'female_hs_gap_4',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 69,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -601,8 +1161,16 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            70,
+                        stats_by_source: [
+                            {
+                                name: 'female_ugrad_gap_4',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 70,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -613,8 +1181,16 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            71,
+                        stats_by_source: [
+                            {
+                                name: 'female_grad_gap_4',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 71,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -631,8 +1207,16 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            72,
+                        stats_by_source: [
+                            {
+                                name: 'generation_silent',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 72,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -643,8 +1227,16 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            73,
+                        stats_by_source: [
+                            {
+                                name: 'generation_boomer',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 73,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -655,8 +1247,16 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            74,
+                        stats_by_source: [
+                            {
+                                name: 'generation_genx',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 74,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -667,8 +1267,16 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            75,
+                        stats_by_source: [
+                            {
+                                name: 'generation_millenial',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 75,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -679,8 +1287,16 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            76,
+                        stats_by_source: [
+                            {
+                                name: 'generation_genz',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 76,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -691,8 +1307,16 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            77,
+                        stats_by_source: [
+                            {
+                                name: 'generation_genalpha',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 77,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -709,8 +1333,16 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            78,
+                        stats_by_source: [
+                            {
+                                name: 'poverty_below_line',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 78,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -721,8 +1353,16 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            79,
+                        stats_by_source: [
+                            {
+                                name: 'household_income_under_50k',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 79,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -733,8 +1373,16 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            80,
+                        stats_by_source: [
+                            {
+                                name: 'household_income_50k_to_100k',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 80,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -745,8 +1393,16 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            81,
+                        stats_by_source: [
+                            {
+                                name: 'household_income_over_100k',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 81,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -757,8 +1413,16 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            82,
+                        stats_by_source: [
+                            {
+                                name: 'individual_income_under_50k',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 82,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -769,8 +1433,16 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            83,
+                        stats_by_source: [
+                            {
+                                name: 'individual_income_50k_to_100k',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 83,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -781,8 +1453,16 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            84,
+                        stats_by_source: [
+                            {
+                                name: 'individual_income_over_100k',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 84,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -799,20 +1479,44 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            85,
+                        stats_by_source: [
+                            {
+                                name: 'housing_per_pop',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 85,
+                                    },
+                                ],
+                            },
                         ],
                     },
                     {
                         year: 2010,
-                        stats: [
-                            86,
+                        stats_by_source: [
+                            {
+                                name: 'housing_per_pop_2010',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 86,
+                                    },
+                                ],
+                            },
                         ],
                     },
                     {
                         year: 2000,
-                        stats: [
-                            87,
+                        stats_by_source: [
+                            {
+                                name: 'housing_per_pop_2000',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 87,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -823,20 +1527,44 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            88,
+                        stats_by_source: [
+                            {
+                                name: 'vacancy',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 88,
+                                    },
+                                ],
+                            },
                         ],
                     },
                     {
                         year: 2010,
-                        stats: [
-                            89,
+                        stats_by_source: [
+                            {
+                                name: 'vacancy_2010',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 89,
+                                    },
+                                ],
+                            },
                         ],
                     },
                     {
                         year: 2000,
-                        stats: [
-                            90,
+                        stats_by_source: [
+                            {
+                                name: 'vacancy_2000',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 90,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -847,8 +1575,16 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            91,
+                        stats_by_source: [
+                            {
+                                name: 'rent_burden_under_20',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 91,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -859,8 +1595,16 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            92,
+                        stats_by_source: [
+                            {
+                                name: 'rent_burden_20_to_40',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 92,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -871,8 +1615,16 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            93,
+                        stats_by_source: [
+                            {
+                                name: 'rent_burden_over_40',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 93,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -883,8 +1635,16 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            94,
+                        stats_by_source: [
+                            {
+                                name: 'rent_1br_under_750',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 94,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -895,8 +1655,16 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            95,
+                        stats_by_source: [
+                            {
+                                name: 'rent_1br_750_to_1500',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 95,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -907,8 +1675,16 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            96,
+                        stats_by_source: [
+                            {
+                                name: 'rent_1br_over_1500',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 96,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -919,8 +1695,16 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            97,
+                        stats_by_source: [
+                            {
+                                name: 'rent_2br_under_750',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 97,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -931,8 +1715,16 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            98,
+                        stats_by_source: [
+                            {
+                                name: 'rent_2br_750_to_1500',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 98,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -943,8 +1735,16 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            99,
+                        stats_by_source: [
+                            {
+                                name: 'rent_2br_over_1500',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 99,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -955,8 +1755,16 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            100,
+                        stats_by_source: [
+                            {
+                                name: 'year_built_1969_or_earlier',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 100,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -967,8 +1775,16 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            101,
+                        stats_by_source: [
+                            {
+                                name: 'year_built_1970_to_1979',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 101,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -979,8 +1795,16 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            102,
+                        stats_by_source: [
+                            {
+                                name: 'year_built_1980_to_1989',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 102,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -991,8 +1815,16 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            103,
+                        stats_by_source: [
+                            {
+                                name: 'year_built_1990_to_1999',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 103,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -1003,8 +1835,16 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            104,
+                        stats_by_source: [
+                            {
+                                name: 'year_built_2000_to_2009',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 104,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -1015,8 +1855,16 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            105,
+                        stats_by_source: [
+                            {
+                                name: 'year_built_2010_or_later',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 105,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -1027,8 +1875,16 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            106,
+                        stats_by_source: [
+                            {
+                                name: 'rent_or_own_rent',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 106,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -1045,8 +1901,16 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            107,
+                        stats_by_source: [
+                            {
+                                name: 'transportation_means_car',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 107,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -1057,8 +1921,16 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            108,
+                        stats_by_source: [
+                            {
+                                name: 'transportation_means_bike',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 108,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -1069,8 +1941,16 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            109,
+                        stats_by_source: [
+                            {
+                                name: 'transportation_means_walk',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 109,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -1081,8 +1961,16 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            110,
+                        stats_by_source: [
+                            {
+                                name: 'transportation_means_transit',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 110,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -1093,8 +1981,16 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            111,
+                        stats_by_source: [
+                            {
+                                name: 'transportation_means_worked_at_home',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 111,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -1105,8 +2001,16 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            112,
+                        stats_by_source: [
+                            {
+                                name: 'transportation_commute_time_under_15',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 112,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -1117,8 +2021,16 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            113,
+                        stats_by_source: [
+                            {
+                                name: 'transportation_commute_time_15_to_29',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 113,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -1129,8 +2041,16 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            114,
+                        stats_by_source: [
+                            {
+                                name: 'transportation_commute_time_30_to_59',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 114,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -1141,8 +2061,16 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            115,
+                        stats_by_source: [
+                            {
+                                name: 'transportation_commute_time_over_60',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 115,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -1153,8 +2081,16 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            116,
+                        stats_by_source: [
+                            {
+                                name: 'vehicle_ownership_none',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 116,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -1165,8 +2101,16 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            117,
+                        stats_by_source: [
+                            {
+                                name: 'vehicle_ownership_at_least_1',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 117,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -1177,8 +2121,16 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            118,
+                        stats_by_source: [
+                            {
+                                name: 'vehicle_ownership_at_least_2',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 118,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -1189,8 +2141,16 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            119,
+                        stats_by_source: [
+                            {
+                                name: 'traffic_fatalities_last_decade_per_capita',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 119,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -1201,8 +2161,16 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            120,
+                        stats_by_source: [
+                            {
+                                name: 'traffic_fatalities_ped_last_decade_per_capita',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 120,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -1213,8 +2181,16 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            121,
+                        stats_by_source: [
+                            {
+                                name: 'traffic_fatalities_last_decade',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 121,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -1225,8 +2201,16 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            122,
+                        stats_by_source: [
+                            {
+                                name: 'traffic_fatalities_ped_last_decade',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 122,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -1243,8 +2227,16 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            123,
+                        stats_by_source: [
+                            {
+                                name: 'GHLTH_cdc_2',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 123,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -1255,8 +2247,16 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            124,
+                        stats_by_source: [
+                            {
+                                name: 'PHLTH_cdc_2',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 124,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -1267,8 +2267,16 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            125,
+                        stats_by_source: [
+                            {
+                                name: 'ARTHRITIS_cdc_2',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 125,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -1279,8 +2287,16 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            126,
+                        stats_by_source: [
+                            {
+                                name: 'CASTHMA_cdc_2',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 126,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -1291,8 +2307,16 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            127,
+                        stats_by_source: [
+                            {
+                                name: 'BPHIGH_cdc_2',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 127,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -1303,8 +2327,16 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            128,
+                        stats_by_source: [
+                            {
+                                name: 'CANCER_cdc_2',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 128,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -1315,8 +2347,16 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            129,
+                        stats_by_source: [
+                            {
+                                name: 'KIDNEY_cdc_2',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 129,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -1327,8 +2367,16 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            130,
+                        stats_by_source: [
+                            {
+                                name: 'COPD_cdc_2',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 130,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -1339,8 +2387,16 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            131,
+                        stats_by_source: [
+                            {
+                                name: 'CHD_cdc_2',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 131,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -1351,8 +2407,16 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            132,
+                        stats_by_source: [
+                            {
+                                name: 'DIABETES_cdc_2',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 132,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -1363,8 +2427,16 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            133,
+                        stats_by_source: [
+                            {
+                                name: 'OBESITY_cdc_2',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 133,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -1375,8 +2447,16 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            134,
+                        stats_by_source: [
+                            {
+                                name: 'STROKE_cdc_2',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 134,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -1387,8 +2467,16 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            135,
+                        stats_by_source: [
+                            {
+                                name: 'DISABILITY_cdc_2',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 135,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -1399,8 +2487,16 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            136,
+                        stats_by_source: [
+                            {
+                                name: 'HEARING_cdc_2',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 136,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -1411,8 +2507,16 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            137,
+                        stats_by_source: [
+                            {
+                                name: 'VISION_cdc_2',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 137,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -1423,8 +2527,16 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            138,
+                        stats_by_source: [
+                            {
+                                name: 'COGNITION_cdc_2',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 138,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -1435,8 +2547,16 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            139,
+                        stats_by_source: [
+                            {
+                                name: 'MOBILITY_cdc_2',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 139,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -1447,8 +2567,16 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            140,
+                        stats_by_source: [
+                            {
+                                name: 'SELFCARE_cdc_2',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 140,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -1459,8 +2587,16 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            141,
+                        stats_by_source: [
+                            {
+                                name: 'INDEPLIVE_cdc_2',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 141,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -1471,8 +2607,16 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            142,
+                        stats_by_source: [
+                            {
+                                name: 'BINGE_cdc_2',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 142,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -1483,8 +2627,16 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            143,
+                        stats_by_source: [
+                            {
+                                name: 'CSMOKING_cdc_2',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 143,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -1495,8 +2647,16 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            144,
+                        stats_by_source: [
+                            {
+                                name: 'LPA_cdc_2',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 144,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -1507,8 +2667,16 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            145,
+                        stats_by_source: [
+                            {
+                                name: 'SLEEP_cdc_2',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 145,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -1519,8 +2687,16 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            146,
+                        stats_by_source: [
+                            {
+                                name: 'CHECKUP_cdc_2',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 146,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -1531,8 +2707,16 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            147,
+                        stats_by_source: [
+                            {
+                                name: 'DENTAL_cdc_2',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 147,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -1543,8 +2727,16 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            148,
+                        stats_by_source: [
+                            {
+                                name: 'CHOLSCREEN_cdc_2',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 148,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -1561,8 +2753,16 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            149,
+                        stats_by_source: [
+                            {
+                                name: 'heating_utility_gas',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 149,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -1573,8 +2773,16 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            150,
+                        stats_by_source: [
+                            {
+                                name: 'heating_electricity',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 150,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -1585,8 +2793,16 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            151,
+                        stats_by_source: [
+                            {
+                                name: 'heating_bottled_tank_lp_gas',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 151,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -1597,8 +2813,16 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            152,
+                        stats_by_source: [
+                            {
+                                name: 'heating_feul_oil_kerosene',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 152,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -1609,8 +2833,16 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            153,
+                        stats_by_source: [
+                            {
+                                name: 'heating_other',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 153,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -1621,8 +2853,16 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            154,
+                        stats_by_source: [
+                            {
+                                name: 'heating_no',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 154,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -1639,8 +2879,16 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            155,
+                        stats_by_source: [
+                            {
+                                name: 'industry_agriculture,_forestry,_fishing_and_hunting',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 155,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -1651,8 +2899,16 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            156,
+                        stats_by_source: [
+                            {
+                                name: 'industry_mining,_quarrying,_and_oil_and_gas_extraction',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 156,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -1663,8 +2919,16 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            157,
+                        stats_by_source: [
+                            {
+                                name: 'industry_accommodation_and_food_services',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 157,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -1675,8 +2939,16 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            158,
+                        stats_by_source: [
+                            {
+                                name: 'industry_arts,_entertainment,_and_recreation',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 158,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -1687,8 +2959,16 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            159,
+                        stats_by_source: [
+                            {
+                                name: 'industry_construction',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 159,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -1699,8 +2979,16 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            160,
+                        stats_by_source: [
+                            {
+                                name: 'industry_educational_services',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 160,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -1711,8 +2999,16 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            161,
+                        stats_by_source: [
+                            {
+                                name: 'industry_health_care_and_social_assistance',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 161,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -1723,8 +3019,16 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            162,
+                        stats_by_source: [
+                            {
+                                name: 'industry_finance_and_insurance',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 162,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -1735,8 +3039,16 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            163,
+                        stats_by_source: [
+                            {
+                                name: 'industry_real_estate_and_rental_and_leasing',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 163,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -1747,8 +3059,16 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            164,
+                        stats_by_source: [
+                            {
+                                name: 'industry_information',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 164,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -1759,8 +3079,16 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            165,
+                        stats_by_source: [
+                            {
+                                name: 'industry_manufacturing',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 165,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -1771,8 +3099,16 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            166,
+                        stats_by_source: [
+                            {
+                                name: 'industry_other_services,_except_public_administration',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 166,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -1783,8 +3119,16 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            167,
+                        stats_by_source: [
+                            {
+                                name: 'industry_administrative_and_support_and_waste_management_services',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 167,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -1795,8 +3139,16 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            168,
+                        stats_by_source: [
+                            {
+                                name: 'industry_management_of_companies_and_enterprises',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 168,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -1807,8 +3159,16 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            169,
+                        stats_by_source: [
+                            {
+                                name: 'industry_professional,_scientific,_and_technical_services',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 169,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -1819,8 +3179,16 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            170,
+                        stats_by_source: [
+                            {
+                                name: 'industry_public_administration',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 170,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -1831,8 +3199,16 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            171,
+                        stats_by_source: [
+                            {
+                                name: 'industry_retail_trade',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 171,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -1843,8 +3219,16 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            172,
+                        stats_by_source: [
+                            {
+                                name: 'industry_transportation_and_warehousing',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 172,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -1855,8 +3239,16 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            173,
+                        stats_by_source: [
+                            {
+                                name: 'industry_utilities',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 173,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -1867,8 +3259,16 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            174,
+                        stats_by_source: [
+                            {
+                                name: 'industry_wholesale_trade',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 174,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -1885,8 +3285,16 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            175,
+                        stats_by_source: [
+                            {
+                                name: 'occupation_architecture_and_engineering_occupations',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 175,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -1897,8 +3305,16 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            176,
+                        stats_by_source: [
+                            {
+                                name: 'occupation_computer_and_mathematical_occupations',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 176,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -1909,8 +3325,16 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            177,
+                        stats_by_source: [
+                            {
+                                name: 'occupation_life,_physical,_and_social_science_occupations',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 177,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -1921,8 +3345,16 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            178,
+                        stats_by_source: [
+                            {
+                                name: 'occupation_arts,_design,_entertainment,_sports,_and_media_occupations',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 178,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -1933,8 +3365,16 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            179,
+                        stats_by_source: [
+                            {
+                                name: 'occupation_community_and_social_service_occupations',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 179,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -1945,8 +3385,16 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            180,
+                        stats_by_source: [
+                            {
+                                name: 'occupation_educational_instruction,_and_library_occupations',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 180,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -1957,8 +3405,16 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            181,
+                        stats_by_source: [
+                            {
+                                name: 'occupation_legal_occupations',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 181,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -1969,8 +3425,16 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            182,
+                        stats_by_source: [
+                            {
+                                name: 'occupation_health_diagnosing_and_treating_practitioners_and_other_technical_occupations',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 182,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -1981,8 +3445,16 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            183,
+                        stats_by_source: [
+                            {
+                                name: 'occupation_health_technologists_and_technicians',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 183,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -1993,8 +3465,16 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            184,
+                        stats_by_source: [
+                            {
+                                name: 'occupation_business_and_financial_operations_occupations',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 184,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -2005,8 +3485,16 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            185,
+                        stats_by_source: [
+                            {
+                                name: 'occupation_management_occupations',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 185,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -2017,8 +3505,16 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            186,
+                        stats_by_source: [
+                            {
+                                name: 'occupation_construction_and_extraction_occupations',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 186,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -2029,8 +3525,16 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            187,
+                        stats_by_source: [
+                            {
+                                name: 'occupation_farming,_fishing,_and_forestry_occupations',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 187,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -2041,8 +3545,16 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            188,
+                        stats_by_source: [
+                            {
+                                name: 'occupation_installation,_maintenance,_and_repair_occupations',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 188,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -2053,8 +3565,16 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            189,
+                        stats_by_source: [
+                            {
+                                name: 'occupation_material_moving_occupations',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 189,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -2065,8 +3585,16 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            190,
+                        stats_by_source: [
+                            {
+                                name: 'occupation_production_occupations',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 190,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -2077,8 +3605,16 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            191,
+                        stats_by_source: [
+                            {
+                                name: 'occupation_transportation_occupations',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 191,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -2089,8 +3625,16 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            192,
+                        stats_by_source: [
+                            {
+                                name: 'occupation_office_and_administrative_support_occupations',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 192,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -2101,8 +3645,16 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            193,
+                        stats_by_source: [
+                            {
+                                name: 'occupation_sales_and_related_occupations',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 193,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -2113,8 +3665,16 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            194,
+                        stats_by_source: [
+                            {
+                                name: 'occupation_building_and_grounds_cleaning_and_maintenance_occupations',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 194,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -2125,8 +3685,16 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            195,
+                        stats_by_source: [
+                            {
+                                name: 'occupation_food_preparation_and_serving_related_occupations',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 195,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -2137,8 +3705,16 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            196,
+                        stats_by_source: [
+                            {
+                                name: 'occupation_healthcare_support_occupations',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 196,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -2149,8 +3725,16 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            197,
+                        stats_by_source: [
+                            {
+                                name: 'occupation_personal_care_and_service_occupations',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 197,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -2161,8 +3745,16 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            198,
+                        stats_by_source: [
+                            {
+                                name: 'occupation_firefighting_and_prevention,_and_other_protective_service_workers_including_supervisors',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 198,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -2173,8 +3765,16 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            199,
+                        stats_by_source: [
+                            {
+                                name: 'occupation_law_enforcement_workers_including_supervisors',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 199,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -2191,8 +3791,16 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            200,
+                        stats_by_source: [
+                            {
+                                name: 'sors_unpartnered_householder',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 200,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -2203,8 +3811,16 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            201,
+                        stats_by_source: [
+                            {
+                                name: 'sors_cohabiting_partnered_gay',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 201,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -2215,8 +3831,16 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            202,
+                        stats_by_source: [
+                            {
+                                name: 'sors_cohabiting_partnered_straight',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 202,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -2227,8 +3851,16 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            203,
+                        stats_by_source: [
+                            {
+                                name: 'sors_child',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 203,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -2239,8 +3871,16 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            204,
+                        stats_by_source: [
+                            {
+                                name: 'sors_other',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 204,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -2251,8 +3891,16 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            205,
+                        stats_by_source: [
+                            {
+                                name: 'marriage_never_married',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 205,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -2263,8 +3911,16 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            206,
+                        stats_by_source: [
+                            {
+                                name: 'marriage_married_not_divorced',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 206,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -2275,8 +3931,16 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            207,
+                        stats_by_source: [
+                            {
+                                name: 'marriage_divorced',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 207,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -2293,8 +3957,19 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            208,
+                        stats_by_source: [
+                            {
+                                name: [
+                                    '2020 Presidential Election',
+                                    'margin',
+                                ],
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 208,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -2305,8 +3980,19 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            209,
+                        stats_by_source: [
+                            {
+                                name: [
+                                    '2016 Presidential Election',
+                                    'margin',
+                                ],
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 209,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -2317,8 +4003,19 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            210,
+                        stats_by_source: [
+                            {
+                                name: [
+                                    '2016-2020 Swing',
+                                    'margin',
+                                ],
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 210,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -2335,8 +4032,16 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            211,
+                        stats_by_source: [
+                            {
+                                name: 'park_percent_1km_v2',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 211,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -2347,8 +4052,16 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            212,
+                        stats_by_source: [
+                            {
+                                name: 'within_Hospital_10',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 212,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -2359,8 +4072,16 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            213,
+                        stats_by_source: [
+                            {
+                                name: 'mean_dist_Hospital_updated',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 213,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -2371,8 +4092,16 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            214,
+                        stats_by_source: [
+                            {
+                                name: 'within_Public School_2',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 214,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -2383,8 +4112,16 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            215,
+                        stats_by_source: [
+                            {
+                                name: 'mean_dist_Public School_updated',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 215,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -2395,8 +4132,16 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            216,
+                        stats_by_source: [
+                            {
+                                name: 'within_Airport_30',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 216,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -2407,8 +4152,16 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            217,
+                        stats_by_source: [
+                            {
+                                name: 'mean_dist_Airport_updated',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 217,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -2419,8 +4172,16 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            218,
+                        stats_by_source: [
+                            {
+                                name: 'within_Active Superfund Site_10',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 218,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -2431,8 +4192,16 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            219,
+                        stats_by_source: [
+                            {
+                                name: 'mean_dist_Active Superfund Site_updated',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 219,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -2443,8 +4212,16 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            220,
+                        stats_by_source: [
+                            {
+                                name: 'lapophalfshare_usda_fra_1',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 220,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -2455,8 +4232,16 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            221,
+                        stats_by_source: [
+                            {
+                                name: 'lapop1share_usda_fra_1',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 221,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -2467,8 +4252,16 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            222,
+                        stats_by_source: [
+                            {
+                                name: 'lapop10share_usda_fra_1',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 222,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -2479,8 +4272,16 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            223,
+                        stats_by_source: [
+                            {
+                                name: 'lapop20share_usda_fra_1',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 223,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -2497,8 +4298,16 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            224,
+                        stats_by_source: [
+                            {
+                                name: 'mean_high_temp_4',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 224,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -2509,8 +4318,16 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            225,
+                        stats_by_source: [
+                            {
+                                name: 'mean_high_heat_index_4',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 225,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -2521,8 +4338,16 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            226,
+                        stats_by_source: [
+                            {
+                                name: 'mean_high_dewpoint_4',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 226,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -2533,8 +4358,16 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            227,
+                        stats_by_source: [
+                            {
+                                name: 'days_above_90_4',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 227,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -2545,8 +4378,16 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            228,
+                        stats_by_source: [
+                            {
+                                name: 'days_between_40_and_90_4',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 228,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -2557,8 +4398,16 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            229,
+                        stats_by_source: [
+                            {
+                                name: 'days_below_40_4',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 229,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -2569,8 +4418,16 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            230,
+                        stats_by_source: [
+                            {
+                                name: 'days_dewpoint_70_inf_4',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 230,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -2581,8 +4438,16 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            231,
+                        stats_by_source: [
+                            {
+                                name: 'days_dewpoint_50_70_4',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 231,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -2593,8 +4458,16 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            232,
+                        stats_by_source: [
+                            {
+                                name: 'days_dewpoint_-inf_50_4',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 232,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -2605,8 +4478,16 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            233,
+                        stats_by_source: [
+                            {
+                                name: 'hours_sunny_4',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 233,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -2617,8 +4498,16 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            234,
+                        stats_by_source: [
+                            {
+                                name: 'rainfall_4',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 234,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -2629,8 +4518,16 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            235,
+                        stats_by_source: [
+                            {
+                                name: 'snowfall_4',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 235,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -2641,8 +4538,16 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            236,
+                        stats_by_source: [
+                            {
+                                name: 'wind_speed_over_10mph_4',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 236,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -2653,8 +4558,16 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            237,
+                        stats_by_source: [
+                            {
+                                name: 'mean_high_temp_summer_4',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 237,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -2665,8 +4578,16 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            238,
+                        stats_by_source: [
+                            {
+                                name: 'mean_high_temp_winter_4',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 238,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -2677,8 +4598,16 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            239,
+                        stats_by_source: [
+                            {
+                                name: 'mean_high_temp_fall_4',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 239,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -2689,8 +4618,16 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            240,
+                        stats_by_source: [
+                            {
+                                name: 'mean_high_temp_spring_4',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 240,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -2707,8 +4644,16 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            241,
+                        stats_by_source: [
+                            {
+                                name: 'internet_no_access',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 241,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -2719,8 +4664,16 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            242,
+                        stats_by_source: [
+                            {
+                                name: 'insurance_coverage_none',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 242,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -2731,8 +4684,16 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            243,
+                        stats_by_source: [
+                            {
+                                name: 'insurance_coverage_govt',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 243,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -2743,8 +4704,16 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            244,
+                        stats_by_source: [
+                            {
+                                name: 'insurance_coverage_private',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 244,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -2761,22 +4730,62 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            245,
+                        stats_by_source: [
+                            {
+                                name: 'ad_0.25',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 245,
+                                    },
+                                ],
+                            },
                         ],
                     },
                     {
                         year: 2010,
-                        stats: [
-                            246,
-                            247,
+                        stats_by_source: [
+                            {
+                                name: 'ad_0.25_2010',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 246,
+                                    },
+                                ],
+                            },
+                            {
+                                name: 'ad_0.25_change_2010',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 247,
+                                    },
+                                ],
+                            },
                         ],
                     },
                     {
                         year: 2000,
-                        stats: [
-                            248,
-                            249,
+                        stats_by_source: [
+                            {
+                                name: 'ad_0.25_2000',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 248,
+                                    },
+                                ],
+                            },
+                            {
+                                name: 'ad_0.25_change_2000',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 249,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -2787,22 +4796,62 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            250,
+                        stats_by_source: [
+                            {
+                                name: 'ad_0.5',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 250,
+                                    },
+                                ],
+                            },
                         ],
                     },
                     {
                         year: 2010,
-                        stats: [
-                            251,
-                            252,
+                        stats_by_source: [
+                            {
+                                name: 'ad_0.5_2010',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 251,
+                                    },
+                                ],
+                            },
+                            {
+                                name: 'ad_0.5_change_2010',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 252,
+                                    },
+                                ],
+                            },
                         ],
                     },
                     {
                         year: 2000,
-                        stats: [
-                            253,
-                            254,
+                        stats_by_source: [
+                            {
+                                name: 'ad_0.5_2000',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 253,
+                                    },
+                                ],
+                            },
+                            {
+                                name: 'ad_0.5_change_2000',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 254,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -2813,22 +4862,62 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            255,
+                        stats_by_source: [
+                            {
+                                name: 'ad_2',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 255,
+                                    },
+                                ],
+                            },
                         ],
                     },
                     {
                         year: 2010,
-                        stats: [
-                            256,
-                            257,
+                        stats_by_source: [
+                            {
+                                name: 'ad_2_2010',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 256,
+                                    },
+                                ],
+                            },
+                            {
+                                name: 'ad_2_change_2010',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 257,
+                                    },
+                                ],
+                            },
                         ],
                     },
                     {
                         year: 2000,
-                        stats: [
-                            258,
-                            259,
+                        stats_by_source: [
+                            {
+                                name: 'ad_2_2000',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 258,
+                                    },
+                                ],
+                            },
+                            {
+                                name: 'ad_2_change_2000',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 259,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -2839,22 +4928,62 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            260,
+                        stats_by_source: [
+                            {
+                                name: 'ad_4',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 260,
+                                    },
+                                ],
+                            },
                         ],
                     },
                     {
                         year: 2010,
-                        stats: [
-                            261,
-                            262,
+                        stats_by_source: [
+                            {
+                                name: 'ad_4_2010',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 261,
+                                    },
+                                ],
+                            },
+                            {
+                                name: 'ad_4_change_2010',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 262,
+                                    },
+                                ],
+                            },
                         ],
                     },
                     {
                         year: 2000,
-                        stats: [
-                            263,
-                            264,
+                        stats_by_source: [
+                            {
+                                name: 'ad_4_2000',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 263,
+                                    },
+                                ],
+                            },
+                            {
+                                name: 'ad_4_change_2000',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 264,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -2865,8 +4994,16 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            265,
+                        stats_by_source: [
+                            {
+                                name: 'gpw_pw_density_2',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 265,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -2877,8 +5014,16 @@ export const rawStatsTree = [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            266,
+                        stats_by_source: [
+                            {
+                                name: 'gpw_pw_density_4',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 266,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
