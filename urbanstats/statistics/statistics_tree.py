@@ -31,16 +31,18 @@ class StatisticGroup:
                 result[stat] = category_id_to_use if year in {2020, None} else str(year)
         return result
 
+    @staticmethod
+    def flatten_year(year, stats, names):
+        assert isinstance(year, int) or year is None, year
+        stats_processed = []
+        for stat in stats:
+            assert stat in names, stat
+            stats_processed.append(names.index(stat))
+
+        return {"year": year, "stats": stats_processed}
+
     def flatten(self, name_map, group_id):
-        group_name = None
-        if group_name is None:
-            year = None if None in self.by_year else max(self.by_year)
-            short_statcol = self.by_year[year][0]
-            group_name = name_map[short_statcol]
-            if len(self.by_year) > 1:
-                assert not (
-                    str(year) in group_name
-                ), f"Group name should not contain year, but got: {group_name}"
+        group_name = self.compute_group_name(name_map)
 
         group_id = get_statistic_column_path(group_id)
         return {
@@ -52,15 +54,18 @@ class StatisticGroup:
             ],
         }
 
-    @staticmethod
-    def flatten_year(year, stats, names):
-        assert isinstance(year, int) or year is None, year
-        stats_processed = []
-        for stat in stats:
-            assert stat in names, stat
-            stats_processed.append(names.index(stat))
+    def compute_group_name(self, name_map):
+        group_name = None
+        if group_name is None:
+            year = None if None in self.by_year else max(self.by_year)
+            short_statcol = self.by_year[year][0]
+            group_name = name_map[short_statcol]
+            if len(self.by_year) > 1:
+                assert not (
+                    str(year) in group_name
+                ), f"Group name should not contain year, but got: {group_name}"
 
-        return {"year": year, "stats": stats_processed}
+        return group_name
 
 
 @dataclass
