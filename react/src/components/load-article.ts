@@ -70,7 +70,7 @@ function compute_indices(longname: string, typ: string): number[] {
     const lists = index_list_info.index_lists
     let result: number[] = []
     result = result.concat(lists.universal)
-    if ((index_list_info.type_to_has_gpw as Record<string, boolean>)[typ]) {
+    if (index_list_info.type_to_has_gpw[typ]) {
         result = result.concat(lists.gpw)
     }
     // else {

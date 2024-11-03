@@ -4,9 +4,9 @@ export { default as RAMPS } from '../data/mapper/ramps'
 
 export type EncodedColorMap = { type: 'none' } | { type: 'custom', custom_colormap: string } | { type: 'preset', name: string }
 
-export type ColorMap = readonly (readonly [number, string])[]
+export type ColorMap = [number, string][]
 
-export type Keypoints = readonly (readonly [number, string])[]
+export type Keypoints = Readonly<[number, string]>[]
 
 export interface Ramp {
     create_ramp(values: number[]): Readonly<[Keypoints, number[]]>
@@ -51,10 +51,10 @@ function parse_colormap(cmap: EncodedColorMap): ColorMap {
         return parse_custom_colormap(cmap.custom_colormap) ?? RAMPS.Gray
     }
     else {
-        if (cmap.name in RAMPS) {
-            return RAMPS[cmap.name]
+        if (cmap.name === '') {
+            return RAMPS.Gray
         }
-        return RAMPS.Gray
+        return RAMPS[cmap.name]
     }
 }
 

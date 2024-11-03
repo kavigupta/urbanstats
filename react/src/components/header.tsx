@@ -192,7 +192,7 @@ function UniverseSelector(
 }
 
 function UniverseDropdown(
-    { all_universes, flag_size }: { readonly all_universes: readonly string[], flag_size: string },
+    { all_universes, flag_size }: { all_universes: readonly string[], flag_size: string },
 ): ReactNode {
     const colors = useColors()
     return (

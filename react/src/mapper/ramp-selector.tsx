@@ -89,7 +89,7 @@ export function RampColormapSelector(props: { ramp: RampDescriptor, set_ramp: (n
     )
 }
 
-function SinglePointSelector({ value, color, cell, set_cell, remove_cell }: { value: number, color: string, cell: readonly [number, string], set_cell: (newValue: [number, string]) => void, remove_cell: () => void }): ReactNode {
+function SinglePointSelector({ value, color, cell, set_cell, remove_cell }: { value: number, color: string, cell: [number, string], set_cell: (newValue: [number, string]) => void, remove_cell: () => void }): ReactNode {
     const colors = useColors()
     return (
         <div
@@ -143,7 +143,7 @@ function CustomColormapSelector(props: { colormap: string, set_colormap: (newVal
     const parsed_colormap = parse_custom_colormap(colormap_text)
     let colormap: ColorMap
     if (parsed_colormap !== undefined) {
-        colormap = Array.from(parsed_colormap).sort((a, b) => a[0] - b[0])
+        colormap = parsed_colormap.sort((a, b) => a[0] - b[0])
         colormap_text = JSON.stringify(colormap)
     }
     else {
