@@ -78,4 +78,3 @@ def output_statistics_metadata():
     fst = statistics_tree.flatten(statistic_internal_to_display_name())
     with open("react/src/data/statistics_tree.json", "w") as f:
         json.dump(fst, f, indent=2)
-
