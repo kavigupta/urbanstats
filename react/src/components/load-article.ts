@@ -1,3 +1,4 @@
+import paths from '../data/statistic_path_list'
 import { StatGroupSettings, statIsEnabled } from '../page_template/statistic-settings'
 import { StatPath } from '../page_template/statistic-tree'
 import { universe_is_american } from '../universe'
@@ -105,7 +106,6 @@ export function load_article(universe: string, data: Article, settings: StatGrou
     const article_type = data.articleType
 
     const names = require('../data/statistic_name_list.json') as string[]
-    const paths = require('../data/statistic_path_list.json') as StatPath[]
     const stats = require('../data/statistic_list.json') as (string | string[])[]
     const explanation_page = require('../data/explanation_page.json') as string[]
 

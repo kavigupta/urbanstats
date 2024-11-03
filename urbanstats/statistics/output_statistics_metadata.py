@@ -61,14 +61,15 @@ def get_explanation_page():
 def output_statistics_metadata():
     with open("react/src/data/statistic_name_list.json", "w") as f:
         json.dump(list(statistic_internal_to_display_name().values()), f)
-    with open("react/src/data/statistic_path_list.json", "w") as f:
-        json.dump(
+    with open("react/src/data/statistic_path_list.ts", "w") as f:
+        content = json.dumps(
             [
                 get_statistic_column_path(name)
                 for name in statistic_internal_to_display_name()
             ],
-            f,
+            indent=4,
         )
+        f.write(f"export default {content} as const")
     with open("react/src/data/statistic_list.json", "w") as f:
         json.dump(list(internal_statistic_names()), f)
 
