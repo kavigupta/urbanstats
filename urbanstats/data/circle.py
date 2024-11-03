@@ -769,6 +769,8 @@ def circle_shapefile_object(country_shapefile, population, just_usa):
     if population == 1e7:
         # just special case for 10M, since there was some weird caching issue.
         version += 0.1
+    if just_usa:
+        version += 0.01
     return Shapefile(
         hash_key=prefix
         + f"population_circle_{named_populations[population]}_{version}",
@@ -778,7 +780,7 @@ def circle_shapefile_object(country_shapefile, population, just_usa):
         shortname_extractor=lambda x: x["shortname"],
         longname_extractor=lambda x: x["longname"],
         meta=dict(type=name, source="GHSL", type_category="Kavi"),
-        filter=(lambda x: "USA" in x.longname) if just_usa else lambda x: True,
+        filter=(lambda x: x.longname.endswith(", USA")) if just_usa else lambda x: True,
         american=just_usa,
         include_in_gpw=not just_usa,
         tolerate_no_state=True,

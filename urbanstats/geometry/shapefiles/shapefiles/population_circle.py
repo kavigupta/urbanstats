@@ -5,7 +5,11 @@ from urbanstats.geometry.shapefiles.shapefiles.countries import COUNTRIES
 # Excluded shapefiles. These are shapefiles that have no entries.
 # When you update the list of circle shapefiles, you should clear this tuple and run
 # PYTHONPATH=. python scripts/population_circle_exclusion.py
-excl = ()
+excl = (
+    "us_population_circle_200M_26.01",
+    "us_population_circle_500M_26.01",
+    "us_population_circle_1B_26.01",
+)
 
 
 def compute_circles():
