@@ -52,7 +52,7 @@ function parse_colormap(cmap: EncodedColorMap): ColorMap {
     }
     else {
         if (cmap.name in RAMPS) {
-            return RAMPS[cmap.name as keyof typeof RAMPS]
+            return RAMPS[cmap.name]
         }
         return RAMPS.Gray
     }

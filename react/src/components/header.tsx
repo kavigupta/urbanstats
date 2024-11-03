@@ -18,7 +18,7 @@ export function Header(props: {
     hamburger_open: boolean
     set_hamburger_open: (newValue: boolean) => void
     has_universe_selector: boolean
-    all_universes: string[]
+    all_universes: readonly string[]
     has_screenshot: boolean
     initiate_screenshot: (curr_universe: string) => void
 }): ReactNode {
@@ -83,7 +83,7 @@ function TopLeft(props: {
     hamburger_open: boolean
     set_hamburger_open: (newValue: boolean) => void
     has_universe_selector: boolean
-    all_universes: string[]
+    all_universes: readonly string[]
 }): ReactNode {
     if (useMobileLayout()) {
         return (
@@ -128,7 +128,7 @@ function HeaderImage(): ReactNode {
 }
 
 function UniverseSelector(
-    { all_universes }: { all_universes: string[] },
+    { all_universes }: { all_universes: readonly string[] },
 ): ReactNode {
     const curr_universe = useUniverse()
     // button to select universe. Image is icons/flags/${universe}.png
@@ -192,7 +192,7 @@ function UniverseSelector(
 }
 
 function UniverseDropdown(
-    { all_universes, flag_size }: { all_universes: string[], flag_size: string },
+    { all_universes, flag_size }: { readonly all_universes: readonly string[], flag_size: string },
 ): ReactNode {
     const colors = useColors()
     return (

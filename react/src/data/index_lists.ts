@@ -1,4 +1,4 @@
-export default {
+const value: { index_lists: Record<string, number[]>, type_to_has_gpw: Record<string, boolean> } = {
     index_lists: {
         universal: [
             16,
@@ -311,4 +311,5 @@ export default {
         '500M Person Circle': true,
         '1B Person Circle': true,
     },
-} as const
+}
+export default value

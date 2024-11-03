@@ -1,5 +1,6 @@
 import React, { CSSProperties, ReactNode, useMemo, useRef } from 'react'
 
+import universes_ordered from '../data/universes_ordered'
 import { article_link, explanation_page_link, sanitize, statistic_link } from '../navigation/links'
 import { useColors } from '../page_template/colors'
 import { useSetting } from '../page_template/settings'
@@ -109,7 +110,7 @@ export function StatisticPanel(props: {
                 elements_to_render: [headers_ref.current!, table_ref.current!],
             })}
             has_universe_selector={true}
-            universes={require('../data/universes_ordered.json') as string[]}
+            universes={universes_ordered}
         >
             <div>
                 <div ref={headers_ref}>

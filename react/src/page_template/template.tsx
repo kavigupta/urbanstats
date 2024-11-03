@@ -27,7 +27,7 @@ export function PageTemplate({
 }: {
     screencap_elements?: () => ScreencapElements
     has_universe_selector?: boolean
-    universes?: string[]
+    universes?: readonly string[]
     children: React.ReactNode
 }): ReactNode {
     const [hamburger_open, set_hamburger_open] = useState(false)

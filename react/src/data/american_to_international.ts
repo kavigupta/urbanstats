@@ -1,4 +1,4 @@
-export default {
+const value: Record<string, string> = {
     'USA': 'Country',
     'State': 'Subnational Region',
     'US Urban Center': 'Urban Center',
@@ -10,4 +10,5 @@ export default {
     'US 200M Person Circle': '200M Person Circle',
     'US 500M Person Circle': '500M Person Circle',
     'US 1B Person Circle': '1B Person Circle',
-} as const
+}
+export default value

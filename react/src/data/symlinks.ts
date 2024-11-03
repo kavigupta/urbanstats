@@ -1,4 +1,4 @@
-export default {
+const value: Record<string, string> = {
     'United States of America': 'USA',
     'Ab Pakhsh Urban Center, Iran, Islamic Republic of': 'Ab Pakhsh Urban Center, Iran',
     'Abadan Urban Center, Iran, Islamic Republic of': 'Abadan Urban Center, Iran',
@@ -1983,4 +1983,5 @@ export default {
     '\u1e28im\u015f, Syrian Arab Republic': '\u1e28im\u015f, Syria',
     '\uc6c5\uc0c1 Urban Center, Korea, Republic of': '\uc6c5\uc0c1 Urban Center, South Korea',
     '\uccad\ud558\uc5ed Urban Center, Korea, Democratic People\'s Republic of': '\uccad\ud558\uc5ed Urban Center, North Korea',
-} as const
+}
+export default value

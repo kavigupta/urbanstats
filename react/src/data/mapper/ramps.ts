@@ -1,4 +1,4 @@
-export default {
+const value: Record<string, [number, string][]> = {
     Afmhot: [
         [
             0.0,
@@ -10633,4 +10633,5 @@ export default {
             '#800026',
         ],
     ],
-} as const
+}
+export default value

@@ -1,4 +1,4 @@
-export default {
+const value: Record<string, number> = {
     'Continent': 0,
     'Country': 1,
     'State': 2,
@@ -40,4 +40,5 @@ export default {
     'US 10M Person Circle': 38,
     '5M Person Circle': 39,
     'US 5M Person Circle': 40,
-} as const
+}
+export default value

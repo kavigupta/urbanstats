@@ -1,4 +1,6 @@
 import explanation_page from '../data/explanation_page'
+import extra_stats from '../data/extra_stats'
+import index_list_info from '../data/index_lists'
 import stats from '../data/statistic_list'
 import names from '../data/statistic_name_list'
 import paths from '../data/statistic_path_list'
@@ -6,19 +8,6 @@ import { StatGroupSettings, statIsEnabled } from '../page_template/statistic-set
 import { StatPath } from '../page_template/statistic-tree'
 import { universe_is_american } from '../universe'
 import { Article } from '../utils/protos'
-
-interface HistogramExtraStatSpec {
-    type: 'histogram'
-    universe_total_idx: number
-}
-
-interface TimeSeriesExtraStatSpec {
-    type: 'time_series'
-    years: number[]
-    name: string
-}
-
-type ExtraStatSpec = HistogramExtraStatSpec | TimeSeriesExtraStatSpec
 
 export interface HistogramExtraStat {
     type: 'histogram'
@@ -56,15 +45,6 @@ export interface ArticleRow {
     extra_stat?: ExtraStat
 }
 
-const index_list_info = require('../data/index_lists.json') as {
-    index_lists: {
-        universal: number[]
-        gpw: number[]
-        usa: number[]
-    }
-    type_to_has_gpw: Record<string, boolean>
-}
-
 function lookup_in_compressed_sequence(seq: [number, number][], idx: number): number {
     // translation of sharding.py::lookup_in_compressed_sequence
     for (const [value, length] of seq) {
@@ -90,7 +70,7 @@ function compute_indices(longname: string, typ: string): number[] {
     const lists = index_list_info.index_lists
     let result: number[] = []
     result = result.concat(lists.universal)
-    if (index_list_info.type_to_has_gpw[typ]) {
+    if ((index_list_info.type_to_has_gpw as Record<string, boolean>)[typ]) {
         result = result.concat(lists.gpw)
     }
     // else {
@@ -109,7 +89,6 @@ export function load_article(universe: string, data: Article, settings: StatGrou
     const universe_index = data.universes.indexOf(universe)
     const article_type = data.articleType
 
-    const extra_stats = require('../data/extra_stats.json') as [number, ExtraStatSpec][]
     const extra_stat_idx_to_col = extra_stats.map(xy => xy[0])
 
     const indices = compute_indices(data.longname, article_type)

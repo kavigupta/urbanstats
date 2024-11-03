@@ -52,10 +52,10 @@ def create_react_jsons():
         output_typescript(map_relationships_by_type, f)
 
     with open("react/src/data/type_to_type_category.ts", "w") as f:
-        output_typescript(type_to_type_category, f)
+        output_typescript(type_to_type_category, f, type="Record<string, string>")
 
     with open("react/src/data/type_ordering_idx.ts", "w") as f:
-        output_typescript(type_ordering_idx, f)
+        output_typescript(type_ordering_idx, f, type="Record<string, number>")
 
     output_statistics_metadata()
 
@@ -77,6 +77,11 @@ def create_react_jsons():
                 for k, v in sorted(extra_stats().items())
             ],
             f,
+            type="""
+            [number, 
+                { type: 'histogram', universe_total_idx: number } | 
+                { type: 'time_series', years: number[], name: string }
+            ][]""",
         )
 
     mapper_folder = "react/src/data/mapper"
@@ -89,13 +94,17 @@ def create_react_jsons():
     output_ramps(mapper_folder)
 
     with open("react/src/data/index_lists.ts", "w") as f:
-        output_typescript(get_index_lists(), f)
+        output_typescript(
+            get_index_lists(),
+            f,
+            type="{ index_lists: Record<string, number[]>, type_to_has_gpw: Record<string, boolean> }",
+        )
 
     with open("react/src/data/american_to_international.ts", "w") as f:
-        output_typescript(american_to_international, f)
+        output_typescript(american_to_international, f, type="Record<string, string>")
 
     with open("react/src/data/symlinks.ts", "w") as f:
-        output_typescript(symlinks.symlinks, f)
+        output_typescript(symlinks.symlinks, f, type="Record<string, string>")
 
 
 def build_react_site(site_folder, dev):

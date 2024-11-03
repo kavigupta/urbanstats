@@ -85,4 +85,4 @@ def plot_ramp(y, ramp, segments=101):
 
 def output_ramps(mapper_folder):
     with open(f"{mapper_folder}/ramps.ts", "w") as f:
-        output_typescript(get_all_ramps(), f)
+        output_typescript(get_all_ramps(), f, "Record<string, [number, string][]>")
