@@ -1,4 +1,4 @@
-export const rawStatsTree = [
+export default [
     {
         id: 'main',
         name: 'Main',

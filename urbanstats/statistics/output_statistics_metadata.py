@@ -5,6 +5,7 @@ from urbanstats.statistics.stat_path import get_statistic_column_path
 
 from .collections_list import statistic_collections
 from .statistics_tree import statistics_tree
+from ..utils import output_typescript
 
 
 @lru_cache(maxsize=1)
@@ -62,14 +63,13 @@ def output_statistics_metadata():
     with open("react/src/data/statistic_name_list.json", "w") as f:
         json.dump(list(statistic_internal_to_display_name().values()), f)
     with open("react/src/data/statistic_path_list.ts", "w") as f:
-        content = json.dumps(
+        output_typescript(
             [
                 get_statistic_column_path(name)
                 for name in statistic_internal_to_display_name()
             ],
-            indent=4,
+            f,
         )
-        f.write(f"export default {content} as const")
     with open("react/src/data/statistic_list.json", "w") as f:
         json.dump(list(internal_statistic_names()), f)
 
@@ -80,7 +80,7 @@ def output_statistics_metadata():
 
 
 def export_statistics_tree(path):
-    fst = statistics_tree.flatten(statistic_internal_to_display_name())
-    fst = json.dumps(fst, indent=4)
     with open(path, "w") as f:
-        f.write(f"export const rawStatsTree = {fst} as const\n")
+        output_typescript(
+            statistics_tree.flatten(statistic_internal_to_display_name()), f
+        )

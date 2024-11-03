@@ -1,5 +1,6 @@
 import numpy as np
 from permacache import stable_hash
+import json
 
 
 def hash_full_table(sh):
@@ -43,3 +44,8 @@ def compute_bins(data, weight, *, bin_size=0.1):
     idx = np.clip(idx, 0, len(values) - 1)
     np.add.at(values, idx, weight)
     return values
+
+
+def output_typescript(data, file):
+    content = json.dumps(data, indent=4)
+    file.write(f"export default {content} as const")
