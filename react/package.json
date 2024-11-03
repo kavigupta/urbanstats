@@ -47,6 +47,7 @@
     "execa": "npm:@esm2cjs/execa@^6.1.1-cjs.1",
     "express": "^4.19.2",
     "express-http-proxy": "^2.1.1",
+    "fork-ts-checker-webpack-plugin": "^9.0.2",
     "glob": "^11.0.0",
     "protobufjs-cli": "^1.1.1",
     "source-map-loader": "^4.0.1",
