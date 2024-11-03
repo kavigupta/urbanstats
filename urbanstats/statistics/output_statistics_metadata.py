@@ -80,33 +80,11 @@ def output_statistics_metadata():
     export_statistics_tree("react/src/data/statistics_tree.ts")
 
 
-prefix = """
-export type CategoryIdentifier = string & { __categoryIdentifier: true }
-export type GroupIdentifier = string & { __groupIdentifier: true }
-export type StatPath = string & { __statPath: true }
-export type StatIndex = number & { __statIndex: true }
-"""
-
-suffix = """
-as {
-    id: CategoryIdentifier
-    name: string
-    contents: {
-        id: GroupIdentifier
-        name: string
-        contents: {
-            year: number | null
-            stats: StatIndex[]
-        }[]
-    }[] }[]
-""".strip()
-
-
 def export_statistics_tree(path):
     fst = statistics_tree.flatten(statistic_internal_to_display_name())
     fst = json.dumps(fst, indent=4)
     with open(path, "w") as f:
-        f.write(f"{prefix}export const rawStatsTree = {fst}{suffix};\n")
+        f.write(f"export const rawStatsTree = {fst} as const\n")
     subprocess.run(
         ["npx", "eslint", "--fix", os.path.relpath(path, "react")],
         check=True,

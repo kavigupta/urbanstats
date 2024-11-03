@@ -1,7 +1,3 @@
-export type CategoryIdentifier = string & { __categoryIdentifier: true }
-export type GroupIdentifier = string & { __groupIdentifier: true }
-export type StatPath = string & { __statPath: true }
-export type StatIndex = number & { __statIndex: true }
 export const rawStatsTree = [
     {
         id: 'main',
@@ -2889,14 +2885,4 @@ export const rawStatsTree = [
             },
         ],
     },
-] as {
-    id: CategoryIdentifier
-    name: string
-    contents: {
-        id: GroupIdentifier
-        name: string
-        contents: {
-            year: number | null
-            stats: StatIndex[]
-        }[]
-    }[] }[]
+] as const
