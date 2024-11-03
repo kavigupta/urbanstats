@@ -1,10 +1,12 @@
-export const RAMPS = require('../data/mapper/ramps.json') as Record<string, [number, string][]>
+import RAMPS from '../data/mapper/ramps'
+// eslint-disable-next-line no-restricted-syntax -- Reexporting
+export { default as RAMPS } from '../data/mapper/ramps'
 
 export type EncodedColorMap = { type: 'none' } | { type: 'custom', custom_colormap: string } | { type: 'preset', name: string }
 
-export type ColorMap = [number, string][]
+export type ColorMap = readonly (readonly [number, string])[]
 
-export type Keypoints = Readonly<[number, string]>[]
+export type Keypoints = readonly (readonly [number, string])[]
 
 export interface Ramp {
     create_ramp(values: number[]): Readonly<[Keypoints, number[]]>
@@ -49,10 +51,10 @@ function parse_colormap(cmap: EncodedColorMap): ColorMap {
         return parse_custom_colormap(cmap.custom_colormap) ?? RAMPS.Gray
     }
     else {
-        if (cmap.name === '') {
-            return RAMPS.Gray
+        if (cmap.name in RAMPS) {
+            return RAMPS[cmap.name as keyof typeof RAMPS]
         }
-        return RAMPS[cmap.name]
+        return RAMPS.Gray
     }
 }
 

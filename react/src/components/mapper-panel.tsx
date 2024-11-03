@@ -5,6 +5,7 @@ import { gunzipSync, gzipSync } from 'zlib'
 
 import React, { ReactNode, useEffect, useRef, useState } from 'react'
 
+import valid_geographies from '../data/mapper/used_geographies'
 import statNames from '../data/statistic_name_list'
 import { loadProtobuf } from '../load_json'
 import { Keypoints, Ramp, parse_ramp } from '../mapper/ramps'
@@ -283,7 +284,6 @@ function mapSettingsFromURLParams(): MapSettings {
     return default_settings(settings)
 }
 
-const valid_geographies = require('../data/mapper/used_geographies.json') as string[]
 const name_to_index = new Map(statNames.map((name, i) => [name, i]))
 
 export function MapperPanel(): ReactNode {
@@ -293,7 +293,7 @@ export function MapperPanel(): ReactNode {
     const [underlying_stats, set_underlying_stats] = useState<Promise<ConsolidatedStatistics> | undefined>(undefined)
 
     useEffect(() => {
-        if (valid_geographies.includes(map_settings.geography_kind)) {
+        if ((valid_geographies as readonly string[]).includes(map_settings.geography_kind)) {
             set_underlying_shapes(loadProtobuf(
                 consolidated_shape_link(map_settings.geography_kind),
                 'ConsolidatedShapes',
@@ -330,7 +330,7 @@ export function MapperPanel(): ReactNode {
         const geography_kind = map_settings.geography_kind
         const color_stat = map_settings.color_stat
         const filter = map_settings.filter
-        const valid = valid_geographies.includes(geography_kind)
+        const valid = (valid_geographies as readonly string[]).includes(geography_kind)
 
         return !valid
             ? <div>Invalid geography kind</div>
@@ -362,7 +362,7 @@ export function MapperPanel(): ReactNode {
                 <div className={headerTextClass}>Urban Stats Mapper (beta)</div>
                 <MapperSettings
                     names={statNames}
-                    valid_geographies={valid_geographies}
+                    valid_geographies={valid_geographies as readonly string[]}
                     map_settings={map_settings}
                     set_map_settings={set_map_settings}
                 />

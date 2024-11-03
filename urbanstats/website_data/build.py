@@ -33,6 +33,7 @@ from urbanstats.website_data.ordinals import all_ordinals
 from urbanstats.website_data.output_geometry import produce_all_geometry_json
 from urbanstats.website_data.statistic_index_lists import get_index_lists
 from urbanstats.website_data.table import shapefile_without_ordinals
+from ..utils import output_typescript
 
 
 def link_scripts_folder(site_folder, dev):
@@ -47,21 +48,21 @@ def link_scripts_folder(site_folder, dev):
 
 
 def create_react_jsons():
-    with open("react/src/data/map_relationship.json", "w") as f:
-        json.dump(map_relationships_by_type, f)
+    with open("react/src/data/map_relationship.ts", "w") as f:
+        output_typescript(map_relationships_by_type, f)
 
-    with open("react/src/data/type_to_type_category.json", "w") as f:
-        json.dump(type_to_type_category, f)
+    with open("react/src/data/type_to_type_category.ts", "w") as f:
+        output_typescript(type_to_type_category, f)
 
-    with open("react/src/data/type_ordering_idx.json", "w") as f:
-        json.dump(type_ordering_idx, f)
+    with open("react/src/data/type_ordering_idx.ts", "w") as f:
+        output_typescript(type_ordering_idx, f)
 
     output_statistics_metadata()
 
-    with open("react/src/data/universes_ordered.json", "w") as f:
-        json.dump(list(all_universes()), f)
-    with open("react/src/data/explanation_industry_occupation_table.json", "w") as f:
-        json.dump(
+    with open("react/src/data/universes_ordered.ts", "w") as f:
+        output_typescript(list(all_universes()), f)
+    with open("react/src/data/explanation_industry_occupation_table.ts", "w") as f:
+        output_typescript(
             {
                 "industry": IndustryStatistics().table(),
                 "occupation": OccupationStatistics().table(),
@@ -69,8 +70,8 @@ def create_react_jsons():
             f,
         )
 
-    with open("react/src/data/extra_stats.json", "w") as f:
-        json.dump(
+    with open("react/src/data/extra_stats.ts", "w") as f:
+        output_typescript(
             [
                 (k, v.extra_stat_spec(list(internal_statistic_names())))
                 for k, v in sorted(extra_stats().items())
@@ -87,14 +88,14 @@ def create_react_jsons():
     output_names(mapper_folder)
     output_ramps(mapper_folder)
 
-    with open("react/src/data/index_lists.json", "w") as f:
-        json.dump(get_index_lists(), f)
+    with open("react/src/data/index_lists.ts", "w") as f:
+        output_typescript(get_index_lists(), f)
 
-    with open("react/src/data/american_to_international.json", "w") as f:
-        json.dump(american_to_international, f)
+    with open("react/src/data/american_to_international.ts", "w") as f:
+        output_typescript(american_to_international, f)
 
-    with open("react/src/data/symlinks.json", "w") as f:
-        json.dump(symlinks.symlinks, f)
+    with open("react/src/data/symlinks.ts", "w") as f:
+        output_typescript(symlinks.symlinks, f)
 
 
 def build_react_site(site_folder, dev):
