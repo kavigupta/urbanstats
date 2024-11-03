@@ -1,6 +1,4 @@
 import json
-import os
-import subprocess
 from functools import lru_cache
 
 from urbanstats.statistics.stat_path import get_statistic_column_path
@@ -85,8 +83,3 @@ def export_statistics_tree(path):
     fst = json.dumps(fst, indent=4)
     with open(path, "w") as f:
         f.write(f"export const rawStatsTree = {fst} as const\n")
-    subprocess.run(
-        ["npx", "eslint", "--fix", os.path.relpath(path, "react")],
-        check=True,
-        cwd="react",
-    )
