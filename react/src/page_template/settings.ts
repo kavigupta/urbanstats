@@ -15,11 +15,8 @@ export type StatCategorySavedIndeterminateKey = `stat_category_saved_indetermina
 export type StatCategoryExpandedKey = `stat_category_expanded_${CategoryIdentifier}`
 export type StatYearKey = `show_stat_year_${number}`
 
-export interface SettingsDictionary {
+export type SettingsDictionary = {
     [relationshipKey: RelationshipKey]: boolean | undefined
-    [showStatisticKey: StatGroupKey]: boolean
-    [savedIndeterminateKey: StatCategorySavedIndeterminateKey]: GroupIdentifier[] // array of child keys
-    [expandedKey: StatCategoryExpandedKey]: boolean
     [rowExpandedKey: RowExpandedKey]: boolean | undefined
     [statYearKey: StatYearKey]: boolean
     show_historical_cds: boolean
@@ -31,6 +28,9 @@ export interface SettingsDictionary {
     colorblind_mode: boolean
     clean_background: boolean
 }
+& { [G in GroupIdentifier as `show_stat_group_${G}`]: boolean }
+& { [C in CategoryIdentifier as `stat_category_saved_indeterminate_${C}`]: GroupIdentifier[] }
+& { [C in CategoryIdentifier as `stat_category_expanded_${C}`]: boolean }
 
 export function relationship_key(article_type: string, other_type: string): RelationshipKey {
     return `related__${article_type}__${other_type}`
@@ -54,6 +54,14 @@ const defaultEnabledYears = new Set(
 
 const map_relationship = require('../data/map_relationship.json') as [string, string][]
 
+const typeSafeObjectFromEntries = <
+    const T extends readonly (readonly [PropertyKey, unknown])[],
+>(
+    entries: T,
+): { [K in T[number] as K[0]]: K[1] } => {
+    return Object.fromEntries(entries) as { [K in T[number] as K[0]]: K[1] }
+}
+
 // Having a default settings object allows us to statically check that we have default values for all settings
 // It also makes visualizing the default setings easier
 const defaultSettings = {
@@ -62,9 +70,9 @@ const defaultSettings = {
             ([article_type, other_type]) => [relationship_key(article_type, other_type), true],
         ),
     ),
-    ...Object.fromEntries(allGroups.map(group => [`show_stat_group_${group.id}` as const, defaultCategorySelections.has(group.parent.id)])),
-    ...Object.fromEntries(statsTree.map(category => [`stat_category_saved_indeterminate_${category.id}`, []])),
-    ...Object.fromEntries(statsTree.map(category => [`stat_category_expanded_${category.id}`, false])),
+    ...typeSafeObjectFromEntries(allGroups.map(group => [`show_stat_group_${group.id}` as const, defaultCategorySelections.has(group.parent.id)])),
+    ...typeSafeObjectFromEntries(statsTree.map(category => [`stat_category_saved_indeterminate_${category.id}` as const, []])),
+    ...typeSafeObjectFromEntries(statsTree.map(category => [`stat_category_expanded_${category.id}` as const, false])),
     ...Object.fromEntries(allYears.map(year => [`show_stat_year_${year}`, defaultEnabledYears.has(year)])),
     show_historical_cds: false,
     simple_ordinals: false,
