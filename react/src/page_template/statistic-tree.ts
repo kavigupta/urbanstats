@@ -1,9 +1,8 @@
+import { CategoryIdentifier, rawStatsTree, StatPath } from '../data/statistics_tree'
 import { DefaultMap } from '../utils/DefaultMap'
 
-export type CategoryIdentifier = string & { __categoryIdentifier: true }
-export type GroupIdentifier = string & { __groupIdentifier: true }
-export type StatPath = string & { __statPath: true }
-export type StatIndex = number & { __statIndex: true }
+const statPaths = require('../data/statistic_path_list.json') as StatPath[]
+const statNames = require('../data/statistic_name_list.json') as string[]
 
 export type StatsTree = Category[]
 export interface Category {
@@ -36,21 +35,6 @@ export interface Statistic {
     name: string
     parent: GroupYear
 }
-
-const rawStatsTree = require('../data/statistics_tree.json') as {
-    id: CategoryIdentifier
-    name: string
-    contents: {
-        id: GroupIdentifier
-        name: string
-        contents: {
-            year: number | null
-            stats: StatIndex[]
-        }[]
-    }[] }[]
-
-const statPaths = require('../data/statistic_path_list.json') as StatPath[]
-const statNames = require('../data/statistic_name_list.json') as string[]
 
 export const statsTree: StatsTree = rawStatsTree.map(category => (
     {
