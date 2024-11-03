@@ -4,24 +4,20 @@ import { DefaultMap } from '../utils/DefaultMap'
 
 import { Theme } from './colors'
 import { fromVector } from './settings-vector'
-import { allGroups, allYears, CategoryIdentifier, GroupIdentifier, statsTree } from './statistic-tree'
+import { allGroups, allYears, CategoryIdentifier, GroupIdentifier, statsTree, Year } from './statistic-tree'
 
 export type RelationshipKey = `related__${string}__${string}`
 export type RowExpandedKey = `expanded__${string}`
 export type HistogramType = 'Bar' | 'Line' | 'Line (cumulative)'
 
-export type StatGroupKey = `show_stat_group_${GroupIdentifier}`
-export type StatCategorySavedIndeterminateKey = `stat_category_saved_indeterminate_${CategoryIdentifier}`
-export type StatCategoryExpandedKey = `stat_category_expanded_${CategoryIdentifier}`
-export type StatYearKey = `show_stat_year_${number}`
+export type StatGroupKey<G extends GroupIdentifier = GroupIdentifier> = `show_stat_group_${G}`
+export type StatCategorySavedIndeterminateKey<C extends CategoryIdentifier = CategoryIdentifier> = `stat_category_saved_indeterminate_${C}`
+export type StatCategoryExpandedKey<C extends CategoryIdentifier = CategoryIdentifier> = `stat_category_expanded_${C}`
+export type StatYearKey<Y extends Year = Year> = `show_stat_year_${Y}`
 
-export interface SettingsDictionary {
+export type SettingsDictionary = {
     [relationshipKey: RelationshipKey]: boolean | undefined
-    [showStatisticKey: StatGroupKey]: boolean
-    [savedIndeterminateKey: StatCategorySavedIndeterminateKey]: GroupIdentifier[] // array of child keys
-    [expandedKey: StatCategoryExpandedKey]: boolean
     [rowExpandedKey: RowExpandedKey]: boolean | undefined
-    [statYearKey: StatYearKey]: boolean
     show_historical_cds: boolean
     simple_ordinals: boolean
     use_imperial: boolean
@@ -31,6 +27,10 @@ export interface SettingsDictionary {
     colorblind_mode: boolean
     clean_background: boolean
 }
+& { [G in GroupIdentifier as StatGroupKey<G>]: boolean }
+& { [C in CategoryIdentifier as StatCategorySavedIndeterminateKey<C>]: GroupIdentifier[] }
+& { [C in CategoryIdentifier as StatCategoryExpandedKey<C>]: boolean }
+& { [Y in Year as StatYearKey<Y>]: boolean }
 
 export function relationship_key(article_type: string, other_type: string): RelationshipKey {
     return `related__${article_type}__${other_type}`
@@ -63,9 +63,9 @@ const defaultSettings = {
         ),
     ),
     ...Object.fromEntries(allGroups.map(group => [`show_stat_group_${group.id}` as const, defaultCategorySelections.has(group.parent.id)])),
-    ...Object.fromEntries(statsTree.map(category => [`stat_category_saved_indeterminate_${category.id}`, []])),
-    ...Object.fromEntries(statsTree.map(category => [`stat_category_expanded_${category.id}`, false])),
-    ...Object.fromEntries(allYears.map(year => [`show_stat_year_${year}`, defaultEnabledYears.has(year)])),
+    ...Object.fromEntries(statsTree.map(category => [`stat_category_saved_indeterminate_${category.id}` as const, []])),
+    ...Object.fromEntries(statsTree.map(category => [`stat_category_expanded_${category.id}` as const, false])),
+    ...Object.fromEntries(allYears.map(year => [`show_stat_year_${year}` as const, defaultEnabledYears.has(year)])),
     show_historical_cds: false,
     simple_ordinals: false,
     use_imperial: false,
@@ -146,8 +146,8 @@ export class Settings {
         return this.settings[key]
     }
 
-    getMultiple<K extends keyof SettingsDictionary>(keys: K[]): Pick<SettingsDictionary, K> {
-        return Object.fromEntries(keys.map(key => [key, this.get(key)])) as Pick<SettingsDictionary, K>
+    getMultiple<const Keys extends readonly (keyof SettingsDictionary)[]>(keys: Keys): Pick<SettingsDictionary, Keys[number]> {
+        return Object.fromEntries(keys.map(key => [key, this.get(key)])) as Pick<SettingsDictionary, Keys[number]>
     }
 
     // Singular settings means we can use observers
@@ -239,11 +239,11 @@ export class Settings {
         }
     }
 
-    getSettingsInfo<K extends keyof SettingsDictionary>(keys: K[]): { [T in K]: SettingInfo<T> } {
+    getSettingsInfo<const Keys extends readonly (keyof SettingsDictionary)[]>(keys: Keys): { [Key in Keys[number]]: SettingInfo<Key> } {
         return Object.fromEntries(keys.map(key => [
             key,
             this.getSettingInfo(key),
-        ])) as { [T in K]: SettingInfo<T> }
+        ])) as unknown as { [Key in Keys[number]]: SettingInfo<Key> }
     }
 
     useSettingsInfo<K extends keyof SettingsDictionary>(keys: K[]): { [T in K]: SettingInfo<T> } {

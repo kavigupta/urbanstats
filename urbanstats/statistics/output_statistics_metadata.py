@@ -75,6 +75,11 @@ def output_statistics_metadata():
     with open("react/src/data/explanation_page.json", "w") as f:
         json.dump(list(get_explanation_page().values()), f)
 
+    export_statistics_tree("react/src/data/statistics_tree.ts")
+
+
+def export_statistics_tree(path):
     fst = statistics_tree.flatten(statistic_internal_to_display_name())
-    with open("react/src/data/statistics_tree.json", "w") as f:
-        json.dump(fst, f, indent=2)
+    fst = json.dumps(fst, indent=4)
+    with open(path, "w") as f:
+        f.write(f"export const rawStatsTree = {fst} as const\n")
