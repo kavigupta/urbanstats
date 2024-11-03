@@ -3,9 +3,9 @@ from functools import lru_cache
 
 from urbanstats.statistics.stat_path import get_statistic_column_path
 
+from ..utils import output_typescript
 from .collections_list import statistic_collections
 from .statistics_tree import statistics_tree
-from ..utils import output_typescript
 
 
 @lru_cache(maxsize=1)
