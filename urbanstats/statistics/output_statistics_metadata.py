@@ -1,4 +1,3 @@
-import json
 from functools import lru_cache
 
 from urbanstats.statistics.stat_path import get_statistic_column_path
