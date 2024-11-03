@@ -1,6 +1,7 @@
+import json
+
 import numpy as np
 from permacache import stable_hash
-import json
 
 
 def hash_full_table(sh):
