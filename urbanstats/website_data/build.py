@@ -97,11 +97,11 @@ def create_react_jsons():
 
 
 def build_react_site(site_folder, dev):
+    os.system(f"cd react; npm {'i' if dev else 'ci'}")
+
     create_react_jsons()
 
-    os.system(
-        f"cd react; npm {'i' if dev else 'ci'}; npm run {'dev' if dev else 'prod'}"
-    )
+    os.system(f"cd react; npm run {'dev' if dev else 'prod'}")
 
     link_scripts_folder(site_folder, dev)
 
