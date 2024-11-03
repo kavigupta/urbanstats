@@ -32,7 +32,7 @@ function CategoryComponent({ category }: { category: Category }): ReactNode {
                     className="expandButton"
                     style={{ transform: isExpanded ? `rotate(${isMobileLayout ? -90 : 90}deg)` : 'rotate(0deg)', color: colors.ordinalTextColor }}
                 >
-                    {isMobileLayout ? '◀' : '▶' /* Arrows are on the right on mobile to be used with both thumbs */}
+                    {isMobileLayout ? '◀\ufe0e' : '▶\ufe0e' /* Arrows are on the right on mobile to be used with both thumbs */}
                 </button>
                 <CheckboxSettingCustom
                     name={category.name}
