@@ -1,5 +1,5 @@
 interface ObjectConstructor {
-    entries<
+    fromEntries<
         const T extends readonly (readonly [PropertyKey, unknown])[],
     >(
         entries: T,

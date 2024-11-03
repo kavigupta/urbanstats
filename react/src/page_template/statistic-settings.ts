@@ -15,7 +15,7 @@ export function groupKeys(groups: Group[]): StatGroupKey[] {
     return groups.map(group => `show_stat_group_${group.id}` as const)
 }
 
-function yearKeys(years: number[]): StatYearKey[] {
+function yearKeys(years: Year[]): StatYearKey[] {
     return years.map(year => `show_stat_year_${year}` as const)
 }
 
