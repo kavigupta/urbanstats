@@ -17,10 +17,10 @@ class MultiSource:
             assert len(self.by_source) == 1
         for source, col in self.by_source.items():
             assert isinstance(source, str) or source is None
-            assert isinstance(col, str) or isinstance(col, tuple)
+            assert isinstance(col, (str, tuple))
 
     def internal_statistics(self):
-        return [col for col in self.by_source.values()]
+        return list(self.by_source.values())
 
     def name_to_category(self, category_id):
         return {col: category_id for col in self.by_source.values()}
@@ -35,7 +35,7 @@ class MultiSource:
                 }
             )
         return dict(name=self.compute_name(name_map), stats=result)
-    
+
     def compute_name(self, name_map):
         assert len(self.by_source) == 1
         col = next(iter(self.by_source.values()))
