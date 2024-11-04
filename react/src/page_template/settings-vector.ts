@@ -236,7 +236,7 @@ const settingsVector = [
 // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- No deprecations yet
 const activeVectorKeys = settingsVector.flatMap(setting => setting.deprecated ? [] : [setting.key])
 
-export type VectorSettingKey = keyof { [setting in (typeof settingsVector)[number] as setting['deprecated'] extends false ? setting['key'] : never ]: never }
+export type VectorSettingKey = typeof activeVectorKeys[number]
 
 export function useVector(): string {
     const settings = useSettings(activeVectorKeys)
