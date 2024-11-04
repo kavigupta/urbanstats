@@ -264,8 +264,8 @@ export function fromVector(vector: string, settings: Settings): Record<VectorSet
         else {
             value = settings.get(setting.key)
         }
-        return [setting, value]
-    })) as Record<BooleanSettingKey, boolean>
+        return [setting.key, value]
+    }))
 }
 
 /*
