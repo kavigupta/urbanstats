@@ -1,6 +1,7 @@
 import json
 import os
 import shutil
+import subprocess
 
 from urbanstats.consolidated_data.produce_consolidated_data import (
     full_consolidated_data,
@@ -97,11 +98,17 @@ def create_react_jsons():
 
 
 def build_react_site(site_folder, dev):
+    os.system(f"cd react; npm {'i' if dev else 'ci'}")
+
     create_react_jsons()
 
-    os.system(
-        f"cd react; npm {'i' if dev else 'ci'}; npm run {'dev' if dev else 'prod'}"
+    subprocess.run(
+        ["npx", "eslint", "--fix", "src/data"],
+        check=True,
+        cwd="react",
     )
+
+    os.system(f"cd react; npm run {'dev' if dev else 'prod'}")
 
     link_scripts_folder(site_folder, dev)
 

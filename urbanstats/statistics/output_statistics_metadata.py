@@ -1,6 +1,8 @@
 import json
 from functools import lru_cache
 
+from urbanstats.statistics.stat_path import get_statistic_column_path
+
 from .collections_list import statistic_collections
 from .statistics_tree import statistics_tree
 
@@ -33,32 +35,14 @@ def internal_statistic_names():
     """
     List of internal statistic names in the order they are stored in the database.
     """
-    return [
-        stat
-        for category in statistics_tree.values()
-        for group in category["contents"].values()
-        for stats in group["contents"].values()
-        for stat in stats
-    ]
+    return statistics_tree.internal_statistics()
 
 
 def get_statistic_categories():
     """
     Map from internal statistic names to categories.
     """
-    category_by_tree = {}
-    for category_id, category in statistics_tree.items():
-        for _, group in category["contents"].items():
-            for year, stats in group["contents"].items():
-                for stat in stats:
-                    category_id_to_use = {
-                        "distance_from_features": "feature",
-                        "climate_change": "climate",
-                    }.get(category_id, category_id)
-                    category_by_tree[stat] = (
-                        category_id_to_use if year in {2020, None} else str(year)
-                    )
-    return category_by_tree
+    return statistics_tree.name_to_category()
 
 
 def get_explanation_page():
@@ -72,15 +56,6 @@ def get_explanation_page():
 
     result = {k: result[k] for k in statistic_internal_to_display_name()}
     return result
-
-
-def get_statistic_column_path(column):
-    """
-    Return a sanitized version of the column name for use in a URL.
-    """
-    if isinstance(column, tuple):
-        column = "-".join(str(x) for x in column)
-    return column.replace("/", " slash ")
 
 
 def output_statistics_metadata():
@@ -100,56 +75,11 @@ def output_statistics_metadata():
     with open("react/src/data/explanation_page.json", "w") as f:
         json.dump(list(get_explanation_page().values()), f)
 
-    fst = flatten_statistic_tree()
-    with open("react/src/data/statistics_tree.json", "w") as f:
-        json.dump(fst, f, indent=2)
+    export_statistics_tree("react/src/data/statistics_tree.ts")
 
 
-def flatten_statistic_tree():
-    return [
-        flatten_category(category_id, category)
-        for category_id, category in statistics_tree.items()
-    ]
-
-
-def flatten_category(category_id, category):
-    return {
-        "id": category_id,
-        "name": category["name"],
-        "contents": [
-            flatten_group(group_id, group)
-            for group_id, group in category["contents"].items()
-        ],
-    }
-
-
-def flatten_group(group_id, group):
-    assert "contents" in group, group
-    group_name = group.get("name", None)
-    if group_name is None:
-        year = None if None in group["contents"] else max(group["contents"])
-        short_statcol = group["contents"][year][0]
-        group_name = statistic_internal_to_display_name()[short_statcol]
-        if len(group["contents"]) > 1:
-            assert not (
-                str(year) in group_name
-            ), f"Group name should not contain year, but got: {group_name}"
-
-    group_id = get_statistic_column_path(group_id)
-    return {
-        "id": group_id,
-        "name": group_name,
-        "contents": [
-            flatten_year(year, stats) for year, stats in group["contents"].items()
-        ],
-    }
-
-
-def flatten_year(year, stats):
-    assert isinstance(year, int) or year is None, year
-    stats_processed = []
-    for stat in stats:
-        assert stat in internal_statistic_names(), stat
-        stats_processed.append(internal_statistic_names().index(stat))
-
-    return {"year": year, "stats": stats_processed}
+def export_statistics_tree(path):
+    fst = statistics_tree.flatten(statistic_internal_to_display_name())
+    fst = json.dumps(fst, indent=4)
+    with open(path, "w") as f:
+        f.write(f"export const rawStatsTree = {fst} as const\n")
