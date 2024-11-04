@@ -3,8 +3,8 @@ import './article.css'
 
 import React, { ReactNode, useRef } from 'react'
 
-import { article_link, comparison_link, sanitize } from '../navigation/links'
-import { useSetting, useSettings } from '../page_template/settings'
+import { comparison_link, sanitize } from '../navigation/links'
+import { useSettings } from '../page_template/settings'
 import { groupYearKeys, StatPathsContext } from '../page_template/statistic-settings'
 import { PageTemplate } from '../page_template/template'
 import { longname_is_exclusively_american, useUniverse } from '../universe'
@@ -19,7 +19,7 @@ import { Map } from './map'
 import { Related } from './related-button'
 import { ScreencapElements } from './screenshot'
 import { SearchBox } from './search'
-import { StatisticRowRaw } from './table'
+import { StatisticTableHeader, StatisticTableRow } from './table'
 
 export function ArticlePanel({ article }: { article: Article }): ReactNode {
     const headers_ref = useRef<HTMLDivElement>(null)
@@ -38,7 +38,6 @@ export function ArticlePanel({ article }: { article: Article }): ReactNode {
 
     const curr_universe = useUniverse()
     const settings = useSettings(groupYearKeys())
-    const [simple_ordinals] = useSetting('simple_ordinals')
     const { result: [filtered_rows], availableStatPaths } = load_article(curr_universe, article, settings,
         longname_is_exclusively_american(article.longname))
 
@@ -54,16 +53,11 @@ export function ArticlePanel({ article }: { article: Article }): ReactNode {
                     <div style={{ marginBlockEnd: '16px' }}></div>
 
                     <div className="stats_table" ref={table_ref}>
-                        <StatisticRowHeader />
-                        {filtered_rows.map((row, i) => (
-                            <StatisticRowRaw
-                                is_header={false}
-                                _idx={i}
+                        <StatisticTableHeader />
+                        {filtered_rows.map(row => (
+                            <StatisticTableRow
+                                row={row}
                                 key={row.statname}
-                                index={i}
-                                {...row}
-                                onReplace={(x) => { document.location = article_link(curr_universe, x) }}
-                                simple={simple_ordinals}
                                 longname={article.longname}
                                 shortname={article.shortname}
                             />
@@ -119,9 +113,4 @@ function ComparisonSearchBox({ longname }: { longname: string }): ReactNode {
             autoFocus={false}
         />
     )
-}
-
-function StatisticRowHeader(): ReactNode {
-    const [simple_ordinals] = useSetting('simple_ordinals')
-    return <StatisticRowRaw index={0} _idx={-1} is_header={true} simple={simple_ordinals} />
 }

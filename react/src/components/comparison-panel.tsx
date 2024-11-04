@@ -21,7 +21,7 @@ import { MapGeneric, MapGenericProps, Polygons } from './map'
 import { WithPlot } from './plots'
 import { ScreencapElements, useScreenshotMode } from './screenshot'
 import { SearchBox } from './search'
-import { StatisticRow, StatisticRowRawCellContents } from './table'
+import { TableRowContainer, StatisticRowCells } from './table'
 
 const main_columns = ['statval', 'statval_unit', 'statistic_ordinal', 'statistic_percentile']
 const main_columns_across_types = ['statval', 'statval_unit']
@@ -180,7 +180,7 @@ export function ComparisonPanel(props: { joined_string: string, universes: strin
                             </div>
                             {bars()}
 
-                            <StatisticRow is_header={true} index={0} contents={header_row} />
+                            <TableRowContainer is_header={true} index={0} contents={header_row} />
 
                             {
                                 rows[0].map((_, row_idx) => (
@@ -283,7 +283,7 @@ function ComparisonRowBody({ rows, row_idx, datas, names }: {
     const plot_props = rows.map((row, data_idx) => ({ ...row[row_idx], color: color(colors.hueColors, data_idx), shortname: datas[data_idx].shortname }))
     return (
         <WithPlot plot_props={plot_props} expanded={expanded ?? false} key={row_idx}>
-            <StatisticRow key={row_idx} is_header={false} index={row_idx} contents={contents} />
+            <TableRowContainer key={row_idx} is_header={false} index={row_idx} contents={contents} />
         </WithPlot>
     )
 }
@@ -325,21 +325,21 @@ function ComparisonRow({ names, params, datas }: {
         </div>,
     )
 
-    row_overall.push(...StatisticRowRawCellContents(
+    row_overall.push(...StatisticRowCells(
         {
             ...param_vals[0], only_columns: ['statname'], _idx: -1, simple: true, longname: datas[0].longname,
-            total_width: 100 * (left_margin_pct - left_bar_margin),
+            totalWidth: 100 * (left_margin_pct - left_bar_margin),
         },
     ))
     const only_columns = all_data_types_same(datas) ? main_columns : main_columns_across_types
 
     for (const i of datas.keys()) {
-        row_overall.push(...StatisticRowRawCellContents(
+        row_overall.push(...StatisticRowCells(
             {
                 ...param_vals[i], only_columns, _idx: i, simple: true,
-                statistic_style: highlight_idx === i ? { backgroundColor: mixWithBackground(color(colors.hueColors, i), colors.mixPct / 100, colors.background) } : {},
+                statisticStyle: highlight_idx === i ? { backgroundColor: mixWithBackground(color(colors.hueColors, i), colors.mixPct / 100, colors.background) } : {},
                 onReplace: (x) => { on_change(names, i, x) },
-                total_width: each(datas),
+                totalWidth: each(datas),
             },
         ))
     }
