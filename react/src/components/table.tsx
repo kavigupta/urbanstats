@@ -65,7 +65,7 @@ interface ColumnLayoutProps {
         widthPercentage: number
         content: ReactNode
     }[]
-    onlyColumns: string[] | null
+    onlyColumns?: string[]
     totalWidth: number
     textAlign: React.CSSProperties['textAlign']
 }
@@ -180,7 +180,6 @@ function StatisticHeaderCells(): ReactNode {
             cells={cells}
             totalWidth={100}
             textAlign="center"
-            onlyColumns={null}
         />
     )
 }
@@ -190,6 +189,7 @@ export function StatisticRowCells(props: {
     longname: string
     statisticStyle?: CSSProperties
     row: ArticleRow
+    onlyColumns?: string[]
 }): ReactNode {
     const currentUniverse = useUniverse()
     const colors = useColors()
@@ -319,7 +319,7 @@ export function StatisticRowCells(props: {
             cells={cells}
             totalWidth={props.totalWidth}
             textAlign="right"
-            onlyColumns={null}
+            onlyColumns={props.onlyColumns}
         />
     )
 }

@@ -21,7 +21,7 @@ import { MapGeneric, MapGenericProps, Polygons } from './map'
 import { WithPlot } from './plots'
 import { ScreencapElements, useScreenshotMode } from './screenshot'
 import { SearchBox } from './search'
-import { TableRowContainer, StatisticRowCells } from './table'
+import { TableRowContainer, StatisticRowCells, TableHeaderContainer } from './table'
 
 const main_columns = ['statval', 'statval_unit', 'statistic_ordinal', 'statistic_percentile']
 const main_columns_across_types = ['statval', 'statval_unit']
@@ -126,14 +126,6 @@ export function ComparisonPanel(props: { joined_string: string, universes: strin
 
     rows = insert_missing(rows, idxs)
 
-    const header_row = (
-        <ComparisonRow
-            params={() => { return { is_header: true } }}
-            datas={props.datas}
-            names={props.names}
-        />
-    )
-
     return (
         <StatPathsContext.Provider value={Array.from(statPaths)}>
             <ArticleComparisonQuerySettingsConnection />
@@ -180,7 +172,13 @@ export function ComparisonPanel(props: { joined_string: string, universes: strin
                             </div>
                             {bars()}
 
-                            <TableRowContainer is_header={true} index={0} contents={header_row} />
+                            <TableHeaderContainer>
+                                <ComparisonRow
+                                    params={() => { return { is_header: true } }}
+                                    datas={props.datas}
+                                    names={props.names}
+                                />
+                            </TableHeaderContainer>
 
                             {
                                 rows[0].map((_, row_idx) => (
@@ -269,32 +267,30 @@ function ComparisonRowBody({ rows, row_idx, datas, names }: {
 }): ReactNode {
     const colors = useColors()
     const [expanded] = useSetting(row_expanded_key(rows[0][row_idx].statname))
-    const contents = (
-        <ComparisonRow
-            params={(data_idx) => {
-                return {
-                    key: row_idx, index: row_idx, ...rows[data_idx][row_idx], is_header: false,
-                }
-            }}
-            datas={datas}
-            names={names}
-        />
-    )
     const plot_props = rows.map((row, data_idx) => ({ ...row[row_idx], color: color(colors.hueColors, data_idx), shortname: datas[data_idx].shortname }))
     return (
         <WithPlot plot_props={plot_props} expanded={expanded ?? false} key={row_idx}>
-            <TableRowContainer key={row_idx} is_header={false} index={row_idx} contents={contents} />
+            <TableRowContainer>
+                <ComparisonRow
+                    params={(data_idx) => {
+                        return {
+                            key: row_idx, index: row_idx, ...rows[data_idx][row_idx], is_header: false,
+                        }
+                    }}
+                    datas={datas}
+                    names={names}
+                />
+            </TableRowContainer>
         </WithPlot>
     )
 }
 
 function ComparisonRow({ names, params, datas }: {
     names: string[]
-    params: (i: number) => { is_header: true } | ({ is_header: false, key: number, index: number } & ArticleRow)
-    datas: Article[]
+    rows: ArticleRow[]
 }): ReactNode {
     const colors = useColors()
-    const row_overall = []
+    const row_overall: ReactNode[] = []
     const param_vals = Array.from(Array(datas.length).keys()).map(params)
 
     const highlight_idx = param_vals.map(x => 'statval' in x ? x.statval : NaN).reduce((iMax, x, i, arr) => {
@@ -324,6 +320,8 @@ function ComparisonRow({ names, params, datas }: {
             />
         </div>,
     )
+
+    row_overall.push(<StatisticRowCells onlyColumns={['statname']} longname={datas[0].longname} totalWidth={100 * (left_margin_pct - left_bar_margin)} row={param_vals[0]} />)
 
     row_overall.push(...StatisticRowCells(
         {
