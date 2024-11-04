@@ -20,7 +20,7 @@ const settingsVector = [
     `show_stat_group_sd`,
     `show_stat_group_area`,
     `show_stat_group_compactness`,
-    `show_stat_group_gpw_population`,
+    // `show_stat_group_gpw_population`,
     `show_stat_group_gpw_pw_density_1`,
     `show_stat_group_gpw_aw_density`,
     `show_stat_group_white`,

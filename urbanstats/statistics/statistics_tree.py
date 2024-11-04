@@ -11,6 +11,7 @@ class MultiSource:
     """
 
     by_source: dict[str | NoneType, str]
+    multi_source_name: str = None
 
     def __post_init__(self):
         if None in self.by_source:
@@ -37,6 +38,8 @@ class MultiSource:
         return dict(name=self.compute_name(name_map), stats=result)
 
     def compute_name(self, name_map):
+        if self.multi_source_name is not None:
+            return self.multi_source_name
         assert len(self.by_source) == 1
         col = next(iter(self.by_source.values()))
         return name_map[col]
@@ -49,6 +52,7 @@ class StatisticGroup:
     """
 
     by_year: dict[int | NoneType, list[MultiSource]]
+    group_name: str = None
 
     def __post_init__(self):
         for year, cols in self.by_year.items():
@@ -101,7 +105,7 @@ class StatisticGroup:
         }
 
     def compute_group_name(self, name_map):
-        group_name = None
+        group_name = self.group_name
         if group_name is None:
             year = None if None in self.by_year else max(self.by_year)
             short_statcol = self.by_year[year][0].by_source[None]
@@ -244,11 +248,28 @@ statistics_tree = StatisticTree(
         "main": StatisticCategory(
             name="Main",
             contents={
-                **census_basics("population", change=True),
+                "population": StatisticGroup(
+                    {
+                        2020: [
+                            MultiSource(
+                                {"Census": "population", "GHSL": "gpw_population"},
+                                "Population",
+                            )
+                        ],
+                        2010: [
+                            single_source("population_2010"),
+                            single_source("population_change_2010"),
+                        ],
+                        2000: [
+                            single_source("population_2000"),
+                            single_source("population_change_2000"),
+                        ],
+                    },
+                    group_name="Population",
+                ),
                 **census_basics("ad_1", change=True),
                 **census_basics("sd", change=False),
                 **just_2020(
-                    "gpw_population",
                     "gpw_pw_density_1",
                     "gpw_aw_density",
                 ),
