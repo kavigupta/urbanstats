@@ -59,14 +59,15 @@ export const statsTree: StatsTree = rawStatsTree.map(category => (
             ...group,
             contents: group.contents.map(({ year, stats_by_source }) => ({
                 year,
-                stats: stats_by_source.map(({ stats }) => ({
+                stats: stats_by_source.map(({ name, stats }) => ({
+                    name,
                     by_source: stats.map(({ source, column }) => ({
                         source,
                         path: statPaths[column],
                         name: statNames[column],
                         parent: undefined as unknown as GroupYear, // set below
-                    } as Statistic)),
-                } as MultiSourceStatistic)),
+                    } satisfies Statistic)),
+                } satisfies MultiSourceStatistic)),
                 parent: undefined as unknown as Group, // set below
             } satisfies GroupYear)),
             parent: undefined as unknown as Category, // set below
@@ -117,5 +118,5 @@ export const statParents = new Map<StatPath, { group: Group, year: Year | null }
     allGroups
         .flatMap(group => group.contents
             .flatMap(({ year, stats }) => stats
-                .flatMap(stat => stat.by_source.map(({ path }) => [path, { group, year }] as const))))
+                .flatMap(stat => stat.by_source.map(({ path }) => [path, { group, year }] as const)))),
 )

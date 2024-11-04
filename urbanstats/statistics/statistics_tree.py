@@ -25,7 +25,7 @@ class MultiSource:
     def name_to_category(self, category_id):
         return {col: category_id for col in self.by_source.values()}
 
-    def flatten(self, names):
+    def flatten(self, name_map, names):
         result = []
         for source, col in self.by_source.items():
             result.append(
@@ -34,11 +34,12 @@ class MultiSource:
                     "column": names.index(col),
                 }
             )
-        return dict(name=self.compute_name(), stats=result)
+        return dict(name=self.compute_name(name_map), stats=result)
     
-    def compute_name(self):
+    def compute_name(self, name_map):
         assert len(self.by_source) == 1
-        return next(iter(self.by_source.values()))
+        col = next(iter(self.by_source.values()))
+        return name_map[col]
 
 
 @dataclass
@@ -78,11 +79,11 @@ class StatisticGroup:
         return result
 
     @staticmethod
-    def flatten_year(year, stats, names):
+    def flatten_year(year, stats, name_map, names):
         assert isinstance(year, int) or year is None, year
         stats_processed = []
         for stat in stats:
-            stats_processed.append(stat.flatten(names))
+            stats_processed.append(stat.flatten(name_map, names))
 
         return {"year": year, "stats_by_source": stats_processed}
 
@@ -94,7 +95,7 @@ class StatisticGroup:
             "id": group_id,
             "name": group_name,
             "contents": [
-                self.flatten_year(year, stats, list(name_map))
+                self.flatten_year(year, stats, name_map, list(name_map))
                 for year, stats in self.by_year.items()
             ],
         }
