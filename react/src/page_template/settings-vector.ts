@@ -5,7 +5,6 @@
 import * as base58 from 'base58-js'
 
 import { Settings, SettingsDictionary, useSettings } from './settings'
-import { allGroups, allYears } from './statistic-tree'
 
 export type BooleanSettingKey = keyof { [K in keyof SettingsDictionary as SettingsDictionary[K] extends boolean ? K : never]: boolean }
 
@@ -232,26 +231,12 @@ const settingsVector = [
     { key: `show_historical_cds`, deprecated: false },
     { key: `simple_ordinals`, deprecated: false },
     { key: `use_imperial`, deprecated: false },
-] satisfies { key: BooleanSettingKey, deprecated: boolean }[]
+] satisfies ({ key: BooleanSettingKey, deprecated: false } | { key: string, deprecated: true })[]
 
 // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- No deprecations yet
-const activeVectorKeys = settingsVector.filter(({ deprecated }) => !deprecated).map(({ key }) => key)
+const activeVectorKeys = settingsVector.flatMap(setting => setting.deprecated ? [] : [setting.key])
 
-function sanityCheckVector(): void {
-    // Should include checks for very potential type parameter in the settings vector
-    const missingYears = allYears.filter(year => !activeVectorKeys.includes(`show_stat_year_${year}`))
-    if (missingYears.length > 0) {
-        throw new Error(`Settings vector is missing years: ${missingYears.join(', ')}`)
-    }
-    const missingGroups = allGroups.filter(group => !activeVectorKeys.includes(`show_stat_group_${group.id}`))
-    if (missingGroups.length > 0) {
-        throw new Error(`Settings vector is missing groups: ${missingGroups.map(group => group.id).join(', ')}`)
-    }
-}
-
-sanityCheckVector()
-
-export type VectorSettingKey = typeof settingsVector[number]['key']
+export type VectorSettingKey = keyof { [setting in (typeof settingsVector)[number] as setting['deprecated'] extends false ? setting['key'] : never ]: never }
 
 export function useVector(): string {
     const settings = useSettings(activeVectorKeys)
