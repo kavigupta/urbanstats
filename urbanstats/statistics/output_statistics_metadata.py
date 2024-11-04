@@ -33,9 +33,13 @@ def statistic_internal_to_display_name():
 @lru_cache(maxsize=1)
 def internal_statistic_names():
     """
-    List of internal statistic names in the order they are stored in the database.
+    List of internal statistic names in the order they are stored in the database. This is designed to be a
+    stable order that does not change when you reorder the statistics in computation or display.
+
+    As such, we just sort lexicographically. This will only ever change if we add or remove statistics,
+    which requires rebuilding the database anyway.
     """
-    return statistics_tree.internal_statistics()
+    return sorted(statistics_tree.internal_statistics(), key=str)
 
 
 def get_statistic_categories():
