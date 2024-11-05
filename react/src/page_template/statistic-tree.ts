@@ -112,3 +112,7 @@ export const statParents = new Map<StatPath, { group: Group, year: Year | null }
 export const statPathToOrder = new Map<StatPath, number>(
     statParentsList.map(([statPath], i) => [statPath, i] as const),
 )
+
+export const statDataOrderToOrder = new Map<number, number>(
+    statPaths.map((statPath, i) => [i, statPathToOrder.get(statPath)!] as const),
+)

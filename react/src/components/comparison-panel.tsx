@@ -7,7 +7,7 @@ import { article_link, sanitize } from '../navigation/links'
 import { HueColors, useColors } from '../page_template/colors'
 import { row_expanded_key, useSetting, useSettings } from '../page_template/settings'
 import { groupYearKeys, StatPathsContext } from '../page_template/statistic-settings'
-import { StatPath } from '../page_template/statistic-tree'
+import { statDataOrderToOrder, StatPath } from '../page_template/statistic-tree'
 import { PageTemplate } from '../page_template/template'
 import { longname_is_exclusively_american, useUniverse } from '../universe'
 import { mixWithBackground } from '../utils/color'
@@ -433,7 +433,7 @@ function insert_missing(rows: ArticleRow[][], idxs: number[][]): ArticleRow[][] 
 
     const all_idxs = idxs.flat().filter((x, i, a) => a.indexOf(x) === i)
     // sort all_idxs in ascending order numerically
-    all_idxs.sort((a, b) => a - b)
+    all_idxs.sort((a, b) => statDataOrderToOrder.get(a)! - statDataOrderToOrder.get(b)!)
 
     const new_rows_all = []
     for (const data_i of rows.keys()) {
