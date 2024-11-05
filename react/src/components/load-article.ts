@@ -1,5 +1,5 @@
 import { StatGroupSettings, statIsEnabled } from '../page_template/statistic-settings'
-import { StatPath } from '../page_template/statistic-tree'
+import { StatPath, statPathToOrder } from '../page_template/statistic-tree'
 import { universe_is_american } from '../universe'
 import { Article } from '../utils/protos'
 
@@ -176,6 +176,8 @@ export function load_article(universe: string, data: Article, settings: StatGrou
         return true
     })
     const filtered_rows = availableRows.filter(row => statIsEnabled(row.statpath, settings))
+        // sort by order in statistics tree.
+        .sort((a, b) => statPathToOrder.get(a.statpath)! - statPathToOrder.get(b.statpath)!)
 
     const filtered_indices = filtered_rows.map(x => x._index)
 
