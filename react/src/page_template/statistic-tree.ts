@@ -100,9 +100,15 @@ export const allYears = Array.from(
         .filter(year => year !== null)),
 ).sort(sortYears)
 
+const statParentsList: [StatPath, { group: Group, year: Year | null }][] = allGroups
+    .flatMap(group => group.contents
+        .flatMap(({ year, stats }) => stats
+            .map(stat => [stat.path, { group, year }] satisfies [StatPath, { group: Group, year: Year | null }])))
+
 export const statParents = new Map<StatPath, { group: Group, year: Year | null }>(
-    allGroups
-        .flatMap(group => group.contents
-            .flatMap(({ year, stats }) => stats
-                .map(stat => [stat.path, { group, year }]))),
+    statParentsList,
+)
+
+export const statPathToOrder = new Map<StatPath, number>(
+    statParentsList.map(([statPath], i) => [statPath, i] as const),
 )
