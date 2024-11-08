@@ -173,7 +173,7 @@ export function ComparisonPanel(props: { joined_string: string, universes: strin
                             {bars()}
 
                             <TableHeaderContainer>
-                                <ComparisonRow
+                                <ComparisonCells
                                     params={() => { return { is_header: true } }}
                                     datas={props.datas}
                                     names={props.names}
@@ -255,8 +255,8 @@ function each(datas: Article[]): number {
     return 100 * (1 - left_margin_pct) / datas.length
 }
 
-function all_data_types_same(datas: Article[]): boolean {
-    return datas.every(x => x.articleType === datas[0].articleType)
+function all_data_types_same(datas: ArticleRow[]): boolean {
+    return datas.every(x => x.article_type === datas[0].article_type)
 }
 
 function ComparisonRowBody({ rows, row_idx, datas, names }: {
@@ -271,7 +271,7 @@ function ComparisonRowBody({ rows, row_idx, datas, names }: {
     return (
         <WithPlot plot_props={plot_props} expanded={expanded ?? false} key={row_idx}>
             <TableRowContainer>
-                <ComparisonRow
+                <ComparisonCells
                     params={(data_idx) => {
                         return {
                             key: row_idx, index: row_idx, ...rows[data_idx][row_idx], is_header: false,
@@ -285,15 +285,14 @@ function ComparisonRowBody({ rows, row_idx, datas, names }: {
     )
 }
 
-function ComparisonRow({ names, params, datas }: {
+function ComparisonCells({ names, rows }: {
     names: string[]
     rows: ArticleRow[]
 }): ReactNode {
     const colors = useColors()
     const row_overall: ReactNode[] = []
-    const param_vals = Array.from(Array(datas.length).keys()).map(params)
 
-    const highlight_idx = param_vals.map(x => 'statval' in x ? x.statval : NaN).reduce((iMax, x, i, arr) => {
+    const highlight_idx = rows.map(x => x.statval).reduce((iMax, x, i, arr) => {
         if (isNaN(x)) {
             return iMax
         }
@@ -321,25 +320,19 @@ function ComparisonRow({ names, params, datas }: {
         </div>,
     )
 
-    row_overall.push(<StatisticRowCells onlyColumns={['statname']} longname={datas[0].longname} totalWidth={100 * (left_margin_pct - left_bar_margin)} row={param_vals[0]} />)
+    row_overall.push(<StatisticRowCells onlyColumns={['statname']} longname={names[0]} totalWidth={100 * (left_margin_pct - left_bar_margin)} row={rows[0]} simpleOrdinals={true} />)
+    const only_columns = all_data_types_same(rows) ? main_columns : main_columns_across_types
 
-    row_overall.push(...StatisticRowCells(
-        {
-            ...param_vals[0], only_columns: ['statname'], _idx: -1, simple: true, longname: datas[0].longname,
-            totalWidth: 100 * (left_margin_pct - left_bar_margin),
-        },
-    ))
-    const only_columns = all_data_types_same(datas) ? main_columns : main_columns_across_types
-
-    for (const i of datas.keys()) {
-        row_overall.push(...StatisticRowCells(
-            {
-                ...param_vals[i], only_columns, _idx: i, simple: true,
-                statisticStyle: highlight_idx === i ? { backgroundColor: mixWithBackground(color(colors.hueColors, i), colors.mixPct / 100, colors.background) } : {},
-                onReplace: (x) => { on_change(names, i, x) },
-                totalWidth: each(datas),
-            },
-        ))
+    for (const i of rows.keys()) {
+        row_overall.push(
+            <StatisticRowCells
+                onlyColumns={only_columns}
+                simpleOrdinals={true}
+                statisticStyle={highlight_idx === i ? { backgroundColor: mixWithBackground(color(colors.hueColors, i), colors.mixPct / 100, colors.background) } : {}}
+                onNavigate={(x) => { on_change(names, i, x) }}
+                totalWidth={each(rows)}
+            />,
+        )
     }
     return row_overall
 }

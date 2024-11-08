@@ -190,6 +190,8 @@ export function StatisticRowCells(props: {
     statisticStyle?: CSSProperties
     row: ArticleRow
     onlyColumns?: string[]
+    onNavigate?: (newArticle: string) => void
+    simpleOrdinals: boolean
 }): ReactNode {
     const currentUniverse = useUniverse()
     const colors = useColors()
@@ -617,9 +619,15 @@ function ElectionResult(props: { value: number }): ReactNode {
     )
 }
 
-function Ordinal(props: { ordinal: number, total: number, type: string, statpath: string }): ReactNode {
+function Ordinal(props: {
+    ordinal: number
+    total: number
+    type: string
+    statpath: string
+    simpleOrdinals: boolean
+    onReplace?: (newArticle: string) => void
+}): ReactNode {
     const curr_universe = useUniverse()
-    const [simpleOrdinals] = useSetting('simple_ordinals')
     const onNewNumber = async (number: number): Promise<void> => {
         let num = number
         if (num < 0) {
@@ -633,7 +641,7 @@ function Ordinal(props: { ordinal: number, total: number, type: string, statpath
             num = 1
         }
         const data = await load_ordering(curr_universe, props.statpath, props.type)
-        document.location = article_link(curr_universe, data[num - 1])
+        props.onReplace?.(data[num - 1])
     }
     const ordinal = props.ordinal
     const total = props.total
@@ -647,7 +655,7 @@ function Ordinal(props: { ordinal: number, total: number, type: string, statpath
             onNewNumber={onNewNumber}
         />
     )
-    if (simpleOrdinals) {
+    if (props.simpleOrdinals) {
         return right_align(en)
     }
     return (
@@ -767,7 +775,14 @@ function PointerButtonsIndex(props: { ordinal: number, statpath: string, type: s
     )
 }
 
-function PointerButtonIndex(props: { text: string, get_data: () => Promise<string[]>, original_pos: number, direction: number, total: number, show_historical_cds: boolean }): ReactNode {
+function PointerButtonIndex(props: {
+    text: string
+    get_data: () => Promise<string[]>
+    original_pos: number
+    direction: number
+    total: number
+    show_historical_cds: boolean
+}): ReactNode {
     const curr_universe = useUniverse()
     const colors = useColors()
     const out_of_bounds = (pos: number): boolean => pos < 0 || pos >= props.total
