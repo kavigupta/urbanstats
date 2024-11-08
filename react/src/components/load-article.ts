@@ -1,6 +1,5 @@
 import { StatGroupSettings, statIsEnabled } from '../page_template/statistic-settings'
-import { StatPath, statPathToOrder } from '../page_template/statistic-tree'
-import { universe_is_american } from '../universe'
+import { AmbiguousSources, findAmbiguousSources, SourceCategoryIdentifier, SourceIdentifier, statParents, StatPath, statPathToOrder } from '../page_template/statistic-tree'
 import { Article } from '../utils/protos'
 
 interface HistogramExtraStatSpec {
@@ -99,6 +98,7 @@ function compute_indices(longname: string, typ: string): number[] {
 export function load_article(universe: string, data: Article, settings: StatGroupSettings, exclusively_american: boolean): {
     result: readonly [ArticleRow[], number[]]
     availableStatPaths: StatPath[]
+    ambiguousSources: AmbiguousSources
 } {
     // index of universe in data.universes
     const universe_index = data.universes.indexOf(universe)
@@ -162,20 +162,12 @@ export function load_article(universe: string, data: Article, settings: StatGrou
             extra_stat,
         } satisfies ArticleRow
     })
-    const availableRows = modified_rows.filter((row) => {
-        if (universe_is_american(universe)) {
-            if (index_list_info.index_lists.gpw.includes(indices[row._index])) {
-                return false
-            }
-        }
-        else {
-            if (index_list_info.index_lists.usa.includes(indices[row._index])) {
-                return false
-            }
-        }
-        return true
-    })
-    const filtered_rows = availableRows.filter(row => statIsEnabled(row.statpath, settings))
+    const availableRows = modified_rows
+    const sources = availableRows.map(row => statParents.get(row.statpath)!.source)
+
+    const ambiguousSources = findAmbiguousSources(sources)
+
+    const filtered_rows = availableRows.filter(row => statIsEnabled(row.statpath, settings, ambiguousSources))
         // sort by order in statistics tree.
         .sort((a, b) => statPathToOrder.get(a.statpath)! - statPathToOrder.get(b.statpath)!)
 
@@ -184,6 +176,7 @@ export function load_article(universe: string, data: Article, settings: StatGrou
     return {
         result: [filtered_rows, filtered_indices] as const,
         availableStatPaths: availableRows.map(row => row.statpath),
+        ambiguousSources,
     }
 }
 

@@ -3,9 +3,10 @@ import React, { CSSProperties, ReactNode, useContext, useEffect, useId, useRef }
 import '../style.css'
 import './sidebar.css'
 
+import { dataSources } from '../data/statistics_tree'
 import { Theme, useColors, useCurrentTheme } from '../page_template/colors'
-import { SettingsDictionary, useSetting, useSettingInfo, useStagedSettingKeys } from '../page_template/settings'
-import { StatPathsContext } from '../page_template/statistic-settings'
+import { SettingsDictionary, source_enabled_key, useSetting, useSettingInfo, useStagedSettingKeys } from '../page_template/settings'
+import { StatPathsContext, useDataSourceCheckboxes } from '../page_template/statistic-settings'
 import { useMobileLayout } from '../utils/responsive'
 
 import { StagingControls } from './StagingControls'
@@ -31,6 +32,7 @@ export function Sidebar(): ReactNode {
     }
 
     const sidebar_section_content = useSidebarSectionContentClassName()
+    const checkboxes = useDataSourceCheckboxes()
 
     return (
         <div
@@ -123,6 +125,23 @@ export function Sidebar(): ReactNode {
             { useContext(StatPathsContext) !== undefined
                 ? (
                         <>
+                            {checkboxes.map(({ category, names }) => (
+                                <div className="sidebar-section" key={category}>
+                                    <div style={sidebar_section_title}>{category}</div>
+                                    <ul className={sidebar_section_content}>
+                                        {
+                                            names.map(name => (
+                                                <li key={name}>
+                                                    <CheckboxSetting
+                                                        name={name}
+                                                        setting_key={source_enabled_key({ category, name })}
+                                                    />
+                                                </li>
+                                            ))
+                                        }
+                                    </ul>
+                                </div>
+                            ))}
                             <div className="sidebar-section">
                                 <div style={sidebar_section_title}>Years</div>
                                 <ul className={sidebar_section_content}>

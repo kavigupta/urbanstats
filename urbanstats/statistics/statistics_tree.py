@@ -4,6 +4,19 @@ from types import NoneType
 from .stat_path import get_statistic_column_path
 
 
+@dataclass(frozen=True)
+class Source:
+    """
+    Represents a source of statistics. Provides a category for the sourcing
+    """
+
+    category: str
+    name: str
+
+    def json(self):
+        return {"category": self.category, "name": self.name}
+
+
 @dataclass
 class MultiSource:
     """
@@ -17,7 +30,7 @@ class MultiSource:
         if None in self.by_source:
             assert len(self.by_source) == 1
         for source, col in self.by_source.items():
-            assert isinstance(source, str) or source is None
+            assert isinstance(source, Source) or source is None
             assert isinstance(col, (str, tuple))
 
     def internal_statistics(self):
@@ -31,7 +44,7 @@ class MultiSource:
         for source, col in self.by_source.items():
             result.append(
                 {
-                    "source": source,
+                    "source": source.json() if source is not None else None,
                     "column": names.index(col),
                 }
             )
@@ -192,6 +205,20 @@ class StatisticTree:
             for category_id, category in self.categories.items()
         ]
 
+    def all_sources(self):
+        result = []
+        for category in self.categories.values():
+            for group in category.contents.values():
+                for stats in group.by_year.values():
+                    for stat in stats:
+                        for source in stat.by_source:
+                            result.append(source)
+        deduplicated_sources = []
+        for source in result:
+            if source not in deduplicated_sources and source is not None:
+                deduplicated_sources.append(source)
+        return deduplicated_sources
+
 
 def single_source(col_name):
     return MultiSource({None: col_name})
@@ -243,6 +270,9 @@ def just_2020_category(cat_key, cat_name, *col_names):
     }
 
 
+population_census = Source("Population", "US Census")
+population_ghsl = Source("Population", "GHSL")
+
 statistics_tree = StatisticTree(
     {
         "main": StatisticCategory(
@@ -252,7 +282,10 @@ statistics_tree = StatisticTree(
                     {
                         2020: [
                             MultiSource(
-                                {"Census": "population", "GHSL": "gpw_population"},
+                                {
+                                    population_census: "population",
+                                    population_ghsl: "gpw_population",
+                                },
                                 "Population",
                             )
                         ],

@@ -6,6 +6,7 @@ import React, { ReactNode, useRef } from 'react'
 import { article_link, comparison_link, sanitize } from '../navigation/links'
 import { useSetting, useSettings } from '../page_template/settings'
 import { groupYearKeys, StatPathsContext } from '../page_template/statistic-settings'
+import { sourceDisambiguation } from '../page_template/statistic-tree'
 import { PageTemplate } from '../page_template/template'
 import { longname_is_exclusively_american, useUniverse } from '../universe'
 import { Article, IRelatedButtons } from '../utils/protos'
@@ -39,11 +40,16 @@ export function ArticlePanel({ article }: { article: Article }): ReactNode {
     const curr_universe = useUniverse()
     const settings = useSettings(groupYearKeys())
     const [simple_ordinals] = useSetting('simple_ordinals')
-    const { result: [filtered_rows], availableStatPaths } = load_article(curr_universe, article, settings,
+    const { result: [filtered_rows], availableStatPaths, ambiguousSources } = load_article(curr_universe, article, settings,
         longname_is_exclusively_american(article.longname))
 
+    const checkboxes = sourceDisambiguation(ambiguousSources)
+
+    console.log('ambiguousSources', ambiguousSources)
+    console.log('checkboxes', checkboxes)
+
     return (
-        <StatPathsContext.Provider value={availableStatPaths}>
+        <StatPathsContext.Provider value={{ statPaths: availableStatPaths, dataSourceCheckboxes: checkboxes }}>
             <ArticleComparisonQuerySettingsConnection />
             <PageTemplate screencap_elements={screencap_elements} has_universe_selector={true} universes={article.universes}>
                 <div>

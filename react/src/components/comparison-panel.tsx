@@ -7,7 +7,7 @@ import { article_link, sanitize } from '../navigation/links'
 import { HueColors, useColors } from '../page_template/colors'
 import { row_expanded_key, useSetting, useSettings } from '../page_template/settings'
 import { groupYearKeys, StatPathsContext } from '../page_template/statistic-settings'
-import { statDataOrderToOrder, StatPath } from '../page_template/statistic-tree'
+import { AmbiguousSources, mergeAmbiguousSources, sourceDisambiguation, statDataOrderToOrder, StatPath } from '../page_template/statistic-tree'
 import { PageTemplate } from '../page_template/template'
 import { longname_is_exclusively_american, useUniverse } from '../universe'
 import { mixWithBackground } from '../utils/color'
@@ -116,13 +116,18 @@ export function ComparisonPanel(props: { joined_string: string, universes: strin
     const exclusively_american = props.datas.every(x => longname_is_exclusively_american(x.longname))
     const settings = useSettings(groupYearKeys())
     const statPaths = new Set<StatPath>()
+    const ambiguousSourcesAll: AmbiguousSources[] = []
     for (const i of props.datas.keys()) {
-        const { result: [r, idx], availableStatPaths } = load_article(curr_universe, props.datas[i], settings,
+        const { result: [r, idx], availableStatPaths, ambiguousSources } = load_article(curr_universe, props.datas[i], settings,
             exclusively_american)
         rows.push(r)
         idxs.push(idx)
         availableStatPaths.forEach(path => statPaths.add(path))
+        ambiguousSourcesAll.push(ambiguousSources)
     }
+
+    const ambiguousSources = mergeAmbiguousSources(ambiguousSourcesAll)
+    const checkboxes = sourceDisambiguation(ambiguousSources)
 
     rows = insert_missing(rows, idxs)
 
@@ -135,7 +140,7 @@ export function ComparisonPanel(props: { joined_string: string, universes: strin
     )
 
     return (
-        <StatPathsContext.Provider value={Array.from(statPaths)}>
+        <StatPathsContext.Provider value={{ statPaths: Array.from(statPaths), dataSourceCheckboxes: checkboxes }}>
             <ArticleComparisonQuerySettingsConnection />
             <PageTemplate screencap_elements={screencap_elements} has_universe_selector={true} universes={props.universes}>
                 <div>

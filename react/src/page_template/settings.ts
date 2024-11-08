@@ -1,10 +1,11 @@
 import { createContext, useContext, useEffect, useState } from 'react'
 
+import { dataSources } from '../data/statistics_tree'
 import { DefaultMap } from '../utils/DefaultMap'
 
 import { Theme } from './colors'
 import { fromVector } from './settings-vector'
-import { allGroups, allYears, CategoryIdentifier, GroupIdentifier, statsTree, Year } from './statistic-tree'
+import { allGroups, allYears, CategoryIdentifier, GroupIdentifier, SourceCategoryIdentifier, SourceIdentifier, statsTree, Year } from './statistic-tree'
 
 export type RelationshipKey = `related__${string}__${string}`
 export type RowExpandedKey = `expanded__${string}`
@@ -14,6 +15,7 @@ export type StatGroupKey<G extends GroupIdentifier = GroupIdentifier> = `show_st
 export type StatCategorySavedIndeterminateKey<C extends CategoryIdentifier = CategoryIdentifier> = `stat_category_saved_indeterminate_${C}`
 export type StatCategoryExpandedKey<C extends CategoryIdentifier = CategoryIdentifier> = `stat_category_expanded_${C}`
 export type StatYearKey<Y extends Year = Year> = `show_stat_year_${Y}`
+export type StatSourceKey<C extends SourceCategoryIdentifier = SourceCategoryIdentifier, S extends SourceIdentifier = SourceIdentifier> = `show_stat_source_${C}_${S}`
 
 export type SettingsDictionary = {
     [relationshipKey: RelationshipKey]: boolean | undefined
@@ -31,6 +33,8 @@ export type SettingsDictionary = {
 & { [C in CategoryIdentifier as StatCategorySavedIndeterminateKey<C>]: GroupIdentifier[] }
 & { [C in CategoryIdentifier as StatCategoryExpandedKey<C>]: boolean }
 & { [Y in Year as StatYearKey<Y>]: boolean }
+// & { [C in SourceCategoryIdentifier, S in SourceIdentifier as StatSourceKey<C, S>]: boolean }
+& { [C in SourceCategoryIdentifier as StatSourceKey<C>]: boolean }
 
 export function relationship_key(article_type: string, other_type: string): RelationshipKey {
     return `related__${article_type}__${other_type}`
@@ -38,6 +42,10 @@ export function relationship_key(article_type: string, other_type: string): Rela
 
 export function row_expanded_key(row_statname: string): RowExpandedKey {
     return `expanded__${row_statname}`
+}
+
+export function source_enabled_key<C extends SourceCategoryIdentifier, S extends SourceIdentifier>(d: { category: C, name: S }): StatSourceKey<C, S> {
+    return `show_stat_source_${d.category}_${d.name}`
 }
 
 const defaultCategorySelections = new Set(
@@ -66,6 +74,7 @@ const defaultSettings = {
     ...Object.fromEntries(statsTree.map(category => [`stat_category_saved_indeterminate_${category.id}` as const, []])),
     ...Object.fromEntries(statsTree.map(category => [`stat_category_expanded_${category.id}` as const, false])),
     ...Object.fromEntries(allYears.map(year => [`show_stat_year_${year}` as const, defaultEnabledYears.has(year)])),
+    ...Object.fromEntries(dataSources.flatMap(({ category, sources }) => sources.map(source => [source_enabled_key({ category, name: source }), true]))),
     show_historical_cds: false,
     simple_ordinals: false,
     use_imperial: false,

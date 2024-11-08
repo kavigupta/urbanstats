@@ -84,6 +84,20 @@ def output_statistics_metadata():
 
 def export_statistics_tree(path):
     fst = statistics_tree.flatten(statistic_internal_to_display_name())
+    sources = statistics_tree.all_sources()
+    source_categories = list(dict.fromkeys([source.category for source in sources]))
+    result = [
+        {
+            "category": category,
+            "sources": [
+                source.name for source in sources if source.category == category
+            ],
+        }
+        for category in source_categories
+    ]
+    # alternation = "|".join([json.dumps(source.json()) for source in sources])
     fst = json.dumps(fst, indent=4)
     with open(path, "w") as f:
+        f.write(f"export const dataSources = {json.dumps(result, indent=4)} as const\n")
+        # f.write(f"export type DataSource = {alternation}\n")
         f.write(f"export const rawStatsTree = {fst} as const\n")

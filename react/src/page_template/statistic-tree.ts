@@ -1,4 +1,4 @@
-import { rawStatsTree } from '../data/statistics_tree'
+import { rawStatsTree, dataSources } from '../data/statistics_tree'
 import { DefaultMap } from '../utils/DefaultMap'
 
 const statPaths = require('../data/statistic_path_list.json') as StatPath[]
@@ -10,6 +10,8 @@ export type CategoryIdentifier = (typeof rawStatsTree)[number]['id']
 export type GroupIdentifier = (typeof rawStatsTree)[number]['contents'][number]['id']
 export type Year = Exclude<(typeof rawStatsTree)[number]['contents'][number]['contents'][number]['year'], null>
 export type DataSource = Exclude<(typeof rawStatsTree)[number]['contents'][number]['contents'][number]['stats_by_source'][number]['stats'][number]['source'], null>
+export type SourceCategoryIdentifier = DataSource['category']
+export type SourceIdentifier = DataSource['name']
 
 export type StatsTree = Category[]
 export interface Category {
@@ -114,12 +116,14 @@ export const allYears = Array.from(
         .filter(year => year !== null)),
 ).sort(sortYears)
 
-const statParentsList: [StatPath, { group: Group, year: Year | null }][] = allGroups
+const statParentsList: [StatPath, { group: Group, year: Year | null, source: DataSource | null }][] = allGroups
     .flatMap(group => group.contents
         .flatMap(({ year, stats }) => stats
-            .flatMap(stat => stat.by_source.map(({ path }) => [path, { group, year }] satisfies [StatPath, { group: Group, year: Year | null }]))))
+            .flatMap(stat => stat.by_source
+                .map(({ source, path }) =>
+                    [path, { group, year, source }] satisfies [StatPath, { group: Group, year: Year | null, source: DataSource | null }]))))
 
-export const statParents = new Map<StatPath, { group: Group, year: Year | null }>(
+export const statParents = new Map<StatPath, { group: Group, year: Year | null, source: DataSource | null }>(
     statParentsList,
 )
 
@@ -130,3 +134,52 @@ export const statPathToOrder = new Map<StatPath, number>(
 export const statDataOrderToOrder = new Map<number, number>(
     statPaths.map((statPath, i) => [i, statPathToOrder.get(statPath)!] as const),
 )
+
+export type AmbiguousSources = Map<SourceCategoryIdentifier, Set<SourceIdentifier>>
+export type DataSourceCheckboxes = { category: SourceCategoryIdentifier, names: SourceIdentifier[] }[]
+
+export function findAmbiguousSources(sources: (DataSource | null)[]): AmbiguousSources {
+    const ambiguousSources = new Map<SourceCategoryIdentifier, Set<SourceIdentifier>>()
+    for (const source of sources) {
+        if (source === null) {
+            continue
+        }
+        const category = source.category
+        const name = source.name
+        if (!ambiguousSources.has(category)) {
+            ambiguousSources.set(category, new Set())
+        }
+        ambiguousSources.get(category)!.add(name)
+    }
+    // delete all length-1 categories
+    for (const [category, names] of ambiguousSources.entries()) {
+        if (names.size === 1) {
+            ambiguousSources.delete(category)
+        }
+    }
+    return ambiguousSources
+}
+
+export function mergeAmbiguousSources(ambiguousSources: AmbiguousSources[]): AmbiguousSources {
+    const result = new Map<SourceCategoryIdentifier, Set<SourceIdentifier>>()
+    for (const sources of ambiguousSources) {
+        for (const [category, names] of sources.entries()) {
+            if (!result.has(category)) {
+                result.set(category, new Set())
+            }
+            for (const name of names) {
+                result.get(category)!.add(name)
+            }
+        }
+    }
+    return result
+}
+
+export function sourceDisambiguation(ambiguousSources: AmbiguousSources): DataSourceCheckboxes {
+    return dataSources
+        .filter(({ category }) => ambiguousSources.has(category) && ambiguousSources.get(category)!.size > 1)
+        .map(({ category, sources }) => ({
+            category,
+            names: Array.from(sources).filter(source => ambiguousSources.has(category) && ambiguousSources.get(category)!.has(source)),
+        }))
+}

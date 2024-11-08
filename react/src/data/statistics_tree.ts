@@ -1,3 +1,12 @@
+export const dataSources = [
+    {
+        category: 'Population',
+        sources: [
+            'US Census',
+            'GHSL',
+        ],
+    },
+] as const
 export const rawStatsTree = [
     {
         id: 'main',
@@ -14,11 +23,17 @@ export const rawStatsTree = [
                                 name: 'Population',
                                 stats: [
                                     {
-                                        source: 'Census',
+                                        source: {
+                                            category: 'Population',
+                                            name: 'US Census',
+                                        },
                                         column: 198,
                                     },
                                     {
-                                        source: 'GHSL',
+                                        source: {
+                                            category: 'Population',
+                                            name: 'GHSL',
+                                        },
                                         column: 90,
                                     },
                                 ],
