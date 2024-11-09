@@ -159,14 +159,6 @@ export function load_single_article(data: Article, universe: string, exclusively
             extra_stat,
         } satisfies ArticleRow
     })
-    return modified_rows
-}
-
-export function load_article(universe: string, data: Article, settings: StatGroupSettings, exclusively_american: boolean): {
-    result: ArticleRow[]
-    availableStatPaths: StatPath[]
-} {
-    const modified_rows = load_single_article(data, universe, exclusively_american)
 
     const availableRows = modified_rows.filter((row) => {
         if (universe_is_american(universe)) {
@@ -181,6 +173,15 @@ export function load_article(universe: string, data: Article, settings: StatGrou
         }
         return true
     })
+    return availableRows
+}
+
+export function load_article(universe: string, data: Article, settings: StatGroupSettings, exclusively_american: boolean): {
+    result: ArticleRow[]
+    availableStatPaths: StatPath[]
+} {
+    const availableRows = load_single_article(data, universe, exclusively_american)
+
     const filtered_rows = availableRows.filter(row => statIsEnabled(row.statpath, settings))
         // sort by order in statistics tree.
         .sort((a, b) => statPathToOrder.get(a.statpath)! - statPathToOrder.get(b.statpath)!)
