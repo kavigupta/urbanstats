@@ -253,11 +253,11 @@ export function useVector(): string {
 
 export function fromVector(vector: string, settings: Settings): Record<VectorSettingKey, boolean> {
     const array = decompressBooleans(base58.base58_to_binary(vector))
-    return Object.fromEntries(settingsVector.map((setting, i) => {
+    const result = settingsVector.map((setting, i) => {
         let value: boolean
         // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- No deprecations yet
         if (setting.deprecated) {
-            value = false
+            return []
         }
         else if (i < array.length) {
             value = array[i]
@@ -265,8 +265,9 @@ export function fromVector(vector: string, settings: Settings): Record<VectorSet
         else {
             value = settings.get(setting.key)
         }
-        return [setting.key, value]
-    }))
+        return [[setting.key, value]] satisfies [VectorSettingKey, boolean][]
+    })
+    return Object.fromEntries(result.flat())
 }
 
 /*
