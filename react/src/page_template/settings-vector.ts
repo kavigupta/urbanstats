@@ -231,6 +231,8 @@ const settingsVector = [
     { key: `show_historical_cds`, deprecated: false },
     { key: `simple_ordinals`, deprecated: false },
     { key: `use_imperial`, deprecated: false },
+    { key: `show_stat_source_Population_US Census`, deprecated: false },
+    { key: `show_stat_source_Population_GHSL`, deprecated: false },
 ] satisfies ({ key: BooleanSettingKey, deprecated: false } | { key: string, deprecated: true })[]
 
 type NotIncludedInSettingsVector = (
@@ -239,8 +241,6 @@ type NotIncludedInSettingsVector = (
     | StatCategoryExpandedKey
     | 'histogram_type' | 'histogram_relative'
     | 'theme' | 'colorblind_mode' | 'clean_background'
-    // placeholder, remove!
-    | 'show_stat_source_Placeholder_Placeholder'
 )
 
 // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- No deprecations yet
