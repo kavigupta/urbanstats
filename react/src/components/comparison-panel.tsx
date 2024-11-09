@@ -164,7 +164,7 @@ export function ComparisonPanel(props: { joined_string: string, universes: strin
                             {
                                 rows[0].map((_, row_idx) => (
                                     <ComparisonRowBody
-                                        key={row_idx}
+                                        key={rows[0][row_idx].statpath}
                                         index={row_idx}
                                         rows={rows.map(row => row[row_idx])}
                                         articles={props.articles}
@@ -282,7 +282,7 @@ function ComparisonCells({ names, rows, onlyColumns }: {
         <StatisticRowCells key="statname" onlyColumns={['statname']} longname={names[0]} totalWidth={100 * (left_margin_pct - left_bar_margin)} row={rows[0]} simpleOrdinals={true} />,
         ...rows.map((row, i) => (
             <StatisticRowCells
-                key={i}
+                key={names[i]}
                 row={row}
                 longname={names[i]}
                 onlyColumns={onlyColumns}

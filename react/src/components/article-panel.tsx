@@ -64,7 +64,7 @@ export function ArticlePanel({ article }: { article: Article }): ReactNode {
                             <StatisticTableRow
                                 row={row}
                                 index={index}
-                                key={index}
+                                key={row.statpath}
                                 longname={article.longname}
                                 shortname={article.shortname}
                             />

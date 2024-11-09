@@ -1,4 +1,4 @@
-import React, { CSSProperties, ReactNode, useRef, useState } from 'react'
+import React, { CSSProperties, ReactNode, useEffect, useRef, useState } from 'react'
 import ContentEditable, { ContentEditableEvent } from 'react-contenteditable'
 
 import { load_ordering } from '../load_json'
@@ -664,6 +664,11 @@ function EditableNumber(props: { number: number, onNewNumber: (number: number) =
 
     const contentEditable: React.Ref<HTMLElement> = useRef(null)
     const [html, setHtml] = useState(props.number.toString())
+
+    // Otherwise, this component can display the wrong number when props change
+    useEffect(() => {
+        setHtml(props.number.toString())
+    }, [props.number])
 
     const handleChange = (evt: ContentEditableEvent): void => {
         setHtml(evt.target.value)
