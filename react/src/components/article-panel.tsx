@@ -125,7 +125,7 @@ function StatisticTableHeader(): ReactNode {
     const [simpleOrdinals] = useSetting('simple_ordinals')
     return (
         <TableHeaderContainer>
-            <StatisticHeaderCells simpleOrdinals={simpleOrdinals} />
+            <StatisticHeaderCells simpleOrdinals={simpleOrdinals} totalWidth={100} />
         </TableHeaderContainer>
     )
 }

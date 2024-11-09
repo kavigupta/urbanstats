@@ -44,22 +44,22 @@ interface ColumnLayoutProps {
         columnIdentifier: ColumnIdentifier
         widthPercentage: number
         content: ReactNode
+        textAlign: React.CSSProperties['textAlign']
     }[]
     onlyColumns?: string[]
     totalWidth: number
-    textAlign: React.CSSProperties['textAlign']
 }
 
 // Lays out column content
 function ColumnLayout(props: ColumnLayoutProps): JSX.Element[] {
     const cellPercentages: number[] = []
     const cellContents = []
-    for (const { widthPercentage, columnIdentifier, content } of props.cells) {
+    for (const { widthPercentage, columnIdentifier, content, textAlign } of props.cells) {
         if (props.onlyColumns && !props.onlyColumns.includes(columnIdentifier)) {
             continue
         }
         cellPercentages.push(widthPercentage)
-        cellContents.push(content)
+        cellContents.push({ content, textAlign })
     }
 
     // normalize cell percentages
@@ -69,8 +69,8 @@ function ColumnLayout(props: ColumnLayoutProps): JSX.Element[] {
     }
 
     const contents = cellContents.map(
-        (content, i) => {
-            const sty: React.CSSProperties = { width: `${cellPercentages[i]}%`, padding: '1px', textAlign: props.textAlign }
+        ({ content, textAlign }, i) => {
+            const sty: React.CSSProperties = { width: `${cellPercentages[i]}%`, padding: '1px', textAlign }
             return (
                 <div key={i} style={sty}>
                     {content}
@@ -81,7 +81,7 @@ function ColumnLayout(props: ColumnLayoutProps): JSX.Element[] {
     return contents
 }
 
-export function StatisticHeaderCells(props: { simpleOrdinals: boolean, onlyColumns?: ColumnIdentifier[] }): ReactNode {
+export function StatisticHeaderCells(props: { simpleOrdinals: boolean, totalWidth: number, onlyColumns?: ColumnIdentifier[] }): ReactNode {
     const colors = useColors()
     const ordinal_style: React.CSSProperties = {
         fontSize: '14px',
@@ -89,7 +89,6 @@ export function StatisticHeaderCells(props: { simpleOrdinals: boolean, onlyColum
         color: colors.ordinalTextColor,
         margin: 0,
     }
-    const alignStyle: React.CSSProperties = { textAlign: 'center' }
 
     const screenshotMode = useScreenshotMode()
 
@@ -102,17 +101,17 @@ export function StatisticHeaderCells(props: { simpleOrdinals: boolean, onlyColum
                     Statistic
                 </span>
             ),
+            textAlign: 'center',
         },
         {
             columnIdentifier: 'statval',
             widthPercentage: 15 + 10,
             content: (
-                <div style={alignStyle} key="value">
-                    <span className="serif value">
-                        Value
-                    </span>
-                </div>
+                <span className="serif value">
+                    Value
+                </span>
             ),
+            textAlign: 'center',
         },
         {
             widthPercentage: props.simpleOrdinals ? 7 : 17,
@@ -125,6 +124,7 @@ export function StatisticHeaderCells(props: { simpleOrdinals: boolean, onlyColum
                     }
                 </span>
             ),
+            textAlign: 'center',
         },
         {
             widthPercentage: props.simpleOrdinals ? 8 : 25,
@@ -136,6 +136,7 @@ export function StatisticHeaderCells(props: { simpleOrdinals: boolean, onlyColum
                     }
                 </span>
             ),
+            textAlign: 'center',
         },
         ...(screenshotMode
             ? []
@@ -144,12 +145,14 @@ export function StatisticHeaderCells(props: { simpleOrdinals: boolean, onlyColum
                     widthPercentage: 8,
                     columnIdentifier: 'pointer_in_class',
                     content: <span className="serif" style={ordinal_style}>Within Type</span>,
+                    textAlign: 'center',
 
                 },
                 {
                     widthPercentage: 8,
                     columnIdentifier: 'pointer_overall',
                     content: <span className="serif" style={ordinal_style}>Overall</span>,
+                    textAlign: 'center',
                 },
             ] satisfies ColumnLayoutProps['cells']),
     ] satisfies ColumnLayoutProps['cells']
@@ -157,8 +160,7 @@ export function StatisticHeaderCells(props: { simpleOrdinals: boolean, onlyColum
     return (
         <ColumnLayout
             cells={cells}
-            totalWidth={100}
-            textAlign="center"
+            totalWidth={props.totalWidth}
             onlyColumns={props.onlyColumns}
         />
     )
@@ -181,7 +183,6 @@ export function StatisticRowCells(props: {
         color: colors.ordinalTextColor,
         margin: 0,
     }
-    const alignStyle: React.CSSProperties = { textAlign: 'right' }
 
     const screenshotMode = useScreenshotMode()
 
@@ -202,22 +203,22 @@ export function StatisticRowCells(props: {
                     />
                 </span>
             ),
+            textAlign: 'left',
         },
         {
             widthPercentage: 15,
             columnIdentifier: 'statval',
             content: (
-                <div style={alignStyle}>
-                    <span className="serif value">
-                        <Statistic
-                            statname={props.row.statname}
-                            value={props.row.statval}
-                            is_unit={false}
-                            style={props.statisticStyle ?? {}}
-                        />
-                    </span>
-                </div>
+                <span className="serif value">
+                    <Statistic
+                        statname={props.row.statname}
+                        value={props.row.statval}
+                        is_unit={false}
+                        style={props.statisticStyle ?? {}}
+                    />
+                </span>
             ),
+            textAlign: 'right',
         },
         {
             widthPercentage: 10,
@@ -233,6 +234,7 @@ export function StatisticRowCells(props: {
                     </span>
                 </div>
             ),
+            textAlign: 'right',
         },
         {
             widthPercentage: props.simpleOrdinals ? 7 : 17,
@@ -247,6 +249,7 @@ export function StatisticRowCells(props: {
                     />
                 </span>
             ),
+            textAlign: 'right',
         },
         {
             widthPercentage: props.simpleOrdinals ? 8 : 25,
@@ -262,6 +265,7 @@ export function StatisticRowCells(props: {
                     />
                 </span>
             ),
+            textAlign: 'right',
         },
         ...(screenshotMode
             ? []
@@ -279,6 +283,7 @@ export function StatisticRowCells(props: {
                             />
                         </span>
                     ),
+                    textAlign: 'right',
                 },
                 {
                     widthPercentage: 8,
@@ -293,6 +298,7 @@ export function StatisticRowCells(props: {
                             />
                         </span>
                     ),
+                    textAlign: 'right',
                 },
             ] satisfies ColumnLayoutProps['cells']),
     ] satisfies ColumnLayoutProps['cells']
@@ -301,7 +307,6 @@ export function StatisticRowCells(props: {
         <ColumnLayout
             cells={cells}
             totalWidth={props.totalWidth}
-            textAlign="right"
             onlyColumns={props.onlyColumns}
         />
     )

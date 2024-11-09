@@ -232,8 +232,8 @@ function go(names: string[]): void {
     window.location.search = window_info.toString()
 }
 
-function each(datas: unknown[]): number {
-    return 100 * (1 - left_margin_pct) / datas.length
+function each({ length }: { length: number }): number {
+    return 100 * (1 - left_margin_pct) / length
 }
 
 function ComparisonRowBody({ rows, articles, names, onlyColumns }: {
@@ -264,19 +264,48 @@ function ComparisonCells({ names, rows, onlyColumns }: {
     onlyColumns: ColumnIdentifier[]
 }): ReactNode {
     const colors = useColors()
-    const row_overall: ReactNode[] = []
 
-    const highlight_idx = rows.map(x => x.statval).reduce((iMax, x, i, arr) => {
+    const highlightIndex = rows.map(x => x.statval).reduce<number | undefined>((iMax, x, i, arr) => {
         if (isNaN(x)) {
             return iMax
         }
-        if (iMax === -1) {
+        if (iMax === undefined) {
             return i
         }
         return x > arr[iMax] ? i : iMax
-    }, -1)
+    }, undefined)
 
-    row_overall.push(
+    return [
+        <ComparisonColorBar key="color" highlightIndex={highlightIndex} />,
+        <StatisticRowCells key="statname" onlyColumns={['statname']} longname={names[0]} totalWidth={100 * (left_margin_pct - left_bar_margin)} row={rows[0]} simpleOrdinals={true} />,
+        ...rows.map((row, i) => (
+            <StatisticRowCells
+                key={i}
+                row={row}
+                longname={names[i]}
+                onlyColumns={onlyColumns}
+                simpleOrdinals={true}
+                statisticStyle={highlightIndex === i ? { backgroundColor: mixWithBackground(color(colors.hueColors, i), colors.mixPct / 100, colors.background) } : {}}
+                onNavigate={(x) => { on_change(names, i, x) }}
+                totalWidth={each(rows)}
+            />
+        )),
+    ]
+}
+
+function ComparisonHeaders({ onlyColumns, length }: { onlyColumns: ColumnIdentifier[], length: number }): ReactNode {
+    return [
+        <ComparisonColorBar key="color" highlightIndex={undefined} />,
+        <StatisticHeaderCells key="statname" onlyColumns={['statname']} simpleOrdinals={true} totalWidth={100 * (left_margin_pct - left_bar_margin)} />,
+        ...Array.from({ length })
+            .map((_, index) => <StatisticHeaderCells key={index} onlyColumns={onlyColumns} simpleOrdinals={true} totalWidth={each({ length })} />),
+    ]
+}
+
+function ComparisonColorBar({ highlightIndex }: { highlightIndex: number | undefined }): ReactNode {
+    const colors = useColors()
+
+    return (
         <div
             key="color"
             style={{
@@ -285,35 +314,14 @@ function ComparisonCells({ names, rows, onlyColumns }: {
             }}
         >
             <div style={{
-                backgroundColor: highlight_idx === -1 ? colors.background : color(colors.hueColors, highlight_idx),
+                backgroundColor: highlightIndex === undefined ? colors.background : color(colors.hueColors, highlightIndex),
                 height: '100%',
                 width: '50%',
                 margin: 'auto',
             }}
             />
-        </div>,
+        </div>
     )
-
-    row_overall.push(<StatisticRowCells onlyColumns={['statname']} longname={names[0]} totalWidth={100 * (left_margin_pct - left_bar_margin)} row={rows[0]} simpleOrdinals={true} />)
-
-    for (const i of rows.keys()) {
-        row_overall.push(
-            <StatisticRowCells
-                row={rows[i]}
-                longname={names[i]}
-                onlyColumns={onlyColumns}
-                simpleOrdinals={true}
-                statisticStyle={highlight_idx === i ? { backgroundColor: mixWithBackground(color(colors.hueColors, i), colors.mixPct / 100, colors.background) } : {}}
-                onNavigate={(x) => { on_change(names, i, x) }}
-                totalWidth={each(rows)}
-            />,
-        )
-    }
-    return row_overall
-}
-
-function ComparisonHeaders(props: { onlyColumns: ColumnIdentifier[], length: number }): ReactNode {
-    return Array.from({ length }).map((_, index) => <StatisticHeaderCells key={index} onlyColumns={props.onlyColumns} simpleOrdinals={true} />)
 }
 
 const manipulation_button_height = '24px'
