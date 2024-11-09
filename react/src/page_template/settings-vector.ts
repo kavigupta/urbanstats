@@ -4,7 +4,7 @@
 
 import * as base58 from 'base58-js'
 
-import { Settings, SettingsDictionary, useSettings } from './settings'
+import { defaultSettingsList, RelationshipKey, Settings, SettingsDictionary, StatCategoryExpandedKey, StatCategorySavedIndeterminateKey, useSettings } from './settings'
 
 export type BooleanSettingKey = keyof { [K in keyof SettingsDictionary as SettingsDictionary[K] extends boolean ? K : never]: boolean }
 
@@ -232,6 +232,17 @@ const settingsVector = [
     { key: `simple_ordinals`, deprecated: false },
     { key: `use_imperial`, deprecated: false },
 ] satisfies ({ key: BooleanSettingKey, deprecated: false } | { key: string, deprecated: true })[]
+
+type NotIncludedInSettingsVector = (
+    RelationshipKey
+    | StatCategorySavedIndeterminateKey
+    | StatCategoryExpandedKey
+    | 'histogram_type' | 'histogram_relative'
+    | 'theme' | 'colorblind_mode' | 'clean_background'
+)
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars -- Just for checking type
+const JUST_FOR_CHECKING_PRESENCE = defaultSettingsList.map(([x]) => x) satisfies (VectorSettingKey | NotIncludedInSettingsVector)[]
 
 // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- No deprecations yet
 const activeVectorKeys = settingsVector.flatMap(setting => setting.deprecated ? [] : [setting.key])
