@@ -134,11 +134,6 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: "!cancelled()"
         with:
-          name: screenshots-${{ matrix.test-file }}
-          path: react/screenshots
-      - uses: actions/upload-artifact@v4
-        if: "!cancelled()"
-        with:
           name: delta-${{ matrix.test-file }}
           path: react/delta
       - uses: actions/upload-artifact@v4
@@ -154,10 +149,6 @@ jobs:
     steps:
       - uses: actions/upload-artifact/merge@v4
         with:
-          name: screenshots
-          pattern: "screenshots-*"
-      - uses: actions/upload-artifact/merge@v4
-        with:
           name: delta
           pattern: "delta-*"
         continue-on-error: true
@@ -169,5 +160,6 @@ jobs:
       - uses: actions/upload-artifact/merge@v4
         with:
           name: combined
-          pattern: "{screenshots,delta,changed_screenshots}"
+          pattern: "{delta,changed_screenshots}"
           separate-directories: true
+        continue-on-error: true

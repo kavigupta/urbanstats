@@ -97,9 +97,9 @@ def export_statistics_tree(path):
         }
         for category in source_categories
     ]
-    # alternation = "|".join([json.dumps(source.json()) for source in sources])
     fst = json.dumps(fst, indent=4)
     with open(path, "w") as f:
-        f.write(f"export const dataSources = {json.dumps(result, indent=4)} as const\n")
-        # f.write(f"export type DataSource = {alternation}\n")
+        f.write(
+            f"export const dataSources = {json.dumps(result, indent=4)} as const\n\n"
+        )
         f.write(f"export const rawStatsTree = {fst} as const\n")

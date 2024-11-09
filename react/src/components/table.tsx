@@ -60,6 +60,7 @@ export function StatisticRowRawCellContents(props: StatisticRowRawProps & {
         fontWeight: 400,
         color: colors.ordinalTextColor,
         margin: 0,
+        textAlign: 'right',
     }
     const alignStyle: React.CSSProperties = { textAlign: props.is_header ? 'center' : 'right' }
     let value_columns: [number, string, React.ReactNode][] = [
