@@ -20,18 +20,22 @@ export function useSidebarSectionContentClassName(): string {
     return sidebar_section_content
 }
 
-export function Sidebar(): ReactNode {
+export function useSidebarSectionTitleStyle(): CSSProperties {
     const colors = useColors()
-    const currentTheme = useCurrentTheme()
-    const link_style = { color: colors.blueLink }
-    const sidebar_section_title: React.CSSProperties = {
+    return {
         marginBottom: useMobileLayout() ? '0.75rem' : '0.5rem',
         borderBottom: `1px solid ${colors.borderNonShadow}`,
         color: colors.ordinalTextColor,
     }
+}
+
+export function Sidebar(): ReactNode {
+    const colors = useColors()
+    const currentTheme = useCurrentTheme()
+    const link_style = { color: colors.blueLink }
+    const sidebar_section_title = useSidebarSectionTitleStyle()
 
     const sidebar_section_content = useSidebarSectionContentClassName()
-    const checkboxes = useDataSourceCheckboxes()
 
     return (
         <div
@@ -122,39 +126,7 @@ export function Sidebar(): ReactNode {
                 </ul>
             </div>
             { useContext(StatPathsContext) !== undefined
-                ? (
-                        <>
-                            {checkboxes.map(({ category, names }) => (
-                                <div className="sidebar-section" key={category}>
-                                    <div style={sidebar_section_title}>{checkbox_category_name(category)}</div>
-                                    <ul className={sidebar_section_content}>
-                                        {
-                                            names.map(name => (
-                                                <li key={name}>
-                                                    <CheckboxSetting
-                                                        name={name}
-                                                        setting_key={source_enabled_key({ category, name })}
-                                                    />
-                                                </li>
-                                            ))
-                                        }
-                                    </ul>
-                                </div>
-                            ))}
-                            <div className="sidebar-section">
-                                <div style={sidebar_section_title}>Years</div>
-                                <ul className={sidebar_section_content}>
-                                    <Years />
-                                </ul>
-                            </div>
-                            <div className="sidebar-section">
-                                <div style={sidebar_section_title}>Statistic Categories</div>
-                                <ul className={sidebar_section_content}>
-                                    <StatsTree />
-                                </ul>
-                            </div>
-                        </>
-                    )
+                ? <SidebarContext />
                 : null}
             <div className="sidebar-section">
                 <div style={sidebar_section_title}>Appearance</div>
@@ -177,6 +149,45 @@ export function Sidebar(): ReactNode {
                 </ul>
             </div>
         </div>
+    )
+}
+
+export function SidebarContext(): ReactNode {
+    const sidebar_section_content = useSidebarSectionContentClassName()
+    const sidebar_section_title = useSidebarSectionTitleStyle()
+    const checkboxes = useDataSourceCheckboxes()
+    return (
+        <>
+            {checkboxes.map(({ category, names }) => (
+                <div className="sidebar-section" key={category}>
+                    <div style={sidebar_section_title}>{checkbox_category_name(category)}</div>
+                    <ul className={sidebar_section_content}>
+                        {
+                            names.map(name => (
+                                <li key={name}>
+                                    <CheckboxSetting
+                                        name={name}
+                                        setting_key={source_enabled_key({ category, name })}
+                                    />
+                                </li>
+                            ))
+                        }
+                    </ul>
+                </div>
+            ))}
+            <div className="sidebar-section">
+                <div style={sidebar_section_title}>Years</div>
+                <ul className={sidebar_section_content}>
+                    <Years />
+                </ul>
+            </div>
+            <div className="sidebar-section">
+                <div style={sidebar_section_title}>Statistic Categories</div>
+                <ul className={sidebar_section_content}>
+                    <StatsTree />
+                </ul>
+            </div>
+        </>
     )
 }
 

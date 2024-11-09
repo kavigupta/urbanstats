@@ -25,7 +25,7 @@ class MultiSource:
     """
 
     by_source: dict[str | NoneType, str]
-    multi_source_name: str = None
+    multi_source_colname: str = None
 
     def __post_init__(self):
         if None in self.by_source:
@@ -52,8 +52,8 @@ class MultiSource:
         return dict(name=self.compute_name(name_map), stats=result)
 
     def compute_name(self, name_map):
-        if self.multi_source_name is not None:
-            return self.multi_source_name
+        if self.multi_source_colname is not None:
+            return name_map[self.multi_source_colname]
         assert len(self.by_source) == 1
         col = next(iter(self.by_source.values()))
         return name_map[col]
@@ -66,7 +66,7 @@ class StatisticGroup:
     """
 
     by_year: dict[int | NoneType, list[MultiSource]]
-    group_name: str = None
+    group_name_statcol: str = None
 
     def __post_init__(self):
         for year, cols in self.by_year.items():
@@ -106,12 +106,11 @@ class StatisticGroup:
         return {"year": year, "stats_by_source": stats_processed}
 
     def flatten(self, name_map, group_id):
-        group_name = self.compute_group_name(name_map)
 
         group_id = get_statistic_column_path(group_id)
         return {
             "id": group_id,
-            "name": group_name,
+            "name": self.compute_group_name(name_map),
             "contents": [
                 self.flatten_year(year, stats, name_map, list(name_map))
                 for year, stats in self.by_year.items()
@@ -119,12 +118,13 @@ class StatisticGroup:
         }
 
     def compute_group_name(self, name_map):
-        group_name = self.group_name
-        if group_name is None:
+        short_statcol = self.group_name_statcol
+        if short_statcol is None:
             year = None if None in self.by_year else max(self.by_year)
             short_statcol = self.by_year[year][0].by_source[None]
-            group_name = name_map[short_statcol]
-            if len(self.by_year) > 1:
+        group_name = name_map[short_statcol]
+        if len(self.by_year) > 1:
+            for year in self.by_year:
                 assert not (
                     str(year) in group_name
                 ), f"Group name should not contain year, but got: {group_name}"
@@ -274,39 +274,27 @@ def just_2020_category(cat_key, cat_name, *col_names):
 population_census = Source("Population", "US Census", is_default=True)
 population_ghsl = Source("Population", "GHSL")
 
+def census_basics_with_ghs(col_name, gpw_name, *, change):
+    result = census_basics(col_name, change=change)
+    result[col_name].by_year[2020] = [
+        MultiSource(
+            {population_census: col_name, population_ghsl: gpw_name},
+            col_name,
+        )
+    ]
+    result[col_name].group_name_statcol = col_name
+    return result
+
+
+
 statistics_tree = StatisticTree(
     {
         "main": StatisticCategory(
             name="Main",
             contents={
-                "population": StatisticGroup(
-                    {
-                        2020: [
-                            MultiSource(
-                                {
-                                    population_census: "population",
-                                    population_ghsl: "gpw_population",
-                                },
-                                "Population",
-                            )
-                        ],
-                        2010: [
-                            single_source("population_2010"),
-                            single_source("population_change_2010"),
-                        ],
-                        2000: [
-                            single_source("population_2000"),
-                            single_source("population_change_2000"),
-                        ],
-                    },
-                    group_name="Population",
-                ),
-                **census_basics("ad_1", change=True),
-                **census_basics("sd", change=False),
-                **just_2020(
-                    "gpw_pw_density_1",
-                    "gpw_aw_density",
-                ),
+                **census_basics_with_ghs("population", "gpw_population", change=True),
+                **census_basics_with_ghs("ad_1", "gpw_pw_density_1", change=True),
+                **census_basics_with_ghs("sd", "gpw_aw_density", change=False),
                 "area": StatisticGroup({None: [single_source("area")]}),
                 "compactness": StatisticGroup({None: [single_source("compactness")]}),
             },
@@ -581,12 +569,8 @@ statistics_tree = StatisticTree(
             contents={
                 **census_basics("ad_0.25", change=True),
                 **census_basics("ad_0.5", change=True),
-                **census_basics("ad_2", change=True),
-                **census_basics("ad_4", change=True),
-                **just_2020(
-                    "gpw_pw_density_2",
-                    "gpw_pw_density_4",
-                ),
+                **census_basics_with_ghs("ad_2", "gpw_pw_density_2", change=True),
+                **census_basics_with_ghs("ad_4", "gpw_pw_density_4", change=True),
             },
         ),
     }

@@ -106,8 +106,18 @@ export const rawStatsTree = [
                                 name: 'PW Density (r=1km)',
                                 stats: [
                                     {
-                                        source: null,
+                                        source: {
+                                            category: 'Population',
+                                            name: 'US Census',
+                                        },
                                         column: 39,
+                                    },
+                                    {
+                                        source: {
+                                            category: 'Population',
+                                            name: 'GHSL',
+                                        },
+                                        column: 91,
                                     },
                                 ],
                             },
@@ -172,8 +182,18 @@ export const rawStatsTree = [
                                 name: 'AW Density',
                                 stats: [
                                     {
-                                        source: null,
+                                        source: {
+                                            category: 'Population',
+                                            name: 'US Census',
+                                        },
                                         column: 215,
+                                    },
+                                    {
+                                        source: {
+                                            category: 'Population',
+                                            name: 'GHSL',
+                                        },
+                                        column: 89,
                                     },
                                 ],
                             },
@@ -202,46 +222,6 @@ export const rawStatsTree = [
                                     {
                                         source: null,
                                         column: 216,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
-            },
-            {
-                id: 'gpw_pw_density_1',
-                name: 'PW Density (r=1km) [GHS-POP]',
-                contents: [
-                    {
-                        year: 2020,
-                        stats_by_source: [
-                            {
-                                name: 'PW Density (r=1km) [GHS-POP]',
-                                stats: [
-                                    {
-                                        source: null,
-                                        column: 91,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
-            },
-            {
-                id: 'gpw_aw_density',
-                name: 'AW Density [GHS-POP]',
-                contents: [
-                    {
-                        year: 2020,
-                        stats_by_source: [
-                            {
-                                name: 'AW Density [GHS-POP]',
-                                stats: [
-                                    {
-                                        source: null,
-                                        column: 89,
                                     },
                                 ],
                             },
@@ -4864,8 +4844,18 @@ export const rawStatsTree = [
                                 name: 'PW Density (r=2km)',
                                 stats: [
                                     {
-                                        source: null,
+                                        source: {
+                                            category: 'Population',
+                                            name: 'US Census',
+                                        },
                                         column: 44,
+                                    },
+                                    {
+                                        source: {
+                                            category: 'Population',
+                                            name: 'GHSL',
+                                        },
+                                        column: 92,
                                     },
                                 ],
                             },
@@ -4930,8 +4920,18 @@ export const rawStatsTree = [
                                 name: 'PW Density (r=4km)',
                                 stats: [
                                     {
-                                        source: null,
+                                        source: {
+                                            category: 'Population',
+                                            name: 'US Census',
+                                        },
                                         column: 49,
+                                    },
+                                    {
+                                        source: {
+                                            category: 'Population',
+                                            name: 'GHSL',
+                                        },
+                                        column: 93,
                                     },
                                 ],
                             },
@@ -4978,46 +4978,6 @@ export const rawStatsTree = [
                                     {
                                         source: null,
                                         column: 52,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
-            },
-            {
-                id: 'gpw_pw_density_2',
-                name: 'PW Density (r=2km) [GHS-POP]',
-                contents: [
-                    {
-                        year: 2020,
-                        stats_by_source: [
-                            {
-                                name: 'PW Density (r=2km) [GHS-POP]',
-                                stats: [
-                                    {
-                                        source: null,
-                                        column: 92,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
-            },
-            {
-                id: 'gpw_pw_density_4',
-                name: 'PW Density (r=4km) [GHS-POP]',
-                contents: [
-                    {
-                        year: 2020,
-                        stats_by_source: [
-                            {
-                                name: 'PW Density (r=4km) [GHS-POP]',
-                                stats: [
-                                    {
-                                        source: null,
-                                        column: 93,
                                     },
                                 ],
                             },
