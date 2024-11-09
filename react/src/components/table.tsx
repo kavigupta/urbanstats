@@ -262,6 +262,7 @@ export function StatisticRowCells(props: {
                         type={props.row.articleType}
                         statpath={props.row.statpath}
                         simpleOrdinals={props.simpleOrdinals}
+                        onNavigate={props.onNavigate}
                     />
                 </span>
             ),
@@ -611,7 +612,7 @@ function Ordinal(props: {
     type: string
     statpath: string
     simpleOrdinals: boolean
-    onReplace?: (newArticle: string) => void
+    onNavigate?: (newArticle: string) => void
 }): ReactNode {
     const curr_universe = useUniverse()
     const onNewNumber = async (number: number): Promise<void> => {
@@ -627,7 +628,7 @@ function Ordinal(props: {
             num = 1
         }
         const data = await load_ordering(curr_universe, props.statpath, props.type)
-        props.onReplace?.(data[num - 1])
+        props.onNavigate?.(data[num - 1])
     }
     const ordinal = props.ordinal
     const total = props.total
