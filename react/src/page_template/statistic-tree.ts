@@ -168,7 +168,8 @@ export function findAmbiguousSourcesAll(statPathsEach: StatPath[][]): AmbiguousS
         for (const [category, sources] of ambiguousSourcesAll) {
             if (ambiguousSources.has(category)) {
                 sources.forEach(source => ambiguousSourcesAll.get(category)!.add(source))
-            } else {
+            }
+            else {
                 ambiguousSourcesAll.delete(category)
             }
         }
