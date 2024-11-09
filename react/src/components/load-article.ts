@@ -178,20 +178,24 @@ export function load_single_article(data: Article, universe: string, exclusively
 
 export function load_articles(datas: Article[], universe: string, settings: StatGroupSettings, exclusively_american: boolean): {
     rows: ArticleRow[][]
-    statPaths: StatPath[]
+    statPaths: StatPath[][]
 } {
     const availableRowsAll = datas.map(data => load_single_article(data, universe, exclusively_american))
-    const statPaths = new Set<StatPath>()
-    for (const availableRows of availableRowsAll) {
-        availableRows.forEach(row => statPaths.add(row.statpath))
-    }
+    const statPathsEach = availableRowsAll.map((availableRows) => {
+        const statPathsThis = new Set<StatPath>()
+        availableRows.forEach((row) => {
+            statPathsThis.add(row.statpath)
+        })
+        return Array.from(statPathsThis)
+    })
+
     const rows = availableRowsAll.map(availableRows => availableRows
         .filter(row => statIsEnabled(row.statpath, settings))
         // sort by order in statistics tree.
         .sort((a, b) => statPathToOrder.get(a.statpath)! - statPathToOrder.get(b.statpath)!),
     )
     const rowsNothingMissing = insert_missing(rows)
-    return { rows: rowsNothingMissing, statPaths: Array.from(statPaths) }
+    return { rows: rowsNothingMissing, statPaths: statPathsEach }
 }
 
 export function render_statname(statindex: number, statname: string, exclusively_american: boolean): string {
