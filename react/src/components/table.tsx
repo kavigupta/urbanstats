@@ -88,6 +88,7 @@ export function StatisticHeaderCells(props: { simpleOrdinals: boolean, totalWidt
         fontWeight: 400,
         color: colors.ordinalTextColor,
         margin: 0,
+        textAlign: 'right',
     }
 
     const screenshotMode = useScreenshotMode()
