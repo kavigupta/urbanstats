@@ -39,7 +39,7 @@ export function ArticlePanel({ article }: { article: Article }): ReactNode {
     const curr_universe = useUniverse()
     const settings = useSettings(groupYearKeys())
     const [simple_ordinals] = useSetting('simple_ordinals')
-    const { result: [filtered_rows], availableStatPaths } = load_article(curr_universe, article, settings,
+    const { result: filtered_rows, availableStatPaths } = load_article(curr_universe, article, settings,
         longname_is_exclusively_american(article.longname))
 
     return (

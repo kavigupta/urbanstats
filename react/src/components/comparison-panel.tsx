@@ -112,19 +112,17 @@ export function ComparisonPanel(props: { joined_string: string, universes: strin
 
     const curr_universe = useUniverse()
     let rows: ArticleRow[][] = []
-    const idxs: number[][] = []
     const exclusively_american = props.datas.every(x => longname_is_exclusively_american(x.longname))
     const settings = useSettings(groupYearKeys())
     const statPaths = new Set<StatPath>()
     for (const i of props.datas.keys()) {
-        const { result: [r, idx], availableStatPaths } = load_article(curr_universe, props.datas[i], settings,
+        const { result: r, availableStatPaths } = load_article(curr_universe, props.datas[i], settings,
             exclusively_american)
         rows.push(r)
-        idxs.push(idx)
         availableStatPaths.forEach(path => statPaths.add(path))
     }
 
-    rows = insert_missing(rows, idxs)
+    rows = insert_missing(rows)
 
     const header_row = (
         <ComparisonRow
@@ -412,7 +410,9 @@ function HeadingDisplay({ longname, include_delete, on_click, on_change: on_sear
     )
 }
 
-function insert_missing(rows: ArticleRow[][], idxs: number[][]): ArticleRow[][] {
+function insert_missing(rows: ArticleRow[][]): ArticleRow[][] {
+    const idxs = rows.map(row => row.map(x => x._index))
+
     const empty_row_example: Record<number, ArticleRow> = {}
     for (const data_i of rows.keys()) {
         for (const row_i of rows[data_i].keys()) {
