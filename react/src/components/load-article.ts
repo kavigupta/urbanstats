@@ -163,7 +163,7 @@ export function load_single_article(data: Article, universe: string, exclusively
 }
 
 export function load_article(universe: string, data: Article, settings: StatGroupSettings, exclusively_american: boolean): {
-    result: readonly [ArticleRow[], number[]]
+    result: ArticleRow[]
     availableStatPaths: StatPath[]
 } {
     const modified_rows = load_single_article(data, universe, exclusively_american)
@@ -185,10 +185,8 @@ export function load_article(universe: string, data: Article, settings: StatGrou
         // sort by order in statistics tree.
         .sort((a, b) => statPathToOrder.get(a.statpath)! - statPathToOrder.get(b.statpath)!)
 
-    const filtered_indices = filtered_rows.map(x => x._index)
-
     return {
-        result: [filtered_rows, filtered_indices] as const,
+        result: filtered_rows,
         availableStatPaths: availableRows.map(row => row.statpath),
     }
 }
