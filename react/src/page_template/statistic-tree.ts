@@ -161,21 +161,6 @@ export function findAmbiguousSources(paths: StatPath[]): AmbiguousSources {
     return ambiguousSources
 }
 
-export function mergeAmbiguousSources(ambiguousSources: AmbiguousSources[]): AmbiguousSources {
-    const result = new Map<SourceCategoryIdentifier, Set<SourceIdentifier>>()
-    for (const sources of ambiguousSources) {
-        for (const [category, names] of sources.entries()) {
-            if (!result.has(category)) {
-                result.set(category, new Set())
-            }
-            for (const name of names) {
-                result.get(category)!.add(name)
-            }
-        }
-    }
-    return result
-}
-
 export function sourceDisambiguation(ambiguousSources: AmbiguousSources): DataSourceCheckboxes {
     return dataSources
         .filter(({ category }) => ambiguousSources.has(category) && ambiguousSources.get(category)!.size > 1)

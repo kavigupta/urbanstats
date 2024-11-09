@@ -48,6 +48,10 @@ export function source_enabled_key<C extends SourceCategoryIdentifier, S extends
     return `show_stat_source_${d.category}_${d.name}`
 }
 
+export function checkbox_category_name(category: SourceCategoryIdentifier): string {
+    return `${category} Sources`
+}
+
 const defaultCategorySelections = new Set(
     [
         'main',

@@ -1,7 +1,8 @@
 import React, { ReactNode } from 'react'
 
 import { useColors } from '../page_template/colors'
-import { useAvailableYears, useGroupsMissingYearSelection, useSelectedGroups } from '../page_template/statistic-settings'
+import { checkbox_category_name, source_enabled_key, useSettings } from '../page_template/settings'
+import { groupYearKeys, useAvailableYears, useDataSourceCheckboxes, useGroupsMissingYearSelection, useSelectedGroups } from '../page_template/statistic-settings'
 import { Category, Group } from '../page_template/statistic-tree'
 
 import { useScreenshotMode } from './screenshot'
@@ -11,6 +12,12 @@ export function ArticleWarnings(): ReactNode {
     const selectedGroups = useSelectedGroups()
     const groupsMissingYearSelection = useGroupsMissingYearSelection()
     const availableYears = useAvailableYears()
+    const dataSourceCheckboxes = useDataSourceCheckboxes()
+    const settings = useSettings(groupYearKeys())
+
+    const allUncheckedSourceGroups = dataSourceCheckboxes
+        .filter(({ category, names }) => names
+            .every(name => !settings[source_enabled_key({ category, name })]))
 
     if (screenshotMode) {
         return null
@@ -30,6 +37,15 @@ export function ArticleWarnings(): ReactNode {
                         {' statistics, select '}
                         <YearList years={availableYears.filter(year => groupOrCategory.years.has(year))} />
                         .
+                    </>
+                )),
+                ...allUncheckedSourceGroups.map(({ category }) => (
+                    <>
+                        All statistics from the
+                        {' '}
+                        <b>{checkbox_category_name(category)}</b>
+                        {' '}
+                        are disabled.
                     </>
                 )),
             ]

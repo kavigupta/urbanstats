@@ -4,7 +4,7 @@ import '../style.css'
 import './sidebar.css'
 
 import { Theme, useColors, useCurrentTheme } from '../page_template/colors'
-import { SettingsDictionary, source_enabled_key, useSetting, useSettingInfo, useStagedSettingKeys } from '../page_template/settings'
+import { checkbox_category_name, SettingsDictionary, source_enabled_key, useSetting, useSettingInfo, useStagedSettingKeys } from '../page_template/settings'
 import { StatPathsContext, useDataSourceCheckboxes } from '../page_template/statistic-settings'
 import { useMobileLayout } from '../utils/responsive'
 
@@ -126,7 +126,7 @@ export function Sidebar(): ReactNode {
                         <>
                             {checkboxes.map(({ category, names }) => (
                                 <div className="sidebar-section" key={category}>
-                                    <div style={sidebar_section_title}>{category}</div>
+                                    <div style={sidebar_section_title}>{checkbox_category_name(category)}</div>
                                     <ul className={sidebar_section_content}>
                                         {
                                             names.map(name => (
