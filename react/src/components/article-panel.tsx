@@ -137,7 +137,7 @@ function StatisticTableRow(props: { shortname: string, longname: string, row: Ar
     const [simpleOrdinals] = useSetting('simple_ordinals')
 
     return (
-        <WithPlot plot_props={[{ ...props, color: colors.hueColors.blue, shortname: props.shortname }]} expanded={expanded ?? false}>
+        <WithPlot plot_props={[{ ...props.row, color: colors.hueColors.blue, shortname: props.shortname }]} expanded={expanded ?? false}>
             <TableRowContainer>
                 <StatisticRowCells
                     totalWidth={100}
