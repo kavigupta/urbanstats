@@ -1,5 +1,5 @@
 import { StatGroupSettings, statIsEnabled } from '../page_template/statistic-settings'
-import { AmbiguousSources, findAmbiguousSources, statDataOrderToOrder, statParents, StatPath, statPathToOrder } from '../page_template/statistic-tree'
+import { findAmbiguousSources, statDataOrderToOrder, StatPath, statPathToOrder } from '../page_template/statistic-tree'
 import { Article } from '../utils/protos'
 
 interface HistogramExtraStatSpec {

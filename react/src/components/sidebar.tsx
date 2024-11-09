@@ -3,7 +3,6 @@ import React, { CSSProperties, ReactNode, useContext, useEffect, useId, useRef }
 import '../style.css'
 import './sidebar.css'
 
-import { dataSources } from '../data/statistics_tree'
 import { Theme, useColors, useCurrentTheme } from '../page_template/colors'
 import { SettingsDictionary, source_enabled_key, useSetting, useSettingInfo, useStagedSettingKeys } from '../page_template/settings'
 import { StatPathsContext, useDataSourceCheckboxes } from '../page_template/statistic-settings'
