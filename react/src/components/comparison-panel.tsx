@@ -165,6 +165,7 @@ export function ComparisonPanel(props: { joined_string: string, universes: strin
                                 rows[0].map((_, row_idx) => (
                                     <ComparisonRowBody
                                         key={row_idx}
+                                        index={row_idx}
                                         rows={rows.map(row => row[row_idx])}
                                         articles={props.articles}
                                         names={props.names}
@@ -236,18 +237,19 @@ function each({ length }: { length: number }): number {
     return 100 * (1 - left_margin_pct) / length
 }
 
-function ComparisonRowBody({ rows, articles, names, onlyColumns }: {
+function ComparisonRowBody({ rows, articles, names, onlyColumns, index }: {
     rows: ArticleRow[]
     articles: Article[]
     names: string[]
     onlyColumns: ColumnIdentifier[]
+    index: number
 }): ReactNode {
     const colors = useColors()
     const [expanded] = useSetting(row_expanded_key(rows[0].statname))
     const plot_props = rows.map((row, data_idx) => ({ ...row, color: color(colors.hueColors, data_idx), shortname: articles[data_idx].shortname }))
     return (
         <WithPlot plot_props={plot_props} expanded={expanded ?? false}>
-            <TableRowContainer>
+            <TableRowContainer index={index}>
                 <ComparisonCells
                     rows={rows}
                     names={names}

@@ -60,10 +60,11 @@ export function ArticlePanel({ article }: { article: Article }): ReactNode {
 
                     <div className="stats_table" ref={table_ref}>
                         <StatisticTableHeader />
-                        {filtered_rows.map(row => (
+                        {filtered_rows.map((row, index) => (
                             <StatisticTableRow
                                 row={row}
-                                key={row.statname}
+                                index={index}
+                                key={index}
                                 longname={article.longname}
                                 shortname={article.shortname}
                             />
@@ -130,7 +131,7 @@ function StatisticTableHeader(): ReactNode {
     )
 }
 
-function StatisticTableRow(props: { shortname: string, longname: string, row: ArticleRow }): ReactNode {
+function StatisticTableRow(props: { shortname: string, longname: string, row: ArticleRow, index: number }): ReactNode {
     const colors = useColors()
     const [expanded] = useSetting(row_expanded_key(props.row.statname))
     const currentUniverse = useUniverse()
@@ -138,7 +139,7 @@ function StatisticTableRow(props: { shortname: string, longname: string, row: Ar
 
     return (
         <WithPlot plot_props={[{ ...props.row, color: colors.hueColors.blue, shortname: props.shortname }]} expanded={expanded ?? false}>
-            <TableRowContainer>
+            <TableRowContainer index={props.index}>
                 <StatisticRowCells
                     totalWidth={100}
                     longname={props.longname}

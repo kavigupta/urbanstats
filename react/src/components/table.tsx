@@ -367,11 +367,11 @@ function StatisticName(props: {
     return link
 }
 
-export function TableRowContainer({ children }: { children: React.ReactNode }): React.ReactNode {
+export function TableRowContainer({ children, index }: { children: React.ReactNode, index: number }): React.ReactNode {
     const colors = useColors()
     const style: React.CSSProperties = {
         ...table_row_style,
-        backgroundColor: colors.slightlyDifferentBackground,
+        backgroundColor: index % 2 === 1 ? colors.slightlyDifferentBackground : undefined,
         alignItems: 'last baseline',
     }
     return (
