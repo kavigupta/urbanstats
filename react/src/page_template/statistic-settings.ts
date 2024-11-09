@@ -3,7 +3,7 @@ import { createContext, useContext } from 'react'
 import { dataSources } from '../data/statistics_tree'
 
 import { Settings, source_enabled_key, StatGroupKey, StatYearKey, StatSourceKey, useSettings } from './settings'
-import { allGroups, allYears, AmbiguousSources, Category, DataSource, DataSourceCheckboxes, Group, statParents, StatPath, statsTree, Year, yearStatPaths } from './statistic-tree'
+import { allGroups, allYears, AmbiguousSources, Category, DataSource, DataSourceCheckboxes, findAmbiguousSources, Group, sourceDisambiguation, statParents, StatPath, statsTree, Year, yearStatPaths } from './statistic-tree'
 
 export type StatGroupSettings = Record<StatGroupKey | StatYearKey | StatSourceKey, boolean>
 
@@ -128,7 +128,7 @@ export function useGroupsMissingYearSelection(): (Group | Category)[] {
  * `groups` **must** be a subset of available groups
  */
 function useConsolidateGroups(): (groups: Group[]) => (Group | Category)[] {
-    const contextStatPaths = useStatPaths().statPaths
+    const contextStatPaths = useStatPaths()
     const availableCategories = useAvailableCategories()
     return (groups) => {
         const result: (Group | Category)[] = []
@@ -166,34 +166,36 @@ function useConsolidateGroups(): (groups: Group[]) => (Group | Category)[] {
  *
  * This allows us to not show the user checkboxes that do nothing.
  */
-interface StatPathAvailability { statPaths: StatPath[], dataSourceCheckboxes: DataSourceCheckboxes }
-export const StatPathsContext = createContext<StatPathAvailability | undefined>(undefined)
+export const StatPathsContext = createContext<StatPath[] | undefined>(undefined)
 
-function useStatPaths(): StatPathAvailability {
+function useStatPaths(): StatPath[] {
     return useContext(StatPathsContext) ?? (() => { throw new Error('Using Statistics settings without StatPathsContext') })()
 }
 
 export function useAvailableGroups(category?: Category): Group[] {
-    const contextStatPaths = useStatPaths().statPaths
+    const contextStatPaths = useStatPaths()
     // Find the intersection between the stat paths we have loaded in the context and the groups that are available
     // This is so we can show the user only the groups that will actually show up
     return (category?.contents ?? allGroups).filter(group => contextStatPaths.some(statPath => group.statPaths.has(statPath)))
 }
 
 export function useAvailableCategories(): Category[] {
-    const contextStatPaths = useStatPaths().statPaths
+    const contextStatPaths = useStatPaths()
     // Find the intersection between the stat paths we have loaded in the context and the categories that are available
     // This is so we can show the user only the categories that will actually show up
     return statsTree.filter(category => contextStatPaths.some(statPath => category.statPaths.has(statPath)))
 }
 
 export function useAvailableYears(): Year[] {
-    const contextStatPaths = useStatPaths().statPaths
+    const contextStatPaths = useStatPaths()
     // Find the intersection between the stat paths we have loaded in the context and the years that are available
     // This is so we can show the user only the years that will actually show up
     return allYears.filter(year => contextStatPaths.some(statPath => yearStatPaths.get(year).has(statPath)))
 }
 
 export function useDataSourceCheckboxes(): DataSourceCheckboxes {
-    return useStatPaths().dataSourceCheckboxes
+    const statPaths = useStatPaths()
+    const ambiguousSources = findAmbiguousSources(statPaths)
+    const checkboxes = sourceDisambiguation(ambiguousSources)
+    return checkboxes
 }

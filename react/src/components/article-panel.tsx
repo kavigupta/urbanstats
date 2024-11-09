@@ -40,17 +40,15 @@ export function ArticlePanel({ article }: { article: Article }): ReactNode {
     const curr_universe = useUniverse()
     const settings = useSettings(groupYearKeys())
     const [simple_ordinals] = useSetting('simple_ordinals')
-    const { rows: filtered_rows_multi, statPaths, ambiguousSources } = load_articles([article], curr_universe, settings,
+    const { rows: filtered_rows_multi, statPaths } = load_articles([article], curr_universe, settings,
         longname_is_exclusively_american(article.longname))
     if (filtered_rows_multi.length !== 1) {
         throw new Error('filtered_rows_multi should have exactly one element')
     }
     const filtered_rows = filtered_rows_multi[0]
 
-    const checkboxes = sourceDisambiguation(ambiguousSources)
-
     return (
-        <StatPathsContext.Provider value={{ statPaths, dataSourceCheckboxes: checkboxes }}>
+        <StatPathsContext.Provider value={statPaths}>
             <ArticleComparisonQuerySettingsConnection />
             <PageTemplate screencap_elements={screencap_elements} has_universe_selector={true} universes={article.universes}>
                 <div>

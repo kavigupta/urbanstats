@@ -138,7 +138,8 @@ export const statDataOrderToOrder = new Map<number, number>(
 export type AmbiguousSources = Map<SourceCategoryIdentifier, Set<SourceIdentifier>>
 export type DataSourceCheckboxes = { category: SourceCategoryIdentifier, names: SourceIdentifier[] }[]
 
-export function findAmbiguousSources(sources: (DataSource | null)[]): AmbiguousSources {
+export function findAmbiguousSources(paths: StatPath[]): AmbiguousSources {
+    const sources = paths.map(statPath => statParents.get(statPath)!.source)
     const ambiguousSources = new Map<SourceCategoryIdentifier, Set<SourceIdentifier>>()
     for (const source of sources) {
         if (source === null) {

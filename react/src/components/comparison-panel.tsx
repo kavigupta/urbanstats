@@ -114,8 +114,7 @@ export function ComparisonPanel(props: { joined_string: string, universes: strin
 
     const curr_universe = useUniverse()
 
-    const { rows, statPaths, ambiguousSources } = load_articles(props.datas, curr_universe, settings, exclusively_american)
-    const checkboxes = sourceDisambiguation(ambiguousSources)
+    const { rows, statPaths } = load_articles(props.datas, curr_universe, settings, exclusively_american)
 
     const header_row = (
         <ComparisonRow
@@ -126,7 +125,7 @@ export function ComparisonPanel(props: { joined_string: string, universes: strin
     )
 
     return (
-        <StatPathsContext.Provider value={{ statPaths: statPaths, dataSourceCheckboxes: checkboxes }}>
+        <StatPathsContext.Provider value={statPaths}>
             <ArticleComparisonQuerySettingsConnection />
             <PageTemplate screencap_elements={screencap_elements} has_universe_selector={true} universes={props.universes}>
                 <div>

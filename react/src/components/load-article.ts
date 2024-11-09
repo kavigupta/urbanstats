@@ -166,16 +166,14 @@ export function load_single_article(data: Article, universe: string, exclusively
 export function load_articles(datas: Article[], universe: string, settings: StatGroupSettings, exclusively_american: boolean): {
     rows: ArticleRow[][]
     statPaths: StatPath[]
-    ambiguousSources: AmbiguousSources
 } {
     const availableRowsAll = datas.map(data => load_single_article(data, universe, exclusively_american))
     const statPaths = new Set<StatPath>()
     for (const availableRows of availableRowsAll) {
         availableRows.forEach(row => statPaths.add(row.statpath))
     }
-    const sources = Array.from(statPaths).map(statPath => statParents.get(statPath)!.source)
 
-    const ambiguousSources = findAmbiguousSources(sources)
+    const ambiguousSources = findAmbiguousSources(Array.from(statPaths))
 
     const rows = availableRowsAll.map(availableRows => availableRows
         .filter(row => statIsEnabled(row.statpath, settings, ambiguousSources))
@@ -183,7 +181,7 @@ export function load_articles(datas: Article[], universe: string, settings: Stat
         .sort((a, b) => statPathToOrder.get(a.statpath)! - statPathToOrder.get(b.statpath)!),
     )
     const rowsNothingMissing = insert_missing(rows)
-    return { rows: rowsNothingMissing, statPaths: Array.from(statPaths), ambiguousSources }
+    return { rows: rowsNothingMissing, statPaths: Array.from(statPaths) }
 }
 
 export function render_statname(statindex: number, statname: string, exclusively_american: boolean): string {
