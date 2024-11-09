@@ -4,6 +4,20 @@ from types import NoneType
 from .stat_path import get_statistic_column_path
 
 
+@dataclass(frozen=True)
+class Source:
+    """
+    Represents a source of statistics. Provides a category for the sourcing
+    """
+
+    category: str
+    name: str
+    is_default: bool = False
+
+    def json(self):
+        return {"category": self.category, "name": self.name}
+
+
 @dataclass
 class MultiSource:
     """
@@ -11,12 +25,13 @@ class MultiSource:
     """
 
     by_source: dict[str | NoneType, str]
+    multi_source_name: str = None
 
     def __post_init__(self):
         if None in self.by_source:
             assert len(self.by_source) == 1
         for source, col in self.by_source.items():
-            assert isinstance(source, str) or source is None
+            assert isinstance(source, Source) or source is None
             assert isinstance(col, (str, tuple))
 
     def internal_statistics(self):
@@ -30,13 +45,15 @@ class MultiSource:
         for source, col in self.by_source.items():
             result.append(
                 {
-                    "source": source,
+                    "source": source.json() if source is not None else None,
                     "column": names.index(col),
                 }
             )
         return dict(name=self.compute_name(name_map), stats=result)
 
     def compute_name(self, name_map):
+        if self.multi_source_name is not None:
+            return self.multi_source_name
         assert len(self.by_source) == 1
         col = next(iter(self.by_source.values()))
         return name_map[col]
@@ -49,6 +66,7 @@ class StatisticGroup:
     """
 
     by_year: dict[int | NoneType, list[MultiSource]]
+    group_name: str = None
 
     def __post_init__(self):
         for year, cols in self.by_year.items():
@@ -101,7 +119,7 @@ class StatisticGroup:
         }
 
     def compute_group_name(self, name_map):
-        group_name = None
+        group_name = self.group_name
         if group_name is None:
             year = None if None in self.by_year else max(self.by_year)
             short_statcol = self.by_year[year][0].by_source[None]
@@ -187,6 +205,20 @@ class StatisticTree:
             category.flatten(category_id, name_map)
             for category_id, category in self.categories.items()
         ]
+
+    def all_sources(self):
+        result = []
+        for category in self.categories.values():
+            for group in category.contents.values():
+                for stats in group.by_year.values():
+                    for stat in stats:
+                        for source in stat.by_source:
+                            result.append(source)
+        deduplicated_sources = []
+        for source in result:
+            if source not in deduplicated_sources and source is not None:
+                deduplicated_sources.append(source)
+        return deduplicated_sources
 
 
 def single_source(col_name):
