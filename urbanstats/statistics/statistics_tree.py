@@ -106,7 +106,6 @@ class StatisticGroup:
         return {"year": year, "stats_by_source": stats_processed}
 
     def flatten(self, name_map, group_id):
-
         group_id = get_statistic_column_path(group_id)
         return {
             "id": group_id,
@@ -274,6 +273,7 @@ def just_2020_category(cat_key, cat_name, *col_names):
 population_census = Source("Population", "US Census", is_default=True)
 population_ghsl = Source("Population", "GHSL")
 
+
 def census_basics_with_ghs(col_name, gpw_name, *, change):
     result = census_basics(col_name, change=change)
     result[col_name].by_year[2020] = [
@@ -284,7 +284,6 @@ def census_basics_with_ghs(col_name, gpw_name, *, change):
     ]
     result[col_name].group_name_statcol = col_name
     return result
-
 
 
 statistics_tree = StatisticTree(
