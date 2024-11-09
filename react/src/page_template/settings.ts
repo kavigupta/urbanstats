@@ -4,7 +4,7 @@ import { DefaultMap } from '../utils/DefaultMap'
 
 import { Theme } from './colors'
 import { fromVector } from './settings-vector'
-import { allGroups, allYears, CategoryIdentifier, Group, GroupIdentifier, statsTree, Year } from './statistic-tree'
+import { allGroups, allYears, CategoryIdentifier, GroupIdentifier, statsTree, Year } from './statistic-tree'
 
 export type RelationshipKey = `related__${string}__${string}`
 export type RowExpandedKey = `expanded__${string}`
