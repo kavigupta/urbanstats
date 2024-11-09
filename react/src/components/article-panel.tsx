@@ -15,7 +15,7 @@ import { NormalizeProto } from '../utils/types'
 
 import { ArticleWarnings } from './ArticleWarnings'
 import { ArticleComparisonQuerySettingsConnection } from './QuerySettingsConnection'
-import { ArticleRow, load_article } from './load-article'
+import { ArticleRow, load_articles } from './load-article'
 import { Map } from './map'
 import { WithPlot } from './plots'
 import { Related } from './related-button'
@@ -40,11 +40,15 @@ export function ArticlePanel({ article }: { article: Article }): ReactNode {
 
     const curr_universe = useUniverse()
     const settings = useSettings(groupYearKeys())
-    const { result: [filtered_rows], availableStatPaths } = load_article(curr_universe, article, settings,
+    const { rows: filtered_rows_multi, statPaths } = load_articles([article], curr_universe, settings,
         longname_is_exclusively_american(article.longname))
+    if (filtered_rows_multi.length !== 1) {
+        throw new Error('filtered_rows_multi should have exactly one element')
+    }
+    const filtered_rows = filtered_rows_multi[0]
 
     return (
-        <StatPathsContext.Provider value={availableStatPaths}>
+        <StatPathsContext.Provider value={statPaths}>
             <ArticleComparisonQuerySettingsConnection />
             <PageTemplate screencap_elements={screencap_elements} has_universe_selector={true} universes={article.universes}>
                 <div>
