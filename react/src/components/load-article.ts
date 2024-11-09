@@ -176,37 +176,22 @@ export function load_single_article(data: Article, universe: string, exclusively
     return availableRows
 }
 
-export function load_article(universe: string, data: Article, settings: StatGroupSettings, exclusively_american: boolean): {
-    result: ArticleRow[]
-    availableStatPaths: StatPath[]
-} {
-    const availableRows = load_single_article(data, universe, exclusively_american)
-
-    const filtered_rows = availableRows.filter(row => statIsEnabled(row.statpath, settings))
-        // sort by order in statistics tree.
-        .sort((a, b) => statPathToOrder.get(a.statpath)! - statPathToOrder.get(b.statpath)!)
-
-    return {
-        result: filtered_rows,
-        availableStatPaths: availableRows.map(row => row.statpath),
-    }
-}
-
 export function load_articles(datas: Article[], universe: string, settings: StatGroupSettings, exclusively_american: boolean): {
     rows: ArticleRow[][]
     statPaths: StatPath[]
 } {
-    let rows: ArticleRow[][] = []
+    const availableRowsAll = datas.map(data => load_single_article(data, universe, exclusively_american))
     const statPaths = new Set<StatPath>()
-    for (const i of datas.keys()) {
-        const { result: r, availableStatPaths } = load_article(universe, datas[i], settings,
-            exclusively_american)
-        rows.push(r)
-        availableStatPaths.forEach(path => statPaths.add(path))
+    for (const availableRows of availableRowsAll) {
+        availableRows.forEach(row => statPaths.add(row.statpath))
     }
-
-    rows = insert_missing(rows)
-    return { rows, statPaths: Array.from(statPaths) }
+    const rows = availableRowsAll.map(availableRows => availableRows
+        .filter(row => statIsEnabled(row.statpath, settings))
+        // sort by order in statistics tree.
+        .sort((a, b) => statPathToOrder.get(a.statpath)! - statPathToOrder.get(b.statpath)!),
+    )
+    const rowsNothingMissing = insert_missing(rows)
+    return { rows: rowsNothingMissing, statPaths: Array.from(statPaths) }
 }
 
 export function render_statname(statindex: number, statname: string, exclusively_american: boolean): string {
