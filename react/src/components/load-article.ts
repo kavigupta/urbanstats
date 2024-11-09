@@ -42,7 +42,7 @@ export interface ArticleRow {
     statname: string
     statpath: StatPath
     explanation_page: string
-    article_type: string
+    articleType: string
     total_count_in_class: number
     total_count_overall: number
     _index: number
@@ -154,7 +154,7 @@ export function load_article(universe: string, data: Article, settings: StatGrou
             statname: names[i],
             statpath: paths[i],
             explanation_page: explanation_page[i],
-            article_type,
+            articleType: article_type,
             total_count_in_class: for_type(universe, stats[i], article_type),
             total_count_overall: for_type(universe, stats[i], 'overall'),
             _index: i,

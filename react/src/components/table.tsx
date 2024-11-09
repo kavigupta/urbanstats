@@ -11,8 +11,9 @@ import { is_historical_cd } from '../utils/is_historical'
 import { display_type } from '../utils/text'
 
 import { ArticleRow } from './load-article'
-import { WithPlot } from './plots'
 import { useScreenshotMode } from './screenshot'
+
+export type ColumnIdentifier = 'statname' | 'statval' | 'statval_unit' | 'statistic_percentile' | 'statistic_ordinal' | 'pointer_in_class' | 'pointer_overall'
 
 const table_row_style: React.CSSProperties = {
     display: 'flex',
@@ -38,30 +39,9 @@ export function TableHeaderContainer({ children }: { children: ReactNode }): Rea
     )
 }
 
-export function StatisticTableHeader(): ReactNode {
-    return (
-        <TableHeaderContainer>
-            <StatisticHeaderCells />
-        </TableHeaderContainer>
-    )
-}
-
-export function StatisticTableRow(props: { shortname: string, longname: string, row: ArticleRow }): ReactNode {
-    const colors = useColors()
-    const [expanded] = useSetting(row_expanded_key(props.row.statname))
-
-    return (
-        <WithPlot plot_props={[{ ...props, color: colors.hueColors.blue, shortname: props.shortname }]} expanded={expanded ?? false}>
-            <TableRowContainer>
-                <StatisticRowCells totalWidth={100} longname={props.longname} row={props.row} />
-            </TableRowContainer>
-        </WithPlot>
-    )
-}
-
 interface ColumnLayoutProps {
     cells: {
-        columnIdentifier: string
+        columnIdentifier: ColumnIdentifier
         widthPercentage: number
         content: ReactNode
     }[]
@@ -101,7 +81,7 @@ function ColumnLayout(props: ColumnLayoutProps): JSX.Element[] {
     return contents
 }
 
-function StatisticHeaderCells(): ReactNode {
+export function StatisticHeaderCells(props: { simpleOrdinals: boolean, onlyColumns?: ColumnIdentifier[] }): ReactNode {
     const colors = useColors()
     const ordinal_style: React.CSSProperties = {
         fontSize: '14px',
@@ -112,7 +92,6 @@ function StatisticHeaderCells(): ReactNode {
     const alignStyle: React.CSSProperties = { textAlign: 'center' }
 
     const screenshotMode = useScreenshotMode()
-    const [simpleOrdinals] = useSetting('simple_ordinals')
 
     const cells = [
         {
@@ -136,24 +115,24 @@ function StatisticHeaderCells(): ReactNode {
             ),
         },
         {
-            widthPercentage: simpleOrdinals ? 7 : 17,
+            widthPercentage: props.simpleOrdinals ? 7 : 17,
             columnIdentifier: 'statistic_percentile',
             content: (
                 <span className="serif" key="ordinal" style={ordinal_style}>
                     {
-                        (simpleOrdinals ? right_align('%ile') : 'Percentile')
+                        (props.simpleOrdinals ? right_align('%ile') : 'Percentile')
 
                     }
                 </span>
             ),
         },
         {
-            widthPercentage: simpleOrdinals ? 8 : 25,
+            widthPercentage: props.simpleOrdinals ? 8 : 25,
             columnIdentifier: 'statistic_ordinal',
             content: (
                 <span className="serif" key="statistic_ordinal" style={ordinal_style}>
                     {
-                        (simpleOrdinals ? right_align('Ord') : 'Ordinal')
+                        (props.simpleOrdinals ? right_align('Ord') : 'Ordinal')
                     }
                 </span>
             ),
@@ -180,6 +159,7 @@ function StatisticHeaderCells(): ReactNode {
             cells={cells}
             totalWidth={100}
             textAlign="center"
+            onlyColumns={props.onlyColumns}
         />
     )
 }
@@ -204,7 +184,6 @@ export function StatisticRowCells(props: {
     const alignStyle: React.CSSProperties = { textAlign: 'right' }
 
     const screenshotMode = useScreenshotMode()
-    const [simpleOrdinals] = useSetting('simple_ordinals')
 
     const cells = [
         {
@@ -214,7 +193,7 @@ export function StatisticRowCells(props: {
                 <span className="serif value">
                     <StatisticName
                         statname={props.row.statname}
-                        article_type={props.row.article_type}
+                        article_type={props.row.articleType}
                         ordinal={props.row.ordinal}
                         longname={props.longname}
                         rendered_statname={props.row.rendered_statname}
@@ -256,7 +235,7 @@ export function StatisticRowCells(props: {
             ),
         },
         {
-            widthPercentage: simpleOrdinals ? 7 : 17,
+            widthPercentage: props.simpleOrdinals ? 7 : 17,
             columnIdentifier: 'statistic_percentile',
             content: (
                 <span className="serif" style={ordinal_style}>
@@ -264,20 +243,22 @@ export function StatisticRowCells(props: {
                         ordinal={props.row.ordinal}
                         total={props.row.total_count_in_class}
                         percentile_by_population={props.row.percentile_by_population}
+                        simpleOrdinals={props.simpleOrdinals}
                     />
                 </span>
             ),
         },
         {
-            widthPercentage: simpleOrdinals ? 8 : 25,
+            widthPercentage: props.simpleOrdinals ? 8 : 25,
             columnIdentifier: 'statistic_ordinal',
             content: (
                 <span className="serif" style={ordinal_style}>
                     <Ordinal
                         ordinal={props.row.ordinal}
                         total={props.row.total_count_in_class}
-                        type={props.row.article_type}
+                        type={props.row.articleType}
                         statpath={props.row.statpath}
+                        simpleOrdinals={props.simpleOrdinals}
                     />
                 </span>
             ),
@@ -293,7 +274,7 @@ export function StatisticRowCells(props: {
                             <PointerButtonsIndex
                                 ordinal={props.row.ordinal}
                                 statpath={props.row.statpath}
-                                type={props.row.article_type}
+                                type={props.row.articleType}
                                 total={props.row.total_count_in_class}
                             />
                         </span>
@@ -720,10 +701,14 @@ function EditableNumber(props: { number: number, onNewNumber: (number: number) =
     )
 };
 
-export function Percentile(props: { ordinal: number, total: number, percentile_by_population: number }): ReactNode {
+export function Percentile(props: {
+    ordinal: number
+    total: number
+    percentile_by_population: number
+    simpleOrdinals: boolean
+}): ReactNode {
     const ordinal = props.ordinal
     const total = props.total
-    const [simpleOrdinals] = useSetting('simple_ordinals')
     if (ordinal > total) {
         return <span></span>
     }
@@ -731,7 +716,7 @@ export function Percentile(props: { ordinal: number, total: number, percentile_b
     // used to be keyed by a setting, but now we always use percentile_by_population
     const quantile = props.percentile_by_population
     const percentile = Math.floor(100 * quantile)
-    if (simpleOrdinals) {
+    if (props.simpleOrdinals) {
         return right_align(`${percentile.toString()}%`)
     }
     // something like Xth percentile
@@ -748,11 +733,10 @@ export function Percentile(props: { ordinal: number, total: number, percentile_b
     return <div className="serif" style={{ textAlign: 'right' }}>{text}</div>
 }
 
+// Lacks some customization since its column is not show in the comparison view
 function PointerButtonsIndex(props: { ordinal: number, statpath: string, type: string, total: number }): ReactNode {
     const curr_universe = useUniverse()
     const get_data = async (): Promise<string[]> => await load_ordering(curr_universe, props.statpath, props.type)
-    const [settings_show_historical_cds] = useSetting('show_historical_cds')
-    const show_historical_cds = settings_show_historical_cds
     return (
         <span style={{ margin: 'auto' }}>
             <PointerButtonIndex
@@ -761,7 +745,6 @@ function PointerButtonsIndex(props: { ordinal: number, statpath: string, type: s
                 original_pos={props.ordinal}
                 direction={-1}
                 total={props.total}
-                show_historical_cds={show_historical_cds}
             />
             <PointerButtonIndex
                 text=">"
@@ -769,7 +752,6 @@ function PointerButtonsIndex(props: { ordinal: number, statpath: string, type: s
                 original_pos={props.ordinal}
                 direction={+1}
                 total={props.total}
-                show_historical_cds={show_historical_cds}
             />
         </span>
     )
@@ -781,17 +763,17 @@ function PointerButtonIndex(props: {
     original_pos: number
     direction: number
     total: number
-    show_historical_cds: boolean
 }): ReactNode {
     const curr_universe = useUniverse()
     const colors = useColors()
+    const [show_historical_cds] = useSetting('show_historical_cds')
     const out_of_bounds = (pos: number): boolean => pos < 0 || pos >= props.total
     const onClick = async (pos: number): Promise<void> => {
         {
             const data = await props.get_data()
             while (!out_of_bounds(pos)) {
                 const name = data[pos]
-                if (!props.show_historical_cds && is_historical_cd(name)) {
+                if (!show_historical_cds && is_historical_cd(name)) {
                     pos += props.direction
                     continue
                 }

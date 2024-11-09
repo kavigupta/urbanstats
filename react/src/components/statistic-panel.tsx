@@ -2,6 +2,7 @@ import React, { CSSProperties, ReactNode, useMemo, useRef } from 'react'
 
 import { article_link, explanation_page_link, sanitize, statistic_link } from '../navigation/links'
 import { useColors } from '../page_template/colors'
+import { useSetting } from '../page_template/settings'
 import { PageTemplate } from '../page_template/template'
 import '../common.css'
 import './article.css'
@@ -403,11 +404,13 @@ function AutoPercentile(props: {
     data: { populationPercentile: number[] }
     i: number
 }): ReactNode {
+    const [simpleOrdinals] = useSetting('simple_ordinals')
     return (
         <Percentile
             ordinal={props.ordinal}
             total={props.total_count_in_class}
             percentile_by_population={props.data.populationPercentile[props.i]}
+            simpleOrdinals={simpleOrdinals}
         />
     )
 }
