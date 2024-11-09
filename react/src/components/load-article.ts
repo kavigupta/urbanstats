@@ -194,7 +194,7 @@ export function load_article(universe: string, data: Article, settings: StatGrou
 
 export function load_articles(datas: Article[], universe: string, settings: StatGroupSettings, exclusively_american: boolean): {
     rows: ArticleRow[][]
-    statPaths: Set<StatPath>
+    statPaths: StatPath[]
 } {
     let rows: ArticleRow[][] = []
     const statPaths = new Set<StatPath>()
@@ -206,7 +206,7 @@ export function load_articles(datas: Article[], universe: string, settings: Stat
     }
 
     rows = insert_missing(rows)
-    return { rows, statPaths }
+    return { rows, Array.from(statPaths) }
 }
 
 export function render_statname(statindex: number, statname: string, exclusively_american: boolean): string {

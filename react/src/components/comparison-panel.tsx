@@ -124,7 +124,7 @@ export function ComparisonPanel(props: { joined_string: string, universes: strin
     )
 
     return (
-        <StatPathsContext.Provider value={Array.from(statPaths)}>
+        <StatPathsContext.Provider value={statPaths}>
             <ArticleComparisonQuerySettingsConnection />
             <PageTemplate screencap_elements={screencap_elements} has_universe_selector={true} universes={props.universes}>
                 <div>
