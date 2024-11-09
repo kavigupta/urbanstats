@@ -1,5 +1,5 @@
 import { StatGroupSettings, statIsEnabled } from '../page_template/statistic-settings'
-import { findAmbiguousSources, statDataOrderToOrder, StatPath, statPathToOrder } from '../page_template/statistic-tree'
+import { findAmbiguousSourcesAll, statDataOrderToOrder, StatPath, statPathToOrder } from '../page_template/statistic-tree'
 import { Article } from '../utils/protos'
 
 interface HistogramExtraStatSpec {
@@ -165,23 +165,26 @@ export function load_single_article(data: Article, universe: string, exclusively
 
 export function load_articles(datas: Article[], universe: string, settings: StatGroupSettings, exclusively_american: boolean): {
     rows: ArticleRow[][]
-    statPaths: StatPath[]
+    statPaths: StatPath[][]
 } {
     const availableRowsAll = datas.map(data => load_single_article(data, universe, exclusively_american))
-    const statPaths = new Set<StatPath>()
-    for (const availableRows of availableRowsAll) {
-        availableRows.forEach(row => statPaths.add(row.statpath))
-    }
+    const statPathsEach = availableRowsAll.map((availableRows) => {
+        const statPathsThis = new Set<StatPath>()
+        availableRows.forEach((row) => {
+            statPathsThis.add(row.statpath)
+        })
+        return Array.from(statPathsThis)
+    })
 
-    const ambiguousSources = findAmbiguousSources(Array.from(statPaths))
+    const ambiguousSourcesAll = findAmbiguousSourcesAll(statPathsEach)
 
     const rows = availableRowsAll.map(availableRows => availableRows
-        .filter(row => statIsEnabled(row.statpath, settings, ambiguousSources))
+        .filter(row => statIsEnabled(row.statpath, settings, ambiguousSourcesAll))
         // sort by order in statistics tree.
         .sort((a, b) => statPathToOrder.get(a.statpath)! - statPathToOrder.get(b.statpath)!),
     )
     const rowsNothingMissing = insert_missing(rows)
-    return { rows: rowsNothingMissing, statPaths: Array.from(statPaths) }
+    return { rows: rowsNothingMissing, statPaths: statPathsEach }
 }
 
 export function render_statname(statindex: number, statname: string, exclusively_american: boolean): string {

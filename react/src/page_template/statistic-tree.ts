@@ -138,7 +138,7 @@ export const statDataOrderToOrder = new Map<number, number>(
 export type AmbiguousSources = Map<SourceCategoryIdentifier, Set<SourceIdentifier>>
 export type DataSourceCheckboxes = { category: SourceCategoryIdentifier, names: SourceIdentifier[] }[]
 
-export function findAmbiguousSources(paths: StatPath[]): AmbiguousSources {
+function findAmbiguousSources(paths: StatPath[]): AmbiguousSources {
     const sources = paths.map(statPath => statParents.get(statPath)!.source)
     const ambiguousSources = new Map<SourceCategoryIdentifier, Set<SourceIdentifier>>()
     for (const source of sources) {
@@ -159,6 +159,21 @@ export function findAmbiguousSources(paths: StatPath[]): AmbiguousSources {
         }
     }
     return ambiguousSources
+}
+
+export function findAmbiguousSourcesAll(statPathsEach: StatPath[][]): AmbiguousSources {
+    const ambiguousSourcesAll = findAmbiguousSources(Array.from(statPathsEach[0]))
+    for (let i = 1; i < statPathsEach.length; i++) {
+        const ambiguousSources = findAmbiguousSources(statPathsEach[i])
+        for (const [category, sources] of ambiguousSourcesAll) {
+            if (ambiguousSources.has(category)) {
+                sources.forEach(source => ambiguousSourcesAll.get(category)!.add(source))
+            } else {
+                ambiguousSourcesAll.delete(category)
+            }
+        }
+    }
+    return ambiguousSourcesAll
 }
 
 export function sourceDisambiguation(ambiguousSources: AmbiguousSources): DataSourceCheckboxes {

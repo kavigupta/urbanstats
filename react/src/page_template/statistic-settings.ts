@@ -3,7 +3,7 @@ import { createContext, useContext } from 'react'
 import { dataSources } from '../data/statistics_tree'
 
 import { Settings, source_enabled_key, StatGroupKey, StatYearKey, StatSourceKey, useSettings } from './settings'
-import { allGroups, allYears, AmbiguousSources, Category, DataSource, DataSourceCheckboxes, findAmbiguousSources, Group, sourceDisambiguation, statParents, StatPath, statsTree, Year, yearStatPaths } from './statistic-tree'
+import { allGroups, allYears, AmbiguousSources, Category, DataSource, DataSourceCheckboxes, findAmbiguousSourcesAll, Group, sourceDisambiguation, statParents, StatPath, statsTree, Year, yearStatPaths } from './statistic-tree'
 
 export type StatGroupSettings = Record<StatGroupKey | StatYearKey | StatSourceKey, boolean>
 
@@ -166,10 +166,14 @@ function useConsolidateGroups(): (groups: Group[]) => (Group | Category)[] {
  *
  * This allows us to not show the user checkboxes that do nothing.
  */
-export const StatPathsContext = createContext<StatPath[] | undefined>(undefined)
+export const StatPathsContext = createContext<StatPath[][] | undefined>(undefined)
 
-function useStatPaths(): StatPath[] {
+function useStatPathsAll(): StatPath[][] {
     return useContext(StatPathsContext) ?? (() => { throw new Error('Using Statistics settings without StatPathsContext') })()
+}
+
+export function useStatPaths(): StatPath[] {
+    return useStatPathsAll().flat()
 }
 
 export function useAvailableGroups(category?: Category): Group[] {
@@ -194,8 +198,8 @@ export function useAvailableYears(): Year[] {
 }
 
 export function useDataSourceCheckboxes(): DataSourceCheckboxes {
-    const statPaths = useStatPaths()
-    const ambiguousSources = findAmbiguousSources(statPaths)
+    const statPathsAll = useStatPathsAll()
+    const ambiguousSources = findAmbiguousSourcesAll(statPathsAll)
     const checkboxes = sourceDisambiguation(ambiguousSources)
     return checkboxes
 }
