@@ -241,13 +241,13 @@ type NotIncludedInSettingsVector = (
     | 'theme' | 'colorblind_mode' | 'clean_background'
 )
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars -- Just for checking type
-const JUST_FOR_CHECKING_PRESENCE = defaultSettingsList.map(([x]) => x) satisfies (VectorSettingKey | NotIncludedInSettingsVector)[]
-
 // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- No deprecations yet
 const activeVectorKeys = settingsVector.flatMap(setting => setting.deprecated ? [] : [setting.key])
 
 export type VectorSettingKey = typeof activeVectorKeys[number]
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars -- Just for checking type
+const JUST_FOR_CHECKING_PRESENCE = defaultSettingsList.map(([x]) => x) satisfies (VectorSettingKey | NotIncludedInSettingsVector)[]
 
 export function useVector(): string {
     const settings = useSettings(activeVectorKeys)
