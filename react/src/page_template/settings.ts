@@ -72,8 +72,6 @@ export const defaultSettingsList = [
     ['clean_background', false] as const,
 ] as const
 
-export const hi = defaultSettingsList.map(([x]) => x) satisfies (keyof SettingsDictionary)[]
-
 // Having a default settings object allows us to statically check that we have default values for all settings
 // It also makes visualizing the default setings easier
 const defaultSettings = Object.fromEntries(defaultSettingsList) satisfies SettingsDictionary
