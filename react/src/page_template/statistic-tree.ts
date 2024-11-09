@@ -9,7 +9,10 @@ export type StatPath = string & { __statPath: true }
 export type CategoryIdentifier = (typeof rawStatsTree)[number]['id']
 export type GroupIdentifier = (typeof rawStatsTree)[number]['contents'][number]['id']
 export type Year = Exclude<(typeof rawStatsTree)[number]['contents'][number]['contents'][number]['year'], null>
-export type DataSource = Exclude<(typeof rawStatsTree)[number]['contents'][number]['contents'][number]['stats_by_source'][number]['stats'][number]['source'], null>
+// eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents -- not meaningful now but will be in future
+export type DataSource = { category: 'Placeholder', name: 'Placeholder' } | Exclude<(typeof rawStatsTree)[number]['contents'][number]['contents'][number]['stats_by_source'][number]['stats'][number]['source'], null>
+export type SourceCategoryIdentifier = DataSource['category']
+export type SourceIdentifier = DataSource['name']
 
 export type StatsTree = Category[]
 export interface Category {
@@ -114,12 +117,14 @@ export const allYears = Array.from(
         .filter(year => year !== null)),
 ).sort(sortYears)
 
-const statParentsList: [StatPath, { group: Group, year: Year | null }][] = allGroups
+const statParentsList: [StatPath, { group: Group, year: Year | null, source: DataSource | null }][] = allGroups
     .flatMap(group => group.contents
         .flatMap(({ year, stats }) => stats
-            .flatMap(stat => stat.by_source.map(({ path }) => [path, { group, year }] satisfies [StatPath, { group: Group, year: Year | null }]))))
+            .flatMap(stat => stat.by_source
+                .map(({ source, path }) =>
+                    [path, { group, year, source }] satisfies [StatPath, { group: Group, year: Year | null, source: DataSource | null }]))))
 
-export const statParents = new Map<StatPath, { group: Group, year: Year | null }>(
+export const statParents = new Map<StatPath, { group: Group, year: Year | null, source: DataSource | null }>(
     statParentsList,
 )
 
