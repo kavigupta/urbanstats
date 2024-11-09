@@ -4,7 +4,7 @@
 
 import * as base58 from 'base58-js'
 
-import { Settings, SettingsDictionary, useSettings } from './settings'
+import { defaultSettingsList, RelationshipKey, Settings, SettingsDictionary, StatCategoryExpandedKey, StatCategorySavedIndeterminateKey, useSettings } from './settings'
 
 export type BooleanSettingKey = keyof { [K in keyof SettingsDictionary as SettingsDictionary[K] extends boolean ? K : never]: boolean }
 
@@ -233,10 +233,23 @@ const settingsVector = [
     { key: `use_imperial`, deprecated: false },
 ] satisfies ({ key: BooleanSettingKey, deprecated: false } | { key: string, deprecated: true })[]
 
+type NotIncludedInSettingsVector = (
+    RelationshipKey
+    | StatCategorySavedIndeterminateKey
+    | StatCategoryExpandedKey
+    | 'histogram_type' | 'histogram_relative'
+    | 'theme' | 'colorblind_mode' | 'clean_background'
+    // placeholder, remove!
+    | 'show_stat_source_Placeholder_Placeholder'
+)
+
 // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- No deprecations yet
 const activeVectorKeys = settingsVector.flatMap(setting => setting.deprecated ? [] : [setting.key])
 
 export type VectorSettingKey = typeof activeVectorKeys[number]
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars -- Just for checking type
+const JUST_FOR_CHECKING_PRESENCE = defaultSettingsList.map(([x]) => x) satisfies (VectorSettingKey | NotIncludedInSettingsVector)[]
 
 export function useVector(): string {
     const settings = useSettings(activeVectorKeys)
@@ -252,11 +265,11 @@ export function useVector(): string {
 
 export function fromVector(vector: string, settings: Settings): Record<VectorSettingKey, boolean> {
     const array = decompressBooleans(base58.base58_to_binary(vector))
-    return Object.fromEntries(settingsVector.map((setting, i) => {
+    const result = settingsVector.map((setting, i) => {
         let value: boolean
         // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- No deprecations yet
         if (setting.deprecated) {
-            value = false
+            return []
         }
         else if (i < array.length) {
             value = array[i]
@@ -264,8 +277,9 @@ export function fromVector(vector: string, settings: Settings): Record<VectorSet
         else {
             value = settings.get(setting.key)
         }
-        return [setting.key, value]
-    }))
+        return [[setting.key, value]] satisfies [VectorSettingKey, boolean][]
+    })
+    return Object.fromEntries(result.flat())
 }
 
 /*

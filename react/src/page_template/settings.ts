@@ -56,29 +56,29 @@ const defaultEnabledYears = new Set(
 
 const map_relationship = require('../data/map_relationship.json') as [string, string][]
 
+export const defaultSettingsList = [
+    ...map_relationship.map(
+        ([article_type, other_type]) => [relationship_key(article_type, other_type), true] as const,
+    ),
+    ...allGroups.map(group => [`show_stat_group_${group.id}` as const, defaultCategorySelections.has(group.parent.id)] as const),
+    ...statsTree.map(category => [`stat_category_saved_indeterminate_${category.id}` as const, [] as GroupIdentifier[]] as const),
+    ...statsTree.map(category => [`stat_category_expanded_${category.id}` as const, false] as const),
+    ...allYears.map(year => [`show_stat_year_${year}` as const, defaultEnabledYears.has(year)] as const),
+    ['show_historical_cds', false] as const,
+    ['simple_ordinals', false] as const,
+    ['use_imperial', false] as const,
+    ['histogram_type', 'Line'] as const,
+    ['histogram_relative', true] as const,
+    ['theme', 'System Theme'] as const,
+    ['colorblind_mode', false] as const,
+    ['clean_background', false] as const,
+    // placeholder. Remove!
+    ['show_stat_source_Placeholder_Placeholder', true] as const,
+] as const
+
 // Having a default settings object allows us to statically check that we have default values for all settings
 // It also makes visualizing the default setings easier
-const defaultSettings = {
-    ...Object.fromEntries(
-        map_relationship.map(
-            ([article_type, other_type]) => [relationship_key(article_type, other_type), true],
-        ),
-    ),
-    ...Object.fromEntries(allGroups.map(group => [`show_stat_group_${group.id}` as const, defaultCategorySelections.has(group.parent.id)])),
-    ...Object.fromEntries(statsTree.map(category => [`stat_category_saved_indeterminate_${category.id}` as const, []])),
-    ...Object.fromEntries(statsTree.map(category => [`stat_category_expanded_${category.id}` as const, false])),
-    ...Object.fromEntries(allYears.map(year => [`show_stat_year_${year}` as const, defaultEnabledYears.has(year)])),
-    show_historical_cds: false,
-    simple_ordinals: false,
-    use_imperial: false,
-    histogram_type: 'Line',
-    histogram_relative: true,
-    theme: 'System Theme',
-    colorblind_mode: false,
-    clean_background: false,
-    // placeholder. Remove!
-    show_stat_source_Placeholder_Placeholder: false,
-} satisfies SettingsDictionary
+const defaultSettings = Object.fromEntries(defaultSettingsList) satisfies SettingsDictionary
 
 export interface SettingInfo<K extends keyof SettingsDictionary> {
     persistedValue: SettingsDictionary[K]
