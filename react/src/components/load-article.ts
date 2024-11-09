@@ -96,10 +96,7 @@ function compute_indices(longname: string, typ: string): number[] {
     return result.sort((a, b) => a - b)
 }
 
-export function load_article(universe: string, data: Article, settings: StatGroupSettings, exclusively_american: boolean): {
-    result: readonly [ArticleRow[], number[]]
-    availableStatPaths: StatPath[]
-} {
+export function load_single_article(data: Article, universe: string, exclusively_american: boolean): ArticleRow[] {
     // index of universe in data.universes
     const universe_index = data.universes.indexOf(universe)
     const article_type = data.articleType
@@ -114,7 +111,7 @@ export function load_article(universe: string, data: Article, settings: StatGrou
 
     const indices = compute_indices(data.longname, article_type)
 
-    const modified_rows: ArticleRow[] = data.rows.map((row_original, row_index) => {
+    const modified_rows = data.rows.map((row_original, row_index) => {
         const i = indices[row_index]
         // fresh row object
         let extra_stat: ExtraStat | undefined = undefined
@@ -162,6 +159,15 @@ export function load_article(universe: string, data: Article, settings: StatGrou
             extra_stat,
         } satisfies ArticleRow
     })
+    return modified_rows
+}
+
+export function load_article(universe: string, data: Article, settings: StatGroupSettings, exclusively_american: boolean): {
+    result: readonly [ArticleRow[], number[]]
+    availableStatPaths: StatPath[]
+} {
+    const modified_rows = load_single_article(data, universe, exclusively_american)
+
     const availableRows = modified_rows.filter((row) => {
         if (universe_is_american(universe)) {
             if (index_list_info.index_lists.gpw.includes(row._index)) {
