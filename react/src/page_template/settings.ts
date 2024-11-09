@@ -5,7 +5,7 @@ import { DefaultMap } from '../utils/DefaultMap'
 
 import { Theme } from './colors'
 import { fromVector } from './settings-vector'
-import { allGroups, allYears, CategoryIdentifier, GroupIdentifier, SourceCategoryIdentifier, SourceIdentifier, statsTree, Year } from './statistic-tree'
+import { allGroups, allYears, CategoryIdentifier, DataSource, GroupIdentifier, SourceCategoryIdentifier, SourceIdentifier, statsTree, Year } from './statistic-tree'
 
 export type RelationshipKey = `related__${string}__${string}`
 export type RowExpandedKey = `expanded__${string}`
@@ -33,8 +33,7 @@ export type SettingsDictionary = {
 & { [C in CategoryIdentifier as StatCategorySavedIndeterminateKey<C>]: GroupIdentifier[] }
 & { [C in CategoryIdentifier as StatCategoryExpandedKey<C>]: boolean }
 & { [Y in Year as StatYearKey<Y>]: boolean }
-// & { [C in SourceCategoryIdentifier, S in SourceIdentifier as StatSourceKey<C, S>]: boolean }
-& { [C in SourceCategoryIdentifier as StatSourceKey<C>]: boolean }
+& { [D in DataSource as StatSourceKey<D['category'], D['name']>]: boolean }
 
 export function relationship_key(article_type: string, other_type: string): RelationshipKey {
     return `related__${article_type}__${other_type}`
