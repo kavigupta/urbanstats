@@ -247,7 +247,9 @@ const activeVectorKeys = settingsVector.flatMap(setting => setting.deprecated ? 
 export type VectorSettingKey = typeof activeVectorKeys[number]
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars -- Just for checking type
-const JUST_FOR_CHECKING_PRESENCE = defaultSettingsList.map(([x]) => x) satisfies (VectorSettingKey | NotIncludedInSettingsVector)[]
+function justForCheckingType(): (VectorSettingKey | NotIncludedInSettingsVector)[] {
+    return (defaultSettingsList.map(([x]) => x) satisfies (VectorSettingKey | NotIncludedInSettingsVector)[])
+}
 
 export function useVector(): string {
     const settings = useSettings(activeVectorKeys)
