@@ -15,7 +15,7 @@ import { NormalizeProto } from '../utils/types'
 
 import { ArticleWarnings } from './ArticleWarnings'
 import { ArticleComparisonQuerySettingsConnection } from './QuerySettingsConnection'
-import { load_article } from './load-article'
+import { load_articles } from './load-article'
 import { Map } from './map'
 import { Related } from './related-button'
 import { ScreencapElements } from './screenshot'
@@ -40,16 +40,17 @@ export function ArticlePanel({ article }: { article: Article }): ReactNode {
     const curr_universe = useUniverse()
     const settings = useSettings(groupYearKeys())
     const [simple_ordinals] = useSetting('simple_ordinals')
-    const { result: [filtered_rows], availableStatPaths, ambiguousSources } = load_article(curr_universe, article, settings,
+    const { rows: filtered_rows_multi, statPaths, ambiguousSources } = load_articles([article], curr_universe, settings,
         longname_is_exclusively_american(article.longname))
+    if (filtered_rows_multi.length !== 1) {
+        throw new Error('filtered_rows_multi should have exactly one element')
+    }
+    const filtered_rows = filtered_rows_multi[0]
 
     const checkboxes = sourceDisambiguation(ambiguousSources)
 
-    console.log('ambiguousSources', ambiguousSources)
-    console.log('checkboxes', checkboxes)
-
     return (
-        <StatPathsContext.Provider value={{ statPaths: availableStatPaths, dataSourceCheckboxes: checkboxes }}>
+        <StatPathsContext.Provider value={{ statPaths, dataSourceCheckboxes: checkboxes }}>
             <ArticleComparisonQuerySettingsConnection />
             <PageTemplate screencap_elements={screencap_elements} has_universe_selector={true} universes={article.universes}>
                 <div>
