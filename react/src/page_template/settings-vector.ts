@@ -254,6 +254,7 @@ export function fromVector(vector: string, settings: Settings): Record<VectorSet
     const array = decompressBooleans(base58.base58_to_binary(vector))
     const result = settingsVector.map((setting, i) => {
         let value: boolean
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- No deprecations yet
         if (setting.deprecated) {
             return []
         }
