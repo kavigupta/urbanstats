@@ -30,7 +30,7 @@ export function groupYearKeys(): (keyof StatGroupSettings)[] {
     return [
         ...groupKeys(allGroups),
         ...allYears.map(year => `show_stat_year_${year}` as const),
-        ...dataSources.flatMap(({ category, sources }) => sources.map(source => source_enabled_key({ category, name: source }))),
+        ...dataSources.flatMap(({ category, sources }) => sources.map(({ source }) => source_enabled_key({ category, name: source }))),
     ]
 }
 

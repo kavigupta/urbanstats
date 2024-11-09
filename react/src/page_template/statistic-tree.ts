@@ -166,6 +166,8 @@ export function sourceDisambiguation(ambiguousSources: AmbiguousSources): DataSo
         .filter(({ category }) => ambiguousSources.has(category) && ambiguousSources.get(category)!.size > 1)
         .map(({ category, sources }) => ({
             category,
-            names: Array.from(sources).filter(source => ambiguousSources.has(category) && ambiguousSources.get(category)!.has(source)),
+            names: Array.from(sources)
+                .filter(({ source }) => ambiguousSources.has(category) && ambiguousSources.get(category)!.has(source))
+                .map(({ source }) => source),
         }))
 }

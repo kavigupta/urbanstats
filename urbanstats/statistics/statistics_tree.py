@@ -12,6 +12,7 @@ class Source:
 
     category: str
     name: str
+    is_default: bool = False
 
     def json(self):
         return {"category": self.category, "name": self.name}
@@ -270,7 +271,7 @@ def just_2020_category(cat_key, cat_name, *col_names):
     }
 
 
-population_census = Source("Population", "US Census")
+population_census = Source("Population", "US Census", is_default=True)
 population_ghsl = Source("Population", "GHSL")
 
 statistics_tree = StatisticTree(

@@ -90,7 +90,9 @@ def export_statistics_tree(path):
         {
             "category": category,
             "sources": [
-                source.name for source in sources if source.category == category
+                dict(source=source.name, is_default=source.is_default)
+                for source in sources
+                if source.category == category
             ],
         }
         for category in source_categories

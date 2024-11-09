@@ -78,7 +78,9 @@ const defaultSettings = {
     ...Object.fromEntries(statsTree.map(category => [`stat_category_saved_indeterminate_${category.id}` as const, []])),
     ...Object.fromEntries(statsTree.map(category => [`stat_category_expanded_${category.id}` as const, false])),
     ...Object.fromEntries(allYears.map(year => [`show_stat_year_${year}` as const, defaultEnabledYears.has(year)])),
-    ...Object.fromEntries(dataSources.flatMap(({ category, sources }) => sources.map(source => [source_enabled_key({ category, name: source }), true]))),
+    ...Object.fromEntries(dataSources
+        .flatMap(({ category, sources }) => sources
+            .map(({ source, is_default }) => [source_enabled_key({ category, name: source }), is_default]))),
     show_historical_cds: false,
     simple_ordinals: false,
     use_imperial: false,

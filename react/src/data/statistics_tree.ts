@@ -2,8 +2,14 @@ export const dataSources = [
     {
         category: 'Population',
         sources: [
-            'US Census',
-            'GHSL',
+            {
+                source: 'US Census',
+                is_default: true,
+            },
+            {
+                source: 'GHSL',
+                is_default: false,
+            },
         ],
     },
 ] as const
