@@ -162,3 +162,4 @@ jobs:
           name: combined
           pattern: "{delta,changed_screenshots}"
           separate-directories: true
+        continue-on-error: true
