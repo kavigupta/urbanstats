@@ -164,12 +164,12 @@ export function load_article(universe: string, data: Article, settings: StatGrou
     })
     const availableRows = modified_rows.filter((row) => {
         if (universe_is_american(universe)) {
-            if (index_list_info.index_lists.gpw.includes(indices[row._index])) {
+            if (index_list_info.index_lists.gpw.includes(row._index)) {
                 return false
             }
         }
         else {
-            if (index_list_info.index_lists.usa.includes(indices[row._index])) {
+            if (index_list_info.index_lists.usa.includes(row._index)) {
                 return false
             }
         }
