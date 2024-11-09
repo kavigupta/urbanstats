@@ -97,7 +97,7 @@ function compute_indices(longname: string, typ: string): number[] {
 }
 
 export function load_article(universe: string, data: Article, settings: StatGroupSettings, exclusively_american: boolean): {
-    result: readonly [ArticleRow[], number[]]
+    result: ArticleRow[]
     availableStatPaths: StatPath[]
 } {
     // index of universe in data.universes
@@ -179,10 +179,8 @@ export function load_article(universe: string, data: Article, settings: StatGrou
         // sort by order in statistics tree.
         .sort((a, b) => statPathToOrder.get(a.statpath)! - statPathToOrder.get(b.statpath)!)
 
-    const filtered_indices = filtered_rows.map(x => x._index)
-
     return {
-        result: [filtered_rows, filtered_indices] as const,
+        result: filtered_rows,
         availableStatPaths: availableRows.map(row => row.statpath),
     }
 }
