@@ -7,7 +7,6 @@ import { article_link, sanitize } from '../navigation/links'
 import { HueColors, useColors } from '../page_template/colors'
 import { row_expanded_key, useSetting, useSettings } from '../page_template/settings'
 import { groupYearKeys, StatPathsContext } from '../page_template/statistic-settings'
-import { statDataOrderToOrder, StatPath } from '../page_template/statistic-tree'
 import { PageTemplate } from '../page_template/template'
 import { longname_is_exclusively_american, useUniverse } from '../universe'
 import { mixWithBackground } from '../utils/color'
@@ -16,7 +15,7 @@ import { useComparisonHeadStyle, useHeaderTextClass, useMobileLayout, useSubHead
 
 import { ArticleWarnings } from './ArticleWarnings'
 import { ArticleComparisonQuerySettingsConnection } from './QuerySettingsConnection'
-import { ArticleRow, load_article } from './load-article'
+import { ArticleRow, load_articles } from './load-article'
 import { MapGeneric, MapGenericProps, Polygons } from './map'
 import { WithPlot } from './plots'
 import { ScreencapElements, useScreenshotMode } from './screenshot'
@@ -109,20 +108,12 @@ export function ComparisonPanel(props: { joined_string: string, universes: strin
     const subHeaderTextClass = useSubHeaderTextClass()
     const comparisonRightStyle = useComparisonHeadStyle('right')
     const searchComparisonStyle = useComparisonHeadStyle()
+    const settings = useSettings(groupYearKeys())
+    const exclusively_american = props.datas.every(x => longname_is_exclusively_american(x.longname))
 
     const curr_universe = useUniverse()
-    let rows: ArticleRow[][] = []
-    const exclusively_american = props.datas.every(x => longname_is_exclusively_american(x.longname))
-    const settings = useSettings(groupYearKeys())
-    const statPaths = new Set<StatPath>()
-    for (const i of props.datas.keys()) {
-        const { result: r, availableStatPaths } = load_article(curr_universe, props.datas[i], settings,
-            exclusively_american)
-        rows.push(r)
-        availableStatPaths.forEach(path => statPaths.add(path))
-    }
 
-    rows = insert_missing(rows)
+    const { rows, statPaths } = load_articles(props.datas, curr_universe, settings, exclusively_american)
 
     const header_row = (
         <ComparisonRow
@@ -408,48 +399,6 @@ function HeadingDisplay({ longname, include_delete, on_click, on_change: on_sear
                 : null}
         </div>
     )
-}
-
-function insert_missing(rows: ArticleRow[][]): ArticleRow[][] {
-    const idxs = rows.map(row => row.map(x => x._index))
-
-    const empty_row_example: Record<number, ArticleRow> = {}
-    for (const data_i of rows.keys()) {
-        for (const row_i of rows[data_i].keys()) {
-            const idx = idxs[data_i][row_i]
-            empty_row_example[idx] = JSON.parse(JSON.stringify(rows[data_i][row_i])) as typeof rows[number][number]
-            for (const key of Object.keys(empty_row_example[idx]) as (keyof ArticleRow)[]) {
-                if (typeof empty_row_example[idx][key] === 'number') {
-                    // @ts-expect-error Typescript is fucking up this assignment
-                    empty_row_example[idx][key] = NaN
-                }
-                else if (key === 'extra_stat') {
-                    empty_row_example[idx][key] = undefined
-                }
-            }
-            empty_row_example[idx].article_type = 'none' // doesn't matter since we are using simple mode
-        }
-    }
-
-    const all_idxs = idxs.flat().filter((x, i, a) => a.indexOf(x) === i)
-    // sort all_idxs in ascending order numerically
-    all_idxs.sort((a, b) => statDataOrderToOrder.get(a)! - statDataOrderToOrder.get(b)!)
-
-    const new_rows_all = []
-    for (const data_i of rows.keys()) {
-        const new_rows = []
-        for (const idx of all_idxs) {
-            if (idxs[data_i].includes(idx)) {
-                const index_to_pull = idxs[data_i].findIndex(x => x === idx)
-                new_rows.push(rows[data_i][index_to_pull])
-            }
-            else {
-                new_rows.push(empty_row_example[idx])
-            }
-        }
-        new_rows_all.push(new_rows)
-    }
-    return new_rows_all
 }
 
 // eslint-disable-next-line prefer-function-component/prefer-function-component -- TODO: Maps don't support function components yet.

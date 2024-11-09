@@ -1,5 +1,5 @@
 import { StatGroupSettings, statIsEnabled } from '../page_template/statistic-settings'
-import { StatPath, statPathToOrder } from '../page_template/statistic-tree'
+import { statDataOrderToOrder, StatPath, statPathToOrder } from '../page_template/statistic-tree'
 import { universe_is_american } from '../universe'
 import { Article } from '../utils/protos'
 
@@ -192,6 +192,23 @@ export function load_article(universe: string, data: Article, settings: StatGrou
     }
 }
 
+export function load_articles(datas: Article[], universe: string, settings: StatGroupSettings, exclusively_american: boolean): {
+    rows: ArticleRow[][]
+    statPaths: Set<StatPath>
+} {
+    let rows: ArticleRow[][] = []
+    const statPaths = new Set<StatPath>()
+    for (const i of datas.keys()) {
+        const { result: r, availableStatPaths } = load_article(universe, datas[i], settings,
+            exclusively_american)
+        rows.push(r)
+        availableStatPaths.forEach(path => statPaths.add(path))
+    }
+
+    rows = insert_missing(rows)
+    return { rows, statPaths }
+}
+
 export function render_statname(statindex: number, statname: string, exclusively_american: boolean): string {
     const usa_stat = index_list_info.index_lists.usa.includes(statindex)
     if (!exclusively_american && usa_stat) {
@@ -199,4 +216,46 @@ export function render_statname(statindex: number, statname: string, exclusively
         return `${statname} (USA only)`
     }
     return statname
+}
+
+function insert_missing(rows: ArticleRow[][]): ArticleRow[][] {
+    const idxs = rows.map(row => row.map(x => x._index))
+
+    const empty_row_example: Record<number, ArticleRow> = {}
+    for (const data_i of rows.keys()) {
+        for (const row_i of rows[data_i].keys()) {
+            const idx = idxs[data_i][row_i]
+            empty_row_example[idx] = JSON.parse(JSON.stringify(rows[data_i][row_i])) as typeof rows[number][number]
+            for (const key of Object.keys(empty_row_example[idx]) as (keyof ArticleRow)[]) {
+                if (typeof empty_row_example[idx][key] === 'number') {
+                    // @ts-expect-error Typescript is fucking up this assignment
+                    empty_row_example[idx][key] = NaN
+                }
+                else if (key === 'extra_stat') {
+                    empty_row_example[idx][key] = undefined
+                }
+            }
+            empty_row_example[idx].article_type = 'none' // doesn't matter since we are using simple mode
+        }
+    }
+
+    const all_idxs = idxs.flat().filter((x, i, a) => a.indexOf(x) === i)
+    // sort all_idxs in ascending order numerically
+    all_idxs.sort((a, b) => statDataOrderToOrder.get(a)! - statDataOrderToOrder.get(b)!)
+
+    const new_rows_all = []
+    for (const data_i of rows.keys()) {
+        const new_rows = []
+        for (const idx of all_idxs) {
+            if (idxs[data_i].includes(idx)) {
+                const index_to_pull = idxs[data_i].findIndex(x => x === idx)
+                new_rows.push(rows[data_i][index_to_pull])
+            }
+            else {
+                new_rows.push(empty_row_example[idx])
+            }
+        }
+        new_rows_all.push(new_rows)
+    }
+    return new_rows_all
 }
