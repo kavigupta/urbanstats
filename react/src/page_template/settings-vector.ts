@@ -231,6 +231,7 @@ const settingsVector = [
     { key: `show_historical_cds`, deprecated: false },
     { key: `simple_ordinals`, deprecated: false },
     { key: `use_imperial`, deprecated: false },
+    { key: `X`, deprecated: true },
 ] satisfies ({ key: BooleanSettingKey, deprecated: false } | { key: string, deprecated: true })[]
 
 // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- No deprecations yet
