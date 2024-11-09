@@ -158,10 +158,14 @@ function useConsolidateGroups(): (groups: Group[]) => (Group | Category)[] {
  *
  * This allows us to not show the user checkboxes that do nothing.
  */
-export const StatPathsContext = createContext<StatPath[] | undefined>(undefined)
+export const StatPathsContext = createContext<StatPath[][] | undefined>(undefined)
 
-function useStatPaths(): StatPath[] {
+function useStatPathsAll(): StatPath[][] {
     return useContext(StatPathsContext) ?? (() => { throw new Error('Using Statistics settings without StatPathsContext') })()
+}
+
+export function useStatPaths(): StatPath[] {
+    return useStatPathsAll().flat()
 }
 
 export function useAvailableGroups(category?: Category): Group[] {
