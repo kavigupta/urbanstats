@@ -206,7 +206,7 @@ export function load_articles(datas: Article[], universe: string, settings: Stat
     }
 
     rows = insert_missing(rows)
-    return { rows, Array.from(statPaths) }
+    return { rows, statPaths: Array.from(statPaths) }
 }
 
 export function render_statname(statindex: number, statname: string, exclusively_american: boolean): string {
