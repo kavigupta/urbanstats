@@ -88,6 +88,8 @@ const defaultSettings = {
     theme: 'System Theme',
     colorblind_mode: false,
     clean_background: false,
+    // placeholder. Remove!
+    show_stat_source_Placeholder_Placeholder: false,
 } satisfies SettingsDictionary
 
 export interface SettingInfo<K extends keyof SettingsDictionary> {
