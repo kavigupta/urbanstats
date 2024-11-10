@@ -52,7 +52,7 @@
     "protobufjs-cli": "^1.1.1",
     "source-map-loader": "^4.0.1",
     "style-loader": "^3.3.1",
-    "testcafe": "^3.5.0",
+    "testcafe": "^3.7.0",
     "tsx": "^4.19.1",
     "typescript": "^5.5.4",
     "typescript-eslint": "^8.0.1",
