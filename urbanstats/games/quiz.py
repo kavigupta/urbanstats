@@ -15,7 +15,6 @@ import tqdm.auto as tqdm
 from permacache import permacache, stable_hash
 
 from urbanstats.games.quiz_columns import stats_to_display, types
-from urbanstats.geometry.relationship import states_for_all
 from urbanstats.geometry.shapefiles.shapefiles_list import (
     american_to_international,
     filter_table_for_type,
@@ -37,7 +36,7 @@ from .quiz_custom import get_custom_quizzes
 
 min_pop = 250_000
 min_pop_international = 2_500_000
-version_numeric = 71
+version_numeric = 72
 
 version = str(version_numeric) + stable_hash(statistic_collections)
 
@@ -161,7 +160,7 @@ def sample_quiz_question(
         typ = rng.choice(types)
         if type_ban_categorize(typ) in banned_type_categories:
             continue
-        at_pop = filter_for_pop(typ)
+        at_pop, universes = filter_for_pop(typ)
         stat_column_original = rng.choice(at_pop.columns)
         cat = get_statistic_categories()[stat_column_original]
         p_skip = skip_category_probs.get(cat, 0)
@@ -174,7 +173,7 @@ def sample_quiz_question(
             if typ == "State":
                 if "District of Columbia, USA" in (a, b):
                     continue
-            if same_state(at_pop.loc[a].universes, at_pop.loc[b].universes):
+            if same_state(universes.loc[a], universes.loc[b]):
                 continue
             stat_a, stat_b = (
                 at_pop.loc[a][stat_column_original],
@@ -213,8 +212,7 @@ def filter_for_pop(typ):
     at_pop = pd.DataFrame({s: at_pop[s] for s in stats if s in stats_filter})
     mask = ~at_pop.applymap(np.isnan).all()
     assert mask.all()
-    at_pop["universes"] = universes
-    return at_pop
+    return at_pop, universes
 
 
 def minimum_population(typ):
