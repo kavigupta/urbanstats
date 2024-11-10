@@ -18,7 +18,6 @@ export const IS_TESTING = true
 export function comparison_page(locations: string[]): string {
     const params = new URLSearchParams()
     params.set('longnames', JSON.stringify(locations))
-    params.set('s', '3PTGqijnkK')
     return `${TARGET}/comparison.html?${params.toString()}`
 }
 

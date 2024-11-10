@@ -2,7 +2,7 @@ import { Selector } from 'testcafe'
 
 import {
     TARGET, check_all_category_boxes, check_textboxes, comparison_page, download_image,
-    getLocation, getLocationWithoutSettings, screencap,
+    getLocationWithoutSettings, screencap,
     urbanstatsFixture,
 } from './test_utils'
 
@@ -135,7 +135,7 @@ test('create-comparison-from-article', async (t) => {
         .click(otherRegion)
         .typeText(otherRegion, 'pasadena city california')
         .pressKey('enter')
-    await t.expect(getLocation())
+    await t.expect(getLocationWithoutSettings())
         .eql(comparison_page(['San Marino city, California, USA', 'Pasadena city, California, USA']))
 })
 
