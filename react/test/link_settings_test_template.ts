@@ -169,4 +169,26 @@ export function linkSettingsTests(baseLink: string): void {
 
         await screencap(t)
     })
+
+    const histogramLink = `${baseLink}&s=oWHKo6omJJwy`
+
+    urbanstatsFixture('generate histogram link', baseLink)
+
+    test('open histogram', async (t) => {
+        await t.click(Selector('.expand-toggle'))
+
+        await t.expect(getLocation())
+            .eql(`${TARGET}${histogramLink}`)
+    })
+
+    urbanstatsFixture('paste histogram link', histogramLink)
+
+    test('histogram is visible', async (t) => {
+        await t.expect(Selector('.histogram-svg-panel').exists).ok()
+        await screencap(t)
+    })
+
+    test('not in staging mode', async (t) => {
+        await t.expect(Selector('[data-test-id=staging_controls]').exists).notOk()
+    })
 }
