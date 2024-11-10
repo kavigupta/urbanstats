@@ -4,7 +4,8 @@ import './article.css'
 import React, { ReactNode, useRef } from 'react'
 
 import { article_link, comparison_link, sanitize } from '../navigation/links'
-import { useSetting, useSettings } from '../page_template/settings'
+import { useColors } from '../page_template/colors'
+import { row_expanded_key, useSetting, useSettings } from '../page_template/settings'
 import { groupYearKeys, StatPathsContext } from '../page_template/statistic-settings'
 import { PageTemplate } from '../page_template/template'
 import { longname_is_exclusively_american, useUniverse } from '../universe'
@@ -14,12 +15,13 @@ import { NormalizeProto } from '../utils/types'
 
 import { ArticleWarnings } from './ArticleWarnings'
 import { ArticleComparisonQuerySettingsConnection } from './QuerySettingsConnection'
-import { load_articles } from './load-article'
+import { ArticleRow, load_articles } from './load-article'
 import { Map } from './map'
+import { WithPlot } from './plots'
 import { Related } from './related-button'
 import { ScreencapElements } from './screenshot'
 import { SearchBox } from './search'
-import { StatisticRowRaw } from './table'
+import { StatisticHeaderCells, StatisticRowCells, TableHeaderContainer, TableRowContainer } from './table'
 
 export function ArticlePanel({ article }: { article: Article }): ReactNode {
     const headers_ref = useRef<HTMLDivElement>(null)
@@ -38,7 +40,6 @@ export function ArticlePanel({ article }: { article: Article }): ReactNode {
 
     const curr_universe = useUniverse()
     const settings = useSettings(groupYearKeys())
-    const [simple_ordinals] = useSetting('simple_ordinals')
     const { rows: filtered_rows_multi, statPaths } = load_articles([article], curr_universe, settings,
         longname_is_exclusively_american(article.longname))
     if (filtered_rows_multi.length !== 1) {
@@ -58,16 +59,12 @@ export function ArticlePanel({ article }: { article: Article }): ReactNode {
                     <div style={{ marginBlockEnd: '16px' }}></div>
 
                     <div className="stats_table" ref={table_ref}>
-                        <StatisticRowHeader />
-                        {filtered_rows.map((row, i) => (
-                            <StatisticRowRaw
-                                is_header={false}
-                                _idx={i}
-                                key={row.statname}
-                                index={i}
-                                {...row}
-                                onReplace={(x) => { document.location = article_link(curr_universe, x) }}
-                                simple={simple_ordinals}
+                        <StatisticTableHeader />
+                        {filtered_rows.map((row, index) => (
+                            <StatisticTableRow
+                                row={row}
+                                index={index}
+                                key={row.statpath}
                                 longname={article.longname}
                                 shortname={article.shortname}
                             />
@@ -125,7 +122,32 @@ function ComparisonSearchBox({ longname }: { longname: string }): ReactNode {
     )
 }
 
-function StatisticRowHeader(): ReactNode {
-    const [simple_ordinals] = useSetting('simple_ordinals')
-    return <StatisticRowRaw index={0} _idx={-1} is_header={true} simple={simple_ordinals} />
+function StatisticTableHeader(): ReactNode {
+    const [simpleOrdinals] = useSetting('simple_ordinals')
+    return (
+        <TableHeaderContainer>
+            <StatisticHeaderCells simpleOrdinals={simpleOrdinals} totalWidth={100} />
+        </TableHeaderContainer>
+    )
+}
+
+function StatisticTableRow(props: { shortname: string, longname: string, row: ArticleRow, index: number }): ReactNode {
+    const colors = useColors()
+    const [expanded] = useSetting(row_expanded_key(props.row.statname))
+    const currentUniverse = useUniverse()
+    const [simpleOrdinals] = useSetting('simple_ordinals')
+
+    return (
+        <WithPlot plot_props={[{ ...props.row, color: colors.hueColors.blue, shortname: props.shortname }]} expanded={expanded ?? false}>
+            <TableRowContainer index={props.index}>
+                <StatisticRowCells
+                    totalWidth={100}
+                    longname={props.longname}
+                    row={props.row}
+                    onNavigate={newArticle => document.location = article_link(currentUniverse, newArticle)}
+                    simpleOrdinals={simpleOrdinals}
+                />
+            </TableRowContainer>
+        </WithPlot>
+    )
 }
