@@ -253,6 +253,12 @@ function justForCheckingType(): (VectorSettingKey | NotIncludedInSettingsVector)
     return (defaultSettingsList.map(([x]) => x) satisfies (VectorSettingKey | NotIncludedInSettingsVector)[])
 }
 
+type Overlap = VectorSettingKey & NotIncludedInSettingsVector
+type CheckOverlap = [Overlap] extends [never] ? 'no overlap' : 'overlap'
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars -- Just for checking type
+const checkOverlap: CheckOverlap = 'no overlap'
+
 export function useVector(): string {
     const settings = useSettings(activeVectorKeys)
     const booleans = settingsVector.map((setting) => {
