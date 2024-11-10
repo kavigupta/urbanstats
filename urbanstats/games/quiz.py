@@ -1,12 +1,12 @@
 import base64
 import copy
-from functools import lru_cache
 import gzip
 import json
 import os
 import shutil
 import urllib
 from datetime import datetime
+from functools import lru_cache
 
 import numpy as np
 import pandas as pd
@@ -27,8 +27,8 @@ from urbanstats.statistics.output_statistics_metadata import (
     internal_statistic_names,
     statistic_internal_to_display_name,
 )
-from urbanstats.universe.annotate_universes import universe_by_universe_type
 from urbanstats.statistics.stat_path import get_statistic_column_path
+from urbanstats.universe.annotate_universes import universe_by_universe_type
 from urbanstats.website_data.sharding import create_filename
 from urbanstats.website_data.statistic_index_lists import index_list_for_longname
 from urbanstats.website_data.table import shapefile_without_ordinals
