@@ -41,7 +41,7 @@ export interface ArticleRow {
     statname: string
     statpath: StatPath
     explanation_page: string
-    article_type: string
+    articleType: string
     total_count_in_class: number
     total_count_overall: number
     _index: number
@@ -150,7 +150,7 @@ export function load_single_article(data: Article, universe: string, exclusively
             statname: names[i],
             statpath: paths[i],
             explanation_page: explanation_page[i],
-            article_type,
+            articleType: article_type,
             total_count_in_class: for_type(universe, stats[i], article_type),
             total_count_overall: for_type(universe, stats[i], 'overall'),
             _index: i,
@@ -213,7 +213,7 @@ function insert_missing(rows: ArticleRow[][]): ArticleRow[][] {
                     empty_row_example[idx][key] = undefined
                 }
             }
-            empty_row_example[idx].article_type = 'none' // doesn't matter since we are using simple mode
+            empty_row_example[idx].articleType = 'none' // doesn't matter since we are using simple mode
         }
     }
 
