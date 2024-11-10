@@ -133,7 +133,7 @@ function StatisticTableHeader(): ReactNode {
 
 function StatisticTableRow(props: { shortname: string, longname: string, row: ArticleRow, index: number }): ReactNode {
     const colors = useColors()
-    const [expanded] = useSetting(row_expanded_key(props.row.statname))
+    const [expanded] = useSetting(row_expanded_key(props.row.statpath))
     const currentUniverse = useUniverse()
     const [simpleOrdinals] = useSetting('simple_ordinals')
 
