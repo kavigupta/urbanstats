@@ -194,13 +194,9 @@ export function StatisticRowCells(props: {
             content: (
                 <span className="serif value">
                     <StatisticName
-                        statname={props.row.statname}
-                        article_type={props.row.articleType}
-                        ordinal={props.row.ordinal}
+                        row={props.row}
                         longname={props.longname}
-                        rendered_statname={props.row.rendered_statname}
                         curr_universe={currentUniverse}
-                        use_toggle={props.row.extra_stat !== undefined}
                     />
                 </span>
             ),
@@ -315,15 +311,11 @@ export function StatisticRowCells(props: {
 }
 
 function StatisticName(props: {
-    statname: string
-    article_type: string
-    ordinal: number
+    row: ArticleRow
     longname: string
-    rendered_statname: string
     curr_universe: string
-    use_toggle: boolean
 }): ReactNode {
-    const [expanded, setExpanded] = useSetting(row_expanded_key(props.statname))
+    const [expanded, setExpanded] = useSetting(row_expanded_key(props.row.statpath))
     const colors = useColors()
     const link = (
         <a
@@ -331,16 +323,16 @@ function StatisticName(props: {
             href={
                 statistic_link(
                     props.curr_universe,
-                    props.statname, props.article_type, props.ordinal,
+                    props.row.statname, props.row.articleType, props.row.ordinal,
                     20, undefined, props.longname,
                 )
             }
         >
-            {props.rendered_statname}
+            {props.row.rendered_statname}
         </a>
     )
     const screenshot_mode = useScreenshotMode()
-    if (props.use_toggle && !screenshot_mode) {
+    if (props.row.extra_stat !== undefined && !screenshot_mode) {
         return (
             <span style={{
                 display: 'flex',

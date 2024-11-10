@@ -1,16 +1,22 @@
 import { createContext, useContext, useEffect, useState } from 'react'
 
+import extra_stats from '../data/extra_stats'
 import map_relationship from '../data/map_relationship'
+import stat_path_list from '../data/statistic_path_list'
 import { dataSources } from '../data/statistics_tree'
 import article_types_other from '../data/type_to_type_category'
 import { DefaultMap } from '../utils/DefaultMap'
 
 import { Theme } from './colors'
 import { fromVector } from './settings-vector'
-import { allGroups, allYears, CategoryIdentifier, DataSource, GroupIdentifier, SourceCategoryIdentifier, SourceIdentifier, statsTree, Year } from './statistic-tree'
+import { allGroups, allYears, CategoryIdentifier, DataSource, GroupIdentifier, SourceCategoryIdentifier, SourceIdentifier, StatPath, statsTree, Year } from './statistic-tree'
 
 export type RelationshipKey = `related__${string}__${string}`
-export type RowExpandedKey = `expanded__${string}`
+
+export const statPathsWithExtra = extra_stats.map(([index]) => stat_path_list[index])
+export type StatPathWithExtra = (typeof statPathsWithExtra)[number]
+export type RowExpandedKey<P extends StatPath> = `expanded__${P}`
+
 export type HistogramType = 'Bar' | 'Line' | 'Line (cumulative)'
 
 export type StatGroupKey<G extends GroupIdentifier = GroupIdentifier> = `show_stat_group_${G}`
@@ -21,7 +27,6 @@ export type StatSourceKey<C extends SourceCategoryIdentifier = SourceCategoryIde
 
 export type SettingsDictionary = {
     [relationshipKey: RelationshipKey]: boolean | undefined
-    [rowExpandedKey: RowExpandedKey]: boolean | undefined
     show_historical_cds: boolean
     simple_ordinals: boolean
     use_imperial: boolean
@@ -36,13 +41,15 @@ export type SettingsDictionary = {
 & { [C in CategoryIdentifier as StatCategoryExpandedKey<C>]: boolean }
 & { [Y in Year as StatYearKey<Y>]: boolean }
 & { [D in DataSource as StatSourceKey<D['category'], D['name']>]: boolean }
+& { [P in StatPathWithExtra as RowExpandedKey<P>]: boolean }
+& { [P in Exclude<StatPath, StatPathWithExtra> as RowExpandedKey<P>]?: undefined }
 
 export function relationship_key(article_type: string, other_type: string): RelationshipKey {
     return `related__${article_type}__${other_type}`
 }
 
-export function row_expanded_key(row_statname: string): RowExpandedKey {
-    return `expanded__${row_statname}`
+export function row_expanded_key<P extends StatPath>(statpath: P): RowExpandedKey<P> {
+    return `expanded__${statpath}`
 }
 
 export function source_enabled_key<C extends SourceCategoryIdentifier, S extends SourceIdentifier>(d: { category: C, name: S }): StatSourceKey<C, S> {
@@ -78,7 +85,7 @@ export const defaultSettingsList = [
     ['theme', 'System Theme'] as const,
     ['colorblind_mode', false] as const,
     ['clean_background', false] as const,
-    // placeholder. Remove!
+    ...statPathsWithExtra.map(statPath => [`expanded__${statPath}`, false] as const),
 ] as const
 
 // Having a default settings object allows us to statically check that we have default values for all settings
@@ -180,7 +187,7 @@ export class Settings {
         this.stagedKeysObservers.forEach((observer) => { observer() })
         for (const key of Object.keys(stagedSettings)) {
             // Need to update observers since the setting values have changed
-            this.settingValueObservers.get(key as keyof SettingsDictionary).forEach((observer) => { observer() })
+            this.settingValueObservers.get(key).forEach((observer) => { observer() })
         }
     }
 
@@ -204,7 +211,7 @@ export class Settings {
                 this.stagedKeysObservers.forEach((observer) => { observer() })
                 for (const key of Object.keys(stagedSettings)) {
                     // Need to update observers since the setting values have changed
-                    this.settingValueObservers.get(key as keyof SettingsDictionary).forEach((observer) => { observer() })
+                    this.settingValueObservers.get(key).forEach((observer) => { observer() })
                 }
                 break
         }
@@ -214,7 +221,7 @@ export class Settings {
         if (this.stagedSettings === undefined) {
             return undefined
         }
-        return Object.keys(this.stagedSettings) as (keyof SettingsDictionary)[]
+        return Object.keys(this.stagedSettings)
     }
 
     private readonly stagedKeysObservers = new Set<() => void>()

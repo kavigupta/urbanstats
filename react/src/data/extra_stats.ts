@@ -1,8 +1,4 @@
-const value:
-[number,
-{ type: 'histogram', universe_total_idx: number } |
-{ type: 'time_series', years: number[], name: string },
-][] = [
+export default [
     [
         29,
         {
@@ -129,5 +125,4 @@ const value:
             universe_total_idx: 90,
         },
     ],
-]
-export default value
+] as const

@@ -7,8 +7,8 @@ export function linkSettingsTests(baseLink: string): void {
         await t.click('.expandButton[data-category-id=main]')
     })
 
-    const defaultLink = `${baseLink}&s=3PTGqijnkK`
-    const expectedLink = `${baseLink}&s=3K4K6m63K1`
+    const defaultLink = `${baseLink}&s=BY6xv3Ds1ih`
+    const expectedLink = `${baseLink}&s=BChctRbFJ1F`
 
     test('formulates correct link', async (t) => {
         // Check imperial, uncheck population
@@ -168,5 +168,27 @@ export function linkSettingsTests(baseLink: string): void {
         })
 
         await screencap(t)
+    })
+
+    const histogramLink = `${baseLink}&s=oWHKo6omJJwy`
+
+    urbanstatsFixture('generate histogram link', baseLink)
+
+    test('open histogram', async (t) => {
+        await t.click(Selector('.expand-toggle'))
+
+        await t.expect(getLocation())
+            .eql(`${TARGET}${histogramLink}`)
+    })
+
+    urbanstatsFixture('paste histogram link', histogramLink)
+
+    test('histogram is visible', async (t) => {
+        await t.expect(Selector('.histogram-svg-panel').exists).ok()
+        await screencap(t)
+    })
+
+    test('not in staging mode', async (t) => {
+        await t.expect(Selector('[data-test-id=staging_controls]').exists).notOk()
     })
 }

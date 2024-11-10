@@ -2,7 +2,7 @@ import { Selector } from 'testcafe'
 
 import {
     TARGET, check_all_category_boxes, check_textboxes, comparison_page, download_image,
-    getLocation, screencap,
+    getLocationWithoutSettings, screencap,
     urbanstatsFixture,
 } from './test_utils'
 
@@ -17,8 +17,8 @@ test('neighboring-state-test', async (t) => {
     await screencap(t)
     await t
         .click(Selector('path').withAttribute('class', /tag-Arizona,_USA/))
-    await t.expect(getLocation())
-        .eql(`${TARGET}/article.html?longname=Arizona%2C+USA&s=3PTGqijnkK`)
+    await t.expect(getLocationWithoutSettings())
+        .eql(`${TARGET}/article.html?longname=Arizona%2C+USA`)
 })
 
 urbanstatsFixture('cross-country test', '/article.html?longname=Tijuana+Urban+Center%2C+Mexico-USA')
@@ -51,8 +51,8 @@ test('editable-number', async (t) => {
         .typeText(editableNumber, '3')
         .pressKey('enter')
     await t.expect(editableNumber.innerText).eql('3')
-    await t.expect(getLocation())
-        .eql(`${TARGET}/article.html?longname=Chicago+city%2C+Illinois%2C+USA&s=3PTGqijnkK`)
+    await t.expect(getLocationWithoutSettings())
+        .eql(`${TARGET}/article.html?longname=Chicago+city%2C+Illinois%2C+USA`)
 })
 
 test('lr-buttons', async (t) => {
@@ -63,30 +63,30 @@ test('lr-buttons', async (t) => {
     const next_overall = Selector('a').withText('>').nth(1)
     await t
         .click(prev)
-    await t.expect(getLocation())
-        .eql(`${TARGET}/article.html?longname=Fortuna+city%2C+California%2C+USA&s=3PTGqijnkK`)
+    await t.expect(getLocationWithoutSettings())
+        .eql(`${TARGET}/article.html?longname=Fortuna+city%2C+California%2C+USA`)
     await t
         .click(next)
-    await t.expect(getLocation())
-        .eql(`${TARGET}/article.html?longname=San+Marino+city%2C+California%2C+USA&s=3PTGqijnkK`)
+    await t.expect(getLocationWithoutSettings())
+        .eql(`${TARGET}/article.html?longname=San+Marino+city%2C+California%2C+USA`)
     await t
         .click(next)
-    await t.expect(getLocation())
-        .eql(`${TARGET}/article.html?longname=Lakewood+Park+CDP%2C+Florida%2C+USA&s=3PTGqijnkK`)
+    await t.expect(getLocationWithoutSettings())
+        .eql(`${TARGET}/article.html?longname=Lakewood+Park+CDP%2C+Florida%2C+USA`)
     await t
         .click(prev)
-    await t.expect(getLocation())
-        .eql(`${TARGET}/article.html?longname=San+Marino+city%2C+California%2C+USA&s=3PTGqijnkK`)
+    await t.expect(getLocationWithoutSettings())
+        .eql(`${TARGET}/article.html?longname=San+Marino+city%2C+California%2C+USA`)
 
     await t.click(prev_overall)
-    await t.expect(getLocation())
-        .eql(`${TARGET}/article.html?longname=Havre+High+School+District%2C+Montana%2C+USA&s=3PTGqijnkK`)
+    await t.expect(getLocationWithoutSettings())
+        .eql(`${TARGET}/article.html?longname=Havre+High+School+District%2C+Montana%2C+USA`)
     await t.click(next_overall)
-    await t.expect(getLocation())
-        .eql(`${TARGET}/article.html?longname=San+Marino+city%2C+California%2C+USA&s=3PTGqijnkK`)
+    await t.expect(getLocationWithoutSettings())
+        .eql(`${TARGET}/article.html?longname=San+Marino+city%2C+California%2C+USA`)
     await t.click(next_overall)
-    await t.expect(getLocation())
-        .eql(`${TARGET}/article.html?longname=78225%2C+USA&s=3PTGqijnkK`)
+    await t.expect(getLocationWithoutSettings())
+        .eql(`${TARGET}/article.html?longname=78225%2C+USA`)
 })
 
 test('san-marino-2010-health', async (t) => {
@@ -135,7 +135,7 @@ test('create-comparison-from-article', async (t) => {
         .click(otherRegion)
         .typeText(otherRegion, 'pasadena city california')
         .pressKey('enter')
-    await t.expect(getLocation())
+    await t.expect(getLocationWithoutSettings())
         .eql(comparison_page(['San Marino city, California, USA', 'Pasadena city, California, USA']))
 })
 

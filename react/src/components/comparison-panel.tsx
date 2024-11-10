@@ -244,7 +244,7 @@ function ComparisonRowBody({ rows, articles, names, onlyColumns, index }: {
     index: number
 }): ReactNode {
     const colors = useColors()
-    const [expanded] = useSetting(row_expanded_key(rows[0].statname))
+    const [expanded] = useSetting(row_expanded_key(rows[0].statpath))
     const plot_props = rows.map((row, data_idx) => ({ ...row, color: color(colors.hueColors, data_idx), shortname: articles[data_idx].shortname }))
     return (
         <WithPlot plot_props={plot_props} expanded={expanded ?? false}>

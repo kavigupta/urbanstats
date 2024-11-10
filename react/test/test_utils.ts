@@ -7,13 +7,17 @@ import { ClientFunction, Selector } from 'testcafe'
 export const TARGET = process.env.URBANSTATS_TEST_TARGET ?? 'http://localhost:8000'
 export const SEARCH_FIELD = Selector('input').withAttribute('placeholder', 'Search Urban Stats')
 export const getLocation = ClientFunction(() => document.location.href)
+export const getLocationWithoutSettings = ClientFunction(() => {
+    const url = new URL(document.location.href)
+    url.searchParams.delete('s')
+    return url.toString()
+})
 
 export const IS_TESTING = true
 
 export function comparison_page(locations: string[]): string {
     const params = new URLSearchParams()
     params.set('longnames', JSON.stringify(locations))
-    params.set('s', '3PTGqijnkK')
     return `${TARGET}/comparison.html?${params.toString()}`
 }
 
