@@ -259,7 +259,6 @@ type NotIncludedInSettingsVector = (
     | StatCategoryExpandedKey
     | 'histogram_type' | 'histogram_relative'
     | 'theme' | 'colorblind_mode' | 'clean_background'
-    | 'always_false_setting'
 )
 
 // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- No deprecations yet
