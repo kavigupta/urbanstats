@@ -4,8 +4,8 @@ import '../style.css'
 import './sidebar.css'
 
 import { Theme, useColors, useCurrentTheme } from '../page_template/colors'
-import { SettingsDictionary, useSetting, useSettingInfo, useStagedSettingKeys } from '../page_template/settings'
-import { StatPathsContext } from '../page_template/statistic-settings'
+import { checkbox_category_name, SettingsDictionary, source_enabled_key, useSetting, useSettingInfo, useStagedSettingKeys } from '../page_template/settings'
+import { StatPathsContext, useDataSourceCheckboxes } from '../page_template/statistic-settings'
 import { useMobileLayout } from '../utils/responsive'
 
 import { StagingControls } from './StagingControls'
@@ -155,8 +155,27 @@ export function Sidebar(): ReactNode {
 export function SidebarForStatisticChoice(): ReactNode {
     const sidebar_section_content = useSidebarSectionContentClassName()
     const sidebar_section_title = useSidebarSectionTitleStyle()
+    const checkboxes = useDataSourceCheckboxes()
     return (
         <>
+            {checkboxes.map(({ category, checkboxSpecs }) => (
+                <div className="sidebar-section" key={category}>
+                    <div style={sidebar_section_title}>{checkbox_category_name(category)}</div>
+                    <ul className={sidebar_section_content}>
+                        {
+                            checkboxSpecs.map(({ name, forcedOn }) => (
+                                <li key={name}>
+                                    <CheckboxSetting
+                                        name={name}
+                                        setting_key={source_enabled_key({ category, name })}
+                                        forcedOn={forcedOn}
+                                    />
+                                </li>
+                            ))
+                        }
+                    </ul>
+                </div>
+            ))}
             <div className="sidebar-section">
                 <div style={sidebar_section_title}>Years</div>
                 <ul className={sidebar_section_content}>

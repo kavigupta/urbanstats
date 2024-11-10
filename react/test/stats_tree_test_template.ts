@@ -257,9 +257,8 @@ export function statsTreeTest(platform: 'mobile' | 'desktop'): void {
 
     test('switch-universe-indeterminate', async (t) => {
         /**
-         * Makes an indeterminate selection in the Main category, then switches to a universe where the deslected group is not available.
-         * In this universe, the main category should not be indeterminate.
-         * When switching back to the previous universe, the Main category should once again be indeterminate.
+         * Makes an indeterminate selection in the Main category, then switch to a different universe. The set of
+         * statistics is the same regardless of universe, so the indeterminate selection should persist.
          */
         await withHamburgerMenu(t, async () => {
             await t.click(mainExpand)
@@ -274,7 +273,7 @@ export function statsTreeTest(platform: 'mobile' | 'desktop'): void {
                     .withAttribute('class', 'universe-selector-option')
                     .withAttribute('alt', 'North America'))
         await withHamburgerMenu(t, async () => {
-            await t.expect(await checkIsIndeterminate(t, mainCheck)).eql(false)
+            await t.expect(await checkIsIndeterminate(t, mainCheck)).eql(true)
             if (platform === 'mobile') {
                 await screencap(t)
             }

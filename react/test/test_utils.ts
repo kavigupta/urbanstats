@@ -13,7 +13,7 @@ export const IS_TESTING = true
 export function comparison_page(locations: string[]): string {
     const params = new URLSearchParams()
     params.set('longnames', JSON.stringify(locations))
-    params.set('s', '3t2X5xvsKo')
+    params.set('s', '3PTGqijnkK')
     return `${TARGET}/comparison.html?${params.toString()}`
 }
 
@@ -50,10 +50,9 @@ export async function check_all_category_boxes(t: TestController): Promise<void>
                     label !== 'Use Imperial Units'
                     && label !== 'Include Historical Districts'
                     && label !== 'Simple Ordinals'
-                    && label !== 'Race'
-                    && label !== 'Election'
                     && label !== '2020'
                     && label !== 'Main'
+                    && label !== 'US Census'
                 )
             }).find('input')
         for (let i = 0; i < await checkboxes.count; i++) {

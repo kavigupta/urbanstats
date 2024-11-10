@@ -7,8 +7,8 @@ export function linkSettingsTests(baseLink: string): void {
         await t.click('.expandButton[data-category-id=main]')
     })
 
-    const defaultLink = `${baseLink}&s=3t2X5xvsKo`
-    const expectedLink = `${baseLink}&s=jBXza8t6SU9`
+    const defaultLink = `${baseLink}&s=3PTGqijnkK`
+    const expectedLink = `${baseLink}&s=3K4K6m63K1`
 
     test('formulates correct link', async (t) => {
         // Check imperial, uncheck population

@@ -8,7 +8,7 @@ function symlink_test(name: string, link: string, expected: string | undefined =
 
     test(name, async (t) => {
         await screencap(t)
-        await t.expect(getLocation()).eql(`${TARGET}${expected}&s=3t2X5xvsKo`)
+        await t.expect(getLocation()).eql(`${TARGET}${expected}&s=3PTGqijnkK`)
     })
 }
 

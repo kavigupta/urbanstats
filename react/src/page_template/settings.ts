@@ -3,6 +3,7 @@ import { createContext, useContext, useEffect, useState } from 'react'
 import extra_stats from '../data/extra_stats'
 import map_relationship from '../data/map_relationship'
 import stat_path_list from '../data/statistic_path_list'
+import { dataSources } from '../data/statistics_tree'
 import article_types_other from '../data/type_to_type_category'
 import { DefaultMap } from '../utils/DefaultMap'
 
@@ -51,13 +52,15 @@ export function row_expanded_key<P extends StatPathWithExtra>(statpath: Exclude<
     return statPathsWithExtra.includes(statpath as P) ? `expanded__${statpath as P}` : 'always_false_setting'
 }
 
-const defaultCategorySelections = new Set(
-    [
-        'main',
-        'race',
-        'election',
-    ] as CategoryIdentifier[],
-)
+export function source_enabled_key<C extends SourceCategoryIdentifier, S extends SourceIdentifier>(d: { category: C, name: S }): StatSourceKey<C, S> {
+    return `show_stat_source_${d.category}_${d.name}`
+}
+
+export function checkbox_category_name(category: SourceCategoryIdentifier): string {
+    return `${category} Sources`
+}
+
+const defaultCategorySelections = new Set(['main'] as CategoryIdentifier[])
 
 const defaultEnabledYears = new Set(
     [2020],
@@ -71,6 +74,9 @@ export const defaultSettingsList = [
     ...statsTree.map(category => [`stat_category_saved_indeterminate_${category.id}` as const, [] as GroupIdentifier[]] as const),
     ...statsTree.map(category => [`stat_category_expanded_${category.id}` as const, false] as const),
     ...allYears.map(year => [`show_stat_year_${year}` as const, defaultEnabledYears.has(year)] as const),
+    ...dataSources
+        .flatMap(({ category, sources }) => sources
+            .map(({ source, is_default }) => [source_enabled_key({ category, name: source }), is_default] as const)),
     ['show_historical_cds', false] as const,
     ['simple_ordinals', false] as const,
     ['use_imperial', false] as const,
@@ -79,8 +85,6 @@ export const defaultSettingsList = [
     ['theme', 'System Theme'] as const,
     ['colorblind_mode', false] as const,
     ['clean_background', false] as const,
-    // placeholder. Remove!
-    ['show_stat_source_Placeholder_Placeholder', true] as const,
     ...statPathsWithExtra.map(statPath => [`expanded__${statPath}`, false] as const),
     ['always_false_setting', false] as const,
 ] as const

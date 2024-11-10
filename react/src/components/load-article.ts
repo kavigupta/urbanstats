@@ -5,8 +5,7 @@ import stats from '../data/statistic_list'
 import names from '../data/statistic_name_list'
 import paths from '../data/statistic_path_list'
 import { StatGroupSettings, statIsEnabled } from '../page_template/statistic-settings'
-import { statDataOrderToOrder, StatPath, statPathToOrder } from '../page_template/statistic-tree'
-import { universe_is_american } from '../universe'
+import { findAmbiguousSourcesAll, statDataOrderToOrder, StatPath, statPathToOrder } from '../page_template/statistic-tree'
 import { Article } from '../utils/protos'
 
 export interface HistogramExtraStat {
@@ -90,7 +89,7 @@ export function load_single_article(data: Article, universe: string, exclusively
 
     const indices = compute_indices(data.longname, article_type)
 
-    const modified_rows = data.rows.map((row_original, row_index) => {
+    return data.rows.map((row_original, row_index) => {
         const i = indices[row_index]
         // fresh row object
         let extra_stat: ExtraStat | undefined = undefined
@@ -127,21 +126,6 @@ export function load_single_article(data: Article, universe: string, exclusively
             extra_stat,
         } satisfies ArticleRow
     })
-
-    const availableRows = modified_rows.filter((row) => {
-        if (universe_is_american(universe)) {
-            if (index_list_info.index_lists.gpw.includes(row._index)) {
-                return false
-            }
-        }
-        else {
-            if (index_list_info.index_lists.usa.includes(row._index)) {
-                return false
-            }
-        }
-        return true
-    })
-    return availableRows
 }
 
 export function load_articles(datas: Article[], universe: string, settings: StatGroupSettings, exclusively_american: boolean): {
@@ -157,8 +141,10 @@ export function load_articles(datas: Article[], universe: string, settings: Stat
         return Array.from(statPathsThis)
     })
 
+    const ambiguousSourcesAll = findAmbiguousSourcesAll(statPathsEach)
+
     const rows = availableRowsAll.map(availableRows => availableRows
-        .filter(row => statIsEnabled(row.statpath, settings))
+        .filter(row => statIsEnabled(row.statpath, settings, ambiguousSourcesAll))
         // sort by order in statistics tree.
         .sort((a, b) => statPathToOrder.get(a.statpath)! - statPathToOrder.get(b.statpath)!),
     )
