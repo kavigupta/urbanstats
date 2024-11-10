@@ -125,7 +125,7 @@ async function dataValues(): Promise<string[]> {
 }
 
 const ONLY_US_CENSUS = '7aScwAoYX'
-const NEITHER = '7aScwAdoZ'
+const NEITHER = 'W2c5c5XY2V'
 
 urbanstatsFixture(
     'comparison-non-overlapping-population-stats',
