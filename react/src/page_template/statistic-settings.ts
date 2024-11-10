@@ -1,14 +1,27 @@
 import { createContext, useContext } from 'react'
 
-import { Settings, StatGroupKey, StatYearKey, useSettings } from './settings'
-import { allGroups, allYears, Category, Group, statParents, StatPath, statsTree, Year, yearStatPaths } from './statistic-tree'
+import { dataSources } from '../data/statistics_tree'
 
-export type StatGroupSettings = Record<StatGroupKey | StatYearKey, boolean>
+import { Settings, source_enabled_key, StatGroupKey, StatYearKey, StatSourceKey, useSettings } from './settings'
+import { allGroups, allYears, AmbiguousSources, Category, DataSource, DataSourceCheckboxes, findAmbiguousSourcesAll, Group, sourceDisambiguation, statParents, StatPath, statsTree, Year, yearStatPaths } from './statistic-tree'
 
-export function statIsEnabled(statId: StatPath, settings: StatGroupSettings): boolean {
-    const { group, year } = statParents.get(statId)!
+export type StatGroupSettings = Record<StatGroupKey | StatYearKey | StatSourceKey, boolean>
+
+export function statIsEnabled(statId: StatPath, settings: StatGroupSettings, sourcesByCategory: AmbiguousSources): boolean {
+    const { group, year, source } = statParents.get(statId)!
     return settings[`show_stat_group_${group.id}`]
         && (year !== null ? settings[`show_stat_year_${year}`] : true)
+        && (source !== null ? sourceApplies(source, settings, sourcesByCategory) : true)
+}
+
+export function sourceApplies(source: DataSource, settings: StatGroupSettings, sourcesByCategory: AmbiguousSources): boolean {
+    if (!sourcesByCategory.has(source.category)) {
+        return true
+    }
+    if (!sourcesByCategory.get(source.category)!.chooseable.has(source.name)) {
+        return true
+    }
+    return settings[source_enabled_key(source) satisfies StatSourceKey]
 }
 
 export function groupKeys(groups: Group[]): StatGroupKey[] {
@@ -23,6 +36,7 @@ export function groupYearKeys(): (keyof StatGroupSettings)[] {
     return [
         ...groupKeys(allGroups),
         ...allYears.map(year => `show_stat_year_${year}` as const),
+        ...dataSources.flatMap(({ category, sources }) => sources.map(({ source }) => source_enabled_key({ category, name: source }))),
     ]
 }
 
@@ -187,4 +201,11 @@ export function useAvailableYears(): Year[] {
     // Find the intersection between the stat paths we have loaded in the context and the years that are available
     // This is so we can show the user only the years that will actually show up
     return allYears.filter(year => contextStatPaths.some(statPath => yearStatPaths.get(year).has(statPath)))
+}
+
+export function useDataSourceCheckboxes(): DataSourceCheckboxes {
+    const statPathsAll = useStatPathsAll()
+    const ambiguousSources = findAmbiguousSourcesAll(statPathsAll)
+    const checkboxes = sourceDisambiguation(ambiguousSources)
+    return checkboxes
 }

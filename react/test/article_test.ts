@@ -18,7 +18,7 @@ test('neighboring-state-test', async (t) => {
     await t
         .click(Selector('path').withAttribute('class', /tag-Arizona,_USA/))
     await t.expect(getLocation())
-        .eql(`${TARGET}/article.html?longname=Arizona%2C+USA&s=3t2X5xvsKo`)
+        .eql(`${TARGET}/article.html?longname=Arizona%2C+USA&s=4YErw5vV5ZfzEX`)
 })
 
 urbanstatsFixture('cross-country test', '/article.html?longname=Tijuana+Urban+Center%2C+Mexico-USA')
@@ -52,7 +52,7 @@ test('editable-number', async (t) => {
         .pressKey('enter')
     await t.expect(editableNumber.innerText).eql('3')
     await t.expect(getLocation())
-        .eql(`${TARGET}/article.html?longname=Chicago+city%2C+Illinois%2C+USA&s=3t2X5xvsKo`)
+        .eql(`${TARGET}/article.html?longname=Chicago+city%2C+Illinois%2C+USA&s=4YErw5vV5ZfzEX`)
 })
 
 test('lr-buttons', async (t) => {
@@ -64,29 +64,29 @@ test('lr-buttons', async (t) => {
     await t
         .click(prev)
     await t.expect(getLocation())
-        .eql(`${TARGET}/article.html?longname=Fortuna+city%2C+California%2C+USA&s=3t2X5xvsKo`)
+        .eql(`${TARGET}/article.html?longname=Fortuna+city%2C+California%2C+USA&s=4YErw5vV5ZfzEX`)
     await t
         .click(next)
     await t.expect(getLocation())
-        .eql(`${TARGET}/article.html?longname=San+Marino+city%2C+California%2C+USA&s=3t2X5xvsKo`)
+        .eql(`${TARGET}/article.html?longname=San+Marino+city%2C+California%2C+USA&s=4YErw5vV5ZfzEX`)
     await t
         .click(next)
     await t.expect(getLocation())
-        .eql(`${TARGET}/article.html?longname=Lakewood+Park+CDP%2C+Florida%2C+USA&s=3t2X5xvsKo`)
+        .eql(`${TARGET}/article.html?longname=Lakewood+Park+CDP%2C+Florida%2C+USA&s=4YErw5vV5ZfzEX`)
     await t
         .click(prev)
     await t.expect(getLocation())
-        .eql(`${TARGET}/article.html?longname=San+Marino+city%2C+California%2C+USA&s=3t2X5xvsKo`)
+        .eql(`${TARGET}/article.html?longname=San+Marino+city%2C+California%2C+USA&s=4YErw5vV5ZfzEX`)
 
     await t.click(prev_overall)
     await t.expect(getLocation())
-        .eql(`${TARGET}/article.html?longname=Havre+High+School+District%2C+Montana%2C+USA&s=3t2X5xvsKo`)
+        .eql(`${TARGET}/article.html?longname=Havre+High+School+District%2C+Montana%2C+USA&s=4YErw5vV5ZfzEX`)
     await t.click(next_overall)
     await t.expect(getLocation())
-        .eql(`${TARGET}/article.html?longname=San+Marino+city%2C+California%2C+USA&s=3t2X5xvsKo`)
+        .eql(`${TARGET}/article.html?longname=San+Marino+city%2C+California%2C+USA&s=4YErw5vV5ZfzEX`)
     await t.click(next_overall)
     await t.expect(getLocation())
-        .eql(`${TARGET}/article.html?longname=78225%2C+USA&s=3t2X5xvsKo`)
+        .eql(`${TARGET}/article.html?longname=78225%2C+USA&s=4YErw5vV5ZfzEX`)
 })
 
 test('san-marino-2010-health', async (t) => {

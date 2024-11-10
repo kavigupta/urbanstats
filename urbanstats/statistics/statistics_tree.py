@@ -270,19 +270,30 @@ def just_2020_category(cat_key, cat_name, *col_names):
     }
 
 
+population_census = Source("Population", "US Census", is_default=True)
+population_ghsl = Source("Population", "GHSL")
+
+
+def census_basics_with_ghs(col_name, gpw_name, *, change):
+    result = census_basics(col_name, change=change)
+    result[col_name].by_year[2020] = [
+        MultiSource(
+            {population_census: col_name, population_ghsl: gpw_name},
+            col_name,
+        )
+    ]
+    result[col_name].group_name_statcol = col_name
+    return result
+
+
 statistics_tree = StatisticTree(
     {
         "main": StatisticCategory(
             name="Main",
             contents={
-                **census_basics("population", change=True),
-                **census_basics("ad_1", change=True),
-                **census_basics("sd", change=False),
-                **just_2020(
-                    "gpw_population",
-                    "gpw_pw_density_1",
-                    "gpw_aw_density",
-                ),
+                **census_basics_with_ghs("population", "gpw_population", change=True),
+                **census_basics_with_ghs("ad_1", "gpw_pw_density_1", change=True),
+                **census_basics_with_ghs("sd", "gpw_aw_density", change=False),
                 "area": StatisticGroup({None: [single_source("area")]}),
                 "compactness": StatisticGroup({None: [single_source("compactness")]}),
             },
@@ -557,12 +568,8 @@ statistics_tree = StatisticTree(
             contents={
                 **census_basics("ad_0.25", change=True),
                 **census_basics("ad_0.5", change=True),
-                **census_basics("ad_2", change=True),
-                **census_basics("ad_4", change=True),
-                **just_2020(
-                    "gpw_pw_density_2",
-                    "gpw_pw_density_4",
-                ),
+                **census_basics_with_ghs("ad_2", "gpw_pw_density_2", change=True),
+                **census_basics_with_ghs("ad_4", "gpw_pw_density_4", change=True),
             },
         ),
     }

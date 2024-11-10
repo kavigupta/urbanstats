@@ -10,6 +10,20 @@ import {
 
 const testLocation = `${TARGET}/article.html?longname=San+Marino+city%2C+California%2C+USA`
 
+function migration(from: string, to: string): void {
+    urbanstatsFixture(`settings migration test ${from} to ${to}`, `${testLocation}&s=${from}`)
+
+    test(`check-settings-migration-${from}-${to}`, async (t) => {
+        // reload
+        await t.eval(() => { location.reload() })
+        // check the href
+        await t.expect(getLocation()).eql(`${testLocation}&s=${to}`)
+    })
+}
+
+migration('BY68s6QRqV9', 'oWDfi6rQ4kxy')
+migration('3t2X5xvsKo', '4YErw5vV5ZfzEX')
+migration('jBXza8t6SU9', '4RisSVrGwPQJH9')
 urbanstatsFixture('settings regression test', testLocation,
     async (t) => {
         const EG_SETTINGS = fs.readFileSync('test/assets/saved-settings-1.json').toString()
@@ -41,7 +55,7 @@ test('check-settings-persistent', async (t) => {
     // navigate to Pasadena via search
     await t.typeText(SEARCH_FIELD, 'Pasadena, CA, USA')
     await t.pressKey('enter')
-    await t.expect(getLocation()).eql(`${TARGET}/article.html?longname=Pasadena+city%2C+California%2C+USA&s=BY68s6QRqV9`)
+    await t.expect(getLocation()).eql(`${TARGET}/article.html?longname=Pasadena+city%2C+California%2C+USA&s=oWDfi6rQ4kxy`)
     // check box "Imperial"
     await check_textboxes(t, ['Use Imperial Units'])
     // assert mi not in page
@@ -55,7 +69,7 @@ test('check-related-button-checkboxes-page-specific', async (t) => {
     // navigate to 91108
     await t.typeText(SEARCH_FIELD, '91108')
     await t.pressKey('enter')
-    await t.expect(getLocation()).eql(`${TARGET}/article.html?longname=91108%2C+USA&s=BY68s6QRqV9`)
+    await t.expect(getLocation()).eql(`${TARGET}/article.html?longname=91108%2C+USA&s=oWDfi6rQ4kxy`)
     // this should not be page specific
     await t.expect(Selector('span').withText('mi').exists).ok()
     // San Marino should be present
@@ -78,6 +92,6 @@ test('checkboxes-can-be-checked', async (t) => {
     // check that this is persistent by going to Berkeley and checking that Briones CCD is present
     await t.typeText(SEARCH_FIELD, 'Berkeley, CA, USA')
     await t.pressKey('enter')
-    await t.expect(getLocation()).eql(`${TARGET}/article.html?longname=Berkeley+city%2C+California%2C+USA&s=BY68s6QRqV9`)
+    await t.expect(getLocation()).eql(`${TARGET}/article.html?longname=Berkeley+city%2C+California%2C+USA&s=oWDfi6rQ4kxy`)
     await t.expect(Selector('path').withAttribute('class', /tag-Briones_CCD/).exists).ok()
 })

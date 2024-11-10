@@ -19,9 +19,9 @@ const settingsVector = [
     { key: `show_stat_group_sd`, deprecated: false },
     { key: `show_stat_group_area`, deprecated: false },
     { key: `show_stat_group_compactness`, deprecated: false },
-    { key: `show_stat_group_gpw_population`, deprecated: false },
-    { key: `show_stat_group_gpw_pw_density_1`, deprecated: false },
-    { key: `show_stat_group_gpw_aw_density`, deprecated: false },
+    { key: `show_stat_group_gpw_population`, deprecated: true },
+    { key: `show_stat_group_gpw_pw_density_1`, deprecated: true },
+    { key: `show_stat_group_gpw_aw_density`, deprecated: true },
     { key: `show_stat_group_white`, deprecated: false },
     { key: `show_stat_group_hispanic`, deprecated: false },
     { key: `show_stat_group_black`, deprecated: false },
@@ -223,14 +223,16 @@ const settingsVector = [
     { key: `show_stat_group_ad_0.5`, deprecated: false },
     { key: `show_stat_group_ad_2`, deprecated: false },
     { key: `show_stat_group_ad_4`, deprecated: false },
-    { key: `show_stat_group_gpw_pw_density_2`, deprecated: false },
-    { key: `show_stat_group_gpw_pw_density_4`, deprecated: false },
+    { key: `show_stat_group_gpw_pw_density_2`, deprecated: true },
+    { key: `show_stat_group_gpw_pw_density_4`, deprecated: true },
     { key: `show_stat_year_2020`, deprecated: false },
     { key: `show_stat_year_2010`, deprecated: false },
     { key: `show_stat_year_2000`, deprecated: false },
     { key: `show_historical_cds`, deprecated: false },
     { key: `simple_ordinals`, deprecated: false },
     { key: `use_imperial`, deprecated: false },
+    { key: `show_stat_source_Population_US Census`, deprecated: false },
+    { key: `show_stat_source_Population_GHSL`, deprecated: false },
 ] satisfies ({ key: BooleanSettingKey, deprecated: false } | { key: string, deprecated: true })[]
 
 type NotIncludedInSettingsVector = (
@@ -239,8 +241,6 @@ type NotIncludedInSettingsVector = (
     | StatCategoryExpandedKey
     | 'histogram_type' | 'histogram_relative'
     | 'theme' | 'colorblind_mode' | 'clean_background'
-    // placeholder, remove!
-    | 'show_stat_source_Placeholder_Placeholder'
 )
 
 // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- No deprecations yet
