@@ -46,7 +46,6 @@ export interface MultiSourceStatistic {
 }
 
 export interface Statistic {
-    // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents -- this should be fine even if there's never any non-null source
     source: DataSource | null
     path: StatPath
     name: string
