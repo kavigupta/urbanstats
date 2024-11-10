@@ -50,8 +50,6 @@ export async function check_all_category_boxes(t: TestController): Promise<void>
                     label !== 'Use Imperial Units'
                     && label !== 'Include Historical Districts'
                     && label !== 'Simple Ordinals'
-                    && label !== 'Race'
-                    && label !== 'Election'
                     && label !== '2020'
                     && label !== 'Main'
                     && label !== 'US Census'

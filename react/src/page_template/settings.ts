@@ -53,13 +53,7 @@ export function checkbox_category_name(category: SourceCategoryIdentifier): stri
     return `${category} Sources`
 }
 
-const defaultCategorySelections = new Set(
-    [
-        'main',
-        'race',
-        'election',
-    ] as CategoryIdentifier[],
-)
+const defaultCategorySelections = new Set(['main'] as CategoryIdentifier[])
 
 const defaultEnabledYears = new Set(
     [2020],

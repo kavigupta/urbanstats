@@ -117,7 +117,7 @@ function TemplateFooter(): ReactNode {
 }
 
 function Version(): ReactNode {
-    return <span id="current-version">19.5.0</span>
+    return <span id="current-version">19.6.0</span>
 }
 
 function LastUpdated(): ReactNode {
