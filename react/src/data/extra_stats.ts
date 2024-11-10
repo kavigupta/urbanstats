@@ -4,129 +4,129 @@ const value:
 { type: 'time_series', years: number[], name: string },
 ][] = [
     [
-        5,
+        29,
         {
             type: 'histogram',
-            universe_total_idx: 0,
+            universe_total_idx: 198,
         },
     ],
     [
-        6,
+        30,
         {
             type: 'histogram',
-            universe_total_idx: 0,
+            universe_total_idx: 198,
         },
     ],
     [
-        8,
+        31,
         {
             type: 'histogram',
-            universe_total_idx: 0,
+            universe_total_idx: 198,
         },
     ],
     [
-        14,
+        34,
         {
             type: 'histogram',
-            universe_total_idx: 13,
+            universe_total_idx: 198,
         },
     ],
     [
-        245,
+        35,
         {
             type: 'histogram',
-            universe_total_idx: 0,
+            universe_total_idx: 198,
         },
     ],
     [
-        246,
+        36,
         {
             type: 'histogram',
-            universe_total_idx: 0,
+            universe_total_idx: 198,
         },
     ],
     [
-        248,
+        39,
         {
             type: 'histogram',
-            universe_total_idx: 0,
+            universe_total_idx: 198,
         },
     ],
     [
-        250,
+        40,
         {
             type: 'histogram',
-            universe_total_idx: 0,
+            universe_total_idx: 198,
         },
     ],
     [
-        251,
+        41,
         {
             type: 'histogram',
-            universe_total_idx: 0,
+            universe_total_idx: 198,
         },
     ],
     [
-        253,
+        44,
         {
             type: 'histogram',
-            universe_total_idx: 0,
+            universe_total_idx: 198,
         },
     ],
     [
-        255,
+        45,
         {
             type: 'histogram',
-            universe_total_idx: 0,
+            universe_total_idx: 198,
         },
     ],
     [
-        256,
+        46,
         {
             type: 'histogram',
-            universe_total_idx: 0,
+            universe_total_idx: 198,
         },
     ],
     [
-        258,
+        49,
         {
             type: 'histogram',
-            universe_total_idx: 0,
+            universe_total_idx: 198,
         },
     ],
     [
-        260,
+        50,
         {
             type: 'histogram',
-            universe_total_idx: 0,
+            universe_total_idx: 198,
         },
     ],
     [
-        261,
+        51,
         {
             type: 'histogram',
-            universe_total_idx: 0,
+            universe_total_idx: 198,
         },
     ],
     [
-        263,
+        91,
         {
             type: 'histogram',
-            universe_total_idx: 0,
+            universe_total_idx: 90,
         },
     ],
     [
-        265,
+        92,
         {
             type: 'histogram',
-            universe_total_idx: 13,
+            universe_total_idx: 90,
         },
     ],
     [
-        266,
+        93,
         {
             type: 'histogram',
-            universe_total_idx: 13,
+            universe_total_idx: 90,
         },
     ],
 ]
