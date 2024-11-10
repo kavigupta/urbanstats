@@ -1,4 +1,6 @@
-export default [
+export const dataSources = [] as const
+
+export const rawStatsTree = [
     {
         id: 'main',
         name: 'Main',
@@ -9,22 +11,62 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            198,
+                        stats_by_source: [
+                            {
+                                name: 'Population',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 198,
+                                    },
+                                ],
+                            },
                         ],
                     },
                     {
                         year: 2010,
-                        stats: [
-                            200,
-                            202,
+                        stats_by_source: [
+                            {
+                                name: 'Population (2010)',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 200,
+                                    },
+                                ],
+                            },
+                            {
+                                name: 'Population Change (2010-2020)',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 202,
+                                    },
+                                ],
+                            },
                         ],
                     },
                     {
                         year: 2000,
-                        stats: [
-                            199,
-                            201,
+                        stats_by_source: [
+                            {
+                                name: 'Population (2000)',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 199,
+                                    },
+                                ],
+                            },
+                            {
+                                name: 'Population Change (2000-2020)',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 201,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -35,22 +77,62 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            39,
+                        stats_by_source: [
+                            {
+                                name: 'PW Density (r=1km)',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 39,
+                                    },
+                                ],
+                            },
                         ],
                     },
                     {
                         year: 2010,
-                        stats: [
-                            41,
-                            43,
+                        stats_by_source: [
+                            {
+                                name: 'PW Density (r=1km) (2010)',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 41,
+                                    },
+                                ],
+                            },
+                            {
+                                name: 'PW Density (r=1km) Change (2010-2020)',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 43,
+                                    },
+                                ],
+                            },
                         ],
                     },
                     {
                         year: 2000,
-                        stats: [
-                            40,
-                            42,
+                        stats_by_source: [
+                            {
+                                name: 'PW Density (r=1km) (2000)',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 40,
+                                    },
+                                ],
+                            },
+                            {
+                                name: 'PW Density (r=1km) Change (2000-2020)',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 42,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -61,20 +143,44 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            215,
+                        stats_by_source: [
+                            {
+                                name: 'AW Density',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 215,
+                                    },
+                                ],
+                            },
                         ],
                     },
                     {
                         year: 2010,
-                        stats: [
-                            217,
+                        stats_by_source: [
+                            {
+                                name: 'AW Density (2010)',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 217,
+                                    },
+                                ],
+                            },
                         ],
                     },
                     {
                         year: 2000,
-                        stats: [
-                            216,
+                        stats_by_source: [
+                            {
+                                name: 'AW Density (2000)',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 216,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -85,8 +191,16 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            90,
+                        stats_by_source: [
+                            {
+                                name: 'Population [GHS-POP]',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 90,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -97,8 +211,16 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            91,
+                        stats_by_source: [
+                            {
+                                name: 'PW Density (r=1km) [GHS-POP]',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 91,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -109,8 +231,16 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            89,
+                        stats_by_source: [
+                            {
+                                name: 'AW Density [GHS-POP]',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 89,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -121,8 +251,16 @@ export default [
                 contents: [
                     {
                         year: null,
-                        stats: [
-                            54,
+                        stats_by_source: [
+                            {
+                                name: 'Area',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 54,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -133,8 +271,16 @@ export default [
                 contents: [
                     {
                         year: null,
-                        stats: [
-                            67,
+                        stats_by_source: [
+                            {
+                                name: 'Compactness',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 67,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -151,20 +297,44 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            253,
+                        stats_by_source: [
+                            {
+                                name: 'White %',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 253,
+                                    },
+                                ],
+                            },
                         ],
                     },
                     {
                         year: 2010,
-                        stats: [
-                            255,
+                        stats_by_source: [
+                            {
+                                name: 'White % (2010)',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 255,
+                                    },
+                                ],
+                            },
                         ],
                     },
                     {
                         year: 2000,
-                        stats: [
-                            254,
+                        stats_by_source: [
+                            {
+                                name: 'White % (2000)',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 254,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -175,20 +345,44 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            103,
+                        stats_by_source: [
+                            {
+                                name: 'Hispanic %',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 103,
+                                    },
+                                ],
+                            },
                         ],
                     },
                     {
                         year: 2010,
-                        stats: [
-                            105,
+                        stats_by_source: [
+                            {
+                                name: 'Hispanic % (2010)',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 105,
+                                    },
+                                ],
+                            },
                         ],
                     },
                     {
                         year: 2000,
-                        stats: [
-                            104,
+                        stats_by_source: [
+                            {
+                                name: 'Hispanic % (2000)',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 104,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -199,20 +393,44 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            61,
+                        stats_by_source: [
+                            {
+                                name: 'Black %',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 61,
+                                    },
+                                ],
+                            },
                         ],
                     },
                     {
                         year: 2010,
-                        stats: [
-                            63,
+                        stats_by_source: [
+                            {
+                                name: 'Black % (2010)',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 63,
+                                    },
+                                ],
+                            },
                         ],
                     },
                     {
                         year: 2000,
-                        stats: [
-                            62,
+                        stats_by_source: [
+                            {
+                                name: 'Black % (2000)',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 62,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -223,20 +441,44 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            55,
+                        stats_by_source: [
+                            {
+                                name: 'Asian %',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 55,
+                                    },
+                                ],
+                            },
                         ],
                     },
                     {
                         year: 2010,
-                        stats: [
-                            57,
+                        stats_by_source: [
+                            {
+                                name: 'Asian % (2010)',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 57,
+                                    },
+                                ],
+                            },
                         ],
                     },
                     {
                         year: 2000,
-                        stats: [
-                            56,
+                        stats_by_source: [
+                            {
+                                name: 'Asian % (2000)',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 56,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -247,20 +489,44 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            166,
+                        stats_by_source: [
+                            {
+                                name: 'Native %',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 166,
+                                    },
+                                ],
+                            },
                         ],
                     },
                     {
                         year: 2010,
-                        stats: [
-                            168,
+                        stats_by_source: [
+                            {
+                                name: 'Native % (2010)',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 168,
+                                    },
+                                ],
+                            },
                         ],
                     },
                     {
                         year: 2000,
-                        stats: [
-                            167,
+                        stats_by_source: [
+                            {
+                                name: 'Native % (2000)',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 167,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -271,20 +537,44 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            94,
+                        stats_by_source: [
+                            {
+                                name: 'Hawaiian / PI %',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 94,
+                                    },
+                                ],
+                            },
                         ],
                     },
                     {
                         year: 2010,
-                        stats: [
-                            96,
+                        stats_by_source: [
+                            {
+                                name: 'Hawaiian / PI % (2010)',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 96,
+                                    },
+                                ],
+                            },
                         ],
                     },
                     {
                         year: 2000,
-                        stats: [
-                            95,
+                        stats_by_source: [
+                            {
+                                name: 'Hawaiian / PI % (2000)',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 95,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -295,20 +585,44 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            194,
+                        stats_by_source: [
+                            {
+                                name: 'Other / Mixed %',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 194,
+                                    },
+                                ],
+                            },
                         ],
                     },
                     {
                         year: 2010,
-                        stats: [
-                            196,
+                        stats_by_source: [
+                            {
+                                name: 'Other / Mixed % (2010)',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 196,
+                                    },
+                                ],
+                            },
                         ],
                     },
                     {
                         year: 2000,
-                        stats: [
-                            195,
+                        stats_by_source: [
+                            {
+                                name: 'Other / Mixed % (2000)',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 195,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -319,22 +633,62 @@ export default [
                 contents: [
                     {
                         year: 2000,
-                        stats: [
-                            106,
-                            109,
+                        stats_by_source: [
+                            {
+                                name: 'Racial Homogeneity (2000) %',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 106,
+                                    },
+                                ],
+                            },
+                            {
+                                name: 'Racial Homogeneity Change (2000-2020) %',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 109,
+                                    },
+                                ],
+                            },
                         ],
                     },
                     {
                         year: 2010,
-                        stats: [
-                            107,
-                            110,
+                        stats_by_source: [
+                            {
+                                name: 'Racial Homogeneity (2010) %',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 107,
+                                    },
+                                ],
+                            },
+                            {
+                                name: 'Racial Homogeneity Change (2010-2020) %',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 110,
+                                    },
+                                ],
+                            },
                         ],
                     },
                     {
                         year: 2020,
-                        stats: [
-                            108,
+                        stats_by_source: [
+                            {
+                                name: 'Racial Homogeneity %',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 108,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -345,22 +699,62 @@ export default [
                 contents: [
                     {
                         year: 2000,
-                        stats: [
-                            223,
-                            226,
+                        stats_by_source: [
+                            {
+                                name: 'Segregation (2000) %',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 223,
+                                    },
+                                ],
+                            },
+                            {
+                                name: 'Segregation Change (2000-2020) %',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 226,
+                                    },
+                                ],
+                            },
                         ],
                     },
                     {
                         year: 2010,
-                        stats: [
-                            224,
-                            227,
+                        stats_by_source: [
+                            {
+                                name: 'Segregation (2010) %',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 224,
+                                    },
+                                ],
+                            },
+                            {
+                                name: 'Segregation Change (2010-2020) %',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 227,
+                                    },
+                                ],
+                            },
                         ],
                     },
                     {
                         year: 2020,
-                        stats: [
-                            225,
+                        stats_by_source: [
+                            {
+                                name: 'Segregation %',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 225,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -371,22 +765,62 @@ export default [
                 contents: [
                     {
                         year: 2000,
-                        stats: [
-                            218,
-                            221,
+                        stats_by_source: [
+                            {
+                                name: 'Mean Local Segregation (2000) %',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 218,
+                                    },
+                                ],
+                            },
+                            {
+                                name: 'Mean Local Segregation Change (2000-2020) %',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 221,
+                                    },
+                                ],
+                            },
                         ],
                     },
                     {
                         year: 2010,
-                        stats: [
-                            219,
-                            222,
+                        stats_by_source: [
+                            {
+                                name: 'Mean Local Segregation (2010) %',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 219,
+                                    },
+                                ],
+                            },
+                            {
+                                name: 'Mean Local Segregation Change (2010-2020) %',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 222,
+                                    },
+                                ],
+                            },
                         ],
                     },
                     {
                         year: 2020,
-                        stats: [
-                            220,
+                        stats_by_source: [
+                            {
+                                name: 'Mean Local Segregation %',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 220,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -403,8 +837,16 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            64,
+                        stats_by_source: [
+                            {
+                                name: 'Citizen by Birth %',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 64,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -415,8 +857,16 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            65,
+                        stats_by_source: [
+                            {
+                                name: 'Citizen by Naturalization %',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 65,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -427,8 +877,16 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            66,
+                        stats_by_source: [
+                            {
+                                name: 'Non-citizen %',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 66,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -439,8 +897,16 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            58,
+                        stats_by_source: [
+                            {
+                                name: 'Born outside US %',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 58,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -451,8 +917,16 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            59,
+                        stats_by_source: [
+                            {
+                                name: 'Born in us outside state %',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 59,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -463,8 +937,16 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            60,
+                        stats_by_source: [
+                            {
+                                name: 'Born in state of residence %',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 60,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -475,8 +957,16 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            145,
+                        stats_by_source: [
+                            {
+                                name: 'Only English at Home %',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 145,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -487,8 +977,16 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            147,
+                        stats_by_source: [
+                            {
+                                name: 'Spanish at Home %',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 147,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -499,8 +997,16 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            146,
+                        stats_by_source: [
+                            {
+                                name: 'Other at Home %',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 146,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -517,8 +1023,16 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            78,
+                        stats_by_source: [
+                            {
+                                name: 'High School %',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 78,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -529,8 +1043,16 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            79,
+                        stats_by_source: [
+                            {
+                                name: 'Undergrad %',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 79,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -541,8 +1063,16 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            77,
+                        stats_by_source: [
+                            {
+                                name: 'Grad %',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 77,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -553,8 +1083,16 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            76,
+                        stats_by_source: [
+                            {
+                                name: 'Undergrad STEM %',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 76,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -565,8 +1103,16 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            75,
+                        stats_by_source: [
+                            {
+                                name: 'Undergrad Humanities %',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 75,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -577,8 +1123,16 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            74,
+                        stats_by_source: [
+                            {
+                                name: 'Undergrad Business %',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 74,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -589,8 +1143,16 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            81,
+                        stats_by_source: [
+                            {
+                                name: '% of women with high school education - % of men with high school education',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 81,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -601,8 +1163,16 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            82,
+                        stats_by_source: [
+                            {
+                                name: '% of women with undergraduate education - % of men with undergraduate education',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 82,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -613,8 +1183,16 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            80,
+                        stats_by_source: [
+                            {
+                                name: '% of women with graduate education - % of men with graduate education',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 80,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -631,8 +1209,16 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            88,
+                        stats_by_source: [
+                            {
+                                name: 'Silent %',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 88,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -643,8 +1229,16 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            83,
+                        stats_by_source: [
+                            {
+                                name: 'Boomer %',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 83,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -655,8 +1249,16 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            85,
+                        stats_by_source: [
+                            {
+                                name: 'Gen X %',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 85,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -667,8 +1269,16 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            87,
+                        stats_by_source: [
+                            {
+                                name: 'Millennial %',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 87,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -679,8 +1289,16 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            86,
+                        stats_by_source: [
+                            {
+                                name: 'Gen Z %',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 86,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -691,8 +1309,16 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            84,
+                        stats_by_source: [
+                            {
+                                name: 'Gen Alpha %',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 84,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -709,8 +1335,16 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            203,
+                        stats_by_source: [
+                            {
+                                name: 'Poverty %',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 203,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -721,8 +1355,16 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            114,
+                        stats_by_source: [
+                            {
+                                name: 'Household Income < $50k %',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 114,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -733,8 +1375,16 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            112,
+                        stats_by_source: [
+                            {
+                                name: 'Household Income $50k - $100k %',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 112,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -745,8 +1395,16 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            113,
+                        stats_by_source: [
+                            {
+                                name: 'Household Income > $100k %',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 113,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -757,8 +1415,16 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            120,
+                        stats_by_source: [
+                            {
+                                name: 'Individual Income < $50k %',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 120,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -769,8 +1435,16 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            118,
+                        stats_by_source: [
+                            {
+                                name: 'Individual Income $50k - $100k %',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 118,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -781,8 +1455,16 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            119,
+                        stats_by_source: [
+                            {
+                                name: 'Individual Income > $100k %',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 119,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -799,20 +1481,44 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            115,
+                        stats_by_source: [
+                            {
+                                name: 'Housing Units per Adult',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 115,
+                                    },
+                                ],
+                            },
                         ],
                     },
                     {
                         year: 2010,
-                        stats: [
-                            117,
+                        stats_by_source: [
+                            {
+                                name: 'Housing Units per Adult (2010)',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 117,
+                                    },
+                                ],
+                            },
                         ],
                     },
                     {
                         year: 2000,
-                        stats: [
-                            116,
+                        stats_by_source: [
+                            {
+                                name: 'Housing Units per Adult (2000)',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 116,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -823,20 +1529,44 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            247,
+                        stats_by_source: [
+                            {
+                                name: 'Vacancy %',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 247,
+                                    },
+                                ],
+                            },
                         ],
                     },
                     {
                         year: 2010,
-                        stats: [
-                            249,
+                        stats_by_source: [
+                            {
+                                name: 'Vacancy % (2010)',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 249,
+                                    },
+                                ],
+                            },
                         ],
                     },
                     {
                         year: 2000,
-                        stats: [
-                            248,
+                        stats_by_source: [
+                            {
+                                name: 'Vacancy % (2000)',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 248,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -847,8 +1577,16 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            213,
+                        stats_by_source: [
+                            {
+                                name: 'Rent/Income < 20%',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 213,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -859,8 +1597,16 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            211,
+                        stats_by_source: [
+                            {
+                                name: 'Rent/Income 20%-40%',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 211,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -871,8 +1617,16 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            212,
+                        stats_by_source: [
+                            {
+                                name: 'Rent/Income > 40%',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 212,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -883,8 +1637,16 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            207,
+                        stats_by_source: [
+                            {
+                                name: '1BR Rent < $750 %',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 207,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -895,8 +1657,16 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            205,
+                        stats_by_source: [
+                            {
+                                name: '1BR Rent $750 - $1500 %',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 205,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -907,8 +1677,16 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            206,
+                        stats_by_source: [
+                            {
+                                name: '1BR Rent > $1500 %',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 206,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -919,8 +1697,16 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            210,
+                        stats_by_source: [
+                            {
+                                name: '2BR Rent < $750 %',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 210,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -931,8 +1717,16 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            208,
+                        stats_by_source: [
+                            {
+                                name: '2BR Rent $750 - $1500 %',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 208,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -943,8 +1737,16 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            209,
+                        stats_by_source: [
+                            {
+                                name: '2BR Rent > $1500 %',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 209,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -955,8 +1757,16 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            261,
+                        stats_by_source: [
+                            {
+                                name: '% units built pre-1970',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 261,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -967,8 +1777,16 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            262,
+                        stats_by_source: [
+                            {
+                                name: '% units built in 1970s',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 262,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -979,8 +1797,16 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            263,
+                        stats_by_source: [
+                            {
+                                name: '% units built in 1980s',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 263,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -991,8 +1817,16 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            264,
+                        stats_by_source: [
+                            {
+                                name: '% units built in 1990s',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 264,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -1003,8 +1837,16 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            265,
+                        stats_by_source: [
+                            {
+                                name: '% units built in 2000s',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 265,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -1015,8 +1857,16 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            266,
+                        stats_by_source: [
+                            {
+                                name: '% units built in 2010s+',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 266,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -1027,8 +1877,16 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            214,
+                        stats_by_source: [
+                            {
+                                name: 'Renter %',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 214,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -1045,8 +1903,16 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            243,
+                        stats_by_source: [
+                            {
+                                name: 'Commute Car %',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 243,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -1057,8 +1923,16 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            242,
+                        stats_by_source: [
+                            {
+                                name: 'Commute Bike %',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 242,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -1069,8 +1943,16 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            245,
+                        stats_by_source: [
+                            {
+                                name: 'Commute Walk %',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 245,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -1081,8 +1963,16 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            244,
+                        stats_by_source: [
+                            {
+                                name: 'Commute Transit %',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 244,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -1093,8 +1983,16 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            246,
+                        stats_by_source: [
+                            {
+                                name: 'Commute Work From Home %',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 246,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -1105,8 +2003,16 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            241,
+                        stats_by_source: [
+                            {
+                                name: 'Commute Time < 15 min %',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 241,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -1117,8 +2023,16 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            238,
+                        stats_by_source: [
+                            {
+                                name: 'Commute Time 15 - 29 min %',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 238,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -1129,8 +2043,16 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            239,
+                        stats_by_source: [
+                            {
+                                name: 'Commute Time 30 - 59 min %',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 239,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -1141,8 +2063,16 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            240,
+                        stats_by_source: [
+                            {
+                                name: 'Commute Time > 60 min %',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 240,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -1153,8 +2083,16 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            252,
+                        stats_by_source: [
+                            {
+                                name: 'Households With no Vehicle %',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 252,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -1165,8 +2103,16 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            250,
+                        stats_by_source: [
+                            {
+                                name: 'Households With 1+ Vehicles %',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 250,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -1177,8 +2123,16 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            251,
+                        stats_by_source: [
+                            {
+                                name: 'Households With 2+ Vehicles %',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 251,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -1189,8 +2143,16 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            235,
+                        stats_by_source: [
+                            {
+                                name: 'Traffic Fatalities Per Capita Per Year',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 235,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -1201,8 +2163,16 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            237,
+                        stats_by_source: [
+                            {
+                                name: 'Pedestrian/Cyclist Fatalities Per Capita Per Year',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 237,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -1213,8 +2183,16 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            234,
+                        stats_by_source: [
+                            {
+                                name: 'Total Traffic Fatalities In Last Decade',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 234,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -1225,8 +2203,16 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            236,
+                        stats_by_source: [
+                            {
+                                name: 'Total Pedestrian/Cyclist Fatalities In Last Decade',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 236,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -1243,8 +2229,16 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            17,
+                        stats_by_source: [
+                            {
+                                name: 'Fair or poor self-rated health status %',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 17,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -1255,8 +2249,16 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            24,
+                        stats_by_source: [
+                            {
+                                name: 'Physical health not good for two weeks in last year %',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 24,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -1267,8 +2269,16 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            3,
+                        stats_by_source: [
+                            {
+                                name: 'Arthritis %',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 3,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -1279,8 +2289,16 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            7,
+                        stats_by_source: [
+                            {
+                                name: 'Current asthma %',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 7,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -1291,8 +2309,16 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            5,
+                        stats_by_source: [
+                            {
+                                name: 'High blood pressure %',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 5,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -1303,8 +2329,16 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            6,
+                        stats_by_source: [
+                            {
+                                name: 'Cancer (excluding skin cancer) %',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 6,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -1315,8 +2349,16 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            20,
+                        stats_by_source: [
+                            {
+                                name: 'Chronic kidney disease %',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 20,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -1327,8 +2369,16 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            12,
+                        stats_by_source: [
+                            {
+                                name: 'COPD %',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 12,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -1339,8 +2389,16 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            8,
+                        stats_by_source: [
+                            {
+                                name: 'Coronary heart disease %',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 8,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -1351,8 +2409,16 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            15,
+                        stats_by_source: [
+                            {
+                                name: 'Diagnosed diabetes %',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 15,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -1363,8 +2429,16 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            23,
+                        stats_by_source: [
+                            {
+                                name: 'Obesity %',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 23,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -1375,8 +2449,16 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            27,
+                        stats_by_source: [
+                            {
+                                name: 'Stroke %',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 27,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -1387,8 +2469,16 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            16,
+                        stats_by_source: [
+                            {
+                                name: 'Disability %',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 16,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -1399,8 +2489,16 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            18,
+                        stats_by_source: [
+                            {
+                                name: 'Hearing disability %',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 18,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -1411,8 +2509,16 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            28,
+                        stats_by_source: [
+                            {
+                                name: 'Vision disability %',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 28,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -1423,8 +2529,16 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            11,
+                        stats_by_source: [
+                            {
+                                name: 'Cognitive disability %',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 11,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -1435,8 +2549,16 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            22,
+                        stats_by_source: [
+                            {
+                                name: 'Mobility disability %',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 22,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -1447,8 +2569,16 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            25,
+                        stats_by_source: [
+                            {
+                                name: 'Self-care disability %',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 25,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -1459,8 +2589,16 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            19,
+                        stats_by_source: [
+                            {
+                                name: 'Independent living disability %',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 19,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -1471,8 +2609,16 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            4,
+                        stats_by_source: [
+                            {
+                                name: 'Binge drinking among adults %',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 4,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -1483,8 +2629,16 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            13,
+                        stats_by_source: [
+                            {
+                                name: 'Smoking %',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 13,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -1495,8 +2649,16 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            21,
+                        stats_by_source: [
+                            {
+                                name: 'No leisure-time physical activity %',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 21,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -1507,8 +2669,16 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            26,
+                        stats_by_source: [
+                            {
+                                name: 'Sleeping less than 7 hours %',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 26,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -1519,8 +2689,16 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            9,
+                        stats_by_source: [
+                            {
+                                name: 'Attended doctor in last year %',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 9,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -1531,8 +2709,16 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            14,
+                        stats_by_source: [
+                            {
+                                name: 'Attended dentist in last year %',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 14,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -1543,8 +2729,16 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            10,
+                        stats_by_source: [
+                            {
+                                name: 'Cholesterol screening in last year %',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 10,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -1561,8 +2755,16 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            102,
+                        stats_by_source: [
+                            {
+                                name: 'Utility gas heating %',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 102,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -1573,8 +2775,16 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            98,
+                        stats_by_source: [
+                            {
+                                name: 'Electricity heating %',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 98,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -1585,8 +2795,16 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            97,
+                        stats_by_source: [
+                            {
+                                name: 'Bottled, tank, or LP gas heating %',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 97,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -1597,8 +2815,16 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            99,
+                        stats_by_source: [
+                            {
+                                name: 'Fuel oil, kerosene, etc. heating %',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 99,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -1609,8 +2835,16 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            101,
+                        stats_by_source: [
+                            {
+                                name: 'Other fuel heating %',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 101,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -1621,8 +2855,16 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            100,
+                        stats_by_source: [
+                            {
+                                name: 'No heating %',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 100,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -1639,8 +2881,16 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            123,
+                        stats_by_source: [
+                            {
+                                name: 'Agriculture, forestry, fishing and hunting %',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 123,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -1651,8 +2901,16 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            132,
+                        stats_by_source: [
+                            {
+                                name: 'Mining, quarrying, and oil and gas extraction %',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 132,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -1663,8 +2921,16 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            121,
+                        stats_by_source: [
+                            {
+                                name: 'Accommodation and food services %',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 121,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -1675,8 +2941,16 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            124,
+                        stats_by_source: [
+                            {
+                                name: 'Arts, entertainment, and recreation %',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 124,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -1687,8 +2961,16 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            125,
+                        stats_by_source: [
+                            {
+                                name: 'Construction %',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 125,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -1699,8 +2981,16 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            126,
+                        stats_by_source: [
+                            {
+                                name: 'Educational services %',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 126,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -1711,8 +3001,16 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            128,
+                        stats_by_source: [
+                            {
+                                name: 'Health care and social assistance %',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 128,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -1723,8 +3021,16 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            127,
+                        stats_by_source: [
+                            {
+                                name: 'Finance and insurance %',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 127,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -1735,8 +3041,16 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            136,
+                        stats_by_source: [
+                            {
+                                name: 'Real estate and rental and leasing %',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 136,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -1747,8 +3061,16 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            129,
+                        stats_by_source: [
+                            {
+                                name: 'Information %',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 129,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -1759,8 +3081,16 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            131,
+                        stats_by_source: [
+                            {
+                                name: 'Manufacturing %',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 131,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -1771,8 +3101,16 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            133,
+                        stats_by_source: [
+                            {
+                                name: 'Other services, except public administration %',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 133,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -1783,8 +3121,16 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            122,
+                        stats_by_source: [
+                            {
+                                name: 'Administrative and support and waste management services %',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 122,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -1795,8 +3141,16 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            130,
+                        stats_by_source: [
+                            {
+                                name: 'Management of companies and enterprises %',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 130,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -1807,8 +3161,16 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            134,
+                        stats_by_source: [
+                            {
+                                name: 'Professional, scientific, and technical services %',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 134,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -1819,8 +3181,16 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            135,
+                        stats_by_source: [
+                            {
+                                name: 'Public administration %',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 135,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -1831,8 +3201,16 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            137,
+                        stats_by_source: [
+                            {
+                                name: 'Retail trade %',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 137,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -1843,8 +3221,16 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            138,
+                        stats_by_source: [
+                            {
+                                name: 'Transportation and warehousing %',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 138,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -1855,8 +3241,16 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            139,
+                        stats_by_source: [
+                            {
+                                name: 'Utilities %',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 139,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -1867,8 +3261,16 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            140,
+                        stats_by_source: [
+                            {
+                                name: 'Wholesale trade %',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 140,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -1885,8 +3287,16 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            169,
+                        stats_by_source: [
+                            {
+                                name: 'Architecture and engineering occupations %',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 169,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -1897,8 +3307,16 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            174,
+                        stats_by_source: [
+                            {
+                                name: 'Computer and mathematical occupations %',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 174,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -1909,8 +3327,16 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            186,
+                        stats_by_source: [
+                            {
+                                name: 'Life, physical, and social science occupations %',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 186,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -1921,8 +3347,16 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            170,
+                        stats_by_source: [
+                            {
+                                name: 'Arts, design, entertainment, sports, and media occupations %',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 170,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -1933,8 +3367,16 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            173,
+                        stats_by_source: [
+                            {
+                                name: 'Community and social service occupations %',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 173,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -1945,8 +3387,16 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            176,
+                        stats_by_source: [
+                            {
+                                name: 'Educational instruction, and library occupations %',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 176,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -1957,8 +3407,16 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            185,
+                        stats_by_source: [
+                            {
+                                name: 'Legal occupations %',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 185,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -1969,8 +3427,16 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            180,
+                        stats_by_source: [
+                            {
+                                name: 'Health diagnosing and treating practitioners and other technical occupations %',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 180,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -1981,8 +3447,16 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            181,
+                        stats_by_source: [
+                            {
+                                name: 'Health technologists and technicians %',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 181,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -1993,8 +3467,16 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            172,
+                        stats_by_source: [
+                            {
+                                name: 'Business and financial operations occupations %',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 172,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -2005,8 +3487,16 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            187,
+                        stats_by_source: [
+                            {
+                                name: 'Management occupations %',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 187,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -2017,8 +3507,16 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            175,
+                        stats_by_source: [
+                            {
+                                name: 'Construction and extraction occupations %',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 175,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -2029,8 +3527,16 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            177,
+                        stats_by_source: [
+                            {
+                                name: 'Farming, fishing, and forestry occupations %',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 177,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -2041,8 +3547,16 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            183,
+                        stats_by_source: [
+                            {
+                                name: 'Installation, maintenance, and repair occupations %',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 183,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -2053,8 +3567,16 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            188,
+                        stats_by_source: [
+                            {
+                                name: 'Material moving occupations %',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 188,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -2065,8 +3587,16 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            191,
+                        stats_by_source: [
+                            {
+                                name: 'Production occupations %',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 191,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -2077,8 +3607,16 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            193,
+                        stats_by_source: [
+                            {
+                                name: 'Transportation occupations %',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 193,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -2089,8 +3627,16 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            189,
+                        stats_by_source: [
+                            {
+                                name: 'Office and administrative support occupations %',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 189,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -2101,8 +3647,16 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            192,
+                        stats_by_source: [
+                            {
+                                name: 'Sales and related occupations %',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 192,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -2113,8 +3667,16 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            171,
+                        stats_by_source: [
+                            {
+                                name: 'Building and grounds cleaning and maintenance occupations %',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 171,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -2125,8 +3687,16 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            179,
+                        stats_by_source: [
+                            {
+                                name: 'Food preparation and serving related occupations %',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 179,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -2137,8 +3707,16 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            182,
+                        stats_by_source: [
+                            {
+                                name: 'Healthcare support occupations %',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 182,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -2149,8 +3727,16 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            190,
+                        stats_by_source: [
+                            {
+                                name: 'Personal care and service occupations %',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 190,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -2161,8 +3747,16 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            178,
+                        stats_by_source: [
+                            {
+                                name: 'Firefighting and prevention, and other protective service workers including supervisors %',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 178,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -2173,8 +3767,16 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            184,
+                        stats_by_source: [
+                            {
+                                name: 'Law enforcement workers including supervisors %',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 184,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -2191,8 +3793,16 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            233,
+                        stats_by_source: [
+                            {
+                                name: 'Not Cohabiting With Partner %',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 233,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -2203,8 +3813,16 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            230,
+                        stats_by_source: [
+                            {
+                                name: 'Cohabiting With Partner (Gay) %',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 230,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -2215,8 +3833,16 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            231,
+                        stats_by_source: [
+                            {
+                                name: 'Cohabiting With Partner (Straight) %',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 231,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -2227,8 +3853,16 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            229,
+                        stats_by_source: [
+                            {
+                                name: 'Living With Parents %',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 229,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -2239,8 +3873,16 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            232,
+                        stats_by_source: [
+                            {
+                                name: 'Other Living Situation %',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 232,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -2251,8 +3893,16 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            154,
+                        stats_by_source: [
+                            {
+                                name: 'Never Married %',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 154,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -2263,8 +3913,16 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            153,
+                        stats_by_source: [
+                            {
+                                name: 'Married (not divorced) %',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 153,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -2275,8 +3933,16 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            152,
+                        stats_by_source: [
+                            {
+                                name: 'Divorced %',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 152,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -2293,8 +3959,16 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            2,
+                        stats_by_source: [
+                            {
+                                name: '2020 Presidential Election',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 2,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -2305,8 +3979,16 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            0,
+                        stats_by_source: [
+                            {
+                                name: '2016 Presidential Election',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 0,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -2317,8 +3999,16 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            1,
+                        stats_by_source: [
+                            {
+                                name: '2016-2020 Swing',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 1,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -2335,8 +4025,16 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            197,
+                        stats_by_source: [
+                            {
+                                name: 'PW Mean % of parkland within 1km',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 197,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -2347,8 +4045,16 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            259,
+                        stats_by_source: [
+                            {
+                                name: 'Within 10km of Hospital %',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 259,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -2359,8 +4065,16 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            157,
+                        stats_by_source: [
+                            {
+                                name: 'Mean distance to nearest Hospital',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 157,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -2371,8 +4085,16 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            260,
+                        stats_by_source: [
+                            {
+                                name: 'Within 2km of Public School %',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 260,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -2383,8 +4105,16 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            158,
+                        stats_by_source: [
+                            {
+                                name: 'Mean distance to nearest Public School',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 158,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -2395,8 +4125,16 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            258,
+                        stats_by_source: [
+                            {
+                                name: 'Within 30km of Airport %',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 258,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -2407,8 +4145,16 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            156,
+                        stats_by_source: [
+                            {
+                                name: 'Mean distance to nearest Airport',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 156,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -2419,8 +4165,16 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            257,
+                        stats_by_source: [
+                            {
+                                name: 'Within 10km of Active Superfund Site %',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 257,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -2431,8 +4185,16 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            155,
+                        stats_by_source: [
+                            {
+                                name: 'Mean distance to nearest Active Superfund Site',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 155,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -2443,8 +4205,16 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            151,
+                        stats_by_source: [
+                            {
+                                name: 'Within 0.5mi of a grocery store %',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 151,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -2455,8 +4225,16 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            149,
+                        stats_by_source: [
+                            {
+                                name: 'Within 1mi of a grocery store %',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 149,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -2467,8 +4245,16 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            148,
+                        stats_by_source: [
+                            {
+                                name: 'Within 10mi of a grocery store %',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 148,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -2479,8 +4265,16 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            150,
+                        stats_by_source: [
+                            {
+                                name: 'Within 20mi of a grocery store %',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 150,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -2497,8 +4291,16 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            161,
+                        stats_by_source: [
+                            {
+                                name: 'Mean high temp',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 161,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -2509,8 +4311,16 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            160,
+                        stats_by_source: [
+                            {
+                                name: 'Mean high heat index',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 160,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -2521,8 +4331,16 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            159,
+                        stats_by_source: [
+                            {
+                                name: 'Mean high dewpt',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 159,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -2533,8 +4351,16 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            68,
+                        stats_by_source: [
+                            {
+                                name: 'High temperature Above 90\u00b0F %',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 68,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -2545,8 +4371,16 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            70,
+                        stats_by_source: [
+                            {
+                                name: 'High temperature Between 40 and 90\u00b0F %',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 70,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -2557,8 +4391,16 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            69,
+                        stats_by_source: [
+                            {
+                                name: 'High temperature Below 40\u00b0F %',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 69,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -2569,8 +4411,16 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            73,
+                        stats_by_source: [
+                            {
+                                name: 'Humid days (dewpt > 70\u00b0F) %',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 73,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -2581,8 +4431,16 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            72,
+                        stats_by_source: [
+                            {
+                                name: 'Non-humid days (50\u00b0F < dewpt < 70\u00b0F) %',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 72,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -2593,8 +4451,16 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            71,
+                        stats_by_source: [
+                            {
+                                name: 'Dry days (dewpt < 50\u00b0F) %',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 71,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -2605,8 +4471,16 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            111,
+                        stats_by_source: [
+                            {
+                                name: 'Mean sunny hours',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 111,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -2617,8 +4491,16 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            204,
+                        stats_by_source: [
+                            {
+                                name: 'Rainfall',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 204,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -2629,8 +4511,16 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            228,
+                        stats_by_source: [
+                            {
+                                name: 'Snowfall [rain-equivalent]',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 228,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -2641,8 +4531,16 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            256,
+                        stats_by_source: [
+                            {
+                                name: 'High windspeed (>10mph) days %',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 256,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -2653,8 +4551,16 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            164,
+                        stats_by_source: [
+                            {
+                                name: 'Mean high temperature in summer',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 164,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -2665,8 +4571,16 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            165,
+                        stats_by_source: [
+                            {
+                                name: 'Mean high temperature in winter',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 165,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -2677,8 +4591,16 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            162,
+                        stats_by_source: [
+                            {
+                                name: 'Mean high temperature in fall',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 162,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -2689,8 +4611,16 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            163,
+                        stats_by_source: [
+                            {
+                                name: 'Mean high temperature in spring',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 163,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -2707,8 +4637,16 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            144,
+                        stats_by_source: [
+                            {
+                                name: 'No internet access %',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 144,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -2719,8 +4657,16 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            142,
+                        stats_by_source: [
+                            {
+                                name: 'Uninsured %',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 142,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -2731,8 +4677,16 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            141,
+                        stats_by_source: [
+                            {
+                                name: 'Public Insurance %',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 141,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -2743,8 +4697,16 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            143,
+                        stats_by_source: [
+                            {
+                                name: 'Private Insurance %',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 143,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -2761,22 +4723,62 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            29,
+                        stats_by_source: [
+                            {
+                                name: 'PW Density (r=250m)',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 29,
+                                    },
+                                ],
+                            },
                         ],
                     },
                     {
                         year: 2010,
-                        stats: [
-                            31,
-                            33,
+                        stats_by_source: [
+                            {
+                                name: 'PW Density (r=250m) (2010)',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 31,
+                                    },
+                                ],
+                            },
+                            {
+                                name: 'PW Density (r=250m) Change (2010-2020)',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 33,
+                                    },
+                                ],
+                            },
                         ],
                     },
                     {
                         year: 2000,
-                        stats: [
-                            30,
-                            32,
+                        stats_by_source: [
+                            {
+                                name: 'PW Density (r=250m) (2000)',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 30,
+                                    },
+                                ],
+                            },
+                            {
+                                name: 'PW Density (r=250m) Change (2000-2020)',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 32,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -2787,22 +4789,62 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            34,
+                        stats_by_source: [
+                            {
+                                name: 'PW Density (r=500m)',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 34,
+                                    },
+                                ],
+                            },
                         ],
                     },
                     {
                         year: 2010,
-                        stats: [
-                            36,
-                            38,
+                        stats_by_source: [
+                            {
+                                name: 'PW Density (r=500m) (2010)',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 36,
+                                    },
+                                ],
+                            },
+                            {
+                                name: 'PW Density (r=500m) Change (2010-2020)',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 38,
+                                    },
+                                ],
+                            },
                         ],
                     },
                     {
                         year: 2000,
-                        stats: [
-                            35,
-                            37,
+                        stats_by_source: [
+                            {
+                                name: 'PW Density (r=500m) (2000)',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 35,
+                                    },
+                                ],
+                            },
+                            {
+                                name: 'PW Density (r=500m) Change (2000-2020)',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 37,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -2813,22 +4855,62 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            44,
+                        stats_by_source: [
+                            {
+                                name: 'PW Density (r=2km)',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 44,
+                                    },
+                                ],
+                            },
                         ],
                     },
                     {
                         year: 2010,
-                        stats: [
-                            46,
-                            48,
+                        stats_by_source: [
+                            {
+                                name: 'PW Density (r=2km) (2010)',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 46,
+                                    },
+                                ],
+                            },
+                            {
+                                name: 'PW Density (r=2km) Change (2010-2020)',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 48,
+                                    },
+                                ],
+                            },
                         ],
                     },
                     {
                         year: 2000,
-                        stats: [
-                            45,
-                            47,
+                        stats_by_source: [
+                            {
+                                name: 'PW Density (r=2km) (2000)',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 45,
+                                    },
+                                ],
+                            },
+                            {
+                                name: 'PW Density (r=2km) Change (2000-2020)',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 47,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -2839,22 +4921,62 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            49,
+                        stats_by_source: [
+                            {
+                                name: 'PW Density (r=4km)',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 49,
+                                    },
+                                ],
+                            },
                         ],
                     },
                     {
                         year: 2010,
-                        stats: [
-                            51,
-                            53,
+                        stats_by_source: [
+                            {
+                                name: 'PW Density (r=4km) (2010)',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 51,
+                                    },
+                                ],
+                            },
+                            {
+                                name: 'PW Density (r=4km) Change (2010-2020)',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 53,
+                                    },
+                                ],
+                            },
                         ],
                     },
                     {
                         year: 2000,
-                        stats: [
-                            50,
-                            52,
+                        stats_by_source: [
+                            {
+                                name: 'PW Density (r=4km) (2000)',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 50,
+                                    },
+                                ],
+                            },
+                            {
+                                name: 'PW Density (r=4km) Change (2000-2020)',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 52,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -2865,8 +4987,16 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            92,
+                        stats_by_source: [
+                            {
+                                name: 'PW Density (r=2km) [GHS-POP]',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 92,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -2877,8 +5007,16 @@ export default [
                 contents: [
                     {
                         year: 2020,
-                        stats: [
-                            93,
+                        stats_by_source: [
+                            {
+                                name: 'PW Density (r=4km) [GHS-POP]',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 93,
+                                    },
+                                ],
+                            },
                         ],
                     },
                 ],

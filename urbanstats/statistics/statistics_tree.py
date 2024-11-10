@@ -4,63 +4,126 @@ from types import NoneType
 from .stat_path import get_statistic_column_path
 
 
+@dataclass(frozen=True)
+class Source:
+    """
+    Represents a source of statistics. Provides a category for the sourcing
+    """
+
+    category: str
+    name: str
+    is_default: bool = False
+
+    def json(self):
+        return {"category": self.category, "name": self.name}
+
+
+@dataclass
+class MultiSource:
+    """
+    Represent a statistic that is available from multiple sources.
+    """
+
+    by_source: dict[str | NoneType, str]
+    multi_source_colname: str = None
+
+    def __post_init__(self):
+        if None in self.by_source:
+            assert len(self.by_source) == 1
+        for source, col in self.by_source.items():
+            assert isinstance(source, Source) or source is None
+            assert isinstance(col, (str, tuple))
+
+    def internal_statistics(self):
+        return list(self.by_source.values())
+
+    def name_to_category(self, category_id):
+        return {col: category_id for col in self.by_source.values()}
+
+    def flatten(self, name_map, names):
+        result = []
+        for source, col in self.by_source.items():
+            result.append(
+                {
+                    "source": source.json() if source is not None else None,
+                    "column": names.index(col),
+                }
+            )
+        return dict(name=self.compute_name(name_map), stats=result)
+
+    def compute_name(self, name_map):
+        if self.multi_source_colname is not None:
+            return name_map[self.multi_source_colname]
+        assert len(self.by_source) == 1
+        col = next(iter(self.by_source.values()))
+        return name_map[col]
+
+
 @dataclass
 class StatisticGroup:
     """
     Represents a statistic that is available for multiple years.
     """
 
-    by_year: dict[int | NoneType, list[str]]
+    by_year: dict[int | NoneType, list[MultiSource]]
+    group_name_statcol: str = None
 
     def __post_init__(self):
         for year, cols in self.by_year.items():
             assert year in {2000, 2010, 2020, None}
             assert isinstance(cols, list)
+            assert all(isinstance(col, MultiSource) for col in cols), cols
 
     def internal_statistics(self):
-        return [col for cols in self.by_year.values() for col in cols]
+        return [
+            col
+            for multi_sources in self.by_year.values()
+            for multi_source in multi_sources
+            for col in multi_source.internal_statistics()
+        ]
 
     def name_to_category(self, category_id):
         result = {}
         for year, stats in self.by_year.items():
-            for stat in stats:
+            for stat_by_source in stats:
                 category_id_to_use = {
                     "distance_from_features": "feature",
                     "climate_change": "climate",
                 }.get(category_id, category_id)
-                result[stat] = category_id_to_use if year in {2020, None} else str(year)
+                category_id_to_use = (
+                    category_id_to_use if year in {2020, None} else str(year)
+                )
+                result.update(stat_by_source.name_to_category(category_id_to_use))
         return result
 
     @staticmethod
-    def flatten_year(year, stats, names):
+    def flatten_year(year, stats, name_map, names):
         assert isinstance(year, int) or year is None, year
         stats_processed = []
         for stat in stats:
-            assert stat in names, stat
-            stats_processed.append(names.index(stat))
+            stats_processed.append(stat.flatten(name_map, names))
 
-        return {"year": year, "stats": stats_processed}
+        return {"year": year, "stats_by_source": stats_processed}
 
     def flatten(self, name_map, group_id):
-        group_name = self.compute_group_name(name_map)
-
         group_id = get_statistic_column_path(group_id)
         return {
             "id": group_id,
-            "name": group_name,
+            "name": self.compute_group_name(name_map),
             "contents": [
-                self.flatten_year(year, stats, list(name_map))
+                self.flatten_year(year, stats, name_map, list(name_map))
                 for year, stats in self.by_year.items()
             ],
         }
 
     def compute_group_name(self, name_map):
-        group_name = None
-        if group_name is None:
+        short_statcol = self.group_name_statcol
+        if short_statcol is None:
             year = None if None in self.by_year else max(self.by_year)
-            short_statcol = self.by_year[year][0]
-            group_name = name_map[short_statcol]
-            if len(self.by_year) > 1:
+            short_statcol = self.by_year[year][0].by_source[None]
+        group_name = name_map[short_statcol]
+        if len(self.by_year) > 1:
+            for year in self.by_year:
                 assert not (
                     str(year) in group_name
                 ), f"Group name should not contain year, but got: {group_name}"
@@ -142,15 +205,33 @@ class StatisticTree:
             for category_id, category in self.categories.items()
         ]
 
+    def all_sources(self):
+        result = []
+        for category in self.categories.values():
+            for group in category.contents.values():
+                for stats in group.by_year.values():
+                    for stat in stats:
+                        for source in stat.by_source:
+                            result.append(source)
+        deduplicated_sources = []
+        for source in result:
+            if source not in deduplicated_sources and source is not None:
+                deduplicated_sources.append(source)
+        return deduplicated_sources
+
+
+def single_source(col_name):
+    return MultiSource({None: col_name})
+
 
 def census_basics(col_name, *, change):
     results = {
-        2020: [col_name],
+        2020: [single_source(col_name)],
     }
     for year in [2010, 2000]:
-        results[year] = [f"{col_name}_{year}"]
+        results[year] = [single_source(f"{col_name}_{year}")]
         if change:
-            results[year].append(f"{col_name}_change_{year}")
+            results[year].append(single_source(f"{col_name}_change_{year}"))
     results = StatisticGroup(results)
     return {col_name: results}
 
@@ -159,16 +240,25 @@ def census_segregation(col_name):
     return {
         col_name: StatisticGroup(
             {
-                2000: [f"{col_name}_2000", f"{col_name}_diff_2000"],
-                2010: [f"{col_name}_2010", f"{col_name}_diff_2010"],
-                2020: [f"{col_name}_2020"],
+                2000: [
+                    single_source(f"{col_name}_2000"),
+                    single_source(f"{col_name}_diff_2000"),
+                ],
+                2010: [
+                    single_source(f"{col_name}_2010"),
+                    single_source(f"{col_name}_diff_2010"),
+                ],
+                2020: [single_source(f"{col_name}_2020")],
             }
         )
     }
 
 
 def just_2020(*col_names):
-    return {col_name: StatisticGroup({2020: [col_name]}) for col_name in col_names}
+    return {
+        col_name: StatisticGroup({2020: [single_source(col_name)]})
+        for col_name in col_names
+    }
 
 
 def just_2020_category(cat_key, cat_name, *col_names):
@@ -193,8 +283,8 @@ statistics_tree = StatisticTree(
                     "gpw_pw_density_1",
                     "gpw_aw_density",
                 ),
-                "area": StatisticGroup({None: ["area"]}),
-                "compactness": StatisticGroup({None: ["compactness"]}),
+                "area": StatisticGroup({None: [single_source("area")]}),
+                "compactness": StatisticGroup({None: [single_source("compactness")]}),
             },
         ),
         "race": StatisticCategory(

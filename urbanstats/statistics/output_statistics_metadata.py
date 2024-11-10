@@ -1,3 +1,4 @@
+import json
 from functools import lru_cache
 
 from urbanstats.statistics.stat_path import get_statistic_column_path
@@ -79,7 +80,27 @@ def output_statistics_metadata():
     with open("react/src/data/explanation_page.ts", "w") as f:
         output_typescript(list(get_explanation_page().values()), f)
 
-    with open("react/src/data/statistics_tree.ts", "w") as f:
-        output_typescript(
-            statistics_tree.flatten(statistic_internal_to_display_name()), f
+    export_statistics_tree("react/src/data/statistics_tree.ts")
+
+
+def export_statistics_tree(path):
+    fst = statistics_tree.flatten(statistic_internal_to_display_name())
+    sources = statistics_tree.all_sources()
+    source_categories = list(dict.fromkeys([source.category for source in sources]))
+    result = [
+        {
+            "category": category,
+            "sources": [
+                dict(source=source.name, is_default=source.is_default)
+                for source in sources
+                if source.category == category
+            ],
+        }
+        for category in source_categories
+    ]
+    fst = json.dumps(fst, indent=4)
+    with open(path, "w") as f:
+        f.write(
+            f"export const dataSources = {json.dumps(result, indent=4)} as const\n\n"
         )
+        f.write(f"export const rawStatsTree = {fst} as const\n")

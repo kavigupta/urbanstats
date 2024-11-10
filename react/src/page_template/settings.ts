@@ -6,10 +6,9 @@ import { DefaultMap } from '../utils/DefaultMap'
 
 import { Theme } from './colors'
 import { fromVector } from './settings-vector'
-import { allGroups, allYears, CategoryIdentifier, GroupIdentifier, StatPath, statsTree, Year } from './statistic-tree'
+import { allGroups, allYears, CategoryIdentifier, DataSource, GroupIdentifier, SourceCategoryIdentifier, SourceIdentifier, StatPath, statsTree, Year } from './statistic-tree'
 
 export type RelationshipKey = `related__${string}__${string}`
-export type RowExpandedKey = `expanded__${string}`
 export type RowExpandedKey<P extends StatPath> = `expanded__${P}`
 export type HistogramType = 'Bar' | 'Line' | 'Line (cumulative)'
 
@@ -17,6 +16,7 @@ export type StatGroupKey<G extends GroupIdentifier = GroupIdentifier> = `show_st
 export type StatCategorySavedIndeterminateKey<C extends CategoryIdentifier = CategoryIdentifier> = `stat_category_saved_indeterminate_${C}`
 export type StatCategoryExpandedKey<C extends CategoryIdentifier = CategoryIdentifier> = `stat_category_expanded_${C}`
 export type StatYearKey<Y extends Year = Year> = `show_stat_year_${Y}`
+export type StatSourceKey<C extends SourceCategoryIdentifier = SourceCategoryIdentifier, S extends SourceIdentifier = SourceIdentifier> = `show_stat_source_${C}_${S}`
 
 export type SettingsDictionary = {
     [relationshipKey: RelationshipKey]: boolean | undefined
@@ -33,6 +33,7 @@ export type SettingsDictionary = {
 & { [C in CategoryIdentifier as StatCategorySavedIndeterminateKey<C>]: GroupIdentifier[] }
 & { [C in CategoryIdentifier as StatCategoryExpandedKey<C>]: boolean }
 & { [Y in Year as StatYearKey<Y>]: boolean }
+& { [D in DataSource as StatSourceKey<D['category'], D['name']>]: boolean }
 & { [P in StatPath as RowExpandedKey<P>]?: boolean }
 
 export function relationship_key(article_type: string, other_type: string): RelationshipKey {
@@ -71,6 +72,8 @@ export const defaultSettingsList = [
     ['theme', 'System Theme'] as const,
     ['colorblind_mode', false] as const,
     ['clean_background', false] as const,
+    // placeholder. Remove!
+    ['show_stat_source_Placeholder_Placeholder', true] as const,
 ] as const
 
 // Having a default settings object allows us to statically check that we have default values for all settings

@@ -121,7 +121,7 @@ def build_react_site(site_folder, dev):
     )
 
     subprocess.run(
-        f"cd react; npm run {'dev' if dev else 'prod'}", shell=True, check=True
+        f"cd react; npm run {'dev' if dev else 'prod'}", shell=True, check=not dev
     )
 
     link_scripts_folder(site_folder, dev)

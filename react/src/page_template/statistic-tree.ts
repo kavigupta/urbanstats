@@ -1,6 +1,6 @@
 import statNames from '../data/statistic_name_list'
 import statPaths from '../data/statistic_path_list'
-import rawStatsTree from '../data/statistics_tree'
+import { rawStatsTree } from '../data/statistics_tree'
 import { DefaultMap } from '../utils/DefaultMap'
 
 export type StatPath = (typeof statPaths)[number]
@@ -8,6 +8,10 @@ export type StatPath = (typeof statPaths)[number]
 export type CategoryIdentifier = (typeof rawStatsTree)[number]['id']
 export type GroupIdentifier = (typeof rawStatsTree)[number]['contents'][number]['id']
 export type Year = Exclude<(typeof rawStatsTree)[number]['contents'][number]['contents'][number]['year'], null>
+// eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents -- not meaningful now but will be in future
+export type DataSource = { category: 'Placeholder', name: 'Placeholder' } | Exclude<(typeof rawStatsTree)[number]['contents'][number]['contents'][number]['stats_by_source'][number]['stats'][number]['source'], null>
+export type SourceCategoryIdentifier = DataSource['category']
+export type SourceIdentifier = DataSource['name']
 
 export type StatsTree = Category[]
 export interface Category {
@@ -31,11 +35,17 @@ export interface Group {
 
 export interface GroupYear {
     year: Year | null
-    stats: Statistic[]
+    stats: MultiSourceStatistic[]
     parent: Group
 }
 
+export interface MultiSourceStatistic {
+    name: string
+    by_source: Statistic[]
+}
+
 export interface Statistic {
+    source: DataSource | null
     path: StatPath
     name: string
     parent: GroupYear
@@ -48,13 +58,17 @@ export const statsTree: StatsTree = rawStatsTree.map(category => (
         contents: category.contents.map(group => ({
             kind: 'Group',
             ...group,
-            contents: group.contents.map(({ year, stats }) => ({
+            contents: group.contents.map(({ year, stats_by_source }) => ({
                 year,
-                stats: stats.map(statIndex => ({
-                    path: statPaths[statIndex],
-                    name: statNames[statIndex],
-                    parent: undefined as unknown as GroupYear, // set below
-                } satisfies Statistic)),
+                stats: stats_by_source.map(({ name, stats }) => ({
+                    name,
+                    by_source: stats.map(({ source, column }) => ({
+                        source,
+                        path: statPaths[column],
+                        name: statNames[column],
+                        parent: undefined as unknown as GroupYear, // set below
+                    } satisfies Statistic)),
+                } satisfies MultiSourceStatistic)),
                 parent: undefined as unknown as Group, // set below
             } satisfies GroupYear)),
             parent: undefined as unknown as Category, // set below
@@ -75,12 +89,14 @@ for (const category of statsTree) {
         group.parent = category
         for (const yearGroup of group.contents) {
             yearGroup.parent = group
-            for (const stat of yearGroup.stats) {
-                stat.parent = yearGroup
-                group.statPaths.add(stat.path)
-                category.statPaths.add(stat.path)
-                if (yearGroup.year !== null) {
-                    yearStatPaths.get(yearGroup.year).add(stat.path)
+            for (const stats_by_source of yearGroup.stats) {
+                for (const stat of stats_by_source.by_source) {
+                    stat.parent = yearGroup
+                    group.statPaths.add(stat.path)
+                    category.statPaths.add(stat.path)
+                    if (yearGroup.year !== null) {
+                        yearStatPaths.get(yearGroup.year).add(stat.path)
+                    }
                 }
             }
             category.years.add(yearGroup.year)
@@ -99,12 +115,14 @@ export const allYears = Array.from(
         .filter(year => year !== null)),
 ).sort(sortYears)
 
-const statParentsList: [StatPath, { group: Group, year: Year | null }][] = allGroups
+const statParentsList: [StatPath, { group: Group, year: Year | null, source: DataSource | null }][] = allGroups
     .flatMap(group => group.contents
         .flatMap(({ year, stats }) => stats
-            .map(stat => [stat.path, { group, year }] satisfies [StatPath, { group: Group, year: Year | null }])))
+            .flatMap(stat => stat.by_source
+                .map(({ source, path }) =>
+                    [path, { group, year, source }] satisfies [StatPath, { group: Group, year: Year | null, source: DataSource | null }]))))
 
-export const statParents = new Map<StatPath, { group: Group, year: Year | null }>(
+export const statParents = new Map<StatPath, { group: Group, year: Year | null, source: DataSource | null }>(
     statParentsList,
 )
 
