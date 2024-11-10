@@ -1,5 +1,5 @@
 import {
-    SEARCH_FIELD, TARGET, getLocation, getLocationWithoutSettings, screencap,
+    SEARCH_FIELD, TARGET, getLocationWithoutSettings, screencap,
     urbanstatsFixture,
 } from './test_utils'
 

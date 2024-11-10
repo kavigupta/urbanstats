@@ -1,4 +1,4 @@
-import { screencap, urbanstatsFixture, TARGET, getLocation, getLocationWithoutSettings } from './test_utils'
+import { screencap, urbanstatsFixture, TARGET, getLocationWithoutSettings } from './test_utils'
 
 function symlink_test(name: string, link: string, expected: string | undefined = undefined): void {
     if (expected === undefined) {
