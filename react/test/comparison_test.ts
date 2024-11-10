@@ -195,3 +195,23 @@ test('comparison-usa-vs-usa-netiher', async (t) => {
     // should show a warning
     await screencap(t)
 })
+
+urbanstatsFixture(
+    'comparison-city-vs-city',
+    `${TARGET}/comparison.html?longnames=%5B"Boston+city%2C+Massachusetts%2C+USA"%2C"Cambridge+city%2C+Massachusetts%2C+USA"%5D`,
+)
+
+test('comparison-city-vs-city', async (t) => {
+    // check that the image with class `universe-selector` has the alt text `USA`
+    await t.expect(Selector('img.universe-selector').getAttribute('alt')).eql('USA')
+})
+
+urbanstatsFixture(
+    'comparison-uc-vs-uc-intl',
+    `${TARGET}/comparison.html?longnames=%5B"Delhi+%5BNew+Delhi%5D+Urban+Center%2C+India"%2C"Mumbai+Urban+Center%2C+India"%5D`,
+)
+
+test('comparison-uc-vs-uc-intl', async (t) => {
+    // check that the image with class `universe-selector` has the alt text `world`
+    await t.expect(Selector('img.universe-selector').getAttribute('alt')).eql('world')
+})

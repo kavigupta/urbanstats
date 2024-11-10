@@ -43,13 +43,13 @@ export function default_article_universe(longname: string): 'USA' | 'world' {
     return 'world'
 }
 
-export function default_comparison_universe(longnames: string[]): 'USA' | 'world' {
-    // if all longnames are the same universe, default to that universe
+export function default_comparison_universe(longnames: string[], availableUniverses: string[]): string {
     const universes = longnames.map(x => default_article_universe(x))
-    if (universes.every(x => x === universes[0])) {
-        return universes[0]
-    }
-    return 'world'
+    // locate each universe in availableUniverses. If it is in, give the index, otherwise length of availableUniverses
+    const universe_indices = universes.map(x => availableUniverses.includes(x) ? availableUniverses.indexOf(x) : availableUniverses.length - 1)
+    // find the universe with the largest index
+    const max_index = Math.max(...universe_indices)
+    return availableUniverses[max_index]
 }
 
 export function universe_is_american(universe: string): boolean {
