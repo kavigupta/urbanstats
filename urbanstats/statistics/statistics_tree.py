@@ -25,7 +25,7 @@ class MultiSource:
     """
 
     by_source: dict[str | NoneType, str]
-    multi_source_name: str = None
+    multi_source_colname: str = None
 
     def __post_init__(self):
         if None in self.by_source:
@@ -52,8 +52,8 @@ class MultiSource:
         return dict(name=self.compute_name(name_map), stats=result)
 
     def compute_name(self, name_map):
-        if self.multi_source_name is not None:
-            return self.multi_source_name
+        if self.multi_source_colname is not None:
+            return name_map[self.multi_source_colname]
         assert len(self.by_source) == 1
         col = next(iter(self.by_source.values()))
         return name_map[col]
@@ -66,7 +66,7 @@ class StatisticGroup:
     """
 
     by_year: dict[int | NoneType, list[MultiSource]]
-    group_name: str = None
+    group_name_statcol: str = None
 
     def __post_init__(self):
         for year, cols in self.by_year.items():
@@ -106,12 +106,10 @@ class StatisticGroup:
         return {"year": year, "stats_by_source": stats_processed}
 
     def flatten(self, name_map, group_id):
-        group_name = self.compute_group_name(name_map)
-
         group_id = get_statistic_column_path(group_id)
         return {
             "id": group_id,
-            "name": group_name,
+            "name": self.compute_group_name(name_map),
             "contents": [
                 self.flatten_year(year, stats, name_map, list(name_map))
                 for year, stats in self.by_year.items()
@@ -119,12 +117,13 @@ class StatisticGroup:
         }
 
     def compute_group_name(self, name_map):
-        group_name = self.group_name
-        if group_name is None:
+        short_statcol = self.group_name_statcol
+        if short_statcol is None:
             year = None if None in self.by_year else max(self.by_year)
             short_statcol = self.by_year[year][0].by_source[None]
-            group_name = name_map[short_statcol]
-            if len(self.by_year) > 1:
+        group_name = name_map[short_statcol]
+        if len(self.by_year) > 1:
+            for year in self.by_year:
                 assert not (
                     str(year) in group_name
                 ), f"Group name should not contain year, but got: {group_name}"
