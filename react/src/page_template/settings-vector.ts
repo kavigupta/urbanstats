@@ -4,7 +4,7 @@
 
 import * as base58 from 'base58-js'
 
-import { Settings, SettingsDictionary, useSettings } from './settings'
+import { defaultSettingsList, RelationshipKey, Settings, SettingsDictionary, StatCategoryExpandedKey, StatCategorySavedIndeterminateKey, useSettings } from './settings'
 
 export type BooleanSettingKey = keyof { [K in keyof SettingsDictionary as SettingsDictionary[K] extends boolean ? K : never]: boolean }
 
@@ -233,10 +233,29 @@ const settingsVector = [
     { key: `use_imperial`, deprecated: false },
 ] satisfies ({ key: BooleanSettingKey, deprecated: false } | { key: string, deprecated: true })[]
 
+type NotIncludedInSettingsVector = (
+    RelationshipKey
+    | StatCategorySavedIndeterminateKey
+    | StatCategoryExpandedKey
+    | 'histogram_type' | 'histogram_relative'
+    | 'theme' | 'colorblind_mode' | 'clean_background'
+)
+
 // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- No deprecations yet
 const activeVectorKeys = settingsVector.flatMap(setting => setting.deprecated ? [] : [setting.key])
 
 export type VectorSettingKey = typeof activeVectorKeys[number]
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars -- Just for checking type
+function justForCheckingType(): (VectorSettingKey | NotIncludedInSettingsVector)[] {
+    return (defaultSettingsList.map(([x]) => x) satisfies (VectorSettingKey | NotIncludedInSettingsVector)[])
+}
+
+type Overlap = VectorSettingKey & NotIncludedInSettingsVector
+type CheckOverlap = [Overlap] extends [never] ? 'no overlap' : 'overlap'
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars -- Just for checking type
+const checkOverlap: CheckOverlap = 'no overlap'
 
 export function useVector(): string {
     const settings = useSettings(activeVectorKeys)
