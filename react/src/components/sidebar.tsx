@@ -195,14 +195,15 @@ export function SidebarForStatisticChoice(): ReactNode {
 // type representing a key of SettingsDictionary that have boolean values
 type BooleanSettingKey = keyof { [K in keyof SettingsDictionary as SettingsDictionary[K] extends boolean | undefined ? K : never]: boolean }
 
-export function CheckboxSetting(props: { name: string, setting_key: BooleanSettingKey, classNameToUse?: string, id?: string, testId?: string }): ReactNode {
+export function CheckboxSetting(props: { name: string, setting_key: BooleanSettingKey, classNameToUse?: string, id?: string, testId?: string, forcedOn?: boolean }): ReactNode {
     const [checked, setChecked] = useSetting(props.setting_key)
     const info = useSettingInfo(props.setting_key)
 
     return (
         <CheckboxSettingCustom
             name={props.name}
-            checked={checked ?? false}
+            checked={(checked ?? false) || (props.forcedOn ?? false)}
+            forcedOn={props.forcedOn}
             onChange={setChecked}
             classNameToUse={props.classNameToUse}
             id={props.id}
@@ -243,6 +244,7 @@ interface CheckboxSettingCustomProps {
     id?: string
     testId?: string
     highlight?: boolean
+    forcedOn?: boolean
 }
 
 export function CheckboxSettingCustom(props: CheckboxSettingCustomProps): ReactNode {
@@ -261,13 +263,15 @@ export function CheckboxSettingCustom(props: CheckboxSettingCustomProps): ReactN
         backgroundColor: props.highlight ? colors.slightlyDifferentBackgroundFocused : undefined,
         borderRadius: '5px',
     }
+    const forcedOn = props.forcedOn ?? false
 
     return (
-        <div className={props.classNameToUse ?? 'checkbox-setting'} style={divStyle}>
+        <div className={(props.classNameToUse ?? 'checkbox-setting') + (forcedOn ? ' testing-checkbox-disabled' : '')} style={divStyle}>
             <input
                 id={inputId}
                 type="checkbox"
                 checked={props.checked}
+                disabled={forcedOn}
                 onChange={(e) => { props.onChange(e.target.checked) }}
                 ref={checkboxRef}
                 style={{ accentColor: colors.hueColors.blue, backgroundColor: colors.background }}
