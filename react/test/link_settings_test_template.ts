@@ -171,6 +171,7 @@ export function linkSettingsTests(baseLink: string): void {
     })
 
     const histogramLink = `${baseLink}&s=oWHKo6omJJwy`
+    const histogramLinkWithRelativeChanged = `${baseLink}&s=oWHKo6omJJy5`
 
     urbanstatsFixture('generate histogram link', baseLink)
 
@@ -181,6 +182,14 @@ export function linkSettingsTests(baseLink: string): void {
             .eql(`${TARGET}${histogramLink}`)
     })
 
+    test('open histogram with relative changed', async (t) => {
+        await t.click(Selector('.expand-toggle'))
+        await t.click(Selector('[data-test-id=histogram_relative]'))
+
+        await t.expect(getLocation())
+            .eql(`${TARGET}${histogramLinkWithRelativeChanged}`)
+    })
+
     urbanstatsFixture('paste histogram link', histogramLink)
 
     test('histogram is visible', async (t) => {
@@ -189,6 +198,18 @@ export function linkSettingsTests(baseLink: string): void {
     })
 
     test('not in staging mode', async (t) => {
+        await t.expect(Selector('[data-test-id=staging_controls]').exists).notOk()
+    })
+
+    urbanstatsFixture('paste histogram relative changed link', histogramLinkWithRelativeChanged)
+
+    test('relative changed histogram is visible', async (t) => {
+        await t.expect(Selector('.histogram-svg-panel').exists).ok()
+        await t.expect(Selector('[data-test-id=histogram_relative]').checked).notOk()
+        await screencap(t)
+    })
+
+    test('relative changed histogram is not in staging mode', async (t) => {
         await t.expect(Selector('[data-test-id=staging_controls]').exists).notOk()
     })
 }
