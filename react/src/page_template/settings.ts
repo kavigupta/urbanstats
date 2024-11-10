@@ -1,5 +1,7 @@
 import { createContext, useContext, useEffect, useState } from 'react'
 
+import map_relationship from '../data/map_relationship'
+import article_types_other from '../data/type_to_type_category'
 import { DefaultMap } from '../utils/DefaultMap'
 
 import { Theme } from './colors'
@@ -53,8 +55,6 @@ const defaultCategorySelections = new Set(
 const defaultEnabledYears = new Set(
     [2020],
 )
-
-const map_relationship = require('../data/map_relationship.json') as [string, string][]
 
 export const defaultSettingsList = [
     ...map_relationship.map(
@@ -186,7 +186,7 @@ export class Settings {
         switch (action) {
             case 'apply':
                 for (const [key, value] of Object.entries(this.stagedSettings)) {
-                    this.settings[key as keyof SettingsDictionary] = value as never
+                    this.settings[key] = value as never
                     // No need to update observers since these were already the values
                 }
                 localStorage.setItem('settings', JSON.stringify(this.settings))
@@ -280,7 +280,6 @@ export function useSettings<K extends keyof SettingsDictionary>(keys: K[]): Pick
 }
 
 export function relatedSettingsKeys(article_type_this: string): RelationshipKey[] {
-    const article_types_other = require('../data/type_to_type_category.json') as Record<string, string>
     return Object.keys(article_types_other).map(article_type_other => relationship_key(article_type_this, article_type_other))
 }
 
