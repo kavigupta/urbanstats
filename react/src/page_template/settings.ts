@@ -6,10 +6,11 @@ import { DefaultMap } from '../utils/DefaultMap'
 
 import { Theme } from './colors'
 import { fromVector } from './settings-vector'
-import { allGroups, allYears, CategoryIdentifier, GroupIdentifier, statsTree, Year } from './statistic-tree'
+import { allGroups, allYears, CategoryIdentifier, GroupIdentifier, StatPath, statsTree, Year } from './statistic-tree'
 
 export type RelationshipKey = `related__${string}__${string}`
 export type RowExpandedKey = `expanded__${string}`
+export type RowExpandedKey<P extends StatPath> = `expanded__${P}`
 export type HistogramType = 'Bar' | 'Line' | 'Line (cumulative)'
 
 export type StatGroupKey<G extends GroupIdentifier = GroupIdentifier> = `show_stat_group_${G}`
@@ -19,7 +20,6 @@ export type StatYearKey<Y extends Year = Year> = `show_stat_year_${Y}`
 
 export type SettingsDictionary = {
     [relationshipKey: RelationshipKey]: boolean | undefined
-    [rowExpandedKey: RowExpandedKey]: boolean | undefined
     show_historical_cds: boolean
     simple_ordinals: boolean
     use_imperial: boolean
@@ -33,13 +33,14 @@ export type SettingsDictionary = {
 & { [C in CategoryIdentifier as StatCategorySavedIndeterminateKey<C>]: GroupIdentifier[] }
 & { [C in CategoryIdentifier as StatCategoryExpandedKey<C>]: boolean }
 & { [Y in Year as StatYearKey<Y>]: boolean }
+& { [P in StatPath as RowExpandedKey<P>]?: boolean }
 
 export function relationship_key(article_type: string, other_type: string): RelationshipKey {
     return `related__${article_type}__${other_type}`
 }
 
-export function row_expanded_key(row_statname: string): RowExpandedKey {
-    return `expanded__${row_statname}`
+export function row_expanded_key<P extends StatPath>(statpath: P): RowExpandedKey<P> {
+    return `expanded__${statpath}`
 }
 
 const defaultCategorySelections = new Set(
@@ -171,7 +172,7 @@ export class Settings {
         this.stagedKeysObservers.forEach((observer) => { observer() })
         for (const key of Object.keys(stagedSettings)) {
             // Need to update observers since the setting values have changed
-            this.settingValueObservers.get(key as keyof SettingsDictionary).forEach((observer) => { observer() })
+            this.settingValueObservers.get(key).forEach((observer) => { observer() })
         }
     }
 
@@ -195,7 +196,7 @@ export class Settings {
                 this.stagedKeysObservers.forEach((observer) => { observer() })
                 for (const key of Object.keys(stagedSettings)) {
                     // Need to update observers since the setting values have changed
-                    this.settingValueObservers.get(key as keyof SettingsDictionary).forEach((observer) => { observer() })
+                    this.settingValueObservers.get(key).forEach((observer) => { observer() })
                 }
                 break
         }
@@ -205,7 +206,7 @@ export class Settings {
         if (this.stagedSettings === undefined) {
             return undefined
         }
-        return Object.keys(this.stagedSettings) as (keyof SettingsDictionary)[]
+        return Object.keys(this.stagedSettings)
     }
 
     private readonly stagedKeysObservers = new Set<() => void>()
