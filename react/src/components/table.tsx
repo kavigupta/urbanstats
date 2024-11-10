@@ -210,7 +210,7 @@ export function StatisticRowCells(props: {
             widthPercentage: 15,
             columnIdentifier: 'statval',
             content: (
-                <span className="serif value">
+                <span className="serif value testing-statistic-value">
                     <Statistic
                         statname={props.row.statname}
                         value={props.row.statval}
