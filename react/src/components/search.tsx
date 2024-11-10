@@ -111,9 +111,6 @@ export const SearchBox = (props: {
                     continue
                 }
             }
-            if (is_international_duplicate(values[i])) {
-                continue
-            }
             matches_new.push([match_count, i, match_count - priorities[i] / 10])
         }
         matches_new = top_10(matches_new)
@@ -242,9 +239,4 @@ function is_a_match(a: string, b: string): number {
 
 function normalize(a: string): string {
     return a.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
-}
-
-function is_international_duplicate(x: string): boolean {
-    // ends with [SN], USA
-    return x.endsWith(' [SN], USA')
 }
