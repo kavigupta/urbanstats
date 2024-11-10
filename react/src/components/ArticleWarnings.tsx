@@ -16,8 +16,8 @@ export function ArticleWarnings(): ReactNode {
     const settings = useSettings(groupYearKeys())
 
     const allUncheckedSourceGroups = dataSourceCheckboxes
-        .filter(({ category, names }) => names
-            .every(name => !settings[source_enabled_key({ category, name })]))
+        .filter(({ category, checkboxSpecs }) => checkboxSpecs
+            .every(({ name, forcedOn }) => !forcedOn && !settings[source_enabled_key({ category, name })]))
 
     if (screenshotMode) {
         return null

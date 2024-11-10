@@ -134,10 +134,11 @@ export const statDataOrderToOrder = new Map<number, number>(
     statPaths.map((statPath, i) => [i, statPathToOrder.get(statPath)!] as const),
 )
 
-export type AmbiguousSources = Map<SourceCategoryIdentifier, Set<SourceIdentifier>>
-export type DataSourceCheckboxes = { category: SourceCategoryIdentifier, names: SourceIdentifier[] }[]
+export interface DataSourceCheckbox { name: SourceIdentifier, forcedOn: boolean }
 
-function findAmbiguousSources(paths: StatPath[]): AmbiguousSources {
+export type DataSourceCheckboxes = { category: SourceCategoryIdentifier, checkboxSpecs: DataSourceCheckbox[] }[]
+
+function findAmbiguousSources(paths: StatPath[]): Map<SourceCategoryIdentifier, Set<SourceIdentifier>> {
     const sources = paths.map(statPath => statParents.get(statPath)!.source)
     const ambiguousSources = new Map<SourceCategoryIdentifier, Set<SourceIdentifier>>()
     for (const source of sources) {
@@ -151,38 +152,61 @@ function findAmbiguousSources(paths: StatPath[]): AmbiguousSources {
         }
         ambiguousSources.get(category)!.add(name)
     }
-    // delete all length-1 categories
-    for (const [category, names] of ambiguousSources.entries()) {
-        if (names.size === 1) {
-            ambiguousSources.delete(category)
-        }
-    }
     return ambiguousSources
 }
 
+export type AmbiguousSources = Map<SourceCategoryIdentifier, { chooseable: Set<SourceIdentifier>, forcedOn: Set<SourceIdentifier> }>
+// Rule being followed here is somewhat nontrivial, but it exists to avoid showing a checkbox menu
+// in situations where unchecking boxes (which might be done by default) would result in no data
+// being shown at all.
+
+// The idea is to show a checkbox menu for all the checkboxes for each category that have more than
+// one source, but to not show a checkbox for any source where unchecking it would result in no data
+// for any of the articles.
 export function findAmbiguousSourcesAll(statPathsEach: StatPath[][]): AmbiguousSources {
-    const ambiguousSourcesAll = findAmbiguousSources(Array.from(statPathsEach[0]))
-    for (let i = 1; i < statPathsEach.length; i++) {
-        const ambiguousSources = findAmbiguousSources(statPathsEach[i])
-        for (const [category, sources] of ambiguousSourcesAll) {
-            if (ambiguousSources.has(category)) {
-                sources.forEach(source => ambiguousSourcesAll.get(category)!.add(source))
-            }
-            else {
-                ambiguousSourcesAll.delete(category)
+    const ambiguousSourcesAll = statPathsEach.map(findAmbiguousSources)
+    const categoriesAll = new Set(ambiguousSourcesAll.flatMap(ambiguousSources => Array.from(ambiguousSources.keys())))
+    const result = new Map<SourceCategoryIdentifier, { chooseable: Set<SourceIdentifier>, forcedOn: Set<SourceIdentifier> }>()
+    for (const category of categoriesAll) {
+        const namesEach = ambiguousSourcesAll.map(ambiguousSources => ambiguousSources.get(category) ?? new Set() satisfies Set<SourceIdentifier>)
+        const union = new Set(Array.from(namesEach[0]))
+        for (const names of namesEach.slice(1)) {
+            for (const name of names) {
+                union.add(name)
             }
         }
+        const singletons = new Set(namesEach.filter(names => names.size === 1).map(names => Array.from(names)[0])) satisfies Set<SourceIdentifier>
+        for (const name of singletons) {
+            union.delete(name)
+        }
+        result.set(category, { chooseable: union, forcedOn: singletons })
     }
-    return ambiguousSourcesAll
+    return result
 }
 
 export function sourceDisambiguation(ambiguousSources: AmbiguousSources): DataSourceCheckboxes {
+    function splitSources(sources: SourceIdentifier[], ambiguous: { chooseable: Set<SourceIdentifier>, forcedOn: Set<SourceIdentifier> }): DataSourceCheckbox[] {
+        const result = []
+        for (const source of sources) {
+            let forcedOn
+            if (ambiguous.forcedOn.has(source)) {
+                forcedOn = true
+            }
+            else if (ambiguous.chooseable.has(source)) {
+                forcedOn = false
+            }
+            else {
+                continue
+            }
+            result.push({ name: source, forcedOn })
+        }
+        return result
+    }
+
     return dataSources
-        .filter(({ category }) => ambiguousSources.has(category) && ambiguousSources.get(category)!.size > 1)
+        .filter(({ category }) => ambiguousSources.has(category) && ambiguousSources.get(category)!.chooseable.size > 0)
         .map(({ category, sources }) => ({
             category,
-            names: Array.from(sources)
-                .filter(({ source }) => ambiguousSources.has(category) && ambiguousSources.get(category)!.has(source))
-                .map(({ source }) => source),
+            checkboxSpecs: splitSources(sources.map(({ source }) => source), ambiguousSources.get(category)!),
         }))
 }

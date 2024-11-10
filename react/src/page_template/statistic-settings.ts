@@ -11,10 +11,16 @@ export function statIsEnabled(statId: StatPath, settings: StatGroupSettings, sou
     const { group, year, source } = statParents.get(statId)!
     return settings[`show_stat_group_${group.id}`]
         && (year !== null ? settings[`show_stat_year_${year}`] : true)
-        && (source !== null && sourcesByCategory.has(source.category) ? sourceApplies(source, settings) : true)
+        && (source !== null ? sourceApplies(source, settings, sourcesByCategory) : true)
 }
 
-export function sourceApplies(source: DataSource, settings: StatGroupSettings): boolean {
+export function sourceApplies(source: DataSource, settings: StatGroupSettings, sourcesByCategory: AmbiguousSources): boolean {
+    if (!sourcesByCategory.has(source.category)) {
+        return true
+    }
+    if (!sourcesByCategory.get(source.category)!.chooseable.has(source.name)) {
+        return true
+    }
     return settings[source_enabled_key(source) satisfies StatSourceKey]
 }
 
