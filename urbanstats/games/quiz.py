@@ -26,13 +26,11 @@ from urbanstats.statistics.output_statistics_metadata import (
     internal_statistic_names,
     statistic_internal_to_display_name,
 )
-from urbanstats.statistics.stat_path import get_statistic_column_path
-from urbanstats.website_data.sharding import create_filename
 from urbanstats.website_data.statistic_index_lists import index_list_for_longname
 from urbanstats.website_data.table import shapefile_without_ordinals
 
 from .fixed import juxtastat as fixed_up_to
-from .quiz_columns import categories, stats, stats_to_display, types
+from .quiz_columns import stats, stats_to_display, types
 from .quiz_custom import get_custom_quizzes
 
 min_pop = 250_000
