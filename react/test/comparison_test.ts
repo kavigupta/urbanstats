@@ -185,3 +185,13 @@ test('comparison-usa-vs-usa', async (t) => {
     // these are the values for the US Census, since GHSL is disabled
     await t.expect(await dataValues()).eql(['7.03', '39.5'])
 })
+
+urbanstatsFixture(
+    'comparison-usa-vs-usa-netiher',
+    `${TARGET}/comparison.html?longnames=%5B"Massachusetts%2C+USA"%2C"California%2C+USA"%5D&s=${NEITHER}`,
+)
+
+test('comparison-usa-vs-usa-netiher', async (t) => {
+    // should show a warning
+    await screencap(t)
+})
