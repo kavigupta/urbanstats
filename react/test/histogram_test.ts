@@ -8,9 +8,9 @@ export const sw_sgv = 'Southwest San Gabriel Valley CCD [CCD], Los Angeles Count
 export const east_sgv = 'East San Gabriel Valley CCD [CCD], Los Angeles County, California, USA'
 export const chicago = 'Chicago city [CCD], Cook County, Illinois, USA'
 
-async function download_or_check_histogram(t: TestController, name: string): Promise<void> {
+async function download_or_check_histogram(t: TestController, name: string, nth = 0): Promise<void> {
     const output = await t.eval(() => {
-        return document.getElementsByClassName('histogram-svg-panel')[0].innerHTML
+        return document.getElementsByClassName('histogram-svg-panel')[nth].innerHTML
     }) as string
     await download_or_check_string(t, output, name)
 }
@@ -89,6 +89,6 @@ urbanstatsFixture('comparison ordering test', `${TARGET}/comparison.html?longnam
 
 test('histogram-ordering', async (t) => {
     await t.click(Selector('.expand-toggle'))
-    await download_or_check_histogram(t, 'histogram-ordering')
+    await download_or_check_histogram(t, 'histogram-ordering', 1)
     await screencap(t)
 })
