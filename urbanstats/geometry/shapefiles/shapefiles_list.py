@@ -26,8 +26,10 @@ from urbanstats.geometry.shapefiles.shapefiles.subnational_regions import (
     SUBNATIONAL_REGIONS,
 )
 from urbanstats.geometry.shapefiles.shapefiles.urban_areas import URBAN_AREAS
-from urbanstats.geometry.shapefiles.shapefiles.urban_centers import URBAN_CENTERS
-from urbanstats.geometry.shapefiles.shapefiles.urban_centers import URBAN_CENTERS_USA
+from urbanstats.geometry.shapefiles.shapefiles.urban_centers import (
+    URBAN_CENTERS,
+    URBAN_CENTERS_USA,
+)
 from urbanstats.geometry.shapefiles.shapefiles.usda_county_type import USDA_COUNTY_TYPE
 from urbanstats.geometry.shapefiles.shapefiles.zctas import ZCTAs
 
