@@ -8,7 +8,7 @@ export function linkSettingsTests(baseLink: string): void {
     })
 
     const defaultLink = `${baseLink}&s=4YErw5vV5ZfzEX`
-    const expectedLink = `${baseLink}&s=jBXza8t6SU9`
+    const expectedLink = `${baseLink}&s=4RisSVrGwPQJH9`
 
     test('formulates correct link', async (t) => {
         // Check imperial, uncheck population

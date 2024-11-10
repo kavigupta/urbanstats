@@ -23,7 +23,7 @@ function migration(from: string, to: string): void {
 
 migration('BY68s6QRqV9', 'oWDfi6rQ4kxy')
 migration('3t2X5xvsKo', '4YErw5vV5ZfzEX')
-
+migration('jBXza8t6SU9', '4RisSVrGwPQJH9')
 urbanstatsFixture('settings regression test', testLocation,
     async (t) => {
         const EG_SETTINGS = fs.readFileSync('test/assets/saved-settings-1.json').toString()
