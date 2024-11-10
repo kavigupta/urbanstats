@@ -7,7 +7,6 @@ import { article_link, sanitize } from '../navigation/links'
 import { HueColors, useColors } from '../page_template/colors'
 import { row_expanded_key, useSetting, useSettings } from '../page_template/settings'
 import { groupYearKeys, StatPathsContext } from '../page_template/statistic-settings'
-import { StatPath } from '../page_template/statistic-tree'
 import { PageTemplate } from '../page_template/template'
 import { longname_is_exclusively_american, useUniverse } from '../universe'
 import { mixWithBackground } from '../utils/color'
@@ -16,20 +15,18 @@ import { useComparisonHeadStyle, useHeaderTextClass, useMobileLayout, useSubHead
 
 import { ArticleWarnings } from './ArticleWarnings'
 import { ArticleComparisonQuerySettingsConnection } from './QuerySettingsConnection'
-import { ArticleRow, load_article } from './load-article'
+import { ArticleRow, load_articles } from './load-article'
 import { MapGeneric, MapGenericProps, Polygons } from './map'
 import { WithPlot } from './plots'
 import { ScreencapElements, useScreenshotMode } from './screenshot'
 import { SearchBox } from './search'
-import { StatisticRow, StatisticRowRawCellContents } from './table'
+import { TableRowContainer, StatisticRowCells, TableHeaderContainer, StatisticHeaderCells, ColumnIdentifier } from './table'
 
-const main_columns = ['statval', 'statval_unit', 'statistic_ordinal', 'statistic_percentile']
-const main_columns_across_types = ['statval', 'statval_unit']
 const left_bar_margin = 0.02
 const left_margin_pct = 0.18
 const bar_height = '5px'
 
-export function ComparisonPanel(props: { joined_string: string, universes: string[], names: string[], datas: Article[] }): ReactNode {
+export function ComparisonPanel(props: { joined_string: string, universes: string[], names: string[], articles: Article[] }): ReactNode {
     const colors = useColors()
     const table_ref = useRef<HTMLDivElement>(null)
     const map_ref = useRef(null)
@@ -52,7 +49,7 @@ export function ComparisonPanel(props: { joined_string: string, universes: strin
                 </div>
             )
         }
-        const width = `${each(props.datas)}%`
+        const width = `${each(props.articles)}%`
         return (
             <div key={i} style={{ width }}>
                 {contents}
@@ -64,12 +61,12 @@ export function ComparisonPanel(props: { joined_string: string, universes: strin
         return (
             <div style={{ display: 'flex' }}>
                 {cell(true, 0, <div></div>)}
-                {props.datas.map(
+                {props.articles.map(
                     (data, i) => (
                         <div
                             key={i}
                             style={{
-                                width: `${each(props.datas)}%`,
+                                width: `${each(props.articles)}%`,
                                 height: bar_height,
                                 backgroundColor: color(colors.hueColors, i),
                             }}
@@ -82,21 +79,19 @@ export function ComparisonPanel(props: { joined_string: string, universes: strin
 
     const mobileLayout = useMobileLayout()
 
-    const max_columns = (): number => {
-        return mobileLayout ? 4 : 6
-    }
+    const allArticlesOfSameType = props.articles.every(article => article.articleType === props.articles[0].articleType)
 
-    const width_columns = (): number => {
-    // 1.5 columns each if all data types are the same, otherwise 1 column each
-    // + 1 for the left margin
-        return (all_data_types_same(props.datas) ? 1.5 : 1) * props.datas.length + 1
-    }
+    const onlyColumns: ColumnIdentifier[] = allArticlesOfSameType ? ['statval', 'statval_unit', 'statistic_ordinal', 'statistic_percentile'] : ['statval', 'statval_unit']
 
-    const maybe_scroll = (contents: React.ReactNode): ReactNode => {
-        if (width_columns() > max_columns()) {
+    const maxColumns = mobileLayout ? 4 : 6
+
+    const widthColumns = (allArticlesOfSameType ? 1.5 : 1) * props.articles.length + 1
+
+    const maybeScroll = (contents: React.ReactNode): ReactNode => {
+        if (widthColumns > maxColumns) {
             return (
                 <div style={{ overflowX: 'scroll' }}>
-                    <div style={{ width: `${100 * width_columns() / (max_columns() - 0.7)}%` }}>
+                    <div style={{ width: `${100 * widthColumns / (maxColumns - 0.7)}%` }}>
                         {contents}
                     </div>
                 </div>
@@ -109,33 +104,15 @@ export function ComparisonPanel(props: { joined_string: string, universes: strin
     const subHeaderTextClass = useSubHeaderTextClass()
     const comparisonRightStyle = useComparisonHeadStyle('right')
     const searchComparisonStyle = useComparisonHeadStyle()
+    const settings = useSettings(groupYearKeys())
+    const exclusively_american = props.articles.every(x => longname_is_exclusively_american(x.longname))
 
     const curr_universe = useUniverse()
-    let rows: ArticleRow[][] = []
-    const idxs: number[][] = []
-    const exclusively_american = props.datas.every(x => longname_is_exclusively_american(x.longname))
-    const settings = useSettings(groupYearKeys())
-    const statPaths = new Set<StatPath>()
-    for (const i of props.datas.keys()) {
-        const { result: [r, idx], availableStatPaths } = load_article(curr_universe, props.datas[i], settings,
-            exclusively_american)
-        rows.push(r)
-        idxs.push(idx)
-        availableStatPaths.forEach(path => statPaths.add(path))
-    }
 
-    rows = insert_missing(rows, idxs)
-
-    const header_row = (
-        <ComparisonRow
-            params={() => { return { is_header: true } }}
-            datas={props.datas}
-            names={props.names}
-        />
-    )
+    const { rows, statPaths } = load_articles(props.articles, curr_universe, settings, exclusively_american)
 
     return (
-        <StatPathsContext.Provider value={Array.from(statPaths)}>
+        <StatPathsContext.Provider value={statPaths}>
             <ArticleComparisonQuerySettingsConnection />
             <PageTemplate screencap_elements={screencap_elements} has_universe_selector={true} universes={props.universes}>
                 <div>
@@ -160,17 +137,17 @@ export function ComparisonPanel(props: { joined_string: string, universes: strin
 
                     <div style={{ marginBlockEnd: '1em' }}></div>
 
-                    {maybe_scroll(
+                    {maybeScroll(
                         <div ref={table_ref}>
                             {bars()}
                             <div style={{ display: 'flex' }}>
                                 {cell(true, 0, <div></div>)}
-                                {props.datas.map(
+                                {props.articles.map(
                                     (data, i) => cell(false, i,
                                         <div>
                                             <HeadingDisplay
                                                 longname={data.longname}
-                                                include_delete={props.datas.length > 1}
+                                                include_delete={props.articles.length > 1}
                                                 on_click={() => { on_delete(props.names, i) }}
                                                 on_change={(x) => { on_change(props.names, i, x) }}
                                             />
@@ -180,16 +157,19 @@ export function ComparisonPanel(props: { joined_string: string, universes: strin
                             </div>
                             {bars()}
 
-                            <StatisticRow is_header={true} index={0} contents={header_row} />
+                            <TableHeaderContainer>
+                                <ComparisonHeaders onlyColumns={onlyColumns} length={props.articles.length} />
+                            </TableHeaderContainer>
 
                             {
                                 rows[0].map((_, row_idx) => (
                                     <ComparisonRowBody
-                                        key={row_idx}
-                                        rows={rows}
-                                        row_idx={row_idx}
-                                        datas={props.datas}
+                                        key={rows[0][row_idx].statpath}
+                                        index={row_idx}
+                                        rows={rows.map(row => row[row_idx])}
+                                        articles={props.articles}
                                         names={props.names}
+                                        onlyColumns={onlyColumns}
                                     />
                                 ),
                                 )
@@ -201,8 +181,8 @@ export function ComparisonPanel(props: { joined_string: string, universes: strin
 
                     <div ref={map_ref}>
                         <ComparisonMap
-                            longnames={props.datas.map(x => x.longname)}
-                            colors={props.datas.map((_, i) => color(colors.hueColors, i))}
+                            longnames={props.articles.map(x => x.longname)}
+                            colors={props.articles.map((_, i) => color(colors.hueColors, i))}
                             basemap={{ type: 'osm' }}
                         />
                     </div>
@@ -253,61 +233,81 @@ function go(names: string[]): void {
     window.location.search = window_info.toString()
 }
 
-function each(datas: Article[]): number {
-    return 100 * (1 - left_margin_pct) / datas.length
+function each({ length }: { length: number }): number {
+    return 100 * (1 - left_margin_pct) / length
 }
 
-function all_data_types_same(datas: Article[]): boolean {
-    return datas.every(x => x.articleType === datas[0].articleType)
-}
-
-function ComparisonRowBody({ rows, row_idx, datas, names }: {
-    rows: ArticleRow[][]
-    row_idx: number
-    datas: Article[]
+function ComparisonRowBody({ rows, articles, names, onlyColumns, index }: {
+    rows: ArticleRow[]
+    articles: Article[]
     names: string[]
+    onlyColumns: ColumnIdentifier[]
+    index: number
 }): ReactNode {
     const colors = useColors()
-    const [expanded] = useSetting(row_expanded_key(rows[0][row_idx].statname))
-    const contents = (
-        <ComparisonRow
-            params={(data_idx) => {
-                return {
-                    key: row_idx, index: row_idx, ...rows[data_idx][row_idx], is_header: false,
-                }
-            }}
-            datas={datas}
-            names={names}
-        />
-    )
-    const plot_props = rows.map((row, data_idx) => ({ ...row[row_idx], color: color(colors.hueColors, data_idx), shortname: datas[data_idx].shortname }))
+    const [expanded] = useSetting(row_expanded_key(rows[0].statname))
+    const plot_props = rows.map((row, data_idx) => ({ ...row, color: color(colors.hueColors, data_idx), shortname: articles[data_idx].shortname }))
     return (
-        <WithPlot plot_props={plot_props} expanded={expanded ?? false} key={row_idx}>
-            <StatisticRow key={row_idx} is_header={false} index={row_idx} contents={contents} />
+        <WithPlot plot_props={plot_props} expanded={expanded ?? false}>
+            <TableRowContainer index={index}>
+                <ComparisonCells
+                    rows={rows}
+                    names={names}
+                    onlyColumns={onlyColumns}
+                />
+            </TableRowContainer>
         </WithPlot>
     )
 }
 
-function ComparisonRow({ names, params, datas }: {
+function ComparisonCells({ names, rows, onlyColumns }: {
     names: string[]
-    params: (i: number) => { is_header: true } | ({ is_header: false, key: number, index: number } & ArticleRow)
-    datas: Article[]
+    rows: ArticleRow[]
+    onlyColumns: ColumnIdentifier[]
 }): ReactNode {
     const colors = useColors()
-    const row_overall = []
-    const param_vals = Array.from(Array(datas.length).keys()).map(params)
 
-    const highlight_idx = param_vals.map(x => 'statval' in x ? x.statval : NaN).reduce((iMax, x, i, arr) => {
+    const highlightIndex = rows.map(x => x.statval).reduce<number | undefined>((iMax, x, i, arr) => {
         if (isNaN(x)) {
             return iMax
         }
-        if (iMax === -1) {
+        if (iMax === undefined) {
             return i
         }
         return x > arr[iMax] ? i : iMax
-    }, -1)
+    }, undefined)
 
-    row_overall.push(
+    return [
+        <ComparisonColorBar key="color" highlightIndex={highlightIndex} />,
+        <StatisticRowCells key="statname" onlyColumns={['statname']} longname={names[0]} totalWidth={100 * (left_margin_pct - left_bar_margin)} row={rows[0]} simpleOrdinals={true} />,
+        ...rows.map((row, i) => (
+            <StatisticRowCells
+                key={names[i]}
+                row={row}
+                longname={names[i]}
+                onlyColumns={onlyColumns}
+                simpleOrdinals={true}
+                statisticStyle={highlightIndex === i ? { backgroundColor: mixWithBackground(color(colors.hueColors, i), colors.mixPct / 100, colors.background) } : {}}
+                onNavigate={(x) => { on_change(names, i, x) }}
+                totalWidth={each(rows)}
+            />
+        )),
+    ]
+}
+
+function ComparisonHeaders({ onlyColumns, length }: { onlyColumns: ColumnIdentifier[], length: number }): ReactNode {
+    return [
+        <ComparisonColorBar key="color" highlightIndex={undefined} />,
+        <StatisticHeaderCells key="statname" onlyColumns={['statname']} simpleOrdinals={true} totalWidth={100 * (left_margin_pct - left_bar_margin)} />,
+        ...Array.from({ length })
+            .map((_, index) => <StatisticHeaderCells key={index} onlyColumns={onlyColumns} simpleOrdinals={true} totalWidth={each({ length })} />),
+    ]
+}
+
+function ComparisonColorBar({ highlightIndex }: { highlightIndex: number | undefined }): ReactNode {
+    const colors = useColors()
+
+    return (
         <div
             key="color"
             style={{
@@ -316,34 +316,14 @@ function ComparisonRow({ names, params, datas }: {
             }}
         >
             <div style={{
-                backgroundColor: highlight_idx === -1 ? colors.background : color(colors.hueColors, highlight_idx),
+                backgroundColor: highlightIndex === undefined ? colors.background : color(colors.hueColors, highlightIndex),
                 height: '100%',
                 width: '50%',
                 margin: 'auto',
             }}
             />
-        </div>,
+        </div>
     )
-
-    row_overall.push(...StatisticRowRawCellContents(
-        {
-            ...param_vals[0], only_columns: ['statname'], _idx: -1, simple: true, longname: datas[0].longname,
-            total_width: 100 * (left_margin_pct - left_bar_margin),
-        },
-    ))
-    const only_columns = all_data_types_same(datas) ? main_columns : main_columns_across_types
-
-    for (const i of datas.keys()) {
-        row_overall.push(...StatisticRowRawCellContents(
-            {
-                ...param_vals[i], only_columns, _idx: i, simple: true,
-                statistic_style: highlight_idx === i ? { backgroundColor: mixWithBackground(color(colors.hueColors, i), colors.mixPct / 100, colors.background) } : {},
-                onReplace: (x) => { on_change(names, i, x) },
-                total_width: each(datas),
-            },
-        ))
-    }
-    return row_overall
 }
 
 const manipulation_button_height = '24px'
@@ -410,46 +390,6 @@ function HeadingDisplay({ longname, include_delete, on_click, on_change: on_sear
                 : null}
         </div>
     )
-}
-
-function insert_missing(rows: ArticleRow[][], idxs: number[][]): ArticleRow[][] {
-    const empty_row_example: Record<number, ArticleRow> = {}
-    for (const data_i of rows.keys()) {
-        for (const row_i of rows[data_i].keys()) {
-            const idx = idxs[data_i][row_i]
-            empty_row_example[idx] = JSON.parse(JSON.stringify(rows[data_i][row_i])) as typeof rows[number][number]
-            for (const key of Object.keys(empty_row_example[idx]) as (keyof ArticleRow)[]) {
-                if (typeof empty_row_example[idx][key] === 'number') {
-                    // @ts-expect-error Typescript is fucking up this assignment
-                    empty_row_example[idx][key] = NaN
-                }
-                else if (key === 'extra_stat') {
-                    empty_row_example[idx][key] = undefined
-                }
-            }
-            empty_row_example[idx].article_type = 'none' // doesn't matter since we are using simple mode
-        }
-    }
-
-    const all_idxs = idxs.flat().filter((x, i, a) => a.indexOf(x) === i)
-    // sort all_idxs in ascending order numerically
-    all_idxs.sort((a, b) => a - b)
-
-    const new_rows_all = []
-    for (const data_i of rows.keys()) {
-        const new_rows = []
-        for (const idx of all_idxs) {
-            if (idxs[data_i].includes(idx)) {
-                const index_to_pull = idxs[data_i].findIndex(x => x === idx)
-                new_rows.push(rows[data_i][index_to_pull])
-            }
-            else {
-                new_rows.push(empty_row_example[idx])
-            }
-        }
-        new_rows_all.push(new_rows)
-    }
-    return new_rows_all
 }
 
 // eslint-disable-next-line prefer-function-component/prefer-function-component -- TODO: Maps don't support function components yet.

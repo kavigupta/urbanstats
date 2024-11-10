@@ -3,7 +3,7 @@ import stats from '../data/statistic_list'
 import names from '../data/statistic_name_list'
 import paths from '../data/statistic_path_list'
 import { StatGroupSettings, statIsEnabled } from '../page_template/statistic-settings'
-import { StatPath } from '../page_template/statistic-tree'
+import { statDataOrderToOrder, StatPath, statPathToOrder } from '../page_template/statistic-tree'
 import { universe_is_american } from '../universe'
 import { Article } from '../utils/protos'
 
@@ -48,7 +48,7 @@ export interface ArticleRow {
     statname: string
     statpath: StatPath
     explanation_page: string
-    article_type: string
+    articleType: string
     total_count_in_class: number
     total_count_overall: number
     _index: number
@@ -101,10 +101,7 @@ function compute_indices(longname: string, typ: string): number[] {
     return result.sort((a, b) => a - b)
 }
 
-export function load_article(universe: string, data: Article, settings: StatGroupSettings, exclusively_american: boolean): {
-    result: readonly [ArticleRow[], number[]]
-    availableStatPaths: StatPath[]
-} {
+export function load_single_article(data: Article, universe: string, exclusively_american: boolean): ArticleRow[] {
     // index of universe in data.universes
     const universe_index = data.universes.indexOf(universe)
     const article_type = data.articleType
@@ -114,7 +111,7 @@ export function load_article(universe: string, data: Article, settings: StatGrou
 
     const indices = compute_indices(data.longname, article_type)
 
-    const modified_rows: ArticleRow[] = data.rows.map((row_original, row_index) => {
+    const modified_rows = data.rows.map((row_original, row_index) => {
         const i = indices[row_index]
         // fresh row object
         let extra_stat: ExtraStat | undefined = undefined
@@ -154,7 +151,7 @@ export function load_article(universe: string, data: Article, settings: StatGrou
             statname: names[i],
             statpath: paths[i],
             explanation_page: explanation_page[i],
-            article_type,
+            articleType: article_type,
             total_count_in_class: for_type(universe, stats[i], article_type),
             total_count_overall: for_type(universe, stats[i], 'overall'),
             _index: i,
@@ -162,27 +159,43 @@ export function load_article(universe: string, data: Article, settings: StatGrou
             extra_stat,
         } satisfies ArticleRow
     })
+
     const availableRows = modified_rows.filter((row) => {
         if (universe_is_american(universe)) {
-            if (index_list_info.index_lists.gpw.includes(indices[row._index])) {
+            if (index_list_info.index_lists.gpw.includes(row._index)) {
                 return false
             }
         }
         else {
-            if (index_list_info.index_lists.usa.includes(indices[row._index])) {
+            if (index_list_info.index_lists.usa.includes(row._index)) {
                 return false
             }
         }
         return true
     })
-    const filtered_rows = availableRows.filter(row => statIsEnabled(row.statpath, settings))
+    return availableRows
+}
 
-    const filtered_indices = filtered_rows.map(x => x._index)
+export function load_articles(datas: Article[], universe: string, settings: StatGroupSettings, exclusively_american: boolean): {
+    rows: ArticleRow[][]
+    statPaths: StatPath[][]
+} {
+    const availableRowsAll = datas.map(data => load_single_article(data, universe, exclusively_american))
+    const statPathsEach = availableRowsAll.map((availableRows) => {
+        const statPathsThis = new Set<StatPath>()
+        availableRows.forEach((row) => {
+            statPathsThis.add(row.statpath)
+        })
+        return Array.from(statPathsThis)
+    })
 
-    return {
-        result: [filtered_rows, filtered_indices] as const,
-        availableStatPaths: availableRows.map(row => row.statpath),
-    }
+    const rows = availableRowsAll.map(availableRows => availableRows
+        .filter(row => statIsEnabled(row.statpath, settings))
+        // sort by order in statistics tree.
+        .sort((a, b) => statPathToOrder.get(a.statpath)! - statPathToOrder.get(b.statpath)!),
+    )
+    const rowsNothingMissing = insert_missing(rows)
+    return { rows: rowsNothingMissing, statPaths: statPathsEach }
 }
 
 export function render_statname(statindex: number, statname: string, exclusively_american: boolean): string {
@@ -192,4 +205,46 @@ export function render_statname(statindex: number, statname: string, exclusively
         return `${statname} (USA only)`
     }
     return statname
+}
+
+function insert_missing(rows: ArticleRow[][]): ArticleRow[][] {
+    const idxs = rows.map(row => row.map(x => x._index))
+
+    const empty_row_example: Record<number, ArticleRow> = {}
+    for (const data_i of rows.keys()) {
+        for (const row_i of rows[data_i].keys()) {
+            const idx = idxs[data_i][row_i]
+            empty_row_example[idx] = JSON.parse(JSON.stringify(rows[data_i][row_i])) as typeof rows[number][number]
+            for (const key of Object.keys(empty_row_example[idx]) as (keyof ArticleRow)[]) {
+                if (typeof empty_row_example[idx][key] === 'number') {
+                    // @ts-expect-error Typescript is fucking up this assignment
+                    empty_row_example[idx][key] = NaN
+                }
+                else if (key === 'extra_stat') {
+                    empty_row_example[idx][key] = undefined
+                }
+            }
+            empty_row_example[idx].articleType = 'none' // doesn't matter since we are using simple mode
+        }
+    }
+
+    const all_idxs = idxs.flat().filter((x, i, a) => a.indexOf(x) === i)
+    // sort all_idxs in ascending order numerically
+    all_idxs.sort((a, b) => statDataOrderToOrder.get(a)! - statDataOrderToOrder.get(b)!)
+
+    const new_rows_all = []
+    for (const data_i of rows.keys()) {
+        const new_rows = []
+        for (const idx of all_idxs) {
+            if (idxs[data_i].includes(idx)) {
+                const index_to_pull = idxs[data_i].findIndex(x => x === idx)
+                new_rows.push(rows[data_i][index_to_pull])
+            }
+            else {
+                new_rows.push(empty_row_example[idx])
+            }
+        }
+        new_rows_all.push(new_rows)
+    }
+    return new_rows_all
 }
