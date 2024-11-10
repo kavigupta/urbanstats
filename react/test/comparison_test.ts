@@ -1,6 +1,6 @@
 import { Selector } from 'testcafe'
 
-import { TARGET, check_textboxes, comparison_page, download_image, getLocation, screencap, urbanstatsFixture } from './test_utils'
+import { TARGET, check_textboxes, comparison_page, download_image, getLocation, getLocationWithoutSettings, screencap, urbanstatsFixture } from './test_utils'
 
 export const upper_sgv = 'Upper San Gabriel Valley CCD [CCD], Los Angeles County, California, USA'
 export const pasadena = 'Pasadena CCD [CCD], Los Angeles County, California, USA'
@@ -50,7 +50,7 @@ test('comparison-3-add', async (t) => {
         .click(otherRegion)
         .typeText(otherRegion, 'san marino city california')
         .pressKey('enter')
-    await t.expect(getLocation())
+    await t.expect(getLocationWithoutSettings())
         .eql(comparison_page([upper_sgv, pasadena, sw_sgv, 'San Marino city, California, USA']))
 })
 
@@ -58,7 +58,7 @@ test('comparison-3-remove-first', async (t) => {
     const remove = Selector('div').withAttribute('class', 'serif manipulation-button-delete').nth(0)
     await t
         .click(remove)
-    await t.expect(getLocation())
+    await t.expect(getLocationWithoutSettings())
         .eql(comparison_page([pasadena, sw_sgv]))
 })
 
@@ -66,7 +66,7 @@ test('comparison-3-remove-second', async (t) => {
     const remove = Selector('div').withAttribute('class', 'serif manipulation-button-delete').nth(1)
     await t
         .click(remove)
-    await t.expect(getLocation())
+    await t.expect(getLocationWithoutSettings())
         .eql(comparison_page([upper_sgv, sw_sgv]))
 })
 
@@ -79,7 +79,7 @@ test('comparison-3-replace-second', async (t) => {
     await t
         .typeText(otherRegion, 'East San Gabriel Valley')
         .pressKey('enter')
-    await t.expect(getLocation())
+    await t.expect(getLocationWithoutSettings())
         .eql(comparison_page([upper_sgv, east_sgv, sw_sgv]))
 })
 
@@ -92,7 +92,7 @@ test('comparison-3-editable-number-third', async (t) => {
         .typeText(editableNumber, '3')
         .pressKey('enter')
     await t.expect(editableNumber.innerText).eql('3')
-    await t.expect(getLocation())
+    await t.expect(getLocationWithoutSettings())
         .eql(comparison_page([upper_sgv, pasadena, chicago]))
 })
 
