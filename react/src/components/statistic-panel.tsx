@@ -405,13 +405,13 @@ function AutoPercentile(props: {
     data: { populationPercentile: number[] }
     i: number
 }): ReactNode {
-    const [simple_ordinals] = useSetting('simple_ordinals')
+    const [simpleOrdinals] = useSetting('simple_ordinals')
     return (
         <Percentile
             ordinal={props.ordinal}
             total={props.total_count_in_class}
             percentile_by_population={props.data.populationPercentile[props.i]}
-            simple={simple_ordinals}
+            simpleOrdinals={simpleOrdinals}
         />
     )
 }

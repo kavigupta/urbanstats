@@ -5,7 +5,7 @@ import { Histogram } from './plots-histogram'
 import { TimeSeriesPlot } from './plots-timeseries'
 
 interface PlotProps {
-    shortname?: string
+    shortname: string
     extra_stat?: ExtraStat
     color: string
 }
@@ -31,7 +31,7 @@ function RenderedPlot({ plot_props }: { plot_props: PlotProps[] }): ReactNode {
                         }
                         return [
                             {
-                                shortname: props.shortname!,
+                                shortname: props.shortname,
                                 histogram: props.extra_stat,
                                 color: props.color,
                                 universe_total: props.extra_stat.universe_total,
@@ -50,7 +50,7 @@ function RenderedPlot({ plot_props }: { plot_props: PlotProps[] }): ReactNode {
                         throw new Error('expected time_series')
                     }
                     return {
-                        shortname: props.shortname!,
+                        shortname: props.shortname,
                         stat: props.extra_stat,
                         color: props.color,
                     }
