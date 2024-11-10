@@ -126,7 +126,7 @@ export function Sidebar(): ReactNode {
                 </ul>
             </div>
             { useContext(StatPathsContext) !== undefined
-                ? <SidebarContext />
+                ? <SidebarForStatisticChoice />
                 : null}
             <div className="sidebar-section">
                 <div style={sidebar_section_title}>Appearance</div>
@@ -152,7 +152,7 @@ export function Sidebar(): ReactNode {
     )
 }
 
-export function SidebarContext(): ReactNode {
+export function SidebarForStatisticChoice(): ReactNode {
     const sidebar_section_content = useSidebarSectionContentClassName()
     const sidebar_section_title = useSidebarSectionTitleStyle()
     return (
