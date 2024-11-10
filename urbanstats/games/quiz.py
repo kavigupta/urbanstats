@@ -163,8 +163,7 @@ def sample_quiz_question(
         at_pop, universes = filter_for_pop(typ)
         stat_column_original = rng.choice(at_pop.columns)
         cat = get_statistic_categories()[stat_column_original]
-        p_skip = skip_category_probs.get(cat, 0)
-        if rng.uniform() < p_skip:
+        if rng.uniform() < skip_category_probs.get(cat, 0):
             continue
         if cat in banned_categories:
             continue
