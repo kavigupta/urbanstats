@@ -1,4 +1,3 @@
-from urbanstats.geometry.shapefiles.shapefile import Shapefile
 from urbanstats.geometry.shapefiles.shapefiles.ccds import CCDs
 from urbanstats.geometry.shapefiles.shapefiles.cities import CITIES
 from urbanstats.geometry.shapefiles.shapefiles.continents import CONTINENTS
@@ -28,9 +27,9 @@ from urbanstats.geometry.shapefiles.shapefiles.subnational_regions import (
 )
 from urbanstats.geometry.shapefiles.shapefiles.urban_areas import URBAN_AREAS
 from urbanstats.geometry.shapefiles.shapefiles.urban_centers import URBAN_CENTERS
+from urbanstats.geometry.shapefiles.shapefiles.urban_centers import URBAN_CENTERS_USA
 from urbanstats.geometry.shapefiles.shapefiles.usda_county_type import USDA_COUNTY_TYPE
 from urbanstats.geometry.shapefiles.shapefiles.zctas import ZCTAs
-from urbanstats.special_cases.ghsl_urban_center import load_ghsl_urban_center
 
 shapefiles = dict(
     counties=COUNTIES,
@@ -55,17 +54,6 @@ shapefiles = dict(
     subnational_regions=SUBNATIONAL_REGIONS,
     urban_centers=URBAN_CENTERS,
     **population_circles_shapefiles,
-)
-
-URBAN_CENTERS_USA = Shapefile(
-    hash_key="us_urban_centers_5",
-    path=load_ghsl_urban_center,
-    shortname_extractor=lambda x: x["shortname"],
-    longname_extractor=lambda x: x["longname"],
-    meta=dict(type="Urban Center", source="GHSL", type_category="International"),
-    filter=lambda x: "USA" == x.suffix,
-    american=True,
-    include_in_gpw=False,
 )
 
 shapefiles_for_stats = dict(
