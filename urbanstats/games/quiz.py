@@ -6,6 +6,7 @@ import os
 import shutil
 import urllib
 from datetime import datetime
+from functools import lru_cache
 
 import numpy as np
 import pandas as pd
@@ -14,7 +15,6 @@ import tqdm.auto as tqdm
 from permacache import permacache, stable_hash
 
 from urbanstats.games.quiz_columns import stats_to_display, types
-from urbanstats.geometry.relationship import states_for_all
 from urbanstats.geometry.shapefiles.shapefiles_list import (
     american_to_international,
     filter_table_for_type,
@@ -26,6 +26,7 @@ from urbanstats.statistics.output_statistics_metadata import (
     internal_statistic_names,
     statistic_internal_to_display_name,
 )
+from urbanstats.universe.annotate_universes import universe_by_universe_type
 from urbanstats.website_data.statistic_index_lists import index_list_for_longname
 from urbanstats.website_data.table import shapefile_without_ordinals
 
@@ -35,7 +36,7 @@ from .quiz_custom import get_custom_quizzes
 
 min_pop = 250_000
 min_pop_international = 2_500_000
-version_numeric = 67
+version_numeric = 72
 
 version = str(version_numeric) + stable_hash(statistic_collections)
 
@@ -138,9 +139,14 @@ def compute_difficulty(stat_a, stat_b, stat_column_original, typ):
     return diff
 
 
+@lru_cache(maxsize=None)
+def state_universes():
+    return set(universe_by_universe_type()["state"])
+
+
 def same_state(a, b):
-    sfa = states_for_all()
-    return set(sfa[a]) & set(sfa[b]) != set()
+    shared_states = set(a) & set(b) & state_universes()
+    return bool(shared_states)
 
 
 def is_international(typ):
@@ -154,11 +160,10 @@ def sample_quiz_question(
         typ = rng.choice(types)
         if type_ban_categorize(typ) in banned_type_categories:
             continue
-        at_pop = filter_for_pop(typ)
+        at_pop, universes = filter_for_pop(typ)
         stat_column_original = rng.choice(at_pop.columns)
         cat = get_statistic_categories()[stat_column_original]
-        p_skip = skip_category_probs.get(cat, 0)
-        if rng.uniform() < p_skip:
+        if rng.uniform() < skip_category_probs.get(cat, 0):
             continue
         if cat in banned_categories:
             continue
@@ -167,7 +172,7 @@ def sample_quiz_question(
             if typ == "State":
                 if "District of Columbia, USA" in (a, b):
                     continue
-            if same_state(a, b):
+            if same_state(universes.loc[a], universes.loc[b]):
                 continue
             stat_a, stat_b = (
                 at_pop.loc[a][stat_column_original],
@@ -202,11 +207,11 @@ def filter_for_pop(typ):
         strict_display=True,
     )
     stats_filter = {internal_statistic_names()[i] for i in idxs}
+    universes = at_pop["universes"]
     at_pop = pd.DataFrame({s: at_pop[s] for s in stats if s in stats_filter})
     mask = ~at_pop.applymap(np.isnan).all()
     assert mask.all()
-    at_pop = at_pop.loc[:, mask]
-    return at_pop
+    return at_pop, universes
 
 
 def minimum_population(typ):
