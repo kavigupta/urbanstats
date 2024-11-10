@@ -8,7 +8,7 @@ import { HueColors, useColors } from '../page_template/colors'
 import { row_expanded_key, useSetting, useSettings } from '../page_template/settings'
 import { groupYearKeys, StatPathsContext } from '../page_template/statistic-settings'
 import { PageTemplate } from '../page_template/template'
-import { longname_is_exclusively_american, useUniverse } from '../universe'
+import { useUniverse } from '../universe'
 import { mixWithBackground } from '../utils/color'
 import { Article } from '../utils/protos'
 import { useComparisonHeadStyle, useHeaderTextClass, useMobileLayout, useSubHeaderTextClass } from '../utils/responsive'
@@ -105,11 +105,10 @@ export function ComparisonPanel(props: { joined_string: string, universes: strin
     const comparisonRightStyle = useComparisonHeadStyle('right')
     const searchComparisonStyle = useComparisonHeadStyle()
     const settings = useSettings(groupYearKeys())
-    const exclusively_american = props.articles.every(x => longname_is_exclusively_american(x.longname))
 
     const curr_universe = useUniverse()
 
-    const { rows, statPaths } = load_articles(props.articles, curr_universe, settings, exclusively_american)
+    const { rows, statPaths } = load_articles(props.articles, curr_universe, settings)
 
     return (
         <StatPathsContext.Provider value={statPaths}>

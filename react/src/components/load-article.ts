@@ -80,7 +80,7 @@ function compute_indices(longname: string, typ: string): number[] {
     return result.sort((a, b) => a - b)
 }
 
-export function load_single_article(data: Article, universe: string, exclusively_american: boolean): ArticleRow[] {
+export function load_single_article(data: Article, universe: string): ArticleRow[] {
     // index of universe in data.universes
     const universe_index = data.universes.indexOf(universe)
     const article_type = data.articleType
@@ -122,17 +122,17 @@ export function load_single_article(data: Article, universe: string, exclusively
             total_count_in_class: for_type(universe, stats[i], article_type),
             total_count_overall: for_type(universe, stats[i], 'overall'),
             _index: i,
-            rendered_statname: render_statname(i, names[i], exclusively_american),
+            rendered_statname: names[i],
             extra_stat,
         } satisfies ArticleRow
     })
 }
 
-export function load_articles(datas: Article[], universe: string, settings: StatGroupSettings, exclusively_american: boolean): {
+export function load_articles(datas: Article[], universe: string, settings: StatGroupSettings): {
     rows: ArticleRow[][]
     statPaths: StatPath[][]
 } {
-    const availableRowsAll = datas.map(data => load_single_article(data, universe, exclusively_american))
+    const availableRowsAll = datas.map(data => load_single_article(data, universe))
     const statPathsEach = availableRowsAll.map((availableRows) => {
         const statPathsThis = new Set<StatPath>()
         availableRows.forEach((row) => {
@@ -150,15 +150,6 @@ export function load_articles(datas: Article[], universe: string, settings: Stat
     )
     const rowsNothingMissing = insert_missing(rows)
     return { rows: rowsNothingMissing, statPaths: statPathsEach }
-}
-
-export function render_statname(statindex: number, statname: string, exclusively_american: boolean): string {
-    const usa_stat = index_list_info.index_lists.usa.includes(statindex)
-    if (!exclusively_american && usa_stat) {
-        // TODO I think we can probably remove this check
-        return `${statname} (USA only)`
-    }
-    return statname
 }
 
 function insert_missing(rows: ArticleRow[][]): ArticleRow[][] {

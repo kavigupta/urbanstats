@@ -8,7 +8,7 @@ import { useColors } from '../page_template/colors'
 import { row_expanded_key, useSetting, useSettings } from '../page_template/settings'
 import { groupYearKeys, StatPathsContext } from '../page_template/statistic-settings'
 import { PageTemplate } from '../page_template/template'
-import { longname_is_exclusively_american, useUniverse } from '../universe'
+import { useUniverse } from '../universe'
 import { Article, IRelatedButtons } from '../utils/protos'
 import { useComparisonHeadStyle, useHeaderTextClass, useSubHeaderTextClass } from '../utils/responsive'
 import { NormalizeProto } from '../utils/types'
@@ -40,8 +40,7 @@ export function ArticlePanel({ article }: { article: Article }): ReactNode {
 
     const curr_universe = useUniverse()
     const settings = useSettings(groupYearKeys())
-    const { rows: filtered_rows_multi, statPaths } = load_articles([article], curr_universe, settings,
-        longname_is_exclusively_american(article.longname))
+    const { rows: filtered_rows_multi, statPaths } = load_articles([article], curr_universe, settings)
     if (filtered_rows_multi.length !== 1) {
         throw new Error('filtered_rows_multi should have exactly one element')
     }
