@@ -1,8 +1,8 @@
 import React, { ReactNode, useContext, useEffect } from 'react'
 
-import { Settings, SettingsDictionary } from '../page_template/settings'
+import { Settings, SettingsDictionary, statPathsWithExtra } from '../page_template/settings'
 import { fromVector, useVector, VectorSettingKey } from '../page_template/settings-vector'
-import { useAvailableGroups, useAvailableYears } from '../page_template/statistic-settings'
+import { useAvailableGroups, useAvailableYears, useStatPaths } from '../page_template/statistic-settings'
 
 /**
  * - Query Params -> Settings
@@ -52,12 +52,16 @@ export function QuerySettingsConnection({ settingsKeys }: { settingsKeys: Vector
 }
 
 export function ArticleComparisonQuerySettingsConnection(): ReactNode {
+    const availableStatPaths = useStatPaths()
+    const availableStatPathsWithExtra = statPathsWithExtra.filter(path => availableStatPaths.includes(path))
+
     const settingsKeys: VectorSettingKey[] = [
         'use_imperial',
         'show_historical_cds',
         'simple_ordinals',
         ...useAvailableYears().map(year => `show_stat_year_${year}` as const),
         ...useAvailableGroups().map(group => `show_stat_group_${group.id}` as const),
+        ...availableStatPathsWithExtra.map(path => `expanded__${path}` as const),
     ]
 
     return <QuerySettingsConnection settingsKeys={settingsKeys} />

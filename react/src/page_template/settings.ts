@@ -12,7 +12,7 @@ import { allGroups, allYears, CategoryIdentifier, DataSource, GroupIdentifier, S
 
 export type RelationshipKey = `related__${string}__${string}`
 
-const statPathsWithExtra = extra_stats.map(([index]) => stat_path_list[index])
+export const statPathsWithExtra = extra_stats.map(([index]) => stat_path_list[index])
 export type StatPathWithExtra = (typeof statPathsWithExtra)[number]
 export type RowExpandedKey<P extends StatPathWithExtra> = `expanded__${P}`
 
