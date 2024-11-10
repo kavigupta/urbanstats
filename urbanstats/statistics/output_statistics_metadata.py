@@ -1,8 +1,8 @@
-import json
 from functools import lru_cache
 
 from urbanstats.statistics.stat_path import get_statistic_column_path
 
+from ..utils import output_typescript
 from .collections_list import statistic_collections
 from .statistics_tree import statistics_tree
 
@@ -63,27 +63,23 @@ def get_explanation_page():
 
 
 def output_statistics_metadata():
-    with open("react/src/data/statistic_name_list.json", "w") as f:
-        json.dump(list(statistic_internal_to_display_name().values()), f)
-    with open("react/src/data/statistic_path_list.json", "w") as f:
-        json.dump(
+    with open("react/src/data/statistic_name_list.ts", "w") as f:
+        output_typescript(list(statistic_internal_to_display_name().values()), f)
+    with open("react/src/data/statistic_path_list.ts", "w") as f:
+        output_typescript(
             [
                 get_statistic_column_path(name)
                 for name in statistic_internal_to_display_name()
             ],
             f,
         )
-    with open("react/src/data/statistic_list.json", "w") as f:
-        json.dump(list(internal_statistic_names()), f)
+    with open("react/src/data/statistic_list.ts", "w") as f:
+        output_typescript(list(internal_statistic_names()), f)
 
-    with open("react/src/data/explanation_page.json", "w") as f:
-        json.dump(list(get_explanation_page().values()), f)
+    with open("react/src/data/explanation_page.ts", "w") as f:
+        output_typescript(list(get_explanation_page().values()), f)
 
-    export_statistics_tree("react/src/data/statistics_tree.ts")
-
-
-def export_statistics_tree(path):
-    fst = statistics_tree.flatten(statistic_internal_to_display_name())
-    fst = json.dumps(fst, indent=4)
-    with open(path, "w") as f:
-        f.write(f"export const rawStatsTree = {fst} as const\n")
+    with open("react/src/data/statistics_tree.ts", "w") as f:
+        output_typescript(
+            statistics_tree.flatten(statistic_internal_to_display_name()), f
+        )

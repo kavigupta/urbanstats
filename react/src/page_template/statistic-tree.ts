@@ -1,10 +1,9 @@
-import { rawStatsTree } from '../data/statistics_tree'
+import statNames from '../data/statistic_name_list'
+import statPaths from '../data/statistic_path_list'
+import rawStatsTree from '../data/statistics_tree'
 import { DefaultMap } from '../utils/DefaultMap'
 
-const statPaths = require('../data/statistic_path_list.json') as StatPath[]
-const statNames = require('../data/statistic_name_list.json') as string[]
-
-export type StatPath = string & { __statPath: true }
+export type StatPath = (typeof statPaths)[number]
 
 export type CategoryIdentifier = (typeof rawStatsTree)[number]['id']
 export type GroupIdentifier = (typeof rawStatsTree)[number]['contents'][number]['id']
