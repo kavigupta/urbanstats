@@ -7,7 +7,7 @@ export function linkSettingsTests(baseLink: string): void {
         await t.click('.expandButton[data-category-id=main]')
     })
 
-    const defaultLink = `${baseLink}&s=4YErw5vV5ZfzEX`
+    const defaultLink = `${baseLink}&s=3PTGqijnkK`
     const expectedLink = `${baseLink}&s=4RisSVrGwPQJH9`
 
     test('formulates correct link', async (t) => {
