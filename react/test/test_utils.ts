@@ -54,6 +54,7 @@ export async function check_all_category_boxes(t: TestController): Promise<void>
                     && label !== 'Election'
                     && label !== '2020'
                     && label !== 'Main'
+                    && label !== 'US Census'
                 )
             }).find('input')
         for (let i = 0; i < await checkboxes.count; i++) {
