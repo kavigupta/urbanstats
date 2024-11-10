@@ -26,13 +26,11 @@ from urbanstats.statistics.output_statistics_metadata import (
     internal_statistic_names,
     statistic_internal_to_display_name,
 )
-from urbanstats.statistics.stat_path import get_statistic_column_path
-from urbanstats.website_data.sharding import create_filename
 from urbanstats.website_data.statistic_index_lists import index_list_for_longname
 from urbanstats.website_data.table import shapefile_without_ordinals
 
 from .fixed import juxtastat as fixed_up_to
-from .quiz_columns import categories, stats, stats_to_display, types
+from .quiz_columns import stats, stats_to_display, types
 from .quiz_custom import get_custom_quizzes
 
 min_pop = 250_000
@@ -211,16 +209,6 @@ def filter_for_pop(typ):
     return at_pop
 
 
-def entire_table():
-    return pd.concat(
-        [
-            filter_for_pop(type)
-            for type in types
-            if type not in american_to_international
-        ]
-    )
-
-
 def minimum_population(typ):
     if is_international(typ):
         return min_pop_international
@@ -311,53 +299,6 @@ def generate_quizzes(folder):
         with open(path(i), "w") as f:
             outs = full_quiz(("daily", i))
             json.dump(outs, f)
-
-
-def generate_quiz_info_for_website(site_folder):
-    folder = "react/src/data/quiz"
-    try:
-        os.mkdir(folder)
-    except FileExistsError:
-        pass
-
-    try:
-        os.mkdir(f"{site_folder}/quiz_sample_info")
-    except FileExistsError:
-        pass
-
-    with open(f"{folder}/categories.json", "w") as f:
-        json.dump(categories, f)
-
-    with open(f"{folder}/types.json", "w") as f:
-        json.dump(types, f)
-
-    with open(f"{folder}/stat_to_question.json", "w") as f:
-        json.dump(
-            {get_statistic_column_path(k): v for k, v in stats_to_display.items()}, f
-        )
-
-    with open(f"{folder}/list_of_regions.json", "w") as f:
-        json.dump({type: list(filter_for_pop(type).index) for type in types}, f)
-
-    table = entire_table()
-    table = {
-        x: {
-            get_statistic_column_path(col): float(table[col][x])
-            for col in stats_to_display
-        }
-        for x in table.index
-    }
-    for loc in table:
-        path = f"{site_folder}/quiz_sample_info/{create_filename(loc, 'json')}"
-        folder = os.path.dirname(path)
-        # this should just be a library function but whatever
-        # pylint: disable=duplicate-code
-        try:
-            os.makedirs(folder)
-        except FileExistsError:
-            pass
-        with open(path, "w") as f:
-            json.dump(table[loc], f)
 
 
 def display_question(question):
