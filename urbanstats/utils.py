@@ -1,3 +1,5 @@
+import json
+
 import numpy as np
 from permacache import stable_hash
 
@@ -43,3 +45,11 @@ def compute_bins(data, weight, *, bin_size=0.1):
     idx = np.clip(idx, 0, len(values) - 1)
     np.add.at(values, idx, weight)
     return values
+
+
+def output_typescript(data, file, data_type="const"):
+    content = json.dumps(data, indent=4)
+    if data_type == "const":
+        file.write(f"export default {content} as const")
+    else:
+        file.write(f"const value: {data_type} = {content}\nexport default value")

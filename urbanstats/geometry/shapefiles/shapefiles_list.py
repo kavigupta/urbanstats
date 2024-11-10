@@ -58,12 +58,12 @@ shapefiles = dict(
 )
 
 URBAN_CENTERS_USA = Shapefile(
-    hash_key="us_urban_centers_4",
+    hash_key="us_urban_centers_5",
     path=load_ghsl_urban_center,
     shortname_extractor=lambda x: x["shortname"],
     longname_extractor=lambda x: x["longname"],
     meta=dict(type="Urban Center", source="GHSL", type_category="International"),
-    filter=lambda x: "USA" in x.suffix,
+    filter=lambda x: "USA" == x.suffix,
     american=True,
     include_in_gpw=False,
 )
@@ -90,7 +90,7 @@ def filter_table_for_type(table, typ):
         typ = american_to_international[typ]
     table = table[table.type == typ]
     if is_internationalized:
-        table = table[table.longname.apply(lambda x: "USA" in x)]
+        table = table[table.longname.apply(lambda x: x.endswith(", USA"))]
     return table
 
 
@@ -101,5 +101,7 @@ def load_file_for_type(typ):
     [loaded_file] = [x for x in shapefiles.values() if x.meta["type"] == typ]
     loaded_file = loaded_file.load_file()
     if is_internationalized:
-        loaded_file = loaded_file[loaded_file.longname.apply(lambda x: "USA" in x)]
+        loaded_file = loaded_file[
+            loaded_file.longname.apply(lambda x: x.endswith(", USA"))
+        ]
     return loaded_file

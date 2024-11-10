@@ -33,9 +33,9 @@ class SegregationStatistics(USAStatistics):
         return {
             "homogeneity_250_2020": "higher racial homogeneity"
             + homogeneity_explanation,
-            "homogeneity_250_diff_2010": "increase in racial homogeneity from 2010 to 2020"
+            "homogeneity_250_diff_2010": "higher increase (or smaller decrease) in racial homogeneity from 2010 to 2020"
             + homogeneity_explanation,
-            "homogeneity_250_diff_2000": "increase in racial homogeneity from 2000 to 2020"
+            "homogeneity_250_diff_2000": "higher increase (or smaller decrease) in racial homogeneity from 2000 to 2020"
             + homogeneity_explanation,
         }
 

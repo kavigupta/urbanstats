@@ -28,11 +28,11 @@ async function loadPage(): Promise<void> {
     // intersection of all the data.universes
     const universes = datas.map(x => x.universes).reduce((a, b) => a.filter(c => b.includes(c)))
     remove_universe_if_not_in(universes)
-    const default_universe = default_comparison_universe(names)
+    const default_universe = default_comparison_universe(names, universes)
     remove_universe_if_default(default_universe)
     root.render(
         <UNIVERSE_CONTEXT.Provider value={get_universe(default_universe)}>
-            <ComparisonPanel names={names} datas={datas} joined_string={joined_string} universes={universes} />
+            <ComparisonPanel names={names} articles={datas} joined_string={joined_string} universes={universes} />
         </UNIVERSE_CONTEXT.Provider>,
     )
 }

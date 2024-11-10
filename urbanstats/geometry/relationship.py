@@ -318,14 +318,11 @@ tiers = [
     [
         "Continent",
         "1B Person Circle",
-        "US 1B Person Circle",
         "500M Person Circle",
-        "US 500M Person Circle",
     ],
     [
         "Country",
         "200M Person Circle",
-        "US 200M Person Circle",
         "100M Person Circle",
         "US 100M Person Circle",
     ],
@@ -383,8 +380,6 @@ type_category_order = {
     "Oddball": 70,
     "Kavi": 80,
 }
-
-is_american = {k: v.american for k, v in shapefiles_for_stats.items()}
 
 key_to_type = {x: sf.meta["type"] for x, sf in shapefiles_for_stats.items()}
 
@@ -448,7 +443,7 @@ def full_relationships(long_to_type):
 
 
 @permacache(
-    "relationship/relationships_for_list",
+    "relationship/relationships_for_list_2",
     key_function=dict(
         long_to_type=stable_hash,
         shapefiles_to_use=lambda shapefiles_to_use: stable_hash(
@@ -518,9 +513,6 @@ def compute_all_relationships(long_to_type, shapefiles_to_use):
         for k2 in shapefiles_to_use:
             print(k1, k2)
             if k1 < k2:
-                continue
-
-            if is_american[k1] != is_american[k2]:
                 continue
 
             (

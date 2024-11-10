@@ -1,8 +1,8 @@
-import json
-
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
+
+from ..utils import output_typescript
 
 
 def get_pyplot_ramps():
@@ -83,5 +83,5 @@ def plot_ramp(y, ramp, segments=101):
 
 
 def output_ramps(mapper_folder):
-    with open(f"{mapper_folder}/ramps.json", "w") as f:
-        json.dump(get_all_ramps(), f)
+    with open(f"{mapper_folder}/ramps.ts", "w") as f:
+        output_typescript(get_all_ramps(), f, "Record<string, [number, string][]>")

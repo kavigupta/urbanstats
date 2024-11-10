@@ -1,26 +1,32 @@
 import { createContext, useContext, useEffect, useState } from 'react'
 
+import extra_stats from '../data/extra_stats'
+import map_relationship from '../data/map_relationship'
+import stat_path_list from '../data/statistic_path_list'
+import { dataSources } from '../data/statistics_tree'
+import article_types_other from '../data/type_to_type_category'
 import { DefaultMap } from '../utils/DefaultMap'
 
 import { Theme } from './colors'
-import { allGroups, allYears, CategoryIdentifier, GroupIdentifier, statsTree } from './statistic-tree'
+import { fromVector } from './settings-vector'
+import { allGroups, allYears, CategoryIdentifier, DataSource, GroupIdentifier, SourceCategoryIdentifier, SourceIdentifier, StatPath, statsTree, Year } from './statistic-tree'
 
 export type RelationshipKey = `related__${string}__${string}`
-export type RowExpandedKey = `expanded__${string}`
+
+export const statPathsWithExtra = extra_stats.map(([index]) => stat_path_list[index])
+export type StatPathWithExtra = (typeof statPathsWithExtra)[number]
+export type RowExpandedKey<P extends StatPath> = `expanded__${P}`
+
 export type HistogramType = 'Bar' | 'Line' | 'Line (cumulative)'
 
-export type StatGroupKey = `show_stat_group_${GroupIdentifier}`
-export type StatCategorySavedIndeterminateKey = `stat_category_saved_indeterminate_${CategoryIdentifier}`
-export type StatCategoryExpandedKey = `stat_category_expanded_${CategoryIdentifier}`
-export type StatYearKey = `show_stat_year_${number}`
+export type StatGroupKey<G extends GroupIdentifier = GroupIdentifier> = `show_stat_group_${G}`
+export type StatCategorySavedIndeterminateKey<C extends CategoryIdentifier = CategoryIdentifier> = `stat_category_saved_indeterminate_${C}`
+export type StatCategoryExpandedKey<C extends CategoryIdentifier = CategoryIdentifier> = `stat_category_expanded_${C}`
+export type StatYearKey<Y extends Year = Year> = `show_stat_year_${Y}`
+export type StatSourceKey<C extends SourceCategoryIdentifier = SourceCategoryIdentifier, S extends SourceIdentifier = SourceIdentifier> = `show_stat_source_${C}_${S}`
 
-export interface SettingsDictionary {
+export type SettingsDictionary = {
     [relationshipKey: RelationshipKey]: boolean | undefined
-    [showStatisticKey: StatGroupKey]: boolean
-    [savedIndeterminateKey: StatCategorySavedIndeterminateKey]: GroupIdentifier[] // array of child keys
-    [expandedKey: StatCategoryExpandedKey]: boolean
-    [rowExpandedKey: RowExpandedKey]: boolean | undefined
-    [statYearKey: StatYearKey]: boolean
     show_historical_cds: boolean
     simple_ordinals: boolean
     use_imperial: boolean
@@ -30,64 +36,93 @@ export interface SettingsDictionary {
     colorblind_mode: boolean
     clean_background: boolean
 }
+& { [G in GroupIdentifier as StatGroupKey<G>]: boolean }
+& { [C in CategoryIdentifier as StatCategorySavedIndeterminateKey<C>]: GroupIdentifier[] }
+& { [C in CategoryIdentifier as StatCategoryExpandedKey<C>]: boolean }
+& { [Y in Year as StatYearKey<Y>]: boolean }
+& { [D in DataSource as StatSourceKey<D['category'], D['name']>]: boolean }
+& { [P in StatPathWithExtra as RowExpandedKey<P>]: boolean }
+& { [P in Exclude<StatPath, StatPathWithExtra> as RowExpandedKey<P>]?: undefined }
 
 export function relationship_key(article_type: string, other_type: string): RelationshipKey {
     return `related__${article_type}__${other_type}`
 }
 
-export function row_expanded_key(row_statname: string): RowExpandedKey {
-    return `expanded__${row_statname}`
+export function row_expanded_key<P extends StatPath>(statpath: P): RowExpandedKey<P> {
+    return `expanded__${statpath}`
 }
 
-const defaultCategorySelections = new Set(
-    [
-        'main',
-        'race',
-        'election',
-    ] as CategoryIdentifier[],
-)
+export function source_enabled_key<C extends SourceCategoryIdentifier, S extends SourceIdentifier>(d: { category: C, name: S }): StatSourceKey<C, S> {
+    return `show_stat_source_${d.category}_${d.name}`
+}
+
+export function checkbox_category_name(category: SourceCategoryIdentifier): string {
+    return `${category} Sources`
+}
+
+const defaultCategorySelections = new Set(['main'] as CategoryIdentifier[])
 
 const defaultEnabledYears = new Set(
     [2020],
 )
 
-const map_relationship = require('../data/map_relationship.json') as [string, string][]
+export const defaultSettingsList = [
+    ...map_relationship.map(
+        ([article_type, other_type]) => [relationship_key(article_type, other_type), true] as const,
+    ),
+    ...allGroups.map(group => [`show_stat_group_${group.id}` as const, defaultCategorySelections.has(group.parent.id)] as const),
+    ...statsTree.map(category => [`stat_category_saved_indeterminate_${category.id}` as const, [] as GroupIdentifier[]] as const),
+    ...statsTree.map(category => [`stat_category_expanded_${category.id}` as const, false] as const),
+    ...allYears.map(year => [`show_stat_year_${year}` as const, defaultEnabledYears.has(year)] as const),
+    ...dataSources
+        .flatMap(({ category, sources }) => sources
+            .map(({ source, is_default }) => [source_enabled_key({ category, name: source }), is_default] as const)),
+    ['show_historical_cds', false] as const,
+    ['simple_ordinals', false] as const,
+    ['use_imperial', false] as const,
+    ['histogram_type', 'Line'] as const,
+    ['histogram_relative', true] as const,
+    ['theme', 'System Theme'] as const,
+    ['colorblind_mode', false] as const,
+    ['clean_background', false] as const,
+    ...statPathsWithExtra.map(statPath => [`expanded__${statPath}`, false] as const),
+] as const
 
 // Having a default settings object allows us to statically check that we have default values for all settings
 // It also makes visualizing the default setings easier
-const defaultSettings = {
-    ...Object.fromEntries(
-        map_relationship.map(
-            ([article_type, other_type]) => [relationship_key(article_type, other_type), true],
-        ),
-    ),
-    ...Object.fromEntries(allGroups.map(group => [`show_stat_group_${group.id}` as const, defaultCategorySelections.has(group.parent.id)])),
-    ...Object.fromEntries(statsTree.map(category => [`stat_category_saved_indeterminate_${category.id}`, []])),
-    ...Object.fromEntries(statsTree.map(category => [`stat_category_expanded_${category.id}`, false])),
-    ...Object.fromEntries(allYears.map(year => [`show_stat_year_${year}`, defaultEnabledYears.has(year)])),
-    show_historical_cds: false,
-    simple_ordinals: false,
-    use_imperial: false,
-    histogram_type: 'Line',
-    histogram_relative: true,
-    theme: 'System Theme',
-    colorblind_mode: false,
-    clean_background: false,
-} satisfies SettingsDictionary
+const defaultSettings = Object.fromEntries(defaultSettingsList) satisfies SettingsDictionary
 
-export function load_settings(): SettingsDictionary {
-    const settings = JSON.parse(localStorage.getItem('settings') ?? '{}') as Partial<SettingsDictionary>
-    return { ...defaultSettings, ...settings }
+export interface SettingInfo<K extends keyof SettingsDictionary> {
+    persistedValue: SettingsDictionary[K]
+    stagedValue?: SettingsDictionary[K]
 }
 
 export class Settings {
+    /**
+     * Basic Settings
+     */
     private readonly settings: SettingsDictionary
 
     constructor() {
-        this.settings = load_settings()
+        const savedSettings = localStorage.getItem('settings')
+        if (savedSettings === null) {
+            this.settings = { ...defaultSettings }
+            // Try loading from a link vector, if it exists
+            const settingsVector = new URL(window.location.href).searchParams.get('s')
+            if (settingsVector !== null) {
+                const settingsFromQueryParams = fromVector(settingsVector, this)
+                for (const [key, value] of Object.entries(settingsFromQueryParams)) {
+                    this.settings[key as keyof SettingsDictionary] = value as never
+                }
+            }
+        }
+        else {
+            const loadedSettings = JSON.parse(savedSettings) as Partial<SettingsDictionary>
+            this.settings = { ...defaultSettings, ...loadedSettings }
+        }
     }
 
-    private readonly observers = new DefaultMap<keyof SettingsDictionary, Set<() => void>>(() => new Set())
+    private readonly settingValueObservers = new DefaultMap<keyof SettingsDictionary, Set<() => void>>(() => new Set())
 
     useSettings<K extends keyof SettingsDictionary>(keys: K[]): Pick<SettingsDictionary, K> {
         // eslint-disable-next-line react-hooks/rules-of-hooks -- This is a custom hook
@@ -96,9 +131,9 @@ export class Settings {
         useEffect(() => {
             setResult(this.getMultiple(keys)) // So that if `key` changes we change our result immediately
             const observer = (): void => { setResult(this.getMultiple(keys)) }
-            keys.forEach(key => this.observers.get(key).add(observer))
+            keys.forEach(key => this.settingValueObservers.get(key).add(observer))
             return () => {
-                keys.forEach(key => this.observers.get(key).delete(observer))
+                keys.forEach(key => this.settingValueObservers.get(key).delete(observer))
             }
         // eslint-disable-next-line react-hooks/exhaustive-deps -- Our dependencies are the keys
         }, keys)
@@ -106,9 +141,14 @@ export class Settings {
     }
 
     setSetting<K extends keyof SettingsDictionary>(key: K, newValue: SettingsDictionary[K]): void {
-        this.settings[key] = newValue
-        localStorage.setItem('settings', JSON.stringify(this.settings))
-        this.observers.get(key).forEach((observer) => { observer() })
+        if (this.stagedSettings !== undefined && (key in this.stagedSettings)) {
+            this.stagedSettings[key] = newValue
+        }
+        else {
+            this.settings[key] = newValue
+            localStorage.setItem('settings', JSON.stringify(this.settings))
+        }
+        this.settingValueObservers.get(key).forEach((observer) => { observer() })
     }
 
     updateSetting<K extends keyof SettingsDictionary>(key: K, makeNewValue: (oldValue: SettingsDictionary[K]) => SettingsDictionary[K]): void {
@@ -116,15 +156,129 @@ export class Settings {
     }
 
     get<K extends keyof SettingsDictionary>(key: K): SettingsDictionary[K] {
+        if (this.stagedSettings !== undefined && (key in this.stagedSettings)) {
+            return this.stagedSettings[key]!
+        }
         return this.settings[key]
     }
 
-    getMultiple<K extends keyof SettingsDictionary>(keys: K[]): Pick<SettingsDictionary, K> {
-        return Object.fromEntries(keys.map(key => [key, this.settings[key]])) as Pick<SettingsDictionary, K>
+    getMultiple<const Keys extends readonly (keyof SettingsDictionary)[]>(keys: Keys): Pick<SettingsDictionary, Keys[number]> {
+        return Object.fromEntries(keys.map(key => [key, this.get(key)])) as Pick<SettingsDictionary, Keys[number]>
     }
 
     // Singular settings means we can use observers
     static Context = createContext(new Settings())
+
+    /**
+     * Staged Mode
+     *
+     * Allows the settings to enter a temporary mode where a subset of settings are not saved, and can be diffed with the saved settings
+     */
+    private stagedSettings?: Partial<SettingsDictionary>
+
+    /**
+     * Starts a "staging" mode for a subset of keys that are contained in this object with the values from this object
+     */
+    enterStagedMode(stagedSettings: Partial<SettingsDictionary>): void {
+        if (this.stagedSettings !== undefined) {
+            throw new Error('Already in staged mode')
+        }
+        this.stagedSettings = { ...stagedSettings }
+        this.stagedKeysObservers.forEach((observer) => { observer() })
+        for (const key of Object.keys(stagedSettings)) {
+            // Need to update observers since the setting values have changed
+            this.settingValueObservers.get(key).forEach((observer) => { observer() })
+        }
+    }
+
+    exitStagedMode(action: 'apply' | 'discard'): void {
+        if (this.stagedSettings === undefined) {
+            throw new Error('Not in staged mode')
+        }
+        switch (action) {
+            case 'apply':
+                for (const [key, value] of Object.entries(this.stagedSettings)) {
+                    this.settings[key] = value as never
+                    // No need to update observers since these were already the values
+                }
+                localStorage.setItem('settings', JSON.stringify(this.settings))
+                this.stagedSettings = undefined
+                this.stagedKeysObservers.forEach((observer) => { observer() })
+                break
+            case 'discard':
+                const stagedSettings = this.stagedSettings
+                this.stagedSettings = undefined
+                this.stagedKeysObservers.forEach((observer) => { observer() })
+                for (const key of Object.keys(stagedSettings)) {
+                    // Need to update observers since the setting values have changed
+                    this.settingValueObservers.get(key).forEach((observer) => { observer() })
+                }
+                break
+        }
+    }
+
+    getStagedKeys(): (keyof SettingsDictionary)[] | undefined {
+        if (this.stagedSettings === undefined) {
+            return undefined
+        }
+        return Object.keys(this.stagedSettings)
+    }
+
+    private readonly stagedKeysObservers = new Set<() => void>()
+
+    useStagedKeys(): (keyof SettingsDictionary)[] | undefined {
+        // eslint-disable-next-line react-hooks/rules-of-hooks -- This is a custom hook
+        const [result, setResult] = useState(this.getStagedKeys())
+        // eslint-disable-next-line react-hooks/rules-of-hooks -- This is a custom hook
+        useEffect(() => {
+            setResult(this.getStagedKeys())
+            const observer = (): void => {
+                setResult(this.getStagedKeys())
+            }
+            this.stagedKeysObservers.add(observer)
+            return () => {
+                this.stagedKeysObservers.delete(observer)
+            }
+        }, [])
+        return result
+    }
+
+    getSettingInfo<K extends keyof SettingsDictionary>(key: K): SettingInfo<K> {
+        if (this.stagedSettings !== undefined && (key in this.stagedSettings)) {
+            return {
+                stagedValue: this.stagedSettings[key],
+                persistedValue: this.settings[key],
+            }
+        }
+        return {
+            persistedValue: this.settings[key],
+        }
+    }
+
+    getSettingsInfo<const Keys extends readonly (keyof SettingsDictionary)[]>(keys: Keys): { [Key in Keys[number]]: SettingInfo<Key> } {
+        return Object.fromEntries(keys.map(key => [
+            key,
+            this.getSettingInfo(key),
+        ])) as unknown as { [Key in Keys[number]]: SettingInfo<Key> }
+    }
+
+    useSettingsInfo<K extends keyof SettingsDictionary>(keys: K[]): { [T in K]: SettingInfo<T> } {
+        // eslint-disable-next-line react-hooks/rules-of-hooks -- This is a custom hook
+        const [result, setResult] = useState(this.getSettingsInfo(keys))
+        // eslint-disable-next-line react-hooks/rules-of-hooks -- This is a custom hook
+        useEffect(() => {
+            setResult(this.getSettingsInfo(keys)) // So that if `key` changes we change our result immediately
+            const observer = (): void => { setResult(this.getSettingsInfo(keys)) }
+            keys.forEach(key => this.settingValueObservers.get(key).add(observer))
+            this.stagedKeysObservers.add(observer)
+            return () => {
+                keys.forEach(key => this.settingValueObservers.get(key).delete(observer))
+                this.stagedKeysObservers.delete(observer)
+            }
+        // eslint-disable-next-line react-hooks/exhaustive-deps -- Our dependencies are the keys
+        }, keys)
+        return result
+    }
 }
 
 export function useSetting<K extends keyof SettingsDictionary>(key: K): [SettingsDictionary[K], (newValue: SettingsDictionary[K]) => void] {
@@ -138,6 +292,20 @@ export function useSettings<K extends keyof SettingsDictionary>(keys: K[]): Pick
 }
 
 export function relatedSettingsKeys(article_type_this: string): RelationshipKey[] {
-    const article_types_other = require('../data/type_to_type_category.json') as Record<string, string>
     return Object.keys(article_types_other).map(article_type_other => relationship_key(article_type_this, article_type_other))
+}
+
+export function useSettingInfo<K extends keyof SettingsDictionary>(key: K): SettingInfo<K> {
+    const settings = useContext(Settings.Context)
+    return settings.useSettingsInfo([key])[key]
+}
+
+export function useSettingsInfo<K extends keyof SettingsDictionary>(keys: K[]): { [T in K]: SettingInfo<T> } {
+    const settings = useContext(Settings.Context)
+    return settings.useSettingsInfo(keys)
+}
+
+export function useStagedSettingKeys(): (keyof SettingsDictionary)[] | undefined {
+    const settings = useContext(Settings.Context)
+    return settings.useStagedKeys()
 }

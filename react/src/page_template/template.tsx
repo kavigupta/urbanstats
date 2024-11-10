@@ -27,7 +27,7 @@ export function PageTemplate({
 }: {
     screencap_elements?: () => ScreencapElements
     has_universe_selector?: boolean
-    universes?: string[]
+    universes?: readonly string[]
     children: React.ReactNode
 }): ReactNode {
     const [hamburger_open, set_hamburger_open] = useState(false)
@@ -117,11 +117,11 @@ function TemplateFooter(): ReactNode {
 }
 
 function Version(): ReactNode {
-    return <span id="current-version">19.2.0</span>
+    return <span id="current-version">19.6.0</span>
 }
 
 function LastUpdated(): ReactNode {
-    return <span id="last-updated">2024-10-28</span>
+    return <span id="last-updated">2024-11-09</span>
 }
 
 function MainCredits(): ReactNode {
