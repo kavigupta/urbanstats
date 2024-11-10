@@ -5,13 +5,12 @@ import ReactDOM from 'react-dom/client'
 
 import './style.css'
 import './common.css'
+import industry_occupation_table from './data/explanation_industry_occupation_table'
 import { useColors } from './page_template/colors'
 import { PageTemplate } from './page_template/template'
 import { useHeaderTextClass } from './utils/responsive'
 
-const industry_occupation_table = require('./data/explanation_industry_occupation_table.json') as { industry: [string, string][], occupation: [string, string][] }
-
-function ExplanationTable(props: { name: string, link: string, table: [string, string][] }): ReactNode {
+function ExplanationTable(props: { name: string, link: string, table: readonly (readonly [string, string])[] }): ReactNode {
     const colors = useColors()
     return (
         <div>

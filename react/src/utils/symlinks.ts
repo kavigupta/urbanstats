@@ -1,4 +1,4 @@
-const SYMLINKS = require('../data/symlinks.json') as Record<string, string>
+import SYMLINKS from '../data/symlinks'
 
 export function followSymlink(name: string): [string, boolean] {
     if (name in SYMLINKS) {

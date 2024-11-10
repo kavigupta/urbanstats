@@ -1,4 +1,6 @@
-export const RAMPS = require('../data/mapper/ramps.json') as Record<string, [number, string][]>
+import RAMPS from '../data/mapper/ramps'
+// eslint-disable-next-line no-restricted-syntax -- Reexporting
+export { default as RAMPS } from '../data/mapper/ramps'
 
 export type EncodedColorMap = { type: 'none' } | { type: 'custom', custom_colormap: string } | { type: 'preset', name: string }
 

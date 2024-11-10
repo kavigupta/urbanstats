@@ -5,6 +5,7 @@ import { gunzipSync, gzipSync } from 'zlib'
 
 import React, { ReactNode, useEffect, useRef, useState } from 'react'
 
+import valid_geographies from '../data/mapper/used_geographies'
 import statNames from '../data/statistic_name_list'
 import { loadProtobuf } from '../load_json'
 import { Keypoints, Ramp, parse_ramp } from '../mapper/ramps'
@@ -283,7 +284,6 @@ function mapSettingsFromURLParams(): MapSettings {
     return default_settings(settings)
 }
 
-const valid_geographies = require('../data/mapper/used_geographies.json') as string[]
 const name_to_index = new Map(statNames.map((name, i) => [name, i]))
 
 export function MapperPanel(): ReactNode {
