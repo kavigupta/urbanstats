@@ -89,7 +89,7 @@ export function load_single_article(data: Article, universe: string, exclusively
 
     const indices = compute_indices(data.longname, article_type)
 
-    const modified_rows = data.rows.map((row_original, row_index) => {
+    return data.rows.map((row_original, row_index) => {
         const i = indices[row_index]
         // fresh row object
         let extra_stat: ExtraStat | undefined = undefined
@@ -137,9 +137,6 @@ export function load_single_article(data: Article, universe: string, exclusively
             extra_stat,
         } satisfies ArticleRow
     })
-
-    const availableRows = modified_rows
-    return availableRows
 }
 
 export function load_articles(datas: Article[], universe: string, settings: StatGroupSettings, exclusively_american: boolean): {
