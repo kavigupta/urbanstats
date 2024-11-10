@@ -13,7 +13,7 @@ test('search-test', async (t) => {
     await t
         .pressKey('enter')
     await t.expect(getLocation())
-        .eql(`${TARGET}/article.html?longname=Pasadena+city%2C+Texas%2C+USA&s=3t2X5xvsKo`)
+        .eql(`${TARGET}/article.html?longname=Pasadena+city%2C+Texas%2C+USA&s=4YErw5vV5ZfzEX`)
 })
 
 test('search-test-with-extra-char', async (t) => {
@@ -51,5 +51,5 @@ test('search-test-arrows', async (t) => {
     await t
         .pressKey('enter')
     await t.expect(getLocation())
-        .eql(`${TARGET}/article.html?longname=Pasadena+CDP%2C+Maryland%2C+USA&s=3t2X5xvsKo`)
+        .eql(`${TARGET}/article.html?longname=Pasadena+CDP%2C+Maryland%2C+USA&s=4YErw5vV5ZfzEX`)
 })
