@@ -86,7 +86,7 @@ export function load_single_article(data: Article, universe: string, exclusively
     const universe_index = data.universes.indexOf(universe)
     const article_type = data.articleType
 
-    const extra_stat_idx_to_col = extra_stats.map(xy => xy[0])
+    const extra_stat_idx_to_col: number[] = extra_stats.map(xy => xy[0])
 
     const indices = compute_indices(data.longname, article_type)
 
@@ -108,17 +108,6 @@ export function load_single_article(data: Article, universe: string, exclusively
                     counts: histogram.counts,
                     universe_total: data.rows.find((_, universe_row_index) => indices[universe_row_index] === universe_total_idx)!.statval!,
                 } as HistogramExtraStat
-            }
-            else {
-                const years = spec.years
-                const name = spec.name
-                const time_series = data.extraStats[extra_stat_idx].timeseries!
-                extra_stat = {
-                    type: 'time_series',
-                    years,
-                    name,
-                    time_series: time_series.values!,
-                } as TimeSeriesExtraStat
             }
         }
         return {

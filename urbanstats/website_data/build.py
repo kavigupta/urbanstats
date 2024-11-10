@@ -77,11 +77,6 @@ def create_react_jsons():
                 for k, v in sorted(extra_stats().items())
             ],
             f,
-            data_type="""
-            [number, 
-                { type: 'histogram', universe_total_idx: number } | 
-                { type: 'time_series', years: number[], name: string }
-            ][]""",
         )
 
     mapper_folder = "react/src/data/mapper"

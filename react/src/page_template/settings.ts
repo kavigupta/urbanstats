@@ -1,6 +1,8 @@
 import { createContext, useContext, useEffect, useState } from 'react'
 
+import extra_stats from '../data/extra_stats'
 import map_relationship from '../data/map_relationship'
+import stat_path_list from '../data/statistic_path_list'
 import article_types_other from '../data/type_to_type_category'
 import { DefaultMap } from '../utils/DefaultMap'
 
@@ -9,7 +11,11 @@ import { fromVector } from './settings-vector'
 import { allGroups, allYears, CategoryIdentifier, DataSource, GroupIdentifier, SourceCategoryIdentifier, SourceIdentifier, StatPath, statsTree, Year } from './statistic-tree'
 
 export type RelationshipKey = `related__${string}__${string}`
-export type RowExpandedKey<P extends StatPath> = `expanded__${P}`
+
+const statPathsWithExtra = extra_stats.map(([index]) => stat_path_list[index])
+export type StatPathWithExtra = (typeof statPathsWithExtra)[number]
+export type RowExpandedKey<P extends StatPathWithExtra> = `expanded__${P}`
+
 export type HistogramType = 'Bar' | 'Line' | 'Line (cumulative)'
 
 export type StatGroupKey<G extends GroupIdentifier = GroupIdentifier> = `show_stat_group_${G}`
@@ -28,20 +34,21 @@ export type SettingsDictionary = {
     theme: Theme | 'System Theme'
     colorblind_mode: boolean
     clean_background: boolean
+    always_false_setting: false
 }
 & { [G in GroupIdentifier as StatGroupKey<G>]: boolean }
 & { [C in CategoryIdentifier as StatCategorySavedIndeterminateKey<C>]: GroupIdentifier[] }
 & { [C in CategoryIdentifier as StatCategoryExpandedKey<C>]: boolean }
 & { [Y in Year as StatYearKey<Y>]: boolean }
 & { [D in DataSource as StatSourceKey<D['category'], D['name']>]: boolean }
-& { [P in StatPath as RowExpandedKey<P>]?: boolean }
+& { [P in StatPathWithExtra as RowExpandedKey<P>]: boolean }
 
 export function relationship_key(article_type: string, other_type: string): RelationshipKey {
     return `related__${article_type}__${other_type}`
 }
 
-export function row_expanded_key<P extends StatPath>(statpath: P): RowExpandedKey<P> {
-    return `expanded__${statpath}`
+export function row_expanded_key<P extends StatPathWithExtra>(statpath: Exclude<StatPath, StatPathWithExtra> | P): RowExpandedKey<P> | 'always_false_setting' {
+    return statPathsWithExtra.includes(statpath as P) ? `expanded__${statpath as P}` : 'always_false_setting'
 }
 
 const defaultCategorySelections = new Set(
@@ -74,6 +81,8 @@ export const defaultSettingsList = [
     ['clean_background', false] as const,
     // placeholder. Remove!
     ['show_stat_source_Placeholder_Placeholder', true] as const,
+    ...statPathsWithExtra.map(statPath => [`expanded__${statPath}`, false] as const),
+    ['always_false_setting', false] as const,
 ] as const
 
 // Having a default settings object allows us to statically check that we have default values for all settings

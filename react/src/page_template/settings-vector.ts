@@ -231,6 +231,24 @@ const settingsVector = [
     { key: `show_historical_cds`, deprecated: false },
     { key: `simple_ordinals`, deprecated: false },
     { key: `use_imperial`, deprecated: false },
+    { key: 'expanded__ad_0.25', deprecated: false },
+    { key: 'expanded__ad_0.25_2000', deprecated: false },
+    { key: 'expanded__ad_0.25_2010', deprecated: false },
+    { key: 'expanded__ad_0.5', deprecated: false },
+    { key: 'expanded__ad_0.5_2000', deprecated: false },
+    { key: 'expanded__ad_0.5_2010', deprecated: false },
+    { key: 'expanded__ad_1', deprecated: false },
+    { key: 'expanded__ad_1_2000', deprecated: false },
+    { key: 'expanded__ad_1_2010', deprecated: false },
+    { key: 'expanded__ad_2', deprecated: false },
+    { key: 'expanded__ad_2_2000', deprecated: false },
+    { key: 'expanded__ad_2_2010', deprecated: false },
+    { key: 'expanded__ad_4', deprecated: false },
+    { key: 'expanded__ad_4_2000', deprecated: false },
+    { key: 'expanded__ad_4_2010', deprecated: false },
+    { key: 'expanded__gpw_pw_density_1', deprecated: false },
+    { key: 'expanded__gpw_pw_density_2', deprecated: false },
+    { key: 'expanded__gpw_pw_density_4', deprecated: false },
 ] satisfies ({ key: BooleanSettingKey, deprecated: false } | { key: string, deprecated: true })[]
 
 type NotIncludedInSettingsVector = (
@@ -239,6 +257,7 @@ type NotIncludedInSettingsVector = (
     | StatCategoryExpandedKey
     | 'histogram_type' | 'histogram_relative'
     | 'theme' | 'colorblind_mode' | 'clean_background'
+    | 'always_false_setting'
     // placeholder, remove!
     | 'show_stat_source_Placeholder_Placeholder'
 )
