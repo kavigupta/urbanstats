@@ -6,7 +6,7 @@ from urbanstats.consolidated_data.produce_consolidated_data import (
     full_consolidated_data,
     output_names,
 )
-from urbanstats.games.quiz import generate_quiz_info_for_website, generate_quizzes
+from urbanstats.games.quiz import generate_quizzes
 from urbanstats.games.retrostat import generate_retrostats
 from urbanstats.geometry.relationship import map_relationships_by_type
 from urbanstats.geometry.relationship import ordering_idx as type_ordering_idx
@@ -191,9 +191,6 @@ def build_urbanstats(
     shutil.copy("icons/main/share.png", f"{site_folder}/")
     shutil.copy("icons/main/screenshot.png", f"{site_folder}/")
     shutil.copy("icons/main/download.png", f"{site_folder}/")
-
-    if not no_juxta:
-        generate_quiz_info_for_website(site_folder)
 
     with open(f"{site_folder}/CNAME", "w") as f:
         f.write("urbanstats.org")
