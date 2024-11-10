@@ -1,4 +1,3 @@
-import json
 import os
 import shutil
 import subprocess
@@ -34,6 +33,8 @@ from urbanstats.website_data.output_geometry import produce_all_geometry_json
 from urbanstats.website_data.statistic_index_lists import get_index_lists
 from urbanstats.website_data.table import shapefile_without_ordinals
 
+from ..utils import output_typescript
+
 
 def link_scripts_folder(site_folder, dev):
     if os.path.islink(f"{site_folder}/scripts"):
@@ -47,21 +48,21 @@ def link_scripts_folder(site_folder, dev):
 
 
 def create_react_jsons():
-    with open("react/src/data/map_relationship.json", "w") as f:
-        json.dump(map_relationships_by_type, f)
+    with open("react/src/data/map_relationship.ts", "w") as f:
+        output_typescript(map_relationships_by_type, f)
 
-    with open("react/src/data/type_to_type_category.json", "w") as f:
-        json.dump(type_to_type_category, f)
+    with open("react/src/data/type_to_type_category.ts", "w") as f:
+        output_typescript(type_to_type_category, f, data_type="Record<string, string>")
 
-    with open("react/src/data/type_ordering_idx.json", "w") as f:
-        json.dump(type_ordering_idx, f)
+    with open("react/src/data/type_ordering_idx.ts", "w") as f:
+        output_typescript(type_ordering_idx, f, data_type="Record<string, number>")
 
     output_statistics_metadata()
 
-    with open("react/src/data/universes_ordered.json", "w") as f:
-        json.dump(list(all_universes()), f)
-    with open("react/src/data/explanation_industry_occupation_table.json", "w") as f:
-        json.dump(
+    with open("react/src/data/universes_ordered.ts", "w") as f:
+        output_typescript(list(all_universes()), f)
+    with open("react/src/data/explanation_industry_occupation_table.ts", "w") as f:
+        output_typescript(
             {
                 "industry": IndustryStatistics().table(),
                 "occupation": OccupationStatistics().table(),
@@ -69,13 +70,18 @@ def create_react_jsons():
             f,
         )
 
-    with open("react/src/data/extra_stats.json", "w") as f:
-        json.dump(
+    with open("react/src/data/extra_stats.ts", "w") as f:
+        output_typescript(
             [
                 (k, v.extra_stat_spec(list(internal_statistic_names())))
                 for k, v in sorted(extra_stats().items())
             ],
             f,
+            data_type="""
+            [number, 
+                { type: 'histogram', universe_total_idx: number } | 
+                { type: 'time_series', years: number[], name: string }
+            ][]""",
         )
 
     mapper_folder = "react/src/data/mapper"
@@ -87,14 +93,20 @@ def create_react_jsons():
     output_names(mapper_folder)
     output_ramps(mapper_folder)
 
-    with open("react/src/data/index_lists.json", "w") as f:
-        json.dump(get_index_lists(), f)
+    with open("react/src/data/index_lists.ts", "w") as f:
+        output_typescript(
+            get_index_lists(),
+            f,
+            data_type="{ index_lists: Record<string, number[]>, type_to_has_gpw: Record<string, boolean> }",
+        )
 
-    with open("react/src/data/american_to_international.json", "w") as f:
-        json.dump(american_to_international, f)
+    with open("react/src/data/american_to_international.ts", "w") as f:
+        output_typescript(
+            american_to_international, f, data_type="Record<string, string>"
+        )
 
-    with open("react/src/data/symlinks.json", "w") as f:
-        json.dump(symlinks.symlinks, f)
+    with open("react/src/data/symlinks.ts", "w") as f:
+        output_typescript(symlinks.symlinks, f, data_type="Record<string, string>")
 
 
 def build_react_site(site_folder, dev):
@@ -109,7 +121,7 @@ def build_react_site(site_folder, dev):
     )
 
     subprocess.run(
-        f"cd react; npm run {'dev' if dev else 'prod'}", shell=True, check=True
+        f"cd react; npm run {'dev' if dev else 'prod'}", shell=True, check=not dev
     )
 
     link_scripts_folder(site_folder, dev)

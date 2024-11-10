@@ -1,19 +1,12 @@
+import explanation_page from '../data/explanation_page'
+import extra_stats from '../data/extra_stats'
+import index_list_info from '../data/index_lists'
+import stats from '../data/statistic_list'
+import names from '../data/statistic_name_list'
+import paths from '../data/statistic_path_list'
 import { StatGroupSettings, statIsEnabled } from '../page_template/statistic-settings'
 import { findAmbiguousSourcesAll, statDataOrderToOrder, StatPath, statPathToOrder } from '../page_template/statistic-tree'
 import { Article } from '../utils/protos'
-
-interface HistogramExtraStatSpec {
-    type: 'histogram'
-    universe_total_idx: number
-}
-
-interface TimeSeriesExtraStatSpec {
-    type: 'time_series'
-    years: number[]
-    name: string
-}
-
-type ExtraStatSpec = HistogramExtraStatSpec | TimeSeriesExtraStatSpec
 
 export interface HistogramExtraStat {
     type: 'histogram'
@@ -32,12 +25,14 @@ export interface TimeSeriesExtraStat {
 
 export type ExtraStat = HistogramExtraStat | TimeSeriesExtraStat
 
+export type StatCol = (typeof stats)[number]
+
 export interface ArticleRow {
     statval: number
     ordinal: number
     overallOrdinal: number
     percentile_by_population: number
-    statcol: string | string[]
+    statcol: StatCol
     statname: string
     statpath: StatPath
     explanation_page: string
@@ -47,15 +42,6 @@ export interface ArticleRow {
     _index: number
     rendered_statname: string
     extra_stat?: ExtraStat
-}
-
-const index_list_info = require('../data/index_lists.json') as {
-    index_lists: {
-        universal: number[]
-        gpw: number[]
-        usa: number[]
-    }
-    type_to_has_gpw: Record<string, boolean>
 }
 
 function lookup_in_compressed_sequence(seq: [number, number][], idx: number): number {
@@ -69,9 +55,8 @@ function lookup_in_compressed_sequence(seq: [number, number][], idx: number): nu
     throw new Error('Index out of bounds')
 }
 
-export function for_type(universe: string, statcol: string | string[], typ: string): number {
-    const statnames = require('../data/statistic_list.json') as (string | string[])[]
-    const idx = statnames.indexOf(statcol) // Works because `require` is global
+export function for_type(universe: string, statcol: StatCol, typ: string): number {
+    const idx = stats.indexOf(statcol) // Works because `require` is global
     const counts_by_universe = require('../data/counts_by_article_type.json') as Record<string, Record<string, [number, number][]>>
     const counts_by_type = counts_by_universe[universe][typ]
 
@@ -100,12 +85,6 @@ export function load_single_article(data: Article, universe: string, exclusively
     const universe_index = data.universes.indexOf(universe)
     const article_type = data.articleType
 
-    const names = require('../data/statistic_name_list.json') as string[]
-    const paths = require('../data/statistic_path_list.json') as StatPath[]
-    const stats = require('../data/statistic_list.json') as (string | string[])[]
-    const explanation_page = require('../data/explanation_page.json') as string[]
-
-    const extra_stats = require('../data/extra_stats.json') as [number, ExtraStatSpec][]
     const extra_stat_idx_to_col = extra_stats.map(xy => xy[0])
 
     const indices = compute_indices(data.longname, article_type)

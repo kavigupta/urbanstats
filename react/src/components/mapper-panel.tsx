@@ -5,6 +5,8 @@ import { gunzipSync, gzipSync } from 'zlib'
 
 import React, { ReactNode, useEffect, useRef, useState } from 'react'
 
+import valid_geographies from '../data/mapper/used_geographies'
+import statNames from '../data/statistic_name_list'
 import { loadProtobuf } from '../load_json'
 import { Keypoints, Ramp, parse_ramp } from '../mapper/ramps'
 import { Basemap, ColorStat, ColorStatDescriptor, FilterSettings, LineStyle, MapSettings, MapperSettings, default_settings, parse_color_stat } from '../mapper/settings'
@@ -282,9 +284,7 @@ function mapSettingsFromURLParams(): MapSettings {
     return default_settings(settings)
 }
 
-const valid_geographies = require('../data/mapper/used_geographies.json') as string[]
-const names = require('../data/statistic_name_list.json') as string[]
-const name_to_index = new Map(names.map((name, i) => [name, i]))
+const name_to_index = new Map(statNames.map((name, i) => [name, i]))
 
 export function MapperPanel(): ReactNode {
     const [map_settings, set_map_settings] = useState(mapSettingsFromURLParams())
@@ -361,7 +361,7 @@ export function MapperPanel(): ReactNode {
             <div>
                 <div className={headerTextClass}>Urban Stats Mapper (beta)</div>
                 <MapperSettings
-                    names={names}
+                    names={statNames}
                     valid_geographies={valid_geographies}
                     map_settings={map_settings}
                     set_map_settings={set_map_settings}
