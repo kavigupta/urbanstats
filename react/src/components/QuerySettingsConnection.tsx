@@ -1,8 +1,11 @@
 import React, { ReactNode, useContext, useEffect } from 'react'
 
+import extra_stats from '../data/extra_stats'
+import stat_path_list from '../data/statistic_path_list'
 import { Settings, SettingsDictionary, statPathsWithExtra } from '../page_template/settings'
 import { fromVector, useVector, VectorSettingKey } from '../page_template/settings-vector'
-import { useAvailableGroups, useAvailableYears, useStatPaths } from '../page_template/statistic-settings'
+import { groupYearKeys, statIsEnabled, useAvailableGroups, useAvailableYears, useStatPathsAll } from '../page_template/statistic-settings'
+import { findAmbiguousSourcesAll, StatPath } from '../page_template/statistic-tree'
 
 /**
  * - Query Params -> Settings
@@ -14,9 +17,12 @@ import { useAvailableGroups, useAvailableYears, useStatPaths } from '../page_tem
  *
  * For `stagedSettingsKeys`, changes will launch the interface into staging mode.
  * For `applySettingsKeys`, these setting values will be automatically applied without entering staging mode.
+ * For some of these keys, we don't necessarily want to set them unless it will have a visible impact on the UI.
+ * Therefore, we generate which settings we would like to apply based on the currently visible `StatPaths`
  */
-export function QuerySettingsConnection({ stagedSettingsKeys, applySettingsKeys }: { stagedSettingsKeys: VectorSettingKey[], applySettingsKeys: VectorSettingKey[] }): null {
+export function QuerySettingsConnection({ stagedSettingsKeys, applySettingsKeys }: { stagedSettingsKeys: VectorSettingKey[], applySettingsKeys: (visibleStatPaths: StatPath[]) => VectorSettingKey[] }): null {
     const settings = useContext(Settings.Context)
+    const availableStatPaths = useStatPathsAll()
 
     // Query Params -> Settings
     useEffect(() => {
@@ -29,7 +35,16 @@ export function QuerySettingsConnection({ stagedSettingsKeys, applySettingsKeys 
         if (stagedSettingsKeys.some(key => JSON.stringify(settingsFromQueryParams[key]) !== JSON.stringify(settings.get(key)))) {
             settings.enterStagedMode(Object.fromEntries(stagedSettingsKeys.map(key => [key, settingsFromQueryParams[key]])) as unknown as Partial<SettingsDictionary>)
         }
-        for (const applySettingsKey of applySettingsKeys) {
+
+        // We only want to apply some settings immediately when the user can view certain stat paths
+        // So, we need to figure out which stat paths are viewable
+        const ambiguousSourcesAll = findAmbiguousSourcesAll(availableStatPaths)
+        const groupYearSettings = settings.getMultiple(groupYearKeys())
+        const visibleStatPaths = availableStatPaths.flatMap(statPaths => statPaths.filter(statPath => statIsEnabled(statPath, groupYearSettings, ambiguousSourcesAll)))
+
+        const applyKeys = applySettingsKeys(visibleStatPaths)
+
+        for (const applySettingsKey of applyKeys) {
             settings.setSetting(applySettingsKey, settingsFromQueryParams[applySettingsKey])
         }
     // eslint-disable-next-line react-hooks/exhaustive-deps -- We should only load params on first load.
@@ -57,10 +72,10 @@ export function QuerySettingsConnection({ stagedSettingsKeys, applySettingsKeys 
     return null
 }
 
-export function ArticleComparisonQuerySettingsConnection(): ReactNode {
-    const availableStatPaths = useStatPaths()
-    const availableStatPathsWithExtra = statPathsWithExtra.filter(path => availableStatPaths.includes(path))
+// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- No non-histogram extras yet
+export const statPathsWithHistogram = extra_stats.filter(([,{ type }]) => type === 'histogram').map(([index]) => stat_path_list[index])
 
+export function ArticleComparisonQuerySettingsConnection(): ReactNode {
     const stagedSettingsKeys: VectorSettingKey[] = [
         'use_imperial',
         'show_historical_cds',
@@ -69,10 +84,12 @@ export function ArticleComparisonQuerySettingsConnection(): ReactNode {
         ...useAvailableGroups().map(group => `show_stat_group_${group.id}` as const),
     ]
 
-    const applySettingsKeys: VectorSettingKey[] = [
-        ...availableStatPathsWithExtra.map(path => `expanded__${path}` as const),
-        'histogram_relative',
-    ]
+    const applySettingsKeys = (visibleStatPaths: StatPath[]): VectorSettingKey[] => {
+        return [
+            ...statPathsWithExtra.filter(path => visibleStatPaths.includes(path)).map(path => `expanded__${path}` as const),
+            ...(statPathsWithHistogram.some(path => visibleStatPaths.includes(path)) ? ['histogram_relative'] as const : []),
+        ]
+    }
 
     return <QuerySettingsConnection stagedSettingsKeys={stagedSettingsKeys} applySettingsKeys={applySettingsKeys} />
 }
