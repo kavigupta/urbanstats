@@ -7,7 +7,7 @@ export function linkSettingsTests(baseLink: string): void {
         await t.click('.expandButton[data-category-id=main]')
     })
 
-    const defaultLink = `${baseLink}&s=BY6xv3Ds1ih`
+    const defaultLink = `${baseLink}&s=BY6xv3Ds1im`
     const expectedLink = `${baseLink}&s=BChctRbFJ1F`
 
     test('formulates correct link', async (t) => {
@@ -170,7 +170,7 @@ export function linkSettingsTests(baseLink: string): void {
         await screencap(t)
     })
 
-    const histogramLink = `${baseLink}&s=oWHKo6omJJwy`
+    const histogramLink = `${baseLink}&s=oWHKo6omJJzB`
     const histogramLinkWithRelativeChanged = `${baseLink}&s=oWHKo6omJJy5`
 
     urbanstatsFixture('generate histogram link', baseLink)
