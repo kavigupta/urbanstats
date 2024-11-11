@@ -35,6 +35,7 @@ export function QuerySettingsConnection({ stagedSettingsKeys, applySettingsKeys 
         if (stagedSettingsKeys.some(key => JSON.stringify(settingsFromQueryParams[key]) !== JSON.stringify(settings.get(key)))) {
             settings.enterStagedMode(Object.fromEntries(stagedSettingsKeys.map(key => [key, settingsFromQueryParams[key]])) as unknown as Partial<SettingsDictionary>)
         }
+        // ^ It's important that we apply any other settings in the link before calculating the visible stat paths, as these settings could affect the visible stat paths
 
         // We only want to apply some settings immediately when the user can view certain stat paths
         // So, we need to figure out which stat paths are viewable
