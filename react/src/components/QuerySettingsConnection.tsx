@@ -71,6 +71,7 @@ export function ArticleComparisonQuerySettingsConnection(): ReactNode {
 
     const applySettingsKeys: VectorSettingKey[] = [
         ...availableStatPathsWithExtra.map(path => `expanded__${path}` as const),
+        'histogram_relative',
     ]
 
     return <QuerySettingsConnection stagedSettingsKeys={stagedSettingsKeys} applySettingsKeys={applySettingsKeys} />

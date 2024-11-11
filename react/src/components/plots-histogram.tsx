@@ -115,7 +115,7 @@ function HistogramSettings(props: {
                 <option value="Line (cumulative)">Line (cumulative)</option>
                 <option value="Bar">Bar</option>
             </select>
-            <CheckboxSetting name="Relative Histograms" setting_key="histogram_relative" />
+            <CheckboxSetting name="Relative Histograms" setting_key="histogram_relative" testId="histogram_relative" />
         </div>
     )
 }

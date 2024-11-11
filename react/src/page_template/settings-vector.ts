@@ -251,13 +251,14 @@ const settingsVector = [
     { key: 'expanded__gpw_pw_density_1', deprecated: false },
     { key: 'expanded__gpw_pw_density_2', deprecated: false },
     { key: 'expanded__gpw_pw_density_4', deprecated: false },
+    { key: 'histogram_relative', deprecated: false },
 ] satisfies ({ key: BooleanSettingKey, deprecated: false } | { key: string, deprecated: true })[]
 
 type NotIncludedInSettingsVector = (
     RelationshipKey
     | StatCategorySavedIndeterminateKey
     | StatCategoryExpandedKey
-    | 'histogram_type' | 'histogram_relative'
+    | 'histogram_type'
     | 'theme' | 'colorblind_mode' | 'clean_background'
 )
 
