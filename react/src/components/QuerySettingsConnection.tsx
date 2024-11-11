@@ -19,6 +19,8 @@ import { findAmbiguousSourcesAll, StatPath } from '../page_template/statistic-tr
  * For `applySettingsKeys`, these setting values will be automatically applied without entering staging mode.
  * For some of these keys, we don't necessarily want to set them unless it will have a visible impact on the UI.
  * Therefore, we generate which settings we would like to apply based on the currently visible `StatPaths`
+ *
+ * An alternate approach would have been to "omit" these inapplicable settings. But this would require another "settings mask" component in the link.
  */
 export function QuerySettingsConnection({ stagedSettingsKeys, applySettingsKeys }: { stagedSettingsKeys: VectorSettingKey[], applySettingsKeys: (visibleStatPaths: StatPath[]) => VectorSettingKey[] }): null {
     const settings = useContext(Settings.Context)
@@ -34,6 +36,11 @@ export function QuerySettingsConnection({ stagedSettingsKeys, applySettingsKeys 
         const settingsFromQueryParams = fromVector(settingsVector, settings)
         if (stagedSettingsKeys.some(key => JSON.stringify(settingsFromQueryParams[key]) !== JSON.stringify(settings.get(key)))) {
             settings.enterStagedMode(Object.fromEntries(stagedSettingsKeys.map(key => [key, settingsFromQueryParams[key]])) as unknown as Partial<SettingsDictionary>)
+            // If we haven't saved any previous settings, just save these staged settings
+            // This ensures that the new user doesn't get non-default values for settings that aren't relevant to their linked page
+            if (localStorage.getItem('settings') === null) {
+                settings.exitStagedMode('apply')
+            }
         }
         // ^ It's important that we apply any other settings in the link before calculating the visible stat paths, as these settings could affect the visible stat paths
 
@@ -54,6 +61,8 @@ export function QuerySettingsConnection({ stagedSettingsKeys, applySettingsKeys 
     // Settings -> Query Params
     const settingsVector = useVector()
 
+    // Ordering is important here, as some settings are not applied in the previous effect (discarded 'applySettingsKeys`)
+    // So our link should reflect (the non-application of) these discarded settings
     useEffect(() => {
         const url = new URL(window.location.toString())
         url.searchParams.set('s', settingsVector)
