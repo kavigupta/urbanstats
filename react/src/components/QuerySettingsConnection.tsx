@@ -2,9 +2,9 @@ import React, { ReactNode, useContext, useEffect } from 'react'
 
 import extra_stats from '../data/extra_stats'
 import stat_path_list from '../data/statistic_path_list'
-import { Settings, SettingsDictionary, statPathsWithExtra } from '../page_template/settings'
+import { Settings, SettingsDictionary, source_enabled_key, statPathsWithExtra } from '../page_template/settings'
 import { fromVector, useVector, VectorSettingKey } from '../page_template/settings-vector'
-import { groupYearKeys, statIsEnabled, useAvailableGroups, useAvailableYears, useStatPathsAll } from '../page_template/statistic-settings'
+import { groupYearKeys, statIsEnabled, useAvailableGroups, useAvailableYears, useDataSourceCheckboxes, useStatPathsAll } from '../page_template/statistic-settings'
 import { findAmbiguousSourcesAll, StatPath } from '../page_template/statistic-tree'
 
 /**
@@ -92,6 +92,12 @@ export function ArticleComparisonQuerySettingsConnection(): ReactNode {
         'simple_ordinals',
         ...useAvailableYears().map(year => `show_stat_year_${year}` as const),
         ...useAvailableGroups().map(group => `show_stat_group_${group.id}` as const),
+        ...useDataSourceCheckboxes()
+            .flatMap(({ category, checkboxSpecs }) =>
+                checkboxSpecs.flatMap(({ name, forcedOn }) => forcedOn
+                    ? []
+                    : [source_enabled_key({ category, name })]),
+            ),
     ]
 
     const applySettingsKeys = (visibleStatPaths: StatPath[]): VectorSettingKey[] => {
