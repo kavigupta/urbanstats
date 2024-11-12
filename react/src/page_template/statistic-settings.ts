@@ -174,7 +174,7 @@ function useConsolidateGroups(): (groups: Group[]) => (Group | Category)[] {
  */
 export const StatPathsContext = createContext<StatPath[][] | undefined>(undefined)
 
-function useStatPathsAll(): StatPath[][] {
+export function useStatPathsAll(): StatPath[][] {
     return useContext(StatPathsContext) ?? (() => { throw new Error('Using Statistics settings without StatPathsContext') })()
 }
 
