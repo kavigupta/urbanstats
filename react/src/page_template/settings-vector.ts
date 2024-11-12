@@ -65,7 +65,7 @@ const BooleanSettingCoder: SettingCoder<boolean> = {
     },
 }
 
-const HistogramTypeCoder: SettingCoder<HistogramType> = {
+const HistogramTypeSettingCoder: SettingCoder<HistogramType> = {
     encode(value = 'Line') {
         switch (value) {
             case 'Line':
@@ -344,7 +344,7 @@ const settingsVector = [
     new ActiveSetting({ key: 'expanded__gpw_pw_density_2', coder: BooleanSettingCoder }),
     new ActiveSetting({ key: 'expanded__gpw_pw_density_4', coder: BooleanSettingCoder }),
     new ActiveSetting({ key: 'histogram_relative', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'histogram_type', coder: HistogramTypeCoder }),
+    new ActiveSetting({ key: 'histogram_type', coder: HistogramTypeSettingCoder }),
 ] satisfies (ActiveSetting<keyof SettingsDictionary> | DeprecatedSetting<string>)[]
 
 type NotIncludedInSettingsVector = (
