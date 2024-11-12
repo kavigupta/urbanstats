@@ -215,3 +215,9 @@ test('comparison-uc-vs-uc-intl', async (t) => {
     // check that the image with class `universe-selector` has the alt text `world`
     await t.expect(Selector('img.universe-selector').getAttribute('alt')).eql('world')
 })
+
+urbanstatsFixture('comparison with histogram with data only for second comparee', `${TARGET}/comparison.html?longnames=%5B%22China%22%2C%22USA%22%5D&s=4gm8ETCK5SCX`)
+
+test.only('renders successfully', async (t) => {
+    await screencap(t)
+})
