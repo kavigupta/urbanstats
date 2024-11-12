@@ -4,7 +4,7 @@
 
 import * as base58 from 'base58-js'
 
-import { defaultSettingsList, RelationshipKey, Settings, SettingsDictionary, StatCategoryExpandedKey, StatCategorySavedIndeterminateKey, useSettings } from './settings'
+import { defaultSettingsList, HistogramType, RelationshipKey, Settings, SettingsDictionary, StatCategoryExpandedKey, StatCategorySavedIndeterminateKey, useSettings } from './settings'
 
 const underflow = Symbol()
 
@@ -62,6 +62,41 @@ const BooleanSettingCoder: SettingCoder<boolean> = {
             return underflow
         }
         return result
+    },
+}
+
+const HistogramTypeCoder: SettingCoder<HistogramType> = {
+    encode(value = 'Line') {
+        switch (value) {
+            case 'Line':
+                return [false, false]
+            case 'Line (cumulative)':
+                return [false, true]
+            case 'Bar':
+                return [true, false]
+        }
+    },
+    decode(bits) {
+        const encoded = [bits.shift(), bits.shift()].filter(bit => bit !== undefined)
+        switch (encoded.length) {
+            case 0:
+                return underflow
+            case 1:
+                throw new Error('Something bad has happened with settings decoding')
+            case 2:
+                switch ((bits[0] ? (1 << 1) : 0) | (bits[1] ? (1 << 0) : 0)) {
+                    case 0:
+                        return 'Line'
+                    case 1:
+                        return 'Line (cumulative)'
+                    case 2:
+                        return 'Bar'
+                    default:
+                        return 'Line' // For backwards/forwards compatibility
+                }
+            default:
+                throw new Error('This should never happen')
+        }
     },
 }
 
@@ -309,13 +344,13 @@ const settingsVector = [
     new ActiveSetting({ key: 'expanded__gpw_pw_density_2', coder: BooleanSettingCoder }),
     new ActiveSetting({ key: 'expanded__gpw_pw_density_4', coder: BooleanSettingCoder }),
     new ActiveSetting({ key: 'histogram_relative', coder: BooleanSettingCoder }),
+    new ActiveSetting({ key: 'histogram_type', coder: HistogramTypeCoder }),
 ] satisfies (ActiveSetting<keyof SettingsDictionary> | DeprecatedSetting<string>)[]
 
 type NotIncludedInSettingsVector = (
     RelationshipKey
     | StatCategorySavedIndeterminateKey
     | StatCategoryExpandedKey
-    | 'histogram_type'
     | 'theme' | 'colorblind_mode' | 'clean_background'
 )
 
@@ -341,20 +376,20 @@ export function useVector(): string {
         if (coder.deprecated) {
             return coder.encode()
         }
-        return coder.encode(settings[coder.key])
+        return coder.encode(settings[coder.key] as never)
     })
     return base58.binary_to_base58(compressBooleans(booleans))
 }
 
 export function fromVector(vector: string, settings: Settings): { [K in VectorSettingKey]: SettingsDictionary[K] } {
     const array = decompressBooleans(base58.base58_to_binary(vector))
-    const result = settingsVector.flatMap((coder) => {
-        if (coder.deprecated) {
-            return []
+    const result = {} as { [K in VectorSettingKey]: SettingsDictionary[K] }
+    for (const setting of settingsVector) {
+        if (!setting.deprecated) {
+            result[setting.key] = setting.decode(array, settings) as never
         }
-        return [[coder.key, coder.decode(array, settings)]] as const
-    })
-    return Object.fromEntries(result)
+    }
+    return result
 }
 
 /*
