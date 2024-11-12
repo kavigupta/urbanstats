@@ -103,7 +103,7 @@ export function ArticleComparisonQuerySettingsConnection(): ReactNode {
     const applySettingsKeys = (visibleStatPaths: StatPath[]): VectorSettingKey[] => {
         return [
             ...statPathsWithExtra.filter(path => visibleStatPaths.includes(path)).map(path => `expanded__${path}` as const),
-            ...(statPathsWithHistogram.some(path => visibleStatPaths.includes(path)) ? ['histogram_relative', 'histogram_type'] as const : []),
+            ...(statPathsWithHistogram.some(path => visibleStatPaths.includes(path)) ? ['histogram_relative'] as const : []),
         ]
     }
 
