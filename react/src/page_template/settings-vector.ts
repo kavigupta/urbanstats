@@ -385,7 +385,10 @@ export function fromVector(vector: string, settings: Settings): { [K in VectorSe
     const array = decompressBooleans(base58.base58_to_binary(vector))
     const result = {} as { [K in VectorSettingKey]: SettingsDictionary[K] }
     for (const setting of settingsVector) {
-        if (!setting.deprecated) {
+        if (setting.deprecated) {
+            setting.decode(array)
+        }
+        else {
             result[setting.key] = setting.decode(array, settings) as never
         }
     }
