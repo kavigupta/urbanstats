@@ -278,7 +278,14 @@ function ComparisonCells({ names, rows, onlyColumns }: {
 
     return [
         <ComparisonColorBar key="color" highlightIndex={highlightIndex} />,
-        <StatisticRowCells key="statname" onlyColumns={['statname']} longname={names[0]} totalWidth={100 * (left_margin_pct - left_bar_margin)} row={rows[0]} simpleOrdinals={true} />,
+        <StatisticRowCells
+            key="statname"
+            onlyColumns={['statname']}
+            longname={names[0]}
+            totalWidth={100 * (left_margin_pct - left_bar_margin)}
+            row={rows.find(row => row.extra_stat !== undefined) ?? rows[0]} // So that we show the expand if there's a least one extra
+            simpleOrdinals={true}
+        />,
         ...rows.map((row, i) => (
             <StatisticRowCells
                 key={names[i]}
