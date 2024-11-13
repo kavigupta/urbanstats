@@ -19,6 +19,7 @@ class Shapefile:
     american = attr.ib(default=True)
     include_in_gpw = attr.ib(default=False)
     tolerate_no_state = attr.ib(default=False)
+    universe_provider = attr.ib(kw_only=True)
 
     def load_file(self):
         """

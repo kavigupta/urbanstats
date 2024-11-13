@@ -1,4 +1,5 @@
 import geopandas as gpd
+import numpy as np
 import pandas as pd
 import tqdm
 
@@ -29,3 +30,23 @@ def overlays(a, b, a_size, b_size, **kwargs):
         for_chunk = overlay(x, y, **kwargs)
         results.append(for_chunk)
     return pd.concat(results).reset_index(drop=True)
+
+
+def compute_contained_in_direct(a_df, b_df, a_chunk_size, b_chunk_size):
+    a_df = a_df.copy()
+    a_df["idx"] = np.arange(a_df.shape[0])
+    over = overlays(
+        b_df,
+        a_df,
+        a_chunk_size,
+        b_chunk_size,
+        keep_geom_type=True,
+    )
+    area = over.area
+    area_elem = a_df.set_index("idx").geometry.to_crs("EPSG:2163").area
+    pct = area / np.array(area_elem[over.idx])
+    over = over[pct > 0.05]
+    result = {k: [] for k in a_df.longname}
+    for st, reg in zip(over.longname_1, over.longname_2):
+        result[reg].append(st)
+    return result

@@ -7,10 +7,7 @@ import tempfile
 import requests
 import us
 
-from urbanstats.universe.annotate_universes import (
-    all_universes,
-    get_universe_name_for_state,
-)
+from urbanstats.universe.universe_list import all_universes, get_universe_name_for_state
 
 from .universe_constants import CONTINENTS, COUNTRIES
 
