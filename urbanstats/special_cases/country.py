@@ -137,8 +137,3 @@ def continents():
         os.makedirs(path)
         c.to_file(path + "/continents.shp", encoding="utf-8")
     return gpd.read_file(path + "/continents.shp")
-
-
-@permacache("urbanstats/special_cases/country/continent_names_2")
-def continent_names():
-    return continents().name_1
