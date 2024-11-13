@@ -1,5 +1,5 @@
 from urbanstats.geometry.shapefiles.shapefile import Shapefile
-from urbanstats.universe.universe_provider.contained_within import us_domestic_provider
+from urbanstats.universe.universe_provider import us_domestic_provider
 
 CCDs = Shapefile(
     hash_key="census_cousub_8",

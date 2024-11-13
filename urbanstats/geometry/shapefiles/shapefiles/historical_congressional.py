@@ -1,6 +1,6 @@
 from urbanstats.geometry.shapefiles.shapefile import Shapefile
 from urbanstats.geometry.shapefiles.shapefiles.judicial import render_start_and_end
-from urbanstats.universe.universe_provider.contained_within import us_domestic_provider
+from urbanstats.universe.universe_provider import us_domestic_provider
 
 HISTORICAL_CONGRESSIONAL = Shapefile(
     hash_key="historical_congressional_5",

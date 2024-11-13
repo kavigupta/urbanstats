@@ -7,7 +7,7 @@ from permacache import permacache
 from urbanstats.geometry.shapefiles.shapefile import Shapefile
 from urbanstats.geometry.shapefiles.shapefiles.counties import COUNTIES
 from urbanstats.geometry.shapefiles.shapefiles.districts import CONGRESSIONAL_DISTRICTS
-from urbanstats.universe.universe_provider.contained_within import us_domestic_provider
+from urbanstats.universe.universe_provider import us_domestic_provider
 
 
 @permacache("population_density/shapefiles/county_cross_cd_3")

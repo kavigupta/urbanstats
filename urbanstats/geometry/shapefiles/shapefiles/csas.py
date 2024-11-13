@@ -1,6 +1,6 @@
 from urbanstats.geometry.shapefiles.shapefile import Shapefile
 from urbanstats.geometry.shapefiles.utils import name_components
-from urbanstats.universe.universe_provider.contained_within import us_domestic_provider
+from urbanstats.universe.universe_provider import us_domestic_provider
 
 CSAs = Shapefile(
     hash_key="census_csas_4",
