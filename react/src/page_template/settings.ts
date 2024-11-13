@@ -8,7 +8,6 @@ import article_types_other from '../data/type_to_type_category'
 import { DefaultMap } from '../utils/DefaultMap'
 
 import { Theme } from './colors'
-import { fromVector } from './settings-vector'
 import { allGroups, allYears, CategoryIdentifier, DataSource, GroupIdentifier, SourceCategoryIdentifier, SourceIdentifier, StatPath, statsTree, Year } from './statistic-tree'
 
 export type RelationshipKey = `related__${string}__${string}`
@@ -105,21 +104,8 @@ export class Settings {
 
     constructor() {
         const savedSettings = localStorage.getItem('settings')
-        if (savedSettings === null) {
-            this.settings = { ...defaultSettings }
-            // Try loading from a link vector, if it exists
-            const settingsVector = new URL(window.location.href).searchParams.get('s')
-            if (settingsVector !== null) {
-                const settingsFromQueryParams = fromVector(settingsVector, this)
-                for (const [key, value] of Object.entries(settingsFromQueryParams)) {
-                    this.settings[key as keyof SettingsDictionary] = value as never
-                }
-            }
-        }
-        else {
-            const loadedSettings = JSON.parse(savedSettings) as Partial<SettingsDictionary>
-            this.settings = { ...defaultSettings, ...loadedSettings }
-        }
+        const loadedSettings = JSON.parse(savedSettings ?? '{}') as Partial<SettingsDictionary>
+        this.settings = { ...defaultSettings, ...loadedSettings }
     }
 
     private readonly settingValueObservers = new DefaultMap<keyof SettingsDictionary, Set<() => void>>(() => new Set())
