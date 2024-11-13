@@ -3,12 +3,12 @@ from collections import defaultdict
 from functools import lru_cache
 
 import geopandas as gpd
-import numpy as np
-import pandas as pd
 import tqdm
 from permacache import drop_if_equal, permacache, stable_hash
 
+from urbanstats.geometry.shapefile_geometry import overlays
 from urbanstats.geometry.shapefiles.shapefiles_list import shapefiles_for_stats
+from urbanstats.universe.universe_provider.contained_within import compute_contained_in
 
 
 def skippable_edge_case(k):
@@ -54,40 +54,16 @@ def states_for_all():
 def continents_for_all():
     systematics = {}
     for _, u_shapefile in shapefiles_for_stats.items():
+        if not u_shapefile.include_in_gpw:
+            continue
         for k, v in contained_in(
             u_shapefile,
             shapefiles_for_stats["continents"],
             only_american=False,
             only_nonamerican=False,
         ).items():
-            if skippable_edge_case(k):
-                continue
-            # zip codes are north american, except for hawaii, which all start with 9
-            if re.match(r"^[0-8]\d{4}, USA$", k):
-                v = ["North America"]
-            # Treasure island
-            if k == "94130, USA":
-                v = ["North America"]
-            # Blake Island
-            if k == "98353, USA":
-                v = ["North America"]
-            if k == "HI-HD051, USA":
-                v = ["Oceania"]
-            if k in [
-                "ME-HD119, USA",
-                "OH-HD013, USA",
-                "Inalik ANVSA, USA",
-                "Lesnoi ANVSA, USA",
-            ]:
-                v = ["North America"]
             if k == "Venice Urban Center, Italy":
                 v = ["Europe"]
-            # things in these states are in North America
-            if re.match(
-                r".*, (New York|Maine|Florida|Virginia|Alaska|California|Ohio|Michigan|Washington|North Carolina), USA$",
-                k,
-            ):
-                v = ["North America"]
             if k in systematics:
                 assert systematics[k] == v, (k, systematics[k], v)
             else:
@@ -137,56 +113,10 @@ def states_for(sh):
     ),
 )
 def contained_in(sh, check_contained_in, *, only_american, only_nonamerican):
-    print("contained_in", sh.hash_key, check_contained_in.hash_key)
-    elem = sh.load_file()
     if only_american and not sh.american or only_nonamerican and sh.american:
+        elem = sh.load_file()
         return {k: [] for k in elem.longname}
-    elem["idx"] = np.arange(elem.shape[0])
-    over = overlays(
-        check_contained_in.load_file(),
-        elem,
-        check_contained_in.chunk_size,
-        sh.chunk_size,
-        keep_geom_type=True,
-    )
-    area = over.area
-    area_elem = elem.set_index("idx").geometry.to_crs("EPSG:2163").area
-    pct = area / np.array(area_elem[over.idx])
-    over = over[pct > 0.05]
-    state = over.longname_1
-    region = over.longname_2
-    result = {k: [] for k in elem.longname}
-    for st, reg in zip(state, region):
-        result[reg].append(st)
-    return result
-
-
-def overlays(a, b, a_size, b_size, **kwargs):
-    """
-    Get the overlays between the two shapefiles a and b
-    """
-    if a_size is None and b_size is None:
-        return overlay(a, b, **kwargs)
-
-    total_frac = 1
-    if a_size is not None:
-        total_frac *= a_size / a.shape[0]
-    if b_size is not None:
-        total_frac *= b_size / b.shape[0]
-    size = max(5, int(total_frac * a.shape[0]))
-    results = []
-    for i in tqdm.trange(0, a.shape[0], size):
-        x, y = a.iloc[i : i + size], b
-        for_chunk = overlay(x, y, **kwargs)
-        results.append(for_chunk)
-    return pd.concat(results).reset_index(drop=True)
-
-
-def overlay(x, y, keep_geom_type=False):
-    for_chunk = gpd.overlay(x, y, how="intersection", keep_geom_type=keep_geom_type)
-    for_chunk["area"] = for_chunk.geometry.to_crs("EPSG:2163").area
-    del for_chunk["geometry"]
-    return for_chunk
+    return compute_contained_in(sh, check_contained_in)
 
 
 @permacache(

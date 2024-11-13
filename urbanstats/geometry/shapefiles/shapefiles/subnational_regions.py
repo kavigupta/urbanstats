@@ -1,5 +1,15 @@
 from urbanstats.geometry.shapefiles.shapefile import Shapefile
 from urbanstats.special_cases.country import subnational_regions
+from urbanstats.universe.universe_provider.combined_universe_provider import (
+    CombinedUniverseProvider,
+)
+from urbanstats.universe.universe_provider.constant_provider import (
+    ConstantUniverseProvider,
+)
+from urbanstats.universe.universe_provider.contained_within import (
+    STATE_PROVIDER,
+    ContainedWithinUniverseProvider,
+)
 
 SUBNATIONAL_REGIONS = Shapefile(
     hash_key="subnational_regions_10",
@@ -10,6 +20,13 @@ SUBNATIONAL_REGIONS = Shapefile(
     meta=dict(type="Subnational Region", source="ESRI", type_category="US Subdivision"),
     american=False,
     include_in_gpw=True,
+    universe_provider=CombinedUniverseProvider(
+        [
+            ConstantUniverseProvider(["world"]),
+            ContainedWithinUniverseProvider(["continents", "countries"]),
+            STATE_PROVIDER,
+        ]
+    ),
 )
 STATES_USA = Shapefile(
     hash_key="census_states_3",

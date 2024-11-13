@@ -26,7 +26,7 @@ from urbanstats.statistics.output_statistics_metadata import (
     internal_statistic_names,
     statistic_internal_to_display_name,
 )
-from urbanstats.universe.annotate_universes import universe_by_universe_type
+from urbanstats.universe.universe_list import universe_by_universe_type
 from urbanstats.website_data.statistic_index_lists import index_list_for_longname
 from urbanstats.website_data.table import shapefile_without_ordinals
 
