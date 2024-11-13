@@ -7,8 +7,8 @@ export function linkSettingsTests(baseLink: string): void {
         await t.click('.expandButton[data-category-id=main]')
     })
 
-    const defaultLink = `${baseLink}&s=BY6xv3Ds1ih`
-    const expectedLink = `${baseLink}&s=BChctRbFJ1F`
+    const defaultLink = `${baseLink}&s=BY6xv3Ds1im`
+    const expectedLink = `${baseLink}&s=BChctRbFJ1K`
 
     test('formulates correct link', async (t) => {
         // Check imperial, uncheck population
@@ -170,7 +170,8 @@ export function linkSettingsTests(baseLink: string): void {
         await screencap(t)
     })
 
-    const histogramLink = `${baseLink}&s=oWHKo6omJJwy`
+    const histogramLink = `${baseLink}&s=oWHKo6omJJzB`
+    const histogramLinkWithRelativeChanged = `${baseLink}&s=oWHKo6omJJy5`
 
     urbanstatsFixture('generate histogram link', baseLink)
 
@@ -179,6 +180,14 @@ export function linkSettingsTests(baseLink: string): void {
 
         await t.expect(getLocation())
             .eql(`${TARGET}${histogramLink}`)
+    })
+
+    test('open histogram with relative changed', async (t) => {
+        await t.click(Selector('.expand-toggle'))
+        await t.click(Selector('[data-test-id=histogram_relative]'))
+
+        await t.expect(getLocation())
+            .eql(`${TARGET}${histogramLinkWithRelativeChanged}`)
     })
 
     urbanstatsFixture('paste histogram link', histogramLink)
@@ -190,5 +199,52 @@ export function linkSettingsTests(baseLink: string): void {
 
     test('not in staging mode', async (t) => {
         await t.expect(Selector('[data-test-id=staging_controls]').exists).notOk()
+    })
+
+    urbanstatsFixture('paste histogram relative changed link', histogramLinkWithRelativeChanged)
+
+    test('relative changed histogram is visible', async (t) => {
+        await t.expect(Selector('.histogram-svg-panel').exists).ok()
+        await t.expect(Selector('[data-test-id=histogram_relative]').checked).notOk()
+        await screencap(t)
+    })
+
+    test('relative changed histogram is not in staging mode', async (t) => {
+        await t.expect(Selector('[data-test-id=staging_controls]').exists).notOk()
+    })
+
+    const hiddenHistogramLink = `${baseLink}&s=jV3SFkDSQb9`
+
+    /*
+     * Test that settings included in the link, but not visible, are not applied
+     */
+    urbanstatsFixture('generate hidden histogram link', baseLink)
+
+    test('open histogram, and changed to non-relative, but then hide stat path', async (t) => {
+        await t.click(Selector('.expand-toggle'))
+        await t.click(Selector('[data-test-id=histogram_relative]'))
+
+        // uncheck the main stats
+        await t.click(Selector('[data-test-id=category_main]'))
+
+        await t.expect(getLocation())
+            .eql(`${TARGET}${hiddenHistogramLink}`)
+    })
+
+    urbanstatsFixture('visit hidden histogram link and reopen stats', hiddenHistogramLink, async (t) => {
+        await t.click(Selector('[data-test-id=category_main]'))
+    })
+
+    test('histogram should not be visible', async (t) => {
+        await t.expect(Selector('.histogram-svg-panel').exists).notOk()
+    })
+
+    test('upon opening histogram, relative setting should be correct (not like the previous setting)', async (t) => {
+        await t.click(Selector('.expand-toggle'))
+        await t.expect(Selector('[data-test-id=histogram_relative]').checked).ok()
+    })
+
+    test('link should not include histogram settings', async (t) => {
+        await t.expect(getLocation()).notEql(`${TARGET}${hiddenHistogramLink}`)
     })
 }
