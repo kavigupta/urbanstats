@@ -8,6 +8,7 @@ from urbanstats.universe.universe_provider.constant_provider import (
 )
 from urbanstats.universe.universe_provider.contained_within import (
     STATE_PROVIDER,
+    us_domestic_provider,
     ContainedWithinUniverseProvider,
 )
 
@@ -35,4 +36,5 @@ STATES_USA = Shapefile(
     longname_extractor=lambda x: x["NAME"] + ", USA",
     filter=lambda x: True,
     meta=dict(type="State", source="Census", type_category="US Subdivision"),
+    universe_provider=us_domestic_provider(),
 )

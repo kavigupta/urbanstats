@@ -28,6 +28,7 @@ from urbanstats.universe.universe_provider.constant_provider import (
     ConstantUniverseProvider,
 )
 from urbanstats.universe.universe_provider.contained_within import (
+    STATE_PROVIDER,
     ContainedWithinUniverseProvider,
 )
 
@@ -797,8 +798,7 @@ def circle_shapefile_object(country_shapefile, population, just_usa):
             [
                 ConstantUniverseProvider(["world"]),
                 ContainedWithinUniverseProvider(["continents", "countries"]),
+                STATE_PROVIDER,
             ]
-        )
-        if not just_usa
-        else None,
+        ),
     )

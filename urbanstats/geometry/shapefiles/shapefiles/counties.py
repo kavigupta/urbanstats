@@ -1,6 +1,7 @@
 import us
 
 from urbanstats.geometry.shapefiles.shapefile import Shapefile
+from urbanstats.universe.universe_provider.contained_within import us_domestic_provider
 
 
 def county_name(row):
@@ -20,4 +21,5 @@ COUNTIES = Shapefile(
     + ", USA",
     filter=lambda x: True,
     meta=dict(type="County", source="Census", type_category="US Subdivision"),
+    universe_provider=us_domestic_provider(),
 )

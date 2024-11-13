@@ -52,4 +52,5 @@ COUNTRY_USA = Shapefile(
     meta=dict(type="Country", source="OpenDataSoft", type_category="International"),
     american=True,
     include_in_gpw=False,
+    universe_provider=ConstantUniverseProvider(["world", "North America", "USA"]),
 )

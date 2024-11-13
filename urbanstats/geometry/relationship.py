@@ -1,123 +1,12 @@
 import re
 from collections import defaultdict
-from functools import lru_cache
 
 import geopandas as gpd
 import tqdm
-from permacache import drop_if_equal, permacache, stable_hash
+from permacache import permacache, stable_hash
 
 from urbanstats.geometry.shapefile_geometry import overlays
 from urbanstats.geometry.shapefiles.shapefiles_list import shapefiles_for_stats
-from urbanstats.universe.universe_provider.contained_within import compute_contained_in
-
-
-def skippable_edge_case(k):
-    # no clue what this is
-    return k == "Historical Congressional District DC-98, 103rd-117th Congress, USA"
-
-
-@lru_cache(maxsize=1)
-def states_for_all():
-    systematics = {}
-    one_offs = {
-        "Freeman Island Neighborhood, Long Beach City, California, USA": "California, USA",
-        "Island Chaffee Neighborhood, Long Beach City, California, USA": "California, USA",
-        "Island White Neighborhood, Long Beach City, California, USA": "California, USA",
-        "Bay Islands Neighborhood, San Rafael City, California, USA": "California, USA",
-        "Fair Isle Neighborhood, Miami City, Florida, USA": "Florida, USA",
-        "House Island Neighborhood, Portland City, Maine, USA": "Maine, USA",
-        "HI-HD051, USA": "Hawaii, USA",
-        "HI-SD025, USA": "Hawaii, USA",
-        "OH-HD013, USA": "Ohio, USA",
-        "PA-HD001, USA": "Pennsylvania, USA",
-        "RI-HD075, USA": "Rhode Island, USA",
-    }
-    for u, u_shapefile in shapefiles_for_stats.items():
-        for k, v in states_for(u_shapefile).items():
-            if skippable_edge_case(k):
-                continue
-            if k in one_offs:
-                systematics[k] = [one_offs[k]]
-            else:
-                systematics[k] = v
-            if u_shapefile.american and not u_shapefile.tolerate_no_state:
-                if len(systematics[k]) == 0:
-                    print("Error on ", k, " in ", u)
-                    print("shapefile: ", u_shapefile)
-                    print("systematics: ", systematics[k])
-                    raise ValueError
-                assert len(systematics[k]) >= 1, (u, k)
-    return systematics
-
-
-@lru_cache(maxsize=1)
-def continents_for_all():
-    systematics = {}
-    for _, u_shapefile in shapefiles_for_stats.items():
-        if not u_shapefile.include_in_gpw:
-            continue
-        for k, v in contained_in(
-            u_shapefile,
-            shapefiles_for_stats["continents"],
-            only_american=False,
-            only_nonamerican=False,
-        ).items():
-            if k == "Venice Urban Center, Italy":
-                v = ["Europe"]
-            if k in systematics:
-                assert systematics[k] == v, (k, systematics[k], v)
-            else:
-                systematics[k] = v
-    return systematics
-
-
-@lru_cache(maxsize=1)
-def non_us_countries_for_all():
-    systematics = {}
-    for _, u_shapefile in shapefiles_for_stats.items():
-        for k, v in contained_in(
-            u_shapefile,
-            shapefiles_for_stats["countries"],
-            only_american=False,
-            only_nonamerican=True,
-        ).items():
-            if skippable_edge_case(k):
-                continue
-            if k in systematics and "USA" in k:
-                v = max([v, systematics[k]], key=len)
-                systematics[k] = v
-            if k in systematics:
-                assert systematics[k] == v, (k, systematics[k], v)
-            else:
-                systematics[k] = v
-    return systematics
-
-
-@permacache(
-    "population_density/relationship/states_for_4",
-    key_function=dict(sh=lambda a: a.hash_key),
-)
-def states_for(sh):
-    print("states_for", sh.hash_key)
-    return contained_in(
-        sh, shapefiles_for_stats["states"], only_american=True, only_nonamerican=False
-    )
-
-
-@permacache(
-    "population_density/relationship/contained_in_2",
-    key_function=dict(
-        sh=lambda a: a.hash_key,
-        check_contained_in=lambda a: a.hash_key,
-        only_nonamerican=drop_if_equal(False),
-    ),
-)
-def contained_in(sh, check_contained_in, *, only_american, only_nonamerican):
-    if only_american and not sh.american or only_nonamerican and sh.american:
-        elem = sh.load_file()
-        return {k: [] for k in elem.longname}
-    return compute_contained_in(sh, check_contained_in)
-
 
 @permacache(
     "population_density/relationship/create_relationships_7",

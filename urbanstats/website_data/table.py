@@ -14,7 +14,6 @@ from urbanstats.statistics.collections_list import (
 )
 from urbanstats.universe.annotate_universes import (
     attach_intl_universes,
-    attach_usa_universes,
 )
 
 
@@ -92,7 +91,7 @@ def international_shapefile():
 @lru_cache(maxsize=None)
 def shapefile_without_ordinals():
     usa = american_shapefile()
-    attach_usa_universes(usa)
+    attach_intl_universes(usa)
     intl = international_shapefile()
     attach_intl_universes(intl)
     full = merge_international_and_domestic(intl, usa)

@@ -6,6 +6,7 @@ from permacache import permacache
 
 from urbanstats.geometry.shapefiles.shapefile import Shapefile
 from urbanstats.geometry.shapefiles.shapefiles.counties import COUNTIES
+from urbanstats.universe.universe_provider.contained_within import us_domestic_provider
 
 
 @permacache("population_density/shapefiles/school_district_shapefiles")
@@ -42,4 +43,5 @@ SCHOOL_DISTRICTS = Shapefile(
     longname_extractor=lambda x: f"{x['NAME']}{x['suffix']}, {x['STATE_NAME']}, USA",
     filter=lambda x: True,
     meta=dict(type="School District", source="Census", type_category="School"),
+    universe_provider=us_domestic_provider(),
 )

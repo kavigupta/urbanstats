@@ -1,5 +1,6 @@
 from urbanstats.geometry.shapefiles.shapefile import Shapefile
 from urbanstats.geometry.shapefiles.utils import name_components
+from urbanstats.universe.universe_provider.contained_within import us_domestic_provider
 
 CSAs = Shapefile(
     hash_key="census_csas_4",
@@ -8,4 +9,5 @@ CSAs = Shapefile(
     longname_extractor=lambda x: ", ".join(name_components("CSA", x, abbreviate=True)),
     filter=lambda x: True,
     meta=dict(type="CSA", source="Census", type_category="Census"),
+    universe_provider=us_domestic_provider(),
 )

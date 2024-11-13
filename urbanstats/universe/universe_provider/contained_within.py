@@ -4,6 +4,13 @@ from typing import List
 from permacache import permacache, drop_if_equal
 from urbanstats.geometry.shapefile_geometry import compute_contained_in_direct
 from urbanstats.universe.universe_list import universe_by_universe_type
+from urbanstats.universe.universe_provider.combined_universe_provider import (
+    CombinedUniverseProvider,
+)
+from urbanstats.universe.universe_provider.constant_provider import (
+    ConstantUniverseProvider,
+)
+from urbanstats.universe.universe_provider.override import OverrideUniverseProvider
 from urbanstats.universe.universe_provider.universe_provider import UniverseProvider
 
 
@@ -32,6 +39,15 @@ class ContainedWithinUniverseProvider(UniverseProvider):
 STATE_PROVIDER = ContainedWithinUniverseProvider(
     ["subnational_regions"], universe_by_universe_type()["state"]
 )
+
+
+def us_domestic_provider(overrides=None):
+    state_provider = STATE_PROVIDER
+    if overrides is not None:
+        state_provider = OverrideUniverseProvider(overrides, state_provider)
+    return CombinedUniverseProvider(
+        [ConstantUniverseProvider(["world", "North America", "USA"]), state_provider]
+    )
 
 
 @permacache(

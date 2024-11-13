@@ -11,6 +11,7 @@ from urbanstats.universe.universe_provider.constant_provider import (
     ConstantUniverseProvider,
 )
 from urbanstats.universe.universe_provider.contained_within import (
+    us_domestic_provider,
     ContainedWithinUniverseProvider,
 )
 from urbanstats.universe.universe_provider.universe_provider import UniverseProvider
@@ -67,4 +68,5 @@ URBAN_CENTERS_USA = Shapefile(
     filter=lambda x: "USA" == x.suffix,
     american=True,
     include_in_gpw=False,
+    universe_provider=us_domestic_provider(),
 )

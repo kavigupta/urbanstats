@@ -1,5 +1,6 @@
 from urbanstats.geometry.shapefiles.shapefile import Shapefile
 from urbanstats.geometry.shapefiles.utils import name_components
+from urbanstats.universe.universe_provider.contained_within import us_domestic_provider
 
 MSAs = Shapefile(
     hash_key="census_msas_4",
@@ -8,4 +9,5 @@ MSAs = Shapefile(
     longname_extractor=lambda x: ", ".join(name_components("MSA", x, abbreviate=True)),
     filter=lambda x: True,
     meta=dict(type="MSA", source="Census", type_category="Census"),
+    universe_provider=us_domestic_provider(),
 )

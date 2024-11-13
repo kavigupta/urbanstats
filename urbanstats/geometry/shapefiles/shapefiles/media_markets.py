@@ -1,4 +1,5 @@
 from urbanstats.geometry.shapefiles.shapefile import Shapefile
+from urbanstats.universe.universe_provider.contained_within import us_domestic_provider
 
 MEDIA_MARKETS = Shapefile(
     hash_key="media_markets_2",
@@ -11,4 +12,5 @@ MEDIA_MARKETS = Shapefile(
         source="Nielsen via Kenneth C Black",
         type_category="Oddball",
     ),
+    universe_provider=us_domestic_provider(),
 )
