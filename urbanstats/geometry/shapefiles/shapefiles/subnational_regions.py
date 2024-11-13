@@ -7,9 +7,7 @@ from urbanstats.universe.universe_provider.constants import (
     INTERNATIONAL_PROVIDERS,
     us_domestic_provider,
 )
-from urbanstats.universe.universe_provider.contained_within import (
-    STATE_PROVIDER,
-)
+from urbanstats.universe.universe_provider.contained_within import STATE_PROVIDER
 
 SUBNATIONAL_REGIONS = Shapefile(
     hash_key="subnational_regions_10",
