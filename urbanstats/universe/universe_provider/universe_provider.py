@@ -1,7 +1,5 @@
 from abc import ABC, abstractmethod
 
-from permacache import permacache
-
 
 class UniverseProvider(ABC):
     """

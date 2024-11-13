@@ -5,10 +5,7 @@ import pandas as pd
 import tqdm.auto as tqdm
 from permacache import permacache, stable_hash
 
-from urbanstats.geometry.shapefiles.shapefiles_list import (
-    shapefiles,
-    shapefiles_for_stats,
-)
+from urbanstats.geometry.shapefiles.shapefiles_list import shapefiles_for_stats
 from urbanstats.special_cases.merge_international import (
     merge_international_and_domestic,
 )
@@ -71,7 +68,9 @@ def american_shapefile():
         if not shapefiles_for_stats[k].american:
             continue
 
-        t = compute_statistics_for_shapefile(shapefiles_for_stats[k], shapefiles)
+        t = compute_statistics_for_shapefile(
+            shapefiles_for_stats[k], shapefiles_for_stats
+        )
 
         full.append(t)
 
@@ -91,7 +90,7 @@ def international_shapefile():
     ts = []
     for s in shapefiles_for_stats.values():
         if s.include_in_gpw:
-            t = compute_statistics_for_shapefile(s, shapefiles)
+            t = compute_statistics_for_shapefile(s, shapefiles_for_stats)
             ts.append(t)
     intl = pd.concat(ts)
     # intl = intl[intl.area > 10].copy()

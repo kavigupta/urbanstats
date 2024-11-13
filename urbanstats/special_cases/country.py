@@ -3,7 +3,6 @@ import os
 
 import geopandas as gpd
 import tqdm.auto as tqdm
-from permacache import permacache
 
 from urbanstats.special_cases.country_names import iso_to_country
 

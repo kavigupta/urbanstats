@@ -50,7 +50,6 @@ def us_domestic_provider(overrides=None):
         [ConstantUniverseProvider(["world", "North America", "USA"]), state_provider]
     )
 
-
 @permacache(
     "urbanstats/universe/universe_provider/contained_within/compute_contained_in",
     key_function=dict(

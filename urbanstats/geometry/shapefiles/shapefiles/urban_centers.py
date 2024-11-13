@@ -6,16 +6,8 @@ import us
 from urbanstats.geometry.shapefiles.shapefile import Shapefile
 from urbanstats.special_cases.ghsl_urban_center import load_ghsl_urban_center
 from urbanstats.universe.universe_list import get_universe_name_for_state
-from urbanstats.universe.universe_provider.combined_universe_provider import (
-    CombinedUniverseProvider,
-)
-from urbanstats.universe.universe_provider.constant_provider import (
-    ConstantUniverseProvider,
-)
-from urbanstats.universe.universe_provider.contained_within import (
-    ContainedWithinUniverseProvider,
-    us_domestic_provider,
-)
+from urbanstats.universe.universe_provider import INTERNATIONAL_PROVIDER
+from urbanstats.universe.universe_provider.contained_within import us_domestic_provider
 from urbanstats.universe.universe_provider.universe_provider import UniverseProvider
 
 
@@ -53,13 +45,7 @@ URBAN_CENTERS = Shapefile(
     filter=lambda x: True,
     american=False,
     include_in_gpw=True,
-    universe_provider=CombinedUniverseProvider(
-        [
-            ConstantUniverseProvider(["world"]),
-            ContainedWithinUniverseProvider(["continents", "countries"]),
-            UrbanCenterStateUniverseProvider(),
-        ]
-    ),
+    universe_provider=INTERNATIONAL_PROVIDER,
 )
 URBAN_CENTERS_USA = Shapefile(
     hash_key="us_urban_centers_5",

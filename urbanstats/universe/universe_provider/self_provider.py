@@ -1,7 +1,5 @@
 from dataclasses import dataclass
-from typing import List
 
-from urbanstats.geometry.shapefile_geometry import overlays
 from urbanstats.universe.universe_provider.universe_provider import UniverseProvider
 
 
