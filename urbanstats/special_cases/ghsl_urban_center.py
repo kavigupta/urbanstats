@@ -36,6 +36,7 @@ def load_ghsl_urban_center():
     areas["longname"] = areas.shortname + ", " + areas.suffix
     return areas
 
+
 @permacache(
     "urbanstats/special_cases/ghsl_urban_center/load_ghsl_urban_center_no_names_3"
 )

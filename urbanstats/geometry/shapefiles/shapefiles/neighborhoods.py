@@ -18,10 +18,18 @@ NEIGHBORHOODS = Shapefile(
     drop_dup="cousub",
     universe_provider=us_domestic_provider(
         {
-            "Freeman Island Neighborhood, Long Beach City, California, USA": ["California, USA"],
-            "Island Chaffee Neighborhood, Long Beach City, California, USA": ["California, USA"],
-            "Island White Neighborhood, Long Beach City, California, USA": ["California, USA"],
-            "Bay Islands Neighborhood, San Rafael City, California, USA": ["California, USA"],
+            "Freeman Island Neighborhood, Long Beach City, California, USA": [
+                "California, USA"
+            ],
+            "Island Chaffee Neighborhood, Long Beach City, California, USA": [
+                "California, USA"
+            ],
+            "Island White Neighborhood, Long Beach City, California, USA": [
+                "California, USA"
+            ],
+            "Bay Islands Neighborhood, San Rafael City, California, USA": [
+                "California, USA"
+            ],
             "Fair Isle Neighborhood, Miami City, Florida, USA": ["Florida, USA"],
             "House Island Neighborhood, Portland City, Maine, USA": ["Maine, USA"],
         }

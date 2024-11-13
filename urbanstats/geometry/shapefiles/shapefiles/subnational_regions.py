@@ -8,8 +8,8 @@ from urbanstats.universe.universe_provider.constant_provider import (
 )
 from urbanstats.universe.universe_provider.contained_within import (
     STATE_PROVIDER,
-    us_domestic_provider,
     ContainedWithinUniverseProvider,
+    us_domestic_provider,
 )
 
 SUBNATIONAL_REGIONS = Shapefile(

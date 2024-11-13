@@ -14,7 +14,6 @@ from urbanstats.universe.universe_provider.compute_universes import (
 from .universe_constants import CONTINENTS, COUNTRIES
 
 
-
 def attach_intl_universes(intl):
     assert country_names() == COUNTRIES
     assert list(continent_names()) == CONTINENTS

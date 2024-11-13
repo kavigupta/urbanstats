@@ -1,6 +1,8 @@
 from dataclasses import dataclass
 from typing import Tuple
+
 import us
+
 from urbanstats.geometry.shapefiles.shapefile import Shapefile
 from urbanstats.special_cases.ghsl_urban_center import load_ghsl_urban_center
 from urbanstats.universe.universe_list import get_universe_name_for_state
@@ -11,8 +13,8 @@ from urbanstats.universe.universe_provider.constant_provider import (
     ConstantUniverseProvider,
 )
 from urbanstats.universe.universe_provider.contained_within import (
-    us_domestic_provider,
     ContainedWithinUniverseProvider,
+    us_domestic_provider,
 )
 from urbanstats.universe.universe_provider.universe_provider import UniverseProvider
 

@@ -8,6 +8,7 @@ from permacache import permacache, stable_hash
 from urbanstats.geometry.shapefile_geometry import overlays
 from urbanstats.geometry.shapefiles.shapefiles_list import shapefiles_for_stats
 
+
 @permacache(
     "population_density/relationship/create_relationships_7",
     key_function=dict(x=lambda x: x.hash_key, y=lambda y: y.hash_key),

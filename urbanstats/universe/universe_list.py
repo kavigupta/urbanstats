@@ -1,10 +1,8 @@
-from urbanstats.universe.universe_constants import CONTINENTS, COUNTRIES
-
+from functools import lru_cache
 
 import us
 
-
-from functools import lru_cache
+from urbanstats.universe.universe_constants import CONTINENTS, COUNTRIES
 
 
 def get_universe_name_for_state(state):

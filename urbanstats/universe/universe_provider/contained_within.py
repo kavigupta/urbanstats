@@ -1,7 +1,8 @@
 from dataclasses import dataclass
 from typing import List
 
-from permacache import permacache, drop_if_equal
+from permacache import drop_if_equal, permacache
+
 from urbanstats.geometry.shapefile_geometry import compute_contained_in_direct
 from urbanstats.universe.universe_list import universe_by_universe_type
 from urbanstats.universe.universe_provider.combined_universe_provider import (

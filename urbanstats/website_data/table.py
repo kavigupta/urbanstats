@@ -12,9 +12,7 @@ from urbanstats.special_cases.merge_international import (
 from urbanstats.statistics.collections_list import (
     statistic_collections as statistic_collections_list,
 )
-from urbanstats.universe.annotate_universes import (
-    attach_intl_universes,
-)
+from urbanstats.universe.annotate_universes import attach_intl_universes
 
 
 @permacache(

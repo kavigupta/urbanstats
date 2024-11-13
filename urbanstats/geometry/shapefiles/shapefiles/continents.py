@@ -18,5 +18,7 @@ CONTINENTS = Shapefile(
     american=False,
     include_in_gpw=True,
     chunk_size=1,
-    universe_provider=CombinedUniverseProvider([ConstantUniverseProvider(["world"]), SelfUniverseProvider()]),
+    universe_provider=CombinedUniverseProvider(
+        [ConstantUniverseProvider(["world"]), SelfUniverseProvider()]
+    ),
 )

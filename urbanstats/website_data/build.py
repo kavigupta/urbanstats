@@ -21,8 +21,8 @@ from urbanstats.statistics.output_statistics_metadata import (
     internal_statistic_names,
     output_statistics_metadata,
 )
-from urbanstats.universe.universe_list import all_universes
 from urbanstats.universe.icons import place_icons_in_site_folder
+from urbanstats.universe.universe_list import all_universes
 from urbanstats.website_data.create_article_gzips import (
     create_article_gzips,
     extra_stats,
