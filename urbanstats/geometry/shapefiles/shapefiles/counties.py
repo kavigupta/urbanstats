@@ -1,7 +1,7 @@
 import us
 
 from urbanstats.geometry.shapefiles.shapefile import Shapefile
-from urbanstats.universe.universe_provider import us_domestic_provider
+from urbanstats.universe.universe_provider.constants import us_domestic_provider
 
 
 def county_name(row):
