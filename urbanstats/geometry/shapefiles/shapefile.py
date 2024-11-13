@@ -13,6 +13,7 @@ class Shapefile:
     longname_extractor = attr.ib()
     filter = attr.ib()
     meta = attr.ib()
+    additional_columns_to_keep = attr.ib(default=())
     drop_dup = attr.ib(default=False)
     chunk_size = attr.ib(default=None)
     american = attr.ib(default=True)
@@ -50,6 +51,7 @@ class Shapefile:
             dict(
                 shortname=s.apply(self.shortname_extractor, axis=1),
                 longname=s.apply(self.longname_extractor, axis=1),
+                **{col: s[col] for col in self.additional_columns_to_keep},
             ),
             geometry=s.geometry,
         )
