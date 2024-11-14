@@ -9,7 +9,10 @@ from urbanstats.protobuf.utils import write_gzip
 from urbanstats.statistics.collections_list import statistic_collections
 from urbanstats.statistics.output_statistics_metadata import internal_statistic_names
 from urbanstats.website_data.sharding import create_filename
-from urbanstats.website_data.statistic_index_lists import index_list_for_longname
+from urbanstats.website_data.statistic_index_lists import (
+    index_bitvector_for_longname,
+    index_list_for_longname,
+)
 
 
 def create_article_gzip(
@@ -27,6 +30,7 @@ def create_article_gzip(
     statistic_names = internal_statistic_names()
     idxs_by_type = index_list_for_longname(row.longname, row.type)
     data = data_files_pb2.Article()
+    data.statistic_indices_packed = bytes(index_bitvector_for_longname(row.longname, row.type))
     data.shortname = row.shortname
     data.longname = row.longname
     data.source = row.source

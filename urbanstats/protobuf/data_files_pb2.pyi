@@ -1,13 +1,14 @@
-# pylint: skip-file
-from typing import ClassVar as _ClassVar
-from typing import Iterable as _Iterable
-from typing import Mapping as _Mapping
-from typing import Optional as _Optional
-from typing import Union as _Union
-
+#pylint: skip-file
+from google.protobuf.internal import containers as _containers
 from google.protobuf import descriptor as _descriptor
 from google.protobuf import message as _message
-from google.protobuf.internal import containers as _containers
+from typing import (
+    ClassVar as _ClassVar,
+    Iterable as _Iterable,
+    Mapping as _Mapping,
+    Optional as _Optional,
+    Union as _Union,
+)
 
 DESCRIPTOR: _descriptor.FileDescriptor
 
@@ -102,6 +103,7 @@ class Article(_message.Message):
         "longname",
         "source",
         "article_type",
+        "statistic_indices_packed",
         "rows",
         "related",
         "universes",
@@ -111,6 +113,7 @@ class Article(_message.Message):
     LONGNAME_FIELD_NUMBER: _ClassVar[int]
     SOURCE_FIELD_NUMBER: _ClassVar[int]
     ARTICLE_TYPE_FIELD_NUMBER: _ClassVar[int]
+    STATISTIC_INDICES_PACKED_FIELD_NUMBER: _ClassVar[int]
     ROWS_FIELD_NUMBER: _ClassVar[int]
     RELATED_FIELD_NUMBER: _ClassVar[int]
     UNIVERSES_FIELD_NUMBER: _ClassVar[int]
@@ -119,6 +122,7 @@ class Article(_message.Message):
     longname: str
     source: str
     article_type: str
+    statistic_indices_packed: bytes
     rows: _containers.RepeatedCompositeFieldContainer[StatisticRow]
     related: _containers.RepeatedCompositeFieldContainer[RelatedButtons]
     universes: _containers.RepeatedScalarFieldContainer[str]
@@ -129,6 +133,7 @@ class Article(_message.Message):
         longname: _Optional[str] = ...,
         source: _Optional[str] = ...,
         article_type: _Optional[str] = ...,
+        statistic_indices_packed: _Optional[bytes] = ...,
         rows: _Optional[_Iterable[_Union[StatisticRow, _Mapping]]] = ...,
         related: _Optional[_Iterable[_Union[RelatedButtons, _Mapping]]] = ...,
         universes: _Optional[_Iterable[str]] = ...,

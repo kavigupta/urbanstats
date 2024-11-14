@@ -41,6 +41,7 @@ message Article {
     string longname = 2;
     string source = 3;
     string article_type = 4;
+    bytes statistic_indices_packed = 9;
     repeated StatisticRow rows = 5;
     repeated RelatedButtons related = 6;
     repeated string universes = 7;

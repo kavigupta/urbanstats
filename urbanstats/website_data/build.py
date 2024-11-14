@@ -30,7 +30,6 @@ from urbanstats.website_data.create_article_gzips import (
 from urbanstats.website_data.index import export_index
 from urbanstats.website_data.ordinals import all_ordinals
 from urbanstats.website_data.output_geometry import produce_all_geometry_json
-from urbanstats.website_data.statistic_index_lists import get_index_lists
 from urbanstats.website_data.table import shapefile_without_ordinals
 
 from ..utils import output_typescript
@@ -87,13 +86,6 @@ def create_react_jsons():
 
     output_names(mapper_folder)
     output_ramps(mapper_folder)
-
-    with open("react/src/data/index_lists.ts", "w") as f:
-        output_typescript(
-            get_index_lists(),
-            f,
-            data_type="{ index_lists: Record<string, number[]>, type_to_has_gpw: Record<string, boolean> }",
-        )
 
     with open("react/src/data/american_to_international.ts", "w") as f:
         output_typescript(

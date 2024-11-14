@@ -1636,6 +1636,7 @@ $root.Article = (function() {
      * @property {string|null} [longname] Article longname
      * @property {string|null} [source] Article source
      * @property {string|null} [articleType] Article articleType
+     * @property {Uint8Array|null} [statisticIndicesPacked] Article statisticIndicesPacked
      * @property {Array.<IStatisticRow>|null} [rows] Article rows
      * @property {Array.<IRelatedButtons>|null} [related] Article related
      * @property {Array.<string>|null} [universes] Article universes
@@ -1692,6 +1693,14 @@ $root.Article = (function() {
      * @instance
      */
     Article.prototype.articleType = "";
+
+    /**
+     * Article statisticIndicesPacked.
+     * @member {Uint8Array} statisticIndicesPacked
+     * @memberof Article
+     * @instance
+     */
+    Article.prototype.statisticIndicesPacked = $util.newBuffer([]);
 
     /**
      * Article rows.
@@ -1769,6 +1778,8 @@ $root.Article = (function() {
         if (message.extraStats != null && message.extraStats.length)
             for (var i = 0; i < message.extraStats.length; ++i)
                 $root.ExtraStatistic.encode(message.extraStats[i], writer.uint32(/* id 8, wireType 2 =*/66).fork()).ldelim();
+        if (message.statisticIndicesPacked != null && Object.hasOwnProperty.call(message, "statisticIndicesPacked"))
+            writer.uint32(/* id 9, wireType 2 =*/74).bytes(message.statisticIndicesPacked);
         return writer;
     };
 
@@ -1817,6 +1828,10 @@ $root.Article = (function() {
                 }
             case 4: {
                     message.articleType = reader.string();
+                    break;
+                }
+            case 9: {
+                    message.statisticIndicesPacked = reader.bytes();
                     break;
                 }
             case 5: {
@@ -1890,6 +1905,9 @@ $root.Article = (function() {
         if (message.articleType != null && message.hasOwnProperty("articleType"))
             if (!$util.isString(message.articleType))
                 return "articleType: string expected";
+        if (message.statisticIndicesPacked != null && message.hasOwnProperty("statisticIndicesPacked"))
+            if (!(message.statisticIndicesPacked && typeof message.statisticIndicesPacked.length === "number" || $util.isString(message.statisticIndicesPacked)))
+                return "statisticIndicesPacked: buffer expected";
         if (message.rows != null && message.hasOwnProperty("rows")) {
             if (!Array.isArray(message.rows))
                 return "rows: array expected";
@@ -1947,6 +1965,11 @@ $root.Article = (function() {
             message.source = String(object.source);
         if (object.articleType != null)
             message.articleType = String(object.articleType);
+        if (object.statisticIndicesPacked != null)
+            if (typeof object.statisticIndicesPacked === "string")
+                $util.base64.decode(object.statisticIndicesPacked, message.statisticIndicesPacked = $util.newBuffer($util.base64.length(object.statisticIndicesPacked)), 0);
+            else if (object.statisticIndicesPacked.length >= 0)
+                message.statisticIndicesPacked = object.statisticIndicesPacked;
         if (object.rows) {
             if (!Array.isArray(object.rows))
                 throw TypeError(".Article.rows: array expected");
@@ -2011,6 +2034,13 @@ $root.Article = (function() {
             object.longname = "";
             object.source = "";
             object.articleType = "";
+            if (options.bytes === String)
+                object.statisticIndicesPacked = "";
+            else {
+                object.statisticIndicesPacked = [];
+                if (options.bytes !== Array)
+                    object.statisticIndicesPacked = $util.newBuffer(object.statisticIndicesPacked);
+            }
         }
         if (message.shortname != null && message.hasOwnProperty("shortname"))
             object.shortname = message.shortname;
@@ -2040,6 +2070,8 @@ $root.Article = (function() {
             for (var j = 0; j < message.extraStats.length; ++j)
                 object.extraStats[j] = $root.ExtraStatistic.toObject(message.extraStats[j], options);
         }
+        if (message.statisticIndicesPacked != null && message.hasOwnProperty("statisticIndicesPacked"))
+            object.statisticIndicesPacked = options.bytes === String ? $util.base64.encode(message.statisticIndicesPacked, 0, message.statisticIndicesPacked.length) : options.bytes === Array ? Array.prototype.slice.call(message.statisticIndicesPacked) : message.statisticIndicesPacked;
         return object;
     };
 
