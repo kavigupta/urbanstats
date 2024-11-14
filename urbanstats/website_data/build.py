@@ -1,3 +1,4 @@
+import hashlib
 import os
 import shutil
 import subprocess
@@ -32,9 +33,16 @@ from urbanstats.website_data.ordinals import all_ordinals
 from urbanstats.website_data.output_geometry import produce_all_geometry_json
 from urbanstats.website_data.statistic_index_lists import get_index_lists
 from urbanstats.website_data.table import shapefile_without_ordinals
+from urbanstats.protobuf.data_files_pb2_hash import proto_hash
 
 from ..utils import output_typescript
 
+def check_proto_hash():
+    with open("data_files.proto", "rb") as f:
+        h = hashlib.sha256(f.read()).hexdigest()
+    if h == proto_hash:
+        return
+    raise ValueError("data_files.proto has changed, please run `bash scripts/build-protos.sh`")
 
 def link_scripts_folder(site_folder, dev):
     if os.path.islink(f"{site_folder}/scripts"):
@@ -132,6 +140,7 @@ def build_urbanstats(
     no_index=False,
     dev=False,
 ):
+    check_proto_hash()
     if not no_geo:
         print("Producing geometry jsons")
     if not no_data_jsons and not no_data:
