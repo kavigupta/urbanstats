@@ -126,13 +126,15 @@ export class Settings {
         return result
     }
 
-    setSetting<K extends keyof SettingsDictionary>(key: K, newValue: SettingsDictionary[K]): void {
+    setSetting<K extends keyof SettingsDictionary>(key: K, newValue: SettingsDictionary[K], save = true): void {
         if (this.stagedSettings !== undefined && (key in this.stagedSettings)) {
             this.stagedSettings[key] = newValue
         }
         else {
             this.settings[key] = newValue
-            localStorage.setItem('settings', JSON.stringify(this.settings))
+            if (save) {
+                localStorage.setItem('settings', JSON.stringify(this.settings))
+            }
         }
         this.settingValueObservers.get(key).forEach((observer) => { observer() })
     }
@@ -177,17 +179,20 @@ export class Settings {
         }
     }
 
-    exitStagedMode(action: 'apply' | 'discard'): void {
+    exitStagedMode(action: 'apply' | 'applyWithoutSaving' | 'discard'): void {
         if (this.stagedSettings === undefined) {
             throw new Error('Not in staged mode')
         }
         switch (action) {
             case 'apply':
+            case 'applyWithoutSaving':
                 for (const [key, value] of Object.entries(this.stagedSettings)) {
                     this.settings[key] = value as never
                     // No need to update observers since these were already the values
                 }
-                localStorage.setItem('settings', JSON.stringify(this.settings))
+                if (action !== 'applyWithoutSaving') {
+                    localStorage.setItem('settings', JSON.stringify(this.settings))
+                }
                 this.stagedSettings = undefined
                 this.stagedKeysObservers.forEach((observer) => { observer() })
                 break

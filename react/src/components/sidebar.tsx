@@ -169,6 +169,7 @@ export function SidebarForStatisticChoice(): ReactNode {
                                         name={name}
                                         setting_key={source_enabled_key({ category, name })}
                                         forcedOn={forcedOn}
+                                        testId={`source ${category} ${name}`}
                                     />
                                 </li>
                             ))
