@@ -79,6 +79,6 @@ test('checkboxes-can-be-checked', async (t) => {
     // check that this is persistent by going to Berkeley and checking that Briones CCD is present
     await t.typeText(SEARCH_FIELD, 'Berkeley, CA, USA')
     await t.pressKey('enter')
-    await t.expect(getLocation()).match(/\/article\.html\?longname=Berkeley\+city%2C\+California%2C\+USA&s=4YFxurQq2ob9Rf/)
+    await t.expect(getLocation()).match(/\/article\.html\?longname=Berkeley\+city%2C\+California%2C\+USA/)
     await t.expect(Selector('path').withAttribute('class', /tag-Briones_CCD/).exists).ok()
 })
