@@ -12,7 +12,7 @@ from urbanstats.games.retrostat import generate_retrostats
 from urbanstats.geometry.relationship import map_relationships_by_type
 from urbanstats.geometry.relationship import ordering_idx as type_ordering_idx
 from urbanstats.geometry.relationship import type_to_type_category
-from urbanstats.geometry.shapefiles.shapefiles_list import american_to_international
+from urbanstats.geometry.shapefiles.shapefiles_list import localized_type_names
 from urbanstats.mapper.ramp import output_ramps
 from urbanstats.ordinals.ordering_info_outputter import output_ordering
 from urbanstats.protobuf.data_files_pb2_hash import proto_hash
@@ -103,9 +103,11 @@ def create_react_jsons():
     output_names(mapper_folder)
     output_ramps(mapper_folder)
 
-    with open("react/src/data/american_to_international.ts", "w") as f:
+    with open("react/src/data/localized_type_names.ts", "w") as f:
         output_typescript(
-            american_to_international, f, data_type="Record<string, string>"
+            list(localized_type_names.items()),
+            f,
+            data_type="[string, Record<string, string>][]",
         )
 
     with open("react/src/data/symlinks.ts", "w") as f:
