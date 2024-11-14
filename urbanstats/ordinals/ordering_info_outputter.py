@@ -7,7 +7,7 @@ from urbanstats.protobuf import data_files_pb2
 from urbanstats.protobuf.utils import save_string_list, write_gzip
 from urbanstats.statistics.output_statistics_metadata import internal_statistic_names
 from urbanstats.statistics.stat_path import get_statistic_column_path
-from urbanstats.universe.annotate_universes import all_universes
+from urbanstats.universe.universe_list import all_universes
 
 
 class ProtobufOutputter:

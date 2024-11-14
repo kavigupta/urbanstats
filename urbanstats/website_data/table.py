@@ -12,23 +12,31 @@ from urbanstats.special_cases.merge_international import (
 from urbanstats.statistics.collections_list import (
     statistic_collections as statistic_collections_list,
 )
-from urbanstats.universe.annotate_universes import (
-    attach_intl_universes,
-    attach_usa_universes,
+from urbanstats.universe.universe_provider.compute_universes import (
+    compute_universes_for_shapefile,
 )
 
 
 @permacache(
     "population_density/stats_for_shapefile/compute_statistics_for_shapefile_28",
-    key_function=dict(sf=lambda x: x.hash_key, statistic_collections=stable_hash),
+    key_function=dict(
+        sf=lambda x: x.hash_key,
+        shapefiles=lambda x: {k: v.hash_key for k, v in x.items()},
+        statistic_collections=stable_hash,
+    ),
     multiprocess_safe=True,
 )
 def compute_statistics_for_shapefile(
-    sf, statistic_collections=statistic_collections_list
+    sf, shapefiles, statistic_collections=statistic_collections_list
 ):
     print("Computing statistics for", sf.hash_key)
     sf_fr = sf.load_file()
     result = sf_fr[["shortname", "longname"]].copy()
+
+    longname_to_universes = compute_universes_for_shapefile(shapefiles, sf)
+    result["universes"] = [
+        longname_to_universes[longname] for longname in result.longname
+    ]
 
     for k in sf.meta:
         result[k] = sf.meta[k]
@@ -60,7 +68,9 @@ def american_shapefile():
         if not shapefiles_for_stats[k].american:
             continue
 
-        t = compute_statistics_for_shapefile(shapefiles_for_stats[k])
+        t = compute_statistics_for_shapefile(
+            shapefiles_for_stats[k], shapefiles_for_stats
+        )
 
         full.append(t)
 
@@ -80,7 +90,7 @@ def international_shapefile():
     ts = []
     for s in shapefiles_for_stats.values():
         if s.include_in_gpw:
-            t = compute_statistics_for_shapefile(s)
+            t = compute_statistics_for_shapefile(s, shapefiles_for_stats)
             ts.append(t)
     intl = pd.concat(ts)
     # intl = intl[intl.area > 10].copy()
@@ -92,8 +102,6 @@ def international_shapefile():
 @lru_cache(maxsize=None)
 def shapefile_without_ordinals():
     usa = american_shapefile()
-    attach_usa_universes(usa)
     intl = international_shapefile()
-    attach_intl_universes(intl)
     full = merge_international_and_domestic(intl, usa)
     return full

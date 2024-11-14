@@ -1,4 +1,5 @@
 from urbanstats.geometry.shapefiles.shapefile import Shapefile
+from urbanstats.universe.universe_provider.constants import us_domestic_provider
 
 
 def urban_area(name, *, is_shortname):
@@ -20,4 +21,5 @@ URBAN_AREAS = Shapefile(
     longname_extractor=lambda x: urban_area(x.NAMELSAD20, is_shortname=False),
     filter=lambda x: True,
     meta=dict(type="Urban Area", source="Census", type_category="Census"),
+    universe_provider=us_domestic_provider(),
 )

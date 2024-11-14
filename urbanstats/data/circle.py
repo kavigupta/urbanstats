@@ -21,6 +21,16 @@ from urbanstats.data.population_overlays import (
 )
 from urbanstats.geometry.shapefiles.shapefile import Shapefile
 from urbanstats.geometry.shapefiles.shapefiles.urban_centers import URBAN_CENTERS
+from urbanstats.universe.universe_provider.combined_universe_provider import (
+    CombinedUniverseProvider,
+)
+from urbanstats.universe.universe_provider.constant_provider import (
+    ConstantUniverseProvider,
+)
+from urbanstats.universe.universe_provider.contained_within import (
+    STATE_PROVIDER,
+    ContainedWithinUniverseProvider,
+)
 
 
 class MapDataset:
@@ -784,4 +794,11 @@ def circle_shapefile_object(country_shapefile, population, just_usa):
         american=just_usa,
         include_in_gpw=not just_usa,
         tolerate_no_state=True,
+        universe_provider=CombinedUniverseProvider(
+            [
+                ConstantUniverseProvider(["world"]),
+                ContainedWithinUniverseProvider(["continents", "countries"]),
+                STATE_PROVIDER,
+            ]
+        ),
     )

@@ -38,14 +38,6 @@ def load_ghsl_urban_center():
 
 
 @permacache(
-    f"urbanstats/special_cases/ghsl_urban_center/gsl_urban_center_longname_to_subnational_codes_{version}"
-)
-def gsl_urban_center_longname_to_subnational_codes():
-    areas = load_ghsl_urban_center()
-    return dict(zip(areas.longname, areas.subnationals_ISO_CODE))
-
-
-@permacache(
     "urbanstats/special_cases/ghsl_urban_center/load_ghsl_urban_center_no_names_3"
 )
 def load_ghsl_urban_center_no_names():

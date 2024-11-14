@@ -1,4 +1,5 @@
 from urbanstats.geometry.shapefiles.shapefile import Shapefile
+from urbanstats.universe.universe_provider.constants import us_domestic_provider
 
 
 def hrr_shortname(x, suffix="HRR"):
@@ -17,6 +18,7 @@ HRRs = Shapefile(
         source="Dartmouth Atlas",
         type_category="Oddball",
     ),
+    universe_provider=us_domestic_provider(),
 )
 HSAs = Shapefile(
     hash_key="hospital_service_areas_2",
@@ -32,6 +34,7 @@ HSAs = Shapefile(
         source="Dartmouth Atlas",
         type_category="Oddball",
     ),
+    universe_provider=us_domestic_provider(),
 )
 hospital_shapefiles = dict(
     hospital_referral_regions=HRRs,
