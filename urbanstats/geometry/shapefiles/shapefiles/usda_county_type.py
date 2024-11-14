@@ -3,6 +3,7 @@ import pandas as pd
 from permacache import permacache
 
 from urbanstats.geometry.shapefiles.shapefile import Shapefile
+from urbanstats.universe.universe_provider.constants import us_domestic_provider
 
 
 @permacache("population_density/shapefiles/usda_county_type")
@@ -32,4 +33,5 @@ USDA_COUNTY_TYPE = Shapefile(
     longname_extractor=lambda x: x.name + " [USDA County Type], USA",
     filter=lambda x: True,
     meta=dict(type="USDA County Type", source="Census", type_category="Oddball"),
+    universe_provider=us_domestic_provider(),
 )

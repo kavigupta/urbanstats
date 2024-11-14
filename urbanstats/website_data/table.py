@@ -1,14 +1,10 @@
 from collections import Counter
 from functools import lru_cache
 
-import numpy as np
 import pandas as pd
 import tqdm.auto as tqdm
 from permacache import permacache, stable_hash
 
-from urbanstats.data.census_blocks import RADII
-from urbanstats.data.census_histogram import census_histogram
-from urbanstats.data.gpw import compute_gpw_data_for_shapefile
 from urbanstats.geometry.shapefiles.shapefiles_list import shapefiles_for_stats
 from urbanstats.special_cases.merge_international import (
     merge_international_and_domestic,
@@ -16,32 +12,53 @@ from urbanstats.special_cases.merge_international import (
 from urbanstats.statistics.collections_list import (
     statistic_collections as statistic_collections_list,
 )
-from urbanstats.universe.annotate_universes import (
-    attach_intl_universes,
-    attach_usa_universes,
+from urbanstats.universe.universe_provider.compute_universes import (
+    compute_universes_for_shapefile,
 )
 
 
 @permacache(
-    "population_density/stats_for_shapefile/compute_statistics_for_shapefile_24",
-    key_function=dict(sf=lambda x: x.hash_key, statistic_collections=stable_hash),
+    "population_density/stats_for_shapefile/compute_statistics_for_shapefile_28",
+    key_function=dict(
+        sf=lambda x: x.hash_key,
+        shapefiles=lambda x: {k: v.hash_key for k, v in x.items()},
+        statistic_collections=stable_hash,
+    ),
     multiprocess_safe=True,
 )
 def compute_statistics_for_shapefile(
-    sf, statistic_collections=statistic_collections_list
+    sf, shapefiles, statistic_collections=statistic_collections_list
 ):
+    print("Computing statistics for", sf.hash_key)
     sf_fr = sf.load_file()
-    print(sf)
     result = sf_fr[["shortname", "longname"]].copy()
-    result["area"] = sf_fr["geometry"].to_crs({"proj": "cea"}).area / 1e6
-    assert (result.longname == sf_fr.longname).all()
+
+    longname_to_universes = compute_universes_for_shapefile(shapefiles, sf)
+    result["universes"] = [
+        longname_to_universes[longname] for longname in result.longname
+    ]
+
     for k in sf.meta:
         result[k] = sf.meta[k]
 
-    for collection in statistic_collections:
-        if collection.for_america():
-            collection.compute_statistics(sf, result, sf_fr)
+    statistics = {}
 
+    for collection in statistic_collections:
+        passes = collection.for_america() and sf.american
+        passes = passes or (collection.for_international() and sf.include_in_gpw)
+        if passes:
+            statistics.update(
+                collection.compute_statistics_dictionary(
+                    shapefile=sf,
+                    existing_statistics={
+                        k: statistics[k] for k in collection.dependencies()
+                    },
+                    shapefile_table=sf_fr,
+                )
+            )
+
+    statistics = pd.DataFrame(statistics)
+    result = pd.concat([result, statistics], axis=1)
     return result
 
 
@@ -51,13 +68,9 @@ def american_shapefile():
         if not shapefiles_for_stats[k].american:
             continue
 
-        t = compute_statistics_for_shapefile(shapefiles_for_stats[k])
-
-        hists = census_histogram(shapefiles_for_stats[k], 2020)
-        for dens in RADII:
-            t[f"pw_density_histogram_{dens}"] = [
-                hists[x][f"ad_{dens}"] if x in hists else np.nan for x in t.longname
-            ]
+        t = compute_statistics_for_shapefile(
+            shapefiles_for_stats[k], shapefiles_for_stats
+        )
 
         full.append(t)
 
@@ -73,40 +86,11 @@ def american_shapefile():
     return full
 
 
-@permacache(
-    "urbanstats/data/gpw/compute_gpw_data_for_shapefile_table_10",
-    key_function=dict(
-        shapefile=lambda x: x.hash_key, statistic_collections=stable_hash
-    ),
-)
-def compute_gpw_data_for_shapefile_table(
-    shapefile, statistic_collections=statistic_collections_list
-):
-    shapes = shapefile.load_file()
-    result, hists = compute_gpw_data_for_shapefile(shapefile)
-    result = pd.DataFrame(result)
-    print(shapefile.hash_key, len(result), len(shapes))
-    result.index = shapes.index
-    result["area"] = shapes.to_crs({"proj": "cea"}).area / 1e6
-    for collection in statistic_collections:
-        if collection.for_international():
-            collection.compute_statistics(shapefile, result, shapes)
-
-    result["longname"] = shapes.longname
-    result["shortname"] = shapes.shortname
-
-    return result, hists
-
-
 def international_shapefile():
     ts = []
     for s in shapefiles_for_stats.values():
         if s.include_in_gpw:
-            t, hist = compute_gpw_data_for_shapefile_table(s)
-            for k in s.meta:
-                t[k] = s.meta[k]
-            for k, hist_k in hist.items():
-                t[k] = hist_k
+            t = compute_statistics_for_shapefile(s, shapefiles_for_stats)
             ts.append(t)
     intl = pd.concat(ts)
     # intl = intl[intl.area > 10].copy()
@@ -118,8 +102,6 @@ def international_shapefile():
 @lru_cache(maxsize=None)
 def shapefile_without_ordinals():
     usa = american_shapefile()
-    attach_usa_universes(usa)
     intl = international_shapefile()
-    attach_intl_universes(intl)
     full = merge_international_and_domestic(intl, usa)
     return full

@@ -78,7 +78,7 @@ export function statistic_link(universe: string | undefined, statname: string, a
         start = start + 1
     }
     const params = new URLSearchParams()
-    params.set('statname', statname)
+    params.set('statname', statname.replace('%', '__PCT__'))
     params.set('article_type', article_type)
     params.set('start', start.toString())
     params.set('amount', `${amount}`)

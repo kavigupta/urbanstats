@@ -33,9 +33,9 @@ class SegregationStatistics(USAStatistics):
         return {
             "homogeneity_250_2020": "higher racial homogeneity"
             + homogeneity_explanation,
-            "homogeneity_250_diff_2010": "increase in racial homogeneity from 2010 to 2020"
+            "homogeneity_250_diff_2010": "higher increase (or smaller decrease) in racial homogeneity from 2010 to 2020"
             + homogeneity_explanation,
-            "homogeneity_250_diff_2000": "increase in racial homogeneity from 2000 to 2020"
+            "homogeneity_250_diff_2000": "higher increase (or smaller decrease) in racial homogeneity from 2000 to 2020"
             + homogeneity_explanation,
         }
 
@@ -71,7 +71,10 @@ class SegregationStatistics(USAStatistics):
                 if not k.startswith("year"):
                     table[f"{k}_diff_{stats['year']}"] = stats_current[k] - stats[k]
 
-    def compute_statistics(self, shapefile, statistics_table, shapefile_table):
+    def compute_statistics_dictionary(
+        self, *, shapefile, existing_statistics, shapefile_table
+    ):
+        statistics_table = {}
         stats_2020 = self.compute_stats_for_year(2020, shapefile)
         stats_2010 = self.compute_stats_for_year(2010, shapefile)
         stats_2000 = self.compute_stats_for_year(2000, shapefile)
@@ -79,6 +82,4 @@ class SegregationStatistics(USAStatistics):
         self.add_stats(statistics_table, stats_2020, None)
         self.add_stats(statistics_table, stats_2010, stats_2020)
         self.add_stats(statistics_table, stats_2000, stats_2020)
-
-    def mutate_statistic_table(self, statistics_table, shapefile_table):
-        raise NotImplementedError
+        return statistics_table

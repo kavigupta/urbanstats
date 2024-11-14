@@ -1,6 +1,6 @@
 import { createContext, useContext } from 'react'
 
-// FIXME better framework for indices for more than just international/USA
+import universes_default from './data/universes_default'
 
 export const UNIVERSE_CONTEXT = createContext<string | undefined>(undefined)
 
@@ -37,29 +37,21 @@ export function remove_universe_if_default(default_universe: string): void {
     }
 }
 
-export function default_article_universe(longname: string): 'USA' | 'world' {
-    // if longname contains USA, then default to USA
-    if (longname.includes('USA')) {
-        return 'USA'
+export function default_article_universe(articleUniverses: string[]): typeof universes_default[number] {
+    // last element of articleUniverses that is in universes_default
+    for (let i = articleUniverses.length - 1; i >= 0; i--) {
+        if (universes_default.some(x => x === articleUniverses[i])) {
+            return articleUniverses[i] as typeof universes_default[number]
+        }
     }
-    return 'world'
+    return universes_default[0]
 }
 
-export function default_comparison_universe(longnames: string[]): 'USA' | 'world' {
-    // if all longnames are the same universe, default to that universe
-    const universes = longnames.map(x => default_article_universe(x))
-    if (universes.every(x => x === universes[0])) {
-        return universes[0]
-    }
-    return 'world'
-}
-
-export function universe_is_american(universe: string): boolean {
-    // if universe ends with USA, then it's American
-    return universe.includes('USA')
-}
-
-export function longname_is_exclusively_american(universe: string): boolean {
-    // if longname ends with ", USA", then it's exclusively American
-    return universe.endsWith(', USA') || universe === 'USA'
+export function default_comparison_universe(articleUniverses: string[][], availableUniverses: string[]): string {
+    const universes = articleUniverses.map(x => default_article_universe(x))
+    // locate each universe in availableUniverses. If it is in, give the index, otherwise length of availableUniverses
+    const universe_indices = universes.map(x => availableUniverses.includes(x) ? availableUniverses.indexOf(x) : availableUniverses.length - 1)
+    // find the universe with the largest index
+    const max_index = Math.max(...universe_indices)
+    return availableUniverses[max_index]
 }

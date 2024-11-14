@@ -6,6 +6,7 @@ import os
 import shutil
 import urllib
 from datetime import datetime
+from functools import lru_cache
 
 import numpy as np
 import pandas as pd
@@ -14,7 +15,6 @@ import tqdm.auto as tqdm
 from permacache import permacache, stable_hash
 
 from urbanstats.games.quiz_columns import stats_to_display, types
-from urbanstats.geometry.relationship import states_for_all
 from urbanstats.geometry.shapefiles.shapefiles_list import (
     american_to_international,
     filter_table_for_type,
@@ -23,21 +23,20 @@ from urbanstats.shortener import shorten
 from urbanstats.statistics.collections_list import statistic_collections
 from urbanstats.statistics.output_statistics_metadata import (
     get_statistic_categories,
-    get_statistic_column_path,
     internal_statistic_names,
     statistic_internal_to_display_name,
 )
-from urbanstats.website_data.sharding import create_filename
+from urbanstats.universe.universe_list import universe_by_universe_type
 from urbanstats.website_data.statistic_index_lists import index_list_for_longname
 from urbanstats.website_data.table import shapefile_without_ordinals
 
 from .fixed import juxtastat as fixed_up_to
-from .quiz_columns import categories, stats, stats_to_display, types
+from .quiz_columns import stats, stats_to_display, types
 from .quiz_custom import get_custom_quizzes
 
 min_pop = 250_000
 min_pop_international = 2_500_000
-version_numeric = 67
+version_numeric = 72
 
 version = str(version_numeric) + stable_hash(statistic_collections)
 
@@ -140,9 +139,14 @@ def compute_difficulty(stat_a, stat_b, stat_column_original, typ):
     return diff
 
 
+@lru_cache(maxsize=None)
+def state_universes():
+    return set(universe_by_universe_type()["state"])
+
+
 def same_state(a, b):
-    sfa = states_for_all()
-    return set(sfa[a]) & set(sfa[b]) != set()
+    shared_states = set(a) & set(b) & state_universes()
+    return bool(shared_states)
 
 
 def is_international(typ):
@@ -156,11 +160,10 @@ def sample_quiz_question(
         typ = rng.choice(types)
         if type_ban_categorize(typ) in banned_type_categories:
             continue
-        at_pop = filter_for_pop(typ)
+        at_pop, universes = filter_for_pop(typ)
         stat_column_original = rng.choice(at_pop.columns)
         cat = get_statistic_categories()[stat_column_original]
-        p_skip = skip_category_probs.get(cat, 0)
-        if rng.uniform() < p_skip:
+        if rng.uniform() < skip_category_probs.get(cat, 0):
             continue
         if cat in banned_categories:
             continue
@@ -169,7 +172,7 @@ def sample_quiz_question(
             if typ == "State":
                 if "District of Columbia, USA" in (a, b):
                     continue
-            if same_state(a, b):
+            if same_state(universes.loc[a], universes.loc[b]):
                 continue
             stat_a, stat_b = (
                 at_pop.loc[a][stat_column_original],
@@ -205,23 +208,11 @@ def filter_for_pop(typ):
         strict_display=True,
     )
     stats_filter = {internal_statistic_names()[i] for i in idxs}
-    at_pop = pd.DataFrame(
-        {s: at_pop[s] for s in stats if s in stats_filter}
-    )
+    universes = at_pop["universes"]
+    at_pop = pd.DataFrame({s: at_pop[s] for s in stats if s in stats_filter})
     mask = ~at_pop.applymap(np.isnan).all()
     assert mask.all()
-    at_pop = at_pop.loc[:, mask]
-    return at_pop
-
-
-def entire_table():
-    return pd.concat(
-        [
-            filter_for_pop(type)
-            for type in types
-            if type not in american_to_international
-        ]
-    )
+    return at_pop, universes
 
 
 def minimum_population(typ):
@@ -314,54 +305,6 @@ def generate_quizzes(folder):
         with open(path(i), "w") as f:
             outs = full_quiz(("daily", i))
             json.dump(outs, f)
-
-
-def generate_quiz_info_for_website(site_folder):
-
-    folder = "react/src/data/quiz"
-    try:
-        os.mkdir(folder)
-    except FileExistsError:
-        pass
-
-    try:
-        os.mkdir(f"{site_folder}/quiz_sample_info")
-    except FileExistsError:
-        pass
-
-    with open(f"{folder}/categories.json", "w") as f:
-        json.dump(categories, f)
-
-    with open(f"{folder}/types.json", "w") as f:
-        json.dump(types, f)
-
-    with open(f"{folder}/stat_to_question.json", "w") as f:
-        json.dump(
-            {get_statistic_column_path(k): v for k, v in stats_to_display.items()}, f
-        )
-
-    with open(f"{folder}/list_of_regions.json", "w") as f:
-        json.dump({type: list(filter_for_pop(type).index) for type in types}, f)
-
-    table = entire_table()
-    table = {
-        x: {
-            get_statistic_column_path(col): float(table[col][x])
-            for col in stats_to_display
-        }
-        for x in table.index
-    }
-    for loc in table:
-        path = f"{site_folder}/quiz_sample_info/{create_filename(loc, 'json')}"
-        folder = os.path.dirname(path)
-        # this should just be a library function but whatever
-        # pylint: disable=duplicate-code
-        try:
-            os.makedirs(folder)
-        except FileExistsError:
-            pass
-        with open(path, "w") as f:
-            json.dump(table[loc], f)
 
 
 def display_question(question):

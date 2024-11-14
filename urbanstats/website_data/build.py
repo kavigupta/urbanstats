@@ -1,19 +1,21 @@
-import json
+import hashlib
 import os
 import shutil
+import subprocess
 
 from urbanstats.consolidated_data.produce_consolidated_data import (
     full_consolidated_data,
     output_names,
 )
-from urbanstats.games.quiz import generate_quiz_info_for_website, generate_quizzes
+from urbanstats.games.quiz import generate_quizzes
 from urbanstats.games.retrostat import generate_retrostats
 from urbanstats.geometry.relationship import map_relationships_by_type
 from urbanstats.geometry.relationship import ordering_idx as type_ordering_idx
 from urbanstats.geometry.relationship import type_to_type_category
-from urbanstats.geometry.shapefiles.shapefiles_list import american_to_international
+from urbanstats.geometry.shapefiles.shapefiles_list import localized_type_names
 from urbanstats.mapper.ramp import output_ramps
 from urbanstats.ordinals.ordering_info_outputter import output_ordering
+from urbanstats.protobuf.data_files_pb2_hash import proto_hash
 from urbanstats.special_cases import symlinks
 from urbanstats.statistics.collections.industry import IndustryStatistics
 from urbanstats.statistics.collections.occupation import OccupationStatistics
@@ -21,8 +23,8 @@ from urbanstats.statistics.output_statistics_metadata import (
     internal_statistic_names,
     output_statistics_metadata,
 )
-from urbanstats.universe.annotate_universes import all_universes
 from urbanstats.universe.icons import place_icons_in_site_folder
+from urbanstats.universe.universe_list import all_universes, default_universes
 from urbanstats.website_data.create_article_gzips import (
     create_article_gzips,
     extra_stats,
@@ -30,8 +32,19 @@ from urbanstats.website_data.create_article_gzips import (
 from urbanstats.website_data.index import export_index
 from urbanstats.website_data.ordinals import all_ordinals
 from urbanstats.website_data.output_geometry import produce_all_geometry_json
-from urbanstats.website_data.statistic_index_lists import get_index_lists
 from urbanstats.website_data.table import shapefile_without_ordinals
+
+from ..utils import output_typescript
+
+
+def check_proto_hash():
+    with open("data_files.proto", "rb") as f:
+        h = hashlib.sha256(f.read()).hexdigest()
+    if h == proto_hash:
+        return
+    raise ValueError(
+        "data_files.proto has changed, please run `bash scripts/build-protos.sh`"
+    )
 
 
 def link_scripts_folder(site_folder, dev):
@@ -46,21 +59,25 @@ def link_scripts_folder(site_folder, dev):
 
 
 def create_react_jsons():
-    with open("react/src/data/map_relationship.json", "w") as f:
-        json.dump(map_relationships_by_type, f)
+    with open("react/src/data/map_relationship.ts", "w") as f:
+        output_typescript(map_relationships_by_type, f)
 
-    with open("react/src/data/type_to_type_category.json", "w") as f:
-        json.dump(type_to_type_category, f)
+    with open("react/src/data/type_to_type_category.ts", "w") as f:
+        output_typescript(type_to_type_category, f, data_type="Record<string, string>")
 
-    with open("react/src/data/type_ordering_idx.json", "w") as f:
-        json.dump(type_ordering_idx, f)
+    with open("react/src/data/type_ordering_idx.ts", "w") as f:
+        output_typescript(type_ordering_idx, f, data_type="Record<string, number>")
 
     output_statistics_metadata()
 
-    with open("react/src/data/universes_ordered.json", "w") as f:
-        json.dump(list(all_universes()), f)
-    with open("react/src/data/explanation_industry_occupation_table.json", "w") as f:
-        json.dump(
+    with open("react/src/data/universes_ordered.ts", "w") as f:
+        output_typescript(list(all_universes()), f)
+
+    with open("react/src/data/universes_default.ts", "w") as f:
+        output_typescript(default_universes, f)
+
+    with open("react/src/data/explanation_industry_occupation_table.ts", "w") as f:
+        output_typescript(
             {
                 "industry": IndustryStatistics().table(),
                 "occupation": OccupationStatistics().table(),
@@ -68,8 +85,8 @@ def create_react_jsons():
             f,
         )
 
-    with open("react/src/data/extra_stats.json", "w") as f:
-        json.dump(
+    with open("react/src/data/extra_stats.ts", "w") as f:
+        output_typescript(
             [
                 (k, v.extra_stat_spec(list(internal_statistic_names())))
                 for k, v in sorted(extra_stats().items())
@@ -86,21 +103,30 @@ def create_react_jsons():
     output_names(mapper_folder)
     output_ramps(mapper_folder)
 
-    with open("react/src/data/index_lists.json", "w") as f:
-        json.dump(get_index_lists(), f)
+    with open("react/src/data/localized_type_names.ts", "w") as f:
+        output_typescript(
+            list(localized_type_names.items()),
+            f,
+            data_type="[string, Record<string, string>][]",
+        )
 
-    with open("react/src/data/american_to_international.json", "w") as f:
-        json.dump(american_to_international, f)
-
-    with open("react/src/data/symlinks.json", "w") as f:
-        json.dump(symlinks.symlinks, f)
+    with open("react/src/data/symlinks.ts", "w") as f:
+        output_typescript(symlinks.symlinks, f, data_type="Record<string, string>")
 
 
 def build_react_site(site_folder, dev):
+    subprocess.run(f"cd react; npm {'i' if dev else 'ci'}", shell=True, check=True)
+
     create_react_jsons()
 
-    os.system(
-        f"cd react; npm {'i' if dev else 'ci'}; npm run {'dev' if dev else 'prod'}"
+    subprocess.run(
+        ["npx", "eslint", "--fix", "src/data"],
+        check=True,
+        cwd="react",
+    )
+
+    subprocess.run(
+        f"cd react; npm run {'dev' if dev else 'prod'}", shell=True, check=not dev
     )
 
     link_scripts_folder(site_folder, dev)
@@ -116,6 +142,7 @@ def build_urbanstats(
     no_index=False,
     dev=False,
 ):
+    check_proto_hash()
     if not no_geo:
         print("Producing geometry jsons")
     if not no_data_jsons and not no_data:
@@ -175,9 +202,6 @@ def build_urbanstats(
     shutil.copy("icons/main/share.png", f"{site_folder}/")
     shutil.copy("icons/main/screenshot.png", f"{site_folder}/")
     shutil.copy("icons/main/download.png", f"{site_folder}/")
-
-    if not no_juxta:
-        generate_quiz_info_for_website(site_folder)
 
     with open(f"{site_folder}/CNAME", "w") as f:
         f.write("urbanstats.org")

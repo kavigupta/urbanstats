@@ -1,4 +1,3 @@
-import json
 import os
 
 import tqdm.auto as tqdm
@@ -12,6 +11,8 @@ from urbanstats.protobuf.utils import write_gzip
 from urbanstats.statistics.output_statistics_metadata import internal_statistic_names
 from urbanstats.website_data.output_geometry import convert_to_protobuf
 from urbanstats.website_data.table import shapefile_without_ordinals
+
+from ..utils import output_typescript
 
 use = [
     "State",
@@ -47,7 +48,6 @@ dont_use = [
 
 
 def produce_results(row_geo, row):
-
     res = row_geo.geometry.simplify(0.01)
     geo = convert_to_protobuf(res)
     results = data_files_pb2.AllStats()
@@ -97,5 +97,5 @@ def full_consolidated_data(folder):
 
 
 def output_names(mapper_folder):
-    with open(f"{mapper_folder}/used_geographies.json", "w") as f:
-        json.dump(use, f)
+    with open(f"{mapper_folder}/used_geographies.ts", "w") as f:
+        output_typescript(use, f, data_type="string[]")

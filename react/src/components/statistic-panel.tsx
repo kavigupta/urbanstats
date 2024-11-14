@@ -1,5 +1,6 @@
 import React, { CSSProperties, ReactNode, useMemo, useRef } from 'react'
 
+import universes_ordered from '../data/universes_ordered'
 import { article_link, explanation_page_link, sanitize, statistic_link } from '../navigation/links'
 import { useColors } from '../page_template/colors'
 import { useSetting } from '../page_template/settings'
@@ -109,7 +110,7 @@ export function StatisticPanel(props: {
                 elements_to_render: [headers_ref.current!, table_ref.current!],
             })}
             has_universe_selector={true}
-            universes={require('../data/universes_ordered.json') as string[]}
+            universes={universes_ordered}
         >
             <div>
                 <div ref={headers_ref}>
@@ -330,6 +331,19 @@ function SelectPage(props: {
     }
 
     const curr_universe = useUniverse()
+
+    const handleSubmit = (e: React.FocusEvent | React.KeyboardEvent): void => {
+        let new_page = parseInt((e.target as HTMLInputElement).value)
+        if (new_page < 1) {
+            new_page = 1
+        }
+        if (new_page > props.max_pages) {
+            new_page = props.max_pages
+        }
+        const new_start = (new_page - 1) * props.per_page + 1
+        props.change_start(curr_universe, new_start)
+    }
+
     return (
         <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
             <button onClick={() => { props.change_start(curr_universe, props.prev_page) }} className="serif" style={button_style}>&lt;</button>
@@ -343,17 +357,11 @@ function SelectPage(props: {
                     defaultValue={props.current_page}
                     onKeyDown={(e) => {
                         if (e.key === 'Enter') {
-                            let new_page = parseInt((e.target as HTMLInputElement).value)
-                            if (new_page < 1) {
-                                new_page = 1
-                            }
-                            if (new_page > props.max_pages) {
-                                new_page = props.max_pages
-                            }
-                            const new_start = (new_page - 1) * props.per_page + 1
-                            props.change_start(curr_universe, new_start)
+                            handleSubmit(e)
                         }
                     }}
+                    onFocus={(e) => { e.target.select() }}
+                    onBlur={handleSubmit}
                 />
                 <span>
                     {' of '}
@@ -397,13 +405,13 @@ function AutoPercentile(props: {
     data: { populationPercentile: number[] }
     i: number
 }): ReactNode {
-    const [simple_ordinals] = useSetting('simple_ordinals')
+    const [simpleOrdinals] = useSetting('simple_ordinals')
     return (
         <Percentile
             ordinal={props.ordinal}
             total={props.total_count_in_class}
             percentile_by_population={props.data.populationPercentile[props.i]}
-            simple={simple_ordinals}
+            simpleOrdinals={simpleOrdinals}
         />
     )
 }

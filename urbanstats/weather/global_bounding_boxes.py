@@ -50,7 +50,6 @@ def global_bounding_boxes():
 
 
 def plot_bounding_boxes():
-
     _, ax = plt.subplots(figsize=(10, 5))
     for box in global_bounding_boxes():
         lon_min, lat_min, lon_max, lat_max = box

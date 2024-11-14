@@ -1,20 +1,11 @@
+import explanation_page from '../data/explanation_page'
+import extra_stats from '../data/extra_stats'
+import stats from '../data/statistic_list'
+import names from '../data/statistic_name_list'
+import paths from '../data/statistic_path_list'
 import { StatGroupSettings, statIsEnabled } from '../page_template/statistic-settings'
-import { StatPath } from '../page_template/statistic-tree'
-import { universe_is_american } from '../universe'
+import { findAmbiguousSourcesAll, statDataOrderToOrder, StatPath, statPathToOrder } from '../page_template/statistic-tree'
 import { Article } from '../utils/protos'
-
-interface HistogramExtraStatSpec {
-    type: 'histogram'
-    universe_total_idx: number
-}
-
-interface TimeSeriesExtraStatSpec {
-    type: 'time_series'
-    years: number[]
-    name: string
-}
-
-type ExtraStatSpec = HistogramExtraStatSpec | TimeSeriesExtraStatSpec
 
 export interface HistogramExtraStat {
     type: 'histogram'
@@ -33,30 +24,23 @@ export interface TimeSeriesExtraStat {
 
 export type ExtraStat = HistogramExtraStat | TimeSeriesExtraStat
 
+export type StatCol = (typeof stats)[number]
+
 export interface ArticleRow {
     statval: number
     ordinal: number
     overallOrdinal: number
     percentile_by_population: number
-    statcol: string | string[]
+    statcol: StatCol
     statname: string
     statpath: StatPath
     explanation_page: string
-    article_type: string
+    articleType: string
     total_count_in_class: number
     total_count_overall: number
     _index: number
     rendered_statname: string
     extra_stat?: ExtraStat
-}
-
-const index_list_info = require('../data/index_lists.json') as {
-    index_lists: {
-        universal: number[]
-        gpw: number[]
-        usa: number[]
-    }
-    type_to_has_gpw: Record<string, boolean>
 }
 
 function lookup_in_compressed_sequence(seq: [number, number][], idx: number): number {
@@ -70,52 +54,37 @@ function lookup_in_compressed_sequence(seq: [number, number][], idx: number): nu
     throw new Error('Index out of bounds')
 }
 
-export function for_type(universe: string, statcol: string | string[], typ: string): number {
-    const statnames = require('../data/statistic_list.json') as (string | string[])[]
-    const idx = statnames.indexOf(statcol) // Works because `require` is global
+export function for_type(universe: string, statcol: StatCol, typ: string): number {
+    const idx = stats.indexOf(statcol) // Works because `require` is global
     const counts_by_universe = require('../data/counts_by_article_type.json') as Record<string, Record<string, [number, number][]>>
     const counts_by_type = counts_by_universe[universe][typ]
 
     return lookup_in_compressed_sequence(counts_by_type, idx)
 }
 
-function compute_indices(longname: string, typ: string): number[] {
-    // FIXME better framework for indices for more than just international/USA
-    // translation of statistic_index_lists.py::indices
-
-    const lists = index_list_info.index_lists
-    let result: number[] = []
-    result = result.concat(lists.universal)
-    if (index_list_info.type_to_has_gpw[typ]) {
-        result = result.concat(lists.gpw)
+function unpackBytes(bytes: Uint8Array): number[] {
+    const result = []
+    for (let i = 0; i < bytes.length; i += 1) {
+        const byte = bytes[i]
+        for (let j = 0; j < 8; j += 1) {
+            if (byte & (1 << j)) {
+                result.push(i * 8 + j)
+            }
+        }
     }
-    // else {
-    if (longname.includes('USA')) {
-        result = result.concat(lists.usa)
-    }
-    // sort result by numeric value
-    return result.sort((a, b) => a - b)
+    return result
 }
 
-export function load_article(universe: string, data: Article, settings: StatGroupSettings, exclusively_american: boolean): {
-    result: readonly [ArticleRow[], number[]]
-    availableStatPaths: StatPath[]
-} {
+export function load_single_article(data: Article, universe: string): ArticleRow[] {
     // index of universe in data.universes
     const universe_index = data.universes.indexOf(universe)
     const article_type = data.articleType
 
-    const names = require('../data/statistic_name_list.json') as string[]
-    const paths = require('../data/statistic_path_list.json') as StatPath[]
-    const stats = require('../data/statistic_list.json') as (string | string[])[]
-    const explanation_page = require('../data/explanation_page.json') as string[]
+    const extra_stat_idx_to_col: number[] = extra_stats.map(xy => xy[0])
 
-    const extra_stats = require('../data/extra_stats.json') as [number, ExtraStatSpec][]
-    const extra_stat_idx_to_col = extra_stats.map(xy => xy[0])
+    const indices = unpackBytes(data.statisticIndicesPacked)
 
-    const indices = compute_indices(data.longname, article_type)
-
-    const modified_rows: ArticleRow[] = data.rows.map((row_original, row_index) => {
+    return data.rows.map((row_original, row_index) => {
         const i = indices[row_index]
         // fresh row object
         let extra_stat: ExtraStat | undefined = undefined
@@ -134,17 +103,6 @@ export function load_article(universe: string, data: Article, settings: StatGrou
                     universe_total: data.rows.find((_, universe_row_index) => indices[universe_row_index] === universe_total_idx)!.statval!,
                 } as HistogramExtraStat
             }
-            else {
-                const years = spec.years
-                const name = spec.name
-                const time_series = data.extraStats[extra_stat_idx].timeseries!
-                extra_stat = {
-                    type: 'time_series',
-                    years,
-                    name,
-                    time_series: time_series.values!,
-                } as TimeSeriesExtraStat
-            }
         }
         return {
             statval: row_original.statval!,
@@ -155,41 +113,78 @@ export function load_article(universe: string, data: Article, settings: StatGrou
             statname: names[i],
             statpath: paths[i],
             explanation_page: explanation_page[i],
-            article_type,
+            articleType: article_type,
             total_count_in_class: for_type(universe, stats[i], article_type),
             total_count_overall: for_type(universe, stats[i], 'overall'),
             _index: i,
-            rendered_statname: render_statname(i, names[i], exclusively_american),
+            rendered_statname: names[i],
             extra_stat,
         } satisfies ArticleRow
     })
-    const availableRows = modified_rows.filter((row) => {
-        if (universe_is_american(universe)) {
-            if (index_list_info.index_lists.gpw.includes(indices[row._index])) {
-                return false
-            }
-        }
-        else {
-            if (index_list_info.index_lists.usa.includes(indices[row._index])) {
-                return false
-            }
-        }
-        return true
-    })
-    const filtered_rows = availableRows.filter(row => statIsEnabled(row.statpath, settings))
-
-    const filtered_indices = filtered_rows.map(x => x._index)
-
-    return {
-        result: [filtered_rows, filtered_indices] as const,
-        availableStatPaths: availableRows.map(row => row.statpath),
-    }
 }
 
-export function render_statname(statindex: number, statname: string, exclusively_american: boolean): string {
-    const usa_stat = index_list_info.index_lists.usa.includes(statindex)
-    if (!exclusively_american && usa_stat) {
-        return `${statname} (USA only)`
+export function load_articles(datas: Article[], universe: string, settings: StatGroupSettings): {
+    rows: ArticleRow[][]
+    statPaths: StatPath[][]
+} {
+    const availableRowsAll = datas.map(data => load_single_article(data, universe))
+    const statPathsEach = availableRowsAll.map((availableRows) => {
+        const statPathsThis = new Set<StatPath>()
+        availableRows.forEach((row) => {
+            statPathsThis.add(row.statpath)
+        })
+        return Array.from(statPathsThis)
+    })
+
+    const ambiguousSourcesAll = findAmbiguousSourcesAll(statPathsEach)
+
+    const rows = availableRowsAll.map(availableRows => availableRows
+        .filter(row => statIsEnabled(row.statpath, settings, ambiguousSourcesAll))
+        // sort by order in statistics tree.
+        .sort((a, b) => statPathToOrder.get(a.statpath)! - statPathToOrder.get(b.statpath)!),
+    )
+    const rowsNothingMissing = insert_missing(rows)
+    return { rows: rowsNothingMissing, statPaths: statPathsEach }
+}
+
+function insert_missing(rows: ArticleRow[][]): ArticleRow[][] {
+    const idxs = rows.map(row => row.map(x => x._index))
+
+    const empty_row_example: Record<number, ArticleRow> = {}
+    for (const data_i of rows.keys()) {
+        for (const row_i of rows[data_i].keys()) {
+            const idx = idxs[data_i][row_i]
+            empty_row_example[idx] = JSON.parse(JSON.stringify(rows[data_i][row_i])) as typeof rows[number][number]
+            for (const key of Object.keys(empty_row_example[idx]) as (keyof ArticleRow)[]) {
+                if (typeof empty_row_example[idx][key] === 'number') {
+                    // @ts-expect-error Typescript is fucking up this assignment
+                    empty_row_example[idx][key] = NaN
+                }
+                else if (key === 'extra_stat') {
+                    empty_row_example[idx][key] = undefined
+                }
+            }
+            empty_row_example[idx].articleType = 'none' // doesn't matter since we are using simple mode
+        }
     }
-    return statname
+
+    const all_idxs = idxs.flat().filter((x, i, a) => a.indexOf(x) === i)
+    // sort all_idxs in ascending order numerically
+    all_idxs.sort((a, b) => statDataOrderToOrder.get(a)! - statDataOrderToOrder.get(b)!)
+
+    const new_rows_all = []
+    for (const data_i of rows.keys()) {
+        const new_rows = []
+        for (const idx of all_idxs) {
+            if (idxs[data_i].includes(idx)) {
+                const index_to_pull = idxs[data_i].findIndex(x => x === idx)
+                new_rows.push(rows[data_i][index_to_pull])
+            }
+            else {
+                new_rows.push(empty_row_example[idx])
+            }
+        }
+        new_rows_all.push(new_rows)
+    }
+    return new_rows_all
 }

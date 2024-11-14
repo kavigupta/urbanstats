@@ -1,192 +1,12 @@
 import re
 from collections import defaultdict
-from functools import lru_cache
 
 import geopandas as gpd
-import numpy as np
-import pandas as pd
 import tqdm
-from permacache import drop_if_equal, permacache, stable_hash
+from permacache import permacache, stable_hash
 
+from urbanstats.geometry.shapefile_geometry import overlays
 from urbanstats.geometry.shapefiles.shapefiles_list import shapefiles_for_stats
-
-
-def skippable_edge_case(k):
-    # no clue what this is
-    return k == "Historical Congressional District DC-98, 103rd-117th Congress, USA"
-
-
-@lru_cache(maxsize=1)
-def states_for_all():
-    systematics = {}
-    one_offs = {
-        "Freeman Island Neighborhood, Long Beach City, California, USA": "California, USA",
-        "Island Chaffee Neighborhood, Long Beach City, California, USA": "California, USA",
-        "Island White Neighborhood, Long Beach City, California, USA": "California, USA",
-        "Bay Islands Neighborhood, San Rafael City, California, USA": "California, USA",
-        "Fair Isle Neighborhood, Miami City, Florida, USA": "Florida, USA",
-        "House Island Neighborhood, Portland City, Maine, USA": "Maine, USA",
-        "HI-HD051, USA": "Hawaii, USA",
-        "HI-SD025, USA": "Hawaii, USA",
-        "OH-HD013, USA": "Ohio, USA",
-        "PA-HD001, USA": "Pennsylvania, USA",
-        "RI-HD075, USA": "Rhode Island, USA",
-    }
-    for u, u_shapefile in shapefiles_for_stats.items():
-        for k, v in states_for(u_shapefile).items():
-            if skippable_edge_case(k):
-                continue
-            if k in one_offs:
-                systematics[k] = [one_offs[k]]
-            else:
-                systematics[k] = v
-            if u_shapefile.american and not u_shapefile.tolerate_no_state:
-                if len(systematics[k]) == 0:
-                    print("Error on ", k, " in ", u)
-                    print("shapefile: ", u_shapefile)
-                    print("systematics: ", systematics[k])
-                    raise ValueError
-                assert len(systematics[k]) >= 1, (u, k)
-    return systematics
-
-
-@lru_cache(maxsize=1)
-def continents_for_all():
-    systematics = {}
-    for _, u_shapefile in shapefiles_for_stats.items():
-        for k, v in contained_in(
-            u_shapefile,
-            shapefiles_for_stats["continents"],
-            only_american=False,
-            only_nonamerican=False,
-        ).items():
-            if skippable_edge_case(k):
-                continue
-            # zip codes are north american, except for hawaii, which all start with 9
-            if re.match(r"^[0-8]\d{4}, USA$", k):
-                v = ["North America"]
-            # Treasure island
-            if k == "94130, USA":
-                v = ["North America"]
-            # Blake Island
-            if k == "98353, USA":
-                v = ["North America"]
-            if k == "HI-HD051, USA":
-                v = ["Oceania"]
-            if k in [
-                "ME-HD119, USA",
-                "OH-HD013, USA",
-                "Inalik ANVSA, USA",
-                "Lesnoi ANVSA, USA",
-            ]:
-                v = ["North America"]
-            if k == "Venice Urban Center, Italy":
-                v = ["Europe"]
-            # things in these states are in North America
-            if re.match(
-                r".*, (New York|Maine|Florida|Virginia|Alaska|California|Ohio|Michigan|Washington|North Carolina), USA$",
-                k,
-            ):
-                v = ["North America"]
-            if k in systematics:
-                assert systematics[k] == v, (k, systematics[k], v)
-            else:
-                systematics[k] = v
-    return systematics
-
-
-@lru_cache(maxsize=1)
-def non_us_countries_for_all():
-    systematics = {}
-    for _, u_shapefile in shapefiles_for_stats.items():
-        for k, v in contained_in(
-            u_shapefile,
-            shapefiles_for_stats["countries"],
-            only_american=False,
-            only_nonamerican=True,
-        ).items():
-            if skippable_edge_case(k):
-                continue
-            if k in systematics and "USA" in k:
-                v = max([v, systematics[k]], key=len)
-                systematics[k] = v
-            if k in systematics:
-                assert systematics[k] == v, (k, systematics[k], v)
-            else:
-                systematics[k] = v
-    return systematics
-
-
-@permacache(
-    "population_density/relationship/states_for_4",
-    key_function=dict(sh=lambda a: a.hash_key),
-)
-def states_for(sh):
-    print("states_for", sh.hash_key)
-    return contained_in(
-        sh, shapefiles_for_stats["states"], only_american=True, only_nonamerican=False
-    )
-
-
-@permacache(
-    "population_density/relationship/contained_in_2",
-    key_function=dict(
-        sh=lambda a: a.hash_key,
-        check_contained_in=lambda a: a.hash_key,
-        only_nonamerican=drop_if_equal(False),
-    ),
-)
-def contained_in(sh, check_contained_in, *, only_american, only_nonamerican):
-    print("contained_in", sh.hash_key, check_contained_in.hash_key)
-    elem = sh.load_file()
-    if only_american and not sh.american or only_nonamerican and sh.american:
-        return {k: [] for k in elem.longname}
-    elem["idx"] = np.arange(elem.shape[0])
-    over = overlays(
-        check_contained_in.load_file(),
-        elem,
-        check_contained_in.chunk_size,
-        sh.chunk_size,
-        keep_geom_type=True,
-    )
-    area = over.area
-    area_elem = elem.set_index("idx").geometry.to_crs("EPSG:2163").area
-    pct = area / np.array(area_elem[over.idx])
-    over = over[pct > 0.05]
-    state = over.longname_1
-    region = over.longname_2
-    result = {k: [] for k in elem.longname}
-    for st, reg in zip(state, region):
-        result[reg].append(st)
-    return result
-
-
-def overlays(a, b, a_size, b_size, **kwargs):
-    """
-    Get the overlays between the two shapefiles a and b
-    """
-    if a_size is None and b_size is None:
-        return overlay(a, b, **kwargs)
-
-    total_frac = 1
-    if a_size is not None:
-        total_frac *= a_size / a.shape[0]
-    if b_size is not None:
-        total_frac *= b_size / b.shape[0]
-    size = max(5, int(total_frac * a.shape[0]))
-    results = []
-    for i in tqdm.trange(0, a.shape[0], size):
-        x, y = a.iloc[i : i + size], b
-        for_chunk = overlay(x, y, **kwargs)
-        results.append(for_chunk)
-    return pd.concat(results).reset_index(drop=True)
-
-
-def overlay(x, y, keep_geom_type=False):
-    for_chunk = gpd.overlay(x, y, how="intersection", keep_geom_type=keep_geom_type)
-    for_chunk["area"] = for_chunk.geometry.to_crs("EPSG:2163").area
-    del for_chunk["geometry"]
-    return for_chunk
 
 
 @permacache(
@@ -318,14 +138,11 @@ tiers = [
     [
         "Continent",
         "1B Person Circle",
-        "US 1B Person Circle",
         "500M Person Circle",
-        "US 500M Person Circle",
     ],
     [
         "Country",
         "200M Person Circle",
-        "US 200M Person Circle",
         "100M Person Circle",
         "US 100M Person Circle",
     ],
@@ -383,8 +200,6 @@ type_category_order = {
     "Oddball": 70,
     "Kavi": 80,
 }
-
-is_american = {k: v.american for k, v in shapefiles_for_stats.items()}
 
 key_to_type = {x: sf.meta["type"] for x, sf in shapefiles_for_stats.items()}
 
@@ -448,7 +263,7 @@ def full_relationships(long_to_type):
 
 
 @permacache(
-    "relationship/relationships_for_list",
+    "relationship/relationships_for_list_2",
     key_function=dict(
         long_to_type=stable_hash,
         shapefiles_to_use=lambda shapefiles_to_use: stable_hash(
@@ -520,12 +335,12 @@ def compute_all_relationships(long_to_type, shapefiles_to_use):
             if k1 < k2:
                 continue
 
-            if is_american[k1] != is_american[k2]:
-                continue
-
-            a_contains_b, b_contains_a, a_intersects_b, a_borders_b = (
-                create_relationships_dispatch(shapefiles_to_use, k1, k2)
-            )
+            (
+                a_contains_b,
+                b_contains_a,
+                a_intersects_b,
+                a_borders_b,
+            ) = create_relationships_dispatch(shapefiles_to_use, k1, k2)
 
             add(contains, a_contains_b)
             add(contains, [(big, small) for small, big in b_contains_a])

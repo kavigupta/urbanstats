@@ -1,9 +1,12 @@
-from urbanstats.statistics.collections.census_2010 import DENSITY_EXPLANATION_PW
+from urbanstats.data.gpw import compute_gpw_data_for_shapefile
+from urbanstats.statistics.collections.census import DENSITY_EXPLANATION_PW
 from urbanstats.statistics.extra_statistics import HistogramSpec
 from urbanstats.statistics.statistic_collection import InternationalStatistics
 
 
 class GPWStatistics(InternationalStatistics):
+    version = 2
+
     def name_for_each_statistic(self):
         return {
             "gpw_population": "Population [GHS-POP]",
@@ -27,13 +30,25 @@ class GPWStatistics(InternationalStatistics):
     def quiz_question_unused(self):
         return ["gpw_pw_density_2", "gpw_pw_density_1", "gpw_aw_density"]
 
-    def mutate_statistic_table(self, statistics_table, shapefile_table):
-        assert (
-            "area" in statistics_table
-        ), "area not in statistics table. I know this should probably be creating it. I'll fix it later."
+    def dependencies(self):
+        return ["area"]
+
+    def compute_statistics_dictionary(
+        self, *, shapefile, existing_statistics, shapefile_table
+    ):
+        statistics_table = {}
+
+        result, hists = compute_gpw_data_for_shapefile(shapefile)
+        for k, rk in result.items():
+            statistics_table[k] = rk
+        for k, hk in hists.items():
+            statistics_table[k] = hk
+
         statistics_table["gpw_aw_density"] = (
-            statistics_table["gpw_population"] / statistics_table["area"]
+            statistics_table["gpw_population"] / existing_statistics["area"]
         )
+
+        return statistics_table
 
     def extra_stats(self):
         return {

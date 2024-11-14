@@ -3,20 +3,26 @@ import ReactDOM from 'react-dom/client'
 import './style.css'
 import './common.css'
 
-import { for_type, render_statname } from './components/load-article'
+import { for_type } from './components/load-article'
 import { StatisticPanel } from './components/statistic-panel'
+import explanation_pages from './data/explanation_page'
+import stats from './data/statistic_list'
+import names from './data/statistic_name_list'
+import paths from './data/statistic_path_list'
 import { discordFix } from './discord-fix'
 import { load_ordering, load_ordering_protobuf } from './load_json'
-import { UNIVERSE_CONTEXT, get_universe, longname_is_exclusively_american, remove_universe_if_default } from './universe'
+import { UNIVERSE_CONTEXT, get_universe, remove_universe_if_default } from './universe'
 import { IDataList } from './utils/protos'
 import { NormalizeProto } from './utils/types'
+
+export type StatName = (typeof names)[number]
 
 async function loadPage(): Promise<void> {
     const window_info = new URLSearchParams(window.location.search)
 
     // TODO: Use zod to better parse these
     const article_type = window_info.get('article_type')!
-    const statname = window_info.get('statname')!
+    const statname = window_info.get('statname')!.replace('__PCT__', '%') as StatName
     const start = parseInt(window_info.get('start') ?? '1')
     const amount = window_info.get('amount')
     const order = (window_info.get('order') ?? 'descending') as 'ascending' | 'descending'
@@ -24,10 +30,6 @@ async function loadPage(): Promise<void> {
     // delete highlight then replaceState
     window_info.delete('highlight')
     window.history.replaceState({}, '', `?${window_info.toString()}`)
-    const names = require('./data/statistic_name_list.json') as string[]
-    const paths = require('./data/statistic_path_list.json') as string[]
-    const explanation_pages = require('./data/explanation_page.json') as string[]
-    const stats = require('./data/statistic_list.json') as (string | string[])[]
     const statpath = paths[names.indexOf(statname)]
     const explanation_page = explanation_pages[names.indexOf(statname)]
     const statcol = stats[names.indexOf(statname)]
@@ -44,7 +46,6 @@ async function loadPage(): Promise<void> {
     }
     document.title = statname
     const root = ReactDOM.createRoot(document.getElementById('root')!)
-    const exclusively_american = article_names.every(longname_is_exclusively_american)
     root.render(
         <UNIVERSE_CONTEXT.Provider value={universe}>
             <StatisticPanel
@@ -59,7 +60,7 @@ async function loadPage(): Promise<void> {
                 amount={parsedAmount}
                 article_names={article_names}
                 data={data}
-                rendered_statname={render_statname(names.indexOf(statname), statname, exclusively_american)}
+                rendered_statname={statname}
             />
         </UNIVERSE_CONTEXT.Provider>,
     )

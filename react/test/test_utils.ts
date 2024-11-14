@@ -7,6 +7,11 @@ import { ClientFunction, Selector } from 'testcafe'
 export const TARGET = process.env.URBANSTATS_TEST_TARGET ?? 'http://localhost:8000'
 export const SEARCH_FIELD = Selector('input').withAttribute('placeholder', 'Search Urban Stats')
 export const getLocation = ClientFunction(() => document.location.href)
+export const getLocationWithoutSettings = ClientFunction(() => {
+    const url = new URL(document.location.href)
+    url.searchParams.delete('s')
+    return url.toString()
+})
 
 export const IS_TESTING = true
 
@@ -49,10 +54,9 @@ export async function check_all_category_boxes(t: TestController): Promise<void>
                     label !== 'Use Imperial Units'
                     && label !== 'Include Historical Districts'
                     && label !== 'Simple Ordinals'
-                    && label !== 'Race'
-                    && label !== 'Election'
                     && label !== '2020'
                     && label !== 'Main'
+                    && label !== 'US Census'
                 )
             }).find('input')
         for (let i = 0; i < await checkboxes.count; i++) {
@@ -60,7 +64,7 @@ export async function check_all_category_boxes(t: TestController): Promise<void>
         }
     })
     // reload
-    await t.eval(() => { location.reload() })
+    await safeReload(t)
 }
 
 export async function waitForLoading(t: TestController): Promise<void> {
@@ -187,4 +191,9 @@ export function urbanstatsFixture(name: string, url: string, beforeEach: undefin
 
 export async function arrayFromSelector(selector: Selector): Promise<Selector[]> {
     return Array.from({ length: await selector.count }, (_, n) => selector.nth(n))
+}
+
+export async function safeReload(t: TestController): Promise<void> {
+    // eslint-disable-next-line no-restricted-syntax -- This is the utility that replaces location.reload()
+    await t.eval(() => setTimeout(() => { location.reload() }, 0))
 }

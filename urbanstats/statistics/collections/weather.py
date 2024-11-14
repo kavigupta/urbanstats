@@ -53,18 +53,23 @@ class USWeatherStatistics(USAStatistics):
             "days_dewpoint_-inf_50_4",
         ]
 
-    def compute_statistics(self, shapefile, statistics_table, shapefile_table):
+    def dependencies(self):
+        return ["population"]
+
+    def compute_statistics_dictionary(
+        self, *, shapefile, existing_statistics, shapefile_table
+    ):
+        statistics_table = {}
         by_region = weather_by_region(shapefile)
         for weather_stat in self.name_for_each_statistic():
             statistics_table[weather_stat] = by_region[weather_stat]
 
-        self.mutate_statistic_table(statistics_table, shapefile_table)
-
-    def mutate_statistic_table(self, statistics_table, shapefile_table):
         for weather_stat in self.name_for_each_statistic():
             statistics_table[weather_stat] = (
-                statistics_table[weather_stat] / statistics_table["population"]
+                statistics_table[weather_stat] / existing_statistics["population"]
             )
+
+        return statistics_table
 
 
 @permacache(

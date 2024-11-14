@@ -21,6 +21,16 @@ from urbanstats.data.population_overlays import (
 )
 from urbanstats.geometry.shapefiles.shapefile import Shapefile
 from urbanstats.geometry.shapefiles.shapefiles.urban_centers import URBAN_CENTERS
+from urbanstats.universe.universe_provider.combined_universe_provider import (
+    CombinedUniverseProvider,
+)
+from urbanstats.universe.universe_provider.constant_provider import (
+    ConstantUniverseProvider,
+)
+from urbanstats.universe.universe_provider.contained_within import (
+    STATE_PROVIDER,
+    ContainedWithinUniverseProvider,
+)
 
 
 class MapDataset:
@@ -396,7 +406,6 @@ def to_shapely_ellipse(map_shape, r_pixels, y_pixels, x_pixels):
 
 
 def to_basic_geopandas_frame(map_shape, circles):
-
     ellipses = []
     for r, (y, x) in tqdm.tqdm(circles):
         current = to_shapely_ellipse(map_shape, r, y, x)
@@ -760,7 +769,6 @@ def produce_image(population):
 
 
 def circle_shapefile_object(country_shapefile, population, just_usa):
-
     name = named_populations[population] + " Person Circle"
     if just_usa:
         name = "US " + name
@@ -771,6 +779,8 @@ def circle_shapefile_object(country_shapefile, population, just_usa):
     if population == 1e7:
         # just special case for 10M, since there was some weird caching issue.
         version += 0.1
+    if just_usa:
+        version += 0.01
     return Shapefile(
         hash_key=prefix
         + f"population_circle_{named_populations[population]}_{version}",
@@ -781,8 +791,15 @@ def circle_shapefile_object(country_shapefile, population, just_usa):
         longname_extractor=lambda x: x["longname"],
         meta=dict(type=name, source="GHSL", type_category="Kavi"),
         # FIXME better framework for indices for more than just international/USA
-        filter=(lambda x: "USA" in x.longname) if just_usa else lambda x: True,
+        filter=(lambda x: x.longname.endswith(", USA")) if just_usa else lambda x: True,
         american=just_usa,
         include_in_gpw=not just_usa,
         tolerate_no_state=True,
+        universe_provider=CombinedUniverseProvider(
+            [
+                ConstantUniverseProvider(["world"]),
+                ContainedWithinUniverseProvider(["continents", "countries"]),
+                STATE_PROVIDER,
+            ]
+        ),
     )

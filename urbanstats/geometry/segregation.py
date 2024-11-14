@@ -33,7 +33,7 @@ from permacache import permacache
 from urbanstats.data.census_blocks import all_densities_gpd, load_raw_census
 from urbanstats.geometry.census_aggregation import aggregate_by_census_block
 from urbanstats.geometry.ellipse import locate_blocks
-from urbanstats.statistics.collections.census_2010 import race_names
+from urbanstats.statistics.collections.census import race_names
 
 
 @lru_cache(None)

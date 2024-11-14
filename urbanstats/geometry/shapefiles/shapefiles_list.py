@@ -1,4 +1,3 @@
-from urbanstats.geometry.shapefiles.shapefile import Shapefile
 from urbanstats.geometry.shapefiles.shapefiles.ccds import CCDs
 from urbanstats.geometry.shapefiles.shapefiles.cities import CITIES
 from urbanstats.geometry.shapefiles.shapefiles.continents import CONTINENTS
@@ -27,10 +26,12 @@ from urbanstats.geometry.shapefiles.shapefiles.subnational_regions import (
     SUBNATIONAL_REGIONS,
 )
 from urbanstats.geometry.shapefiles.shapefiles.urban_areas import URBAN_AREAS
-from urbanstats.geometry.shapefiles.shapefiles.urban_centers import URBAN_CENTERS
+from urbanstats.geometry.shapefiles.shapefiles.urban_centers import (
+    URBAN_CENTERS,
+    URBAN_CENTERS_USA,
+)
 from urbanstats.geometry.shapefiles.shapefiles.usda_county_type import USDA_COUNTY_TYPE
 from urbanstats.geometry.shapefiles.shapefiles.zctas import ZCTAs
-from urbanstats.special_cases.ghsl_urban_center import load_ghsl_urban_center
 
 shapefiles = dict(
     counties=COUNTIES,
@@ -57,17 +58,6 @@ shapefiles = dict(
     **population_circles_shapefiles,
 )
 
-URBAN_CENTERS_USA = Shapefile(
-    hash_key="us_urban_centers_4",
-    path=load_ghsl_urban_center,
-    shortname_extractor=lambda x: x["shortname"],
-    longname_extractor=lambda x: x["longname"],
-    meta=dict(type="Urban Center", source="GHSL", type_category="International"),
-    filter=lambda x: "USA" in x.suffix,
-    american=True,
-    include_in_gpw=False,
-)
-
 # FIXME better framework for indices for more than just international/USA
 shapefiles_for_stats = dict(
     **shapefiles,
@@ -85,6 +75,8 @@ american_to_international = {
     **population_circles_usa_to_international,
 }
 
+localized_type_names = {"USA": {v: k for k, v in american_to_international.items()}}
+
 
 def filter_table_for_type(table, typ):
     # FIXME better framework for indices for more than just international/USA
@@ -93,7 +85,7 @@ def filter_table_for_type(table, typ):
         typ = american_to_international[typ]
     table = table[table.type == typ]
     if is_internationalized:
-        table = table[table.longname.apply(lambda x: "USA" in x)]
+        table = table[table.longname.apply(lambda x: x.endswith(", USA"))]
     return table
 
 
@@ -105,5 +97,7 @@ def load_file_for_type(typ):
     [loaded_file] = [x for x in shapefiles.values() if x.meta["type"] == typ]
     loaded_file = loaded_file.load_file()
     if is_internationalized:
-        loaded_file = loaded_file[loaded_file.longname.apply(lambda x: "USA" in x)]
+        loaded_file = loaded_file[
+            loaded_file.longname.apply(lambda x: x.endswith(", USA"))
+        ]
     return loaded_file

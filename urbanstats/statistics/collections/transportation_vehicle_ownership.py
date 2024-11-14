@@ -25,7 +25,7 @@ class TransportationVehicleOwnershipStatistics(ACSStatisticsColection):
             "vehicle_ownership_at_least_2",
         ]
 
-    def mutate_statistic_table(self, statistics_table, shapefile_table):
+    def mutate_acs_results(self, statistics_table):
         fractionalize(
             statistics_table,
             "vehicle_ownership_none",

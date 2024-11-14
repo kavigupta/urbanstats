@@ -52,7 +52,6 @@ def load_airports():
 
 
 def load_buses():
-
     s = national_stops().copy()
     s.geometry = s.geometry.centroid
     s = s[~s.geometry.is_empty]

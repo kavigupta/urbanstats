@@ -13,11 +13,13 @@ class Shapefile:
     longname_extractor = attr.ib()
     filter = attr.ib()
     meta = attr.ib()
+    additional_columns_to_keep = attr.ib(default=())
     drop_dup = attr.ib(default=False)
     chunk_size = attr.ib(default=None)
     american = attr.ib(default=True)
     include_in_gpw = attr.ib(default=False)
     tolerate_no_state = attr.ib(default=False)
+    universe_provider = attr.ib(kw_only=True)
 
     def load_file(self):
         """
@@ -44,10 +46,13 @@ class Shapefile:
         else:
             s = self.path()
         s = s[s.apply(self.filter, axis=1)]
+        if s.shape[0] == 0:
+            raise EmptyShapefileError
         s = gpd.GeoDataFrame(
             dict(
                 shortname=s.apply(self.shortname_extractor, axis=1),
                 longname=s.apply(self.longname_extractor, axis=1),
+                **{col: s[col] for col in self.additional_columns_to_keep},
             ),
             geometry=s.geometry,
         )
@@ -69,3 +74,7 @@ class Shapefile:
             s.crs = "EPSG:4326"
         s = s.to_crs("EPSG:4326")
         return s
+
+
+class EmptyShapefileError(Exception):
+    pass

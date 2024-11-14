@@ -27,7 +27,7 @@ class TransportationCommuteTimeStatistics(ACSStatisticsColection):
             "transportation_commute_time_30_to_59",
         ]
 
-    def mutate_statistic_table(self, statistics_table, shapefile_table):
+    def mutate_acs_results(self, statistics_table):
         fractionalize(
             statistics_table,
             "transportation_commute_time_under_15",

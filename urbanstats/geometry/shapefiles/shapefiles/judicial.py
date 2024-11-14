@@ -2,6 +2,7 @@ import geopandas as gpd
 import us
 
 from urbanstats.geometry.shapefiles.shapefile import Shapefile
+from urbanstats.universe.universe_provider.constants import us_domestic_provider
 
 
 def render_ordinal(x):
@@ -39,6 +40,7 @@ JUDICIAL_DISTRICTS = Shapefile(
     + ", USA",
     filter=lambda x: True,
     meta=dict(type="Judicial District", source="HIFLD", type_category="Oddball"),
+    universe_provider=us_domestic_provider(),
 )
 
 
@@ -69,6 +71,7 @@ JUDICIAL_CIRCUITS = Shapefile(
     longname_extractor=lambda x: x["shortname"] + ", USA",
     filter=lambda x: True,
     meta=dict(type="Judicial Circuit", source="HIFLD", type_category="Oddball"),
+    universe_provider=us_domestic_provider(),
 )
 judicial_shapefiles = dict(
     judicial_districts=JUDICIAL_DISTRICTS,

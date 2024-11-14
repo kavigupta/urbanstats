@@ -1,5 +1,5 @@
 from urbanstats.statistics.collections.cdc_statistics import CDCStatistics
-from urbanstats.statistics.collections.census_2010 import (
+from urbanstats.statistics.collections.census import (
     Census2000,
     Census2010,
     Census2020,
@@ -57,13 +57,13 @@ from urbanstats.statistics.collections.usda_fra_statistics import USDAFRAStatist
 from urbanstats.statistics.collections.weather import USWeatherStatistics
 
 statistic_collections = (
+    AreaAndCompactnessStatistics(),
     Census2020(),
     Census2010(),
     CensusChange2010(),
     Census2000(),
     CensusChange2000(),
     GPWStatistics(),
-    AreaAndCompactnessStatistics(),
     SegregationStatistics(),
     NationalOriginCitizenshipStatistics(),
     NationalOriginBirthplaceStatistics(),

@@ -8,10 +8,10 @@ export const sw_sgv = 'Southwest San Gabriel Valley CCD [CCD], Los Angeles Count
 export const east_sgv = 'East San Gabriel Valley CCD [CCD], Los Angeles County, California, USA'
 export const chicago = 'Chicago city [CCD], Cook County, Illinois, USA'
 
-async function download_or_check_histogram(t: TestController, name: string): Promise<void> {
+async function download_or_check_histogram(t: TestController, name: string, nth = 0): Promise<void> {
     const output = await t.eval(() => {
-        return document.getElementsByClassName('histogram-svg-panel')[0].innerHTML
-    }) as string
+        return document.getElementsByClassName('histogram-svg-panel')[nth].innerHTML
+    }, { dependencies: { nth } }) as string
     await download_or_check_string(t, output, name)
 }
 
@@ -34,8 +34,8 @@ test('histogram-basic-article', async (t) => {
     await waitForLoading(t) // Need to avoid a race condition between map loading and page resizing
     await t.resizeWindow(800, 800)
     await t.click(Selector('.expand-toggle'))
-    await download_or_check_histogram(t, 'histogram-basic-article')
     await screencap(t)
+    await download_or_check_histogram(t, 'histogram-basic-article')
 })
 
 test('histogram-basic-article-multi', async (t) => {
@@ -59,8 +59,8 @@ test('histogram-basic-comparison', async (t) => {
     await t.resizeWindow(800, 800)
     // select element with class name `expand-toggle`
     await t.click(Selector('.expand-toggle'))
-    await download_or_check_histogram(t, 'histogram-basic-comparison')
     await screencap(t)
+    await download_or_check_histogram(t, 'histogram-basic-comparison')
 })
 
 urbanstatsFixture('comparison test heterogenous with nan', comparison_page(['India', 'China', pasadena]))
@@ -69,9 +69,9 @@ test('histogram-basic-comparison-nan', async (t) => {
     await waitForLoading(t) // Need to avoid a race condition between map loading and page resizing
     await t.resizeWindow(800, 800)
     // select element with class name `expand-toggle`
-    await t.click(Selector('.expand-toggle'))
-    await download_or_check_histogram(t, 'histogram-basic-comparison-nan')
+    await t.click(Selector('.expand-toggle').nth(1))
     await screencap(t)
+    await download_or_check_histogram(t, 'histogram-basic-comparison-nan')
 })
 
 urbanstatsFixture('comparison test heterogenous with nan in the middle', comparison_page(['India', pasadena, 'China']))
@@ -80,15 +80,15 @@ test('histogram-basic-comparison-nan-middle', async (t) => {
     await waitForLoading(t) // Need to avoid a race condition between map loading and page resizing
     await t.resizeWindow(800, 800)
     // select element with class name `expand-toggle`
-    await t.click(Selector('.expand-toggle'))
-    await download_or_check_histogram(t, 'histogram-basic-comparison-nan-middle')
+    await t.click(Selector('.expand-toggle').nth(1))
     await screencap(t)
+    await download_or_check_histogram(t, 'histogram-basic-comparison-nan-middle')
 })
 
 urbanstatsFixture('comparison ordering test', `${TARGET}/comparison.html?longnames=%5B%22USA%22%2C%22United+Kingdom%22%5D`)
 
 test('histogram-ordering', async (t) => {
-    await t.click(Selector('.expand-toggle'))
-    await download_or_check_histogram(t, 'histogram-ordering')
+    await t.click(Selector('.expand-toggle').nth(1))
     await screencap(t)
+    await download_or_check_histogram(t, 'histogram-ordering')
 })
