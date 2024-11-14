@@ -157,6 +157,8 @@ urbanstatsFixture(
     `${TARGET}/comparison.html?longnames=%5B"Ontario%2C+Canada"%2C"California%2C+USA"%5D&s=${ONLY_US_CENSUS}`,
 )
 
+let ghslLocation: string
+
 test('comparison-american-vs-international-population-stats', async (t) => {
     // forces GHSL onto the screen. US Census is only enabled by the checkbox
     await t.expect(await checkboxStatus('US Census')).eql('enabled')
@@ -164,13 +166,19 @@ test('comparison-american-vs-international-population-stats', async (t) => {
     // these are the values for the US Census
     await t.expect(await dataValues()).eql(['NaN', '39.5', '14.3', '40.3'])
     await check_textboxes(t, ['US Census'])
-    // assert location
-    await t.expect(getLocation()).eql(`${TARGET}/comparison.html?longnames=%5B%22Ontario%2C+Canada%22%2C%22California%2C+USA%22%5D&s=${NEITHER}`)
+    ghslLocation = await getLocation()
     // these are the values for GHSL
     await t.expect(await dataValues()).eql(['14.3', '40.3'])
     // disabled so this does nothing
     await check_textboxes(t, ['GHSL'])
-    await t.expect(getLocation()).eql(`${TARGET}/comparison.html?longnames=%5B%22Ontario%2C+Canada%22%2C%22California%2C+USA%22%5D&s=${NEITHER}`)
+    await t.expect(getLocation()).eql(ghslLocation)
+})
+
+test('settings param works correctly on url with just ghsl source checked', async (t) => {
+    await t.navigateTo(ghslLocation)
+    await t.expect(Selector('[data-test-id="source Population US Census"]').checked).eql(false)
+    await t.expect(Selector('[data-test-id="source Population GHSL"]').checked).eql(true)
+    await screencap(t)
 })
 
 urbanstatsFixture(

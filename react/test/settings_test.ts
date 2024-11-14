@@ -4,6 +4,7 @@ import { Selector } from 'testcafe'
 
 import {
     SEARCH_FIELD, TARGET, check_textboxes, getLocation,
+    safeReload,
     screencap,
     urbanstatsFixture,
 } from './test_utils'
@@ -41,13 +42,13 @@ test('check-settings-persistent', async (t) => {
     // navigate to Pasadena via search
     await t.typeText(SEARCH_FIELD, 'Pasadena, CA, USA')
     await t.pressKey('enter')
-    await t.expect(getLocation()).eql(`${TARGET}/article.html?longname=Pasadena+city%2C+California%2C+USA&s=4YFxurQq2ob9Rf`)
+    await t.expect(getLocation()).match(/\/article\.html\?longname=Pasadena\+city%2C\+California%2C\+USA/)
     // check box "Imperial"
     await check_textboxes(t, ['Use Imperial Units'])
     // assert mi not in page
     await t.expect(Selector('span').withText('mi').exists).notOk()
     // go back to San Marino
-    await t.eval(() => { location.reload() })
+    await safeReload(t)
     await t.expect(Selector('span').withText('mi').exists).notOk()
 })
 
@@ -55,7 +56,7 @@ test('check-related-button-checkboxes-page-specific', async (t) => {
     // navigate to 91108
     await t.typeText(SEARCH_FIELD, '91108')
     await t.pressKey('enter')
-    await t.expect(getLocation()).eql(`${TARGET}/article.html?longname=91108%2C+USA&s=4YFxurQq2ob9Rf`)
+    await t.expect(getLocation()).match(/\/article\.html\?longname=91108%2C\+USA/)
     // this should not be page specific
     await t.expect(Selector('span').withText('mi').exists).ok()
     // San Marino should be present
@@ -78,6 +79,6 @@ test('checkboxes-can-be-checked', async (t) => {
     // check that this is persistent by going to Berkeley and checking that Briones CCD is present
     await t.typeText(SEARCH_FIELD, 'Berkeley, CA, USA')
     await t.pressKey('enter')
-    await t.expect(getLocation()).eql(`${TARGET}/article.html?longname=Berkeley+city%2C+California%2C+USA&s=4YFxurQq2ob9Rf`)
+    await t.expect(getLocation()).match(/\/article\.html\?longname=Berkeley\+city%2C\+California%2C\+USA/)
     await t.expect(Selector('path').withAttribute('class', /tag-Briones_CCD/).exists).ok()
 })

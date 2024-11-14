@@ -1,6 +1,6 @@
 import { Selector } from 'testcafe'
 
-import { arrayFromSelector, screencap, TARGET, urbanstatsFixture, withHamburgerMenu } from './test_utils'
+import { arrayFromSelector, safeReload, screencap, TARGET, urbanstatsFixture, withHamburgerMenu } from './test_utils'
 
 const mainCheck = 'input[data-test-id=category_main]'
 const mainExpand = '.expandButton[data-category-id=main]'
@@ -212,7 +212,7 @@ export function statsTreeTest(platform: 'mobile' | 'desktop'): void {
         await withHamburgerMenu(t, async () => {
             await t.click(mainExpand)
         })
-        await t.eval(() => { location.reload() })
+        await safeReload(t)
         await withHamburgerMenu(t, async () => {
             await t.expect(Selector(populationCheck).visible).eql(true)
         })
@@ -223,7 +223,7 @@ export function statsTreeTest(platform: 'mobile' | 'desktop'): void {
             await t.click(mainExpand)
             await t.click(populationCheck)
         })
-        await t.eval(() => { location.reload() })
+        await safeReload(t)
         await withHamburgerMenu(t, async () => {
             await t.expect(Selector(populationCheck).checked).eql(false)
             await t.expect(await checkIsIndeterminate(t, mainCheck)).eql(true)
@@ -240,7 +240,7 @@ export function statsTreeTest(platform: 'mobile' | 'desktop'): void {
             await t.click(populationCheck)
             await t.click(mainCheck)
         })
-        await t.eval(() => { location.reload() })
+        await safeReload(t)
         await withHamburgerMenu(t, async () => {
             await t.expect(Selector(mainCheck).checked).eql(true)
             await t.expect(await checkIsIndeterminate(t, mainCheck)).eql(false)

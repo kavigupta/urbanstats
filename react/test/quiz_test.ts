@@ -5,7 +5,7 @@ import { promisify } from 'util'
 import { execa } from 'execa'
 import { RequestHook, Selector } from 'testcafe'
 
-import { TARGET, screencap, urbanstatsFixture } from './test_utils'
+import { TARGET, safeReload, screencap, urbanstatsFixture } from './test_utils'
 
 async function quiz_screencap(t: TestController): Promise<void> {
     await t.eval(() => {
@@ -152,7 +152,7 @@ quiz_fixture(
 )
 
 test('quiz-report-old-results', async (t) => {
-    await t.eval(() => { location.reload() })
+    await safeReload(t)
     await click_buttons(t, ['a', 'a', 'a', 'a', 'a'])
     const quiz_history: unknown = await t.eval(() => {
         return JSON.parse(localStorage.getItem('quiz_history')!) as unknown
@@ -181,7 +181,7 @@ quiz_fixture(
 )
 
 test('quiz-do-not-report-stale-results', async (t) => {
-    await t.eval(() => { location.reload() })
+    await safeReload(t)
     await click_buttons(t, ['a', 'a', 'a', 'a', 'a'])
     const quiz_history: unknown = await t.eval(() => {
         return JSON.parse(localStorage.getItem('quiz_history')!) as unknown
@@ -213,7 +213,7 @@ quiz_fixture(
 )
 
 test('quiz-percentage-correct', async (t) => {
-    await t.eval(() => { location.reload() })
+    await safeReload(t)
     await click_buttons(t, ['a', 'a', 'a', 'a', 'a'])
     await quiz_screencap(t)
     await t.expect(await juxtastat_table()).eql(
@@ -227,7 +227,7 @@ test('quiz-percentage-correct', async (t) => {
         localStorage.setItem('persistent_id', '000000000000008')
         localStorage.setItem('testHostname', 'urbanstats.org')
     })
-    await t.eval(() => { location.reload() })
+    await safeReload(t)
     await click_buttons(t, ['a', 'a', 'a', 'a', 'a'])
     await quiz_screencap(t)
     await t.expect(await juxtastat_table()).eql(
@@ -285,7 +285,7 @@ quiz_fixture(
 )
 
 test('quiz-retrostat-regular-quiz-reporting', async (t) => {
-    await t.eval(() => { location.reload() })
+    await safeReload(t)
     await click_buttons(t, ['a', 'a', 'a', 'a', 'a'])
     const quiz_history: unknown = await t.eval(() => {
         return JSON.parse(localStorage.getItem('quiz_history')!) as unknown
@@ -303,7 +303,7 @@ test('quiz-retrostat-regular-quiz-reporting', async (t) => {
 test('quiz-retrostat-retrostat-reporting', async (t) => {
     const url = `${TARGET}/quiz.html?mode=retro&date=38`
     await t.navigateTo(url)
-    await t.eval(() => { location.reload() })
+    await safeReload(t)
     await click_buttons(t, ['a', 'a', 'a', 'a', 'a'])
     const quiz_history: unknown = await t.eval(() => {
         return JSON.parse(localStorage.getItem('quiz_history')!) as unknown
@@ -334,7 +334,7 @@ async function check_text(t: TestController, words: string, emoji: string): Prom
 
 test('quiz-results-test', async (t) => {
     await t.resizeWindow(1400, 800)
-    await t.eval(() => { location.reload() })
+    await safeReload(t)
     await quiz_screencap(t)
     await check_text(t, 'Excellent! 😊 4/5', '🟩🟩🟩🟩🟥')
 })
@@ -372,7 +372,7 @@ quiz_fixture('several quiz results', `${TARGET}/quiz.html?date=90`,
 )
 
 test('several-quiz-results-test', async (t) => {
-    await t.eval(() => { location.reload() })
+    await safeReload(t)
     await quiz_screencap(t)
     // true true true true false
     await check_text(t, 'Excellent! 😊 4/5', '🟩🟩🟩🟩🟥')
