@@ -73,6 +73,8 @@ american_to_international = {
     **population_circles_usa_to_international,
 }
 
+localized_type_names = {"USA": {v: k for k, v in american_to_international.items()}}
+
 
 def filter_table_for_type(table, typ):
     is_internationalized = typ in american_to_international

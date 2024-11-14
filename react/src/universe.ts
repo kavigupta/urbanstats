@@ -55,8 +55,3 @@ export function default_comparison_universe(articleUniverses: string[][], availa
     const max_index = Math.max(...universe_indices)
     return availableUniverses[max_index]
 }
-
-export function universe_is_american(universe: string): boolean {
-    // if universe ends with USA, then it's American
-    return universe.endsWith(', USA') || universe === 'USA'
-}
