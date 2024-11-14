@@ -26,9 +26,10 @@ async function loadPage(): Promise<void> {
     document.title = joined_string
     const root = ReactDOM.createRoot(document.getElementById('root')!)
     // intersection of all the data.universes
-    const universes = datas.map(x => x.universes).reduce((a, b) => a.filter(c => b.includes(c)))
+    const articleUniverses = datas.map(x => x.universes)
+    const universes = articleUniverses.reduce((a, b) => a.filter(c => b.includes(c)))
     remove_universe_if_not_in(universes)
-    const default_universe = default_comparison_universe(names, universes)
+    const default_universe = default_comparison_universe(articleUniverses, universes)
     remove_universe_if_default(default_universe)
     root.render(
         <UNIVERSE_CONTEXT.Provider value={get_universe(default_universe)}>
