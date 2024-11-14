@@ -63,7 +63,6 @@ export function for_type(universe: string, statcol: StatCol, typ: string): numbe
 }
 
 function unpackBytes(bytes: Uint8Array): number[] {
-    // translation of sharding.py::unpackBytes
     const result = []
     for (let i = 0; i < bytes.length; i += 1) {
         const byte = bytes[i]
