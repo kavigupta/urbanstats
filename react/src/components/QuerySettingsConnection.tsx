@@ -39,7 +39,7 @@ export function QuerySettingsConnection({ stagedSettingsKeys, applySettingsKeys 
             // If we haven't saved any previous settings, just save these staged settings
             // This ensures that the new user doesn't get non-default values for settings that aren't relevant to their linked page
             if (localStorage.getItem('settings') === null) {
-                settings.exitStagedMode('apply')
+                settings.exitStagedMode('applyWithoutSaving')
             }
         }
         // ^ It's important that we apply any other settings in the link before calculating the visible stat paths, as these settings could affect the visible stat paths
@@ -53,7 +53,8 @@ export function QuerySettingsConnection({ stagedSettingsKeys, applySettingsKeys 
         const applyKeys = applySettingsKeys(visibleStatPaths)
 
         for (const applySettingsKey of applyKeys) {
-            settings.setSetting(applySettingsKey, settingsFromQueryParams[applySettingsKey])
+            // If we haven't saved any settings, don't save them yet
+            settings.setSetting(applySettingsKey, settingsFromQueryParams[applySettingsKey], localStorage.getItem('settings') !== null)
         }
     // eslint-disable-next-line react-hooks/exhaustive-deps -- We should only load params on first load.
     }, [])

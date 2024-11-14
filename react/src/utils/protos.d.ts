@@ -657,6 +657,9 @@ export interface IArticle {
     /** Article articleType */
     articleType?: (string|null);
 
+    /** Article statisticIndicesPacked */
+    statisticIndicesPacked?: (Uint8Array|null);
+
     /** Article rows */
     rows?: (IStatisticRow[]|null);
 
@@ -690,6 +693,9 @@ export class Article implements IArticle {
 
     /** Article articleType. */
     public articleType: string;
+
+    /** Article statisticIndicesPacked. */
+    public statisticIndicesPacked: Uint8Array;
 
     /** Article rows. */
     public rows: IStatisticRow[];

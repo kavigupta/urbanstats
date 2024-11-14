@@ -1,6 +1,5 @@
 import explanation_page from '../data/explanation_page'
 import extra_stats from '../data/extra_stats'
-import index_list_info from '../data/index_lists'
 import stats from '../data/statistic_list'
 import names from '../data/statistic_name_list'
 import paths from '../data/statistic_path_list'
@@ -63,21 +62,17 @@ export function for_type(universe: string, statcol: StatCol, typ: string): numbe
     return lookup_in_compressed_sequence(counts_by_type, idx)
 }
 
-function compute_indices(longname: string, typ: string): number[] {
-    // translation of statistic_index_lists.py::indices
-
-    const lists = index_list_info.index_lists
-    let result: number[] = []
-    result = result.concat(lists.universal)
-    if (index_list_info.type_to_has_gpw[typ]) {
-        result = result.concat(lists.gpw)
+function unpackBytes(bytes: Uint8Array): number[] {
+    const result = []
+    for (let i = 0; i < bytes.length; i += 1) {
+        const byte = bytes[i]
+        for (let j = 0; j < 8; j += 1) {
+            if (byte & (1 << j)) {
+                result.push(i * 8 + j)
+            }
+        }
     }
-    // else {
-    if (longname.endsWith(', USA') || longname === 'USA') {
-        result = result.concat(lists.usa)
-    }
-    // sort result by numeric value
-    return result.sort((a, b) => a - b)
+    return result
 }
 
 export function load_single_article(data: Article, universe: string): ArticleRow[] {
@@ -87,7 +82,7 @@ export function load_single_article(data: Article, universe: string): ArticleRow
 
     const extra_stat_idx_to_col: number[] = extra_stats.map(xy => xy[0])
 
-    const indices = compute_indices(data.longname, article_type)
+    const indices = unpackBytes(data.statisticIndicesPacked)
 
     return data.rows.map((row_original, row_index) => {
         const i = indices[row_index]

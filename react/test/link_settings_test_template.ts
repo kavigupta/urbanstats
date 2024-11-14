@@ -7,9 +7,12 @@ export function linkSettingsTests(baseLink: string): void {
         await t.click('.expandButton[data-category-id=main]')
     })
 
+    let defaultLink: string
     let expectedLink: string
 
     test('formulates correct link', async (t) => {
+        defaultLink = await getLocation()
+
         // Check imperial, uncheck population
         await t.click('input[data-test-id=use_imperial]')
         await t.click('input[data-test-id=group_population]:not([inert] *)')
@@ -54,15 +57,8 @@ export function linkSettingsTests(baseLink: string): void {
             group_population: true,
         })
 
-        // Can go to this link and also get default settings
-        await safeReload(t)
-
-        await t.click('.expandButton[data-category-id=main]')
-
-        await expectInputTestIdValues(t, {
-            use_imperial: false,
-            group_population: true,
-        })
+        await t.expect(getLocation())
+            .eql(defaultLink)
 
         await screencap(t)
     })
@@ -208,6 +204,17 @@ export function linkSettingsTests(baseLink: string): void {
         await t.expect(Selector('[data-test-id=staging_controls]').exists).notOk()
     })
 
+    test('settings are not saved for new visitor', async (t) => {
+        await t.navigateTo(baseLink)
+        await t.expect(Selector('.histogram-svg-panel').exists).notOk()
+    })
+
+    test('settings are saved for new visitor once they make a change', async (t) => {
+        await t.click(Selector('[data-test-id=histogram_relative]'))
+        await t.navigateTo(baseLink)
+        await t.expect(Selector('.histogram-svg-panel').exists).ok()
+    })
+
     urbanstatsFixture('paste histogram relative changed link', TARGET, async (t) => {
         await t.navigateTo(histogramLinkWithRelativeChanged)
     })
@@ -254,6 +261,6 @@ export function linkSettingsTests(baseLink: string): void {
     })
 
     test('link should not include histogram settings', async (t) => {
-        await t.expect(getLocation()).notEql(`${TARGET}${hiddenHistogramLink}`)
+        await t.expect(getLocation()).notEql(hiddenHistogramLink)
     })
 }
