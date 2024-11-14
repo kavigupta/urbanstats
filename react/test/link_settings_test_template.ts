@@ -1,6 +1,6 @@
 import { Selector } from 'testcafe'
 
-import { arrayFromSelector, getLocation, screencap, TARGET, urbanstatsFixture } from './test_utils'
+import { arrayFromSelector, getLocation, safeReload, screencap, TARGET, urbanstatsFixture } from './test_utils'
 
 export function linkSettingsTests(baseLink: string): void {
     urbanstatsFixture('generate link', baseLink, async (t) => {
@@ -119,7 +119,7 @@ export function linkSettingsTests(baseLink: string): void {
             year_2010: false,
         })
 
-        await t.eval(() => { location.reload() })
+        await safeReload(t)
 
         // Settings persist after reload without staging
         await t.expect(Selector('[data-test-id=staging_controls]').exists).notOk()

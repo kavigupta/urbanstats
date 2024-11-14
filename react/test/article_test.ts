@@ -2,7 +2,7 @@ import { Selector } from 'testcafe'
 
 import {
     TARGET, check_all_category_boxes, check_textboxes, comparison_page, download_image,
-    getLocationWithoutSettings, screencap,
+    getLocationWithoutSettings, safeReload, screencap,
     urbanstatsFixture,
 } from './test_utils'
 
@@ -102,7 +102,7 @@ test('uncheck-box-mobile', async (t) => {
 
     await screencap(t)
     // refresh
-    await t.eval(() => { location.reload() })
+    await safeReload(t)
     await screencap(t)
 })
 
@@ -113,7 +113,7 @@ test('uncheck-box-desktop', async (t) => {
 
     await screencap(t)
     // refresh
-    await t.eval(() => { location.reload() })
+    await safeReload(t)
     await screencap(t)
 })
 
