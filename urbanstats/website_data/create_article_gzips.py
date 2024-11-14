@@ -30,7 +30,9 @@ def create_article_gzip(
     statistic_names = internal_statistic_names()
     idxs_by_type = index_list_for_longname(row.longname, row.type)
     data = data_files_pb2.Article()
-    data.statistic_indices_packed = bytes(index_bitvector_for_longname(row.longname, row.type))
+    data.statistic_indices_packed = bytes(
+        index_bitvector_for_longname(row.longname, row.type)
+    )
     data.shortname = row.shortname
     data.longname = row.longname
     data.source = row.source
