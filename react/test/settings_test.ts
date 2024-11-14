@@ -4,6 +4,7 @@ import { Selector } from 'testcafe'
 
 import {
     SEARCH_FIELD, TARGET, check_textboxes, getLocation,
+    safeReload,
     screencap,
     urbanstatsFixture,
 } from './test_utils'
@@ -47,7 +48,7 @@ test('check-settings-persistent', async (t) => {
     // assert mi not in page
     await t.expect(Selector('span').withText('mi').exists).notOk()
     // go back to San Marino
-    await t.eval(() => { location.reload() })
+    await safeReload(t)
     await t.expect(Selector('span').withText('mi').exists).notOk()
 })
 

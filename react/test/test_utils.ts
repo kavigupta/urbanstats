@@ -64,7 +64,7 @@ export async function check_all_category_boxes(t: TestController): Promise<void>
         }
     })
     // reload
-    await t.eval(() => { location.reload() })
+    await safeReload(t)
 }
 
 export async function waitForLoading(t: TestController): Promise<void> {
@@ -191,4 +191,8 @@ export function urbanstatsFixture(name: string, url: string, beforeEach: undefin
 
 export async function arrayFromSelector(selector: Selector): Promise<Selector[]> {
     return Array.from({ length: await selector.count }, (_, n) => selector.nth(n))
+}
+
+export async function safeReload(t: TestController): Promise<void> {
+    await t.eval(() => setTimeout(() => { location.reload() }, 0))
 }

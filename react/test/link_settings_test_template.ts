@@ -126,7 +126,7 @@ export function linkSettingsTests(baseLink: string): void {
             year_2010: false,
         })
 
-        await t.eval(() => { location.reload() })
+        await safeReload(t)
 
         // Settings persist after reload without staging
         await t.expect(Selector('[data-test-id=staging_controls]').exists).notOk()
