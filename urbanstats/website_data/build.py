@@ -15,6 +15,7 @@ from urbanstats.geometry.relationship import type_to_type_category
 from urbanstats.geometry.shapefiles.shapefiles_list import american_to_international
 from urbanstats.mapper.ramp import output_ramps
 from urbanstats.ordinals.ordering_info_outputter import output_ordering
+from urbanstats.protobuf.data_files_pb2_hash import proto_hash
 from urbanstats.special_cases import symlinks
 from urbanstats.statistics.collections.industry import IndustryStatistics
 from urbanstats.statistics.collections.occupation import OccupationStatistics
@@ -32,16 +33,19 @@ from urbanstats.website_data.index import export_index
 from urbanstats.website_data.ordinals import all_ordinals
 from urbanstats.website_data.output_geometry import produce_all_geometry_json
 from urbanstats.website_data.table import shapefile_without_ordinals
-from urbanstats.protobuf.data_files_pb2_hash import proto_hash
 
 from ..utils import output_typescript
+
 
 def check_proto_hash():
     with open("data_files.proto", "rb") as f:
         h = hashlib.sha256(f.read()).hexdigest()
     if h == proto_hash:
         return
-    raise ValueError("data_files.proto has changed, please run `bash scripts/build-protos.sh`")
+    raise ValueError(
+        "data_files.proto has changed, please run `bash scripts/build-protos.sh`"
+    )
+
 
 def link_scripts_folder(site_folder, dev):
     if os.path.islink(f"{site_folder}/scripts"):
