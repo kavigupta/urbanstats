@@ -1,5 +1,7 @@
 from functools import lru_cache
 
+import numpy as np
+
 from urbanstats.geometry.shapefiles.shapefiles_list import shapefiles
 from urbanstats.statistics.collections_list import statistic_collections
 from urbanstats.statistics.output_statistics_metadata import internal_statistic_names
@@ -45,3 +47,10 @@ def index_list_for_longname(longname, typ, strict_display=False):
     if is_american:
         result += lists["usa"]
     return sorted(result)
+
+
+def index_bitvector_for_longname(longname, typ, strict_display=False):
+    idxs = index_list_for_longname(longname, typ, strict_display)
+    bool_array = np.zeros(max(idxs) + 1, dtype=np.bool_)
+    bool_array[idxs] = True
+    return np.packbits(bool_array, bitorder="little").tolist()

@@ -102,6 +102,7 @@ class Article(_message.Message):
         "longname",
         "source",
         "article_type",
+        "statistic_indices_packed",
         "rows",
         "related",
         "universes",
@@ -111,6 +112,7 @@ class Article(_message.Message):
     LONGNAME_FIELD_NUMBER: _ClassVar[int]
     SOURCE_FIELD_NUMBER: _ClassVar[int]
     ARTICLE_TYPE_FIELD_NUMBER: _ClassVar[int]
+    STATISTIC_INDICES_PACKED_FIELD_NUMBER: _ClassVar[int]
     ROWS_FIELD_NUMBER: _ClassVar[int]
     RELATED_FIELD_NUMBER: _ClassVar[int]
     UNIVERSES_FIELD_NUMBER: _ClassVar[int]
@@ -119,6 +121,7 @@ class Article(_message.Message):
     longname: str
     source: str
     article_type: str
+    statistic_indices_packed: bytes
     rows: _containers.RepeatedCompositeFieldContainer[StatisticRow]
     related: _containers.RepeatedCompositeFieldContainer[RelatedButtons]
     universes: _containers.RepeatedScalarFieldContainer[str]
@@ -129,6 +132,7 @@ class Article(_message.Message):
         longname: _Optional[str] = ...,
         source: _Optional[str] = ...,
         article_type: _Optional[str] = ...,
+        statistic_indices_packed: _Optional[bytes] = ...,
         rows: _Optional[_Iterable[_Union[StatisticRow, _Mapping]]] = ...,
         related: _Optional[_Iterable[_Union[RelatedButtons, _Mapping]]] = ...,
         universes: _Optional[_Iterable[str]] = ...,
