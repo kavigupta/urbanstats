@@ -202,6 +202,7 @@ def filter_for_pop(typ):
     )
     # FIXME better framework for indices for more than just international/USA
     # make sure to only include the appropriate columns
+    # TODO don't use index lists for this, it probably isn't necessary?
     idxs = index_list_for_longname(
         "" if is_international(typ) else "USA",
         american_to_international.get(typ, typ),

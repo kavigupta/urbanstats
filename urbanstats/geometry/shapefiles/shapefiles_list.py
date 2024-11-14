@@ -67,7 +67,8 @@ shapefiles_for_stats = dict(
     **population_circles_usa_shapefiles,
 )
 
-# FIXME better framework for indices for more than just international/USA
+# TODO make localize_type_names a thing that's sourced from the shapefiles themselves
+# remove american_to_international
 american_to_international = {
     "USA": "Country",
     "State": "Subnational Region",
