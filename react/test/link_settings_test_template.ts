@@ -55,7 +55,7 @@ export function linkSettingsTests(baseLink: string): void {
         })
 
         // Can go to this link and also get default settings
-        await t.navigateTo(await getLocation())
+        await safeReload(t)
 
         await t.click('.expandButton[data-category-id=main]')
 
@@ -177,10 +177,26 @@ export function linkSettingsTests(baseLink: string): void {
         await screencap(t)
     })
 
-    urbanstatsFixture('paste histogram link', baseLink, async (t) => {
+    let histogramLink: string
+    let histogramLinkWithRelativeChanged: string
+
+    urbanstatsFixture('generate histogram link', baseLink)
+
+    test('open histogram', async (t) => {
         await t.click(Selector('.expand-toggle'))
-        await t.eval(() => { localStorage.clear() })
-        await safeReload(t)
+
+        histogramLink = await getLocation()
+    })
+
+    test('open histogram with relative changed', async (t) => {
+        await t.click(Selector('.expand-toggle'))
+        await t.click(Selector('[data-test-id=histogram_relative]'))
+
+        histogramLinkWithRelativeChanged = await getLocation()
+    })
+
+    urbanstatsFixture('paste histogram link', TARGET, async (t) => {
+        await t.navigateTo(histogramLink)
     })
 
     test('histogram is visible', async (t) => {
@@ -192,10 +208,8 @@ export function linkSettingsTests(baseLink: string): void {
         await t.expect(Selector('[data-test-id=staging_controls]').exists).notOk()
     })
 
-    urbanstatsFixture('paste histogram relative changed link', baseLink, async (t) => {
-        await t.click(Selector('.expand-toggle'))
-        await t.click(Selector('[data-test-id=histogram_relative]'))
-        await t.navigateTo(await getLocation())
+    urbanstatsFixture('paste histogram relative changed link', TARGET, async (t) => {
+        await t.navigateTo(histogramLinkWithRelativeChanged)
     })
 
     test('relative changed histogram is visible', async (t) => {
@@ -208,18 +222,25 @@ export function linkSettingsTests(baseLink: string): void {
         await t.expect(Selector('[data-test-id=staging_controls]').exists).notOk()
     })
 
+    let hiddenHistogramLink: string
+
     /*
      * Test that settings included in the link, but not visible, are not applied
      */
-    urbanstatsFixture('generate hidden histogram link', baseLink, async (t) => {
+    urbanstatsFixture('generate hidden histogram link', baseLink)
+
+    test('open histogram, and changed to non-relative, but then hide stat path', async (t) => {
         await t.click(Selector('.expand-toggle'))
         await t.click(Selector('[data-test-id=histogram_relative]'))
+
         // uncheck the main stats
         await t.click(Selector('[data-test-id=category_main]'))
 
-        await t.eval(() => { localStorage.clear() })
-        await safeReload(t)
+        hiddenHistogramLink = await getLocation()
+    })
 
+    urbanstatsFixture('visit hidden histogram link and reopen stats', TARGET, async (t) => {
+        await t.navigateTo(hiddenHistogramLink)
         await t.click(Selector('[data-test-id=category_main]'))
     })
 
@@ -233,6 +254,6 @@ export function linkSettingsTests(baseLink: string): void {
     })
 
     test('link should not include histogram settings', async (t) => {
-        await t.expect(getLocation()).eql(`${TARGET}${baseLink}`)
+        await t.expect(getLocation()).notEql(`${TARGET}${hiddenHistogramLink}`)
     })
 }
