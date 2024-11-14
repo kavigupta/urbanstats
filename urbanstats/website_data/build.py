@@ -24,7 +24,7 @@ from urbanstats.statistics.output_statistics_metadata import (
     output_statistics_metadata,
 )
 from urbanstats.universe.icons import place_icons_in_site_folder
-from urbanstats.universe.universe_list import all_universes
+from urbanstats.universe.universe_list import all_universes, default_universes
 from urbanstats.website_data.create_article_gzips import (
     create_article_gzips,
     extra_stats,
@@ -72,6 +72,10 @@ def create_react_jsons():
 
     with open("react/src/data/universes_ordered.ts", "w") as f:
         output_typescript(list(all_universes()), f)
+
+    with open("react/src/data/universes_default.ts", "w") as f:
+        output_typescript(default_universes, f)
+
     with open("react/src/data/explanation_industry_occupation_table.ts", "w") as f:
         output_typescript(
             {
