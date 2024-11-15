@@ -33,7 +33,7 @@ class GPWStatistics(InternationalStatistics):
     def dependencies(self):
         return ["area"]
 
-    def compute_statistics_dictionary(
+    def compute_statistics_dictionary_intl(
         self, *, shapefile, existing_statistics, shapefile_table
     ):
         statistics_table = {}

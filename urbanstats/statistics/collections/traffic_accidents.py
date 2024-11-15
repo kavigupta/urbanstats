@@ -40,7 +40,7 @@ class NHTSAAccidentStatistics(USAStatistics):
         # do not include the non-per-capita version in the quiz
         return ["traffic_fatalities_last_decade", "traffic_fatalities_ped_last_decade"]
 
-    def compute_statistics_dictionary(
+    def compute_statistics_dictionary_usa(
         self, *, shapefile, existing_statistics, shapefile_table
     ):
         acc_raw_all = accidents_by_region(shapefile)

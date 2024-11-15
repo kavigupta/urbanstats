@@ -89,7 +89,7 @@ class CensusForPreviousYear(USAStatistics):
     def dependencies(self):
         return ["area"]
 
-    def compute_statistics_dictionary(
+    def compute_statistics_dictionary_usa(
         self, *, shapefile, existing_statistics, shapefile_table
     ):
         statistics_table = {}
@@ -190,7 +190,7 @@ class CensusChange(USAStatistics):
             for ky in [k, f"{k}_{self.year()}"]
         ]
 
-    def compute_statistics_dictionary(
+    def compute_statistics_dictionary_usa(
         self, *, shapefile, existing_statistics, shapefile_table
     ):
         year = self.year()

@@ -107,6 +107,23 @@ class InternationalStatistics(StatisticCollection):
     def quiz_question_types(self):
         return QUIZ_REGION_TYPES_INTERNATIONAL
 
+    def compute_statistics_dictionary(
+        self, *, shapefile, existing_statistics, shapefile_table
+    ):
+        if shapefile.include_in_gpw:
+            return self.compute_statistics_dictionary_intl(
+                shapefile=shapefile,
+                existing_statistics=existing_statistics,
+                shapefile_table=shapefile_table,
+            )
+        return {}
+
+    @abstractmethod
+    def compute_statistics_dictionary_intl(
+        self, shapefile, existing_statistics, shapefile_table
+    ):
+        pass
+
 
 class USAStatistics(StatisticCollection):
     def for_america(self):
@@ -117,6 +134,23 @@ class USAStatistics(StatisticCollection):
 
     def quiz_question_types(self):
         return QUIZ_REGION_TYPES_USA
+
+    def compute_statistics_dictionary(
+        self, *, shapefile, existing_statistics, shapefile_table
+    ):
+        if shapefile.american:
+            return self.compute_statistics_dictionary_usa(
+                shapefile=shapefile,
+                existing_statistics=existing_statistics,
+                shapefile_table=shapefile_table,
+            )
+        return {}
+
+    @abstractmethod
+    def compute_statistics_dictionary_usa(
+        self, shapefile, existing_statistics, shapefile_table
+    ):
+        pass
 
 
 class ACSStatisticsColection(USAStatistics):
@@ -134,7 +168,7 @@ class ACSStatisticsColection(USAStatistics):
     def acs_entity_dict(self):
         return {self.acs_name(): self.acs_entity()}
 
-    def compute_statistics_dictionary(
+    def compute_statistics_dictionary_usa(
         self, *, shapefile, existing_statistics, shapefile_table
     ):
         result = {}
@@ -166,7 +200,7 @@ class ACSUSPRStatisticsColection(USAStatistics):
     def acs_entity_dict(self):
         return {self.acs_name(): self.acs_entities()}
 
-    def compute_statistics_dictionary(
+    def compute_statistics_dictionary_usa(
         self, *, shapefile, existing_statistics, shapefile_table
     ):
         result = {}
