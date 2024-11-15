@@ -14,11 +14,11 @@ import pytz
 import tqdm.auto as tqdm
 from permacache import permacache, stable_hash
 
+from urbanstats.games.quiz_columns import stats, stats_to_display, stats_to_types
 from urbanstats.games.quiz_region_types import (
     QUIZ_REGION_TYPES_ALL,
     QUIZ_REGION_TYPES_INTERNATIONAL,
 )
-from urbanstats.games.quiz_columns import stats, stats_to_display, stats_to_types
 from urbanstats.geometry.shapefiles.shapefiles_list import filter_table_for_type
 from urbanstats.shortener import shorten
 from urbanstats.statistics.collections_list import statistic_collections
