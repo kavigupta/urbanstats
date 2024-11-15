@@ -120,7 +120,7 @@ class InternationalStatistics(StatisticCollection):
 
     @abstractmethod
     def compute_statistics_dictionary_intl(
-        self, shapefile, existing_statistics, shapefile_table
+        self, *, shapefile, existing_statistics, shapefile_table
     ):
         pass
 
@@ -148,7 +148,7 @@ class USAStatistics(StatisticCollection):
 
     @abstractmethod
     def compute_statistics_dictionary_usa(
-        self, shapefile, existing_statistics, shapefile_table
+        self, *, shapefile, existing_statistics, shapefile_table
     ):
         pass
 
