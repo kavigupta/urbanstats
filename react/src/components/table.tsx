@@ -402,9 +402,8 @@ export function Statistic(props: { style?: React.CSSProperties, statname: string
                 return <span>{(100_000 * value).toFixed(2)}</span>
             }
             else if (name.includes('Density')) {
-                const is_imperial = use_imperial
                 let unit_name = 'km'
-                if (is_imperial) {
+                if (use_imperial) {
                     unit_name = 'mi'
                     value *= 1.60934 * 1.60934
                 }
@@ -453,9 +452,8 @@ export function Statistic(props: { style?: React.CSSProperties, statname: string
                 }
             }
             else if (name === 'Area') {
-                const is_imperial = use_imperial
                 let unit: string | React.ReactElement = 'null'
-                if (is_imperial) {
+                if (use_imperial) {
                     value /= 1.60934 * 1.60934
                     if (value < 1) {
                         unit = <span>acres</span>
@@ -508,9 +506,8 @@ export function Statistic(props: { style?: React.CSSProperties, statname: string
                 }
             }
             else if (name.includes('Mean distance')) {
-                const is_imperial = use_imperial
                 let unit = <span>km</span>
-                if (is_imperial) {
+                if (use_imperial) {
                     unit = <span>mi</span>
                     value /= 1.60934
                 }
@@ -528,8 +525,13 @@ export function Statistic(props: { style?: React.CSSProperties, statname: string
                 return <ElectionResult value={value} />
             }
             else if (name.includes('high temp') || name.includes('high heat index') || name.includes('dewpt')) {
+                let unit = <span>&deg;F</span>
+                if (!use_imperial) {
+                    unit = <span>&deg;C</span>
+                    value = (value - 32) * (5 / 9)
+                }
                 if (is_unit) {
-                    return <span>&deg;F</span>
+                    return unit
                 }
                 return <span>{value.toFixed(1)}</span>
             }
@@ -549,10 +551,9 @@ export function Statistic(props: { style?: React.CSSProperties, statname: string
                 )
             }
             else if (name === 'Rainfall' || name === 'Snowfall [rain-equivalent]') {
-                const is_imperial = use_imperial
                 value *= 100
                 let unit = 'cm'
-                if (is_imperial) {
+                if (use_imperial) {
                     unit = 'in'
                     value /= 2.54
                 }
