@@ -28,7 +28,7 @@ class USElectionStatistics(USAStatistics):
             ): "!FULL Which swung towards Democrats more from 2016 to 2020?",
         }
 
-    def compute_statistics_dictionary(
+    def compute_statistics_dictionary_usa(
         self, *, shapefile, existing_statistics, shapefile_table
     ):
         table = aggregated_election_results(shapefile)
