@@ -3,6 +3,11 @@ from abc import ABC, abstractmethod
 import pandas as pd
 
 from urbanstats.acs.load import aggregated_acs_data, aggregated_acs_data_us_pr
+from urbanstats.games.quiz_region_types import (
+    QUIZ_REGION_TYPES_ALL,
+    QUIZ_REGION_TYPES_INTERNATIONAL,
+    QUIZ_REGION_TYPES_USA,
+)
 
 ORDER_CATEGORY_MAIN = 0
 ORDER_CATEGORY_OTHER_DENSITIES = 1
@@ -37,6 +42,10 @@ class StatisticCollection(ABC):
 
     @abstractmethod
     def quiz_question_names(self):
+        pass
+
+    @abstractmethod
+    def quiz_question_types(self):
         pass
 
     def quiz_question_unused(self):
@@ -84,6 +93,9 @@ class GeographicStatistics(StatisticCollection):
     def for_international(self):
         return True
 
+    def quiz_question_types(self):
+        return QUIZ_REGION_TYPES_ALL
+
 
 class InternationalStatistics(StatisticCollection):
     def for_america(self):
@@ -91,6 +103,9 @@ class InternationalStatistics(StatisticCollection):
 
     def for_international(self):
         return True
+
+    def quiz_question_types(self):
+        return QUIZ_REGION_TYPES_INTERNATIONAL
 
 
 class USAStatistics(StatisticCollection):
@@ -100,8 +115,11 @@ class USAStatistics(StatisticCollection):
     def for_international(self):
         return False
 
+    def quiz_question_types(self):
+        return QUIZ_REGION_TYPES_USA
 
-class ACSStatisticsColection(StatisticCollection):
+
+class ACSStatisticsColection(USAStatistics):
     def year(self):
         return 2020
 
@@ -115,12 +133,6 @@ class ACSStatisticsColection(StatisticCollection):
 
     def acs_entity_dict(self):
         return {self.acs_name(): self.acs_entity()}
-
-    def for_america(self):
-        return True
-
-    def for_international(self):
-        return False
 
     def compute_statistics_dictionary(
         self, *, shapefile, existing_statistics, shapefile_table
@@ -139,7 +151,7 @@ class ACSStatisticsColection(StatisticCollection):
         pass
 
 
-class ACSUSPRStatisticsColection(StatisticCollection):
+class ACSUSPRStatisticsColection(USAStatistics):
     def year(self):
         return 2020
 
@@ -153,12 +165,6 @@ class ACSUSPRStatisticsColection(StatisticCollection):
 
     def acs_entity_dict(self):
         return {self.acs_name(): self.acs_entities()}
-
-    def for_america(self):
-        return True
-
-    def for_international(self):
-        return False
 
     def compute_statistics_dictionary(
         self, *, shapefile, existing_statistics, shapefile_table
