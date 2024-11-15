@@ -241,10 +241,19 @@ export function ColorThemeSetting(): ReactNode {
 
 export function TemperatureSetting(): ReactNode {
     const [temperatureUnit, setTemperatureUnit] = useSetting('temperature_unit')
+    const info = useSettingInfo('temperature_unit')
     const colors = useColors()
 
+    const highlight = 'stagedValue' in info && info.stagedValue !== info.persistedValue
+
+    const divStyle: CSSProperties = {
+        backgroundColor: highlight ? colors.slightlyDifferentBackgroundFocused : undefined,
+        borderRadius: '5px',
+        padding: '0px 5px',
+    }
+
     return (
-        <div>
+        <div style={divStyle}>
             <label style={{ verticalAlign: 'middle' }}>{'Temperatures '}</label>
             <select
                 className="serif"
