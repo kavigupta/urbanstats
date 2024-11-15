@@ -77,14 +77,13 @@ const HistogramTypeSettingCoder: SettingCoder<HistogramType> = {
         }
     },
     decode(bits) {
-        const encoded = [bits.shift(), bits.shift()].filter(bit => bit !== undefined)
-        switch (encoded.length) {
+        switch (bits.length) {
             case 0:
                 return underflow
             case 1:
                 throw new Error('Something bad has happened with settings decoding')
-            case 2:
-                switch ((bits[0] ? (1 << 1) : 0) | (bits[1] ? (1 << 0) : 0)) {
+            default:
+                switch ((bits.shift()! ? (1 << 1) : 0) | (bits.shift()! ? (1 << 0) : 0)) {
                     case 0:
                         return 'Line'
                     case 1:
@@ -94,8 +93,6 @@ const HistogramTypeSettingCoder: SettingCoder<HistogramType> = {
                     default:
                         return 'Line' // For backwards/forwards compatibility
                 }
-            default:
-                throw new Error('This should never happen')
         }
     },
 }
