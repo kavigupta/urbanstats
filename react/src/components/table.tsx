@@ -378,6 +378,7 @@ export function TableRowContainer({ children, index }: { children: React.ReactNo
 
 export function Statistic(props: { style?: React.CSSProperties, statname: string, value: number, is_unit: boolean }): ReactNode {
     const [use_imperial] = useSetting('use_imperial')
+    const [temperatureUnit] = useSetting('temperature_unit')
     const content = (() => {
         {
             const name = props.statname
@@ -526,7 +527,7 @@ export function Statistic(props: { style?: React.CSSProperties, statname: string
             }
             else if (name.includes('high temp') || name.includes('high heat index') || name.includes('dewpt')) {
                 let unit = <span>&deg;F</span>
-                if (!use_imperial) {
+                if (temperatureUnit === 'celsius') {
                     unit = <span>&deg;C</span>
                     value = (value - 32) * (5 / 9)
                 }

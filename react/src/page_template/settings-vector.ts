@@ -4,7 +4,7 @@
 
 import * as base58 from 'base58-js'
 
-import { defaultSettingsList, RelationshipKey, Settings, SettingsDictionary, StatCategoryExpandedKey, StatCategorySavedIndeterminateKey, useSettings } from './settings'
+import { defaultSettingsList, RelationshipKey, Settings, SettingsDictionary, StatCategoryExpandedKey, StatCategorySavedIndeterminateKey, TemperatureUnit, useSettings } from './settings'
 
 const underflow = Symbol()
 
@@ -62,6 +62,27 @@ const BooleanSettingCoder: SettingCoder<boolean> = {
             return underflow
         }
         return result
+    },
+}
+
+const TemperatureUnitCoder: SettingCoder<TemperatureUnit> = {
+    encode(value = 'fahrenheit') {
+        switch (value) {
+            case 'fahrenheit':
+                return [false]
+            case 'celsius':
+                return [true]
+        }
+    },
+    decode(bits) {
+        switch (bits.shift()) {
+            case false:
+                return 'fahrenheit'
+            case true:
+                return 'celsius'
+            case undefined:
+                return underflow
+        }
     },
 }
 
@@ -309,6 +330,7 @@ const settingsVector = [
     new ActiveSetting({ key: 'expanded__gpw_pw_density_2', coder: BooleanSettingCoder }),
     new ActiveSetting({ key: 'expanded__gpw_pw_density_4', coder: BooleanSettingCoder }),
     new ActiveSetting({ key: 'histogram_relative', coder: BooleanSettingCoder }),
+    new ActiveSetting({ key: 'temperature_unit', coder: TemperatureUnitCoder }),
 ] satisfies (ActiveSetting<keyof SettingsDictionary> | DeprecatedSetting<string>)[]
 
 type NotIncludedInSettingsVector = (

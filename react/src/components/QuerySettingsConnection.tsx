@@ -22,7 +22,7 @@ import { findAmbiguousSourcesAll, StatPath } from '../page_template/statistic-tr
  *
  * An alternate approach would have been to "omit" these inapplicable settings. But this would require another "settings mask" component in the link.
  */
-export function QuerySettingsConnection({ stagedSettingsKeys, applySettingsKeys }: { stagedSettingsKeys: VectorSettingKey[], applySettingsKeys: (visibleStatPaths: StatPath[]) => VectorSettingKey[] }): null {
+export function QuerySettingsConnection({ stagedSettingsKeys, applySettingsKeys }: { stagedSettingsKeys: readonly VectorSettingKey[], applySettingsKeys: (visibleStatPaths: StatPath[]) => readonly VectorSettingKey[] }): null {
     const settings = useContext(Settings.Context)
     const availableStatPaths = useStatPathsAll()
 
@@ -87,7 +87,7 @@ export function QuerySettingsConnection({ stagedSettingsKeys, applySettingsKeys 
 export const statPathsWithHistogram = extra_stats.filter(([,{ type }]) => type === 'histogram').map(([index]) => stat_path_list[index])
 
 export function ArticleComparisonQuerySettingsConnection(): ReactNode {
-    const stagedSettingsKeys: VectorSettingKey[] = [
+    const stagedSettingsKeys = [
         'use_imperial',
         'show_historical_cds',
         'simple_ordinals',
@@ -99,14 +99,24 @@ export function ArticleComparisonQuerySettingsConnection(): ReactNode {
                     ? []
                     : [source_enabled_key({ category, name })]),
             ),
-    ]
+        'temperature_unit',
+    ] as const
 
-    const applySettingsKeys = (visibleStatPaths: StatPath[]): VectorSettingKey[] => {
-        return [
+    const applySettingsKeys = (visibleStatPaths: StatPath[]): typeof result => {
+        const result = [
             ...statPathsWithExtra.filter(path => visibleStatPaths.includes(path)).map(path => `expanded__${path}` as const),
             ...(statPathsWithHistogram.some(path => visibleStatPaths.includes(path)) ? ['histogram_relative'] as const : []),
-        ]
+        ] as const
+        return result
     }
+
+    /* eslint-disable @typescript-eslint/no-unused-vars, @typescript-eslint/no-redundant-type-constituents -- Type Checking Section */
+    let included: typeof stagedSettingsKeys[number] | ReturnType<typeof applySettingsKeys>[number]
+    let notIncluded: never
+
+    const failsIfMissing: (typeof included | typeof notIncluded)[] = [] as VectorSettingKey[]
+    const failsIfOverlap: never[] = [] as (typeof included & typeof notIncluded)[]
+    /* eslint-enable @typescript-eslint/no-unused-vars, @typescript-eslint/no-redundant-type-constituents */
 
     return <QuerySettingsConnection stagedSettingsKeys={stagedSettingsKeys} applySettingsKeys={applySettingsKeys} />
 }
