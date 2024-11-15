@@ -166,12 +166,6 @@ class ACSUSPRStatisticsColection(USAStatistics):
     def acs_entity_dict(self):
         return {self.acs_name(): self.acs_entities()}
 
-    def for_america(self):
-        return True
-
-    def for_international(self):
-        return False
-
     def compute_statistics_dictionary(
         self, *, shapefile, existing_statistics, shapefile_table
     ):
