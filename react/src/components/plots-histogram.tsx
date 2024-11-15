@@ -110,6 +110,7 @@ function HistogramSettings(props: {
                 style={{ backgroundColor: colors.background, color: colors.textMain }}
                 onChange={(e) => { setHistogramType(e.target.value as HistogramType) }}
                 className="serif"
+                data-test-id="histogram_type"
             >
                 <option value="Line">Line</option>
                 <option value="Line (cumulative)">Line (cumulative)</option>
