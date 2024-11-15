@@ -14,29 +14,27 @@ import pytz
 import tqdm.auto as tqdm
 from permacache import permacache, stable_hash
 
-from urbanstats.games.quiz_columns import stats_to_display, types
-from urbanstats.geometry.shapefiles.shapefiles_list import (
-    american_to_international,
-    filter_table_for_type,
+from urbanstats.games.quiz_region_types import (
+    QUIZ_REGION_TYPES_ALL,
+    QUIZ_REGION_TYPES_INTERNATIONAL,
 )
+from urbanstats.games.quiz_columns import stats, stats_to_display, stats_to_types
+from urbanstats.geometry.shapefiles.shapefiles_list import filter_table_for_type
 from urbanstats.shortener import shorten
 from urbanstats.statistics.collections_list import statistic_collections
 from urbanstats.statistics.output_statistics_metadata import (
     get_statistic_categories,
-    internal_statistic_names,
     statistic_internal_to_display_name,
 )
 from urbanstats.universe.universe_list import universe_by_universe_type
-from urbanstats.website_data.statistic_index_lists import index_list_for_longname
 from urbanstats.website_data.table import shapefile_without_ordinals
 
 from .fixed import juxtastat as fixed_up_to
-from .quiz_columns import stats, stats_to_display, types
 from .quiz_custom import get_custom_quizzes
 
 min_pop = 250_000
 min_pop_international = 2_500_000
-version_numeric = 72
+version_numeric = 76
 
 version = str(version_numeric) + stable_hash(statistic_collections)
 
@@ -124,7 +122,7 @@ def sample_quiz(rng):
 
 
 def difficulty_multiplier(stat_column_original, typ):
-    if is_international(typ):
+    if typ in QUIZ_REGION_TYPES_INTERNATIONAL:
         return 4
     return difficulties[get_statistic_categories()[stat_column_original]]
 
@@ -149,15 +147,11 @@ def same_state(a, b):
     return bool(shared_states)
 
 
-def is_international(typ):
-    return typ in {"Country", "Subnational Region", "Urban Center"}
-
-
 def sample_quiz_question(
     rng, banned_categories, banned_type_categories, distance_pct_bot, distance_pct_top
 ):
     while True:
-        typ = rng.choice(types)
+        typ = rng.choice(QUIZ_REGION_TYPES_ALL)
         if type_ban_categorize(typ) in banned_type_categories:
             continue
         at_pop, universes = filter_for_pop(typ)
@@ -200,22 +194,15 @@ def filter_for_pop(typ):
     at_pop = filt[filt.best_population_estimate >= minimum_population(typ)].set_index(
         "longname"
     )
-    # make sure to only include the appropriate columns
-    idxs = index_list_for_longname(
-        "" if is_international(typ) else "USA",
-        american_to_international.get(typ, typ),
-        strict_display=True,
-    )
-    stats_filter = {internal_statistic_names()[i] for i in idxs}
     universes = at_pop["universes"]
-    at_pop = pd.DataFrame({s: at_pop[s] for s in stats if s in stats_filter})
+    at_pop = pd.DataFrame({s: at_pop[s] for s in stats if typ in stats_to_types[s]})
     mask = ~at_pop.applymap(np.isnan).all()
     assert mask.all()
     return at_pop, universes
 
 
 def minimum_population(typ):
-    if is_international(typ):
+    if typ in QUIZ_REGION_TYPES_INTERNATIONAL:
         return min_pop_international
     return min_pop
 
@@ -328,7 +315,7 @@ def discordify(quiz):
 
 
 def type_ban_categorize(typ):
-    if is_international(typ):
+    if typ in QUIZ_REGION_TYPES_INTERNATIONAL:
         return "international"
     return typ
 
