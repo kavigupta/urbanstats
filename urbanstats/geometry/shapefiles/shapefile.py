@@ -1,8 +1,16 @@
+from dataclasses import dataclass
 import pickle
+from typing import Callable
 
 import attr
 import geopandas as gpd
 import pandas as pd
+
+
+@dataclass
+class SubsetSpecification:
+    name_in_subset: str
+    subset_filter: Callable[[gpd.GeoSeries], bool]
 
 
 @attr.s
@@ -20,6 +28,7 @@ class Shapefile:
     include_in_gpw = attr.ib(default=False)
     tolerate_no_state = attr.ib(default=False)
     universe_provider = attr.ib(kw_only=True)
+    subset_masks = attr.ib(default=attr.Factory(dict))
 
     def load_file(self):
         """
@@ -48,12 +57,20 @@ class Shapefile:
         s = s[s.apply(self.filter, axis=1)]
         if s.shape[0] == 0:
             raise EmptyShapefileError
+        for subset_name, subset in self.subset_masks.items():
+            s[self.subset_mask_key(subset_name)] = s.apply(subset.subset_filter, axis=1)
         s = gpd.GeoDataFrame(
-            dict(
-                shortname=s.apply(self.shortname_extractor, axis=1),
-                longname=s.apply(self.longname_extractor, axis=1),
-                **{col: s[col] for col in self.additional_columns_to_keep},
-            ),
+            {
+                "shortname": s.apply(self.shortname_extractor, axis=1),
+                "longname": s.apply(self.longname_extractor, axis=1),
+                **{
+                    col: s[col]
+                    for col in [
+                        *self.additional_columns_to_keep,
+                        *self.subset_mask_keys,
+                    ]
+                },
+            },
             geometry=s.geometry,
         )
         if self.drop_dup:
@@ -74,6 +91,21 @@ class Shapefile:
             s.crs = "EPSG:4326"
         s = s.to_crs("EPSG:4326")
         return s
+
+    def subset_shapefile(self, subset_name):
+        new_filter = lambda x: self.filter(x) and self.subset_masks[
+            subset_name
+        ].subset_filter(x)
+        return attr.evolve(
+            self, filter=new_filter, hash_key=f"{self.hash_key}_{subset_name}"
+        )
+
+    @property
+    def subset_mask_keys(self):
+        return [self.subset_mask_key(k) for k in self.subset_masks]
+
+    def subset_mask_key(self, subset_name):
+        return f"subset_mask_{subset_name}"
 
 
 class EmptyShapefileError(Exception):

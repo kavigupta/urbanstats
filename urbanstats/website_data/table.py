@@ -18,7 +18,7 @@ from urbanstats.universe.universe_provider.compute_universes import (
 
 
 @permacache(
-    "population_density/stats_for_shapefile/compute_statistics_for_shapefile_29",
+    "population_density/stats_for_shapefile/compute_statistics_for_shapefile_30",
     key_function=dict(
         sf=lambda x: x.hash_key,
         shapefiles=lambda x: {k: v.hash_key for k, v in x.items()},
@@ -31,7 +31,7 @@ def compute_statistics_for_shapefile(
 ):
     print("Computing statistics for", sf.hash_key)
     sf_fr = sf.load_file()
-    result = sf_fr[["shortname", "longname"]].copy()
+    result = sf_fr[["shortname", "longname"] + sf.subset_mask_keys].copy()
 
     longname_to_universes = compute_universes_for_shapefile(shapefiles, sf)
     result["universes"] = [
