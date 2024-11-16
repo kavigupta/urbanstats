@@ -25,8 +25,6 @@ runs:
       shell: bash
 
     - name: Install requirements
-      run: |
-        pip3 install -r requirements.txt
-        pip3 cache purge
+      run: pip3 install -r requirements.txt
       shell: bash
       if: steps.cache-venv.outputs.cache-hit != 'true'
