@@ -144,10 +144,8 @@ tiers = [
         "Country",
         "200M Person Circle",
         "100M Person Circle",
-        "US 100M Person Circle",
     ],
     [
-        "State",
         "Subnational Region",
         "Native Area",
         "Native Statistical Area",
@@ -156,7 +154,6 @@ tiers = [
         "USDA County Type",
         "Hospital Referral Region",
         "50M Person Circle",
-        "US 50M Person Circle",
     ],
     [
         "CSA",
@@ -174,11 +171,8 @@ tiers = [
         "Urban Center",
         "Urban Center",
         "20M Person Circle",
-        "US 20M Person Circle",
         "10M Person Circle",
-        "US 10M Person Circle",
         "5M Person Circle",
-        "US 5M Person Circle",
     ],
     ["CCD", "City", "School District"],
     ["Neighborhood", "ZIP"],
@@ -204,7 +198,7 @@ type_category_order = {
 key_to_type = {x: sf.meta["type"] for x, sf in shapefiles_for_stats.items()}
 
 map_relationships = [
-    ("states", "counties"),
+    ("subnational_regions", "counties"),
     ("native_areas", "native_subdivisions"),
     ("native_statistical_areas", "native_subdivisions"),
     ("csas", "msas"),

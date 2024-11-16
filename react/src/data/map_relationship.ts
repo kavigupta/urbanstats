@@ -1,6 +1,6 @@
 export default [
     [
-        'State',
+        'Subnational Region',
         'County',
     ],
     [
@@ -186,37 +186,5 @@ export default [
     [
         '1B Person Circle',
         '1B Person Circle',
-    ],
-    [
-        'Country',
-        'Country',
-    ],
-    [
-        'State',
-        'State',
-    ],
-    [
-        'Urban Center',
-        'Urban Center',
-    ],
-    [
-        'US 5M Person Circle',
-        'US 5M Person Circle',
-    ],
-    [
-        'US 10M Person Circle',
-        'US 10M Person Circle',
-    ],
-    [
-        'US 20M Person Circle',
-        'US 20M Person Circle',
-    ],
-    [
-        'US 50M Person Circle',
-        'US 50M Person Circle',
-    ],
-    [
-        'US 100M Person Circle',
-        'US 100M Person Circle',
     ],
 ] as const
