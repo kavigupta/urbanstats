@@ -29,7 +29,7 @@ jobs:
 
       - name: Create the tag by hashing react/test/Dockerfile
         id: tag
-        run: echo "tag=$(shasum -a 256 react/test/Dockerfile requirements.txt | shasum -a 256 | cut -d ' ' -f 1)" >> $GITHUB_OUTPUT
+        run: echo "tag=$(shasum -a 256 react/test/Dockerfile | cut -d ' ' -f 1)" >> $GITHUB_OUTPUT
 
       - name: concat the Docker image name
         id: image
@@ -67,6 +67,7 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+      - uses: ./.github/actions/python_environment
       - name: Lint with pylint
         run: python -m pylint --prefer-stubs=true urbanstats
       - name: Check black
@@ -88,6 +89,7 @@ jobs:
       image: ${{ needs.build-and-push-image.outputs.image }}
     steps:
       - uses: actions/checkout@v4
+      - uses: ./.github/actions/python_environment
       - uses: ./.github/actions/node_modules
       - run: python3 create_website.py react/test/density-db --no-data --no-geo --no-juxta
       - uses: actions/upload-artifact@v4
@@ -116,11 +118,12 @@ jobs:
         test-file: ${{ fromJson(needs.list-e2e-tests.outputs.matrix) }}
     steps:
       - uses: actions/checkout@v4
+      - uses: ./.github/actions/python_environment
+      - uses: ./.github/actions/node_modules
       - uses: actions/download-artifact@v4
         with:
           name: frontend-build
           path: react/test/density-db
-      - uses: ./.github/actions/node_modules
       - name: Run tests
         run: |
           npm run test:e2e -- \

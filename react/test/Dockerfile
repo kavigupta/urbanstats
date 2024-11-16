@@ -22,7 +22,7 @@ RUN apt-get -y install fluxbox
 RUN apt-get -y install xdg-user-dirs
 
 COPY ./requirements.txt ./
-RUN pip3 install --upgrade pip
-RUN pip3 install --break-system-packages -r requirements.txt && pip3 cache purge
+RUN pip3 install --upgrade pip virtualenv
+RUN pip3 cache purge
 
 ENTRYPOINT [ "/bin/bash" ] 
