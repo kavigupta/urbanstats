@@ -285,5 +285,4 @@ export default [
     'Northern Mariana Islands, USA',
     'Puerto Rico, USA',
     'US Virgin Islands, USA',
-    'District of Columbia, USA',
 ] as const
