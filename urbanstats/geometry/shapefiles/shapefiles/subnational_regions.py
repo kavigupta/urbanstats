@@ -10,7 +10,7 @@ from urbanstats.universe.universe_provider.constants import (
 from urbanstats.universe.universe_provider.contained_within import STATE_PROVIDER
 
 SUBNATIONAL_REGIONS = Shapefile(
-    hash_key="subnational_regions_10",
+    hash_key="subnational_regions_11",
     path=subnational_regions,
     shortname_extractor=lambda x: x["NAME"],
     longname_extractor=lambda x: x["fullname"],

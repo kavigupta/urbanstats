@@ -7,8 +7,6 @@ from permacache import permacache
 from urbanstats.special_cases.country import subnational_regions
 from urbanstats.special_cases.country_names import iso_to_country
 
-version = 9
-
 
 def classify_areas_by_subnational_region(snr, areas):
     joined = gpd.overlay(snr, areas[["index_", "geometry"]], keep_geom_type=False)
@@ -23,9 +21,7 @@ def classify_areas_by_subnational_region(snr, areas):
     return subnationals
 
 
-@permacache(
-    f"urbanstats/special_cases/ghsl_urban_center/load_ghsl_urban_center_{version}"
-)
+@permacache(f"urbanstats/special_cases/ghsl_urban_center/load_ghsl_urban_center_10")
 def load_ghsl_urban_center():
     areas = load_ghsl_urban_center_no_names()
     areas["shortname"] = (
@@ -38,7 +34,7 @@ def load_ghsl_urban_center():
 
 
 @permacache(
-    "urbanstats/special_cases/ghsl_urban_center/load_ghsl_urban_center_no_names_3"
+    "urbanstats/special_cases/ghsl_urban_center/load_ghsl_urban_center_no_names_4"
 )
 def load_ghsl_urban_center_no_names():
     areas = gpd.read_file(
