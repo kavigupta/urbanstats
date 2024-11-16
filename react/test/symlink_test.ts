@@ -46,3 +46,18 @@ symlink_test(
 )
 
 symlink_test('usa-comparison', '/comparison.html?longnames=%5B%22United+States+of+America%22%2C%22Canada%22%5D', '/comparison.html?longnames=%5B%22USA%22%2C%22Canada%22%5D')
+
+symlink_test('fixed-subnationals-1',
+    '/article.html?longname=Ciudad+Ojeda+5MPC%2C+Venezuela-USA-France',
+    '/article.html?longname=Ciudad+Ojeda+5MPC%2C+Venezuela-France-USA',
+)
+
+symlink_test('fixed-subnationals-2',
+    '/article.html?longname=Acapulco+20MPC%2C+Canada-USA-Mexico',
+    '/article.html?longname=Acapulco+20MPC%2C+Canada-Mexico-USA',
+)
+
+symlink_test('fixed-subnationals-3',
+    '/article.html?longname=Virginia+Beach+20MPC%2C+USA',
+    '/article.html?longname=Virginia+Beach+20MPC%2C+USA-Canada',
+)
