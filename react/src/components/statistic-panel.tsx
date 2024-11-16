@@ -341,13 +341,8 @@ function SelectPage(props: {
     next_page: number
 }): ReactNode {
     // low-key style for the buttons
-    const colors = useColors()
     const button_style = {
-        backgroundColor: colors.slightlyDifferentBackground,
-        border: `1px solid ${colors.textMain}`,
-        padding: '0 0.5em',
         margin: '0.5em',
-        color: colors.textMain,
     }
 
     const handleSubmit = (e: React.FocusEvent | React.KeyboardEvent): void => {
@@ -364,13 +359,15 @@ function SelectPage(props: {
 
     return (
         <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-            <button onClick={() => { props.change_start(props.prev_page) }} className="serif" style={button_style}>&lt;</button>
+            <button onClick={() => { props.change_start(props.prev_page) }} className="serif" style={button_style}>
+                {'◀\ufe0e'}
+            </button>
             <div>
                 <span>Page: </span>
                 <input
-                    type="string"
+                    type="text"
                     pattern="[0-9]*"
-                    style={{ width: '3em', textAlign: 'right', backgroundColor: colors.background, color: colors.textMain }}
+                    style={{ width: '3em', textAlign: 'right' }}
                     className="serif"
                     defaultValue={props.current_page}
                     onKeyDown={(e) => {
@@ -386,7 +383,9 @@ function SelectPage(props: {
                     {props.max_pages}
                 </span>
             </div>
-            <button onClick={() => { props.change_start(props.next_page) }} className="serif" style={button_style}>&gt;</button>
+            <button onClick={() => { props.change_start(props.next_page) }} className="serif" style={button_style}>
+                {'▶\ufe0e'}
+            </button>
         </div>
     )
 }
@@ -440,7 +439,7 @@ function AscendingVsDescending({ on_click, is_ascending }: { on_click: (curr_uni
     return (
         <div style={{ display: 'flex', alignItems: 'center' }}>
             <div style={{ cursor: 'pointer' }} onClick={() => { on_click(curr_universe) }} id="statistic-panel-order-swap">
-                {is_ascending ? '▲' : '▼'}
+                {is_ascending ? '▲\ufe0e' : '▼\ufe0e'}
             </div>
         </div>
     )
