@@ -260,6 +260,7 @@ export function TemperatureSetting(): ReactNode {
                 style={{ backgroundColor: colors.background, color: colors.textMain, verticalAlign: 'middle', minWidth: '50px' }}
                 value={temperatureUnit}
                 onChange={(e: React.ChangeEvent<HTMLSelectElement>) => { setTemperatureUnit(e.target.value as TemperatureUnit) }}
+                data-test-id="temperature_select"
             >
                 <option value="fahrenheit">&deg;F</option>
                 <option value="celsius">&deg;C</option>
