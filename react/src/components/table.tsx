@@ -804,17 +804,9 @@ function PointerButtonIndex(props: {
     const pos = props.original_pos - 1 + +props.direction
     const disabled = out_of_bounds(pos) || props.original_pos > props.total
 
-    const spanStyle: React.CSSProperties = {
-        transform: `scale(${props.direction * -1}, 1)`,
-        display: 'inline-block',
-        visibility: disabled ? 'hidden' : 'visible',
-    }
-
     return (
         <button disabled={disabled} style={buttonStyle} onClick={() => onClick(pos)}>
-            <span style={spanStyle}>
-                {'◁\ufe0e'}
-            </span>
+            <PointerArrow direction={props.direction} disabled={disabled} />
         </button>
     )
 }
@@ -825,6 +817,20 @@ function right_align(value: React.ReactNode): ReactNode {
             style={{ float: 'right', marginRight: '5px' }}
         >
             {value}
+        </span>
+    )
+}
+
+export function PointerArrow({ direction, disabled }: { direction: -1 | 1, disabled: boolean }): ReactNode {
+    const spanStyle: React.CSSProperties = {
+        transform: `scale(${direction * -1}, 1)`, // Because the right unicode arrow is weird
+        display: 'inline-block',
+        visibility: disabled ? 'hidden' : 'visible',
+    }
+
+    return (
+        <span style={spanStyle}>
+            {'◁\ufe0e'}
         </span>
     )
 }
