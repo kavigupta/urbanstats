@@ -28,6 +28,8 @@ export async function startProxy(): Promise<void> {
         }
     })
 
+    console.log("USING BRANCH", branch)
+
     const app = express()
 
     app.use(express.static('test/density-db'), proxy('https://raw.githubusercontent.com', {
