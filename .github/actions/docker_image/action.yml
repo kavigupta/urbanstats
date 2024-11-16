@@ -5,13 +5,14 @@ inputs:
     description: "Path to the Dockerfile"
     required: true
 outputs:
-  image: ${{ steps.image.outputs.image }}
+  image:
+    description: "The fully qualified image generated"
+    value: ${{ steps.image.outputs.image }}
 runs:
   using: "composite"
   env:
     DOCKER_REGISTRY: ghcr.io
     DOCKER_REPOSITORY: ${{ github.repository }}/dockerfile-hash
-    BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
   steps:
     - name: Create the tag by hashing the dockerfile
       id: tag
