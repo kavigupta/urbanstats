@@ -12,6 +12,10 @@ inputs:
     description: "The docker registry"
     required: false
     default: ghcr.io
+  token:
+    description: "The Github token to access ghcr"
+    required: false
+    default: ${{ secrets.GITHUB_TOKEN }}
 outputs:
   image:
     description: "The fully qualified image generated"
@@ -32,7 +36,7 @@ runs:
     - name: Check for existing image
       id: existing-image
       run: |
-        GHCR_TOKEN=$(echo -n ${{ secrets.GITHUB_TOKEN }} | base64)
+        GHCR_TOKEN=$(echo -n ${{ inputs.token }} | base64)
         echo "response=$(curl -s -o /dev/null -w "%{http_code}" -H "Authorization: Bearer ${GHCR_TOKEN}" https://${{ inputs.registry }}/v2/${{ inputs.repository }}/manifests/${{ steps.tag.outputs.tag }})" >> $GITHUB_OUTPUT
       shell: bash
 
@@ -42,7 +46,7 @@ runs:
       with:
         registry: ${{ inputs.registry }}
         username: ${{ github.actor }}
-        password: ${{ secrets.GITHUB_TOKEN }}
+        password: ${{ inputs.token }}
 
     - name: Build and push Docker image
       if: ${{ steps.existing-image.outputs.response == '404' }}
