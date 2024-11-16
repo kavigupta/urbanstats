@@ -25,6 +25,8 @@ runs:
         source venv/bin/activate
         echo "$VIRTUAL_ENV/bin" >> $GITHUB_PATH
         echo "VIRTUAL_ENV=$VIRTUAL_ENV" >> $GITHUB_ENV
+        which python
+        du -h venv
       shell: bash
 
     - name: Install requirements
