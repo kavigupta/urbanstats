@@ -8,7 +8,7 @@ import { article_link } from './links'
 
 export async function by_population(settings: { show_historical_cds: boolean }, domestic_only = false): Promise<void> {
     const values = (await loadProtobuf('/index/pages.gz', 'StringList')).elements
-    const populations = loadJSON('/index/best_population_estimate.json') as number[]
+    const populations = await loadJSON('/index/best_population_estimate.json') as number[]
     const totalWeight = populations.reduce((sum, x) => sum + x)
 
     while (true) {

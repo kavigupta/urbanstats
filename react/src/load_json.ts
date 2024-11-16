@@ -12,29 +12,12 @@ import {
 // from https://stackoverflow.com/a/4117299/1549476
 
 // Load JSON text from server hosted file and return JSON parsed object
-export function loadJSON(filePath: string): unknown {
-    // Load json file;
-    const json = loadTextFileAjaxSync(filePath, 'application/json')
-    // assert json is a string
-    if (typeof json !== 'string') {
-        throw new Error(`file not found: ${filePath}`)
+export async function loadJSON(filePath: string): Promise<unknown> {
+    const response = await fetch(filePath, { headers: { 'Content-Type': 'application/json' } })
+    if (response.status !== 200) {
+        throw new Error(`Expected response status 200, got ${response.status}: ${response.statusText}`)
     }
-    // Parse json
-    return JSON.parse(json)
-}
-
-function loadTextFileAjaxSync(filePath: string, mimeType: string): string | null {
-    const xmlhttp = new XMLHttpRequest()
-    xmlhttp.open('GET', filePath, false)
-    xmlhttp.overrideMimeType(mimeType)
-    xmlhttp.send()
-    if (xmlhttp.status === 200 && xmlhttp.readyState === 4) {
-        return xmlhttp.responseText
-    }
-    else {
-    // TODO Throw exception
-        return null
-    }
+    return response.json()
 }
 
 // Load a protobuf file from the server

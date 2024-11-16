@@ -97,7 +97,8 @@ test('statistic-universe-selector-test', async (t) => {
                 .withAttribute('class', 'universe-selector-option')
                 .withAttribute('alt', 'Puerto Rico, USA'))
     await t.expect(getLocation())
-        .eql(`${TARGET}/statistic.html?statname=Population&article_type=City&start=3461&amount=20&universe=Puerto+Rico%2C+USA`)
+        .eql(`${TARGET}/statistic.html?statname=Population&article_type=City&start=261&amount=20&universe=Puerto+Rico%2C+USA`)
+    await screencap(t)
 })
 
 urbanstatsFixture('statistic ascending descending', `${TARGET}/statistic.html?statname=Population&article_type=Subnational+Region&start=1&amount=10`)
@@ -168,4 +169,10 @@ test('statistic-ascending-page', async (t) => {
     // We should see the state with the least vehicles, which is DC
     await t.expect(Selector('div').withExactText('1').exists).ok()
     await t.expect(Selector('div').withText('District of Columbia, USA').exists).ok()
+})
+
+urbanstatsFixture('stats page without enough geos to fill', `${TARGET}/statistic.html?statname=Population&article_type=County&start=1&amount=20&universe=Arizona%2C+USA`)
+
+test('displays without error', async (t) => {
+    await screencap(t)
 })

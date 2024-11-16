@@ -159,40 +159,43 @@ def overlapping_circles(map_arr, P, limit=100):
 
 @permacache(
     "urbanstats/data/circle/overlapping_circles_fast",
-    key_function=dict(map_arr=stable_hash),
+    key_function=dict(map=stable_hash),
     multiprocess_safe=True,
 )
-def overlapping_circles_fast(map_arr, P, *, limit=100, max_radius_in_chunks=10):
+# This is necessary to avoid breaking the cache
+# pylint: disable=redefined-builtin
+def overlapping_circles_fast(map, P, *, limit=100, max_radius_in_chunks=10):
     circles = []
-    map_arr = np.array(map_arr)
+    map = np.array(map)
     adjustment = 1
     radius = 2
     while True:
+        print("Current size", map.shape, "current radius", radius)
         radius, center = binary_search_map(
-            map_arr,
+            map,
             ban=None,
             P=P,
-            start_radius=radius / 2,
+            start_radius=radius * 0.95,
             high=max_radius_in_chunks * 2,
         )
         if center is not None:
             y, x = center
             circles.append((radius * adjustment, (y * adjustment, x * adjustment)))
-            clear_location(map_arr, radius, y, x)
+            clear_location(map, radius, y, x)
             print("Found circle", circles[-1])
         while radius > max_radius_in_chunks:
             radius = radius / 2
-            map_arr = chunk(map_arr, 2)
+            map = chunk(map, 2)
             adjustment *= 2
             print(
                 "Chunked map_arr, new size",
-                map_arr.shape,
+                map.shape,
                 "new radius",
                 radius,
                 "adjustment",
                 adjustment,
             )
-        if map_arr.shape[0] <= 2:
+        if map.shape[0] <= 2:
             break
         if len(circles) > limit:
             break
@@ -515,12 +518,13 @@ def specify_duplicates(frame, long_to_short):
 
 
 @permacache(
-    "urbanstats/data/circle/overlapping_circles_frame_7",
+    "urbanstats/data/circle/overlapping_circles_frame_8",
     key_function=dict(country_shapefile=lambda x: x.hash_key),
 )
 def overlapping_circles_frame(
     country_shapefile, population, suffix, max_radius_in_chunks=20
 ):
+    print(f"population circles being computed for {suffix}")
     ghs = load_full_ghs()
     circles = overlapping_circles_fast(
         ghs, population, limit=10**9, max_radius_in_chunks=max_radius_in_chunks
@@ -536,6 +540,7 @@ def overlapping_circles_frame(
         shapely.geometry.box(-180, -89, 180, 89)
     )
     assert len(frame) == len(set(frame.longname))
+    print(f"done with {suffix}")
     return frame
 
 
@@ -775,12 +780,7 @@ def circle_shapefile_object(country_shapefile, population, just_usa):
         prefix = "us_"
     else:
         prefix = ""
-    version = 26
-    if population == 1e7:
-        # just special case for 10M, since there was some weird caching issue.
-        version += 0.1
-    if just_usa:
-        version += 0.01
+    version = 27
     return Shapefile(
         hash_key=prefix
         + f"population_circle_{named_populations[population]}_{version}",

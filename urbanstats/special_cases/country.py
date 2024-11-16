@@ -5,6 +5,9 @@ import geopandas as gpd
 import tqdm.auto as tqdm
 
 from urbanstats.special_cases.country_names import iso_to_country
+from urbanstats.special_cases.special_subnational_source import (
+    SPECIAL_SUBNATIONAL_SOURCES,
+)
 
 # < 50m
 SIMPLIFY_REALLY_SMALL = 1 / 120 * 50e-3
@@ -28,12 +31,20 @@ def subnational_regions_direct():
     data["dissolveby"] = data["fullname"]
     data = data.dissolve(by="dissolveby")
     print("dissolved subnationals")
+
+    data = data.reset_index(drop=True)
+
+    unmanipulated_indices = []
+    for source in SPECIAL_SUBNATIONAL_SOURCES:
+        unmanipulated_indices += source.replace_subnational_geographies(data)
+
     # apply filter_small_islands to each row
     for i, row in tqdm.tqdm(list(data.iterrows())):
+        if i in unmanipulated_indices:
+            continue
         print(row.NAME + ", " + row.COUNTRY)
         data.loc[i] = filter_small_islands(row)
-    data = data.reset_index(drop=True)
-    data = buffer_all(data, SIMPLIFY_WATER)
+    data = buffer_all(data, SIMPLIFY_WATER, unmanipulated_indices)
     print("buffered subnationals")
     return data
 
@@ -78,11 +89,13 @@ def buffer_geometry(data, idx, buffer):
     return buffered_geom
 
 
-def buffer_all(data, buffer):
+def buffer_all(data, buffer, unmanipulated_indices):
     data = data.copy()
     data["bounds_tuples"] = data.geometry.apply(lambda x: x.bounds)
     fullname = data.NAME + ", " + data.COUNTRY
     for idx in tqdm.trange(data.shape[0]):
+        if idx in unmanipulated_indices:
+            continue
         print(fullname[idx])
         data.loc[idx, "geometry"] = buffer_geometry(data, idx, buffer)
     del data["bounds_tuples"]

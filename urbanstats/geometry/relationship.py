@@ -6,7 +6,7 @@ import tqdm
 from permacache import permacache, stable_hash
 
 from urbanstats.geometry.shapefile_geometry import overlays
-from urbanstats.geometry.shapefiles.shapefiles_list import shapefiles_for_stats
+from urbanstats.geometry.shapefiles.shapefiles_list import shapefiles
 
 
 @permacache(
@@ -180,7 +180,7 @@ tiers = [
 
 type_to_type_category = {
     shapefile.meta["type"]: shapefile.meta["type_category"]
-    for shapefile in shapefiles_for_stats.values()
+    for shapefile in shapefiles.values()
 }
 
 type_category_order = {
@@ -195,7 +195,7 @@ type_category_order = {
     "Kavi": 80,
 }
 
-key_to_type = {x: sf.meta["type"] for x, sf in shapefiles_for_stats.items()}
+key_to_type = {x: sf.meta["type"] for x, sf in shapefiles.items()}
 
 map_relationships = [
     ("subnational_regions", "counties"),
@@ -211,7 +211,7 @@ map_relationships = [
     ("urban_areas", "cities"),
     ("judicial_circuits", "judicial_districts"),
 ]
-map_relationships += [[x, x] for x in shapefiles_for_stats]
+map_relationships += [[x, x] for x in shapefiles]
 
 map_relationships_by_type = [[key_to_type[x] for x in y] for y in map_relationships]
 
@@ -253,7 +253,7 @@ def can_border(x, y):
 
 
 def full_relationships(long_to_type):
-    return relationships_for_list(long_to_type, shapefiles_for_stats)
+    return relationships_for_list(long_to_type, shapefiles)
 
 
 @permacache(
