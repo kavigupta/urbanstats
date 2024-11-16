@@ -236,7 +236,7 @@ function Pagination(props: {
     const total = props.count
     const per_page = props.amount
     const prev = Math.max(1, current - per_page)
-    const max_pages = Math.floor(total / per_page)
+    const max_pages = Math.max(Math.floor(total / per_page), 1)
     const max_page_start = (max_pages - 1) * per_page + 1
     const next = Math.min(max_page_start, current + per_page)
     const current_page = Math.ceil(current / per_page)
