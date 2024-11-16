@@ -23,7 +23,8 @@ jobs:
         uses: actions/checkout@v4
 
       - uses: ./.github/actions/docker_image
-        with: Dockerfile
+        with:
+          dockerfile: Dockerfile
         id: image
 
   build-and-push-e2e-image:
@@ -37,7 +38,8 @@ jobs:
         uses: actions/checkout@v4
 
       - uses: ./.github/actions/docker_image
-        with: react/test/Dockerfile
+        with:
+          dockerfile: react/test/Dockerfile
         id: image
 
   lint-python:
