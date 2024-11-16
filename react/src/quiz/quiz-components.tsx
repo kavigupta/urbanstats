@@ -71,11 +71,11 @@ export function DownloadUpload(): ReactNode {
     return (
         <div style={{ marginTop: '5px' }}>
             <button onClick={() => { exportQuizPersona() }}>
-                Download Quiz Progress
+                Download Quiz History
             </button>
             {' '}
             <button onClick={() => { void importQuizPersona() }}>
-                Upload Quiz Progress
+                Upload Quiz History
             </button>
         </div>
     )
