@@ -1,3 +1,4 @@
+import counts_by_article_type from '../data/counts_by_article_type'
 import explanation_page from '../data/explanation_page'
 import extra_stats from '../data/extra_stats'
 import stats from '../data/statistic_list'
@@ -56,8 +57,7 @@ function lookup_in_compressed_sequence(seq: [number, number][], idx: number): nu
 
 export function for_type(universe: string, statcol: StatCol, typ: string): number {
     const idx = stats.indexOf(statcol) // Works because `require` is global
-    const counts_by_universe = require('../data/counts_by_article_type.json') as Record<string, Record<string, [number, number][]>>
-    const counts_by_type = counts_by_universe[universe][typ]
+    const counts_by_type = counts_by_article_type[universe][typ]
 
     return lookup_in_compressed_sequence(counts_by_type, idx)
 }
