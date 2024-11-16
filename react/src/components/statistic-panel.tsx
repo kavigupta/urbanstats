@@ -1,4 +1,4 @@
-import React, { CSSProperties, ReactNode, useMemo, useRef } from 'react'
+import React, { CSSProperties, ReactNode, useEffect, useMemo, useRef } from 'react'
 
 import universes_ordered from '../data/universes_ordered'
 import { article_link, explanation_page_link, sanitize, statistic_link } from '../navigation/links'
@@ -195,7 +195,9 @@ function Pagination(props: {
     // next and previous buttons, along with the current range (editable to jump to a specific page)
     // also a button to change the number of items per page
 
-    const change_start = (curr_universe: string | undefined, new_start: number): void => {
+    const curr_universe = useUniverse()
+
+    const change_start = (new_start: number): void => {
         document.location.href = statistic_link(
             curr_universe,
             props.statname, props.article_type,
@@ -203,7 +205,7 @@ function Pagination(props: {
         )
     }
 
-    const change_amount = (curr_universe: string | undefined, new_amount: string | number): void => {
+    const change_amount = (new_amount: string | number): void => {
         let start = props.start
         let new_amount_num: number
         if (new_amount === 'All') {
@@ -239,9 +241,28 @@ function Pagination(props: {
     const next = Math.min(max_page_start, current + per_page)
     const current_page = Math.ceil(current / per_page)
 
+    useEffect(() => {
+        const goToPage = (new_page: number): void => {
+            location.replace(
+                statistic_link(
+                    curr_universe,
+                    props.statname, props.article_type,
+                    (new_page - 1) * per_page + 1, props.amount, props.ordering, undefined,
+                ),
+            )
+        }
+
+        if (current_page > max_pages) {
+            goToPage(max_pages)
+        }
+        else if (current_page < 1) {
+            goToPage(1)
+        }
+    }, [current_page, max_pages, curr_universe, per_page, props.amount, props.article_type, props.ordering, props.statname])
+
     const select_page = (
         <SelectPage
-            change_start={(curr_universe, new_start) => { change_start(curr_universe, new_start) }}
+            change_start={(new_start) => { change_start(new_start) }}
             current_page={current_page}
             max_pages={max_pages}
             prev_page={prev}
@@ -274,7 +295,7 @@ function Pagination(props: {
                 <PerPageSelector
                     per_page={per_page}
                     total={total}
-                    change_amount={(curr_universe, new_amount) => { change_amount(curr_universe, new_amount) }}
+                    change_amount={(new_amount) => { change_amount(new_amount) }}
                 />
             </div>
         </div>
@@ -284,9 +305,8 @@ function Pagination(props: {
 function PerPageSelector(props: {
     per_page: number
     total: number
-    change_amount: (curr_universe: string | undefined, targetValue: string) => void
+    change_amount: (targetValue: string) => void
 }): ReactNode {
-    const curr_universe = useUniverse()
     const colors = useColors()
     return (
         <div style={{ margin: 'auto', textAlign: 'center' }}>
@@ -296,7 +316,7 @@ function PerPageSelector(props: {
                     defaultValue={
                         props.per_page === props.total ? 'All' : props.per_page
                     }
-                    onChange={(e) => { props.change_amount(curr_universe, e.target.value) }}
+                    onChange={(e) => { props.change_amount(e.target.value) }}
                     className="serif"
                 >
                     <option value="10">10</option>
@@ -317,7 +337,7 @@ function SelectPage(props: {
     current_page: number
     max_pages: number
     per_page: number
-    change_start: (curr_universe: string | undefined, new_start: number) => void
+    change_start: (new_start: number) => void
     next_page: number
 }): ReactNode {
     // low-key style for the buttons
@@ -330,8 +350,6 @@ function SelectPage(props: {
         color: colors.textMain,
     }
 
-    const curr_universe = useUniverse()
-
     const handleSubmit = (e: React.FocusEvent | React.KeyboardEvent): void => {
         let new_page = parseInt((e.target as HTMLInputElement).value)
         if (new_page < 1) {
@@ -341,12 +359,12 @@ function SelectPage(props: {
             new_page = props.max_pages
         }
         const new_start = (new_page - 1) * props.per_page + 1
-        props.change_start(curr_universe, new_start)
+        props.change_start(new_start)
     }
 
     return (
         <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-            <button onClick={() => { props.change_start(curr_universe, props.prev_page) }} className="serif" style={button_style}>&lt;</button>
+            <button onClick={() => { props.change_start(props.prev_page) }} className="serif" style={button_style}>&lt;</button>
             <div>
                 <span>Page: </span>
                 <input
@@ -368,7 +386,7 @@ function SelectPage(props: {
                     {props.max_pages}
                 </span>
             </div>
-            <button onClick={() => { props.change_start(curr_universe, props.next_page) }} className="serif" style={button_style}>&gt;</button>
+            <button onClick={() => { props.change_start(props.next_page) }} className="serif" style={button_style}>&gt;</button>
         </div>
     )
 }
