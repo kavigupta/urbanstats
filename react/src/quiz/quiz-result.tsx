@@ -7,7 +7,7 @@ import { JuxtastatColors, useColors, useJuxtastatColors } from '../page_template
 
 import { render_time_remaining } from './dates'
 import { ENDPOINT, JuxtaQuestion, QuizDescriptor, QuizHistory, QuizQuestion, RetroQuestion, a_correct, nameOfQuizKind } from './quiz'
-import { Header, UserId } from './quiz-components'
+import { DownloadUpload, Header, UserId } from './quiz-components'
 import { render_question } from './quiz-question'
 import { AudienceStatistics, QuizStatistics } from './quiz-statistics'
 import { reportToServer, reportToServerRetro } from './statistics'
@@ -109,6 +109,7 @@ export function QuizResult(props: QuizResultProps): ReactNode {
             )}
             <div className="centered_text serif">
                 <UserId />
+                <DownloadUpload />
             </div>
         </div>
     )

@@ -53,6 +53,7 @@ export function Help(props: { quiz_kind: 'juxtastat' | 'retrostat' }): ReactNode
             {text()}
             {' '}
             {UserId()}
+            {DownloadUpload()}
         </div>
     )
 }
@@ -62,14 +63,20 @@ export function UserId(): ReactNode {
         <div>
             {'Your user id is '}
             <span className="juxtastat-user-id">{unique_persistent_id()}</span>
-            {' '}
-            <a href="#download" onClick={() => { exportQuizPersona() }}>
+        </div>
+    )
+}
+
+export function DownloadUpload(): ReactNode {
+    return (
+        <div style={{ marginTop: '5px' }}>
+            <button onClick={() => { exportQuizPersona() }}>
                 Download Quiz Progress
-            </a>
+            </button>
             {' '}
-            <a href="#upload" onClick={() => { void importQuizPersona() }}>
+            <button onClick={() => { void importQuizPersona() }}>
                 Upload Quiz Progress
-            </a>
+            </button>
         </div>
     )
 }
