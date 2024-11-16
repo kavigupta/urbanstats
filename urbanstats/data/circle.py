@@ -524,6 +524,7 @@ def specify_duplicates(frame, long_to_short):
 def overlapping_circles_frame(
     country_shapefile, population, suffix, max_radius_in_chunks=20
 ):
+    print(f"population circles being computed for {suffix}")
     ghs = load_full_ghs()
     circles = overlapping_circles_fast(
         ghs, population, limit=10**9, max_radius_in_chunks=max_radius_in_chunks
@@ -539,6 +540,7 @@ def overlapping_circles_frame(
         shapely.geometry.box(-180, -89, 180, 89)
     )
     assert len(frame) == len(set(frame.longname))
+    print(f"done with {suffix}")
     return frame
 
 
