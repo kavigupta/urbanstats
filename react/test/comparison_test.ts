@@ -164,11 +164,11 @@ test('comparison-american-vs-international-population-stats', async (t) => {
     await t.expect(await checkboxStatus('US Census')).eql('enabled')
     await t.expect(await checkboxStatus('GHSL')).eql('disabled')
     // these are the values for the US Census
-    await t.expect(await dataValues()).eql(['NaN', '39.5', '14.3', '40.3'])
+    await t.expect(await dataValues()).eql(['NaN', '39.5', '14.3', '40.2'])
     await check_textboxes(t, ['US Census'])
     ghslLocation = await getLocation()
     // these are the values for GHSL
-    await t.expect(await dataValues()).eql(['14.3', '40.3'])
+    await t.expect(await dataValues()).eql(['14.3', '40.2'])
     // disabled so this does nothing
     await check_textboxes(t, ['GHSL'])
     await t.expect(getLocation()).eql(ghslLocation)

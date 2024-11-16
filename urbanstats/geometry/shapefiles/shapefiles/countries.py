@@ -18,7 +18,7 @@ def extract_country_longname(x):
 
 
 COUNTRIES = Shapefile(
-    hash_key="countries_9",
+    hash_key="countries_10",
     path=countries,
     shortname_extractor=extract_country_longname,
     longname_extractor=extract_country_longname,
@@ -44,7 +44,7 @@ def countries_usa():
 
 
 COUNTRY_USA = Shapefile(
-    hash_key="usa_only_2",
+    hash_key="usa_only_3",
     path=countries_usa,
     shortname_extractor=lambda x: x["shortname"],
     longname_extractor=lambda x: x["longname"],

@@ -9,7 +9,7 @@ from urbanstats.universe.universe_provider.constant_provider import (
 from urbanstats.universe.universe_provider.self_provider import SelfUniverseProvider
 
 CONTINENTS = Shapefile(
-    hash_key="continents_2",
+    hash_key="continents_3",
     path=continents,
     shortname_extractor=lambda x: x.name_1,
     longname_extractor=lambda x: x.name_1,

@@ -518,7 +518,7 @@ def specify_duplicates(frame, long_to_short):
 
 
 @permacache(
-    "urbanstats/data/circle/overlapping_circles_frame_7",
+    "urbanstats/data/circle/overlapping_circles_frame_8",
     key_function=dict(country_shapefile=lambda x: x.hash_key),
 )
 def overlapping_circles_frame(
@@ -780,12 +780,7 @@ def circle_shapefile_object(country_shapefile, population, just_usa):
         prefix = "us_"
     else:
         prefix = ""
-    version = 26
-    if population == 1e7:
-        # just special case for 10M, since there was some weird caching issue.
-        version += 0.1
-    if just_usa:
-        version += 0.01
+    version = 27
     return Shapefile(
         hash_key=prefix
         + f"population_circle_{named_populations[population]}_{version}",
