@@ -28,4 +28,5 @@ runs:
       run: |
         pip3 install -r requirements.txt
         pip3 cache purge
+      shell: bash
       if: steps.cache-venv.outputs.cache-hit != 'true'
