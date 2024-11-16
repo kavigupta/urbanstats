@@ -11,7 +11,7 @@ import { useUniverse } from '../universe'
 import { useHeaderTextClass, useSubHeaderTextClass } from '../utils/responsive'
 import { display_type } from '../utils/text'
 
-import { Percentile, Statistic } from './table'
+import { Percentile, PointerArrow, Statistic } from './table'
 
 const table_style = { display: 'flex', flexDirection: 'column', padding: '1px' } as const
 const column_names = ['Ordinal', 'Name', 'Value', '', 'Percentile']
@@ -357,10 +357,20 @@ function SelectPage(props: {
         props.change_start(new_start)
     }
 
+    const disabled = {
+        left: props.current_page === 1,
+        right: props.current_page === props.max_pages,
+    }
+
     return (
         <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-            <button onClick={() => { props.change_start(props.prev_page) }} className="serif" style={button_style}>
-                {'◀\ufe0e'}
+            <button
+                onClick={() => { props.change_start(props.prev_page) }}
+                className="serif"
+                style={{ ...button_style, visibility: disabled.left ? 'hidden' : 'visible' }}
+                disabled={disabled.left}
+            >
+                <PointerArrow direction={-1} disabled={disabled.left} />
             </button>
             <div>
                 <span>Page: </span>
@@ -383,8 +393,13 @@ function SelectPage(props: {
                     {props.max_pages}
                 </span>
             </div>
-            <button onClick={() => { props.change_start(props.next_page) }} className="serif" style={button_style}>
-                {'▶\ufe0e'}
+            <button
+                onClick={() => { props.change_start(props.next_page) }}
+                className="serif"
+                style={{ ...button_style, visibility: disabled.right ? 'hidden' : 'visible' }}
+                disabled={disabled.right}
+            >
+                <PointerArrow direction={1} disabled={disabled.right} />
             </button>
         </div>
     )
