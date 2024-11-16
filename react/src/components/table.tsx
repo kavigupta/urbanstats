@@ -804,12 +804,21 @@ function PointerButtonIndex(props: {
     const pos = props.original_pos - 1 + +props.direction
     const disabled = out_of_bounds(pos) || props.original_pos > props.total
 
+    const buttonRef = useRef<HTMLButtonElement>(null) // Need the ref otherwise the mouse enter and leave events can be sent to the wrong elem
+
     return (
         <button
             disabled={disabled}
             style={buttonStyle}
             onClick={() => onClick(pos)}
             data-test-id={props.direction}
+            ref={buttonRef}
+            onMouseEnter={() => {
+                buttonRef.current!.style.backgroundColor = colors.slightlyDifferentBackgroundFocused
+            }}
+            onMouseLeave={() => {
+                buttonRef.current!.style.backgroundColor = 'transparent'
+            }}
         >
             <PointerArrow direction={props.direction} disabled={disabled} />
         </button>
