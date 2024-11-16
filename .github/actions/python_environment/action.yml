@@ -25,17 +25,9 @@ runs:
         source venv/bin/activate
         echo "$VIRTUAL_ENV/bin" >> $GITHUB_PATH
         echo "VIRTUAL_ENV=$VIRTUAL_ENV" >> $GITHUB_ENV
-        which python
-        du -h venv
       shell: bash
 
     - name: Install requirements
       run: pip3 install -r requirements.txt
       shell: bash
       if: steps.cache-venv.outputs.cache-hit != 'true'
-
-    - name: Debugging info
-      run: |
-        which python
-        du -h venv
-      shell: bash
