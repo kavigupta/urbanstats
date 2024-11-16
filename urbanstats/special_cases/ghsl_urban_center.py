@@ -21,7 +21,7 @@ def classify_areas_by_subnational_region(snr, areas):
     return subnationals
 
 
-@permacache(f"urbanstats/special_cases/ghsl_urban_center/load_ghsl_urban_center_10")
+@permacache("urbanstats/special_cases/ghsl_urban_center/load_ghsl_urban_center_10")
 def load_ghsl_urban_center():
     areas = load_ghsl_urban_center_no_names()
     areas["shortname"] = (
