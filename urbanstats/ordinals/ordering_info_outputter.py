@@ -1,5 +1,3 @@
-import json
-
 import tqdm.auto as tqdm
 
 from urbanstats.ordinals.compress_counts import compress_counts, mapify
