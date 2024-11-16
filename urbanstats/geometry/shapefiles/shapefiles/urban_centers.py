@@ -41,7 +41,7 @@ class UrbanCenterStateUniverseProvider(UniverseProvider):
 
 
 URBAN_CENTERS = Shapefile(
-    hash_key="urban_centers_4",
+    hash_key="urban_centers_5",
     path=load_ghsl_urban_center,
     shortname_extractor=lambda x: x["shortname"],
     longname_extractor=lambda x: x["longname"],
@@ -55,7 +55,7 @@ URBAN_CENTERS = Shapefile(
     ),
 )
 URBAN_CENTERS_USA = Shapefile(
-    hash_key="us_urban_centers_5",
+    hash_key="us_urban_centers_6",
     path=load_ghsl_urban_center,
     shortname_extractor=lambda x: x["shortname"],
     longname_extractor=lambda x: x["longname"],

@@ -4,7 +4,7 @@ import '../style.css'
 import './sidebar.css'
 
 import { Theme, useColors, useCurrentTheme } from '../page_template/colors'
-import { checkbox_category_name, SettingsDictionary, source_enabled_key, useSetting, useSettingInfo, useStagedSettingKeys } from '../page_template/settings'
+import { checkbox_category_name, SettingsDictionary, source_enabled_key, TemperatureUnit, useSetting, useSettingInfo, useStagedSettingKeys } from '../page_template/settings'
 import { StatPathsContext, useDataSourceCheckboxes } from '../page_template/statistic-settings'
 import { useMobileLayout } from '../utils/responsive'
 
@@ -123,6 +123,9 @@ export function Sidebar(): ReactNode {
                             setting_key="simple_ordinals"
                         />
                     </li>
+                    <li>
+                        <TemperatureSetting />
+                    </li>
                 </ul>
             </div>
             { useContext(StatPathsContext) !== undefined
@@ -231,6 +234,36 @@ export function ColorThemeSetting(): ReactNode {
                 <option value="System Theme">System Theme</option>
                 <option value="Light Mode">Light Mode</option>
                 <option value="Dark Mode">Dark Mode</option>
+            </select>
+        </div>
+    )
+};
+
+export function TemperatureSetting(): ReactNode {
+    const [temperatureUnit, setTemperatureUnit] = useSetting('temperature_unit')
+    const info = useSettingInfo('temperature_unit')
+    const colors = useColors()
+
+    const highlight = 'stagedValue' in info && info.stagedValue !== info.persistedValue
+
+    const divStyle: CSSProperties = {
+        backgroundColor: highlight ? colors.slightlyDifferentBackgroundFocused : undefined,
+        borderRadius: '5px',
+        padding: '0px 5px',
+    }
+
+    return (
+        <div style={divStyle}>
+            <label style={{ verticalAlign: 'middle' }}>{'Temperatures '}</label>
+            <select
+                className="serif"
+                style={{ backgroundColor: colors.background, color: colors.textMain, verticalAlign: 'middle', minWidth: '50px' }}
+                value={temperatureUnit}
+                onChange={(e: React.ChangeEvent<HTMLSelectElement>) => { setTemperatureUnit(e.target.value as TemperatureUnit) }}
+                data-test-id="temperature_select"
+            >
+                <option value="fahrenheit">&deg;F</option>
+                <option value="celsius">&deg;C</option>
             </select>
         </div>
     )
