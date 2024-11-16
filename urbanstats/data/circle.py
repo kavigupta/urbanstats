@@ -11,7 +11,7 @@ import shapely.geometry
 import tqdm.auto as tqdm
 from matplotlib import patches
 from matplotlib import pyplot as plt
-from permacache import drop_if_equal, permacache, stable_hash, stringify
+from permacache import drop_if_equal, permacache, stable_hash
 from PIL import Image
 
 from urbanstats.data.gpw import load_full_ghs
