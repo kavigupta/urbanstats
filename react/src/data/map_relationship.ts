@@ -1,6 +1,6 @@
 export default [
     [
-        'State',
+        'Subnational Region',
         'County',
     ],
     [
