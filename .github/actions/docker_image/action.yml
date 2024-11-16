@@ -14,8 +14,7 @@ inputs:
     default: ghcr.io
   token:
     description: "The Github token to access ghcr"
-    required: false
-    default: ${{ secrets.GITHUB_TOKEN }}
+    required: true
 outputs:
   image:
     description: "The fully qualified image generated"

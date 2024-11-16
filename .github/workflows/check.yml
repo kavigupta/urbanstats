@@ -26,6 +26,7 @@ jobs:
       - uses: ./.github/actions/docker_image
         with:
           dockerfile: Dockerfile
+          token: ${{ secrets.GITHUB_TOKEN }}
         id: image
 
   build-and-push-e2e-image:
@@ -42,6 +43,7 @@ jobs:
       - uses: ./.github/actions/docker_image
         with:
           dockerfile: react/test/Dockerfile
+          token: ${{ secrets.GITHUB_TOKEN }}
         id: image
 
   lint-python:
