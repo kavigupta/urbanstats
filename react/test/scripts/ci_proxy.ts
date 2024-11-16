@@ -28,7 +28,8 @@ export async function startProxy(): Promise<void> {
         }
     })
 
-    console.log("USING BRANCH", branch)
+    // eslint-disable-next-line no-console -- This is useful for debugging in case the proxy isn't working
+    console.log('Proxy is using branch...', branch)
 
     const app = express()
 
