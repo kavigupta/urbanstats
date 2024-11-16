@@ -17,6 +17,7 @@ jobs:
     outputs:
       image: ${{ steps.image.outputs.image }}
     permissions:
+      contents: read
       packages: write
     steps:
       - name: Checkout repository
@@ -32,6 +33,7 @@ jobs:
     outputs:
       image: ${{ steps.image.outputs.image }}
     permissions:
+      contents: read
       packages: write
     steps:
       - name: Checkout repository
