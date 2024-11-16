@@ -74,7 +74,7 @@ async function loadPage(): Promise<void> {
             name: `W${retro}`,
         }
         today_name = `Week ${retro}`
-        todays_quiz = (loadJSON(`/retrostat/${retro}`) as RetroQuestionJSON[]).map(load_retro)
+        todays_quiz = (await loadJSON(`/retrostat/${retro}`) as RetroQuestionJSON[]).map(load_retro)
     }
     else {
         // daily quiz
@@ -85,7 +85,7 @@ async function loadPage(): Promise<void> {
         else {
             today = get_daily_offset_number()
         }
-        todays_quiz = (loadJSON(`/quiz/${today}`) as JuxtaQuestionJSON[]).map(load_juxta)
+        todays_quiz = (await loadJSON(`/quiz/${today}`) as JuxtaQuestionJSON[]).map(load_juxta)
         today_name = today.toString()
         descriptor = { kind: 'juxtastat', name: today }
     }
