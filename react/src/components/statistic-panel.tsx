@@ -377,7 +377,7 @@ function SelectPage(props: {
                 <input
                     type="text"
                     pattern="[0-9]*"
-                    style={{ width: '3em', textAlign: 'right' }}
+                    style={{ width: '3em', textAlign: 'right', fontSize: '16px' }}
                     className="serif"
                     defaultValue={props.current_page}
                     onKeyDown={(e) => {
