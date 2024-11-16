@@ -33,3 +33,9 @@ runs:
       run: pip3 install -r requirements.txt
       shell: bash
       if: steps.cache-venv.outputs.cache-hit != 'true'
+
+    - name: Debugging info
+      run: |
+        which python
+        du -h venv
+      shell: bash
