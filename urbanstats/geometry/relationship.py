@@ -204,7 +204,7 @@ type_category_order = {
 key_to_type = {x: sf.meta["type"] for x, sf in shapefiles_for_stats.items()}
 
 map_relationships = [
-    ("states", "counties"),
+    ("subnational_regions", "counties"),
     ("native_areas", "native_subdivisions"),
     ("native_statistical_areas", "native_subdivisions"),
     ("csas", "msas"),
