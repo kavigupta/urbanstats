@@ -115,8 +115,6 @@ def create_react_jsons():
 
 
 def build_react_site(site_folder, dev):
-    subprocess.run(f"cd react; npm {'i' if dev else 'ci'}", shell=True, check=True)
-
     create_react_jsons()
 
     subprocess.run(

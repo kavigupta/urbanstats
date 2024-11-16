@@ -155,3 +155,26 @@ test('charlotte-all-stats', async (t) => {
     await check_all_category_boxes(t)
     await screencap(t)
 })
+
+urbanstatsFixture('weather F', '/article.html?longname=California%2C+USA&s=jV3GG2h8Vfb')
+
+test('is F', async (t) => {
+    await t.expect(Selector('span').withText('62.2').exists).ok()
+})
+
+const temperatureSelect = Selector('[data-test-id=temperature_select]')
+
+test('change to C and back to F', async (t) => {
+    await t.click(temperatureSelect).click(temperatureSelect.find('option').withText('C'))
+    await t.expect(Selector('span').withText('28.8').exists).ok()
+    await t.click(temperatureSelect).click(temperatureSelect.find('option').withText('F'))
+    await t.expect(Selector('span').withText('62.2').exists).ok()
+})
+
+test('paste C link', async (t) => {
+    await check_textboxes(t, ['Simple Ordinals']) // to save settings
+    await t.navigateTo('/article.html?longname=California%2C+USA&s=jV3GG2h8Vfs')
+    await t.expect(Selector('[data-test-id=staging_controls]').exists).ok()
+    await t.expect(Selector('span').withText('28.8').exists).ok()
+    await screencap(t)
+})
