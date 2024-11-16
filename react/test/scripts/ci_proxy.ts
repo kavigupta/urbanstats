@@ -28,6 +28,9 @@ export async function startProxy(): Promise<void> {
         }
     })
 
+    // eslint-disable-next-line no-console -- This is useful for debugging in case the proxy isn't working
+    console.log('Proxy is using branch...', branch)
+
     const app = express()
 
     app.use(express.static('test/density-db'), proxy('https://raw.githubusercontent.com', {
