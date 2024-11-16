@@ -9,10 +9,7 @@ from urbanstats.universe.universe_list import get_universe_name_for_state
 from urbanstats.universe.universe_provider.combined_universe_provider import (
     CombinedUniverseProvider,
 )
-from urbanstats.universe.universe_provider.constants import (
-    INTERNATIONAL_PROVIDERS,
-    us_domestic_provider,
-)
+from urbanstats.universe.universe_provider.constants import INTERNATIONAL_PROVIDERS
 from urbanstats.universe.universe_provider.universe_provider import UniverseProvider
 
 

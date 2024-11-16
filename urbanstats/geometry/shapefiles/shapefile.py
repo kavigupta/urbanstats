@@ -1,5 +1,5 @@
-from dataclasses import dataclass
 import pickle
+from dataclasses import dataclass
 from typing import Callable
 
 import attr
@@ -93,9 +93,9 @@ class Shapefile:
         return s
 
     def subset_shapefile(self, subset_name):
-        new_filter = lambda x: self.filter(x) and self.subset_masks[
-            subset_name
-        ].subset_filter(x)
+        def new_filter(x):
+            return self.filter(x) and self.subset_masks[subset_name].subset_filter(x)
+
         return attr.evolve(
             self, filter=new_filter, hash_key=f"{self.hash_key}_{subset_name}"
         )

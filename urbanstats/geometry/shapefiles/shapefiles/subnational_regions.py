@@ -4,10 +4,7 @@ from urbanstats.special_cases.country import subnational_regions
 from urbanstats.universe.universe_provider.combined_universe_provider import (
     CombinedUniverseProvider,
 )
-from urbanstats.universe.universe_provider.constants import (
-    INTERNATIONAL_PROVIDERS,
-    us_domestic_provider,
-)
+from urbanstats.universe.universe_provider.constants import INTERNATIONAL_PROVIDERS
 from urbanstats.universe.universe_provider.contained_within import STATE_PROVIDER
 
 SUBNATIONAL_REGIONS = Shapefile(

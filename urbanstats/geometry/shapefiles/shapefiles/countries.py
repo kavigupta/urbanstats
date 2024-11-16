@@ -36,6 +36,8 @@ COUNTRIES = Shapefile(
         ]
     ),
     subset_masks={
-        "USA": SubsetSpecification("USA", lambda x: extract_country_longname(x) == "USA")
+        "USA": SubsetSpecification(
+            "USA", lambda x: extract_country_longname(x) == "USA"
+        )
     },
 )
