@@ -168,6 +168,7 @@ def overlapping_circles_fast(map_arr, P, *, limit=100, max_radius_in_chunks=10):
     adjustment = 1
     radius = 2
     while True:
+        print("Current size", map_arr.shape, "current radius", radius)
         radius, center = binary_search_map(
             map_arr,
             ban=None,
