@@ -101,3 +101,14 @@ button, select {
 input[type=checkbox] {
     vertical-align: middle;
 }
+
+button {
+    background-color: var(--slightly-different-background);
+    border-radius: 5px;
+    color: var(--text-main);
+    border: 1px solid var(--text-main);
+}
+
+button:hover {
+    background-color: var(--slightly-different-background-focused);
+}
