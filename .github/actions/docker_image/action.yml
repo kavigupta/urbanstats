@@ -4,15 +4,20 @@ inputs:
   dockerfile:
     description: "Path to the Dockerfile"
     required: true
+  repository:
+    description: "The docker respository"
+    required: false
+    default: ${{ github.repository }}/dockerfile-hash
+  registry:
+    description: "The docker registry"
+    required: false
+    default: ghcr.io
 outputs:
   image:
     description: "The fully qualified image generated"
     value: ${{ steps.image.outputs.image }}
 runs:
   using: "composite"
-  env:
-    DOCKER_REGISTRY: ghcr.io
-    DOCKER_REPOSITORY: ${{ github.repository }}/dockerfile-hash
   steps:
     - name: Create the tag by hashing the dockerfile
       id: tag
@@ -21,21 +26,21 @@ runs:
 
     - name: concat the Docker image name
       id: image
-      run: echo "image=${{ env.DOCKER_REGISTRY }}/${{ env.DOCKER_REPOSITORY }}:${{ steps.tag.outputs.tag }}" >> $GITHUB_OUTPUT
+      run: echo "image=${{ inputs.registry }}/${{ inputs.repository }}:${{ steps.tag.outputs.tag }}" >> $GITHUB_OUTPUT
       shell: bash
 
     - name: Check for existing image
       id: existing-image
       run: |
         GHCR_TOKEN=$(echo -n ${{ secrets.GITHUB_TOKEN }} | base64)
-        echo "response=$(curl -s -o /dev/null -w "%{http_code}" -H "Authorization: Bearer ${GHCR_TOKEN}" https://${{ env.DOCKER_REGISTRY }}/v2/${{ env.DOCKER_REPOSITORY }}/manifests/${{ steps.tag.outputs.tag }})" >> $GITHUB_OUTPUT
+        echo "response=$(curl -s -o /dev/null -w "%{http_code}" -H "Authorization: Bearer ${GHCR_TOKEN}" https://${{ inputs.registry }}/v2/${{ inputs.repository }}/manifests/${{ steps.tag.outputs.tag }})" >> $GITHUB_OUTPUT
       shell: bash
 
     - name: Log in to the Container registry
       if: ${{ steps.existing-image.outputs.response == '404' }}
       uses: docker/login-action@v3
       with:
-        registry: ${{ env.DOCKER_REGISTRY }}
+        registry: ${{ inputs.registry }}
         username: ${{ github.actor }}
         password: ${{ secrets.GITHUB_TOKEN }}
 
