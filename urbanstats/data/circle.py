@@ -162,6 +162,8 @@ def overlapping_circles(map_arr, P, limit=100):
     key_function=dict(map=stable_hash),
     multiprocess_safe=True,
 )
+# This is necessary to avoid breaking the cache
+# pylint: disable=redefined-builtin
 def overlapping_circles_fast(map, P, *, limit=100, max_radius_in_chunks=10):
     circles = []
     map = np.array(map)
