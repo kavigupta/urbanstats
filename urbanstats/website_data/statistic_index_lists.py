@@ -30,7 +30,8 @@ def get_index_lists():
             "usa": usa_idxs,
         },
         "type_to_has_gpw": {
-            s.meta["type"]: s.include_in_gpw for s in shapefiles.values()
+            s.meta["type"]: ("international_gridded_data" in s.special_data_sources)
+            for s in shapefiles.values()
         },
     }
 
