@@ -54,8 +54,6 @@ shapefiles = dict(
     **population_circles_shapefiles,
 )
 
-shapefiles_for_stats = dict(**shapefiles)
-
 american_to_international = {
     "USA": "Country",
     "State": "Subnational Region",
@@ -63,7 +61,7 @@ american_to_international = {
     **population_circles_usa_to_international,
 }
 
-localized_type_names = multiple_localized_type_names(shapefiles_for_stats)
+localized_type_names = multiple_localized_type_names(shapefiles)
 
 
 def filter_table_for_type(table, typ):
