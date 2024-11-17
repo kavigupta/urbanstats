@@ -460,6 +460,10 @@ const expectedExportWithoutDate = {
 
 test('export quiz progress', async (t) => {
     await t.click(Selector('button').withText('Download Quiz History'))
+
+    // Give it a second to download...
+    await t.wait(1000)
+
     const { date_exported, ...downloadContents } = JSON.parse(readFileSync(most_recent_download_path()).toString()) as Record<string, unknown>
 
     await t.expect(typeof date_exported === 'string').ok()
