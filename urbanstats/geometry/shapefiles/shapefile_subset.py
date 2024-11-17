@@ -29,5 +29,5 @@ class FilteringSubset(ShapefileSubset):
 
         return attr.evolve(sf, filter=new_filter, hash_key=f"{sf.hash_key}_{key}")
 
-    def mutate_table(subset, subset_name, s):
-        s[subset_mask_key(subset_name)] = s.apply(subset.subset_filter, axis=1)
+    def mutate_table(self, subset_name, s):
+        s[subset_mask_key(subset_name)] = s.apply(self.subset_filter, axis=1)
