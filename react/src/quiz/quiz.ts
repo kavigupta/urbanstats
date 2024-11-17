@@ -62,7 +62,7 @@ export const quizPersonaSchema = z.object({
 
 export type QuizPersona = z.infer<typeof quizPersonaSchema>
 
-export function deleteQuizPersona(): void {
+export function deleteQuizPersona(): void { // currently unused
     if (confirm(`This will DELETE ALL your Juxtastat and Retrostat progress.
 
         Your existing Juxtastat and Retrostat progress will be lost.

@@ -77,11 +77,6 @@ export function DownloadUpload(): ReactNode {
             <button onClick={() => { void importQuizPersona() }}>
                 Import Quiz History
             </button>
-            {/* Delete is mostly for testing. May want to comment out otherwise. */}
-            {' '}
-            <button onClick={() => { void deleteQuizPersona() }}>
-                Delete Quiz History
-            </button>
         </div>
     )
 }
