@@ -6,7 +6,7 @@ import pandas as pd
 import tqdm.auto as tqdm
 from permacache import permacache, stable_hash
 
-from urbanstats.geometry.shapefiles.shapefiles import shapefiles_list
+from urbanstats.geometry.shapefiles.shapefiles import shapefiles as shapefiles_list
 from urbanstats.statistics.collections_list import (
     statistic_collections as statistic_collections_list,
 )
