@@ -15,7 +15,7 @@ def valid_state(x):
         return False
     if s in us.STATES + [us.states.DC, us.states.PR]:
         return True
-    if s in [us.states.GU, us.states.AS]:
+    if s in [us.states.GU, us.states.AS, us.states.VI, us.states.MP]:
         return False
     raise ValueError(f"unrecognized state {s}")
 
