@@ -1,3 +1,5 @@
+import us
+
 from urbanstats.geometry.shapefiles.shapefile import Shapefile
 from urbanstats.special_cases.country import subnational_regions
 from urbanstats.universe.universe_provider.combined_universe_provider import (
@@ -8,6 +10,18 @@ from urbanstats.universe.universe_provider.constants import (
     us_domestic_provider,
 )
 from urbanstats.universe.universe_provider.contained_within import STATE_PROVIDER
+
+
+def valid_state(x):
+    s = us.states.lookup(x.NAME)
+    if s is None:
+        return False
+    if s in us.STATES + [us.states.DC, us.states.PR]:
+        return True
+    if s in [us.states.GU, us.states.AS]:
+        return False
+    raise ValueError(f"unrecognized state {s}")
+
 
 SUBNATIONAL_REGIONS = Shapefile(
     hash_key="subnational_regions_11",
@@ -23,11 +37,11 @@ SUBNATIONAL_REGIONS = Shapefile(
     ),
 )
 STATES_USA = Shapefile(
-    hash_key="census_states_3",
+    hash_key="census_states_4",
     path="named_region_shapefiles/cb_2022_us_state_500k.zip",
     shortname_extractor=lambda x: x["NAME"],
     longname_extractor=lambda x: x["NAME"] + ", USA",
-    filter=lambda x: True,
+    filter=valid_state,
     meta=dict(type="State", source="Census", type_category="US Subdivision"),
     universe_provider=us_domestic_provider(),
 )
