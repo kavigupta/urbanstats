@@ -56,9 +56,7 @@ shapefiles = dict(
     **population_circles_shapefiles,
 )
 
-shapefiles_for_stats = dict(**shapefiles)
-
-localized_type_names = multiple_localized_type_names(shapefiles_for_stats)
+localized_type_names = multiple_localized_type_names(shapefiles)
 unlocalization_map = {
     localized: (unlocalized, subset)
     for subset, localization_map in localized_type_names.items()
