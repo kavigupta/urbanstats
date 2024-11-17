@@ -2,17 +2,17 @@ import React, { ReactNode } from 'react'
 
 import { useColors, useJuxtastatColors } from '../page_template/colors'
 
-import { QuizDescriptor } from './quiz'
-import { History, parse_time_identifier } from './statistics'
+import { QuizDescriptor, QuizHistory } from './quiz'
+import { parse_time_identifier } from './statistics'
 
 interface QuizStatisticsProps {
     quiz: QuizDescriptor
-    whole_history: History
+    whole_history: QuizHistory
 }
 
 export function QuizStatistics(props: QuizStatisticsProps): ReactNode {
     const colors = useColors()
-    const history = (i: number): History[string] | undefined => {
+    const history = (i: number): QuizHistory[string] | undefined => {
         switch (props.quiz.kind) {
             case 'juxtastat':
                 return props.whole_history[i]

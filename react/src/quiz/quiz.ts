@@ -1,3 +1,11 @@
+import { saveAs } from 'file-saver'
+import { z } from 'zod'
+
+import { loadQuizHistory } from '../components/quiz-panel'
+import { cancelled, uploadFile } from '../upload-util'
+
+import { unique_persistent_id } from './statistics'
+
 export type QuizDescriptor = { kind: 'juxtastat', name: number } | { kind: 'retrostat', name: string }
 
 export const ENDPOINT = 'https://persistent.urbanstats.org'
@@ -32,4 +40,60 @@ export function load_juxta(quiz: JuxtaQuestionJSON): JuxtaQuestion {
 
 export function load_retro(quiz: RetroQuestionJSON): RetroQuestion {
     return { kind: 'retrostat', a: load_juxta(quiz.a), b: load_juxta(quiz.b), a_ease: quiz.a_ease, b_ease: quiz.b_ease }
+}
+
+export const quizHistorySchema = z.record(
+    z.string(),
+    z.object({
+        choices: z.array(z.union([z.literal('A'), z.literal('B')])),
+        correct_pattern: z.array(z.boolean()),
+    })
+        .strict()
+        .refine(quiz => quiz.choices.length === quiz.correct_pattern.length, { message: 'Quiz choices must be the same length as quiz correct_pattern' }),
+)
+
+export type QuizHistory = z.infer<typeof quizHistorySchema>
+
+export const quizPersonaSchema = z.object({
+    persistent_id: z.string(),
+    quiz_history: quizHistorySchema,
+    date_exported: z.optional(z.string().pipe(z.coerce.date())),
+}).strict()
+
+export type QuizPersona = z.infer<typeof quizPersonaSchema>
+
+export function exportQuizPersona(): void {
+    const exported: QuizPersona = {
+        date_exported: new Date(),
+        persistent_id: unique_persistent_id(),
+        quiz_history: loadQuizHistory(),
+    }
+    const data = JSON.stringify(exported, null, 2)
+    saveAs(new Blob([data], { type: 'application/json' }), `urbanstats_quiz_${exported.persistent_id}.json`)
+}
+
+export async function importQuizPersona(): Promise<void> {
+    const file = await uploadFile('.json')
+    if (file === cancelled) {
+        return
+    }
+
+    try {
+        const text = await file.text()
+        const persona = quizPersonaSchema.parse(JSON.parse(text))
+        if (confirm(`The uploaded progress will REPLACE ALL your Juxtastat and Retrostat progress.
+
+Your existing Juxtastat and Retrostat progress will be lost. 
+
+Recommend downloading your current progress so you can restore it later.
+
+Continue?`)) {
+            localStorage.setItem('quiz_history', JSON.stringify(persona.quiz_history))
+            localStorage.setItem('persistent_id', persona.persistent_id)
+            window.location.reload()
+        }
+    }
+    catch (error) {
+        alert(`Could not parse file. Error: ${error}`)
+    }
 }
