@@ -1,8 +1,9 @@
-import React, { CSSProperties, ReactNode, useEffect, useRef, useState } from 'react'
+import React, { CSSProperties, ReactNode, useContext, useEffect, useRef, useState } from 'react'
 import ContentEditable, { ContentEditableEvent } from 'react-contenteditable'
 
+import { navigationContext } from '../article'
 import { load_ordering } from '../load_json'
-import { article_link, statistic_link } from '../navigation/links'
+import { statistic_link } from '../navigation/links'
 import './table.css'
 import { useColors } from '../page_template/colors'
 import { row_expanded_key, useSetting } from '../page_template/settings'
@@ -767,8 +768,8 @@ function PointerButtonIndex(props: {
     direction: -1 | 1
     total: number
 }): ReactNode {
-    const curr_universe = useUniverse()
     const colors = useColors()
+    const navigation = useContext(navigationContext)!
     const [show_historical_cds] = useSetting('show_historical_cds')
     const out_of_bounds = (pos: number): boolean => pos < 0 || pos >= props.total
     const onClick = async (pos: number): Promise<void> => {
@@ -780,7 +781,7 @@ function PointerButtonIndex(props: {
                     pos += props.direction
                     continue
                 }
-                document.location = article_link(curr_universe, name)
+                navigation.setLongname(name)
                 return
             }
         }
