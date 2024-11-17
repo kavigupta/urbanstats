@@ -21,7 +21,6 @@ from urbanstats.geometry.shapefiles.shapefiles.native import native_shapefiles
 from urbanstats.geometry.shapefiles.shapefiles.neighborhoods import NEIGHBORHOODS
 from urbanstats.geometry.shapefiles.shapefiles.population_circle import (
     population_circles_shapefiles,
-    population_circles_usa_to_international,
 )
 from urbanstats.geometry.shapefiles.shapefiles.school_districts import SCHOOL_DISTRICTS
 from urbanstats.geometry.shapefiles.shapefiles.subnational_regions import (
