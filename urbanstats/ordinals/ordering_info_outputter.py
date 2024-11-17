@@ -78,9 +78,6 @@ def output_data_files(order_info, site_folder, universe, typ):
         ordered_values, ordered_percentile = order_info.compute_values_and_percentiles(
             universe, typ, statistic_column
         )
-        # for value, percentile in zip(ordered_values, ordered_percentile):
-        #     data_list.value.append(value)
-        #     data_list.population_percentile.append(percentile)
         data_list.value.extend(ordered_values)
         data_list.population_percentile.extend(ordered_percentile)
         outputter.notify(data_list.ByteSize())
