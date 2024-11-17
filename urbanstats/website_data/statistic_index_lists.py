@@ -50,8 +50,7 @@ def index_list_for_longname(longname, typ, strict_display=False):
     return sorted(result)
 
 
-def index_bitvector_for_longname(longname, typ, strict_display=False):
-    idxs = index_list_for_longname(longname, typ, strict_display)
+def index_bitvector_for_longname(idxs):
     bool_array = np.zeros(max(idxs) + 1, dtype=np.bool_)
     bool_array[idxs] = True
     return np.packbits(bool_array, bitorder="little").tolist()

@@ -1,5 +1,6 @@
 import re
 
+import numpy as np
 import tqdm.auto as tqdm
 
 from urbanstats.geometry.relationship import full_relationships, ordering_idx
@@ -9,10 +10,13 @@ from urbanstats.protobuf.utils import write_gzip
 from urbanstats.statistics.collections_list import statistic_collections
 from urbanstats.statistics.output_statistics_metadata import internal_statistic_names
 from urbanstats.website_data.sharding import create_filename
-from urbanstats.website_data.statistic_index_lists import (
-    index_bitvector_for_longname,
-    index_list_for_longname,
-)
+from urbanstats.website_data.statistic_index_lists import index_bitvector_for_longname
+
+
+def isnan(x):
+    if isinstance(x, (float, np.float64, np.float32)):
+        return np.isnan(x)
+    return False
 
 
 def create_article_gzip(
@@ -28,11 +32,9 @@ def create_article_gzip(
 ):
     # pylint: disable=too-many-locals,too-many-arguments
     statistic_names = internal_statistic_names()
-    idxs_by_type = index_list_for_longname(row.longname, row.type)
+    idxs = [i for i, x in enumerate(statistic_names) if not isnan(row[x])]
     data = data_files_pb2.Article()
-    data.statistic_indices_packed = bytes(
-        index_bitvector_for_longname(row.longname, row.type)
-    )
+    data.statistic_indices_packed = bytes(index_bitvector_for_longname(idxs))
     data.shortname = row.shortname
     data.longname = row.longname
     data.source = row.source
@@ -41,7 +43,7 @@ def create_article_gzip(
 
     ords, percs = flat_ords.query(long_to_idx[row.longname])
 
-    for idx in idxs_by_type:
+    for idx in idxs:
         stat = statistic_names[idx]
         statrow = data.rows.add()
         statrow.statval = float(row[stat])
