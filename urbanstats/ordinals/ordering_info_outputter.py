@@ -25,7 +25,7 @@ class ProtobufOutputter:
         self.proto = self.protobuf_class()
         self.fields = []
 
-    def with_name(self, universe, typ, name):
+    def with_name(self, name):
         self.proto.statnames.append(name)
         return getattr(self.proto, self.protobuf_field).add()
 
@@ -55,9 +55,7 @@ def output_order_files(order_info, site_folder, universe, typ):
     )
 
     for statistic_column in internal_statistic_names():
-        order_list = outputter.with_name(
-            universe, typ, get_statistic_column_path(statistic_column)
-        )
+        order_list = outputter.with_name(get_statistic_column_path(statistic_column))
         for idx in order_info.compute_ordinals(universe, typ, statistic_column):
             order_list.order_idxs.append(idx)
         outputter.notify(order_list.ByteSize())
@@ -76,9 +74,7 @@ def output_data_files(order_info, site_folder, universe, typ):
     )
 
     for statistic_column in internal_statistic_names():
-        data_list = outputter.with_name(
-            universe, typ, get_statistic_column_path(statistic_column)
-        )
+        data_list = outputter.with_name(get_statistic_column_path(statistic_column))
         ordered_values, ordered_percentile = order_info.compute_values_and_percentiles(
             universe, typ, statistic_column
         )
@@ -126,8 +122,12 @@ def output_ordering_for_universe(ordinal_info, site_folder, universe):
         {t for u, t in ordinal_info.universe_type if t != "overall" and u == universe}
     )
     for typ in tqdm.tqdm(typs, desc=f"ords for {universe}"):
-        order_map[universe, typ] = output_order_files(ordinal_info, site_folder, universe, typ)
-        data_map[universe, typ] = output_data_files(ordinal_info, site_folder, universe, typ)
+        order_map[universe, typ] = output_order_files(
+            ordinal_info, site_folder, universe, typ
+        )
+        data_map[universe, typ] = output_data_files(
+            ordinal_info, site_folder, universe, typ
+        )
     return order_map, data_map
 
 
