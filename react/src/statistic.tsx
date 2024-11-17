@@ -49,6 +49,7 @@ async function loadPage(): Promise<void> {
     root.render(
         <UNIVERSE_CONTEXT.Provider value={universe}>
             <StatisticPanel
+                statcol={statcol}
                 statname={statname}
                 count={for_type(universe, statcol, article_type)}
                 explanation_page={explanation_page}

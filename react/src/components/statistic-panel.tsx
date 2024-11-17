@@ -11,6 +11,7 @@ import { useUniverse } from '../universe'
 import { useHeaderTextClass, useSubHeaderTextClass } from '../utils/responsive'
 import { display_type } from '../utils/text'
 
+import { for_type, StatCol } from './load-article'
 import { Percentile, PointerArrow, Statistic } from './table'
 
 const table_style = { display: 'flex', flexDirection: 'column', padding: '1px' } as const
@@ -30,6 +31,7 @@ export function StatisticPanel(props: {
     count: number
     ordering: 'ascending' | 'descending'
     joined_string: string
+    statcol: StatCol
     statname: string
     article_type: string
     article_names: string[]
@@ -102,6 +104,10 @@ export function StatisticPanel(props: {
 
     const textHeaderClass = useHeaderTextClass()
 
+    const universes_filtered = universes_ordered.filter(
+        universe => for_type(universe, props.statcol, props.article_type) > 0,
+    )
+
     return (
         <PageTemplate
             screencap_elements={() => ({
@@ -110,7 +116,7 @@ export function StatisticPanel(props: {
                 elements_to_render: [headers_ref.current!, table_ref.current!],
             })}
             has_universe_selector={true}
-            universes={universes_ordered}
+            universes={universes_filtered}
         >
             <div>
                 <div ref={headers_ref}>
