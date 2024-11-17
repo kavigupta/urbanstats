@@ -1,3 +1,4 @@
+from collections import defaultdict
 import pickle
 
 import attr
@@ -91,6 +92,12 @@ class Shapefile:
     def subset_mask_keys(self):
         return [subset_mask_key(k) for k in self.subset_masks]
 
+    def localized_type_names(self):
+        return {
+            subset_name: subset.localized_type_names(self.meta["type"])
+            for subset_name, subset in self.subset_masks.items()
+        }
+
 
 def subset_mask_key(subset_name):
     return f"subset_mask_{subset_name}"
@@ -98,3 +105,11 @@ def subset_mask_key(subset_name):
 
 class EmptyShapefileError(Exception):
     pass
+
+
+def multiple_localized_type_names(shapefiles):
+    localized = defaultdict(dict)
+    for sf in shapefiles.values():
+        for subset_name, subset_localized in sf.localized_type_names().items():
+            localized[subset_name].update(subset_localized)
+    return localized
