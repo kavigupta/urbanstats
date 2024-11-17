@@ -8,9 +8,8 @@ import { MapGeneric, MapGenericProps, Polygons } from '../components/map'
 import { useColors } from '../page_template/colors'
 import { useMobileLayout } from '../utils/responsive'
 
-import { JuxtaQuestion, RetroQuestion, a_correct } from './quiz'
+import { JuxtaQuestion, QuizHistory, RetroQuestion, a_correct } from './quiz'
 import { Footer, Header, Help } from './quiz-components'
-import { History } from './statistics'
 
 interface MapProps extends MapGenericProps {
     longname: string
@@ -39,7 +38,7 @@ export function QuizQuestionDispatch(props: QuizQuestionProps & (
 
 interface QuizQuestionProps {
     waiting: boolean
-    history: History[string]
+    history: QuizHistory[string]
     nested: boolean
     no_header: boolean
     no_footer: boolean

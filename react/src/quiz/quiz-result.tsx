@@ -6,11 +6,11 @@ import { article_link } from '../navigation/links'
 import { JuxtastatColors, useColors, useJuxtastatColors } from '../page_template/colors'
 
 import { render_time_remaining } from './dates'
-import { ENDPOINT, JuxtaQuestion, QuizDescriptor, QuizQuestion, RetroQuestion, a_correct, nameOfQuizKind } from './quiz'
-import { Header, UserId } from './quiz-components'
+import { ENDPOINT, JuxtaQuestion, QuizDescriptor, QuizHistory, QuizQuestion, RetroQuestion, a_correct, nameOfQuizKind } from './quiz'
+import { DownloadUpload, Header, UserId } from './quiz-components'
 import { render_question } from './quiz-question'
 import { AudienceStatistics, QuizStatistics } from './quiz-statistics'
-import { History, reportToServer, reportToServerRetro } from './statistics'
+import { reportToServer, reportToServerRetro } from './statistics'
 
 interface QuizResultProps {
     quizDescriptor: QuizDescriptor
@@ -20,7 +20,7 @@ interface QuizResultProps {
         choices: ('A' | 'B')[]
     }
     parameters: string
-    whole_history: History
+    whole_history: QuizHistory
     quiz: QuizQuestion[]
 }
 
@@ -109,6 +109,7 @@ export function QuizResult(props: QuizResultProps): ReactNode {
             )}
             <div className="centered_text serif">
                 <UserId />
+                <DownloadUpload />
             </div>
         </div>
     )

@@ -378,6 +378,7 @@ export function TableRowContainer({ children, index }: { children: React.ReactNo
 
 export function Statistic(props: { style?: React.CSSProperties, statname: string, value: number, is_unit: boolean }): ReactNode {
     const [use_imperial] = useSetting('use_imperial')
+    const [temperatureUnit] = useSetting('temperature_unit')
     const content = (() => {
         {
             const name = props.statname
@@ -402,9 +403,8 @@ export function Statistic(props: { style?: React.CSSProperties, statname: string
                 return <span>{(100_000 * value).toFixed(2)}</span>
             }
             else if (name.includes('Density')) {
-                const is_imperial = use_imperial
                 let unit_name = 'km'
-                if (is_imperial) {
+                if (use_imperial) {
                     unit_name = 'mi'
                     value *= 1.60934 * 1.60934
                 }
@@ -453,9 +453,8 @@ export function Statistic(props: { style?: React.CSSProperties, statname: string
                 }
             }
             else if (name === 'Area') {
-                const is_imperial = use_imperial
                 let unit: string | React.ReactElement = 'null'
-                if (is_imperial) {
+                if (use_imperial) {
                     value /= 1.60934 * 1.60934
                     if (value < 1) {
                         unit = <span>acres</span>
@@ -508,9 +507,8 @@ export function Statistic(props: { style?: React.CSSProperties, statname: string
                 }
             }
             else if (name.includes('Mean distance')) {
-                const is_imperial = use_imperial
                 let unit = <span>km</span>
-                if (is_imperial) {
+                if (use_imperial) {
                     unit = <span>mi</span>
                     value /= 1.60934
                 }
@@ -528,8 +526,13 @@ export function Statistic(props: { style?: React.CSSProperties, statname: string
                 return <ElectionResult value={value} />
             }
             else if (name.includes('high temp') || name.includes('high heat index') || name.includes('dewpt')) {
+                let unit = <span>&deg;F</span>
+                if (temperatureUnit === 'celsius') {
+                    unit = <span>&deg;C</span>
+                    value = (value - 32) * (5 / 9)
+                }
                 if (is_unit) {
-                    return <span>&deg;F</span>
+                    return unit
                 }
                 return <span>{value.toFixed(1)}</span>
             }
@@ -549,10 +552,9 @@ export function Statistic(props: { style?: React.CSSProperties, statname: string
                 )
             }
             else if (name === 'Rainfall' || name === 'Snowfall [rain-equivalent]') {
-                const is_imperial = use_imperial
                 value *= 100
                 let unit = 'cm'
-                if (is_imperial) {
+                if (use_imperial) {
                     unit = 'in'
                     value /= 2.54
                 }
@@ -744,14 +746,12 @@ function PointerButtonsIndex(props: { ordinal: number, statpath: string, type: s
     return (
         <span style={{ margin: 'auto' }}>
             <PointerButtonIndex
-                text="<"
                 get_data={get_data}
                 original_pos={props.ordinal}
                 direction={-1}
                 total={props.total}
             />
             <PointerButtonIndex
-                text=">"
                 get_data={get_data}
                 original_pos={props.ordinal}
                 direction={+1}
@@ -762,10 +762,9 @@ function PointerButtonsIndex(props: { ordinal: number, statpath: string, type: s
 }
 
 function PointerButtonIndex(props: {
-    text: string
     get_data: () => Promise<string[]>
     original_pos: number
-    direction: number
+    direction: -1 | 1
     total: number
 }): ReactNode {
     const curr_universe = useUniverse()
@@ -799,17 +798,31 @@ function PointerButtonIndex(props: {
         borderRight: `1px solid ${colors.borderShadow}`,
         borderBottom: `1px solid ${colors.borderShadow}`,
         borderLeft: `1px solid ${colors.borderNonShadow}`,
+        backgroundColor: 'transparent',
     }
 
     const pos = props.original_pos - 1 + +props.direction
-    if (out_of_bounds(pos) || props.original_pos > props.total) {
-        return <span style={buttonStyle}>&nbsp;&nbsp;</span>
-    }
-    else {
-        return (
-            <a href="#" style={buttonStyle} onClick={() => onClick(pos)}>{props.text}</a>
-        )
-    }
+    const disabled = out_of_bounds(pos) || props.original_pos > props.total
+
+    const buttonRef = useRef<HTMLButtonElement>(null) // Need the ref otherwise the mouse enter and leave events can be sent to the wrong elem
+
+    return (
+        <button
+            disabled={disabled}
+            style={buttonStyle}
+            onClick={() => onClick(pos)}
+            data-test-id={props.direction}
+            ref={buttonRef}
+            onMouseEnter={() => {
+                buttonRef.current!.style.backgroundColor = colors.slightlyDifferentBackgroundFocused
+            }}
+            onMouseLeave={() => {
+                buttonRef.current!.style.backgroundColor = 'transparent'
+            }}
+        >
+            <PointerArrow direction={props.direction} disabled={disabled} />
+        </button>
+    )
 }
 
 function right_align(value: React.ReactNode): ReactNode {
@@ -818,6 +831,20 @@ function right_align(value: React.ReactNode): ReactNode {
             style={{ float: 'right', marginRight: '5px' }}
         >
             {value}
+        </span>
+    )
+}
+
+export function PointerArrow({ direction, disabled }: { direction: -1 | 1, disabled: boolean }): ReactNode {
+    const spanStyle: React.CSSProperties = {
+        transform: `scale(${direction * -1}, 1)`, // Because the right unicode arrow is weird
+        display: 'inline-block',
+        visibility: disabled ? 'hidden' : 'visible',
+    }
+
+    return (
+        <span style={spanStyle}>
+            {'◁\ufe0e'}
         </span>
     )
 }

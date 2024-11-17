@@ -24,6 +24,8 @@ export type StatCategoryExpandedKey<C extends CategoryIdentifier = CategoryIdent
 export type StatYearKey<Y extends Year = Year> = `show_stat_year_${Y}`
 export type StatSourceKey<C extends SourceCategoryIdentifier = SourceCategoryIdentifier, S extends SourceIdentifier = SourceIdentifier> = `show_stat_source_${C}_${S}`
 
+export type TemperatureUnit = 'fahrenheit' | 'celsius'
+
 export type SettingsDictionary = {
     [relationshipKey: RelationshipKey]: boolean | undefined
     show_historical_cds: boolean
@@ -34,6 +36,7 @@ export type SettingsDictionary = {
     theme: Theme | 'System Theme'
     colorblind_mode: boolean
     clean_background: boolean
+    temperature_unit: TemperatureUnit
 }
 & { [G in GroupIdentifier as StatGroupKey<G>]: boolean }
 & { [C in CategoryIdentifier as StatCategorySavedIndeterminateKey<C>]: GroupIdentifier[] }
@@ -85,6 +88,7 @@ export const defaultSettingsList = [
     ['colorblind_mode', false] as const,
     ['clean_background', false] as const,
     ...statPathsWithExtra.map(statPath => [`expanded__${statPath}`, false] as const),
+    ['temperature_unit', 'fahrenheit'],
 ] as const
 
 // Having a default settings object allows us to statically check that we have default values for all settings

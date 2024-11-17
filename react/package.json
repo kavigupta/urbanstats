@@ -56,7 +56,6 @@
     "tsx": "^4.19.1",
     "typescript": "^5.5.4",
     "typescript-eslint": "^8.0.1",
-    "zod": "^3.23.8",
     "zodcli": "^0.0.4"
   },
   "dependencies": {
@@ -85,6 +84,6 @@
     "react-dom": "^18.2.0",
     "react-mobile-share": "^1.0.30",
     "react-zlib-js": "^1.0.5",
-    "resolve-cwd": "^3.0.0"
+    "zod": "^3.23.8"
   }
 }

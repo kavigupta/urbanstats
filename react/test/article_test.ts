@@ -57,10 +57,10 @@ test('editable-number', async (t) => {
 
 test('lr-buttons', async (t) => {
     // button with a < on it
-    const prev = Selector('a').withText('<').nth(0)
-    const next = Selector('a').withText('>').nth(0)
-    const prev_overall = Selector('a').withText('<').nth(1)
-    const next_overall = Selector('a').withText('>').nth(1)
+    const prev = Selector('button[data-test-id="-1"]').nth(0)
+    const next = Selector('button[data-test-id="1"]').nth(0)
+    const prev_overall = Selector('button[data-test-id="-1"]').nth(1)
+    const next_overall = Selector('button[data-test-id="1"]').nth(1)
     await t
         .click(prev)
     await t.expect(getLocationWithoutSettings())
@@ -153,5 +153,28 @@ urbanstatsFixture('all stats test regression', `/article.html?longname=Charlotte
 test('charlotte-all-stats', async (t) => {
     await t.resizeWindow(1400, 800)
     await check_all_category_boxes(t)
+    await screencap(t)
+})
+
+urbanstatsFixture('weather F', '/article.html?longname=California%2C+USA&s=jV3GG2h8Vfb')
+
+test('is F', async (t) => {
+    await t.expect(Selector('span').withText('62.2').exists).ok()
+})
+
+const temperatureSelect = Selector('[data-test-id=temperature_select]')
+
+test('change to C and back to F', async (t) => {
+    await t.click(temperatureSelect).click(temperatureSelect.find('option').withText('C'))
+    await t.expect(Selector('span').withText('28.8').exists).ok()
+    await t.click(temperatureSelect).click(temperatureSelect.find('option').withText('F'))
+    await t.expect(Selector('span').withText('62.2').exists).ok()
+})
+
+test('paste C link', async (t) => {
+    await check_textboxes(t, ['Simple Ordinals']) // to save settings
+    await t.navigateTo('/article.html?longname=California%2C+USA&s=jV3GG2h8Vfs')
+    await t.expect(Selector('[data-test-id=staging_controls]').exists).ok()
+    await t.expect(Selector('span').withText('28.8').exists).ok()
     await screencap(t)
 })

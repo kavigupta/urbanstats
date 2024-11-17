@@ -1,8 +1,8 @@
 name: check
 on: [push]
 env:
-  DOCKER_REGISTRY: ghcr.io
-  DOCKER_REPOSITORY: ${{ github.repository }}/e2e
+  # This is used in ci_proxy, do not remove. It is necessary so that
+  # we can test against non-production data
   BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
 jobs:
   lint:
@@ -12,62 +12,52 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-      - run: npm ci
-        working-directory: react
+      - uses: ./.github/actions/node_modules
       - run: npx eslint .
         working-directory: react
 
-  build-and-push-image:
+  build-and-push-common-image:
     runs-on: ubuntu-22.04
     outputs:
       image: ${{ steps.image.outputs.image }}
     permissions:
-      contents: read
       packages: write
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Create the tag by hashing react/test/Dockerfile
-        id: tag
-        run: echo "tag=$(shasum -a 256 react/test/Dockerfile requirements.txt | shasum -a 256 | cut -d ' ' -f 1)" >> $GITHUB_OUTPUT
-
-      - name: concat the Docker image name
+      - uses: ./.github/actions/docker_image
+        with:
+          dockerfile: Dockerfile
+          token: ${{ secrets.GITHUB_TOKEN }}
         id: image
-        run: echo "image=${{ env.DOCKER_REGISTRY }}/${{ env.DOCKER_REPOSITORY }}:${{ steps.tag.outputs.tag }}" >> $GITHUB_OUTPUT
 
-      - name: Check for existing image
-        id: existing-image
-        run: |
-          GHCR_TOKEN=$(echo -n ${{ secrets.GITHUB_TOKEN }} | base64)
-          echo "response=$(curl -s -o /dev/null -w "%{http_code}" -H "Authorization: Bearer ${GHCR_TOKEN}" https://${{ env.DOCKER_REGISTRY }}/v2/${{ env.DOCKER_REPOSITORY }}/manifests/${{ steps.tag.outputs.tag }})" >> $GITHUB_OUTPUT
+  build-and-push-e2e-image:
+    runs-on: ubuntu-22.04
+    outputs:
+      image: ${{ steps.image.outputs.image }}
+    permissions:
+      packages: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-      - name: Log in to the Container registry
-        if: ${{ steps.existing-image.outputs.response == '404' }}
-        uses: docker/login-action@v3
+      - uses: ./.github/actions/docker_image
         with:
-          registry: ${{ env.DOCKER_REGISTRY }}
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Build and push Docker image
-        if: ${{ steps.existing-image.outputs.response == '404' }}
-        uses: docker/build-push-action@v6
-        with:
-          context: .
-          file: react/test/Dockerfile
-          push: true
-          tags: ${{ steps.image.outputs.image }}
+          dockerfile: react/test/Dockerfile
+          token: ${{ secrets.GITHUB_TOKEN }}
+        id: image
 
   lint-python:
     runs-on: ubuntu-22.04
 
-    needs: build-and-push-image
+    needs: build-and-push-common-image
     container:
-      image: ${{ needs.build-and-push-image.outputs.image }}
+      image: ${{ needs.build-and-push-common-image.outputs.image }}
 
     steps:
       - uses: actions/checkout@v4
+      - uses: ./.github/actions/python_environment
       - name: Lint with pylint
         run: python -m pylint --prefer-stubs=true urbanstats
       - name: Check black
@@ -84,12 +74,14 @@ jobs:
 
   build-frontend:
     runs-on: ubuntu-22.04
-    needs: build-and-push-image
+    needs: build-and-push-common-image
     container:
-      image: ${{ needs.build-and-push-image.outputs.image }}
+      image: ${{ needs.build-and-push-common-image.outputs.image }}
     steps:
       - uses: actions/checkout@v4
-      - run: python3 create_website.py react/test/density-db --no-data --no-geo --no-juxta
+      - uses: ./.github/actions/python_environment
+      - uses: ./.github/actions/node_modules
+      - run: python3 create_website.py react/test/density-db --no-data --no-geo --no-juxta --mode=ci
       - uses: actions/upload-artifact@v4
         with:
           name: frontend-build
@@ -107,22 +99,23 @@ jobs:
 
   run-e2e-tests:
     runs-on: ubuntu-22.04
-    needs: [build-and-push-image, build-frontend, list-e2e-tests]
+    needs: [build-and-push-e2e-image, build-frontend, list-e2e-tests]
     container:
-      image: ${{ needs.build-and-push-image.outputs.image }}
+      image: ${{ needs.build-and-push-e2e-image.outputs.image }}
     strategy:
       fail-fast: false
       matrix:
         test-file: ${{ fromJson(needs.list-e2e-tests.outputs.matrix) }}
     steps:
       - uses: actions/checkout@v4
+      - uses: ./.github/actions/python_environment
+      - uses: ./.github/actions/node_modules
       - uses: actions/download-artifact@v4
         with:
           name: frontend-build
           path: react/test/density-db
       - name: Run tests
         run: |
-          npm ci
           npm run test:e2e -- \
             --proxy=true \
             --browser=chromium \

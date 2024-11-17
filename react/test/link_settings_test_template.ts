@@ -175,6 +175,7 @@ export function linkSettingsTests(baseLink: string): void {
 
     let histogramLink: string
     let histogramLinkWithRelativeChanged: string
+    let histogramLinkWithBar: string
 
     urbanstatsFixture('generate histogram link', baseLink)
 
@@ -189,6 +190,16 @@ export function linkSettingsTests(baseLink: string): void {
         await t.click(Selector('[data-test-id=histogram_relative]'))
 
         histogramLinkWithRelativeChanged = await getLocation()
+    })
+
+    const histogramTypeSelect = Selector('[data-test-id=histogram_type]')
+
+    test('open bar histogram', async (t) => {
+        await t.click(Selector('.expand-toggle'))
+        await t.click(histogramTypeSelect)
+            .click(histogramTypeSelect.find('option').withText('Bar'))
+
+        histogramLinkWithBar = await getLocation()
     })
 
     urbanstatsFixture('paste histogram link', TARGET, async (t) => {
@@ -227,6 +238,14 @@ export function linkSettingsTests(baseLink: string): void {
 
     test('relative changed histogram is not in staging mode', async (t) => {
         await t.expect(Selector('[data-test-id=staging_controls]').exists).notOk()
+    })
+
+    urbanstatsFixture('paste histogram bar link', TARGET, async (t) => {
+        await t.navigateTo(histogramLinkWithBar)
+    })
+
+    test('histogram has bar selected', async (t) => {
+        await t.expect(histogramTypeSelect.value).eql('Bar')
     })
 
     let hiddenHistogramLink: string

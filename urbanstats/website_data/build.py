@@ -47,12 +47,12 @@ def check_proto_hash():
     )
 
 
-def link_scripts_folder(site_folder, dev):
+def link_scripts_folder(site_folder, mode):
     if os.path.islink(f"{site_folder}/scripts"):
         os.unlink(f"{site_folder}/scripts")
     else:
         shutil.rmtree(f"{site_folder}/scripts")
-    if dev:
+    if mode == "dev":
         os.symlink(f"{os.getcwd()}/dist", f"{site_folder}/scripts", True)
     else:
         shutil.copytree("dist", f"{site_folder}/scripts")
@@ -114,8 +114,12 @@ def create_react_jsons():
         output_typescript(symlinks.symlinks, f, data_type="Record<string, string>")
 
 
-def build_react_site(site_folder, dev):
-    subprocess.run(f"cd react; npm {'i' if dev else 'ci'}", shell=True, check=True)
+def build_react_site(site_folder, mode):
+    if mode != "ci":
+        # In ci, we cache the node_modules
+        subprocess.run(
+            f"cd react; npm {'i' if mode == 'dev' else 'ci'}", shell=True, check=True
+        )
 
     create_react_jsons()
 
@@ -126,10 +130,12 @@ def build_react_site(site_folder, dev):
     )
 
     subprocess.run(
-        f"cd react; npm run {'dev' if dev else 'prod'}", shell=True, check=not dev
+        f"cd react; npm run {'dev' if mode == 'dev' else 'prod'}",
+        shell=True,
+        check=mode != "dev",
     )
 
-    link_scripts_folder(site_folder, dev)
+    link_scripts_folder(site_folder, mode)
 
 
 def build_urbanstats(
@@ -140,8 +146,12 @@ def build_urbanstats(
     no_juxta=False,
     no_data_jsons=False,
     no_index=False,
-    dev=False,
+    mode=None,
 ):
+    if not mode:
+        print("Must pass --mode=dev,prod,ci")
+        return
+
     check_proto_hash()
     if not no_geo:
         print("Producing geometry jsons")
@@ -209,7 +219,7 @@ def build_urbanstats(
     with open(f"{site_folder}/.nojekyll", "w") as f:
         f.write("")
 
-    build_react_site(site_folder, dev)
+    build_react_site(site_folder, mode)
 
     place_icons_in_site_folder(site_folder)
 

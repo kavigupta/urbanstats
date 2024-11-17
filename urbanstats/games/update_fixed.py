@@ -1,6 +1,7 @@
 import ast
 import json
 import os
+import subprocess
 
 import requests
 
@@ -29,6 +30,8 @@ def save_fixed_py(fixed):
         f.write("\n")
         for key, value in fixed.items():
             f.write(f"{key} = {value}\n")
+
+    subprocess.check_call(f"python -m black {fixed_py_file}", shell=True)
 
 
 def copy_up_to(key, new_up_to, folder=None):

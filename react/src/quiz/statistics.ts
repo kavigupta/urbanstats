@@ -1,3 +1,5 @@
+import { QuizHistory } from './quiz'
+
 const ENDPOINT = 'https://persistent.urbanstats.org'
 
 export function unique_persistent_id(): string {
@@ -26,9 +28,7 @@ async function registerUser(userId: string): Promise<void> {
     })
 }
 
-export type History = Record<string, { choices: ('A' | 'B')[], correct_pattern: boolean[] }>
-
-async function reportToServerGeneric(whole_history: History, endpoint_latest: string, endpoint_store: string, parse_day: (day: string) => number): Promise<void> {
+async function reportToServerGeneric(whole_history: QuizHistory, endpoint_latest: string, endpoint_store: string, parse_day: (day: string) => number): Promise<void> {
     const user = unique_persistent_id()
     await registerUser(user)
     // fetch from latest_day endpoint
@@ -83,10 +83,10 @@ function parse_retrostat_week(day: string): number {
     return parseInt(day.substring(1))
 }
 
-export async function reportToServer(whole_history: History): Promise<void> {
+export async function reportToServer(whole_history: QuizHistory): Promise<void> {
     await reportToServerGeneric(whole_history, '/juxtastat/latest_day', '/juxtastat/store_user_stats', parse_juxtastat_day)
 }
 
-export async function reportToServerRetro(whole_history: History): Promise<void> {
+export async function reportToServerRetro(whole_history: QuizHistory): Promise<void> {
     await reportToServerGeneric(whole_history, '/retrostat/latest_week', '/retrostat/store_user_stats', parse_retrostat_week)
 }

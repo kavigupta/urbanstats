@@ -4,23 +4,13 @@ from urbanstats.statistics.output_statistics_metadata import (
     internal_statistic_names,
 )
 
-types = [
-    "City",
-    "County",
-    "MSA",
-    "State",
-    "Urban Area",
-    "Congressional District",
-    "Media Market",
-    "Judicial Circuit",
-    "Country",
-    "Subnational Region",
-    "Urban Center",
-]
 stats_to_display = {}
+stats_to_types = {}
 
 for collection in statistic_collections:
     stats_to_display.update(collection.quiz_question_names())
+    for name in collection.quiz_question_names():
+        stats_to_types[name] = collection.quiz_question_types()
 
 not_included = set()
 

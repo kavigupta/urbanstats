@@ -101,7 +101,7 @@ class CDCStatistics(USAStatistics):
     def dependencies(self):
         return ["population_18_2010"]
 
-    def compute_statistics_dictionary(
+    def compute_statistics_dictionary_usa(
         self, *, shapefile, existing_statistics, shapefile_table
     ):
         result = {}

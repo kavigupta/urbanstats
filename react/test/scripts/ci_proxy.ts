@@ -28,6 +28,9 @@ export async function startProxy(): Promise<void> {
         }
     })
 
+    // This is useful for debugging in case the proxy isn't working
+    console.warn('Proxy is using branch...', branch)
+
     const app = express()
 
     app.use(express.static('test/density-db'), proxy('https://raw.githubusercontent.com', {

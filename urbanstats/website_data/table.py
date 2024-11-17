@@ -18,7 +18,7 @@ from urbanstats.universe.universe_provider.compute_universes import (
 
 
 @permacache(
-    "population_density/stats_for_shapefile/compute_statistics_for_shapefile_28",
+    "population_density/stats_for_shapefile/compute_statistics_for_shapefile_30",
     key_function=dict(
         sf=lambda x: x.hash_key,
         shapefiles=lambda x: {k: v.hash_key for k, v in x.items()},
@@ -31,7 +31,7 @@ def compute_statistics_for_shapefile(
 ):
     print("Computing statistics for", sf.hash_key)
     sf_fr = sf.load_file()
-    result = sf_fr[["shortname", "longname"]].copy()
+    result = sf_fr[["shortname", "longname"] + sf.subset_mask_keys].copy()
 
     longname_to_universes = compute_universes_for_shapefile(shapefiles, sf)
     result["universes"] = [
@@ -44,18 +44,15 @@ def compute_statistics_for_shapefile(
     statistics = {}
 
     for collection in statistic_collections:
-        passes = collection.for_america() and sf.american
-        passes = passes or (collection.for_international() and sf.include_in_gpw)
-        if passes:
-            statistics.update(
-                collection.compute_statistics_dictionary(
-                    shapefile=sf,
-                    existing_statistics={
-                        k: statistics[k] for k in collection.dependencies()
-                    },
-                    shapefile_table=sf_fr,
-                )
+        statistics.update(
+            collection.compute_statistics_dictionary(
+                shapefile=sf,
+                existing_statistics={
+                    k: statistics.get(k, None) for k in collection.dependencies()
+                },
+                shapefile_table=sf_fr,
             )
+        )
 
     statistics = pd.DataFrame(statistics)
     result = pd.concat([result, statistics], axis=1)

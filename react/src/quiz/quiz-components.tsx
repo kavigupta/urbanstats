@@ -5,8 +5,8 @@ import '../components/quiz.css'
 import { useColors, useJuxtastatColors } from '../page_template/colors'
 import { useHeaderTextClass } from '../utils/responsive'
 
-import { nameOfQuizKind } from './quiz'
-import { History, unique_persistent_id } from './statistics'
+import { exportQuizPersona, importQuizPersona, nameOfQuizKind, QuizHistory } from './quiz'
+import { unique_persistent_id } from './statistics'
 
 export function Header({ quiz }: { quiz: { kind: 'juxtastat' | 'retrostat', name: string | number } }): ReactNode {
     let text = nameOfQuizKind(quiz.kind)
@@ -16,7 +16,7 @@ export function Header({ quiz }: { quiz: { kind: 'juxtastat' | 'retrostat', name
     return (<div className={useHeaderTextClass()}>{text}</div>)
 }
 
-export function Footer(props: { length: number, history: History[string] }): ReactNode {
+export function Footer(props: { length: number, history: QuizHistory[string] }): ReactNode {
     const colors = useColors()
     const juxtaColors = useJuxtastatColors()
     const footerColors: string[] = props.history.correct_pattern.map(
@@ -53,6 +53,7 @@ export function Help(props: { quiz_kind: 'juxtastat' | 'retrostat' }): ReactNode
             {text()}
             {' '}
             {UserId()}
+            {DownloadUpload()}
         </div>
     )
 }
@@ -62,6 +63,20 @@ export function UserId(): ReactNode {
         <div>
             {'Your user id is '}
             <span className="juxtastat-user-id">{unique_persistent_id()}</span>
+        </div>
+    )
+}
+
+export function DownloadUpload(): ReactNode {
+    return (
+        <div style={{ marginTop: '5px' }}>
+            <button onClick={() => { exportQuizPersona() }}>
+                Download Quiz History
+            </button>
+            {' '}
+            <button onClick={() => { void importQuizPersona() }}>
+                Upload Quiz History
+            </button>
         </div>
     )
 }

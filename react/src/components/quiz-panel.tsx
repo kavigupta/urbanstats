@@ -3,13 +3,12 @@ import React, { ReactNode, useState } from 'react'
 import { PageTemplate } from '../page_template/template'
 import '../common.css'
 import './quiz.css'
-import { QuizDescriptor, QuizQuestion, a_correct } from '../quiz/quiz'
+import { QuizDescriptor, QuizHistory, QuizQuestion, a_correct } from '../quiz/quiz'
 import { QuizQuestionDispatch } from '../quiz/quiz-question'
 import { QuizResult } from '../quiz/quiz-result'
-import { History } from '../quiz/statistics'
 
-function loadQuizHistory(): History {
-    const history = JSON.parse(localStorage.getItem('quiz_history') ?? '{}') as History
+export function loadQuizHistory(): QuizHistory {
+    const history = JSON.parse(localStorage.getItem('quiz_history') ?? '{}') as QuizHistory
 
     // set 42's correct_pattern's 0th element to true
     if ('42' in history) {
@@ -28,7 +27,7 @@ export function QuizPanel(props: { quizDescriptor: QuizDescriptor, today_name: s
 
     const todays_quiz_history = quiz_history[props.quizDescriptor.name] ?? { choices: [], correct_pattern: [] }
 
-    const set_todays_quiz_history = (history_today: History[string]): void => {
+    const set_todays_quiz_history = (history_today: QuizHistory[string]): void => {
         const newHistory = { ...quiz_history, [props.quizDescriptor.name]: history_today }
         set_quiz_history(newHistory)
         setWaiting(true)
