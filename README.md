@@ -30,7 +30,7 @@ echo "source venv/bin/activate" > .envrc
 direnv allow .
 ```
 
-Install Python requirements:
+Install Python requirements (This has been tested on Python 3.10):
 
 ```
 pip install -r requirements.txt
