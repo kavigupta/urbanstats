@@ -154,7 +154,7 @@ def output_order(ordinal_info):
     res = compress_counts(res_uncompressed)
     with open("react/src/data/counts_by_article_type.ts", "w") as f:
         output_typescript(
-            list(res.items()),
+            res,
             f,
             data_type="Record<string, Record<string, [number, number][]>>",
         )
