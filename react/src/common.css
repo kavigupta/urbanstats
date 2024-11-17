@@ -68,6 +68,14 @@
 
 button, select {
     font-family: 'Jost', 'Arial', sans-serif;
+    background-color: var(--slightly-different-background);
+    border-radius: 5px;
+    color: var(--text-main);
+    border: 1px solid var(--ordinal-text-color);
+}
+
+button:hover {
+    background-color: var(--slightly-different-background-focused);
 }
 
 .centered_text {
@@ -102,13 +110,9 @@ input[type=checkbox] {
     vertical-align: middle;
 }
 
-button {
-    background-color: var(--slightly-different-background);
+input[type=text] {
+    background-color: var(--background);
     border-radius: 5px;
     color: var(--text-main);
-    border: 1px solid var(--text-main);
-}
-
-button:hover {
-    background-color: var(--slightly-different-background-focused);
+    border: 1px solid var(--ordinal-text-color);
 }

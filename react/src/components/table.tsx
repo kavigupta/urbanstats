@@ -746,14 +746,12 @@ function PointerButtonsIndex(props: { ordinal: number, statpath: string, type: s
     return (
         <span style={{ margin: 'auto' }}>
             <PointerButtonIndex
-                text="<"
                 get_data={get_data}
                 original_pos={props.ordinal}
                 direction={-1}
                 total={props.total}
             />
             <PointerButtonIndex
-                text=">"
                 get_data={get_data}
                 original_pos={props.ordinal}
                 direction={+1}
@@ -764,10 +762,9 @@ function PointerButtonsIndex(props: { ordinal: number, statpath: string, type: s
 }
 
 function PointerButtonIndex(props: {
-    text: string
     get_data: () => Promise<string[]>
     original_pos: number
-    direction: number
+    direction: -1 | 1
     total: number
 }): ReactNode {
     const curr_universe = useUniverse()
@@ -801,17 +798,31 @@ function PointerButtonIndex(props: {
         borderRight: `1px solid ${colors.borderShadow}`,
         borderBottom: `1px solid ${colors.borderShadow}`,
         borderLeft: `1px solid ${colors.borderNonShadow}`,
+        backgroundColor: 'transparent',
     }
 
     const pos = props.original_pos - 1 + +props.direction
-    if (out_of_bounds(pos) || props.original_pos > props.total) {
-        return <span style={buttonStyle}>&nbsp;&nbsp;</span>
-    }
-    else {
-        return (
-            <a href="#" style={buttonStyle} onClick={() => onClick(pos)}>{props.text}</a>
-        )
-    }
+    const disabled = out_of_bounds(pos) || props.original_pos > props.total
+
+    const buttonRef = useRef<HTMLButtonElement>(null) // Need the ref otherwise the mouse enter and leave events can be sent to the wrong elem
+
+    return (
+        <button
+            disabled={disabled}
+            style={buttonStyle}
+            onClick={() => onClick(pos)}
+            data-test-id={props.direction}
+            ref={buttonRef}
+            onMouseEnter={() => {
+                buttonRef.current!.style.backgroundColor = colors.slightlyDifferentBackgroundFocused
+            }}
+            onMouseLeave={() => {
+                buttonRef.current!.style.backgroundColor = 'transparent'
+            }}
+        >
+            <PointerArrow direction={props.direction} disabled={disabled} />
+        </button>
+    )
 }
 
 function right_align(value: React.ReactNode): ReactNode {
@@ -820,6 +831,20 @@ function right_align(value: React.ReactNode): ReactNode {
             style={{ float: 'right', marginRight: '5px' }}
         >
             {value}
+        </span>
+    )
+}
+
+export function PointerArrow({ direction, disabled }: { direction: -1 | 1, disabled: boolean }): ReactNode {
+    const spanStyle: React.CSSProperties = {
+        transform: `scale(${direction * -1}, 1)`, // Because the right unicode arrow is weird
+        display: 'inline-block',
+        visibility: disabled ? 'hidden' : 'visible',
+    }
+
+    return (
+        <span style={spanStyle}>
+            {'◁\ufe0e'}
         </span>
     )
 }

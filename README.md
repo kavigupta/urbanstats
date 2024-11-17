@@ -44,6 +44,14 @@ git clone --depth 1 git@github.com:densitydb/densitydb.github.io.git
 
 I assume you are placing the site repository in `~/densitydb.github.io` in the following commands:
 
+Install Node requirements:
+```
+cd react
+npm ci
+```
+
+(Use `npm i` for subsequent updates)
+
 To develop on the site, run:
 
 ```
@@ -51,11 +59,9 @@ cd react
 npm run watch ~/densitydb.github.io
 ```
 
-This automatically installs and updates node modules.
-
 Then you can then visit the site in your web browser at `http://localhost:8000/`.
 
-The site will automatically reload when you make changes to JavaScript/TypeScript files.
+The site will automatically reload when you make changes to TypeScript files.
 
 You may need to restart the command when changing other files or pulling from `origin`.
 

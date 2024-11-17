@@ -34,11 +34,5 @@ const value: Record<string, string> = {
     '200M Person Circle': 'Kavi',
     '500M Person Circle': 'Kavi',
     '1B Person Circle': 'Kavi',
-    'State': 'US Subdivision',
-    'US 5M Person Circle': 'Kavi',
-    'US 10M Person Circle': 'Kavi',
-    'US 20M Person Circle': 'Kavi',
-    'US 50M Person Circle': 'Kavi',
-    'US 100M Person Circle': 'Kavi',
 }
 export default value

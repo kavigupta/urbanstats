@@ -11,7 +11,8 @@ import { useUniverse } from '../universe'
 import { useHeaderTextClass, useSubHeaderTextClass } from '../utils/responsive'
 import { display_type } from '../utils/text'
 
-import { Percentile, Statistic } from './table'
+import { for_type, StatCol } from './load-article'
+import { Percentile, PointerArrow, Statistic } from './table'
 
 const table_style = { display: 'flex', flexDirection: 'column', padding: '1px' } as const
 const column_names = ['Ordinal', 'Name', 'Value', '', 'Percentile']
@@ -30,6 +31,7 @@ export function StatisticPanel(props: {
     count: number
     ordering: 'ascending' | 'descending'
     joined_string: string
+    statcol: StatCol
     statname: string
     article_type: string
     article_names: string[]
@@ -102,6 +104,10 @@ export function StatisticPanel(props: {
 
     const textHeaderClass = useHeaderTextClass()
 
+    const universes_filtered = universes_ordered.filter(
+        universe => for_type(universe, props.statcol, props.article_type) > 0,
+    )
+
     return (
         <PageTemplate
             screencap_elements={() => ({
@@ -110,7 +116,7 @@ export function StatisticPanel(props: {
                 elements_to_render: [headers_ref.current!, table_ref.current!],
             })}
             has_universe_selector={true}
-            universes={universes_ordered}
+            universes={universes_filtered}
         >
             <div>
                 <div ref={headers_ref}>
@@ -341,13 +347,8 @@ function SelectPage(props: {
     next_page: number
 }): ReactNode {
     // low-key style for the buttons
-    const colors = useColors()
     const button_style = {
-        backgroundColor: colors.slightlyDifferentBackground,
-        border: `1px solid ${colors.textMain}`,
-        padding: '0 0.5em',
         margin: '0.5em',
-        color: colors.textMain,
     }
 
     const handleSubmit = (e: React.FocusEvent | React.KeyboardEvent): void => {
@@ -362,15 +363,28 @@ function SelectPage(props: {
         props.change_start(new_start)
     }
 
+    const disabled = {
+        left: props.current_page === 1,
+        right: props.current_page === props.max_pages,
+    }
+
     return (
         <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-            <button onClick={() => { props.change_start(props.prev_page) }} className="serif" style={button_style}>&lt;</button>
+            <button
+                onClick={() => { props.change_start(props.prev_page) }}
+                className="serif"
+                style={{ ...button_style, visibility: disabled.left ? 'hidden' : 'visible' }}
+                disabled={disabled.left}
+                data-test-id="-1"
+            >
+                <PointerArrow direction={-1} disabled={disabled.left} />
+            </button>
             <div>
                 <span>Page: </span>
                 <input
-                    type="string"
+                    type="text"
                     pattern="[0-9]*"
-                    style={{ width: '3em', textAlign: 'right', backgroundColor: colors.background, color: colors.textMain }}
+                    style={{ width: '3em', textAlign: 'right', fontSize: '16px' }}
                     className="serif"
                     defaultValue={props.current_page}
                     onKeyDown={(e) => {
@@ -386,7 +400,15 @@ function SelectPage(props: {
                     {props.max_pages}
                 </span>
             </div>
-            <button onClick={() => { props.change_start(props.next_page) }} className="serif" style={button_style}>&gt;</button>
+            <button
+                onClick={() => { props.change_start(props.next_page) }}
+                className="serif"
+                style={{ ...button_style, visibility: disabled.right ? 'hidden' : 'visible' }}
+                disabled={disabled.right}
+                data-test-id="1"
+            >
+                <PointerArrow direction={1} disabled={disabled.right} />
+            </button>
         </div>
     )
 }
@@ -440,7 +462,7 @@ function AscendingVsDescending({ on_click, is_ascending }: { on_click: (curr_uni
     return (
         <div style={{ display: 'flex', alignItems: 'center' }}>
             <div style={{ cursor: 'pointer' }} onClick={() => { on_click(curr_universe) }} id="statistic-panel-order-swap">
-                {is_ascending ? '▲' : '▼'}
+                {is_ascending ? '▲\ufe0e' : '▼\ufe0e'}
             </div>
         </div>
     )
