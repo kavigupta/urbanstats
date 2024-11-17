@@ -57,10 +57,10 @@ test('editable-number', async (t) => {
 
 test('lr-buttons', async (t) => {
     // button with a < on it
-    const prev = Selector('a').withText('<').nth(0)
-    const next = Selector('a').withText('>').nth(0)
-    const prev_overall = Selector('a').withText('<').nth(1)
-    const next_overall = Selector('a').withText('>').nth(1)
+    const prev = Selector('button[data-test-id="-1"]').nth(0)
+    const next = Selector('button[data-test-id="1"]').nth(0)
+    const prev_overall = Selector('button[data-test-id="-1"]').nth(1)
+    const next_overall = Selector('button[data-test-id="1"]').nth(1)
     await t
         .click(prev)
     await t.expect(getLocationWithoutSettings())

@@ -57,6 +57,12 @@ function lookup_in_compressed_sequence(seq: [number, number][], idx: number): nu
 
 export function for_type(universe: string, statcol: StatCol, typ: string): number {
     const idx = stats.indexOf(statcol) // Works because `require` is global
+    if (!(universe in counts_by_article_type)) {
+        return 0
+    }
+    if (!(typ in counts_by_article_type[universe])) {
+        return 0
+    }
     const counts_by_type = counts_by_article_type[universe][typ]
 
     return lookup_in_compressed_sequence(counts_by_type, idx)

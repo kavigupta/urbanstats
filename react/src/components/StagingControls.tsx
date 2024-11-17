@@ -10,9 +10,7 @@ export function StagingControls(): ReactNode {
     const isMobile = useMobileLayout()
 
     const buttonStyle: CSSProperties = {
-        backgroundColor: colors.background,
-        color: colors.textMain,
-        borderRadius: '5px',
+        border: `2px solid ${colors.textMain}`,
         margin: isMobile ? '20px' : '10px',
     }
 

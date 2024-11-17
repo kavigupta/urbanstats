@@ -20,7 +20,7 @@ Create a `virtualenv` for urbanstats:
 
 ```
 cd urbanstats
-virtualenv venv
+virtualenv venv -p 3.10
 ```
 
 Create a `direnv` that uses the `virtualenv`
@@ -30,7 +30,7 @@ echo "source venv/bin/activate" > .envrc
 direnv allow .
 ```
 
-Install Python requirements:
+Install Python requirements (This has been tested on Python 3.10):
 
 ```
 pip install -r requirements.txt
@@ -39,18 +39,10 @@ pip install -r requirements.txt
 You will want to clone the site repository to some location, using a shallow clone
 
 ```
-git clone --depth 1 git@github.com:densitydb/densitydb.github.io.git
+git clone --depth 1 https://github.com/densitydb/densitydb.github.io.git
 ```
 
 I assume you are placing the site repository in `~/densitydb.github.io` in the following commands:
-
-Install Node requirements:
-```
-cd react
-npm ci
-```
-
-(Use `npm i` for subsequent updates)
 
 To develop on the site, run:
 
@@ -58,6 +50,8 @@ To develop on the site, run:
 cd react
 npm run watch ~/densitydb.github.io
 ```
+
+This automatically installs and updates node modules.
 
 Then you can then visit the site in your web browser at `http://localhost:8000/`.
 

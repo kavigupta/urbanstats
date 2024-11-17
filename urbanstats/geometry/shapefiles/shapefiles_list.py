@@ -2,7 +2,7 @@ from urbanstats.geometry.shapefiles.shapefiles.ccds import CCDs
 from urbanstats.geometry.shapefiles.shapefiles.cities import CITIES
 from urbanstats.geometry.shapefiles.shapefiles.continents import CONTINENTS
 from urbanstats.geometry.shapefiles.shapefiles.counties import COUNTIES
-from urbanstats.geometry.shapefiles.shapefiles.countries import COUNTRIES, COUNTRY_USA
+from urbanstats.geometry.shapefiles.shapefiles.countries import COUNTRIES
 from urbanstats.geometry.shapefiles.shapefiles.county_cross_cd import COUNTY_CROSS_CD
 from urbanstats.geometry.shapefiles.shapefiles.csas import CSAs
 from urbanstats.geometry.shapefiles.shapefiles.districts import district_shapefiles
@@ -17,19 +17,14 @@ from urbanstats.geometry.shapefiles.shapefiles.native import native_shapefiles
 from urbanstats.geometry.shapefiles.shapefiles.neighborhoods import NEIGHBORHOODS
 from urbanstats.geometry.shapefiles.shapefiles.population_circle import (
     population_circles_shapefiles,
-    population_circles_usa_shapefiles,
     population_circles_usa_to_international,
 )
 from urbanstats.geometry.shapefiles.shapefiles.school_districts import SCHOOL_DISTRICTS
 from urbanstats.geometry.shapefiles.shapefiles.subnational_regions import (
-    STATES_USA,
     SUBNATIONAL_REGIONS,
 )
 from urbanstats.geometry.shapefiles.shapefiles.urban_areas import URBAN_AREAS
-from urbanstats.geometry.shapefiles.shapefiles.urban_centers import (
-    URBAN_CENTERS,
-    URBAN_CENTERS_USA,
-)
+from urbanstats.geometry.shapefiles.shapefiles.urban_centers import URBAN_CENTERS
 from urbanstats.geometry.shapefiles.shapefiles.usda_county_type import USDA_COUNTY_TYPE
 from urbanstats.geometry.shapefiles.shapefiles.zctas import ZCTAs
 
@@ -58,13 +53,7 @@ shapefiles = dict(
     **population_circles_shapefiles,
 )
 
-shapefiles_for_stats = dict(
-    **shapefiles,
-    usa_only=COUNTRY_USA,
-    states=STATES_USA,
-    us_urban_centers=URBAN_CENTERS_USA,
-    **population_circles_usa_shapefiles,
-)
+shapefiles_for_stats = dict(**shapefiles)
 
 american_to_international = {
     "USA": "Country",
