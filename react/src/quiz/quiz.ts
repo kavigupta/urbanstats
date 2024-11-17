@@ -62,6 +62,20 @@ export const quizPersonaSchema = z.object({
 
 export type QuizPersona = z.infer<typeof quizPersonaSchema>
 
+export function deleteQuizPersona(): void {
+    if (confirm(`This will DELETE ALL your Juxtastat and Retrostat progress.
+
+        Your existing Juxtastat and Retrostat progress will be lost.
+
+        Recommend downloading your current progress so you can restore it later.
+
+        Continue?`)){
+            localStorage.removeItem('quiz_history')
+            localStorage.removeItem('persistent_id')
+            window.location.reload()
+        }
+}
+
 export function exportQuizPersona(): void {
     const exported: QuizPersona = {
         date_exported: new Date(),
@@ -70,6 +84,18 @@ export function exportQuizPersona(): void {
     }
     const data = JSON.stringify(exported, null, 2)
     saveAs(new Blob([data], { type: 'application/json' }), `urbanstats_quiz_${exported.persistent_id}.json`)
+}
+
+function mergeHistories(data1: QuizHistory, data2: QuizHistory): QuizHistory{ // merge in favor of data1
+    const mergedData: QuizHistory = { ...data1 }
+    for (const key in data2) {
+        if (data2.hasOwnProperty(key)) {
+            if (!(key in mergedData)) {
+                mergedData[key] = data2[key]
+            }
+        }
+    }
+    return mergedData
 }
 
 export async function importQuizPersona(): Promise<void> {
@@ -81,14 +107,20 @@ export async function importQuizPersona(): Promise<void> {
     try {
         const text = await file.text()
         const persona = quizPersonaSchema.parse(JSON.parse(text))
-        if (confirm(`The uploaded progress will REPLACE ALL your Juxtastat and Retrostat progress.
+        let overwrite: boolean
+        if (localStorage.getItem('quiz_history')!==null) {  // no reason to confirm if they don't have any data in the first place'
+            overwrite = confirm(`The uploaded progress will be preferentially merged with your current Juxtastat and Retrostat progress.
 
-Your existing Juxtastat and Retrostat progress will be lost. 
+            Your existing Juxtastat and Retrostat progress, if different from what is uploaded, will be lost.
 
-Recommend downloading your current progress so you can restore it later.
+            Recommend downloading your current progress so you can restore it later.
 
-Continue?`)) {
-            localStorage.setItem('quiz_history', JSON.stringify(persona.quiz_history))
+            Continue?`)
+        } else {
+            overwrite = true;
+        }
+        if (overwrite) {
+            localStorage.setItem('quiz_history', JSON.stringify(mergeHistories(persona.quiz_history, loadQuizHistory())))
             localStorage.setItem('persistent_id', persona.persistent_id)
             window.location.reload()
         }
