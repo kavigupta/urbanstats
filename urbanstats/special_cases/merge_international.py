@@ -3,8 +3,7 @@ from collections import Counter
 import numpy as np
 import pandas as pd
 
-def merge_international_and_domestic(intl, usa):
-    full = pd.concat([usa, intl]).reset_index(drop=True)
+def merge_international_and_domestic(full):
     del full["type_category"]
     popu = np.array(full.population)
     popu[np.isnan(popu)] = full.gpw_population[np.isnan(popu)]

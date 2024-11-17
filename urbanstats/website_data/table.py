@@ -97,5 +97,6 @@ def international_shapefile():
 def shapefile_without_ordinals():
     usa = american_shapefile()
     intl = international_shapefile()
-    full = merge_international_and_domestic(intl, usa)
+    full = pd.concat([usa, intl]).reset_index(drop=True)
+    full = merge_international_and_domestic(full)
     return full
