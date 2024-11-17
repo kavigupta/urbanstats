@@ -20,7 +20,7 @@ Create a `virtualenv` for urbanstats:
 
 ```
 cd urbanstats
-virtualenv venv
+virtualenv venv -p 3.10
 ```
 
 Create a `direnv` that uses the `virtualenv`
@@ -39,7 +39,7 @@ pip install -r requirements.txt
 You will want to clone the site repository to some location, using a shallow clone
 
 ```
-git clone --depth 1 git@github.com:densitydb/densitydb.github.io.git
+git clone --depth 1 https://github.com/densitydb/densitydb.github.io.git
 ```
 
 I assume you are placing the site repository in `~/densitydb.github.io` in the following commands:
