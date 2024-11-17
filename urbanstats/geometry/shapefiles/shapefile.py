@@ -16,7 +16,7 @@ class Shapefile:
     additional_columns_to_keep = attr.ib(default=())
     drop_dup = attr.ib(default=False)
     chunk_size = attr.ib(default=None)
-    include_in_gpw = attr.ib(default=False)
+    special_data_sources = attr.ib(default=attr.Factory(dict))
     tolerate_no_state = attr.ib(default=False)
     universe_provider = attr.ib(kw_only=True)
     subset_masks = attr.ib(default=attr.Factory(dict))
