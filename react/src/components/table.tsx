@@ -798,7 +798,7 @@ function PointerButtonIndex(props: {
         borderRight: `1px solid ${colors.borderShadow}`,
         borderBottom: `1px solid ${colors.borderShadow}`,
         borderLeft: `1px solid ${colors.borderNonShadow}`,
-        backgroundColor: colors.background,
+        backgroundColor: 'transparent',
     }
 
     const pos = props.original_pos - 1 + +props.direction
