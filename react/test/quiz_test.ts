@@ -459,7 +459,7 @@ const expectedExportWithoutDate = {
 }
 
 test('export quiz progress', async (t) => {
-    await t.click(Selector('button').withText('Download Quiz History'))
+    await t.click(Selector('button').withText('Export Quiz History'))
 
     // Give it a second to download...
     await t.wait(1000)
@@ -473,19 +473,24 @@ test('export quiz progress', async (t) => {
 
 quiz_fixture('import quiz progress', `${TARGET}/quiz.html?date=90`,
     {
-        quiz_history: JSON.stringify({}),
+        quiz_history: JSON.stringify({
+            91: {
+                choices: ['A', 'A', 'A', 'A', 'A'],
+                correct_pattern: [true, true, true, true, true],
+            },
+        }),
         persistent_id: 'deadbeef',
     },
     '',
 )
 
-test('import quiz progress', async (t) => {
+test('import quiz progress merge', async (t) => {
     // Write the file to upload
     const tempfile = `${tempfile_name()}.json`
     writeFileSync(tempfile, JSON.stringify(expectedExportWithoutDate, null, 2))
 
-    await t.setNativeDialogHandler(() => true)
-    await t.click(Selector('button').withText('Upload Quiz History'))
+    await t.setNativeDialogHandler(() => 'merge')
+    await t.click(Selector('button').withText('Import Quiz History'))
     await t.setFilesToUpload('input[type=file]', [tempfile])
     await check_text(t, 'Excellent! 😊 4/5', '🟩🟩🟩🟩🟥')
 
@@ -497,4 +502,10 @@ test('import quiz progress', async (t) => {
 
     // Should transfer over the user id
     await t.expect(Selector('.juxtastat-user-id').withText('b0bacafe').exists).ok()
+
+    // Quiz 91 should still be there
+    await t.eval(() => {
+        document.location.href = '/quiz.html?date=91'
+    })
+    await check_text(t, 'Perfect! 🔥 5/5', '🟩🟩🟩🟩🟩')
 })

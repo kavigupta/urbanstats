@@ -81,19 +81,38 @@ export async function importQuizPersona(): Promise<void> {
     try {
         const text = await file.text()
         const persona = quizPersonaSchema.parse(JSON.parse(text))
-        if (confirm(`The uploaded progress will REPLACE ALL your Juxtastat and Retrostat progress.
-
-Your existing Juxtastat and Retrostat progress will be lost. 
-
-Recommend downloading your current progress so you can restore it later.
-
-Continue?`)) {
-            localStorage.setItem('quiz_history', JSON.stringify(persona.quiz_history))
-            localStorage.setItem('persistent_id', persona.persistent_id)
-            window.location.reload()
+        switch (promptUserForImportChoice()) {
+            case 'merge':
+                localStorage.setItem('quiz_history', JSON.stringify({ ...loadQuizHistory(), ...persona.quiz_history }))
+                localStorage.setItem('persistent_id', persona.persistent_id)
+                window.location.reload()
+                break
+            case 'replace':
+                localStorage.setItem('quiz_history', JSON.stringify(persona.quiz_history))
+                localStorage.setItem('persistent_id', persona.persistent_id)
+                window.location.reload()
+                break
+            case null:
+                break
         }
     }
     catch (error) {
         alert(`Could not parse file. Error: ${error}`)
+    }
+}
+
+function promptUserForImportChoice(previousInput?: string): 'merge' | 'replace' | null {
+    const userChoice = prompt(`${previousInput !== undefined ? `Unknown option "${previousInput}".\n\n` : ''}Type "merge" to merge the uploaded quiz history for both Juxtastat and Retrostat with your current progress.
+
+Type "replace" to ERASE ALL your current Juxtastat and Retrostat progress, and replace it with the uploaded history.
+        
+Recommend downloading your current progress so you can restore it later.`)?.toLowerCase()
+    switch (userChoice) {
+        case 'merge':
+        case 'replace':
+        case null:
+            return userChoice
+        default:
+            return promptUserForImportChoice(userChoice)
     }
 }
