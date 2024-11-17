@@ -12,6 +12,16 @@ class SubsetSpecification:
     name_in_subset: str
     subset_filter: Callable[[gpd.GeoSeries], bool]
 
+    def apply_to_shapefile(self, key, sf):
+        def new_filter(x):
+            return sf.filter(x) and self.subset_filter(x)
+
+        return attr.evolve(
+            sf, filter=new_filter, hash_key=f"{sf.hash_key}_{key}"
+        )
+
+    def mutate_table(subset, subset_name, s):
+        s[subset_mask_key(subset_name)] = s.apply(subset.subset_filter, axis=1)
 
 @attr.s
 class Shapefile:
@@ -58,7 +68,7 @@ class Shapefile:
         if s.shape[0] == 0:
             raise EmptyShapefileError
         for subset_name, subset in self.subset_masks.items():
-            s[self.subset_mask_key(subset_name)] = s.apply(subset.subset_filter, axis=1)
+            subset.mutate_table(subset_name, s)
         s = gpd.GeoDataFrame(
             {
                 "shortname": s.apply(self.shortname_extractor, axis=1),
@@ -93,19 +103,15 @@ class Shapefile:
         return s
 
     def subset_shapefile(self, subset_name):
-        def new_filter(x):
-            return self.filter(x) and self.subset_masks[subset_name].subset_filter(x)
-
-        return attr.evolve(
-            self, filter=new_filter, hash_key=f"{self.hash_key}_{subset_name}"
-        )
+        subset = self.subset_masks[subset_name]
+        return subset.apply_to_shapefile(subset_name, self)
 
     @property
     def subset_mask_keys(self):
-        return [self.subset_mask_key(k) for k in self.subset_masks]
+        return [subset_mask_key(k) for k in self.subset_masks]
 
-    def subset_mask_key(self, subset_name):
-        return f"subset_mask_{subset_name}"
+def subset_mask_key(subset_name):
+    return f"subset_mask_{subset_name}"
 
 
 class EmptyShapefileError(Exception):
