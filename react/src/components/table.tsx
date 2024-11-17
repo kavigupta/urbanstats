@@ -805,7 +805,12 @@ function PointerButtonIndex(props: {
     const disabled = out_of_bounds(pos) || props.original_pos > props.total
 
     return (
-        <button disabled={disabled} style={buttonStyle} onClick={() => onClick(pos)}>
+        <button
+            disabled={disabled}
+            style={buttonStyle}
+            onClick={() => onClick(pos)}
+            data-test-id={props.direction}
+        >
             <PointerArrow direction={props.direction} disabled={disabled} />
         </button>
     )
