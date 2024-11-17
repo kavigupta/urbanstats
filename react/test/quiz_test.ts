@@ -1,11 +1,11 @@
 import { exec } from 'child_process'
-import { writeFileSync } from 'fs'
+import { writeFileSync, readFileSync } from 'fs'
 import { promisify } from 'util'
 
 import { execa } from 'execa'
 import { RequestHook, Selector } from 'testcafe'
 
-import { TARGET, safeReload, screencap, urbanstatsFixture } from './test_utils'
+import { TARGET, most_recent_download_path, safeReload, screencap, urbanstatsFixture } from './test_utils'
 
 async function quiz_screencap(t: TestController): Promise<void> {
     await t.eval(() => {
@@ -48,10 +48,14 @@ function retrostat_table(): Promise<string> {
     return run_query('SELECT user, week, corrects from JuxtaStatIndividualStatsRetrostat')
 }
 
+function tempfile_name(): string {
+    return `/tmp/quiz_test_${Math.floor(Math.random() * 1000000)}`
+}
+
 function quiz_fixture(fix_name: string, url: string, new_localstorage: Record<string, string>, sql_statements: string): void {
     urbanstatsFixture(fix_name, url, async (t) => {
         // create a temporary file
-        const tempfile = `/tmp/quiz_test_${Math.floor(Math.random() * 1000000)}.sql`
+        const tempfile = `${tempfile_name()}.sql`
         // write the sql statements to the temporary file
         writeFileSync(tempfile, sql_statements)
         await promisify(exec)(`rm -f ../urbanstats-persistent-data/db.sqlite3; cd ../urbanstats-persistent-data; cat ${tempfile} | sqlite3 db.sqlite3; cd -`)
@@ -397,4 +401,96 @@ test('several-quiz-results-test', async (t) => {
         document.location.href = '/quiz.html?date=95'
     })
     await check_text(t, 'Excellent! 😊 4/5', '🟩🟩🟩🟩🟥')
+})
+
+quiz_fixture('export quiz progress', `${TARGET}/quiz.html?date=90`,
+    {
+        quiz_history: JSON.stringify({
+            90: {
+                choices: ['A', 'A', 'A', 'A', 'A'],
+                correct_pattern: [true, true, true, true, false],
+            },
+            W38: {
+                choices: ['A', 'A', 'A', 'A', 'A'],
+                correct_pattern: [true, false, true, false, true],
+            },
+        }),
+        persistent_id: 'b0bacafe',
+    },
+    '',
+)
+
+const expectedExportWithoutDate = {
+    persistent_id: 'b0bacafe',
+    quiz_history: {
+        90: {
+            choices: [
+                'A',
+                'A',
+                'A',
+                'A',
+                'A',
+            ],
+            correct_pattern: [
+                true,
+                true,
+                true,
+                true,
+                false,
+            ],
+        },
+        W38: {
+            choices: [
+                'A',
+                'A',
+                'A',
+                'A',
+                'A',
+            ],
+            correct_pattern: [
+                true,
+                false,
+                true,
+                false,
+                true,
+            ],
+        },
+    },
+}
+
+test('export quiz progress', async (t) => {
+    await t.click(Selector('button').withText('Download Quiz History'))
+    const { date_exported, ...downloadContents } = JSON.parse(readFileSync(most_recent_download_path()).toString()) as Record<string, unknown>
+
+    await t.expect(typeof date_exported === 'string').ok()
+
+    await t.expect(JSON.stringify(downloadContents, null, 2)).eql(JSON.stringify(expectedExportWithoutDate, null, 2))
+})
+
+quiz_fixture('import quiz progress', `${TARGET}/quiz.html?date=90`,
+    {
+        quiz_history: JSON.stringify({}),
+        persistent_id: 'deadbeef',
+    },
+    '',
+)
+
+test('import quiz progress', async (t) => {
+    // Write the file to upload
+    const tempfile = `${tempfile_name()}.json`
+    writeFileSync(tempfile, JSON.stringify(expectedExportWithoutDate, null, 2))
+
+    await t.setNativeDialogHandler(() => true)
+    await t.click(Selector('button').withText('Upload Quiz History'))
+    await t.setFilesToUpload('input[type=file]', [tempfile])
+    await check_text(t, 'Excellent! 😊 4/5', '🟩🟩🟩🟩🟥')
+
+    await t.eval(() => {
+        document.location.href = '/quiz.html?mode=retro&date=38'
+    })
+    // Should transfer over retro results
+    await check_text(t, 'Good! 🙃 3/5', '🟩🟥🟩🟥🟩')
+
+    // Should transfer over the user id
+    await t.expect(Selector('.juxtastat-user-id').withText('b0bacafe').exists).ok()
 })

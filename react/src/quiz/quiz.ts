@@ -57,7 +57,7 @@ export type QuizHistory = z.infer<typeof quizHistorySchema>
 export const quizPersonaSchema = z.object({
     persistent_id: z.string(),
     quiz_history: quizHistorySchema,
-    date_exported: z.string().pipe(z.coerce.date()),
+    date_exported: z.optional(z.string().pipe(z.coerce.date())),
 }).strict()
 
 export type QuizPersona = z.infer<typeof quizPersonaSchema>
