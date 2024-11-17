@@ -107,9 +107,8 @@ export async function importQuizPersona(): Promise<void> {
     try {
         const text = await file.text()
         const persona = quizPersonaSchema.parse(JSON.parse(text))
-        let overwrite: boolean
-        if (localStorage.getItem('quiz_history')!==null) {  // no reason to confirm if they don't have any data in the first place'
-            overwrite = confirm(`The uploaded progress will be preferentially merged with your current Juxtastat and Retrostat progress.
+        // no reason to confirm if they don't have any data in the first place
+        if (localStorage.getItem('quiz_history') === null || confirm(`The uploaded progress will be preferentially merged with your current Juxtastat and Retrostat progress.
 
             Your existing Juxtastat and Retrostat progress, if different from what is uploaded, will be lost.
 
