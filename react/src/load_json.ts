@@ -1,5 +1,6 @@
 import { gunzipSync } from 'zlib'
 
+import statistic_path_list from './data/statistic_path_list'
 import { index_link, ordering_data_link, ordering_link } from './navigation/links'
 import {
     Article, ConsolidatedShapes, ConsolidatedStatistics, DataLists,
@@ -63,15 +64,30 @@ export async function loadProtobuf(filePath: string, name: string): Promise<Arti
     }
 }
 
-const order_links = require('./data/order_links.json') as Record<string, number>
-const data_links = require('./data/data_links.json') as Record<string, number>
+const order_links = require('./data/order_links.json') as Record<string, number[]>
+const data_links = require('./data/data_links.json') as Record<string, number[]>
+
+function pull_key(arr: number[], key: string): number {
+    const idx = statistic_path_list.indexOf(key as ElementOf<typeof statistic_path_list>)
+    if (idx === -1) {
+        throw new Error(`statistic path not found: ${key}`)
+    }
+    let current = 0
+    for (let i = 0; i < arr.length; i++) {
+        current += arr[i]
+        if (idx < current) {
+            return i
+        }
+    }
+    throw new Error('index not found')
+}
 
 export async function load_ordering_protobuf(universe: string, statpath: string, type: string, is_data: true): Promise<IDataList>
 export async function load_ordering_protobuf(universe: string, statpath: string, type: string, is_data: boolean): Promise<IOrderList>
 export async function load_ordering_protobuf(universe: string, statpath: string, type: string, is_data: boolean): Promise<IDataList | IOrderList> {
     const links = is_data ? data_links : order_links
-    const key = `${universe}__${type}__${statpath}`
-    const idx = key in links ? links[key] : 0
+    const key = `${universe}__${type}`
+    const idx = key in links ? pull_key(links[key], statpath) : 0
     const order_link = is_data ? ordering_data_link(universe, type, idx) : ordering_link(universe, type, idx)
     if (is_data) {
         const dataLists = await loadProtobuf(order_link, 'DataLists')

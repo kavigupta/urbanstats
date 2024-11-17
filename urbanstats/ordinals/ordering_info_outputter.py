@@ -21,25 +21,27 @@ class ProtobufOutputter:
         self.limit = limit
         self.count = 0
         self.size = 0
+        self.count_each = 0
         self.proto = self.protobuf_class()
         self.fields = []
 
     def with_name(self, universe, typ, name):
         self.proto.statnames.append(name)
-        if self.count > 0:
-            self.fields.append(((universe, typ, name), self.count))
         return getattr(self.proto, self.protobuf_field).add()
 
     def notify(self, size):
         self.size += size
+        self.count_each += 1
 
     def flush(self, force=False):
         if self.size < self.limit and not force:
             return
         if self.size == 0:
             return
+        self.fields.append(self.count_each)
         write_gzip(self.proto, self.site_folder + self.path_fn(self.count))
         self.size = 0
+        self.count_each = 0
         self.count += 1
         self.proto = self.protobuf_class()
 
@@ -80,9 +82,11 @@ def output_data_files(order_info, site_folder, universe, typ):
         ordered_values, ordered_percentile = order_info.compute_values_and_percentiles(
             universe, typ, statistic_column
         )
-        for value, percentile in zip(ordered_values, ordered_percentile):
-            data_list.value.append(value)
-            data_list.population_percentile.append(percentile)
+        # for value, percentile in zip(ordered_values, ordered_percentile):
+        #     data_list.value.append(value)
+        #     data_list.population_percentile.append(percentile)
+        data_list.value.extend(ordered_values)
+        data_list.population_percentile.extend(ordered_percentile)
         outputter.notify(data_list.ByteSize())
         outputter.flush()
     outputter.flush(force=True)
@@ -109,21 +113,21 @@ def output_indices(ordinal_info, site_folder, universe):
 
 def output_ordering_for_universe(ordinal_info, site_folder, universe):
     output_indices(ordinal_info, site_folder, universe)
-    order_map = []
+    order_map = {}
     if (universe, "overall") in ordinal_info.universe_type_to_idx:
-        order_map += output_order_files(
+        order_map[universe, "overall"] = output_order_files(
             ordinal_info,
             site_folder,
             universe,
             "overall",
         )
-    data_map = []
+    data_map = {}
     typs = sorted(
         {t for u, t in ordinal_info.universe_type if t != "overall" and u == universe}
     )
     for typ in tqdm.tqdm(typs, desc=f"ords for {universe}"):
-        order_map += output_order_files(ordinal_info, site_folder, universe, typ)
-        data_map += output_data_files(ordinal_info, site_folder, universe, typ)
+        order_map[universe, typ] = output_order_files(ordinal_info, site_folder, universe, typ)
+        data_map[universe, typ] = output_data_files(ordinal_info, site_folder, universe, typ)
     return order_map, data_map
 
 
@@ -157,14 +161,14 @@ def output_order(ordinal_info):
 
 
 def output_ordering(site_folder, ordinal_info):
-    order_map_all = []
-    data_map_all = []
+    order_map_all = {}
+    data_map_all = {}
     for universe in all_universes():
         order_map, data_map = output_ordering_for_universe(
             ordinal_info, site_folder, universe
         )
-        order_map_all += order_map
-        data_map_all += data_map
+        order_map_all.update(order_map)
+        data_map_all.update(data_map)
     output_order(ordinal_info)
     with open("react/src/data/order_links.json", "w") as f:
         json.dump(mapify(order_map_all), f)
