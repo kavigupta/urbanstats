@@ -20,7 +20,7 @@ Create a `virtualenv` for urbanstats:
 
 ```
 cd urbanstats
-virtualenv venv
+virtualenv venv -p 3.10
 ```
 
 Create a `direnv` that uses the `virtualenv`
