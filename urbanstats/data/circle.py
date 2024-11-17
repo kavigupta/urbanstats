@@ -797,8 +797,6 @@ def circle_shapefile_object(country_shapefile, population):
             ]
         ),
         subset_masks={
-            "USA": FilteringSubset(
-                "US " + name, lambda x: x.longname.endswith(", USA")
-            )
+            "USA": FilteringSubset("US " + name, lambda x: x.longname.endswith(", USA"))
         },
     )

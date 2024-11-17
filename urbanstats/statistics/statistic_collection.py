@@ -9,7 +9,10 @@ from urbanstats.games.quiz_region_types import (
     QUIZ_REGION_TYPES_INTERNATIONAL,
     QUIZ_REGION_TYPES_USA,
 )
-from urbanstats.geometry.shapefiles.shapefile import EmptyShapefileError, subset_mask_key
+from urbanstats.geometry.shapefiles.shapefile import (
+    EmptyShapefileError,
+    subset_mask_key,
+)
 
 ORDER_CATEGORY_MAIN = 0
 ORDER_CATEGORY_OTHER_DENSITIES = 1
