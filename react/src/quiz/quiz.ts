@@ -103,7 +103,7 @@ Your existing Juxtastat and Retrostat progress, if different from what is upload
 Recommend downloading your current progress so you can restore it later.
 
 Continue?`)) {
-            localStorage.setItem('quiz_history', JSON.stringify({ ...persona.quiz_history, ...loadQuizHistory() }))
+            localStorage.setItem('quiz_history', JSON.stringify({ ...loadQuizHistory(), ...persona.quiz_history }))
             localStorage.setItem('persistent_id', persona.persistent_id)
             window.location.reload()
         }
