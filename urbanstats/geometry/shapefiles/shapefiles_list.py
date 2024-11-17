@@ -53,8 +53,6 @@ shapefiles = dict(
     **population_circles_shapefiles,
 )
 
-shapefiles_for_stats = dict(**shapefiles)
-
 american_to_international = {
     "USA": "Country",
     "State": "Subnational Region",
