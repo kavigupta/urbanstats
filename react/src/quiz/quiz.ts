@@ -86,18 +86,6 @@ export function exportQuizPersona(): void {
     saveAs(new Blob([data], { type: 'application/json' }), `urbanstats_quiz_${exported.persistent_id}.json`)
 }
 
-function mergeHistories(data1: QuizHistory, data2: QuizHistory): QuizHistory{ // merge in favor of data1
-    const mergedData: QuizHistory = { ...data1 }
-    for (const key in data2) {
-        if (data2.hasOwnProperty(key)) {
-            if (!(key in mergedData)) {
-                mergedData[key] = data2[key]
-            }
-        }
-    }
-    return mergedData
-}
-
 export async function importQuizPersona(): Promise<void> {
     const file = await uploadFile('.json')
     if (file === cancelled) {
