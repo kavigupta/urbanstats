@@ -112,7 +112,7 @@ export async function importQuizPersona(): Promise<void> {
 
 Your existing Juxtastat and Retrostat progress, if different from what is uploaded, will be lost.
 
-            Recommend downloading your current progress so you can restore it later.
+Recommend downloading your current progress so you can restore it later.
 
             Continue?`)
         } else {
