@@ -47,6 +47,9 @@ export function PageTemplate({
         document.documentElement.style.setProperty('--slightly-different-background-focused', colors.slightlyDifferentBackgroundFocused)
         document.documentElement.style.setProperty('--blue-link', colors.blueLink)
         document.documentElement.style.setProperty('--text-main-opposite', colors.textMainOpposite)
+        document.documentElement.style.setProperty('--text-main', colors.textMain)
+        document.documentElement.style.setProperty('--ordinal-text-color', colors.ordinalTextColor)
+        document.documentElement.style.setProperty('--background', colors.background)
     }, [colors, juxtaColors])
 
     useEffect(() => {

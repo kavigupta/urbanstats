@@ -27,20 +27,17 @@ urbanstatsFixture('statistics-navigation', `${TARGET}/statistic.html?statname=Po
 
 test('statistics-navigation-left', async (t) => {
     await t
-        .click(Selector('button').withText('<'))
+        .click(Selector('button[data-test-id="-1"]'))
     const url = `${TARGET}/statistic.html?statname=Population&article_type=Hospital+Referral+Region&start=1&amount=20`
     await t.expect(getLocation())
         .eql(url)
-    // going left again does nothing
-    await t
-        .click(Selector('button').withText('<'))
-    await t.expect(getLocation())
-        .eql(url)
+    // going left again is not an option
+    await t.expect(Selector('button[data-test-id="-1"][disabled]').exists).ok()
 })
 
 test('statistics-navigation-right', async (t) => {
     await t
-        .click(Selector('button').withText('>'))
+        .click(Selector('button[data-test-id="1"]'))
     await t.expect(getLocation())
         .eql(`${TARGET}/statistic.html?statname=Population&article_type=Hospital+Referral+Region&start=41&amount=20`)
 })
@@ -78,11 +75,8 @@ test('statistics-navigation-last-page', async (t) => {
         .eql(url)
 
     await screencap(t)
-    // going right again does nothing
-    await t
-        .click(Selector('button').withText('>'))
-    await t.expect(getLocation())
-        .eql(url)
+    // going right again is not available
+    await t.expect(Selector('button[data-test-id="1"][disabled]').exists).ok()
 })
 
 urbanstatsFixture('statistic universe selector test', `${TARGET}/statistic.html?statname=Population&article_type=City&start=3461&amount=20`)
@@ -160,10 +154,10 @@ test('statistic-ascending-descending-check-descending', async (t) => {
 test('statistic-ascending-descending-check-click', async (t) => {
     // click the button
     // check that button "statistic-panel-order-swap" has text downwards arrow ▼
-    await t.expect(Selector('#statistic-panel-order-swap').innerText).eql('▼')
+    await t.expect(Selector('#statistic-panel-order-swap').innerText).eql('▼\ufe0e')
     await t.click(Selector('#statistic-panel-order-swap'))
     // ensure the button is now ▲
-    await t.expect(Selector('#statistic-panel-order-swap').innerText).eql('▲')
+    await t.expect(Selector('#statistic-panel-order-swap').innerText).eql('▲\ufe0e')
     await t.wait(1000)
     // check the url
     await t.expect(getLocation())
