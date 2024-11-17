@@ -8,6 +8,7 @@ from urbanstats.protobuf.utils import save_string_list, write_gzip
 from urbanstats.statistics.output_statistics_metadata import internal_statistic_names
 from urbanstats.statistics.stat_path import get_statistic_column_path
 from urbanstats.universe.universe_list import all_universes
+from urbanstats.utils import output_typescript
 
 
 class ProtobufOutputter:
@@ -167,7 +168,9 @@ def output_ordering(site_folder, ordinal_info):
         order_map_all.update(order_map)
         data_map_all.update(data_map)
     output_order(ordinal_info)
-    with open("react/src/data/order_links.json", "w") as f:
-        json.dump(mapify(order_map_all), f)
-    with open("react/src/data/data_links.json", "w") as f:
-        json.dump(mapify(data_map_all), f)
+    with open("react/src/data/order_links.ts", "w") as f:
+        output_typescript(
+            mapify(order_map_all), f, data_type="Record<string, number[]>"
+        )
+    with open("react/src/data/data_links.ts", "w") as f:
+        output_typescript(mapify(data_map_all), f, data_type="Record<string, number[]>")
