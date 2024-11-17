@@ -1,27 +1,9 @@
 import pickle
-from dataclasses import dataclass
-from typing import Callable
 
 import attr
 import geopandas as gpd
 import pandas as pd
 
-
-@dataclass
-class SubsetSpecification:
-    name_in_subset: str
-    subset_filter: Callable[[gpd.GeoSeries], bool]
-
-    def apply_to_shapefile(self, key, sf):
-        def new_filter(x):
-            return sf.filter(x) and self.subset_filter(x)
-
-        return attr.evolve(
-            sf, filter=new_filter, hash_key=f"{sf.hash_key}_{key}"
-        )
-
-    def mutate_table(subset, subset_name, s):
-        s[subset_mask_key(subset_name)] = s.apply(subset.subset_filter, axis=1)
 
 @attr.s
 class Shapefile:
@@ -109,6 +91,7 @@ class Shapefile:
     @property
     def subset_mask_keys(self):
         return [subset_mask_key(k) for k in self.subset_masks]
+
 
 def subset_mask_key(subset_name):
     return f"subset_mask_{subset_name}"

@@ -1,4 +1,5 @@
-from urbanstats.geometry.shapefiles.shapefile import Shapefile, SubsetSpecification
+from urbanstats.geometry.shapefiles.shapefile import Shapefile
+from urbanstats.geometry.shapefiles.shapefile_subset import FilteringSubset
 from urbanstats.special_cases.country import countries
 from urbanstats.special_cases.country_names import iso_to_country
 from urbanstats.universe.universe_provider.combined_universe_provider import (
@@ -36,7 +37,7 @@ COUNTRIES = Shapefile(
         ]
     ),
     subset_masks={
-        "USA": SubsetSpecification(
+        "USA": FilteringSubset(
             "USA", lambda x: extract_country_longname(x) == "USA"
         )
     },

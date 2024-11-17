@@ -3,7 +3,8 @@ from typing import Tuple
 
 import us
 
-from urbanstats.geometry.shapefiles.shapefile import Shapefile, SubsetSpecification
+from urbanstats.geometry.shapefiles.shapefile import Shapefile
+from urbanstats.geometry.shapefiles.shapefile_subset import FilteringSubset
 from urbanstats.special_cases.ghsl_urban_center import load_ghsl_urban_center
 from urbanstats.universe.universe_list import get_universe_name_for_state
 from urbanstats.universe.universe_provider.combined_universe_provider import (
@@ -51,6 +52,6 @@ URBAN_CENTERS = Shapefile(
         [*INTERNATIONAL_PROVIDERS, UrbanCenterStateUniverseProvider()]
     ),
     subset_masks={
-        "USA": SubsetSpecification("US Urban Center", lambda x: "USA" == x.suffix)
+        "USA": FilteringSubset("US Urban Center", lambda x: "USA" == x.suffix)
     },
 )
