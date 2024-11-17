@@ -101,7 +101,7 @@ test('statistic-universe availability test', async (t) => {
     await t
         .click(Selector('img').withAttribute('class', 'universe-selector'))
     const options = Selector('img').withAttribute('class', 'universe-selector-option')
-    await t.expect(options.count).eql(55)
+    await t.expect(options.count).eql(56)
     // take the first 10 options and get the alt attribute
     const first10: (string | null)[] = []
     for (let i = 0; i < 10; i++) {
@@ -110,6 +110,7 @@ test('statistic-universe availability test', async (t) => {
     await t.expect(first10).eql([
         'world',
         'North America',
+        'Oceania',
         'USA',
         'Alabama, USA',
         'Alaska, USA',
@@ -117,7 +118,6 @@ test('statistic-universe availability test', async (t) => {
         'Arkansas, USA',
         'California, USA',
         'Colorado, USA',
-        'Connecticut, USA',
     ])
 })
 
