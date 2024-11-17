@@ -1,9 +1,9 @@
-const path = require('path')
+import path, { resolve } from 'path'
 
-const NodePolyfillPlugin = require('node-polyfill-webpack-plugin')
-const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin')
+import NodePolyfillPlugin from 'node-polyfill-webpack-plugin'
+import ForkTsCheckerWebpackPlugin from 'fork-ts-checker-webpack-plugin'
 
-module.exports = env => ({
+export default env => ({
     entry: {
         'article': ['./src/article.tsx'],
         'quiz': ['./src/quiz.tsx'],
@@ -17,7 +17,7 @@ module.exports = env => ({
     },
     output: {
         filename: '[name].js',
-        path: path.resolve(__dirname, '..', 'dist'),
+        path: path.resolve(import.meta.dirname, '..', 'dist'),
         clean: true,
     },
     resolve: {
@@ -31,7 +31,7 @@ module.exports = env => ({
     module: {
         rules: [
             { test: /\.tsx?$/, loader: 'builtin:swc-loader' },
-            { test: /\.js$/, loader: 'builtin:swc-loader' },
+            { test: /\.m?js$/, loader: 'builtin:swc-loader', resolve: { fullySpecified: false } },
             {
                 test: /\.css$/i,
                 use: ['style-loader', 'css-loader'],

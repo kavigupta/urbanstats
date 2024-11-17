@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 
+import numpy as np
 import pandas as pd
 
 from urbanstats.acs.load import aggregated_acs_data, aggregated_acs_data_us_pr
@@ -7,6 +8,10 @@ from urbanstats.games.quiz_region_types import (
     QUIZ_REGION_TYPES_ALL,
     QUIZ_REGION_TYPES_INTERNATIONAL,
     QUIZ_REGION_TYPES_USA,
+)
+from urbanstats.geometry.shapefiles.shapefile import (
+    EmptyShapefileError,
+    subset_mask_key,
 )
 
 ORDER_CATEGORY_MAIN = 0
@@ -110,7 +115,7 @@ class InternationalStatistics(StatisticCollection):
     def compute_statistics_dictionary(
         self, *, shapefile, existing_statistics, shapefile_table
     ):
-        if shapefile.include_in_gpw:
+        if "international_gridded_data" in shapefile.special_data_sources:
             return self.compute_statistics_dictionary_intl(
                 shapefile=shapefile,
                 existing_statistics=existing_statistics,
@@ -138,13 +143,37 @@ class USAStatistics(StatisticCollection):
     def compute_statistics_dictionary(
         self, *, shapefile, existing_statistics, shapefile_table
     ):
-        if shapefile.american:
+        if "USA" not in shapefile.subset_masks:
+            return {}
+
+        shapefile_subset = shapefile.subset_shapefile("USA")
+        if shapefile_subset is shapefile:
             return self.compute_statistics_dictionary_usa(
                 shapefile=shapefile,
                 existing_statistics=existing_statistics,
                 shapefile_table=shapefile_table,
             )
-        return {}
+        try:
+            shapefile_subset.load_file()
+        except EmptyShapefileError:
+            return {}
+        mask = shapefile_table[subset_mask_key("USA")]
+        [idxs] = np.where(mask)
+        for_subset = self.compute_statistics_dictionary_usa(
+            shapefile=shapefile_subset,
+            existing_statistics={
+                k: existing_statistics[k][mask] for k in existing_statistics
+            },
+            shapefile_table=shapefile_table[mask],
+        )
+
+        full = {}
+        for k in for_subset:
+            result = [np.nan] * len(shapefile_table)
+            for idx, value in zip(idxs, for_subset[k]):
+                result[idx] = value
+            full[k] = pd.Series(result, index=shapefile_table.index)
+        return full
 
     @abstractmethod
     def compute_statistics_dictionary_usa(

@@ -1,8 +1,12 @@
+from urbanstats.geometry.shapefiles.shapefile import (
+    multiple_localized_type_names,
+    subset_mask_key,
+)
 from urbanstats.geometry.shapefiles.shapefiles.ccds import CCDs
 from urbanstats.geometry.shapefiles.shapefiles.cities import CITIES
 from urbanstats.geometry.shapefiles.shapefiles.continents import CONTINENTS
 from urbanstats.geometry.shapefiles.shapefiles.counties import COUNTIES
-from urbanstats.geometry.shapefiles.shapefiles.countries import COUNTRIES, COUNTRY_USA
+from urbanstats.geometry.shapefiles.shapefiles.countries import COUNTRIES
 from urbanstats.geometry.shapefiles.shapefiles.county_cross_cd import COUNTY_CROSS_CD
 from urbanstats.geometry.shapefiles.shapefiles.csas import CSAs
 from urbanstats.geometry.shapefiles.shapefiles.districts import district_shapefiles
@@ -17,19 +21,13 @@ from urbanstats.geometry.shapefiles.shapefiles.native import native_shapefiles
 from urbanstats.geometry.shapefiles.shapefiles.neighborhoods import NEIGHBORHOODS
 from urbanstats.geometry.shapefiles.shapefiles.population_circle import (
     population_circles_shapefiles,
-    population_circles_usa_shapefiles,
-    population_circles_usa_to_international,
 )
 from urbanstats.geometry.shapefiles.shapefiles.school_districts import SCHOOL_DISTRICTS
 from urbanstats.geometry.shapefiles.shapefiles.subnational_regions import (
-    STATES_USA,
     SUBNATIONAL_REGIONS,
 )
 from urbanstats.geometry.shapefiles.shapefiles.urban_areas import URBAN_AREAS
-from urbanstats.geometry.shapefiles.shapefiles.urban_centers import (
-    URBAN_CENTERS,
-    URBAN_CENTERS_USA,
-)
+from urbanstats.geometry.shapefiles.shapefiles.urban_centers import URBAN_CENTERS
 from urbanstats.geometry.shapefiles.shapefiles.usda_county_type import USDA_COUNTY_TYPE
 from urbanstats.geometry.shapefiles.shapefiles.zctas import ZCTAs
 
@@ -58,42 +56,30 @@ shapefiles = dict(
     **population_circles_shapefiles,
 )
 
-shapefiles_for_stats = dict(
-    **shapefiles,
-    usa_only=COUNTRY_USA,
-    states=STATES_USA,
-    us_urban_centers=URBAN_CENTERS_USA,
-    **population_circles_usa_shapefiles,
-)
-
-american_to_international = {
-    "USA": "Country",
-    "State": "Subnational Region",
-    "US Urban Center": "Urban Center",
-    **population_circles_usa_to_international,
+localized_type_names = multiple_localized_type_names(shapefiles)
+unlocalization_map = {
+    localized: (unlocalized, subset)
+    for subset, localization_map in localized_type_names.items()
+    for unlocalized, localized in localization_map.items()
 }
-
-localized_type_names = {"USA": {v: k for k, v in american_to_international.items()}}
 
 
 def filter_table_for_type(table, typ):
-    is_internationalized = typ in american_to_international
-    if is_internationalized:
-        typ = american_to_international[typ]
-    table = table[table.type == typ]
-    if is_internationalized:
-        table = table[table.longname.apply(lambda x: x.endswith(", USA"))]
+    unlocalized_typ, subset = unlocalization_map.get(typ, (typ, None))
+    table = table[table["type"] == unlocalized_typ]
+    if subset is not None:
+        table = table[table[subset_mask_key(subset)]]
     return table
 
 
 def load_file_for_type(typ):
-    is_internationalized = typ in american_to_international
-    if is_internationalized:
-        typ = american_to_international[typ]
-    [loaded_file] = [x for x in shapefiles.values() if x.meta["type"] == typ]
-    loaded_file = loaded_file.load_file()
-    if is_internationalized:
-        loaded_file = loaded_file[
-            loaded_file.longname.apply(lambda x: x.endswith(", USA"))
-        ]
-    return loaded_file
+    if typ not in unlocalization_map:
+        unlocalized_typ = typ
+    else:
+        unlocalized_typ, _ = unlocalization_map[typ]
+    [loaded_shapefile] = [
+        x for x in shapefiles.values() if x.meta["type"] == unlocalized_typ
+    ]
+    loaded_file = loaded_shapefile.load_file()
+    loaded_file["type"] = loaded_shapefile.meta["type"]
+    return filter_table_for_type(loaded_file, typ)

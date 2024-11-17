@@ -1,4 +1,5 @@
 import pickle
+from collections import defaultdict
 
 import attr
 import geopandas as gpd
@@ -16,10 +17,10 @@ class Shapefile:
     additional_columns_to_keep = attr.ib(default=())
     drop_dup = attr.ib(default=False)
     chunk_size = attr.ib(default=None)
-    american = attr.ib(default=True)
-    include_in_gpw = attr.ib(default=False)
+    special_data_sources = attr.ib(default=attr.Factory(dict))
     tolerate_no_state = attr.ib(default=False)
     universe_provider = attr.ib(kw_only=True)
+    subset_masks = attr.ib(default=attr.Factory(dict))
 
     def load_file(self):
         """
@@ -48,12 +49,20 @@ class Shapefile:
         s = s[s.apply(self.filter, axis=1)]
         if s.shape[0] == 0:
             raise EmptyShapefileError
+        for subset_name, subset in self.subset_masks.items():
+            subset.mutate_table(subset_name, s)
         s = gpd.GeoDataFrame(
-            dict(
-                shortname=s.apply(self.shortname_extractor, axis=1),
-                longname=s.apply(self.longname_extractor, axis=1),
-                **{col: s[col] for col in self.additional_columns_to_keep},
-            ),
+            {
+                "shortname": s.apply(self.shortname_extractor, axis=1),
+                "longname": s.apply(self.longname_extractor, axis=1),
+                **{
+                    col: s[col]
+                    for col in [
+                        *self.additional_columns_to_keep,
+                        *self.subset_mask_keys,
+                    ]
+                },
+            },
             geometry=s.geometry,
         )
         if self.drop_dup:
@@ -75,6 +84,32 @@ class Shapefile:
         s = s.to_crs("EPSG:4326")
         return s
 
+    def subset_shapefile(self, subset_name):
+        subset = self.subset_masks[subset_name]
+        return subset.apply_to_shapefile(subset_name, self)
+
+    @property
+    def subset_mask_keys(self):
+        return [subset_mask_key(k) for k in self.subset_masks]
+
+    def localized_type_names(self):
+        return {
+            subset_name: subset.localized_type_names(self.meta["type"])
+            for subset_name, subset in self.subset_masks.items()
+        }
+
+
+def subset_mask_key(subset_name):
+    return f"subset_mask_{subset_name}"
+
 
 class EmptyShapefileError(Exception):
     pass
+
+
+def multiple_localized_type_names(shapefiles):
+    localized = defaultdict(dict)
+    for sf in shapefiles.values():
+        for subset_name, subset_localized in sf.localized_type_names().items():
+            localized[subset_name].update(subset_localized)
+    return localized

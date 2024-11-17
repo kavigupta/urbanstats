@@ -1,4 +1,5 @@
 from urbanstats.geometry.shapefiles.shapefile import Shapefile
+from urbanstats.geometry.shapefiles.shapefile_subset import FilteringSubset
 from urbanstats.special_cases.country import countries
 from urbanstats.special_cases.country_names import iso_to_country
 from urbanstats.universe.universe_provider.combined_universe_provider import (
@@ -14,6 +15,7 @@ from urbanstats.universe.universe_provider.self_provider import SelfUniverseProv
 
 
 def extract_country_longname(x):
+    # print(x)
     return iso_to_country(x.ISO_CC)
 
 
@@ -24,8 +26,7 @@ COUNTRIES = Shapefile(
     longname_extractor=extract_country_longname,
     filter=lambda x: iso_to_country(x.ISO_CC) is not None,
     meta=dict(type="Country", source="OpenDataSoft", type_category="International"),
-    american=False,
-    include_in_gpw=True,
+    special_data_sources=["international_gridded_data"],
     chunk_size=1,
     universe_provider=CombinedUniverseProvider(
         [
@@ -34,23 +35,7 @@ COUNTRIES = Shapefile(
             SelfUniverseProvider(),
         ]
     ),
-)
-
-
-def countries_usa():
-    loaded_file = COUNTRIES.load_file()
-    loaded_file = loaded_file[loaded_file.longname.apply(lambda x: "USA" in x)]
-    return loaded_file
-
-
-COUNTRY_USA = Shapefile(
-    hash_key="usa_only_3",
-    path=countries_usa,
-    shortname_extractor=lambda x: x["shortname"],
-    longname_extractor=lambda x: x["longname"],
-    filter=lambda x: "USA" == x.longname,
-    meta=dict(type="Country", source="OpenDataSoft", type_category="International"),
-    american=True,
-    include_in_gpw=False,
-    universe_provider=ConstantUniverseProvider(["world", "North America", "USA"]),
+    subset_masks={
+        "USA": FilteringSubset("USA", lambda x: extract_country_longname(x) == "USA")
+    },
 )

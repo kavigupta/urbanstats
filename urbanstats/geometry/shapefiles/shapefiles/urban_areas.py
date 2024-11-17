@@ -1,4 +1,5 @@
 from urbanstats.geometry.shapefiles.shapefile import Shapefile
+from urbanstats.geometry.shapefiles.shapefile_subset import SelfSubset
 from urbanstats.universe.universe_provider.constants import us_domestic_provider
 
 
@@ -22,4 +23,5 @@ URBAN_AREAS = Shapefile(
     filter=lambda x: True,
     meta=dict(type="Urban Area", source="Census", type_category="Census"),
     universe_provider=us_domestic_provider(),
+    subset_masks={"USA": SelfSubset()},
 )
