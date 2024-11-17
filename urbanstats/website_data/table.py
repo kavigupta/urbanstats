@@ -77,7 +77,6 @@ def american_shapefile():
     # https://www.openstreetmap.org/user/Minh%20Nguyen/diary/398893#:~:text=An%20administrative%20area%E2%80%99s%20name%20is%20unique%20within%20its%20immediate%20containing%20area%20%E2%80%93%20false
     # Ban both of these from the database
     full = full[full.longname != "Washington township [CCD], Union County, Ohio, USA"]
-    full = full[full.population > 0].copy()
     duplicates = {k: v for k, v in Counter(full.longname).items() if v > 1}
     assert not duplicates, str(duplicates)
     return full
@@ -90,8 +89,6 @@ def international_shapefile():
             t = compute_statistics_for_shapefile(s, shapefiles_for_stats)
             ts.append(t)
     intl = pd.concat(ts)
-    # intl = intl[intl.area > 10].copy()
-    intl = intl[intl.gpw_population > 0].copy()
     intl = intl.reset_index(drop=True)
     return intl
 
