@@ -1,4 +1,7 @@
-from urbanstats.geometry.shapefiles.shapefile import multiple_localized_type_names
+from urbanstats.geometry.shapefiles.shapefile import (
+    multiple_localized_type_names,
+    subset_mask_key,
+)
 from urbanstats.geometry.shapefiles.shapefiles.ccds import CCDs
 from urbanstats.geometry.shapefiles.shapefiles.cities import CITIES
 from urbanstats.geometry.shapefiles.shapefiles.continents import CONTINENTS
@@ -56,13 +59,6 @@ shapefiles = dict(
 
 shapefiles_for_stats = dict(**shapefiles)
 
-american_to_international = {
-    "USA": "Country",
-    "State": "Subnational Region",
-    "US Urban Center": "Urban Center",
-    **population_circles_usa_to_international,
-}
-
 localized_type_names = multiple_localized_type_names(shapefiles_for_stats)
 unlocalization_map = {
     localized: (unlocalized, subset)
@@ -72,12 +68,10 @@ unlocalization_map = {
 
 
 def filter_table_for_type(table, typ):
-    is_internationalized = typ in american_to_international
-    if is_internationalized:
-        typ = american_to_international[typ]
-    table = table[table["type"] == typ]
-    if is_internationalized:
-        table = table[table.longname.apply(lambda x: x.endswith(", USA"))]
+    unlocalized_typ, subset = unlocalization_map.get(typ, (typ, None))
+    table = table[table["type"] == unlocalized_typ]
+    if subset is not None:
+        table = table[table[subset_mask_key(subset)]]
     return table
 
 
