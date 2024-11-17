@@ -459,7 +459,7 @@ const expectedExportWithoutDate = {
 }
 
 test('export quiz progress', async (t) => {
-    await t.click(Selector('button').withText('Download Quiz History'))
+    await t.click(Selector('button').withText('Export Quiz History'))
 
     // Give it a second to download...
     await t.wait(1000)
