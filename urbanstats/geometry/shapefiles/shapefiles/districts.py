@@ -1,4 +1,5 @@
 from urbanstats.geometry.shapefiles.shapefile import Shapefile
+from urbanstats.geometry.shapefiles.shapefile_subset import SelfSubset
 from urbanstats.universe.universe_provider.constants import us_domestic_provider
 
 
@@ -18,6 +19,7 @@ def districts(file_name, district_type, district_abbrev, overrides=None):
         meta=dict(type=district_type, source="Census", type_category="Political"),
         filter=lambda x: True,
         universe_provider=us_domestic_provider(overrides),
+        subset_masks={"USA": SelfSubset()},
     )
 
 

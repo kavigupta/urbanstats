@@ -9,7 +9,10 @@ from urbanstats.games.quiz_region_types import (
     QUIZ_REGION_TYPES_INTERNATIONAL,
     QUIZ_REGION_TYPES_USA,
 )
-from urbanstats.geometry.shapefiles.shapefile import EmptyShapefileError
+from urbanstats.geometry.shapefiles.shapefile import (
+    EmptyShapefileError,
+    subset_mask_key,
+)
 
 ORDER_CATEGORY_MAIN = 0
 ORDER_CATEGORY_OTHER_DENSITIES = 1
@@ -140,21 +143,21 @@ class USAStatistics(StatisticCollection):
     def compute_statistics_dictionary(
         self, *, shapefile, existing_statistics, shapefile_table
     ):
-        if shapefile.american:
+        if "USA" not in shapefile.subset_masks:
+            return {}
+
+        shapefile_subset = shapefile.subset_shapefile("USA")
+        if shapefile_subset is shapefile:
             return self.compute_statistics_dictionary_usa(
                 shapefile=shapefile,
                 existing_statistics=existing_statistics,
                 shapefile_table=shapefile_table,
             )
-        if "USA" not in shapefile.subset_masks:
-            return {}
-
-        shapefile_subset = shapefile.subset_shapefile("USA")
         try:
             shapefile_subset.load_file()
         except EmptyShapefileError:
             return {}
-        mask = shapefile_table[shapefile.subset_mask_key("USA")]
+        mask = shapefile_table[subset_mask_key("USA")]
         [idxs] = np.where(mask)
         for_subset = self.compute_statistics_dictionary_usa(
             shapefile=shapefile_subset,

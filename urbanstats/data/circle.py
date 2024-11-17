@@ -19,7 +19,8 @@ from urbanstats.data.population_overlays import (
     direct_population_overlay,
     relevant_regions,
 )
-from urbanstats.geometry.shapefiles.shapefile import Shapefile, SubsetSpecification
+from urbanstats.geometry.shapefiles.shapefile import Shapefile
+from urbanstats.geometry.shapefiles.shapefile_subset import FilteringSubset
 from urbanstats.geometry.shapefiles.shapefiles.urban_centers import URBAN_CENTERS
 from urbanstats.universe.universe_provider.combined_universe_provider import (
     CombinedUniverseProvider,
@@ -785,7 +786,6 @@ def circle_shapefile_object(country_shapefile, population):
         longname_extractor=lambda x: x["longname"],
         meta=dict(type=name, source="GHSL", type_category="Kavi"),
         filter=lambda x: True,
-        american=False,
         include_in_gpw=True,
         tolerate_no_state=True,
         universe_provider=CombinedUniverseProvider(
@@ -796,8 +796,6 @@ def circle_shapefile_object(country_shapefile, population):
             ]
         ),
         subset_masks={
-            "USA": SubsetSpecification(
-                "US " + name, lambda x: x.longname.endswith(", USA")
-            )
+            "USA": FilteringSubset("US " + name, lambda x: x.longname.endswith(", USA"))
         },
     )
