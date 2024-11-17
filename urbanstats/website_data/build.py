@@ -183,15 +183,15 @@ def build_urbanstats(
         )
 
     if not no_data:
-        # if not no_data_jsons:
-        #     create_article_gzips(
-        #         site_folder, shapefile_without_ordinals(), all_ordinals()
-        #     )
+        if not no_data_jsons:
+            create_article_gzips(
+                site_folder, shapefile_without_ordinals(), all_ordinals()
+            )
 
-        # if not no_index:
-        #     export_index(shapefile_without_ordinals(), site_folder)
+        if not no_index:
+            export_index(shapefile_without_ordinals(), site_folder)
 
-        # output_ordering(site_folder, all_ordinals())
+        output_ordering(site_folder, all_ordinals())
 
         full_consolidated_data(site_folder)
 
