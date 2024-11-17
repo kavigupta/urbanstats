@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+
 from urbanstats.universe.universe_provider.combined_universe_provider import (
     CombinedUniverseProvider,
 )
