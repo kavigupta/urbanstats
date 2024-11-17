@@ -1,4 +1,5 @@
 from urbanstats.geometry.shapefiles.shapefile import Shapefile
+from urbanstats.geometry.shapefiles.shapefile_subset import SelfSubset
 from urbanstats.universe.universe_provider.constants import us_domestic_provider
 
 CCDs = Shapefile(
@@ -9,4 +10,5 @@ CCDs = Shapefile(
     filter=lambda x: True,
     meta=dict(type="CCD", source="Census", type_category="Census"),
     universe_provider=us_domestic_provider(),
+    subset_masks={"USA": SelfSubset()},
 )

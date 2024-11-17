@@ -1,4 +1,5 @@
 from urbanstats.geometry.shapefiles.shapefile import Shapefile
+from urbanstats.geometry.shapefiles.shapefile_subset import SelfSubset
 from urbanstats.geometry.shapefiles.shapefiles.judicial import render_start_and_end
 from urbanstats.universe.universe_provider.constants import us_domestic_provider
 
@@ -16,4 +17,5 @@ HISTORICAL_CONGRESSIONAL = Shapefile(
     ),
     chunk_size=100,
     universe_provider=us_domestic_provider(),
+    subset_masks={"USA": SelfSubset()},
 )

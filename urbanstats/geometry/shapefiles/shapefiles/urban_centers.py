@@ -46,7 +46,6 @@ URBAN_CENTERS = Shapefile(
     additional_columns_to_keep=["subnationals_ISO_CODE"],
     meta=dict(type="Urban Center", source="GHSL", type_category="International"),
     filter=lambda x: True,
-    american=False,
     include_in_gpw=True,
     universe_provider=CombinedUniverseProvider(
         [*INTERNATIONAL_PROVIDERS, UrbanCenterStateUniverseProvider()]
