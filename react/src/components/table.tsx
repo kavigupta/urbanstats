@@ -798,7 +798,7 @@ function PointerButtonIndex(props: {
         borderRight: `1px solid ${colors.borderShadow}`,
         borderBottom: `1px solid ${colors.borderShadow}`,
         borderLeft: `1px solid ${colors.borderNonShadow}`,
-        backgroundColor: colors.background,
+        backgroundColor: 'transparent',
     }
 
     const pos = props.original_pos - 1 + +props.direction
@@ -808,15 +808,16 @@ function PointerButtonIndex(props: {
 
     return (
         <button
-            ref={buttonRef}
             disabled={disabled}
             style={buttonStyle}
             onClick={() => onClick(pos)}
+            data-test-id={props.direction}
+            ref={buttonRef}
             onMouseEnter={() => {
                 buttonRef.current!.style.backgroundColor = colors.slightlyDifferentBackgroundFocused
             }}
             onMouseLeave={() => {
-                buttonRef.current!.style.backgroundColor = colors.background
+                buttonRef.current!.style.backgroundColor = 'transparent'
             }}
         >
             <PointerArrow direction={props.direction} disabled={disabled} />

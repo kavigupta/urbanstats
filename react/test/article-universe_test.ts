@@ -42,7 +42,7 @@ urbanstatsFixture('article universe navigation test', `/article.html?longname=Sa
 test('article-universe-right-arrow', async (t) => {
     // click right population arrow
     await t
-        .click(Selector('a').withText('>'))
+        .click(Selector('button[data-test-id="1"]'))
     await t.expect(getLocationWithoutSettings())
         .eql(`${TARGET}/article.html?longname=Camp+Pendleton+South+CDP%2C+California%2C+USA&universe=California%2C+USA`)
 })
@@ -135,7 +135,7 @@ test('article-universe-state-from-subnational', async (t) => {
     await screencap(t)
     // click the > button
     await t
-        .click(Selector('a').withText('>'))
+        .click(Selector('button[data-test-id="1"]'))
     await t.expect(getLocationWithoutSettings())
         .eql(`${TARGET}/article.html?longname=California%2C+USA&universe=world`)
     await screencap(t)
