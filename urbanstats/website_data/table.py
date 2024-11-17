@@ -6,7 +6,7 @@ import pandas as pd
 import tqdm.auto as tqdm
 from permacache import permacache, stable_hash
 
-from urbanstats.geometry.shapefiles.shapefiles_list import shapefiles
+from urbanstats.geometry.shapefiles.shapefiles_list import shapefiles_list
 from urbanstats.statistics.collections_list import (
     statistic_collections as statistic_collections_list,
 )
@@ -59,10 +59,8 @@ def compute_statistics_for_shapefile(
 
 def combined_shapefile():
     full = []
-    for k in tqdm.tqdm(shapefiles, desc="computing statistics"):
-        t = compute_statistics_for_shapefile(
-            shapefiles[k], shapefiles
-        )
+    for k in tqdm.tqdm(shapefiles_list, desc="computing statistics"):
+        t = compute_statistics_for_shapefile(shapefiles_list[k], shapefiles_list)
 
         full.append(t)
 
