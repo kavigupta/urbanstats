@@ -1,5 +1,3 @@
-import json
-
 import tqdm.auto as tqdm
 
 from urbanstats.ordinals.compress_counts import compress_counts, mapify
@@ -154,8 +152,12 @@ def output_order(ordinal_info):
     counts = ordinal_info.counts_by_type_universe_col()
     res_uncompressed = reorganize_counts(ordinal_info, counts)
     res = compress_counts(res_uncompressed)
-    with open("react/src/data/counts_by_article_type.json", "w") as f:
-        json.dump(res, f)
+    with open("react/src/data/counts_by_article_type.ts", "w") as f:
+        output_typescript(
+            res,
+            f,
+            data_type="Record<string, Record<string, [number, number][]>>",
+        )
 
 
 def output_ordering(site_folder, ordinal_info):
