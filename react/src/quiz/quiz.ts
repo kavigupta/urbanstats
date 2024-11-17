@@ -110,7 +110,7 @@ export async function importQuizPersona(): Promise<void> {
         // no reason to confirm if they don't have any data in the first place
         if (localStorage.getItem('quiz_history') === null || confirm(`The uploaded progress will be preferentially merged with your current Juxtastat and Retrostat progress.
 
-            Your existing Juxtastat and Retrostat progress, if different from what is uploaded, will be lost.
+Your existing Juxtastat and Retrostat progress, if different from what is uploaded, will be lost.
 
             Recommend downloading your current progress so you can restore it later.
 
