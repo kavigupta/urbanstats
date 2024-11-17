@@ -22,7 +22,7 @@ class SelfSubset(ShapefileSubset):
     def apply_to_shapefile(self, key, sf):
         return sf
 
-    def mutate_table(subset, subset_name, s):
+    def mutate_table(self, subset_name, s):
         s[subset_mask_key(subset_name)] = True
 
 
