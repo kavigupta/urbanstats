@@ -485,7 +485,7 @@ test('import quiz progress', async (t) => {
     writeFileSync(tempfile, JSON.stringify(expectedExportWithoutDate, null, 2))
 
     await t.setNativeDialogHandler(() => true)
-    await t.click(Selector('button').withText('Upload Quiz History'))
+    await t.click(Selector('button').withText('Import Quiz History'))
     await t.setFilesToUpload('input[type=file]', [tempfile])
     await check_text(t, 'Excellent! 😊 4/5', '🟩🟩🟩🟩🟥')
 
