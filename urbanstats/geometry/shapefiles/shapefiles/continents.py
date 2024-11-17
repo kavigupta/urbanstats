@@ -15,7 +15,6 @@ CONTINENTS = Shapefile(
     longname_extractor=lambda x: x.name_1,
     filter=lambda x: True,
     meta=dict(type="Continent", source="OpenDataSoft", type_category="International"),
-    american=False,
     include_in_gpw=True,
     chunk_size=1,
     universe_provider=CombinedUniverseProvider(
