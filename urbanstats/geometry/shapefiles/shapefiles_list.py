@@ -65,6 +65,7 @@ american_to_international = {
 
 localized_type_names = multiple_localized_type_names(shapefiles_for_stats)
 
+
 def filter_table_for_type(table, typ):
     is_internationalized = typ in american_to_international
     if is_internationalized:

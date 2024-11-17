@@ -1,5 +1,5 @@
-from collections import defaultdict
 import pickle
+from collections import defaultdict
 
 import attr
 import geopandas as gpd
