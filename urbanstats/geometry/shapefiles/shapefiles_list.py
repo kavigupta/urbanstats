@@ -1,3 +1,4 @@
+from urbanstats.geometry.shapefiles.shapefile import multiple_localized_type_names
 from urbanstats.geometry.shapefiles.shapefiles.ccds import CCDs
 from urbanstats.geometry.shapefiles.shapefiles.cities import CITIES
 from urbanstats.geometry.shapefiles.shapefiles.continents import CONTINENTS
@@ -60,7 +61,7 @@ american_to_international = {
     **population_circles_usa_to_international,
 }
 
-localized_type_names = {"USA": {v: k for k, v in american_to_international.items()}}
+localized_type_names = multiple_localized_type_names(shapefiles_for_stats)
 
 
 def filter_table_for_type(table, typ):

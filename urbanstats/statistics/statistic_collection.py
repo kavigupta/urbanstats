@@ -115,7 +115,7 @@ class InternationalStatistics(StatisticCollection):
     def compute_statistics_dictionary(
         self, *, shapefile, existing_statistics, shapefile_table
     ):
-        if shapefile.include_in_gpw:
+        if "international_gridded_data" in shapefile.special_data_sources:
             return self.compute_statistics_dictionary_intl(
                 shapefile=shapefile,
                 existing_statistics=existing_statistics,
@@ -143,16 +143,16 @@ class USAStatistics(StatisticCollection):
     def compute_statistics_dictionary(
         self, *, shapefile, existing_statistics, shapefile_table
     ):
-        if shapefile.american:
+        if "USA" not in shapefile.subset_masks:
+            return {}
+
+        shapefile_subset = shapefile.subset_shapefile("USA")
+        if shapefile_subset is shapefile:
             return self.compute_statistics_dictionary_usa(
                 shapefile=shapefile,
                 existing_statistics=existing_statistics,
                 shapefile_table=shapefile_table,
             )
-        if "USA" not in shapefile.subset_masks:
-            return {}
-
-        shapefile_subset = shapefile.subset_shapefile("USA")
         try:
             shapefile_subset.load_file()
         except EmptyShapefileError:
