@@ -369,6 +369,7 @@ function SelectPage(props: {
                 className="serif"
                 style={{ ...button_style, visibility: disabled.left ? 'hidden' : 'visible' }}
                 disabled={disabled.left}
+                data-test-id="-1"
             >
                 <PointerArrow direction={-1} disabled={disabled.left} />
             </button>
@@ -398,6 +399,7 @@ function SelectPage(props: {
                 className="serif"
                 style={{ ...button_style, visibility: disabled.right ? 'hidden' : 'visible' }}
                 disabled={disabled.right}
+                data-test-id="1"
             >
                 <PointerArrow direction={1} disabled={disabled.right} />
             </button>
