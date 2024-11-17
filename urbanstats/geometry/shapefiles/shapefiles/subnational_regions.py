@@ -1,4 +1,5 @@
 import us
+
 from urbanstats.geometry.shapefiles.shapefile import Shapefile, SubsetSpecification
 from urbanstats.geometry.shapefiles.shapefiles.countries import extract_country_longname
 from urbanstats.special_cases.country import subnational_regions
