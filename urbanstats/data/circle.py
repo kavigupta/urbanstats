@@ -773,26 +773,20 @@ def produce_image(population):
     print("Done with population", name)
 
 
-def circle_shapefile_object(country_shapefile, population, just_usa):
+def circle_shapefile_object(country_shapefile, population):
     name = named_populations[population] + " Person Circle"
-    if just_usa:
-        name = "US " + name
-        prefix = "us_"
-    else:
-        prefix = ""
     version = 27
     return Shapefile(
-        hash_key=prefix
-        + f"population_circle_{named_populations[population]}_{version}",
+        hash_key=f"population_circle_{named_populations[population]}_{version}",
         path=lambda: overlapping_circles_frame(
             country_shapefile, population, named_populations[population] + "PC"
         ),
         shortname_extractor=lambda x: x["shortname"],
         longname_extractor=lambda x: x["longname"],
         meta=dict(type=name, source="GHSL", type_category="Kavi"),
-        filter=(lambda x: x.longname.endswith(", USA")) if just_usa else lambda x: True,
-        american=just_usa,
-        include_in_gpw=not just_usa,
+        filter=lambda x: True,
+        american=False,
+        include_in_gpw=True,
         tolerate_no_state=True,
         universe_provider=CombinedUniverseProvider(
             [

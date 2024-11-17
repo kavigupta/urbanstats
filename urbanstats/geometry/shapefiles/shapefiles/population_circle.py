@@ -8,7 +8,7 @@ def compute_circles():
 
     for population, name in named_populations.items():
         key = f"population_circle_{name}"
-        intl = circle_shapefile_object(COUNTRIES, population, just_usa=False)
+        intl = circle_shapefile_object(COUNTRIES, population)
         pc_shapefiles[key] = intl
         pc_usa_to_intl["US " + intl.meta["type"]] = intl.meta["type"]
     return pc_shapefiles, pc_usa_to_intl
