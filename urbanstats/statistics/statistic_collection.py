@@ -115,7 +115,7 @@ class InternationalStatistics(StatisticCollection):
     def compute_statistics_dictionary(
         self, *, shapefile, existing_statistics, shapefile_table
     ):
-        if shapefile.include_in_gpw:
+        if "international_gridded_data" in shapefile.special_data_sources:
             return self.compute_statistics_dictionary_intl(
                 shapefile=shapefile,
                 existing_statistics=existing_statistics,
