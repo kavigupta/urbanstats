@@ -1,7 +1,7 @@
 import '../common.css'
 import './article.css'
 
-import React, { ReactNode, useRef } from 'react'
+import React, { ReactNode, useEffect, useRef } from 'react'
 
 import { article_link, comparison_link, sanitize } from '../navigation/links'
 import { useColors } from '../page_template/colors'
@@ -45,6 +45,10 @@ export function ArticlePanel({ article }: { article: Article }): ReactNode {
         throw new Error('filtered_rows_multi should have exactly one element')
     }
     const filtered_rows = filtered_rows_multi[0]
+
+    useEffect(() => {
+        document.title = article.shortname
+    }, [article.shortname])
 
     return (
         <StatPathsContext.Provider value={statPaths}>
