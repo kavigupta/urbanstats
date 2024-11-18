@@ -118,6 +118,7 @@ def extra_stats():
     extra = {name_to_idx[k]: v for k, v in result.items()}
     return extra
 
+
 def pack_index_vector(idxs):
     bool_array = np.zeros(max(idxs) + 1, dtype=np.bool_)
     bool_array[idxs] = True
