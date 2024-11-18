@@ -185,9 +185,9 @@ test('virgin-islands', async (t) => {
     await screencap(t)
 })
 
-urbanstatsFixture('some-stats-missing', '/article.html?longname=Shannon+Colony+CDP%2C+South+Dakota%2C+USA')
+urbanstatsFixture('some-stats-missing', '/article.html?longname=Pueblo East CDP%2C+Texas%2C+USA')
 
-test('shannon-colony-cdp', async (t) => {
+test('pueblo-east-cdp', async (t) => {
     await check_textboxes(t, ['Transportation'])
     await screencap(t)
 })
