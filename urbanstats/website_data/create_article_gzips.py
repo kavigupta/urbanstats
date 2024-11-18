@@ -10,7 +10,6 @@ from urbanstats.protobuf.utils import write_gzip
 from urbanstats.statistics.collections_list import statistic_collections
 from urbanstats.statistics.output_statistics_metadata import internal_statistic_names
 from urbanstats.website_data.sharding import create_filename
-from urbanstats.website_data.statistic_index_lists import index_bitvector_for_longname
 
 
 def isnan(x):
@@ -34,7 +33,7 @@ def create_article_gzip(
     statistic_names = internal_statistic_names()
     idxs = [i for i, x in enumerate(statistic_names) if not isnan(row[x])]
     data = data_files_pb2.Article()
-    data.statistic_indices_packed = bytes(index_bitvector_for_longname(idxs))
+    data.statistic_indices_packed = bytes(pack_index_vector(idxs))
     data.shortname = row.shortname
     data.longname = row.longname
     data.source = row.source
@@ -118,3 +117,8 @@ def extra_stats():
     name_to_idx = {name: idx for idx, name in enumerate(internal_statistic_names())}
     extra = {name_to_idx[k]: v for k, v in result.items()}
     return extra
+
+def pack_index_vector(idxs):
+    bool_array = np.zeros(max(idxs) + 1, dtype=np.bool_)
+    bool_array[idxs] = True
+    return np.packbits(bool_array, bitorder="little").tolist()
