@@ -1,5 +1,7 @@
 import { gunzipSync } from 'zlib'
 
+import data_links from './data/data_links'
+import order_links from './data/order_links'
 import statistic_path_list from './data/statistic_path_list'
 import { index_link, ordering_data_link, ordering_link } from './navigation/links'
 import {
@@ -63,9 +65,6 @@ export async function loadProtobuf(filePath: string, name: string): Promise<Arti
         throw new Error('protobuf type not recognized (see load_json.ts)')
     }
 }
-
-const order_links = require('./data/order_links.json') as Record<string, number[]>
-const data_links = require('./data/data_links.json') as Record<string, number[]>
 
 function pull_key(arr: number[], key: string): number {
     const idx = statistic_path_list.indexOf(key as ElementOf<typeof statistic_path_list>)

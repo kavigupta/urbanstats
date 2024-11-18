@@ -1,6 +1,7 @@
 import us
 
 from urbanstats.geometry.shapefiles.shapefile import Shapefile
+from urbanstats.geometry.shapefiles.shapefile_subset import SelfSubset
 from urbanstats.universe.universe_provider.constants import us_domestic_provider
 
 NEIGHBORHOODS = Shapefile(
@@ -34,4 +35,5 @@ NEIGHBORHOODS = Shapefile(
             "House Island Neighborhood, Portland City, Maine, USA": ["Maine, USA"],
         }
     ),
+    subset_masks={"USA": SelfSubset()},
 )
