@@ -110,12 +110,13 @@ function HistogramSettings(props: {
                 style={{ backgroundColor: colors.background, color: colors.textMain }}
                 onChange={(e) => { setHistogramType(e.target.value as HistogramType) }}
                 className="serif"
+                data-test-id="histogram_type"
             >
                 <option value="Line">Line</option>
                 <option value="Line (cumulative)">Line (cumulative)</option>
                 <option value="Bar">Bar</option>
             </select>
-            <CheckboxSetting name="Relative Histograms" setting_key="histogram_relative" />
+            <CheckboxSetting name="Relative Histograms" setting_key="histogram_relative" testId="histogram_relative" />
         </div>
     )
 }

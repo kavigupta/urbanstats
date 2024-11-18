@@ -1,11 +1,11 @@
 from functools import lru_cache
 
-from create_website import shapefile_without_ordinals
 from urbanstats.statistics.output_statistics_metadata import (
     statistic_internal_to_display_name,
 )
+from urbanstats.website_data.table import shapefile_without_ordinals
 
-from .quiz import stats_to_display
+from .quiz_columns import stats_to_display
 
 
 @lru_cache(maxsize=None)

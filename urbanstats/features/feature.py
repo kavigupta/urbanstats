@@ -2,6 +2,7 @@ import attr
 import geopandas as gpd
 import pandas as pd
 
+from ..osm.buses import national_stops
 from .within_distance import shapefile_points_to_radius
 
 
@@ -51,8 +52,6 @@ def load_airports():
 
 
 def load_buses():
-    from ..osm.buses import national_stops
-
     s = national_stops().copy()
     s.geometry = s.geometry.centroid
     s = s[~s.geometry.is_empty]

@@ -1,5 +1,11 @@
-from urbanstats.statistics.statistic_collection import USWeatherStatisticsCollection
+import pandas as pd
+from permacache import permacache
+
+from urbanstats.data.census_blocks import all_densities_gpd
+from urbanstats.geometry.census_aggregation import aggregate_by_census_block
+from urbanstats.statistics.statistic_collection import USAStatistics
 from urbanstats.weather.stats import era5_statistics
+from urbanstats.weather.to_blocks import weather_block_statistics
 
 POPULATION_WEIGHTED_EXPLANATION = (
     "!TOOLTIP Population weighted weather"
@@ -8,12 +14,11 @@ POPULATION_WEIGHTED_EXPLANATION = (
 )
 
 
-class USWeatherStatistics(USWeatherStatisticsCollection):
+class USWeatherStatistics(USAStatistics):
+    version = 3
+
     def name_for_each_statistic(self):
         return {k: stat.display_name for k, stat in era5_statistics.items()}
-
-    def category_for_each_statistic(self):
-        return self.same_for_each_name("weather")
 
     def explanation_page_for_each_statistic(self):
         return self.same_for_each_name("weather")
@@ -48,8 +53,35 @@ class USWeatherStatistics(USWeatherStatisticsCollection):
             "days_dewpoint_-inf_50_4",
         ]
 
-    def mutate_statistic_table(self, statistics_table, shapefile_table):
+    def dependencies(self):
+        return ["population"]
+
+    def compute_statistics_dictionary_usa(
+        self, *, shapefile, existing_statistics, shapefile_table
+    ):
+        statistics_table = {}
+        by_region = weather_by_region(shapefile)
+        for weather_stat in self.name_for_each_statistic():
+            statistics_table[weather_stat] = by_region[weather_stat]
+
         for weather_stat in self.name_for_each_statistic():
             statistics_table[weather_stat] = (
-                statistics_table[weather_stat] / statistics_table["population"]
+                statistics_table[weather_stat] / existing_statistics["population"]
             )
+
+        return statistics_table
+
+
+@permacache(
+    "urbanstats/statistics/collections/weather/weather_by_region",
+    key_function=dict(shapefile=lambda x: x.hash_key),
+)
+def weather_by_region(shapefile):
+    popu = all_densities_gpd().population
+
+    weather_block = weather_block_statistics()
+    result = {}
+    for k, wb_k in weather_block.items():
+        result[k] = wb_k * popu
+
+    return aggregate_by_census_block(2020, shapefile, pd.DataFrame(result))

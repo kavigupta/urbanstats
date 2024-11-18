@@ -2,10 +2,13 @@ from permacache import permacache
 
 chunk = 360 * 4
 
+import matplotlib.pyplot as plt
+from matplotlib.patches import Rectangle
+
+from urbanstats.data.gpw import lat_from_row_idx, load_full, lon_from_col_idx
+
 
 def produce_all_bounding_boxes():
-    from urbanstats.data.gpw import load_full
-
     mask = load_full() > 0
     rows, cols = mask.shape
     for i in range(0, rows, chunk):
@@ -15,8 +18,6 @@ def produce_all_bounding_boxes():
 
 
 def coords(i, j, mask):
-    from urbanstats.data.gpw import lat_from_row_idx, lon_from_col_idx
-
     i, j, i_end, j_end = clip(i, j, i + chunk, j + chunk, mask)
     lon_min = lon_from_col_idx(j)
     lon_max = lon_from_col_idx(j_end)
@@ -49,14 +50,7 @@ def global_bounding_boxes():
 
 
 def plot_bounding_boxes():
-    import matplotlib.pyplot as plt
-    from matplotlib.patches import Rectangle
-
-    from urbanstats.data.gpw import load_full
-
-    mask = load_full() > 0
-    fig, ax = plt.subplots(figsize=(10, 5))
-    # ax.imshow(mask)
+    _, ax = plt.subplots(figsize=(10, 5))
     for box in global_bounding_boxes():
         lon_min, lat_min, lon_max, lat_max = box
         ax.add_patch(

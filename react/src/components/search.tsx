@@ -111,9 +111,6 @@ export const SearchBox = (props: {
                     continue
                 }
             }
-            if (is_international_duplicate(values[i])) {
-                continue
-            }
             matches_new.push([match_count, i, match_count - priorities[i] / 10])
         }
         matches_new = top_10(matches_new)
@@ -140,11 +137,6 @@ export const SearchBox = (props: {
                 type="text"
                 className="serif"
                 style={{
-                    backgroundColor: colors.background,
-                    borderWidth: '0.1em',
-                    color: colors.textMain,
-                    borderRadius: '5px',
-                    border: `1px solid ${colors.ordinalTextColor}`,
                     ...props.style }}
                 placeholder={props.placeholder}
                 onKeyUp={onTextBoxKeyUp}
@@ -242,9 +234,4 @@ function is_a_match(a: string, b: string): number {
 
 function normalize(a: string): string {
     return a.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
-}
-
-function is_international_duplicate(x: string): boolean {
-    // ends with [SN], USA
-    return x.endsWith(' [SN], USA')
 }

@@ -1,5 +1,8 @@
 import { gunzipSync } from 'zlib'
 
+import data_links from './data/data_links'
+import order_links from './data/order_links'
+import statistic_path_list from './data/statistic_path_list'
 import { index_link, ordering_data_link, ordering_link } from './navigation/links'
 import {
     Article, ConsolidatedShapes, ConsolidatedStatistics, DataLists,
@@ -12,29 +15,12 @@ import {
 // from https://stackoverflow.com/a/4117299/1549476
 
 // Load JSON text from server hosted file and return JSON parsed object
-export function loadJSON(filePath: string): unknown {
-    // Load json file;
-    const json = loadTextFileAjaxSync(filePath, 'application/json')
-    // assert json is a string
-    if (typeof json !== 'string') {
-        throw new Error(`file not found: ${filePath}`)
+export async function loadJSON(filePath: string): Promise<unknown> {
+    const response = await fetch(filePath, { headers: { 'Content-Type': 'application/json' } })
+    if (response.status !== 200) {
+        throw new Error(`Expected response status 200, got ${response.status}: ${response.statusText}`)
     }
-    // Parse json
-    return JSON.parse(json)
-}
-
-function loadTextFileAjaxSync(filePath: string, mimeType: string): string | null {
-    const xmlhttp = new XMLHttpRequest()
-    xmlhttp.open('GET', filePath, false)
-    xmlhttp.overrideMimeType(mimeType)
-    xmlhttp.send()
-    if (xmlhttp.status === 200 && xmlhttp.readyState === 4) {
-        return xmlhttp.responseText
-    }
-    else {
-    // TODO Throw exception
-        return null
-    }
+    return response.json()
 }
 
 // Load a protobuf file from the server
@@ -80,15 +66,27 @@ export async function loadProtobuf(filePath: string, name: string): Promise<Arti
     }
 }
 
-const order_links = require('./data/order_links.json') as Record<string, number>
-const data_links = require('./data/data_links.json') as Record<string, number>
+function pull_key(arr: number[], key: string): number {
+    const idx = statistic_path_list.indexOf(key as ElementOf<typeof statistic_path_list>)
+    if (idx === -1) {
+        throw new Error(`statistic path not found: ${key}`)
+    }
+    let current = 0
+    for (let i = 0; i < arr.length; i++) {
+        current += arr[i]
+        if (idx < current) {
+            return i
+        }
+    }
+    throw new Error('index not found')
+}
 
 export async function load_ordering_protobuf(universe: string, statpath: string, type: string, is_data: true): Promise<IDataList>
 export async function load_ordering_protobuf(universe: string, statpath: string, type: string, is_data: boolean): Promise<IOrderList>
 export async function load_ordering_protobuf(universe: string, statpath: string, type: string, is_data: boolean): Promise<IDataList | IOrderList> {
     const links = is_data ? data_links : order_links
-    const key = `${universe}__${type}__${statpath}`
-    const idx = key in links ? links[key] : 0
+    const key = `${universe}__${type}`
+    const idx = key in links ? pull_key(links[key], statpath) : 0
     const order_link = is_data ? ordering_data_link(universe, type, idx) : ordering_link(universe, type, idx)
     if (is_data) {
         const dataLists = await loadProtobuf(order_link, 'DataLists')

@@ -1,6 +1,5 @@
 from urbanstats.acs.load import ACSDataEntity
 from urbanstats.statistics.statistic_collection import ACSStatisticsColection
-from urbanstats.statistics.utils import fractionalize
 
 
 class EducationStatistics(ACSStatisticsColection):
@@ -13,9 +12,6 @@ class EducationStatistics(ACSStatisticsColection):
             "education_field_humanities": "Undergrad Humanities %",
             "education_field_business": "Undergrad Business %",
         }
-
-    def category_for_each_statistic(self):
-        return self.same_for_each_name("education")
 
     def explanation_page_for_each_statistic(self):
         return self.same_for_each_name("education")
@@ -33,7 +29,7 @@ class EducationStatistics(ACSStatisticsColection):
     def quiz_question_unused(self):
         return []
 
-    def mutate_statistic_table(self, statistics_table, shapefile_table):
+    def mutate_acs_results(self, statistics_table):
         education_denominator = (
             statistics_table.education_no
             + statistics_table.education_high_school

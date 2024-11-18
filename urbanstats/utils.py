@@ -1,12 +1,11 @@
+import json
+
 import numpy as np
-import shapely
 from permacache import stable_hash
 
 
 def hash_full_table(sh):
-    non_float_columns = [
-        x for x in sh if sh[x].dtype != np.float64 and sh[x].dtype != np.float32
-    ]
+    non_float_columns = [x for x in sh if sh[x].dtype not in {np.float64, np.float32}]
     return stable_hash(
         (
             stable_hash([sh[x] for x in non_float_columns]),
@@ -25,7 +24,7 @@ def compute_bins_slow(data, weight, *, bin_size=0.1):
     bins = idxs * bin_size
     return [
         weight[
-            [idx == min(idxs, key=lambda idx: abs(bins[idx] - x)) for x in data]
+            [idx == min(idxs, key=lambda idx, x=x: abs(bins[idx] - x)) for x in data]
         ].sum()
         for idx in range(len(bins))
     ]
@@ -46,3 +45,11 @@ def compute_bins(data, weight, *, bin_size=0.1):
     idx = np.clip(idx, 0, len(values) - 1)
     np.add.at(values, idx, weight)
     return values
+
+
+def output_typescript(data, file, data_type="const"):
+    content = json.dumps(data, indent=4)
+    if data_type == "const":
+        file.write(f"export default {content} as const")
+    else:
+        file.write(f"const value: {data_type} = {content}\nexport default value")

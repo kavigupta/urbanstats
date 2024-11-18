@@ -1,0 +1,107 @@
+[
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Mean high temperature in winter",
+      "question": "higher mean daily high temperature in winter (population weighted)!TOOLTIP Population weighted weather statistics are calculated by computing the weather statistic for each person in the region and then averaging the results.",
+      "longname_a": "VA-03, USA",
+      "longname_b": "MD-08, USA",
+      "stat_a": 51.68668569232185,
+      "stat_b": 46.439382091075466
+    },
+    "b": {
+      "stat_column": "PW Density (r=4km) [GHS-POP]",
+      "question": "higher population-weighted density (r=4km)!TOOLTIP Population-weighted density is computed by computing the density within the given radius for each person in the region and then averaging the results. This is a better measure of the density that people actually experience.",
+      "longname_a": "Ethiopia",
+      "longname_b": "Syrian Arab Republic",
+      "stat_a": 1829.2957763671875,
+      "stat_b": 4842.546875
+    },
+    "a_ease": 0.7452948557089084,
+    "b_ease": 0.32622333751568383
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Gen Z %",
+      "question": "higher % of people who are gen z!TOOLTIP born between 1997 and 2011",
+      "longname_a": "IL-14, USA",
+      "longname_b": "MN-02, USA",
+      "stat_a": 0.22873498671446668,
+      "stat_b": 0.2021734529722633
+    },
+    "b": {
+      "stat_column": "Black %",
+      "question": "higher % of people who are Black",
+      "longname_a": "Portland-Vancouver-Hillsboro MSA, OR-WA, USA",
+      "longname_b": "Ann Arbor MSA, MI, USA",
+      "stat_a": 0.029035851195789338,
+      "stat_b": 0.11316076484588646
+    },
+    "a_ease": 0.35379644588045234,
+    "b_ease": 0.76
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Health technologists and technicians %",
+      "question": "higher % of workers employed as health technologists and technicians!TOOLTIP radiology technicians, lab technicians, hospital machinery technicians, etc.",
+      "longname_a": "MN-06, USA",
+      "longname_b": "PA-04, USA",
+      "stat_a": 0.021451541892316007,
+      "stat_b": 0.018165177468681282
+    },
+    "b": {
+      "stat_column": "PW Density (r=4km) [GHS-POP]",
+      "question": "higher population-weighted density (r=4km)!TOOLTIP Population-weighted density is computed by computing the density within the given radius for each person in the region and then averaging the results. This is a better measure of the density that people actually experience.",
+      "longname_a": "Kano, Nigeria",
+      "longname_b": "Lomami, Congo, The Democratic Republic of the",
+      "stat_a": 5286.20751953125,
+      "stat_b": 1572.0224609375
+    },
+    "a_ease": 0.35202340321794245,
+    "b_ease": 0.7668282175551966
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "No internet access %",
+      "question": "higher % of people who have no internet access",
+      "longname_a": "Flint [Urban Area], MI, USA",
+      "longname_b": "McKinney-Frisco [Urban Area], TX, USA",
+      "stat_a": 0.14917988661388845,
+      "stat_b": 0.03122926728813344
+    },
+    "b": {
+      "stat_column": "Utility gas heating %",
+      "question": "!FULL Which has a larger % of homes heated using utility gas?",
+      "longname_a": "Albuquerque city, New Mexico, USA",
+      "longname_b": "Nashville-Davidson metropolitan government (balance), Tennessee, USA",
+      "stat_a": 0.783154883478231,
+      "stat_b": 0.3173970458569305
+    },
+    "a_ease": 0.7926706827309237,
+    "b_ease": 0.3669678714859438
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Mean high temperature in winter",
+      "question": "higher mean daily high temperature in winter (population weighted)!TOOLTIP Population weighted weather statistics are calculated by computing the weather statistic for each person in the region and then averaging the results.",
+      "longname_a": "Philadelphia-Camden-Wilmington MSA, PA-NJ-DE-MD, USA",
+      "longname_b": "Wilmington MSA, NC, USA",
+      "stat_a": 44.29788977477639,
+      "stat_b": 57.871480722818596
+    },
+    "b": {
+      "stat_column": "Undergrad STEM %",
+      "question": "!FULL Which has more people with a STEM degree, as a percentage of the overall population?",
+      "longname_a": "Boulder County, Colorado, USA",
+      "longname_b": "Kitsap County, Washington, USA",
+      "stat_a": 0.3379276121671644,
+      "stat_b": 0.16535431296085953
+    },
+    "a_ease": 0.851373182552504,
+    "b_ease": 0.4500243783520234
+  }
+]

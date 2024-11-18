@@ -2,17 +2,19 @@
     "compilerOptions": {
         "strict": true,
         "lib": [
-            "ES2021",
+            "ES2022",
             "DOM"
         ],
         "jsx": "react",
         "esModuleInterop": true,
         "target": "ES2022",
-        "module": "CommonJS",
+        "module": "ES2022",
         "resolveJsonModule": true,
         "noImplicitOverride": true,
         "noImplicitReturns": true,
         "noFallthroughCasesInSwitch": true,
-        "allowUnreachableCode": false
+        "allowUnreachableCode": false,
+        "skipLibCheck": true,
+        "moduleResolution": "bundler"
     }
 }

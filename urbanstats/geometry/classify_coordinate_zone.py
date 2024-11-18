@@ -6,6 +6,7 @@ boxes = [
 
 
 def classify_coordinate_zone(geo):
+    # pylint: disable=too-many-return-statements
     xmin, _, xmax, _ = geo.bounds
     # adding 0.1 to avoid floating point errors
     if xmin < -180.1:

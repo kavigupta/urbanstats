@@ -11,9 +11,6 @@ class NationalOriginLanguageStatistics(ACSStatisticsColection):
             "language_other": "Other at Home %",
         }
 
-    def category_for_each_statistic(self):
-        return self.same_for_each_name("national_origin")
-
     def explanation_page_for_each_statistic(self):
         return self.same_for_each_name("language")
 
@@ -26,7 +23,7 @@ class NationalOriginLanguageStatistics(ACSStatisticsColection):
     def quiz_question_unused(self):
         return ["language_other"]
 
-    def mutate_statistic_table(self, statistics_table, shapefile_table):
+    def mutate_acs_results(self, statistics_table):
         fractionalize(
             statistics_table,
             "language_english_only",

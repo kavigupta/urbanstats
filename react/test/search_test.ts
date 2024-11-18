@@ -1,5 +1,5 @@
 import {
-    SEARCH_FIELD, TARGET, getLocation, screencap,
+    SEARCH_FIELD, TARGET, getLocationWithoutSettings, screencap,
     urbanstatsFixture,
 } from './test_utils'
 
@@ -12,7 +12,7 @@ test('search-test', async (t) => {
     await screencap(t)
     await t
         .pressKey('enter')
-    await t.expect(getLocation())
+    await t.expect(getLocationWithoutSettings())
         .eql(`${TARGET}/article.html?longname=Pasadena+city%2C+Texas%2C+USA`)
 })
 
@@ -50,6 +50,6 @@ test('search-test-arrows', async (t) => {
     await screencap(t)
     await t
         .pressKey('enter')
-    await t.expect(getLocation())
+    await t.expect(getLocationWithoutSettings())
         .eql(`${TARGET}/article.html?longname=Pasadena+CDP%2C+Maryland%2C+USA`)
 })

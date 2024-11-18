@@ -14,9 +14,6 @@ class HousingRent(ACSStatisticsColection):
             "rent_2br_over_1500": "2BR Rent > $1500 %",
         }
 
-    def category_for_each_statistic(self):
-        return self.same_for_each_name("housing")
-
     def explanation_page_for_each_statistic(self):
         return self.same_for_each_name("housing-acs")
 
@@ -34,7 +31,7 @@ class HousingRent(ACSStatisticsColection):
             "rent_2br_750_to_1500",
         ]
 
-    def mutate_statistic_table(self, statistics_table, shapefile_table):
+    def mutate_acs_results(self, statistics_table):
         fractionalize(
             statistics_table,
             "rent_1br_under_750",

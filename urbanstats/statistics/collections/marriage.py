@@ -11,9 +11,6 @@ class MarriageStatistics(ACSStatisticsColection):
             "marriage_divorced": "Divorced %",
         }
 
-    def category_for_each_statistic(self):
-        return self.same_for_each_name("relationships")
-
     def explanation_page_for_each_statistic(self):
         return self.same_for_each_name("marriage")
 
@@ -25,7 +22,7 @@ class MarriageStatistics(ACSStatisticsColection):
     def quiz_question_unused(self):
         return ["marriage_married_not_divorced", "marriage_never_married"]
 
-    def mutate_statistic_table(self, statistics_table, shapefile_table):
+    def mutate_acs_results(self, statistics_table):
         fractionalize(
             statistics_table,
             "marriage_never_married",

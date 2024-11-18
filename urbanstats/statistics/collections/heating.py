@@ -14,9 +14,6 @@ class HouseHeating(ACSStatisticsColection):
             "heating_no": "No heating %",
         }
 
-    def category_for_each_statistic(self):
-        return self.same_for_each_name("climate")
-
     def explanation_page_for_each_statistic(self):
         return self.same_for_each_name("climate-acs")
 
@@ -34,7 +31,7 @@ class HouseHeating(ACSStatisticsColection):
             "heating_no",
         ]
 
-    def mutate_statistic_table(self, statistics_table, shapefile_table):
+    def mutate_acs_results(self, statistics_table):
         fractionalize(statistics_table, *self.name_for_each_statistic().keys())
 
     def acs_name(self):

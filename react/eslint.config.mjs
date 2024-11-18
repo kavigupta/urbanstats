@@ -49,6 +49,7 @@ export default tseslint.config(
             }],
             'import/no-named-as-default-member': 'off',
             'import/namespace': 'off',
+            'import/named': 'off',
         },
         settings: {
             'import/resolver': {
@@ -93,7 +94,11 @@ export default tseslint.config(
             'eqeqeq': 'error',
             'guard-for-in': 'error',
             'object-shorthand': 'error',
-            'no-restricted-syntax': ['error', 'ExportNamedDeclaration:not([declaration])'],
+            'no-restricted-syntax': [
+                'error', 
+                'ExportNamedDeclaration:not([declaration])', 
+                'MemberExpression[object.name=location][property.name=reload]'
+            ],
             'react/prop-types': 'off',
             'no-shadow': 'error',
             'eslint-comments/require-description': ['error', {

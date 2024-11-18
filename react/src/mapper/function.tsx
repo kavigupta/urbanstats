@@ -3,6 +3,7 @@ import React, { ReactNode } from 'react'
 
 import { CheckboxSettingCustom } from '../components/sidebar'
 import { useColors } from '../page_template/colors'
+import { StatName } from '../statistic'
 
 import { DataListSelector } from './DataListSelector'
 import { Regression } from './regression'
@@ -65,7 +66,7 @@ function VariableNameSelector({ variable_name, set_variable_name, placeholder }:
     )
 }
 
-function RegressionSelector(props: { regression: RegressionDescriptor, set_regression: (newValue: RegressionDescriptor) => void, delete_regression: () => void, names: string[] }): ReactNode {
+function RegressionSelector(props: { regression: RegressionDescriptor, set_regression: (newValue: RegressionDescriptor) => void, delete_regression: () => void, names: readonly StatName[] }): ReactNode {
     // Create several rows organized as
     // [stat selector] = [coefficient textbox] * [stat selector]
     //                 + [coefficient textbox] * [stat selector]
@@ -225,16 +226,13 @@ function RegressionSelector(props: { regression: RegressionDescriptor, set_regre
                 {rhs_stack}
                 <CheckboxSettingCustom
                     name="Weighted by Population"
-                    setting_key="weight_by_population"
-                    settings={props.regression}
-                    set_setting={
-                        (key, value) => {
-                            props.set_regression({
-                                ...props.regression,
-                                [key]: value,
-                            })
-                        }
-                    }
+                    checked={props.regression.weight_by_population}
+                    onChange={(value) => {
+                        props.set_regression({
+                            ...props.regression,
+                            weight_by_population: value,
+                        })
+                    }}
                 />
             </div>
         </div>
@@ -254,7 +252,7 @@ function RegressionSelector(props: { regression: RegressionDescriptor, set_regre
     )
 }
 
-function VariableSelector(props: { variable: VariableDescriptor, set_variable: (newValue: VariableDescriptor) => void, delete_variable: () => void, names: string[] }): ReactNode {
+function VariableSelector(props: { variable: VariableDescriptor, set_variable: (newValue: VariableDescriptor) => void, delete_variable: () => void, names: readonly StatName[] }): ReactNode {
     const colors = useColors()
     const variable = props.variable
     const names_full = ['', ...props.names]
@@ -305,7 +303,7 @@ function VariableSelector(props: { variable: VariableDescriptor, set_variable: (
     )
 }
 
-export function FunctionSelector(props: { function: ColorStatDescriptor, set_function: (newValue: ColorStatDescriptor) => void, names: string[], simple?: boolean, no_name_field?: boolean, placeholder?: string }): ReactNode {
+export function FunctionSelector(props: { function: ColorStatDescriptor, set_function: (newValue: ColorStatDescriptor) => void, names: readonly StatName[], simple?: boolean, no_name_field?: boolean, placeholder?: string }): ReactNode {
     const colors = useColors()
     const func = props.function
     if (func.variables === undefined) {
@@ -377,7 +375,7 @@ export function FunctionSelector(props: { function: ColorStatDescriptor, set_fun
     )
 }
 
-function VariablesSelector({ get_variables, set_variables, names }: { get_variables: () => VariableDescriptor[], set_variables: (newValue: VariableDescriptor[]) => void, names: string[] },
+function VariablesSelector({ get_variables, set_variables, names }: { get_variables: () => VariableDescriptor[], set_variables: (newValue: VariableDescriptor[]) => void, names: readonly StatName[] },
 ): ReactNode {
     return (
         <>
@@ -409,7 +407,7 @@ function VariablesSelector({ get_variables, set_variables, names }: { get_variab
     )
 }
 
-function RegressionsSelector({ get_regressions, set_regressions, names }: { get_regressions: () => RegressionDescriptor[], set_regressions: (newValue: RegressionDescriptor[]) => void, names: string[] }): ReactNode {
+function RegressionsSelector({ get_regressions, set_regressions, names }: { get_regressions: () => RegressionDescriptor[], set_regressions: (newValue: RegressionDescriptor[]) => void, names: readonly StatName[] }): ReactNode {
     const gr: () => RegressionDescriptor[] = () => get_regressions()
 
     return (
@@ -445,7 +443,7 @@ function RegressionsSelector({ get_regressions, set_regressions, names }: { get_
     )
 }
 
-export function FilterSelector(props: { filter: FilterSettings, set_filter: (newValue: FilterSettings) => void, names: string[] }): ReactNode {
+export function FilterSelector(props: { filter: FilterSettings, set_filter: (newValue: FilterSettings) => void, names: readonly StatName[] }): ReactNode {
     const colors = useColors()
     const filter = props.filter
     // like FunctionSelector, but has a checkmark for whether the filter is enabled
@@ -487,7 +485,7 @@ export function FilterSelector(props: { filter: FilterSettings, set_filter: (new
         </div>
     )
 }
-export function StatisticSelector({ statistic, set_statistic, names, overall_name, simple }: { statistic: ColorStatDescriptor | undefined, set_statistic: (newValue: ColorStatDescriptor) => void, names: string[], overall_name: string | undefined, simple: boolean }): ReactNode {
+export function StatisticSelector({ statistic, set_statistic, names, overall_name, simple }: { statistic: ColorStatDescriptor | undefined, set_statistic: (newValue: ColorStatDescriptor) => void, names: readonly StatName[], overall_name: string | undefined, simple: boolean }): ReactNode {
     return (
         <div style={{ width: '100%' }}>
             <DataListSelector

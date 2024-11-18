@@ -11,9 +11,6 @@ class NationalOriginBirthplaceStatistics(ACSUSPRStatisticsColection):
             "birthplace_us_state": "Born in state of residence %",
         }
 
-    def category_for_each_statistic(self):
-        return self.same_for_each_name("national_origin")
-
     def explanation_page_for_each_statistic(self):
         return self.same_for_each_name("birthplace")
 
@@ -27,7 +24,7 @@ class NationalOriginBirthplaceStatistics(ACSUSPRStatisticsColection):
     def quiz_question_unused(self):
         return []
 
-    def mutate_statistic_table(self, statistics_table, shapefile_table):
+    def mutate_acs_results(self, statistics_table):
         fractionalize(
             statistics_table,
             "birthplace_non_us",

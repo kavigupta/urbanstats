@@ -1,3 +1,4 @@
+# pylint: disable=duplicate-code
 from urbanstats.acs.load import ACSDataEntity
 from urbanstats.statistics.statistic_collection import ACSStatisticsColection
 from urbanstats.statistics.utils import fractionalize
@@ -13,9 +14,6 @@ class TransportationModeStatistics(ACSStatisticsColection):
             "transportation_means_worked_at_home": "Commute Work From Home %",
         }
 
-    def category_for_each_statistic(self):
-        return self.same_for_each_name("transportation")
-
     def explanation_page_for_each_statistic(self):
         return self.same_for_each_name("transportation")
 
@@ -28,7 +26,7 @@ class TransportationModeStatistics(ACSStatisticsColection):
             "transportation_means_worked_at_home": "higher % of people who work from home",
         }
 
-    def mutate_statistic_table(self, statistics_table, shapefile_table):
+    def mutate_acs_results(self, statistics_table):
         fractionalize(
             statistics_table,
             "transportation_means_car",

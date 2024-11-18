@@ -1,8 +1,12 @@
 name: check
-on: [push]
+on:
+  push:
+    branches:
+      - master
+  pull_request:
 env:
-  REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository }}/e2e
+  # This is used in ci_proxy, do not remove. It is necessary so that
+  # we can test against non-production data
   BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
 jobs:
   lint:
@@ -12,54 +16,76 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-      - run: npm ci
-        working-directory: react
+      - uses: ./.github/actions/node_modules
       - run: npx eslint .
         working-directory: react
 
-  build-and-push-image:
+  build-and-push-common-image:
     runs-on: ubuntu-22.04
     outputs:
-      image_tag: ${{ steps.meta.outputs.tags }}
+      image: ${{ steps.image.outputs.image }}
     permissions:
-      contents: read
       packages: write
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Log in to the Container registry
-        uses: docker/login-action@v3
+      - uses: ./.github/actions/docker_image
         with:
-          registry: ${{ env.REGISTRY }}
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          dockerfile: Dockerfile
+          token: ${{ secrets.GITHUB_TOKEN }}
+        id: image
 
-      - name: Extract metadata (tags, labels) for Docker
-        id: meta
-        uses: docker/metadata-action@v5
-        with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+  build-and-push-e2e-image:
+    runs-on: ubuntu-22.04
+    outputs:
+      image: ${{ steps.image.outputs.image }}
+    permissions:
+      packages: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-      - name: Build and push Docker image
-        uses: docker/build-push-action@v6
+      - uses: ./.github/actions/docker_image
         with:
-          context: .
-          file: react/test/Dockerfile
-          push: true
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=registry,ref=${{ steps.meta.outputs.tags }}
-          cache-to: type=inline
+          dockerfile: react/test/Dockerfile
+          token: ${{ secrets.GITHUB_TOKEN }}
+        id: image
+
+  lint-python:
+    runs-on: ubuntu-22.04
+
+    needs: build-and-push-common-image
+    container:
+      image: ${{ needs.build-and-push-common-image.outputs.image }}
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/python_environment
+      - name: Lint with pylint
+        run: python -m pylint --prefer-stubs=true urbanstats
+      - name: Check black
+        run: |
+          python -m isort urbanstats
+          python -m black urbanstats
+           # allow all directories. This is needed because git complains about git repositories outside the user directory
+          git config --global --add safe.directory '*'
+          # check if there are any changes
+          # if there are, print the diff and exit with an error
+          # this is needed because isort and black disagree on the formatting of some files, so we run both and check
+          # if there's a difference
+          bash -c '[ $(git status --porcelain --untracked-files=no | wc -c) -eq 0 ]  || (git status; git diff; exit 1)'
 
   build-frontend:
     runs-on: ubuntu-22.04
-    needs: build-and-push-image
+    needs: build-and-push-common-image
     container:
-      image: ghcr.io/${{ needs.build-and-push-image.outputs.image_tag }}
+      image: ${{ needs.build-and-push-common-image.outputs.image }}
     steps:
       - uses: actions/checkout@v4
-      - run: python3 create_website.py react/test/density-db --no-data --no-geo --no-juxta
+      - uses: ./.github/actions/python_environment
+      - uses: ./.github/actions/node_modules
+      - run: python3 create_website.py react/test/density-db --no-data --no-geo --no-juxta --mode=ci
       - uses: actions/upload-artifact@v4
         with:
           name: frontend-build
@@ -72,66 +98,36 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - id: set-matrix
-        run: echo "matrix=$(find . -name '*_test.ts' | jq -R -s -c 'gsub("./"; "") | gsub(".ts"; "") | split("\n")[:-1]')" >> $GITHUB_OUTPUT
+        run: echo "matrix=$(find . -name '*_test.ts' | jq -R -s -c 'gsub("\\./"; "") | gsub("\\.ts"; "") | split("\n")[:-1]')" >> $GITHUB_OUTPUT
         working-directory: react/test
 
   run-e2e-tests:
     runs-on: ubuntu-22.04
-    needs: [build-and-push-image, build-frontend, list-e2e-tests]
+    needs: [build-and-push-e2e-image, build-frontend, list-e2e-tests]
     container:
-      image: ghcr.io/${{ needs.build-and-push-image.outputs.image_tag }}
+      image: ${{ needs.build-and-push-e2e-image.outputs.image }}
     strategy:
       fail-fast: false
       matrix:
         test-file: ${{ fromJson(needs.list-e2e-tests.outputs.matrix) }}
     steps:
       - uses: actions/checkout@v4
+      - uses: ./.github/actions/python_environment
+      - uses: ./.github/actions/node_modules
       - uses: actions/download-artifact@v4
         with:
           name: frontend-build
           path: react/test/density-db
       - name: Run tests
         run: |
-          npm ci
           npm run test:e2e -- \
             --proxy=true \
             --browser=chromium \
             --test=test/${{ matrix.test-file }}.ts \
             --parallel=1 \
             --headless=true \
-            --video=true \
-            --compare=false
+            --compare=true
         working-directory: react
-      - uses: actions/upload-artifact@v4
-        if: "!cancelled()"
-        with:
-          name: screenshots-${{ matrix.test-file }}
-          path: react/screenshots
-      - uses: actions/upload-artifact@v4
-        if: "!cancelled()"
-        with:
-          name: videos-${{ matrix.test-file }}
-          path: react/videos
-
-  check-screenshots:
-    runs-on: ubuntu-22.04
-    needs: [build-and-push-image, list-e2e-tests, run-e2e-tests]
-    if: ${{ !cancelled() && needs.build-and-push-image.result == 'success' && needs.list-e2e-tests.result == 'success' }} # Should run even if e2e tests fail
-    container:
-      image: ghcr.io/${{ needs.build-and-push-image.outputs.image_tag }}
-    strategy:
-      fail-fast: false
-      matrix:
-        test-file: ${{ fromJson(needs.list-e2e-tests.outputs.matrix) }}
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/download-artifact@v4
-        with:
-          name: screenshots-${{ matrix.test-file }}
-          path: react/screenshots
-        continue-on-error: true
-      - name: Check screenshots
-        run: python3 tests/check_images.py --test=${{ matrix.test-file }}
       - uses: actions/upload-artifact@v4
         if: "!cancelled()"
         with:
@@ -145,13 +141,9 @@ jobs:
 
   merge-screenshots:
     runs-on: ubuntu-22.04
-    needs: [run-e2e-tests, check-screenshots]
+    needs: [run-e2e-tests]
     if: "!cancelled()"
     steps:
-      - uses: actions/upload-artifact/merge@v4
-        with:
-          name: screenshots
-          pattern: "screenshots-*"
       - uses: actions/upload-artifact/merge@v4
         with:
           name: delta
@@ -165,5 +157,6 @@ jobs:
       - uses: actions/upload-artifact/merge@v4
         with:
           name: combined
-          pattern: "{screenshots,delta,changed_screenshots}"
+          pattern: "{delta,changed_screenshots}"
           separate-directories: true
+        continue-on-error: true

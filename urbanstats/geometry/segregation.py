@@ -26,20 +26,19 @@ E_x[v_x^T u_x] - E_x[v_x]^T E_x[u_x]
 
 from functools import lru_cache
 
-
 import numpy as np
 import pandas as pd
 from permacache import permacache
 
-from census_blocks import all_densities_gpd, load_raw_census
-from geometry import locate_blocks
+from urbanstats.data.census_blocks import all_densities_gpd, load_raw_census
 from urbanstats.geometry.census_aggregation import aggregate_by_census_block
-from urbanstats.statistics.collections.race_census import RaceCensus
+from urbanstats.geometry.ellipse import locate_blocks
+from urbanstats.statistics.collections.census import race_names
 
 
 @lru_cache(None)
 def race_columns():
-    return list(RaceCensus().name_for_each_statistic())
+    return list(race_names)
 
 
 @lru_cache(None)
@@ -82,6 +81,7 @@ def local_segregation_by_block(year, radius_small, radius_large):
     key_function=dict(shapefile=lambda x: x.hash_key),
 )
 def compute_homogenity_info_by_shapefile(year, radius_small, radius_large, shapefile):
+    # pylint: disable=too-many-locals
     census_pop = all_densities_gpd(year).population
 
     print("Aggregating homogenity info", shapefile.hash_key)

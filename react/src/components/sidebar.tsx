@@ -1,32 +1,49 @@
-import React, { ReactNode, useId } from 'react'
+import React, { CSSProperties, ReactNode, useContext, useEffect, useId, useRef } from 'react'
 
 import '../style.css'
 import './sidebar.css'
 
-import { Theme, useColors } from '../page_template/colors'
-import { SettingsDictionary, useSetting, useStatisticCategoryMetadataCheckboxes } from '../page_template/settings'
+import { Theme, useColors, useCurrentTheme } from '../page_template/colors'
+import { checkbox_category_name, SettingsDictionary, source_enabled_key, TemperatureUnit, useSetting, useSettingInfo, useStagedSettingKeys } from '../page_template/settings'
+import { StatPathsContext, useDataSourceCheckboxes } from '../page_template/statistic-settings'
 import { useMobileLayout } from '../utils/responsive'
 
-export function Sidebar(): ReactNode {
-    const colors = useColors()
-    const link_style = { color: colors.blueLink }
-    const statistic_category_metadata_checkboxes = useStatisticCategoryMetadataCheckboxes()
+import { StagingControls } from './StagingControls'
+import { StatsTree } from './StatsTree'
+import { Years } from './Years'
+
+export function useSidebarSectionContentClassName(): string {
     let sidebar_section_content = 'sidebar-section-content'
-    const sidebar_section_title: React.CSSProperties = {
+    if (useMobileLayout()) {
+        sidebar_section_content += ' sidebar-section-content_mobile'
+    }
+    return sidebar_section_content
+}
+
+export function useSidebarSectionTitleStyle(): CSSProperties {
+    const colors = useColors()
+    return {
         marginBottom: useMobileLayout() ? '0.75rem' : '0.5rem',
         borderBottom: `1px solid ${colors.borderNonShadow}`,
         color: colors.ordinalTextColor,
     }
-    if (useMobileLayout()) {
-        sidebar_section_content += ' sidebar-section-content_mobile'
-    }
+}
+
+export function Sidebar(): ReactNode {
+    const colors = useColors()
+    const currentTheme = useCurrentTheme()
+    const link_style = { color: colors.blueLink }
+    const sidebar_section_title = useSidebarSectionTitleStyle()
+
+    const sidebar_section_content = useSidebarSectionContentClassName()
+
     return (
         <div
-            className="serif"
+            className={`serif ${useMobileLayout() ? 'sidebar_mobile' : ''}`}
             style={{
                 backgroundColor: colors.slightlyDifferentBackground,
                 padding: '2rem',
-                fontSize: useMobileLayout() ? '20pt' : '12pt',
+                fontSize: useMobileLayout() ? '27px' : '16px',
                 borderRadius: '5px',
             }}
         >
@@ -72,6 +89,18 @@ export function Sidebar(): ReactNode {
                     </li>
                 </ul>
             </div>
+            {
+                useStagedSettingKeys() === undefined
+                    ? null
+                    : (
+                            <div className="sidebar-section">
+                                <div style={sidebar_section_title}>Link Settings</div>
+                                <ul className={sidebar_section_content}>
+                                    <StagingControls />
+                                </ul>
+                            </div>
+                        )
+            }
             <div className="sidebar-section">
                 <div style={sidebar_section_title}>Settings</div>
                 <ul className={sidebar_section_content}>
@@ -79,6 +108,7 @@ export function Sidebar(): ReactNode {
                         <CheckboxSetting
                             name="Use Imperial Units"
                             setting_key="use_imperial"
+                            testId="use_imperial"
                         />
                     </li>
                     <li>
@@ -93,27 +123,31 @@ export function Sidebar(): ReactNode {
                             setting_key="simple_ordinals"
                         />
                     </li>
+                    <li>
+                        <TemperatureSetting />
+                    </li>
                 </ul>
             </div>
-            <div className="sidebar-section">
-                <div style={sidebar_section_title}>Statistic Categories</div>
-                <ul className={sidebar_section_content}>
-                    {statistic_category_metadata_checkboxes.map((checkbox, i) => (
-                        <li key={i}>
-                            <CheckboxSetting
-                                name={checkbox.name}
-                                setting_key={checkbox.setting_key}
-                            />
-                        </li>
-                    ),
-                    )}
-                </ul>
-            </div>
+            { useContext(StatPathsContext) !== undefined
+                ? <SidebarForStatisticChoice />
+                : null}
             <div className="sidebar-section">
                 <div style={sidebar_section_title}>Appearance</div>
                 <ul className={sidebar_section_content}>
                     <li>
                         <ColorThemeSetting />
+                    </li>
+                    <li>
+                        <CheckboxSetting
+                            name="Colorblind Mode"
+                            setting_key="colorblind_mode"
+                        />
+                    </li>
+                    <li>
+                        <CheckboxSetting
+                            name={`${currentTheme === 'Dark Mode' ? 'Black' : 'White'} Background`}
+                            setting_key="clean_background"
+                        />
                     </li>
                 </ul>
             </div>
@@ -121,27 +155,64 @@ export function Sidebar(): ReactNode {
     )
 }
 
-// type representing a key of SettingsDictionary that have boolean values
-type BooleanSettingKey = keyof { [K in keyof SettingsDictionary as SettingsDictionary[K] extends boolean ? K : never]: boolean }
+export function SidebarForStatisticChoice(): ReactNode {
+    const sidebar_section_content = useSidebarSectionContentClassName()
+    const sidebar_section_title = useSidebarSectionTitleStyle()
+    const checkboxes = useDataSourceCheckboxes()
+    return (
+        <>
+            {checkboxes.map(({ category, checkboxSpecs }) => (
+                <div className="sidebar-section" key={category}>
+                    <div style={sidebar_section_title}>{checkbox_category_name(category)}</div>
+                    <ul className={sidebar_section_content}>
+                        {
+                            checkboxSpecs.map(({ name, forcedOn }) => (
+                                <li key={name}>
+                                    <CheckboxSetting
+                                        name={name}
+                                        setting_key={source_enabled_key({ category, name })}
+                                        forcedOn={forcedOn}
+                                        testId={`source ${category} ${name}`}
+                                    />
+                                </li>
+                            ))
+                        }
+                    </ul>
+                </div>
+            ))}
+            <div className="sidebar-section">
+                <div style={sidebar_section_title}>Years</div>
+                <ul className={sidebar_section_content}>
+                    <Years />
+                </ul>
+            </div>
+            <div className="sidebar-section">
+                <div style={sidebar_section_title}>Statistic Categories</div>
+                <ul className={sidebar_section_content}>
+                    <StatsTree />
+                </ul>
+            </div>
+        </>
+    )
+}
 
-export function CheckboxSetting<K extends BooleanSettingKey>(props: { name: string, setting_key: K, classNameToUse?: string, id?: string }): ReactNode {
+// type representing a key of SettingsDictionary that have boolean values
+type BooleanSettingKey = keyof { [K in keyof SettingsDictionary as SettingsDictionary[K] extends boolean | undefined ? K : never]: boolean }
+
+export function CheckboxSetting(props: { name: string, setting_key: BooleanSettingKey, classNameToUse?: string, id?: string, testId?: string, forcedOn?: boolean }): ReactNode {
     const [checked, setChecked] = useSetting(props.setting_key)
+    const info = useSettingInfo(props.setting_key)
 
     return (
         <CheckboxSettingCustom
             name={props.name}
-            setting_key={props.setting_key}
-            settings={{ [props.setting_key]: checked } as Record<K, boolean>}
-            set_setting={(key, value) => {
-                if (key === props.setting_key) {
-                    setChecked(value)
-                }
-                else {
-                    throw new Error(`Invalid key: ${key}`)
-                }
-            }}
+            checked={(checked ?? false) || (props.forcedOn ?? false)}
+            forcedOn={props.forcedOn}
+            onChange={setChecked}
             classNameToUse={props.classNameToUse}
             id={props.id}
+            testId={props.testId}
+            highlight={'stagedValue' in info && info.stagedValue !== info.persistedValue}
         />
     )
 };
@@ -153,10 +224,10 @@ export function ColorThemeSetting(): ReactNode {
 
     return (
         <div className="theme-setting">
-            <label>{'Theme '}</label>
+            <label style={{ verticalAlign: 'middle' }}>{'Theme '}</label>
             <select
                 className="serif"
-                style={{ backgroundColor: colors.background, color: colors.textMain }}
+                style={{ backgroundColor: colors.background, color: colors.textMain, verticalAlign: 'middle' }}
                 value={theme}
                 onChange={(e: React.ChangeEvent<HTMLSelectElement>) => { setTheme(e.target.value as Theme) }}
             >
@@ -168,19 +239,78 @@ export function ColorThemeSetting(): ReactNode {
     )
 };
 
-export function CheckboxSettingCustom<K extends string>(props: { name: string, setting_key: K, settings: Record<K, boolean>, set_setting: (key: K, value: boolean) => void, classNameToUse?: string, id?: string }): ReactNode {
+export function TemperatureSetting(): ReactNode {
+    const [temperatureUnit, setTemperatureUnit] = useSetting('temperature_unit')
+    const info = useSettingInfo('temperature_unit')
     const colors = useColors()
-    // like CheckboxSetting, but doesn't use useSetting, instead using the callbacks
+
+    const highlight = 'stagedValue' in info && info.stagedValue !== info.persistedValue
+
+    const divStyle: CSSProperties = {
+        backgroundColor: highlight ? colors.slightlyDifferentBackgroundFocused : undefined,
+        borderRadius: '5px',
+        padding: '0px 5px',
+    }
+
+    return (
+        <div style={divStyle}>
+            <label style={{ verticalAlign: 'middle' }}>{'Temperatures '}</label>
+            <select
+                className="serif"
+                style={{ backgroundColor: colors.background, color: colors.textMain, verticalAlign: 'middle', minWidth: '50px' }}
+                value={temperatureUnit}
+                onChange={(e: React.ChangeEvent<HTMLSelectElement>) => { setTemperatureUnit(e.target.value as TemperatureUnit) }}
+                data-test-id="temperature_select"
+            >
+                <option value="fahrenheit">&deg;F</option>
+                <option value="celsius">&deg;C</option>
+            </select>
+        </div>
+    )
+};
+
+interface CheckboxSettingCustomProps {
+    name: string
+    checked: boolean
+    indeterminate?: boolean
+    onChange: (checked: boolean) => void
+    classNameToUse?: string
+    id?: string
+    testId?: string
+    highlight?: boolean
+    forcedOn?: boolean
+}
+
+export function CheckboxSettingCustom(props: CheckboxSettingCustomProps): ReactNode {
+    const colors = useColors()
+
     const id = useId()
     const inputId = props.id ?? id
+
+    const checkboxRef = useRef<HTMLInputElement>(null)
+
+    useEffect(() => {
+        checkboxRef.current!.indeterminate = props.indeterminate ?? false
+    }, [props.indeterminate])
+
+    const divStyle: CSSProperties = {
+        backgroundColor: props.highlight ? colors.slightlyDifferentBackgroundFocused : undefined,
+        borderRadius: '5px',
+    }
+    const forcedOn = props.forcedOn ?? false
+
     return (
-        <div className={props.classNameToUse ?? 'checkbox-setting'}>
+        <div className={(props.classNameToUse ?? 'checkbox-setting') + (forcedOn ? ' testing-checkbox-disabled' : '')} style={divStyle}>
             <input
                 id={inputId}
                 type="checkbox"
-                checked={props.settings[props.setting_key] || false}
-                onChange={(e) => { props.set_setting(props.setting_key, e.target.checked) }}
+                checked={props.checked}
+                disabled={forcedOn}
+                onChange={(e) => { props.onChange(e.target.checked) }}
+                ref={checkboxRef}
                 style={{ accentColor: colors.hueColors.blue, backgroundColor: colors.background }}
+                data-test-id={props.testId}
+                data-test-highlight={props.highlight}
             />
             <label htmlFor={inputId}>{props.name}</label>
         </div>

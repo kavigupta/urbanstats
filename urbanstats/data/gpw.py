@@ -3,14 +3,12 @@ from collections import defaultdict
 from functools import lru_cache
 
 import numpy as np
-import pandas as pd
 import shapely
 import tqdm.auto as tqdm
 from geotiff import GeoTiff
-from permacache import drop_if, drop_if_equal, permacache, stable_hash
+from permacache import drop_if_equal, permacache, stable_hash
 
 from urbanstats.features.within_distance import xy_to_radius
-from urbanstats.statistics.collections_list import statistic_collections
 from urbanstats.utils import compute_bins
 
 GPW_PATH = (
@@ -26,9 +24,7 @@ GPW_LAND_PATH = (
 
 @lru_cache(maxsize=None)
 def load_file(prefix, path, tag):
-    with zipfile.ZipFile(path) as f:
-        x = f.open(f"{prefix}{tag}.asc").read().decode("utf-8")
-        x = x.split("\r\n")
+    x = read_asc_file(prefix, path, tag)
 
     assert x.pop(-1) == ""
 
@@ -59,6 +55,14 @@ def load_file(prefix, path, tag):
         cellsize=cellsize,
         data=data,
     )
+
+
+def read_asc_file(prefix, path, tag):
+    with zipfile.ZipFile(path) as zipf:
+        with zipf.open(f"{prefix}{tag}.asc") as f:
+            x = f.read().decode("utf-8")
+        x = x.split("\r\n")
+    return x
 
 
 def load(prefix, path):
@@ -148,20 +152,24 @@ def cell_overlaps(shape):
 
     for row_idx in range(int(row_min), int(row_max) + 1):
         for col_idx in range(int(col_min), int(col_max) + 1):
-            cell_lat_min = lat_from_row_idx(row_idx)
-            cell_lat_max = lat_from_row_idx(row_idx + 1)
-            cell_lon_min = lon_from_col_idx(col_idx)
-            cell_lon_max = lon_from_col_idx(col_idx + 1)
-
-            cell = shapely.geometry.box(
-                cell_lon_min, cell_lat_min, cell_lon_max, cell_lat_max
-            )
+            cell = box_for_cell(row_idx, col_idx)
             intersection = cell.intersection(shape)
             if intersection.is_empty or cell.area == 0:
                 continue
             result[(row_idx, col_idx)] = intersection.area / cell.area
 
     return result
+
+
+def box_for_cell(row_idx, col_idx):
+    cell_lat_min = lat_from_row_idx(row_idx)
+    cell_lat_max = lat_from_row_idx(row_idx + 1)
+    cell_lon_min = lon_from_col_idx(col_idx)
+    cell_lon_max = lon_from_col_idx(col_idx + 1)
+
+    cell = shapely.geometry.box(cell_lon_min, cell_lat_min, cell_lon_max, cell_lat_max)
+
+    return cell
 
 
 def compute_full_cell_overlaps_with_circle(radius, row_idx, num_grid=10):
@@ -259,22 +267,14 @@ def lattice_cells_contained(glo, polygon):
     Return a list of (row, col) tuples of lattice cells that are contained in the polygon.
     """
 
-    lon_min, lat_min, lon_max, lat_max = polygon.bounds
-    # pad by 1/120 to make sure we get all cells that are even slightly contained
-    lon_min -= 1 / 120
-    lat_min -= 1 / 120
-    lon_max += 1 / 120
-    lat_max += 1 / 120
-    row_min = row_idx_from_lat(lat_max)
-    row_max = row_idx_from_lat(lat_min)
-
-    col_min = col_idx_from_lon(lon_min)
-    col_max = col_idx_from_lon(lon_max)
+    row_min, row_max, col_min, col_max = get_cell_bounds(polygon)
 
     # produce full arrays of row and col indices
     row_idxs = np.arange(max(0, int(row_min)), min(int(row_max) + 1, glo.shape[0]))
     col_idxs = np.arange(max(0, int(col_min)), min(int(col_max) + 1, glo.shape[1]))
     # product
+    # no idea why this is necessary
+    # pylint: disable=unpacking-non-sequence
     row_idxs, col_idxs = np.meshgrid(row_idxs, col_idxs)
     # filter
     glo_vals = glo[row_idxs, col_idxs]
@@ -288,6 +288,21 @@ def lattice_cells_contained(glo, polygon):
     row_selected, col_selected = filter_lat_lon(polygon, row_idxs, col_idxs)
 
     return row_selected, col_selected
+
+
+def get_cell_bounds(polygon):
+    lon_min, lat_min, lon_max, lat_max = polygon.bounds
+    # pad by 1/120 to make sure we get all cells that are even slightly contained
+    lon_min -= 1 / 120
+    lat_min -= 1 / 120
+    lon_max += 1 / 120
+    lat_max += 1 / 120
+    row_min = row_idx_from_lat(lat_max)
+    row_max = row_idx_from_lat(lat_min)
+
+    col_min = col_idx_from_lon(lon_min)
+    col_max = col_idx_from_lon(lon_max)
+    return row_min, row_max, col_min, col_max
 
 
 def produce_histogram(density_data, population_data):
@@ -322,31 +337,21 @@ def compute_gpw_for_shape(shape, collect_density=True):
         dens_1_selected = dens_1[row_selected, col_selected]
         dens_2_selected = dens_2[row_selected, col_selected]
         dens_4_selected = dens_4[row_selected, col_selected]
-        dens_1_sum = np.nansum(pop * dens_1_selected)
-        dens_2_sum = np.nansum(pop * dens_2_selected)
-        dens_4_sum = np.nansum(pop * dens_4_selected)
-        dens_1_hist = produce_histogram(dens_1_selected, pop)
-        dens_2_hist = produce_histogram(dens_2_selected, pop)
-        dens_4_hist = produce_histogram(dens_4_selected, pop)
         hists = dict(
-            gpw_pw_density_histogram_1=dens_1_hist,
-            gpw_pw_density_histogram_2=dens_2_hist,
-            gpw_pw_density_histogram_4=dens_4_hist,
+            gpw_pw_density_histogram_1=produce_histogram(dens_1_selected, pop),
+            gpw_pw_density_histogram_2=produce_histogram(dens_2_selected, pop),
+            gpw_pw_density_histogram_4=produce_histogram(dens_4_selected, pop),
+        )
+        density = dict(
+            gpw_pw_density_1=np.nansum(pop * dens_1_selected) / pop_sum,
+            gpw_pw_density_2=np.nansum(pop * dens_2_selected) / pop_sum,
+            gpw_pw_density_4=np.nansum(pop * dens_4_selected) / pop_sum,
         )
     else:
         hists = {}
+        density = {}
 
-    result = dict(gpw_population=pop_sum)
-    if collect_density:
-        result.update(
-            dict(
-                gpw_pw_density_1=dens_1_sum / pop_sum,
-                gpw_pw_density_2=dens_2_sum / pop_sum,
-                gpw_pw_density_4=dens_4_sum / pop_sum,
-            )
-        )
-
-    return result, hists
+    return dict(gpw_population=pop_sum, **density), hists
 
 
 @permacache(
@@ -393,24 +398,3 @@ def compute_gpw_data_for_shapefile(shapefile, collect_density=True, log=True):
             result_hists[k].append(v)
 
     return result, result_hists
-
-
-@permacache(
-    "urbanstats/data/gpw/compute_gpw_data_for_shapefile_table_8",
-    key_function=dict(shapefile=lambda x: x.hash_key),
-)
-def compute_gpw_data_for_shapefile_table(shapefile):
-    shapes = shapefile.load_file()
-    result, hists = compute_gpw_data_for_shapefile(shapefile)
-    result = pd.DataFrame(result)
-    print(shapefile.hash_key, len(result), len(shapes))
-    result.index = shapes.index
-    result["area"] = shapes.to_crs({"proj": "cea"}).area / 1e6
-    for collection in statistic_collections:
-        if collection.for_international():
-            collection.compute_statistics(shapefile, result, shapes)
-
-    result["longname"] = shapes.longname
-    result["shortname"] = shapes.shortname
-
-    return result, hists

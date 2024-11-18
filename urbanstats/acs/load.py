@@ -7,7 +7,7 @@ import us
 from cached_property import cached_property
 from permacache import permacache, stable_hash
 
-from census_blocks import all_densities_gpd
+from urbanstats.data.census_blocks import all_densities_gpd
 from urbanstats.geometry.census_aggregation import aggregate_by_census_block
 
 TRACT_PREFIX_COUNT = 2 + 3 + 6  # state + county + tract
@@ -26,7 +26,7 @@ def extract_block_group_geoid(geoid):
 def acs_variables():
     url = "https://api.census.gov/data/2021/acs/acs5/variables.json"
 
-    r = requests.get(url)
+    r = requests.get(url, timeout=1000)
     r.raise_for_status()
     res = r.json()
     assert res.keys() == {"variables"}
@@ -50,7 +50,7 @@ def query_acs_for_state_direct(keys, state_fips, geography_level):
         "for": geography_level + ":*",
         "in": f"state:{state_fips} county:*",
     }
-    response = requests.get(url, params=params)
+    response = requests.get(url, params=params, timeout=1000)
     response.raise_for_status()
     return response.json()
 
@@ -76,15 +76,7 @@ def query_acs_for_state(keys, state_fips, geography_level):
 def query_acs(
     keys, categories, var_for_concept, geography_level, *, replace_negatives_with_nan
 ):
-    all_data = []
-    for state in tqdm.tqdm(us.states.STATES + [us.states.DC, us.states.PR]):
-        all_data.append(query_acs_for_state(keys, state.fips, geography_level))
-    header = all_data[0][0]
-    for data in all_data:
-        assert data[0] == header
-    data = pd.DataFrame([row for data in all_data for row in data[1:]], columns=header)
-    for key in keys:
-        data[key] = pd.to_numeric(data[key])
+    data = query_acs_direct(keys, geography_level)
 
     label_to_column = {v["label"]: k for k, v in var_for_concept.items()}
     result = {col: data[col] for col in data if col not in keys}
@@ -97,6 +89,20 @@ def query_acs(
             for_category += for_key
         result[category] = for_category
     return pd.DataFrame(result)
+
+
+def query_acs_direct(keys, geography_level):
+    all_data = []
+    for state in tqdm.tqdm(us.states.STATES + [us.states.DC, us.states.PR]):
+        all_data.append(query_acs_for_state(keys, state.fips, geography_level))
+    header = all_data[0][0]
+    for data in all_data:
+        assert data[0] == header
+    data = pd.DataFrame([row for data in all_data for row in data[1:]], columns=header)
+    for key in keys:
+        data[key] = pd.to_numeric(data[key])
+
+    return data
 
 
 def disaggregate_to_blocks(
@@ -153,7 +159,7 @@ class ACSDataEntity:
         used_labels = {x for xs in self._categories.values() for x in xs}
         assert all_labels - used_labels == set(), sorted(all_labels - used_labels)
         assert used_labels - all_labels == set(), sorted(used_labels - all_labels)
-        return {k: v for k, v in var_for_concept.items()}
+        return dict(var_for_concept.items())
 
     @property
     def categories(self):
@@ -182,10 +188,13 @@ def get_acs_data(acs_data_entity):
     )
 
 
-def combine_us_pr(us, pr):
-    us, pr = get_acs_data(us), get_acs_data(pr)
-    assert list(us) == list(pr) and (us.index == pr.index).all()
-    return us.fillna(0) + pr.fillna(0)
+def combine_us_pr(us_entity, pr_entity):
+    us_entity, pr_entity = get_acs_data(us_entity), get_acs_data(pr_entity)
+    assert (
+        list(us_entity) == list(pr_entity)
+        and (us_entity.index == pr_entity.index).all()
+    )
+    return us_entity.fillna(0) + pr_entity.fillna(0)
 
 
 @permacache(

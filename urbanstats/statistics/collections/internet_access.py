@@ -9,9 +9,6 @@ class InternetAccessStatistics(ACSStatisticsColection):
             "internet_no_access": "No internet access %",
         }
 
-    def category_for_each_statistic(self):
-        return self.same_for_each_name("misc")
-
     def explanation_page_for_each_statistic(self):
         return self.same_for_each_name("internet")
 
@@ -20,7 +17,7 @@ class InternetAccessStatistics(ACSStatisticsColection):
             "internet_no_access": "higher % of people who have no internet access",
         }
 
-    def mutate_statistic_table(self, statistics_table, shapefile_table):
+    def mutate_acs_results(self, statistics_table):
         fractionalize(
             statistics_table,
             "internet_access",

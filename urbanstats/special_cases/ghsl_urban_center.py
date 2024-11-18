@@ -5,8 +5,7 @@ import numpy as np
 from permacache import permacache
 
 from urbanstats.special_cases.country import subnational_regions
-
-version = 8
+from urbanstats.special_cases.country_names import iso_to_country
 
 
 def classify_areas_by_subnational_region(snr, areas):
@@ -22,9 +21,7 @@ def classify_areas_by_subnational_region(snr, areas):
     return subnationals
 
 
-@permacache(
-    f"urbanstats/special_cases/ghsl_urban_center/load_ghsl_urban_center_{version}"
-)
+@permacache("urbanstats/special_cases/ghsl_urban_center/load_ghsl_urban_center_10")
 def load_ghsl_urban_center():
     areas = load_ghsl_urban_center_no_names()
     areas["shortname"] = (
@@ -37,19 +34,9 @@ def load_ghsl_urban_center():
 
 
 @permacache(
-    f"urbanstats/special_cases/ghsl_urban_center/gsl_urban_center_longname_to_subnational_codes_{version}"
-)
-def gsl_urban_center_longname_to_subnational_codes():
-    areas = load_ghsl_urban_center()
-    return dict(zip(areas.longname, areas.subnationals_ISO_CODE))
-
-
-@permacache(
-    f"urbanstats/special_cases/ghsl_urban_center/load_ghsl_urban_center_no_names_2"
+    "urbanstats/special_cases/ghsl_urban_center/load_ghsl_urban_center_no_names_4"
 )
 def load_ghsl_urban_center_no_names():
-    from shapefiles import iso_to_country
-
     areas = gpd.read_file(
         "named_region_shapefiles/GHS_STAT_UCDB2015MT_GLOBE_R2019A_V1_2.gpkg"
     )
@@ -102,6 +89,7 @@ def compute_mid_by_idx(areas, duplicates, code_to_name):
 
 
 def directions(areas, idx1, idx2):
+    # pylint: disable=no-else-return
     coord1, coord2 = areas.geometry[idx1].centroid, areas.geometry[idx2].centroid
     dlat, dlon = coord2.y - coord1.y, coord2.x - coord1.x
     if abs(dlat) > abs(dlon):

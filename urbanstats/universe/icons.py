@@ -7,10 +7,7 @@ import tempfile
 import requests
 import us
 
-from urbanstats.universe.annotate_universes import (
-    all_universes,
-    get_universe_name_for_state,
-)
+from urbanstats.universe.universe_list import all_universes, get_universe_name_for_state
 
 from .universe_constants import CONTINENTS, COUNTRIES
 
@@ -18,25 +15,9 @@ flags_folder = "icons/flags/"
 
 
 internal_country_to_wikipedia = {
-    "Bolivia, Plurinational State of": "Bolivia",
     "Bouvet Island": "Norway",
-    "Congo, The Democratic Republic of the": "Democratic_Republic_of_the_Congo",
-    "Falkland Islands (Malvinas)": "Falkland_Islands",
-    "Micronesia, Federated States of": "Federated_States_of_Micronesia",
     "Heard Island and McDonald Islands": "Australia",
-    "Iran, Islamic Republic of": "Iran",
-    "Korea, Democratic People's Republic of": "North_Korea",
-    "Korea, Republic of": "South_Korea",
-    "Lao People's Democratic Republic": "Laos",
-    "Moldova, Republic of": "Moldova",
-    "Palestine, State of": "Palestine",
-    "Syrian Arab Republic": "Syria",
-    "Tanzania, United Republic of": "Tanzania",
     "United States Minor Outlying Islands": "United_States",
-    "Holy See (Vatican City State)": "Vatican_City",
-    "Venezuela, Bolivarian Republic of": "Venezuela",
-    "Virgin Islands, British": "British_Virgin_Islands",
-    "Viet Nam": "Vietnam",
 }
 
 
@@ -51,7 +32,7 @@ def download_and_convert_flag(wikipedia_page, out_path):
         pass
     url = "http://commons.wikimedia.org/wiki/Special:FilePath/" + wikipedia_page
     print(url)
-    r = requests.get(url)
+    r = requests.get(url, timeout=100)
 
     content = re.sub(b'inkscape:label="[^"]*"', b"", r.content)
 
@@ -70,7 +51,8 @@ def run_conversion(png_path, svg_path):
             "--export-filename=" + png_path,
             "-w",
             "400",
-        ]
+        ],
+        check=True,
     )
 
 
@@ -114,7 +96,7 @@ def download_all_icons():
 
     convert_continent_icons()
 
-    missing = set([x + ".png" for x in all_universes()]) - set(os.listdir(flags_folder))
+    missing = {x + ".png" for x in all_universes()} - set(os.listdir(flags_folder))
     assert not missing, missing
 
 

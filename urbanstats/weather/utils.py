@@ -13,11 +13,11 @@ seasons = [
 ]
 
 
-def get_season(date):
-    if isinstance(date, datetime):
-        date = date.date()
-    date = date.replace(year=Y)
-    return next(season for season, (start, end) in seasons if start <= date <= end)
+def get_season(date_obj):
+    if isinstance(date_obj, datetime):
+        date_obj = date_obj.date()
+    date_obj = date_obj.replace(year=Y)
+    return next(season for season, (start, end) in seasons if start <= date_obj <= end)
 
 
 def f_to_k(f):

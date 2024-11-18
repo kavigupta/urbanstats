@@ -11,9 +11,6 @@ class TransportationVehicleOwnershipStatistics(ACSStatisticsColection):
             "vehicle_ownership_at_least_2": "Households With 2+ Vehicles %",
         }
 
-    def category_for_each_statistic(self):
-        return self.same_for_each_name("transportation")
-
     def explanation_page_for_each_statistic(self):
         return self.same_for_each_name("transportation")
 
@@ -28,7 +25,7 @@ class TransportationVehicleOwnershipStatistics(ACSStatisticsColection):
             "vehicle_ownership_at_least_2",
         ]
 
-    def mutate_statistic_table(self, statistics_table, shapefile_table):
+    def mutate_acs_results(self, statistics_table):
         fractionalize(
             statistics_table,
             "vehicle_ownership_none",

@@ -1,6 +1,8 @@
 import React, { ReactNode, useId } from 'react'
 
 import './related.css'
+import type_ordering_idx from '../data/type_ordering_idx'
+import type_to_type_category from '../data/type_to_type_category'
 import { article_link } from '../navigation/links'
 import { HueColors, useColors } from '../page_template/colors'
 import { relationship_key, useSetting } from '../page_template/settings'
@@ -9,9 +11,6 @@ import { mixWithBackground } from '../utils/color'
 import { useMobileLayout } from '../utils/responsive'
 
 import { CheckboxSetting } from './sidebar'
-
-const type_ordering_idx = require('../data/type_ordering_idx.json') as Record<string, number>
-const type_to_type_category = require('../data/type_to_type_category.json') as Record<string, string>
 
 interface Region { rowType: string, longname: string, shortname: string }
 

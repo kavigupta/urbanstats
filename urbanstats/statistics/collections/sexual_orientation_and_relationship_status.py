@@ -13,9 +13,6 @@ class SexualOrientationRelationshipStatusStatistics(ACSStatisticsColection):
             "sors_other": "Other Living Situation %",
         }
 
-    def category_for_each_statistic(self):
-        return self.same_for_each_name("relationships")
-
     def explanation_page_for_each_statistic(self):
         return self.same_for_each_name("sors")
 
@@ -32,7 +29,7 @@ class SexualOrientationRelationshipStatusStatistics(ACSStatisticsColection):
             "sors_other",
         ]
 
-    def mutate_statistic_table(self, statistics_table, shapefile_table):
+    def mutate_acs_results(self, statistics_table):
         fractionalize(
             statistics_table,
             "household_type_by_relationship_other",

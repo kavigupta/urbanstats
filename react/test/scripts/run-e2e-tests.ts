@@ -30,6 +30,12 @@ async function main(): Promise<void> {
     }).parse(process.argv.slice(2))
 
     const testFiles = globSync(options.test)
+
+    if (testFiles.length === 0) {
+        console.error(`No test files found for ${options.test}`)
+        process.exit(1)
+    }
+
     const tests = testFiles.map(file => /test\/(.+)\.ts/.exec(file)![1])
 
     if (options.headless) {
@@ -60,7 +66,7 @@ async function main(): Promise<void> {
 
         let runner = testcafe.createRunner()
             .src(`test/${test}.ts`)
-            .browsers([`${options.browser} --window-size=1400,800 --hide-scrollbars --disable-gpu`])
+            .browsers([`${options.browser} --window-size=1400,800 --hide-scrollbars --disable-gpu --disable-search-engine-choice-screen`])
             .screenshots(`screenshots/${test}`)
 
         if (options.video) {
@@ -77,11 +83,15 @@ async function main(): Promise<void> {
     const testsFailed = (await Promise.all(Array.from({ length: options.parallel }).map(runTest))).reduce((a, n) => a + n, 0)
 
     if (options.compare) {
-        await Promise.all(tests.map(test => execa('python', ['tests/check_images.py', `--test=${test}`], {
+        const comparisonResults = await Promise.all(tests.map(test => execa('python', ['tests/check_images.py', `--test=${test}`], {
             cwd: '..',
             stdio: 'inherit',
             reject: false,
         })))
+
+        if (comparisonResults.some(result => result.failed)) {
+            process.exit(1)
+        }
     }
 
     if (testsFailed > 0) {

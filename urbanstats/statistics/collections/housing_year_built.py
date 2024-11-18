@@ -1,3 +1,4 @@
+# pylint: disable=duplicate-code
 from urbanstats.acs.load import ACSDataEntity
 from urbanstats.statistics.statistic_collection import ACSStatisticsColection
 from urbanstats.statistics.utils import fractionalize
@@ -13,9 +14,6 @@ class HousingYearBuiltStatistics(ACSStatisticsColection):
             "year_built_2000_to_2009": "% units built in 2000s",
             "year_built_2010_or_later": "% units built in 2010s+",
         }
-
-    def category_for_each_statistic(self):
-        return self.same_for_each_name("housing")
 
     def explanation_page_for_each_statistic(self):
         return self.same_for_each_name("housing-acs")
@@ -34,7 +32,7 @@ class HousingYearBuiltStatistics(ACSStatisticsColection):
             "year_built_2000_to_2009",
         ]
 
-    def mutate_statistic_table(self, statistics_table, shapefile_table):
+    def mutate_acs_results(self, statistics_table):
         fractionalize(
             statistics_table,
             "year_built_1969_or_earlier",

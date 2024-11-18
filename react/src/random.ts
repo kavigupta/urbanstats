@@ -2,12 +2,12 @@ import './style.css'
 import './common.css'
 
 import { by_population, uniform } from './navigation/random'
-import { load_settings } from './page_template/settings'
+import { Settings } from './page_template/settings'
 
 async function main(): Promise<void> {
     const window_info = new URLSearchParams(window.location.search)
 
-    const [settings] = load_settings()
+    const settings = new Settings().getMultiple(['show_historical_cds'])
 
     const sampleby = window_info.get('sampleby')
 

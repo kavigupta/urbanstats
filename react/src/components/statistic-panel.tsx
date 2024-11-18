@@ -1,5 +1,6 @@
-import React, { CSSProperties, ReactNode, useMemo, useRef } from 'react'
+import React, { CSSProperties, ReactNode, useEffect, useMemo, useRef } from 'react'
 
+import universes_ordered from '../data/universes_ordered'
 import { article_link, explanation_page_link, sanitize, statistic_link } from '../navigation/links'
 import { useColors } from '../page_template/colors'
 import { useSetting } from '../page_template/settings'
@@ -10,7 +11,8 @@ import { useUniverse } from '../universe'
 import { useHeaderTextClass, useSubHeaderTextClass } from '../utils/responsive'
 import { display_type } from '../utils/text'
 
-import { Percentile, Statistic } from './table'
+import { for_type, StatCol } from './load-article'
+import { Percentile, PointerArrow, Statistic } from './table'
 
 const table_style = { display: 'flex', flexDirection: 'column', padding: '1px' } as const
 const column_names = ['Ordinal', 'Name', 'Value', '', 'Percentile']
@@ -29,6 +31,7 @@ export function StatisticPanel(props: {
     count: number
     ordering: 'ascending' | 'descending'
     joined_string: string
+    statcol: StatCol
     statname: string
     article_type: string
     article_names: string[]
@@ -101,6 +104,10 @@ export function StatisticPanel(props: {
 
     const textHeaderClass = useHeaderTextClass()
 
+    const universes_filtered = universes_ordered.filter(
+        universe => for_type(universe, props.statcol, props.article_type) > 0,
+    )
+
     return (
         <PageTemplate
             screencap_elements={() => ({
@@ -109,7 +116,7 @@ export function StatisticPanel(props: {
                 elements_to_render: [headers_ref.current!, table_ref.current!],
             })}
             has_universe_selector={true}
-            universes={require('../data/universes_ordered.json') as string[]}
+            universes={universes_filtered}
         >
             <div>
                 <div ref={headers_ref}>
@@ -194,7 +201,9 @@ function Pagination(props: {
     // next and previous buttons, along with the current range (editable to jump to a specific page)
     // also a button to change the number of items per page
 
-    const change_start = (curr_universe: string | undefined, new_start: number): void => {
+    const curr_universe = useUniverse()
+
+    const change_start = (new_start: number): void => {
         document.location.href = statistic_link(
             curr_universe,
             props.statname, props.article_type,
@@ -202,7 +211,7 @@ function Pagination(props: {
         )
     }
 
-    const change_amount = (curr_universe: string | undefined, new_amount: string | number): void => {
+    const change_amount = (new_amount: string | number): void => {
         let start = props.start
         let new_amount_num: number
         if (new_amount === 'All') {
@@ -233,14 +242,33 @@ function Pagination(props: {
     const total = props.count
     const per_page = props.amount
     const prev = Math.max(1, current - per_page)
-    const max_pages = Math.floor(total / per_page)
+    const max_pages = Math.max(Math.floor(total / per_page), 1)
     const max_page_start = (max_pages - 1) * per_page + 1
     const next = Math.min(max_page_start, current + per_page)
     const current_page = Math.ceil(current / per_page)
 
+    useEffect(() => {
+        const goToPage = (new_page: number): void => {
+            location.replace(
+                statistic_link(
+                    curr_universe,
+                    props.statname, props.article_type,
+                    (new_page - 1) * per_page + 1, props.amount, props.ordering, undefined,
+                ),
+            )
+        }
+
+        if (current_page > max_pages) {
+            goToPage(max_pages)
+        }
+        else if (current_page < 1) {
+            goToPage(1)
+        }
+    }, [current_page, max_pages, curr_universe, per_page, props.amount, props.article_type, props.ordering, props.statname])
+
     const select_page = (
         <SelectPage
-            change_start={(curr_universe, new_start) => { change_start(curr_universe, new_start) }}
+            change_start={(new_start) => { change_start(new_start) }}
             current_page={current_page}
             max_pages={max_pages}
             prev_page={prev}
@@ -273,7 +301,7 @@ function Pagination(props: {
                 <PerPageSelector
                     per_page={per_page}
                     total={total}
-                    change_amount={(curr_universe, new_amount) => { change_amount(curr_universe, new_amount) }}
+                    change_amount={(new_amount) => { change_amount(new_amount) }}
                 />
             </div>
         </div>
@@ -283,9 +311,8 @@ function Pagination(props: {
 function PerPageSelector(props: {
     per_page: number
     total: number
-    change_amount: (curr_universe: string | undefined, targetValue: string) => void
+    change_amount: (targetValue: string) => void
 }): ReactNode {
-    const curr_universe = useUniverse()
     const colors = useColors()
     return (
         <div style={{ margin: 'auto', textAlign: 'center' }}>
@@ -295,7 +322,7 @@ function PerPageSelector(props: {
                     defaultValue={
                         props.per_page === props.total ? 'All' : props.per_page
                     }
-                    onChange={(e) => { props.change_amount(curr_universe, e.target.value) }}
+                    onChange={(e) => { props.change_amount(e.target.value) }}
                     className="serif"
                 >
                     <option value="10">10</option>
@@ -316,51 +343,72 @@ function SelectPage(props: {
     current_page: number
     max_pages: number
     per_page: number
-    change_start: (curr_universe: string | undefined, new_start: number) => void
+    change_start: (new_start: number) => void
     next_page: number
 }): ReactNode {
     // low-key style for the buttons
-    const colors = useColors()
     const button_style = {
-        backgroundColor: colors.slightlyDifferentBackground,
-        border: `1px solid ${colors.textMain}`,
-        padding: '0 0.5em',
         margin: '0.5em',
-        color: colors.textMain,
     }
 
-    const curr_universe = useUniverse()
+    const handleSubmit = (e: React.FocusEvent | React.KeyboardEvent): void => {
+        let new_page = parseInt((e.target as HTMLInputElement).value)
+        if (new_page < 1) {
+            new_page = 1
+        }
+        if (new_page > props.max_pages) {
+            new_page = props.max_pages
+        }
+        const new_start = (new_page - 1) * props.per_page + 1
+        props.change_start(new_start)
+    }
+
+    const disabled = {
+        left: props.current_page === 1,
+        right: props.current_page === props.max_pages,
+    }
+
     return (
         <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-            <button onClick={() => { props.change_start(curr_universe, props.prev_page) }} className="serif" style={button_style}>&lt;</button>
+            <button
+                onClick={() => { props.change_start(props.prev_page) }}
+                className="serif"
+                style={{ ...button_style, visibility: disabled.left ? 'hidden' : 'visible' }}
+                disabled={disabled.left}
+                data-test-id="-1"
+            >
+                <PointerArrow direction={-1} disabled={disabled.left} />
+            </button>
             <div>
                 <span>Page: </span>
                 <input
-                    type="string"
+                    type="text"
                     pattern="[0-9]*"
-                    style={{ width: '3em', textAlign: 'right', backgroundColor: colors.background, color: colors.textMain }}
+                    style={{ width: '3em', textAlign: 'right', fontSize: '16px' }}
                     className="serif"
                     defaultValue={props.current_page}
                     onKeyDown={(e) => {
                         if (e.key === 'Enter') {
-                            let new_page = parseInt((e.target as HTMLInputElement).value)
-                            if (new_page < 1) {
-                                new_page = 1
-                            }
-                            if (new_page > props.max_pages) {
-                                new_page = props.max_pages
-                            }
-                            const new_start = (new_page - 1) * props.per_page + 1
-                            props.change_start(curr_universe, new_start)
+                            handleSubmit(e)
                         }
                     }}
+                    onFocus={(e) => { e.target.select() }}
+                    onBlur={handleSubmit}
                 />
                 <span>
                     {' of '}
                     {props.max_pages}
                 </span>
             </div>
-            <button onClick={() => { props.change_start(curr_universe, props.next_page) }} className="serif" style={button_style}>&gt;</button>
+            <button
+                onClick={() => { props.change_start(props.next_page) }}
+                className="serif"
+                style={{ ...button_style, visibility: disabled.right ? 'hidden' : 'visible' }}
+                disabled={disabled.right}
+                data-test-id="1"
+            >
+                <PointerArrow direction={1} disabled={disabled.right} />
+            </button>
         </div>
     )
 }
@@ -397,13 +445,13 @@ function AutoPercentile(props: {
     data: { populationPercentile: number[] }
     i: number
 }): ReactNode {
-    const [simple_ordinals] = useSetting('simple_ordinals')
+    const [simpleOrdinals] = useSetting('simple_ordinals')
     return (
         <Percentile
             ordinal={props.ordinal}
             total={props.total_count_in_class}
             percentile_by_population={props.data.populationPercentile[props.i]}
-            simple={simple_ordinals}
+            simpleOrdinals={simpleOrdinals}
         />
     )
 }
@@ -414,7 +462,7 @@ function AscendingVsDescending({ on_click, is_ascending }: { on_click: (curr_uni
     return (
         <div style={{ display: 'flex', alignItems: 'center' }}>
             <div style={{ cursor: 'pointer' }} onClick={() => { on_click(curr_universe) }} id="statistic-panel-order-swap">
-                {is_ascending ? '▲' : '▼'}
+                {is_ascending ? '▲\ufe0e' : '▼\ufe0e'}
             </div>
         </div>
     )

@@ -1,11 +1,12 @@
 from dataclasses import dataclass
-from cached_property import cached_property
 from typing import Dict, List, Tuple
+
 import numpy as np
 import pandas as pd
 import tqdm.auto as tqdm
-from scipy.sparse import csc_matrix
+from cached_property import cached_property
 from permacache import permacache, stable_hash
+from scipy.sparse import csc_matrix
 
 from urbanstats.statistics.output_statistics_metadata import internal_statistic_names
 
@@ -16,8 +17,6 @@ class OrdinalInfoForColumn:
     percentile: csc_matrix
     values: csc_matrix
 
-
-    
 
 @dataclass
 class OrdinalInfo:
@@ -94,6 +93,7 @@ class OrdinalInfo:
         col_idx = self.universe_type_to_idx[universe, typ]
         return self.by_column[col].percentile[row_idx, col_idx]
 
+
 def type_matches(table_type, t):
     if t == "overall":
         return np.ones(len(table_type), dtype=np.bool_)
@@ -124,7 +124,9 @@ def compute_universe_type_masks(table, universe_type):
     }
     for i, (u, t) in enumerate(tqdm.tqdm(universe_type)):
         idxs_for_t = idxs_by_type[t]
-        mask_within_idxs = table.iloc[idxs_for_t].universes.apply(lambda us: u in us)
+        mask_within_idxs = table.iloc[idxs_for_t].universes.apply(
+            lambda us, u=u: u in us
+        )
         idxs_relevant = idxs_for_t[mask_within_idxs]
         universe_type_mask[idxs_relevant, i] = 1
     return universe_type_mask
@@ -155,7 +157,7 @@ def compute_universe_type_masks(table, universe_type):
 
 
 @permacache(
-    "urbanstats/ordinals/ordinal_info/compute_ordinal_info_3",
+    "urbanstats/ordinals/ordinal_info/compute_ordinal_info_5",
     key_function=dict(
         universe_type_masks=lambda universe_type_masks: stable_hash(
             (universe_type_masks.indices, universe_type_masks.shape)
@@ -201,7 +203,12 @@ def fully_complete_ordinals(sorted_by_name, universe_typ):
             stat_col: compute_ordinal_info(
                 universe_type_masks,
                 universe_typ,
-                sorted_by_name[[stat_col, "best_population_estimate"]],
+                pd.DataFrame(
+                    {
+                        stat_col: sorted_by_name[stat_col],
+                        "best_population_estimate": sorted_by_name.best_population_estimate,
+                    }
+                ),
                 stat_col,
             )
             for stat_col in tqdm.tqdm(internal_statistic_names())
@@ -212,7 +219,12 @@ def fully_complete_ordinals(sorted_by_name, universe_typ):
 
 
 def sort_by_column(sorted_by_name, stat_col):
-    relevant = sorted_by_name[[stat_col, "best_population_estimate"]]
+    relevant = pd.DataFrame(
+        {
+            stat_col: sorted_by_name[stat_col],
+            "best_population_estimate": sorted_by_name.best_population_estimate,
+        }
+    )
     selected_and_sorted = relevant.loc[
         np.argsort(np.array(sorted_by_name[stat_col]), kind="stable")
     ]
@@ -221,7 +233,6 @@ def sort_by_column(sorted_by_name, stat_col):
         first_nan_idx = nan_idxs[0]
         selected_and_sorted = pd.concat(
             [
-                # TODO just delete the NaNs
                 selected_and_sorted[first_nan_idx:],
                 selected_and_sorted[:first_nan_idx],
             ]
@@ -233,50 +244,3 @@ def sort_by_column(sorted_by_name, stat_col):
 def to_csc_matrix(arr, dtype):
     row_idxs, col_idxs, data = [np.concatenate(x) for x in zip(*arr)]
     return csc_matrix((data, (row_idxs, col_idxs)), dtype=dtype)
-
-
-# def compute_idx_to_order_in_index_list(sorted_by_name):
-#     """
-#     Create a mapping from index in the sorted_by_name dataframe to the
-#     index in the index order list.
-#     """
-#     typs = sorted(set(sorted_by_name.type))
-#     universes = all_universes()
-#     idx_to_name_order = {}
-#     idxs_each = {}
-#     mask_for_universes = {}
-#     for universe in tqdm.tqdm(universes):
-#         mask_for_universe = sorted_by_name.universes.apply(lambda x: universe in x)
-#         [idxs_for_universe] = np.where(mask_for_universe)
-#         frame_for_universe = sorted_by_name[mask_for_universe]
-#         for typ in typs:
-#             mask = np.zeros(len(sorted_by_name), dtype=np.int64)
-#             [for_typ_within_universe] = np.where((frame_for_universe.type == typ))
-#             idxs_for_typ = idxs_for_universe[for_typ_within_universe]
-#             mask[idxs_for_typ] = np.argsort(
-#                 np.argsort(sorted_by_name.index_order[idxs_for_typ])
-#             )
-#             idxs_each[universe, typ] = idxs_for_typ
-#             idx_to_name_order[universe, typ] = mask
-#         idx_to_name_order[universe, "overall"] = np.argsort(
-#             np.argsort(frame_for_universe.index_order)
-#         )
-#         idxs_each[universe, "overall"] = idxs_for_universe
-#         mask_for_universes[universe] = mask_for_universe
-#     return idx_to_name_order, idxs_each, mask_for_universes
-
-
-def ordering(
-    idx_to_order_in_index_list,
-    idxs_each,
-    selected_and_sorted_for_col,
-    backmap,
-    universe,
-    typ,
-):
-    idxs_orig = idxs_each[universe, typ]
-    idxs = backmap[idxs_orig]
-    idxs.sort()
-    return idx_to_order_in_index_list[universe, typ][
-        selected_and_sorted_for_col.iloc[idxs].index
-    ]

@@ -12,9 +12,6 @@ class TransportationCommuteTimeStatistics(ACSStatisticsColection):
             "transportation_commute_time_over_60": "Commute Time > 60 min %",
         }
 
-    def category_for_each_statistic(self):
-        return self.same_for_each_name("transportation")
-
     def explanation_page_for_each_statistic(self):
         return self.same_for_each_name("transportation")
 
@@ -30,7 +27,7 @@ class TransportationCommuteTimeStatistics(ACSStatisticsColection):
             "transportation_commute_time_30_to_59",
         ]
 
-    def mutate_statistic_table(self, statistics_table, shapefile_table):
+    def mutate_acs_results(self, statistics_table):
         fractionalize(
             statistics_table,
             "transportation_commute_time_under_15",
@@ -43,6 +40,7 @@ class TransportationCommuteTimeStatistics(ACSStatisticsColection):
         return "transportation_commute_time"
 
     def acs_entity(self):
+        # pylint: disable=line-too-long
         return ACSDataEntity(
             "MEANS OF TRANSPORTATION TO WORK BY TRAVEL TIME TO WORK",
             "population_18",

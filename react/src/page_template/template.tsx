@@ -17,7 +17,7 @@ import '../common.css'
 import '../components/article.css'
 import { useMobileLayout } from '../utils/responsive'
 
-import { useColors } from './colors'
+import { useColors, useJuxtastatColors } from './colors'
 
 export function PageTemplate({
     screencap_elements = undefined,
@@ -27,25 +27,36 @@ export function PageTemplate({
 }: {
     screencap_elements?: () => ScreencapElements
     has_universe_selector?: boolean
-    universes?: string[]
+    universes?: readonly string[]
     children: React.ReactNode
 }): ReactNode {
     const [hamburger_open, set_hamburger_open] = useState(false)
     const [screenshot_mode, set_screenshot_mode] = useState(false)
     const colors = useColors()
+    const juxtaColors = useJuxtastatColors()
+    const mobileLayout = useMobileLayout()
 
     useEffect(() => {
         document.body.style.backgroundColor = colors.background
         document.body.style.color = colors.textMain
         document.documentElement.style.setProperty('--quiz-plain-bg', colors.unselectedButton)
         document.documentElement.style.setProperty('--quiz-selected-bg', colors.selectedButton)
-        document.documentElement.style.setProperty('--quiz-correct', colors.hueColors.green)
-        document.documentElement.style.setProperty('--quiz-incorrect', colors.hueColors.red)
+        document.documentElement.style.setProperty('--quiz-correct', juxtaColors.correct)
+        document.documentElement.style.setProperty('--quiz-incorrect', juxtaColors.incorrect)
         document.documentElement.style.setProperty('--slightly-different-background', colors.slightlyDifferentBackground)
         document.documentElement.style.setProperty('--slightly-different-background-focused', colors.slightlyDifferentBackgroundFocused)
         document.documentElement.style.setProperty('--blue-link', colors.blueLink)
         document.documentElement.style.setProperty('--text-main-opposite', colors.textMainOpposite)
-    }, [colors])
+        document.documentElement.style.setProperty('--text-main', colors.textMain)
+        document.documentElement.style.setProperty('--ordinal-text-color', colors.ordinalTextColor)
+        document.documentElement.style.setProperty('--background', colors.background)
+    }, [colors, juxtaColors])
+
+    useEffect(() => {
+        if (!mobileLayout && hamburger_open) {
+            set_hamburger_open(false)
+        }
+    }, [hamburger_open, mobileLayout])
 
     const has_screenshot_button = screencap_elements !== undefined
 
@@ -72,7 +83,7 @@ export function PageTemplate({
     return (
         <ScreenshotContext.Provider value={screenshot_mode}>
             <meta name="viewport" content="width=device-width, initial-scale=0.75, shrink-to-fit=no, maximum-scale=0.75" />
-            <div className={useMobileLayout() ? 'main_panel_mobile' : 'main_panel'} style={{ backgroundColor: colors.background }}>
+            <div className={mobileLayout ? 'main_panel_mobile' : 'main_panel'} style={{ backgroundColor: colors.background }}>
                 <Header
                     hamburger_open={hamburger_open}
                     set_hamburger_open={set_hamburger_open}
@@ -109,11 +120,11 @@ function TemplateFooter(): ReactNode {
 }
 
 function Version(): ReactNode {
-    return <span id="current-version">18.0.0</span>
+    return <span id="current-version">20.0.0</span>
 }
 
 function LastUpdated(): ReactNode {
-    return <span id="last-updated">2024-10-18</span>
+    return <span id="last-updated">2024-11-16</span>
 }
 
 function MainCredits(): ReactNode {

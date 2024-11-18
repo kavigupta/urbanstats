@@ -4,8 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "webpack --mode=development",
-    "prod": "export NODE_ENV=production && webpack --mode=production",
+    "dev": "rspack --mode=development",
+    "prod": "export NODE_ENV=production && rspack --mode=production",
     "watch": "./watch.sh",
     "lint": "npx eslint . --fix",
     "test:e2e": "tsx test/scripts/run-e2e-tests.ts"
@@ -20,6 +20,8 @@
     "@babel/preset-env": "^7.20.2",
     "@babel/preset-react": "^7.18.6",
     "@eslint/js": "^9.8.0",
+    "@rspack/cli": "^1.0.14",
+    "@rspack/core": "^1.0.14",
     "@stylistic/eslint-plugin": "^2.7.2",
     "@types/dom-to-image": "^2.6.7",
     "@types/eslint__js": "^8.42.3",
@@ -45,19 +47,15 @@
     "execa": "npm:@esm2cjs/execa@^6.1.1-cjs.1",
     "express": "^4.19.2",
     "express-http-proxy": "^2.1.1",
+    "fork-ts-checker-webpack-plugin": "^9.0.2",
     "glob": "^11.0.0",
     "protobufjs-cli": "^1.1.1",
     "source-map-loader": "^4.0.1",
     "style-loader": "^3.3.1",
-    "testcafe": "^3.5.0",
-    "ts-loader": "^9.4.2",
+    "testcafe": "^3.7.0",
     "tsx": "^4.19.1",
     "typescript": "^5.5.4",
     "typescript-eslint": "^8.0.1",
-    "webpack": "^5.88.2",
-    "webpack-cli": "^5.1.4",
-    "webpack-dev-server": "^4.15.1",
-    "zod": "^3.23.8",
     "zodcli": "^0.0.4"
   },
   "dependencies": {
@@ -66,6 +64,7 @@
     "@fontsource/jost": "^5.0.18",
     "@observablehq/plot": "^0.6.16",
     "@types/google-protobuf": "^3.15.12",
+    "base58-js": "^2.0.0",
     "better-react-mathjax": "^2.0.3",
     "dom-to-image-more": "^3.3.0",
     "expr-eval": "^2.0.2",
@@ -75,15 +74,17 @@
     "json5": "^2.2.0",
     "leaflet": "^1.9.4",
     "mathjs": "^12.1.0",
-    "node-polyfill-webpack-plugin": "^2.0.1",
+    "node-polyfill-webpack-plugin": "^3.0.0",
     "prng": "^0.0.1",
     "protobufjs": "^7.2.4",
     "react": "^18.2.0",
+    "react-a11y-footnotes": "^0.7.0",
     "react-contenteditable": "^3.3.7",
     "react-device-detect": "^2.2.3",
     "react-dom": "^18.2.0",
     "react-mobile-share": "^1.0.30",
     "react-zlib-js": "^1.0.5",
-    "resolve-cwd": "^3.0.0"
-  }
+    "zod": "^3.23.8"
+  },
+  "type": "module"
 }

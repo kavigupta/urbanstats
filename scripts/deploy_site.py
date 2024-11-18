@@ -31,6 +31,11 @@ def update_scripts(branch):
     and push to the remote repo.
     """
     synchronize()
+    # if the branch isn't the same as the current branch, checkout to the branch
+    current_branch = get_current_branch()
+    if current_branch != branch:
+        # create a new branch if it doesn't exist
+        subprocess.run(["git", "checkout", "-b", branch], cwd=PATH)
     # add the files to the git repo
     subprocess.run(["git", "add", "."], cwd=PATH)
     # commit the changes, using the commit message corresponding to the one in the local repo
@@ -44,6 +49,17 @@ def update_scripts(branch):
     subprocess.run(["git", "push", "origin", branch], cwd=PATH)
 
 
+def get_current_branch():
+    current_branch = subprocess.run(
+        ["git", "rev-parse", "--abbrev-ref", "HEAD"],
+        cwd=PATH,
+        capture_output=True,
+        text=True,
+    ).stdout.strip()
+
+    return current_branch
+
+
 def update_all():
     temp_branch = "temp"
     push_to_new_branch(temp_branch)
@@ -51,8 +67,21 @@ def update_all():
 
 
 def push_to_master(new_branch):
-    # add master branch
-    subprocess.run(["git", "checkout", "-b", "master"], cwd=PATH)
+    current_branch = get_current_branch()
+    assert current_branch == new_branch != "master", (current_branch, new_branch)
+    # check if master branch exists
+    branches = subprocess.run(
+        ["git", "branch"], cwd=PATH, capture_output=True, text=True
+    ).stdout.split("\n")
+    branches = [x.strip().strip("*").strip() for x in branches]
+    if "master" in branches:
+        # checkout to master branch
+        subprocess.run(["git", "checkout", "master"], cwd=PATH)
+        # merge in the branch we were on
+        subprocess.run(["git", "merge", new_branch], cwd=PATH)
+    else:
+        # add master branch
+        subprocess.run(["git", "checkout", "-b", "master"], cwd=PATH)
     # force push to master
     subprocess.run(["git", "push", "-f", "origin", "master"], cwd=PATH)
     # remove temp branch

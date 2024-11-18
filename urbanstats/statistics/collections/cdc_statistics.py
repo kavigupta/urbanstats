@@ -1,9 +1,10 @@
 from urbanstats.census_2010.cdc import aggregated_cdc_table
-from urbanstats.statistics.statistic_collection import CDCStatisticsCollection
+from urbanstats.statistics.statistic_collection import USAStatistics
 
 
-class CDCStatistics(CDCStatisticsCollection):
+class CDCStatistics(USAStatistics):
     def name_for_each_statistic(self):
+        # pylint: disable=line-too-long
         cdc_columns = {
             "GHLTH": "Fair or poor self-rated health status %",  # "GHLTH": "Fair or poor self-rated health status among adults aged >=18 years",
             "PHLTH": "Physical health not good for two weeks in last year %",  # "PHLTH": "Physical health not good for >=14 days among adults aged >=18 years",
@@ -59,9 +60,6 @@ class CDCStatistics(CDCStatisticsCollection):
         out = {f"{k}_cdc_2": v for k, v in cdc_columns.items()}
         return out
 
-    def category_for_each_statistic(self):
-        return self.same_for_each_name("health")
-
     def explanation_page_for_each_statistic(self):
         return self.same_for_each_name("health")
 
@@ -100,12 +98,16 @@ class CDCStatistics(CDCStatisticsCollection):
             "DENTAL_cdc_2",
         ]
 
-    def compute_statistics(self, shapefile, statistics_table, shapefile_table):
+    def dependencies(self):
+        return ["population_18_2010"]
+
+    def compute_statistics_dictionary_usa(
+        self, *, shapefile, existing_statistics, shapefile_table
+    ):
+        result = {}
         cdc_table = aggregated_cdc_table(shapefile)
         for cdc in self.name_for_each_statistic():
-            statistics_table[cdc] = cdc_table[cdc]
-        self.mutate_statistic_table(statistics_table, shapefile_table)
-
-    def mutate_statistic_table(self, statistics_table, shapefile_table):
+            result[cdc] = cdc_table[cdc]
         for cdc in self.name_for_each_statistic():
-            statistics_table[cdc] /= statistics_table["population_18_2010"]
+            result[cdc] /= existing_statistics["population_18_2010"]
+        return result

@@ -7,20 +7,18 @@ from urbanstats.statistics.utils import fractionalize
 class IndustryStatistics(ACSStatisticsColection):
     def __init__(self):
         super().__init__()
-        assert set(self.category_for_each_statistic()) == set(
+        assert set(self.name_for_each_statistic()) == set(
             self.industry_name_to_description()
         )
 
     def name_for_each_statistic(self):
         return industry.industry_display
 
-    def category_for_each_statistic(self):
-        return self.same_for_each_name("industry")
-
     def explanation_page_for_each_statistic(self):
         return self.same_for_each_name("industry_and_occupation")
 
     def quiz_question_names(self):
+        # pylint: disable=line-too-long
         quick_names = {
             "industry_agriculture,_forestry,_fishing_and_hunting": "higher % of workers employed in the agriculture, forestry, fishing, and hunting industries",
             "industry_mining,_quarrying,_and_oil_and_gas_extraction": "higher % of workers employed in the mining, quarrying, and oil/gas extraction industries",
@@ -118,7 +116,7 @@ class IndustryStatistics(ACSStatisticsColection):
             " public finance activities, public order and safety activities, etc.",
         }
 
-    def mutate_statistic_table(self, statistics_table, shapefile_table):
+    def mutate_acs_results(self, statistics_table):
         fractionalize(statistics_table, *self.name_for_each_statistic())
 
     def acs_name(self):

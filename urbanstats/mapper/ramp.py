@@ -1,9 +1,8 @@
-import json
-import os
-
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
+
+from ..utils import output_typescript
 
 
 def get_pyplot_ramps():
@@ -21,9 +20,7 @@ def get_pyplot_ramps():
         ramp_name = ramp_name[0].upper() + ramp_name[1:]
         pyplot_ramps[ramp_name] = ramp_obj_to_list(ramp_obj)
 
-    pyplot_ramps = {
-        k: v for k, v in sorted(pyplot_ramps.items(), key=lambda x: x[0].lower())
-    }
+    pyplot_ramps = dict(sorted(pyplot_ramps.items(), key=lambda x: x[0].lower()))
     return pyplot_ramps
 
 
@@ -41,6 +38,7 @@ def ramp_obj_to_list(ramp_obj):
     The float is the position in the colormap, and the tuple is the RGBA value
     at that position.
     """
+    # pylint: disable=protected-access
     assert isinstance(ramp_obj, mpl.colors.LinearSegmentedColormap)
 
     if callable(ramp_obj._segmentdata["red"]) or len(ramp_obj._segmentdata["red"]) < 10:
@@ -49,6 +47,7 @@ def ramp_obj_to_list(ramp_obj):
         xs = sorted(
             {x for segment in ramp_obj._segmentdata.values() for x, _, _ in segment}
         )
+    # pylint: disable=consider-using-f-string
     return [
         (x, "#%02x%02x%02x" % tuple(int(255 * y) for y in ramp_obj(x))[:-1]) for x in xs
     ]
@@ -69,9 +68,10 @@ def interpolate_ramp(ramp, relative_pos):
     y1, y2 = np.array(
         [[int(y[1:][a:b], 16) for a, b in [(0, 2), (2, 4), (4, 6)]] for y in [y1, y2]]
     )
+    # pylint: disable=consider-using-f-string
     return "#%02x%02x%02x" % tuple(
         ((y1 * (x2 - relative_pos) + y2 * (relative_pos - x1)) / (x2 - x1)).astype(
-            np.int
+            np.int64
         )
     )
 
@@ -82,11 +82,6 @@ def plot_ramp(y, ramp, segments=101):
     plt.scatter(xs, [y for _ in colors], c=colors, s=100)
 
 
-def output_ramps():
-    mapper_folder = "react/src/data/mapper"
-    try:
-        os.makedirs(mapper_folder)
-    except FileExistsError:
-        pass
-    with open(f"{mapper_folder}/ramps.json", "w") as f:
-        json.dump(get_all_ramps(), f)
+def output_ramps(mapper_folder):
+    with open(f"{mapper_folder}/ramps.ts", "w") as f:
+        output_typescript(get_all_ramps(), f, "Record<string, [number, string][]>")

@@ -1,7 +1,8 @@
-from urbanstats.statistics.statistic_collection import USDAFRAStatisticsCollection
+from urbanstats.census_2010.usda_food_research_atlas import aggregated_usda_fra
+from urbanstats.statistics.statistic_collection import USAStatistics
 
 
-class USDAFRAStatistics(USDAFRAStatisticsCollection):
+class USDAFRAStatistics(USAStatistics):
     version = 4
     tooltip = "!TOOLTIP The USDA defines a grocery store as a 'supermarket, supercenter, or large grocery store.'"
 
@@ -12,9 +13,6 @@ class USDAFRAStatistics(USDAFRAStatisticsCollection):
             "lapop10share_usda_fra_1": "Within 10mi of a grocery store %",
             "lapop20share_usda_fra_1": "Within 20mi of a grocery store %",
         }
-
-    def category_for_each_statistic(self):
-        return self.same_for_each_name("feature")
 
     def explanation_page_for_each_statistic(self):
         return self.same_for_each_name("usda_fra")
@@ -34,8 +32,21 @@ class USDAFRAStatistics(USDAFRAStatisticsCollection):
             "lapop20share_usda_fra_1",
         ]
 
-    def mutate_statistic_table(self, statistics_table, shapefile_table):
+    def dependencies(self):
+        return ["population_2010"]
+
+    def compute_statistics_dictionary_usa(
+        self, *, shapefile, existing_statistics, shapefile_table
+    ):
+        statistics_table = {}
+
+        t = aggregated_usda_fra(shapefile)
+        for column in t.columns:
+            statistics_table[column] = t[column]
+
         for cdc in self.name_for_each_statistic():
-            statistics_table[cdc] /= statistics_table["population_2010"]
+            statistics_table[cdc] /= existing_statistics["population_2010"]
             # not having access to grocery stores -> having access to grocery stores
             statistics_table[cdc] = 1 - statistics_table[cdc]
+
+        return statistics_table

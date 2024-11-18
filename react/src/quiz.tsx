@@ -4,6 +4,7 @@ import './style.css'
 import './common.css'
 
 import { QuizPanel } from './components/quiz-panel'
+import { discordFix } from './discord-fix'
 import { loadJSON } from './load_json'
 import { get_daily_offset_number, get_retrostat_offset_number } from './quiz/dates'
 import { JuxtaQuestionJSON, QuizDescriptor, RetroQuestionJSON, load_juxta, load_retro } from './quiz/quiz'
@@ -35,33 +36,6 @@ async function loadPage(): Promise<void> {
     let todays_quiz
     let today_name: string
     let descriptor: QuizDescriptor
-    if (mode === 'upload') {
-        document.title = 'Upload'
-        // this is a bit of a hack, we should probably have a well designed page for this
-        // and also tests
-        root.render(
-            <input
-                type="file"
-                accept=".json"
-                onChange={async (e) => {
-                    const file = e.target.files![0]
-                    const text = await file.text()
-                    const upload = JSON.parse(text) as { quiz_history: [string, boolean[]][], persistent_id: string }
-                    const updated_quizzes = upload.quiz_history
-                    // updated_quizzes is an array of (date, outcome) pairs
-                    const quiz_history = JSON.parse(localStorage.getItem('quiz_history') ?? '{}') as Record<string, { choices: string[], correct_pattern: boolean[] }>
-                    for (const [date, outcome] of updated_quizzes) {
-                        quiz_history[date] = { choices: ['A', 'A', 'A', 'A', 'A'], correct_pattern: outcome }
-                    }
-                    localStorage.setItem('quiz_history', JSON.stringify(quiz_history))
-                    localStorage.setItem('persistent_id', upload.persistent_id)
-                    // navigate to the page with no mode set
-                    window.location.href = window.location.origin + window.location.pathname
-                }}
-            />,
-        )
-        return
-    }
     if (mode === 'retro') {
         document.title = 'Retrostat'
         let retro = get_retrostat_offset_number()
@@ -73,7 +47,7 @@ async function loadPage(): Promise<void> {
             name: `W${retro}`,
         }
         today_name = `Week ${retro}`
-        todays_quiz = (loadJSON(`/retrostat/${retro}`) as RetroQuestionJSON[]).map(load_retro)
+        todays_quiz = (await loadJSON(`/retrostat/${retro}`) as RetroQuestionJSON[]).map(load_retro)
     }
     else {
         // daily quiz
@@ -84,7 +58,7 @@ async function loadPage(): Promise<void> {
         else {
             today = get_daily_offset_number()
         }
-        todays_quiz = (loadJSON(`/quiz/${today}`) as JuxtaQuestionJSON[]).map(load_juxta)
+        todays_quiz = (await loadJSON(`/quiz/${today}`) as JuxtaQuestionJSON[]).map(load_juxta)
         today_name = today.toString()
         descriptor = { kind: 'juxtastat', name: today }
     }
@@ -98,4 +72,5 @@ async function loadPage(): Promise<void> {
     )
 }
 
+discordFix()
 void loadPage()
