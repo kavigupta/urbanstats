@@ -26,8 +26,6 @@ export type StatSourceKey<C extends SourceCategoryIdentifier = SourceCategoryIde
 
 export type TemperatureUnit = 'fahrenheit' | 'celsius'
 
-export type MobileArticlePointers = 'in_class' | 'overall'
-
 export type SettingsDictionary = {
     [relationshipKey: RelationshipKey]: boolean | undefined
     show_historical_cds: boolean
@@ -39,7 +37,6 @@ export type SettingsDictionary = {
     colorblind_mode: boolean
     clean_background: boolean
     temperature_unit: TemperatureUnit
-    mobile_article_pointers: MobileArticlePointers
 }
 & { [G in GroupIdentifier as StatGroupKey<G>]: boolean }
 & { [C in CategoryIdentifier as StatCategorySavedIndeterminateKey<C>]: GroupIdentifier[] }
@@ -92,7 +89,6 @@ export const defaultSettingsList = [
     ['clean_background', false] as const,
     ...statPathsWithExtra.map(statPath => [`expanded__${statPath}`, false] as const),
     ['temperature_unit', 'fahrenheit'],
-    ['mobile_article_pointers', 'in_class'],
 ] as const
 
 // Having a default settings object allows us to statically check that we have default values for all settings
