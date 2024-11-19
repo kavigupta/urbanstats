@@ -118,6 +118,9 @@ const TemperatureUnitCoder: SettingCoder<TemperatureUnit> = {
     },
 }
 
+// Too many bits for expansion
+const MobileArticlePointersCoder = new BitmapCoder(2, ['in_class', 'overall'])
+
 /**
  * DO NOT REORDER, ONLY ADD
  *
@@ -364,6 +367,7 @@ const settingsVector = [
     new ActiveSetting({ key: 'histogram_relative', coder: BooleanSettingCoder }),
     new ActiveSetting({ key: 'histogram_type', coder: HistogramTypeSettingCoder }),
     new ActiveSetting({ key: 'temperature_unit', coder: TemperatureUnitCoder }),
+    new ActiveSetting({ key: 'mobile_article_pointers', coder: MobileArticlePointersCoder }),
 ] satisfies (ActiveSetting<keyof SettingsDictionary> | DeprecatedSetting<string>)[]
 
 type NotIncludedInSettingsVector = (
