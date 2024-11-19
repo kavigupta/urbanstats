@@ -744,7 +744,7 @@ function PointerButtonsIndex(props: { ordinal: number, statpath: string, type: s
     const curr_universe = useUniverse()
     const get_data = async (): Promise<string[]> => await load_ordering(curr_universe, props.statpath, props.type)
     return (
-        <span style={{ margin: 'auto' }}>
+        <span style={{ margin: 'auto', whiteSpace: 'nowrap' }}>
             <PointerButtonIndex
                 get_data={get_data}
                 original_pos={props.ordinal}
