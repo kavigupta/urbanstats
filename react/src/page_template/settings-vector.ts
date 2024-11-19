@@ -4,7 +4,7 @@
 
 import * as base58 from 'base58-js'
 
-import { defaultSettingsList, HistogramType, RelationshipKey, Settings, SettingsDictionary, StatCategoryExpandedKey, StatCategorySavedIndeterminateKey, TemperatureUnit, useSettings } from './settings'
+import { defaultSettingsList, RelationshipKey, Settings, SettingsDictionary, StatCategoryExpandedKey, StatCategorySavedIndeterminateKey, useSettings } from './settings'
 
 const underflow = Symbol()
 
@@ -65,58 +65,39 @@ const BooleanSettingCoder: SettingCoder<boolean> = {
     },
 }
 
-const HistogramTypeSettingCoder: SettingCoder<HistogramType> = {
-    encode(value = 'Line') {
-        switch (value) {
-            case 'Line':
-                return [false, false]
-            case 'Line (cumulative)':
-                return [false, true]
-            case 'Bar':
-                return [true, false]
+/**
+ * Do not modify `bits` once deployed.
+ * Only append to `array` once deployed.
+ */
+class BitmapCoder<const Value> implements SettingCoder<Value> {
+    constructor(bits: 1, array: [Value, Value])
+    constructor(bits: 2, array: [Value, Value] | [Value, Value, Value] | [Value, Value, Value, Value])
+    constructor(readonly bits: number, readonly array: Value[]) {}
+
+    encode(value: Value = this.array[0]): boolean[] {
+        const number = this.array.indexOf(value)
+        return Array.from({ length: this.bits }).map((_, i) => ((number >> (this.bits - (i + 1))) & 1) === 1 ? true : false)
+    }
+
+    decode(bits: boolean[]): Value | typeof underflow {
+        if (bits.length === 0) {
+            return underflow
         }
-    },
-    decode(bits) {
-        switch (bits.length) {
-            case 0:
-                return underflow
-            case 1:
-                throw new Error('Something bad has happened with settings decoding')
-            default:
-                switch ((bits.shift()! ? (1 << 1) : 0) | (bits.shift()! ? (1 << 0) : 0)) {
-                    case 0:
-                        return 'Line'
-                    case 1:
-                        return 'Line (cumulative)'
-                    case 2:
-                        return 'Bar'
-                    default:
-                        return 'Line' // For backwards/forwards compatibility
-                }
+        if (bits.length < this.bits) {
+            throw new Error('Something bad has happened with settings decoding')
         }
-    },
+        const number = bits.reduce<number>((n, bit, i) => n | ((bit ? 1 : 0) << (this.bits - (i + 1))), 0)
+        return this.array[number] ?? underflow
+    }
 }
 
-const TemperatureUnitCoder: SettingCoder<TemperatureUnit> = {
-    encode(value = 'fahrenheit') {
-        switch (value) {
-            case 'fahrenheit':
-                return [false]
-            case 'celsius':
-                return [true]
-        }
-    },
-    decode(bits) {
-        switch (bits.shift()) {
-            case false:
-                return 'fahrenheit'
-            case true:
-                return 'celsius'
-            case undefined:
-                return underflow
-        }
-    },
-}
+const HistogramTypeSettingCoder = new BitmapCoder(2, [
+    'Line',
+    'Line (cumulative)',
+    'Bar',
+])
+
+const TemperatureUnitCoder = new BitmapCoder(1, ['fahrenheit', 'celsius'])
 
 // Too many bits for expansion
 const MobileArticlePointersCoder = new BitmapCoder(2, ['in_class', 'overall'])
