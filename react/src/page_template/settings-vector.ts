@@ -77,21 +77,28 @@ class BitmapCoder<const Value> implements SettingCoder<Value> {
     constructor(bits: 2, array: Min2<Double<[Value, Value]>>)
     constructor(bits: 3, array: Min2<Double<Double<[Value, Value]>>>)
     constructor(bits: 4, array: Min2<Double<Double<Double<[Value, Value]>>>>)
-    constructor(readonly bits: number, readonly array: Value[]) {}
+    constructor(readonly numBits: number, readonly array: Value[]) {}
 
     encode(value: Value = this.array[0]): boolean[] {
         const number = this.array.indexOf(value)
-        return Array.from({ length: this.bits }).map((_, i) => ((number >> (this.bits - (i + 1))) & 1) === 1 ? true : false)
+        const result: boolean[] = []
+        for (let b = this.numBits - 1; b >= 0; b--) {
+            result.push(((number >> b) & 1) === 1 ? true : false)
+        }
+        return result
     }
 
     decode(bits: boolean[]): Value | typeof underflow {
         if (bits.length === 0) {
             return underflow
         }
-        if (bits.length < this.bits) {
+        if (bits.length < this.numBits) {
             throw new Error('Something bad has happened with settings decoding')
         }
-        const number = bits.reduce<number>((n, bit, i) => n | ((bit ? 1 : 0) << (this.bits - (i + 1))), 0)
+        let number = 0
+        for (let b = this.numBits - 1; b >= 0; b--) {
+            number |= (bits.shift() ? 1 : 0) << b
+        }
         return this.array[number] ?? underflow
     }
 }
