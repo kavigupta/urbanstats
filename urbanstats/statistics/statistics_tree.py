@@ -254,18 +254,18 @@ def census_segregation(col_name):
     }
 
 
-def just_2020(*col_names):
+def just_2020(*col_names, year=2020):
     return {
-        col_name: StatisticGroup({2020: [single_source(col_name)]})
+        col_name: StatisticGroup({year: [single_source(col_name)]})
         for col_name in col_names
     }
 
 
-def just_2020_category(cat_key, cat_name, *col_names):
+def just_2020_category(cat_key, cat_name, *col_names, year=2020):
     return {
         cat_key: StatisticCategory(
             name=cat_name,
-            contents=just_2020(*col_names),
+            contents=just_2020(*col_names, year=year),
         )
     }
 
@@ -297,6 +297,12 @@ statistics_tree = StatisticTree(
                 "area": StatisticGroup({None: [single_source("area")]}),
                 "compactness": StatisticGroup({None: [single_source("compactness")]}),
             },
+        ),
+        **just_2020_category(
+            "elevation_hilliness",
+            "Elevation and Hilliness",
+            "gridded_hilliness",
+            "gridded_elevation",
         ),
         "race": StatisticCategory(
             name="Race",

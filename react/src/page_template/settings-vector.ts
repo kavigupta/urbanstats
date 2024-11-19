@@ -364,6 +364,8 @@ const settingsVector = [
     new ActiveSetting({ key: 'histogram_relative', coder: BooleanSettingCoder }),
     new ActiveSetting({ key: 'histogram_type', coder: HistogramTypeSettingCoder }),
     new ActiveSetting({ key: 'temperature_unit', coder: TemperatureUnitCoder }),
+    new ActiveSetting({ key: 'show_stat_group_gridded_elevation', coder: BooleanSettingCoder }),
+    new ActiveSetting({ key: 'show_stat_group_gridded_hilliness', coder: BooleanSettingCoder }),
 ] satisfies (ActiveSetting<keyof SettingsDictionary> | DeprecatedSetting<string>)[]
 
 type NotIncludedInSettingsVector = (

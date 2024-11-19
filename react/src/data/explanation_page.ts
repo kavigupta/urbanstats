@@ -93,6 +93,8 @@ export default [
     'gpw',
     'gpw',
     'gpw',
+    'elevation_hilliness',
+    'elevation_hilliness',
     'race',
     '2000',
     '2010',

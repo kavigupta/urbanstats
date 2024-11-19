@@ -3,10 +3,12 @@ import tempfile
 import time
 from urllib.error import HTTPError
 
-from permacache import permacache
+from permacache import permacache, stable_hash
 import netCDF4
 import numpy as np
-import tqdm
+import shapely
+import tqdm.auto as tqdm
+from urbanstats.data.gpw import compute_gpw_weighted_for_shape
 from urbanstats.data.nasa import get_nasa_data
 
 PER_CELL = 3600
@@ -125,6 +127,66 @@ def aggregated_elevation(lat_min, lon_min):
 def aggregated_hilliness(lat_min, lon_min):
     data = compute_grade_aligned(lat_min, lon_min)
     return chunk_mean(data)
+
+
+def full_image(function, chunk_reduction):
+    size = PER_CELL // (CHUNK * chunk_reduction)
+    full_image = np.zeros((180 * size, 360 * size), dtype=np.float32)
+    for i in tqdm.tqdm(range(-90, 90)):
+        for j in range(-180, 180):
+            result = function(i, j)
+            if result is None:
+                continue
+            result = result.reshape(
+                result.shape[0] // chunk_reduction,
+                chunk_reduction,
+                result.shape[1] // chunk_reduction,
+                chunk_reduction,
+            ).mean((1, 3))
+            start_row = (89 - i) * size
+            start_col = (j + 180) * size
+            full_image[
+                start_row : start_row + size, start_col : start_col + size
+            ] = result
+    return full_image
+
+
+@lru_cache(maxsize=1)
+def full_elevation():
+    return full_image(aggregated_elevation, 2)
+
+
+@lru_cache(maxsize=1)
+def full_hilliness():
+    return full_image(aggregated_hilliness, 2)
+
+
+@permacache(
+    "urbanstats/data/elevation/elevation_statistics_for_shape_2",
+    key_function=dict(
+        shape=lambda x: stable_hash(shapely.to_geojson(x)),
+    ),
+)
+def elevation_statistics_for_shape(shape):
+    return compute_gpw_weighted_for_shape(
+        shape,
+        {"elevation": full_elevation(), "hilliness": full_hilliness()},
+        do_histograms=False,
+    )
+
+
+@permacache(
+    "urbanstats/data/elevation/elevation_statistics_for_shapefile_2",
+    key_function=dict(shapefile=lambda x: x.hash_key),
+)
+def elevation_statistics_for_shapefile(shapefile):
+    sf = shapefile.load_file()
+    result = {"elevation": [], "hilliness": []}
+    for shape in tqdm.tqdm(sf.geometry):
+        stats, _ = elevation_statistics_for_shape(shape)
+        result["elevation"].append(stats["elevation"])
+        result["hilliness"].append(stats["hilliness"])
+    return result
 
 
 if __name__ == "__main__":
