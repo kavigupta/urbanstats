@@ -68,8 +68,6 @@ const BooleanSettingCoder: SettingCoder<boolean> = {
 type Double<T extends readonly unknown[]> = [...T, ...T]
 type Min2<T extends readonly unknown[]> = [...T] extends [unknown, infer X, ...infer R] ? T | Min2<[X, ...R]> : never
 
-type X = Min2<Double<Double<[1, 1]>>>
-
 /**
  * Do not modify `bits` once deployed.
  * Only append to `array` once deployed.
