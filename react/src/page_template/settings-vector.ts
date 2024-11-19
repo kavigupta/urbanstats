@@ -65,13 +65,20 @@ const BooleanSettingCoder: SettingCoder<boolean> = {
     },
 }
 
+type Double<T extends readonly unknown[]> = [...T, ...T]
+type Min2<T extends readonly unknown[]> = [...T] extends [unknown, infer X, ...infer R] ? T | Min2<[X, ...R]> : never
+
+type X = Min2<Double<Double<[1, 1]>>>
+
 /**
  * Do not modify `bits` once deployed.
  * Only append to `array` once deployed.
  */
 class BitmapCoder<const Value> implements SettingCoder<Value> {
     constructor(bits: 1, array: [Value, Value])
-    constructor(bits: 2, array: [Value, Value] | [Value, Value, Value] | [Value, Value, Value, Value])
+    constructor(bits: 2, array: Min2<Double<[Value, Value]>>)
+    constructor(bits: 3, array: Min2<Double<Double<[Value, Value]>>>)
+    constructor(bits: 4, array: Min2<Double<Double<Double<[Value, Value]>>>>)
     constructor(readonly bits: number, readonly array: Value[]) {}
 
     encode(value: Value = this.array[0]): boolean[] {
