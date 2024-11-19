@@ -80,6 +80,9 @@ export function PageTemplate({
         })
     }
 
+    // https://stackoverflow.com/a/55451665
+    const runningInTestCafe = (window as unknown as { '%hammerhead%': unknown })['%hammerhead%'] !== undefined
+
     return (
         <ScreenshotContext.Provider value={screenshot_mode}>
             <meta name="viewport" content="width=device-width, initial-scale=0.75" />
@@ -87,7 +90,9 @@ export function PageTemplate({
                 className={mobileLayout ? 'main_panel_mobile' : 'main_panel'}
                 style={{
                     backgroundColor: colors.background,
-                    zoom: mobileLayout && (window as unknown as { '%hammerhead%': unknown })['%hammerhead%'] !== undefined ? 0.75 : undefined, // simulate mobile zoom in testcafe
+                    // simulate mobile zoom in testcafe so screenshots are more accurate to what they would actually be on mobile
+                    // since desktop browsers don't respect meta[name=viewport]
+                    zoom: mobileLayout && runningInTestCafe ? 0.75 : undefined,
                 }}
             >
                 <Header
