@@ -10,7 +10,7 @@ export function statsTreeTest(platform: 'mobile' | 'desktop'): void {
     urbanstatsFixture('stats tree test', `${TARGET}/article.html?longname=San+Francisco+city%2C+California%2C+USA`, async (t) => {
         switch (platform) {
             case 'mobile':
-                await t.resizeWindow(800, 800)
+                await t.resizeWindow(400, 800)
                 break
             case 'desktop':
                 await t.resizeWindow(1400, 800)
