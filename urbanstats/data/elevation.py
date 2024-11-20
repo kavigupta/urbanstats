@@ -1,5 +1,4 @@
 import tempfile
-import time
 from functools import lru_cache
 from urllib.error import HTTPError
 
