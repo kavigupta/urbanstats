@@ -272,8 +272,8 @@ export const rawStatsTree = [
         ],
     },
     {
-        id: 'elevation_hilliness',
-        name: 'Elevation and Hilliness',
+        id: 'topography',
+        name: 'Topography',
         contents: [
             {
                 id: 'gridded_hilliness',

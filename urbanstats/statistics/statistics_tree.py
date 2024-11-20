@@ -299,8 +299,8 @@ statistics_tree = StatisticTree(
             },
         ),
         **just_2020_category(
-            "elevation_hilliness",
-            "Elevation and Hilliness",
+            "topography",
+            "Topography",
             "gridded_hilliness",
             "gridded_elevation",
         ),
