@@ -1,9 +1,7 @@
+import os
+import urllib
 from functools import lru_cache
 from http.cookiejar import CookieJar
-import os
-from urllib.parse import urlencode
-
-import urllib
 
 
 @lru_cache(None)
@@ -27,5 +25,5 @@ def get_nasa_data(url):
     )
     urllib.request.install_opener(opener)
     request = urllib.request.Request(url)
-    response = urllib.request.urlopen(request)
-    return response.read()
+    with urllib.request.urlopen(request) as response:
+        return response.read()

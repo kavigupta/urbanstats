@@ -1,7 +1,4 @@
 from urbanstats.data.elevation import elevation_statistics_for_shapefile
-from urbanstats.data.gpw import compute_gpw_data_for_shapefile
-from urbanstats.statistics.collections.census import DENSITY_EXPLANATION_PW
-from urbanstats.statistics.extra_statistics import HistogramSpec
 from urbanstats.statistics.statistic_collection import InternationalStatistics
 
 POPULATION_WEIGHTED_EXPLANATION = (

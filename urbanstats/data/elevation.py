@@ -1,13 +1,14 @@
-from functools import lru_cache
 import tempfile
 import time
+from functools import lru_cache
 from urllib.error import HTTPError
 
-from permacache import permacache, stable_hash
 import netCDF4
 import numpy as np
 import shapely
 import tqdm.auto as tqdm
+from permacache import permacache, stable_hash
+
 from urbanstats.data.gpw import compute_gpw_weighted_for_shape
 from urbanstats.data.nasa import get_nasa_data
 
@@ -35,14 +36,16 @@ def load_elevation_data(lat_min, lon_min):
     except HTTPError as e:
         assert e.code == 404
         return None
-    t = tempfile.NamedTemporaryFile(suffix=".nc")
-    with open(t.name, "wb") as f:
-        f.write(content)
-    d = netCDF4.Dataset(f.name, "r")
-    d = np.array(d["ASTER_GDEM_DEM"][:])
-    # trim off the highest-lat row and easternmost column
-    # these are duplicates of the next cell.
-    res = d[1:, :-1]
+    with tempfile.NamedTemporaryFile(suffix=".nc") as t:
+        with open(t.name, "wb") as f:
+            f.write(content)
+        # The member exists, but pylint doesn't know about it.
+        # pylint: disable=no-member
+        d = netCDF4.Dataset(t.name, "r")
+        d = np.array(d["ASTER_GDEM_DEM"][:])
+        # trim off the highest-lat row and easternmost column
+        # these are duplicates of the next cell.
+        res = d[1:, :-1]
     assert res.shape == (PER_CELL, PER_CELL)
     return res
 
@@ -61,6 +64,7 @@ def load_elevation_data_with_surrounding(lat_min, lon_min):
 
 
 def compute_grade_aligned(y_min, x_min):
+    # pylint: disable=too-many-locals
     cell = load_elevation_data(y_min, x_min)
     if cell is None:
         return None
@@ -129,7 +133,7 @@ def aggregated_hilliness(lat_min, lon_min):
     return chunk_mean(data)
 
 
-def full_image(function, chunk_reduction):
+def create_full_image(function, chunk_reduction):
     size = PER_CELL // (CHUNK * chunk_reduction)
     full_image = np.zeros((180 * size, 360 * size), dtype=np.float32)
     for i in tqdm.tqdm(range(-90, 90)):
@@ -153,12 +157,12 @@ def full_image(function, chunk_reduction):
 
 @lru_cache(maxsize=1)
 def full_elevation():
-    return full_image(aggregated_elevation, 2)
+    return create_full_image(aggregated_elevation, 2)
 
 
 @lru_cache(maxsize=1)
 def full_hilliness():
-    return full_image(aggregated_hilliness, 2)
+    return create_full_image(aggregated_hilliness, 2)
 
 
 @permacache(
@@ -187,15 +191,3 @@ def elevation_statistics_for_shapefile(shapefile):
         result["elevation"].append(stats["elevation"])
         result["hilliness"].append(stats["hilliness"])
     return result
-
-
-if __name__ == "__main__":
-    lat_lons = [(lat, lon) for lon in range(-180, 180) for lat in range(-90, 90)]
-    for lat, lon in tqdm.tqdm(lat_lons):
-        try:
-            aggregated_elevation(lat, lon)
-            aggregated_hilliness(lat, lon)
-        except Exception as e:
-            print(lat, lon, e)
-            time.sleep(10)
-            continue
