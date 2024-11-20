@@ -93,6 +93,8 @@ export default [
     'PW Density (r=1km) [GHS-POP]',
     'PW Density (r=2km) [GHS-POP]',
     'PW Density (r=4km) [GHS-POP]',
+    'PW Mean Elevation',
+    'PW Mean Hilliness (Grade)',
     'Hawaiian / PI %',
     'Hawaiian / PI % (2000)',
     'Hawaiian / PI % (2010)',

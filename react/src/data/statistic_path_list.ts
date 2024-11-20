@@ -93,6 +93,8 @@ export default [
     'gpw_pw_density_1',
     'gpw_pw_density_2',
     'gpw_pw_density_4',
+    'gridded_elevation',
+    'gridded_hilliness',
     'hawaiian_pi',
     'hawaiian_pi_2000',
     'hawaiian_pi_2010',
