@@ -29,7 +29,8 @@ class ActiveSetting<const K extends keyof SettingsDictionary> {
 }
 
 class DeprecatedSetting<const K extends string> {
-    constructor(readonly props: { key: K, coder: SettingCoder<unknown> }) {} // How many bits is our data going to consume
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Necessary use of any
+    constructor(readonly props: { key: K, coder: SettingCoder<any> }) {}
 
     encode(): boolean[] {
         return this.props.coder.encode()
@@ -48,8 +49,8 @@ class DeprecatedSetting<const K extends string> {
 }
 
 interface SettingCoder<T> {
-    encode(value?: T): boolean[]
-    decode(bits: boolean[]): T | typeof underflow
+    encode: (value?: T) => boolean[]
+    decode: (bits: boolean[]) => T | typeof underflow
 }
 
 const BooleanSettingCoder: SettingCoder<boolean> = {
@@ -359,7 +360,8 @@ const settingsVector = [
     new ActiveSetting({ key: 'temperature_unit', coder: TemperatureUnitCoder }),
     new ActiveSetting({ key: 'show_stat_group_gridded_elevation', coder: BooleanSettingCoder }),
     new ActiveSetting({ key: 'show_stat_group_gridded_hilliness', coder: BooleanSettingCoder }),
-] satisfies (ActiveSetting<keyof SettingsDictionary> | DeprecatedSetting<string>)[]
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- Necessary use of any
+] satisfies (ActiveSetting<any> | DeprecatedSetting<string>)[]
 
 type NotIncludedInSettingsVector = (
     RelationshipKey
