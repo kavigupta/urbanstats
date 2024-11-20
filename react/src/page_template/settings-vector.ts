@@ -8,55 +8,55 @@ import { defaultSettingsList, RelationshipKey, Settings, SettingsDictionary, Sta
 
 const underflow = Symbol()
 
-class ActiveSetting<const K extends keyof SettingsDictionary> {
-    constructor(readonly props: { key: K, coder: SettingCoder<SettingsDictionary[K]> }) {}
+interface ActiveSetting<K extends keyof SettingsDictionary> {
+    deprecated: false
+    key: K
 
-    readonly deprecated = false
-
-    encode(value: SettingsDictionary[K]): boolean[] {
-        return this.props.coder.encode(value)
-    }
-
-    decode(bits: boolean[], settings: Settings): SettingsDictionary[K] {
-        const result = this.props.coder.decode(bits)
-        if (result === underflow) {
-            return settings.get(this.props.key)
-        }
-        return result
-    }
-
-    get key(): K { return this.props.key }
+    encode(value: SettingsDictionary[K]): boolean[]
+    decode(bits: boolean[], settings: Settings): SettingsDictionary[K]
 }
 
-class DeprecatedSetting<const K extends string> {
-    constructor(readonly props: { key: K, coder: SettingCoder<unknown> }) {} // How many bits is our data going to consume
-
-    encode(): boolean[] {
-        return this.props.coder.encode()
+function ActiveSetting<const K extends keyof SettingsDictionary>(props: { key: K, coder: SettingCoder<SettingsDictionary[K]> }): ActiveSetting<K> {
+    return {
+        deprecated: false,
+        key: props.key,
+        encode: value => props.coder.encode(value),
+        decode: (bits, settings) => {
+            const result = props.coder.decode(bits)
+            if (result === underflow) {
+                return settings.get(props.key)
+            }
+            return result
+        },
     }
+}
 
-    decode(bits: boolean[]): void {
-        // Need to use the bits, but don't care about the result
-        this.props.coder.decode(bits)
+interface DeprecatedSetting<K extends string> {
+    deprecated: true
+    key: K
+
+    encode: () => boolean[]
+    decode: (bits: boolean[]) => void
+}
+
+function DeprecatedSetting<const K extends string, T>(props: { key: K, coder: SettingCoder<T> }): DeprecatedSetting<K> {
+    return {
+        deprecated: true,
+        key: props.key,
+        encode: () => props.coder.encode(),
+        decode: (bits: boolean[]) => { props.coder.decode(bits) },
     }
-
-    get key(): K {
-        return this.props.key
-    }
-
-    readonly deprecated = true
 }
 
 interface SettingCoder<T> {
-    encode(value?: T): boolean[]
-    decode(bits: boolean[]): T | typeof underflow
+    // Uses properites instead of methods because methods are bivariant in typescript
+    encode: (value?: T) => boolean[]
+    decode: (bits: boolean[]) => T | typeof underflow
 }
 
 const BooleanSettingCoder: SettingCoder<boolean> = {
-    encode(value = false) {
-        return [value]
-    },
-    decode(bits) {
+    encode: (value = false) => [value],
+    decode: (bits) => {
         const result = bits.shift()
         if (result === undefined) {
             return underflow
@@ -71,45 +71,46 @@ type Min2<T extends readonly unknown[]> = [...T] extends [unknown, infer X, ...i
 /**
  * Do not modify `bits` once deployed.
  * Only append to `array` once deployed.
+ *
+ * Do not explicitly specify the generic type
  */
-class BitmapCoder<const Value> implements SettingCoder<Value> {
-    constructor(bits: 1, array: [Value, Value])
-    constructor(bits: 2, array: Min2<Double<[Value, Value]>>)
-    constructor(bits: 3, array: Min2<Double<Double<[Value, Value]>>>)
-    constructor(bits: 4, array: Min2<Double<Double<Double<[Value, Value]>>>>)
-    constructor(readonly numBits: number, readonly array: Value[]) {}
-
-    encode(value: Value = this.array[0]): boolean[] {
-        const number = this.array.indexOf(value)
-        const result: boolean[] = []
-        for (let b = this.numBits - 1; b >= 0; b--) {
-            result.push(((number >> b) & 1) === 1 ? true : false)
-        }
-        return result
-    }
-
-    decode(bits: boolean[]): Value | typeof underflow {
-        if (bits.length === 0) {
-            return underflow
-        }
-        if (bits.length < this.numBits) {
-            throw new Error('Something bad has happened with settings decoding')
-        }
-        let number = 0
-        for (let b = this.numBits - 1; b >= 0; b--) {
-            number |= (bits.shift() ? 1 : 0) << b
-        }
-        return this.array[number] ?? underflow
+function BitmapCoder<const Value>(bits: 1, array: [Value, Value]): SettingCoder<Value>
+function BitmapCoder<const Value>(bits: 2, array: Min2<Double<[Value, Value]>>): SettingCoder<Value>
+function BitmapCoder<const Value>(bits: 3, array: Min2<Double<Double<[Value, Value]>>>): SettingCoder<Value>
+function BitmapCoder<const Value>(bits: 4, array: Min2<Double<Double<Double<[Value, Value]>>>>): SettingCoder<Value>
+function BitmapCoder<const A extends Record<number, unknown>>(numBits: number, array: A[number][]): SettingCoder<A[number]> {
+    return {
+        encode: (value = array[0]): boolean[] => {
+            const number = array.indexOf(value)
+            const result: boolean[] = []
+            for (let b = numBits - 1; b >= 0; b--) {
+                result.push(((number >> b) & 1) === 1 ? true : false)
+            }
+            return result
+        },
+        decode: (bits: boolean[]): A[number] | typeof underflow => {
+            if (bits.length === 0) {
+                return underflow
+            }
+            if (bits.length < numBits) {
+                throw new Error('Something bad has happened with settings decoding')
+            }
+            let number = 0
+            for (let b = numBits - 1; b >= 0; b--) {
+                number |= (bits.shift() ? 1 : 0) << b
+            }
+            return array[number] ?? underflow
+        },
     }
 }
 
-const HistogramTypeSettingCoder = new BitmapCoder(2, [
+const HistogramTypeSettingCoder = BitmapCoder(2, [
     'Line',
     'Line (cumulative)',
     'Bar',
 ])
 
-const TemperatureUnitCoder = new BitmapCoder(1, ['fahrenheit', 'celsius'])
+const TemperatureUnitCoder = BitmapCoder(1, ['fahrenheit', 'celsius'])
 
 /**
  * DO NOT REORDER, ONLY ADD
@@ -117,248 +118,248 @@ const TemperatureUnitCoder = new BitmapCoder(1, ['fahrenheit', 'celsius'])
  * This vector represents setting values encoded as bit vectors in hyperlinks.
  */
 const settingsVector = [
-    new ActiveSetting({ key: 'show_stat_group_population', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_ad_1', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_sd', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_area', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_compactness', coder: BooleanSettingCoder }),
-    new DeprecatedSetting({ key: 'show_stat_group_gpw_population', coder: BooleanSettingCoder }),
-    new DeprecatedSetting({ key: 'show_stat_group_gpw_pw_density_1', coder: BooleanSettingCoder }),
-    new DeprecatedSetting({ key: 'show_stat_group_gpw_aw_density', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_white', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_hispanic', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_black', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_asian', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_native', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_hawaiian_pi', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_other  slash  mixed', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_homogeneity_250', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_segregation_250', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_segregation_250_10', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_citizenship_citizen_by_birth', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_citizenship_citizen_by_naturalization', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_citizenship_not_citizen', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_birthplace_non_us', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_birthplace_us_not_state', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_birthplace_us_state', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_language_english_only', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_language_spanish', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_language_other', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_education_high_school', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_education_ugrad', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_education_grad', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_education_field_stem', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_education_field_humanities', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_education_field_business', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_female_hs_gap_4', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_female_ugrad_gap_4', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_female_grad_gap_4', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_generation_silent', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_generation_boomer', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_generation_genx', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_generation_millenial', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_generation_genz', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_generation_genalpha', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_poverty_below_line', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_household_income_under_50k', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_household_income_50k_to_100k', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_household_income_over_100k', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_individual_income_under_50k', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_individual_income_50k_to_100k', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_individual_income_over_100k', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_housing_per_pop', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_vacancy', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_rent_burden_under_20', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_rent_burden_20_to_40', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_rent_burden_over_40', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_rent_1br_under_750', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_rent_1br_750_to_1500', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_rent_1br_over_1500', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_rent_2br_under_750', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_rent_2br_750_to_1500', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_rent_2br_over_1500', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_year_built_1969_or_earlier', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_year_built_1970_to_1979', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_year_built_1980_to_1989', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_year_built_1990_to_1999', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_year_built_2000_to_2009', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_year_built_2010_or_later', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_rent_or_own_rent', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_transportation_means_car', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_transportation_means_bike', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_transportation_means_walk', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_transportation_means_transit', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_transportation_means_worked_at_home', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_transportation_commute_time_under_15', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_transportation_commute_time_15_to_29', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_transportation_commute_time_30_to_59', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_transportation_commute_time_over_60', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_vehicle_ownership_none', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_vehicle_ownership_at_least_1', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_vehicle_ownership_at_least_2', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_traffic_fatalities_last_decade_per_capita', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_traffic_fatalities_ped_last_decade_per_capita', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_traffic_fatalities_last_decade', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_traffic_fatalities_ped_last_decade', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_GHLTH_cdc_2', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_PHLTH_cdc_2', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_ARTHRITIS_cdc_2', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_CASTHMA_cdc_2', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_BPHIGH_cdc_2', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_CANCER_cdc_2', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_KIDNEY_cdc_2', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_COPD_cdc_2', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_CHD_cdc_2', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_DIABETES_cdc_2', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_OBESITY_cdc_2', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_STROKE_cdc_2', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_DISABILITY_cdc_2', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_HEARING_cdc_2', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_VISION_cdc_2', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_COGNITION_cdc_2', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_MOBILITY_cdc_2', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_SELFCARE_cdc_2', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_INDEPLIVE_cdc_2', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_BINGE_cdc_2', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_CSMOKING_cdc_2', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_LPA_cdc_2', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_SLEEP_cdc_2', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_CHECKUP_cdc_2', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_DENTAL_cdc_2', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_CHOLSCREEN_cdc_2', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_heating_utility_gas', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_heating_electricity', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_heating_bottled_tank_lp_gas', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_heating_feul_oil_kerosene', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_heating_other', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_heating_no', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_industry_agriculture,_forestry,_fishing_and_hunting', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_industry_mining,_quarrying,_and_oil_and_gas_extraction', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_industry_accommodation_and_food_services', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_industry_arts,_entertainment,_and_recreation', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_industry_construction', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_industry_educational_services', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_industry_health_care_and_social_assistance', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_industry_finance_and_insurance', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_industry_real_estate_and_rental_and_leasing', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_industry_information', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_industry_manufacturing', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_industry_other_services,_except_public_administration', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_industry_administrative_and_support_and_waste_management_services', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_industry_management_of_companies_and_enterprises', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_industry_professional,_scientific,_and_technical_services', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_industry_public_administration', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_industry_retail_trade', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_industry_transportation_and_warehousing', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_industry_utilities', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_industry_wholesale_trade', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_occupation_architecture_and_engineering_occupations', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_occupation_computer_and_mathematical_occupations', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_occupation_life,_physical,_and_social_science_occupations', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_occupation_arts,_design,_entertainment,_sports,_and_media_occupations', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_occupation_community_and_social_service_occupations', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_occupation_educational_instruction,_and_library_occupations', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_occupation_legal_occupations', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_occupation_health_diagnosing_and_treating_practitioners_and_other_technical_occupations', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_occupation_health_technologists_and_technicians', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_occupation_business_and_financial_operations_occupations', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_occupation_management_occupations', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_occupation_construction_and_extraction_occupations', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_occupation_farming,_fishing,_and_forestry_occupations', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_occupation_installation,_maintenance,_and_repair_occupations', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_occupation_material_moving_occupations', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_occupation_production_occupations', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_occupation_transportation_occupations', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_occupation_office_and_administrative_support_occupations', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_occupation_sales_and_related_occupations', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_occupation_building_and_grounds_cleaning_and_maintenance_occupations', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_occupation_food_preparation_and_serving_related_occupations', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_occupation_healthcare_support_occupations', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_occupation_personal_care_and_service_occupations', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_occupation_firefighting_and_prevention,_and_other_protective_service_workers_including_supervisors', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_occupation_law_enforcement_workers_including_supervisors', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_sors_unpartnered_householder', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_sors_cohabiting_partnered_gay', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_sors_cohabiting_partnered_straight', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_sors_child', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_sors_other', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_marriage_never_married', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_marriage_married_not_divorced', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_marriage_divorced', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_2020 Presidential Election-margin', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_2016 Presidential Election-margin', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_2016-2020 Swing-margin', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_park_percent_1km_v2', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_within_Hospital_10', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_mean_dist_Hospital_updated', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_within_Public School_2', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_mean_dist_Public School_updated', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_within_Airport_30', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_mean_dist_Airport_updated', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_within_Active Superfund Site_10', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_mean_dist_Active Superfund Site_updated', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_lapophalfshare_usda_fra_1', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_lapop1share_usda_fra_1', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_lapop10share_usda_fra_1', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_lapop20share_usda_fra_1', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_mean_high_temp_4', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_mean_high_heat_index_4', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_mean_high_dewpoint_4', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_days_above_90_4', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_days_between_40_and_90_4', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_days_below_40_4', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_days_dewpoint_70_inf_4', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_days_dewpoint_50_70_4', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_days_dewpoint_-inf_50_4', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_hours_sunny_4', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_rainfall_4', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_snowfall_4', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_wind_speed_over_10mph_4', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_mean_high_temp_summer_4', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_mean_high_temp_winter_4', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_mean_high_temp_fall_4', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_mean_high_temp_spring_4', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_internet_no_access', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_insurance_coverage_none', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_insurance_coverage_govt', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_insurance_coverage_private', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_ad_0.25', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_ad_0.5', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_ad_2', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_ad_4', coder: BooleanSettingCoder }),
-    new DeprecatedSetting({ key: 'show_stat_group_gpw_pw_density_2', coder: BooleanSettingCoder }),
-    new DeprecatedSetting({ key: 'show_stat_group_gpw_pw_density_4', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_year_2020', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_year_2010', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_year_2000', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_historical_cds', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'simple_ordinals', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'use_imperial', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_source_Population_US Census', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_source_Population_GHSL', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'expanded__ad_0.25', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'expanded__ad_0.25_2000', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'expanded__ad_0.25_2010', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'expanded__ad_0.5', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'expanded__ad_0.5_2000', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'expanded__ad_0.5_2010', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'expanded__ad_1', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'expanded__ad_1_2000', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'expanded__ad_1_2010', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'expanded__ad_2', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'expanded__ad_2_2000', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'expanded__ad_2_2010', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'expanded__ad_4', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'expanded__ad_4_2000', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'expanded__ad_4_2010', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'expanded__gpw_pw_density_1', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'expanded__gpw_pw_density_2', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'expanded__gpw_pw_density_4', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'histogram_relative', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'histogram_type', coder: HistogramTypeSettingCoder }),
-    new ActiveSetting({ key: 'temperature_unit', coder: TemperatureUnitCoder }),
-    new ActiveSetting({ key: 'show_stat_group_gridded_elevation', coder: BooleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_gridded_hilliness', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_population', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_ad_1', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_sd', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_area', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_compactness', coder: BooleanSettingCoder }),
+    DeprecatedSetting({ key: 'show_stat_group_gpw_population', coder: BooleanSettingCoder }),
+    DeprecatedSetting({ key: 'show_stat_group_gpw_pw_density_1', coder: BooleanSettingCoder }),
+    DeprecatedSetting({ key: 'show_stat_group_gpw_aw_density', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_white', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_hispanic', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_black', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_asian', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_native', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_hawaiian_pi', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_other  slash  mixed', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_homogeneity_250', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_segregation_250', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_segregation_250_10', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_citizenship_citizen_by_birth', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_citizenship_citizen_by_naturalization', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_citizenship_not_citizen', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_birthplace_non_us', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_birthplace_us_not_state', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_birthplace_us_state', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_language_english_only', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_language_spanish', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_language_other', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_education_high_school', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_education_ugrad', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_education_grad', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_education_field_stem', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_education_field_humanities', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_education_field_business', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_female_hs_gap_4', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_female_ugrad_gap_4', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_female_grad_gap_4', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_generation_silent', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_generation_boomer', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_generation_genx', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_generation_millenial', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_generation_genz', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_generation_genalpha', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_poverty_below_line', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_household_income_under_50k', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_household_income_50k_to_100k', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_household_income_over_100k', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_individual_income_under_50k', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_individual_income_50k_to_100k', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_individual_income_over_100k', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_housing_per_pop', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_vacancy', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_rent_burden_under_20', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_rent_burden_20_to_40', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_rent_burden_over_40', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_rent_1br_under_750', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_rent_1br_750_to_1500', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_rent_1br_over_1500', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_rent_2br_under_750', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_rent_2br_750_to_1500', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_rent_2br_over_1500', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_year_built_1969_or_earlier', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_year_built_1970_to_1979', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_year_built_1980_to_1989', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_year_built_1990_to_1999', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_year_built_2000_to_2009', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_year_built_2010_or_later', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_rent_or_own_rent', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_transportation_means_car', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_transportation_means_bike', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_transportation_means_walk', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_transportation_means_transit', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_transportation_means_worked_at_home', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_transportation_commute_time_under_15', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_transportation_commute_time_15_to_29', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_transportation_commute_time_30_to_59', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_transportation_commute_time_over_60', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_vehicle_ownership_none', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_vehicle_ownership_at_least_1', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_vehicle_ownership_at_least_2', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_traffic_fatalities_last_decade_per_capita', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_traffic_fatalities_ped_last_decade_per_capita', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_traffic_fatalities_last_decade', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_traffic_fatalities_ped_last_decade', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_GHLTH_cdc_2', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_PHLTH_cdc_2', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_ARTHRITIS_cdc_2', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_CASTHMA_cdc_2', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_BPHIGH_cdc_2', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_CANCER_cdc_2', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_KIDNEY_cdc_2', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_COPD_cdc_2', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_CHD_cdc_2', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_DIABETES_cdc_2', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_OBESITY_cdc_2', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_STROKE_cdc_2', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_DISABILITY_cdc_2', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_HEARING_cdc_2', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_VISION_cdc_2', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_COGNITION_cdc_2', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_MOBILITY_cdc_2', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_SELFCARE_cdc_2', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_INDEPLIVE_cdc_2', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_BINGE_cdc_2', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_CSMOKING_cdc_2', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_LPA_cdc_2', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_SLEEP_cdc_2', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_CHECKUP_cdc_2', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_DENTAL_cdc_2', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_CHOLSCREEN_cdc_2', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_heating_utility_gas', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_heating_electricity', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_heating_bottled_tank_lp_gas', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_heating_feul_oil_kerosene', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_heating_other', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_heating_no', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_industry_agriculture,_forestry,_fishing_and_hunting', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_industry_mining,_quarrying,_and_oil_and_gas_extraction', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_industry_accommodation_and_food_services', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_industry_arts,_entertainment,_and_recreation', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_industry_construction', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_industry_educational_services', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_industry_health_care_and_social_assistance', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_industry_finance_and_insurance', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_industry_real_estate_and_rental_and_leasing', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_industry_information', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_industry_manufacturing', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_industry_other_services,_except_public_administration', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_industry_administrative_and_support_and_waste_management_services', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_industry_management_of_companies_and_enterprises', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_industry_professional,_scientific,_and_technical_services', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_industry_public_administration', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_industry_retail_trade', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_industry_transportation_and_warehousing', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_industry_utilities', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_industry_wholesale_trade', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_occupation_architecture_and_engineering_occupations', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_occupation_computer_and_mathematical_occupations', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_occupation_life,_physical,_and_social_science_occupations', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_occupation_arts,_design,_entertainment,_sports,_and_media_occupations', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_occupation_community_and_social_service_occupations', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_occupation_educational_instruction,_and_library_occupations', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_occupation_legal_occupations', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_occupation_health_diagnosing_and_treating_practitioners_and_other_technical_occupations', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_occupation_health_technologists_and_technicians', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_occupation_business_and_financial_operations_occupations', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_occupation_management_occupations', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_occupation_construction_and_extraction_occupations', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_occupation_farming,_fishing,_and_forestry_occupations', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_occupation_installation,_maintenance,_and_repair_occupations', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_occupation_material_moving_occupations', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_occupation_production_occupations', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_occupation_transportation_occupations', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_occupation_office_and_administrative_support_occupations', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_occupation_sales_and_related_occupations', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_occupation_building_and_grounds_cleaning_and_maintenance_occupations', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_occupation_food_preparation_and_serving_related_occupations', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_occupation_healthcare_support_occupations', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_occupation_personal_care_and_service_occupations', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_occupation_firefighting_and_prevention,_and_other_protective_service_workers_including_supervisors', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_occupation_law_enforcement_workers_including_supervisors', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_sors_unpartnered_householder', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_sors_cohabiting_partnered_gay', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_sors_cohabiting_partnered_straight', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_sors_child', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_sors_other', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_marriage_never_married', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_marriage_married_not_divorced', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_marriage_divorced', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_2020 Presidential Election-margin', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_2016 Presidential Election-margin', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_2016-2020 Swing-margin', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_park_percent_1km_v2', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_within_Hospital_10', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_mean_dist_Hospital_updated', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_within_Public School_2', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_mean_dist_Public School_updated', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_within_Airport_30', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_mean_dist_Airport_updated', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_within_Active Superfund Site_10', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_mean_dist_Active Superfund Site_updated', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_lapophalfshare_usda_fra_1', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_lapop1share_usda_fra_1', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_lapop10share_usda_fra_1', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_lapop20share_usda_fra_1', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_mean_high_temp_4', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_mean_high_heat_index_4', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_mean_high_dewpoint_4', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_days_above_90_4', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_days_between_40_and_90_4', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_days_below_40_4', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_days_dewpoint_70_inf_4', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_days_dewpoint_50_70_4', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_days_dewpoint_-inf_50_4', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_hours_sunny_4', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_rainfall_4', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_snowfall_4', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_wind_speed_over_10mph_4', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_mean_high_temp_summer_4', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_mean_high_temp_winter_4', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_mean_high_temp_fall_4', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_mean_high_temp_spring_4', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_internet_no_access', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_insurance_coverage_none', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_insurance_coverage_govt', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_insurance_coverage_private', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_ad_0.25', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_ad_0.5', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_ad_2', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_ad_4', coder: BooleanSettingCoder }),
+    DeprecatedSetting({ key: 'show_stat_group_gpw_pw_density_2', coder: BooleanSettingCoder }),
+    DeprecatedSetting({ key: 'show_stat_group_gpw_pw_density_4', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_year_2020', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_year_2010', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_year_2000', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_historical_cds', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'simple_ordinals', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'use_imperial', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_source_Population_US Census', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_source_Population_GHSL', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'expanded__ad_0.25', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'expanded__ad_0.25_2000', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'expanded__ad_0.25_2010', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'expanded__ad_0.5', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'expanded__ad_0.5_2000', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'expanded__ad_0.5_2010', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'expanded__ad_1', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'expanded__ad_1_2000', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'expanded__ad_1_2010', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'expanded__ad_2', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'expanded__ad_2_2000', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'expanded__ad_2_2010', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'expanded__ad_4', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'expanded__ad_4_2000', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'expanded__ad_4_2010', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'expanded__gpw_pw_density_1', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'expanded__gpw_pw_density_2', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'expanded__gpw_pw_density_4', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'histogram_relative', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'histogram_type', coder: HistogramTypeSettingCoder }),
+    ActiveSetting({ key: 'temperature_unit', coder: TemperatureUnitCoder }),
+    ActiveSetting({ key: 'show_stat_group_gridded_elevation', coder: BooleanSettingCoder }),
+    ActiveSetting({ key: 'show_stat_group_gridded_hilliness', coder: BooleanSettingCoder }),
 ] satisfies (ActiveSetting<keyof SettingsDictionary> | DeprecatedSetting<string>)[]
 
 type NotIncludedInSettingsVector = (
