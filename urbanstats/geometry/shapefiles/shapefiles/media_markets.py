@@ -13,6 +13,7 @@ MEDIA_MARKETS = Shapefile(
         source="Nielsen via Kenneth C Black",
         type_category="Oddball",
     ),
+    special_data_sources=["international_gridded_data"],
     universe_provider=us_domestic_provider(),
     subset_masks={"USA": SelfSubset()},
 )

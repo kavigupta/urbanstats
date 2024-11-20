@@ -41,6 +41,7 @@ JUDICIAL_DISTRICTS = Shapefile(
     + ", USA",
     filter=lambda x: True,
     meta=dict(type="Judicial District", source="HIFLD", type_category="Oddball"),
+    special_data_sources=["international_gridded_data"],
     universe_provider=us_domestic_provider(),
     subset_masks={"USA": SelfSubset()},
 )
@@ -73,6 +74,7 @@ JUDICIAL_CIRCUITS = Shapefile(
     longname_extractor=lambda x: x["shortname"] + ", USA",
     filter=lambda x: True,
     meta=dict(type="Judicial Circuit", source="HIFLD", type_category="Oddball"),
+    special_data_sources=["international_gridded_data"],
     universe_provider=us_domestic_provider(),
     subset_masks={"USA": SelfSubset()},
 )

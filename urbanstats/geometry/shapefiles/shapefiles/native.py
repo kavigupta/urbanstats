@@ -18,6 +18,7 @@ NATIVE_AREAS = Shapefile(
     longname_extractor=lambda x: f"{x.NAMELSAD}, USA",
     filter=lambda x: not is_native_statistical_area(x),
     meta=dict(type="Native Area", source="Census", type_category="Native"),
+    special_data_sources=["international_gridded_data"],
     universe_provider=us_domestic_provider(),
     subset_masks={"USA": SelfSubset()},
 )
@@ -28,6 +29,7 @@ NATIVE_STATISTICAL_AREAS = Shapefile(
     longname_extractor=lambda x: f"{x.NAMELSAD}, USA",
     filter=is_native_statistical_area,
     meta=dict(type="Native Statistical Area", source="Census", type_category="Native"),
+    special_data_sources=["international_gridded_data"],
     universe_provider=us_domestic_provider(),
     subset_masks={"USA": SelfSubset()},
 )
@@ -38,6 +40,7 @@ NATIVE_SUBDIVISIONS = Shapefile(
     longname_extractor=lambda x: f"{x.NAMELSAD}, {ce_to_name()[x.AIANNHCE]}, USA",
     filter=lambda x: True,
     meta=dict(type="Native Subdivision", source="Census", type_category="Native"),
+    special_data_sources=["international_gridded_data"],
     universe_provider=us_domestic_provider(),
     subset_masks={"USA": SelfSubset()},
 )

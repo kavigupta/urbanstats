@@ -174,8 +174,12 @@ const value: Record<string, Record<string, [number, number][]>> = {
                 6,
             ],
             [
-                17212,
-                7,
+                29807,
+                2,
+            ],
+            [
+                29733,
+                5,
             ],
             [
                 164112,
@@ -1119,15 +1123,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
             ],
             [
                 174,
-                86,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                174,
-                141,
+                234,
             ],
             [
                 171,
@@ -1567,15 +1563,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'Congressional District': [
             [
                 435,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                435,
-                173,
+                269,
             ],
         ],
         'Continent': [
@@ -1645,15 +1633,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
             ],
             [
                 3222,
-                86,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                3222,
-                111,
+                204,
             ],
             [
                 3180,
@@ -1907,29 +1887,13 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'Hospital Referral Region': [
             [
                 306,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                306,
-                173,
+                269,
             ],
         ],
         'Hospital Service Area': [
             [
                 3436,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                3436,
-                111,
+                207,
             ],
             [
                 3427,
@@ -1943,15 +1907,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'Judicial Circuit': [
             [
                 12,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                12,
-                173,
+                269,
             ],
         ],
         'Judicial District': [
@@ -1961,15 +1917,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
             ],
             [
                 91,
-                86,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                91,
-                141,
+                234,
             ],
             [
                 90,
@@ -1995,15 +1943,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
             ],
             [
                 945,
-                86,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                945,
-                141,
+                234,
             ],
             [
                 933,
@@ -2025,15 +1965,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'Media Market': [
             [
                 210,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                210,
-                173,
+                269,
             ],
         ],
         'Native Area': [
@@ -2187,11 +2119,11 @@ const value: Record<string, Record<string, [number, number][]>> = {
             ],
             [
                 373,
-                6,
+                8,
             ],
             [
-                0,
-                7,
+                327,
+                5,
             ],
             [
                 373,
@@ -2565,11 +2497,11 @@ const value: Record<string, Record<string, [number, number][]>> = {
             ],
             [
                 288,
-                6,
+                8,
             ],
             [
-                0,
-                7,
+                270,
+                5,
             ],
             [
                 288,
@@ -2935,11 +2867,11 @@ const value: Record<string, Record<string, [number, number][]>> = {
             ],
             [
                 459,
-                6,
+                8,
             ],
             [
-                0,
-                7,
+                449,
+                5,
             ],
             [
                 459,
@@ -3979,15 +3911,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'USDA County Type': [
             [
                 6,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                6,
-                173,
+                269,
             ],
         ],
         'Urban Area': [
@@ -4093,15 +4017,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
             ],
             [
                 2638,
-                26,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                2638,
-                1,
+                34,
             ],
             [
                 2636,
@@ -6142,8 +6058,12 @@ const value: Record<string, Record<string, [number, number][]>> = {
                 6,
             ],
             [
-                1310,
-                7,
+                13807,
+                2,
+            ],
+            [
+                13755,
+                5,
             ],
             [
                 163598,
@@ -7087,15 +7007,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
             ],
             [
                 174,
-                86,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                174,
-                141,
+                234,
             ],
             [
                 171,
@@ -7535,15 +7447,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'Congressional District': [
             [
                 433,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                433,
-                173,
+                269,
             ],
         ],
         'Continent': [
@@ -7613,15 +7517,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
             ],
             [
                 3217,
-                86,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                3217,
-                111,
+                204,
             ],
             [
                 3175,
@@ -7875,29 +7771,13 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'Hospital Referral Region': [
             [
                 305,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                305,
-                173,
+                269,
             ],
         ],
         'Hospital Service Area': [
             [
                 3427,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                3427,
-                111,
+                207,
             ],
             [
                 3418,
@@ -7911,15 +7791,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'Judicial Circuit': [
             [
                 12,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                12,
-                173,
+                269,
             ],
         ],
         'Judicial District': [
@@ -7929,15 +7801,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
             ],
             [
                 90,
-                86,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                90,
-                141,
+                234,
             ],
             [
                 89,
@@ -7963,15 +7827,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
             ],
             [
                 941,
-                86,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                941,
-                141,
+                234,
             ],
             [
                 929,
@@ -7993,15 +7849,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'Media Market': [
             [
                 209,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                209,
-                173,
+                269,
             ],
         ],
         'Native Area': [
@@ -8155,11 +8003,11 @@ const value: Record<string, Record<string, [number, number][]>> = {
             ],
             [
                 313,
-                6,
+                8,
             ],
             [
-                0,
-                7,
+                289,
+                5,
             ],
             [
                 313,
@@ -8533,11 +8381,11 @@ const value: Record<string, Record<string, [number, number][]>> = {
             ],
             [
                 288,
-                6,
+                8,
             ],
             [
-                0,
-                7,
+                270,
+                5,
             ],
             [
                 288,
@@ -8903,11 +8751,11 @@ const value: Record<string, Record<string, [number, number][]>> = {
             ],
             [
                 459,
-                6,
+                8,
             ],
             [
-                0,
-                7,
+                449,
+                5,
             ],
             [
                 459,
@@ -9947,15 +9795,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'USDA County Type': [
             [
                 6,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                6,
-                173,
+                269,
             ],
         ],
         'Urban Area': [
@@ -10061,15 +9901,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
             ],
             [
                 2623,
-                26,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                2623,
-                1,
+                34,
             ],
             [
                 2621,
@@ -10860,8 +10692,12 @@ const value: Record<string, Record<string, [number, number][]>> = {
                 6,
             ],
             [
-                246,
-                7,
+                344,
+                2,
+            ],
+            [
+                322,
+                5,
             ],
             [
                 514,
@@ -11625,15 +11461,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'Congressional District': [
             [
                 2,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                2,
-                173,
+                269,
             ],
         ],
         'Continent': [
@@ -11699,15 +11527,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'County': [
             [
                 5,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                5,
-                173,
+                269,
             ],
         ],
         'County Cross CD': [
@@ -11741,71 +11561,31 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'Hospital Referral Region': [
             [
                 1,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                1,
-                173,
+                269,
             ],
         ],
         'Hospital Service Area': [
             [
                 9,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                9,
-                173,
+                269,
             ],
         ],
         'Judicial District': [
             [
                 1,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                1,
-                173,
+                269,
             ],
         ],
         'MSA': [
             [
                 4,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                4,
-                173,
+                269,
             ],
         ],
         'Media Market': [
             [
                 1,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                1,
-                173,
+                269,
             ],
         ],
         'Native Area': [
@@ -11951,11 +11731,11 @@ const value: Record<string, Record<string, [number, number][]>> = {
             ],
             [
                 60,
-                6,
+                8,
             ],
             [
-                0,
-                7,
+                38,
+                5,
             ],
             [
                 60,
@@ -12283,15 +12063,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'Urban Area': [
             [
                 15,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                15,
-                173,
+                269,
             ],
         ],
         'Urban Center': [
@@ -58949,8 +58721,12 @@ const value: Record<string, Record<string, [number, number][]>> = {
                 6,
             ],
             [
-                547,
-                7,
+                13142,
+                2,
+            ],
+            [
+                13068,
+                5,
             ],
             [
                 164112,
@@ -59894,15 +59670,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
             ],
             [
                 174,
-                86,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                174,
-                141,
+                234,
             ],
             [
                 171,
@@ -60342,15 +60110,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'Congressional District': [
             [
                 435,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                435,
-                173,
+                269,
             ],
         ],
         'Country': [
@@ -60366,15 +60126,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
             ],
             [
                 3222,
-                86,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                3222,
-                111,
+                204,
             ],
             [
                 3180,
@@ -60628,29 +60380,13 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'Hospital Referral Region': [
             [
                 306,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                306,
-                173,
+                269,
             ],
         ],
         'Hospital Service Area': [
             [
                 3436,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                3436,
-                111,
+                207,
             ],
             [
                 3427,
@@ -60664,15 +60400,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'Judicial Circuit': [
             [
                 12,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                12,
-                173,
+                269,
             ],
         ],
         'Judicial District': [
@@ -60682,15 +60410,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
             ],
             [
                 91,
-                86,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                91,
-                141,
+                234,
             ],
             [
                 90,
@@ -60716,15 +60436,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
             ],
             [
                 945,
-                86,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                945,
-                141,
+                234,
             ],
             [
                 933,
@@ -60746,15 +60458,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'Media Market': [
             [
                 210,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                210,
-                173,
+                269,
             ],
         ],
         'Native Area': [
@@ -60908,11 +60612,11 @@ const value: Record<string, Record<string, [number, number][]>> = {
             ],
             [
                 373,
-                6,
+                8,
             ],
             [
-                0,
-                7,
+                327,
+                5,
             ],
             [
                 373,
@@ -61286,11 +60990,11 @@ const value: Record<string, Record<string, [number, number][]>> = {
             ],
             [
                 288,
-                6,
+                8,
             ],
             [
-                0,
-                7,
+                270,
+                5,
             ],
             [
                 288,
@@ -61656,11 +61360,11 @@ const value: Record<string, Record<string, [number, number][]>> = {
             ],
             [
                 459,
-                6,
+                8,
             ],
             [
-                0,
-                7,
+                449,
+                5,
             ],
             [
                 459,
@@ -62700,15 +62404,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'USDA County Type': [
             [
                 6,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                6,
-                173,
+                269,
             ],
         ],
         'Urban Area': [
@@ -62814,15 +62510,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
             ],
             [
                 2638,
-                26,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                2638,
-                1,
+                34,
             ],
             [
                 2636,
@@ -66351,7 +66039,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
                 6,
             ],
             [
-                15,
+                284,
                 7,
             ],
             [
@@ -66638,15 +66326,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'CSA': [
             [
                 7,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                7,
-                173,
+                269,
             ],
         ],
         'City': [
@@ -66926,29 +66606,13 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'Congressional District': [
             [
                 7,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                7,
-                173,
+                269,
             ],
         ],
         'County': [
             [
                 67,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                67,
-                173,
+                269,
             ],
         ],
         'County Cross CD': [
@@ -66990,29 +66654,13 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'Hospital Referral Region': [
             [
                 12,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                12,
-                173,
+                269,
             ],
         ],
         'Hospital Service Area': [
             [
                 77,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                77,
-                111,
+                207,
             ],
             [
                 76,
@@ -67026,85 +66674,37 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'Judicial Circuit': [
             [
                 1,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                1,
-                173,
+                269,
             ],
         ],
         'Judicial District': [
             [
                 3,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                3,
-                173,
+                269,
             ],
         ],
         'MSA': [
             [
                 26,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                26,
-                173,
+                269,
             ],
         ],
         'Media Market': [
             [
                 9,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                9,
-                173,
+                269,
             ],
         ],
         'Native Area': [
             [
                 2,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                2,
-                173,
+                269,
             ],
         ],
         'Native Statistical Area': [
             [
                 6,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                6,
-                173,
+                269,
             ],
         ],
         'Neighborhood': [
@@ -67480,29 +67080,13 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'USDA County Type': [
             [
                 1,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                1,
-                173,
+                269,
             ],
         ],
         'Urban Area': [
             [
                 51,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                51,
-                173,
+                269,
             ],
         ],
         'Urban Center': [
@@ -68005,8 +67589,12 @@ const value: Record<string, Record<string, [number, number][]>> = {
                 6,
             ],
             [
+                296,
                 2,
-                7,
+            ],
+            [
+                278,
+                5,
             ],
             [
                 1101,
@@ -68648,29 +68236,13 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'Congressional District': [
             [
                 1,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                1,
-                173,
+                269,
             ],
         ],
         'County': [
             [
                 30,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                30,
-                173,
+                269,
             ],
         ],
         'County Cross CD': [
@@ -68690,99 +68262,43 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'Hospital Referral Region': [
             [
                 1,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                1,
-                173,
+                269,
             ],
         ],
         'Hospital Service Area': [
             [
                 19,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                19,
-                173,
+                269,
             ],
         ],
         'Judicial Circuit': [
             [
                 1,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                1,
-                173,
+                269,
             ],
         ],
         'Judicial District': [
             [
                 1,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                1,
-                173,
+                269,
             ],
         ],
         'MSA': [
             [
                 4,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                4,
-                173,
+                269,
             ],
         ],
         'Media Market': [
             [
                 3,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                3,
-                173,
+                269,
             ],
         ],
         'Native Area': [
             [
                 1,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                1,
-                173,
+                269,
             ],
         ],
         'Native Statistical Area': [
@@ -68864,11 +68380,11 @@ const value: Record<string, Record<string, [number, number][]>> = {
             ],
             [
                 217,
-                6,
+                8,
             ],
             [
-                0,
-                7,
+                199,
+                5,
             ],
             [
                 217,
@@ -69140,29 +68656,13 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'USDA County Type': [
             [
                 5,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                5,
-                173,
+                269,
             ],
         ],
         'Urban Area': [
             [
                 11,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                11,
-                173,
+                269,
             ],
         ],
         'Urban Center': [
@@ -69633,8 +69133,12 @@ const value: Record<string, Record<string, [number, number][]>> = {
                 6,
             ],
             [
-                19,
-                7,
+                303,
+                2,
+            ],
+            [
+                300,
+                5,
             ],
             [
                 2388,
@@ -69992,15 +69496,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'CSA': [
             [
                 2,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                2,
-                173,
+                269,
             ],
         ],
         'City': [
@@ -70288,29 +69784,13 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'Congressional District': [
             [
                 9,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                9,
-                173,
+                269,
             ],
         ],
         'County': [
             [
                 15,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                15,
-                173,
+                269,
             ],
         ],
         'County Cross CD': [
@@ -70352,99 +69832,43 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'Hospital Referral Region': [
             [
                 6,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                6,
-                173,
+                269,
             ],
         ],
         'Hospital Service Area': [
             [
                 37,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                37,
-                173,
+                269,
             ],
         ],
         'Judicial Circuit': [
             [
                 1,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                1,
-                173,
+                269,
             ],
         ],
         'Judicial District': [
             [
                 1,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                1,
-                173,
+                269,
             ],
         ],
         'MSA': [
             [
                 11,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                11,
-                173,
+                269,
             ],
         ],
         'Media Market': [
             [
                 4,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                4,
-                173,
+                269,
             ],
         ],
         'Native Area': [
             [
                 19,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                19,
-                111,
+                207,
             ],
             [
                 15,
@@ -70602,11 +70026,11 @@ const value: Record<string, Record<string, [number, number][]>> = {
             ],
             [
                 121,
-                6,
+                8,
             ],
             [
-                0,
-                7,
+                118,
+                5,
             ],
             [
                 121,
@@ -71250,15 +70674,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'USDA County Type': [
             [
                 2,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                2,
-                173,
+                269,
             ],
         ],
         'Urban Area': [
@@ -71360,15 +70776,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
             ],
             [
                 56,
-                26,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                56,
-                1,
+                34,
             ],
             [
                 55,
@@ -72027,7 +71435,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
                 6,
             ],
             [
-                13,
+                253,
                 7,
             ],
             [
@@ -72338,15 +71746,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'CSA': [
             [
                 4,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                4,
-                173,
+                269,
             ],
         ],
         'City': [
@@ -72670,29 +72070,13 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'Congressional District': [
             [
                 4,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                4,
-                173,
+                269,
             ],
         ],
         'County': [
             [
                 75,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                75,
-                173,
+                269,
             ],
         ],
         'County Cross CD': [
@@ -72726,85 +72110,37 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'Hospital Referral Region': [
             [
                 7,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                7,
-                173,
+                269,
             ],
         ],
         'Hospital Service Area': [
             [
                 70,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                70,
-                173,
+                269,
             ],
         ],
         'Judicial Circuit': [
             [
                 1,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                1,
-                173,
+                269,
             ],
         ],
         'Judicial District': [
             [
                 2,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                2,
-                173,
+                269,
             ],
         ],
         'MSA': [
             [
                 23,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                23,
-                173,
+                269,
             ],
         ],
         'Media Market': [
             [
                 7,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                7,
-                173,
+                269,
             ],
         ],
         'Neighborhood': [
@@ -73112,15 +72448,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'Urban Area': [
             [
                 47,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                47,
-                173,
+                269,
             ],
         ],
         'Urban Center': [
@@ -73659,8 +72987,12 @@ const value: Record<string, Record<string, [number, number][]>> = {
                 6,
             ],
             [
-                72,
-                7,
+                788,
+                2,
+            ],
+            [
+                772,
+                5,
             ],
             [
                 8304,
@@ -74034,15 +73366,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'CSA': [
             [
                 7,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                7,
-                173,
+                269,
             ],
         ],
         'City': [
@@ -74430,29 +73754,13 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'Congressional District': [
             [
                 52,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                52,
-                173,
+                269,
             ],
         ],
         'County': [
             [
                 58,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                58,
-                173,
+                269,
             ],
         ],
         'County Cross CD': [
@@ -74486,29 +73794,13 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'Hospital Referral Region': [
             [
                 27,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                27,
-                173,
+                269,
             ],
         ],
         'Hospital Service Area': [
             [
                 226,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                226,
-                111,
+                207,
             ],
             [
                 225,
@@ -74522,57 +73814,25 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'Judicial Circuit': [
             [
                 1,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                1,
-                173,
+                269,
             ],
         ],
         'Judicial District': [
             [
                 4,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                4,
-                173,
+                269,
             ],
         ],
         'MSA': [
             [
                 34,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                34,
-                173,
+                269,
             ],
         ],
         'Media Market': [
             [
                 14,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                14,
-                173,
+                269,
             ],
         ],
         'Native Area': [
@@ -74722,11 +73982,11 @@ const value: Record<string, Record<string, [number, number][]>> = {
             ],
             [
                 95,
-                6,
+                8,
             ],
             [
-                0,
-                7,
+                79,
+                5,
             ],
             [
                 95,
@@ -75048,15 +74308,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
             ],
             [
                 2,
-                26,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                2,
-                1,
+                34,
             ],
             [
                 1,
@@ -75166,15 +74418,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'Native Subdivision': [
             [
                 4,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                4,
-                3,
+                99,
             ],
             [
                 3,
@@ -75738,15 +74982,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'USDA County Type': [
             [
                 2,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                2,
-                173,
+                269,
             ],
         ],
         'Urban Area': [
@@ -75848,15 +75084,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
             ],
             [
                 190,
-                26,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                190,
-                1,
+                34,
             ],
             [
                 189,
@@ -76547,7 +75775,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
                 6,
             ],
             [
-                16,
+                236,
                 7,
             ],
             [
@@ -76846,15 +76074,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'CSA': [
             [
                 4,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                4,
-                173,
+                269,
             ],
         ],
         'City': [
@@ -77098,29 +76318,13 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'Congressional District': [
             [
                 8,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                8,
-                173,
+                269,
             ],
         ],
         'County': [
             [
                 64,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                64,
-                173,
+                269,
             ],
         ],
         'County Cross CD': [
@@ -77166,99 +76370,43 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'Hospital Referral Region': [
             [
                 8,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                8,
-                173,
+                269,
             ],
         ],
         'Hospital Service Area': [
             [
                 51,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                51,
-                173,
+                269,
             ],
         ],
         'Judicial Circuit': [
             [
                 1,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                1,
-                173,
+                269,
             ],
         ],
         'Judicial District': [
             [
                 1,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                1,
-                173,
+                269,
             ],
         ],
         'MSA': [
             [
                 17,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                17,
-                173,
+                269,
             ],
         ],
         'Media Market': [
             [
                 3,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                3,
-                173,
+                269,
             ],
         ],
         'Native Area': [
             [
                 2,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                2,
-                111,
+                207,
             ],
             [
                 1,
@@ -77694,29 +76842,13 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'USDA County Type': [
             [
                 1,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                1,
-                173,
+                269,
             ],
         ],
         'Urban Area': [
             [
                 60,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                60,
-                111,
+                207,
             ],
             [
                 57,
@@ -78207,8 +77339,12 @@ const value: Record<string, Record<string, [number, number][]>> = {
                 6,
             ],
             [
-                9,
-                7,
+                88,
+                2,
+            ],
+            [
+                87,
+                5,
             ],
             [
                 1350,
@@ -78502,15 +77638,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'CSA': [
             [
                 3,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                3,
-                173,
+                269,
             ],
         ],
         'City': [
@@ -78790,29 +77918,13 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'Congressional District': [
             [
                 5,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                5,
-                173,
+                269,
             ],
         ],
         'County': [
             [
                 9,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                9,
-                173,
+                269,
             ],
         ],
         'County Cross CD': [
@@ -78846,85 +77958,37 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'Hospital Referral Region': [
             [
                 4,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                4,
-                173,
+                269,
             ],
         ],
         'Hospital Service Area': [
             [
                 27,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                27,
-                173,
+                269,
             ],
         ],
         'Judicial Circuit': [
             [
                 1,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                1,
-                173,
+                269,
             ],
         ],
         'Judicial District': [
             [
                 1,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                1,
-                173,
+                269,
             ],
         ],
         'MSA': [
             [
                 6,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                6,
-                173,
+                269,
             ],
         ],
         'Media Market': [
             [
                 2,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                2,
-                173,
+                269,
             ],
         ],
         'Native Area': [
@@ -79026,11 +78090,11 @@ const value: Record<string, Record<string, [number, number][]>> = {
             ],
             [
                 4,
-                26,
+                28,
             ],
             [
-                0,
-                7,
+                3,
+                5,
             ],
             [
                 4,
@@ -79498,15 +78562,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'Urban Area': [
             [
                 17,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                17,
-                173,
+                269,
             ],
         ],
         'Urban Center': [
@@ -79965,7 +79021,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
                 26,
             ],
             [
-                2,
+                35,
                 7,
             ],
             [
@@ -80122,15 +79178,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'CSA': [
             [
                 1,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                1,
-                173,
+                269,
             ],
         ],
         'City': [
@@ -80182,29 +79230,13 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'Congressional District': [
             [
                 1,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                1,
-                173,
+                269,
             ],
         ],
         'County': [
             [
                 3,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                3,
-                173,
+                269,
             ],
         ],
         'County Cross CD': [
@@ -80224,85 +79256,37 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'Hospital Referral Region': [
             [
                 2,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                2,
-                173,
+                269,
             ],
         ],
         'Hospital Service Area': [
             [
                 6,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                6,
-                173,
+                269,
             ],
         ],
         'Judicial District': [
             [
                 1,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                1,
-                173,
+                269,
             ],
         ],
         'MSA': [
             [
                 3,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                3,
-                173,
+                269,
             ],
         ],
         'Media Market': [
             [
                 2,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                2,
-                173,
+                269,
             ],
         ],
         'Native Statistical Area': [
             [
                 2,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                2,
-                173,
+                269,
             ],
         ],
         'Neighborhood': [
@@ -80394,15 +79378,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'Urban Area': [
             [
                 12,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                12,
-                111,
+                207,
             ],
             [
                 11,
@@ -80821,8 +79797,12 @@ const value: Record<string, Record<string, [number, number][]>> = {
                 6,
             ],
             [
-                35,
-                7,
+                400,
+                2,
+            ],
+            [
+                399,
+                5,
             ],
             [
                 4473,
@@ -81484,15 +80464,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'CSA': [
             [
                 8,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                8,
-                173,
+                269,
             ],
         ],
         'City': [
@@ -81868,29 +80840,13 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'Congressional District': [
             [
                 28,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                28,
-                173,
+                269,
             ],
         ],
         'County': [
             [
                 67,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                67,
-                111,
+                207,
             ],
             [
                 66,
@@ -81944,85 +80900,37 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'Hospital Referral Region': [
             [
                 19,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                19,
-                173,
+                269,
             ],
         ],
         'Hospital Service Area': [
             [
                 116,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                116,
-                173,
+                269,
             ],
         ],
         'Judicial Circuit': [
             [
                 1,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                1,
-                173,
+                269,
             ],
         ],
         'Judicial District': [
             [
                 3,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                3,
-                173,
+                269,
             ],
         ],
         'MSA': [
             [
                 29,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                29,
-                173,
+                269,
             ],
         ],
         'Media Market': [
             [
                 10,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                10,
-                173,
+                269,
             ],
         ],
         'Native Area': [
@@ -82124,11 +81032,11 @@ const value: Record<string, Record<string, [number, number][]>> = {
             ],
             [
                 6,
-                26,
+                28,
             ],
             [
-                0,
-                7,
+                5,
+                5,
             ],
             [
                 6,
@@ -82708,15 +81616,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'Urban Area': [
             [
                 78,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                78,
-                111,
+                207,
             ],
             [
                 74,
@@ -83247,7 +82147,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
                 21,
             ],
             [
-                18,
+                463,
                 7,
             ],
             [
@@ -83560,15 +82460,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'CSA': [
             [
                 8,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                8,
-                173,
+                269,
             ],
         ],
         'City': [
@@ -83628,29 +82520,13 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'Congressional District': [
             [
                 14,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                14,
-                173,
+                269,
             ],
         ],
         'County': [
             [
                 159,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                159,
-                111,
+                207,
             ],
             [
                 158,
@@ -83700,99 +82576,43 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'Hospital Referral Region': [
             [
                 11,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                11,
-                173,
+                269,
             ],
         ],
         'Hospital Service Area': [
             [
                 117,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                117,
-                173,
+                269,
             ],
         ],
         'Judicial Circuit': [
             [
                 1,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                1,
-                173,
+                269,
             ],
         ],
         'Judicial District': [
             [
                 3,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                3,
-                173,
+                269,
             ],
         ],
         'MSA': [
             [
                 39,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                39,
-                173,
+                269,
             ],
         ],
         'Media Market': [
             [
                 11,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                11,
-                173,
+                269,
             ],
         ],
         'Native Area': [
             [
                 1,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                1,
-                114,
+                210,
             ],
             [
                 0,
@@ -83806,15 +82626,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'Native Statistical Area': [
             [
                 1,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                1,
-                173,
+                269,
             ],
         ],
         'Neighborhood': [
@@ -84222,15 +83034,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'Urban Area': [
             [
                 80,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                80,
-                173,
+                269,
             ],
         ],
         'Urban Center': [
@@ -84749,8 +83553,12 @@ const value: Record<string, Record<string, [number, number][]>> = {
                 6,
             ],
             [
+                100,
                 2,
-                7,
+            ],
+            [
+                78,
+                5,
             ],
             [
                 514,
@@ -85364,29 +84172,13 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'Congressional District': [
             [
                 2,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                2,
-                173,
+                269,
             ],
         ],
         'County': [
             [
                 5,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                5,
-                173,
+                269,
             ],
         ],
         'County Cross CD': [
@@ -85420,71 +84212,31 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'Hospital Referral Region': [
             [
                 1,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                1,
-                173,
+                269,
             ],
         ],
         'Hospital Service Area': [
             [
                 9,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                9,
-                173,
+                269,
             ],
         ],
         'Judicial District': [
             [
                 1,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                1,
-                173,
+                269,
             ],
         ],
         'MSA': [
             [
                 4,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                4,
-                173,
+                269,
             ],
         ],
         'Media Market': [
             [
                 1,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                1,
-                173,
+                269,
             ],
         ],
         'Native Area': [
@@ -85630,11 +84382,11 @@ const value: Record<string, Record<string, [number, number][]>> = {
             ],
             [
                 60,
-                6,
+                8,
             ],
             [
-                0,
-                7,
+                38,
+                5,
             ],
             [
                 60,
@@ -85938,15 +84690,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'Urban Area': [
             [
                 15,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                15,
-                173,
+                269,
             ],
         ],
         'Urban Center': [
@@ -86421,7 +85165,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
                 21,
             ],
             [
-                10,
+                151,
                 7,
             ],
             [
@@ -86766,15 +85510,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'CSA': [
             [
                 4,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                4,
-                173,
+                269,
             ],
         ],
         'City': [
@@ -87062,29 +85798,13 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'Congressional District': [
             [
                 2,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                2,
-                173,
+                269,
             ],
         ],
         'County': [
             [
                 44,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                44,
-                111,
+                207,
             ],
             [
                 43,
@@ -87134,99 +85854,43 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'Hospital Referral Region': [
             [
                 5,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                5,
-                173,
+                269,
             ],
         ],
         'Hospital Service Area': [
             [
                 33,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                33,
-                173,
+                269,
             ],
         ],
         'Judicial Circuit': [
             [
                 1,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                1,
-                173,
+                269,
             ],
         ],
         'Judicial District': [
             [
                 1,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                1,
-                173,
+                269,
             ],
         ],
         'MSA': [
             [
                 15,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                15,
-                173,
+                269,
             ],
         ],
         'Media Market': [
             [
                 4,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                4,
-                173,
+                269,
             ],
         ],
         'Native Area': [
             [
                 5,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                5,
-                111,
+                207,
             ],
             [
                 4,
@@ -87322,15 +85986,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'Urban Area': [
             [
                 27,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                27,
-                111,
+                207,
             ],
             [
                 25,
@@ -87773,7 +86429,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
                 15,
             ],
             [
-                28,
+                475,
                 7,
             ],
             [
@@ -88122,15 +86778,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'CSA': [
             [
                 11,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                11,
-                173,
+                269,
             ],
         ],
         'City': [
@@ -88454,29 +87102,13 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'Congressional District': [
             [
                 17,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                17,
-                173,
+                269,
             ],
         ],
         'County': [
             [
                 102,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                102,
-                173,
+                269,
             ],
         ],
         'County Cross CD': [
@@ -88510,85 +87142,37 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'Hospital Referral Region': [
             [
                 22,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                22,
-                173,
+                269,
             ],
         ],
         'Hospital Service Area': [
             [
                 145,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                145,
-                173,
+                269,
             ],
         ],
         'Judicial Circuit': [
             [
                 1,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                1,
-                173,
+                269,
             ],
         ],
         'Judicial District': [
             [
                 3,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                3,
-                173,
+                269,
             ],
         ],
         'MSA': [
             [
                 33,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                33,
-                173,
+                269,
             ],
         ],
         'Media Market': [
             [
                 10,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                10,
-                173,
+                269,
             ],
         ],
         'Neighborhood': [
@@ -89292,15 +87876,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'Urban Area': [
             [
                 103,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                103,
-                111,
+                207,
             ],
             [
                 102,
@@ -89707,7 +88283,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
                 21,
             ],
             [
-                25,
+                375,
                 7,
             ],
             [
@@ -90046,15 +88622,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'CSA': [
             [
                 10,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                10,
-                173,
+                269,
             ],
         ],
         'City': [
@@ -90298,29 +88866,13 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'Congressional District': [
             [
                 9,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                9,
-                173,
+                269,
             ],
         ],
         'County': [
             [
                 92,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                92,
-                173,
+                269,
             ],
         ],
         'County Cross CD': [
@@ -90354,85 +88906,37 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'Hospital Referral Region': [
             [
                 13,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                13,
-                173,
+                269,
             ],
         ],
         'Hospital Service Area': [
             [
                 94,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                94,
-                173,
+                269,
             ],
         ],
         'Judicial Circuit': [
             [
                 1,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                1,
-                173,
+                269,
             ],
         ],
         'Judicial District': [
             [
                 2,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                2,
-                173,
+                269,
             ],
         ],
         'MSA': [
             [
                 39,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                39,
-                173,
+                269,
             ],
         ],
         'Media Market': [
             [
                 9,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                9,
-                173,
+                269,
             ],
         ],
         'Neighborhood': [
@@ -90812,15 +89316,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'Urban Area': [
             [
                 81,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                81,
-                111,
+                207,
             ],
             [
                 80,
@@ -91239,7 +89735,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
                 21,
             ],
             [
-                18,
+                346,
                 7,
             ],
             [
@@ -91598,15 +90094,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'CSA': [
             [
                 6,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                6,
-                173,
+                269,
             ],
         ],
         'City': [
@@ -91958,29 +90446,13 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'Congressional District': [
             [
                 4,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                4,
-                173,
+                269,
             ],
         ],
         'County': [
             [
                 99,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                99,
-                173,
+                269,
             ],
         ],
         'County Cross CD': [
@@ -92014,99 +90486,43 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'Hospital Referral Region': [
             [
                 12,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                12,
-                173,
+                269,
             ],
         ],
         'Hospital Service Area': [
             [
                 99,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                99,
-                173,
+                269,
             ],
         ],
         'Judicial Circuit': [
             [
                 1,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                1,
-                173,
+                269,
             ],
         ],
         'Judicial District': [
             [
                 2,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                2,
-                173,
+                269,
             ],
         ],
         'MSA': [
             [
                 26,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                26,
-                173,
+                269,
             ],
         ],
         'Media Market': [
             [
                 8,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                8,
-                173,
+                269,
             ],
         ],
         'Native Area': [
             [
                 1,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                1,
-                173,
+                269,
             ],
         ],
         'Neighborhood': [
@@ -92390,15 +90806,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'Urban Area': [
             [
                 70,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                70,
-                111,
+                207,
             ],
             [
                 69,
@@ -92693,7 +91101,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
                 15,
             ],
             [
-                14,
+                334,
                 7,
             ],
             [
@@ -93290,15 +91698,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'CSA': [
             [
                 3,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                3,
-                173,
+                269,
             ],
         ],
         'City': [
@@ -93646,29 +92046,13 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'Congressional District': [
             [
                 4,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                4,
-                173,
+                269,
             ],
         ],
         'County': [
             [
                 105,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                105,
-                173,
+                269,
             ],
         ],
         'County Cross CD': [
@@ -93702,99 +92086,43 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'Hospital Referral Region': [
             [
                 5,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                5,
-                173,
+                269,
             ],
         ],
         'Hospital Service Area': [
             [
                 122,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                122,
-                173,
+                269,
             ],
         ],
         'Judicial Circuit': [
             [
                 1,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                1,
-                173,
+                269,
             ],
         ],
         'Judicial District': [
             [
                 1,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                1,
-                173,
+                269,
             ],
         ],
         'MSA': [
             [
                 22,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                22,
-                173,
+                269,
             ],
         ],
         'Media Market': [
             [
                 6,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                6,
-                173,
+                269,
             ],
         ],
         'Native Area': [
             [
                 4,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                4,
-                173,
+                269,
             ],
         ],
         'Neighborhood': [
@@ -94094,29 +92422,13 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'USDA County Type': [
             [
                 1,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                1,
-                173,
+                269,
             ],
         ],
         'Urban Area': [
             [
                 46,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                46,
-                173,
+                269,
             ],
         ],
         'Urban Center': [
@@ -94555,7 +92867,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
                 6,
             ],
             [
-                18,
+                353,
                 7,
             ],
             [
@@ -95250,15 +93562,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'CSA': [
             [
                 7,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                7,
-                173,
+                269,
             ],
         ],
         'City': [
@@ -95582,29 +93886,13 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'Congressional District': [
             [
                 6,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                6,
-                173,
+                269,
             ],
         ],
         'County': [
             [
                 120,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                120,
-                173,
+                269,
             ],
         ],
         'County Cross CD': [
@@ -95646,85 +93934,37 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'Hospital Referral Region': [
             [
                 9,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                9,
-                173,
+                269,
             ],
         ],
         'Hospital Service Area': [
             [
                 88,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                88,
-                173,
+                269,
             ],
         ],
         'Judicial Circuit': [
             [
                 1,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                1,
-                173,
+                269,
             ],
         ],
         'Judicial District': [
             [
                 2,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                2,
-                173,
+                269,
             ],
         ],
         'MSA': [
             [
                 26,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                26,
-                173,
+                269,
             ],
         ],
         'Media Market': [
             [
                 10,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                10,
-                173,
+                269,
             ],
         ],
         'Neighborhood': [
@@ -95816,15 +94056,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'Urban Area': [
             [
                 66,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                66,
-                173,
+                269,
             ],
         ],
         'Urban Center': [
@@ -96219,7 +94451,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
                 26,
             ],
             [
-                13,
+                261,
                 7,
             ],
             [
@@ -96456,15 +94688,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'CSA': [
             [
                 5,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                5,
-                173,
+                269,
             ],
         ],
         'City': [
@@ -96708,29 +94932,13 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'Congressional District': [
             [
                 6,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                6,
-                173,
+                269,
             ],
         ],
         'County': [
             [
                 64,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                64,
-                111,
+                207,
             ],
             [
                 63,
@@ -96784,85 +94992,37 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'Hospital Referral Region': [
             [
                 11,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                11,
-                173,
+                269,
             ],
         ],
         'Hospital Service Area': [
             [
                 69,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                69,
-                173,
+                269,
             ],
         ],
         'Judicial Circuit': [
             [
                 1,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                1,
-                173,
+                269,
             ],
         ],
         'Judicial District': [
             [
                 3,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                3,
-                173,
+                269,
             ],
         ],
         'MSA': [
             [
                 19,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                19,
-                173,
+                269,
             ],
         ],
         'Media Market': [
             [
                 7,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                7,
-                173,
+                269,
             ],
         ],
         'Native Area': [
@@ -96964,15 +95124,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
             ],
             [
                 4,
-                26,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                4,
-                1,
+                34,
             ],
             [
                 3,
@@ -97090,15 +95242,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'Native Statistical Area': [
             [
                 10,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                10,
-                111,
+                207,
             ],
             [
                 9,
@@ -97194,15 +95338,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'Urban Area': [
             [
                 49,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                49,
-                173,
+                269,
             ],
         ],
         'Urban Center': [
@@ -97477,7 +95613,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
                 6,
             ],
             [
-                5,
+                95,
                 7,
             ],
             [
@@ -98170,15 +96306,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'CSA': [
             [
                 1,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                1,
-                173,
+                269,
             ],
         ],
         'City': [
@@ -98234,29 +96362,13 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'Congressional District': [
             [
                 2,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                2,
-                173,
+                269,
             ],
         ],
         'County': [
             [
                 16,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                16,
-                173,
+                269,
             ],
         ],
         'County Cross CD': [
@@ -98290,85 +96402,37 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'Hospital Referral Region': [
             [
                 2,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                2,
-                173,
+                269,
             ],
         ],
         'Hospital Service Area': [
             [
                 33,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                33,
-                173,
+                269,
             ],
         ],
         'Judicial Circuit': [
             [
                 1,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                1,
-                173,
+                269,
             ],
         ],
         'Judicial District': [
             [
                 1,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                1,
-                173,
+                269,
             ],
         ],
         'MSA': [
             [
                 4,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                4,
-                173,
+                269,
             ],
         ],
         'Media Market': [
             [
                 3,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                3,
-                173,
+                269,
             ],
         ],
         'Native Area': [
@@ -98434,15 +96498,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
             ],
             [
                 6,
-                25,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                6,
-                1,
+                33,
             ],
             [
                 5,
@@ -99274,15 +97330,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'Urban Area': [
             [
                 21,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                21,
-                173,
+                269,
             ],
         ],
         'Urban Center': [
@@ -99497,7 +97545,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
                 6,
             ],
             [
-                15,
+                134,
                 7,
             ],
             [
@@ -99798,15 +97846,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'CSA': [
             [
                 1,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                1,
-                173,
+                269,
             ],
         ],
         'City': [
@@ -100086,29 +98126,13 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'Congressional District': [
             [
                 8,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                8,
-                173,
+                269,
             ],
         ],
         'County': [
             [
                 24,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                24,
-                173,
+                269,
             ],
         ],
         'County Cross CD': [
@@ -100142,85 +98166,37 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'Hospital Referral Region': [
             [
                 6,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                6,
-                173,
+                269,
             ],
         ],
         'Hospital Service Area': [
             [
                 32,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                32,
-                173,
+                269,
             ],
         ],
         'Judicial Circuit': [
             [
                 1,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                1,
-                173,
+                269,
             ],
         ],
         'Judicial District': [
             [
                 1,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                1,
-                173,
+                269,
             ],
         ],
         'MSA': [
             [
                 9,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                9,
-                173,
+                269,
             ],
         ],
         'Media Market': [
             [
                 4,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                4,
-                173,
+                269,
             ],
         ],
         'Neighborhood': [
@@ -100660,15 +98636,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'Urban Area': [
             [
                 33,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                33,
-                111,
+                207,
             ],
             [
                 32,
@@ -101143,7 +99111,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
                 21,
             ],
             [
-                18,
+                153,
                 7,
             ],
             [
@@ -101446,15 +99414,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'CSA': [
             [
                 2,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                2,
-                173,
+                269,
             ],
         ],
         'City': [
@@ -101514,29 +99474,13 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'Congressional District': [
             [
                 9,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                9,
-                173,
+                269,
             ],
         ],
         'County': [
             [
                 14,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                14,
-                173,
+                269,
             ],
         ],
         'County Cross CD': [
@@ -101570,99 +99514,43 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'Hospital Referral Region': [
             [
                 4,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                4,
-                173,
+                269,
             ],
         ],
         'Hospital Service Area': [
             [
                 66,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                66,
-                173,
+                269,
             ],
         ],
         'Judicial Circuit': [
             [
                 1,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                1,
-                173,
+                269,
             ],
         ],
         'Judicial District': [
             [
                 1,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                1,
-                173,
+                269,
             ],
         ],
         'MSA': [
             [
                 8,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                8,
-                173,
+                269,
             ],
         ],
         'Media Market': [
             [
                 4,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                4,
-                173,
+                269,
             ],
         ],
         'Native Area': [
             [
                 3,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                3,
-                111,
+                207,
             ],
             [
                 2,
@@ -102082,15 +99970,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'Urban Area': [
             [
                 23,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                23,
-                173,
+                269,
             ],
         ],
         'Urban Center': [
@@ -102541,7 +100421,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
                 15,
             ],
             [
-                23,
+                422,
                 7,
             ],
             [
@@ -103138,15 +101018,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'CSA': [
             [
                 7,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                7,
-                173,
+                269,
             ],
         ],
         'City': [
@@ -103206,29 +101078,13 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'Congressional District': [
             [
                 13,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                13,
-                173,
+                269,
             ],
         ],
         'County': [
             [
                 83,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                83,
-                173,
+                269,
             ],
         ],
         'County Cross CD': [
@@ -103274,99 +101130,43 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'Hospital Referral Region': [
             [
                 20,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                20,
-                173,
+                269,
             ],
         ],
         'Hospital Service Area': [
             [
                 116,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                116,
-                173,
+                269,
             ],
         ],
         'Judicial Circuit': [
             [
                 1,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                1,
-                173,
+                269,
             ],
         ],
         'Judicial District': [
             [
                 2,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                2,
-                173,
+                269,
             ],
         ],
         'MSA': [
             [
                 35,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                35,
-                173,
+                269,
             ],
         ],
         'Media Market': [
             [
                 10,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                10,
-                173,
+                269,
             ],
         ],
         'Native Area': [
             [
                 12,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                12,
-                111,
+                207,
             ],
             [
                 11,
@@ -103396,15 +101196,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'Native Subdivision': [
             [
                 1,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                1,
-                173,
+                269,
             ],
         ],
         'Neighborhood': [
@@ -103848,15 +101640,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'Urban Area': [
             [
                 99,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                99,
-                111,
+                207,
             ],
             [
                 98,
@@ -104463,8 +102247,12 @@ const value: Record<string, Record<string, [number, number][]>> = {
                 6,
             ],
             [
-                13,
-                7,
+                388,
+                2,
+            ],
+            [
+                383,
+                5,
             ],
             [
                 5965,
@@ -105072,15 +102860,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'CSA': [
             [
                 4,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                4,
-                173,
+                269,
             ],
         ],
         'City': [
@@ -105360,29 +103140,13 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'Congressional District': [
             [
                 8,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                8,
-                173,
+                269,
             ],
         ],
         'County': [
             [
                 87,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                87,
-                173,
+                269,
             ],
         ],
         'County Cross CD': [
@@ -105424,95 +103188,47 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'Hospital Referral Region': [
             [
                 9,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                9,
-                173,
+                269,
             ],
         ],
         'Hospital Service Area': [
             [
                 129,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                129,
-                173,
+                269,
             ],
         ],
         'Judicial Circuit': [
             [
                 1,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                1,
-                173,
+                269,
             ],
         ],
         'Judicial District': [
             [
                 1,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                1,
-                173,
+                269,
             ],
         ],
         'MSA': [
             [
                 26,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                26,
-                173,
+                269,
             ],
         ],
         'Media Market': [
             [
                 7,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                7,
-                173,
+                269,
             ],
         ],
         'Native Area': [
             [
                 12,
-                89,
+                91,
             ],
             [
-                0,
-                7,
+                11,
+                5,
             ],
             [
                 12,
@@ -105678,11 +103394,11 @@ const value: Record<string, Record<string, [number, number][]>> = {
             ],
             [
                 17,
-                25,
+                27,
             ],
             [
-                0,
-                7,
+                13,
+                5,
             ],
             [
                 17,
@@ -106258,29 +103974,13 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'USDA County Type': [
             [
                 1,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                1,
-                173,
+                269,
             ],
         ],
         'Urban Area': [
             [
                 73,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                73,
-                173,
+                269,
             ],
         ],
         'Urban Center': [
@@ -106755,7 +104455,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
                 6,
             ],
             [
-                10,
+                250,
                 7,
             ],
             [
@@ -107014,15 +104714,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'CSA': [
             [
                 5,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                5,
-                173,
+                269,
             ],
         ],
         'City': [
@@ -107354,29 +105046,13 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'Congressional District': [
             [
                 4,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                4,
-                173,
+                269,
             ],
         ],
         'County': [
             [
                 82,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                82,
-                173,
+                269,
             ],
         ],
         'County Cross CD': [
@@ -107410,99 +105086,43 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'Hospital Referral Region': [
             [
                 10,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                10,
-                173,
+                269,
             ],
         ],
         'Hospital Service Area': [
             [
                 65,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                65,
-                173,
+                269,
             ],
         ],
         'Judicial Circuit': [
             [
                 1,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                1,
-                173,
+                269,
             ],
         ],
         'Judicial District': [
             [
                 2,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                2,
-                173,
+                269,
             ],
         ],
         'MSA': [
             [
                 23,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                23,
-                173,
+                269,
             ],
         ],
         'Media Market': [
             [
                 10,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                10,
-                173,
+                269,
             ],
         ],
         'Native Area': [
             [
                 1,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                1,
-                173,
+                269,
             ],
         ],
         'Neighborhood': [
@@ -107798,15 +105418,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'Urban Area': [
             [
                 37,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                37,
-                173,
+                269,
             ],
         ],
         'Urban Center': [
@@ -108233,7 +105845,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
                 21,
             ],
             [
-                16,
+                359,
                 7,
             ],
             [
@@ -108586,15 +106198,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'CSA': [
             [
                 7,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                7,
-                173,
+                269,
             ],
         ],
         'City': [
@@ -108946,29 +106550,13 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'Congressional District': [
             [
                 8,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                8,
-                173,
+                269,
             ],
         ],
         'County': [
             [
                 115,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                115,
-                173,
+                269,
             ],
         ],
         'County Cross CD': [
@@ -109002,85 +106590,37 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'Hospital Referral Region': [
             [
                 8,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                8,
-                173,
+                269,
             ],
         ],
         'Hospital Service Area': [
             [
                 85,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                85,
-                173,
+                269,
             ],
         ],
         'Judicial Circuit': [
             [
                 1,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                1,
-                173,
+                269,
             ],
         ],
         'Judicial District': [
             [
                 2,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                2,
-                173,
+                269,
             ],
         ],
         'MSA': [
             [
                 28,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                28,
-                173,
+                269,
             ],
         ],
         'Media Market': [
             [
                 9,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                9,
-                173,
+                269,
             ],
         ],
         'Neighborhood': [
@@ -109464,15 +107004,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'Urban Area': [
             [
                 80,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                80,
-                173,
+                269,
             ],
         ],
         'Urban Center': [
@@ -109991,7 +107523,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
                 15,
             ],
             [
-                10,
+                190,
                 7,
             ],
             [
@@ -110880,29 +108412,13 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'Congressional District': [
             [
                 2,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                2,
-                173,
+                269,
             ],
         ],
         'County': [
             [
                 56,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                56,
-                111,
+                207,
             ],
             [
                 54,
@@ -110960,29 +108476,13 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'Hospital Referral Region': [
             [
                 4,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                4,
-                173,
+                269,
             ],
         ],
         'Hospital Service Area': [
             [
                 46,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                46,
-                111,
+                207,
             ],
             [
                 45,
@@ -110996,85 +108496,37 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'Judicial Circuit': [
             [
                 1,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                1,
-                173,
+                269,
             ],
         ],
         'Judicial District': [
             [
                 1,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                1,
-                173,
+                269,
             ],
         ],
         'MSA': [
             [
                 7,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                7,
-                173,
+                269,
             ],
         ],
         'Media Market': [
             [
                 9,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                9,
-                173,
+                269,
             ],
         ],
         'Native Area': [
             [
                 8,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                8,
-                173,
+                269,
             ],
         ],
         'Native Subdivision': [
             [
                 23,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                23,
-                111,
+                207,
             ],
             [
                 21,
@@ -111262,29 +108714,13 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'USDA County Type': [
             [
                 1,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                1,
-                173,
+                269,
             ],
         ],
         'Urban Area': [
             [
                 22,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                22,
-                173,
+                269,
             ],
         ],
         'Urban Center': [
@@ -111475,7 +108911,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
                 6,
             ],
             [
-                9,
+                255,
                 7,
             ],
             [
@@ -111878,15 +109314,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'CSA': [
             [
                 3,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                3,
-                173,
+                269,
             ],
         ],
         'City': [
@@ -112174,29 +109602,13 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'Congressional District': [
             [
                 3,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                3,
-                173,
+                269,
             ],
         ],
         'County': [
             [
                 93,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                93,
-                111,
+                207,
             ],
             [
                 89,
@@ -112254,99 +109666,43 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'Hospital Referral Region': [
             [
                 6,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                6,
-                173,
+                269,
             ],
         ],
         'Hospital Service Area': [
             [
                 82,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                82,
-                173,
+                269,
             ],
         ],
         'Judicial Circuit': [
             [
                 1,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                1,
-                173,
+                269,
             ],
         ],
         'Judicial District': [
             [
                 1,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                1,
-                173,
+                269,
             ],
         ],
         'MSA': [
             [
                 13,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                13,
-                173,
+                269,
             ],
         ],
         'Media Market': [
             [
                 7,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                7,
-                173,
+                269,
             ],
         ],
         'Native Area': [
             [
                 6,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                6,
-                3,
+                99,
             ],
             [
                 5,
@@ -112468,29 +109824,13 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'USDA County Type': [
             [
                 1,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                1,
-                173,
+                269,
             ],
         ],
         'Urban Area': [
             [
                 30,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                30,
-                173,
+                269,
             ],
         ],
         'Urban Center': [
@@ -112713,8 +110053,12 @@ const value: Record<string, Record<string, [number, number][]>> = {
                 15,
             ],
             [
-                13,
-                7,
+                120,
+                2,
+            ],
+            [
+                116,
+                5,
             ],
             [
                 671,
@@ -113108,15 +110452,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'CSA': [
             [
                 2,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                2,
-                173,
+                269,
             ],
         ],
         'City': [
@@ -113396,29 +110732,13 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'Congressional District': [
             [
                 4,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                4,
-                173,
+                269,
             ],
         ],
         'County': [
             [
                 17,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                17,
-                111,
+                207,
             ],
             [
                 15,
@@ -113644,29 +110964,13 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'Hospital Referral Region': [
             [
                 4,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                4,
-                173,
+                269,
             ],
         ],
         'Hospital Service Area': [
             [
                 17,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                17,
-                111,
+                207,
             ],
             [
                 16,
@@ -113680,67 +110984,35 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'Judicial Circuit': [
             [
                 1,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                1,
-                173,
+                269,
             ],
         ],
         'Judicial District': [
             [
                 1,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                1,
-                173,
+                269,
             ],
         ],
         'MSA': [
             [
                 9,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                9,
-                173,
+                269,
             ],
         ],
         'Media Market': [
             [
                 4,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                4,
-                173,
+                269,
             ],
         ],
         'Native Area': [
             [
                 27,
-                89,
+                91,
             ],
             [
-                0,
-                7,
+                23,
+                5,
             ],
             [
                 27,
@@ -113844,29 +111116,13 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'USDA County Type': [
             [
                 1,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                1,
-                173,
+                269,
             ],
         ],
         'Urban Area': [
             [
                 20,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                20,
-                111,
+                207,
             ],
             [
                 19,
@@ -114361,7 +111617,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
                 6,
             ],
             [
-                7,
+                84,
                 7,
             ],
             [
@@ -115032,15 +112288,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'CSA': [
             [
                 1,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                1,
-                173,
+                269,
             ],
         ],
         'City': [
@@ -115092,29 +112340,13 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'Congressional District': [
             [
                 2,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                2,
-                173,
+                269,
             ],
         ],
         'County': [
             [
                 10,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                10,
-                173,
+                269,
             ],
         ],
         'County Cross CD': [
@@ -115148,85 +112380,37 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'Hospital Referral Region': [
             [
                 3,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                3,
-                173,
+                269,
             ],
         ],
         'Hospital Service Area': [
             [
                 28,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                28,
-                173,
+                269,
             ],
         ],
         'Judicial Circuit': [
             [
                 1,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                1,
-                173,
+                269,
             ],
         ],
         'Judicial District': [
             [
                 1,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                1,
-                173,
+                269,
             ],
         ],
         'MSA': [
             [
                 7,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                7,
-                173,
+                269,
             ],
         ],
         'Media Market': [
             [
                 3,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                3,
-                173,
+                269,
             ],
         ],
         'Neighborhood': [
@@ -115354,15 +112538,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'Urban Area': [
             [
                 21,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                21,
-                173,
+                269,
             ],
         ],
         'Urban Center': [
@@ -115585,7 +112761,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
                 6,
             ],
             [
-                21,
+                167,
                 7,
             ],
             [
@@ -115914,15 +113090,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'CSA': [
             [
                 2,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                2,
-                173,
+                269,
             ],
         ],
         'City': [
@@ -116246,29 +113414,13 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'Congressional District': [
             [
                 12,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                12,
-                173,
+                269,
             ],
         ],
         'County': [
             [
                 21,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                21,
-                173,
+                269,
             ],
         ],
         'County Cross CD': [
@@ -116302,99 +113454,43 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'Hospital Referral Region': [
             [
                 10,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                10,
-                173,
+                269,
             ],
         ],
         'Hospital Service Area': [
             [
                 67,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                67,
-                173,
+                269,
             ],
         ],
         'Judicial Circuit': [
             [
                 1,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                1,
-                173,
+                269,
             ],
         ],
         'Judicial District': [
             [
                 1,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                1,
-                173,
+                269,
             ],
         ],
         'MSA': [
             [
                 7,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                7,
-                173,
+                269,
             ],
         ],
         'Media Market': [
             [
                 2,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                2,
-                173,
+                269,
             ],
         ],
         'Native Statistical Area': [
             [
                 2,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                2,
-                173,
+                269,
             ],
         ],
         'Neighborhood': [
@@ -116694,15 +113790,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'Urban Area': [
             [
                 21,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                21,
-                173,
+                269,
             ],
         ],
         'Urban Center': [
@@ -117181,7 +114269,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
                 6,
             ],
             [
-                11,
+                221,
                 7,
             ],
             [
@@ -117524,15 +114612,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'CSA': [
             [
                 3,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                3,
-                173,
+                269,
             ],
         ],
         'City': [
@@ -117904,29 +114984,13 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'Congressional District': [
             [
                 3,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                3,
-                173,
+                269,
             ],
         ],
         'County': [
             [
                 33,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                33,
-                111,
+                207,
             ],
             [
                 32,
@@ -117980,99 +115044,43 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'Hospital Referral Region': [
             [
                 4,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                4,
-                173,
+                269,
             ],
         ],
         'Hospital Service Area': [
             [
                 33,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                33,
-                173,
+                269,
             ],
         ],
         'Judicial Circuit': [
             [
                 1,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                1,
-                173,
+                269,
             ],
         ],
         'Judicial District': [
             [
                 1,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                1,
-                173,
+                269,
             ],
         ],
         'MSA': [
             [
                 19,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                19,
-                173,
+                269,
             ],
         ],
         'Media Market': [
             [
                 3,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                3,
-                173,
+                269,
             ],
         ],
         'Native Area': [
             [
                 23,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                23,
-                111,
+                207,
             ],
             [
                 17,
@@ -118090,15 +115098,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'Native Subdivision': [
             [
                 54,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                54,
-                111,
+                207,
             ],
             [
                 23,
@@ -118522,29 +115522,13 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'USDA County Type': [
             [
                 1,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                1,
-                173,
+                269,
             ],
         ],
         'Urban Area': [
             [
                 32,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                32,
-                111,
+                207,
             ],
             [
                 31,
@@ -118851,7 +115835,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
                 6,
             ],
             [
-                31,
+                436,
                 7,
             ],
             [
@@ -119514,15 +116498,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'CSA': [
             [
                 7,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                7,
-                173,
+                269,
             ],
         ],
         'City': [
@@ -119818,29 +116794,13 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'Congressional District': [
             [
                 26,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                26,
-                173,
+                269,
             ],
         ],
         'County': [
             [
                 62,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                62,
-                173,
+                269,
             ],
         ],
         'County Cross CD': [
@@ -119874,85 +116834,37 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'Hospital Referral Region': [
             [
                 19,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                19,
-                173,
+                269,
             ],
         ],
         'Hospital Service Area': [
             [
                 143,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                143,
-                173,
+                269,
             ],
         ],
         'Judicial Circuit': [
             [
                 1,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                1,
-                173,
+                269,
             ],
         ],
         'Judicial District': [
             [
                 4,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                4,
-                173,
+                269,
             ],
         ],
         'MSA': [
             [
                 26,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                26,
-                173,
+                269,
             ],
         ],
         'Media Market': [
             [
                 10,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                10,
-                173,
+                269,
             ],
         ],
         'Native Area': [
@@ -119970,15 +116882,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
             ],
             [
                 10,
-                6,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                10,
-                111,
+                124,
             ],
             [
                 5,
@@ -120012,15 +116916,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'Native Statistical Area': [
             [
                 1,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                1,
-                173,
+                269,
             ],
         ],
         'Neighborhood': [
@@ -120524,15 +117420,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'Urban Area': [
             [
                 96,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                96,
-                173,
+                269,
             ],
         ],
         'Urban Center': [
@@ -121115,7 +118003,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
                 21,
             ],
             [
-                20,
+                414,
                 7,
             ],
             [
@@ -121624,15 +118512,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'CSA': [
             [
                 11,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                11,
-                173,
+                269,
             ],
         ],
         'City': [
@@ -121900,29 +118780,13 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'Congressional District': [
             [
                 14,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                14,
-                173,
+                269,
             ],
         ],
         'County': [
             [
                 100,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                100,
-                111,
+                207,
             ],
             [
                 98,
@@ -121972,127 +118836,55 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'Hospital Referral Region': [
             [
                 12,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                12,
-                173,
+                269,
             ],
         ],
         'Hospital Service Area': [
             [
                 102,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                102,
-                173,
+                269,
             ],
         ],
         'Judicial Circuit': [
             [
                 1,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                1,
-                173,
+                269,
             ],
         ],
         'Judicial District': [
             [
                 3,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                3,
-                173,
+                269,
             ],
         ],
         'MSA': [
             [
                 41,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                41,
-                173,
+                269,
             ],
         ],
         'Media Market': [
             [
                 9,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                9,
-                173,
+                269,
             ],
         ],
         'Native Area': [
             [
                 1,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                1,
-                173,
+                269,
             ],
         ],
         'Native Statistical Area': [
             [
                 7,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                7,
-                173,
+                269,
             ],
         ],
         'Native Subdivision': [
             [
                 7,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                7,
-                111,
+                207,
             ],
             [
                 6,
@@ -122480,15 +119272,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'Urban Area': [
             [
                 86,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                86,
-                111,
+                207,
             ],
             [
                 84,
@@ -122947,7 +119731,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
                 6,
             ],
             [
-                6,
+                150,
                 7,
             ],
             [
@@ -123578,15 +120362,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'CSA': [
             [
                 1,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                1,
-                173,
+                269,
             ],
         ],
         'City': [
@@ -123866,29 +120642,13 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'Congressional District': [
             [
                 1,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                1,
-                173,
+                269,
             ],
         ],
         'County': [
             [
                 53,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                53,
-                111,
+                207,
             ],
             [
                 51,
@@ -123938,113 +120698,49 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'Hospital Referral Region': [
             [
                 4,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                4,
-                173,
+                269,
             ],
         ],
         'Hospital Service Area': [
             [
                 41,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                41,
-                173,
+                269,
             ],
         ],
         'Judicial Circuit': [
             [
                 1,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                1,
-                173,
+                269,
             ],
         ],
         'Judicial District': [
             [
                 1,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                1,
-                173,
+                269,
             ],
         ],
         'MSA': [
             [
                 8,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                8,
-                173,
+                269,
             ],
         ],
         'Media Market': [
             [
                 2,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                2,
-                173,
+                269,
             ],
         ],
         'Native Area': [
             [
                 5,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                5,
-                173,
+                269,
             ],
         ],
         'Native Subdivision': [
             [
                 15,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                15,
-                173,
+                269,
             ],
         ],
         'Neighborhood': [
@@ -124452,29 +121148,13 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'USDA County Type': [
             [
                 1,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                1,
-                173,
+                269,
             ],
         ],
         'Urban Area': [
             [
                 11,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                11,
-                173,
+                269,
             ],
         ],
         'Urban Center': [
@@ -124913,7 +121593,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
                 21,
             ],
             [
-                25,
+                452,
                 7,
             ],
             [
@@ -125564,15 +122244,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'CSA': [
             [
                 12,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                12,
-                173,
+                269,
             ],
         ],
         'City': [
@@ -125632,29 +122304,13 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'Congressional District': [
             [
                 15,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                15,
-                173,
+                269,
             ],
         ],
         'County': [
             [
                 88,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                88,
-                173,
+                269,
             ],
         ],
         'County Cross CD': [
@@ -125696,85 +122352,37 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'Hospital Referral Region': [
             [
                 14,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                14,
-                173,
+                269,
             ],
         ],
         'Hospital Service Area': [
             [
                 122,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                122,
-                173,
+                269,
             ],
         ],
         'Judicial Circuit': [
             [
                 1,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                1,
-                173,
+                269,
             ],
         ],
         'Judicial District': [
             [
                 2,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                2,
-                173,
+                269,
             ],
         ],
         'MSA': [
             [
                 47,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                47,
-                173,
+                269,
             ],
         ],
         'Media Market': [
             [
                 12,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                12,
-                173,
+                269,
             ],
         ],
         'Neighborhood': [
@@ -126290,29 +122898,13 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'USDA County Type': [
             [
                 1,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                1,
-                173,
+                269,
             ],
         ],
         'Urban Area': [
             [
                 113,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                113,
-                173,
+                269,
             ],
         ],
         'Urban Center': [
@@ -126759,7 +123351,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
                 25,
             ],
             [
-                13,
+                473,
                 7,
             ],
             [
@@ -127030,15 +123622,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'CSA': [
             [
                 4,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                4,
-                173,
+                269,
             ],
         ],
         'City': [
@@ -127390,29 +123974,13 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'Congressional District': [
             [
                 5,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                5,
-                173,
+                269,
             ],
         ],
         'County': [
             [
                 77,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                77,
-                173,
+                269,
             ],
         ],
         'County Cross CD': [
@@ -127446,113 +124014,49 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'Hospital Referral Region': [
             [
                 9,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                9,
-                173,
+                269,
             ],
         ],
         'Hospital Service Area': [
             [
                 96,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                96,
-                173,
+                269,
             ],
         ],
         'Judicial Circuit': [
             [
                 1,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                1,
-                173,
+                269,
             ],
         ],
         'Judicial District': [
             [
                 3,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                3,
-                173,
+                269,
             ],
         ],
         'MSA': [
             [
                 22,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                22,
-                173,
+                269,
             ],
         ],
         'Media Market': [
             [
                 8,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                8,
-                173,
+                269,
             ],
         ],
         'Native Area': [
             [
                 1,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                1,
-                173,
+                269,
             ],
         ],
         'Native Statistical Area': [
             [
                 29,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                29,
-                111,
+                207,
             ],
             [
                 28,
@@ -127566,15 +124070,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'Native Subdivision': [
             [
                 155,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                155,
-                111,
+                207,
             ],
             [
                 99,
@@ -127970,15 +124466,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'Urban Area': [
             [
                 50,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                50,
-                173,
+                269,
             ],
         ],
         'Urban Center': [
@@ -128409,7 +124897,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
                 21,
             ],
             [
-                12,
+                215,
                 7,
             ],
             [
@@ -128788,15 +125276,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'CSA': [
             [
                 4,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                4,
-                173,
+                269,
             ],
         ],
         'City': [
@@ -129148,29 +125628,13 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'Congressional District': [
             [
                 6,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                6,
-                173,
+                269,
             ],
         ],
         'County': [
             [
                 36,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                36,
-                173,
+                269,
             ],
         ],
         'County Cross CD': [
@@ -129228,99 +125692,43 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'Hospital Referral Region': [
             [
                 7,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                7,
-                173,
+                269,
             ],
         ],
         'Hospital Service Area': [
             [
                 48,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                48,
-                173,
+                269,
             ],
         ],
         'Judicial Circuit': [
             [
                 1,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                1,
-                173,
+                269,
             ],
         ],
         'Judicial District': [
             [
                 1,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                1,
-                173,
+                269,
             ],
         ],
         'MSA': [
             [
                 20,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                20,
-                173,
+                269,
             ],
         ],
         'Media Market': [
             [
                 7,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                7,
-                173,
+                269,
             ],
         ],
         'Native Area': [
             [
                 11,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                11,
-                111,
+                207,
             ],
             [
                 10,
@@ -129432,29 +125840,13 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'USDA County Type': [
             [
                 1,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                1,
-                173,
+                269,
             ],
         ],
         'Urban Area': [
             [
                 61,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                61,
-                173,
+                269,
             ],
         ],
         'Urban Center': [
@@ -129853,7 +126245,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
                 6,
             ],
             [
-                36,
+                436,
                 7,
             ],
             [
@@ -130320,15 +126712,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'CSA': [
             [
                 11,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                11,
-                173,
+                269,
             ],
         ],
         'City': [
@@ -130692,29 +127076,13 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'Congressional District': [
             [
                 17,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                17,
-                173,
+                269,
             ],
         ],
         'County': [
             [
                 67,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                67,
-                173,
+                269,
             ],
         ],
         'County Cross CD': [
@@ -130756,85 +127124,37 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'Hospital Referral Region': [
             [
                 19,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                19,
-                173,
+                269,
             ],
         ],
         'Hospital Service Area': [
             [
                 136,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                136,
-                173,
+                269,
             ],
         ],
         'Judicial Circuit': [
             [
                 1,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                1,
-                173,
+                269,
             ],
         ],
         'Judicial District': [
             [
                 3,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                3,
-                173,
+                269,
             ],
         ],
         'MSA': [
             [
                 37,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                37,
-                173,
+                269,
             ],
         ],
         'Media Market': [
             [
                 9,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                9,
-                173,
+                269,
             ],
         ],
         'Neighborhood': [
@@ -131226,15 +127546,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'Urban Area': [
             [
                 100,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                100,
-                111,
+                207,
             ],
             [
                 99,
@@ -131765,7 +128077,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
                 25,
             ],
             [
-                5,
+                28,
                 7,
             ],
             [
@@ -131936,15 +128248,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'CSA': [
             [
                 1,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                1,
-                173,
+                269,
             ],
         ],
         'City': [
@@ -131976,29 +128280,13 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'Congressional District': [
             [
                 2,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                2,
-                173,
+                269,
             ],
         ],
         'County': [
             [
                 5,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                5,
-                173,
+                269,
             ],
         ],
         'County Cross CD': [
@@ -132032,71 +128320,31 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'Hospital Referral Region': [
             [
                 1,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                1,
-                173,
+                269,
             ],
         ],
         'Hospital Service Area': [
             [
                 8,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                8,
-                173,
+                269,
             ],
         ],
         'Judicial District': [
             [
                 1,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                1,
-                173,
+                269,
             ],
         ],
         'MSA': [
             [
                 1,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                1,
-                173,
+                269,
             ],
         ],
         'Media Market': [
             [
                 1,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                1,
-                173,
+                269,
             ],
         ],
         'Neighborhood': [
@@ -132392,15 +128640,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'Urban Area': [
             [
                 3,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                3,
-                173,
+                269,
             ],
         ],
         'Urban Center': [
@@ -132595,7 +128835,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
                 6,
             ],
             [
-                10,
+                212,
                 7,
             ],
             [
@@ -132864,15 +129104,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'CSA': [
             [
                 4,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                4,
-                173,
+                269,
             ],
         ],
         'City': [
@@ -133116,29 +129348,13 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'Congressional District': [
             [
                 7,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                7,
-                173,
+                269,
             ],
         ],
         'County': [
             [
                 46,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                46,
-                173,
+                269,
             ],
         ],
         'County Cross CD': [
@@ -133180,113 +129396,49 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'Hospital Referral Region': [
             [
                 8,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                8,
-                173,
+                269,
             ],
         ],
         'Hospital Service Area': [
             [
                 53,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                53,
-                173,
+                269,
             ],
         ],
         'Judicial Circuit': [
             [
                 1,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                1,
-                173,
+                269,
             ],
         ],
         'Judicial District': [
             [
                 1,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                1,
-                173,
+                269,
             ],
         ],
         'MSA': [
             [
                 17,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                17,
-                173,
+                269,
             ],
         ],
         'Media Market': [
             [
                 7,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                7,
-                173,
+                269,
             ],
         ],
         'Native Area': [
             [
                 1,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                1,
-                173,
+                269,
             ],
         ],
         'Native Statistical Area': [
             [
                 7,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                7,
-                111,
+                207,
             ],
             [
                 5,
@@ -133802,15 +129954,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'Urban Area': [
             [
                 50,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                50,
-                111,
+                207,
             ],
             [
                 49,
@@ -134341,7 +130485,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
                 6,
             ],
             [
-                5,
+                228,
                 7,
             ],
             [
@@ -134912,15 +131056,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'CSA': [
             [
                 2,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                2,
-                173,
+                269,
             ],
         ],
         'City': [
@@ -135304,29 +131440,13 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'Congressional District': [
             [
                 1,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                1,
-                173,
+                269,
             ],
         ],
         'County': [
             [
                 66,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                66,
-                173,
+                269,
             ],
         ],
         'County Cross CD': [
@@ -135360,113 +131480,49 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'Hospital Referral Region': [
             [
                 3,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                3,
-                173,
+                269,
             ],
         ],
         'Hospital Service Area': [
             [
                 54,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                54,
-                173,
+                269,
             ],
         ],
         'Judicial Circuit': [
             [
                 1,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                1,
-                173,
+                269,
             ],
         ],
         'Judicial District': [
             [
                 1,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                1,
-                173,
+                269,
             ],
         ],
         'MSA': [
             [
                 12,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                12,
-                173,
+                269,
             ],
         ],
         'Media Market': [
             [
                 2,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                2,
-                173,
+                269,
             ],
         ],
         'Native Area': [
             [
                 10,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                10,
-                173,
+                269,
             ],
         ],
         'Native Subdivision': [
             [
                 49,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                49,
-                111,
+                207,
             ],
             [
                 41,
@@ -135566,29 +131622,13 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'USDA County Type': [
             [
                 1,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                1,
-                173,
+                269,
             ],
         ],
         'Urban Area': [
             [
                 21,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                21,
-                173,
+                269,
             ],
         ],
         'Urban Center': [
@@ -135847,7 +131887,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
                 6,
             ],
             [
-                16,
+                334,
                 7,
             ],
             [
@@ -136130,15 +132170,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'CSA': [
             [
                 7,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                7,
-                173,
+                269,
             ],
         ],
         'City': [
@@ -136198,29 +132230,13 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'Congressional District': [
             [
                 9,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                9,
-                173,
+                269,
             ],
         ],
         'County': [
             [
                 95,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                95,
-                173,
+                269,
             ],
         ],
         'County Cross CD': [
@@ -136262,85 +132278,37 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'Hospital Referral Region': [
             [
                 8,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                8,
-                173,
+                269,
             ],
         ],
         'Hospital Service Area': [
             [
                 90,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                90,
-                173,
+                269,
             ],
         ],
         'Judicial Circuit': [
             [
                 1,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                1,
-                173,
+                269,
             ],
         ],
         'Judicial District': [
             [
                 3,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                3,
-                173,
+                269,
             ],
         ],
         'MSA': [
             [
                 27,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                27,
-                173,
+                269,
             ],
         ],
         'Media Market': [
             [
                 8,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                8,
-                173,
+                269,
             ],
         ],
         'Neighborhood': [
@@ -136748,15 +132716,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'Urban Area': [
             [
                 70,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                70,
-                111,
+                207,
             ],
             [
                 69,
@@ -137307,7 +133267,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
                 6,
             ],
             [
-                48,
+                884,
                 7,
             ],
             [
@@ -137716,15 +133676,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'CSA': [
             [
                 12,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                12,
-                173,
+                269,
             ],
         ],
         'City': [
@@ -138076,29 +134028,13 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'Congressional District': [
             [
                 38,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                38,
-                173,
+                269,
             ],
         ],
         'County': [
             [
                 254,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                254,
-                111,
+                207,
             ],
             [
                 244,
@@ -138156,29 +134092,13 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'Hospital Referral Region': [
             [
                 24,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                24,
-                173,
+                269,
             ],
         ],
         'Hospital Service Area': [
             [
                 212,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                212,
-                111,
+                207,
             ],
             [
                 208,
@@ -138192,71 +134112,31 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'Judicial Circuit': [
             [
                 1,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                1,
-                173,
+                269,
             ],
         ],
         'Judicial District': [
             [
                 4,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                4,
-                173,
+                269,
             ],
         ],
         'MSA': [
             [
                 69,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                69,
-                173,
+                269,
             ],
         ],
         'Media Market': [
             [
                 20,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                20,
-                173,
+                269,
             ],
         ],
         'Native Area': [
             [
                 3,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                3,
-                173,
+                269,
             ],
         ],
         'Neighborhood': [
@@ -138700,29 +134580,13 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'USDA County Type': [
             [
                 4,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                4,
-                173,
+                269,
             ],
         ],
         'Urban Area': [
             [
                 195,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                195,
-                111,
+                207,
             ],
             [
                 193,
@@ -139301,7 +135165,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
                 21,
             ],
             [
-                13,
+                134,
                 7,
             ],
             [
@@ -139662,15 +135526,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'CSA': [
             [
                 1,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                1,
-                173,
+                269,
             ],
         ],
         'City': [
@@ -139914,29 +135770,13 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'Congressional District': [
             [
                 4,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                4,
-                173,
+                269,
             ],
         ],
         'County': [
             [
                 29,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                29,
-                111,
+                207,
             ],
             [
                 27,
@@ -139986,113 +135826,49 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'Hospital Referral Region': [
             [
                 4,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                4,
-                173,
+                269,
             ],
         ],
         'Hospital Service Area': [
             [
                 31,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                31,
-                173,
+                269,
             ],
         ],
         'Judicial Circuit': [
             [
                 1,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                1,
-                173,
+                269,
             ],
         ],
         'Judicial District': [
             [
                 1,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                1,
-                173,
+                269,
             ],
         ],
         'MSA': [
             [
                 10,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                10,
-                173,
+                269,
             ],
         ],
         'Media Market': [
             [
                 1,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                1,
-                173,
+                269,
             ],
         ],
         'Native Area': [
             [
                 5,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                5,
-                173,
+                269,
             ],
         ],
         'Native Subdivision': [
             [
                 9,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                9,
-                129,
+                225,
             ],
             [
                 8,
@@ -140388,15 +136164,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'Urban Area': [
             [
                 25,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                25,
-                173,
+                269,
             ],
         ],
         'Urban Center': [
@@ -140811,7 +136579,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
                 6,
             ],
             [
-                5,
+                66,
                 7,
             ],
             [
@@ -141464,29 +137232,13 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'Congressional District': [
             [
                 1,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                1,
-                173,
+                269,
             ],
         ],
         'County': [
             [
                 14,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                14,
-                173,
+                269,
             ],
         ],
         'County Cross CD': [
@@ -141520,85 +137272,37 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'Hospital Referral Region': [
             [
                 3,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                3,
-                173,
+                269,
             ],
         ],
         'Hospital Service Area': [
             [
                 20,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                20,
-                173,
+                269,
             ],
         ],
         'Judicial Circuit': [
             [
                 1,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                1,
-                173,
+                269,
             ],
         ],
         'Judicial District': [
             [
                 1,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                1,
-                173,
+                269,
             ],
         ],
         'MSA': [
             [
                 6,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                6,
-                173,
+                269,
             ],
         ],
         'Media Market': [
             [
                 3,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                3,
-                173,
+                269,
             ],
         ],
         'Neighborhood': [
@@ -141886,15 +137590,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'Urban Area': [
             [
                 12,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                12,
-                173,
+                269,
             ],
         ],
         'ZIP': [
@@ -142287,7 +137983,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
                 21,
             ],
             [
-                24,
+                342,
                 7,
             ],
             [
@@ -142600,15 +138296,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'CSA': [
             [
                 4,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                4,
-                173,
+                269,
             ],
         ],
         'City': [
@@ -142932,29 +138620,13 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'Congressional District': [
             [
                 11,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                11,
-                173,
+                269,
             ],
         ],
         'County': [
             [
                 133,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                133,
-                111,
+                207,
             ],
             [
                 127,
@@ -143004,99 +138676,43 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'Hospital Referral Region': [
             [
                 11,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                11,
-                173,
+                269,
             ],
         ],
         'Hospital Service Area': [
             [
                 71,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                71,
-                173,
+                269,
             ],
         ],
         'Judicial Circuit': [
             [
                 1,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                1,
-                173,
+                269,
             ],
         ],
         'Judicial District': [
             [
                 2,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                2,
-                173,
+                269,
             ],
         ],
         'MSA': [
             [
                 15,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                15,
-                173,
+                269,
             ],
         ],
         'Media Market': [
             [
                 10,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                10,
-                173,
+                269,
             ],
         ],
         'Native Area': [
             [
                 2,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                2,
-                111,
+                207,
             ],
             [
                 0,
@@ -143110,15 +138726,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'Native Statistical Area': [
             [
                 3,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                3,
-                111,
+                207,
             ],
             [
                 2,
@@ -143534,15 +139142,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'Urban Area': [
             [
                 55,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                55,
-                111,
+                207,
             ],
             [
                 52,
@@ -144085,8 +139685,12 @@ const value: Record<string, Record<string, [number, number][]>> = {
                 6,
             ],
             [
-                14,
-                7,
+                273,
+                2,
+            ],
+            [
+                271,
+                5,
             ],
             [
                 2849,
@@ -144544,15 +140148,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'CSA': [
             [
                 5,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                5,
-                173,
+                269,
             ],
         ],
         'City': [
@@ -144804,29 +140400,13 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'Congressional District': [
             [
                 10,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                10,
-                173,
+                269,
             ],
         ],
         'County': [
             [
                 39,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                39,
-                173,
+                269,
             ],
         ],
         'County Cross CD': [
@@ -144860,81 +140440,41 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'Hospital Referral Region': [
             [
                 7,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                7,
-                173,
+                269,
             ],
         ],
         'Hospital Service Area': [
             [
                 63,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                63,
-                173,
+                269,
             ],
         ],
         'Judicial District': [
             [
                 2,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                2,
-                173,
+                269,
             ],
         ],
         'MSA': [
             [
                 22,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                22,
-                173,
+                269,
             ],
         ],
         'Media Market': [
             [
                 4,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                4,
-                173,
+                269,
             ],
         ],
         'Native Area': [
             [
                 26,
-                89,
+                91,
             ],
             [
-                0,
-                7,
+                25,
+                5,
             ],
             [
                 26,
@@ -144952,15 +140492,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'Native Statistical Area': [
             [
                 1,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                1,
-                173,
+                269,
             ],
         ],
         'Native Subdivision': [
@@ -145098,11 +140630,11 @@ const value: Record<string, Record<string, [number, number][]>> = {
             ],
             [
                 19,
-                25,
+                27,
             ],
             [
-                0,
-                7,
+                18,
+                5,
             ],
             [
                 19,
@@ -145690,15 +141222,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'Urban Area': [
             [
                 61,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                61,
-                111,
+                207,
             ],
             [
                 57,
@@ -146217,7 +141741,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
                 21,
             ],
             [
-                8,
+                185,
                 7,
             ],
             [
@@ -146522,15 +142046,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'CSA': [
             [
                 4,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                4,
-                173,
+                269,
             ],
         ],
         'City': [
@@ -146590,29 +142106,13 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'Congressional District': [
             [
                 2,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                2,
-                173,
+                269,
             ],
         ],
         'County': [
             [
                 55,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                55,
-                173,
+                269,
             ],
         ],
         'County Cross CD': [
@@ -146646,85 +142146,37 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'Hospital Referral Region': [
             [
                 8,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                8,
-                173,
+                269,
             ],
         ],
         'Hospital Service Area': [
             [
                 52,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                52,
-                173,
+                269,
             ],
         ],
         'Judicial Circuit': [
             [
                 1,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                1,
-                173,
+                269,
             ],
         ],
         'Judicial District': [
             [
                 2,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                2,
-                173,
+                269,
             ],
         ],
         'MSA': [
             [
                 16,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                16,
-                173,
+                269,
             ],
         ],
         'Media Market': [
             [
                 9,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                9,
-                173,
+                269,
             ],
         ],
         'Neighborhood': [
@@ -146792,15 +142244,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'Urban Area': [
             [
                 28,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                28,
-                173,
+                269,
             ],
         ],
         'ZIP': [
@@ -147313,8 +142757,12 @@ const value: Record<string, Record<string, [number, number][]>> = {
                 6,
             ],
             [
-                21,
-                7,
+                367,
+                2,
+            ],
+            [
+                365,
+                5,
             ],
             [
                 5061,
@@ -147962,15 +143410,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'CSA': [
             [
                 7,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                7,
-                173,
+                269,
             ],
         ],
         'City': [
@@ -148290,29 +143730,13 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'Congressional District': [
             [
                 8,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                8,
-                173,
+                269,
             ],
         ],
         'County': [
             [
                 72,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                72,
-                173,
+                269,
             ],
         ],
         'County Cross CD': [
@@ -148346,109 +143770,53 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'Hospital Referral Region': [
             [
                 13,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                13,
-                173,
+                269,
             ],
         ],
         'Hospital Service Area': [
             [
                 110,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                110,
-                173,
+                269,
             ],
         ],
         'Judicial Circuit': [
             [
                 1,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                1,
-                173,
+                269,
             ],
         ],
         'Judicial District': [
             [
                 2,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                2,
-                173,
+                269,
             ],
         ],
         'MSA': [
             [
                 27,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                27,
-                173,
+                269,
             ],
         ],
         'Media Market': [
             [
                 7,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                7,
-                173,
+                269,
             ],
         ],
         'Native Area': [
             [
                 11,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                11,
-                173,
+                269,
             ],
         ],
         'Native Subdivision': [
             [
                 2,
-                89,
+                91,
             ],
             [
                 0,
-                7,
+                5,
             ],
             [
                 2,
@@ -148896,29 +144264,13 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'USDA County Type': [
             [
                 1,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                1,
-                173,
+                269,
             ],
         ],
         'Urban Area': [
             [
                 85,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                85,
-                173,
+                269,
             ],
         ],
         'Urban Center': [
@@ -149353,7 +144705,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
                 21,
             ],
             [
-                8,
+                105,
                 7,
             ],
             [
@@ -149906,29 +145258,13 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'Congressional District': [
             [
                 1,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                1,
-                173,
+                269,
             ],
         ],
         'County': [
             [
                 23,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                23,
-                111,
+                207,
             ],
             [
                 22,
@@ -149964,29 +145300,13 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'Hospital Referral Region': [
             [
                 5,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                5,
-                173,
+                269,
             ],
         ],
         'Hospital Service Area': [
             [
                 30,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                30,
-                111,
+                207,
             ],
             [
                 29,
@@ -150000,71 +145320,31 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'Judicial Circuit': [
             [
                 1,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                1,
-                173,
+                269,
             ],
         ],
         'Judicial District': [
             [
                 1,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                1,
-                173,
+                269,
             ],
         ],
         'MSA': [
             [
                 9,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                9,
-                173,
+                269,
             ],
         ],
         'Media Market': [
             [
                 7,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                7,
-                173,
+                269,
             ],
         ],
         'Native Area': [
             [
                 1,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                1,
-                173,
+                269,
             ],
         ],
         'School District': [
@@ -150134,29 +145414,13 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'USDA County Type': [
             [
                 1,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                1,
-                173,
+                269,
             ],
         ],
         'Urban Area': [
             [
                 18,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                18,
-                173,
+                269,
             ],
         ],
         'Urban Center': [
@@ -150553,7 +145817,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
                 6,
             ],
             [
-                4,
+                125,
                 7,
             ],
             [
@@ -151162,15 +146426,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
             ],
             [
                 3,
-                86,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                3,
-                141,
+                234,
             ],
             [
                 0,
@@ -151530,15 +146786,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
             ],
             [
                 78,
-                86,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                78,
-                111,
+                204,
             ],
             [
                 72,
@@ -151568,15 +146816,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'Judicial Circuit': [
             [
                 1,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                1,
-                173,
+                269,
             ],
         ],
         'Judicial District': [
@@ -151586,15 +146826,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
             ],
             [
                 1,
-                86,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                1,
-                141,
+                234,
             ],
             [
                 0,
@@ -151620,15 +146852,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
             ],
             [
                 12,
-                86,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                12,
-                141,
+                234,
             ],
             [
                 0,
@@ -151756,15 +146980,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
             ],
             [
                 26,
-                86,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                26,
-                141,
+                234,
             ],
             [
                 0,
@@ -152277,7 +147493,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
                 6,
             ],
             [
-                2,
+                7,
                 7,
             ],
             [
@@ -152536,57 +147752,25 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'County': [
             [
                 1,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                1,
-                173,
+                269,
             ],
         ],
         'Hospital Service Area': [
             [
                 1,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                1,
-                173,
+                269,
             ],
         ],
         'Judicial Circuit': [
             [
                 1,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                1,
-                173,
+                269,
             ],
         ],
         'Judicial District': [
             [
                 1,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                1,
-                173,
+                269,
             ],
         ],
         'Neighborhood': [
@@ -152890,15 +148074,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
         'Urban Area': [
             [
                 1,
-                89,
-            ],
-            [
-                0,
-                7,
-            ],
-            [
-                1,
-                173,
+                269,
             ],
         ],
         'Urban Center': [

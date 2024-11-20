@@ -10,6 +10,7 @@ MSAs = Shapefile(
     longname_extractor=lambda x: ", ".join(name_components("MSA", x, abbreviate=True)),
     filter=lambda x: True,
     meta=dict(type="MSA", source="Census", type_category="Census"),
+    special_data_sources=["international_gridded_data"],
     universe_provider=us_domestic_provider(),
     subset_masks={"USA": SelfSubset()},
 )

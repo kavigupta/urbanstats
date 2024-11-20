@@ -22,6 +22,7 @@ COUNTIES = Shapefile(
     + ", USA",
     filter=lambda x: True,
     meta=dict(type="County", source="Census", type_category="US Subdivision"),
+    special_data_sources=["international_gridded_data"],
     universe_provider=us_domestic_provider(),
     subset_masks={"USA": SelfSubset()},
 )

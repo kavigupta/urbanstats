@@ -34,6 +34,7 @@ USDA_COUNTY_TYPE = Shapefile(
     longname_extractor=lambda x: x.name + " [USDA County Type], USA",
     filter=lambda x: True,
     meta=dict(type="USDA County Type", source="Census", type_category="Oddball"),
+    special_data_sources=["international_gridded_data"],
     universe_provider=us_domestic_provider(),
     subset_masks={"USA": SelfSubset()},
 )
