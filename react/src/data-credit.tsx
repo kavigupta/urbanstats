@@ -608,6 +608,39 @@ function DataCreditPanel(): ReactNode {
                         </div>
                     </div>
 
+                    <NRef name="elevation_hilliness" h="h1">Elevation and Hilliness</NRef>
+                    <div>
+                        We compute elevation and hilliness using the NASA ASTER Global Digital Elevation Model
+                        {' '}
+                        <FootnoteRef
+                            description={(
+                                <span>
+                                    NASA/METI/AIST/Japan Spacesystems and U.S./Japan ASTER Science Team.
+                                    ASTER Global Digital Elevation Model V003. 2019, distributed by NASA EOSDIS Land
+                                    Processes Distributed Active Archive Center,
+                                    {' '}
+                                    <a href="https://doi.org/10.5067/ASTER/ASTGTM.003">https://doi.org/10.5067/ASTER/ASTGTM.003</a>
+                                    {'. '}
+                                    Accessed 2024.
+                                </span>
+                            )}
+                        >
+                            ASTER GDEM
+                        </FootnoteRef>
+                        {'. '}
+                        We compute hilliness by first computing the absolute grade (rise over run)
+                        at each point to a point 100m to the north, east, south, and west. We then
+                        take the average of these four values. To compute population weighted elevation
+                        and hilliness, we then aggregate these values to 30 arc-second blocks, and then
+                        use
+                        {' '}
+                        <a href="/data-credit.html#explanation_gpw">GPW</a>
+                        {' '}
+                        data to compute the population weighted average of these statistics for each geography.
+                        As a result, these statistics are only available for regions that are sufficiently
+                        large for GPW data to be available.
+                    </div>
+
                     <NRef name="election" h="h1">Voting and Elections Science Team Data</NRef>
                     <div>
                         Election Data is from
