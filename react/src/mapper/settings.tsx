@@ -13,8 +13,8 @@ import { setting_name_style, useSettingSubNameStyle } from './style'
 export type StatisticsForGeography = { stats: number[] }[]
 
 export interface ColorStat {
-    name(): string
-    compute(statistics_for_geography: StatisticsForGeography, vars?: Record<string, number[]>): number[]
+    name: () => string
+    compute: (statistics_for_geography: StatisticsForGeography, vars?: Record<string, number[]>) => number[]
 }
 
 export interface RegressionDescriptor {

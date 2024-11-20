@@ -104,6 +104,7 @@ export default tseslint.config(
             'eslint-comments/require-description': ['error', {
                 ignore: ['eslint-enable']
             }],
+            "@typescript-eslint/method-signature-style": ["error", "property"], // https://www.totaltypescript.com/method-shorthand-syntax-considered-harmful
         },
     },
     {
