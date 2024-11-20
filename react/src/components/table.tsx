@@ -384,7 +384,7 @@ export function Statistic(props: { style?: React.CSSProperties, statname: string
             const name = props.statname
             let value = props.value
             const is_unit = props.is_unit
-            if (name.includes('%') || name.includes('Change')) {
+            if (name.includes('%') || name.includes('Change') || name.includes('(Grade)')) {
                 if (is_unit) {
                     return <span>%</span>
                 }
@@ -425,6 +425,17 @@ export function Statistic(props: { style?: React.CSSProperties, statname: string
                     )
                 }
                 return <span>{value.toFixed(places)}</span>
+            }
+            else if (name.includes('Elevation')) {
+                let unit_name = 'm'
+                if (use_imperial) {
+                    unit_name = 'ft'
+                    value *= 3.28084
+                }
+                if (is_unit) {
+                    return <span>{unit_name}</span>
+                }
+                return <span>{value.toFixed(0)}</span>
             }
             else if (name.startsWith('Population')) {
                 if (value > 1e9) {
