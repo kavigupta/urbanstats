@@ -12,7 +12,7 @@ POPULATION_WEIGHTED_EXPLANATION = (
 
 
 class ElevationHillinessStatistics(InternationalStatistics):
-    version = 3
+    version = 4
 
     def name_for_each_statistic(self):
         return {
@@ -25,15 +25,14 @@ class ElevationHillinessStatistics(InternationalStatistics):
 
     def quiz_question_names(self):
         return {
-            "gridded_hilliness": "higher population-weighted mean hilliness!TOOLTIP"
-            + POPULATION_WEIGHTED_EXPLANATION
-            + " Hilliness is a measure of the steepness of the terrain, measured as a grade (rise over run).",
             "gridded_elevation": "higher population-weighted mean elevation!TOOLTIP"
             + POPULATION_WEIGHTED_EXPLANATION,
         }
 
     def quiz_question_unused(self):
-        return []
+        # apparently this is "too confusing" and "a weird metric"
+        # I think they're just coping
+        return ["gridded_hilliness"]
 
     def dependencies(self):
         return []
