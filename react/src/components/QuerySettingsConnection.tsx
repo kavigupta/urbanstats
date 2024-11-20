@@ -6,6 +6,7 @@ import { Settings, SettingsDictionary, source_enabled_key, statPathsWithExtra } 
 import { fromVector, useVector, VectorSettingKey } from '../page_template/settings-vector'
 import { groupYearKeys, statIsEnabled, useAvailableGroups, useAvailableYears, useDataSourceCheckboxes, useStatPathsAll } from '../page_template/statistic-settings'
 import { findAmbiguousSourcesAll, StatPath } from '../page_template/statistic-tree'
+import { isMobileLayout } from '../utils/responsive'
 
 /**
  * - Query Params -> Settings
@@ -86,7 +87,7 @@ export function QuerySettingsConnection({ stagedSettingsKeys, applySettingsKeys 
 // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- No non-histogram extras yet
 export const statPathsWithHistogram = extra_stats.filter(([,{ type }]) => type === 'histogram').map(([index]) => stat_path_list[index])
 
-export function ArticleComparisonQuerySettingsConnection(): ReactNode {
+export function ArticleComparisonQuerySettingsConnection({ pageKind }: { pageKind: 'article' | 'comparison' }): ReactNode {
     const stagedSettingsKeys = [
         'use_imperial',
         'show_historical_cds',
@@ -106,6 +107,7 @@ export function ArticleComparisonQuerySettingsConnection(): ReactNode {
         const result = [
             ...statPathsWithExtra.filter(path => visibleStatPaths.includes(path)).map(path => `expanded__${path}` as const),
             ...(statPathsWithHistogram.some(path => visibleStatPaths.includes(path)) ? ['histogram_relative', 'histogram_type'] as const : []),
+            ...(pageKind === 'article' && isMobileLayout() ? ['mobile_article_pointers'] as const : []),
         ] as const
         return result
     }
