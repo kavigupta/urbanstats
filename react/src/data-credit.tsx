@@ -636,9 +636,10 @@ function DataCreditPanel(): ReactNode {
                         {' '}
                         <a href="/data-credit.html#explanation_gpw">GPW</a>
                         {' '}
-                        data to compute the population weighted average of these statistics for each geography.
-                        As a result, these statistics are only available for regions that are sufficiently
-                        large for GPW data to be available.
+                        data to compute the population weighted average of these statistics for each geography
+                        for large regions. For American regions, we disaggregate to the block level (starting
+                        with 15 arc-second blocks) via bilinear interpolation and then use the population of each
+                        block as a weight.
                     </div>
 
                     <NRef name="election" h="h1">Voting and Elections Science Team Data</NRef>
