@@ -76,6 +76,7 @@ class ElevationHillinessStatistics(GeographicStatistics):
         }
 
     def compute_usa(self, *, shapefile, existing_statistics, shapefile_table):
+        del existing_statistics, shapefile_table
         table = elevation_statistics_for_american_shapefile(shapefile)
         return {
             "gridded_hilliness": table["hilliness"],
