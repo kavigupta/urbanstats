@@ -73,14 +73,6 @@ class StatisticCollection(ABC):
         :return: A dictionary of statistics to add to the existing statistics table.
         """
 
-    @abstractmethod
-    def for_america(self):
-        pass
-
-    @abstractmethod
-    def for_international(self):
-        pass
-
     def same_for_each_name(self, value):
         return {name: value for name in self.name_for_each_statistic()}
 
@@ -92,23 +84,11 @@ class StatisticCollection(ABC):
 
 
 class GeographicStatistics(StatisticCollection):
-    def for_america(self):
-        return True
-
-    def for_international(self):
-        return True
-
     def quiz_question_types(self):
         return QUIZ_REGION_TYPES_ALL
 
 
 class InternationalStatistics(StatisticCollection):
-    def for_america(self):
-        return False
-
-    def for_international(self):
-        return True
-
     def quiz_question_types(self):
         return QUIZ_REGION_TYPES_INTERNATIONAL
 
@@ -131,12 +111,6 @@ class InternationalStatistics(StatisticCollection):
 
 
 class USAStatistics(StatisticCollection):
-    def for_america(self):
-        return True
-
-    def for_international(self):
-        return False
-
     def quiz_question_types(self):
         return QUIZ_REGION_TYPES_USA
 
