@@ -74,6 +74,7 @@ difficulties = {
     "industry": 2,
     "occupation": 2,
     "weather": 0.3,
+    "topography": 1,
 }
 
 skip_category_probs = {
