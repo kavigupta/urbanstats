@@ -113,7 +113,7 @@ const HistogramTypeSettingCoder = new BitmapCoder(2, [
 const TemperatureUnitCoder = new BitmapCoder(1, ['fahrenheit', 'celsius'])
 
 // Too many bits for expansion
-const MobileArticlePointersCoder = new BitmapCoder(2, ['in_class', 'overall'])
+const MobileArticlePointersCoder = new BitmapCoder(2, ['pointer_in_class', 'pointer_overall'])
 
 /**
  * DO NOT REORDER, ONLY ADD
