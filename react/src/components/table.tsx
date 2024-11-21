@@ -169,14 +169,12 @@ function PointerHeaderCells(props: { ordinal_style: CSSProperties }): ColumnLayo
     const selectorCell = PointerHeaderSelectorCell()
 
     const screenshotMode = useScreenshotMode()
-    const isMobile = useMobileLayout()
-
-    const [simpleOrdinals] = useSetting('simple_ordinals')
+    const singlePointerCell = useSinglePointerCell()
 
     if (screenshotMode) {
         return []
     }
-    else if (isMobile && !simpleOrdinals) {
+    else if (singlePointerCell) {
         return [selectorCell]
     }
     else {
@@ -323,10 +321,16 @@ export function StatisticRowCells(props: {
     )
 }
 
+export function useSinglePointerCell(): boolean {
+    const isMobile = useMobileLayout()
+    const [simpleOrdinals] = useSetting('simple_ordinals')
+    return isMobile && !simpleOrdinals
+}
+
 function PointerRowCells(props: { ordinal_style: CSSProperties, row: ArticleRow }): ColumnLayoutProps['cells'] {
     const screenshotMode = useScreenshotMode()
 
-    const isMobile = useMobileLayout()
+    const singlePointerCell = useSinglePointerCell()
     const [preferredPointerCell] = useSetting('mobile_article_pointers')
 
     const pointerInClassCell: ColumnLayoutProps['cells'][number] = {
@@ -361,12 +365,10 @@ function PointerRowCells(props: { ordinal_style: CSSProperties, row: ArticleRow 
         style: { textAlign: 'right' },
     }
 
-    const [simpleOrdinals] = useSetting('simple_ordinals')
-
     if (screenshotMode) {
         return []
     }
-    else if (isMobile && !simpleOrdinals) {
+    else if (singlePointerCell) {
         switch (preferredPointerCell) {
             case 'pointer_in_class':
                 return [pointerInClassCell]

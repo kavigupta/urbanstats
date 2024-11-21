@@ -6,7 +6,8 @@ import { Settings, SettingsDictionary, source_enabled_key, statPathsWithExtra } 
 import { fromVector, useVector, VectorSettingKey } from '../page_template/settings-vector'
 import { groupYearKeys, statIsEnabled, useAvailableGroups, useAvailableYears, useDataSourceCheckboxes, useStatPathsAll } from '../page_template/statistic-settings'
 import { findAmbiguousSourcesAll, StatPath } from '../page_template/statistic-tree'
-import { isMobileLayout } from '../utils/responsive'
+
+import { useSinglePointerCell } from './table'
 
 /**
  * - Query Params -> Settings
@@ -103,11 +104,13 @@ export function ArticleComparisonQuerySettingsConnection({ pageKind }: { pageKin
         'temperature_unit',
     ] as const
 
+    const singlePointerCell = useSinglePointerCell()
+
     const applySettingsKeys = (visibleStatPaths: StatPath[]): typeof result => {
         const result = [
             ...statPathsWithExtra.filter(path => visibleStatPaths.includes(path)).map(path => `expanded__${path}` as const),
             ...(statPathsWithHistogram.some(path => visibleStatPaths.includes(path)) ? ['histogram_relative', 'histogram_type'] as const : []),
-            ...(pageKind === 'article' && isMobileLayout() ? ['mobile_article_pointers'] as const : []),
+            ...(pageKind === 'article' && singlePointerCell ? ['mobile_article_pointers'] as const : []),
         ] as const
         return result
     }
