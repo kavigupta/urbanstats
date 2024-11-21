@@ -45,7 +45,7 @@ interface ColumnLayoutProps {
         columnIdentifier: ColumnIdentifier
         widthPercentage: number
         content: ReactNode
-        textAlign: React.CSSProperties['textAlign']
+        style: CSSProperties
     }[]
     onlyColumns?: string[]
     totalWidth: number
@@ -55,12 +55,12 @@ interface ColumnLayoutProps {
 function ColumnLayout(props: ColumnLayoutProps): JSX.Element[] {
     const cellPercentages: number[] = []
     const cellContents = []
-    for (const { widthPercentage, columnIdentifier, content, textAlign } of props.cells) {
+    for (const { widthPercentage, columnIdentifier, content, style } of props.cells) {
         if (props.onlyColumns && !props.onlyColumns.includes(columnIdentifier)) {
             continue
         }
         cellPercentages.push(widthPercentage)
-        cellContents.push({ content, textAlign })
+        cellContents.push({ content, style })
     }
 
     // normalize cell percentages
@@ -70,8 +70,8 @@ function ColumnLayout(props: ColumnLayoutProps): JSX.Element[] {
     }
 
     const contents = cellContents.map(
-        ({ content, textAlign }, i) => {
-            const sty: React.CSSProperties = { width: `${cellPercentages[i]}%`, padding: '1px', textAlign }
+        ({ content, style }, i) => {
+            const sty: React.CSSProperties = { width: `${cellPercentages[i]}%`, padding: '1px', ...style }
             return (
                 <div key={i} style={sty}>
                     {content}
@@ -101,7 +101,7 @@ export function StatisticHeaderCells(props: { simpleOrdinals: boolean, totalWidt
                     Statistic
                 </span>
             ),
-            textAlign: 'center',
+            style: { textAlign: 'center' },
         },
         {
             columnIdentifier: 'statval',
@@ -111,7 +111,7 @@ export function StatisticHeaderCells(props: { simpleOrdinals: boolean, totalWidt
                     Value
                 </span>
             ),
-            textAlign: 'center',
+            style: { textAlign: 'center' },
         },
         {
             widthPercentage: props.simpleOrdinals ? 7 : 17,
@@ -124,7 +124,7 @@ export function StatisticHeaderCells(props: { simpleOrdinals: boolean, totalWidt
                     }
                 </span>
             ),
-            textAlign: 'center',
+            style: { textAlign: 'center' },
         },
         {
             widthPercentage: props.simpleOrdinals ? 8 : 25,
@@ -136,7 +136,7 @@ export function StatisticHeaderCells(props: { simpleOrdinals: boolean, totalWidt
                     }
                 </span>
             ),
-            textAlign: 'center',
+            style: { textAlign: 'center' },
         },
         ...PointerHeaderCells({ ordinal_style }),
     ] satisfies ColumnLayoutProps['cells']
@@ -155,14 +155,14 @@ function PointerHeaderCells(props: { ordinal_style: CSSProperties }): ColumnLayo
         widthPercentage: 8,
         columnIdentifier: 'pointer_in_class',
         content: <span className="serif" style={props.ordinal_style}>Within Type</span>,
-        textAlign: 'center',
+        style: { textAlign: 'center' },
 
     }
     const pointerOverallCell: ColumnLayoutProps['cells'][number] = {
         widthPercentage: 8,
         columnIdentifier: 'pointer_overall',
         content: <span className="serif" style={props.ordinal_style}>Overall</span>,
-        textAlign: 'center',
+        style: { textAlign: 'center' },
     }
 
     // Must be outside branch because uses hooks
@@ -171,10 +171,12 @@ function PointerHeaderCells(props: { ordinal_style: CSSProperties }): ColumnLayo
     const screenshotMode = useScreenshotMode()
     const isMobile = useMobileLayout()
 
+    const [simpleOrdinals] = useSetting('simple_ordinals')
+
     if (screenshotMode) {
         return []
     }
-    else if (isMobile) {
+    else if (isMobile && !simpleOrdinals) {
         return [selectorCell]
     }
     else {
@@ -185,11 +187,20 @@ function PointerHeaderCells(props: { ordinal_style: CSSProperties }): ColumnLayo
 function PointerHeaderSelectorCell(): ColumnLayoutProps['cells'][number] {
     const [preferredPointerCell, setPreferredPointerCell] = useSetting('mobile_article_pointers')
 
+    const selectStyle: CSSProperties = {
+        height: '2lh',
+        whiteSpace: 'wrap',
+        width: '70px',
+        textAlign: 'center',
+        direction: 'ltr',
+    }
+
     return {
         widthPercentage: 8,
         columnIdentifier: preferredPointerCell,
         content: (
             <select
+                style={selectStyle}
                 value={preferredPointerCell}
                 onChange={(e) => { setPreferredPointerCell(e.target.value as MobileArticlePointers) }}
             >
@@ -197,7 +208,10 @@ function PointerHeaderSelectorCell(): ColumnLayoutProps['cells'][number] {
                 <option value="pointer_overall">Overall</option>
             </select>
         ),
-        textAlign: 'center',
+        style: {
+            textAlign: 'center',
+            direction: 'rtl', // Ensure that the select overflows out the left side, not off the screen on mobile
+        },
     }
 }
 
@@ -232,7 +246,7 @@ export function StatisticRowCells(props: {
                     />
                 </span>
             ),
-            textAlign: 'left',
+            style: { textAlign: 'left' },
         },
         {
             widthPercentage: 15,
@@ -247,7 +261,7 @@ export function StatisticRowCells(props: {
                     />
                 </span>
             ),
-            textAlign: 'right',
+            style: { textAlign: 'right' },
         },
         {
             widthPercentage: 10,
@@ -263,7 +277,7 @@ export function StatisticRowCells(props: {
                     </span>
                 </div>
             ),
-            textAlign: 'right',
+            style: { textAlign: 'right' },
         },
         {
             widthPercentage: props.simpleOrdinals ? 7 : 17,
@@ -278,7 +292,7 @@ export function StatisticRowCells(props: {
                     />
                 </span>
             ),
-            textAlign: 'right',
+            style: { textAlign: 'right' },
         },
         {
             widthPercentage: props.simpleOrdinals ? 8 : 25,
@@ -295,7 +309,7 @@ export function StatisticRowCells(props: {
                     />
                 </span>
             ),
-            textAlign: 'right',
+            style: { textAlign: 'right' },
         },
         ...PointerRowCells({ ordinal_style, row: props.row }),
     ] satisfies ColumnLayoutProps['cells']
@@ -328,7 +342,7 @@ function PointerRowCells(props: { ordinal_style: CSSProperties, row: ArticleRow 
                 />
             </span>
         ),
-        textAlign: 'right',
+        style: { textAlign: 'right' },
     }
 
     const pointerOverallCell: ColumnLayoutProps['cells'][number] = {
@@ -344,13 +358,15 @@ function PointerRowCells(props: { ordinal_style: CSSProperties, row: ArticleRow 
                 />
             </span>
         ),
-        textAlign: 'right',
+        style: { textAlign: 'right' },
     }
+
+    const [simpleOrdinals] = useSetting('simple_ordinals')
 
     if (screenshotMode) {
         return []
     }
-    else if (isMobile) {
+    else if (isMobile && !simpleOrdinals) {
         switch (preferredPointerCell) {
             case 'pointer_in_class':
                 return [pointerInClassCell]
