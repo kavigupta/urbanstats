@@ -1,5 +1,13 @@
-from urbanstats.data.elevation import elevation_statistics_for_shapefile
-from urbanstats.statistics.statistic_collection import InternationalStatistics
+import numpy as np
+
+from urbanstats.data.elevation import (
+    elevation_statistics_for_american_shapefile,
+    elevation_statistics_for_shapefile,
+)
+from urbanstats.statistics.statistic_collection import (
+    GeographicStatistics,
+    compute_subset_statistics,
+)
 
 POPULATION_WEIGHTED_EXPLANATION = (
     "Population weighted elevation/hilliness"
@@ -8,8 +16,8 @@ POPULATION_WEIGHTED_EXPLANATION = (
 )
 
 
-class ElevationHillinessStatistics(InternationalStatistics):
-    version = 4
+class ElevationHillinessStatistics(GeographicStatistics):
+    version = 5
 
     def name_for_each_statistic(self):
         return {
@@ -34,11 +42,42 @@ class ElevationHillinessStatistics(InternationalStatistics):
     def dependencies(self):
         return []
 
-    def compute_statistics_dictionary_intl(
+    def compute_statistics_dictionary(
         self, *, shapefile, existing_statistics, shapefile_table
     ):
+        just_usa, usa_stats = compute_subset_statistics(
+            shapefile,
+            existing_statistics,
+            shapefile_table,
+            subset="USA",
+            compute_function=self.compute_usa,
+        )
+        if just_usa:
+            return usa_stats
+
+        intl_stats = self.compute_intl(shapefile)
+        if not usa_stats:
+            return intl_stats
+
+        assert intl_stats.keys() == usa_stats.keys()
+
+        intl_stats = {k: np.array(v) for k, v in intl_stats.items()}
+
+        for k, v in usa_stats.items():
+            intl_stats[k][~np.isnan(v)] = v[~np.isnan(v)]
+
+        return intl_stats
+
+    def compute_intl(self, shapefile):
         result = elevation_statistics_for_shapefile(shapefile)
         return {
             "gridded_hilliness": result["hilliness"],
             "gridded_elevation": result["elevation"],
+        }
+
+    def compute_usa(self, *, shapefile, existing_statistics, shapefile_table):
+        table = elevation_statistics_for_american_shapefile(shapefile)
+        return {
+            "gridded_hilliness": table["hilliness"],
+            "gridded_elevation": table["elevation"],
         }
