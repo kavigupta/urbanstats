@@ -19,7 +19,7 @@ urbanstatsFixture('article check and uncheck test', `${TARGET}/article.html?long
 
 test('histogram-article-check-uncheck', async (t) => {
     await waitForLoading(t) // Need to avoid a race condition between map loading and page resizing
-    await t.resizeWindow(800, 800)
+    await t.resizeWindow(400, 800)
     // count the number of `histogram-svg-panel` elements
     await t.expect(Selector('.histogram-svg-panel').count).eql(0)
     await t.click(Selector('.expand-toggle'))
@@ -32,7 +32,7 @@ urbanstatsFixture('article test', `${TARGET}/article.html?longname=Germany&unive
 
 test('histogram-basic-article', async (t) => {
     await waitForLoading(t) // Need to avoid a race condition between map loading and page resizing
-    await t.resizeWindow(800, 800)
+    await t.resizeWindow(400, 800)
     await t.click(Selector('.expand-toggle'))
     await screencap(t)
     await download_or_check_histogram(t, 'histogram-basic-article')
@@ -40,7 +40,7 @@ test('histogram-basic-article', async (t) => {
 
 test('histogram-basic-article-multi', async (t) => {
     await waitForLoading(t) // Need to avoid a race condition between map loading and page resizing
-    await t.resizeWindow(800, 800)
+    await t.resizeWindow(400, 800)
     await check_textboxes(t, ['Other Density Metrics'])
     const count = await Selector('.expand-toggle').count
     for (let i = 0; i < count; i++) {
@@ -56,7 +56,7 @@ urbanstatsFixture('comparison test heterogenous', comparison_page(['San Marino c
 
 test('histogram-basic-comparison', async (t) => {
     await waitForLoading(t) // Need to avoid a race condition between map loading and page resizing
-    await t.resizeWindow(800, 800)
+    await t.resizeWindow(400, 800)
     // select element with class name `expand-toggle`
     await t.click(Selector('.expand-toggle'))
     await screencap(t)
@@ -67,7 +67,7 @@ urbanstatsFixture('comparison test heterogenous with nan', comparison_page(['Ind
 
 test('histogram-basic-comparison-nan', async (t) => {
     await waitForLoading(t) // Need to avoid a race condition between map loading and page resizing
-    await t.resizeWindow(800, 800)
+    await t.resizeWindow(400, 800)
     // select element with class name `expand-toggle`
     await t.click(Selector('.expand-toggle').nth(1))
     await screencap(t)
@@ -78,7 +78,7 @@ urbanstatsFixture('comparison test heterogenous with nan in the middle', compari
 
 test('histogram-basic-comparison-nan-middle', async (t) => {
     await waitForLoading(t) // Need to avoid a race condition between map loading and page resizing
-    await t.resizeWindow(800, 800)
+    await t.resizeWindow(400, 800)
     // select element with class name `expand-toggle`
     await t.click(Selector('.expand-toggle').nth(1))
     await screencap(t)

@@ -27,7 +27,7 @@ export class FunctionColorStat implements ColorStat {
         return this._name ?? '[Unnamed function]'
     }
 
-    compute(statistics_for_geography: StatisticsForGeography, vars: Record<string, number[]>): number[] {
+    compute(statistics_for_geography: StatisticsForGeography, vars?: Record<string, number[]>): number[] {
         let variables = { ...vars }
         for (const variable of this._variables) {
             variables[variable.name] = variable.expr.compute(statistics_for_geography)
