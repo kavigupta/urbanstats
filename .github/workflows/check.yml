@@ -122,7 +122,7 @@ jobs:
         run: |
           npm run test:e2e -- \
             --proxy=true \
-            --browser=/root/chrome/linux-130.0.6723.116/chrome-linux64/chrome \
+            --browser=./chrome/linux-130.0.6723.116/chrome-linux64/chrome \
             --test=test/${{ matrix.test-file }}.ts \
             --parallel=1 \
             --headless=true \
