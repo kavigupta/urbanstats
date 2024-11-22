@@ -15,6 +15,17 @@ def compress_counts_sequence(counts):
     return result
 
 
+def uncompress_counts_sequence(counts):
+    """
+    Take a sequence like [[50, 3], [32, 2], [64, 1]] and expand it into
+        [50, 50, 50, 32, 32, 64]
+    """
+    result = []
+    for c, n in counts:
+        result.extend([c] * n)
+    return result
+
+
 def compress_counts(counts):
     statcols = list(internal_statistic_names())
     counts_new = {}
@@ -37,6 +48,8 @@ def compress_counts(counts):
 
 def mapify(lst):
     result = {}
-    for (a, b, c), v in lst:
-        result[f"{a}__{b}__{c}"] = v
+    for (a, b), v in lst.items():
+        if len(v) == 1:
+            continue
+        result[f"{a}__{b}"] = v
     return result

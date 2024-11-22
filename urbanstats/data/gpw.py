@@ -316,6 +316,20 @@ def produce_histogram(density_data, population_data):
     return compute_bins(density_data, population_data, bin_size=0.1)
 
 
+def compute_gpw_weighted_for_shape(shape, gridded_statistics, *, do_histograms):
+    glo_pop = load_full_ghs()
+    row_selected, col_selected = lattice_cells_contained(glo_pop, shape)
+    pop = glo_pop[row_selected, col_selected]
+    result = {}
+    hists = {}
+    for name, data in gridded_statistics.items():
+        data_selected = data[row_selected, col_selected]
+        result[name] = np.nansum(pop * data_selected) / np.nansum(pop)
+        if do_histograms:
+            hists[name] = produce_histogram(data_selected, pop)
+    return result, hists
+
+
 @permacache(
     "urbanstats/data/gpw/compute_gpw_for_shape_4",
     key_function=dict(

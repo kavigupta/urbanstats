@@ -9,7 +9,7 @@ export type ColorMap = [number, string][]
 export type Keypoints = Readonly<[number, string]>[]
 
 export interface Ramp {
-    create_ramp(values: number[]): Readonly<[Keypoints, number[]]>
+    create_ramp: (values: number[]) => Readonly<[Keypoints, number[]]>
 }
 
 interface CommonRampDescriptor {

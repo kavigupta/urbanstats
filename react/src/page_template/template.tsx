@@ -50,6 +50,7 @@ export function PageTemplate({
         document.documentElement.style.setProperty('--text-main', colors.textMain)
         document.documentElement.style.setProperty('--ordinal-text-color', colors.ordinalTextColor)
         document.documentElement.style.setProperty('--background', colors.background)
+        document.documentElement.style.setProperty('--highlight', colors.highlight)
     }, [colors, juxtaColors])
 
     useEffect(() => {
@@ -80,10 +81,21 @@ export function PageTemplate({
         })
     }
 
+    // https://stackoverflow.com/a/55451665
+    const runningInTestCafe = (window as unknown as { '%hammerhead%': unknown })['%hammerhead%'] !== undefined
+
     return (
         <ScreenshotContext.Provider value={screenshot_mode}>
-            <meta name="viewport" content="width=device-width, initial-scale=0.75, shrink-to-fit=no, maximum-scale=0.75" />
-            <div className={mobileLayout ? 'main_panel_mobile' : 'main_panel'} style={{ backgroundColor: colors.background }}>
+            <meta name="viewport" content="width=device-width, initial-scale=0.75" />
+            <div
+                className={mobileLayout ? 'main_panel_mobile' : 'main_panel'}
+                style={{
+                    backgroundColor: colors.background,
+                    // simulate mobile zoom in testcafe so screenshots are more accurate to what they would actually be on mobile
+                    // since desktop browsers don't respect meta[name=viewport]
+                    zoom: mobileLayout && runningInTestCafe ? 0.75 : undefined,
+                }}
+            >
                 <Header
                     hamburger_open={hamburger_open}
                     set_hamburger_open={set_hamburger_open}
@@ -120,11 +132,11 @@ function TemplateFooter(): ReactNode {
 }
 
 function Version(): ReactNode {
-    return <span id="current-version">20.0.0</span>
+    return <span id="current-version">21.1.0</span>
 }
 
 function LastUpdated(): ReactNode {
-    return <span id="last-updated">2024-11-16</span>
+    return <span id="last-updated">2024-11-21</span>
 }
 
 function MainCredits(): ReactNode {

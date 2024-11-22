@@ -3,11 +3,11 @@ Like `git diff`, but for protobuf files.
 """
 
 import argparse
+import gzip
 import os
 import subprocess
 import sys
 import tempfile
-import gzip
 
 sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 
@@ -19,7 +19,7 @@ def main():
     parser.add_argument("typ", help="Protobuf type")
     parser.add_argument("old", help="Old protobuf file/directory")
     parser.add_argument("new", help="New protobuf file/directory")
-    parser.add_argument("file", help="File to diff", optional=True)
+    parser.add_argument("file", help="File to diff")
     args = parser.parse_args()
     if args.file:
         args.old = os.path.join(args.old, args.file)
@@ -41,8 +41,12 @@ def main():
         new_path = os.path.join(tmpdir, "new")
         with open(old_path, "w") as f:
             f.write(str(old))
-        with open(new_path, "wb") as f:
+        with open(new_path, "w") as f:
             f.write(str(new))
 
         # run diff
-        subprocess.run(["diff", "-u", old_path, new_path])
+        subprocess.run(["git", "diff", "--no-index", old_path, new_path])
+
+
+if __name__ == "__main__":
+    main()

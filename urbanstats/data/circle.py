@@ -19,7 +19,8 @@ from urbanstats.data.population_overlays import (
     direct_population_overlay,
     relevant_regions,
 )
-from urbanstats.geometry.shapefiles.shapefile import Shapefile, SubsetSpecification
+from urbanstats.geometry.shapefiles.shapefile import Shapefile
+from urbanstats.geometry.shapefiles.shapefile_subset import FilteringSubset
 from urbanstats.geometry.shapefiles.shapefiles.urban_centers import URBAN_CENTERS
 from urbanstats.universe.universe_provider.combined_universe_provider import (
     CombinedUniverseProvider,
@@ -773,26 +774,19 @@ def produce_image(population):
     print("Done with population", name)
 
 
-def circle_shapefile_object(country_shapefile, population, just_usa):
+def circle_shapefile_object(country_shapefile, population):
     name = named_populations[population] + " Person Circle"
-    if just_usa:
-        name = "US " + name
-        prefix = "us_"
-    else:
-        prefix = ""
     version = 27
     return Shapefile(
-        hash_key=prefix
-        + f"population_circle_{named_populations[population]}_{version}",
+        hash_key=f"population_circle_{named_populations[population]}_{version}",
         path=lambda: overlapping_circles_frame(
             country_shapefile, population, named_populations[population] + "PC"
         ),
         shortname_extractor=lambda x: x["shortname"],
         longname_extractor=lambda x: x["longname"],
         meta=dict(type=name, source="GHSL", type_category="Kavi"),
-        filter=(lambda x: x.longname.endswith(", USA")) if just_usa else lambda x: True,
-        american=just_usa,
-        include_in_gpw=not just_usa,
+        filter=lambda x: True,
+        special_data_sources=["international_gridded_data"],
         tolerate_no_state=True,
         universe_provider=CombinedUniverseProvider(
             [
@@ -802,8 +796,6 @@ def circle_shapefile_object(country_shapefile, population, just_usa):
             ]
         ),
         subset_masks={
-            "USA": SubsetSpecification(
-                "US " + name, lambda x: x.longname.endswith(", USA")
-            )
+            "USA": FilteringSubset("US " + name, lambda x: x.longname.endswith(", USA"))
         },
     )

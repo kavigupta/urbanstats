@@ -1,14 +1,12 @@
 from collections import Counter
 from functools import lru_cache
 
+import numpy as np
 import pandas as pd
 import tqdm.auto as tqdm
 from permacache import permacache, stable_hash
 
-from urbanstats.geometry.shapefiles.shapefiles_list import shapefiles_for_stats
-from urbanstats.special_cases.merge_international import (
-    merge_international_and_domestic,
-)
+from urbanstats.geometry.shapefiles.shapefiles_list import shapefiles as shapefiles_list
 from urbanstats.statistics.collections_list import (
     statistic_collections as statistic_collections_list,
 )
@@ -59,15 +57,10 @@ def compute_statistics_for_shapefile(
     return result
 
 
-def american_shapefile():
+def combined_shapefile():
     full = []
-    for k in tqdm.tqdm(shapefiles_for_stats, desc="computing statistics"):
-        if not shapefiles_for_stats[k].american:
-            continue
-
-        t = compute_statistics_for_shapefile(
-            shapefiles_for_stats[k], shapefiles_for_stats
-        )
+    for k in tqdm.tqdm(shapefiles_list, desc="computing statistics"):
+        t = compute_statistics_for_shapefile(shapefiles_list[k], shapefiles_list)
 
         full.append(t)
 
@@ -77,28 +70,33 @@ def american_shapefile():
     # https://www.openstreetmap.org/user/Minh%20Nguyen/diary/398893#:~:text=An%20administrative%20area%E2%80%99s%20name%20is%20unique%20within%20its%20immediate%20containing%20area%20%E2%80%93%20false
     # Ban both of these from the database
     full = full[full.longname != "Washington township [CCD], Union County, Ohio, USA"]
-    full = full[full.population > 0].copy()
-    duplicates = {k: v for k, v in Counter(full.longname).items() if v > 1}
-    assert not duplicates, str(duplicates)
+    # duplicates = {k: v for k, v in Counter(full.longname).items() if v > 1}
+    # assert not duplicates, str(duplicates)
+    del full["type_category"]
     return full
 
 
-def international_shapefile():
-    ts = []
-    for s in shapefiles_for_stats.values():
-        if s.include_in_gpw:
-            t = compute_statistics_for_shapefile(s, shapefiles_for_stats)
-            ts.append(t)
-    intl = pd.concat(ts)
-    # intl = intl[intl.area > 10].copy()
-    intl = intl[intl.gpw_population > 0].copy()
-    intl = intl.reset_index(drop=True)
-    return intl
+def merge_population_estimates(full):
+    popu = np.array(full.population)
+    popu[np.isnan(popu)] = full.gpw_population[np.isnan(popu)]
+    full["best_population_estimate"] = popu
+    return full
+
+
+def sort_shapefile(full):
+    full = full.sort_values("longname")
+    full = full.sort_values("best_population_estimate", ascending=False, kind="stable")
+    full = full[full.best_population_estimate > 0].reset_index(drop=True)
+    return full
 
 
 @lru_cache(maxsize=None)
 def shapefile_without_ordinals():
-    usa = american_shapefile()
-    intl = international_shapefile()
-    full = merge_international_and_domestic(intl, usa)
+    full = combined_shapefile()
+    full = merge_population_estimates(full)
+    full = sort_shapefile(full)
+
+    counted = Counter(full.longname)
+    duplicates = [name for name, count in counted.items() if count > 1]
+    assert not duplicates, f"Duplicate names: {duplicates}"
     return full

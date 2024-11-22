@@ -1,5 +1,5 @@
 export interface ReadonlyDefaultMap<K, V> extends ReadonlyMap<K, V> {
-    get(key: K): V
+    get: (key: K) => V
 }
 
 export class DefaultMap<K, V> extends Map<K, V> implements ReadonlyDefaultMap<K, V> {

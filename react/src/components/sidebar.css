@@ -69,6 +69,10 @@
     vertical-align: middle;
 }
 
+.expandButton:hover {
+    background-color: transparent;
+}
+
 .sidebar-section-content .sidebar-section-content .expandButton {
     left: -16px;
 }

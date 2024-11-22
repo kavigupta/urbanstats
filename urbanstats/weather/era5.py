@@ -12,6 +12,7 @@ import us
 import xarray as xr
 from permacache import permacache
 
+from urbanstats.geometry.shapefiles.shapefile import subset_mask_key
 from urbanstats.geometry.shapefiles.shapefiles.subnational_regions import (
     SUBNATIONAL_REGIONS,
 )
@@ -255,7 +256,7 @@ def precipitation_statistics(bounding_box, year, month):
 @permacache("urbanstats/weather/era5/bounding_boxes")
 def bounding_boxes():
     shape = SUBNATIONAL_REGIONS.load_file()
-    shape = shape[shape[SUBNATIONAL_REGIONS.subset_mask_key("USA")]]
+    shape = shape[shape[subset_mask_key("USA")]]
     shape = shape.copy()
     shape["state"] = shape.shortname.apply(us.states.lookup)
     # this is not a singleton comparison, it's a vectorized comparison

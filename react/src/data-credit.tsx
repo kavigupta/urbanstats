@@ -1,10 +1,11 @@
 import { MathJax, MathJaxContext } from 'better-react-mathjax'
-import React, { ReactNode, useEffect, useRef } from 'react'
+import React, { ReactNode } from 'react'
 import { FootnoteRef, Footnotes, FootnotesProvider } from 'react-a11y-footnotes'
 import ReactDOM from 'react-dom/client'
 
 import './style.css'
 import './common.css'
+import './data-credit.css'
 import industry_occupation_table from './data/explanation_industry_occupation_table'
 import { useColors } from './page_template/colors'
 import { PageTemplate } from './page_template/template'
@@ -51,20 +52,11 @@ function ExplanationTable(props: { name: string, link: string, table: readonly (
 }
 
 function NRef({ children, name, h: Header = 'h2' }: { children: React.ReactNode, name: string, h?: 'h1' | 'h2' }): ReactNode {
-    const colors = useColors()
-    const ref = useRef<HTMLHeadingElement>(null)
-
-    const highlighted = window.location.hash.substring(1) === `explanation_${name}`
-
-    useEffect(() => {
-        if (highlighted && ref.current !== null) {
-            ref.current.scrollIntoView()
-        }
-    }, [highlighted])
-
-    const style = highlighted ? { backgroundColor: colors.highlight } : {}
-
-    return <Header ref={ref} style={style}>{children}</Header>
+    return (
+        <Header id={`explanation_${name}`}>
+            {children}
+        </Header>
+    )
 }
 
 function DataCreditPanel(): ReactNode {
@@ -606,6 +598,40 @@ function DataCreditPanel(): ReactNode {
                                 2010 Census data is treated the same way as 2020 Census data.
                             </p>
                         </div>
+                    </div>
+
+                    <NRef name="elevation_hilliness" h="h1">Elevation and Hilliness</NRef>
+                    <div>
+                        We compute elevation and hilliness using the NASA ASTER Global Digital Elevation Model
+                        {' '}
+                        <FootnoteRef
+                            description={(
+                                <span>
+                                    NASA/METI/AIST/Japan Spacesystems and U.S./Japan ASTER Science Team.
+                                    ASTER Global Digital Elevation Model V003. 2019, distributed by NASA EOSDIS Land
+                                    Processes Distributed Active Archive Center,
+                                    {' '}
+                                    <a href="https://doi.org/10.5067/ASTER/ASTGTM.003">https://doi.org/10.5067/ASTER/ASTGTM.003</a>
+                                    {'. '}
+                                    Accessed 2024.
+                                </span>
+                            )}
+                        >
+                            ASTER GDEM
+                        </FootnoteRef>
+                        {'. '}
+                        We compute hilliness by first computing the absolute grade (rise over run)
+                        at each point to a point 100m to the north, east, south, and west. We then
+                        take the average of these four values. To compute population weighted elevation
+                        and hilliness, we then aggregate these values to 30 arc-second blocks, and then
+                        use
+                        {' '}
+                        <a href="/data-credit.html#explanation_gpw">GPW</a>
+                        {' '}
+                        data to compute the population weighted average of these statistics for each geography
+                        for large regions. For American regions, we disaggregate to the block level (starting
+                        with 15 arc-second blocks) via bilinear interpolation and then use the population of each
+                        block as a weight.
                     </div>
 
                     <NRef name="election" h="h1">Voting and Elections Science Team Data</NRef>
