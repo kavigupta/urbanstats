@@ -1,9 +1,10 @@
 import '../common.css'
 import './article.css'
 
-import React, { ReactNode, useEffect, useRef } from 'react'
+import React, { ReactNode, useContext, useEffect, useRef } from 'react'
 
 import { article_link, comparison_link, sanitize } from '../navigation/links'
+import { navigationContext } from '../navigation/navigator'
 import { useColors } from '../page_template/colors'
 import { row_expanded_key, useSetting, useSettings } from '../page_template/settings'
 import { groupYearKeys, StatPathsContext } from '../page_template/statistic-settings'

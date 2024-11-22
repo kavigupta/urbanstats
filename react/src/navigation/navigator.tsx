@@ -4,23 +4,45 @@ import { ArticlePanel } from '../components/article-panel'
 import { UNIVERSE_CONTEXT } from '../universe'
 import { Article } from '../utils/protos'
 
-export type PageDescriptor = { kind: 'error', error: Error } | { kind: 'article', longname: string } | { kind: 'comparison', longnames: string[] }
+export type PageDescriptor = { kind: 'error', error: Error } | { kind: 'article', longname: string, settings?: string } | { kind: 'comparison', longnames: string[], settings?: string }
 
 function pageDescriptorFromURL(url: URL): PageDescriptor {
-    throw new Error('not implemented')
+    switch (url.pathname) {
+        case '/article.html':
+            const longname = url.searchParams.get('longname')
+            if (longname === null) {
+                throw new Error('missing param longname')
+            }
+            return { kind: 'article', longname }
+        default:
+            return { kind: 'error', error: new Error('404 not found') }
+    }
 }
 
 function urlFromPageDescriptor(pageDescriptor: PageDescriptor): URL {
-    throw new Error('not implemented')
+    const result = new URL(window.location.origin)
+    result.hash = window.location.hash
+    switch (pageDescriptor.kind) {
+        case 'article':
+            result.pathname = '/article.html'
+            result.searchParams.set('longname', pageDescriptor.longname)
+            if (pageDescriptor.settings !== undefined) {
+                result.searchParams.set('s', pageDescriptor.settings)
+            }
+            break
+        default:
+            throw new Error('not implemented')
+    }
+    return result
 }
 
 // Must not throw an error, should return errors as error PageData
-async function loadPageDescriptor(descriptor: PageDescriptor): Promise<PageData> {
+async function loadPageDescriptor(descriptor: PageDescriptor): Promise<{ data: PageData, updatedDescriptor: PageDescriptor }> {
     try {
         throw new Error('not implemented')
     }
     catch (error) {
-        return { kind: 'error', error }
+        return { data: { kind: 'error', error }, updatedDescriptor: descriptor }
     }
 }
 
@@ -117,7 +139,7 @@ function ErrorScreen({ error }: { error: unknown }): ReactNode {
 }
 
 interface NavigationContext {
-    navigate(pageDescriptor: PageDescriptor, kind: 'replace' | 'push'): void
+    navigate: (pageDescriptor: PageDescriptor, kind: 'replace' | 'push') => void
 }
 
 export const navigationContext = createContext<NavigationContext | undefined>(undefined)
