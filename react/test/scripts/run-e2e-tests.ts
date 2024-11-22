@@ -20,7 +20,6 @@ async function main(): Promise<void> {
     const options = argumentParser({
         options: z.object({
             proxy: booleanArgument({ defaultValue: false }),
-            browser: z.union([z.literal('chrome'), z.literal('chromium')]).default('chrome'),
             test: z.array(z.string()).default(['test/*_test.ts']),
             parallel: z.string().transform(string => parseInt(string)).default('1'),
             headless: booleanArgument({ defaultValue: true }),
@@ -66,7 +65,7 @@ async function main(): Promise<void> {
 
         let runner = testcafe.createRunner()
             .src(`test/${test}.ts`)
-            .browsers([`${options.browser} --window-size=1400,800 --hide-scrollbars --disable-gpu --disable-search-engine-choice-screen`])
+            .browsers([`chrome --window-size=1400,800 --hide-scrollbars --disable-gpu --disable-search-engine-choice-screen`])
             .screenshots(`screenshots/${test}`)
 
         if (options.video) {

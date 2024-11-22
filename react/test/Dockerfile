@@ -12,6 +12,7 @@ RUN pip3 cache purge
 RUN dpkg --add-architecture i386
 RUN apt-get -y update
 
+# https://www.chromium.org/getting-involved/download-chromium/
 RUN npx @puppeteer/browsers install chrome@130
 RUN apt-get -y install xvfb
 

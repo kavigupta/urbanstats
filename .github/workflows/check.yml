@@ -122,7 +122,6 @@ jobs:
         run: |
           npm run test:e2e -- \
             --proxy=true \
-            --browser=chromium \
             --test=test/${{ matrix.test-file }}.ts \
             --parallel=1 \
             --headless=true \
