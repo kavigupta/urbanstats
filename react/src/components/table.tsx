@@ -5,10 +5,10 @@ import { load_ordering } from '../load_json'
 import { article_link, statistic_link } from '../navigation/links'
 import './table.css'
 import { useColors } from '../page_template/colors'
-import { MobileArticlePointers, row_expanded_key, useSetting } from '../page_template/settings'
+import { MobileArticlePointers, row_expanded_key, Settings, useSetting } from '../page_template/settings'
 import { useUniverse } from '../universe'
 import { is_historical_cd } from '../utils/is_historical'
-import { useMobileLayout } from '../utils/responsive'
+import { isMobileLayout, useMobileLayout } from '../utils/responsive'
 import { display_type } from '../utils/text'
 
 import { ArticleRow } from './load-article'
@@ -216,6 +216,7 @@ function PointerHeaderSelectorCell(): ColumnLayoutProps['cells'][number] {
                     style={selectStyle}
                     value={preferredPointerCell}
                     onChange={(e) => { setPreferredPointerCell(e.target.value as MobileArticlePointers) }}
+                    data-test-id="tablePointerSelect"
                 >
                     <option value="pointer_in_class">Within Type</option>
                     <option value="pointer_overall">Overall</option>
@@ -340,10 +341,15 @@ export function StatisticRowCells(props: {
     )
 }
 
-export function useSinglePointerCell(): boolean {
+// Reactive and non-reactive versions of the same function
+function useSinglePointerCell(): boolean {
     const isMobile = useMobileLayout()
     const [simpleOrdinals] = useSetting('simple_ordinals')
     return isMobile && !simpleOrdinals
+}
+
+export function isSinglePointerCell(settings: Settings): boolean {
+    return isMobileLayout() && !settings.get('simple_ordinals')
 }
 
 function PointerRowCells(props: { ordinal_style: CSSProperties, row: ArticleRow }): ColumnLayoutProps['cells'] {
