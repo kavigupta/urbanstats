@@ -185,30 +185,49 @@ function PointerHeaderCells(props: { ordinal_style: CSSProperties }): ColumnLayo
 function PointerHeaderSelectorCell(): ColumnLayoutProps['cells'][number] {
     const [preferredPointerCell, setPreferredPointerCell] = useSetting('mobile_article_pointers')
 
+    const selectWidth = 'clamp(45px, 100%, 65px)'
+    const arrowWidth = '12px'
+
     const selectStyle: CSSProperties = {
         height: '2lh',
         whiteSpace: 'wrap',
-        width: '70px',
-        textAlign: 'center',
-        direction: 'ltr',
+        width: selectWidth,
+        textAlign: 'left',
+        appearance: 'none',
+        padding: '0px 1px',
+    }
+
+    const arrowStyle: CSSProperties = {
+        position: 'absolute',
+        left: `calc((max(0px, 100% - ${selectWidth}) / 2) + ${selectWidth} - (${arrowWidth}))`,
+        pointerEvents: 'none',
+        height: arrowWidth,
+        width: arrowWidth,
+        fontSize: arrowWidth,
+        bottom: `5px`,
     }
 
     return {
         widthPercentage: 8,
         columnIdentifier: preferredPointerCell,
         content: (
-            <select
-                style={selectStyle}
-                value={preferredPointerCell}
-                onChange={(e) => { setPreferredPointerCell(e.target.value as MobileArticlePointers) }}
-            >
-                <option value="pointer_in_class">Within Type</option>
-                <option value="pointer_overall">Overall</option>
-            </select>
+            <>
+                <select
+                    style={selectStyle}
+                    value={preferredPointerCell}
+                    onChange={(e) => { setPreferredPointerCell(e.target.value as MobileArticlePointers) }}
+                >
+                    <option value="pointer_in_class">Within Type</option>
+                    <option value="pointer_overall">Overall</option>
+                </select>
+                <span style={arrowStyle}>
+                    {'▼\ufe0e'}
+                </span>
+            </>
         ),
         style: {
             textAlign: 'center',
-            direction: 'rtl', // Ensure that the select overflows out the left side, not off the screen on mobile
+            position: 'relative',
         },
     }
 }
