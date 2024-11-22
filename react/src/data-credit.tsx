@@ -1,10 +1,11 @@
 import { MathJax, MathJaxContext } from 'better-react-mathjax'
-import React, { ReactNode, useEffect, useRef } from 'react'
+import React, { ReactNode } from 'react'
 import { FootnoteRef, Footnotes, FootnotesProvider } from 'react-a11y-footnotes'
 import ReactDOM from 'react-dom/client'
 
 import './style.css'
 import './common.css'
+import './data-credit.css'
 import industry_occupation_table from './data/explanation_industry_occupation_table'
 import { useColors } from './page_template/colors'
 import { PageTemplate } from './page_template/template'
@@ -51,20 +52,11 @@ function ExplanationTable(props: { name: string, link: string, table: readonly (
 }
 
 function NRef({ children, name, h: Header = 'h2' }: { children: React.ReactNode, name: string, h?: 'h1' | 'h2' }): ReactNode {
-    const colors = useColors()
-    const ref = useRef<HTMLHeadingElement>(null)
-
-    const highlighted = window.location.hash.substring(1) === `explanation_${name}`
-
-    useEffect(() => {
-        if (highlighted && ref.current !== null) {
-            ref.current.scrollIntoView()
-        }
-    }, [highlighted])
-
-    const style = highlighted ? { backgroundColor: colors.highlight } : {}
-
-    return <Header ref={ref} style={style}>{children}</Header>
+    return (
+        <Header id={`explanation_${name}`}>
+            {children}
+        </Header>
+    )
 }
 
 function DataCreditPanel(): ReactNode {
