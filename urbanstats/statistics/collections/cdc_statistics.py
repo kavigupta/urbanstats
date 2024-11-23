@@ -84,7 +84,7 @@ class CDCStatistics(USAStatistics):
             "SELFCARE_cdc_2": "higher % of adults with a self-care disability",
             "INDEPLIVE_cdc_2": "higher % of adults with an independent living disability",
             "BINGE_cdc_2": "higher % of adults who binge drink",
-            "CSMOKING_cdc_2": "higher % of adults with smoke",
+            "CSMOKING_cdc_2": "higher % of adults who smoke",
             "LPA_cdc_2": "higher % of adults who don't exercise (do leisure-time physical activity)",
             "SLEEP_cdc_2": "higher % of adults who sleep less than 7 hours",
         }
