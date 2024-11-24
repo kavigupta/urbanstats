@@ -325,16 +325,21 @@ def produce_histogram(density_data, population_data):
     return compute_bins(density_data, population_data, bin_size=0.1)
 
 
-def compute_gpw_weighted_for_shape(shape, gridded_statistics, *, do_histograms):
-    glo_pop = load_full_ghs()
+def compute_gpw_weighted_for_shape(
+    shape, glo_pop, gridded_statistics, *, do_histograms
+):
     row_selected, col_selected = lattice_cells_contained(glo_pop, shape)
     pop = glo_pop[row_selected, col_selected]
     result = {}
     hists = {}
-    for name, data in gridded_statistics.items():
+    for name, (data, pop_weight) in gridded_statistics.items():
         data_selected = data[row_selected, col_selected]
-        result[name] = np.nansum(pop * data_selected) / np.nansum(pop)
+        if pop_weight:
+            result[name] = np.nansum(pop * data_selected) / np.nansum(pop)
+        else:
+            result[name] = np.nansum(data_selected)
         if do_histograms:
+            assert pop_weight, "pop_weight is required for histograms"
             hists[name] = produce_histogram(data_selected, pop)
     return result, hists
 
