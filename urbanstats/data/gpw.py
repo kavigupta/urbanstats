@@ -93,9 +93,18 @@ def load_concatenated(prefix, path):
 
 @permacache("urbanstats/data/gpw/load_full_ghs_2")
 def load_full_ghs():
-    gt = GeoTiff(
-        "named_region_shapefiles/gpw/GHS_POP_E2020_GLOBE_R2023A_4326_30ss_V1_0.tif"
-    )
+    path = "named_region_shapefiles/gpw/GHS_POP_E2020_GLOBE_R2023A_4326_30ss_V1_0.tif"
+    return load_ghs_from_path(path)
+
+
+@permacache("urbanstats/data/gpw/load_full_ghs_2015")
+def load_full_ghs_2015():
+    path = "named_region_shapefiles/gpw/GHS_POP_E2015_GLOBE_R2023A_4326_30ss_V1_0.tif"
+    return load_ghs_from_path(path)
+
+
+def load_ghs_from_path(path):
+    gt = GeoTiff(path)
     ghs = np.array(gt.read())
     popu = np.zeros((180 * 120, 360 * 120), dtype=np.float32)
     min_lon, max_lat = gt.get_coords(0, 0)
