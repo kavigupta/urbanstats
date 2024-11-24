@@ -30,7 +30,7 @@ class ElevationHillinessStatistics(GeographicStatistics):
 
     def quiz_question_names(self):
         return {
-            "gridded_elevation": "higher population-weighted mean elevation!TOOLTIP"
+            "gridded_elevation": "higher population-weighted mean elevation !TOOLTIP "
             + POPULATION_WEIGHTED_EXPLANATION,
         }
 
