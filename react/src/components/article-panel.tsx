@@ -48,7 +48,7 @@ export function ArticlePanel({ article }: { article: Article }): ReactNode {
 
     return (
         <StatPathsContext.Provider value={statPaths}>
-            <ArticleComparisonQuerySettingsConnection />
+            <ArticleComparisonQuerySettingsConnection pageKind="article" />
             <PageTemplate screencap_elements={screencap_elements} has_universe_selector={true} universes={article.universes}>
                 <div>
                     <div ref={headers_ref}>

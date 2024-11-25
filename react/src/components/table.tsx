@@ -5,9 +5,10 @@ import { load_ordering } from '../load_json'
 import { article_link, statistic_link } from '../navigation/links'
 import './table.css'
 import { useColors } from '../page_template/colors'
-import { row_expanded_key, useSetting } from '../page_template/settings'
+import { MobileArticlePointers, row_expanded_key, Settings, useSetting } from '../page_template/settings'
 import { useUniverse } from '../universe'
 import { is_historical_cd } from '../utils/is_historical'
+import { isMobileLayout, useMobileLayout } from '../utils/responsive'
 import { display_type } from '../utils/text'
 
 import { ArticleRow } from './load-article'
@@ -44,7 +45,7 @@ interface ColumnLayoutProps {
         columnIdentifier: ColumnIdentifier
         widthPercentage: number
         content: ReactNode
-        textAlign: React.CSSProperties['textAlign']
+        style: CSSProperties
     }[]
     onlyColumns?: string[]
     totalWidth: number
@@ -54,12 +55,12 @@ interface ColumnLayoutProps {
 function ColumnLayout(props: ColumnLayoutProps): JSX.Element[] {
     const cellPercentages: number[] = []
     const cellContents = []
-    for (const { widthPercentage, columnIdentifier, content, textAlign } of props.cells) {
+    for (const { widthPercentage, columnIdentifier, content, style } of props.cells) {
         if (props.onlyColumns && !props.onlyColumns.includes(columnIdentifier)) {
             continue
         }
         cellPercentages.push(widthPercentage)
-        cellContents.push({ content, textAlign })
+        cellContents.push({ content, style })
     }
 
     // normalize cell percentages
@@ -69,8 +70,8 @@ function ColumnLayout(props: ColumnLayoutProps): JSX.Element[] {
     }
 
     const contents = cellContents.map(
-        ({ content, textAlign }, i) => {
-            const sty: React.CSSProperties = { width: `${cellPercentages[i]}%`, padding: '1px', textAlign }
+        ({ content, style }, i) => {
+            const sty: React.CSSProperties = { width: `${cellPercentages[i]}%`, padding: '1px', ...style }
             return (
                 <div key={i} style={sty}>
                     {content}
@@ -91,8 +92,6 @@ export function StatisticHeaderCells(props: { simpleOrdinals: boolean, totalWidt
         textAlign: 'right',
     }
 
-    const screenshotMode = useScreenshotMode()
-
     const cells = [
         {
             columnIdentifier: 'statname',
@@ -102,7 +101,7 @@ export function StatisticHeaderCells(props: { simpleOrdinals: boolean, totalWidt
                     Statistic
                 </span>
             ),
-            textAlign: 'center',
+            style: { textAlign: 'center' },
         },
         {
             columnIdentifier: 'statval',
@@ -112,7 +111,7 @@ export function StatisticHeaderCells(props: { simpleOrdinals: boolean, totalWidt
                     Value
                 </span>
             ),
-            textAlign: 'center',
+            style: { textAlign: 'center' },
         },
         {
             widthPercentage: props.simpleOrdinals ? 7 : 17,
@@ -125,7 +124,7 @@ export function StatisticHeaderCells(props: { simpleOrdinals: boolean, totalWidt
                     }
                 </span>
             ),
-            textAlign: 'center',
+            style: { textAlign: 'center' },
         },
         {
             widthPercentage: props.simpleOrdinals ? 8 : 25,
@@ -137,25 +136,9 @@ export function StatisticHeaderCells(props: { simpleOrdinals: boolean, totalWidt
                     }
                 </span>
             ),
-            textAlign: 'center',
+            style: { textAlign: 'center' },
         },
-        ...(screenshotMode
-            ? []
-            : [
-                {
-                    widthPercentage: 8,
-                    columnIdentifier: 'pointer_in_class',
-                    content: <span className="serif" style={ordinal_style}>Within Type</span>,
-                    textAlign: 'center',
-
-                },
-                {
-                    widthPercentage: 8,
-                    columnIdentifier: 'pointer_overall',
-                    content: <span className="serif" style={ordinal_style}>Overall</span>,
-                    textAlign: 'center',
-                },
-            ] satisfies ColumnLayoutProps['cells']),
+        ...PointerHeaderCells({ ordinal_style }),
     ] satisfies ColumnLayoutProps['cells']
 
     return (
@@ -165,6 +148,89 @@ export function StatisticHeaderCells(props: { simpleOrdinals: boolean, totalWidt
             onlyColumns={props.onlyColumns}
         />
     )
+}
+
+function PointerHeaderCells(props: { ordinal_style: CSSProperties }): ColumnLayoutProps['cells'] {
+    const pointerInClassCell: ColumnLayoutProps['cells'][number] = {
+        widthPercentage: 8,
+        columnIdentifier: 'pointer_in_class',
+        content: <span className="serif" style={props.ordinal_style}>Within Type</span>,
+        style: { textAlign: 'center' },
+
+    }
+    const pointerOverallCell: ColumnLayoutProps['cells'][number] = {
+        widthPercentage: 8,
+        columnIdentifier: 'pointer_overall',
+        content: <span className="serif" style={props.ordinal_style}>Overall</span>,
+        style: { textAlign: 'center' },
+    }
+
+    // Must be outside branch because uses hooks
+    const selectorCell = PointerHeaderSelectorCell()
+
+    const screenshotMode = useScreenshotMode()
+    const singlePointerCell = useSinglePointerCell()
+
+    if (screenshotMode) {
+        return []
+    }
+    else if (singlePointerCell) {
+        return [selectorCell]
+    }
+    else {
+        return [pointerInClassCell, pointerOverallCell]
+    }
+}
+
+function PointerHeaderSelectorCell(): ColumnLayoutProps['cells'][number] {
+    const [preferredPointerCell, setPreferredPointerCell] = useSetting('mobile_article_pointers')
+
+    const selectWidth = 'clamp(45px, 100%, 65px)'
+    const arrowWidth = '12px'
+
+    const selectStyle: CSSProperties = {
+        height: '2lh',
+        whiteSpace: 'wrap',
+        width: selectWidth,
+        textAlign: 'left',
+        appearance: 'none',
+        padding: '0px 1px',
+    }
+
+    const arrowStyle: CSSProperties = {
+        position: 'absolute',
+        left: `calc((max(0px, 100% - ${selectWidth}) / 2) + ${selectWidth} - (${arrowWidth}))`,
+        pointerEvents: 'none',
+        height: arrowWidth,
+        width: arrowWidth,
+        fontSize: arrowWidth,
+        bottom: `5px`,
+    }
+
+    return {
+        widthPercentage: 8,
+        columnIdentifier: preferredPointerCell,
+        content: (
+            <>
+                <select
+                    style={selectStyle}
+                    value={preferredPointerCell}
+                    onChange={(e) => { setPreferredPointerCell(e.target.value as MobileArticlePointers) }}
+                    data-test-id="tablePointerSelect"
+                >
+                    <option value="pointer_in_class">Within Type</option>
+                    <option value="pointer_overall">Overall</option>
+                </select>
+                <span style={arrowStyle}>
+                    {'▼\ufe0e'}
+                </span>
+            </>
+        ),
+        style: {
+            textAlign: 'center',
+            position: 'relative',
+        },
+    }
 }
 
 export function StatisticRowCells(props: {
@@ -185,8 +251,6 @@ export function StatisticRowCells(props: {
         margin: 0,
     }
 
-    const screenshotMode = useScreenshotMode()
-
     const cells = [
         {
             widthPercentage: 31,
@@ -200,7 +264,7 @@ export function StatisticRowCells(props: {
                     />
                 </span>
             ),
-            textAlign: 'left',
+            style: { textAlign: 'left' },
         },
         {
             widthPercentage: 15,
@@ -215,7 +279,7 @@ export function StatisticRowCells(props: {
                     />
                 </span>
             ),
-            textAlign: 'right',
+            style: { textAlign: 'right' },
         },
         {
             widthPercentage: 10,
@@ -231,7 +295,7 @@ export function StatisticRowCells(props: {
                     </span>
                 </div>
             ),
-            textAlign: 'right',
+            style: { textAlign: 'right' },
         },
         {
             widthPercentage: props.simpleOrdinals ? 7 : 17,
@@ -246,7 +310,7 @@ export function StatisticRowCells(props: {
                     />
                 </span>
             ),
-            textAlign: 'right',
+            style: { textAlign: 'right' },
         },
         {
             widthPercentage: props.simpleOrdinals ? 8 : 25,
@@ -263,42 +327,9 @@ export function StatisticRowCells(props: {
                     />
                 </span>
             ),
-            textAlign: 'right',
+            style: { textAlign: 'right' },
         },
-        ...(screenshotMode
-            ? []
-            : [
-                {
-                    widthPercentage: 8,
-                    columnIdentifier: 'pointer_in_class',
-                    content: (
-                        <span key="pointer_in_class" className="serif" style={{ display: 'flex', ...ordinal_style }}>
-                            <PointerButtonsIndex
-                                ordinal={props.row.ordinal}
-                                statpath={props.row.statpath}
-                                type={props.row.articleType}
-                                total={props.row.total_count_in_class}
-                            />
-                        </span>
-                    ),
-                    textAlign: 'right',
-                },
-                {
-                    widthPercentage: 8,
-                    columnIdentifier: 'pointer_overall',
-                    content: (
-                        <span className="serif" style={{ display: 'flex', ...ordinal_style }}>
-                            <PointerButtonsIndex
-                                ordinal={props.row.overallOrdinal}
-                                statpath={props.row.statpath}
-                                type="overall"
-                                total={props.row.total_count_overall}
-                            />
-                        </span>
-                    ),
-                    textAlign: 'right',
-                },
-            ] satisfies ColumnLayoutProps['cells']),
+        ...PointerRowCells({ ordinal_style, row: props.row }),
     ] satisfies ColumnLayoutProps['cells']
 
     return (
@@ -308,6 +339,71 @@ export function StatisticRowCells(props: {
             onlyColumns={props.onlyColumns}
         />
     )
+}
+
+// Reactive and non-reactive versions of the same function
+function useSinglePointerCell(): boolean {
+    const isMobile = useMobileLayout()
+    const [simpleOrdinals] = useSetting('simple_ordinals')
+    return isMobile && !simpleOrdinals
+}
+
+export function isSinglePointerCell(settings: Settings): boolean {
+    return isMobileLayout() && !settings.get('simple_ordinals')
+}
+
+function PointerRowCells(props: { ordinal_style: CSSProperties, row: ArticleRow }): ColumnLayoutProps['cells'] {
+    const screenshotMode = useScreenshotMode()
+
+    const singlePointerCell = useSinglePointerCell()
+    const [preferredPointerCell] = useSetting('mobile_article_pointers')
+
+    const pointerInClassCell: ColumnLayoutProps['cells'][number] = {
+        widthPercentage: 8,
+        columnIdentifier: 'pointer_in_class',
+        content: (
+            <span key="pointer_in_class" className="serif" style={{ display: 'flex', ...props.ordinal_style }}>
+                <PointerButtonsIndex
+                    ordinal={props.row.ordinal}
+                    statpath={props.row.statpath}
+                    type={props.row.articleType}
+                    total={props.row.total_count_in_class}
+                />
+            </span>
+        ),
+        style: { textAlign: 'right' },
+    }
+
+    const pointerOverallCell: ColumnLayoutProps['cells'][number] = {
+        widthPercentage: 8,
+        columnIdentifier: 'pointer_overall',
+        content: (
+            <span className="serif" style={{ display: 'flex', ...props.ordinal_style }}>
+                <PointerButtonsIndex
+                    ordinal={props.row.overallOrdinal}
+                    statpath={props.row.statpath}
+                    type="overall"
+                    total={props.row.total_count_overall}
+                />
+            </span>
+        ),
+        style: { textAlign: 'right' },
+    }
+
+    if (screenshotMode) {
+        return []
+    }
+    else if (singlePointerCell) {
+        switch (preferredPointerCell) {
+            case 'pointer_in_class':
+                return [pointerInClassCell]
+            case 'pointer_overall':
+                return [pointerOverallCell]
+        }
+    }
+    else {
+        return [pointerInClassCell, pointerOverallCell]
+    }
 }
 
 function StatisticName(props: {
