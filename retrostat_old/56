@@ -1,0 +1,107 @@
+[
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Pedestrian/Cyclist Fatalities Per Capita Per Year",
+      "question": "higher pedestrian/cyclist fatalities per capita between 2013 and 2022!TOOLTIP pedestrian and cyclist fatalities in the region, divided by the population of the region",
+      "longname_a": "Mesa city, Arizona, USA",
+      "longname_b": "Chicago city, Illinois, USA",
+      "stat_a": 2.2615547593824766e-05,
+      "stat_b": 1.9238427885226746e-05
+    },
+    "b": {
+      "stat_column": "Population Change (2010-2020)",
+      "question": "higher % increase in population from 2010 to 2020",
+      "longname_a": "Greenville County, South Carolina, USA",
+      "longname_b": "Fayette County, Kentucky, USA",
+      "stat_a": 0.16453676599309067,
+      "stat_b": 0.09048927833727176
+    },
+    "a_ease": 0.31314878892733566,
+    "b_ease": 0.7162079510703364
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Public Insurance %",
+      "question": "higher % of people who are on public insurance",
+      "longname_a": "Irvine city, California, USA",
+      "longname_b": "San Juan zona urbana, Puerto Rico, USA",
+      "stat_a": 0.10021080242994408,
+      "stat_b": 0.33880272602692163
+    },
+    "b": {
+      "stat_column": "2BR Rent < $750 %",
+      "question": "higher % of units with 2br rent under $750",
+      "longname_a": "IL-11, USA",
+      "longname_b": "RI-02, USA",
+      "stat_a": 0.0467798665629426,
+      "stat_b": 0.1532048591063662
+    },
+    "a_ease": 0.6913946587537092,
+    "b_ease": 0.27225519287833827
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Mean high temperature in winter",
+      "question": "higher mean daily high temperature in winter (population weighted)!TOOLTIP Population weighted weather statistics are calculated by computing the weather statistic for each person in the region and then averaging the results.",
+      "longname_a": "Lubbock [Urban Area], TX, USA",
+      "longname_b": "Durham [Urban Area], NC, USA",
+      "stat_a": 59.786980122230304,
+      "stat_b": 54.48665709907521
+    },
+    "b": {
+      "stat_column": "% units built pre-1970",
+      "question": "higher % units built pre-1970",
+      "longname_a": "Las Vegas-Henderson-Paradise [Urban Area], NV, USA",
+      "longname_b": "Bonita Springs-Estero [Urban Area], FL, USA",
+      "stat_a": 0.08141852028291456,
+      "stat_b": 0.04717150195695605
+    },
+    "a_ease": 0.7641291810841984,
+    "b_ease": 0.33710541989279336
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Racial Homogeneity %",
+      "question": "higher racial homogeneity!TOOLTIP We define racial homogeneity as the average probability a person selecing a random person in a 250m radius will select someone of the same race",
+      "longname_a": "Killeen [Urban Area], TX, USA",
+      "longname_b": "Barnstable Town [Urban Area], MA, USA",
+      "stat_a": 0.3036676320605699,
+      "stat_b": 0.7628694879280072
+    },
+    "b": {
+      "stat_column": "Mean distance to nearest Active Superfund Site",
+      "question": "!FULL Which has less exposure to active EPA superfund sites (higher population-weighted mean distance)?!TOOLTIP EPA superfund sites are hazardous waste sites identified by the Environmental Protection Agency.",
+      "longname_a": "Tarrant County, Texas, USA",
+      "longname_b": "Spokane County, Washington, USA",
+      "stat_a": 19.694588047663967,
+      "stat_b": 6.0341711205946815
+    },
+    "a_ease": 0.7779816513761468,
+    "b_ease": 0.37797619047619047
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Vision disability %",
+      "question": "higher % of adults with a vision disability",
+      "longname_a": "Sacramento city, California, USA",
+      "longname_b": "Aurora city, Colorado, USA",
+      "stat_a": 0.05835369165810768,
+      "stat_b": 0.048979292581110355
+    },
+    "b": {
+      "stat_column": "PW Density (r=1km) Change (2000-2020)",
+      "question": "higher % increase in population-weighted density (r=1km) from 2000 to 2020!TOOLTIP Population-weighted density is computed by computing the density within the given radius for each person in the region and then averaging the results. This is a better measure of the density that people actually experience.",
+      "longname_a": "Ottawa County, Michigan, USA",
+      "longname_b": "Nueces County, Texas, USA",
+      "stat_a": 0.08331241753868747,
+      "stat_b": -0.022671898151124463
+    },
+    "a_ease": 0.6345238095238095,
+    "b_ease": 0.22453841572364502
+  }
+]
