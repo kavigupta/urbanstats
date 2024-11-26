@@ -58,10 +58,7 @@ class Shapefile:
             {
                 "shortname": s.apply(self.shortname_extractor, axis=1),
                 "longname": s.apply(self.longname_extractor, axis=1),
-                **{
-                    col: s[col]
-                    for col in self.available_columns
-                },
+                **{col: s[col] for col in self.available_columns},
             },
             geometry=s.geometry,
         )
@@ -101,10 +98,10 @@ class Shapefile:
     @property
     def available_columns(self):
         return [
-                *self.additional_columns_computer,
-                *self.additional_columns_to_keep,
-                *self.subset_mask_keys,
-            ]
+            *self.additional_columns_computer,
+            *self.additional_columns_to_keep,
+            *self.subset_mask_keys,
+        ]
 
 
 def subset_mask_key(subset_name):
