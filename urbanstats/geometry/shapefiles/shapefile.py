@@ -14,6 +14,7 @@ class Shapefile:
     longname_extractor = attr.ib()
     filter = attr.ib()
     meta = attr.ib()
+    additional_columns_computer = attr.ib(default=attr.Factory(dict))
     additional_columns_to_keep = attr.ib(default=())
     drop_dup = attr.ib(default=False)
     chunk_size = attr.ib(default=None)
@@ -51,17 +52,13 @@ class Shapefile:
             raise EmptyShapefileError
         for subset_name, subset in self.subset_masks.items():
             subset.mutate_table(subset_name, s)
+        for k, v in self.additional_columns_computer.items():
+            s[k] = s.apply(v, axis=1)
         s = gpd.GeoDataFrame(
             {
                 "shortname": s.apply(self.shortname_extractor, axis=1),
                 "longname": s.apply(self.longname_extractor, axis=1),
-                **{
-                    col: s[col]
-                    for col in [
-                        *self.additional_columns_to_keep,
-                        *self.subset_mask_keys,
-                    ]
-                },
+                **{col: s[col] for col in self.available_columns},
             },
             geometry=s.geometry,
         )
@@ -97,6 +94,14 @@ class Shapefile:
             subset_name: subset.localized_type_names(self.meta["type"])
             for subset_name, subset in self.subset_masks.items()
         }
+
+    @property
+    def available_columns(self):
+        return [
+            *self.additional_columns_computer,
+            *self.additional_columns_to_keep,
+            *self.subset_mask_keys,
+        ]
 
 
 def subset_mask_key(subset_name):
