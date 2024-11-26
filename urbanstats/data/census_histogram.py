@@ -18,7 +18,7 @@ def census_histogram(shap, year):
 
 
 @permacache(
-    "urbanstats/data/census_histogram_canada",
+    "urbanstats/data/census_histogram_canada_2",
     key_function=dict(shap=lambda x: x.hash_key),
 )
 def census_histogram_canada(shap, year):

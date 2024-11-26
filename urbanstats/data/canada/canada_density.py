@@ -11,7 +11,8 @@ def canada_shapefile_with_densities(year):
     data_db = data_db.copy()
     coords = np.array([data_db.geometry.y, data_db.geometry.x]).T
     for r in RADII:
-        data_db[f"canada_density_{year}_{r}"] = compute_density_for_radius(
-            r, data_db.population, coords
+        data_db[f"canada_density_{year}_{r}"] = (
+            compute_density_for_radius(r, data_db.population, coords)
+            * data_db.population
         )
     return data_db

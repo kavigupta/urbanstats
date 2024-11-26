@@ -56,7 +56,7 @@ def load_canada_data_da():
     return canada
 
 
-@permacache("urbanstats/data/canada/canada_blocks/load_canada_db_shapefile_3")
+@permacache("urbanstats/data/canada/canada_blocks/load_canada_db_shapefile_4")
 def load_canada_db_shapefile(year):
     assert year == 2021
     table_by_block = pd.read_csv(
@@ -83,10 +83,10 @@ def load_canada_db_shapefile(year):
     data_db = data_db.rename(
         columns={"DBtdwell_2021": "total_dwellings", "DBpop_2021": "population"}
     )
-    return data_db.reset_index(drop=True)
+    return data_db.reset_index(drop=True).set_crs("epsg:4326")
 
 
-@permacache("urbanstats/data/canada/load_canada_shapefile_2")
+@permacache("urbanstats/data/canada/load_canada_shapefile_3")
 def load_canada_da_shapefile():
     gdf = gpd.read_file("named_region_shapefiles/canada/lda_000b21a_e.zip")
     data = load_canada_data_da()
@@ -102,4 +102,4 @@ def load_canada_da_shapefile():
         .representative_point()
     )
     data = gpd.GeoDataFrame(data, geometry=intpt)
-    return data.reset_index().rename(columns={"index": "DAUID"})
+    return data.reset_index().rename(columns={"index": "DAUID"}).set_crs("epsg:4326")
