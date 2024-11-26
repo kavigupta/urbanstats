@@ -452,9 +452,10 @@ function RetrostatQuizResultRow(props: QuizResultRowProps & { question: RetroQue
 export function Clickable({ longname }: { longname: string }): ReactNode {
     // return <a href={article_link(longname)}>{longname}</a>
     // same without any link formatting
+    const url = article_link(undefined, longname)
     return (
         <a
-            href={article_link(undefined, longname)}
+            href={url}
             style={{ textDecoration: 'none', color: 'inherit' }}
         >
             {longname}

@@ -5,6 +5,7 @@
 import * as base58 from 'base58-js'
 
 import { defaultSettingsList, RelationshipKey, Settings, SettingsDictionary, StatCategoryExpandedKey, StatCategorySavedIndeterminateKey, useSettings } from './settings'
+import { CategoryIdentifier } from './statistic-tree'
 
 const underflow = Symbol()
 
@@ -388,6 +389,10 @@ const checkOverlap: CheckOverlap = 'no overlap'
 
 export function useVector(): string {
     const settings = useSettings(activeVectorKeys)
+    return toVector(settings)
+}
+
+function toVector(settings: Pick<SettingsDictionary, ElementOf<typeof activeVectorKeys>>): string {
     const booleans = settingsVector.flatMap((coder) => {
         if (coder.deprecated) {
             return coder.encode()
@@ -395,6 +400,12 @@ export function useVector(): string {
         return coder.encode(settings[coder.key] as never)
     })
     return base58.binary_to_base58(compressBooleans(booleans))
+}
+
+export function useSingleCategorySettingsVector(category: CategoryIdentifier): string {
+    const settings = useSettings(activeVectorKeys)
+    
+    return toVector(settings)
 }
 
 export function fromVector(vector: string, settings: Settings): { [K in VectorSettingKey]: SettingsDictionary[K] } {

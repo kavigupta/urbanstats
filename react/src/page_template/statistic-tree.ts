@@ -114,7 +114,7 @@ export const allYears = Array.from(
         .filter(year => year !== null)),
 ).sort(sortYears)
 
-const statParentsList: [StatPath, { group: Group, year: Year | null, source: DataSource | null }][] = allGroups
+const statParentsList: [StatPath, { category: CategoryIdentifier, group: Group, year: Year | null, source: DataSource | null }][] = allGroups
     .flatMap(group => group.contents
         .flatMap(({ year, stats }) => stats
             .flatMap(stat => stat.by_source
