@@ -271,16 +271,16 @@ def just_2020_category(cat_key, cat_name, *col_names, year=2020):
 
 
 population_census = Source("Population", "US Census", is_default=True)
+population_canada = Source("Population", "Canadian Census", is_default=True)
 population_ghsl = Source("Population", "GHSL")
-population_canada = Source("Population", "Canadian Census")
 
 
 def census_basics_with_ghs_and_canada(col_name, gpw_name, canada_name, *, change):
     result = census_basics(col_name, change=change)
     by_source = {
         population_census: col_name,
-        population_ghsl: gpw_name,
         population_canada: canada_name,
+        population_ghsl: gpw_name,
     }
     by_source = {k: v for k, v in by_source.items() if v is not None}
     result[col_name].by_year[2020] = [MultiSource(by_source, col_name)]

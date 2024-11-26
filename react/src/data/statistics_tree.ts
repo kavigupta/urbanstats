@@ -7,11 +7,11 @@ export const dataSources = [
                 is_default: true,
             },
             {
-                source: 'GHSL',
-                is_default: false,
+                source: 'Canadian Census',
+                is_default: true,
             },
             {
-                source: 'Canadian Census',
+                source: 'GHSL',
                 is_default: false,
             },
         ],
@@ -43,16 +43,16 @@ export const rawStatsTree = [
                                     {
                                         source: {
                                             category: 'Population',
-                                            name: 'GHSL',
+                                            name: 'Canadian Census',
                                         },
-                                        column: 95,
+                                        column: 208,
                                     },
                                     {
                                         source: {
                                             category: 'Population',
-                                            name: 'Canadian Census',
+                                            name: 'GHSL',
                                         },
-                                        column: 208,
+                                        column: 95,
                                     },
                                 ],
                             },
@@ -126,16 +126,16 @@ export const rawStatsTree = [
                                     {
                                         source: {
                                             category: 'Population',
-                                            name: 'GHSL',
+                                            name: 'Canadian Census',
                                         },
-                                        column: 96,
+                                        column: 76,
                                     },
                                     {
                                         source: {
                                             category: 'Population',
-                                            name: 'Canadian Census',
+                                            name: 'GHSL',
                                         },
-                                        column: 76,
+                                        column: 96,
                                     },
                                 ],
                             },
@@ -209,16 +209,16 @@ export const rawStatsTree = [
                                     {
                                         source: {
                                             category: 'Population',
-                                            name: 'GHSL',
+                                            name: 'Canadian Census',
                                         },
-                                        column: 94,
+                                        column: 226,
                                     },
                                     {
                                         source: {
                                             category: 'Population',
-                                            name: 'Canadian Census',
+                                            name: 'GHSL',
                                         },
-                                        column: 226,
+                                        column: 94,
                                     },
                                 ],
                             },
@@ -4944,16 +4944,16 @@ export const rawStatsTree = [
                                     {
                                         source: {
                                             category: 'Population',
-                                            name: 'GHSL',
+                                            name: 'Canadian Census',
                                         },
-                                        column: 97,
+                                        column: 77,
                                     },
                                     {
                                         source: {
                                             category: 'Population',
-                                            name: 'Canadian Census',
+                                            name: 'GHSL',
                                         },
-                                        column: 77,
+                                        column: 97,
                                     },
                                 ],
                             },
@@ -5027,16 +5027,16 @@ export const rawStatsTree = [
                                     {
                                         source: {
                                             category: 'Population',
-                                            name: 'GHSL',
+                                            name: 'Canadian Census',
                                         },
-                                        column: 98,
+                                        column: 78,
                                     },
                                     {
                                         source: {
                                             category: 'Population',
-                                            name: 'Canadian Census',
+                                            name: 'GHSL',
                                         },
-                                        column: 78,
+                                        column: 98,
                                     },
                                 ],
                             },
