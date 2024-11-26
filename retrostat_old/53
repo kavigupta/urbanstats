@@ -1,0 +1,107 @@
+[
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "% units built in 2010s+",
+      "question": "higher % units built in 2010s+",
+      "longname_a": "Hartford-West Hartford-East Hartford MSA, CT, USA",
+      "longname_b": "Amarillo MSA, TX, USA",
+      "stat_a": 0.033303089342668714,
+      "stat_b": 0.10048922034378083
+    },
+    "b": {
+      "stat_column": "Chronic kidney disease %",
+      "question": "higher % of adults with chronic kidney disease",
+      "longname_a": "Pittsburgh city, Pennsylvania, USA",
+      "longname_b": "Stockton city, California, USA",
+      "stat_a": 0.02858115308781541,
+      "stat_b": 0.031259298909403835
+    },
+    "a_ease": 0.687089715536105,
+    "b_ease": 0.27188183807439825
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Population [GHS-POP]",
+      "question": "higher population",
+      "longname_a": "Akwa Ibom, Nigeria",
+      "longname_b": "Samut Prakan, Thailand",
+      "stat_a": 6779839.0,
+      "stat_b": 2527649.75
+    },
+    "b": {
+      "stat_column": "Undergrad Humanities %",
+      "question": "!FULL Which has more people with a humanities degree, as a percentage of the overall population?",
+      "longname_a": "San Joaquin County, California, USA",
+      "longname_b": "Fairfax County, Virginia, USA",
+      "stat_a": 0.06266770809645728,
+      "stat_b": 0.17412680529194982
+    },
+    "a_ease": 0.29385964912280704,
+    "b_ease": 0.7210184182015168
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Population Change (2000-2020)",
+      "question": "higher % increase in population from 2000 to 2020",
+      "longname_a": "San Francisco-Oakland-Hayward MSA, CA, USA",
+      "longname_b": "Allentown-Bethlehem-Easton MSA, PA-NJ, USA",
+      "stat_a": 0.15167655309202016,
+      "stat_b": 0.16408131401195858
+    },
+    "b": {
+      "stat_column": "Cancer (excluding skin cancer) %",
+      "question": "higher % of adults with cancer (excluding skin cancer)",
+      "longname_a": "Provo-Orem MSA, UT, USA",
+      "longname_b": "Myrtle Beach-Conway-North Myrtle Beach MSA, SC-NC, USA",
+      "stat_a": 0.04634233391493053,
+      "stat_b": 0.07708267074312648
+    },
+    "a_ease": 0.37473535638673255,
+    "b_ease": 0.7984832069339112
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Population",
+      "question": "higher population",
+      "longname_a": "Boise City MSA, ID, USA",
+      "longname_b": "Deltona-Daytona Beach-Ormond Beach MSA, FL, USA",
+      "stat_a": 764718.0,
+      "stat_b": 668921.0
+    },
+    "b": {
+      "stat_column": "Commute Time < 15 min %",
+      "question": "higher % of people who have commute time under 15 min",
+      "longname_a": "CA-08, USA",
+      "longname_b": "TX-19, USA",
+      "stat_a": 0.1843621413103425,
+      "stat_b": 0.4947474374535641
+    },
+    "a_ease": 0.14247020585048753,
+    "b_ease": 0.6083150984682714
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Sleeping less than 7 hours %",
+      "question": "higher % of adults who sleep less than 7 hours",
+      "longname_a": "Minot-Bismarck-Dickinson ND Media Market, USA",
+      "longname_b": "Mobile AL-Pensacola (Ft. Walton Beach) FL Media Market, USA",
+      "stat_a": 0.2944911468423969,
+      "stat_b": 0.36682983625131343
+    },
+    "b": {
+      "stat_column": "Mean distance to nearest Hospital",
+      "question": "!FULL Which has less access to hospitals (higher population-weighted mean distance)?",
+      "longname_a": "Nebraska, USA",
+      "longname_b": "North Carolina, USA",
+      "stat_a": 6.291040507339889,
+      "stat_b": 8.856705043713212
+    },
+    "a_ease": 0.6083423618634887,
+    "b_ease": 0.1337719298245614
+  }
+]

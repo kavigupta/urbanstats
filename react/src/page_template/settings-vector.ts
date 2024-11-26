@@ -112,6 +112,9 @@ const HistogramTypeSettingCoder = new BitmapCoder(2, [
 
 const TemperatureUnitCoder = new BitmapCoder(1, ['fahrenheit', 'celsius'])
 
+// Too many bits for expansion
+const MobileArticlePointersCoder = new BitmapCoder(2, ['pointer_in_class', 'pointer_overall'])
+
 /**
  * DO NOT REORDER, ONLY ADD
  *
@@ -360,6 +363,7 @@ const settingsVector = [
     new ActiveSetting({ key: 'temperature_unit', coder: TemperatureUnitCoder }),
     new ActiveSetting({ key: 'show_stat_group_gridded_elevation', coder: BooleanSettingCoder }),
     new ActiveSetting({ key: 'show_stat_group_gridded_hilliness', coder: BooleanSettingCoder }),
+    new ActiveSetting({ key: 'mobile_article_pointers', coder: MobileArticlePointersCoder }),
     new ActiveSetting({ key: 'show_stat_source_Population_Canadian Census', coder: BooleanSettingCoder }),
     new ActiveSetting({ key: 'expanded__density_2021_pw_0.25_canada', coder: BooleanSettingCoder }),
     new ActiveSetting({ key: 'expanded__density_2021_pw_0.5_canada', coder: BooleanSettingCoder }),
