@@ -12,6 +12,10 @@ def county_name(row):
     return f
 
 
+def compute_geoid(row):
+    return row.STATEFP + row.COUNTYFP
+
+
 COUNTIES = Shapefile(
     hash_key="census_counties_7",
     path="named_region_shapefiles/cb_2022_us_county_500k.zip",
@@ -20,6 +24,7 @@ COUNTIES = Shapefile(
     + ", "
     + us.states.lookup(x["STATEFP"]).name
     + ", USA",
+    additional_columns_computer={"geoid": compute_geoid},
     filter=lambda x: True,
     meta=dict(type="County", source="Census", type_category="US Subdivision"),
     universe_provider=us_domestic_provider(),

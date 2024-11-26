@@ -113,6 +113,9 @@ const HistogramTypeSettingCoder = new BitmapCoder(2, [
 
 const TemperatureUnitCoder = new BitmapCoder(1, ['fahrenheit', 'celsius'])
 
+// Too many bits for expansion
+const MobileArticlePointersCoder = new BitmapCoder(2, ['pointer_in_class', 'pointer_overall'])
+
 /**
  * DO NOT REORDER, ONLY ADD
  *
@@ -361,6 +364,7 @@ const settingsVector = [
     new ActiveSetting({ key: 'temperature_unit', coder: TemperatureUnitCoder }),
     new ActiveSetting({ key: 'show_stat_group_gridded_elevation', coder: BooleanSettingCoder }),
     new ActiveSetting({ key: 'show_stat_group_gridded_hilliness', coder: BooleanSettingCoder }),
+    new ActiveSetting({ key: 'mobile_article_pointers', coder: MobileArticlePointersCoder }),
 // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Necessary use of any
 ] satisfies (ActiveSetting<any> | DeprecatedSetting<string>)[]
 

@@ -50,6 +50,7 @@ export function PageTemplate({
         document.documentElement.style.setProperty('--text-main', colors.textMain)
         document.documentElement.style.setProperty('--ordinal-text-color', colors.ordinalTextColor)
         document.documentElement.style.setProperty('--background', colors.background)
+        document.documentElement.style.setProperty('--highlight', colors.highlight)
     }, [colors, juxtaColors])
 
     useEffect(() => {
@@ -131,11 +132,11 @@ function TemplateFooter(): ReactNode {
 }
 
 function Version(): ReactNode {
-    return <span id="current-version">21.0.0</span>
+    return <span id="current-version">21.1.0</span>
 }
 
 function LastUpdated(): ReactNode {
-    return <span id="last-updated">2024-11-19</span>
+    return <span id="last-updated">2024-11-21</span>
 }
 
 function MainCredits(): ReactNode {
