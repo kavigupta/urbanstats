@@ -272,16 +272,18 @@ def just_2020_category(cat_key, cat_name, *col_names, year=2020):
 
 population_census = Source("Population", "US Census", is_default=True)
 population_ghsl = Source("Population", "GHSL")
+population_canada = Source("Population", "Canadian Census")
 
 
-def census_basics_with_ghs(col_name, gpw_name, *, change):
+def census_basics_with_ghs_and_canada(col_name, gpw_name, canada_name, *, change):
     result = census_basics(col_name, change=change)
-    result[col_name].by_year[2020] = [
-        MultiSource(
-            {population_census: col_name, population_ghsl: gpw_name},
-            col_name,
-        )
-    ]
+    by_source = {
+        population_census: col_name,
+        population_ghsl: gpw_name,
+        population_canada: canada_name,
+    }
+    by_source = {k: v for k, v in by_source.items() if v is not None}
+    result[col_name].by_year[2020] = [MultiSource(by_source, col_name)]
     result[col_name].group_name_statcol = col_name
     return result
 
@@ -291,9 +293,18 @@ statistics_tree = StatisticTree(
         "main": StatisticCategory(
             name="Main",
             contents={
-                **census_basics_with_ghs("population", "gpw_population", change=True),
-                **census_basics_with_ghs("ad_1", "gpw_pw_density_1", change=True),
-                **census_basics_with_ghs("sd", "gpw_aw_density", change=False),
+                **census_basics_with_ghs_and_canada(
+                    "population",
+                    "gpw_population",
+                    "population_2021_canada",
+                    change=True,
+                ),
+                **census_basics_with_ghs_and_canada(
+                    "ad_1", "gpw_pw_density_1", "density_2021_pw_1_canada", change=True
+                ),
+                **census_basics_with_ghs_and_canada(
+                    "sd", "gpw_aw_density", "sd_2021_canada", change=False
+                ),
                 "area": StatisticGroup({None: [single_source("area")]}),
                 "compactness": StatisticGroup({None: [single_source("compactness")]}),
             },
@@ -572,10 +583,18 @@ statistics_tree = StatisticTree(
         "other_densities": StatisticCategory(
             name="Other Density Metrics",
             contents={
-                **census_basics("ad_0.25", change=True),
-                **census_basics("ad_0.5", change=True),
-                **census_basics_with_ghs("ad_2", "gpw_pw_density_2", change=True),
-                **census_basics_with_ghs("ad_4", "gpw_pw_density_4", change=True),
+                **census_basics_with_ghs_and_canada(
+                    "ad_0.25", None, "density_2021_pw_0.25_canada", change=True
+                ),
+                **census_basics_with_ghs_and_canada(
+                    "ad_0.5", None, "density_2021_pw_0.5_canada", change=True
+                ),
+                **census_basics_with_ghs_and_canada(
+                    "ad_2", "gpw_pw_density_2", "density_2021_pw_2_canada", change=True
+                ),
+                **census_basics_with_ghs_and_canada(
+                    "ad_4", "gpw_pw_density_4", "density_2021_pw_4_canada", change=True
+                ),
             },
         ),
     }

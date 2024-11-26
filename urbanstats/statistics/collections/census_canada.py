@@ -68,9 +68,9 @@ class CensusCanada(CanadaStatistics):
     def extra_stats(self):
         return {
             f"density_2021_pw_{r}_canada": HistogramSpec(
-                0, 0.1, f"canada_density_2021_{d}", "population_canada"
+                0, 0.1, f"pw_density_histogram_{r}_canada", "population_2021_canada"
             )
-            for d in RADII
+            for r in RADII
         }
 
 
