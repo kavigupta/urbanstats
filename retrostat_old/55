@@ -1,0 +1,107 @@
+[
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Citizen by Naturalization %",
+      "question": "higher % of residents who are citizens by naturalization",
+      "longname_a": "Toledo city, Ohio, USA",
+      "longname_b": "Minneapolis city, Minnesota, USA",
+      "stat_a": 0.01689219619568205,
+      "stat_b": 0.07859728858056256
+    },
+    "b": {
+      "stat_column": "Racial Homogeneity Change (2000-2020) %",
+      "question": "higher increase (or smaller decrease) in racial homogeneity from 2000 to 2020!TOOLTIP We define racial homogeneity as the average probability a person selecing a random person in a 250m radius will select someone of the same race",
+      "longname_a": "California, USA",
+      "longname_b": "Virginia, USA",
+      "stat_a": -0.058674642042988334,
+      "stat_b": -0.1426082674633975
+    },
+    "a_ease": 0.7744599745870394,
+    "b_ease": 0.36149936467598476
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Population",
+      "question": "higher population",
+      "longname_a": "Summit County, Ohio, USA",
+      "longname_b": "Wake County, North Carolina, USA",
+      "stat_a": 540428.0,
+      "stat_b": 1129410.0
+    },
+    "b": {
+      "stat_column": "Racial Homogeneity Change (2010-2020) %",
+      "question": "increase in racial homogeneity from 2010 to 2020!TOOLTIP We define racial homogeneity as the average probability a person selecing a random person in a 250m radius will select someone of the same race",
+      "longname_a": "Lancaster-Manheim [Urban Area], PA, USA",
+      "longname_b": "Trenton [Urban Area], NJ, USA",
+      "stat_a": -0.07935561820476245,
+      "stat_b": -0.06826174176869693
+    },
+    "a_ease": 0.7846645367412141,
+    "b_ease": 0.3840255591054313
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Commute Time > 60 min %",
+      "question": "higher % of people who have commute time over 60 min",
+      "longname_a": "Temecula-Murrieta-Menifee [Urban Area], CA, USA",
+      "longname_b": "San Antonio [Urban Area], TX, USA",
+      "stat_a": 0.27588411689327386,
+      "stat_b": 0.05737374582040312
+    },
+    "b": {
+      "stat_column": "Mean high temp",
+      "question": "higher mean daily high temperature (population weighted)!TOOLTIP Population weighted weather statistics are calculated by computing the weather statistic for each person in the region and then averaging the results.",
+      "longname_a": "Southeastern Connecticut Planning Region, Connecticut, USA",
+      "longname_b": "St. Louis city-County, Missouri, USA",
+      "stat_a": 58.973302018306036,
+      "stat_b": 66.54697637336623
+    },
+    "a_ease": 0.49012279765082756,
+    "b_ease": 0.9034307496823379
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Housing Units per Adult",
+      "question": "higher number of housing units per adult",
+      "longname_a": "Asheville MSA, NC, USA",
+      "longname_b": "Sacramento--Roseville--Arden-Arcade MSA, CA, USA",
+      "stat_a": 0.6039417770383391,
+      "stat_b": 0.5031133935531202
+    },
+    "b": {
+      "stat_column": "PW Density (r=4km) [GHS-POP]",
+      "question": "higher population-weighted density (r=4km)!TOOLTIP Population-weighted density is computed by computing the density within the given radius for each person in the region and then averaging the results. This is a better measure of the density that people actually experience.",
+      "longname_a": "Qingdao Urban Center, China",
+      "longname_b": "Tijuana Urban Center, Mexico-USA",
+      "stat_a": 12843.4345703125,
+      "stat_b": 2966.369384765625
+    },
+    "a_ease": 0.5067567567567568,
+    "b_ease": 0.9105431309904153
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Utility gas heating %",
+      "question": "!FULL Which has a larger % of homes heated using utility gas?",
+      "longname_a": "Vermont, USA",
+      "longname_b": "West Virginia, USA",
+      "stat_a": 0.18090098727347115,
+      "stat_b": 0.40960096532315726
+    },
+    "b": {
+      "stat_column": "Commute Car %",
+      "question": "higher % of people who commute by car",
+      "longname_a": "California, USA",
+      "longname_b": "New York, USA",
+      "stat_a": 0.7995851789912214,
+      "stat_b": 0.5831334616530466
+    },
+    "a_ease": 0.4835164835164835,
+    "b_ease": 0.9162506932889628
+  }
+]

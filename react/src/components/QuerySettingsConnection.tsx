@@ -7,6 +7,8 @@ import { fromVector, useVector, VectorSettingKey } from '../page_template/settin
 import { groupYearKeys, statIsEnabled, useAvailableGroups, useAvailableYears, useDataSourceCheckboxes, useStatPathsAll } from '../page_template/statistic-settings'
 import { findAmbiguousSourcesAll, StatPath } from '../page_template/statistic-tree'
 
+import { isSinglePointerCell } from './table'
+
 /**
  * - Query Params -> Settings
  *   Reads specified settings keys from the query params, filling in any blanks with current settings.
@@ -86,7 +88,7 @@ export function QuerySettingsConnection({ stagedSettingsKeys, applySettingsKeys 
 // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- No non-histogram extras yet
 export const statPathsWithHistogram = extra_stats.filter(([,{ type }]) => type === 'histogram').map(([index]) => stat_path_list[index])
 
-export function ArticleComparisonQuerySettingsConnection(): ReactNode {
+export function ArticleComparisonQuerySettingsConnection({ pageKind }: { pageKind: 'article' | 'comparison' }): ReactNode {
     const stagedSettingsKeys = [
         'use_imperial',
         'show_historical_cds',
@@ -102,10 +104,14 @@ export function ArticleComparisonQuerySettingsConnection(): ReactNode {
         'temperature_unit',
     ] as const
 
+    const settings = useContext(Settings.Context)
+
     const applySettingsKeys = (visibleStatPaths: StatPath[]): typeof result => {
+        const singlePointerCell = isSinglePointerCell(settings)
         const result = [
             ...statPathsWithExtra.filter(path => visibleStatPaths.includes(path)).map(path => `expanded__${path}` as const),
             ...(statPathsWithHistogram.some(path => visibleStatPaths.includes(path)) ? ['histogram_relative', 'histogram_type'] as const : []),
+            ...(pageKind === 'article' && singlePointerCell ? ['mobile_article_pointers'] as const : []),
         ] as const
         return result
     }

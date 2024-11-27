@@ -10,7 +10,7 @@ import tqdm.auto as tqdm
 from permacache import permacache, stable_hash
 
 from urbanstats.data.census_blocks import load_raw_census
-from urbanstats.data.gpw import compute_gpw_weighted_for_shape
+from urbanstats.data.gpw import compute_gpw_weighted_for_shape, load_full_ghs
 from urbanstats.data.nasa import get_nasa_data
 from urbanstats.geometry.census_aggregation import aggregate_by_census_block
 
@@ -231,8 +231,9 @@ def elevation_statistics_for_american_shapefile(sf):
 )
 def elevation_statistics_for_shape(shape):
     return compute_gpw_weighted_for_shape(
+        load_full_ghs(),
         shape,
-        {"elevation": full_elevation(), "hilliness": full_hilliness()},
+        {"elevation": (full_elevation(), True), "hilliness": (full_hilliness(), True)},
         do_histograms=False,
     )
 
