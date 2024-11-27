@@ -97,7 +97,9 @@ export default tseslint.config(
             'no-restricted-syntax': [
                 'error', 
                 'ExportNamedDeclaration:not([declaration])', 
-                'MemberExpression[object.name=location][property.name=reload]'
+                'MemberExpression[object.name=location][property.name=reload]',
+                'MemberExpression[property.name=replaceState]',
+                'MemberExpression[property.name=pushState]'
             ],
             'react/prop-types': 'off',
             'no-shadow': 'error',

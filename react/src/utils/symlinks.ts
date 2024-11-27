@@ -1,18 +1,12 @@
 import SYMLINKS from '../data/symlinks'
 
-export function followSymlink(name: string): [string, boolean] {
+export function followSymlink(name: string): string {
     if (name in SYMLINKS) {
-        return [SYMLINKS[name], true]
+        return SYMLINKS[name]
     }
-    return [name, false]
+    return name
 }
 
-export function followSymlinks(names: string[]): [string[], boolean] {
-    let changed = false
-    const result = names.map((name) => {
-        const [newName, didChange] = followSymlink(name)
-        changed = changed || didChange
-        return newName
-    })
-    return [result, changed]
+export function followSymlinks(names: string[]): string[] {
+    return names.map(name => followSymlink(name))
 }

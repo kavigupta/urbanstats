@@ -4,6 +4,7 @@ import { ArticlePanel } from '../components/article-panel'
 import { loadProtobuf } from '../load_json'
 import { default_article_universe, UNIVERSE_CONTEXT } from '../universe'
 import { Article } from '../utils/protos'
+import { followSymlink } from '../utils/symlinks'
 
 import { data_link } from './links'
 
@@ -51,7 +52,7 @@ function pageDescriptorFromURL(url: URL): PageDescriptor {
                 throw new Error('missing param longname')
             }
             const universe = url.searchParams.get('universe')
-            return { kind: 'article', longname, universe }
+            return { kind: 'article', longname: followSymlink(longname), universe }
         default:
             throw new Error('404 not found')
     }
@@ -116,6 +117,7 @@ export function Navigator(): ReactNode {
             return { state: 'notFound', error }
         }
         const url = urlFromPageDescriptor(descriptor) // Since we may want to do a redirect
+        // eslint-disable-next-line no-restricted-syntax -- Core navigation functions
         history.replaceState(descriptor, '', url)
         return { state: 'loading', to: { descriptor } }
     })
@@ -131,6 +133,7 @@ export function Navigator(): ReactNode {
                 loadPageDescriptor(state.to.descriptor).then(({ pageData, newPageDescriptor }) => {
                     setState((currentState) => {
                         if (currentState.state === 'loading' && currentState.to.descriptor === state.to.descriptor) {
+                            // eslint-disable-next-line no-restricted-syntax -- Core navigation functions
                             history.replaceState(newPageDescriptor, '', urlFromPageDescriptor(newPageDescriptor))
                             return { state: 'loaded', descriptor: newPageDescriptor, data: pageData }
                         }
@@ -163,9 +166,11 @@ export function Navigator(): ReactNode {
                     const from = toFromField(currentState)
                     switch (kind) {
                         case 'push':
+                            // eslint-disable-next-line no-restricted-syntax -- Core navigation functions
                             history.pushState(newDescriptor, '', urlFromPageDescriptor(newDescriptor))
                             break
                         case 'replace':
+                            // eslint-disable-next-line no-restricted-syntax -- Core navigation functions
                             history.replaceState(newDescriptor, '', urlFromPageDescriptor(newDescriptor))
                             break
                     }
