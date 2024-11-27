@@ -1,4 +1,5 @@
 import React, { createContext, ReactNode, useEffect, useMemo, useState } from 'react'
+import { z } from 'zod'
 
 import { ArticlePanel } from '../components/article-panel'
 import { ComparisonPanel } from '../components/comparison-panel'
@@ -10,16 +11,18 @@ import { followSymlink, followSymlinks } from '../utils/symlinks'
 
 import { data_link } from './links'
 
-export type PageDescriptor = {
-    kind: 'article'
-    longname: string
-    universe: string | null
-}
-| {
-    kind: 'comparison'
-    longnames: string[]
-    universe: string | null
-}
+const articleSchema = z.object({
+    longname: z.string().transform(followSymlink),
+    universe: z.nullable(z.string()),
+})
+
+const comparisonSchema = z.object({
+    longnames: z.preprocess(value => JSON.parse(value as string), z.array(z.string())).transform(followSymlinks),
+    universe: z.nullable(z.string()),
+})
+
+export type PageDescriptor = ({ kind: 'article' } & z.infer<typeof articleSchema>)
+    | ({ kind: 'comparison' } & z.infer<typeof comparisonSchema>)
 
 type PageData =
     { kind: 'article', article: Article, universe: string }
@@ -51,21 +54,12 @@ function toFromField(navigationState: NavigationState): { descriptor: PageDescri
 }
 
 function pageDescriptorFromURL(url: URL): PageDescriptor {
-    const universe = url.searchParams.get('universe')
+    const params = Object.fromEntries(url.searchParams.entries())
     switch (url.pathname) {
         case '/article.html':
-            const longname = url.searchParams.get('longname')
-            if (longname === null) {
-                throw new Error('missing param longname')
-            }
-            return { kind: 'article', longname: followSymlink(longname), universe }
+            return { kind: 'article', ...articleSchema.parse(params) }
         case '/comparison.html':
-            const longnames = url.searchParams.get('longnames')
-            if (longnames === null) {
-                throw new Error('missing param longnames')
-            }
-            const names = followSymlinks(JSON.parse(longnames) as string[])
-            return { kind: 'comparison', longnames: names, universe }
+            return { kind: 'comparison', ...comparisonSchema.parse(params) }
         default:
             throw new Error('404 not found')
     }
