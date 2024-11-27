@@ -1,10 +1,36 @@
-import React, { createContext, DependencyList, ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import React, { createContext, ReactNode, useEffect, useMemo, useState } from 'react'
 
 import { ArticlePanel } from '../components/article-panel'
 import { UNIVERSE_CONTEXT } from '../universe'
 import { Article } from '../utils/protos'
 
-export type PageDescriptor = { kind: 'error', error: Error } | { kind: 'article', longname: string, settings?: string } | { kind: 'comparison', longnames: string[], settings?: string }
+export type PageDescriptor = { kind: 'article', longname: string, settings?: string } | { kind: 'comparison', longnames: string[], settings?: string }
+interface PageData { kind: 'article', article: Article, universe: string }
+
+type NavigationState = { state: 'notFound', error: unknown }
+    | {
+        state: 'loading'
+        from?: { descriptor: PageDescriptor, data: PageData }
+        to: { descriptor: PageDescriptor }
+    }
+    | { state: 'loaded', descriptor: PageDescriptor, data: PageData }
+    | {
+        state: 'errorLoading'
+        error: unknown
+        from?: { descriptor: PageDescriptor, data: PageData }
+        to: { descriptor: PageDescriptor }
+    }
+
+function toFromField(navigationState: NavigationState): { descriptor: PageDescriptor, data: PageData } | undefined {
+    switch (navigationState.state) {
+        case 'notFound':
+            return undefined
+        case 'loaded':
+            return navigationState
+        default:
+            return navigationState.from
+    }
+}
 
 function pageDescriptorFromURL(url: URL): PageDescriptor {
     switch (url.pathname) {
@@ -15,7 +41,7 @@ function pageDescriptorFromURL(url: URL): PageDescriptor {
             }
             return { kind: 'article', longname }
         default:
-            return { kind: 'error', error: new Error('404 not found') }
+            throw new Error('404 not found')
     }
 }
 
@@ -37,36 +63,61 @@ function urlFromPageDescriptor(pageDescriptor: PageDescriptor): URL {
 }
 
 // Must not throw an error, should return errors as error PageData
-async function loadPageDescriptor(descriptor: PageDescriptor): Promise<{ data: PageData, updatedDescriptor: PageDescriptor }> {
-    try {
-        throw new Error('not implemented')
-    }
-    catch (error) {
-        return { data: { kind: 'error', error }, updatedDescriptor: descriptor }
-    }
+//
+// Since setting the descriptor causes this function to be called, you'll probably want to avoid infinite loops
+async function loadPageDescriptor(descriptor: PageDescriptor): Promise<{ pageData: PageData, newPageDescriptor: PageDescriptor }> {
+    throw new Error('not implemented')
 }
 
-type PageData = { kind: 'article', article: Article, universe: string } | { kind: 'error', error: unknown }
-
 export function Navigator(): ReactNode {
-    const [descriptor, setDescriptor] = useState<PageDescriptor>(() => {
-        const result = pageDescriptorFromURL(new URL(window.location.href))
-        const url = urlFromPageDescriptor(result) // Since we may want to do a redirect
-        history.replaceState(result, '', url)
-        return result
+    const [state, setState] = useState<NavigationState>(() => {
+        let descriptor: PageDescriptor
+        try {
+            descriptor = pageDescriptorFromURL(new URL(window.location.href))
+        }
+        catch (error) {
+            return { state: 'notFound', error }
+        }
+        const url = urlFromPageDescriptor(descriptor) // Since we may want to do a redirect
+        history.replaceState(descriptor, '', url)
+        return { state: 'loading', to: { descriptor } }
     })
 
     useEffect(() => {
-        const listener = (state: PopStateEvent): void => {
-            setDescriptor(state.state as PageDescriptor)
+        // Load if necessary
+        // We should only update the state if our navigation is most recent, to avoid races
+        switch (state.state) {
+            case 'notFound':
+            case 'loaded':
+                return
+            case 'loading':
+                loadPageDescriptor(state.to.descriptor).then(({ pageData, newPageDescriptor }) => {
+                    setState((currentState) => {
+                        if (currentState.state === 'loading' && currentState.to.descriptor === state.to.descriptor) {
+                            history.replaceState(newPageDescriptor, '', urlFromPageDescriptor(newPageDescriptor))
+                            return { state: 'loaded', descriptor: newPageDescriptor, data: pageData }
+                        }
+                        return currentState
+                    })
+                }, (error) => {
+                    setState((currentState) => {
+                        if (currentState.state === 'loading' && currentState.to.descriptor === state.to.descriptor) {
+                            return { state: 'errorLoading', error, from: currentState.from, to: currentState.to }
+                        }
+                        return currentState
+                    })
+                })
+        }
+    }, [state])
+
+    useEffect(() => {
+        // Hook into the browser back/forward buttons
+        const listener = (popStateEvent: PopStateEvent): void => {
+            setState(currentState => ({ state: 'loading', from: toFromField(currentState), to: { descriptor: popStateEvent.state as PageDescriptor } }))
         }
         window.addEventListener('popstate', listener)
         return () => { window.removeEventListener('popstate', listener) }
     }, [])
-
-    const state = useAsyncLoad<PageData>(async () => {
-        return await loadPageDescriptor(descriptor)
-    }, [descriptor])
 
     const navContext = useMemo<NavigationContext>(() => {
         return {
@@ -79,46 +130,37 @@ export function Navigator(): ReactNode {
                         history.replaceState(newDescriptor, '', urlFromPageDescriptor(newDescriptor))
                         break
                 }
-                setDescriptor(newDescriptor)
+                setState(currentState => ({ state: 'loading', from: toFromField(currentState), to: { descriptor: newDescriptor } }))
             },
         }
     }, [])
 
     switch (state.state) {
-        case 'loaded':
-        case 'transitioning':
+        case 'notFound':
+            return <ErrorScreen error="Not Found" />
+        case 'loading':
             return (
                 <navigationContext.Provider value={navContext}>
-                    <PageRouter pageData={state.thing} />
+                    {state.from !== undefined ? <PageRouter pageData={state.from.data} /> : null}
+                    <LoadingScreen />
+                </navigationContext.Provider>
+            )
+        case 'loaded':
+            return (
+                <navigationContext.Provider value={navContext}>
+                    <PageRouter pageData={state.data} />
                 </navigationContext.Provider>
             )
         case 'loading':
             return <LoadingScreen />
+        case 'errorLoading':
+            return (
+                <navigationContext.Provider value={navContext}>
+                    {state.from !== undefined ? <PageRouter pageData={state.from.data} /> : null}
+                    <ErrorScreen error={state.error} />
+                </navigationContext.Provider>
+            )
     }
-}
-
-type AsyncLoadState<T> = { state: 'loading' } | { state: 'loaded', thing: T } | { state: 'transitioning', thing: T }
-
-function useAsyncLoad<T>(loadThing: () => Promise<T>, deps: DependencyList): AsyncLoadState<T> {
-    const [state, setState] = useState<AsyncLoadState<T>>({ state: 'loading' })
-    const loadIteration = useRef(0)
-
-    if (useCallback(loadThing, deps) === loadThing) {
-        if (state.state === 'loaded') {
-            setState({ state: 'transitioning', thing: state.thing })
-        }
-        // Deps have changed, so we should load the thing
-        loadIteration.current++
-        const thisIteration = loadIteration.current
-        loadThing().then((newThing) => {
-            if (loadIteration.current === thisIteration) {
-                // want to avoid loading races
-                setState({ state: 'loaded', thing: newThing })
-            }
-        }).catch(() => { throw new Error('Async loader should not throw errors') })
-    }
-
-    return state
 }
 
 function LoadingScreen(): ReactNode {
@@ -152,7 +194,5 @@ function PageRouter({ pageData }: { pageData: PageData }): ReactNode {
                     <ArticlePanel article={pageData.article} />
                 </UNIVERSE_CONTEXT.Provider>
             )
-        case 'error':
-            return <ErrorScreen error={pageData.error} />
     }
 }
