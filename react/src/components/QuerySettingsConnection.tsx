@@ -70,7 +70,7 @@ export function QuerySettingsConnection({ stagedSettingsKeys, applySettingsKeys 
         const url = new URL(window.location.toString())
         url.searchParams.set('s', settingsVector)
         if (url.searchParams.toString() !== window.location.search) {
-            history.replaceState(null, '', url)
+            history.replaceState(history.state, '', url)
         }
 
         // If we're in staged mode, our monitored settings are the same as persisted, exit staged mode
