@@ -1,7 +1,7 @@
 import '../common.css'
 import './article.css'
 
-import React, { ReactNode, useRef } from 'react'
+import React, { ReactNode, useEffect, useRef } from 'react'
 
 import { article_link, sanitize } from '../navigation/links'
 import { HueColors, useColors } from '../page_template/colors'
@@ -26,13 +26,16 @@ const left_bar_margin = 0.02
 const left_margin_pct = 0.18
 const bar_height = '5px'
 
-export function ComparisonPanel(props: { joined_string: string, universes: string[], names: string[], articles: Article[] }): ReactNode {
+export function ComparisonPanel(props: { universes: string[], articles: Article[] }): ReactNode {
     const colors = useColors()
     const table_ref = useRef<HTMLDivElement>(null)
     const map_ref = useRef(null)
 
+    const joined_string = props.articles.map(x => x.shortname).join(' vs ')
+    const names = props.articles.map(a => a.longname)
+
     const screencap_elements = (): ScreencapElements => ({
-        path: `${sanitize(props.joined_string)}.png`,
+        path: `${sanitize(joined_string)}.png`,
         overall_width: table_ref.current!.offsetWidth * 2,
         elements_to_render: [table_ref.current!, map_ref.current!],
     })
@@ -110,13 +113,17 @@ export function ComparisonPanel(props: { joined_string: string, universes: strin
 
     const { rows, statPaths } = load_articles(props.articles, curr_universe, settings)
 
+    useEffect(() => {
+        document.title = joined_string
+    }, [props.articles])
+
     return (
         <StatPathsContext.Provider value={statPaths}>
             <ArticleComparisonQuerySettingsConnection pageKind="comparison" />
             <PageTemplate screencap_elements={screencap_elements} has_universe_selector={true} universes={props.universes}>
                 <div>
                     <div className={headerTextClass}>Comparison</div>
-                    <div className={subHeaderTextClass}>{props.joined_string}</div>
+                    <div className={subHeaderTextClass}>{joined_string}</div>
                     <div style={{ marginBlockEnd: '16px' }}></div>
 
                     <div style={{ display: 'flex' }}>
@@ -128,7 +135,7 @@ export function ComparisonPanel(props: { joined_string: string, universes: strin
                             <SearchBox
                                 style={{ ...searchComparisonStyle, width: '100%' }}
                                 placeholder="Name"
-                                on_change={(x) => { add_new(props.names, x) }}
+                                on_change={(x) => { add_new(names, x) }}
                                 autoFocus={false}
                             />
                         </div>
@@ -147,8 +154,8 @@ export function ComparisonPanel(props: { joined_string: string, universes: strin
                                             <HeadingDisplay
                                                 longname={data.longname}
                                                 include_delete={props.articles.length > 1}
-                                                on_click={() => { on_delete(props.names, i) }}
-                                                on_change={(x) => { on_change(props.names, i, x) }}
+                                                on_click={() => { on_delete(names, i) }}
+                                                on_change={(x) => { on_change(names, i, x) }}
                                             />
                                         </div>,
                                     ),
@@ -167,7 +174,7 @@ export function ComparisonPanel(props: { joined_string: string, universes: strin
                                         index={row_idx}
                                         rows={rows.map(row => row[row_idx])}
                                         articles={props.articles}
-                                        names={props.names}
+                                        names={names}
                                         onlyColumns={onlyColumns}
                                     />
                                 ),

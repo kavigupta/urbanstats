@@ -4,7 +4,6 @@ import ReactDOM from 'react-dom/client'
 import './style.css'
 import './common.css'
 
-import { discordFix } from './discord-fix'
 import { Navigator } from './navigation/navigator'
 
 function loadPage(): void {
@@ -14,5 +13,4 @@ function loadPage(): void {
     )
 }
 
-discordFix()
 loadPage()

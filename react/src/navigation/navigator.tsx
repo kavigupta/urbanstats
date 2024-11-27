@@ -1,10 +1,12 @@
 import React, { createContext, ReactNode, useEffect, useMemo, useState } from 'react'
 
 import { ArticlePanel } from '../components/article-panel'
+import { ComparisonPanel } from '../components/comparison-panel'
+import { discordFix } from '../discord-fix'
 import { loadProtobuf } from '../load_json'
-import { default_article_universe, UNIVERSE_CONTEXT } from '../universe'
+import { default_article_universe, default_comparison_universe, UNIVERSE_CONTEXT } from '../universe'
 import { Article } from '../utils/protos'
-import { followSymlink } from '../utils/symlinks'
+import { followSymlink, followSymlinks } from '../utils/symlinks'
 
 import { data_link } from './links'
 
@@ -16,8 +18,12 @@ export type PageDescriptor = {
 | {
     kind: 'comparison'
     longnames: string[]
+    universe: string | null
 }
-interface PageData { kind: 'article', article: Article, universe: string }
+
+type PageData =
+    { kind: 'article', article: Article, universe: string }
+    | { kind: 'comparison', articles: Article[], universe: string, universes: string[] }
 
 type NavigationState = { state: 'notFound', error: unknown }
     | {
@@ -45,14 +51,21 @@ function toFromField(navigationState: NavigationState): { descriptor: PageDescri
 }
 
 function pageDescriptorFromURL(url: URL): PageDescriptor {
+    const universe = url.searchParams.get('universe')
     switch (url.pathname) {
         case '/article.html':
             const longname = url.searchParams.get('longname')
             if (longname === null) {
                 throw new Error('missing param longname')
             }
-            const universe = url.searchParams.get('universe')
             return { kind: 'article', longname: followSymlink(longname), universe }
+        case '/comparison.html':
+            const longnames = url.searchParams.get('longnames')
+            if (longnames === null) {
+                throw new Error('missing param longnames')
+            }
+            const names = followSymlinks(JSON.parse(longnames) as string[])
+            return { kind: 'comparison', longnames: names, universe }
         default:
             throw new Error('404 not found')
     }
@@ -70,8 +83,13 @@ function urlFromPageDescriptor(pageDescriptor: PageDescriptor): URL {
                 result.searchParams.set('universe', pageDescriptor.universe)
             }
             break
-        default:
-            throw new Error('not implemented')
+        case 'comparison':
+            result.pathname = '/comparison.html'
+            result.searchParams.set('longnames', JSON.stringify(pageDescriptor.longnames))
+            if (pageDescriptor.universe !== null) {
+                result.searchParams.set('universe', pageDescriptor.universe)
+            }
+            break
     }
     return result
 }
@@ -103,7 +121,29 @@ async function loadPageDescriptor(descriptor: PageDescriptor): Promise<{ pageDat
 
             }
         case 'comparison':
-            throw new Error('not implemented')
+            const articles = await Promise.all(descriptor.longnames.map(name => loadProtobuf(data_link(name), 'Article')))
+            // intersection of all the data.universes
+            const articleUniverses = articles.map(x => x.universes)
+            const universes = articleUniverses.reduce((a, b) => a.filter(c => b.includes(c)))
+
+            const defaultComparisonUniverse = default_comparison_universe(articleUniverses, universes)
+
+            const comparisonUniverse = descriptor.universe !== null && universes.includes(descriptor.universe) ? descriptor.universe : defaultComparisonUniverse
+
+            const displayComparisonUniverse = comparisonUniverse === defaultComparisonUniverse ? null : comparisonUniverse
+
+            return {
+                pageData: {
+                    kind: 'comparison',
+                    articles,
+                    universe: comparisonUniverse,
+                    universes,
+                },
+                newPageDescriptor: {
+                    ...descriptor,
+                    universe: displayComparisonUniverse,
+                },
+            }
     }
 }
 
@@ -111,7 +151,7 @@ export function Navigator(): ReactNode {
     const [state, setState] = useState<NavigationState>(() => {
         let descriptor: PageDescriptor
         try {
-            descriptor = pageDescriptorFromURL(new URL(window.location.href))
+            descriptor = pageDescriptorFromURL(new URL(discordFix(window.location.href)))
         }
         catch (error) {
             return { state: 'notFound', error }
@@ -237,6 +277,12 @@ function PageRouter({ pageData }: { pageData: PageData }): ReactNode {
             return (
                 <UNIVERSE_CONTEXT.Provider value={pageData.universe}>
                     <ArticlePanel article={pageData.article} />
+                </UNIVERSE_CONTEXT.Provider>
+            )
+        case 'comparison':
+            return (
+                <UNIVERSE_CONTEXT.Provider value={pageData.universe}>
+                    <ComparisonPanel articles={pageData.articles} universes={pageData.universes} />
                 </UNIVERSE_CONTEXT.Provider>
             )
     }

@@ -72,5 +72,4 @@ async function loadPage(): Promise<void> {
     )
 }
 
-discordFix()
 void loadPage()
