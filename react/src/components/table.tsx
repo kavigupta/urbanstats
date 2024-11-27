@@ -1,10 +1,10 @@
 import React, { CSSProperties, ReactNode, useContext, useEffect, useRef, useState } from 'react'
 import ContentEditable, { ContentEditableEvent } from 'react-contenteditable'
 
-import { navigationContext } from '../article'
 import { load_ordering } from '../load_json'
 import { statistic_link } from '../navigation/links'
 import './table.css'
+import { navigationContext } from '../navigation/navigator'
 import { useColors } from '../page_template/colors'
 import { MobileArticlePointers, row_expanded_key, Settings, useSetting } from '../page_template/settings'
 import { useUniverse } from '../universe'
@@ -875,6 +875,7 @@ function PointerButtonIndex(props: {
     direction: -1 | 1
     total: number
 }): ReactNode {
+    const universe = useUniverse()
     const colors = useColors()
     const navigation = useContext(navigationContext)!
     const [show_historical_cds] = useSetting('show_historical_cds')
@@ -888,7 +889,11 @@ function PointerButtonIndex(props: {
                     pos += props.direction
                     continue
                 }
-                navigation.setLongname(name)
+                navigation.navigate({
+                    kind: 'article',
+                    longname: name,
+                    universe,
+                }, 'push')
                 return
             }
         }

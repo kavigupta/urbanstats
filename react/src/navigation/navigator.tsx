@@ -1,10 +1,21 @@
 import React, { createContext, ReactNode, useEffect, useMemo, useState } from 'react'
 
 import { ArticlePanel } from '../components/article-panel'
-import { UNIVERSE_CONTEXT } from '../universe'
+import { loadProtobuf } from '../load_json'
+import { default_article_universe, UNIVERSE_CONTEXT } from '../universe'
 import { Article } from '../utils/protos'
 
-export type PageDescriptor = { kind: 'article', longname: string, settings?: string } | { kind: 'comparison', longnames: string[], settings?: string }
+import { data_link } from './links'
+
+export type PageDescriptor = {
+    kind: 'article'
+    longname: string
+    universe: string | null
+}
+| {
+    kind: 'comparison'
+    longnames: string[]
+}
 interface PageData { kind: 'article', article: Article, universe: string }
 
 type NavigationState = { state: 'notFound', error: unknown }
@@ -39,12 +50,14 @@ function pageDescriptorFromURL(url: URL): PageDescriptor {
             if (longname === null) {
                 throw new Error('missing param longname')
             }
-            return { kind: 'article', longname }
+            const universe = url.searchParams.get('universe')
+            return { kind: 'article', longname, universe }
         default:
             throw new Error('404 not found')
     }
 }
 
+// Not a pure function, just modifies the current URL
 function urlFromPageDescriptor(pageDescriptor: PageDescriptor): URL {
     const result = new URL(window.location.origin)
     result.hash = window.location.hash
@@ -52,8 +65,8 @@ function urlFromPageDescriptor(pageDescriptor: PageDescriptor): URL {
         case 'article':
             result.pathname = '/article.html'
             result.searchParams.set('longname', pageDescriptor.longname)
-            if (pageDescriptor.settings !== undefined) {
-                result.searchParams.set('s', pageDescriptor.settings)
+            if (pageDescriptor.universe !== null) {
+                result.searchParams.set('universe', pageDescriptor.universe)
             }
             break
         default:
@@ -66,7 +79,31 @@ function urlFromPageDescriptor(pageDescriptor: PageDescriptor): URL {
 //
 // Since setting the descriptor causes this function to be called, you'll probably want to avoid infinite loops
 async function loadPageDescriptor(descriptor: PageDescriptor): Promise<{ pageData: PageData, newPageDescriptor: PageDescriptor }> {
-    throw new Error('not implemented')
+    switch (descriptor.kind) {
+        case 'article':
+            const article = await loadProtobuf(data_link(descriptor.longname), 'Article')
+
+            const defaultUniverse = default_article_universe(article.universes)
+
+            const articleUniverse = descriptor.universe !== null && article.universes.includes(descriptor.universe) ? descriptor.universe : defaultUniverse
+
+            const displayUniverse = articleUniverse === defaultUniverse ? null : articleUniverse
+
+            return {
+                pageData: {
+                    kind: 'article',
+                    article,
+                    universe: articleUniverse,
+                },
+                newPageDescriptor: {
+                    ...descriptor,
+                    universe: displayUniverse,
+                },
+
+            }
+        case 'comparison':
+            throw new Error('not implemented')
+    }
 }
 
 export function Navigator(): ReactNode {
@@ -122,15 +159,18 @@ export function Navigator(): ReactNode {
     const navContext = useMemo<NavigationContext>(() => {
         return {
             navigate(newDescriptor, kind) {
-                switch (kind) {
-                    case 'push':
-                        history.pushState(newDescriptor, '', urlFromPageDescriptor(newDescriptor))
-                        break
-                    case 'replace':
-                        history.replaceState(newDescriptor, '', urlFromPageDescriptor(newDescriptor))
-                        break
-                }
-                setState(currentState => ({ state: 'loading', from: toFromField(currentState), to: { descriptor: newDescriptor } }))
+                setState((currentState) => {
+                    const from = toFromField(currentState)
+                    switch (kind) {
+                        case 'push':
+                            history.pushState(newDescriptor, '', urlFromPageDescriptor(newDescriptor))
+                            break
+                        case 'replace':
+                            history.replaceState(newDescriptor, '', urlFromPageDescriptor(newDescriptor))
+                            break
+                    }
+                    return { state: 'loading', from, to: { descriptor: newDescriptor } }
+                })
             },
         }
     }, [])
