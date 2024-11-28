@@ -2,7 +2,7 @@ import { saveAs } from 'file-saver'
 import { z } from 'zod'
 
 import { loadQuizHistory } from '../components/quiz-panel'
-import { cancelled, uploadFile } from '../upload-util'
+import { cancelled, uploadFile } from '../utils/upload'
 
 import { unique_persistent_id } from './statistics'
 
