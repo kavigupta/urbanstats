@@ -1,10 +1,11 @@
-import React, { ReactNode } from 'react'
+import React, { ReactNode, useContext } from 'react'
 
 import '../common.css'
 import './header.css'
-import { article_link, universe_path } from '../navigation/links'
+import { universe_path } from '../navigation/links'
+import { NavigationContext } from '../navigation/navigator'
 import { useColors } from '../page_template/colors'
-import { set_universe, useUniverse } from '../universe'
+import { useUniverse } from '../universe'
 import { useMobileLayout } from '../utils/responsive'
 
 import { Nav } from './hamburger'
@@ -23,6 +24,7 @@ export function Header(props: {
     initiate_screenshot: (curr_universe: string) => void
 }): ReactNode {
     const curr_universe = useUniverse()
+    const navContext = useContext(NavigationContext)!
     return (
         <div className="top_panel">
             <TopLeft
@@ -57,9 +59,11 @@ export function Header(props: {
                         <SearchBox
                             on_change={
                                 (new_location) => {
-                                    window.location.href = article_link(
-                                        curr_universe, new_location,
-                                    )
+                                    navContext.navigate({
+                                        kind: 'article',
+                                        universe: curr_universe,
+                                        longname: new_location,
+                                    }, 'push')
                                 }
                             }
                             placeholder="Search Urban Stats"
@@ -195,6 +199,7 @@ function UniverseDropdown(
     { all_universes, flag_size }: { all_universes: readonly string[], flag_size: string },
 ): ReactNode {
     const colors = useColors()
+    const navContext = useContext(NavigationContext)!
     return (
         <div>
             <div
@@ -208,7 +213,7 @@ function UniverseDropdown(
             </div>
             {all_universes.map((alt_universe) => {
                 return (
-                    <div key={alt_universe} onClick={() => { set_universe(alt_universe) }}>
+                    <div key={alt_universe} onClick={() => { navContext.setUniverse(alt_universe) }}>
                         <div
                             style={{
                                 display: 'flex',

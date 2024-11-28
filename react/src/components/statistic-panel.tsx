@@ -2,7 +2,7 @@ import React, { CSSProperties, ReactNode, useContext, useEffect, useMemo, useRef
 
 import universes_ordered from '../data/universes_ordered'
 import { explanation_page_link, sanitize } from '../navigation/links'
-import { navigationContext, StatName } from '../navigation/navigator'
+import { NavigationContext, StatName } from '../navigation/navigator'
 import { useColors } from '../page_template/colors'
 import { useSetting } from '../page_template/settings'
 import { PageTemplate } from '../page_template/template'
@@ -52,7 +52,7 @@ export function StatisticPanel(props: StatisticPanelProps): ReactNode {
 
     const is_ascending = props.order === 'ascending'
 
-    const navContext = useContext(navigationContext)!
+    const navContext = useContext(NavigationContext)!
 
     const index_range = useMemo(() => {
         const start = props.start - 1
@@ -215,7 +215,7 @@ function Pagination(props: {
 
     const curr_universe = useUniverse()
 
-    const navContext = useContext(navigationContext)!
+    const navContext = useContext(NavigationContext)!
 
     const change_start = (new_start: number): void => {
         navContext.navigate({
@@ -433,7 +433,7 @@ function SelectPage(props: {
 function ArticleLink(props: { longname: string }): ReactNode {
     const curr_universe = useUniverse()
     const colors = useColors()
-    const navContext = useContext(navigationContext)!
+    const navContext = useContext(NavigationContext)!
     return (
         <a
             onClick={() => {

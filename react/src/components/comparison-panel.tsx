@@ -4,7 +4,7 @@ import './article.css'
 import React, { ReactNode, useContext, useEffect, useRef } from 'react'
 
 import { sanitize } from '../navigation/links'
-import { navigationContext } from '../navigation/navigator'
+import { NavigationContext } from '../navigation/navigator'
 import { HueColors, useColors } from '../page_template/colors'
 import { row_expanded_key, useSetting, useSettings } from '../page_template/settings'
 import { groupYearKeys, StatPathsContext } from '../page_template/statistic-settings'
@@ -387,7 +387,7 @@ function HeadingDisplay({ longname, include_delete, on_click, on_change: on_sear
 
     const screenshot_mode = useScreenshotMode()
 
-    const navContext = useContext(navigationContext)!
+    const navContext = useContext(NavigationContext)!
 
     return (
         <div>

@@ -13,7 +13,7 @@ import paths from '../data/statistic_path_list'
 import { discordFix } from '../discord-fix'
 import { load_ordering, load_ordering_protobuf, loadProtobuf } from '../load_json'
 import { Settings } from '../page_template/settings'
-import { default_article_universe, default_comparison_universe, UNIVERSE_CONTEXT } from '../universe'
+import { default_article_universe, default_comparison_universe, UniverseContext } from '../universe'
 import { Article, IDataList } from '../utils/protos'
 import { followSymlink, followSymlinks } from '../utils/symlinks'
 import { NormalizeProto } from '../utils/types'
@@ -147,6 +147,7 @@ function urlFromPageDescriptor(pageDescriptor: PageDescriptor): URL {
             pathname = ''
             searchParams = {}
     }
+    // eslint-disable-next-line no-restricted-syntax -- Core navigation functions
     const result = new URL(window.location.href)
     result.pathname = pathname
     for (const [key, value] of Object.entries(searchParams)) {
@@ -280,6 +281,7 @@ export function Navigator(): ReactNode {
     const [state, setState] = useState<NavigationState>(() => {
         let descriptor: PageDescriptor
         try {
+            // eslint-disable-next-line no-restricted-syntax -- Core navigation functions
             descriptor = pageDescriptorFromURL(new URL(discordFix(window.location.href)))
         }
         catch (error) {
@@ -330,7 +332,7 @@ export function Navigator(): ReactNode {
         return () => { window.removeEventListener('popstate', listener) }
     }, [])
 
-    const navContext = useMemo<NavigationContext>(() => {
+    const navContext = useMemo<NavigationContextValue>(() => {
         return {
             navigate(newDescriptor, kind) {
                 setState((currentState) => {
@@ -348,6 +350,26 @@ export function Navigator(): ReactNode {
                     return { state: 'loading', from, to: { descriptor: newDescriptor } }
                 })
             },
+
+            setUniverse(newUniverse) {
+                setState((currentState) => {
+                    const from = toFromField(currentState)
+                    switch (from?.descriptor.kind) {
+                        case 'article':
+                        case 'comparison':
+                        case 'statistic':
+                            const newDescriptor = {
+                                ...from.descriptor,
+                                universe: newUniverse,
+                            }
+                            // eslint-disable-next-line no-restricted-syntax -- Core navigation functions
+                            history.pushState(newDescriptor, '', urlFromPageDescriptor(newDescriptor))
+                            return { state: 'loading', from, to: { descriptor: newDescriptor } }
+                        default:
+                            throw new Error(`switching universe is not supported for page descriptor kind ${from?.descriptor.kind}`)
+                    }
+                })
+            },
         }
     }, [])
 
@@ -356,25 +378,25 @@ export function Navigator(): ReactNode {
             return <ErrorScreen error="Not Found" />
         case 'loading':
             return (
-                <navigationContext.Provider value={navContext}>
+                <NavigationContext.Provider value={navContext}>
                     {state.from !== undefined ? <PageRouter pageData={state.from.data} /> : null}
                     <LoadingScreen />
-                </navigationContext.Provider>
+                </NavigationContext.Provider>
             )
         case 'loaded':
             return (
-                <navigationContext.Provider value={navContext}>
+                <NavigationContext.Provider value={navContext}>
                     <PageRouter pageData={state.data} />
-                </navigationContext.Provider>
+                </NavigationContext.Provider>
             )
         case 'loading':
             return <LoadingScreen />
         case 'errorLoading':
             return (
-                <navigationContext.Provider value={navContext}>
+                <NavigationContext.Provider value={navContext}>
                     {state.from !== undefined ? <PageRouter pageData={state.from.data} /> : null}
                     <ErrorScreen error={state.error} />
-                </navigationContext.Provider>
+                </NavigationContext.Provider>
             )
     }
 }
@@ -396,33 +418,34 @@ function ErrorScreen({ error }: { error: unknown }): ReactNode {
     )
 }
 
-interface NavigationContext {
+interface NavigationContextValue {
     navigate: (pageDescriptor: PageDescriptor, kind: 'replace' | 'push') => void
+    setUniverse: (newUniverse: string) => void
 }
 
-export const navigationContext = createContext<NavigationContext | undefined>(undefined)
+export const NavigationContext = createContext<NavigationContextValue | undefined>(undefined)
 
 function PageRouter({ pageData }: { pageData: PageData }): ReactNode {
     switch (pageData.kind) {
         case 'article':
             return (
-                <UNIVERSE_CONTEXT.Provider value={pageData.universe}>
+                <UniverseContext.Provider value={pageData.universe}>
                     <ArticlePanel article={pageData.article} />
-                </UNIVERSE_CONTEXT.Provider>
+                </UniverseContext.Provider>
             )
         case 'comparison':
             return (
-                <UNIVERSE_CONTEXT.Provider value={pageData.universe}>
+                <UniverseContext.Provider value={pageData.universe}>
                     <ComparisonPanel articles={pageData.articles} universes={pageData.universes} />
-                </UNIVERSE_CONTEXT.Provider>
+                </UniverseContext.Provider>
             )
         case 'statistic':
             return (
-                <UNIVERSE_CONTEXT.Provider value={pageData.universe}>
+                <UniverseContext.Provider value={pageData.universe}>
                     <StatisticPanel
                         {...pageData}
                     />
-                </UNIVERSE_CONTEXT.Provider>
+                </UniverseContext.Provider>
             )
         case 'index':
             return <IndexPanel />

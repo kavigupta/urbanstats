@@ -8,7 +8,7 @@ import { Basemap } from '../mapper/settings'
 import { article_link, shape_link } from '../navigation/links'
 import { useColors } from '../page_template/colors'
 import { relatedSettingsKeys, relationship_key, useSetting, useSettings } from '../page_template/settings'
-import { UNIVERSE_CONTEXT } from '../universe'
+import { UniverseContext } from '../universe'
 import { random_color } from '../utils/color'
 import { is_historical_cd } from '../utils/is_historical'
 import { Feature, IRelatedButton, IRelatedButtons } from '../utils/protos'
@@ -330,9 +330,9 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
         this.map!.fitBounds(this.polygon_by_name.get(name)!.getBounds())
     }
 
-    static override contextType = UNIVERSE_CONTEXT
+    static override contextType = UniverseContext
 
-    declare context: React.ContextType<typeof UNIVERSE_CONTEXT>
+    declare context: React.ContextType<typeof UniverseContext>
 }
 
 const MapBody = (props: { id: string, height: string | undefined, buttons: ReactNode }): ReactNode => {

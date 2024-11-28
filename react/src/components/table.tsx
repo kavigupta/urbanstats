@@ -4,7 +4,7 @@ import ContentEditable, { ContentEditableEvent } from 'react-contenteditable'
 import { load_ordering } from '../load_json'
 import { statistic_link } from '../navigation/links'
 import './table.css'
-import { navigationContext } from '../navigation/navigator'
+import { NavigationContext } from '../navigation/navigator'
 import { useColors } from '../page_template/colors'
 import { MobileArticlePointers, row_expanded_key, Settings, useSetting } from '../page_template/settings'
 import { useUniverse } from '../universe'
@@ -877,7 +877,7 @@ function PointerButtonIndex(props: {
 }): ReactNode {
     const universe = useUniverse()
     const colors = useColors()
-    const navigation = useContext(navigationContext)!
+    const navigation = useContext(NavigationContext)!
     const [show_historical_cds] = useSetting('show_historical_cds')
     const out_of_bounds = (pos: number): boolean => pos < 0 || pos >= props.total
     const onClick = async (pos: number): Promise<void> => {
