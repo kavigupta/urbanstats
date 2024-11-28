@@ -1,12 +1,11 @@
 import React, { ReactNode } from 'react'
-import ReactDOM from 'react-dom/client'
-import './style.css'
-import './common.css'
+import '../style.css'
+import '../common.css'
 
-import { useColors } from './page_template/colors'
-import { PageTemplate } from './page_template/template'
+import { useColors } from '../page_template/colors'
+import { PageTemplate } from '../page_template/template'
 
-function IndexPanel(): ReactNode {
+export function IndexPanel(): ReactNode {
     const colors = useColors()
     return (
         <PageTemplate>
@@ -44,10 +43,3 @@ function IndexPanel(): ReactNode {
         </PageTemplate>
     )
 }
-
-function loadPage(): void {
-    const root = ReactDOM.createRoot(document.getElementById('root')!)
-    root.render(<IndexPanel />)
-}
-
-loadPage()

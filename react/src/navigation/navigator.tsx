@@ -1,6 +1,7 @@
 import React, { createContext, ReactNode, useContext, useEffect, useMemo, useState } from 'react'
 import { z } from 'zod'
 
+import { IndexPanel } from '../components/IndexPanel'
 import { ArticlePanel } from '../components/article-panel'
 import { ComparisonPanel } from '../components/comparison-panel'
 import { for_type } from '../components/load-article'
@@ -51,11 +52,13 @@ export type PageDescriptor = ({ kind: 'article' } & z.infer<typeof articleSchema
     | ({ kind: 'comparison' } & z.infer<typeof comparisonSchema>)
     | ({ kind: 'statistic' } & z.infer<typeof statisticSchema>)
     | ({ kind: 'random' } & z.infer<typeof randomSchema>)
+    | ({ kind: 'index' })
 
 type PageData =
     { kind: 'article', article: Article, universe: string }
     | { kind: 'comparison', articles: Article[], universe: string, universes: string[] }
     | { kind: 'statistic', universe: string } & StatisticPanelProps
+    | { kind: 'index' }
 
 type NavigationState = { state: 'notFound', error: unknown }
     | {
@@ -93,6 +96,10 @@ function pageDescriptorFromURL(url: URL): PageDescriptor {
             return { kind: 'statistic', ...statisticSchema.parse(params) }
         case '/random.html':
             return { kind: 'random', ...randomSchema.parse(params) }
+        case '/':
+        case '':
+        case '/index.html':
+            return { kind: 'index' }
         default:
             throw new Error('404 not found')
     }
@@ -136,6 +143,9 @@ function urlFromPageDescriptor(pageDescriptor: PageDescriptor): URL {
                 us_only: pageDescriptor.us_only ? 'true' : null,
             }
             break
+        case 'index':
+            pathname = ''
+            searchParams = {}
     }
     const result = new URL(window.location.href)
     result.pathname = pathname
@@ -260,6 +270,9 @@ async function loadPageDescriptor(descriptor: PageDescriptor, settings: Settings
                 longname,
                 universe: null,
             }, settings)
+
+        case 'index':
+            return { pageData: { kind: 'index' }, newPageDescriptor: { kind: 'index' } }
     }
 }
 
@@ -411,5 +424,7 @@ function PageRouter({ pageData }: { pageData: PageData }): ReactNode {
                     />
                 </UNIVERSE_CONTEXT.Provider>
             )
+        case 'index':
+            return <IndexPanel />
     }
 }
