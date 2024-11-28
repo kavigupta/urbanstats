@@ -5,7 +5,7 @@ import ForkTsCheckerWebpackPlugin from 'fork-ts-checker-webpack-plugin'
 
 export default env => ({
     entry: {
-        'entry': ['./src/entry.tsx'],
+        'index': ['./src/index.tsx'],
     },
     output: {
         filename: '[name].js',
