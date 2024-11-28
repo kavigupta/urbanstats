@@ -1,4 +1,4 @@
-import React, { createContext, ReactNode, useEffect, useMemo, useState } from 'react'
+import React, { createContext, ReactNode, useContext, useEffect, useMemo, useState } from 'react'
 import { z } from 'zod'
 
 import { ArticlePanel } from '../components/article-panel'
@@ -11,12 +11,14 @@ import names from '../data/statistic_name_list' // TODO: Maybe dynamically impor
 import paths from '../data/statistic_path_list'
 import { discordFix } from '../discord-fix'
 import { load_ordering, load_ordering_protobuf, loadProtobuf } from '../load_json'
+import { Settings } from '../page_template/settings'
 import { default_article_universe, default_comparison_universe, UNIVERSE_CONTEXT } from '../universe'
 import { Article, IDataList } from '../utils/protos'
 import { followSymlink, followSymlinks } from '../utils/symlinks'
 import { NormalizeProto } from '../utils/types'
 
 import { data_link, sanitize } from './links'
+import { by_population, uniform } from './random'
 
 export type StatName = (typeof names)[number]
 
@@ -40,9 +42,15 @@ const statisticSchema = z.object({
     universe: z.nullable(z.string()),
 })
 
+const randomSchema = z.object({
+    sampleby: z.union([z.literal('uniform'), z.literal('population'), z.null().transform(() => 'uniform' as const)]),
+    us_only: z.union([z.literal('true').transform(() => true), z.literal('false').transform(() => false), z.null().transform(() => false)]),
+})
+
 export type PageDescriptor = ({ kind: 'article' } & z.infer<typeof articleSchema>)
     | ({ kind: 'comparison' } & z.infer<typeof comparisonSchema>)
     | ({ kind: 'statistic' } & z.infer<typeof statisticSchema>)
+    | ({ kind: 'random' } & z.infer<typeof randomSchema>)
 
 type PageData =
     { kind: 'article', article: Article, universe: string }
@@ -83,6 +91,8 @@ function pageDescriptorFromURL(url: URL): PageDescriptor {
             return { kind: 'comparison', ...comparisonSchema.parse(params) }
         case '/statistic.html':
             return { kind: 'statistic', ...statisticSchema.parse(params) }
+        case '/random.html':
+            return { kind: 'random', ...randomSchema.parse(params) }
         default:
             throw new Error('404 not found')
     }
@@ -119,6 +129,13 @@ function urlFromPageDescriptor(pageDescriptor: PageDescriptor): URL {
                 universe: pageDescriptor.universe,
             }
             break
+        case 'random':
+            pathname = '/random.html'
+            searchParams = {
+                sampleby: pageDescriptor.sampleby,
+                us_only: pageDescriptor.us_only ? 'true' : null,
+            }
+            break
     }
     const result = new URL(window.location.href)
     result.pathname = pathname
@@ -133,7 +150,7 @@ function urlFromPageDescriptor(pageDescriptor: PageDescriptor): URL {
     return result
 }
 
-async function loadPageDescriptor(descriptor: PageDescriptor): Promise<{ pageData: PageData, newPageDescriptor: PageDescriptor }> {
+async function loadPageDescriptor(descriptor: PageDescriptor, settings: Settings): Promise<{ pageData: PageData, newPageDescriptor: PageDescriptor }> {
     switch (descriptor.kind) {
         case 'article':
             const article = await loadProtobuf(data_link(descriptor.longname), 'Article')
@@ -225,6 +242,24 @@ async function loadPageDescriptor(descriptor: PageDescriptor): Promise<{ pageDat
                     highlight: null,
                 },
             }
+        case 'random':
+            const settingsValues = settings.getMultiple(['show_historical_cds'])
+
+            let longname: string
+            switch (descriptor.sampleby) {
+                case 'uniform':
+                    longname = await uniform(settingsValues)
+                    break
+                case 'population':
+                    longname = await by_population(settingsValues, descriptor.us_only)
+                    break
+            }
+
+            return await loadPageDescriptor({
+                kind: 'article',
+                longname,
+                universe: null,
+            }, settings)
     }
 }
 
@@ -243,6 +278,8 @@ export function Navigator(): ReactNode {
         return { state: 'loading', to: { descriptor } }
     })
 
+    const settings = useContext(Settings.Context)
+
     useEffect(() => {
         // Load if necessary
         // We should only update the state if our navigation is most recent, to avoid races
@@ -251,7 +288,7 @@ export function Navigator(): ReactNode {
             case 'loaded':
                 return
             case 'loading':
-                loadPageDescriptor(state.to.descriptor).then(({ pageData, newPageDescriptor }) => {
+                loadPageDescriptor(state.to.descriptor, settings).then(({ pageData, newPageDescriptor }) => {
                     setState((currentState) => {
                         if (currentState.state === 'loading' && currentState.to.descriptor === state.to.descriptor) {
                             // eslint-disable-next-line no-restricted-syntax -- Core navigation functions
@@ -269,7 +306,7 @@ export function Navigator(): ReactNode {
                     })
                 })
         }
-    }, [state])
+    }, [state, settings])
 
     useEffect(() => {
         // Hook into the browser back/forward buttons
