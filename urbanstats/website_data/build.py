@@ -195,15 +195,18 @@ def build_urbanstats(
 
         full_consolidated_data(site_folder)
 
-    shutil.copy("html_templates/article.html", f"{site_folder}")
-    shutil.copy("html_templates/comparison.html", f"{site_folder}")
-    shutil.copy("html_templates/statistic.html", f"{site_folder}")
-    shutil.copy("html_templates/index.html", f"{site_folder}/")
-    shutil.copy("html_templates/random.html", f"{site_folder}")
-    shutil.copy("html_templates/about.html", f"{site_folder}/")
-    shutil.copy("html_templates/data-credit.html", f"{site_folder}/")
-    shutil.copy("html_templates/mapper.html", f"{site_folder}/")
-    shutil.copy("html_templates/quiz.html", f"{site_folder}")
+    for entrypoint in [
+        "index",
+        "article",
+        "comparison",
+        "statistic",
+        "random",
+        "about",
+        "data-credit",
+        "mapper",
+        "quiz",
+    ]:
+        shutil.copy("html_templates/index.html", f"{site_folder}/{entrypoint}.html")
 
     shutil.copy("icons/main/thumbnail.png", f"{site_folder}/")
     shutil.copy("icons/main/banner.png", f"{site_folder}/")

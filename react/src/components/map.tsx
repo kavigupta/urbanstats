@@ -1,5 +1,6 @@
 import { GeoJSON2SVG } from 'geojson2svg'
 import L from 'leaflet'
+import 'leaflet/dist/leaflet.css'
 import React, { ReactNode } from 'react'
 
 import { loadProtobuf } from '../load_json'
