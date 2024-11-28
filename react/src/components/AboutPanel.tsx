@@ -1,12 +1,11 @@
 import React, { ReactNode } from 'react'
-import ReactDOM from 'react-dom/client'
 
-import './style.css'
-import './common.css'
-import { PageTemplate } from './page_template/template'
-import { useHeaderTextClass } from './utils/responsive'
+import '../style.css'
+import '../common.css'
+import { PageTemplate } from '../page_template/template'
+import { useHeaderTextClass } from '../utils/responsive'
 
-function AboutPanel(): ReactNode {
+export function AboutPanel(): ReactNode {
     const headerTextClass = useHeaderTextClass()
 
     return (
@@ -42,10 +41,3 @@ function AboutPanel(): ReactNode {
         </PageTemplate>
     )
 }
-
-function loadPage(): void {
-    const root = ReactDOM.createRoot(document.getElementById('root')!)
-    root.render(<AboutPanel />)
-}
-
-loadPage()

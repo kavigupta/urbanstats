@@ -1,6 +1,7 @@
 import React, { createContext, ReactNode, useContext, useEffect, useMemo, useState } from 'react'
 import { z } from 'zod'
 
+import { AboutPanel } from '../components/AboutPanel'
 import { IndexPanel } from '../components/IndexPanel'
 import { ArticlePanel } from '../components/article-panel'
 import { ComparisonPanel } from '../components/comparison-panel'
@@ -52,13 +53,15 @@ export type PageDescriptor = ({ kind: 'article' } & z.infer<typeof articleSchema
     | ({ kind: 'comparison' } & z.infer<typeof comparisonSchema>)
     | ({ kind: 'statistic' } & z.infer<typeof statisticSchema>)
     | ({ kind: 'random' } & z.infer<typeof randomSchema>)
-    | ({ kind: 'index' })
+    | { kind: 'index' }
+    | { kind: 'about' }
 
 type PageData =
     { kind: 'article', article: Article, universe: string }
     | { kind: 'comparison', articles: Article[], universe: string, universes: string[] }
     | { kind: 'statistic', universe: string } & StatisticPanelProps
     | { kind: 'index' }
+    | { kind: 'about' }
 
 type NavigationState = { state: 'notFound', error: unknown }
     | {
@@ -146,6 +149,11 @@ function urlFromPageDescriptor(pageDescriptor: PageDescriptor): URL {
         case 'index':
             pathname = ''
             searchParams = {}
+            break
+        case 'about':
+            pathname = '/about.html'
+            searchParams = {}
+            break
     }
     // eslint-disable-next-line no-restricted-syntax -- Core navigation functions
     const result = new URL(window.location.href)
@@ -273,7 +281,8 @@ async function loadPageDescriptor(descriptor: PageDescriptor, settings: Settings
             }, settings)
 
         case 'index':
-            return { pageData: { kind: 'index' }, newPageDescriptor: { kind: 'index' } }
+        case 'about':
+            return { pageData: descriptor, newPageDescriptor: descriptor }
     }
 }
 
@@ -449,5 +458,7 @@ function PageRouter({ pageData }: { pageData: PageData }): ReactNode {
             )
         case 'index':
             return <IndexPanel />
+        case 'about':
+            return <AboutPanel />
     }
 }
