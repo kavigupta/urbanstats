@@ -3,13 +3,22 @@ import { z } from 'zod'
 
 import { ArticlePanel } from '../components/article-panel'
 import { ComparisonPanel } from '../components/comparison-panel'
+import { for_type } from '../components/load-article'
+import { StatisticPanel, StatisticPanelProps } from '../components/statistic-panel'
+import explanation_pages from '../data/explanation_page'
+import stats from '../data/statistic_list'
+import names from '../data/statistic_name_list' // TODO: Maybe dynamically import these
+import paths from '../data/statistic_path_list'
 import { discordFix } from '../discord-fix'
-import { loadProtobuf } from '../load_json'
+import { load_ordering, load_ordering_protobuf, loadProtobuf } from '../load_json'
 import { default_article_universe, default_comparison_universe, UNIVERSE_CONTEXT } from '../universe'
-import { Article } from '../utils/protos'
+import { Article, IDataList } from '../utils/protos'
 import { followSymlink, followSymlinks } from '../utils/symlinks'
+import { NormalizeProto } from '../utils/types'
 
-import { data_link } from './links'
+import { data_link, sanitize } from './links'
+
+export type StatName = (typeof names)[number]
 
 const articleSchema = z.object({
     longname: z.string().transform(followSymlink),
@@ -21,12 +30,24 @@ const comparisonSchema = z.object({
     universe: z.nullable(z.string()),
 })
 
+const statisticSchema = z.object({
+    article_type: z.string(),
+    statname: z.string().transform(s => s.replaceAll('__PCT__', '%') as StatName),
+    start: z.nullable(z.string()).transform(s => parseInt(s ?? '1')),
+    amount: z.union([z.literal('All'), z.string().transform(s => parseInt(s)), z.null().transform(() => 10)]),
+    order: z.union([z.null().transform(() => 'descending' as const), z.literal('descending'), z.literal('ascending')]),
+    highlight: z.nullable(z.string()),
+    universe: z.nullable(z.string()),
+})
+
 export type PageDescriptor = ({ kind: 'article' } & z.infer<typeof articleSchema>)
     | ({ kind: 'comparison' } & z.infer<typeof comparisonSchema>)
+    | ({ kind: 'statistic' } & z.infer<typeof statisticSchema>)
 
 type PageData =
     { kind: 'article', article: Article, universe: string }
     | { kind: 'comparison', articles: Article[], universe: string, universes: string[] }
+    | { kind: 'statistic', universe: string } & StatisticPanelProps
 
 type NavigationState = { state: 'notFound', error: unknown }
     | {
@@ -60,6 +81,8 @@ function pageDescriptorFromURL(url: URL): PageDescriptor {
             return { kind: 'article', ...articleSchema.parse(params) }
         case '/comparison.html':
             return { kind: 'comparison', ...comparisonSchema.parse(params) }
+        case '/statistic.html':
+            return { kind: 'statistic', ...statisticSchema.parse(params) }
         default:
             throw new Error('404 not found')
     }
@@ -67,30 +90,49 @@ function pageDescriptorFromURL(url: URL): PageDescriptor {
 
 // Not a pure function, just modifies the current URL
 function urlFromPageDescriptor(pageDescriptor: PageDescriptor): URL {
-    const result = new URL(window.location.origin)
-    result.hash = window.location.hash
+    let pathname: string
+    let searchParams: Record<string, string | null>
     switch (pageDescriptor.kind) {
         case 'article':
-            result.pathname = '/article.html'
-            result.searchParams.set('longname', pageDescriptor.longname)
-            if (pageDescriptor.universe !== null) {
-                result.searchParams.set('universe', pageDescriptor.universe)
+            pathname = '/article.html'
+            searchParams = {
+                longname: sanitize(pageDescriptor.longname),
+                universe: pageDescriptor.universe,
             }
             break
         case 'comparison':
-            result.pathname = '/comparison.html'
-            result.searchParams.set('longnames', JSON.stringify(pageDescriptor.longnames))
-            if (pageDescriptor.universe !== null) {
-                result.searchParams.set('universe', pageDescriptor.universe)
+            pathname = '/comparison.html'
+            searchParams = {
+                longnames: JSON.stringify(pageDescriptor.longnames.map(n => sanitize(n))),
+                universe: pageDescriptor.universe,
             }
             break
+        case 'statistic':
+            pathname = '/statistic.html'
+            searchParams = {
+                statname: pageDescriptor.statname.replaceAll('%', '__PCT__'),
+                article_type: pageDescriptor.article_type,
+                start: pageDescriptor.start.toString(),
+                amount: pageDescriptor.amount.toString(),
+                order: pageDescriptor.order === 'descending' ? null : 'ascending',
+                highlight: pageDescriptor.highlight,
+                universe: pageDescriptor.universe,
+            }
+            break
+    }
+    const result = new URL(window.location.href)
+    result.pathname = pathname
+    for (const [key, value] of Object.entries(searchParams)) {
+        if (value === null) {
+            result.searchParams.delete(key)
+        }
+        else {
+            result.searchParams.set(key, value)
+        }
     }
     return result
 }
 
-// Must not throw an error, should return errors as error PageData
-//
-// Since setting the descriptor causes this function to be called, you'll probably want to avoid infinite loops
 async function loadPageDescriptor(descriptor: PageDescriptor): Promise<{ pageData: PageData, newPageDescriptor: PageDescriptor }> {
     switch (descriptor.kind) {
         case 'article':
@@ -136,6 +178,51 @@ async function loadPageDescriptor(descriptor: PageDescriptor): Promise<{ pageDat
                 newPageDescriptor: {
                     ...descriptor,
                     universe: displayComparisonUniverse,
+                },
+            }
+        case 'statistic':
+            const statUniverse = descriptor.universe ?? 'world'
+            const displayStatUniverse = statUniverse !== 'world' ? statUniverse : null
+
+            const statIndex = names.indexOf(descriptor.statname)
+            const statpath = paths[statIndex]
+            const statcol = stats[statIndex]
+            const explanation_page = explanation_pages[statIndex]
+
+            const article_names = await load_ordering(statUniverse, statpath, descriptor.article_type)
+            const data = await load_ordering_protobuf(statUniverse, statpath, descriptor.article_type, true) as NormalizeProto<IDataList>
+
+            let parsedAmount: number
+            if (descriptor.amount === 'All') {
+                parsedAmount = article_names.length
+            }
+            else {
+                parsedAmount = descriptor.amount
+            }
+
+            return {
+                pageData: {
+                    kind: 'statistic',
+                    statcol,
+                    statname: descriptor.statname,
+                    count: for_type(statUniverse, statcol, descriptor.article_type),
+                    explanation_page,
+                    order: descriptor.order,
+                    highlight: descriptor.highlight ?? undefined,
+                    article_type: descriptor.article_type,
+                    joined_string: statpath,
+                    start: descriptor.start,
+                    amount: parsedAmount,
+                    article_names,
+                    data,
+                    rendered_statname: descriptor.statname,
+                    universe: statUniverse,
+
+                },
+                newPageDescriptor: {
+                    ...descriptor,
+                    universe: displayStatUniverse,
+                    highlight: null,
                 },
             }
     }
@@ -277,6 +364,14 @@ function PageRouter({ pageData }: { pageData: PageData }): ReactNode {
             return (
                 <UNIVERSE_CONTEXT.Provider value={pageData.universe}>
                     <ComparisonPanel articles={pageData.articles} universes={pageData.universes} />
+                </UNIVERSE_CONTEXT.Provider>
+            )
+        case 'statistic':
+            return (
+                <UNIVERSE_CONTEXT.Provider value={pageData.universe}>
+                    <StatisticPanel
+                        {...pageData}
+                    />
                 </UNIVERSE_CONTEXT.Provider>
             )
     }

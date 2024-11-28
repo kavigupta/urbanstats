@@ -1,7 +1,8 @@
-import React, { CSSProperties, ReactNode, useEffect, useMemo, useRef } from 'react'
+import React, { CSSProperties, ReactNode, useContext, useEffect, useMemo, useRef } from 'react'
 
 import universes_ordered from '../data/universes_ordered'
-import { article_link, explanation_page_link, sanitize, statistic_link } from '../navigation/links'
+import { explanation_page_link, sanitize } from '../navigation/links'
+import { navigationContext, StatName } from '../navigation/navigator'
 import { useColors } from '../page_template/colors'
 import { useSetting } from '../page_template/settings'
 import { PageTemplate } from '../page_template/template'
@@ -25,14 +26,14 @@ const column_styles = [
     { textAlign: 'right' },
 ] as const
 
-export function StatisticPanel(props: {
+export interface StatisticPanelProps {
     start: number
     amount: number
     count: number
-    ordering: 'ascending' | 'descending'
+    order: 'ascending' | 'descending'
     joined_string: string
     statcol: StatCol
-    statname: string
+    statname: StatName
     article_type: string
     article_names: string[]
     highlight: string | undefined
@@ -42,12 +43,16 @@ export function StatisticPanel(props: {
         populationPercentile: number[]
     }
     explanation_page: string
-}): ReactNode {
+}
+
+export function StatisticPanel(props: StatisticPanelProps): ReactNode {
     const colors = useColors()
     const headers_ref = useRef<HTMLDivElement>(null)
     const table_ref = useRef<HTMLDivElement>(null)
 
-    const is_ascending = props.ordering === 'ascending'
+    const is_ascending = props.order === 'ascending'
+
+    const navContext = useContext(navigationContext)!
 
     const index_range = useMemo(() => {
         const start = props.start - 1
@@ -67,13 +72,16 @@ export function StatisticPanel(props: {
 
     const swap_ascending_descending = (curr_universe: string | undefined): void => {
         const new_order = is_ascending ? 'descending' : 'ascending'
-        const link = statistic_link(
-            curr_universe,
-            props.statname, props.article_type,
-            1, props.amount, new_order,
-            undefined,
-        )
-        document.location = link
+        navContext.navigate({
+            kind: 'statistic',
+            universe: curr_universe ?? null,
+            statname: props.statname,
+            article_type: props.article_type,
+            start: 1,
+            amount: props.amount,
+            order: new_order,
+            highlight: null,
+        }, 'push')
     }
 
     const background_color = (row_idx: number): string => {
@@ -108,6 +116,10 @@ export function StatisticPanel(props: {
         universe => for_type(universe, props.statcol, props.article_type) > 0,
     )
 
+    useEffect(() => {
+        document.title = props.statname
+    }, [props.statname])
+
     return (
         <PageTemplate
             screencap_elements={() => ({
@@ -124,7 +136,7 @@ export function StatisticPanel(props: {
                     {/* // TODO plural */}
                     <StatisticPanelSubhead
                         article_type={props.article_type}
-                        rendered_order={props.ordering}
+                        rendered_order={props.order}
                     />
                 </div>
                 <div style={{ marginBlockEnd: '16px' }}></div>
@@ -194,21 +206,25 @@ function Pagination(props: {
     count: number
     amount: number
     explanation_page: string
-    statname: string
+    statname: StatName
     article_type: string
-    ordering: string | undefined
+    order: 'ascending' | 'descending'
 }): ReactNode {
     // next and previous buttons, along with the current range (editable to jump to a specific page)
     // also a button to change the number of items per page
 
     const curr_universe = useUniverse()
 
+    const navContext = useContext(navigationContext)!
+
     const change_start = (new_start: number): void => {
-        document.location.href = statistic_link(
-            curr_universe,
-            props.statname, props.article_type,
-            new_start, props.amount, props.ordering, undefined,
-        )
+        navContext.navigate({
+            kind: 'statistic',
+            universe: curr_universe,
+            highlight: null,
+            ...props,
+            start: new_start,
+        }, 'push')
     }
 
     const change_amount = (new_amount: string | number): void => {
@@ -227,15 +243,16 @@ function Pagination(props: {
         if (start > props.count - new_amount_num) {
             start = props.count - new_amount_num + 1
         }
-        document.location.href = statistic_link(
-            curr_universe,
-            props.statname,
-            props.article_type,
+        navContext.navigate({
+            kind: 'statistic',
+            universe: curr_universe,
+            statname: props.statname,
+            article_type: props.article_type,
             start,
-            new_amount === 'All' ? 'All' : new_amount_num,
-            props.ordering,
-            undefined,
-        )
+            amount: new_amount === 'All' ? 'All' : new_amount_num,
+            order: props.order,
+            highlight: null,
+        }, 'push')
     }
 
     const current = props.start
@@ -249,13 +266,13 @@ function Pagination(props: {
 
     useEffect(() => {
         const goToPage = (new_page: number): void => {
-            location.replace(
-                statistic_link(
-                    curr_universe,
-                    props.statname, props.article_type,
-                    (new_page - 1) * per_page + 1, props.amount, props.ordering, undefined,
-                ),
-            )
+            navContext.navigate({
+                kind: 'statistic',
+                universe: curr_universe,
+                ...props,
+                start: (new_page - 1) * per_page + 1,
+                highlight: null,
+            }, 'replace')
         }
 
         if (current_page > max_pages) {
@@ -264,7 +281,7 @@ function Pagination(props: {
         else if (current_page < 1) {
             goToPage(1)
         }
-    }, [current_page, max_pages, curr_universe, per_page, props.amount, props.article_type, props.ordering, props.statname])
+    }, [current_page, max_pages, curr_universe, per_page, props, navContext])
 
     const select_page = (
         <SelectPage
@@ -416,9 +433,16 @@ function SelectPage(props: {
 function ArticleLink(props: { longname: string }): ReactNode {
     const curr_universe = useUniverse()
     const colors = useColors()
+    const navContext = useContext(navigationContext)!
     return (
         <a
-            href={article_link(curr_universe, props.longname)}
+            onClick={() => {
+                navContext.navigate({
+                    kind: 'article',
+                    longname: props.longname,
+                    universe: curr_universe,
+                }, 'push')
+            }}
             style={{ fontWeight: 500, color: colors.textMain, textDecoration: 'none' }}
         >
             {props.longname}

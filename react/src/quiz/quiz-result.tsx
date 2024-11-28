@@ -1,8 +1,8 @@
-import React, { ReactNode, useEffect, useRef, useState } from 'react'
+import React, { ReactNode, useContext, useEffect, useRef, useState } from 'react'
 import { isFirefox, isMobile } from 'react-device-detect'
 
 import { Statistic } from '../components/table'
-import { article_link } from '../navigation/links'
+import { navigationContext } from '../navigation/navigator'
 import { JuxtastatColors, useColors, useJuxtastatColors } from '../page_template/colors'
 
 import { render_time_remaining } from './dates'
@@ -450,11 +450,16 @@ function RetrostatQuizResultRow(props: QuizResultRowProps & { question: RetroQue
 }
 
 export function Clickable({ longname }: { longname: string }): ReactNode {
-    // return <a href={article_link(longname)}>{longname}</a>
-    // same without any link formatting
+    const navContext = useContext(navigationContext)!
     return (
         <a
-            href={article_link(undefined, longname)}
+            onClick={() => {
+                navContext.navigate({
+                    kind: 'article',
+                    longname,
+                    universe: null,
+                }, 'push')
+            }}
             style={{ textDecoration: 'none', color: 'inherit' }}
         >
             {longname}

@@ -1,9 +1,10 @@
 import '../common.css'
 import './article.css'
 
-import React, { ReactNode, useEffect, useRef } from 'react'
+import React, { ReactNode, useContext, useEffect, useRef } from 'react'
 
-import { article_link, sanitize } from '../navigation/links'
+import { sanitize } from '../navigation/links'
+import { navigationContext } from '../navigation/navigator'
 import { HueColors, useColors } from '../page_template/colors'
 import { row_expanded_key, useSetting, useSettings } from '../page_template/settings'
 import { groupYearKeys, StatPathsContext } from '../page_template/statistic-settings'
@@ -115,7 +116,7 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
 
     useEffect(() => {
         document.title = joined_string
-    }, [props.articles])
+    }, [joined_string])
 
     return (
         <StatPathsContext.Provider value={statPaths}>
@@ -386,11 +387,25 @@ function HeadingDisplay({ longname, include_delete, on_click, on_change: on_sear
 
     const screenshot_mode = useScreenshotMode()
 
+    const navContext = useContext(navigationContext)!
+
     return (
         <div>
             {screenshot_mode ? undefined : manipulation_buttons}
             <div style={{ height: '5px' }} />
-            <a className="serif" href={article_link(curr_universe, longname)} style={{ textDecoration: 'none' }}><div style={useComparisonHeadStyle()}>{longname}</div></a>
+            <a
+                className="serif"
+                onClick={() => {
+                    navContext.navigate({
+                        kind: 'article',
+                        longname,
+                        universe: curr_universe,
+                    }, 'push')
+                }}
+                style={{ textDecoration: 'none' }}
+            >
+                <div style={useComparisonHeadStyle()}>{longname}</div>
+            </a>
             {is_editing
                 ? (
                         <SearchBox
