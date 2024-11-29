@@ -3,7 +3,7 @@ import './article.css'
 
 import { gunzipSync, gzipSync } from 'zlib'
 
-import React, { ReactNode, useEffect, useRef, useState } from 'react'
+import React, { ReactNode, useContext, useEffect, useRef, useState } from 'react'
 
 import valid_geographies from '../data/mapper/used_geographies'
 import statNames from '../data/statistic_name_list'
@@ -11,6 +11,7 @@ import { loadProtobuf } from '../load_json'
 import { Keypoints, Ramp, parse_ramp } from '../mapper/ramps'
 import { Basemap, ColorStat, ColorStatDescriptor, FilterSettings, LineStyle, MapSettings, MapperSettings, default_settings, parse_color_stat } from '../mapper/settings'
 import { consolidated_shape_link, consolidated_stats_link } from '../navigation/links'
+import { NavigationContext } from '../navigation/navigator'
 import { PageTemplate } from '../page_template/template'
 import { interpolate_color } from '../utils/color'
 import { ConsolidatedShapes, ConsolidatedStatistics, Feature, IAllStats } from '../utils/protos'
@@ -261,7 +262,7 @@ function Export(props: { map_ref: React.RefObject<DisplayedMap> }): ReactNode {
                 Export as GeoJSON
             </button>
             <button onClick={() => {
-                // eslint-disable-next-line no-restricted-syntax -- Mapper manages its own params
+                // eslint-disable-next-line no-restricted-syntax -- We're opening a new window here
                 const params = new URLSearchParams(window.location.search)
                 params.set('view', 'true')
                 // navigate to the page in a new tab
@@ -274,10 +275,7 @@ function Export(props: { map_ref: React.RefObject<DisplayedMap> }): ReactNode {
     )
 }
 
-function mapSettingsFromURLParams(): MapSettings {
-    // eslint-disable-next-line no-restricted-syntax -- Mapper manages its own params
-    const params = new URLSearchParams(window.location.search)
-    const encoded_settings = params.get('settings')
+export function mapSettingsFromURLParam(encoded_settings: string | null): MapSettings {
     let settings: Partial<MapSettings> = {}
     if (encoded_settings !== null) {
         const jsoned_settings = gunzipSync(Buffer.from(encoded_settings, 'base64')).toString()
@@ -288,8 +286,13 @@ function mapSettingsFromURLParams(): MapSettings {
 
 const name_to_index = new Map(statNames.map((name, i) => [name, i]))
 
-export function MapperPanel(): ReactNode {
-    const [map_settings, set_map_settings] = useState(mapSettingsFromURLParams())
+export function MapperPanel(props: { map_settings: MapSettings, view: boolean }): ReactNode {
+    const [map_settings, set_map_settings] = useState(props.map_settings)
+
+    useEffect(() => {
+        // So that map settings are updated when the prop changes
+        set_map_settings(props.map_settings)
+    }, [props.map_settings])
 
     const [underlying_shapes, set_underlying_shapes] = useState<Promise<ConsolidatedShapes> | undefined>(undefined)
     const [underlying_stats, set_underlying_stats] = useState<Promise<ConsolidatedStatistics> | undefined>(undefined)
@@ -311,23 +314,20 @@ export function MapperPanel(): ReactNode {
 
     const jsoned_settings = JSON.stringify(map_settings)
 
-    useEffect(() => {
-        // gzip then base64 encode
-        const encoded_settings = gzipSync(jsoned_settings).toString('base64')
-        // convert to parameters like ?settings=...
-        // eslint-disable-next-line no-restricted-syntax -- Mapper manages its own params
-        const params = new URLSearchParams(window.location.search)
-        params.set('settings', encoded_settings)
-        // back button should work
-        // eslint-disable-next-line no-restricted-syntax -- Mapper manages its own params
-        window.history.pushState(history.state, '', `?${params.toString()}`)
-    }, [jsoned_settings])
+    const navContext = useContext(NavigationContext)!
 
     useEffect(() => {
-        const listener = (): void => { set_map_settings(mapSettingsFromURLParams()) }
-        window.addEventListener('popstate', listener)
-        return () => { window.removeEventListener('popstate', listener) }
-    }, [])
+        if (props.map_settings !== map_settings) {
+            // gzip then base64 encode
+            const encoded_settings = gzipSync(jsoned_settings).toString('base64')
+            navContext.navigate({
+                kind: 'mapper',
+                settings: encoded_settings,
+                view: props.view,
+            }, 'push', false)
+        }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- props.view won't be set except from the navigator
+    }, [jsoned_settings, navContext])
 
     const mapper_panel = (height: string | undefined): ReactNode => {
         const ramp = parse_ramp(map_settings.ramp)
@@ -356,8 +356,7 @@ export function MapperPanel(): ReactNode {
 
     const headerTextClass = useHeaderTextClass()
 
-    // eslint-disable-next-line no-restricted-syntax -- Mapper manages its own params
-    if (new URLSearchParams(window.location.search).get('view') === 'true') {
+    if (props.view) {
         return mapper_panel('100%')
     }
 

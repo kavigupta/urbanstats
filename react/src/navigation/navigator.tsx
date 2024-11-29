@@ -7,7 +7,7 @@ import { IndexPanel } from '../components/IndexPanel'
 import { ArticlePanel } from '../components/article-panel'
 import { ComparisonPanel } from '../components/comparison-panel'
 import { for_type } from '../components/load-article'
-import { MapperPanel } from '../components/mapper-panel'
+import { MapperPanel, mapSettingsFromURLParam } from '../components/mapper-panel'
 import { QuizPanel } from '../components/quiz-panel'
 import { StatisticPanel, StatisticPanelProps } from '../components/statistic-panel'
 import explanation_pages from '../data/explanation_page'
@@ -16,6 +16,7 @@ import names from '../data/statistic_name_list' // TODO: Maybe dynamically impor
 import paths from '../data/statistic_path_list'
 import { discordFix } from '../discord-fix'
 import { load_ordering, load_ordering_protobuf, loadJSON, loadProtobuf } from '../load_json'
+import { MapSettings } from '../mapper/settings'
 import { Settings } from '../page_template/settings'
 import { StatName } from '../page_template/statistic-tree'
 import { get_daily_offset_number, get_retrostat_offset_number } from '../quiz/dates'
@@ -31,11 +32,13 @@ import { by_population, uniform } from './random'
 const articleSchema = z.object({
     longname: z.string().transform(followSymlink),
     universe: z.nullable(z.string()),
+    s: z.nullable(z.string()),
 })
 
 const comparisonSchema = z.object({
     longnames: z.preprocess(value => JSON.parse(value as string), z.array(z.string())).transform(followSymlinks),
     universe: z.nullable(z.string()),
+    s: z.nullable(z.string()),
 })
 
 const statisticSchema = z.object({
@@ -58,6 +61,11 @@ const quizSchema = z.object({
     date: z.nullable(z.number().int()),
 })
 
+const mapperSchema = z.object({
+    settings: z.nullable(z.string()),
+    view: z.union([z.null().transform(() => false), z.literal('true').transform(() => true), z.literal('false').transform(() => false)]),
+})
+
 export type PageDescriptor = ({ kind: 'article' } & z.infer<typeof articleSchema>)
     | ({ kind: 'comparison' } & z.infer<typeof comparisonSchema>)
     | ({ kind: 'statistic' } & z.infer<typeof statisticSchema>)
@@ -66,7 +74,7 @@ export type PageDescriptor = ({ kind: 'article' } & z.infer<typeof articleSchema
     | { kind: 'about' }
     | { kind: 'dataCredit' }
     | ({ kind: 'quiz' } & z.infer<typeof quizSchema>)
-    | { kind: 'mapper' }
+    | ({ kind: 'mapper' } & z.infer<typeof mapperSchema>)
 
 type PageData =
     { kind: 'article', article: Article, universe: string }
@@ -76,7 +84,7 @@ type PageData =
     | { kind: 'about' }
     | { kind: 'dataCredit' }
     | { kind: 'quiz', quizDescriptor: QuizDescriptor, quiz: QuizQuestion[], parameters: string, todayName: string }
-    | { kind: 'mapper' }
+    | { kind: 'mapper', settings: MapSettings, view: boolean }
 
 type NavigationState = { state: 'notFound', error: unknown }
     | {
@@ -121,7 +129,7 @@ function pageDescriptorFromURL(url: URL): PageDescriptor {
         case '/quiz.html':
             return { kind: 'quiz', ...quizSchema.parse(params) }
         case '/mapper.html':
-            return { kind: 'mapper' }
+            return { kind: 'mapper', ...mapperSchema.parse(params) }
         case '/about.html':
             return { kind: 'about' }
         case '/data-credit.html':
@@ -190,7 +198,10 @@ function urlFromPageDescriptor(pageDescriptor: PageDescriptor): URL {
             break
         case 'mapper':
             pathname = '/mapper.html'
-            searchParams = {}
+            searchParams = {
+                view: pageDescriptor.view ? 'true' : null,
+                settings: pageDescriptor.settings,
+            }
     }
     // eslint-disable-next-line no-restricted-syntax -- Core navigation functions
     const result = new URL(window.location.href)
@@ -315,12 +326,12 @@ async function loadPageDescriptor(descriptor: PageDescriptor, settings: Settings
                 kind: 'article',
                 longname,
                 universe: null,
+                s: null,
             }, settings)
 
         case 'index':
         case 'about':
         case 'dataCredit':
-        case 'mapper':
             return { pageData: descriptor, newPageDescriptor: descriptor }
         case 'quiz':
             let quiz: QuizQuestion[]
@@ -349,6 +360,15 @@ async function loadPageDescriptor(descriptor: PageDescriptor, settings: Settings
                     quiz,
                     parameters: urlFromPageDescriptor(descriptor).searchParams.toString(),
                     todayName,
+                },
+                newPageDescriptor: descriptor,
+            }
+        case 'mapper':
+            return {
+                pageData: {
+                    kind: 'mapper',
+                    view: descriptor.view,
+                    settings: mapSettingsFromURLParam(descriptor.settings),
                 },
                 newPageDescriptor: descriptor,
             }
@@ -412,7 +432,7 @@ export function Navigator(): ReactNode {
 
     const navContext = useMemo<NavigationContextValue>(() => {
         return {
-            navigate(newDescriptor, kind) {
+            navigate(newDescriptor, kind, doPageLoad = true) {
                 setState((currentState) => {
                     const from = toFromField(currentState)
                     switch (kind) {
@@ -425,7 +445,10 @@ export function Navigator(): ReactNode {
                             history.replaceState(newDescriptor, '', urlFromPageDescriptor(newDescriptor))
                             break
                     }
-                    return { state: 'loading', from, to: { descriptor: newDescriptor } }
+                    // We only skip page load if we're already in a loaded state, otherwise we can have weird conditions
+                    return doPageLoad || currentState.state !== 'loaded'
+                        ? { state: 'loading', from, to: { descriptor: newDescriptor } }
+                        : { state: 'loaded', descriptor: newDescriptor, data: currentState.data }
                 })
             },
 
@@ -520,7 +543,7 @@ function ErrorScreen({ error }: { error: unknown }): ReactNode {
 }
 
 interface NavigationContextValue {
-    navigate: (pageDescriptor: PageDescriptor, kind: 'replace' | 'push') => void
+    navigate: (pageDescriptor: PageDescriptor, kind: 'replace' | 'push', doPageLoad?: boolean) => void
     setUniverse: (newUniverse: string) => void
     universe: string | undefined
     link: (pageDescriptor: PageDescriptor) => { href: string, onClick: (e: React.MouseEvent) => void }
@@ -560,6 +583,6 @@ function PageRouter({ pageData }: { pageData: PageData }): ReactNode {
                 />
             )
         case 'mapper':
-            return <MapperPanel />
+            return <MapperPanel map_settings={pageData.settings} view={pageData.view} />
     }
 }
