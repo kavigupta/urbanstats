@@ -1,4 +1,4 @@
-import React, { ReactNode, useState } from 'react'
+import React, { ReactNode, useEffect, useState } from 'react'
 
 import { PageTemplate } from '../page_template/template'
 import '../common.css'
@@ -52,6 +52,17 @@ export function QuizPanel(props: { quizDescriptor: QuizDescriptor, today_name: s
         set_todays_quiz_history(history)
         setTimeout(() => { setWaiting(false) }, 500)
     }
+
+    useEffect(() => {
+        switch (props.quizDescriptor.kind) {
+            case 'juxtastat':
+                document.title = 'Juxtastat'
+                break
+            case 'retrostat':
+                document.title = 'Retrostat'
+                break
+        }
+    })
 
     return (
         <PageTemplate>

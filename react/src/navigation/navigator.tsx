@@ -7,14 +7,17 @@ import { IndexPanel } from '../components/IndexPanel'
 import { ArticlePanel } from '../components/article-panel'
 import { ComparisonPanel } from '../components/comparison-panel'
 import { for_type } from '../components/load-article'
+import { QuizPanel } from '../components/quiz-panel'
 import { StatisticPanel, StatisticPanelProps } from '../components/statistic-panel'
 import explanation_pages from '../data/explanation_page'
 import stats from '../data/statistic_list'
 import names from '../data/statistic_name_list' // TODO: Maybe dynamically import these
 import paths from '../data/statistic_path_list'
 import { discordFix } from '../discord-fix'
-import { load_ordering, load_ordering_protobuf, loadProtobuf } from '../load_json'
+import { load_ordering, load_ordering_protobuf, loadJSON, loadProtobuf } from '../load_json'
 import { Settings } from '../page_template/settings'
+import { get_daily_offset_number, get_retrostat_offset_number } from '../quiz/dates'
+import { JuxtaQuestionJSON, load_juxta, load_retro, QuizDescriptor, QuizQuestion, RetroQuestionJSON } from '../quiz/quiz'
 import { default_article_universe, default_comparison_universe, UniverseContext } from '../universe'
 import { Article, IDataList } from '../utils/protos'
 import { followSymlink, followSymlinks } from '../utils/symlinks'
@@ -50,6 +53,11 @@ const randomSchema = z.object({
     us_only: z.union([z.literal('true').transform(() => true), z.literal('false').transform(() => false), z.null().transform(() => false)]),
 })
 
+const quizSchema = z.object({
+    mode: z.union([z.null(), z.literal('retro')]),
+    date: z.nullable(z.number().int()),
+})
+
 export type PageDescriptor = ({ kind: 'article' } & z.infer<typeof articleSchema>)
     | ({ kind: 'comparison' } & z.infer<typeof comparisonSchema>)
     | ({ kind: 'statistic' } & z.infer<typeof statisticSchema>)
@@ -57,6 +65,7 @@ export type PageDescriptor = ({ kind: 'article' } & z.infer<typeof articleSchema
     | { kind: 'index' }
     | { kind: 'about' }
     | { kind: 'dataCredit' }
+    | ({ kind: 'quiz' } & z.infer<typeof quizSchema>)
 
 type PageData =
     { kind: 'article', article: Article, universe: string }
@@ -65,6 +74,7 @@ type PageData =
     | { kind: 'index' }
     | { kind: 'about' }
     | { kind: 'dataCredit' }
+    | { kind: 'quiz', quizDescriptor: QuizDescriptor, quiz: QuizQuestion[], parameters: string, todayName: string }
 
 type NavigationState = { state: 'notFound', error: unknown }
     | {
@@ -106,6 +116,8 @@ function pageDescriptorFromURL(url: URL): PageDescriptor {
         case '':
         case '/index.html':
             return { kind: 'index' }
+        case '/quiz.html':
+            return { kind: 'quiz', ...quizSchema.parse(params) }
         default:
             throw new Error('404 not found')
     }
@@ -160,6 +172,14 @@ function urlFromPageDescriptor(pageDescriptor: PageDescriptor): URL {
         case 'dataCredit':
             pathname = '/data-credit.html'
             searchParams = {}
+            break
+        case 'quiz':
+            pathname = '/quiz.html'
+            searchParams = {
+                mode: pageDescriptor.mode,
+                date: pageDescriptor.date?.toString() ?? null,
+            }
+            break
     }
     // eslint-disable-next-line no-restricted-syntax -- Core navigation functions
     const result = new URL(window.location.href)
@@ -290,6 +310,36 @@ async function loadPageDescriptor(descriptor: PageDescriptor, settings: Settings
         case 'about':
         case 'dataCredit':
             return { pageData: descriptor, newPageDescriptor: descriptor }
+        case 'quiz':
+            let quiz: QuizQuestion[]
+            let quizDescriptor: QuizDescriptor
+            let todayName: string
+            switch (descriptor.mode) {
+                case 'retro':
+                    const retro = descriptor.date ?? get_retrostat_offset_number()
+                    quizDescriptor = {
+                        kind: 'retrostat',
+                        name: `W${retro}`,
+                    }
+                    quiz = (await loadJSON(`/retrostat/${retro}`) as RetroQuestionJSON[]).map(load_retro)
+                    todayName = `Week ${retro}`
+                    break
+                case null:
+                    const today = descriptor.date ?? get_daily_offset_number()
+                    quizDescriptor = { kind: 'juxtastat', name: today }
+                    quiz = (await loadJSON(`/quiz/${today}`) as JuxtaQuestionJSON[]).map(load_juxta)
+                    todayName = today.toString()
+            }
+            return {
+                pageData: {
+                    kind: 'quiz',
+                    quizDescriptor,
+                    quiz,
+                    parameters: urlFromPageDescriptor(descriptor).searchParams.toString(),
+                    todayName,
+                },
+                newPageDescriptor: descriptor,
+            }
     }
 }
 
@@ -469,5 +519,14 @@ function PageRouter({ pageData }: { pageData: PageData }): ReactNode {
             return <AboutPanel />
         case 'dataCredit':
             return <DataCreditPanel />
+        case 'quiz':
+            return (
+                <QuizPanel
+                    quizDescriptor={pageData.quizDescriptor}
+                    today_name={pageData.todayName}
+                    todays_quiz={pageData.quiz}
+                    parameters={pageData.parameters}
+                />
+            )
     }
 }
