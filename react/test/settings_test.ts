@@ -17,6 +17,7 @@ urbanstatsFixture('settings regression test', testLocation,
         await t.eval(() => {
             localStorage.setItem('settings', EG_SETTINGS)
             // Delete settings param so old settings don't persist after navigation
+            // eslint-disable-next-line no-restricted-syntax -- Test file
             window.location.href = testLocation
         }, { dependencies: { EG_SETTINGS, testLocation } })
     })

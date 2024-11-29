@@ -30,6 +30,7 @@ export function QuerySettingsConnection({ stagedSettingsKeys, applySettingsKeys 
 
     // Query Params -> Settings
     useEffect(() => {
+        // eslint-disable-next-line no-restricted-syntax -- Just manages settings vector functionality
         const queryParams = new URLSearchParams(window.location.search)
         const settingsVector = queryParams.get('s')
         if (settingsVector === null) {
@@ -67,11 +68,13 @@ export function QuerySettingsConnection({ stagedSettingsKeys, applySettingsKeys 
     // Ordering is important here, as some settings are not applied in the previous effect (discarded 'applySettingsKeys`)
     // So our link should reflect (the non-application of) these discarded settings
     useEffect(() => {
+        /* eslint-disable no-restricted-syntax -- Just manages settings vector functionality */
         const url = new URL(window.location.toString())
         url.searchParams.set('s', settingsVector)
         if (url.searchParams.toString() !== window.location.search) {
             history.replaceState(history.state, '', url)
         }
+        /* eslint-enable no-restricted-syntax */
 
         // If we're in staged mode, our monitored settings are the same as persisted, exit staged mode
         if (settings.getStagedKeys() !== undefined && stagedSettingsKeys.every((key) => {

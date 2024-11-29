@@ -90,6 +90,7 @@ Recommend downloading your current progress so you can restore it later.
 Continue?`)) {
             localStorage.setItem('quiz_history', JSON.stringify(persona.quiz_history))
             localStorage.setItem('persistent_id', persona.persistent_id)
+            // eslint-disable-next-line no-restricted-syntax -- Localstorage is not reactive
             window.location.reload()
         }
     }

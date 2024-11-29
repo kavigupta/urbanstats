@@ -118,6 +118,8 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
         document.title = joined_string
     }, [joined_string])
 
+    const navContext = useContext(NavigationContext)!
+
     return (
         <StatPathsContext.Provider value={statPaths}>
             <ArticleComparisonQuerySettingsConnection pageKind="comparison" />
@@ -136,7 +138,13 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
                             <SearchBox
                                 style={{ ...searchComparisonStyle, width: '100%' }}
                                 placeholder="Name"
-                                on_change={(x) => { add_new(names, x) }}
+                                on_change={(x) => {
+                                    navContext.navigate({
+                                        kind: 'comparison',
+                                        universe: curr_universe,
+                                        longnames: [...names, x],
+                                    }, 'push')
+                                }}
                                 autoFocus={false}
                             />
                         </div>
@@ -155,8 +163,20 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
                                             <HeadingDisplay
                                                 longname={data.longname}
                                                 include_delete={props.articles.length > 1}
-                                                on_click={() => { on_delete(names, i) }}
-                                                on_change={(x) => { on_change(names, i, x) }}
+                                                on_click={() => {
+                                                    navContext.navigate({
+                                                        kind: 'comparison',
+                                                        universe: curr_universe,
+                                                        longnames: names.filter((_, index) => index !== i),
+                                                    }, 'push')
+                                                }}
+                                                on_change={(x) => {
+                                                    navContext.navigate({
+                                                        kind: 'comparison',
+                                                        universe: curr_universe,
+                                                        longnames: names.map((value, index) => index === i ? x : value),
+                                                    }, 'push')
+                                                }}
                                             />
                                         </div>,
                                     ),
@@ -213,33 +233,6 @@ function color(colors: HueColors, i: number): string {
     return color_cycle[i % color_cycle.length]
 }
 
-function on_change(names: string[] | undefined, i: number, x: string): void {
-    if (names === undefined) {
-        throw new Error('names is undefined')
-    }
-    const new_names = [...names]
-    new_names[i] = x
-    go(new_names)
-}
-
-function on_delete(names: string[], i: number): void {
-    const new_names = [...names]
-    new_names.splice(i, 1)
-    go(new_names)
-}
-
-function add_new(names: string[], x: string): void {
-    const new_names = [...names]
-    new_names.push(x)
-    go(new_names)
-}
-
-function go(names: string[]): void {
-    const window_info = new URLSearchParams(window.location.search)
-    window_info.set('longnames', JSON.stringify(names))
-    window.location.search = window_info.toString()
-}
-
 function each({ length }: { length: number }): number {
     return 100 * (1 - left_margin_pct) / length
 }
@@ -273,6 +266,7 @@ function ComparisonCells({ names, rows, onlyColumns }: {
     onlyColumns: ColumnIdentifier[]
 }): ReactNode {
     const colors = useColors()
+    const navContext = useContext(NavigationContext)!
 
     const highlightIndex = rows.map(x => x.statval).reduce<number | undefined>((iMax, x, i, arr) => {
         if (isNaN(x)) {
@@ -302,7 +296,13 @@ function ComparisonCells({ names, rows, onlyColumns }: {
                 onlyColumns={onlyColumns}
                 simpleOrdinals={true}
                 statisticStyle={highlightIndex === i ? { backgroundColor: mixWithBackground(color(colors.hueColors, i), colors.mixPct / 100, colors.background) } : {}}
-                onNavigate={(x) => { on_change(names, i, x) }}
+                onNavigate={(x) => {
+                    navContext.navigate({
+                        kind: 'comparison',
+                        universe: navContext.universe!,
+                        longnames: names.map((value, index) => index === i ? x : value),
+                    }, 'push')
+                }}
                 totalWidth={each(rows)}
             />
         )),
