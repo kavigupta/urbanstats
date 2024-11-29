@@ -417,6 +417,7 @@ function StatisticName(props: {
     const link = (
         <a
             style={{ textDecoration: 'none', color: colors.textMain }}
+            href="javascript:void(0)"
             onClick={() => {
                 navContext.navigate({
                     kind: 'statistic',

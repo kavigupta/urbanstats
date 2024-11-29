@@ -118,8 +118,12 @@ function TopLeft(props: {
 function HeaderImage(): ReactNode {
     const colors = useColors()
     const path = useMobileLayout() ? '/thumbnail.png' : colors.bannerURL
+    const navContext = useContext(NavigationContext)!
     return (
-        <a href="/index.html">
+        <a
+            href="javascript:void(0)"
+            onClick={() => { navContext.navigate({ kind: 'index' }, 'push') }}
+        >
             <img
                 src={path}
                 style={{

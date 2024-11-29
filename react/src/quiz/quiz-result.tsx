@@ -439,6 +439,7 @@ export function Clickable({ longname }: { longname: string }): ReactNode {
     const navContext = useContext(NavigationContext)!
     return (
         <a
+            href="javascript:void(0)"
             onClick={() => {
                 navContext.navigate({
                     kind: 'article',

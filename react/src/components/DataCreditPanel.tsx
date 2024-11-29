@@ -626,7 +626,7 @@ export function DataCreditPanel(): ReactNode {
                             and hilliness, we then aggregate these values to 30 arc-second blocks, and then
                             use
                             {' '}
-                            <a href="/data-credit.html#explanation_gpw">GPW</a>
+                            <a href="#explanation_gpw">GPW</a>
                             {' '}
                             data to compute the population weighted average of these statistics for each geography
                             for large regions. For American regions, we disaggregate to the block level (starting

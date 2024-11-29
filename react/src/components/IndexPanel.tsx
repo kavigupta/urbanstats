@@ -1,12 +1,14 @@
-import React, { ReactNode } from 'react'
+import React, { ReactNode, useContext } from 'react'
 import '../style.css'
 import '../common.css'
 
+import { NavigationContext } from '../navigation/navigator'
 import { useColors } from '../page_template/colors'
 import { PageTemplate } from '../page_template/template'
 
 export function IndexPanel(): ReactNode {
     const colors = useColors()
+    const navContext = useContext(NavigationContext)!
     return (
         <PageTemplate>
             <div>
@@ -22,7 +24,7 @@ export function IndexPanel(): ReactNode {
                         interested in these topics. The data is collected from a variety of sources, including the US Census,
                         the GHSL dataset, VEST, and several US government agencies. See
                         {' '}
-                        <a href="/data-credit.html">Data Credit</a>
+                        <a href="javascript:void(0)" onClick={() => { navContext.navigate({ kind: 'dataCredit' }, 'push') }}>Data Credit</a>
                         {' '}
                         for more information.
                     </p>

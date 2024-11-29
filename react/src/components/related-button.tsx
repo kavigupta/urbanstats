@@ -44,6 +44,7 @@ function RelatedButton(props: { region: Region }): ReactNode {
             <a
                 className={classes}
                 style={{ color: colors.textMain, backgroundColor: mixWithBackground(color, colors.mixPct / 100, colors.background) }}
+                href="javascript:void(0)"
                 onClick={() => {
                     navContext.navigate({
                         kind: 'article',

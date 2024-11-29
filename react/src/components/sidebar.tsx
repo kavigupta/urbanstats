@@ -3,6 +3,7 @@ import React, { CSSProperties, ReactNode, useContext, useEffect, useId, useRef }
 import '../style.css'
 import './sidebar.css'
 
+import { NavigationContext } from '../navigation/navigator'
 import { Theme, useColors, useCurrentTheme } from '../page_template/colors'
 import { checkbox_category_name, SettingsDictionary, source_enabled_key, TemperatureUnit, useSetting, useSettingInfo, useStagedSettingKeys } from '../page_template/settings'
 import { StatPathsContext, useDataSourceCheckboxes } from '../page_template/statistic-settings'
@@ -37,6 +38,8 @@ export function Sidebar(): ReactNode {
 
     const sidebar_section_content = useSidebarSectionContentClassName()
 
+    const navContext = useContext(NavigationContext)!
+
     return (
         <div
             className={`serif ${useMobileLayout() ? 'sidebar_mobile' : ''}`}
@@ -51,16 +54,16 @@ export function Sidebar(): ReactNode {
                 <div style={sidebar_section_title}>Main Menu</div>
                 <ul className={sidebar_section_content}>
                     <li>
-                        <a style={link_style} href="/">Home</a>
+                        <a style={link_style} href="javascript:void(0)" onClick={() => { navContext.navigate({ kind: 'index' }, 'push') }}>Home</a>
                     </li>
                     <li>
-                        <a style={link_style} href="/about.html">About Urban Stats</a>
+                        <a style={link_style} href="javascript:void(0)" onClick={() => { navContext.navigate({ kind: 'about' }, 'push') }}>About Urban Stats</a>
                     </li>
                     <li>
-                        <a style={link_style} href="/data-credit.html">Data Credit</a>
+                        <a style={link_style} href="javascript:void(0)" onClick={() => { navContext.navigate({ kind: 'dataCredit' }, 'push') }}>Data Credit</a>
                     </li>
                     <li>
-                        <a style={link_style} href="/mapper.html">Mapper (beta)</a>
+                        <a style={link_style} href="javascript:void(0)" onClick={() => { navContext.navigate({ kind: 'mapper' }, 'push') }}>Mapper (beta)</a>
                     </li>
                 </ul>
             </div>
@@ -68,13 +71,13 @@ export function Sidebar(): ReactNode {
                 <div style={sidebar_section_title}>Random</div>
                 <ul className={sidebar_section_content}>
                     <li>
-                        <a style={link_style} href="/random.html">Unweighted</a>
+                        <a style={link_style} href="javascript:void(0)" onClick={() => { navContext.navigate({ kind: 'random', sampleby: 'uniform', us_only: false }, 'push') }}>Unweighted</a>
                     </li>
                     <li>
-                        <a style={link_style} href="/random.html?sampleby=population&us_only=false">Weighted by Population</a>
+                        <a style={link_style} href="javascript:void(0)" onClick={() => { navContext.navigate({ kind: 'random', sampleby: 'population', us_only: false }, 'push') }}>Weighted by Population</a>
                     </li>
                     <li>
-                        <a style={link_style} href="/random.html?sampleby=population&us_only=true">Weighted by Population (US only)</a>
+                        <a style={link_style} href="javascript:void(0)" onClick={() => { navContext.navigate({ kind: 'random', sampleby: 'population', us_only: true }, 'push') }}>Weighted by Population (US only)</a>
                     </li>
                 </ul>
             </div>
@@ -82,10 +85,10 @@ export function Sidebar(): ReactNode {
                 <div style={sidebar_section_title}>Games</div>
                 <ul className={sidebar_section_content}>
                     <li>
-                        <a style={link_style} href="/quiz.html">Juxtastat</a>
+                        <a style={link_style} href="javascript:void(0)" onClick={() => { navContext.navigate({ kind: 'quiz', date: null, mode: null }, 'push') }}>Juxtastat</a>
                     </li>
                     <li>
-                        <a style={link_style} href="/quiz.html?mode=retro">Retrostat</a>
+                        <a style={link_style} href="javascript:void(0)" onClick={() => { navContext.navigate({ kind: 'quiz', date: null, mode: 'retro' }, 'push') }}>Retrostat</a>
                     </li>
                 </ul>
             </div>
