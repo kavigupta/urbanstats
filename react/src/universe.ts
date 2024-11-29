@@ -1,11 +1,10 @@
-import { createContext, useContext } from 'react'
+import { useContext } from 'react'
 
 import universes_default from './data/universes_default'
-
-export const UniverseContext = createContext<string | undefined>(undefined)
+import { NavigationContext } from './navigation/navigator'
 
 export function useUniverse(): string {
-    return useContext(UniverseContext)!
+    return useContext(NavigationContext)!.universe!
 }
 
 export function default_article_universe(articleUniverses: string[]): typeof universes_default[number] {

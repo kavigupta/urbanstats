@@ -2,9 +2,10 @@ import React, { CSSProperties, ReactNode, useContext, useEffect, useMemo, useRef
 
 import universes_ordered from '../data/universes_ordered'
 import { explanation_page_link, sanitize } from '../navigation/links'
-import { NavigationContext, StatName } from '../navigation/navigator'
+import { NavigationContext } from '../navigation/navigator'
 import { useColors } from '../page_template/colors'
 import { useSetting } from '../page_template/settings'
+import { StatName } from '../page_template/statistic-tree'
 import { PageTemplate } from '../page_template/template'
 import '../common.css'
 import './article.css'

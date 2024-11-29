@@ -2,7 +2,6 @@ import React, { CSSProperties, ReactNode, useContext, useEffect, useRef, useStat
 import ContentEditable, { ContentEditableEvent } from 'react-contenteditable'
 
 import { load_ordering } from '../load_json'
-import { statistic_link } from '../navigation/links'
 import './table.css'
 import { NavigationContext } from '../navigation/navigator'
 import { useColors } from '../page_template/colors'
@@ -414,16 +413,22 @@ function StatisticName(props: {
 }): ReactNode {
     const [expanded, setExpanded] = useSetting(row_expanded_key(props.row.statpath))
     const colors = useColors()
+    const navContext = useContext(NavigationContext)!
     const link = (
         <a
             style={{ textDecoration: 'none', color: colors.textMain }}
-            href={
-                statistic_link(
-                    props.curr_universe,
-                    props.row.statname, props.row.articleType, props.row.ordinal,
-                    20, undefined, props.longname,
-                )
-            }
+            onClick={() => {
+                navContext.navigate({
+                    kind: 'statistic',
+                    universe: props.curr_universe,
+                    statname: props.row.statname,
+                    article_type: props.row.articleType,
+                    start: props.row.ordinal,
+                    amount: 20,
+                    order: 'descending',
+                    highlight: props.longname,
+                }, 'push')
+            }}
         >
             {props.row.rendered_statname}
         </a>

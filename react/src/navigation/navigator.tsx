@@ -7,6 +7,7 @@ import { IndexPanel } from '../components/IndexPanel'
 import { ArticlePanel } from '../components/article-panel'
 import { ComparisonPanel } from '../components/comparison-panel'
 import { for_type } from '../components/load-article'
+import { MapperPanel } from '../components/mapper-panel'
 import { QuizPanel } from '../components/quiz-panel'
 import { StatisticPanel, StatisticPanelProps } from '../components/statistic-panel'
 import explanation_pages from '../data/explanation_page'
@@ -16,17 +17,16 @@ import paths from '../data/statistic_path_list'
 import { discordFix } from '../discord-fix'
 import { load_ordering, load_ordering_protobuf, loadJSON, loadProtobuf } from '../load_json'
 import { Settings } from '../page_template/settings'
+import { StatName } from '../page_template/statistic-tree'
 import { get_daily_offset_number, get_retrostat_offset_number } from '../quiz/dates'
 import { JuxtaQuestionJSON, load_juxta, load_retro, QuizDescriptor, QuizQuestion, RetroQuestionJSON } from '../quiz/quiz'
-import { default_article_universe, default_comparison_universe, UniverseContext } from '../universe'
+import { default_article_universe, default_comparison_universe } from '../universe'
 import { Article, IDataList } from '../utils/protos'
 import { followSymlink, followSymlinks } from '../utils/symlinks'
 import { NormalizeProto } from '../utils/types'
 
 import { data_link, sanitize } from './links'
 import { by_population, uniform } from './random'
-
-export type StatName = (typeof names)[number]
 
 const articleSchema = z.object({
     longname: z.string().transform(followSymlink),
@@ -66,6 +66,7 @@ export type PageDescriptor = ({ kind: 'article' } & z.infer<typeof articleSchema
     | { kind: 'about' }
     | { kind: 'dataCredit' }
     | ({ kind: 'quiz' } & z.infer<typeof quizSchema>)
+    | { kind: 'mapper' }
 
 type PageData =
     { kind: 'article', article: Article, universe: string }
@@ -75,6 +76,7 @@ type PageData =
     | { kind: 'about' }
     | { kind: 'dataCredit' }
     | { kind: 'quiz', quizDescriptor: QuizDescriptor, quiz: QuizQuestion[], parameters: string, todayName: string }
+    | { kind: 'mapper' }
 
 type NavigationState = { state: 'notFound', error: unknown }
     | {
@@ -118,6 +120,12 @@ function pageDescriptorFromURL(url: URL): PageDescriptor {
             return { kind: 'index' }
         case '/quiz.html':
             return { kind: 'quiz', ...quizSchema.parse(params) }
+        case '/mapper.html':
+            return { kind: 'mapper' }
+        case '/about.html':
+            return { kind: 'about' }
+        case '/data-credit.html':
+            return { kind: 'dataCredit' }
         default:
             throw new Error('404 not found')
     }
@@ -180,6 +188,9 @@ function urlFromPageDescriptor(pageDescriptor: PageDescriptor): URL {
                 date: pageDescriptor.date?.toString() ?? null,
             }
             break
+        case 'mapper':
+            pathname = '/mapper.html'
+            searchParams = {}
     }
     // eslint-disable-next-line no-restricted-syntax -- Core navigation functions
     const result = new URL(window.location.href)
@@ -309,6 +320,7 @@ async function loadPageDescriptor(descriptor: PageDescriptor, settings: Settings
         case 'index':
         case 'about':
         case 'dataCredit':
+        case 'mapper':
             return { pageData: descriptor, newPageDescriptor: descriptor }
         case 'quiz':
             let quiz: QuizQuestion[]
@@ -436,8 +448,20 @@ export function Navigator(): ReactNode {
                     }
                 })
             },
+
+            universe: (() => {
+                const from = toFromField(state)
+                switch (from?.data.kind) {
+                    case 'article':
+                    case 'comparison':
+                    case 'statistic':
+                        return from.data.universe
+                    default:
+                        return undefined
+                }
+            })(),
         }
-    }, [])
+    }, [state])
 
     switch (state.state) {
         case 'notFound':
@@ -487,6 +511,7 @@ function ErrorScreen({ error }: { error: unknown }): ReactNode {
 interface NavigationContextValue {
     navigate: (pageDescriptor: PageDescriptor, kind: 'replace' | 'push') => void
     setUniverse: (newUniverse: string) => void
+    universe: string | undefined
 }
 
 export const NavigationContext = createContext<NavigationContextValue | undefined>(undefined)
@@ -495,23 +520,17 @@ function PageRouter({ pageData }: { pageData: PageData }): ReactNode {
     switch (pageData.kind) {
         case 'article':
             return (
-                <UniverseContext.Provider value={pageData.universe}>
-                    <ArticlePanel article={pageData.article} />
-                </UniverseContext.Provider>
+                <ArticlePanel article={pageData.article} />
             )
         case 'comparison':
             return (
-                <UniverseContext.Provider value={pageData.universe}>
-                    <ComparisonPanel articles={pageData.articles} universes={pageData.universes} />
-                </UniverseContext.Provider>
+                <ComparisonPanel articles={pageData.articles} universes={pageData.universes} />
             )
         case 'statistic':
             return (
-                <UniverseContext.Provider value={pageData.universe}>
-                    <StatisticPanel
-                        {...pageData}
-                    />
-                </UniverseContext.Provider>
+                <StatisticPanel
+                    {...pageData}
+                />
             )
         case 'index':
             return <IndexPanel />
@@ -528,5 +547,7 @@ function PageRouter({ pageData }: { pageData: PageData }): ReactNode {
                     parameters={pageData.parameters}
                 />
             )
+        case 'mapper':
+            return <MapperPanel />
     }
 }

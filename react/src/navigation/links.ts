@@ -56,28 +56,6 @@ export function consolidated_stats_link(typ: string): string {
     return `/consolidated/stats__${sanitize(typ)}.gz`
 }
 
-// export function statistic_link(universe: string | undefined, statname: string, article_type: string, start: number, amount: number | 'All', order: string | undefined, highlight: string | undefined): string {
-//     // make start % amount == 0
-//     if (amount !== 'All') {
-//         start = start - 1
-//         start = start - (start % amount)
-//         start = start + 1
-//     }
-//     const params = new URLSearchParams()
-//     params.set('statname', statname.replace('%', '__PCT__'))
-//     params.set('article_type', article_type)
-//     params.set('start', start.toString())
-//     params.set('amount', `${amount}`)
-//     if (order !== undefined && order !== 'descending') {
-//         params.set('order', order)
-//     }
-//     if (highlight !== undefined) {
-//         params.set('highlight', highlight)
-//     }
-//     add_universe_to_params(universe, params)
-//     return `/statistic.html?${params.toString()}`
-// }
-
 export function sanitize(longname: string, spaces_around_slash = true): string {
     let x = longname
     if (spaces_around_slash) {

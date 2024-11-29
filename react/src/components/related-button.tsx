@@ -1,9 +1,9 @@
-import React, { ReactNode, useId } from 'react'
+import React, { ReactNode, useContext, useId } from 'react'
 
 import './related.css'
 import type_ordering_idx from '../data/type_ordering_idx'
 import type_to_type_category from '../data/type_to_type_category'
-import { article_link } from '../navigation/links'
+import { NavigationContext } from '../navigation/navigator'
 import { HueColors, useColors } from '../page_template/colors'
 import { relationship_key, useSetting } from '../page_template/settings'
 import { useUniverse } from '../universe'
@@ -32,6 +32,7 @@ function RelatedButton(props: { region: Region }): ReactNode {
     const curr_universe = useUniverse()
     const colors = useColors()
     const type_category = type_to_type_category[props.region.rowType]
+    const navContext = useContext(NavigationContext)!
 
     let classes = `serif button_related`
     if (useMobileLayout()) {
@@ -43,7 +44,13 @@ function RelatedButton(props: { region: Region }): ReactNode {
             <a
                 className={classes}
                 style={{ color: colors.textMain, backgroundColor: mixWithBackground(color, colors.mixPct / 100, colors.background) }}
-                href={article_link(curr_universe, props.region.longname)}
+                onClick={() => {
+                    navContext.navigate({
+                        kind: 'article',
+                        longname: props.region.longname,
+                        universe: curr_universe,
+                    }, 'push')
+                }}
             >
                 {props.region.shortname}
             </a>

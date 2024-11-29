@@ -261,6 +261,7 @@ function Export(props: { map_ref: React.RefObject<DisplayedMap> }): ReactNode {
                 Export as GeoJSON
             </button>
             <button onClick={() => {
+                // eslint-disable-next-line no-restricted-syntax -- Mapper manages its own params
                 const params = new URLSearchParams(window.location.search)
                 params.set('view', 'true')
                 // navigate to the page in a new tab
@@ -274,6 +275,7 @@ function Export(props: { map_ref: React.RefObject<DisplayedMap> }): ReactNode {
 }
 
 function mapSettingsFromURLParams(): MapSettings {
+    // eslint-disable-next-line no-restricted-syntax -- Mapper manages its own params
     const params = new URLSearchParams(window.location.search)
     const encoded_settings = params.get('settings')
     let settings: Partial<MapSettings> = {}
@@ -310,13 +312,15 @@ export function MapperPanel(): ReactNode {
     const jsoned_settings = JSON.stringify(map_settings)
 
     useEffect(() => {
-    // gzip then base64 encode
+        // gzip then base64 encode
         const encoded_settings = gzipSync(jsoned_settings).toString('base64')
         // convert to parameters like ?settings=...
+        // eslint-disable-next-line no-restricted-syntax -- Mapper manages its own params
         const params = new URLSearchParams(window.location.search)
         params.set('settings', encoded_settings)
         // back button should work
-        window.history.pushState(null, '', `?${params.toString()}`)
+        // eslint-disable-next-line no-restricted-syntax -- Mapper manages its own params
+        window.history.pushState(history.state, '', `?${params.toString()}`)
     }, [jsoned_settings])
 
     useEffect(() => {
@@ -352,6 +356,7 @@ export function MapperPanel(): ReactNode {
 
     const headerTextClass = useHeaderTextClass()
 
+    // eslint-disable-next-line no-restricted-syntax -- Mapper manages its own params
     if (new URLSearchParams(window.location.search).get('view') === 'true') {
         return mapper_panel('100%')
     }

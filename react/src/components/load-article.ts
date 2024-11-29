@@ -5,7 +5,7 @@ import stats from '../data/statistic_list'
 import names from '../data/statistic_name_list'
 import paths from '../data/statistic_path_list'
 import { StatGroupSettings, statIsEnabled } from '../page_template/statistic-settings'
-import { findAmbiguousSourcesAll, statDataOrderToOrder, StatPath, statPathToOrder } from '../page_template/statistic-tree'
+import { findAmbiguousSourcesAll, statDataOrderToOrder, StatName, StatPath, statPathToOrder } from '../page_template/statistic-tree'
 import { Article } from '../utils/protos'
 
 export interface HistogramExtraStat {
@@ -33,7 +33,7 @@ export interface ArticleRow {
     overallOrdinal: number
     percentile_by_population: number
     statcol: StatCol
-    statname: string
+    statname: StatName
     statpath: StatPath
     explanation_page: string
     articleType: string

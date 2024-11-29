@@ -1,9 +1,10 @@
 import '../common.css'
 import './article.css'
 
-import React, { ReactNode, useEffect, useRef } from 'react'
+import React, { ReactNode, useContext, useEffect, useRef } from 'react'
 
-import { article_link, comparison_link, sanitize } from '../navigation/links'
+import { sanitize } from '../navigation/links'
+import { NavigationContext } from '../navigation/navigator'
 import { useColors } from '../page_template/colors'
 import { row_expanded_key, useSetting, useSettings } from '../page_template/settings'
 import { groupYearKeys, StatPathsContext } from '../page_template/statistic-settings'
@@ -111,14 +112,17 @@ export function ArticlePanel({ article }: { article: Article }): ReactNode {
 
 function ComparisonSearchBox({ longname }: { longname: string }): ReactNode {
     const curr_universe = useUniverse()
+    const navContext = useContext(NavigationContext)!
     return (
         <SearchBox
             style={{ ...useComparisonHeadStyle(), width: '100%' }}
             placeholder="Other region..."
             on_change={(x) => {
-                document.location.href = comparison_link(
-                    curr_universe,
-                    [longname, x])
+                navContext.navigate({
+                    kind: 'comparison',
+                    universe: curr_universe,
+                    longnames: [longname, x],
+                }, 'push')
             }}
             autoFocus={false}
         />
@@ -139,6 +143,7 @@ function StatisticTableRow(props: { shortname: string, longname: string, row: Ar
     const [expanded] = useSetting(row_expanded_key(props.row.statpath))
     const currentUniverse = useUniverse()
     const [simpleOrdinals] = useSetting('simple_ordinals')
+    const navContext = useContext(NavigationContext)!
 
     return (
         <WithPlot plot_props={[{ ...props.row, color: colors.hueColors.blue, shortname: props.shortname }]} expanded={expanded ?? false}>
@@ -147,7 +152,13 @@ function StatisticTableRow(props: { shortname: string, longname: string, row: Ar
                     totalWidth={100}
                     longname={props.longname}
                     row={props.row}
-                    onNavigate={newArticle => document.location = article_link(currentUniverse, newArticle)}
+                    onNavigate={(newArticle) => {
+                        navContext.navigate({
+                            kind: 'article',
+                            longname: newArticle,
+                            universe: currentUniverse,
+                        }, 'push')
+                    }}
                     simpleOrdinals={simpleOrdinals}
                 />
             </TableRowContainer>
