@@ -437,14 +437,11 @@ function ArticleLink(props: { longname: string }): ReactNode {
     const navContext = useContext(NavigationContext)!
     return (
         <a
-            href="javascript:void(0)"
-            onClick={() => {
-                navContext.navigate({
-                    kind: 'article',
-                    longname: props.longname,
-                    universe: curr_universe,
-                }, 'push')
-            }}
+            {...navContext.link({
+                kind: 'article',
+                longname: props.longname,
+                universe: curr_universe,
+            })}
             style={{ fontWeight: 500, color: colors.textMain, textDecoration: 'none' }}
         >
             {props.longname}

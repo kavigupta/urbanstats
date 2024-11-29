@@ -395,13 +395,13 @@ function HeadingDisplay({ longname, include_delete, on_click, on_change: on_sear
             <div style={{ height: '5px' }} />
             <a
                 className="serif"
-                onClick={() => {
-                    navContext.navigate({
+                {
+                    ...navContext.link({
                         kind: 'article',
                         longname,
                         universe: curr_universe,
-                    }, 'push')
-                }}
+                    })
+                }
                 style={{ textDecoration: 'none' }}
             >
                 <div style={useComparisonHeadStyle()}>{longname}</div>

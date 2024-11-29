@@ -54,16 +54,16 @@ export function Sidebar(): ReactNode {
                 <div style={sidebar_section_title}>Main Menu</div>
                 <ul className={sidebar_section_content}>
                     <li>
-                        <a style={link_style} href="javascript:void(0)" onClick={() => { navContext.navigate({ kind: 'index' }, 'push') }}>Home</a>
+                        <a style={link_style} {...navContext.link({ kind: 'index' })}>Home</a>
                     </li>
                     <li>
-                        <a style={link_style} href="javascript:void(0)" onClick={() => { navContext.navigate({ kind: 'about' }, 'push') }}>About Urban Stats</a>
+                        <a style={link_style} {...navContext.link({ kind: 'about' })}>About Urban Stats</a>
                     </li>
                     <li>
-                        <a style={link_style} href="javascript:void(0)" onClick={() => { navContext.navigate({ kind: 'dataCredit' }, 'push') }}>Data Credit</a>
+                        <a style={link_style} {...navContext.link({ kind: 'dataCredit' })}>Data Credit</a>
                     </li>
                     <li>
-                        <a style={link_style} href="javascript:void(0)" onClick={() => { navContext.navigate({ kind: 'mapper' }, 'push') }}>Mapper (beta)</a>
+                        <a style={link_style} {...navContext.link({ kind: 'mapper' })}>Mapper (beta)</a>
                     </li>
                 </ul>
             </div>
@@ -71,13 +71,13 @@ export function Sidebar(): ReactNode {
                 <div style={sidebar_section_title}>Random</div>
                 <ul className={sidebar_section_content}>
                     <li>
-                        <a style={link_style} href="javascript:void(0)" onClick={() => { navContext.navigate({ kind: 'random', sampleby: 'uniform', us_only: false }, 'push') }}>Unweighted</a>
+                        <a style={link_style} {...navContext.link({ kind: 'random', sampleby: 'uniform', us_only: false })}>Unweighted</a>
                     </li>
                     <li>
-                        <a style={link_style} href="javascript:void(0)" onClick={() => { navContext.navigate({ kind: 'random', sampleby: 'population', us_only: false }, 'push') }}>Weighted by Population</a>
+                        <a style={link_style} {...navContext.link({ kind: 'random', sampleby: 'population', us_only: false })}>Weighted by Population</a>
                     </li>
                     <li>
-                        <a style={link_style} href="javascript:void(0)" onClick={() => { navContext.navigate({ kind: 'random', sampleby: 'population', us_only: true }, 'push') }}>Weighted by Population (US only)</a>
+                        <a style={link_style} {...navContext.link({ kind: 'random', sampleby: 'population', us_only: true })}>Weighted by Population (US only)</a>
                     </li>
                 </ul>
             </div>
@@ -85,10 +85,10 @@ export function Sidebar(): ReactNode {
                 <div style={sidebar_section_title}>Games</div>
                 <ul className={sidebar_section_content}>
                     <li>
-                        <a style={link_style} href="javascript:void(0)" onClick={() => { navContext.navigate({ kind: 'quiz', date: null, mode: null }, 'push') }}>Juxtastat</a>
+                        <a style={link_style} {...navContext.link({ kind: 'quiz', date: null, mode: null })}>Juxtastat</a>
                     </li>
                     <li>
-                        <a style={link_style} href="javascript:void(0)" onClick={() => { navContext.navigate({ kind: 'quiz', date: null, mode: 'retro' }, 'push') }}>Retrostat</a>
+                        <a style={link_style} {...navContext.link({ kind: 'quiz', date: null, mode: 'retro' })}>Retrostat</a>
                     </li>
                 </ul>
             </div>

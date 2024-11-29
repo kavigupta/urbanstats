@@ -460,6 +460,17 @@ export function Navigator(): ReactNode {
                         return undefined
                 }
             })(),
+
+            link(pageDescriptor) {
+                const url = urlFromPageDescriptor(pageDescriptor)
+                return {
+                    href: url.pathname + url.search,
+                    onClick: (e: React.MouseEvent) => {
+                        e.preventDefault()
+                        this.navigate(pageDescriptor, 'push')
+                    },
+                }
+            },
         }
     }, [state])
 
@@ -512,6 +523,7 @@ interface NavigationContextValue {
     navigate: (pageDescriptor: PageDescriptor, kind: 'replace' | 'push') => void
     setUniverse: (newUniverse: string) => void
     universe: string | undefined
+    link: (pageDescriptor: PageDescriptor) => { href: string, onClick: (e: React.MouseEvent) => void }
 }
 
 export const NavigationContext = createContext<NavigationContextValue | undefined>(undefined)

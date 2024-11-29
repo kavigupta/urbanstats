@@ -417,9 +417,8 @@ function StatisticName(props: {
     const link = (
         <a
             style={{ textDecoration: 'none', color: colors.textMain }}
-            href="javascript:void(0)"
-            onClick={() => {
-                navContext.navigate({
+            {
+                ...navContext.link({
                     kind: 'statistic',
                     universe: props.curr_universe,
                     statname: props.row.statname,
@@ -428,8 +427,8 @@ function StatisticName(props: {
                     amount: 20,
                     order: 'descending',
                     highlight: props.longname,
-                }, 'push')
-            }}
+                })
+            }
         >
             {props.row.rendered_statname}
         </a>

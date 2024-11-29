@@ -439,14 +439,13 @@ export function Clickable({ longname }: { longname: string }): ReactNode {
     const navContext = useContext(NavigationContext)!
     return (
         <a
-            href="javascript:void(0)"
-            onClick={() => {
-                navContext.navigate({
+            {
+                ...navContext.link({
                     kind: 'article',
                     longname,
                     universe: null,
-                }, 'push')
-            }}
+                })
+            }
             style={{ textDecoration: 'none', color: 'inherit' }}
         >
             {longname}
