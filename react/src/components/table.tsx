@@ -428,7 +428,29 @@ function StatisticName(props: {
         </a>
     )
     const screenshot_mode = useScreenshotMode()
+    const elements = [link]
     if (props.row.extra_stat !== undefined && !screenshot_mode) {
+        elements.push(
+            <div
+                className="expand-toggle"
+                onClick={() => { setExpanded(!expanded) }}
+                style={{
+                    cursor: 'pointer', border: `1px solid ${colors.textMain}`,
+                    padding: 0, borderRadius: '3px', fontSize: '75%',
+                    minWidth: '1.5em', minHeight: '1.5em', textAlign: 'center',
+                    lineHeight: '1.2em',
+                }}
+            >
+                {expanded ? '-' : '+'}
+            </div>,
+        )
+    }
+    if (elements.length > 1) {
+        const paddedElements = [elements[0]]
+        for (let i = 1; i < elements.length; i++) {
+            paddedElements.push(<div key={i} style={{ marginLeft: '0.3em' }} />)
+            paddedElements.push(elements[i])
+        }
         return (
             <span style={{
                 display: 'flex',
@@ -436,20 +458,7 @@ function StatisticName(props: {
                 flexDirection: 'row',
             }}
             >
-                {link}
-                <div style={{ marginLeft: '0.3em' }} />
-                <div
-                    className="expand-toggle"
-                    onClick={() => { setExpanded(!expanded) }}
-                    style={{
-                        cursor: 'pointer', border: `1px solid ${colors.textMain}`,
-                        padding: 0, borderRadius: '3px', fontSize: '75%',
-                        minWidth: '1.5em', minHeight: '1.5em', textAlign: 'center',
-                        lineHeight: '1.2em',
-                    }}
-                >
-                    {expanded ? '-' : '+'}
-                </div>
+                {paddedElements}
             </span>
         )
     }
