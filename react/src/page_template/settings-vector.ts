@@ -401,9 +401,11 @@ export function useVector(): string {
     return base58.binary_to_base58(compressBooleans(booleans))
 }
 
-export function fromVector(vector: string, settings: Settings): { [K in VectorSettingKey]: SettingsDictionary[K] } {
+export type VectorSettingsDictionary = { [K in VectorSettingKey]: SettingsDictionary[K] }
+
+export function fromVector(vector: string, settings: Settings): VectorSettingsDictionary {
     const array = decompressBooleans(base58.base58_to_binary(vector))
-    const result = {} as { [K in VectorSettingKey]: SettingsDictionary[K] }
+    const result = {} as VectorSettingsDictionary
     for (const setting of settingsVector) {
         if (setting.deprecated) {
             setting.decode(array)

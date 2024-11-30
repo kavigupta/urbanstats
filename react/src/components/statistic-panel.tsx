@@ -441,6 +441,7 @@ function ArticleLink(props: { longname: string }): ReactNode {
                 kind: 'article',
                 longname: props.longname,
                 universe: curr_universe,
+                s: null,
             })}
             style={{ fontWeight: 500, color: colors.textMain, textDecoration: 'none' }}
         >

@@ -18,6 +18,7 @@ import { discordFix } from '../discord-fix'
 import { load_ordering, load_ordering_protobuf, loadJSON, loadProtobuf } from '../load_json'
 import { MapSettings } from '../mapper/settings'
 import { Settings } from '../page_template/settings'
+import { fromVector, VectorSettingsDictionary } from '../page_template/settings-vector'
 import { StatName } from '../page_template/statistic-tree'
 import { get_daily_offset_number, get_retrostat_offset_number } from '../quiz/dates'
 import { JuxtaQuestionJSON, load_juxta, load_retro, QuizDescriptor, QuizQuestion, RetroQuestionJSON } from '../quiz/quiz'
@@ -77,8 +78,8 @@ export type PageDescriptor = ({ kind: 'article' } & z.infer<typeof articleSchema
     | ({ kind: 'mapper' } & z.infer<typeof mapperSchema>)
 
 type PageData =
-    { kind: 'article', article: Article, universe: string }
-    | { kind: 'comparison', articles: Article[], universe: string, universes: string[] }
+    { kind: 'article', article: Article, universe: string, settings: VectorSettingsDictionary | undefined }
+    | { kind: 'comparison', articles: Article[], universe: string, universes: string[], settings: VectorSettingsDictionary | undefined }
     | { kind: 'statistic', universe: string } & StatisticPanelProps
     | { kind: 'index' }
     | { kind: 'about' }
@@ -204,13 +205,10 @@ function urlFromPageDescriptor(pageDescriptor: PageDescriptor): URL {
             }
     }
     // eslint-disable-next-line no-restricted-syntax -- Core navigation functions
-    const result = new URL(window.location.href)
+    const result = new URL(window.location.origin)
     result.pathname = pathname
     for (const [key, value] of Object.entries(searchParams)) {
-        if (value === null) {
-            result.searchParams.delete(key)
-        }
-        else {
+        if (value !== null) {
             result.searchParams.set(key, value)
         }
     }
@@ -228,11 +226,14 @@ async function loadPageDescriptor(descriptor: PageDescriptor, settings: Settings
 
             const displayUniverse = articleUniverse === defaultUniverse ? null : articleUniverse
 
+            const articleVectorSettings = descriptor.s !== null ? fromVector(descriptor.s, settings) : undefined
+
             return {
                 pageData: {
                     kind: 'article',
                     article,
                     universe: articleUniverse,
+                    settings: articleVectorSettings,
                 },
                 newPageDescriptor: {
                     ...descriptor,
@@ -252,12 +253,15 @@ async function loadPageDescriptor(descriptor: PageDescriptor, settings: Settings
 
             const displayComparisonUniverse = comparisonUniverse === defaultComparisonUniverse ? null : comparisonUniverse
 
+            const comparisonVectorSettings = descriptor.s !== null ? fromVector(descriptor.s, settings) : undefined
+
             return {
                 pageData: {
                     kind: 'comparison',
                     articles,
                     universe: comparisonUniverse,
                     universes,
+                    settings: comparisonVectorSettings,
                 },
                 newPageDescriptor: {
                     ...descriptor,
@@ -376,6 +380,8 @@ async function loadPageDescriptor(descriptor: PageDescriptor, settings: Settings
 }
 
 export function Navigator(): ReactNode {
+    const settings = useContext(Settings.Context)
+
     const [state, setState] = useState<NavigationState>(() => {
         let descriptor: PageDescriptor
         try {
@@ -390,8 +396,6 @@ export function Navigator(): ReactNode {
         history.replaceState(descriptor, '', url)
         return { state: 'loading', to: { descriptor } }
     })
-
-    const settings = useContext(Settings.Context)
 
     useEffect(() => {
         // Load if necessary
@@ -494,6 +498,25 @@ export function Navigator(): ReactNode {
                     },
                 }
             },
+
+            setSettingsVector(newVector) {
+                const from = toFromField(state)
+                switch (from?.descriptor.kind) {
+                    case 'article':
+                    case 'comparison':
+                        this.navigate(
+                            {
+                                ...from.descriptor,
+                                s: newVector,
+                            },
+                            'replace',
+                            false,
+                        )
+                        break
+                    default:
+                        throw new Error(`setting settings vector is not supported for page descriptor kind ${from?.descriptor.kind}`)
+                }
+            },
         }
     }, [state])
 
@@ -547,6 +570,7 @@ interface NavigationContextValue {
     setUniverse: (newUniverse: string) => void
     universe: string | undefined
     link: (pageDescriptor: PageDescriptor) => { href: string, onClick: (e: React.MouseEvent) => void }
+    setSettingsVector: (newVector: string) => void
 }
 
 export const NavigationContext = createContext<NavigationContextValue | undefined>(undefined)
@@ -555,11 +579,11 @@ function PageRouter({ pageData }: { pageData: PageData }): ReactNode {
     switch (pageData.kind) {
         case 'article':
             return (
-                <ArticlePanel article={pageData.article} />
+                <ArticlePanel article={pageData.article} vectorSettings={pageData.settings} />
             )
         case 'comparison':
             return (
-                <ComparisonPanel articles={pageData.articles} universes={pageData.universes} />
+                <ComparisonPanel articles={pageData.articles} universes={pageData.universes} vectorSettings={pageData.settings} />
             )
         case 'statistic':
             return (

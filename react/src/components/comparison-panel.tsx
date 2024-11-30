@@ -7,6 +7,7 @@ import { sanitize } from '../navigation/links'
 import { NavigationContext } from '../navigation/navigator'
 import { HueColors, useColors } from '../page_template/colors'
 import { row_expanded_key, useSetting, useSettings } from '../page_template/settings'
+import { VectorSettingsDictionary } from '../page_template/settings-vector'
 import { groupYearKeys, StatPathsContext } from '../page_template/statistic-settings'
 import { PageTemplate } from '../page_template/template'
 import { useUniverse } from '../universe'
@@ -27,7 +28,7 @@ const left_bar_margin = 0.02
 const left_margin_pct = 0.18
 const bar_height = '5px'
 
-export function ComparisonPanel(props: { universes: string[], articles: Article[] }): ReactNode {
+export function ComparisonPanel(props: { universes: string[], articles: Article[], vectorSettings: VectorSettingsDictionary | undefined }): ReactNode {
     const colors = useColors()
     const table_ref = useRef<HTMLDivElement>(null)
     const map_ref = useRef(null)
@@ -122,7 +123,7 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
 
     return (
         <StatPathsContext.Provider value={statPaths}>
-            <ArticleComparisonQuerySettingsConnection pageKind="comparison" />
+            <ArticleComparisonQuerySettingsConnection vectorSettings={props.vectorSettings} pageKind="comparison" />
             <PageTemplate screencap_elements={screencap_elements} has_universe_selector={true} universes={props.universes}>
                 <div>
                     <div className={headerTextClass}>Comparison</div>
@@ -143,6 +144,7 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
                                         kind: 'comparison',
                                         universe: curr_universe,
                                         longnames: [...names, x],
+                                        s: null,
                                     }, 'push')
                                 }}
                                 autoFocus={false}
@@ -168,6 +170,7 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
                                                         kind: 'comparison',
                                                         universe: curr_universe,
                                                         longnames: names.filter((_, index) => index !== i),
+                                                        s: null,
                                                     }, 'push')
                                                 }}
                                                 on_change={(x) => {
@@ -175,6 +178,7 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
                                                         kind: 'comparison',
                                                         universe: curr_universe,
                                                         longnames: names.map((value, index) => index === i ? x : value),
+                                                        s: null,
                                                     }, 'push')
                                                 }}
                                             />
@@ -301,6 +305,7 @@ function ComparisonCells({ names, rows, onlyColumns }: {
                         kind: 'comparison',
                         universe: navContext.universe!,
                         longnames: names.map((value, index) => index === i ? x : value),
+                        s: null,
                     }, 'push')
                 }}
                 totalWidth={each(rows)}
@@ -400,6 +405,7 @@ function HeadingDisplay({ longname, include_delete, on_click, on_change: on_sear
                         kind: 'article',
                         longname,
                         universe: curr_universe,
+                        s: null,
                     })
                 }
                 style={{ textDecoration: 'none' }}

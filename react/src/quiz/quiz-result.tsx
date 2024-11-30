@@ -444,6 +444,7 @@ export function Clickable({ longname }: { longname: string }): ReactNode {
                     kind: 'article',
                     longname,
                     universe: null,
+                    s: null,
                 })
             }
             style={{ textDecoration: 'none', color: 'inherit' }}

@@ -7,6 +7,7 @@ import { sanitize } from '../navigation/links'
 import { NavigationContext } from '../navigation/navigator'
 import { useColors } from '../page_template/colors'
 import { row_expanded_key, useSetting, useSettings } from '../page_template/settings'
+import { VectorSettingsDictionary } from '../page_template/settings-vector'
 import { groupYearKeys, StatPathsContext } from '../page_template/statistic-settings'
 import { PageTemplate } from '../page_template/template'
 import { useUniverse } from '../universe'
@@ -24,7 +25,7 @@ import { ScreencapElements } from './screenshot'
 import { SearchBox } from './search'
 import { StatisticHeaderCells, StatisticRowCells, TableHeaderContainer, TableRowContainer } from './table'
 
-export function ArticlePanel({ article }: { article: Article }): ReactNode {
+export function ArticlePanel({ article, vectorSettings }: { article: Article, vectorSettings: VectorSettingsDictionary | undefined }): ReactNode {
     const headers_ref = useRef<HTMLDivElement>(null)
     const table_ref = useRef<HTMLDivElement>(null)
     const map_ref = useRef<HTMLDivElement>(null)
@@ -53,7 +54,7 @@ export function ArticlePanel({ article }: { article: Article }): ReactNode {
 
     return (
         <StatPathsContext.Provider value={statPaths}>
-            <ArticleComparisonQuerySettingsConnection pageKind="article" />
+            <ArticleComparisonQuerySettingsConnection pageKind="article" vectorSettings={vectorSettings} />
             <PageTemplate screencap_elements={screencap_elements} has_universe_selector={true} universes={article.universes}>
                 <div>
                     <div ref={headers_ref}>
@@ -122,6 +123,7 @@ function ComparisonSearchBox({ longname }: { longname: string }): ReactNode {
                     kind: 'comparison',
                     universe: curr_universe,
                     longnames: [longname, x],
+                    s: null,
                 }, 'push')
             }}
             autoFocus={false}
@@ -157,6 +159,7 @@ function StatisticTableRow(props: { shortname: string, longname: string, row: Ar
                             kind: 'article',
                             longname: newArticle,
                             universe: currentUniverse,
+                            s: null,
                         }, 'push')
                     }}
                     simpleOrdinals={simpleOrdinals}
