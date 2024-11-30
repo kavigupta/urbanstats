@@ -18,7 +18,6 @@ import { discordFix } from '../discord-fix'
 import { load_ordering, load_ordering_protobuf, loadJSON, loadProtobuf } from '../load_json'
 import { MapSettings } from '../mapper/settings'
 import { Settings } from '../page_template/settings'
-import { fromVector, VectorSettingsDictionary } from '../page_template/settings-vector'
 import { StatName } from '../page_template/statistic-tree'
 import { get_daily_offset_number, get_retrostat_offset_number } from '../quiz/dates'
 import { JuxtaQuestionJSON, load_juxta, load_retro, QuizDescriptor, QuizQuestion, RetroQuestionJSON } from '../quiz/quiz'
@@ -78,8 +77,8 @@ export type PageDescriptor = ({ kind: 'article' } & z.infer<typeof articleSchema
     | ({ kind: 'mapper' } & z.infer<typeof mapperSchema>)
 
 type PageData =
-    { kind: 'article', article: Article, universe: string, settings: VectorSettingsDictionary | undefined }
-    | { kind: 'comparison', articles: Article[], universe: string, universes: string[], settings: VectorSettingsDictionary | undefined }
+    { kind: 'article', article: Article, universe: string }
+    | { kind: 'comparison', articles: Article[], universe: string, universes: string[] }
     | { kind: 'statistic', universe: string } & StatisticPanelProps
     | { kind: 'index' }
     | { kind: 'about' }
@@ -114,7 +113,6 @@ function toFromField(navigationState: NavigationState): { descriptor: PageDescri
 
 function pageDescriptorFromURL(url: URL): PageDescriptor {
     const params = Object.fromEntries(url.searchParams.entries())
-    console.log({ pathname: url.pathname, params })
     switch (url.pathname) {
         case '/article.html':
             return { kind: 'article', ...articleSchema.parse(params) }
@@ -151,6 +149,7 @@ function urlFromPageDescriptor(pageDescriptor: PageDescriptor): URL {
             searchParams = {
                 longname: sanitize(pageDescriptor.longname),
                 universe: pageDescriptor.universe,
+                s: pageDescriptor.s,
             }
             break
         case 'comparison':
@@ -158,6 +157,7 @@ function urlFromPageDescriptor(pageDescriptor: PageDescriptor): URL {
             searchParams = {
                 longnames: JSON.stringify(pageDescriptor.longnames.map(n => sanitize(n))),
                 universe: pageDescriptor.universe,
+                s: pageDescriptor.s,
             }
             break
         case 'statistic':
@@ -207,7 +207,6 @@ function urlFromPageDescriptor(pageDescriptor: PageDescriptor): URL {
     }
     // eslint-disable-next-line no-restricted-syntax -- Core navigation functions
     const result = new URL(window.location.origin)
-    console.trace()
     result.pathname = pathname
     for (const [key, value] of Object.entries(searchParams)) {
         if (value !== undefined) {
@@ -228,14 +227,11 @@ async function loadPageDescriptor(descriptor: PageDescriptor, settings: Settings
 
             const displayUniverse = articleUniverse === defaultUniverse ? undefined : articleUniverse
 
-            const articleVectorSettings = descriptor.s !== undefined ? fromVector(descriptor.s, settings) : undefined
-
             return {
                 pageData: {
                     kind: 'article',
                     article,
                     universe: articleUniverse,
-                    settings: articleVectorSettings,
                 },
                 newPageDescriptor: {
                     ...descriptor,
@@ -255,15 +251,12 @@ async function loadPageDescriptor(descriptor: PageDescriptor, settings: Settings
 
             const displayComparisonUniverse = comparisonUniverse === defaultComparisonUniverse ? undefined : comparisonUniverse
 
-            const comparisonVectorSettings = descriptor.s !== undefined ? fromVector(descriptor.s, settings) : undefined
-
             return {
                 pageData: {
                     kind: 'comparison',
                     articles,
                     universe: comparisonUniverse,
                     universes,
-                    settings: comparisonVectorSettings,
                 },
                 newPageDescriptor: {
                     ...descriptor,
@@ -499,6 +492,17 @@ export function Navigator(): ReactNode {
                 }
             },
 
+            settingsVector: (() => {
+                const from = toFromField(state)
+                switch (from?.descriptor.kind) {
+                    case 'article':
+                    case 'comparison':
+                        return from.descriptor.s
+                    default:
+                        return undefined
+                }
+            })(),
+
             setSettingsVector(newVector) {
                 const from = toFromField(state)
                 switch (from?.descriptor.kind) {
@@ -570,6 +574,7 @@ interface NavigationContextValue {
     setUniverse: (newUniverse: string) => void
     universe: string | undefined
     link: (pageDescriptor: PageDescriptor) => { href: string, onClick: (e: React.MouseEvent) => void }
+    settingsVector: string | undefined
     setSettingsVector: (newVector: string) => void
 }
 
@@ -579,11 +584,11 @@ function PageRouter({ pageData }: { pageData: PageData }): ReactNode {
     switch (pageData.kind) {
         case 'article':
             return (
-                <ArticlePanel article={pageData.article} vectorSettings={pageData.settings} />
+                <ArticlePanel article={pageData.article} />
             )
         case 'comparison':
             return (
-                <ComparisonPanel articles={pageData.articles} universes={pageData.universes} vectorSettings={pageData.settings} />
+                <ComparisonPanel articles={pageData.articles} universes={pageData.universes} />
             )
         case 'statistic':
             return (

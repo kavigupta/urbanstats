@@ -7,7 +7,6 @@ import { sanitize } from '../navigation/links'
 import { NavigationContext } from '../navigation/navigator'
 import { HueColors, useColors } from '../page_template/colors'
 import { row_expanded_key, useSetting, useSettings } from '../page_template/settings'
-import { VectorSettingsDictionary } from '../page_template/settings-vector'
 import { groupYearKeys, StatPathsContext } from '../page_template/statistic-settings'
 import { PageTemplate } from '../page_template/template'
 import { useUniverse } from '../universe'
@@ -28,7 +27,7 @@ const left_bar_margin = 0.02
 const left_margin_pct = 0.18
 const bar_height = '5px'
 
-export function ComparisonPanel(props: { universes: string[], articles: Article[], vectorSettings: VectorSettingsDictionary | undefined }): ReactNode {
+export function ComparisonPanel(props: { universes: string[], articles: Article[] }): ReactNode {
     const colors = useColors()
     const table_ref = useRef<HTMLDivElement>(null)
     const map_ref = useRef(null)
@@ -123,7 +122,7 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
 
     return (
         <StatPathsContext.Provider value={statPaths}>
-            <ArticleComparisonQuerySettingsConnection vectorSettings={props.vectorSettings} pageKind="comparison" />
+            <ArticleComparisonQuerySettingsConnection pageKind="comparison" />
             <PageTemplate screencap_elements={screencap_elements} has_universe_selector={true} universes={props.universes}>
                 <div>
                     <div className={headerTextClass}>Comparison</div>

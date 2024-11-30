@@ -7,7 +7,6 @@ import { sanitize } from '../navigation/links'
 import { NavigationContext } from '../navigation/navigator'
 import { useColors } from '../page_template/colors'
 import { row_expanded_key, useSetting, useSettings } from '../page_template/settings'
-import { VectorSettingsDictionary } from '../page_template/settings-vector'
 import { groupYearKeys, StatPathsContext } from '../page_template/statistic-settings'
 import { PageTemplate } from '../page_template/template'
 import { useUniverse } from '../universe'
@@ -25,7 +24,7 @@ import { ScreencapElements } from './screenshot'
 import { SearchBox } from './search'
 import { StatisticHeaderCells, StatisticRowCells, TableHeaderContainer, TableRowContainer } from './table'
 
-export function ArticlePanel({ article, vectorSettings }: { article: Article, vectorSettings: VectorSettingsDictionary | undefined }): ReactNode {
+export function ArticlePanel({ article }: { article: Article }): ReactNode {
     const headers_ref = useRef<HTMLDivElement>(null)
     const table_ref = useRef<HTMLDivElement>(null)
     const map_ref = useRef<HTMLDivElement>(null)
@@ -54,7 +53,7 @@ export function ArticlePanel({ article, vectorSettings }: { article: Article, ve
 
     return (
         <StatPathsContext.Provider value={statPaths}>
-            <ArticleComparisonQuerySettingsConnection pageKind="article" vectorSettings={vectorSettings} />
+            <ArticleComparisonQuerySettingsConnection pageKind="article" />
             <PageTemplate screencap_elements={screencap_elements} has_universe_selector={true} universes={article.universes}>
                 <div>
                     <div ref={headers_ref}>
