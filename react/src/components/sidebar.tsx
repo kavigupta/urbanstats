@@ -63,7 +63,7 @@ export function Sidebar(): ReactNode {
                         <a style={link_style} {...navContext.link({ kind: 'dataCredit' })}>Data Credit</a>
                     </li>
                     <li>
-                        <a style={link_style} {...navContext.link({ kind: 'mapper', settings: null, view: false })}>Mapper (beta)</a>
+                        <a style={link_style} {...navContext.link({ kind: 'mapper', view: false })}>Mapper (beta)</a>
                     </li>
                 </ul>
             </div>
@@ -85,10 +85,10 @@ export function Sidebar(): ReactNode {
                 <div style={sidebar_section_title}>Games</div>
                 <ul className={sidebar_section_content}>
                     <li>
-                        <a style={link_style} {...navContext.link({ kind: 'quiz', date: null, mode: null })}>Juxtastat</a>
+                        <a style={link_style} {...navContext.link({ kind: 'quiz' })}>Juxtastat</a>
                     </li>
                     <li>
-                        <a style={link_style} {...navContext.link({ kind: 'quiz', date: null, mode: 'retro' })}>Retrostat</a>
+                        <a style={link_style} {...navContext.link({ kind: 'quiz', mode: 'retro' })}>Retrostat</a>
                     </li>
                 </ul>
             </div>

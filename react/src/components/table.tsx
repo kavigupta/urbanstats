@@ -898,7 +898,6 @@ function PointerButtonIndex(props: {
                     kind: 'article',
                     longname: name,
                     universe,
-                    s: null,
                 }, 'push')
                 return
             }

@@ -75,13 +75,12 @@ export function StatisticPanel(props: StatisticPanelProps): ReactNode {
         const new_order = is_ascending ? 'descending' : 'ascending'
         navContext.navigate({
             kind: 'statistic',
-            universe: curr_universe ?? null,
+            universe: curr_universe,
             statname: props.statname,
             article_type: props.article_type,
             start: 1,
             amount: props.amount,
             order: new_order,
-            highlight: null,
         }, 'push')
     }
 
@@ -222,7 +221,6 @@ function Pagination(props: {
         navContext.navigate({
             kind: 'statistic',
             universe: curr_universe,
-            highlight: null,
             ...props,
             start: new_start,
         }, 'push')
@@ -252,7 +250,6 @@ function Pagination(props: {
             start,
             amount: new_amount === 'All' ? 'All' : new_amount_num,
             order: props.order,
-            highlight: null,
         }, 'push')
     }
 
@@ -272,7 +269,6 @@ function Pagination(props: {
                 universe: curr_universe,
                 ...props,
                 start: (new_page - 1) * per_page + 1,
-                highlight: null,
             }, 'replace')
         }
 
@@ -441,7 +437,6 @@ function ArticleLink(props: { longname: string }): ReactNode {
                 kind: 'article',
                 longname: props.longname,
                 universe: curr_universe,
-                s: null,
             })}
             style={{ fontWeight: 500, color: colors.textMain, textDecoration: 'none' }}
         >

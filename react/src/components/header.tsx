@@ -63,7 +63,6 @@ export function Header(props: {
                                         kind: 'article',
                                         universe: curr_universe,
                                         longname: new_location,
-                                        s: null,
                                     }, 'push')
                                 }
                             }

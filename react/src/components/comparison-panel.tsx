@@ -144,7 +144,6 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
                                         kind: 'comparison',
                                         universe: curr_universe,
                                         longnames: [...names, x],
-                                        s: null,
                                     }, 'push')
                                 }}
                                 autoFocus={false}
@@ -170,7 +169,6 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
                                                         kind: 'comparison',
                                                         universe: curr_universe,
                                                         longnames: names.filter((_, index) => index !== i),
-                                                        s: null,
                                                     }, 'push')
                                                 }}
                                                 on_change={(x) => {
@@ -178,7 +176,6 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
                                                         kind: 'comparison',
                                                         universe: curr_universe,
                                                         longnames: names.map((value, index) => index === i ? x : value),
-                                                        s: null,
                                                     }, 'push')
                                                 }}
                                             />
@@ -305,7 +302,6 @@ function ComparisonCells({ names, rows, onlyColumns }: {
                         kind: 'comparison',
                         universe: navContext.universe!,
                         longnames: names.map((value, index) => index === i ? x : value),
-                        s: null,
                     }, 'push')
                 }}
                 totalWidth={each(rows)}
@@ -405,7 +401,6 @@ function HeadingDisplay({ longname, include_delete, on_click, on_change: on_sear
                         kind: 'article',
                         longname,
                         universe: curr_universe,
-                        s: null,
                     })
                 }
                 style={{ textDecoration: 'none' }}

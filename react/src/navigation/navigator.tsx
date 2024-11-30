@@ -32,39 +32,39 @@ import { by_population, uniform } from './random'
 
 const articleSchema = z.object({
     longname: z.string().transform(followSymlink),
-    universe: z.nullable(z.string()),
-    s: z.nullable(z.string()),
+    universe: z.optional(z.string()),
+    s: z.optional(z.string()),
 })
 
 const comparisonSchema = z.object({
     longnames: z.preprocess(value => JSON.parse(value as string), z.array(z.string())).transform(followSymlinks),
-    universe: z.nullable(z.string()),
-    s: z.nullable(z.string()),
+    universe: z.optional(z.string()),
+    s: z.optional(z.string()),
 })
 
 const statisticSchema = z.object({
     article_type: z.string(),
     statname: z.string().transform(s => s.replaceAll('__PCT__', '%') as StatName),
-    start: z.nullable(z.string()).transform(s => parseInt(s ?? '1')),
-    amount: z.union([z.literal('All'), z.string().transform(s => parseInt(s)), z.null().transform(() => 10)]),
-    order: z.union([z.null().transform(() => 'descending' as const), z.literal('descending'), z.literal('ascending')]),
-    highlight: z.nullable(z.string()),
-    universe: z.nullable(z.string()),
+    start: z.optional(z.string()).transform(s => parseInt(s ?? '1')),
+    amount: z.union([z.literal('All'), z.string().transform(s => parseInt(s)), z.undefined().transform(() => 10)]),
+    order: z.union([z.undefined().transform(() => 'descending' as const), z.literal('descending'), z.literal('ascending')]),
+    highlight: z.optional(z.string()),
+    universe: z.optional(z.string()),
 })
 
 const randomSchema = z.object({
-    sampleby: z.union([z.literal('uniform'), z.literal('population'), z.null().transform(() => 'uniform' as const)]),
-    us_only: z.union([z.literal('true').transform(() => true), z.literal('false').transform(() => false), z.null().transform(() => false)]),
+    sampleby: z.union([z.literal('uniform'), z.literal('population'), z.undefined().transform(() => 'uniform' as const)]),
+    us_only: z.union([z.literal('true').transform(() => true), z.literal('false').transform(() => false), z.undefined().transform(() => false)]),
 })
 
 const quizSchema = z.object({
-    mode: z.union([z.null(), z.literal('retro')]),
-    date: z.nullable(z.number().int()),
+    mode: z.union([z.undefined(), z.literal('retro')]),
+    date: z.optional(z.number().int()),
 })
 
 const mapperSchema = z.object({
-    settings: z.nullable(z.string()),
-    view: z.union([z.null().transform(() => false), z.literal('true').transform(() => true), z.literal('false').transform(() => false)]),
+    settings: z.optional(z.string()),
+    view: z.union([z.undefined().transform(() => false), z.literal('true').transform(() => true), z.literal('false').transform(() => false)]),
 })
 
 export type PageDescriptor = ({ kind: 'article' } & z.infer<typeof articleSchema>)
@@ -114,6 +114,7 @@ function toFromField(navigationState: NavigationState): { descriptor: PageDescri
 
 function pageDescriptorFromURL(url: URL): PageDescriptor {
     const params = Object.fromEntries(url.searchParams.entries())
+    console.log({ pathname: url.pathname, params })
     switch (url.pathname) {
         case '/article.html':
             return { kind: 'article', ...articleSchema.parse(params) }
@@ -143,7 +144,7 @@ function pageDescriptorFromURL(url: URL): PageDescriptor {
 // Not a pure function, just modifies the current URL
 function urlFromPageDescriptor(pageDescriptor: PageDescriptor): URL {
     let pathname: string
-    let searchParams: Record<string, string | null>
+    let searchParams: Record<string, string | undefined>
     switch (pageDescriptor.kind) {
         case 'article':
             pathname = '/article.html'
@@ -166,7 +167,7 @@ function urlFromPageDescriptor(pageDescriptor: PageDescriptor): URL {
                 article_type: pageDescriptor.article_type,
                 start: pageDescriptor.start.toString(),
                 amount: pageDescriptor.amount.toString(),
-                order: pageDescriptor.order === 'descending' ? null : 'ascending',
+                order: pageDescriptor.order === 'descending' ? undefined : 'ascending',
                 highlight: pageDescriptor.highlight,
                 universe: pageDescriptor.universe,
             }
@@ -175,7 +176,7 @@ function urlFromPageDescriptor(pageDescriptor: PageDescriptor): URL {
             pathname = '/random.html'
             searchParams = {
                 sampleby: pageDescriptor.sampleby,
-                us_only: pageDescriptor.us_only ? 'true' : null,
+                us_only: pageDescriptor.us_only ? 'true' : undefined,
             }
             break
         case 'index':
@@ -194,21 +195,22 @@ function urlFromPageDescriptor(pageDescriptor: PageDescriptor): URL {
             pathname = '/quiz.html'
             searchParams = {
                 mode: pageDescriptor.mode,
-                date: pageDescriptor.date?.toString() ?? null,
+                date: pageDescriptor.date?.toString(),
             }
             break
         case 'mapper':
             pathname = '/mapper.html'
             searchParams = {
-                view: pageDescriptor.view ? 'true' : null,
+                view: pageDescriptor.view ? 'true' : undefined,
                 settings: pageDescriptor.settings,
             }
     }
     // eslint-disable-next-line no-restricted-syntax -- Core navigation functions
     const result = new URL(window.location.origin)
+    console.trace()
     result.pathname = pathname
     for (const [key, value] of Object.entries(searchParams)) {
-        if (value !== null) {
+        if (value !== undefined) {
             result.searchParams.set(key, value)
         }
     }
@@ -222,11 +224,11 @@ async function loadPageDescriptor(descriptor: PageDescriptor, settings: Settings
 
             const defaultUniverse = default_article_universe(article.universes)
 
-            const articleUniverse = descriptor.universe !== null && article.universes.includes(descriptor.universe) ? descriptor.universe : defaultUniverse
+            const articleUniverse = descriptor.universe !== undefined && article.universes.includes(descriptor.universe) ? descriptor.universe : defaultUniverse
 
-            const displayUniverse = articleUniverse === defaultUniverse ? null : articleUniverse
+            const displayUniverse = articleUniverse === defaultUniverse ? undefined : articleUniverse
 
-            const articleVectorSettings = descriptor.s !== null ? fromVector(descriptor.s, settings) : undefined
+            const articleVectorSettings = descriptor.s !== undefined ? fromVector(descriptor.s, settings) : undefined
 
             return {
                 pageData: {
@@ -249,11 +251,11 @@ async function loadPageDescriptor(descriptor: PageDescriptor, settings: Settings
 
             const defaultComparisonUniverse = default_comparison_universe(articleUniverses, universes)
 
-            const comparisonUniverse = descriptor.universe !== null && universes.includes(descriptor.universe) ? descriptor.universe : defaultComparisonUniverse
+            const comparisonUniverse = descriptor.universe !== undefined && universes.includes(descriptor.universe) ? descriptor.universe : defaultComparisonUniverse
 
-            const displayComparisonUniverse = comparisonUniverse === defaultComparisonUniverse ? null : comparisonUniverse
+            const displayComparisonUniverse = comparisonUniverse === defaultComparisonUniverse ? undefined : comparisonUniverse
 
-            const comparisonVectorSettings = descriptor.s !== null ? fromVector(descriptor.s, settings) : undefined
+            const comparisonVectorSettings = descriptor.s !== undefined ? fromVector(descriptor.s, settings) : undefined
 
             return {
                 pageData: {
@@ -270,7 +272,7 @@ async function loadPageDescriptor(descriptor: PageDescriptor, settings: Settings
             }
         case 'statistic':
             const statUniverse = descriptor.universe ?? 'world'
-            const displayStatUniverse = statUniverse !== 'world' ? statUniverse : null
+            const displayStatUniverse = statUniverse !== 'world' ? statUniverse : undefined
 
             const statIndex = names.indexOf(descriptor.statname)
             const statpath = paths[statIndex]
@@ -310,7 +312,7 @@ async function loadPageDescriptor(descriptor: PageDescriptor, settings: Settings
                 newPageDescriptor: {
                     ...descriptor,
                     universe: displayStatUniverse,
-                    highlight: null,
+                    highlight: undefined,
                 },
             }
         case 'random':
@@ -329,8 +331,6 @@ async function loadPageDescriptor(descriptor: PageDescriptor, settings: Settings
             return await loadPageDescriptor({
                 kind: 'article',
                 longname,
-                universe: null,
-                s: null,
             }, settings)
 
         case 'index':
@@ -351,7 +351,7 @@ async function loadPageDescriptor(descriptor: PageDescriptor, settings: Settings
                     quiz = (await loadJSON(`/retrostat/${retro}`) as RetroQuestionJSON[]).map(load_retro)
                     todayName = `Week ${retro}`
                     break
-                case null:
+                case undefined:
                     const today = descriptor.date ?? get_daily_offset_number()
                     quizDescriptor = { kind: 'juxtastat', name: today }
                     quiz = (await loadJSON(`/quiz/${today}`) as JuxtaQuestionJSON[]).map(load_juxta)

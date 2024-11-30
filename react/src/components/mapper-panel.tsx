@@ -275,9 +275,9 @@ function Export(props: { map_ref: React.RefObject<DisplayedMap> }): ReactNode {
     )
 }
 
-export function mapSettingsFromURLParam(encoded_settings: string | null): MapSettings {
+export function mapSettingsFromURLParam(encoded_settings: string | undefined): MapSettings {
     let settings: Partial<MapSettings> = {}
-    if (encoded_settings !== null) {
+    if (encoded_settings !== undefined) {
         const jsoned_settings = gunzipSync(Buffer.from(encoded_settings, 'base64')).toString()
         settings = JSON.parse(jsoned_settings) as Partial<MapSettings>
     }
