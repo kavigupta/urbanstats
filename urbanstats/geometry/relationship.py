@@ -173,6 +173,7 @@ tiers = [
         "20M Person Circle",
         "10M Person Circle",
         "5M Person Circle",
+        "Census Division",
     ],
     ["CCD", "City", "School District"],
     ["Neighborhood", "ZIP"],
@@ -185,6 +186,7 @@ type_to_type_category = {
 
 type_category_order = {
     "US Subdivision": 0,
+    "Canadian Subdivision": 0,
     "International": 0,
     "Census": 20,
     "Small": 30,

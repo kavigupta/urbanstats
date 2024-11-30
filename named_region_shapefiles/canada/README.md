@@ -9,11 +9,20 @@ canada-comprehensive.zip. Then unzip.
 
 Portal is https://www12.statcan.gc.ca/census-recensement/2021/geo/sip-pis/boundary-limites/index2021-eng.cfm?year=21
 
-For each one, we can download the boundaries by selecting the kind of boundary and then clicking "shapefile".
+For each one, we can download the boundaries by selecting the kind of boundary and then clicking "shapefile". Make sure
+to use Digital Boundary File (DBF) format.
 
 ## Dissemination blocks
 
 https://www12.statcan.gc.ca/census-recensement/2021/geo/sip-pis/boundary-limites/files-fichiers/ldb_000b21a_e.zip
+
+## Census Divisions
+
+https://www12.statcan.gc.ca/census-recensement/2021/geo/sip-pis/boundary-limites/files-fichiers/lcd_000b21a_e.zip
+
+## Census Subdivisions
+
+https://www12.statcan.gc.ca/census-recensement/2021/geo/sip-pis/boundary-limites/files-fichiers/lcsd000b21a_e.zip
 
 # Shapefiles for dissemination areas (maybe unnecessary, check back later)
 

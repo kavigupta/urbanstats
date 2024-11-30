@@ -26,6 +26,21 @@ def universe_by_universe_type():
         "state": [
             get_universe_name_for_state(x) for x in us.states.STATES_AND_TERRITORIES
         ],
+        "province": [
+            "Alberta, Canada",
+            "British Columbia, Canada",
+            "Manitoba, Canada",
+            "New Brunswick, Canada",
+            "Newfoundland and Labrador, Canada",
+            "Northwest Territories, Canada",
+            "Nova Scotia, Canada",
+            "Nunavut, Canada",
+            "Ontario, Canada",
+            "Prince Edward Island, Canada",
+            "Quebec, Canada",
+            "Saskatchewan, Canada",
+            "Yukon, Canada",
+        ],
     }
 
 

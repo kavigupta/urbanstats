@@ -22,6 +22,7 @@ const value: Record<string, string> = {
     'Hospital Referral Region': 'Oddball',
     'Hospital Service Area': 'Oddball',
     'Media Market': 'Oddball',
+    'Census Division': 'Canadian Subdivision',
     'Continent': 'International',
     'Country': 'International',
     'Subnational Region': 'US Subdivision',

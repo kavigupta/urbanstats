@@ -78,6 +78,7 @@ def combined_shapefile():
 
 def merge_population_estimates(full):
     popu = np.array(full.population)
+    popu[np.isnan(popu)] = full.population_2021_canada[np.isnan(popu)]
     popu[np.isnan(popu)] = full.gpw_population[np.isnan(popu)]
     full["best_population_estimate"] = popu
     return full

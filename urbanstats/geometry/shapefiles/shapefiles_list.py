@@ -2,6 +2,9 @@ from urbanstats.geometry.shapefiles.shapefile import (
     multiple_localized_type_names,
     subset_mask_key,
 )
+from urbanstats.geometry.shapefiles.shapefiles.canadian_census_divisions import (
+    CANADIAN_CENSUS_DIVISIONS,
+)
 from urbanstats.geometry.shapefiles.shapefiles.ccds import CCDs
 from urbanstats.geometry.shapefiles.shapefiles.cities import CITIES
 from urbanstats.geometry.shapefiles.shapefiles.continents import CONTINENTS
@@ -32,6 +35,7 @@ from urbanstats.geometry.shapefiles.shapefiles.usda_county_type import USDA_COUN
 from urbanstats.geometry.shapefiles.shapefiles.zctas import ZCTAs
 
 shapefiles = dict(
+    # US
     counties=COUNTIES,
     msas=MSAs,
     csas=CSAs,
@@ -49,6 +53,9 @@ shapefiles = dict(
     usda_county_type=USDA_COUNTY_TYPE,
     **hospital_shapefiles,
     media_markets=MEDIA_MARKETS,
+    # Canada
+    canada_census_divisions=CANADIAN_CENSUS_DIVISIONS,
+    # International
     continents=CONTINENTS,
     countries=COUNTRIES,
     subnational_regions=SUBNATIONAL_REGIONS,

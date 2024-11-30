@@ -140,6 +140,10 @@ export default [
         'Media Market',
     ],
     [
+        'Census Division',
+        'Census Division',
+    ],
+    [
         'Continent',
         'Continent',
     ],
