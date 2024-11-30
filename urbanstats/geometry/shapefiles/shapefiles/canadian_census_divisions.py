@@ -47,7 +47,7 @@ def subdivision_longname(row):
 
 
 CANADIAN_CENSUS_DIVISIONS = Shapefile(
-    hash_key="canadian_census_divisions_1",
+    hash_key="canadian_census_divisions_2",
     path="named_region_shapefiles/canada/lcd_000a21a_e.zip",
     shortname_extractor=subdivision_name,
     longname_extractor=subdivision_longname,
