@@ -4,10 +4,10 @@ import './article.css'
 import React, { ReactNode, useContext, useEffect, useRef } from 'react'
 
 import { sanitize } from '../navigation/links'
-import { NavigationContext } from '../navigation/navigator'
+import { Navigator } from '../navigation/navigator'
 import { HueColors, useColors } from '../page_template/colors'
 import { row_expanded_key, useSetting, useSettings } from '../page_template/settings'
-import { groupYearKeys, StatPathsContext } from '../page_template/statistic-settings'
+import { groupYearKeys, StatGroupSettings } from '../page_template/statistic-settings'
 import { PageTemplate } from '../page_template/template'
 import { useUniverse } from '../universe'
 import { mixWithBackground } from '../utils/color'
@@ -15,8 +15,8 @@ import { Article } from '../utils/protos'
 import { useComparisonHeadStyle, useHeaderTextClass, useMobileLayout, useSubHeaderTextClass } from '../utils/responsive'
 
 import { ArticleWarnings } from './ArticleWarnings'
-import { ArticleComparisonQuerySettingsConnection } from './QuerySettingsConnection'
-import { ArticleRow, load_articles } from './load-article'
+import { QuerySettingsConnection } from './QuerySettingsConnection'
+import { ArticleRow } from './load-article'
 import { MapGeneric, MapGenericProps, Polygons } from './map'
 import { WithPlot } from './plots'
 import { ScreencapElements, useScreenshotMode } from './screenshot'
@@ -27,7 +27,7 @@ const left_bar_margin = 0.02
 const left_margin_pct = 0.18
 const bar_height = '5px'
 
-export function ComparisonPanel(props: { universes: string[], articles: Article[] }): ReactNode {
+export function ComparisonPanel(props: { universes: string[], articles: Article[], rows: (settings: StatGroupSettings) => ArticleRow[][] }): ReactNode {
     const colors = useColors()
     const table_ref = useRef<HTMLDivElement>(null)
     const map_ref = useRef(null)
@@ -110,19 +110,19 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
     const searchComparisonStyle = useComparisonHeadStyle()
     const settings = useSettings(groupYearKeys())
 
-    const curr_universe = useUniverse()
+    const rows = props.rows(settings)
 
-    const { rows, statPaths } = load_articles(props.articles, curr_universe, settings)
+    const curr_universe = useUniverse()
 
     useEffect(() => {
         document.title = joined_string
     }, [joined_string])
 
-    const navContext = useContext(NavigationContext)!
+    const navContext = useContext(Navigator.Context)
 
     return (
-        <StatPathsContext.Provider value={statPaths}>
-            <ArticleComparisonQuerySettingsConnection pageKind="comparison" />
+        <>
+            <QuerySettingsConnection />
             <PageTemplate screencap_elements={screencap_elements} has_universe_selector={true} universes={props.universes}>
                 <div>
                     <div className={headerTextClass}>Comparison</div>
@@ -139,7 +139,7 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
                                 style={{ ...searchComparisonStyle, width: '100%' }}
                                 placeholder="Name"
                                 on_change={(x) => {
-                                    navContext.navigate({
+                                    void navContext.navigate({
                                         kind: 'comparison',
                                         universe: curr_universe,
                                         longnames: [...names, x],
@@ -164,14 +164,14 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
                                                 longname={data.longname}
                                                 include_delete={props.articles.length > 1}
                                                 on_click={() => {
-                                                    navContext.navigate({
+                                                    void navContext.navigate({
                                                         kind: 'comparison',
                                                         universe: curr_universe,
                                                         longnames: names.filter((_, index) => index !== i),
                                                     }, 'push')
                                                 }}
                                                 on_change={(x) => {
-                                                    navContext.navigate({
+                                                    void navContext.navigate({
                                                         kind: 'comparison',
                                                         universe: curr_universe,
                                                         longnames: names.map((value, index) => index === i ? x : value),
@@ -215,7 +215,7 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
                     </div>
                 </div>
             </PageTemplate>
-        </StatPathsContext.Provider>
+        </>
     )
 }
 
@@ -266,7 +266,7 @@ function ComparisonCells({ names, rows, onlyColumns }: {
     onlyColumns: ColumnIdentifier[]
 }): ReactNode {
     const colors = useColors()
-    const navContext = useContext(NavigationContext)!
+    const navContext = useContext(Navigator.Context)
 
     const highlightIndex = rows.map(x => x.statval).reduce<number | undefined>((iMax, x, i, arr) => {
         if (isNaN(x)) {
@@ -297,9 +297,9 @@ function ComparisonCells({ names, rows, onlyColumns }: {
                 simpleOrdinals={true}
                 statisticStyle={highlightIndex === i ? { backgroundColor: mixWithBackground(color(colors.hueColors, i), colors.mixPct / 100, colors.background) } : {}}
                 onNavigate={(x) => {
-                    navContext.navigate({
+                    void navContext.navigate({
                         kind: 'comparison',
-                        universe: navContext.universe!,
+                        universe: navContext.universe,
                         longnames: names.map((value, index) => index === i ? x : value),
                     }, 'push')
                 }}
@@ -387,7 +387,7 @@ function HeadingDisplay({ longname, include_delete, on_click, on_change: on_sear
 
     const screenshot_mode = useScreenshotMode()
 
-    const navContext = useContext(NavigationContext)!
+    const navContext = useContext(Navigator.Context)
 
     return (
         <div>

@@ -11,7 +11,7 @@ import { loadProtobuf } from '../load_json'
 import { Keypoints, Ramp, parse_ramp } from '../mapper/ramps'
 import { Basemap, ColorStat, ColorStatDescriptor, FilterSettings, LineStyle, MapSettings, MapperSettings, default_settings, parse_color_stat } from '../mapper/settings'
 import { consolidated_shape_link, consolidated_stats_link } from '../navigation/links'
-import { NavigationContext } from '../navigation/navigator'
+import { Navigator } from '../navigation/navigator'
 import { PageTemplate } from '../page_template/template'
 import { interpolate_color } from '../utils/color'
 import { ConsolidatedShapes, ConsolidatedStatistics, Feature, IAllStats } from '../utils/protos'
@@ -314,17 +314,13 @@ export function MapperPanel(props: { map_settings: MapSettings, view: boolean })
 
     const jsoned_settings = JSON.stringify(map_settings)
 
-    const navContext = useContext(NavigationContext)!
+    const navContext = useContext(Navigator.Context)
 
     useEffect(() => {
         if (props.map_settings !== map_settings) {
             // gzip then base64 encode
             const encoded_settings = gzipSync(jsoned_settings).toString('base64')
-            navContext.navigate({
-                kind: 'mapper',
-                settings: encoded_settings,
-                view: props.view,
-            }, 'push', false)
+            navContext.setMapperSettings(encoded_settings)
         }
     // eslint-disable-next-line react-hooks/exhaustive-deps -- props.view won't be set except from the navigator
     }, [jsoned_settings, navContext])

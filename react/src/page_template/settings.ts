@@ -110,7 +110,7 @@ export class Settings {
      */
     private readonly settings: SettingsDictionary
 
-    constructor() {
+    private constructor() {
         const savedSettings = localStorage.getItem('settings')
         const loadedSettings = JSON.parse(savedSettings ?? '{}') as Partial<SettingsDictionary>
         this.settings = { ...defaultSettings, ...loadedSettings }
@@ -163,7 +163,8 @@ export class Settings {
     }
 
     // Singular settings means we can use observers
-    static Context = createContext(new Settings())
+    static shared = new Settings()
+    static Context = createContext(this.shared)
 
     /**
      * Staged Mode

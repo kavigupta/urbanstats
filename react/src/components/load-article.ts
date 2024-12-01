@@ -129,8 +129,8 @@ export function load_single_article(data: Article, universe: string): ArticleRow
     })
 }
 
-export function load_articles(datas: Article[], universe: string, settings: StatGroupSettings): {
-    rows: ArticleRow[][]
+export function load_articles(datas: Article[], universe: string): {
+    rows: (settings: StatGroupSettings) => ArticleRow[][]
     statPaths: StatPath[][]
 } {
     const availableRowsAll = datas.map(data => load_single_article(data, universe))
@@ -144,13 +144,16 @@ export function load_articles(datas: Article[], universe: string, settings: Stat
 
     const ambiguousSourcesAll = findAmbiguousSourcesAll(statPathsEach)
 
-    const rows = availableRowsAll.map(availableRows => availableRows
-        .filter(row => statIsEnabled(row.statpath, settings, ambiguousSourcesAll))
-        // sort by order in statistics tree.
-        .sort((a, b) => statPathToOrder.get(a.statpath)! - statPathToOrder.get(b.statpath)!),
-    )
-    const rowsNothingMissing = insert_missing(rows)
-    return { rows: rowsNothingMissing, statPaths: statPathsEach }
+    return { rows: (settings: StatGroupSettings) => {
+        const rows = availableRowsAll.map(availableRows => availableRows
+            .filter(row => statIsEnabled(row.statpath, settings, ambiguousSourcesAll))
+            // sort by order in statistics tree.
+            .sort((a, b) => statPathToOrder.get(a.statpath)! - statPathToOrder.get(b.statpath)!),
+        )
+        const rowsNothingMissing = insert_missing(rows)
+
+        return rowsNothingMissing
+    }, statPaths: statPathsEach }
 }
 
 function insert_missing(rows: ArticleRow[][]): ArticleRow[][] {

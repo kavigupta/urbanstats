@@ -2,7 +2,7 @@ import React, { CSSProperties, ReactNode, useContext, useEffect, useMemo, useRef
 
 import universes_ordered from '../data/universes_ordered'
 import { explanation_page_link, sanitize } from '../navigation/links'
-import { NavigationContext } from '../navigation/navigator'
+import { Navigator } from '../navigation/navigator'
 import { useColors } from '../page_template/colors'
 import { useSetting } from '../page_template/settings'
 import { StatName } from '../page_template/statistic-tree'
@@ -53,7 +53,7 @@ export function StatisticPanel(props: StatisticPanelProps): ReactNode {
 
     const is_ascending = props.order === 'ascending'
 
-    const navContext = useContext(NavigationContext)!
+    const navContext = useContext(Navigator.Context)
 
     const index_range = useMemo(() => {
         const start = props.start - 1
@@ -73,7 +73,7 @@ export function StatisticPanel(props: StatisticPanelProps): ReactNode {
 
     const swap_ascending_descending = (curr_universe: string | undefined): void => {
         const new_order = is_ascending ? 'descending' : 'ascending'
-        navContext.navigate({
+        void navContext.navigate({
             kind: 'statistic',
             universe: curr_universe,
             statname: props.statname,
@@ -215,10 +215,10 @@ function Pagination(props: {
 
     const curr_universe = useUniverse()
 
-    const navContext = useContext(NavigationContext)!
+    const navContext = useContext(Navigator.Context)
 
     const change_start = (new_start: number): void => {
-        navContext.navigate({
+        void navContext.navigate({
             kind: 'statistic',
             universe: curr_universe,
             ...props,
@@ -242,7 +242,7 @@ function Pagination(props: {
         if (start > props.count - new_amount_num) {
             start = props.count - new_amount_num + 1
         }
-        navContext.navigate({
+        void navContext.navigate({
             kind: 'statistic',
             universe: curr_universe,
             statname: props.statname,
@@ -264,7 +264,7 @@ function Pagination(props: {
 
     useEffect(() => {
         const goToPage = (new_page: number): void => {
-            navContext.navigate({
+            void navContext.navigate({
                 kind: 'statistic',
                 universe: curr_universe,
                 ...props,
@@ -430,7 +430,7 @@ function SelectPage(props: {
 function ArticleLink(props: { longname: string }): ReactNode {
     const curr_universe = useUniverse()
     const colors = useColors()
-    const navContext = useContext(NavigationContext)!
+    const navContext = useContext(Navigator.Context)
     return (
         <a
             {...navContext.link({

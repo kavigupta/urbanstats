@@ -392,6 +392,14 @@ const checkOverlap: CheckOverlap = 'no overlap'
 
 export function useVector(): string {
     const settings = useSettings(activeVectorKeys)
+    return encodeVector(settings)
+}
+
+export function getVector(settings: Settings): string {
+    return encodeVector(settings.getMultiple(activeVectorKeys))
+}
+
+function encodeVector(settings: VectorSettingsDictionary): string {
     const booleans = settingsVector.flatMap((coder) => {
         if (coder.deprecated) {
             return coder.encode()

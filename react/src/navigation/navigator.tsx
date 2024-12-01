@@ -1,12 +1,13 @@
-import React, { createContext, ReactNode, useContext, useEffect, useMemo, useState } from 'react'
+import React, { createContext, ReactNode, useContext, useEffect, useState } from 'react'
 import { z } from 'zod'
 
 import { AboutPanel } from '../components/AboutPanel'
 import { DataCreditPanel } from '../components/DataCreditPanel'
 import { IndexPanel } from '../components/IndexPanel'
+import { applySettingsParam, settingsConnectionConfig } from '../components/QuerySettingsConnection'
 import { ArticlePanel } from '../components/article-panel'
 import { ComparisonPanel } from '../components/comparison-panel'
-import { for_type } from '../components/load-article'
+import { ArticleRow, for_type, load_articles } from '../components/load-article'
 import { MapperPanel, mapSettingsFromURLParam } from '../components/mapper-panel'
 import { QuizPanel } from '../components/quiz-panel'
 import { StatisticPanel, StatisticPanelProps } from '../components/statistic-panel'
@@ -18,7 +19,9 @@ import { discordFix } from '../discord-fix'
 import { load_ordering, load_ordering_protobuf, loadJSON, loadProtobuf } from '../load_json'
 import { MapSettings } from '../mapper/settings'
 import { Settings } from '../page_template/settings'
-import { StatName } from '../page_template/statistic-tree'
+import { getVector } from '../page_template/settings-vector'
+import { StatGroupSettings } from '../page_template/statistic-settings'
+import { StatName, StatPath } from '../page_template/statistic-tree'
 import { get_daily_offset_number, get_retrostat_offset_number } from '../quiz/dates'
 import { JuxtaQuestionJSON, load_juxta, load_retro, QuizDescriptor, QuizQuestion, RetroQuestionJSON } from '../quiz/quiz'
 import { default_article_universe, default_comparison_universe } from '../universe'
@@ -77,39 +80,14 @@ export type PageDescriptor = ({ kind: 'article' } & z.infer<typeof articleSchema
     | ({ kind: 'mapper' } & z.infer<typeof mapperSchema>)
 
 type PageData =
-    { kind: 'article', article: Article, universe: string }
-    | { kind: 'comparison', articles: Article[], universe: string, universes: string[] }
+    { kind: 'article', article: Article, universe: string, rows: (settings: StatGroupSettings) => ArticleRow[][], statPaths: StatPath[][] }
+    | { kind: 'comparison', articles: Article[], universe: string, universes: string[], rows: (settings: StatGroupSettings) => ArticleRow[][], statPaths: StatPath[][] }
     | { kind: 'statistic', universe: string } & StatisticPanelProps
     | { kind: 'index' }
     | { kind: 'about' }
     | { kind: 'dataCredit' }
     | { kind: 'quiz', quizDescriptor: QuizDescriptor, quiz: QuizQuestion[], parameters: string, todayName: string }
     | { kind: 'mapper', settings: MapSettings, view: boolean }
-
-type NavigationState = { state: 'notFound', error: unknown }
-    | {
-        state: 'loading'
-        from?: { descriptor: PageDescriptor, data: PageData }
-        to: { descriptor: PageDescriptor }
-    }
-    | { state: 'loaded', descriptor: PageDescriptor, data: PageData }
-    | {
-        state: 'errorLoading'
-        error: unknown
-        from?: { descriptor: PageDescriptor, data: PageData }
-        to: { descriptor: PageDescriptor }
-    }
-
-function toFromField(navigationState: NavigationState): { descriptor: PageDescriptor, data: PageData } | undefined {
-    switch (navigationState.state) {
-        case 'notFound':
-            return undefined
-        case 'loaded':
-            return navigationState
-        default:
-            return navigationState.from
-    }
-}
 
 function pageDescriptorFromURL(url: URL): PageDescriptor {
     const params = Object.fromEntries(url.searchParams.entries())
@@ -216,40 +194,57 @@ function urlFromPageDescriptor(pageDescriptor: PageDescriptor): URL {
     return result
 }
 
-async function loadPageDescriptor(descriptor: PageDescriptor, settings: Settings): Promise<{ pageData: PageData, newPageDescriptor: PageDescriptor }> {
-    switch (descriptor.kind) {
+async function loadPageDescriptor(newDescriptor: PageDescriptor, settings: Settings): Promise<{ pageData: PageData, newPageDescriptor: PageDescriptor }> {
+    switch (newDescriptor.kind) {
         case 'article':
-            const article = await loadProtobuf(data_link(descriptor.longname), 'Article')
+            const article = await loadProtobuf(data_link(newDescriptor.longname), 'Article')
 
             const defaultUniverse = default_article_universe(article.universes)
 
-            const articleUniverse = descriptor.universe !== undefined && article.universes.includes(descriptor.universe) ? descriptor.universe : defaultUniverse
+            const articleUniverse = newDescriptor.universe !== undefined && article.universes.includes(newDescriptor.universe) ? newDescriptor.universe : defaultUniverse
 
             const displayUniverse = articleUniverse === defaultUniverse ? undefined : articleUniverse
+
+            const { rows: articleRows, statPaths: articleStatPaths } = load_articles([article], articleUniverse)
+
+            if (newDescriptor.s !== undefined) {
+                const config = settingsConnectionConfig({ pageKind: 'article', statPaths: articleStatPaths, settings })
+                applySettingsParam(newDescriptor.s, settings, articleStatPaths, config)
+            }
 
             return {
                 pageData: {
                     kind: 'article',
                     article,
                     universe: articleUniverse,
+                    rows: articleRows,
+                    statPaths: articleStatPaths,
                 },
                 newPageDescriptor: {
-                    ...descriptor,
+                    ...newDescriptor,
                     universe: displayUniverse,
+                    s: getVector(settings),
                 },
 
             }
         case 'comparison':
-            const articles = await Promise.all(descriptor.longnames.map(name => loadProtobuf(data_link(name), 'Article')))
+            const articles = await Promise.all(newDescriptor.longnames.map(name => loadProtobuf(data_link(name), 'Article')))
             // intersection of all the data.universes
             const articleUniverses = articles.map(x => x.universes)
             const universes = articleUniverses.reduce((a, b) => a.filter(c => b.includes(c)))
 
             const defaultComparisonUniverse = default_comparison_universe(articleUniverses, universes)
 
-            const comparisonUniverse = descriptor.universe !== undefined && universes.includes(descriptor.universe) ? descriptor.universe : defaultComparisonUniverse
+            const comparisonUniverse = newDescriptor.universe !== undefined && universes.includes(newDescriptor.universe) ? newDescriptor.universe : defaultComparisonUniverse
 
             const displayComparisonUniverse = comparisonUniverse === defaultComparisonUniverse ? undefined : comparisonUniverse
+
+            const { rows: comparisonRows, statPaths: comparisonStatPaths } = load_articles(articles, comparisonUniverse)
+
+            if (newDescriptor.s !== undefined) {
+                const config = settingsConnectionConfig({ pageKind: 'comparison', statPaths: comparisonStatPaths, settings })
+                applySettingsParam(newDescriptor.s, settings, comparisonStatPaths, config)
+            }
 
             return {
                 pageData: {
@@ -257,53 +252,56 @@ async function loadPageDescriptor(descriptor: PageDescriptor, settings: Settings
                     articles,
                     universe: comparisonUniverse,
                     universes,
+                    rows: comparisonRows,
+                    statPaths: comparisonStatPaths,
                 },
                 newPageDescriptor: {
-                    ...descriptor,
+                    ...newDescriptor,
                     universe: displayComparisonUniverse,
+                    s: getVector(settings),
                 },
             }
         case 'statistic':
-            const statUniverse = descriptor.universe ?? 'world'
+            const statUniverse = newDescriptor.universe ?? 'world'
             const displayStatUniverse = statUniverse !== 'world' ? statUniverse : undefined
 
-            const statIndex = names.indexOf(descriptor.statname)
+            const statIndex = names.indexOf(newDescriptor.statname)
             const statpath = paths[statIndex]
             const statcol = stats[statIndex]
             const explanation_page = explanation_pages[statIndex]
 
-            const article_names = await load_ordering(statUniverse, statpath, descriptor.article_type)
-            const data = await load_ordering_protobuf(statUniverse, statpath, descriptor.article_type, true) as NormalizeProto<IDataList>
+            const article_names = await load_ordering(statUniverse, statpath, newDescriptor.article_type)
+            const data = await load_ordering_protobuf(statUniverse, statpath, newDescriptor.article_type, true) as NormalizeProto<IDataList>
 
             let parsedAmount: number
-            if (descriptor.amount === 'All') {
+            if (newDescriptor.amount === 'All') {
                 parsedAmount = article_names.length
             }
             else {
-                parsedAmount = descriptor.amount
+                parsedAmount = newDescriptor.amount
             }
 
             return {
                 pageData: {
                     kind: 'statistic',
                     statcol,
-                    statname: descriptor.statname,
-                    count: for_type(statUniverse, statcol, descriptor.article_type),
+                    statname: newDescriptor.statname,
+                    count: for_type(statUniverse, statcol, newDescriptor.article_type),
                     explanation_page,
-                    order: descriptor.order,
-                    highlight: descriptor.highlight ?? undefined,
-                    article_type: descriptor.article_type,
+                    order: newDescriptor.order,
+                    highlight: newDescriptor.highlight ?? undefined,
+                    article_type: newDescriptor.article_type,
                     joined_string: statpath,
-                    start: descriptor.start,
+                    start: newDescriptor.start,
                     amount: parsedAmount,
                     article_names,
                     data,
-                    rendered_statname: descriptor.statname,
+                    rendered_statname: newDescriptor.statname,
                     universe: statUniverse,
 
                 },
                 newPageDescriptor: {
-                    ...descriptor,
+                    ...newDescriptor,
                     universe: displayStatUniverse,
                     highlight: undefined,
                 },
@@ -312,12 +310,12 @@ async function loadPageDescriptor(descriptor: PageDescriptor, settings: Settings
             const settingsValues = settings.getMultiple(['show_historical_cds'])
 
             let longname: string
-            switch (descriptor.sampleby) {
+            switch (newDescriptor.sampleby) {
                 case 'uniform':
                     longname = await uniform(settingsValues)
                     break
                 case 'population':
-                    longname = await by_population(settingsValues, descriptor.us_only)
+                    longname = await by_population(settingsValues, newDescriptor.us_only)
                     break
             }
 
@@ -329,14 +327,14 @@ async function loadPageDescriptor(descriptor: PageDescriptor, settings: Settings
         case 'index':
         case 'about':
         case 'dataCredit':
-            return { pageData: descriptor, newPageDescriptor: descriptor }
+            return { pageData: newDescriptor, newPageDescriptor: newDescriptor }
         case 'quiz':
             let quiz: QuizQuestion[]
             let quizDescriptor: QuizDescriptor
             let todayName: string
-            switch (descriptor.mode) {
+            switch (newDescriptor.mode) {
                 case 'retro':
-                    const retro = descriptor.date ?? get_retrostat_offset_number()
+                    const retro = newDescriptor.date ?? get_retrostat_offset_number()
                     quizDescriptor = {
                         kind: 'retrostat',
                         name: `W${retro}`,
@@ -345,7 +343,7 @@ async function loadPageDescriptor(descriptor: PageDescriptor, settings: Settings
                     todayName = `Week ${retro}`
                     break
                 case undefined:
-                    const today = descriptor.date ?? get_daily_offset_number()
+                    const today = newDescriptor.date ?? get_daily_offset_number()
                     quizDescriptor = { kind: 'juxtastat', name: today }
                     quiz = (await loadJSON(`/quiz/${today}`) as JuxtaQuestionJSON[]).map(load_juxta)
                     todayName = today.toString()
@@ -355,201 +353,235 @@ async function loadPageDescriptor(descriptor: PageDescriptor, settings: Settings
                     kind: 'quiz',
                     quizDescriptor,
                     quiz,
-                    parameters: urlFromPageDescriptor(descriptor).searchParams.toString(),
+                    parameters: urlFromPageDescriptor(newDescriptor).searchParams.toString(),
                     todayName,
                 },
-                newPageDescriptor: descriptor,
+                newPageDescriptor: newDescriptor,
             }
         case 'mapper':
             return {
                 pageData: {
                     kind: 'mapper',
-                    view: descriptor.view,
-                    settings: mapSettingsFromURLParam(descriptor.settings),
+                    view: newDescriptor.view,
+                    settings: mapSettingsFromURLParam(newDescriptor.settings),
                 },
-                newPageDescriptor: descriptor,
+                newPageDescriptor: newDescriptor,
             }
     }
 }
 
-export function Navigator(): ReactNode {
-    const settings = useContext(Settings.Context)
+type PageState = { kind: 'loading', loading: { descriptor: PageDescriptor }, current?: { data: PageData, descriptor: PageDescriptor } }
+    | { kind: 'loaded', current: { data: PageData, descriptor: PageDescriptor } }
+    | { kind: 'error', error: unknown, current?: { data: PageData, descriptor: PageDescriptor } }
 
-    const [state, setState] = useState<NavigationState>(() => {
-        let descriptor: PageDescriptor
+export class Navigator {
+    /* eslint-disable react-hooks/rules-of-hooks -- This is a logic class with custom hooks */
+    static Context = createContext(new Navigator())
+
+    private pageState: PageState
+    private pageStateObservers = new Set<() => void>()
+
+    constructor() {
         try {
             // eslint-disable-next-line no-restricted-syntax -- Core navigation functions
-            descriptor = pageDescriptorFromURL(new URL(discordFix(window.location.href)))
+            this.pageState = { kind: 'loading', loading: { descriptor: pageDescriptorFromURL(new URL(discordFix(window.location.href))) } }
+            void this.navigate(this.pageState.loading.descriptor, 'replace')
         }
         catch (error) {
-            return { state: 'notFound', error }
+            this.pageState = { kind: 'error', error }
         }
-        const url = urlFromPageDescriptor(descriptor) // Since we may want to do a redirect
-        // eslint-disable-next-line no-restricted-syntax -- Core navigation functions
-        history.replaceState(descriptor, '', url)
-        return { state: 'loading', to: { descriptor } }
-    })
+    }
 
-    useEffect(() => {
-        // Load if necessary
-        // We should only update the state if our navigation is most recent, to avoid races
-        switch (state.state) {
-            case 'notFound':
-            case 'loaded':
-                return
-            case 'loading':
-                loadPageDescriptor(state.to.descriptor, settings).then(({ pageData, newPageDescriptor }) => {
-                    setState((currentState) => {
-                        if (currentState.state === 'loading' && currentState.to.descriptor === state.to.descriptor) {
-                            // eslint-disable-next-line no-restricted-syntax -- Core navigation functions
-                            history.replaceState(newPageDescriptor, '', urlFromPageDescriptor(newPageDescriptor))
-                            return { state: 'loaded', descriptor: newPageDescriptor, data: pageData }
-                        }
-                        return currentState
-                    })
-                }, (error) => {
-                    setState((currentState) => {
-                        if (currentState.state === 'loading' && currentState.to.descriptor === state.to.descriptor) {
-                            return { state: 'errorLoading', error, from: currentState.from, to: currentState.to }
-                        }
-                        return currentState
-                    })
-                })
+    async navigate(newDescriptor: PageDescriptor, kind: 'push' | 'replace' | null): Promise<void> {
+        switch (kind) {
+            case 'push':
+                // eslint-disable-next-line no-restricted-syntax -- Core navigation functions
+                history.pushState(newDescriptor, '', urlFromPageDescriptor(newDescriptor))
+                break
+            case 'replace':
+                // eslint-disable-next-line no-restricted-syntax -- Core navigation functions
+                history.replaceState(newDescriptor, '', urlFromPageDescriptor(newDescriptor))
+                break
+            case null:
+                break
         }
-    }, [state, settings])
+
+        this.pageState = { kind: 'loading', loading: { descriptor: newDescriptor }, current: this.pageState.current }
+        this.pageStateObservers.forEach((observer) => { observer() })
+        try {
+            const { pageData, newPageDescriptor } = await loadPageDescriptor(newDescriptor, Settings.shared)
+            // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- Async function, pageState can change during await
+            if (this.pageState.kind !== 'loading' || this.pageState.loading.descriptor !== newDescriptor) {
+                // Another load has started, don't race it
+                return
+            }
+            // eslint-disable-next-line no-restricted-syntax -- Core navigation functions
+            history.replaceState(newPageDescriptor, '', urlFromPageDescriptor(newPageDescriptor))
+            this.pageState = { kind: 'loaded', current: { data: pageData, descriptor: newPageDescriptor } }
+            this.pageStateObservers.forEach((observer) => { observer() })
+        }
+        catch (error) {
+            if (this.pageState.kind !== 'loading' || this.pageState.loading.descriptor !== newDescriptor) {
+                // Another load has started, don't race it
+                return
+            }
+            this.pageState = { kind: 'error', error, current: this.pageState.current }
+            this.pageStateObservers.forEach((observer) => { observer() })
+        }
+    }
+
+    link(pageDescriptor: PageDescriptor): { href: string, onClick: (e: React.MouseEvent) => void } {
+        const url = urlFromPageDescriptor(pageDescriptor)
+        return {
+            href: url.pathname + url.search,
+            onClick: (e: React.MouseEvent) => {
+                e.preventDefault()
+                void this.navigate(pageDescriptor, 'push')
+            },
+        }
+    }
+
+    usePageState(): PageState {
+        const [result, setResult] = useState(this.pageState)
+
+        useEffect(() => {
+            const observer = (): void => {
+                setResult(this.pageState)
+            }
+            this.pageStateObservers.add(observer)
+            return () => { this.pageStateObservers.delete(observer) }
+        }, [])
+
+        return result
+    }
+
+    private get pageData(): PageData {
+        if (this.pageState.current === undefined) {
+            throw new Error(`No current page for state ${JSON.stringify(this.pageState)}`)
+        }
+        return this.pageState.current.data
+    }
+
+    private get pageDescriptor(): PageDescriptor {
+        if (this.pageState.current === undefined) {
+            throw new Error(`No current page descriptor for state ${JSON.stringify(this.pageState)}`)
+        }
+        return this.pageState.current.descriptor
+    }
+
+    get universe(): string {
+        const data = this.pageData
+        switch (data.kind) {
+            case 'article':
+            case 'comparison':
+            case 'statistic':
+                return data.universe
+            default:
+                throw new Error(`Page data kind  ${data.kind} does not have a universe`)
+        }
+    }
+
+    useUniverse(): string {
+        const [universe, setUniverse] = useState(this.universe)
+
+        useEffect(() => {
+            const observer = (): void => {
+                setUniverse(this.universe)
+            }
+            this.pageStateObservers.add(observer)
+            return () => { this.pageStateObservers.delete(observer) }
+        }, [])
+
+        return universe
+    }
+
+    setUniverse(newUniverse: string): void {
+        switch (this.pageDescriptor.kind) {
+            case 'article':
+            case 'comparison':
+            case 'statistic':
+                void this.navigate({
+                    ...this.pageDescriptor,
+                    universe: newUniverse,
+                }, 'push')
+                break
+            default:
+                throw new Error(`Page descriptor kind ${this.pageDescriptor.kind} does not have a universe`)
+        }
+    }
+
+    private get statPaths(): StatPath[][] | undefined {
+        switch (this.pageData.kind) {
+            case 'article':
+            case 'comparison':
+                return this.pageData.statPaths
+            default:
+                return undefined
+        }
+    }
+
+    useStatPathsAll(): StatPath[][] | undefined {
+        const [statPaths, setStatPaths] = useState(this.statPaths)
+
+        useEffect(() => {
+            const observer = (): void => {
+                setStatPaths(this.statPaths)
+            }
+            this.pageStateObservers.add(observer)
+            return () => { this.pageStateObservers.delete(observer) }
+        }, [])
+
+        return statPaths
+    }
+
+    setSettingsVector(newVector: string): void {
+        switch (this.pageState.current?.descriptor.kind) {
+            case 'article':
+            case 'comparison':
+                this.pageState.current.descriptor.s = newVector
+                // eslint-disable-next-line no-restricted-syntax -- Core navigation functions
+                history.replaceState(this.pageState.current.descriptor, '', urlFromPageDescriptor(this.pageState.current.descriptor))
+                break
+            default:
+                throw new Error(`Page descriptor kind ${this.pageDescriptor.kind} does not have a settings vector`)
+        }
+    }
+
+    setMapperSettings(newSettings: string): void {
+        switch (this.pageState.current?.descriptor.kind) {
+            case 'mapper':
+                this.pageState.current.descriptor.settings = newSettings
+                // eslint-disable-next-line no-restricted-syntax -- Core navigation functions
+                history.replaceState(this.pageState.current.descriptor, '', urlFromPageDescriptor(this.pageState.current.descriptor))
+                break
+            default:
+                throw new Error(`Page descriptor kind ${this.pageDescriptor.kind} does not have mapper settings`)
+        }
+    }
+    /* eslint-enable react-hooks/rules-of-hooks */
+}
+
+export function Router(): ReactNode {
+    const navigator = useContext(Navigator.Context)
 
     useEffect(() => {
         // Hook into the browser back/forward buttons
         const listener = (popStateEvent: PopStateEvent): void => {
-            setState(currentState => ({ state: 'loading', from: toFromField(currentState), to: { descriptor: popStateEvent.state as PageDescriptor } }))
+            void navigator.navigate(popStateEvent.state as PageDescriptor, null)
         }
         window.addEventListener('popstate', listener)
         return () => { window.removeEventListener('popstate', listener) }
-    }, [])
+    }, [navigator])
 
-    const navContext = useMemo<NavigationContextValue>(() => {
-        return {
-            navigate(newDescriptor, kind, doPageLoad = true) {
-                setState((currentState) => {
-                    const from = toFromField(currentState)
-                    switch (kind) {
-                        case 'push':
-                            // eslint-disable-next-line no-restricted-syntax -- Core navigation functions
-                            history.pushState(newDescriptor, '', urlFromPageDescriptor(newDescriptor))
-                            break
-                        case 'replace':
-                            // eslint-disable-next-line no-restricted-syntax -- Core navigation functions
-                            history.replaceState(newDescriptor, '', urlFromPageDescriptor(newDescriptor))
-                            break
-                    }
-                    // We only skip page load if we're already in a loaded state, otherwise we can have weird conditions
-                    return doPageLoad || currentState.state !== 'loaded'
-                        ? { state: 'loading', from, to: { descriptor: newDescriptor } }
-                        : { state: 'loaded', descriptor: newDescriptor, data: currentState.data }
-                })
-            },
+    const pageState = navigator.usePageState()
 
-            setUniverse(newUniverse) {
-                setState((currentState) => {
-                    const from = toFromField(currentState)
-                    switch (from?.descriptor.kind) {
-                        case 'article':
-                        case 'comparison':
-                        case 'statistic':
-                            const newDescriptor = {
-                                ...from.descriptor,
-                                universe: newUniverse,
-                            }
-                            // eslint-disable-next-line no-restricted-syntax -- Core navigation functions
-                            history.pushState(newDescriptor, '', urlFromPageDescriptor(newDescriptor))
-                            return { state: 'loading', from, to: { descriptor: newDescriptor } }
-                        default:
-                            throw new Error(`switching universe is not supported for page descriptor kind ${from?.descriptor.kind}`)
-                    }
-                })
-            },
-
-            universe: (() => {
-                const from = toFromField(state)
-                switch (from?.data.kind) {
-                    case 'article':
-                    case 'comparison':
-                    case 'statistic':
-                        return from.data.universe
-                    default:
-                        return undefined
-                }
-            })(),
-
-            link(pageDescriptor) {
-                const url = urlFromPageDescriptor(pageDescriptor)
-                return {
-                    href: url.pathname + url.search,
-                    onClick: (e: React.MouseEvent) => {
-                        e.preventDefault()
-                        this.navigate(pageDescriptor, 'push')
-                    },
-                }
-            },
-
-            settingsVector: (() => {
-                const from = toFromField(state)
-                switch (from?.descriptor.kind) {
-                    case 'article':
-                    case 'comparison':
-                        return from.descriptor.s
-                    default:
-                        return undefined
-                }
-            })(),
-
-            setSettingsVector(newVector) {
-                const from = toFromField(state)
-                switch (from?.descriptor.kind) {
-                    case 'article':
-                    case 'comparison':
-                        this.navigate(
-                            {
-                                ...from.descriptor,
-                                s: newVector,
-                            },
-                            'replace',
-                            false,
-                        )
-                        break
-                    default:
-                        throw new Error(`setting settings vector is not supported for page descriptor kind ${from?.descriptor.kind}`)
-                }
-            },
-        }
-    }, [state])
-
-    switch (state.state) {
-        case 'notFound':
-            return <ErrorScreen error="Not Found" />
-        case 'loading':
-            return (
-                <NavigationContext.Provider value={navContext}>
-                    {state.from !== undefined ? <PageRouter pageData={state.from.data} /> : null}
-                    <LoadingScreen />
-                </NavigationContext.Provider>
-            )
-        case 'loaded':
-            return (
-                <NavigationContext.Provider value={navContext}>
-                    <PageRouter pageData={state.data} />
-                </NavigationContext.Provider>
-            )
-        case 'loading':
-            return <LoadingScreen />
-        case 'errorLoading':
-            return (
-                <NavigationContext.Provider value={navContext}>
-                    {state.from !== undefined ? <PageRouter pageData={state.from.data} /> : null}
-                    <ErrorScreen error={state.error} />
-                </NavigationContext.Provider>
-            )
-    }
+    return (
+        <>
+            {pageState.current !== undefined ? <PageRouter pageData={pageState.current.data} /> : null}
+            {pageState.kind === 'loading' ? <LoadingScreen /> : null}
+            {pageState.kind === 'error' ? <ErrorScreen error={pageState.error} /> : null}
+        </>
+    )
 }
 
 function LoadingScreen(): ReactNode {
@@ -569,26 +601,15 @@ function ErrorScreen({ error }: { error: unknown }): ReactNode {
     )
 }
 
-interface NavigationContextValue {
-    navigate: (pageDescriptor: PageDescriptor, kind: 'replace' | 'push', doPageLoad?: boolean) => void
-    setUniverse: (newUniverse: string) => void
-    universe: string | undefined
-    link: (pageDescriptor: PageDescriptor) => { href: string, onClick: (e: React.MouseEvent) => void }
-    settingsVector: string | undefined
-    setSettingsVector: (newVector: string) => void
-}
-
-export const NavigationContext = createContext<NavigationContextValue | undefined>(undefined)
-
 function PageRouter({ pageData }: { pageData: PageData }): ReactNode {
     switch (pageData.kind) {
         case 'article':
             return (
-                <ArticlePanel article={pageData.article} />
+                <ArticlePanel article={pageData.article} rows={pageData.rows} />
             )
         case 'comparison':
             return (
-                <ComparisonPanel articles={pageData.articles} universes={pageData.universes} />
+                <ComparisonPanel articles={pageData.articles} universes={pageData.universes} rows={pageData.rows} />
             )
         case 'statistic':
             return (

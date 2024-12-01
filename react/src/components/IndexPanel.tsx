@@ -2,13 +2,13 @@ import React, { ReactNode, useContext } from 'react'
 import '../style.css'
 import '../common.css'
 
-import { NavigationContext } from '../navigation/navigator'
+import { Navigator } from '../navigation/navigator'
 import { useColors } from '../page_template/colors'
 import { PageTemplate } from '../page_template/template'
 
 export function IndexPanel(): ReactNode {
     const colors = useColors()
-    const navContext = useContext(NavigationContext)!
+    const navContext = useContext(Navigator.Context)
     return (
         <PageTemplate>
             <div>

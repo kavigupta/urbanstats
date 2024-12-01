@@ -6,7 +6,7 @@ import React, { ReactNode } from 'react'
 import { loadProtobuf } from '../load_json'
 import { Basemap } from '../mapper/settings'
 import { shape_link } from '../navigation/links'
-import { NavigationContext } from '../navigation/navigator'
+import { Navigator } from '../navigation/navigator'
 import { useColors } from '../page_template/colors'
 import { relatedSettingsKeys, relationship_key, useSetting, useSettings } from '../page_template/settings'
 import { random_color } from '../utils/color'
@@ -303,9 +303,9 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
         })
         if (add_callback) {
             polygon = polygon.on('click', () => {
-                this.context!.navigate({
+                void this.context.navigate({
                     kind: 'article',
-                    universe: this.context!.universe!,
+                    universe: this.context.universe,
                     longname: name,
                 }, 'push')
             })
@@ -334,9 +334,9 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
         this.map!.fitBounds(this.polygon_by_name.get(name)!.getBounds())
     }
 
-    static override contextType = NavigationContext
+    static override contextType = Navigator.Context
 
-    declare context: React.ContextType<typeof NavigationContext>
+    declare context: React.ContextType<typeof Navigator.Context>
 }
 
 const MapBody = (props: { id: string, height: string | undefined, buttons: ReactNode }): ReactNode => {

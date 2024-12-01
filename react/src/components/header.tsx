@@ -3,7 +3,7 @@ import React, { ReactNode, useContext } from 'react'
 import '../common.css'
 import './header.css'
 import { universe_path } from '../navigation/links'
-import { NavigationContext } from '../navigation/navigator'
+import { Navigator } from '../navigation/navigator'
 import { useColors } from '../page_template/colors'
 import { useUniverse } from '../universe'
 import { useMobileLayout } from '../utils/responsive'
@@ -24,7 +24,7 @@ export function Header(props: {
     initiate_screenshot: (curr_universe: string) => void
 }): ReactNode {
     const curr_universe = useUniverse()
-    const navContext = useContext(NavigationContext)!
+    const navContext = useContext(Navigator.Context)
     return (
         <div className="top_panel">
             <TopLeft
@@ -59,7 +59,7 @@ export function Header(props: {
                         <SearchBox
                             on_change={
                                 (new_location) => {
-                                    navContext.navigate({
+                                    void navContext.navigate({
                                         kind: 'article',
                                         universe: curr_universe,
                                         longname: new_location,
@@ -118,7 +118,7 @@ function TopLeft(props: {
 function HeaderImage(): ReactNode {
     const colors = useColors()
     const path = useMobileLayout() ? '/thumbnail.png' : colors.bannerURL
-    const navContext = useContext(NavigationContext)!
+    const navContext = useContext(Navigator.Context)
     return (
         <a
             {...navContext.link({ kind: 'index' })}
@@ -202,7 +202,7 @@ function UniverseDropdown(
     { all_universes, flag_size }: { all_universes: readonly string[], flag_size: string },
 ): ReactNode {
     const colors = useColors()
-    const navContext = useContext(NavigationContext)!
+    const navContext = useContext(Navigator.Context)
     return (
         <div>
             <div

@@ -3,10 +3,10 @@ import React, { CSSProperties, ReactNode, useContext, useEffect, useId, useRef }
 import '../style.css'
 import './sidebar.css'
 
-import { NavigationContext } from '../navigation/navigator'
+import { Navigator } from '../navigation/navigator'
 import { Theme, useColors, useCurrentTheme } from '../page_template/colors'
 import { checkbox_category_name, SettingsDictionary, source_enabled_key, TemperatureUnit, useSetting, useSettingInfo, useStagedSettingKeys } from '../page_template/settings'
-import { StatPathsContext, useDataSourceCheckboxes } from '../page_template/statistic-settings'
+import { useDataSourceCheckboxes } from '../page_template/statistic-settings'
 import { useMobileLayout } from '../utils/responsive'
 
 import { StagingControls } from './StagingControls'
@@ -38,7 +38,7 @@ export function Sidebar(): ReactNode {
 
     const sidebar_section_content = useSidebarSectionContentClassName()
 
-    const navContext = useContext(NavigationContext)!
+    const navContext = useContext(Navigator.Context)
 
     return (
         <div
@@ -131,7 +131,7 @@ export function Sidebar(): ReactNode {
                     </li>
                 </ul>
             </div>
-            { useContext(StatPathsContext) !== undefined
+            { navContext.useStatPathsAll() !== undefined
                 ? <SidebarForStatisticChoice />
                 : null}
             <div className="sidebar-section">

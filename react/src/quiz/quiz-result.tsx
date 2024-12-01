@@ -2,7 +2,7 @@ import React, { ReactNode, useContext, useEffect, useRef, useState } from 'react
 import { isFirefox, isMobile } from 'react-device-detect'
 
 import { Statistic } from '../components/table'
-import { NavigationContext } from '../navigation/navigator'
+import { Navigator } from '../navigation/navigator'
 import { JuxtastatColors, useColors, useJuxtastatColors } from '../page_template/colors'
 
 import { render_time_remaining } from './dates'
@@ -436,7 +436,7 @@ function RetrostatQuizResultRow(props: QuizResultRowProps & { question: RetroQue
 }
 
 export function Clickable({ longname }: { longname: string }): ReactNode {
-    const navContext = useContext(NavigationContext)!
+    const navContext = useContext(Navigator.Context)
     return (
         <a
             {

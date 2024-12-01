@@ -3,7 +3,7 @@ import React, { ReactNode, useContext, useId } from 'react'
 import './related.css'
 import type_ordering_idx from '../data/type_ordering_idx'
 import type_to_type_category from '../data/type_to_type_category'
-import { NavigationContext } from '../navigation/navigator'
+import { Navigator } from '../navigation/navigator'
 import { HueColors, useColors } from '../page_template/colors'
 import { relationship_key, useSetting } from '../page_template/settings'
 import { useUniverse } from '../universe'
@@ -32,7 +32,7 @@ function RelatedButton(props: { region: Region }): ReactNode {
     const curr_universe = useUniverse()
     const colors = useColors()
     const type_category = type_to_type_category[props.region.rowType]
-    const navContext = useContext(NavigationContext)!
+    const navContext = useContext(Navigator.Context)
 
     let classes = `serif button_related`
     if (useMobileLayout()) {
