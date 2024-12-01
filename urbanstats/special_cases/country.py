@@ -16,6 +16,7 @@ SIMPLIFY_WATER = 1 / 120
 
 
 def subnational_regions_direct():
+    # TODO update callers
     path = "named_region_shapefiles/World_Administrative_Divisions.zip"
     data = gpd.read_file(path)
     print("read subnational regions")
