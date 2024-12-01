@@ -150,6 +150,7 @@ function UniverseSelector(
                 <UniverseDropdown
                     flag_size={width}
                     all_universes={all_universes}
+                    closeDropdown={() => { set_dropdown_open(false) }}
                 />
             )
         : undefined
@@ -199,7 +200,7 @@ function UniverseSelector(
 }
 
 function UniverseDropdown(
-    { all_universes, flag_size }: { all_universes: readonly string[], flag_size: string },
+    { all_universes, flag_size, closeDropdown }: { all_universes: readonly string[], flag_size: string, closeDropdown: () => void },
 ): ReactNode {
     const colors = useColors()
     const navContext = useContext(Navigator.Context)
@@ -216,7 +217,13 @@ function UniverseDropdown(
             </div>
             {all_universes.map((alt_universe) => {
                 return (
-                    <div key={alt_universe} onClick={() => { navContext.setUniverse(alt_universe) }}>
+                    <div
+                        key={alt_universe}
+                        onClick={() => {
+                            navContext.setUniverse(alt_universe)
+                            closeDropdown()
+                        }}
+                    >
                         <div
                             style={{
                                 display: 'flex',
