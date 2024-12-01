@@ -138,6 +138,7 @@ def build_react_site(site_folder, mode):
     link_scripts_folder(site_folder, mode)
 
 
+# pylint: disable-next=too-many-branches
 def build_urbanstats(
     site_folder,
     *,
