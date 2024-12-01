@@ -5,7 +5,8 @@ from tempfile import NamedTemporaryFile
 
 import requests
 
-sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
+location = os.path.join(os.path.dirname(__file__), "..")
+sys.path.append(location)
 
 from scripts.deploy_site import get_current_branch
 
@@ -35,7 +36,7 @@ def pull_request_for_current_branch():
     """
     Get the pull request for the current branch.
     """
-    current_branch = get_current_branch()
+    current_branch = get_current_branch(path=location)
     for pr in pull_requests():
         if pr["head"]["ref"] == current_branch:
             # print out the pull request url
