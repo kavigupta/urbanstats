@@ -489,18 +489,23 @@ function StatisticNameDisclaimer(props: { disclaimer: Disclaimer }): ReactNode {
         color: colors.textMain,
         padding: '0.5em',
         borderRadius: '0.5em',
-        zIndex: 1,
+        border: `1px solid ${colors.textMain}`,
+        zIndex: 100000,
         display: show ? 'block' : 'none',
     }
     return (
         <span>
             <span
+                className="disclaimer-toggle"
                 style={{ ...articleStatnameButtonStyle(colors), display: 'inline-block' }}
                 onClick={() => { setShow(!show) }}
             >
                 !
             </span>
-            <div style={tooltipStyle}>
+            <div
+                style={tooltipStyle}
+                onClick={() => { setShow(false) }}
+            >
                 {computeDisclaimerText(props.disclaimer)}
             </div>
         </span>

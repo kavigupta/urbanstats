@@ -91,8 +91,8 @@ test('histogram-basic-comparison-nan-middle', async (t) => {
 urbanstatsFixture('comparison ordering test', `${TARGET}/comparison.html?longnames=%5B%22USA%22%2C%22United+Kingdom%22%5D`)
 
 test('histogram-ordering', async (t) => {
-    await t.expect(Selector('.expand-toggle').count).eql(1)
-    await t.click(Selector('.expand-toggle').nth(0))
+    await t.expect(Selector('.expand-toggle').count).eql(2)
+    await t.click(Selector('.expand-toggle').nth(1))
     await screencap(t)
     await download_or_check_histogram(t, 'histogram-ordering')
 })
