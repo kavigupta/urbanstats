@@ -210,6 +210,9 @@ function collapseAlternateSources(rows: ArticleRow[][]): ArticleRow[][] {
         return rows
     }
     const numRows = rows[0].length
+    if (numRows === 0) {
+        return rows
+    }
     // ts Map guarantees insertion order
     // rowsByStatGroupAndYear.get(key)[stat_column][article]
     const rowsByStatGroupAndYear = new Map<string, ArticleRow[][]>()
@@ -230,6 +233,8 @@ function collapseAlternateSources(rows: ArticleRow[][]): ArticleRow[][] {
             groupYearToName.get(key)!,
         ))
     }
+    console.log(rows)
+    console.log(rowsCollapsed)
     return rowsCollapsed[0].map((_, i) => rowsCollapsed.map(row => row[i]))
 }
 
