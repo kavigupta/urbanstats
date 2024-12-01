@@ -231,8 +231,8 @@ def elevation_statistics_for_american_shapefile(sf):
 )
 def elevation_statistics_for_shape(shape):
     return compute_gpw_weighted_for_shape(
-        load_full_ghs(),
         shape,
+        load_full_ghs(),
         {"elevation": (full_elevation(), True), "hilliness": (full_hilliness(), True)},
         do_histograms=False,
     )
