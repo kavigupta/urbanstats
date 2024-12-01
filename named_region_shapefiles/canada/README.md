@@ -12,6 +12,10 @@ Portal is https://www12.statcan.gc.ca/census-recensement/2021/geo/sip-pis/bounda
 For each one, we can download the boundaries by selecting the kind of boundary and then clicking "shapefile". Make sure
 to use Digital Boundary File (DBF) format.
 
+## Provinces
+
+https://www12.statcan.gc.ca/census-recensement/2021/geo/sip-pis/boundary-limites/files-fichiers/lpr_000a21a_e.zip
+
 ## Dissemination blocks
 
 https://www12.statcan.gc.ca/census-recensement/2021/geo/sip-pis/boundary-limites/files-fichiers/ldb_000b21a_e.zip
