@@ -1,4 +1,4 @@
-import React, { CSSProperties, ReactNode, useContext, useEffect, useMemo, useRef } from 'react'
+import React, { ChangeEvent, CSSProperties, ReactNode, useContext, useEffect, useMemo, useRef, useState } from 'react'
 
 import universes_ordered from '../data/universes_ordered'
 import { sanitize, statisticDescriptor } from '../navigation/links'
@@ -364,8 +364,19 @@ function SelectPage(props: {
         margin: '0.5em',
     }
 
-    const handleSubmit = (e: React.FocusEvent | React.KeyboardEvent): void => {
-        let new_page = parseInt((e.target as HTMLInputElement).value)
+    const [pageNumber, setPageNumber] = useState(props.current_page.toString())
+
+    const pageField = useRef<HTMLInputElement>(null)
+
+    useEffect(() => {
+        setPageNumber(props.current_page.toString())
+        if (document.activeElement === pageField.current) {
+            pageField.current!.select()
+        }
+    }, [props.current_page])
+
+    const handleSubmit = (): void => {
+        let new_page = parseInt(pageNumber)
         if (new_page < 1) {
             new_page = 1
         }
@@ -395,18 +406,24 @@ function SelectPage(props: {
             <div>
                 <span>Page: </span>
                 <input
+                    ref={pageField}
                     type="text"
                     pattern="[0-9]*"
                     style={{ width: '3em', textAlign: 'right', fontSize: '16px' }}
                     className="serif"
-                    defaultValue={props.current_page}
+                    value={pageNumber}
                     onKeyDown={(e) => {
                         if (e.key === 'Enter') {
-                            handleSubmit(e)
+                            handleSubmit()
                         }
                     }}
-                    onFocus={(e) => { e.target.select() }}
+                    onFocus={(e) => {
+                        setTimeout(() => {
+                            e.target.select()
+                        }, 0)
+                    }}
                     onBlur={handleSubmit}
+                    onChange={(e: ChangeEvent<HTMLInputElement>) => { setPageNumber(e.target.value) }}
                 />
                 <span>
                     {' of '}
