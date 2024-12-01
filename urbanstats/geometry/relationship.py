@@ -253,7 +253,10 @@ def can_border(x, y):
 
 
 def full_relationships(long_to_type):
-    return relationships_for_list(long_to_type, shapefiles)
+    return {
+        rt: {k: by_rt_k for k, by_rt_k in by_rt.items() if by_rt_k}
+        for rt, by_rt in relationships_for_list(long_to_type, shapefiles).items()
+    }
 
 
 @permacache(
