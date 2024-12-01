@@ -120,17 +120,17 @@ export class Settings {
     private readonly settingValueObservers = new DefaultMap<keyof SettingsDictionary, Set<() => void>>(() => new Set())
 
     useSettings<K extends keyof SettingsDictionary>(keys: K[]): Pick<SettingsDictionary, K> {
-        const [result, setResult] = useState(this.getMultiple(keys))
+        const [, setCounter] = useState(0)
         useEffect(() => {
-            setResult(this.getMultiple(keys)) // So that if `key` changes we change our result immediately
-            const observer = (): void => { setResult(this.getMultiple(keys)) }
+            setCounter(counter => counter + 1) // So that if `key` changes we change our result immediately
+            const observer = (): void => { setCounter(counter => counter + 1) }
             keys.forEach(key => this.settingValueObservers.get(key).add(observer))
             return () => {
                 keys.forEach(key => this.settingValueObservers.get(key).delete(observer))
             }
         // eslint-disable-next-line react-hooks/exhaustive-deps -- Our dependencies are the keys
-        }, keys)
-        return result
+        }, [JSON.stringify(keys)])
+        return this.getMultiple(keys)
     }
 
     setSetting<K extends keyof SettingsDictionary>(key: K, newValue: SettingsDictionary[K], save = true): void {
@@ -226,18 +226,18 @@ export class Settings {
     private readonly stagedKeysObservers = new Set<() => void>()
 
     useStagedKeys(): (keyof SettingsDictionary)[] | undefined {
-        const [result, setResult] = useState(this.getStagedKeys())
+        const [, setCounter] = useState(0)
         useEffect(() => {
-            setResult(this.getStagedKeys())
+            setCounter(counter => counter + 1)
             const observer = (): void => {
-                setResult(this.getStagedKeys())
+                setCounter(counter => counter + 1)
             }
             this.stagedKeysObservers.add(observer)
             return () => {
                 this.stagedKeysObservers.delete(observer)
             }
         }, [])
-        return result
+        return this.getStagedKeys()
     }
 
     getSettingInfo<K extends keyof SettingsDictionary>(key: K): SettingInfo<K> {
@@ -260,10 +260,10 @@ export class Settings {
     }
 
     useSettingsInfo<K extends keyof SettingsDictionary>(keys: K[]): { [T in K]: SettingInfo<T> } {
-        const [result, setResult] = useState(this.getSettingsInfo(keys))
+        const [, setCounter] = useState(0)
         useEffect(() => {
-            setResult(this.getSettingsInfo(keys)) // So that if `key` changes we change our result immediately
-            const observer = (): void => { setResult(this.getSettingsInfo(keys)) }
+            setCounter(counter => counter + 1)
+            const observer = (): void => { setCounter(counter => counter + 1) }
             keys.forEach(key => this.settingValueObservers.get(key).add(observer))
             this.stagedKeysObservers.add(observer)
             return () => {
@@ -271,8 +271,8 @@ export class Settings {
                 this.stagedKeysObservers.delete(observer)
             }
         // eslint-disable-next-line react-hooks/exhaustive-deps -- Our dependencies are the keys
-        }, keys)
-        return result
+        }, [JSON.stringify(keys)])
+        return this.getSettingsInfo(keys)
     }
     /* eslint-enable react-hooks/rules-of-hooks */
 }

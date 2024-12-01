@@ -464,7 +464,7 @@ function StatisticName(props: {
                 flexDirection: 'row',
             }}
             >
-                {paddedElements}
+                {...paddedElements}
             </span>
         )
     }
