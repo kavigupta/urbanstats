@@ -206,6 +206,9 @@ function collapseAlternateSources(rows: ArticleRow[][]): ArticleRow[][] {
     // the set of rows must also be a set of all rows with the same stat group and year,
     // minus any rows that apply to every article
     // rows[article][stat_column]
+    if (rows.length === 0) {
+        return rows
+    }
     const numRows = rows[0].length
     // ts Map guarantees insertion order
     // rowsByStatGroupAndYear.get(key)[stat_column][article]
@@ -224,7 +227,7 @@ function collapseAlternateSources(rows: ArticleRow[][]): ArticleRow[][] {
     for (const key of rowsByStatGroupAndYear.keys()) {
         rowsCollapsed.push(...collapseAlternateSourcesSingleGroupYear(
             rowsByStatGroupAndYear.get(key)!,
-            groupYearToName.get(key)!
+            groupYearToName.get(key)!,
         ))
     }
     return rowsCollapsed[0].map((_, i) => rowsCollapsed.map(row => row[i]))
