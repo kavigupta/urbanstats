@@ -58,6 +58,7 @@ test('histogram-basic-comparison', async (t) => {
     await waitForLoading(t) // Need to avoid a race condition between map loading and page resizing
     await t.resizeWindow(400, 800)
     // select element with class name `expand-toggle`
+    await t.expect(Selector('.expand-toggle').count).eql(1)
     await t.click(Selector('.expand-toggle'))
     await screencap(t)
     await download_or_check_histogram(t, 'histogram-basic-comparison')
@@ -69,6 +70,7 @@ test('histogram-basic-comparison-nan', async (t) => {
     await waitForLoading(t) // Need to avoid a race condition between map loading and page resizing
     await t.resizeWindow(400, 800)
     // select element with class name `expand-toggle`
+    await t.expect(Selector('.expand-toggle').count).eql(2)
     await t.click(Selector('.expand-toggle').nth(1))
     await screencap(t)
     await download_or_check_histogram(t, 'histogram-basic-comparison-nan')
@@ -80,6 +82,7 @@ test('histogram-basic-comparison-nan-middle', async (t) => {
     await waitForLoading(t) // Need to avoid a race condition between map loading and page resizing
     await t.resizeWindow(400, 800)
     // select element with class name `expand-toggle`
+    await t.expect(Selector('.expand-toggle').count).eql(2)
     await t.click(Selector('.expand-toggle').nth(1))
     await screencap(t)
     await download_or_check_histogram(t, 'histogram-basic-comparison-nan-middle')
@@ -88,6 +91,7 @@ test('histogram-basic-comparison-nan-middle', async (t) => {
 urbanstatsFixture('comparison ordering test', `${TARGET}/comparison.html?longnames=%5B%22USA%22%2C%22United+Kingdom%22%5D`)
 
 test('histogram-ordering', async (t) => {
+    await t.expect(Selector('.expand-toggle').count).eql(2)
     await t.click(Selector('.expand-toggle').nth(1))
     await screencap(t)
     await download_or_check_histogram(t, 'histogram-ordering')
