@@ -1,7 +1,7 @@
 import React, { CSSProperties, ReactNode, useContext, useEffect, useMemo, useRef } from 'react'
 
 import universes_ordered from '../data/universes_ordered'
-import { explanation_page_link, sanitize } from '../navigation/links'
+import { explanation_page_link, sanitize, statisticDescriptor } from '../navigation/links'
 import { Navigator } from '../navigation/navigator'
 import { useColors } from '../page_template/colors'
 import { useSetting } from '../page_template/settings'
@@ -73,15 +73,14 @@ export function StatisticPanel(props: StatisticPanelProps): ReactNode {
 
     const swap_ascending_descending = (curr_universe: string | undefined): void => {
         const new_order = is_ascending ? 'descending' : 'ascending'
-        void navContext.navigate({
-            kind: 'statistic',
+        void navContext.navigate(statisticDescriptor({
             universe: curr_universe,
             statname: props.statname,
             article_type: props.article_type,
             start: 1,
             amount: props.amount,
             order: new_order,
-        }, 'push')
+        }), 'push')
     }
 
     const background_color = (row_idx: number): string => {
@@ -218,12 +217,11 @@ function Pagination(props: {
     const navContext = useContext(Navigator.Context)
 
     const change_start = (new_start: number): void => {
-        void navContext.navigate({
-            kind: 'statistic',
+        void navContext.navigate(statisticDescriptor({
             universe: curr_universe,
             ...props,
             start: new_start,
-        }, 'push')
+        }), 'push')
     }
 
     const change_amount = (new_amount: string | number): void => {
@@ -242,15 +240,14 @@ function Pagination(props: {
         if (start > props.count - new_amount_num) {
             start = props.count - new_amount_num + 1
         }
-        void navContext.navigate({
-            kind: 'statistic',
+        void navContext.navigate(statisticDescriptor({
             universe: curr_universe,
             statname: props.statname,
             article_type: props.article_type,
             start,
             amount: new_amount === 'All' ? 'All' : new_amount_num,
             order: props.order,
-        }, 'push')
+        }), 'push')
     }
 
     const current = props.start
@@ -264,12 +261,11 @@ function Pagination(props: {
 
     useEffect(() => {
         const goToPage = (new_page: number): void => {
-            void navContext.navigate({
-                kind: 'statistic',
+            void navContext.navigate(statisticDescriptor({
                 universe: curr_universe,
                 ...props,
                 start: (new_page - 1) * per_page + 1,
-            }, 'replace')
+            }), 'replace')
         }
 
         if (current_page > max_pages) {

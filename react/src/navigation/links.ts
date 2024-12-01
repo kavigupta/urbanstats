@@ -1,3 +1,7 @@
+import { StatName } from '../page_template/statistic-tree'
+
+import { PageDescriptor } from './navigator'
+
 function shard_bytes(longname: string): [string, string] {
     // as bytes, in utf-8
     const bytes = new TextEncoder().encode(longname)
@@ -54,6 +58,34 @@ export function consolidated_shape_link(typ: string): string {
 
 export function consolidated_stats_link(typ: string): string {
     return `/consolidated/stats__${sanitize(typ)}.gz`
+}
+
+export function statisticDescriptor(props: {
+    universe: string | undefined
+    statname: StatName
+    article_type: string
+    start: number
+    amount: number | 'All'
+    order: 'ascending' | 'descending'
+    highlight?: string
+}): PageDescriptor & { kind: 'statistic' } {
+    let start = props.start
+    // make start % amount == 0
+    if (props.amount !== 'All') {
+        start = start - 1
+        start = start - (start % props.amount)
+        start = start + 1
+    }
+    return {
+        kind: 'statistic',
+        statname: props.statname,
+        article_type: props.article_type,
+        start,
+        amount: props.amount,
+        order: props.order,
+        highlight: props.highlight,
+        universe: props.universe,
+    }
 }
 
 export function sanitize(longname: string, spaces_around_slash = true): string {

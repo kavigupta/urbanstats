@@ -3,6 +3,7 @@ import ContentEditable, { ContentEditableEvent } from 'react-contenteditable'
 
 import { load_ordering } from '../load_json'
 import './table.css'
+import { statisticDescriptor } from '../navigation/links'
 import { Navigator } from '../navigation/navigator'
 import { useColors } from '../page_template/colors'
 import { MobileArticlePointers, row_expanded_key, Settings, useSetting } from '../page_template/settings'
@@ -418,8 +419,7 @@ function StatisticName(props: {
         <a
             style={{ textDecoration: 'none', color: colors.textMain }}
             {
-                ...navContext.link({
-                    kind: 'statistic',
+                ...navContext.link(statisticDescriptor({
                     universe: props.curr_universe,
                     statname: props.row.statname,
                     article_type: props.row.articleType,
@@ -427,7 +427,7 @@ function StatisticName(props: {
                     amount: 20,
                     order: 'descending',
                     highlight: props.longname,
-                })
+                }))
             }
         >
             {props.row.rendered_statname}
