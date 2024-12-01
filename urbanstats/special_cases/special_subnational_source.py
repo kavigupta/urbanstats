@@ -40,6 +40,7 @@ CANADA_EABBR_TO_ISO = {
     "Nvt.": "NU",
 }
 
+
 class USStateSpecialSubnationalSource(SpecialSubnationalSource):
     def replace_subnational_geographies(self, data) -> List[int]:
         usa = gpd.read_file("named_region_shapefiles/cb_2022_us_state_500k.zip")
@@ -54,11 +55,11 @@ class USStateSpecialSubnationalSource(SpecialSubnationalSource):
 
 class CanadianProvinceSpecialSubnationalSource(SpecialSubnationalSource):
     def replace_subnational_geographies(self, data) -> List[int]:
-        canada = gpd.read_file("named_region_shapefiles/canada/lpr_000a21a_e.zip")
+        canada = gpd.read_file(
+            "named_region_shapefiles/canada/lpr_000a21a_e.zip"
+        ).to_crs("EPSG:4326")
         data_canada = data[data.ISO_CC == "CA"]
-        canada["ISO_CAN"] = canada.PREABBR.apply(
-            lambda x: CANADA_EABBR_TO_ISO[x]
-        )
+        canada["ISO_CAN"] = canada.PREABBR.apply(lambda x: CANADA_EABBR_TO_ISO[x])
         postal_to_geometry = dict(zip(canada.ISO_CAN, canada.geometry))
         assert set(postal_to_geometry) == set(data_canada.ISO_SUB)
         data.loc[data_canada.index, "geometry"] = data_canada.ISO_SUB.apply(

@@ -23,7 +23,7 @@ def valid_state(x):
 
 
 SUBNATIONAL_REGIONS = Shapefile(
-    hash_key="subnational_regions_13",
+    hash_key="subnational_regions_14",
     path=subnational_regions,
     shortname_extractor=lambda x: x["NAME"],
     longname_extractor=lambda x: x["fullname"],

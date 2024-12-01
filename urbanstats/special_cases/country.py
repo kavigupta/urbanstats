@@ -16,7 +16,6 @@ SIMPLIFY_WATER = 1 / 120
 
 
 def subnational_regions_direct():
-    # TODO update callers
     path = "named_region_shapefiles/World_Administrative_Divisions.zip"
     data = gpd.read_file(path)
     print("read subnational regions")
@@ -136,6 +135,11 @@ def countries():
 def continents_direct():
     data = gpd.read_file("named_region_shapefiles/continents/subnational_regions.shp")
     data = data.dissolve("newcont")
+    country_sh = countries()
+    canada = country_sh[country_sh.COUNTRY == "Canada"].iloc[0].geometry
+    north_america = data.loc['north america'].geometry
+    north_america = north_america.union(canada)
+    data.loc['north america', 'geometry'] = north_america
     data.geometry = data.geometry.buffer(SIMPLIFY_REALLY_SMALL)
     data.geometry = data.geometry.simplify(SIMPLIFY_REALLY_SMALL)
     data["name"] = [x.title() for x in data.index]
