@@ -46,7 +46,7 @@ export function QuerySettingsConnection(): null {
         })) {
             settings.exitStagedMode('discard')
         }
-    }, [statPaths, settings])
+    }, [statPaths, settings, settingsVector])
 
     return null
 }

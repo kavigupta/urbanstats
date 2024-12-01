@@ -15,6 +15,7 @@ import { useComparisonHeadStyle, useHeaderTextClass, useSubHeaderTextClass } fro
 import { NormalizeProto } from '../utils/types'
 
 import { ArticleWarnings } from './ArticleWarnings'
+import { QuerySettingsConnection } from './QuerySettingsConnection'
 import { ArticleRow } from './load-article'
 import { Map } from './map'
 import { WithPlot } from './plots'
@@ -46,58 +47,61 @@ export function ArticlePanel({ article, rows }: { article: Article, rows: (setti
     }, [article.shortname])
 
     return (
-        <PageTemplate screencap_elements={screencap_elements} has_universe_selector={true} universes={article.universes}>
-            <div>
-                <div ref={headers_ref}>
-                    <div className={headerTextClass}>{article.shortname}</div>
-                    <div className={subHeaderTextClass}>{article.longname}</div>
-                </div>
-                <div style={{ marginBlockEnd: '16px' }}></div>
+        <>
+            <QuerySettingsConnection />
+            <PageTemplate screencap_elements={screencap_elements} has_universe_selector={true} universes={article.universes}>
+                <div>
+                    <div ref={headers_ref}>
+                        <div className={headerTextClass}>{article.shortname}</div>
+                        <div className={subHeaderTextClass}>{article.longname}</div>
+                    </div>
+                    <div style={{ marginBlockEnd: '16px' }}></div>
 
-                <div className="stats_table" ref={table_ref}>
-                    <StatisticTableHeader />
-                    {filtered_rows.map((row, index) => (
-                        <StatisticTableRow
-                            row={row}
-                            index={index}
-                            key={row.statpath}
+                    <div className="stats_table" ref={table_ref}>
+                        <StatisticTableHeader />
+                        {filtered_rows.map((row, index) => (
+                            <StatisticTableRow
+                                row={row}
+                                index={index}
+                                key={row.statpath}
+                                longname={article.longname}
+                                shortname={article.shortname}
+                            />
+                        ))}
+                        <ArticleWarnings />
+                    </div>
+
+                    <p></p>
+
+                    <div ref={map_ref}>
+                        <Map
                             longname={article.longname}
-                            shortname={article.shortname}
+                            related={article.related as NormalizeProto<IRelatedButtons>[]}
+                            article_type={article.articleType}
+                            basemap={{ type: 'osm' }}
                         />
-                    ))}
-                    <ArticleWarnings />
-                </div>
+                    </div>
 
-                <p></p>
+                    <div style={{ marginBlockEnd: '1em' }}></div>
 
-                <div ref={map_ref}>
-                    <Map
-                        longname={article.longname}
+                    <div style={{ display: 'flex', alignItems: 'center' }}>
+                        <div style={{ width: '30%', marginRight: '1em' }}>
+                            <div className="serif" style={comparisonHeadStyle}>Compare to: </div>
+                        </div>
+                        <div style={{ width: '70%' }}>
+                            <ComparisonSearchBox longname={article.longname} />
+                        </div>
+                    </div>
+
+                    <script src="/scripts/map.js"></script>
+
+                    <Related
                         related={article.related as NormalizeProto<IRelatedButtons>[]}
                         article_type={article.articleType}
-                        basemap={{ type: 'osm' }}
                     />
                 </div>
-
-                <div style={{ marginBlockEnd: '1em' }}></div>
-
-                <div style={{ display: 'flex', alignItems: 'center' }}>
-                    <div style={{ width: '30%', marginRight: '1em' }}>
-                        <div className="serif" style={comparisonHeadStyle}>Compare to: </div>
-                    </div>
-                    <div style={{ width: '70%' }}>
-                        <ComparisonSearchBox longname={article.longname} />
-                    </div>
-                </div>
-
-                <script src="/scripts/map.js"></script>
-
-                <Related
-                    related={article.related as NormalizeProto<IRelatedButtons>[]}
-                    article_type={article.articleType}
-                />
-            </div>
-        </PageTemplate>
+            </PageTemplate>
+        </>
     )
 }
 
