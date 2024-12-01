@@ -20,7 +20,7 @@ def extract_country_longname(x):
 
 
 COUNTRIES = Shapefile(
-    hash_key="countries_10",
+    hash_key="countries_12",
     path=countries,
     shortname_extractor=extract_country_longname,
     longname_extractor=extract_country_longname,
