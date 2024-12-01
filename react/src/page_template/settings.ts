@@ -105,6 +105,7 @@ export interface SettingInfo<K extends keyof SettingsDictionary> {
 }
 
 export class Settings {
+    /* eslint-disable react-hooks/rules-of-hooks -- This is a custom logic class */
     /**
      * Basic Settings
      */
@@ -119,9 +120,7 @@ export class Settings {
     private readonly settingValueObservers = new DefaultMap<keyof SettingsDictionary, Set<() => void>>(() => new Set())
 
     useSettings<K extends keyof SettingsDictionary>(keys: K[]): Pick<SettingsDictionary, K> {
-        // eslint-disable-next-line react-hooks/rules-of-hooks -- This is a custom hook
         const [result, setResult] = useState(this.getMultiple(keys))
-        // eslint-disable-next-line react-hooks/rules-of-hooks -- This is a custom hook
         useEffect(() => {
             setResult(this.getMultiple(keys)) // So that if `key` changes we change our result immediately
             const observer = (): void => { setResult(this.getMultiple(keys)) }
@@ -227,9 +226,7 @@ export class Settings {
     private readonly stagedKeysObservers = new Set<() => void>()
 
     useStagedKeys(): (keyof SettingsDictionary)[] | undefined {
-        // eslint-disable-next-line react-hooks/rules-of-hooks -- This is a custom hook
         const [result, setResult] = useState(this.getStagedKeys())
-        // eslint-disable-next-line react-hooks/rules-of-hooks -- This is a custom hook
         useEffect(() => {
             setResult(this.getStagedKeys())
             const observer = (): void => {
@@ -263,9 +260,7 @@ export class Settings {
     }
 
     useSettingsInfo<K extends keyof SettingsDictionary>(keys: K[]): { [T in K]: SettingInfo<T> } {
-        // eslint-disable-next-line react-hooks/rules-of-hooks -- This is a custom hook
         const [result, setResult] = useState(this.getSettingsInfo(keys))
-        // eslint-disable-next-line react-hooks/rules-of-hooks -- This is a custom hook
         useEffect(() => {
             setResult(this.getSettingsInfo(keys)) // So that if `key` changes we change our result immediately
             const observer = (): void => { setResult(this.getSettingsInfo(keys)) }
@@ -279,6 +274,7 @@ export class Settings {
         }, keys)
         return result
     }
+    /* eslint-enable react-hooks/rules-of-hooks */
 }
 
 export function useSetting<K extends keyof SettingsDictionary>(key: K): [SettingsDictionary[K], (newValue: SettingsDictionary[K]) => void] {
