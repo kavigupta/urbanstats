@@ -115,14 +115,21 @@ export const allYears = Array.from(
         .filter(year => year !== null)),
 ).sort(sortYears)
 
-const statParentsList: [StatPath, { group: Group, year: Year | null, source: DataSource | null }][] = allGroups
+interface StatParent {
+    group: Group
+    year: Year | null
+    groupYearName: string
+    source: DataSource | null
+}
+
+const statParentsList: [StatPath, StatParent][] = allGroups
     .flatMap(group => group.contents
         .flatMap(({ year, stats }) => stats
             .flatMap(stat => stat.by_source
                 .map(({ source, path }) =>
-                    [path, { group, year, source }] satisfies [StatPath, { group: Group, year: Year | null, source: DataSource | null }]))))
+                    [path, { group, year, groupYearName: stat.name, source }] satisfies [StatPath, StatParent]))))
 
-export const statParents = new Map<StatPath, { group: Group, year: Year | null, source: DataSource | null }>(
+export const statParents = new Map<StatPath, StatParent>(
     statParentsList,
 )
 

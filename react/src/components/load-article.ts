@@ -5,7 +5,7 @@ import stats from '../data/statistic_list'
 import names from '../data/statistic_name_list'
 import paths from '../data/statistic_path_list'
 import { StatGroupSettings, statIsEnabled } from '../page_template/statistic-settings'
-import { findAmbiguousSourcesAll, statDataOrderToOrder, StatName, StatPath, statPathToOrder } from '../page_template/statistic-tree'
+import { findAmbiguousSourcesAll, statDataOrderToOrder, statParents, StatName, StatPath, statPathToOrder } from '../page_template/statistic-tree'
 import { Article } from '../utils/protos'
 
 export interface HistogramExtraStat {
@@ -27,6 +27,8 @@ export type ExtraStat = HistogramExtraStat | TimeSeriesExtraStat
 
 export type StatCol = (typeof stats)[number]
 
+export type Disclaimer = 'heterogenous-sources'
+
 export interface ArticleRow {
     statval: number
     ordinal: number
@@ -42,6 +44,7 @@ export interface ArticleRow {
     _index: number
     rendered_statname: string
     extra_stat?: ExtraStat
+    disclaimer?: Disclaimer
 }
 
 function lookup_in_compressed_sequence(seq: [number, number][], idx: number): number {
@@ -151,8 +154,8 @@ export function load_articles(datas: Article[], universe: string): {
             .sort((a, b) => statPathToOrder.get(a.statpath)! - statPathToOrder.get(b.statpath)!),
         )
         const rowsNothingMissing = insert_missing(rows)
-
-        return rowsNothingMissing
+        const rowsCollapsed = collapseAlternateSources(rowsNothingMissing)
+        return rowsCollapsed
     }, statPaths: statPathsEach }
 }
 
@@ -196,4 +199,117 @@ function insert_missing(rows: ArticleRow[][]): ArticleRow[][] {
         new_rows_all.push(new_rows)
     }
     return new_rows_all
+}
+
+function collapseAlternateSources(rows: ArticleRow[][]): ArticleRow[][] {
+    // collapses multiple rows if they
+    // (1) have the same stat group and year
+    // (2) no two rows apply to the same article
+    // the set of rows must also be a set of all rows with the same stat group and year,
+    // minus any rows that apply to every article
+    // rows[article][stat_column]
+    if (rows.length === 0) {
+        return rows
+    }
+    const numRows = rows[0].length
+    if (numRows === 0) {
+        return rows
+    }
+    // ts Map guarantees insertion order
+    // rowsByStatGroupAndYear.get(key)[stat_column][article]
+    const rowsByStatGroupAndYear = new Map<string, ArticleRow[][]>()
+    const groupYearToName = new Map<string, string>()
+    for (let i = 0; i < numRows; i++) {
+        const { group, year, groupYearName } = statParents.get(rows[0][i].statpath)!
+        const key = `${group.id}_${year}`
+        if (!rowsByStatGroupAndYear.has(key)) {
+            rowsByStatGroupAndYear.set(key, [])
+        }
+        rowsByStatGroupAndYear.get(key)!.push(rows.map(row => row[i]))
+        groupYearToName.set(key, groupYearName)
+    }
+    const rowsCollapsed: ArticleRow[][] = []
+    for (const key of rowsByStatGroupAndYear.keys()) {
+        rowsCollapsed.push(...collapseAlternateSourcesSingleGroupYear(
+            rowsByStatGroupAndYear.get(key)!,
+            groupYearToName.get(key)!,
+        ))
+    }
+    return rowsCollapsed[0].map((_, i) => rowsCollapsed.map(row => row[i]))
+}
+
+function collapseAlternateSourcesSingleGroupYear(rows: ArticleRow[][], groupYearName: string): ArticleRow[][] {
+    // rows[stat_column][article]
+    if (rows.length === 1) {
+        return rows
+    }
+    // convert to a bitmap of whether each thing has a value (alternative is nan)
+    const hasValue = rows.map(row => row.map(x => !Number.isNaN(x.statval)))
+    const rowsC: ArticleRow[][] = []
+    const collapsedRows = computeCollapsedRows(new Map(hasValue.map((x, i) => [i, x])))
+    for (const collapsedRow of collapsedRows) {
+        rowsC.push(collapse(collapsedRow.map(i => rows[i]), groupYearName))
+    }
+    return rowsC
+}
+
+function computeCollapsedRows(hasValue: Map<number, boolean[]>): number[][] {
+    /**
+     * Takes the given hasValue array and computes the rows that should be collapsed
+     *
+     * We collapse a set of rows together if there is no overlap in the articles that have values
+     * for those rows. For now, we will just greedily construct sets of rows that should be
+     * collapsed together
+     *
+     * @param hasValue: A 2D array of booleans, where hasValue[stat_column][article]
+     *  is true if the article has a value for the stat column
+     *
+     * @returns: A list of lists of numbers. Each list of numbers is a set of rows that should
+     * be collapsed together. The numbers are the indices of the rows in the original array.
+     */
+    // if (hasValue.length === 0) {
+    //     return []
+    // }
+    if (hasValue.size === 0) {
+        return []
+    }
+    const idx = Array.from(hasValue.keys())[0]
+    const byArticle = hasValue.get(idx)!
+    // const lastIdx = hasValue.length - 1
+    // if last stat is available in all articles, it cannot be collapsed with anything
+    // same if it is not available in any article
+    if (byArticle.every(x => x) || byArticle.every(x => !x)) {
+        return [[idx], ...computeCollapsedRows(new Map(Array.from(hasValue).slice(1)))]
+    }
+    const rowIdxs = [idx]
+    const covered: boolean[] = [...byArticle]
+    for (const [idx2, byArticle2] of hasValue) {
+        if (byArticle2.every((x, i) => !x || !covered[i])) {
+            rowIdxs.push(idx2)
+            for (let i = 0; i < covered.length; i++) {
+                covered[i] = covered[i] || byArticle2[i]
+            }
+        }
+    }
+    const filtMap = new Map(Array.from(hasValue).filter(([idx2]) => !rowIdxs.includes(idx2)))
+    return [rowIdxs, ...computeCollapsedRows(filtMap)]
+}
+
+function collapse(rows: ArticleRow[][], groupYearName: string): ArticleRow[] {
+    // rows[stat_column][article]
+    if (rows.length === 1) {
+        return rows[0]
+    }
+    const rowsByArticle = rows[0].map((_, i) => rows.map(row => row[i]))
+    return rowsByArticle.map((rowsForArticle) => {
+        const rowsWithValues = rowsForArticle.filter(row => !Number.isNaN(row.statval))
+        if (rowsWithValues.length !== 1) {
+            throw new Error('Cannot collapse rows with none, or multiple, values')
+        }
+        // row is a copy of rowsWithValues[0]
+        const row = JSON.parse(JSON.stringify(rowsWithValues[0])) as ArticleRow
+        row.rendered_statname = groupYearName
+        row.disclaimer = 'heterogenous-sources'
+        return row
+    })
 }
