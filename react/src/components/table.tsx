@@ -4,14 +4,14 @@ import ContentEditable, { ContentEditableEvent } from 'react-contenteditable'
 import { load_ordering } from '../load_json'
 import { article_link, statistic_link } from '../navigation/links'
 import './table.css'
-import { useColors } from '../page_template/colors'
+import { Colors, useColors } from '../page_template/colors'
 import { MobileArticlePointers, row_expanded_key, Settings, useSetting } from '../page_template/settings'
 import { useUniverse } from '../universe'
 import { is_historical_cd } from '../utils/is_historical'
 import { isMobileLayout, useMobileLayout } from '../utils/responsive'
 import { display_type } from '../utils/text'
 
-import { ArticleRow } from './load-article'
+import { ArticleRow, Disclaimer } from './load-article'
 import { useScreenshotMode } from './screenshot'
 
 export type ColumnIdentifier = 'statname' | 'statval' | 'statval_unit' | 'statistic_percentile' | 'statistic_ordinal' | 'pointer_in_class' | 'pointer_overall'
@@ -406,6 +406,15 @@ function PointerRowCells(props: { ordinal_style: CSSProperties, row: ArticleRow 
     }
 }
 
+function articleStatnameButtonStyle(colors: Colors): React.CSSProperties {
+    return {
+        cursor: 'pointer', border: `1px solid ${colors.textMain}`,
+        padding: 0, borderRadius: '3px', fontSize: '75%',
+        minWidth: '1.5em', minHeight: '1.5em', textAlign: 'center',
+        lineHeight: '1.2em',
+    }
+}
+
 function StatisticName(props: {
     row: ArticleRow
     longname: string
@@ -434,16 +443,14 @@ function StatisticName(props: {
             <div
                 className="expand-toggle"
                 onClick={() => { setExpanded(!expanded) }}
-                style={{
-                    cursor: 'pointer', border: `1px solid ${colors.textMain}`,
-                    padding: 0, borderRadius: '3px', fontSize: '75%',
-                    minWidth: '1.5em', minHeight: '1.5em', textAlign: 'center',
-                    lineHeight: '1.2em',
-                }}
+                style={articleStatnameButtonStyle(colors)}
             >
                 {expanded ? '-' : '+'}
             </div>,
         )
+    }
+    if (props.row.disclaimer !== undefined) {
+        elements.push(<StatisticNameDisclaimer disclaimer={props.row.disclaimer} />)
     }
     if (elements.length > 1) {
         const paddedElements = [elements[0]]
@@ -463,6 +470,46 @@ function StatisticName(props: {
         )
     }
     return link
+}
+
+function computeDisclaimerText(disclaimer: Disclaimer): string {
+    switch (disclaimer) {
+        case 'heterogenous-sources':
+            return 'This statistic is based on data from multiple sources, which may not be consistent with each other.'
+    }
+}
+
+function StatisticNameDisclaimer(props: { disclaimer: Disclaimer }): ReactNode {
+    // little disclaimer icon that pops up a tooltip when clicked
+    const [show, setShow] = useState(false)
+    const colors = useColors()
+    const tooltipStyle: React.CSSProperties = {
+        position: 'absolute',
+        backgroundColor: colors.slightlyDifferentBackgroundFocused,
+        color: colors.textMain,
+        padding: '0.5em',
+        borderRadius: '0.5em',
+        border: `1px solid ${colors.textMain}`,
+        zIndex: 100000,
+        display: show ? 'block' : 'none',
+    }
+    return (
+        <span>
+            <span
+                className="disclaimer-toggle"
+                style={{ ...articleStatnameButtonStyle(colors), display: 'inline-block' }}
+                onClick={() => { setShow(!show) }}
+            >
+                !
+            </span>
+            <div
+                style={tooltipStyle}
+                onClick={() => { setShow(false) }}
+            >
+                {computeDisclaimerText(props.disclaimer)}
+            </div>
+        </span>
+    )
 }
 
 export function TableRowContainer({ children, index }: { children: React.ReactNode, index: number }): React.ReactNode {

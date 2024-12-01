@@ -136,7 +136,10 @@ test('comparison-2-non-overlapping-population-stats', async (t) => {
     // no overlap: both are forced onto the screen
     await t.expect(await checkboxStatus('US Census')).eql('missing')
     await t.expect(await checkboxStatus('GHSL')).eql('missing')
-    await t.expect(await dataValues()).eql(['119', 'NaN', 'NaN', '419'])
+    await t.expect(await dataValues()).eql(['119', '419'])
+    await screencap(t)
+    await t.click(Selector('.disclaimer-toggle'))
+    await screencap(t)
 })
 
 urbanstatsFixture(
