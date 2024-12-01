@@ -233,8 +233,6 @@ function collapseAlternateSources(rows: ArticleRow[][]): ArticleRow[][] {
             groupYearToName.get(key)!,
         ))
     }
-    console.log(rows)
-    console.log(rowsCollapsed)
     return rowsCollapsed[0].map((_, i) => rowsCollapsed.map(row => row[i]))
 }
 
@@ -245,15 +243,11 @@ function collapseAlternateSourcesSingleGroupYear(rows: ArticleRow[][], groupYear
     }
     // convert to a bitmap of whether each thing has a value (alternative is nan)
     const hasValue = rows.map(row => row.map(x => !Number.isNaN(x.statval)))
-    console.log('HI')
-    console.log(rows)
-    console.log(hasValue)
     const rowsC: ArticleRow[][] = []
     const collapsedRows = computeCollapsedRows(new Map(hasValue.map((x, i) => [i, x])))
     for (const collapsedRow of collapsedRows) {
         rowsC.push(collapse(collapsedRow.map(i => rows[i]), groupYearName))
     }
-    console.log(collapsedRows)
     return rowsC
 }
 
@@ -308,8 +302,6 @@ function collapse(rows: ArticleRow[][], groupYearName: string): ArticleRow[] {
     return rowsByArticle.map((rowsForArticle) => {
         const rowsWithValues = rowsForArticle.filter(row => !Number.isNaN(row.statval))
         if (rowsWithValues.length !== 1) {
-            console.log(rows)
-            console.log(groupYearName)
             throw new Error('Cannot collapse rows with none, or multiple, values')
         }
         // row is a copy of rowsWithValues[0]
