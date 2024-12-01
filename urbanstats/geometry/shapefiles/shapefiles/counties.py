@@ -17,7 +17,7 @@ def compute_geoid(row):
 
 
 COUNTIES = Shapefile(
-    hash_key="census_counties_7",
+    hash_key="census_counties_8",
     path="named_region_shapefiles/cb_2022_us_county_500k.zip",
     shortname_extractor=county_name,
     longname_extractor=lambda x: county_name(x)
