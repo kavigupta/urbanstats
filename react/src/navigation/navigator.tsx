@@ -42,8 +42,8 @@ const comparisonSchema = z.object({
 const statisticSchema = z.object({
     article_type: z.string(),
     statname: z.string().transform(s => s.replaceAll('__PCT__', '%') as StatName),
-    start: z.optional(z.string()).transform(s => parseInt(s ?? '1')),
-    amount: z.union([z.literal('All'), z.string().transform(s => parseInt(s)), z.undefined().transform(() => 10)]),
+    start: z.optional(z.coerce.number().int()).default(1),
+    amount: z.union([z.literal('All'), z.coerce.number().int(), z.undefined().transform(() => 10)]),
     order: z.union([z.undefined().transform(() => 'descending' as const), z.literal('descending'), z.literal('ascending')]),
     highlight: z.optional(z.string()),
     universe: z.optional(z.string()),
@@ -56,7 +56,7 @@ const randomSchema = z.object({
 
 const quizSchema = z.object({
     mode: z.union([z.undefined(), z.literal('retro')]),
-    date: z.optional(z.number().int()),
+    date: z.optional(z.coerce.number().int()),
 })
 
 const mapperSchema = z.object({
