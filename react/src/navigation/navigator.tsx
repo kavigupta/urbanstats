@@ -70,7 +70,7 @@ export type PageDescriptor = ({ kind: 'article' } & z.infer<typeof articleSchema
     | ({ kind: 'random' } & z.infer<typeof randomSchema>)
     | { kind: 'index' }
     | { kind: 'about' }
-    | { kind: 'dataCredit' }
+    | { kind: 'dataCredit', hash: string }
     | ({ kind: 'quiz' } & z.infer<typeof quizSchema>)
     | ({ kind: 'mapper' } & z.infer<typeof mapperSchema>)
 
@@ -106,7 +106,7 @@ function pageDescriptorFromURL(url: URL): PageDescriptor {
         case '/about.html':
             return { kind: 'about' }
         case '/data-credit.html':
-            return { kind: 'dataCredit' }
+            return { kind: 'dataCredit', hash: url.hash }
         default:
             throw new Error('404 not found')
     }
@@ -116,6 +116,7 @@ function pageDescriptorFromURL(url: URL): PageDescriptor {
 function urlFromPageDescriptor(pageDescriptor: PageDescriptor): URL {
     let pathname: string
     let searchParams: Record<string, string | undefined>
+    let hash = ''
     switch (pageDescriptor.kind) {
         case 'article':
             pathname = '/article.html'
@@ -163,6 +164,7 @@ function urlFromPageDescriptor(pageDescriptor: PageDescriptor): URL {
         case 'dataCredit':
             pathname = '/data-credit.html'
             searchParams = {}
+            hash = pageDescriptor.hash
             break
         case 'quiz':
             pathname = '/quiz.html'
@@ -186,6 +188,7 @@ function urlFromPageDescriptor(pageDescriptor: PageDescriptor): URL {
             result.searchParams.set(key, value)
         }
     }
+    result.hash = hash
     return result
 }
 

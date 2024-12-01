@@ -60,7 +60,7 @@ export function Sidebar(): ReactNode {
                         <a style={link_style} {...navContext.link({ kind: 'about' })}>About Urban Stats</a>
                     </li>
                     <li>
-                        <a style={link_style} {...navContext.link({ kind: 'dataCredit' })}>Data Credit</a>
+                        <a style={link_style} {...navContext.link({ kind: 'dataCredit', hash: '' })}>Data Credit</a>
                     </li>
                     <li>
                         <a style={link_style} {...navContext.link({ kind: 'mapper', view: false })}>Mapper (beta)</a>

@@ -1,5 +1,5 @@
 import { MathJax, MathJaxContext } from 'better-react-mathjax'
-import React, { ReactNode } from 'react'
+import React, { ReactNode, useEffect } from 'react'
 import { FootnoteRef, Footnotes, FootnotesProvider } from 'react-a11y-footnotes'
 
 import '../style.css'
@@ -64,6 +64,15 @@ function NRef({ children, name, h: Header = 'h2' }: { children: React.ReactNode,
  */
 export function DataCreditPanel(): ReactNode {
     const textHeaderClass = useHeaderTextClass()
+
+    useEffect(() => {
+        /* eslint-disable no-restricted-syntax -- Fixes hash navigation in SPA */
+        if (window.location.hash !== '') {
+            window.location.replace(window.location.hash)
+        }
+        /* eslint-enable no-restricted-syntax */
+    }, [])
+
     return (
         <MathJaxContext>
             <PageTemplate>

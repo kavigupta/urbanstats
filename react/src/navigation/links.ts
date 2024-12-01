@@ -48,10 +48,6 @@ export function ordering_data_link(universe: string, type: string, idx: number):
     return `/order/${universe}/${sanitize(type, false)}_${idx}_data.gz`
 }
 
-export function explanation_page_link(explanation: string): string {
-    return `/data-credit.html#explanation_${sanitize(explanation)}`
-}
-
 export function consolidated_shape_link(typ: string): string {
     return `/consolidated/shapes__${sanitize(typ)}.gz`
 }

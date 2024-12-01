@@ -1,7 +1,7 @@
 import React, { CSSProperties, ReactNode, useContext, useEffect, useMemo, useRef } from 'react'
 
 import universes_ordered from '../data/universes_ordered'
-import { explanation_page_link, sanitize, statisticDescriptor } from '../navigation/links'
+import { sanitize, statisticDescriptor } from '../navigation/links'
 import { Navigator } from '../navigation/navigator'
 import { useColors } from '../page_template/colors'
 import { useSetting } from '../page_template/settings'
@@ -299,7 +299,7 @@ function Pagination(props: {
         >
             <div style={{ width: '25%' }}>
                 <div style={{ margin: 'auto', textAlign: 'center' }}>
-                    <a href={explanation_page_link(props.explanation_page)}>Data Explanation and Credit</a>
+                    <a {...navContext.link({ kind: 'dataCredit', hash: `#explanation_${sanitize(props.explanation_page)}` })}>Data Explanation and Credit</a>
                 </div>
             </div>
             <div style={{ width: '50%' }}>
