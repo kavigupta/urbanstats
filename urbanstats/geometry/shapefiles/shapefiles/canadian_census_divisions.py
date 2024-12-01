@@ -1,22 +1,14 @@
+from urbanstats.geometry.shapefiles.load_canada_shapefile import (
+    load_canadian_shapefile,
+    pruid_to_province,
+)
 from urbanstats.geometry.shapefiles.shapefile import Shapefile
 from urbanstats.geometry.shapefiles.shapefile_subset import SelfSubset
+from urbanstats.geometry.shapefiles.shapefiles.countries import COUNTRIES
+from urbanstats.geometry.shapefiles.shapefiles.subnational_regions import (
+    SUBNATIONAL_REGIONS,
+)
 from urbanstats.universe.universe_provider.constants import canada_domestic_provider
-
-pruid_to_province = {
-    "48": "Alberta, Canada",
-    "59": "British Columbia, Canada",
-    "46": "Manitoba, Canada",
-    "13": "New Brunswick, Canada",
-    "10": "Newfoundland and Labrador, Canada",
-    "61": "Northwest Territories, Canada",
-    "12": "Nova Scotia, Canada",
-    "62": "Nunavut, Canada",
-    "35": "Ontario, Canada",
-    "11": "Prince Edward Island, Canada",
-    "24": "Quebec, Canada",
-    "47": "Saskatchewan, Canada",
-    "60": "Yukon, Canada",
-}
 
 cdtype = {
     "CDR": "CDR",
@@ -47,8 +39,12 @@ def subdivision_longname(row):
 
 
 CANADIAN_CENSUS_DIVISIONS = Shapefile(
-    hash_key="canadian_census_divisions_2",
-    path="named_region_shapefiles/canada/lcd_000a21a_e.zip",
+    hash_key="canadian_census_divisions_3",
+    path=lambda: load_canadian_shapefile(
+        "named_region_shapefiles/canada/lcd_000a21a_e.zip",
+        COUNTRIES,
+        SUBNATIONAL_REGIONS,
+    ),
     shortname_extractor=subdivision_name,
     longname_extractor=subdivision_longname,
     filter=lambda x: True,
