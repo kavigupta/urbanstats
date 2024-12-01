@@ -464,7 +464,7 @@ export class Navigator {
         return this.pageState.current.descriptor
     }
 
-    get universe(): string {
+    get universe(): string | undefined {
         const data = this.pageData
         switch (data.kind) {
             case 'article':
@@ -472,11 +472,11 @@ export class Navigator {
             case 'statistic':
                 return data.universe
             default:
-                throw new Error(`Page data kind  ${data.kind} does not have a universe`)
+                return undefined
         }
     }
 
-    useUniverse(): string {
+    useUniverse(): string | undefined {
         const [universe, setUniverse] = useState(this.universe)
 
         useEffect(() => {

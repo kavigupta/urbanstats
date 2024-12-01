@@ -4,7 +4,7 @@ import universes_default from './data/universes_default'
 import { Navigator } from './navigation/navigator'
 
 export function useUniverse(): string {
-    return useContext(Navigator.Context).useUniverse()
+    return useContext(Navigator.Context).useUniverse() ?? (() => { throw new Error(`No universe for current page`) })()
 }
 
 export function default_article_universe(articleUniverses: string[]): typeof universes_default[number] {

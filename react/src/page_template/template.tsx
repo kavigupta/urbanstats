@@ -61,19 +61,19 @@ export function PageTemplate({
 
     const has_screenshot_button = screencap_elements !== undefined
 
-    const screencap = async (curr_universe: string): Promise<void> => {
+    const screencap = async (curr_universe: string | undefined): Promise<void> => {
         if (screencap_elements === undefined) {
             return
         }
         try {
-            await create_screenshot(screencap_elements(), has_universe_selector ? curr_universe : undefined, colors)
+            await create_screenshot(screencap_elements(), curr_universe, colors)
         }
         catch (e) {
             console.error(e)
         }
     }
 
-    const initiate_screenshot = (curr_universe: string): void => {
+    const initiate_screenshot = (curr_universe: string | undefined): void => {
         set_screenshot_mode(true)
         setTimeout(async () => {
             await screencap(curr_universe)

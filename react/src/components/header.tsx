@@ -21,10 +21,10 @@ export function Header(props: {
     has_universe_selector: boolean
     all_universes: readonly string[]
     has_screenshot: boolean
-    initiate_screenshot: (curr_universe: string) => void
+    initiate_screenshot: (curr_universe: string | undefined) => void
 }): ReactNode {
-    const curr_universe = useUniverse()
     const navContext = useContext(Navigator.Context)
+    const curr_universe = navContext.useUniverse()
     return (
         <div className="top_panel">
             <TopLeft
