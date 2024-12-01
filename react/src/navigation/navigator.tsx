@@ -1,23 +1,18 @@
-import React, { createContext, ReactNode, useContext, useEffect, useState } from 'react'
+import { gunzipSync } from 'zlib'
+
+import React, { createContext, useEffect, useState } from 'react'
 import { z } from 'zod'
 
-import { AboutPanel } from '../components/AboutPanel'
-import { DataCreditPanel } from '../components/DataCreditPanel'
-import { IndexPanel } from '../components/IndexPanel'
 import { applySettingsParam, settingsConnectionConfig } from '../components/QuerySettingsConnection'
-import { ArticlePanel } from '../components/article-panel'
-import { ComparisonPanel } from '../components/comparison-panel'
 import { ArticleRow, for_type, load_articles } from '../components/load-article'
-import { MapperPanel, mapSettingsFromURLParam } from '../components/mapper-panel'
-import { QuizPanel } from '../components/quiz-panel'
-import { StatisticPanel, StatisticPanelProps } from '../components/statistic-panel'
+import type { StatisticPanelProps } from '../components/statistic-panel'
 import explanation_pages from '../data/explanation_page'
 import stats from '../data/statistic_list'
 import names from '../data/statistic_name_list' // TODO: Maybe dynamically import these
 import paths from '../data/statistic_path_list'
 import { discordFix } from '../discord-fix'
 import { load_ordering, load_ordering_protobuf, loadJSON, loadProtobuf } from '../load_json'
-import { MapSettings } from '../mapper/settings'
+import { default_settings, MapSettings } from '../mapper/settings'
 import { Settings } from '../page_template/settings'
 import { getVector } from '../page_template/settings-vector'
 import { StatGroupSettings } from '../page_template/statistic-settings'
@@ -79,7 +74,7 @@ export type PageDescriptor = ({ kind: 'article' } & z.infer<typeof articleSchema
     | ({ kind: 'quiz' } & z.infer<typeof quizSchema>)
     | ({ kind: 'mapper' } & z.infer<typeof mapperSchema>)
 
-type PageData =
+export type PageData =
     { kind: 'article', article: Article, universe: string, rows: (settings: StatGroupSettings) => ArticleRow[][], statPaths: StatPath[][] }
     | { kind: 'comparison', articles: Article[], universe: string, universes: string[], rows: (settings: StatGroupSettings) => ArticleRow[][], statPaths: StatPath[][] }
     | { kind: 'statistic', universe: string } & StatisticPanelProps
@@ -561,78 +556,11 @@ export class Navigator {
     /* eslint-enable react-hooks/rules-of-hooks */
 }
 
-export function Router(): ReactNode {
-    const navigator = useContext(Navigator.Context)
-
-    useEffect(() => {
-        // Hook into the browser back/forward buttons
-        const listener = (popStateEvent: PopStateEvent): void => {
-            void navigator.navigate(popStateEvent.state as PageDescriptor, null)
-        }
-        window.addEventListener('popstate', listener)
-        return () => { window.removeEventListener('popstate', listener) }
-    }, [navigator])
-
-    const pageState = navigator.usePageState()
-
-    return (
-        <>
-            {pageState.current !== undefined ? <PageRouter pageData={pageState.current.data} /> : null}
-            {pageState.kind === 'loading' ? <LoadingScreen /> : null}
-            {pageState.kind === 'error' ? <ErrorScreen error={pageState.error} /> : null}
-        </>
-    )
-}
-
-function LoadingScreen(): ReactNode {
-    return (
-        <h1>
-            Loading...
-        </h1>
-    )
-}
-
-function ErrorScreen({ error }: { error: unknown }): ReactNode {
-    return (
-        <h1>
-            Error:
-            {String(error)}
-        </h1>
-    )
-}
-
-function PageRouter({ pageData }: { pageData: PageData }): ReactNode {
-    switch (pageData.kind) {
-        case 'article':
-            return (
-                <ArticlePanel article={pageData.article} rows={pageData.rows} />
-            )
-        case 'comparison':
-            return (
-                <ComparisonPanel articles={pageData.articles} universes={pageData.universes} rows={pageData.rows} />
-            )
-        case 'statistic':
-            return (
-                <StatisticPanel
-                    {...pageData}
-                />
-            )
-        case 'index':
-            return <IndexPanel />
-        case 'about':
-            return <AboutPanel />
-        case 'dataCredit':
-            return <DataCreditPanel />
-        case 'quiz':
-            return (
-                <QuizPanel
-                    quizDescriptor={pageData.quizDescriptor}
-                    today_name={pageData.todayName}
-                    todays_quiz={pageData.quiz}
-                    parameters={pageData.parameters}
-                />
-            )
-        case 'mapper':
-            return <MapperPanel map_settings={pageData.settings} view={pageData.view} />
+function mapSettingsFromURLParam(encoded_settings: string | undefined): MapSettings {
+    let settings: Partial<MapSettings> = {}
+    if (encoded_settings !== undefined) {
+        const jsoned_settings = gunzipSync(Buffer.from(encoded_settings, 'base64')).toString()
+        settings = JSON.parse(jsoned_settings) as Partial<MapSettings>
     }
+    return default_settings(settings)
 }

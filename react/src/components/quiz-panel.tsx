@@ -3,23 +3,9 @@ import React, { ReactNode, useEffect, useState } from 'react'
 import { PageTemplate } from '../page_template/template'
 import '../common.css'
 import './quiz.css'
-import { QuizDescriptor, QuizHistory, QuizQuestion, a_correct } from '../quiz/quiz'
+import { QuizDescriptor, QuizHistory, QuizQuestion, a_correct, loadQuizHistory } from '../quiz/quiz'
 import { QuizQuestionDispatch } from '../quiz/quiz-question'
 import { QuizResult } from '../quiz/quiz-result'
-
-export function loadQuizHistory(): QuizHistory {
-    const history = JSON.parse(localStorage.getItem('quiz_history') ?? '{}') as QuizHistory
-
-    // set 42's correct_pattern's 0th element to true
-    if ('42' in history) {
-        if ('correct_pattern' in history['42']) {
-            if (history['42'].correct_pattern.length > 0) {
-                history['42'].correct_pattern[0] = true
-            }
-        }
-    }
-    return history
-}
 
 export function QuizPanel(props: { quizDescriptor: QuizDescriptor, today_name: string, todays_quiz: QuizQuestion[], parameters: string }): ReactNode {
     const [quiz_history, set_quiz_history] = useState(loadQuizHistory())

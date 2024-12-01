@@ -1,7 +1,7 @@
 import '../common.css'
 import './article.css'
 
-import { gunzipSync, gzipSync } from 'zlib'
+import { gzipSync } from 'zlib'
 
 import React, { ReactNode, useContext, useEffect, useRef, useState } from 'react'
 
@@ -9,7 +9,7 @@ import valid_geographies from '../data/mapper/used_geographies'
 import statNames from '../data/statistic_name_list'
 import { loadProtobuf } from '../load_json'
 import { Keypoints, Ramp, parse_ramp } from '../mapper/ramps'
-import { Basemap, ColorStat, ColorStatDescriptor, FilterSettings, LineStyle, MapSettings, MapperSettings, default_settings, parse_color_stat } from '../mapper/settings'
+import { Basemap, ColorStat, ColorStatDescriptor, FilterSettings, LineStyle, MapSettings, MapperSettings, parse_color_stat } from '../mapper/settings'
 import { consolidated_shape_link, consolidated_stats_link } from '../navigation/links'
 import { Navigator } from '../navigation/navigator'
 import { PageTemplate } from '../page_template/template'
@@ -273,15 +273,6 @@ function Export(props: { map_ref: React.RefObject<DisplayedMap> }): ReactNode {
             </button>
         </div>
     )
-}
-
-export function mapSettingsFromURLParam(encoded_settings: string | undefined): MapSettings {
-    let settings: Partial<MapSettings> = {}
-    if (encoded_settings !== undefined) {
-        const jsoned_settings = gunzipSync(Buffer.from(encoded_settings, 'base64')).toString()
-        settings = JSON.parse(jsoned_settings) as Partial<MapSettings>
-    }
-    return default_settings(settings)
 }
 
 const name_to_index = new Map(statNames.map((name, i) => [name, i]))

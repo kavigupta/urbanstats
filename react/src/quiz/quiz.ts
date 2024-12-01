@@ -1,7 +1,6 @@
 import { saveAs } from 'file-saver'
 import { z } from 'zod'
 
-import { loadQuizHistory } from '../components/quiz-panel'
 import { cancelled, uploadFile } from '../utils/upload'
 
 import { unique_persistent_id } from './statistics'
@@ -97,4 +96,18 @@ Continue?`)) {
     catch (error) {
         alert(`Could not parse file. Error: ${error}`)
     }
+}
+
+export function loadQuizHistory(): QuizHistory {
+    const history = JSON.parse(localStorage.getItem('quiz_history') ?? '{}') as QuizHistory
+
+    // set 42's correct_pattern's 0th element to true
+    if ('42' in history) {
+        if ('correct_pattern' in history['42']) {
+            if (history['42'].correct_pattern.length > 0) {
+                history['42'].correct_pattern[0] = true
+            }
+        }
+    }
+    return history
 }
