@@ -263,7 +263,10 @@ function Pagination(props: {
         const goToPage = (new_page: number): void => {
             void navContext.navigate(statisticDescriptor({
                 universe: curr_universe,
-                ...props,
+                statname: props.statname,
+                article_type: props.article_type,
+                amount: props.amount,
+                order: props.order,
                 start: (new_page - 1) * per_page + 1,
             }), 'replace')
         }
@@ -274,7 +277,7 @@ function Pagination(props: {
         else if (current_page < 1) {
             goToPage(1)
         }
-    }, [current_page, max_pages, curr_universe, per_page, props, navContext])
+    }, [current_page, max_pages, curr_universe, per_page, props.statname, props.article_type, props.amount, props.order, navContext])
 
     const select_page = (
         <SelectPage
