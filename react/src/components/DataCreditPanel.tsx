@@ -58,6 +58,10 @@ function NRef({ children, name, h: Header = 'h2' }: { children: React.ReactNode,
     )
 }
 
+/*
+ * Known issue: Lots of MathJax errors when this unloads.
+ * Doesn't appear to affect functionality.
+ */
 export function DataCreditPanel(): ReactNode {
     const textHeaderClass = useHeaderTextClass()
     return (
