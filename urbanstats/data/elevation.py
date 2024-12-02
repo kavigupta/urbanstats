@@ -152,9 +152,9 @@ def create_full_image(function, chunk_reduction):
             ).mean((1, 3))
             start_row = (89 - i) * size
             start_col = (j + 180) * size
-            full_image[
-                start_row : start_row + size, start_col : start_col + size
-            ] = result
+            full_image[start_row : start_row + size, start_col : start_col + size] = (
+                result
+            )
     return full_image
 
 
