@@ -90,7 +90,7 @@ function TopLeft(props: {
 }): ReactNode {
     if (useMobileLayout()) {
         return (
-            <div className="left_panel_top">
+            <div className="left_panel_top" style={{ minWidth: '28%' }}>
                 <Nav hamburger_open={props.hamburger_open} set_hamburger_open={props.set_hamburger_open} />
                 <div className="hgap"></div>
                 {
@@ -107,7 +107,7 @@ function TopLeft(props: {
     }
     else {
         return (
-            <div className="left_panel_top">
+            <div className="left_panel_top" style={{ minWidth: '20%' }}>
                 <HeaderImage />
             </div>
         )
