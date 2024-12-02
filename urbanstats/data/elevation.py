@@ -150,11 +150,9 @@ def create_full_image(function, chunk_reduction):
                 result.shape[1] // chunk_reduction,
                 chunk_reduction,
             ).mean((1, 3))
-            start_row = (89 - i) * size
-            start_col = (j + 180) * size
-            full_image[start_row : start_row + size, start_col : start_col + size] = (
-                result
-            )
+            sr = (89 - i) * size
+            sc = (j + 180) * size
+            full_image[sr : sr + size, sc : sc + size] = result
     return full_image
 
 
