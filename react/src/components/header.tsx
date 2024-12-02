@@ -185,6 +185,7 @@ function UniverseSelector(
                     height={HEADER_BAR_SIZE}
                     onClick={() => { set_dropdown_open(!dropdown_open) }}
                     universe={curr_universe}
+                    classNameToUse="universe-selector"
                 />
             </div>
             {dropdown}
@@ -192,7 +193,7 @@ function UniverseSelector(
     )
 }
 
-function Flag(props: { height: number, onClick?: () => void, universe: string }): ReactNode {
+function Flag(props: { height: number, onClick?: () => void, universe: string, classNameToUse: string }): ReactNode {
     const imageAR = flag_dimensions[props.universe]
     const usableHeight = props.height * FLAG_ICON_MAX_HEIGHT_PCT
     const usableWidth = Math.min(usableHeight * imageAR, props.height * FLAG_ICON_WIDTH_RATIO)
@@ -206,7 +207,7 @@ function Flag(props: { height: number, onClick?: () => void, universe: string })
                 src={universe_path(props.universe)}
                 alt={props.universe}
                 width={`${usableWidth}px`}
-                className="universe-selector"
+                className={props.classNameToUse}
                 onClick={props.onClick}
             />
         </div>
@@ -246,6 +247,7 @@ function UniverseDropdown(
                             <Flag
                                 height={flag_size}
                                 universe={alt_universe}
+                                classNameToUse="universe-selector-option"
                             />
                             <div className="serif">
                                 {alt_universe === 'world' ? 'World' : alt_universe}
