@@ -18,7 +18,7 @@ const HEADER_BAR_SIZE_DESKTOP = '60px'
 
 function useFlagIconWidthRatio(): number {
     if (useMobileLayout()) {
-        return 1
+        return 1.8
     }
     return 1.8
 }
