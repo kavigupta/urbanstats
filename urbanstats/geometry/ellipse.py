@@ -85,3 +85,9 @@ def locate_blocks(*, coordinates, population, radius=1):
             for coord in tqdm.tqdm(coordinates)
         ]
     )
+
+
+def compute_density_for_radius(radius, population, coordinates):
+    return locate_blocks(
+        coordinates=coordinates, population=population, radius=radius
+    ) / (np.pi * radius**2)
