@@ -13,15 +13,9 @@ import { ScreenshotButton } from './screenshot'
 import { SearchBox } from './search'
 
 export const HEADER_BAR_SIZE = 48
+const FLAG_ICON_WIDTH_RATIO = 1.8
 const FLAG_ICON_MAX_HEIGHT_PCT = 0.85
 const HEADER_BAR_SIZE_DESKTOP = '60px'
-
-function useFlagIconWidthRatio(): number {
-    if (useMobileLayout()) {
-        return 1.8
-    }
-    return 1.8
-}
 
 export function Header(props: {
     hamburger_open: boolean
@@ -143,7 +137,7 @@ function UniverseSelector(
     // button to select universe. Image is icons/flags/${universe}.png
     // when clicked, a dropdown appears with all universes, labeled by their flags
 
-    const width = HEADER_BAR_SIZE * useFlagIconWidthRatio()
+    const width = HEADER_BAR_SIZE * FLAG_ICON_WIDTH_RATIO
 
     const [dropdown_open, set_dropdown_open] = React.useState(false)
 
@@ -199,13 +193,12 @@ function UniverseSelector(
 }
 
 function Flag(props: { height: number, onClick?: () => void, universe: string }): ReactNode {
-    const width = props.height * useFlagIconWidthRatio()
     const imageAR = flag_dimensions[props.universe]
     const usableHeight = props.height * FLAG_ICON_MAX_HEIGHT_PCT
-    const usableWidth = Math.min(usableHeight * imageAR, width)
+    const usableWidth = Math.min(usableHeight * imageAR, props.height * FLAG_ICON_WIDTH_RATIO)
 
     return (
-        <div style={{ width, height: props.height, display: 'flex' }}>
+        <div style={{ width: props.height * FLAG_ICON_WIDTH_RATIO, height: props.height, display: 'flex' }}>
             <img
                 style={{
                     margin: 'auto',
