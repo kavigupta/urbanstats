@@ -69,6 +69,8 @@ class ElevationHillinessStatistics(GeographicStatistics):
         return intl_stats
 
     def compute_intl(self, shapefile):
+        if "international_gridded_data" not in shapefile.special_data_sources:
+            return {}
         result = elevation_statistics_for_shapefile(shapefile)
         return {
             "gridded_hilliness": result["hilliness"],
