@@ -6,6 +6,7 @@ import tempfile
 
 import requests
 import us
+from PIL import Image
 
 from urbanstats.universe.universe_list import (
     all_universes,
@@ -129,6 +130,23 @@ def place_icons_in_site_folder(site_folder):
         shutil.copy(
             os.path.join(flags_folder, f), os.path.join(site_folder, flags_folder)
         )
+
+
+def get_image_dimensions(image_path):
+    with Image.open(image_path) as img:
+        return img.size
+
+
+def all_image_dimensions():
+    result = {}
+    for u in all_universes():
+        result[u] = get_image_dimensions(os.path.join(flags_folder, u + ".png"))
+    return result
+
+
+def all_image_aspect_ratios():
+    dimensions = all_image_dimensions()
+    return {k: v[0] / v[1] for k, v in dimensions.items()}
 
 
 if __name__ == "__main__":

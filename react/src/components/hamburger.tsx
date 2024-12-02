@@ -91,7 +91,6 @@ export function Nav({ hamburger_open, set_hamburger_open }: { hamburger_open: bo
 
                 .hamburgermenu{
                     display:fixed;
-                    padding-top: 10px;
                     margin-left: 10px;
                     z-index: 6;
                 }
