@@ -32,6 +32,7 @@ from urbanstats.geometry.shapefiles.shapefiles.usda_county_type import USDA_COUN
 from urbanstats.geometry.shapefiles.shapefiles.zctas import ZCTAs
 
 shapefiles = dict(
+    # US
     counties=COUNTIES,
     msas=MSAs,
     csas=CSAs,
@@ -49,6 +50,7 @@ shapefiles = dict(
     usda_county_type=USDA_COUNTY_TYPE,
     **hospital_shapefiles,
     media_markets=MEDIA_MARKETS,
+    # International
     continents=CONTINENTS,
     countries=COUNTRIES,
     subnational_regions=SUBNATIONAL_REGIONS,

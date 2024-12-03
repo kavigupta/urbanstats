@@ -2,6 +2,7 @@ import React, { ReactNode, useContext } from 'react'
 
 import '../common.css'
 import './header.css'
+import flag_dimensions from '../data/flag_dimensions'
 import { universe_path } from '../navigation/links'
 import { Navigator } from '../navigation/navigator'
 import { useColors } from '../page_template/colors'
@@ -12,7 +13,9 @@ import { Nav } from './hamburger'
 import { ScreenshotButton } from './screenshot'
 import { SearchBox } from './search'
 
-export const HEADER_BAR_SIZE = '48px'
+export const HEADER_BAR_SIZE = 48
+const FLAG_ICON_WIDTH_RATIO = 1.8
+const FLAG_ICON_MAX_HEIGHT_PCT = 0.85
 const HEADER_BAR_SIZE_DESKTOP = '60px'
 
 export function Header(props: {
@@ -33,7 +36,7 @@ export function Header(props: {
                 has_universe_selector={props.has_universe_selector}
                 all_universes={props.all_universes}
             />
-            <div className="right_panel_top" style={{ height: HEADER_BAR_SIZE }}>
+            <div className="right_panel_top" style={{ height: `${HEADER_BAR_SIZE}px` }}>
                 {/* flex but stretch to fill */}
                 <div style={{ display: 'flex', flexDirection: 'row', height: '100%' }}>
                     {!useMobileLayout() && props.has_universe_selector
@@ -72,7 +75,7 @@ export function Header(props: {
                                 paddingLeft: '1em',
                                 width: '100%',
                                 verticalAlign: 'middle',
-                                height: HEADER_BAR_SIZE,
+                                height: `${HEADER_BAR_SIZE}px`,
                             }}
                             autoFocus={false}
                         />
@@ -91,7 +94,7 @@ function TopLeft(props: {
 }): ReactNode {
     if (useMobileLayout()) {
         return (
-            <div className="left_panel_top">
+            <div className="left_panel_top" style={{ minWidth: '28%' }}>
                 <Nav hamburger_open={props.hamburger_open} set_hamburger_open={props.set_hamburger_open} />
                 <div className="hgap"></div>
                 {
@@ -108,7 +111,7 @@ function TopLeft(props: {
     }
     else {
         return (
-            <div className="left_panel_top">
+            <div className="left_panel_top" style={{ minWidth: '20%' }}>
                 <HeaderImage />
             </div>
         )
@@ -126,7 +129,7 @@ function HeaderImage(): ReactNode {
             <img
                 src={path}
                 style={{
-                    height: useMobileLayout() ? HEADER_BAR_SIZE : HEADER_BAR_SIZE_DESKTOP,
+                    height: useMobileLayout() ? `${HEADER_BAR_SIZE}px` : HEADER_BAR_SIZE_DESKTOP,
                 }}
                 alt="Urban Stats Logo"
             />
@@ -141,14 +144,14 @@ function UniverseSelector(
     // button to select universe. Image is icons/flags/${universe}.png
     // when clicked, a dropdown appears with all universes, labeled by their flags
 
-    const width = HEADER_BAR_SIZE
+    const width = HEADER_BAR_SIZE * FLAG_ICON_WIDTH_RATIO
 
     const [dropdown_open, set_dropdown_open] = React.useState(false)
 
     let dropdown = dropdown_open
         ? (
                 <UniverseDropdown
-                    flag_size={width}
+                    flag_size={HEADER_BAR_SIZE}
                     all_universes={all_universes}
                     closeDropdown={() => { set_dropdown_open(false) }}
                 />
@@ -174,11 +177,11 @@ function UniverseSelector(
     )
 
     return (
-        <div style={{ marginBlockEnd: '0em', position: 'relative', width }}>
+        <div style={{ marginBlockEnd: '0em', position: 'relative', width: `${width}px` }}>
             <div style={
                 {
                     width,
-                    height: width,
+                    height: `${HEADER_BAR_SIZE}px`,
                     display: 'flex',
                     flexDirection: 'row',
                     justifyContent: 'center',
@@ -186,12 +189,11 @@ function UniverseSelector(
                 }
             }
             >
-                <img
-                    src={`/icons/flags/${curr_universe}.png`}
-                    alt={curr_universe}
-                    width={width}
-                    className="universe-selector"
+                <Flag
+                    height={HEADER_BAR_SIZE}
                     onClick={() => { set_dropdown_open(!dropdown_open) }}
+                    universe={curr_universe}
+                    classNameToUse="universe-selector"
                 />
             </div>
             {dropdown}
@@ -199,8 +201,29 @@ function UniverseSelector(
     )
 }
 
+function Flag(props: { height: number, onClick?: () => void, universe: string, classNameToUse: string }): ReactNode {
+    const imageAR = flag_dimensions[props.universe]
+    const usableHeight = props.height * FLAG_ICON_MAX_HEIGHT_PCT
+    const usableWidth = Math.min(usableHeight * imageAR, props.height * FLAG_ICON_WIDTH_RATIO)
+
+    return (
+        <div style={{ width: props.height * FLAG_ICON_WIDTH_RATIO, height: props.height, display: 'flex' }}>
+            <img
+                style={{
+                    margin: 'auto',
+                }}
+                src={universe_path(props.universe)}
+                alt={props.universe}
+                width={`${usableWidth}px`}
+                className={props.classNameToUse}
+                onClick={props.onClick}
+            />
+        </div>
+    )
+}
+
 function UniverseDropdown(
-    { all_universes, flag_size, closeDropdown }: { all_universes: readonly string[], flag_size: string, closeDropdown: () => void },
+    { all_universes, flag_size, closeDropdown }: { all_universes: readonly string[], flag_size: number, closeDropdown: () => void },
 ): ReactNode {
     const colors = useColors()
     const navContext = useContext(Navigator.Context)
@@ -236,11 +259,10 @@ function UniverseDropdown(
                             }}
                             className="hoverable_elements"
                         >
-                            <img
-                                src={universe_path(alt_universe)}
-                                alt={alt_universe}
-                                width={flag_size}
-                                className="universe-selector-option"
+                            <Flag
+                                height={flag_size}
+                                universe={alt_universe}
+                                classNameToUse="universe-selector-option"
                             />
                             <div className="serif">
                                 {alt_universe === 'world' ? 'World' : alt_universe}

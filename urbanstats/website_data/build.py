@@ -23,7 +23,10 @@ from urbanstats.statistics.output_statistics_metadata import (
     internal_statistic_names,
     output_statistics_metadata,
 )
-from urbanstats.universe.icons import place_icons_in_site_folder
+from urbanstats.universe.icons import (
+    all_image_aspect_ratios,
+    place_icons_in_site_folder,
+)
 from urbanstats.universe.universe_list import all_universes, default_universes
 from urbanstats.website_data.create_article_gzips import (
     create_article_gzips,
@@ -61,6 +64,11 @@ def link_scripts_folder(site_folder, mode):
 def create_react_jsons():
     with open("react/src/data/map_relationship.ts", "w") as f:
         output_typescript(map_relationships_by_type, f)
+
+    with open("react/src/data/flag_dimensions.ts", "w") as f:
+        output_typescript(
+            all_image_aspect_ratios(), f, data_type="Record<string, number>"
+        )
 
     with open("react/src/data/type_to_type_category.ts", "w") as f:
         output_typescript(type_to_type_category, f, data_type="Record<string, string>")
