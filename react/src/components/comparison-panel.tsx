@@ -412,7 +412,10 @@ function HeadingDisplay({ longname, include_delete, on_click, on_change: on_sear
                             autoFocus={true}
                             style={{ ...comparisonHeadStyle, width: '100%' }}
                             placeholder="Replacement"
-                            on_change={on_search_change}
+                            on_change={(q) => {
+                                set_is_editing(false)
+                                on_search_change(q)
+                            }}
                         />
                     )
                 : null}
