@@ -29,6 +29,7 @@ function AboutPanel(): ReactNode {
                     Feel free to file an issue or pull request if you have any suggestions or find any bugs.
                 </p>
 
+                {/* eslint-disable-next-line no-restricted-syntax -- Email obfuscation */}
                 <p>
                     The project is primarily developed by Kavi Gupta, a PhD student at MIT, and Luke Brody.
                     The primary contact for this project is urbanstats at kavigupta dot org.

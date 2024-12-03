@@ -97,7 +97,11 @@ export default tseslint.config(
             'no-restricted-syntax': [
                 'error', 
                 'ExportNamedDeclaration:not([declaration])', 
-                'MemberExpression[object.name=location][property.name=reload]'
+                'MemberExpression[object.name=location][property.name=reload]',
+                // Protect branding
+                'JSXText[value=/(^|\\s)((u|U)rban(s|S)tats|urban stats|Urban stats|urban Stats)($|\\s)/]',
+                'Literal[value=/(^|\\s)((u|U)rban(s|S)tats|urban stats|Urban stats|urban Stats)($|\\s)/]',
+                //
             ],
             'react/prop-types': 'off',
             'no-shadow': 'error',

@@ -182,7 +182,7 @@ function LeftPanel(): ReactNode {
 function Support(): ReactNode {
     return (
         <span>
-            {'If you find urbanstats useful, please donate on '}
+            {'If you find Urban Stats useful, please donate on '}
             <a href="https://ko-fi.com/notkavi">kofi</a>
             !
         </span>
