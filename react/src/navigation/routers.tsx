@@ -1,4 +1,5 @@
 import React, { CSSProperties, ReactNode, useContext, useEffect } from 'react'
+import { ZodError } from 'zod'
 
 import { AboutPanel } from '../components/AboutPanel'
 import { DataCreditPanel } from '../components/DataCreditPanel'
@@ -63,21 +64,51 @@ function ErrorScreen({ data }: { data: Extract<PageData, { kind: 'error' }> }): 
     )
 }
 
-function NotFoundError({ url }: { url: URL }): ReactNode {
+function NotFoundError({ url, error }: { url: URL, error: unknown }): ReactNode {
     return (
         <>
             <h1>
                 Not Found
             </h1>
             <p>
-                Urbanstats couldn&apos;t navigate to the URL
+                Urban Stats couldn&apos;t navigate to the URL
                 <br />
                 <code>{url.toString()}</code>
+            </p>
+            <p>
+                While trying to understand the URL, Urban Stats encountered the following errors:
+                <br />
+                <FormatNavigationError error={error} />
             </p>
             <p>
                 Check that the URL is correct.
             </p>
         </>
+    )
+}
+
+function FormatNavigationError({ error }: { error: unknown }): ReactNode {
+    if (error instanceof ZodError) {
+        let key = 0
+        return Object.values(error.flatten((issue) => {
+            key++
+            return (
+                <li key={key}>
+                    Parameter
+                    {' '}
+                    <code>{issue.path}</code>
+                    {' '}
+                    is
+                    {' '}
+                    {issue.message}
+                </li>
+            )
+        }).fieldErrors)
+    }
+    return (
+        <code>
+            {String(error)}
+        </code>
     )
 }
 
@@ -88,12 +119,12 @@ function PageLoadError({ url, error }: { url: URL, error: unknown }): ReactNode 
                 Error Loading Page
             </h1>
             <p>
-                Urbanstats couldn&apos;t load the page at URL
+                Urban Stats couldn&apos;t load the page at URL
                 <br />
                 <code>{url.toString()}</code>
             </p>
             <p>
-                Urbanstats encountered the following error:
+                Urban Stats encountered the following error:
                 <br />
                 <code>{String(error)}</code>
             </p>
