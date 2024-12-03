@@ -64,7 +64,8 @@ const mapperSchema = z.object({
     view: z.union([z.undefined().transform(() => false), z.literal('true').transform(() => true), z.literal('false').transform(() => false)]),
 })
 
-export type PageDescriptor = ({ kind: 'article' } & z.infer<typeof articleSchema>)
+export type PageDescriptor =
+    ({ kind: 'article' } & z.infer<typeof articleSchema>)
     | ({ kind: 'comparison' } & z.infer<typeof comparisonSchema>)
     | ({ kind: 'statistic' } & z.infer<typeof statisticSchema>)
     | ({ kind: 'random' } & z.infer<typeof randomSchema>)
@@ -73,6 +74,8 @@ export type PageDescriptor = ({ kind: 'article' } & z.infer<typeof articleSchema
     | { kind: 'dataCredit', hash: string }
     | ({ kind: 'quiz' } & z.infer<typeof quizSchema>)
     | ({ kind: 'mapper' } & z.infer<typeof mapperSchema>)
+    | { kind: 'initialLoad' }
+    | { kind: 'error', url: URL }
 
 export type PageData =
     { kind: 'article', article: Article, universe: string, rows: (settings: StatGroupSettings) => ArticleRow[][], statPaths: StatPath[][] }
@@ -83,6 +86,13 @@ export type PageData =
     | { kind: 'dataCredit' }
     | { kind: 'quiz', quizDescriptor: QuizDescriptor, quiz: QuizQuestion[], parameters: string, todayName: string }
     | { kind: 'mapper', settings: MapSettings, view: boolean }
+    | {
+        kind: 'error'
+        error: unknown
+        url: URL
+        descriptor?: PageDescriptor // If descriptor is not present, we could not parse it
+    }
+    | { kind: 'initialLoad' }
 
 function pageDescriptorFromURL(url: URL): PageDescriptor {
     const params = Object.fromEntries(url.searchParams.entries())
@@ -179,6 +189,11 @@ function urlFromPageDescriptor(pageDescriptor: PageDescriptor): URL {
                 view: pageDescriptor.view ? 'true' : undefined,
                 settings: pageDescriptor.settings,
             }
+            break
+        case 'initialLoad':
+            throw new Error('cannot navigate to initialLoad')
+        case 'error':
+            return pageDescriptor.url
     }
     // eslint-disable-next-line no-restricted-syntax -- Core navigation functions
     const result = new URL(window.location.origin)
@@ -365,15 +380,18 @@ async function loadPageDescriptor(newDescriptor: PageDescriptor, settings: Setti
                 },
                 newPageDescriptor: newDescriptor,
             }
+        case 'initialLoad':
+            throw new Error('cannot navigate to initialLoad')
+        case 'error':
+            throw new Error('should not attempt to load error descriptor')
     }
 }
 
-type PageState = { kind: 'loading', loading: { descriptor: PageDescriptor }, current?: { data: PageData, descriptor: PageDescriptor } }
+type PageState = { kind: 'loading', loading: { descriptor: PageDescriptor }, current: { data: PageData, descriptor: PageDescriptor } }
     | { kind: 'loaded', current: { data: PageData, descriptor: PageDescriptor } }
-    | { kind: 'error', error: unknown, current?: { data: PageData, descriptor: PageDescriptor } }
 
 export class Navigator {
-    /* eslint-disable react-hooks/rules-of-hooks -- This is a logic class with custom hooks */
+    /* eslint-disable react-hooks/rules-of-hooks, no-restricted-syntax -- This is a logic class with custom hooks and core navigation functions */
     static Context = createContext(new Navigator())
 
     private pageState: PageState
@@ -381,23 +399,30 @@ export class Navigator {
 
     constructor() {
         try {
-            // eslint-disable-next-line no-restricted-syntax -- Core navigation functions
-            this.pageState = { kind: 'loading', loading: { descriptor: pageDescriptorFromURL(new URL(discordFix(window.location.href))) } }
+            this.pageState = {
+                kind: 'loading',
+                loading: { descriptor: pageDescriptorFromURL(new URL(discordFix(window.location.href))) },
+                current: { descriptor: { kind: 'initialLoad' }, data: { kind: 'initialLoad' } } }
             void this.navigate(this.pageState.loading.descriptor, 'replace')
         }
         catch (error) {
-            this.pageState = { kind: 'error', error }
+            const url = new URL(window.location.href)
+            this.pageState = {
+                kind: 'loaded',
+                current: {
+                    descriptor: { kind: 'error', url },
+                    data: { kind: 'error', url, error },
+                },
+            }
         }
     }
 
     async navigate(newDescriptor: PageDescriptor, kind: 'push' | 'replace' | null): Promise<void> {
         switch (kind) {
             case 'push':
-                // eslint-disable-next-line no-restricted-syntax -- Core navigation functions
                 history.pushState(newDescriptor, '', urlFromPageDescriptor(newDescriptor))
                 break
             case 'replace':
-                // eslint-disable-next-line no-restricted-syntax -- Core navigation functions
                 history.replaceState(newDescriptor, '', urlFromPageDescriptor(newDescriptor))
                 break
             case null:
@@ -413,7 +438,6 @@ export class Navigator {
                 // Another load has started, don't race it
                 return
             }
-            // eslint-disable-next-line no-restricted-syntax -- Core navigation functions
             history.replaceState(newPageDescriptor, '', urlFromPageDescriptor(newPageDescriptor))
             this.pageState = { kind: 'loaded', current: { data: pageData, descriptor: newPageDescriptor } }
             this.pageStateObservers.forEach((observer) => { observer() })
@@ -423,7 +447,12 @@ export class Navigator {
                 // Another load has started, don't race it
                 return
             }
-            this.pageState = { kind: 'error', error, current: this.pageState.current }
+            this.pageState = {
+                kind: 'loaded',
+                current: {
+                    descriptor: { kind: 'error', url: urlFromPageDescriptor(newDescriptor) },
+                    data: { kind: 'error', error, descriptor: newDescriptor, url: urlFromPageDescriptor(newDescriptor) },
+                } }
             this.pageStateObservers.forEach((observer) => { observer() })
         }
     }
@@ -453,22 +482,8 @@ export class Navigator {
         return result
     }
 
-    private get pageData(): PageData {
-        if (this.pageState.current === undefined) {
-            throw new Error(`No current page for state ${JSON.stringify(this.pageState)}`)
-        }
-        return this.pageState.current.data
-    }
-
-    private get pageDescriptor(): PageDescriptor {
-        if (this.pageState.current === undefined) {
-            throw new Error(`No current page descriptor for state ${JSON.stringify(this.pageState)}`)
-        }
-        return this.pageState.current.descriptor
-    }
-
     get universe(): string | undefined {
-        const data = this.pageData
+        const data = this.pageState.current.data
         switch (data.kind) {
             case 'article':
             case 'comparison':
@@ -494,25 +509,25 @@ export class Navigator {
     }
 
     setUniverse(newUniverse: string): void {
-        switch (this.pageDescriptor.kind) {
+        switch (this.pageState.current.descriptor.kind) {
             case 'article':
             case 'comparison':
             case 'statistic':
                 void this.navigate({
-                    ...this.pageDescriptor,
+                    ...this.pageState.current.descriptor,
                     universe: newUniverse,
                 }, 'push')
                 break
             default:
-                throw new Error(`Page descriptor kind ${this.pageDescriptor.kind} does not have a universe`)
+                throw new Error(`Page descriptor kind ${this.pageState.current.descriptor.kind} does not have a universe`)
         }
     }
 
     private get statPaths(): StatPath[][] | undefined {
-        switch (this.pageData.kind) {
+        switch (this.pageState.current.data.kind) {
             case 'article':
             case 'comparison':
-                return this.pageData.statPaths
+                return this.pageState.current.data.statPaths
             default:
                 return undefined
         }
@@ -533,30 +548,28 @@ export class Navigator {
     }
 
     setSettingsVector(newVector: string): void {
-        switch (this.pageState.current?.descriptor.kind) {
+        switch (this.pageState.current.descriptor.kind) {
             case 'article':
             case 'comparison':
                 this.pageState.current.descriptor.s = newVector
-                // eslint-disable-next-line no-restricted-syntax -- Core navigation functions
                 history.replaceState(this.pageState.current.descriptor, '', urlFromPageDescriptor(this.pageState.current.descriptor))
                 break
             default:
-                throw new Error(`Page descriptor kind ${this.pageDescriptor.kind} does not have a settings vector`)
+                throw new Error(`Page descriptor kind ${this.pageState.current.descriptor.kind} does not have a settings vector`)
         }
     }
 
     setMapperSettings(newSettings: string): void {
-        switch (this.pageState.current?.descriptor.kind) {
+        switch (this.pageState.current.descriptor.kind) {
             case 'mapper':
                 this.pageState.current.descriptor.settings = newSettings
-                // eslint-disable-next-line no-restricted-syntax -- Core navigation functions
                 history.replaceState(this.pageState.current.descriptor, '', urlFromPageDescriptor(this.pageState.current.descriptor))
                 break
             default:
-                throw new Error(`Page descriptor kind ${this.pageDescriptor.kind} does not have mapper settings`)
+                throw new Error(`Page descriptor kind ${this.pageState.current.descriptor.kind} does not have mapper settings`)
         }
     }
-    /* eslint-enable react-hooks/rules-of-hooks */
+    /* eslint-enable react-hooks/rules-of-hooks, no-restricted-syntax */
 }
 
 function mapSettingsFromURLParam(encoded_settings: string | undefined): MapSettings {

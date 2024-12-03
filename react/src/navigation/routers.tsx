@@ -1,4 +1,4 @@
-import React, { ReactNode, useContext, useEffect } from 'react'
+import React, { CSSProperties, ReactNode, useContext, useEffect } from 'react'
 
 import { AboutPanel } from '../components/AboutPanel'
 import { DataCreditPanel } from '../components/DataCreditPanel'
@@ -8,6 +8,8 @@ import { ComparisonPanel } from '../components/comparison-panel'
 import { MapperPanel } from '../components/mapper-panel'
 import { QuizPanel } from '../components/quiz-panel'
 import { StatisticPanel } from '../components/statistic-panel'
+import { useColors } from '../page_template/colors'
+import { PageTemplate } from '../page_template/template'
 
 import { Navigator, PageData, PageDescriptor } from './navigator'
 
@@ -27,9 +29,8 @@ export function Router(): ReactNode {
 
     return (
         <>
-            {pageState.current !== undefined ? <PageRouter pageData={pageState.current.data} /> : null}
+            <PageRouter pageData={pageState.current.data} />
             {pageState.kind === 'loading' ? <LoadingScreen /> : null}
-            {pageState.kind === 'error' ? <ErrorScreen error={pageState.error} /> : null}
         </>
     )
 }
@@ -42,12 +43,64 @@ function LoadingScreen(): ReactNode {
     )
 }
 
-function ErrorScreen({ error }: { error: unknown }): ReactNode {
+function ErrorScreen({ data }: { data: Extract<PageData, { kind: 'error' }> }): ReactNode {
+    const errorContents = data.descriptor === undefined ? <NotFoundError {...data} /> : <PageLoadError {...data} />
+
+    const colors = useColors()
+    const errorBoxStyle: CSSProperties = {
+        backgroundColor: colors.slightlyDifferentBackgroundFocused,
+        borderRadius: '5px',
+        textAlign: 'center',
+        padding: '10px',
+    }
+
     return (
-        <h1>
-            Error:
-            {String(error)}
-        </h1>
+        <PageTemplate>
+            <div style={errorBoxStyle}>
+                {errorContents}
+            </div>
+        </PageTemplate>
+    )
+}
+
+function NotFoundError({ url }: { url: URL }): ReactNode {
+    return (
+        <>
+            <h1>
+                Not Found
+            </h1>
+            <p>
+                Urbanstats couldn&apos;t navigate to the URL
+                <br />
+                <code>{url.toString()}</code>
+            </p>
+            <p>
+                Check that the URL is correct.
+            </p>
+        </>
+    )
+}
+
+function PageLoadError({ url, error }: { url: URL, error: unknown }): ReactNode {
+    return (
+        <>
+            <h1>
+                Error Loading Page
+            </h1>
+            <p>
+                Urbanstats couldn&apos;t load the page at URL
+                <br />
+                <code>{url.toString()}</code>
+            </p>
+            <p>
+                Urbanstats encountered the following error:
+                <br />
+                <code>{String(error)}</code>
+            </p>
+            <p>
+                Check that you are connected to the internet, and that the URL is correct.
+            </p>
+        </>
     )
 }
 
@@ -84,5 +137,9 @@ function PageRouter({ pageData }: { pageData: PageData }): ReactNode {
             )
         case 'mapper':
             return <MapperPanel map_settings={pageData.settings} view={pageData.view} />
+        case 'error':
+            return <ErrorScreen data={pageData} />
+        case 'initialLoad':
+            return <PageTemplate />
     }
 }
