@@ -24,11 +24,13 @@ export function PageTemplate({
     has_universe_selector = false,
     universes = [],
     children,
+    showFooter = true,
 }: {
     screencap_elements?: () => ScreencapElements
     has_universe_selector?: boolean
     universes?: readonly string[]
     children?: React.ReactNode
+    showFooter?: boolean
 }): ReactNode {
     const [hamburger_open, set_hamburger_open] = useState(false)
     const [screenshot_mode, set_screenshot_mode] = useState(false)
@@ -108,6 +110,7 @@ export function PageTemplate({
                 <BodyPanel
                     hamburger_open={hamburger_open}
                     main_content={children}
+                    showFooter={showFooter}
                 />
             </div>
         </ScreenshotContext.Provider>
@@ -153,7 +156,7 @@ function OtherCredits(): ReactNode {
     )
 }
 
-function BodyPanel({ hamburger_open, main_content }: { hamburger_open: boolean, main_content: React.ReactNode }): ReactNode {
+function BodyPanel({ hamburger_open, main_content, showFooter }: { hamburger_open: boolean, main_content: React.ReactNode, showFooter: boolean }): ReactNode {
     const mobileLayout = useMobileLayout()
 
     if (hamburger_open) {
@@ -165,7 +168,7 @@ function BodyPanel({ hamburger_open, main_content }: { hamburger_open: boolean, 
             <div className={mobileLayout ? 'content_panel_mobile' : 'right_panel'}>
                 {main_content}
                 <div className="gap"></div>
-                <TemplateFooter />
+                { showFooter ? <TemplateFooter /> : null }
             </div>
         </div>
     )

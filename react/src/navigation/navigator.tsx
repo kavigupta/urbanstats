@@ -385,8 +385,25 @@ async function loadPageDescriptor(newDescriptor: PageDescriptor, settings: Setti
     }
 }
 
-type PageState = { kind: 'loading', loading: { descriptor: PageDescriptor }, current: { data: PageData, descriptor: PageDescriptor } }
+type PageState = { kind: 'loading', loading: { descriptor: PageDescriptor }, current: { data: PageData, descriptor: PageDescriptor }, loadStartTime: number }
     | { kind: 'loaded', current: { data: PageData, descriptor: PageDescriptor } }
+
+type LoadingState =
+    { kind: 'notLoading', started: undefined } |
+    { kind: 'initial', started: number } |
+    { kind: 'subsequent', started: number }
+
+function loadingStateFromPageState(pageState: PageState): LoadingState {
+    if (pageState.kind === 'loaded') {
+        return { kind: 'notLoading', started: undefined }
+    }
+    else if (pageState.current.descriptor.kind === 'initialLoad') {
+        return { kind: 'initial', started: pageState.loadStartTime }
+    }
+    else {
+        return { kind: 'subsequent', started: pageState.loadStartTime }
+    }
+}
 
 export class Navigator {
     /* eslint-disable react-hooks/rules-of-hooks, no-restricted-syntax -- This is a logic class with custom hooks and core navigation functions */
@@ -401,7 +418,9 @@ export class Navigator {
             this.pageState = {
                 kind: 'loading',
                 loading: { descriptor: pageDescriptorFromURL(url) },
-                current: { descriptor: { kind: 'initialLoad', url }, data: { kind: 'initialLoad' } } }
+                current: { descriptor: { kind: 'initialLoad', url }, data: { kind: 'initialLoad' } },
+                loadStartTime: Date.now(),
+            }
             void this.navigate(this.pageState.loading.descriptor, 'replace')
         }
         catch (error) {
@@ -428,7 +447,7 @@ export class Navigator {
                 break
         }
 
-        this.pageState = { kind: 'loading', loading: { descriptor: newDescriptor }, current: this.pageState.current }
+        this.pageState = { kind: 'loading', loading: { descriptor: newDescriptor }, current: this.pageState.current, loadStartTime: Date.now() }
         this.pageStateObservers.forEach((observer) => { observer() })
         try {
             const { pageData, newPageDescriptor } = await loadPageDescriptor(newDescriptor, Settings.shared)
@@ -567,6 +586,22 @@ export class Navigator {
             default:
                 throw new Error(`Page descriptor kind ${this.pageState.current.descriptor.kind} does not have mapper settings`)
         }
+    }
+
+    useLoading(): LoadingState {
+        const [loading, setLoading] = useState(loadingStateFromPageState(this.pageState))
+
+        useEffect(() => {
+            const observer = (): void => {
+                const newLoading = loadingStateFromPageState(this.pageState)
+                // Don't want to cause the state to change with a new object
+                setLoading(currentLoading => currentLoading.kind !== newLoading.kind || currentLoading.started !== newLoading.started ? newLoading : currentLoading)
+            }
+            this.pageStateObservers.add(observer)
+            return () => { this.pageStateObservers.delete(observer) }
+        }, [])
+
+        return loading
     }
     /* eslint-enable react-hooks/rules-of-hooks, no-restricted-syntax */
 }

@@ -83,6 +83,7 @@
     "react-device-detect": "^2.2.3",
     "react-dom": "^18.2.0",
     "react-mobile-share": "^1.0.30",
+    "react-spinners": "^0.14.1",
     "react-zlib-js": "^1.0.5",
     "zod": "^3.23.8"
   },
