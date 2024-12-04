@@ -12,7 +12,7 @@ import { StatisticPanel } from '../components/statistic-panel'
 import { useColors } from '../page_template/colors'
 import { PageTemplate } from '../page_template/template'
 
-import { InitialLoad } from './loading'
+import { InitialLoad, SubsequentLoad } from './loading'
 import { Navigator, PageData, PageDescriptor, urlFromPageDescriptor } from './navigator'
 
 export function Router(): ReactNode {
@@ -46,7 +46,10 @@ export function Router(): ReactNode {
     }, [url.hash])
 
     return (
-        <PageRouter pageData={pageState.current.data} />
+        <>
+            <PageRouter pageData={pageState.current.data} />
+            <SubsequentLoad />
+        </>
     )
 }
 

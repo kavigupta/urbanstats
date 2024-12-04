@@ -388,21 +388,15 @@ async function loadPageDescriptor(newDescriptor: PageDescriptor, settings: Setti
 type PageState = { kind: 'loading', loading: { descriptor: PageDescriptor }, current: { data: PageData, descriptor: PageDescriptor }, loadStartTime: number }
     | { kind: 'loaded', current: { data: PageData, descriptor: PageDescriptor } }
 
-type LoadingState =
-    { kind: 'notLoading', started: undefined } |
-    { kind: 'initial', started: number } |
-    { kind: 'subsequent', started: number }
+type SubsequentLoadingState = { kind: 'notLoading', updateAt: undefined } | { kind: 'quickLoad', updateAt: number } | { kind: 'longLoad', updateAt: undefined }
 
-function loadingStateFromPageState(pageState: PageState): LoadingState {
-    if (pageState.kind === 'loaded') {
-        return { kind: 'notLoading', started: undefined }
+function loadingStateFromPageState(pageState: PageState): SubsequentLoadingState {
+    if (pageState.kind === 'loaded' || pageState.current.data.kind === 'initialLoad') {
+        return { kind: 'notLoading', updateAt: undefined }
     }
-    else if (pageState.current.descriptor.kind === 'initialLoad') {
-        return { kind: 'initial', started: pageState.loadStartTime }
-    }
-    else {
-        return { kind: 'subsequent', started: pageState.loadStartTime }
-    }
+
+    const quickThresholdDuration = 2000
+    return Date.now() - pageState.loadStartTime >= quickThresholdDuration ? { kind: 'longLoad', updateAt: undefined } : { kind: 'quickLoad', updateAt: pageState.loadStartTime + quickThresholdDuration }
 }
 
 export class Navigator {
@@ -588,20 +582,30 @@ export class Navigator {
         }
     }
 
-    useLoading(): LoadingState {
+    useSubsequentLoading(): SubsequentLoadingState['kind'] {
         const [loading, setLoading] = useState(loadingStateFromPageState(this.pageState))
 
         useEffect(() => {
             const observer = (): void => {
-                const newLoading = loadingStateFromPageState(this.pageState)
-                // Don't want to cause the state to change with a new object
-                setLoading(currentLoading => currentLoading.kind !== newLoading.kind || currentLoading.started !== newLoading.started ? newLoading : currentLoading)
+                setLoading(loadingStateFromPageState(this.pageState))
             }
             this.pageStateObservers.add(observer)
             return () => { this.pageStateObservers.delete(observer) }
         }, [])
 
-        return loading
+        useEffect(() => {
+            if (loading.updateAt !== undefined) {
+                const timeout = setTimeout(() => {
+                    setLoading(loadingStateFromPageState(this.pageState))
+                }, loading.updateAt - Date.now())
+                return () => { clearTimeout(timeout) }
+            }
+            else {
+                return undefined
+            }
+        }, [loading.updateAt])
+
+        return loading.kind
     }
     /* eslint-enable react-hooks/rules-of-hooks, no-restricted-syntax */
 }
