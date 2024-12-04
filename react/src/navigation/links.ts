@@ -99,8 +99,3 @@ export function sanitize(longname: string, spaces_around_slash = true): string {
 export function universe_path(universe: string): string {
     return `/icons/flags/${universe}.png`
 }
-
-export function add_universe_to_params(universe: string | undefined, params: URLSearchParams): void {
-    if (universe !== undefined)
-        params.set('universe', universe)
-}

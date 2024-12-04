@@ -74,7 +74,7 @@ export type PageDescriptor =
     | { kind: 'dataCredit', hash: string }
     | ({ kind: 'quiz' } & z.infer<typeof quizSchema>)
     | ({ kind: 'mapper' } & z.infer<typeof mapperSchema>)
-    | { kind: 'initialLoad' }
+    | { kind: 'initialLoad', url: URL }
     | { kind: 'error', url: URL }
 
 export type PageData =
@@ -122,8 +122,7 @@ function pageDescriptorFromURL(url: URL): PageDescriptor {
     }
 }
 
-// Not a pure function, just modifies the current URL
-function urlFromPageDescriptor(pageDescriptor: PageDescriptor): URL {
+export function urlFromPageDescriptor(pageDescriptor: PageDescriptor): URL {
     let pathname: string
     let searchParams: Record<string, string | undefined>
     let hash = ''
@@ -191,7 +190,6 @@ function urlFromPageDescriptor(pageDescriptor: PageDescriptor): URL {
             }
             break
         case 'initialLoad':
-            throw new Error('cannot navigate to initialLoad')
         case 'error':
             return pageDescriptor.url
     }
@@ -399,10 +397,11 @@ export class Navigator {
 
     constructor() {
         try {
+            const url = new URL(discordFix(window.location.href))
             this.pageState = {
                 kind: 'loading',
-                loading: { descriptor: pageDescriptorFromURL(new URL(discordFix(window.location.href))) },
-                current: { descriptor: { kind: 'initialLoad' }, data: { kind: 'initialLoad' } } }
+                loading: { descriptor: pageDescriptorFromURL(url) },
+                current: { descriptor: { kind: 'initialLoad', url }, data: { kind: 'initialLoad' } } }
             void this.navigate(this.pageState.loading.descriptor, 'replace')
         }
         catch (error) {

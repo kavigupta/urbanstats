@@ -12,7 +12,7 @@ import { StatisticPanel } from '../components/statistic-panel'
 import { useColors } from '../page_template/colors'
 import { PageTemplate } from '../page_template/template'
 
-import { Navigator, PageData, PageDescriptor } from './navigator'
+import { Navigator, PageData, PageDescriptor, urlFromPageDescriptor } from './navigator'
 
 export function Router(): ReactNode {
     const navigator = useContext(Navigator.Context)
@@ -20,6 +20,10 @@ export function Router(): ReactNode {
     useEffect(() => {
         // Hook into the browser back/forward buttons
         const listener = (popStateEvent: PopStateEvent): void => {
+            if (popStateEvent.state === null) {
+                // When we use window.location.replace below
+                return
+            }
             void navigator.navigate(popStateEvent.state as PageDescriptor, null)
         }
         window.addEventListener('popstate', listener)
@@ -27,6 +31,18 @@ export function Router(): ReactNode {
     }, [navigator])
 
     const pageState = navigator.usePageState()
+
+    const url = urlFromPageDescriptor(pageState.current.descriptor)
+
+    useEffect(() => {
+        if (url.hash !== '') {
+            /* eslint-disable no-restricted-syntax -- Core navigation functionality */
+            window.location.replace(url.hash)
+            history.replaceState(pageState.current.descriptor, '')
+            /* eslint-enable no-restricted-syntax */
+        }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- Should only execute when the hash changes
+    }, [url.hash])
 
     return (
         <>
