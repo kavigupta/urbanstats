@@ -111,6 +111,7 @@ export function PageTemplate({
                     hamburger_open={hamburger_open}
                     main_content={children}
                     showFooter={showFooter}
+                    setHamburgerOpen={set_hamburger_open}
                 />
             </div>
         </ScreenshotContext.Provider>
@@ -156,15 +157,15 @@ function OtherCredits(): ReactNode {
     )
 }
 
-function BodyPanel({ hamburger_open, main_content, showFooter }: { hamburger_open: boolean, main_content: React.ReactNode, showFooter: boolean }): ReactNode {
+function BodyPanel({ hamburger_open, main_content, showFooter, setHamburgerOpen }: { hamburger_open: boolean, main_content: React.ReactNode, showFooter: boolean, setHamburgerOpen: (open: boolean) => void }): ReactNode {
     const mobileLayout = useMobileLayout()
 
     if (hamburger_open) {
-        return <LeftPanel />
+        return <LeftPanel setHamburgerOpen={setHamburgerOpen} />
     }
     return (
         <div className="body_panel">
-            {mobileLayout ? undefined : <LeftPanel />}
+            {mobileLayout ? undefined : <LeftPanel setHamburgerOpen={setHamburgerOpen} />}
             <div className={mobileLayout ? 'content_panel_mobile' : 'right_panel'}>
                 {main_content}
                 <div className="gap"></div>
@@ -174,10 +175,10 @@ function BodyPanel({ hamburger_open, main_content, showFooter }: { hamburger_ope
     )
 }
 
-function LeftPanel(): ReactNode {
+function LeftPanel({ setHamburgerOpen }: { setHamburgerOpen: (open: boolean) => void }): ReactNode {
     return (
         <div className={useMobileLayout() ? 'left_panel_mobile' : 'left_panel'}>
-            <Sidebar />
+            <Sidebar onNavigate={() => { setHamburgerOpen(false) }} />
         </div>
     )
 }

@@ -30,7 +30,7 @@ export function useSidebarSectionTitleStyle(): CSSProperties {
     }
 }
 
-export function Sidebar(): ReactNode {
+export function Sidebar({ onNavigate }: { onNavigate: () => void }): ReactNode {
     const colors = useColors()
     const currentTheme = useCurrentTheme()
     const link_style = { color: colors.blueLink }
@@ -54,16 +54,16 @@ export function Sidebar(): ReactNode {
                 <div style={sidebar_section_title}>Main Menu</div>
                 <ul className={sidebar_section_content}>
                     <li>
-                        <a style={link_style} {...navContext.link({ kind: 'index' })}>Home</a>
+                        <a style={link_style} {...navContext.link({ kind: 'index' }, onNavigate)}>Home</a>
                     </li>
                     <li>
-                        <a style={link_style} {...navContext.link({ kind: 'about' })}>About Urban Stats</a>
+                        <a style={link_style} {...navContext.link({ kind: 'about' }, onNavigate)}>About Urban Stats</a>
                     </li>
                     <li>
-                        <a style={link_style} {...navContext.link({ kind: 'dataCredit', hash: '' })}>Data Credit</a>
+                        <a style={link_style} {...navContext.link({ kind: 'dataCredit', hash: '' }, onNavigate)}>Data Credit</a>
                     </li>
                     <li>
-                        <a style={link_style} {...navContext.link({ kind: 'mapper', view: false })}>Mapper (beta)</a>
+                        <a style={link_style} {...navContext.link({ kind: 'mapper', view: false }, onNavigate)}>Mapper (beta)</a>
                     </li>
                 </ul>
             </div>
@@ -71,13 +71,13 @@ export function Sidebar(): ReactNode {
                 <div style={sidebar_section_title}>Random</div>
                 <ul className={sidebar_section_content}>
                     <li>
-                        <a style={link_style} {...navContext.link({ kind: 'random', sampleby: 'uniform', us_only: false })}>Unweighted</a>
+                        <a style={link_style} {...navContext.link({ kind: 'random', sampleby: 'uniform', us_only: false }, onNavigate)}>Unweighted</a>
                     </li>
                     <li>
-                        <a style={link_style} {...navContext.link({ kind: 'random', sampleby: 'population', us_only: false })}>Weighted by Population</a>
+                        <a style={link_style} {...navContext.link({ kind: 'random', sampleby: 'population', us_only: false }, onNavigate)}>Weighted by Population</a>
                     </li>
                     <li>
-                        <a style={link_style} {...navContext.link({ kind: 'random', sampleby: 'population', us_only: true })}>Weighted by Population (US only)</a>
+                        <a style={link_style} {...navContext.link({ kind: 'random', sampleby: 'population', us_only: true }, onNavigate)}>Weighted by Population (US only)</a>
                     </li>
                 </ul>
             </div>
@@ -85,10 +85,10 @@ export function Sidebar(): ReactNode {
                 <div style={sidebar_section_title}>Games</div>
                 <ul className={sidebar_section_content}>
                     <li>
-                        <a style={link_style} {...navContext.link({ kind: 'quiz' })}>Juxtastat</a>
+                        <a style={link_style} {...navContext.link({ kind: 'quiz' }, onNavigate)}>Juxtastat</a>
                     </li>
                     <li>
-                        <a style={link_style} {...navContext.link({ kind: 'quiz', mode: 'retro' })}>Retrostat</a>
+                        <a style={link_style} {...navContext.link({ kind: 'quiz', mode: 'retro' }, onNavigate)}>Retrostat</a>
                     </li>
                 </ul>
             </div>

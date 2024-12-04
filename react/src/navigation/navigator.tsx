@@ -469,13 +469,14 @@ export class Navigator {
         }
     }
 
-    link(pageDescriptor: PageDescriptor): { href: string, onClick: (e: React.MouseEvent) => void } {
+    link(pageDescriptor: PageDescriptor, postNavigationCallback?: () => void): { href: string, onClick: (e: React.MouseEvent) => Promise<void> } {
         const url = urlFromPageDescriptor(pageDescriptor)
         return {
             href: url.pathname + url.search,
-            onClick: (e: React.MouseEvent) => {
+            onClick: async (e: React.MouseEvent) => {
                 e.preventDefault()
-                void this.navigate(pageDescriptor, 'push')
+                await this.navigate(pageDescriptor, 'push')
+                postNavigationCallback?.()
             },
         }
     }
