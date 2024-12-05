@@ -108,13 +108,13 @@ test('long load', async (t) => {
     await t.expect(Selector('[data-test-id=longLoad]').exists).notOk()
 })
 
-test.only('invalid url', async (t) => {
+test('invalid url', async (t) => {
     await t.navigateTo(`${TARGET}/article.html`)
     await t.expect(Selector('li').withText('Parameter longname is Required').exists).ok()
     await screencap(t, { wait: false })
 })
 
-test.only('loading error', async (t) => {
+test('loading error', async (t) => {
     await t.navigateTo(`${TARGET}/article.html?longname=Kalamazoo+city%2C+Michigan%2C+US`) // Should be USA
     await t.expect(Selector('h1').withText('Error Loading Page').exists).ok()
     await screencap(t, { wait: false })
