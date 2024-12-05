@@ -95,6 +95,9 @@ export type PageData =
     | { kind: 'initialLoad' }
 
 function pageDescriptorFromURL(url: URL): PageDescriptor {
+    /**
+     * Remember: When adding a new entrypoint here, you'll also need to add the actual file in `build.py` in order to support initial navigation.
+     */
     const params = Object.fromEntries(url.searchParams.entries())
     switch (url.pathname) {
         case '/article.html':
