@@ -75,11 +75,13 @@ export async function waitForLoading(t: TestController): Promise<void> {
     await t.wait(1000) // Wait for map to finish rendering
 }
 
-async function prep_for_image(t: TestController, hover = true): Promise<void> {
-    if (hover) {
+async function prep_for_image(t: TestController, options: { hover: boolean, wait: boolean }): Promise<void> {
+    if (options.hover) {
         await t.hover('#searchbox') // Ensure the mouse pointer isn't hovering over any elements that change appearance when hovered over
     }
-    await t.wait(1000)
+    if (options.wait) {
+        await t.wait(1000)
+    }
     await t.eval(() => {
         // disable the base map, so that we're not testing the tiles
         for (const x of Array.from(document.getElementsByClassName('leaflet-tile-pane'))) {
@@ -118,8 +120,8 @@ function screenshot_path(t: TestController): string {
     return `${t.browser.name}/${t.test.name}-${screenshot_number}.png`
 }
 
-export async function screencap(t: TestController, { fullPage = true }: { fullPage?: boolean } = {}): Promise<void> {
-    await prep_for_image(t, fullPage)
+export async function screencap(t: TestController, { fullPage = true, wait = true }: { fullPage?: boolean, wait?: boolean } = {}): Promise<void> {
+    await prep_for_image(t, { hover: fullPage, wait })
     return t.takeScreenshot({
     // include the browser name in the screenshot path
         path: screenshot_path(t),
@@ -128,7 +130,7 @@ export async function screencap(t: TestController, { fullPage = true }: { fullPa
 }
 
 export async function grab_download(t: TestController, button: Selector): Promise<void> {
-    await prep_for_image(t)
+    await prep_for_image(t, { hover: true, wait: true })
     await t
         .click(button)
     await t.wait(3000)

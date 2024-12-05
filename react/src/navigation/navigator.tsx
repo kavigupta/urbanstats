@@ -395,7 +395,7 @@ function loadingStateFromPageState(pageState: PageState): SubsequentLoadingState
         return { kind: 'notLoading', updateAt: undefined }
     }
 
-    const quickThresholdDuration = 2000
+    const quickThresholdDuration = (window as { testQuickNavigationDuration?: number }).testQuickNavigationDuration ?? 2000
     return Date.now() - pageState.loadStartTime >= quickThresholdDuration ? { kind: 'longLoad', updateAt: undefined } : { kind: 'quickLoad', updateAt: pageState.loadStartTime + quickThresholdDuration }
 }
 

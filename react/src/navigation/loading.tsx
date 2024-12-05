@@ -14,7 +14,7 @@ export function InitialLoad(): ReactNode {
     const colors = useColors()
 
     return (
-        <div style={containerStyle}>
+        <div style={containerStyle} data-test-id="initialLoad">
             <MoonLoader
                 color={colors.textMain}
                 cssOverride={{ marginLeft: 'auto', marginRight: 'auto', marginTop: '25vh' }}
@@ -48,7 +48,7 @@ function QuickLoad(): ReactNode {
         zIndex,
     }
 
-    return <BarLoader color={colors.textMain} cssOverride={style} />
+    return <BarLoader color={colors.textMain} cssOverride={style} data-test-id="quickLoad" />
 }
 
 function LongLoad(): ReactNode {
@@ -71,7 +71,7 @@ function LongLoad(): ReactNode {
         left: `calc(50% - ${width} / 2)`,
     }
     return (
-        <div style={containerStyle}>
+        <div style={containerStyle} data-test-id="longLoad">
             <MoonLoader color={colors.textMain} cssOverride={loaderStyle} />
         </div>
     )
