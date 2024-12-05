@@ -75,8 +75,10 @@ export async function waitForLoading(t: TestController): Promise<void> {
     await t.wait(1000) // Wait for map to finish rendering
 }
 
-async function prep_for_image(t: TestController): Promise<void> {
-    await t.hover('#searchbox') // Ensure the mouse pointer isn't hovering over any elements that change appearance when hovered over
+async function prep_for_image(t: TestController, hover = true): Promise<void> {
+    if (hover) {
+        await t.hover('#searchbox') // Ensure the mouse pointer isn't hovering over any elements that change appearance when hovered over
+    }
     await t.wait(1000)
     await t.eval(() => {
         // disable the base map, so that we're not testing the tiles
@@ -101,6 +103,9 @@ async function prep_for_image(t: TestController): Promise<void> {
 
         // remove the flashing text caret
         document.querySelectorAll('input[type=text]').forEach((element) => { element.setAttribute('style', `${element.getAttribute('style')} caret-color: transparent;`) })
+
+        // remove all animated elements that don't have animated children, this covers the moving parts of spinners
+        document.querySelectorAll('[style*=animation]:not(:has([style*=animation]))').forEach((element) => { element.remove() })
     })
     // Wait for the map to finish loading
     await waitForLoading(t)
@@ -113,12 +118,12 @@ function screenshot_path(t: TestController): string {
     return `${t.browser.name}/${t.test.name}-${screenshot_number}.png`
 }
 
-export async function screencap(t: TestController): Promise<void> {
-    await prep_for_image(t)
+export async function screencap(t: TestController, { fullPage = true }: { fullPage?: boolean } = {}): Promise<void> {
+    await prep_for_image(t, fullPage)
     return t.takeScreenshot({
     // include the browser name in the screenshot path
         path: screenshot_path(t),
-        fullPage: true,
+        fullPage,
     })
 }
 

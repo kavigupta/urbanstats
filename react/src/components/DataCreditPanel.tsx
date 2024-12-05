@@ -1,5 +1,5 @@
 import { MathJax, MathJaxContext } from 'better-react-mathjax'
-import React, { ReactNode, useEffect } from 'react'
+import React, { ReactNode } from 'react'
 import { FootnoteRef, Footnotes, FootnotesProvider } from 'react-a11y-footnotes'
 
 import '../style.css'
