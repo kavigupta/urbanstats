@@ -106,8 +106,8 @@ async function prep_for_image(t: TestController, options: { hover: boolean, wait
         // remove the flashing text caret
         document.querySelectorAll('input[type=text]').forEach((element) => { element.setAttribute('style', `${element.getAttribute('style')} caret-color: transparent;`) })
 
-        // remove all animated elements that don't have animated children, this covers the moving parts of spinners
-        document.querySelectorAll('[style*=animation]:not(:has([style*=animation]))').forEach((element) => { element.remove() })
+        // stop all animations (intended for moving spinners)
+        document.querySelectorAll('[style*=animation]').forEach((element) => { (element as HTMLElement).style.animation = 'none' })
     })
     // Wait for the map to finish loading
     await waitForLoading(t)
