@@ -2,13 +2,13 @@ import { MathJax, MathJaxContext } from 'better-react-mathjax'
 import React, { ReactNode } from 'react'
 import { FootnoteRef, Footnotes, FootnotesProvider } from 'react-a11y-footnotes'
 
-import '../style.css'
-import '../common.css'
-import '../data-credit.css'
-import industry_occupation_table from '../data/explanation_industry_occupation_table'
-import { useColors } from '../page_template/colors'
-import { PageTemplate } from '../page_template/template'
-import { useHeaderTextClass } from '../utils/responsive'
+import './style.css'
+import './common.css'
+import './data-credit.css'
+import industry_occupation_table from './data/explanation_industry_occupation_table'
+import { useColors } from './page_template/colors'
+import { PageTemplate } from './page_template/template'
+import { useHeaderTextClass } from './utils/responsive'
 
 function ExplanationTable(props: { name: string, link: string, table: readonly (readonly [string, string])[] }): ReactNode {
     const colors = useColors()
