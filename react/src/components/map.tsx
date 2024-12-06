@@ -245,9 +245,7 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
     }
 
     async add_polygons(map: L.Map, names: string[], styles: Record<string, unknown>[], zoom_to: number): Promise<void> {
-        for (let i = 0; i < names.length; i++) {
-            await this.add_polygon(map, names[i], i === zoom_to, styles[i])
-        }
+        await Promise.all(names.map((name, i) => this.add_polygon(map, name, i === zoom_to, styles[i])))
     }
 
     async polygon_geojson(name: string): Promise<GeoJSON.Feature> {
