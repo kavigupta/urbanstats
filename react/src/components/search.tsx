@@ -22,9 +22,17 @@ export const SearchBox = (props: {
     const [focused, setFocused] = React.useState(0)
     const colors = useColors()
 
-    const form = React.useRef<HTMLFormElement>(null)
     const textbox = React.useRef<HTMLInputElement>(null)
-    const dropdown = React.useRef<HTMLDivElement>(null)
+
+    const reset = (): void => {
+        textbox.current!.value = ''
+        setMatches([])
+        setMatchesStale(false)
+        setIndexCache(undefined)
+        setIndexCacheUninitialized(true)
+        setFirstCharacter(undefined)
+        setFocused(0)
+    }
 
     const searchbox_dropdown_item_style = (idx: number): CSSProperties => {
         return {
@@ -39,6 +47,7 @@ export const SearchBox = (props: {
         const terms = matches
         if (terms.length > 0) {
             props.on_change(terms[focused])
+            reset()
         }
         return false
     }
@@ -126,7 +135,6 @@ export const SearchBox = (props: {
     return (
         <form
             autoComplete="off"
-            ref={form}
             style={{ marginBlockEnd: '0em', position: 'relative', width: '100%' }}
             onSubmit={onFormSubmit}
         >
@@ -143,7 +151,6 @@ export const SearchBox = (props: {
             />
 
             <div
-                ref={dropdown}
                 style={
                     {
                         position: 'absolute',
@@ -163,7 +170,10 @@ export const SearchBox = (props: {
                                 key={location}
                                 className="serif searchbox-dropdown-item"
                                 style={searchbox_dropdown_item_style(idx)}
-                                onClick={() => { props.on_change(matches[idx]) }}
+                                onClick={() => {
+                                    props.on_change(matches[idx])
+                                    reset()
+                                }}
                                 onMouseOver={() => { setFocused(idx) }}
                             >
                                 {' '}

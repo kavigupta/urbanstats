@@ -21,6 +21,7 @@ async function registerUser(userId: string): Promise<void> {
     // Idempotent
     await fetch(`${ENDPOINT}/juxtastat/register_user`, {
         method: 'POST',
+        // eslint-disable-next-line no-restricted-syntax -- Using the window hostname
         body: JSON.stringify({ user: userId, domain: localStorage.getItem('testHostname') ?? window.location.hostname }),
         headers: {
             'Content-Type': 'application/json',

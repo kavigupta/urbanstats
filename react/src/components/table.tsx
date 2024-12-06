@@ -1,9 +1,10 @@
-import React, { CSSProperties, ReactNode, useEffect, useRef, useState } from 'react'
+import React, { CSSProperties, ReactNode, useContext, useEffect, useRef, useState } from 'react'
 import ContentEditable, { ContentEditableEvent } from 'react-contenteditable'
 
 import { load_ordering } from '../load_json'
-import { article_link, statistic_link } from '../navigation/links'
 import './table.css'
+import { statisticDescriptor } from '../navigation/links'
+import { Navigator } from '../navigation/navigator'
 import { Colors, useColors } from '../page_template/colors'
 import { MobileArticlePointers, row_expanded_key, Settings, useSetting } from '../page_template/settings'
 import { useUniverse } from '../universe'
@@ -422,15 +423,20 @@ function StatisticName(props: {
 }): ReactNode {
     const [expanded, setExpanded] = useSetting(row_expanded_key(props.row.statpath))
     const colors = useColors()
+    const navContext = useContext(Navigator.Context)
     const link = (
         <a
             style={{ textDecoration: 'none', color: colors.textMain }}
-            href={
-                statistic_link(
-                    props.curr_universe,
-                    props.row.statname, props.row.articleType, props.row.ordinal,
-                    20, undefined, props.longname,
-                )
+            {
+                ...navContext.link(statisticDescriptor({
+                    universe: props.curr_universe,
+                    statname: props.row.statname,
+                    article_type: props.row.articleType,
+                    start: props.row.ordinal,
+                    amount: 20,
+                    order: 'descending',
+                    highlight: props.longname,
+                }))
             }
         >
             {props.row.rendered_statname}
@@ -465,7 +471,7 @@ function StatisticName(props: {
                 flexDirection: 'row',
             }}
             >
-                {paddedElements}
+                {...paddedElements}
             </span>
         )
     }
@@ -930,8 +936,9 @@ function PointerButtonIndex(props: {
     direction: -1 | 1
     total: number
 }): ReactNode {
-    const curr_universe = useUniverse()
+    const universe = useUniverse()
     const colors = useColors()
+    const navigation = useContext(Navigator.Context)
     const [show_historical_cds] = useSetting('show_historical_cds')
     const out_of_bounds = (pos: number): boolean => pos < 0 || pos >= props.total
     const onClick = async (pos: number): Promise<void> => {
@@ -943,7 +950,11 @@ function PointerButtonIndex(props: {
                     pos += props.direction
                     continue
                 }
-                document.location = article_link(curr_universe, name)
+                void navigation.navigate({
+                    kind: 'article',
+                    longname: name,
+                    universe,
+                }, 'push')
                 return
             }
         }

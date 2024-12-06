@@ -1,12 +1,13 @@
 import '../common.css'
 import './article.css'
 
-import React, { ReactNode, useRef } from 'react'
+import React, { ReactNode, useContext, useEffect, useRef } from 'react'
 
-import { article_link, sanitize } from '../navigation/links'
+import { sanitize } from '../navigation/links'
+import { Navigator } from '../navigation/navigator'
 import { HueColors, useColors } from '../page_template/colors'
 import { row_expanded_key, useSetting, useSettings } from '../page_template/settings'
-import { groupYearKeys, StatPathsContext } from '../page_template/statistic-settings'
+import { groupYearKeys, StatGroupSettings } from '../page_template/statistic-settings'
 import { PageTemplate } from '../page_template/template'
 import { useUniverse } from '../universe'
 import { mixWithBackground } from '../utils/color'
@@ -14,8 +15,8 @@ import { Article } from '../utils/protos'
 import { useComparisonHeadStyle, useHeaderTextClass, useMobileLayout, useSubHeaderTextClass } from '../utils/responsive'
 
 import { ArticleWarnings } from './ArticleWarnings'
-import { ArticleComparisonQuerySettingsConnection } from './QuerySettingsConnection'
-import { ArticleRow, load_articles } from './load-article'
+import { QuerySettingsConnection } from './QuerySettingsConnection'
+import { ArticleRow } from './load-article'
 import { MapGeneric, MapGenericProps, Polygons } from './map'
 import { WithPlot } from './plots'
 import { ScreencapElements, useScreenshotMode } from './screenshot'
@@ -26,13 +27,16 @@ const left_bar_margin = 0.02
 const left_margin_pct = 0.18
 const bar_height = '5px'
 
-export function ComparisonPanel(props: { joined_string: string, universes: string[], names: string[], articles: Article[] }): ReactNode {
+export function ComparisonPanel(props: { universes: string[], articles: Article[], rows: (settings: StatGroupSettings) => ArticleRow[][] }): ReactNode {
     const colors = useColors()
     const table_ref = useRef<HTMLDivElement>(null)
     const map_ref = useRef(null)
 
+    const joined_string = props.articles.map(x => x.shortname).join(' vs ')
+    const names = props.articles.map(a => a.longname)
+
     const screencap_elements = (): ScreencapElements => ({
-        path: `${sanitize(props.joined_string)}.png`,
+        path: `${sanitize(joined_string)}.png`,
         overall_width: table_ref.current!.offsetWidth * 2,
         elements_to_render: [table_ref.current!, map_ref.current!],
     })
@@ -106,17 +110,23 @@ export function ComparisonPanel(props: { joined_string: string, universes: strin
     const searchComparisonStyle = useComparisonHeadStyle()
     const settings = useSettings(groupYearKeys())
 
+    const rows = props.rows(settings)
+
     const curr_universe = useUniverse()
 
-    const { rows, statPaths } = load_articles(props.articles, curr_universe, settings)
+    useEffect(() => {
+        document.title = joined_string
+    }, [joined_string])
+
+    const navContext = useContext(Navigator.Context)
 
     return (
-        <StatPathsContext.Provider value={statPaths}>
-            <ArticleComparisonQuerySettingsConnection pageKind="comparison" />
+        <>
+            <QuerySettingsConnection />
             <PageTemplate screencap_elements={screencap_elements} has_universe_selector={true} universes={props.universes}>
                 <div>
                     <div className={headerTextClass}>Comparison</div>
-                    <div className={subHeaderTextClass}>{props.joined_string}</div>
+                    <div className={subHeaderTextClass}>{joined_string}</div>
                     <div style={{ marginBlockEnd: '16px' }}></div>
 
                     <div style={{ display: 'flex' }}>
@@ -128,7 +138,13 @@ export function ComparisonPanel(props: { joined_string: string, universes: strin
                             <SearchBox
                                 style={{ ...searchComparisonStyle, width: '100%' }}
                                 placeholder="Name"
-                                on_change={(x) => { add_new(props.names, x) }}
+                                on_change={(x) => {
+                                    void navContext.navigate({
+                                        kind: 'comparison',
+                                        universe: curr_universe,
+                                        longnames: [...names, x],
+                                    }, 'push')
+                                }}
                                 autoFocus={false}
                             />
                         </div>
@@ -147,8 +163,20 @@ export function ComparisonPanel(props: { joined_string: string, universes: strin
                                             <HeadingDisplay
                                                 longname={data.longname}
                                                 include_delete={props.articles.length > 1}
-                                                on_click={() => { on_delete(props.names, i) }}
-                                                on_change={(x) => { on_change(props.names, i, x) }}
+                                                on_click={() => {
+                                                    void navContext.navigate({
+                                                        kind: 'comparison',
+                                                        universe: curr_universe,
+                                                        longnames: names.filter((_, index) => index !== i),
+                                                    }, 'push')
+                                                }}
+                                                on_change={(x) => {
+                                                    void navContext.navigate({
+                                                        kind: 'comparison',
+                                                        universe: curr_universe,
+                                                        longnames: names.map((value, index) => index === i ? x : value),
+                                                    }, 'push')
+                                                }}
                                             />
                                         </div>,
                                     ),
@@ -167,7 +195,7 @@ export function ComparisonPanel(props: { joined_string: string, universes: strin
                                         index={row_idx}
                                         rows={rows.map(row => row[row_idx])}
                                         articles={props.articles}
-                                        names={props.names}
+                                        names={names}
                                         onlyColumns={onlyColumns}
                                     />
                                 ),
@@ -187,7 +215,7 @@ export function ComparisonPanel(props: { joined_string: string, universes: strin
                     </div>
                 </div>
             </PageTemplate>
-        </StatPathsContext.Provider>
+        </>
     )
 }
 
@@ -203,33 +231,6 @@ function color(colors: HueColors, i: number): string {
         colors.green,
     ]
     return color_cycle[i % color_cycle.length]
-}
-
-function on_change(names: string[] | undefined, i: number, x: string): void {
-    if (names === undefined) {
-        throw new Error('names is undefined')
-    }
-    const new_names = [...names]
-    new_names[i] = x
-    go(new_names)
-}
-
-function on_delete(names: string[], i: number): void {
-    const new_names = [...names]
-    new_names.splice(i, 1)
-    go(new_names)
-}
-
-function add_new(names: string[], x: string): void {
-    const new_names = [...names]
-    new_names.push(x)
-    go(new_names)
-}
-
-function go(names: string[]): void {
-    const window_info = new URLSearchParams(window.location.search)
-    window_info.set('longnames', JSON.stringify(names))
-    window.location.search = window_info.toString()
 }
 
 function each({ length }: { length: number }): number {
@@ -265,6 +266,7 @@ function ComparisonCells({ names, rows, onlyColumns }: {
     onlyColumns: ColumnIdentifier[]
 }): ReactNode {
     const colors = useColors()
+    const navContext = useContext(Navigator.Context)
 
     const highlightIndex = rows.map(x => x.statval).reduce<number | undefined>((iMax, x, i, arr) => {
         if (isNaN(x)) {
@@ -294,7 +296,13 @@ function ComparisonCells({ names, rows, onlyColumns }: {
                 onlyColumns={onlyColumns}
                 simpleOrdinals={true}
                 statisticStyle={highlightIndex === i ? { backgroundColor: mixWithBackground(color(colors.hueColors, i), colors.mixPct / 100, colors.background) } : {}}
-                onNavigate={(x) => { on_change(names, i, x) }}
+                onNavigate={(x) => {
+                    void navContext.navigate({
+                        kind: 'comparison',
+                        universe: navContext.universe,
+                        longnames: names.map((value, index) => index === i ? x : value),
+                    }, 'push')
+                }}
                 totalWidth={each(rows)}
             />
         )),
@@ -379,18 +387,35 @@ function HeadingDisplay({ longname, include_delete, on_click, on_change: on_sear
 
     const screenshot_mode = useScreenshotMode()
 
+    const navContext = useContext(Navigator.Context)
+
     return (
         <div>
             {screenshot_mode ? undefined : manipulation_buttons}
             <div style={{ height: '5px' }} />
-            <a className="serif" href={article_link(curr_universe, longname)} style={{ textDecoration: 'none' }}><div style={useComparisonHeadStyle()}>{longname}</div></a>
+            <a
+                className="serif"
+                {
+                    ...navContext.link({
+                        kind: 'article',
+                        longname,
+                        universe: curr_universe,
+                    })
+                }
+                style={{ textDecoration: 'none' }}
+            >
+                <div style={useComparisonHeadStyle()}>{longname}</div>
+            </a>
             {is_editing
                 ? (
                         <SearchBox
                             autoFocus={true}
                             style={{ ...comparisonHeadStyle, width: '100%' }}
                             placeholder="Replacement"
-                            on_change={on_search_change}
+                            on_change={(q) => {
+                                set_is_editing(false)
+                                on_search_change(q)
+                            }}
                         />
                     )
                 : null}

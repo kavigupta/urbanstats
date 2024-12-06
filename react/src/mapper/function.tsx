@@ -3,7 +3,7 @@ import React, { ReactNode } from 'react'
 
 import { CheckboxSettingCustom } from '../components/sidebar'
 import { useColors } from '../page_template/colors'
-import { StatName } from '../statistic'
+import { StatName } from '../page_template/statistic-tree'
 
 import { DataListSelector } from './DataListSelector'
 import { Regression } from './regression'

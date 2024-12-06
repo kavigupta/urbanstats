@@ -5,15 +5,7 @@ import ForkTsCheckerWebpackPlugin from 'fork-ts-checker-webpack-plugin'
 
 export default env => ({
     entry: {
-        'article': ['./src/article.tsx'],
-        'quiz': ['./src/quiz.tsx'],
         'index': ['./src/index.tsx'],
-        'random': ['./src/random.ts'],
-        'about': ['./src/about.tsx'],
-        'data-credit': ['./src/data-credit.tsx'],
-        'mapper': ['./src/mapper.tsx'],
-        'comparison': ['./src/comparison.tsx'],
-        'statistic': ['./src/statistic.tsx'],
     },
     output: {
         filename: '[name].js',
