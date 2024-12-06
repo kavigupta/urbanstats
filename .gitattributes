@@ -1,1 +1,4 @@
 *.ipynb linguist-vendored
+react/src/data/** linguist-vendored
+react/package-lock.json linguist-vendored
+react/src/utils/protos.js linguist-vendored
