@@ -102,6 +102,10 @@ export default tseslint.config(
                 'MemberExpression[property.name=pushState]',
                 'MemberExpression[object.name=window][property.name=location]',
                 'JSXAttribute[name.name=href][value.value=/^\\u002F.*$/]', // https://github.com/eslint/eslint/issues/16555  
+                // Protect branding
+                'JSXText[value=/(^|\\s)((u|U)rban(s|S)tats|urban stats|Urban stats|urban Stats)($|\\s)/]',
+                'Literal[value=/(^|\\s)((u|U)rban(s|S)tats|urban stats|Urban stats|urban Stats)($|\\s)/]',
+                //
             ],
             'react/prop-types': 'off',
             'no-shadow': 'error',
