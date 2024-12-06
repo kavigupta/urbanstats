@@ -284,8 +284,8 @@ async function loadPageDescriptor(newDescriptor: PageDescriptor, settings: Setti
             const statcol = stats[statIndex]
             const explanation_page = explanation_pages[statIndex]
 
+            const data = load_ordering_protobuf(statUniverse, statpath, newDescriptor.article_type, true).then(result => result as NormalizeProto<IDataList>)
             const article_names = await load_ordering(statUniverse, statpath, newDescriptor.article_type)
-            const data = await load_ordering_protobuf(statUniverse, statpath, newDescriptor.article_type, true) as NormalizeProto<IDataList>
 
             let parsedAmount: number
             if (newDescriptor.amount === 'All') {
@@ -309,7 +309,7 @@ async function loadPageDescriptor(newDescriptor: PageDescriptor, settings: Setti
                     start: newDescriptor.start,
                     amount: parsedAmount,
                     article_names,
-                    data,
+                    data: await data,
                     rendered_statname: newDescriptor.statname,
                     universe: statUniverse,
 
