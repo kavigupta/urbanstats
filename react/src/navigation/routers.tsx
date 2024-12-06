@@ -15,7 +15,7 @@ import { PageTemplate } from '../page_template/template'
 import { InitialLoad, SubsequentLoad } from './loading'
 import { Navigator, PageData, PageDescriptor, urlFromPageDescriptor } from './navigator'
 
-export function Router(): ReactNode {
+export default function Router(): ReactNode {
     const navigator = useContext(Navigator.Context)
 
     useEffect(() => {
