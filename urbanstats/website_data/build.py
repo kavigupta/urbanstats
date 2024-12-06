@@ -213,9 +213,9 @@ def build_urbanstats(
         "about",
         "data-credit",
         "mapper",
-        "quiz",
     ]:
         shutil.copy("html_templates/index.html", f"{site_folder}/{entrypoint}.html")
+    shutil.copy("html_templates/quiz.html", f"{site_folder}/quiz.html")
 
     shutil.copy("icons/main/thumbnail.png", f"{site_folder}/")
     shutil.copy("icons/main/banner.png", f"{site_folder}/")
