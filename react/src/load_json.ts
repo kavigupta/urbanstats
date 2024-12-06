@@ -17,8 +17,8 @@ import {
 // Load JSON text from server hosted file and return JSON parsed object
 export async function loadJSON(filePath: string): Promise<unknown> {
     const response = await fetch(filePath, { headers: { 'Content-Type': 'application/json' } })
-    if (response.status !== 200) {
-        throw new Error(`Expected response status 200, got ${response.status}: ${response.statusText}`)
+    if (response.status < 200 || response.status > 299) {
+        throw new Error(`Expected response status 2xx for ${filePath}, got ${response.status}: ${response.statusText}`)
     }
     return response.json()
 }
@@ -34,6 +34,9 @@ export async function loadProtobuf(filePath: string, name: 'ConsolidatedStatisti
 export async function loadProtobuf(filePath: string, name: 'SearchIndex'): Promise<SearchIndex>
 export async function loadProtobuf(filePath: string, name: string): Promise<Article | Feature | StringList | OrderLists | DataLists | ConsolidatedShapes | ConsolidatedStatistics | SearchIndex> {
     const response = await fetch(filePath)
+    if (response.status < 200 || response.status > 299) {
+        throw new Error(`Expected response status 2xx for ${filePath}, got ${response.status}: ${response.statusText}`)
+    }
     const compressed_buffer = await response.arrayBuffer()
     const buffer = gunzipSync(Buffer.from(compressed_buffer))
     const arr = new Uint8Array(buffer)

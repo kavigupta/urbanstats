@@ -97,7 +97,11 @@ export default tseslint.config(
             'no-restricted-syntax': [
                 'error', 
                 'ExportNamedDeclaration:not([declaration])', 
-                'MemberExpression[object.name=location][property.name=reload]'
+                'MemberExpression[object.name=location][property.name=reload]',
+                'MemberExpression[property.name=replaceState]',
+                'MemberExpression[property.name=pushState]',
+                'MemberExpression[object.name=window][property.name=location]',
+                'JSXAttribute[name.name=href][value.value=/^\\u002F.*$/]', // https://github.com/eslint/eslint/issues/16555  
             ],
             'react/prop-types': 'off',
             'no-shadow': 'error',

@@ -1,40 +1,10 @@
-import { createContext, useContext } from 'react'
+import { useContext } from 'react'
 
 import universes_default from './data/universes_default'
-
-export const UNIVERSE_CONTEXT = createContext<string | undefined>(undefined)
+import { Navigator } from './navigation/navigator'
 
 export function useUniverse(): string {
-    return useContext(UNIVERSE_CONTEXT)!
-}
-
-export function get_universe<Default extends string | undefined>(default_universe: Default): string | Default {
-    return new URLSearchParams(window.location.search).get('universe') ?? default_universe
-}
-
-export function set_universe(universe: string): void {
-    const params = new URLSearchParams(window.location.search)
-    params.set('universe', universe)
-    window.location.search = params.toString()
-}
-
-export function remove_universe_if_not_in(universes: string[]): void {
-    const universe = get_universe(undefined)
-    if (universe === undefined || !universes.includes(universe)) {
-        // clear universe without actually reloading the page
-        const params = new URLSearchParams(window.location.search)
-        params.delete('universe')
-        window.history.replaceState({}, '', `${window.location.pathname}?${params.toString()}`)
-    }
-}
-
-export function remove_universe_if_default(default_universe: string): void {
-    if (get_universe(undefined) === default_universe) {
-        // clear universe without actually reloading the page
-        const params = new URLSearchParams(window.location.search)
-        params.delete('universe')
-        window.history.replaceState({}, '', `${window.location.pathname}?${params.toString()}`)
-    }
+    return useContext(Navigator.Context).useUniverse() ?? (() => { throw new Error(`No universe for current page`) })()
 }
 
 export function default_article_universe(articleUniverses: string[]): typeof universes_default[number] {
