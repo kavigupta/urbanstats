@@ -311,7 +311,7 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
         this.exist_this_time.push(name)
         if (this.polygon_by_name.has(name)) {
             this.polygon_by_name.get(name)!.setStyle(style)
-            return () => {}
+            return () => undefined
         }
         const geojson = await this.polygon_geojson(name)
         return () => {
