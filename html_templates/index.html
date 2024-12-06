@@ -3,25 +3,79 @@
     <meta charset="utf-8" />
     <link rel="icon" type="image/png" href="/thumbnail.png" />
     <title>Urban Stats</title>
+    <style>
+      @keyframes loading-spinner {
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+    </style>
   </head>
 
-  <!-- Google tag (gtag.js) -->
-  <script
-    async
-    src="https://www.googletagmanager.com/gtag/js?id=G-CM105FFYFC"
-  ></script>
-  <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag() {
-      dataLayer.push(arguments);
-    }
-    gtag("js", new Date());
-
-    gtag("config", "G-CM105FFYFC");
-  </script>
-
   <body>
+    <div id="loading">
+      <div
+        style="
+          position: fixed;
+          inset: 0px;
+          background-color: var(--loading-background);
+        "
+      >
+        <span
+          style="
+            display: inherit;
+            position: absolute;
+            width: 78px;
+            height: 78px;
+            animation: 0.6s linear 0s infinite normal forwards running
+              loading-spinner;
+            top: calc(50% - 39px);
+            left: calc(50% - 39px);
+          "
+          ><span
+            style="
+              width: 9px;
+              height: 9px;
+              border-radius: 100%;
+              background-color: var(--loading-main);
+              opacity: 0.8;
+              position: absolute;
+              top: 25.5px;
+              animation: 0.6s linear 0s infinite normal forwards running
+                loading-spinner;
+            "
+          ></span
+          ><span
+            style="
+              width: 60px;
+              height: 60px;
+              border-radius: 100%;
+              border: 9px solid var(--loading-main);
+              opacity: 0.1;
+              box-sizing: content-box;
+              position: absolute;
+            "
+          ></span
+        ></span>
+      </div>
+    </div>
     <div id="root"></div>
-    <script src="/scripts/index.js"></script>
+    <script src="/scripts/loading.js"></script>
+    <script async src="/scripts/index.js"></script>
+
+    <!-- Google tag (gtag.js) -->
+    <script
+      async
+      src="https://www.googletagmanager.com/gtag/js?id=G-CM105FFYFC"
+    ></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag() {
+        dataLayer.push(arguments);
+      }
+      gtag("js", new Date());
+
+      gtag("config", "G-CM105FFYFC");
+    </script>
   </body>
 </html>
