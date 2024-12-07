@@ -1,7 +1,7 @@
 import React, { ReactNode } from 'react'
 
 import { useColors } from '../page_template/colors'
-import { StatName } from '../statistic'
+import { StatName } from '../page_template/statistic-tree'
 
 import { DataListSelector } from './DataListSelector'
 import { FilterSelector, FunctionColorStat, StatisticSelector } from './function'

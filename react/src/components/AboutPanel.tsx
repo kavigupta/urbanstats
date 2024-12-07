@@ -1,12 +1,11 @@
 import React, { ReactNode } from 'react'
-import ReactDOM from 'react-dom/client'
 
-import './style.css'
-import './common.css'
-import { PageTemplate } from './page_template/template'
-import { useHeaderTextClass } from './utils/responsive'
+import '../style.css'
+import '../common.css'
+import { PageTemplate } from '../page_template/template'
+import { useHeaderTextClass } from '../utils/responsive'
 
-function AboutPanel(): ReactNode {
+export function AboutPanel(): ReactNode {
     const headerTextClass = useHeaderTextClass()
 
     return (
@@ -29,6 +28,7 @@ function AboutPanel(): ReactNode {
                     Feel free to file an issue or pull request if you have any suggestions or find any bugs.
                 </p>
 
+                {/* eslint-disable-next-line no-restricted-syntax -- Email obfuscation */}
                 <p>
                     The project is primarily developed by Kavi Gupta, a PhD student at MIT, and Luke Brody.
                     The primary contact for this project is urbanstats at kavigupta dot org.
@@ -42,10 +42,3 @@ function AboutPanel(): ReactNode {
         </PageTemplate>
     )
 }
-
-function loadPage(): void {
-    const root = ReactDOM.createRoot(document.getElementById('root')!)
-    root.render(<AboutPanel />)
-}
-
-loadPage()

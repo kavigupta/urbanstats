@@ -1,8 +1,7 @@
 import { saveAs } from 'file-saver'
 import { z } from 'zod'
 
-import { loadQuizHistory } from '../components/quiz-panel'
-import { cancelled, uploadFile } from '../upload-util'
+import { cancelled, uploadFile } from '../utils/upload'
 
 import { unique_persistent_id } from './statistics'
 
@@ -90,10 +89,25 @@ Recommend downloading your current progress so you can restore it later.
 Continue?`)) {
             localStorage.setItem('quiz_history', JSON.stringify(persona.quiz_history))
             localStorage.setItem('persistent_id', persona.persistent_id)
+            // eslint-disable-next-line no-restricted-syntax -- Localstorage is not reactive
             window.location.reload()
         }
     }
     catch (error) {
         alert(`Could not parse file. Error: ${error}`)
     }
+}
+
+export function loadQuizHistory(): QuizHistory {
+    const history = JSON.parse(localStorage.getItem('quiz_history') ?? '{}') as QuizHistory
+
+    // set 42's correct_pattern's 0th element to true
+    if ('42' in history) {
+        if ('correct_pattern' in history['42']) {
+            if (history['42'].correct_pattern.length > 0) {
+                history['42'].correct_pattern[0] = true
+            }
+        }
+    }
+    return history
 }

@@ -1,11 +1,12 @@
-import React, { ReactNode } from 'react'
+import React, { ReactNode, useContext } from 'react'
 
 import '../common.css'
 import './header.css'
 import flag_dimensions from '../data/flag_dimensions'
-import { article_link, universe_path } from '../navigation/links'
+import { universe_path } from '../navigation/links'
+import { Navigator } from '../navigation/navigator'
 import { useColors } from '../page_template/colors'
-import { set_universe, useUniverse } from '../universe'
+import { useUniverse } from '../universe'
 import { useMobileLayout } from '../utils/responsive'
 
 import { Nav } from './hamburger'
@@ -23,9 +24,10 @@ export function Header(props: {
     has_universe_selector: boolean
     all_universes: readonly string[]
     has_screenshot: boolean
-    initiate_screenshot: (curr_universe: string) => void
+    initiate_screenshot: (curr_universe: string | undefined) => void
 }): ReactNode {
-    const curr_universe = useUniverse()
+    const navContext = useContext(Navigator.Context)
+    const curr_universe = navContext.useUniverse()
     return (
         <div className="top_panel">
             <TopLeft
@@ -60,9 +62,11 @@ export function Header(props: {
                         <SearchBox
                             on_change={
                                 (new_location) => {
-                                    window.location.href = article_link(
-                                        curr_universe, new_location,
-                                    )
+                                    void navContext.navigate({
+                                        kind: 'article',
+                                        universe: curr_universe,
+                                        longname: new_location,
+                                    }, 'push')
                                 }
                             }
                             placeholder="Search Urban Stats"
@@ -117,8 +121,11 @@ function TopLeft(props: {
 function HeaderImage(): ReactNode {
     const colors = useColors()
     const path = useMobileLayout() ? '/thumbnail.png' : colors.bannerURL
+    const navContext = useContext(Navigator.Context)
     return (
-        <a href="/index.html">
+        <a
+            {...navContext.link({ kind: 'index' })}
+        >
             <img
                 src={path}
                 style={{
@@ -146,6 +153,7 @@ function UniverseSelector(
                 <UniverseDropdown
                     flag_size={HEADER_BAR_SIZE}
                     all_universes={all_universes}
+                    closeDropdown={() => { set_dropdown_open(false) }}
                 />
             )
         : undefined
@@ -215,9 +223,10 @@ function Flag(props: { height: number, onClick?: () => void, universe: string, c
 }
 
 function UniverseDropdown(
-    { all_universes, flag_size }: { all_universes: readonly string[], flag_size: number },
+    { all_universes, flag_size, closeDropdown }: { all_universes: readonly string[], flag_size: number, closeDropdown: () => void },
 ): ReactNode {
     const colors = useColors()
+    const navContext = useContext(Navigator.Context)
     return (
         <div>
             <div
@@ -231,7 +240,13 @@ function UniverseDropdown(
             </div>
             {all_universes.map((alt_universe) => {
                 return (
-                    <div key={alt_universe} onClick={() => { set_universe(alt_universe) }}>
+                    <div
+                        key={alt_universe}
+                        onClick={() => {
+                            navContext.setUniverse(alt_universe)
+                            closeDropdown()
+                        }}
+                    >
                         <div
                             style={{
                                 display: 'flex',

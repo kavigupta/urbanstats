@@ -1,6 +1,4 @@
-export function discordFix(): void {
+export function discordFix(url: string): string {
     // https://github.com/kavigupta/urbanstats/issues/299
-    if (window.location.search.includes('%25%26')) {
-        window.location.search = window.location.search.replaceAll('%25%26', '%25&')
-    }
+    return url.replaceAll('%25%26', '%25&')
 }

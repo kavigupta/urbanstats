@@ -3,9 +3,11 @@ import React, { CSSProperties, ReactNode, useContext, useEffect, useId, useRef }
 import '../style.css'
 import './sidebar.css'
 
-import { Theme, useColors, useCurrentTheme } from '../page_template/colors'
+import { Navigator } from '../navigation/navigator'
+import { Theme } from '../page_template/color-themes'
+import { useColors, useCurrentTheme } from '../page_template/colors'
 import { checkbox_category_name, SettingsDictionary, source_enabled_key, TemperatureUnit, useSetting, useSettingInfo, useStagedSettingKeys } from '../page_template/settings'
-import { StatPathsContext, useDataSourceCheckboxes } from '../page_template/statistic-settings'
+import { useDataSourceCheckboxes } from '../page_template/statistic-settings'
 import { useMobileLayout } from '../utils/responsive'
 
 import { StagingControls } from './StagingControls'
@@ -29,13 +31,15 @@ export function useSidebarSectionTitleStyle(): CSSProperties {
     }
 }
 
-export function Sidebar(): ReactNode {
+export function Sidebar({ onNavigate }: { onNavigate: () => void }): ReactNode {
     const colors = useColors()
     const currentTheme = useCurrentTheme()
     const link_style = { color: colors.blueLink }
     const sidebar_section_title = useSidebarSectionTitleStyle()
 
     const sidebar_section_content = useSidebarSectionContentClassName()
+
+    const navContext = useContext(Navigator.Context)
 
     return (
         <div
@@ -51,16 +55,16 @@ export function Sidebar(): ReactNode {
                 <div style={sidebar_section_title}>Main Menu</div>
                 <ul className={sidebar_section_content}>
                     <li>
-                        <a style={link_style} href="/">Home</a>
+                        <a style={link_style} {...navContext.link({ kind: 'index' }, onNavigate)}>Home</a>
                     </li>
                     <li>
-                        <a style={link_style} href="/about.html">About Urban Stats</a>
+                        <a style={link_style} {...navContext.link({ kind: 'about' }, onNavigate)}>About Urban Stats</a>
                     </li>
                     <li>
-                        <a style={link_style} href="/data-credit.html">Data Credit</a>
+                        <a style={link_style} {...navContext.link({ kind: 'dataCredit', hash: '' }, onNavigate)}>Data Credit</a>
                     </li>
                     <li>
-                        <a style={link_style} href="/mapper.html">Mapper (beta)</a>
+                        <a style={link_style} {...navContext.link({ kind: 'mapper', view: false }, onNavigate)}>Mapper (beta)</a>
                     </li>
                 </ul>
             </div>
@@ -68,13 +72,13 @@ export function Sidebar(): ReactNode {
                 <div style={sidebar_section_title}>Random</div>
                 <ul className={sidebar_section_content}>
                     <li>
-                        <a style={link_style} href="/random.html">Unweighted</a>
+                        <a style={link_style} {...navContext.link({ kind: 'random', sampleby: 'uniform', us_only: false }, onNavigate)}>Unweighted</a>
                     </li>
                     <li>
-                        <a style={link_style} href="/random.html?sampleby=population&us_only=false">Weighted by Population</a>
+                        <a style={link_style} {...navContext.link({ kind: 'random', sampleby: 'population', us_only: false }, onNavigate)}>Weighted by Population</a>
                     </li>
                     <li>
-                        <a style={link_style} href="/random.html?sampleby=population&us_only=true">Weighted by Population (US only)</a>
+                        <a style={link_style} {...navContext.link({ kind: 'random', sampleby: 'population', us_only: true }, onNavigate)}>Weighted by Population (US only)</a>
                     </li>
                 </ul>
             </div>
@@ -82,10 +86,10 @@ export function Sidebar(): ReactNode {
                 <div style={sidebar_section_title}>Games</div>
                 <ul className={sidebar_section_content}>
                     <li>
-                        <a style={link_style} href="/quiz.html">Juxtastat</a>
+                        <a style={link_style} {...navContext.link({ kind: 'quiz' }, onNavigate)}>Juxtastat</a>
                     </li>
                     <li>
-                        <a style={link_style} href="/quiz.html?mode=retro">Retrostat</a>
+                        <a style={link_style} {...navContext.link({ kind: 'quiz', mode: 'retro' }, onNavigate)}>Retrostat</a>
                     </li>
                 </ul>
             </div>
@@ -128,7 +132,7 @@ export function Sidebar(): ReactNode {
                     </li>
                 </ul>
             </div>
-            { useContext(StatPathsContext) !== undefined
+            { navContext.useStatPathsAll() !== undefined
                 ? <SidebarForStatisticChoice />
                 : null}
             <div className="sidebar-section">

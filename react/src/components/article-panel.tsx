@@ -1,12 +1,13 @@
 import '../common.css'
 import './article.css'
 
-import React, { ReactNode, useRef } from 'react'
+import React, { ReactNode, useContext, useEffect, useRef } from 'react'
 
-import { article_link, comparison_link, sanitize } from '../navigation/links'
+import { sanitize } from '../navigation/links'
+import { Navigator } from '../navigation/navigator'
 import { useColors } from '../page_template/colors'
 import { row_expanded_key, useSetting, useSettings } from '../page_template/settings'
-import { groupYearKeys, StatPathsContext } from '../page_template/statistic-settings'
+import { groupYearKeys, StatGroupSettings } from '../page_template/statistic-settings'
 import { PageTemplate } from '../page_template/template'
 import { useUniverse } from '../universe'
 import { Article, IRelatedButtons } from '../utils/protos'
@@ -14,8 +15,8 @@ import { useComparisonHeadStyle, useHeaderTextClass, useSubHeaderTextClass } fro
 import { NormalizeProto } from '../utils/types'
 
 import { ArticleWarnings } from './ArticleWarnings'
-import { ArticleComparisonQuerySettingsConnection } from './QuerySettingsConnection'
-import { ArticleRow, load_articles } from './load-article'
+import { QuerySettingsConnection } from './QuerySettingsConnection'
+import { ArticleRow } from './load-article'
 import { Map } from './map'
 import { WithPlot } from './plots'
 import { Related } from './related-button'
@@ -23,7 +24,7 @@ import { ScreencapElements } from './screenshot'
 import { SearchBox } from './search'
 import { StatisticHeaderCells, StatisticRowCells, TableHeaderContainer, TableRowContainer } from './table'
 
-export function ArticlePanel({ article }: { article: Article }): ReactNode {
+export function ArticlePanel({ article, rows }: { article: Article, rows: (settings: StatGroupSettings) => ArticleRow[][] }): ReactNode {
     const headers_ref = useRef<HTMLDivElement>(null)
     const table_ref = useRef<HTMLDivElement>(null)
     const map_ref = useRef<HTMLDivElement>(null)
@@ -38,17 +39,16 @@ export function ArticlePanel({ article }: { article: Article }): ReactNode {
     const subHeaderTextClass = useSubHeaderTextClass()
     const comparisonHeadStyle = useComparisonHeadStyle('right')
 
-    const curr_universe = useUniverse()
     const settings = useSettings(groupYearKeys())
-    const { rows: filtered_rows_multi, statPaths } = load_articles([article], curr_universe, settings)
-    if (filtered_rows_multi.length !== 1) {
-        throw new Error('filtered_rows_multi should have exactly one element')
-    }
-    const filtered_rows = filtered_rows_multi[0]
+    const filtered_rows = rows(settings)[0]
+
+    useEffect(() => {
+        document.title = article.shortname
+    }, [article.shortname])
 
     return (
-        <StatPathsContext.Provider value={statPaths}>
-            <ArticleComparisonQuerySettingsConnection pageKind="article" />
+        <>
+            <QuerySettingsConnection />
             <PageTemplate screencap_elements={screencap_elements} has_universe_selector={true} universes={article.universes}>
                 <div>
                     <div ref={headers_ref}>
@@ -101,20 +101,23 @@ export function ArticlePanel({ article }: { article: Article }): ReactNode {
                     />
                 </div>
             </PageTemplate>
-        </StatPathsContext.Provider>
+        </>
     )
 }
 
 function ComparisonSearchBox({ longname }: { longname: string }): ReactNode {
     const curr_universe = useUniverse()
+    const navContext = useContext(Navigator.Context)
     return (
         <SearchBox
             style={{ ...useComparisonHeadStyle(), width: '100%' }}
             placeholder="Other region..."
             on_change={(x) => {
-                document.location.href = comparison_link(
-                    curr_universe,
-                    [longname, x])
+                void navContext.navigate({
+                    kind: 'comparison',
+                    universe: curr_universe,
+                    longnames: [longname, x],
+                }, 'push')
             }}
             autoFocus={false}
         />
@@ -135,6 +138,7 @@ function StatisticTableRow(props: { shortname: string, longname: string, row: Ar
     const [expanded] = useSetting(row_expanded_key(props.row.statpath))
     const currentUniverse = useUniverse()
     const [simpleOrdinals] = useSetting('simple_ordinals')
+    const navContext = useContext(Navigator.Context)
 
     return (
         <WithPlot plot_props={[{ ...props.row, color: colors.hueColors.blue, shortname: props.shortname }]} expanded={expanded ?? false}>
@@ -143,7 +147,13 @@ function StatisticTableRow(props: { shortname: string, longname: string, row: Ar
                     totalWidth={100}
                     longname={props.longname}
                     row={props.row}
-                    onNavigate={newArticle => document.location = article_link(currentUniverse, newArticle)}
+                    onNavigate={(newArticle) => {
+                        void navContext.navigate({
+                            kind: 'article',
+                            longname: newArticle,
+                            universe: currentUniverse,
+                        }, 'push')
+                    }}
                     simpleOrdinals={simpleOrdinals}
                 />
             </TableRowContainer>

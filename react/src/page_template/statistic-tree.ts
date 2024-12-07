@@ -4,6 +4,7 @@ import { rawStatsTree, dataSources } from '../data/statistics_tree'
 import { DefaultMap } from '../utils/DefaultMap'
 
 export type StatPath = (typeof statPaths)[number]
+export type StatName = (typeof statNames)[number]
 
 export type CategoryIdentifier = (typeof rawStatsTree)[number]['id']
 export type GroupIdentifier = (typeof rawStatsTree)[number]['contents'][number]['id']

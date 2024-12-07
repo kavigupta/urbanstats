@@ -24,11 +24,13 @@ export function PageTemplate({
     has_universe_selector = false,
     universes = [],
     children,
+    showFooter = true,
 }: {
     screencap_elements?: () => ScreencapElements
     has_universe_selector?: boolean
     universes?: readonly string[]
-    children: React.ReactNode
+    children?: React.ReactNode
+    showFooter?: boolean
 }): ReactNode {
     const [hamburger_open, set_hamburger_open] = useState(false)
     const [screenshot_mode, set_screenshot_mode] = useState(false)
@@ -61,19 +63,19 @@ export function PageTemplate({
 
     const has_screenshot_button = screencap_elements !== undefined
 
-    const screencap = async (curr_universe: string): Promise<void> => {
+    const screencap = async (curr_universe: string | undefined): Promise<void> => {
         if (screencap_elements === undefined) {
             return
         }
         try {
-            await create_screenshot(screencap_elements(), has_universe_selector ? curr_universe : undefined, colors)
+            await create_screenshot(screencap_elements(), curr_universe, colors)
         }
         catch (e) {
             console.error(e)
         }
     }
 
-    const initiate_screenshot = (curr_universe: string): void => {
+    const initiate_screenshot = (curr_universe: string | undefined): void => {
         set_screenshot_mode(true)
         setTimeout(async () => {
             await screencap(curr_universe)
@@ -108,6 +110,8 @@ export function PageTemplate({
                 <BodyPanel
                     hamburger_open={hamburger_open}
                     main_content={children}
+                    showFooter={showFooter}
+                    setHamburgerOpen={set_hamburger_open}
                 />
             </div>
         </ScreenshotContext.Provider>
@@ -132,7 +136,7 @@ function TemplateFooter(): ReactNode {
 }
 
 function Version(): ReactNode {
-    return <span id="current-version">21.1.0</span>
+    return <span id="current-version">22.0.0</span>
 }
 
 function LastUpdated(): ReactNode {
@@ -153,28 +157,28 @@ function OtherCredits(): ReactNode {
     )
 }
 
-function BodyPanel({ hamburger_open, main_content }: { hamburger_open: boolean, main_content: React.ReactNode }): ReactNode {
+function BodyPanel({ hamburger_open, main_content, showFooter, setHamburgerOpen }: { hamburger_open: boolean, main_content: React.ReactNode, showFooter: boolean, setHamburgerOpen: (open: boolean) => void }): ReactNode {
     const mobileLayout = useMobileLayout()
 
     if (hamburger_open) {
-        return <LeftPanel />
+        return <LeftPanel setHamburgerOpen={setHamburgerOpen} />
     }
     return (
         <div className="body_panel">
-            {mobileLayout ? undefined : <LeftPanel />}
+            {mobileLayout ? undefined : <LeftPanel setHamburgerOpen={setHamburgerOpen} />}
             <div className={mobileLayout ? 'content_panel_mobile' : 'right_panel'}>
                 {main_content}
                 <div className="gap"></div>
-                <TemplateFooter />
+                { showFooter ? <TemplateFooter /> : null }
             </div>
         </div>
     )
 }
 
-function LeftPanel(): ReactNode {
+function LeftPanel({ setHamburgerOpen }: { setHamburgerOpen: (open: boolean) => void }): ReactNode {
     return (
         <div className={useMobileLayout() ? 'left_panel_mobile' : 'left_panel'}>
-            <Sidebar />
+            <Sidebar onNavigate={() => { setHamburgerOpen(false) }} />
         </div>
     )
 }
@@ -182,7 +186,7 @@ function LeftPanel(): ReactNode {
 function Support(): ReactNode {
     return (
         <span>
-            {'If you find urbanstats useful, please donate on '}
+            {'If you find Urban Stats useful, please donate on '}
             <a href="https://ko-fi.com/notkavi">kofi</a>
             !
         </span>

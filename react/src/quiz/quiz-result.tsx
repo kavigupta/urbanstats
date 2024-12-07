@@ -1,9 +1,10 @@
-import React, { ReactNode, useEffect, useRef, useState } from 'react'
+import React, { ReactNode, useContext, useEffect, useRef, useState } from 'react'
 import { isFirefox, isMobile } from 'react-device-detect'
 
 import { Statistic } from '../components/table'
-import { article_link } from '../navigation/links'
-import { JuxtastatColors, useColors, useJuxtastatColors } from '../page_template/colors'
+import { Navigator } from '../navigation/navigator'
+import { JuxtastatColors } from '../page_template/color-themes'
+import { useColors, useJuxtastatColors } from '../page_template/colors'
 
 import { render_time_remaining } from './dates'
 import { ENDPOINT, JuxtaQuestion, QuizDescriptor, QuizHistory, QuizQuestion, RetroQuestion, a_correct, nameOfQuizKind } from './quiz'
@@ -150,7 +151,7 @@ function ShareButton({ button_ref, parameters, today_name, correct_pattern, tota
             }}
             ref={button_ref}
             onClick={async () => {
-                const [text, url] = await summary(juxtaColors, today_name, correct_pattern, total_correct, parameters, quiz_kind)
+                const [text, url] = summary(juxtaColors, today_name, correct_pattern, total_correct, parameters, quiz_kind)
 
                 async function copy_to_clipboard(): Promise<void> {
                     await navigator.clipboard.writeText(`${text}\n${url}`)
@@ -267,7 +268,7 @@ export function Summary(props: { total_correct: number, total: number, correct_p
     )
 }
 
-export async function summary(juxtaColors: JuxtastatColors, today_name: string, correct_pattern: boolean[], total_correct: number, parameters: string, quiz_kind: 'juxtastat' | 'retrostat'): Promise<[string, string]> {
+export function summary(juxtaColors: JuxtastatColors, today_name: string, correct_pattern: boolean[], total_correct: number, parameters: string, quiz_kind: 'juxtastat' | 'retrostat'): [string, string] {
     // wordle-style summary
     let text = `${nameOfQuizKind(quiz_kind)} ${today_name} ${total_correct}/${correct_pattern.length}`
 
@@ -280,21 +281,7 @@ export async function summary(juxtaColors: JuxtastatColors, today_name: string, 
 
     let url = 'https://juxtastat.org'
     if (parameters !== '') {
-        if (parameters.length > 100) {
-            // POST to endpoint
-            const responseJson = await fetch(`${ENDPOINT}/shorten`, {
-                method: 'POST',
-                body: JSON.stringify({ full_text: parameters }),
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-            }).then(response => response.json() as Promise<{ shortened: string }>)
-
-            // get short url
-            const short = responseJson.shortened
-            parameters = `short=${short}`
-        }
-        url += `/#${parameters}`
+        url += `/?${parameters}`
     }
     return [text, url]
 }
@@ -450,11 +437,15 @@ function RetrostatQuizResultRow(props: QuizResultRowProps & { question: RetroQue
 }
 
 export function Clickable({ longname }: { longname: string }): ReactNode {
-    // return <a href={article_link(longname)}>{longname}</a>
-    // same without any link formatting
+    const navContext = useContext(Navigator.Context)
     return (
         <a
-            href={article_link(undefined, longname)}
+            {
+                ...navContext.link({
+                    kind: 'article',
+                    longname,
+                })
+            }
             style={{ textDecoration: 'none', color: 'inherit' }}
         >
             {longname}
