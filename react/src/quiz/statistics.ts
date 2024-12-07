@@ -2,27 +2,35 @@ import { QuizHistory } from './quiz'
 
 const ENDPOINT = 'https://persistent.urbanstats.org'
 
-export function unique_persistent_id(): string {
+function create_and_store_id(key: string): string {
     // (domain name, id stored in local storage)
     // random 60 bit hex number
     // (15 hex digits)
-    if (localStorage.getItem('persistent_id') === null) {
+    if (localStorage.getItem(key) === null) {
         let random_hex = ''
         for (let i = 0; i < 15; i++) {
             random_hex += Math.floor(Math.random() * 16).toString(16)[0]
         }
         // register
-        localStorage.setItem('persistent_id', random_hex)
+        localStorage.setItem(key, random_hex)
     }
-    return localStorage.getItem('persistent_id')!
+    return localStorage.getItem(key)!
 }
 
-async function registerUser(userId: string): Promise<void> {
+export function unique_persistent_id(): string {
+    return create_and_store_id('persistent_id')
+}
+
+export function unique_secure_id(): string {
+    return create_and_store_id('secure_id')
+}
+
+async function registerUser(userId: string, secureID: string): Promise<void> {
     // Idempotent
     await fetch(`${ENDPOINT}/juxtastat/register_user`, {
         method: 'POST',
         // eslint-disable-next-line no-restricted-syntax -- Using the window hostname
-        body: JSON.stringify({ user: userId, domain: localStorage.getItem('testHostname') ?? window.location.hostname }),
+        body: JSON.stringify({ user: userId, secureID, domain: localStorage.getItem('testHostname') ?? window.location.hostname }),
         headers: {
             'Content-Type': 'application/json',
         },
@@ -31,11 +39,12 @@ async function registerUser(userId: string): Promise<void> {
 
 async function reportToServerGeneric(whole_history: QuizHistory, endpoint_latest: string, endpoint_store: string, parse_day: (day: string) => number): Promise<void> {
     const user = unique_persistent_id()
-    await registerUser(user)
+    const secureID = unique_secure_id()
+    await registerUser(user, secureID)
     // fetch from latest_day endpoint
     const latest_day_response = await fetch(ENDPOINT + endpoint_latest, {
         method: 'POST',
-        body: JSON.stringify({ user }),
+        body: JSON.stringify({ user, secureID }),
         headers: {
             'Content-Type': 'application/json',
         },
@@ -52,7 +61,7 @@ async function reportToServerGeneric(whole_history: QuizHistory, endpoint_latest
     // store user stats
     await fetch(ENDPOINT + endpoint_store, {
         method: 'POST',
-        body: JSON.stringify({ user, day_stats: JSON.stringify(update) }),
+        body: JSON.stringify({ user, secureID, day_stats: JSON.stringify(update) }),
         headers: {
             'Content-Type': 'application/json',
         },
