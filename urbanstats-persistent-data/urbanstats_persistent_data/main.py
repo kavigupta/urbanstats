@@ -69,7 +69,6 @@ def juxtastat_register_user_request():
         registration_error = register_user(
             form["user"], form["secureID"], form["domain"]
         )
-        # TODO handle registration error later
         return flask.jsonify(dict(success=True, registration_error=registration_error))
     return flask.jsonify({"error": "Needs parameters user, secureID, and domain!"}), 200
 
