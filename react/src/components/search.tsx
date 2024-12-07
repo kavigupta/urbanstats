@@ -1,36 +1,36 @@
-import React, { CSSProperties, ReactNode } from 'react'
+import React, { CSSProperties, ReactNode, useEffect, useMemo, useRef, useState } from 'react'
 
 import { loadProtobuf } from '../load_json'
 import { useColors } from '../page_template/colors'
 import { useSetting } from '../page_template/settings'
 import { is_historical_cd } from '../utils/is_historical'
 import '../common.css'
-import { SearchIndex } from '../utils/protos'
 
 export const SearchBox = (props: {
     on_change: (inp: string) => void
     autoFocus: boolean
     placeholder: string
-    style: React.CSSProperties
+    style: CSSProperties
 }): ReactNode => {
-    const [show_historical_cds] = useSetting('show_historical_cds')
-    const [matches, setMatches] = React.useState<string[]>([])
-    const [matchesStale, setMatchesStale] = React.useState(false)
-    const [indexCache, setIndexCache] = React.useState<SearchIndex | undefined>(undefined)
-    const [indexCacheUninitialized, setIndexCacheUninitialized] = React.useState(true)
-    const [firstCharacter, setFirstCharacter] = React.useState<string | undefined>(undefined)
-    const [focused, setFocused] = React.useState(0)
     const colors = useColors()
+    const [show_historical_cds] = useSetting('show_historical_cds')
 
-    const textbox = React.useRef<HTMLInputElement>(null)
+    const [matches, setMatches] = useState<string[]>([])
+
+    // Keep these in sync
+    const [query, setQuery] = useState('')
+    const queryRef = useRef('')
+
+    const [focused, setFocused] = React.useState(0)
+
+    const firstCharacter = query.length === 0 ? undefined : query[0]
+
+    const indexCache = useMemo(() => firstCharacter === undefined ? undefined : loadProtobuf(`/index/pages_${firstCharacter}.gz`, 'SearchIndex'), [firstCharacter])
 
     const reset = (): void => {
-        textbox.current!.value = ''
+        setQuery('')
+        queryRef.current = ''
         setMatches([])
-        setMatchesStale(false)
-        setIndexCache(undefined)
-        setIndexCacheUninitialized(true)
-        setFirstCharacter(undefined)
         setFocused(0)
     }
 
@@ -52,85 +52,50 @@ export const SearchBox = (props: {
         return false
     }
 
-    const get_input = (): string => {
-        let input = textbox.current!.value
-        input = normalize(input)
-        return input
-    }
-
-    const reload_cache = (): void => {
-        const input = get_input()
-        if (input === '') {
-            setIndexCacheUninitialized(false)
-            setMatchesStale(false)
-            setMatches([])
-            return
-        }
-        const currentFirstCharacter = input[0]
-        if (firstCharacter !== currentFirstCharacter) {
-            setFirstCharacter(currentFirstCharacter)
-            void (async () => {
-                setFirstCharacter(currentFirstCharacter)
-                setIndexCache(await loadProtobuf(`/index/pages_${currentFirstCharacter}.gz`, 'SearchIndex'))
-                setIndexCacheUninitialized(false)
-                setMatchesStale(true)
-            })()
-            return
-        }
-        if (indexCacheUninitialized) {
-            return
-        }
-    }
-
     const onTextBoxKeyUp = (event: React.KeyboardEvent<HTMLInputElement>): void => {
-        reload_cache()
-        // this.setState({ matches_stale: true });
-        setMatchesStale(true)
-
         // if down arrow, then go to the next one
-        const dropdowns = document.getElementsByClassName('searchbox-dropdown-item')
-        if (dropdowns.length > 0) {
+        if (matches.length > 0) {
             if (event.key === 'ArrowDown') {
-                setFocused((focused + 1) % dropdowns.length)
+                setFocused((focused + 1) % matches.length)
             }
             if (event.key === 'ArrowUp') {
-                setFocused((focused - 1) % dropdowns.length)
+                setFocused((focused - 1) % matches.length)
             }
         }
     }
 
-    const update_matches = (): void => {
-        const input = get_input()
-        if (input === '') {
-            if (matches.length > 0) {
-                setMatches([])
-            }
+    // Do the search
+    useEffect(() => {
+        if (indexCache === undefined) {
+            // Occurs when query is empty
+            setMatches([])
+            setFocused(0)
             return
         }
-        const values = indexCache!.elements
-        const priorities = indexCache!.priorities
-        let matches_new = []
-        for (let i = 0; i < values.length; i++) {
-            const match_count = is_a_match(input, normalize(values[i]))
-            if (match_count === 0) {
-                continue
+        void indexCache.then(({ elements, priorities }) => {
+            // we can skip searching if the query has changed since we were waiting on the indexCache
+            if (queryRef.current !== query) {
+                return
             }
-            if (!show_historical_cds) {
-                if (is_historical_cd(values[i])) {
+
+            let matches_new = []
+            for (let i = 0; i < elements.length; i++) {
+                const match_count = is_a_match(query, normalize(elements[i]))
+                if (match_count === 0) {
                     continue
                 }
+                if (!show_historical_cds) {
+                    if (is_historical_cd(elements[i])) {
+                        continue
+                    }
+                }
+                matches_new.push([match_count, i, match_count - priorities[i] / 10])
             }
-            matches_new.push([match_count, i, match_count - priorities[i] / 10])
-        }
-        matches_new = top_10(matches_new)
-        matches_new = matches_new.map(idx => values[idx])
-        setMatches(matches_new)
-        setMatchesStale(false)
-    }
-
-    if (matchesStale && !indexCacheUninitialized) {
-        update_matches()
-    }
+            matches_new = top_10(matches_new)
+            matches_new = matches_new.map(idx => elements[idx])
+            setMatches(matches_new)
+        })
+    }, [query, indexCache, show_historical_cds])
 
     return (
         <form
@@ -140,7 +105,6 @@ export const SearchBox = (props: {
         >
             <input
                 autoFocus={props.autoFocus}
-                ref={textbox}
                 id="searchbox"
                 type="text"
                 className="serif"
@@ -148,6 +112,12 @@ export const SearchBox = (props: {
                     ...props.style }}
                 placeholder={props.placeholder}
                 onKeyUp={onTextBoxKeyUp}
+                onChange={(e) => {
+                    const newQuery = normalize(e.target.value)
+                    setQuery(newQuery)
+                    queryRef.current = newQuery
+                }}
+                value={query}
             />
 
             <div
