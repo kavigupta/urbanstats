@@ -27,7 +27,7 @@ def table():
     # user to secure id
     c.execute(
         """
-        CREATE TABLE IF NOT EXISTS JuxtaStatUserSecureID (user integer PRIMARY KEY, secure_id text)
+        CREATE TABLE IF NOT EXISTS JuxtaStatUserSecureID (user integer PRIMARY KEY, secure_id integer)
         """
     )
     # ADD THESE LATER IF WE NEED THEM
@@ -62,6 +62,7 @@ def register_user(user, secure_id, domain):
     This is Trust on First Use (TOFU) authentication.
     """
     user = int(user, 16)
+    secure_id = int(secure_id, 16)
     conn, c = table()
     # check if secure id is already in the database
     c.execute(
@@ -92,6 +93,7 @@ def check_secureid(user, secure_id):
     Returns True iff the secure_id is correct for the given user.
     """
     user = int(user, 16)
+    secure_id = int(secure_id, 16)
     _, c = table()
     c.execute(
         "SELECT secure_id FROM JuxtaStatUserSecureID WHERE user=?",
