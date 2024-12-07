@@ -56,6 +56,7 @@ test('search-test-arrows', async (t) => {
         .eql(`${TARGET}/article.html?longname=Pasadena+CDP%2C+Maryland%2C+USA`)
 })
 
+// Regession test for a crash
 test('tab tab type', async (t) => {
     await t.pressKey('tab').pressKey('tab')
     await t.expect(Selector(SEARCH_FIELD).focused).ok()
