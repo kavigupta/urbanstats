@@ -18,7 +18,6 @@ function colorsEach(colors: HueColors): Record<string, string> {
     return {
         'International': colors.red,
         'US Subdivision': colors.blue,
-        'Canadian Subdivision': colors.blue,
         'Census': colors.cyan,
         'Political': colors.purple,
         'Oddball': colors.darkGrey,
