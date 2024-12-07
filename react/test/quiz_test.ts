@@ -416,12 +416,14 @@ quiz_fixture('export quiz progress', `${TARGET}/quiz.html?date=90`,
             },
         }),
         persistent_id: 'b0bacafe',
+        secure_id: 'baddecaf',
     },
     '',
 )
 
 const expectedExportWithoutDate = {
     persistent_id: 'b0bacafe',
+    secure_id: 'baddecaf',
     quiz_history: {
         90: {
             choices: [
