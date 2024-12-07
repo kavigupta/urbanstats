@@ -19,17 +19,18 @@ export const SearchBox = (props: {
 
     // Keep these in sync
     const [query, setQuery] = useState('')
-    const queryRef = useRef('')
+    const normalizedQuery = useRef('')
 
     const [focused, setFocused] = React.useState(0)
 
-    const firstCharacter = query.length === 0 ? undefined : query[0]
+    const searchQuery = normalizedQuery.current
+    const firstCharacter = searchQuery.length === 0 ? undefined : searchQuery[0]
 
     const indexCache = useMemo(() => firstCharacter === undefined ? undefined : loadProtobuf(`/index/pages_${firstCharacter}.gz`, 'SearchIndex'), [firstCharacter])
 
     const reset = (): void => {
         setQuery('')
-        queryRef.current = ''
+        normalizedQuery.current = ''
         setMatches([])
         setFocused(0)
     }
@@ -74,13 +75,13 @@ export const SearchBox = (props: {
         }
         void indexCache.then(({ elements, priorities }) => {
             // we can skip searching if the query has changed since we were waiting on the indexCache
-            if (queryRef.current !== query) {
+            if (normalizedQuery.current !== searchQuery) {
                 return
             }
 
             let matches_new = []
             for (let i = 0; i < elements.length; i++) {
-                const match_count = is_a_match(query, normalize(elements[i]))
+                const match_count = is_a_match(searchQuery, normalize(elements[i]))
                 if (match_count === 0) {
                     continue
                 }
@@ -95,7 +96,7 @@ export const SearchBox = (props: {
             matches_new = matches_new.map(idx => elements[idx])
             setMatches(matches_new)
         })
-    }, [query, indexCache, show_historical_cds])
+    }, [searchQuery, indexCache, show_historical_cds])
 
     return (
         <form
@@ -113,9 +114,8 @@ export const SearchBox = (props: {
                 placeholder={props.placeholder}
                 onKeyUp={onTextBoxKeyUp}
                 onChange={(e) => {
-                    const newQuery = normalize(e.target.value)
-                    setQuery(newQuery)
-                    queryRef.current = newQuery
+                    setQuery(e.target.value)
+                    normalizedQuery.current = normalize(e.target.value)
                 }}
                 value={query}
             />
