@@ -63,7 +63,10 @@ def get_action(pr):
     assert len(runs) <= 1, "More than one action found (?)"
     if len(runs) == 0:
         raise Exception("No actions found for PR: " + pr["html_url"])
-    return runs[0]
+    run = runs[0]
+    if run['status'] != 'completed':
+        raise Exception("Action is not completed")
+    return run
 
 
 def get_artifacts(action):
@@ -88,7 +91,11 @@ def unzip_artifact(artifacts, key, path):
 
     Merge the contents of the artifact with the given key into the given path.
     """
-    [artifact] = [a for a in artifacts if a["name"] == key]
+    artifacts = [a for a in artifacts if a["name"] == key]
+    if not artifacts:
+        print(f"Artifact {key} not found")
+        return
+    artifact = artifacts[0]
     url = artifact["archive_download_url"]
     with NamedTemporaryFile(suffix=".zip") as f:
         response = requests.get(url, headers={"Authorization": f"token {GITHUB_TOKEN}"})
