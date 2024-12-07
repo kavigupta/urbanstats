@@ -155,7 +155,7 @@ test('quiz-clickthrough-test', async (t) => {
 quiz_fixture(
     'report old quiz results too',
     `${TARGET}/quiz.html?date=99`,
-    { persistent_id: '000000000000007', quiz_history: JSON.stringify(example_quiz_history(87, 90)) },
+    { persistent_id: '000000000000007', secure_id: '00000003', quiz_history: JSON.stringify(example_quiz_history(87, 90)) },
     '',
 )
 
@@ -172,6 +172,8 @@ test('quiz-report-old-results', async (t) => {
     }
     await t.expect(quiz_history).eql(expected_quiz_history)
     await t.expect(await juxtastat_table()).eql('7|87|7\n7|88|15\n7|89|23\n7|90|7\n7|99|15\n')
+    // check that the user was registered
+    await t.expect(await secure_id_table()).eql('7|3\n')
 })
 
 quiz_fixture(
