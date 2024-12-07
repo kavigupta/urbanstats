@@ -459,7 +459,7 @@ const expectedExportWithoutDate = {
 }
 
 test('export quiz progress', async (t) => {
-    await t.click(Selector('button').withText('Download Quiz History'))
+    await t.click(Selector('button').withText('Export Quiz History'))
 
     // Give it a second to download...
     await t.wait(1000)
@@ -485,7 +485,7 @@ test('import quiz progress', async (t) => {
     writeFileSync(tempfile, JSON.stringify(expectedExportWithoutDate, null, 2))
 
     await t.setNativeDialogHandler(() => true)
-    await t.click(Selector('button').withText('Upload Quiz History'))
+    await t.click(Selector('button').withText('Import Quiz History'))
     await t.setFilesToUpload('input[type=file]', [tempfile])
     await check_text(t, 'Excellent! 😊 4/5', '🟩🟩🟩🟩🟥')
 

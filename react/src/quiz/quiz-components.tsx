@@ -5,7 +5,7 @@ import '../components/quiz.css'
 import { useColors, useJuxtastatColors } from '../page_template/colors'
 import { useHeaderTextClass } from '../utils/responsive'
 
-import { exportQuizPersona, importQuizPersona, nameOfQuizKind, QuizHistory } from './quiz'
+import { exportQuizPersona, importQuizPersona, deleteQuizPersona, nameOfQuizKind, QuizHistory } from './quiz'
 import { unique_persistent_id } from './statistics'
 
 export function Header({ quiz }: { quiz: { kind: 'juxtastat' | 'retrostat', name: string | number } }): ReactNode {
@@ -71,11 +71,11 @@ export function DownloadUpload(): ReactNode {
     return (
         <div style={{ marginTop: '5px' }}>
             <button onClick={() => { exportQuizPersona() }}>
-                Download Quiz History
+                Export Quiz History
             </button>
             {' '}
             <button onClick={() => { void importQuizPersona() }}>
-                Upload Quiz History
+                Import Quiz History
             </button>
         </div>
     )

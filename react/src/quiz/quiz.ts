@@ -61,6 +61,20 @@ export const quizPersonaSchema = z.object({
 
 export type QuizPersona = z.infer<typeof quizPersonaSchema>
 
+export function deleteQuizPersona(): void { // currently unused
+    if (confirm(`This will DELETE ALL your Juxtastat and Retrostat progress.
+
+        Your existing Juxtastat and Retrostat progress will be lost.
+
+        Recommend downloading your current progress so you can restore it later.
+
+        Continue?`)){
+            localStorage.removeItem('quiz_history')
+            localStorage.removeItem('persistent_id')
+            window.location.reload()
+        }
+}
+
 export function exportQuizPersona(): void {
     const exported: QuizPersona = {
         date_exported: new Date(),
@@ -80,14 +94,15 @@ export async function importQuizPersona(): Promise<void> {
     try {
         const text = await file.text()
         const persona = quizPersonaSchema.parse(JSON.parse(text))
-        if (confirm(`The uploaded progress will REPLACE ALL your Juxtastat and Retrostat progress.
+        // no reason to confirm if they don't have any data in the first place
+        if (localStorage.getItem('quiz_history') === null || confirm(`The uploaded progress will be preferentially merged with your current Juxtastat and Retrostat progress.
 
-Your existing Juxtastat and Retrostat progress will be lost. 
+Your existing Juxtastat and Retrostat progress, if different from what is uploaded, will be lost.
 
 Recommend downloading your current progress so you can restore it later.
 
 Continue?`)) {
-            localStorage.setItem('quiz_history', JSON.stringify(persona.quiz_history))
+            localStorage.setItem('quiz_history', JSON.stringify({ ...loadQuizHistory(), ...persona.quiz_history }))
             localStorage.setItem('persistent_id', persona.persistent_id)
             // eslint-disable-next-line no-restricted-syntax -- Localstorage is not reactive
             window.location.reload()
