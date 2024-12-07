@@ -1,3 +1,5 @@
+import { Selector } from 'testcafe'
+
 import {
     SEARCH_FIELD, TARGET, getLocationWithoutSettings, screencap,
     urbanstatsFixture,
@@ -52,4 +54,10 @@ test('search-test-arrows', async (t) => {
         .pressKey('enter')
     await t.expect(getLocationWithoutSettings())
         .eql(`${TARGET}/article.html?longname=Pasadena+CDP%2C+Maryland%2C+USA`)
+})
+
+test('tab tab type', async (t) => {
+    await t.pressKey('tab').pressKey('tab')
+    await t.expect(Selector(SEARCH_FIELD).focused).ok()
+    await t.pressKey('a')
 })
