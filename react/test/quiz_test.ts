@@ -177,6 +177,24 @@ test('quiz-report-old-results', async (t) => {
 })
 
 quiz_fixture(
+    'trust on first use',
+    `${TARGET}/quiz.html?date=99`,
+    { persistent_id: '000000000000007', secure_id: '00000003', quiz_history: JSON.stringify(example_quiz_history(87, 90)) },
+    `
+    CREATE TABLE IF NOT EXISTS JuxtaStatIndividualStats
+        (user integer, day integer, corrects integer, time integer, PRIMARY KEY (user, day));
+    INSERT INTO JuxtaStatIndividualStats VALUES (7, 30, 0, 0);
+    `,
+)
+
+test('quiz-trust-on-first-use', async (t) => {
+    await safeReload(t)
+    await click_buttons(t, ['a', 'a', 'a', 'a', 'a'])
+    await t.expect(await juxtastat_table()).eql('7|30|0\n7|87|7\n7|88|15\n7|89|23\n7|90|7\n7|99|15\n')
+    await t.expect(await secure_id_table()).eql('7|3\n')
+})
+
+quiz_fixture(
     'do not report stale quiz results',
     `${TARGET}/quiz.html?date=99`,
     { persistent_id: '000000000000007', quiz_history: JSON.stringify(example_quiz_history(87, 92)) },
