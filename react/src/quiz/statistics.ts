@@ -25,9 +25,9 @@ export function unique_secure_id(): string {
     return create_and_store_id('secure_id')
 }
 
-async function registerUser(userId: string, secureID: string): Promise<void> {
+async function registerUser(userId: string, secureID: string): Promise<boolean> {
     // Idempotent
-    await fetch(`${ENDPOINT}/juxtastat/register_user`, {
+    const response = await fetch(`${ENDPOINT}/juxtastat/register_user`, {
         method: 'POST',
         // eslint-disable-next-line no-restricted-syntax -- Using the window hostname
         body: JSON.stringify({ user: userId, secureID, domain: localStorage.getItem('testHostname') ?? window.location.hostname }),
@@ -35,12 +35,17 @@ async function registerUser(userId: string, secureID: string): Promise<void> {
             'Content-Type': 'application/json',
         },
     })
+    const json = await response.json() as { success: boolean, registration_error?: boolean }
+    return json.success && (json.registration_error ?? false)
 }
 
-async function reportToServerGeneric(whole_history: QuizHistory, endpoint_latest: string, endpoint_store: string, parse_day: (day: string) => number): Promise<void> {
+async function reportToServerGeneric(whole_history: QuizHistory, endpoint_latest: string, endpoint_store: string, parse_day: (day: string) => number): Promise<boolean> {
     const user = unique_persistent_id()
     const secureID = unique_secure_id()
-    await registerUser(user, secureID)
+    const isError = await registerUser(user, secureID)
+    if (isError) {
+        return true
+    }
     // fetch from latest_day endpoint
     const latest_day_response = await fetch(ENDPOINT + endpoint_latest, {
         method: 'POST',
@@ -66,6 +71,7 @@ async function reportToServerGeneric(whole_history: QuizHistory, endpoint_latest
             'Content-Type': 'application/json',
         },
     })
+    return false
 }
 
 export function parse_time_identifier(quiz_kind: 'juxtastat' | 'retrostat', today: string): number {
@@ -93,10 +99,10 @@ function parse_retrostat_week(day: string): number {
     return parseInt(day.substring(1))
 }
 
-export async function reportToServer(whole_history: QuizHistory): Promise<void> {
-    await reportToServerGeneric(whole_history, '/juxtastat/latest_day', '/juxtastat/store_user_stats', parse_juxtastat_day)
+export async function reportToServer(whole_history: QuizHistory): Promise<boolean> {
+    return await reportToServerGeneric(whole_history, '/juxtastat/latest_day', '/juxtastat/store_user_stats', parse_juxtastat_day)
 }
 
-export async function reportToServerRetro(whole_history: QuizHistory): Promise<void> {
-    await reportToServerGeneric(whole_history, '/retrostat/latest_week', '/retrostat/store_user_stats', parse_retrostat_week)
+export async function reportToServerRetro(whole_history: QuizHistory): Promise<boolean> {
+    return await reportToServerGeneric(whole_history, '/retrostat/latest_week', '/retrostat/store_user_stats', parse_retrostat_week)
 }

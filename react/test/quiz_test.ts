@@ -195,6 +195,28 @@ test('quiz-trust-on-first-use', async (t) => {
 })
 
 quiz_fixture(
+    'auth failure',
+    `${TARGET}/quiz.html?date=99`,
+    { persistent_id: '000000000000007', secure_id: '00000003', quiz_history: JSON.stringify(example_quiz_history(87, 90)) },
+    `
+    CREATE TABLE IF NOT EXISTS JuxtaStatIndividualStats
+        (user integer, day integer, corrects integer, time integer, PRIMARY KEY (user, day));
+    INSERT INTO JuxtaStatIndividualStats VALUES (7, 30, 0, 0);
+    CREATE TABLE IF NOT EXISTS JuxtaStatUserSecureID (user integer PRIMARY KEY, secure_id int);
+    INSERT INTO JuxtaStatUserSecureID VALUES (7, 4);
+    `,
+)
+
+test('quiz-auth-failure', async (t) => {
+    await safeReload(t)
+    await click_buttons(t, ['a', 'a', 'a', 'a', 'a'])
+    // authentication failure, so no change to the database
+    await t.expect(await juxtastat_table()).eql('7|30|0\n')
+    await t.expect(await secure_id_table()).eql('7|4\n')
+    await quiz_screencap(t)
+})
+
+quiz_fixture(
     'do not report stale quiz results',
     `${TARGET}/quiz.html?date=99`,
     { persistent_id: '000000000000007', quiz_history: JSON.stringify(example_quiz_history(87, 92)) },
