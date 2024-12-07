@@ -3,7 +3,8 @@ import { isFirefox, isMobile } from 'react-device-detect'
 
 import { Statistic } from '../components/table'
 import { Navigator } from '../navigation/navigator'
-import { JuxtastatColors, useColors, useJuxtastatColors } from '../page_template/colors'
+import { JuxtastatColors } from '../page_template/color-themes'
+import { useColors, useJuxtastatColors } from '../page_template/colors'
 
 import { render_time_remaining } from './dates'
 import { ENDPOINT, JuxtaQuestion, QuizDescriptor, QuizHistory, QuizQuestion, RetroQuestion, a_correct, nameOfQuizKind } from './quiz'
