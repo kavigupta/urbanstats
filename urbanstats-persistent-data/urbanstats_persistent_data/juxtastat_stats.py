@@ -24,6 +24,12 @@ def table():
         CREATE TABLE IF NOT EXISTS JuxtaStatUserDomain (user integer PRIMARY KEY, domain text)
         """
     )
+    # user to secure id
+    c.execute(
+        """
+        CREATE TABLE IF NOT EXISTS JuxtaStatUserSecureID (user integer PRIMARY KEY, secure_id text)
+        """
+    )
     # ADD THESE LATER IF WE NEED THEM
     # For now, we can just calculate them from the individual stats
     # We don't have enough users to worry about performance
@@ -46,14 +52,55 @@ def table():
     return conn, c
 
 
-def register_user(user, domain):
+def register_user(user, secure_id, domain):
+    """
+    Register a user with a secure id and domain. First checks
+    if the user is already registered, if so checks if the secure id is correct.
+    If the secure id is incorrect, returns True. Otherwise, updates the domain
+    and secure id and returns False.
+
+    This is Trust on First Use (TOFU) authentication.
+    """
     user = int(user, 16)
     conn, c = table()
+    # check if secure id is already in the database
+    c.execute(
+        "SELECT secure_id FROM JuxtaStatUserSecureID WHERE user=?",
+        (user,),
+    )
+    res = c.fetchone()
+    if res is None:
+        # trust on first use
+        c.execute(
+            "INSERT INTO JuxtaStatUserSecureID VALUES (?, ?)",
+            (user, secure_id),
+        )
+    else:
+        # Ensure that the secure id is correct
+        if res[0] != secure_id:
+            # Security error! Return True to indicate that the user is not authenticated
+            return True
     c.execute(
         "INSERT OR REPLACE INTO JuxtaStatUserDomain VALUES (?, ?)",
         (user, domain),
     )
     conn.commit()
+    return False
+
+def check_secureid(user, secure_id):
+    """
+    Returns True iff the secure_id is correct for the given user.
+    """
+    user = int(user, 16)
+    _, c = table()
+    c.execute(
+        "SELECT secure_id FROM JuxtaStatUserSecureID WHERE user=?",
+        (user,),
+    )
+    res = c.fetchone()
+    if res is None:
+        return False
+    return res[0] == secure_id
 
 
 def latest_day_from_table(user, table_name, column):
@@ -82,7 +129,9 @@ def bitvector_to_corrects(bitvector: int) -> List[bool]:
     return [bool(bitvector & (2**i)) for i in range(5)]
 
 
-def store_user_stats_into_table(user, day_stats: List[Tuple[int, List[bool]]], table_name):
+def store_user_stats_into_table(
+    user, day_stats: List[Tuple[int, List[bool]]], table_name
+):
     user = int(user, 16)
     conn, c = table()
     # ignore latest day here, it is up to the client to filter out old stats
@@ -98,11 +147,14 @@ def store_user_stats_into_table(user, day_stats: List[Tuple[int, List[bool]]], t
     )
     conn.commit()
 
+
 def store_user_stats(user, day_stats: List[Tuple[int, List[bool]]]):
     store_user_stats_into_table(user, day_stats, "JuxtaStatIndividualStats")
 
+
 def store_user_stats_retrostat(user, week_stats: List[Tuple[int, List[bool]]]):
     store_user_stats_into_table(user, week_stats, "JuxtaStatIndividualStatsRetrostat")
+
 
 def get_per_question_stats_from_table(day, table_name, column):
     day = int(day)
