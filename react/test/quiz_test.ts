@@ -48,6 +48,10 @@ function retrostat_table(): Promise<string> {
     return run_query('SELECT user, week, corrects from JuxtaStatIndividualStatsRetrostat')
 }
 
+function secure_id_table(): Promise<string> {
+    return run_query('SELECT user, secure_id from JuxtaStatUserSecureID')
+}
+
 function tempfile_name(): string {
     return `/tmp/quiz_test_${Math.floor(Math.random() * 1000000)}`
 }
@@ -262,14 +266,18 @@ function hex_to_dec(hex: string): string {
 
 test('quiz-new-user', async (t) => {
     await click_buttons(t, ['a', 'a', 'a', 'a', 'a'])
-    const user_id = await t.eval(() => {
-        return localStorage.getItem('persistent_id')
-    }) as string | null
-    await t.expect(user_id).notEql(null)
-    const user_id_int = hex_to_dec(user_id!)
+    const result = await t.eval(() => {
+        return [localStorage.getItem('persistent_id'), localStorage.getItem('secure_id')] as [string, string]
+    }) as [string, string] | null
+    await t.expect(result).notEql(null)
+    const [user_id, secure_id] = result!
+    const user_id_int = hex_to_dec(user_id)
+    const secure_id_int = hex_to_dec(secure_id)
     const juxta_table = await juxtastat_table()
     await t.expect(juxta_table).eql(`${user_id_int}|99|15\n`)
     await t.expect(await run_query('SELECT user from JuxtastatUserDomain')).eql(`${user_id_int}\n`)
+    const secure_table = await secure_id_table()
+    await t.expect(secure_table).eql(`${user_id_int}|${secure_id_int}\n`)
 })
 
 quiz_fixture(
