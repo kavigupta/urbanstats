@@ -65,6 +65,7 @@ export class DelayRequests extends RequestHook {
 
 const delayRequests = new DelayRequests()
 const dataFilter: Filter = options => options.path.startsWith('/data')
+const indexFilter: Filter = options => options.path === '/scripts/index.js'
 
 urbanstatsFixture('loading tests', '/', () => {
     delayRequests.removeFilter()
@@ -118,4 +119,13 @@ test('loading error', async (t) => {
     await t.navigateTo(`${TARGET}/article.html?longname=Kalamazoo+city%2C+Michigan%2C+US`) // Should be USA
     await t.expect(Selector('h1').withText('Error Loading Page').exists).ok()
     await screencap(t, { wait: false })
+})
+
+test('before main bundle loads', async (t) => {
+    delayRequests.setFilter(indexFilter)
+    await t.navigateTo(TARGET)
+    await t.expect(Selector('#loading').exists).ok()
+    await screencap(t, { wait: false, fullPage: false })
+    delayRequests.removeFilter()
+    await t.expect(Selector('#loading').exists).notOk()
 })
