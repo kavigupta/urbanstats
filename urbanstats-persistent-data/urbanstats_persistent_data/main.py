@@ -111,11 +111,6 @@ def retrostat_latest_week_request():
 @app.route("/juxtastat/store_user_stats", methods=["POST"])
 def juxtastat_store_user_stats_request():
     form = flask_form()
-
-    # if "user" in form and "day_stats" in form:
-    #     store_user_stats(form["user"], json.loads(form["day_stats"]))
-    #     return flask.jsonify(dict(success=True))
-    # return flask.jsonify({"error": "Needs parameters user and day_stats!"}), 200
     success, error = get_authenticated_user(["day_stats"])
     if not success:
         return error
