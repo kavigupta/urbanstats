@@ -11,6 +11,7 @@ function loadPage(): void {
     root.render(
         <Router />,
     )
+    document.getElementById('loading')!.remove()
 }
 
 loadPage()

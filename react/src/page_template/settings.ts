@@ -7,7 +7,7 @@ import { dataSources } from '../data/statistics_tree'
 import article_types_other from '../data/type_to_type_category'
 import { DefaultMap } from '../utils/DefaultMap'
 
-import { Theme } from './colors'
+import { Theme } from './color-themes'
 import { allGroups, allYears, CategoryIdentifier, DataSource, GroupIdentifier, SourceCategoryIdentifier, SourceIdentifier, StatPath, statsTree, Year } from './statistic-tree'
 
 export type RelationshipKey = `related__${string}__${string}`
