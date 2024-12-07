@@ -173,9 +173,12 @@ tiers = [
         "20M Person Circle",
         "10M Person Circle",
         "5M Person Circle",
-        "Census Division",
+        "Canadian CMA",
+        "Canadian Census Division",
+        "Canadian Riding",
+        "Canadian Population Center",
     ],
-    ["CCD", "City", "School District"],
+    ["CCD", "City", "School District", "Canadian Census Subdivision"],
     ["Neighborhood", "ZIP"],
 ]
 
@@ -186,7 +189,6 @@ type_to_type_category = {
 
 type_category_order = {
     "US Subdivision": 0,
-    "Canadian Subdivision": 0,
     "International": 0,
     "Census": 20,
     "Small": 30,
@@ -218,6 +220,10 @@ map_relationships += [[x, x] for x in shapefiles]
 map_relationships_by_type = [[key_to_type[x] for x in y] for y in map_relationships]
 
 tier_index_by_type = {x: -i for i, tier in enumerate(tiers) for x in tier}
+
+missing = {x.meta["type"] for x in shapefiles.values()} - set(tier_index_by_type)
+
+assert not missing, missing
 
 ordering_idx = {
     x: (type_category_order[type_to_type_category[x]], i, j)

@@ -49,7 +49,7 @@ CANADIAN_CENSUS_DIVISIONS = Shapefile(
     longname_extractor=subdivision_longname,
     filter=lambda x: True,
     meta=dict(
-        type="Census Division", source="StatCan", type_category="Canadian Subdivision"
+        type="Canadian Census Division", source="StatCan", type_category="US Subdivision"
     ),
     universe_provider=canada_domestic_provider(),
     subset_masks={"Canada": SelfSubset()},

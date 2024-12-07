@@ -24,9 +24,21 @@ https://www12.statcan.gc.ca/census-recensement/2021/geo/sip-pis/boundary-limites
 
 https://www12.statcan.gc.ca/census-recensement/2021/geo/sip-pis/boundary-limites/files-fichiers/lcd_000b21a_e.zip
 
+## Federal electoral districts
+
+https://www12.statcan.gc.ca/census-recensement/2021/geo/sip-pis/boundary-limites/files-fichiers/lfed000a21a_e.zip
+
 ## Census Subdivisions
 
-https://www12.statcan.gc.ca/census-recensement/2021/geo/sip-pis/boundary-limites/files-fichiers/lcsd000b21a_e.zip
+https://www12.statcan.gc.ca/census-recensement/2021/geo/sip-pis/boundary-limites/files-fichiers/lcsd000a21a_e.zip
+
+## Census Metropolitan Areas
+
+https://www12.statcan.gc.ca/census-recensement/2021/geo/sip-pis/boundary-limites/files-fichiers/lcma000a21a_e.zip
+
+## Populaiton centres
+
+https://www12.statcan.gc.ca/census-recensement/2021/geo/sip-pis/boundary-limites/files-fichiers/lpc_000a21a_e.zip
 
 # Shapefiles for dissemination areas (maybe unnecessary, check back later)
 

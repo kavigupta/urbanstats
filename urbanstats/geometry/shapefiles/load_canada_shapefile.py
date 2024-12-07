@@ -20,6 +20,22 @@ pruid_to_province = {
     "60": "Yukon, Canada",
 }
 
+pruid_to_province_abbr = {
+    "48": "AB",
+    "59": "BC",
+    "46": "MB",
+    "13": "NB",
+    "10": "NL",
+    "61": "NT",
+    "12": "NS",
+    "62": "NU",
+    "35": "ON",
+    "11": "PE",
+    "24": "QC",
+    "47": "SK",
+    "60": "YT",
+}
+
 
 @permacache(
     "urbanstats/geometry/shapefiles/load_canada_shapefile/canada_shape",

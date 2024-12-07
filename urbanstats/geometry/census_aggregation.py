@@ -56,11 +56,16 @@ class Crosswalk:
         return result
 
     def compute_sum_by_shapefile_dataframe(self, shapefile, values):
-        return pd.DataFrame(
-            self.compute_sum_by_shapefile(np.array(values.fillna(0))),
-            columns=values.columns,
-            index=shapefile.load_file().index,
-        )
+        sum_array = self.compute_sum_by_shapefile(np.array(values.fillna(0)))
+        index = shapefile.load_file().index
+        if len(index) > len(sum_array):
+            sum_array = np.concatenate(
+                [
+                    sum_array,
+                    np.zeros((len(index) - len(sum_array), *sum_array.shape[1:])),
+                ]
+            )
+        return pd.DataFrame(sum_array, columns=values.columns, index=index)
 
 
 @permacache(

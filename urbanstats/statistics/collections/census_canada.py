@@ -1,3 +1,4 @@
+import numpy as np
 from permacache import permacache
 
 from urbanstats.data.canada.canada_density import canada_shapefile_with_densities
@@ -58,11 +59,15 @@ class CensusCanada(CanadaStatistics):
             )
         histos = census_histogram_canada(shapefile, 2021)
         results.update({f"pw_density_histogram_{r}_canada": [] for r in RADII})
-        for longname in shapefile_table.longname:
+        for idx, longname in enumerate(shapefile_table.longname):
             for r in RADII:
-                results[f"pw_density_histogram_{r}_canada"].append(
-                    histos[longname][f"canada_density_2021_{r}"]
-                )
+                if longname not in histos:
+                    assert st["population"][idx] == 0
+                    results[f"pw_density_histogram_{r}_canada"].append(np.nan)
+                else:
+                    results[f"pw_density_histogram_{r}_canada"].append(
+                        histos[longname][f"canada_density_2021_{r}"]
+                    )
         return results
 
     def extra_stats(self):

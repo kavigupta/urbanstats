@@ -9,7 +9,6 @@ from urbanstats.protobuf.utils import save_search_index, save_string_list
 # maps types to their search priority scores, which must fit into an uint32. Higher=less important
 type_category_to_priority = {
     "US Subdivision": 0,
-    "Canadian Subdivision": 0,
     "International": 1,
     "Census": 2,
     "Small": 2,
