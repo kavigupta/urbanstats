@@ -35,8 +35,8 @@ async function registerUser(userId: string, secureID: string): Promise<boolean> 
             'Content-Type': 'application/json',
         },
     })
-    const json = await response.json() as { success: boolean, registration_error?: boolean }
-    return json.success && (json.registration_error ?? false)
+    const json = await response.json() as { error?: string, registration_error?: boolean }
+    return (json.error !== undefined) && (json.registration_error ?? false)
 }
 
 async function reportToServerGeneric(whole_history: QuizHistory, endpoint_latest: string, endpoint_store: string, parse_day: (day: string) => number): Promise<boolean> {

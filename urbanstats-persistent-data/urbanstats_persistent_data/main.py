@@ -69,7 +69,7 @@ def juxtastat_register_user_request():
         registration_error = register_user(
             form["user"], form["secureID"], form["domain"]
         )
-        return flask.jsonify(dict(success=True, registration_error=registration_error))
+        return flask.jsonify(dict(registration_error=registration_error))
     return flask.jsonify({"error": "Needs parameters user, secureID, and domain!"}), 200
 
 
@@ -115,7 +115,7 @@ def juxtastat_store_user_stats_request():
     if not success:
         return error
     store_user_stats(form["user"], json.loads(form["day_stats"]))
-    return flask.jsonify(dict(success=True))
+    return flask.jsonify(dict())
 
 @app.route("/retrostat/store_user_stats", methods=["POST"])
 def retrostat_store_user_stats_request():
@@ -125,7 +125,7 @@ def retrostat_store_user_stats_request():
     if not success:
         return error
     store_user_stats_retrostat(form["user"], json.loads(form["day_stats"]))
-    return flask.jsonify(dict(success=True))
+    return flask.jsonify(dict())
 
 
 @app.route("/juxtastat/get_full_database", methods=["POST"])
