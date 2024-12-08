@@ -26,9 +26,9 @@ from urbanstats.statistics.output_statistics_metadata import (
     get_statistic_categories,
     statistic_internal_to_display_name,
 )
+from urbanstats.statistics.stat_path import get_statistic_column_path
 from urbanstats.universe.universe_list import universe_by_universe_type
 from urbanstats.website_data.table import shapefile_without_ordinals
-from urbanstats.statistics.stat_path import get_statistic_column_path
 
 from .fixed import juxtastat as fixed_up_to
 from .quiz_custom import get_custom_quizzes
