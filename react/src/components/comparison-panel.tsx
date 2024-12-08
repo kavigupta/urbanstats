@@ -92,7 +92,7 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
 
     const includeOrdinals = (
         props.articles.every(article => article.articleType === props.articles[0].articleType)
-        && validOrdinals.some(x => x)
+        && (validOrdinals.length === 0 || validOrdinals.some(x => x))
     )
 
     const onlyColumns: ColumnIdentifier[] = includeOrdinals ? ['statval', 'statval_unit', 'statistic_ordinal', 'statistic_percentile'] : ['statval', 'statval_unit']
