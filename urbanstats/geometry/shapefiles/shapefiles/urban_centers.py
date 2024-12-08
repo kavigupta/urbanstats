@@ -51,6 +51,7 @@ URBAN_CENTERS = Shapefile(
         [*INTERNATIONAL_PROVIDERS, UrbanCenterStateUniverseProvider()]
     ),
     subset_masks={
-        "USA": FilteringSubset("US Urban Center", lambda x: "USA" == x.suffix)
+        "USA": FilteringSubset("US Urban Center", lambda x: "USA" == x.suffix),
+        "Canada": FilteringSubset("CA Urban Center", lambda x: "Canada" == x.suffix),
     },
 )

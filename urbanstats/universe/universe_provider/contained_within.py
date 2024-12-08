@@ -34,6 +34,10 @@ STATE_PROVIDER = ContainedWithinUniverseProvider(
     ["subnational_regions"], universe_by_universe_type()["state"]
 )
 
+PROVINCE_PROVIDER = ContainedWithinUniverseProvider(
+    ["subnational_regions"], universe_by_universe_type()["province"]
+)
+
 
 @permacache(
     "urbanstats/universe/universe_provider/contained_within/compute_contained_in",

@@ -2,6 +2,21 @@ from urbanstats.geometry.shapefiles.shapefile import (
     multiple_localized_type_names,
     subset_mask_key,
 )
+from urbanstats.geometry.shapefiles.shapefiles.canadian_census_divisions import (
+    CANADIAN_CENSUS_DIVISIONS,
+)
+from urbanstats.geometry.shapefiles.shapefiles.canadian_census_subdivisions import (
+    CANADIAN_CENSUS_SUBDIVISIONS,
+)
+from urbanstats.geometry.shapefiles.shapefiles.canadian_cma import (
+    CANADIAN_CENSUS_METROPOLITAN_AREAS,
+)
+from urbanstats.geometry.shapefiles.shapefiles.canadian_districts import (
+    CANADIAN_DISTRICTS,
+)
+from urbanstats.geometry.shapefiles.shapefiles.canadian_population_centers import (
+    CANADIAN_CENSUS_POPULATION_CENTERS,
+)
 from urbanstats.geometry.shapefiles.shapefiles.ccds import CCDs
 from urbanstats.geometry.shapefiles.shapefiles.cities import CITIES
 from urbanstats.geometry.shapefiles.shapefiles.continents import CONTINENTS
@@ -50,6 +65,12 @@ shapefiles = dict(
     usda_county_type=USDA_COUNTY_TYPE,
     **hospital_shapefiles,
     media_markets=MEDIA_MARKETS,
+    # Canada
+    canada_census_divisions=CANADIAN_CENSUS_DIVISIONS,
+    canadian_census_subdivisions=CANADIAN_CENSUS_SUBDIVISIONS,
+    canadian_population_centers=CANADIAN_CENSUS_POPULATION_CENTERS,
+    candian_cmas=CANADIAN_CENSUS_METROPOLITAN_AREAS,
+    canadian_districts=CANADIAN_DISTRICTS,
     # International
     continents=CONTINENTS,
     countries=COUNTRIES,

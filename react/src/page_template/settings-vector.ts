@@ -364,6 +364,12 @@ const settingsVector = [
     new ActiveSetting({ key: 'show_stat_group_gridded_elevation', coder: BooleanSettingCoder }),
     new ActiveSetting({ key: 'show_stat_group_gridded_hilliness', coder: BooleanSettingCoder }),
     new ActiveSetting({ key: 'mobile_article_pointers', coder: MobileArticlePointersCoder }),
+    new ActiveSetting({ key: 'show_stat_source_Population_Canadian Census', coder: BooleanSettingCoder }),
+    new ActiveSetting({ key: 'expanded__density_2021_pw_0.25_canada', coder: BooleanSettingCoder }),
+    new ActiveSetting({ key: 'expanded__density_2021_pw_0.5_canada', coder: BooleanSettingCoder }),
+    new ActiveSetting({ key: 'expanded__density_2021_pw_1_canada', coder: BooleanSettingCoder }),
+    new ActiveSetting({ key: 'expanded__density_2021_pw_2_canada', coder: BooleanSettingCoder }),
+    new ActiveSetting({ key: 'expanded__density_2021_pw_4_canada', coder: BooleanSettingCoder }),
 // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Necessary use of any
 ] satisfies (ActiveSetting<any> | DeprecatedSetting<string>)[]
 
