@@ -85,21 +85,3 @@ def load_canada_db_shapefile(year):
     )
     return data_db.reset_index(drop=True).set_crs("epsg:4326")
 
-
-@permacache("urbanstats/data/canada/load_canada_shapefile_3")
-def load_canada_da_shapefile():
-    gdf = gpd.read_file("named_region_shapefiles/canada/lda_000b21a_e.zip")
-    data = load_canada_data_da()
-    extra_stat_rows = set(data.index) - set(gdf.DAUID)
-    assert np.isnan(data.loc[list(extra_stat_rows)][POPULATION_COLUMN]).all()
-    data = data[[x not in extra_stat_rows for x in data.index]]
-    assert set(gdf.DAUID) == set(data.index)
-    data = data[data[POPULATION_COLUMN] > 0]
-    intpt = (
-        gdf.set_index("DAUID")
-        .loc[data.index]
-        .geometry.to_crs("epsg:4326")
-        .representative_point()
-    )
-    data = gpd.GeoDataFrame(data, geometry=intpt)
-    return data.reset_index().rename(columns={"index": "DAUID"}).set_crs("epsg:4326")
