@@ -753,10 +753,17 @@ export function Statistic(props: { style?: React.CSSProperties, statname: string
         }
     })()
 
-    if (props.style) {
-        return <span style={props.style}>{content}</span>
+    const spanStyle = {
+        ...(props.is_unit
+            ? {}
+            : {
+                    // So that we overflow left
+                    display: 'flex',
+                    justifyContent: 'flex-end',
+                }),
+        ...props.style,
     }
-    return content
+    return <span style={spanStyle}>{content}</span>
 }
 
 function ElectionResult(props: { value: number }): ReactNode {
