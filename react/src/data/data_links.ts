@@ -9,6 +9,24 @@ const value: Record<string, number[]> = {
         76,
         48,
     ],
+    'world__CA Census Subdivision': [
+        26,
+        26,
+        26,
+        26,
+        26,
+        26,
+        26,
+        26,
+        26,
+        26,
+        16,
+    ],
+    'world__CA Population Center': [
+        122,
+        122,
+        32,
+    ],
     'world__CCD': [
         4,
         4,
@@ -79,24 +97,6 @@ const value: Record<string, number[]> = {
         4,
         4,
         4,
-    ],
-    'world__Canadian Census Subdivision': [
-        26,
-        26,
-        26,
-        26,
-        26,
-        26,
-        26,
-        26,
-        26,
-        26,
-        16,
-    ],
-    'world__Canadian Population Center': [
-        122,
-        122,
-        32,
     ],
     'world__City': [
         4,
@@ -482,6 +482,24 @@ const value: Record<string, number[]> = {
         128,
         20,
     ],
+    'North America__CA Census Subdivision': [
+        26,
+        26,
+        26,
+        26,
+        26,
+        26,
+        26,
+        26,
+        26,
+        26,
+        16,
+    ],
+    'North America__CA Population Center': [
+        122,
+        122,
+        32,
+    ],
     'North America__CCD': [
         4,
         4,
@@ -552,24 +570,6 @@ const value: Record<string, number[]> = {
         4,
         4,
         4,
-    ],
-    'North America__Canadian Census Subdivision': [
-        26,
-        26,
-        26,
-        26,
-        26,
-        26,
-        26,
-        26,
-        26,
-        26,
-        16,
-    ],
-    'North America__Canadian Population Center': [
-        122,
-        122,
-        32,
     ],
     'North America__City': [
         4,
@@ -878,7 +878,7 @@ const value: Record<string, number[]> = {
         173,
         103,
     ],
-    'Canada__Canadian Census Subdivision': [
+    'Canada__CA Census Subdivision': [
         26,
         26,
         26,
@@ -891,7 +891,7 @@ const value: Record<string, number[]> = {
         26,
         16,
     ],
-    'Canada__Canadian Population Center': [
+    'Canada__CA Population Center': [
         122,
         122,
         32,
@@ -1815,20 +1815,20 @@ const value: Record<string, number[]> = {
         140,
         136,
     ],
-    'British Columbia, Canada__Canadian Census Subdivision': [
+    'British Columbia, Canada__CA Census Subdivision': [
         195,
         81,
     ],
-    'Ontario, Canada__Canadian Census Subdivision': [
+    'Ontario, Canada__CA Census Subdivision': [
         224,
         52,
     ],
-    'Quebec, Canada__Canadian Census Subdivision': [
+    'Quebec, Canada__CA Census Subdivision': [
         105,
         105,
         66,
     ],
-    'Saskatchewan, Canada__Canadian Census Subdivision': [
+    'Saskatchewan, Canada__CA Census Subdivision': [
         139,
         137,
     ],
