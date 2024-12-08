@@ -462,10 +462,15 @@ function ComparisonLink({ question, children }: { question: JuxtaQuestion, child
     )
 }
 
-function settingsOverrides(questionStatPath: StatPath): Partial<VectorSettingsDictionary> {
+function settingsOverrides(questionStatPath?: StatPath): Partial<VectorSettingsDictionary> | undefined {
+    if (questionStatPath === undefined) {
+        // Old question, doesnt' have stat path
+        return undefined
+    }
     const parents = statParents.get(questionStatPath)
     if (parents === undefined) {
-        return {}
+        // Unknown stat path, possible one that has been removed
+        return undefined
     }
     const categoryId = parents.group.parent.id
     const year = parents.year
