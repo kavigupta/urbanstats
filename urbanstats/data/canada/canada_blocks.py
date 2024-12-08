@@ -1,7 +1,4 @@
-import os
-
 import geopandas as gpd
-import numpy as np
 import pandas as pd
 from permacache import permacache
 
