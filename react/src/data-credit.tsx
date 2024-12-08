@@ -767,7 +767,7 @@ export function DataCreditPanel(): ReactNode {
                                 <p>
                                     We source Canadian geography data from
                                     {' '}
-                                    <a href="https://www12.statcan.gc.ca/census-recensement/2021/geo/sip-pis/boundary-limites/index2021-eng.cfm?year=21">Statcan</a>
+                                    <a href="https://www12.statcan.gc.ca/census-recensement/2021/geo/sip-pis/boundary-limites/index2021-eng.cfm?year=21">StatCan</a>
                                     . Specifically, we use digital boundary files
                                     for provinces/torritories, census divisions, census subdivisions, population centers,
                                     federal electoral districts, and census metropolitan areas. For all of these, we clip
