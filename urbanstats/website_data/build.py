@@ -221,7 +221,7 @@ def build_urbanstats(
         f.write(
             html_index(
                 title="Juxtastat",
-                image="https://urbanstats.org/thumbnail.png",  # Image url must be absolute, or gets messed up from juxtastat.org
+                image="https://urbanstats.org/juxtastat-link-preview.png",  # Image url must be absolute, or gets messed up from juxtastat.org
                 description="Test your knowledge of geography and statistics! New game every day",
             )
         )
@@ -233,6 +233,8 @@ def build_urbanstats(
     shutil.copy("icons/main/share.png", f"{site_folder}/")
     shutil.copy("icons/main/screenshot.png", f"{site_folder}/")
     shutil.copy("icons/main/download.png", f"{site_folder}/")
+    shutil.copy("icons/main/link-preview.png", f"{site_folder}/")
+    shutil.copy("icons/main/juxtastat-link-preview.png", f"{site_folder}/")
 
     with open(f"{site_folder}/CNAME", "w") as f:
         f.write("urbanstats.org")
@@ -251,7 +253,7 @@ def build_urbanstats(
 
 def html_index(
     title="Urban Stats",
-    image="/thumbnail.png",
+    image="/link-preview.png",
     description="Urban Stats is a database of statistics related to density, housing, race, transportation, elections, and climate change.",
 ):
     return f"""<html>
@@ -266,6 +268,7 @@ def html_index(
       property="og:description"
       content="{description}"
     />
+    <meta name="twitter:card" content="summary_large_image" />
     <style>
       @keyframes loading-spinner {{
         100% {{
