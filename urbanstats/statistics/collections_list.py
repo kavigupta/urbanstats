@@ -7,6 +7,9 @@ from urbanstats.statistics.collections.census import (
     CensusChange2010,
 )
 from urbanstats.statistics.collections.census_canada import CensusCanada
+from urbanstats.statistics.collections.census_canada_other import (
+    census_canada_other,
+)
 from urbanstats.statistics.collections.education_gender_gap import (
     EducationGenderGapStatistics,
 )
@@ -100,4 +103,5 @@ statistic_collections = (
     InsuranceTypeStatistics(),
     MarriageStatistics(),
     ElevationHillinessStatistics(),
+    *census_canada_other
 )

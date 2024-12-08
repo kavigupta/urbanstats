@@ -46,6 +46,17 @@ def load_single_canada_data_da(census_file):
     return canada_census
 
 
+@permacache("urbanstats/data/canada/load_canada_data_3")
+def load_canada_data_da(year):
+    assert year == 2021
+    canada = [load_single_canada_data_da(f) for f in census_files]
+    canada = pd.concat(canada)
+    common_prefix = "2021S0512"
+    assert all(canada.index.str.startswith(common_prefix))
+    canada.index = [i[len(common_prefix) :] for i in canada.index]
+    return canada
+
+
 @permacache("urbanstats/data/canada/canada_blocks/load_canada_db_shapefile_4")
 def load_canada_db_shapefile(year):
     assert year == 2021
@@ -75,3 +86,12 @@ def load_canada_db_shapefile(year):
     )
     return data_db.reset_index(drop=True).set_crs("epsg:4326")
 
+
+def disaggregated_from_da(year, columns, disagg_universe):
+    data_da = load_canada_data_da(year)[columns]
+    data_db = load_canada_db_shapefile(year)
+    da_id = data_db.DBuid.apply(lambda x: f"{x:011d}"[:8])
+    da_total = data_db[disagg_universe].groupby(da_id).sum().loc[da_id]
+    frac = np.array(data_db[disagg_universe]) / np.array(da_total)
+    diaggregated = data_da.loc[da_id] * frac[:, None]
+    return diaggregated
