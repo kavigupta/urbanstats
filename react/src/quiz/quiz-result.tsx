@@ -29,12 +29,14 @@ export function QuizResult(props: QuizResultProps): ReactNode {
     const button = useRef<HTMLButtonElement>(null)
     const [total, setTotal] = useState(0)
     const [per_question, set_per_question] = useState([0, 0, 0, 0, 0])
+    const [authError, setAuthError] = useState(false)
 
     useEffect(() => {
         void (async () => {
             let response: Response | undefined
+            let isError: Promise<boolean> | undefined
             if (props.quizDescriptor.kind === 'juxtastat') {
-                void reportToServer(props.whole_history)
+                isError = reportToServer(props.whole_history)
                 // POST to endpoint /juxtastat/get_per_question_stats with the current day
                 response = await fetch(`${ENDPOINT}/juxtastat/get_per_question_stats`, {
                     method: 'POST',
@@ -45,7 +47,7 @@ export function QuizResult(props: QuizResultProps): ReactNode {
                 })
             }
             if (props.quizDescriptor.kind === 'retrostat') {
-                void reportToServerRetro(props.whole_history)
+                isError = reportToServerRetro(props.whole_history)
                 response = await fetch(`${ENDPOINT}/retrostat/get_per_question_stats`, {
                     method: 'POST',
                     body: JSON.stringify({ week: parseInt(props.quizDescriptor.name.substring(1)) }),
@@ -59,9 +61,13 @@ export function QuizResult(props: QuizResultProps): ReactNode {
                 setTotal(responseJson.total)
                 set_per_question(responseJson.per_question)
             }
+            if (isError !== undefined) {
+                setAuthError(await isError)
+            }
         })()
     }, [props.whole_history, props.quizDescriptor.kind, props.quizDescriptor.name])
 
+    const colors = useColors()
     const today_name = props.today_name
     const correct_pattern = props.history.correct_pattern
     const total_correct = correct_pattern.reduce((partialSum, a) => partialSum + (a ? 1 : 0), 0)
@@ -70,6 +76,24 @@ export function QuizResult(props: QuizResultProps): ReactNode {
         <div>
             <Header quiz={props.quizDescriptor} />
             <div className="gap"></div>
+            {authError
+                ? (
+                        <div
+                            className="serif"
+                            style={{
+                                backgroundColor: colors.slightlyDifferentBackgroundFocused, width: '75%', margin: 'auto',
+                                fontSize: '1.5em',
+                                padding: '0.5em',
+                                textAlign: 'center',
+                            }}
+                        >
+                            <b>
+                                Warning! Someone is possibly attempting to hijack your account.
+                                Please contact us at security@urbanstats.org, and send your persistent ID.
+                            </b>
+                        </div>
+                    )
+                : undefined}
             <Summary correct_pattern={correct_pattern} total_correct={total_correct} total={correct_pattern.length} />
             <div className="gap_small"></div>
             <ShareButton
