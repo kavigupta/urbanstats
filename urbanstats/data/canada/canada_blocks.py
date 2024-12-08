@@ -46,16 +46,6 @@ def load_single_canada_data_da(census_file):
     return canada_census
 
 
-@permacache("urbanstats/data/canada/load_canada_data_3")
-def load_canada_data_da():
-    canada = [load_single_canada_data_da(f) for f in census_files]
-    canada = pd.concat(canada)
-    common_prefix = "2021S0512"
-    assert all(canada.index.str.startswith(common_prefix))
-    canada.index = [i[len(common_prefix) :] for i in canada.index]
-    return canada
-
-
 @permacache("urbanstats/data/canada/canada_blocks/load_canada_db_shapefile_4")
 def load_canada_db_shapefile(year):
     assert year == 2021
