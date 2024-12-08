@@ -198,9 +198,7 @@ def filter_for_pop(typ):
     universes = at_pop["universes"]
     at_pop = pd.DataFrame({s: at_pop[s] for s in stats if typ in stats_to_types[s]})
     mask = ~at_pop.applymap(np.isnan).all()
-    # if not mask.all():
-    #     import IPython; IPython.embed(); 1/0
-    assert mask.all(), (typ, mask.index[~mask])
+    assert mask.all()
     return at_pop, universes
 
 
