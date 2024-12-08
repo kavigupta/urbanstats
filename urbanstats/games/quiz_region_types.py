@@ -7,7 +7,6 @@ from urbanstats.geometry.shapefiles.shapefiles_list import (
     unlocalization_map,
 )
 
-
 quiz_weights = {}
 
 QUIZ_REGION_TYPES_USA = [

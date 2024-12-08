@@ -45,4 +45,3 @@ def load_canada_db_shapefile(year):
         columns={"DBtdwell_2021": "total_dwellings", "DBpop_2021": "population"}
     )
     return data_db.reset_index(drop=True).set_crs("epsg:4326")
-

@@ -13,6 +13,7 @@ from urbanstats.geometry.shapefiles.shapefiles.subnational_regions import (
 )
 from urbanstats.universe.universe_provider.constants import canada_domestic_provider
 
+
 @permacache(
     "urbanstats/geometry/shapefiles/shapefiles/canadian_population_centers/load_pcs_2",
 )
@@ -40,7 +41,6 @@ def load_pcs():
     dk_idx = st_alexandre.index[dk_idx]
     table.loc[dk_idx, "PCNAME"] = "Saint-Alexandre [de-Kamouraska]"
     return table
-
 
 
 def shortname_extractor(row):

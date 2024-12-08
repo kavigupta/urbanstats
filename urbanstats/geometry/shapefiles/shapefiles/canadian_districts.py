@@ -10,7 +10,6 @@ from urbanstats.geometry.shapefiles.shapefiles.subnational_regions import (
 )
 from urbanstats.universe.universe_provider.constants import canada_domestic_provider
 
-
 CANADIAN_DISTRICTS = Shapefile(
     hash_key="canadian_districts_2",
     path=lambda: load_canadian_shapefile(
@@ -19,7 +18,9 @@ CANADIAN_DISTRICTS = Shapefile(
         SUBNATIONAL_REGIONS,
     ),
     shortname_extractor=lambda row: row.FEDENAME,
-    longname_extractor=lambda row: row.FEDENAME + " (Riding), " + pruid_to_province[row["PRUID"]],
+    longname_extractor=lambda row: row.FEDENAME
+    + " (Riding), "
+    + pruid_to_province[row["PRUID"]],
     filter=lambda x: True,
     meta=dict(
         type="CA Riding",
