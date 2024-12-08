@@ -17,35 +17,6 @@ census_files = [
 ]
 
 
-@permacache("urbanstats/data/canada/load_single_canada_data")
-def load_single_canada_data_da(census_file):
-    canada_census = pd.read_csv(
-        os.path.join(
-            "named_region_shapefiles/canada",
-            census_file,
-        ),
-        encoding="latin-1",
-    )
-    canada_census = canada_census[canada_census.GEO_LEVEL == "Dissemination area"]
-    canada_census = canada_census[
-        [
-            "DGUID",
-            "ALT_GEO_CODE",
-            "GEO_LEVEL",
-            "GEO_NAME",
-            "CHARACTERISTIC_ID",
-            "C1_COUNT_TOTAL",
-        ]
-    ]
-    canada_census = pd.pivot_table(
-        canada_census,
-        index="DGUID",
-        columns="CHARACTERISTIC_ID",
-        values="C1_COUNT_TOTAL",
-    )
-    return canada_census
-
-
 @permacache("urbanstats/data/canada/canada_blocks/load_canada_db_shapefile_4")
 def load_canada_db_shapefile(year):
     assert year == 2021
