@@ -59,7 +59,7 @@ CANADIAN_CENSUS_POPULATION_CENTERS = Shapefile(
     longname_extractor=longname_extractor,
     filter=lambda x: True,
     meta=dict(
-        type="Canadian Population Center",
+        type="CA Population Center",
         source="StatCan",
         type_category="US Subdivision",
     ),

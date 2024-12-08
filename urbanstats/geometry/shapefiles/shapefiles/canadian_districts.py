@@ -22,7 +22,7 @@ CANADIAN_DISTRICTS = Shapefile(
     longname_extractor=lambda row: row.FEDENAME + " (Riding), " + pruid_to_province[row["PRUID"]],
     filter=lambda x: True,
     meta=dict(
-        type="Canadian Riding",
+        type="CA Riding",
         source="StatCan",
         type_category="Political",
     ),

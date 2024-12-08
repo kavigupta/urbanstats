@@ -16,8 +16,8 @@ from permacache import permacache, stable_hash
 
 from urbanstats.games.quiz_columns import stats, stats_to_display, stats_to_types
 from urbanstats.games.quiz_region_types import (
-    QUIZ_REGION_TYPES_ALL,
     QUIZ_REGION_TYPES_INTERNATIONAL,
+    sample_quiz_type,
 )
 from urbanstats.geometry.shapefiles.shapefiles_list import filter_table_for_type
 from urbanstats.shortener import shorten
@@ -34,7 +34,7 @@ from .quiz_custom import get_custom_quizzes
 
 min_pop = 250_000
 min_pop_international = 2_500_000
-version_numeric = 78
+version_numeric = 79
 
 version = str(version_numeric) + stable_hash(statistic_collections)
 
@@ -152,7 +152,7 @@ def sample_quiz_question(
     rng, banned_categories, banned_type_categories, distance_pct_bot, distance_pct_top
 ):
     while True:
-        typ = rng.choice(QUIZ_REGION_TYPES_ALL)
+        typ = sample_quiz_type(rng)
         if type_ban_categorize(typ) in banned_type_categories:
             continue
         at_pop, universes = filter_for_pop(typ)
@@ -198,7 +198,9 @@ def filter_for_pop(typ):
     universes = at_pop["universes"]
     at_pop = pd.DataFrame({s: at_pop[s] for s in stats if typ in stats_to_types[s]})
     mask = ~at_pop.applymap(np.isnan).all()
-    assert mask.all()
+    # if not mask.all():
+    #     import IPython; IPython.embed(); 1/0
+    assert mask.all(), (typ, mask.index[~mask])
     return at_pop, universes
 
 

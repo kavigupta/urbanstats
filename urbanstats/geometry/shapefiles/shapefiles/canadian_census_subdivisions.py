@@ -117,7 +117,7 @@ CANADIAN_CENSUS_SUBDIVISIONS = Shapefile(
     + row.division_longname,
     filter=lambda x: True,
     meta=dict(
-        type="Canadian Census Subdivision",
+        type="CA Census Subdivision",
         source="StatCan",
         type_category="Census",
     ),
