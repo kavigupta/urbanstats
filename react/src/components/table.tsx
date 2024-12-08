@@ -50,6 +50,7 @@ interface ColumnLayoutProps {
         style: CSSProperties
     }[]
     onlyColumns?: string[]
+    blankColumns?: string[]
     totalWidth: number
 }
 
@@ -62,7 +63,12 @@ function ColumnLayout(props: ColumnLayoutProps): JSX.Element[] {
             continue
         }
         cellPercentages.push(widthPercentage)
-        cellContents.push({ content, style })
+        if (props.blankColumns?.includes(columnIdentifier)) {
+            cellContents.push({ content: <span></span>, style })
+        }
+        else {
+            cellContents.push({ content, style })
+        }
     }
 
     // normalize cell percentages
@@ -241,6 +247,7 @@ export function StatisticRowCells(props: {
     statisticStyle?: CSSProperties
     row: ArticleRow
     onlyColumns?: string[]
+    blankColumns?: string[]
     onNavigate?: (newArticle: string) => void
     simpleOrdinals: boolean
 }): ReactNode {
@@ -339,6 +346,7 @@ export function StatisticRowCells(props: {
             cells={cells}
             totalWidth={props.totalWidth}
             onlyColumns={props.onlyColumns}
+            blankColumns={props.blankColumns}
         />
     )
 }

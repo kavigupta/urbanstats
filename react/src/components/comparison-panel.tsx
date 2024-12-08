@@ -82,15 +82,24 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
         )
     }
 
+    const settings = useSettings(groupYearKeys())
+
+    const rows = props.rows(settings)
+
     const mobileLayout = useMobileLayout()
 
-    const allArticlesOfSameType = props.articles.every(article => article.articleType === props.articles[0].articleType)
+    const validOrdinals = rows[0].map((_, i) => rows.every(row => row[i].disclaimer !== 'heterogenous-sources'))
 
-    const onlyColumns: ColumnIdentifier[] = allArticlesOfSameType ? ['statval', 'statval_unit', 'statistic_ordinal', 'statistic_percentile'] : ['statval', 'statval_unit']
+    const includeOrdinals = (
+        props.articles.every(article => article.articleType === props.articles[0].articleType)
+        && validOrdinals.some(x => x)
+    )
+
+    const onlyColumns: ColumnIdentifier[] = includeOrdinals ? ['statval', 'statval_unit', 'statistic_ordinal', 'statistic_percentile'] : ['statval', 'statval_unit']
 
     const maxColumns = mobileLayout ? 4 : 6
 
-    const widthColumns = (allArticlesOfSameType ? 1.5 : 1) * props.articles.length + 1
+    const widthColumns = (includeOrdinals ? 1.5 : 1) * props.articles.length + 1
 
     const maybeScroll = (contents: React.ReactNode): ReactNode => {
         if (widthColumns > maxColumns) {
@@ -109,9 +118,6 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
     const subHeaderTextClass = useSubHeaderTextClass()
     const comparisonRightStyle = useComparisonHeadStyle('right')
     const searchComparisonStyle = useComparisonHeadStyle()
-    const settings = useSettings(groupYearKeys())
-
-    const rows = props.rows(settings)
 
     const curr_universe = useUniverse()
 
@@ -198,6 +204,7 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
                                         articles={props.articles}
                                         names={names}
                                         onlyColumns={onlyColumns}
+                                        blankColumns={validOrdinals[row_idx] ? [] : ['statistic_ordinal', 'statistic_percentile']}
                                     />
                                 ),
                                 )
@@ -238,11 +245,12 @@ function each({ length }: { length: number }): number {
     return 100 * (1 - left_margin_pct) / length
 }
 
-function ComparisonRowBody({ rows, articles, names, onlyColumns, index }: {
+function ComparisonRowBody({ rows, articles, names, onlyColumns, blankColumns, index }: {
     rows: ArticleRow[]
     articles: Article[]
     names: string[]
     onlyColumns: ColumnIdentifier[]
+    blankColumns: ColumnIdentifier[]
     index: number
 }): ReactNode {
     const colors = useColors()
@@ -255,16 +263,18 @@ function ComparisonRowBody({ rows, articles, names, onlyColumns, index }: {
                     rows={rows}
                     names={names}
                     onlyColumns={onlyColumns}
+                    blankColumns={blankColumns}
                 />
             </TableRowContainer>
         </WithPlot>
     )
 }
 
-function ComparisonCells({ names, rows, onlyColumns }: {
+function ComparisonCells({ names, rows, onlyColumns, blankColumns }: {
     names: string[]
     rows: ArticleRow[]
     onlyColumns: ColumnIdentifier[]
+    blankColumns: ColumnIdentifier[]
 }): ReactNode {
     const colors = useColors()
     const navContext = useContext(Navigator.Context)
@@ -295,6 +305,7 @@ function ComparisonCells({ names, rows, onlyColumns }: {
                 row={row}
                 longname={names[i]}
                 onlyColumns={onlyColumns}
+                blankColumns={blankColumns}
                 simpleOrdinals={true}
                 statisticStyle={highlightIndex === i ? { backgroundColor: mixWithBackground(color(colors.hueColors, i), colors.mixPct / 100, colors.background) } : {}}
                 onNavigate={(x) => {
