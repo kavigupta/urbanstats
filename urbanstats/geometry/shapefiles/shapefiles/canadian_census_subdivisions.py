@@ -109,7 +109,7 @@ def census_subdivision_name(row):
 
 
 CANADIAN_CENSUS_SUBDIVISIONS = Shapefile(
-    hash_key="canadian_census_subdivisions_2",
+    hash_key="canadian_census_subdivisions_3",
     path=load_csd_shapefile,
     shortname_extractor=census_subdivision_name,
     longname_extractor=lambda row: census_subdivision_name(row)

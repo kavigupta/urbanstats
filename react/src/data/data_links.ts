@@ -80,6 +80,24 @@ const value: Record<string, number[]> = {
         4,
         4,
     ],
+    'world__Canadian Census Subdivision': [
+        26,
+        26,
+        26,
+        26,
+        26,
+        26,
+        26,
+        26,
+        26,
+        26,
+        16,
+    ],
+    'world__Canadian Population Center': [
+        122,
+        122,
+        32,
+    ],
     'world__City': [
         4,
         4,
@@ -535,6 +553,24 @@ const value: Record<string, number[]> = {
         4,
         4,
     ],
+    'North America__Canadian Census Subdivision': [
+        26,
+        26,
+        26,
+        26,
+        26,
+        26,
+        26,
+        26,
+        26,
+        26,
+        16,
+    ],
+    'North America__Canadian Population Center': [
+        122,
+        122,
+        32,
+    ],
     'North America__City': [
         4,
         4,
@@ -841,6 +877,24 @@ const value: Record<string, number[]> = {
     'South America__Urban Center': [
         173,
         103,
+    ],
+    'Canada__Canadian Census Subdivision': [
+        26,
+        26,
+        26,
+        26,
+        26,
+        26,
+        26,
+        26,
+        26,
+        26,
+        16,
+    ],
+    'Canada__Canadian Population Center': [
+        122,
+        122,
+        32,
     ],
     'China__Urban Center': [
         69,
@@ -1760,6 +1814,23 @@ const value: Record<string, number[]> = {
     'Puerto Rico, USA__CCD': [
         140,
         136,
+    ],
+    'British Columbia, Canada__Canadian Census Subdivision': [
+        195,
+        81,
+    ],
+    'Ontario, Canada__Canadian Census Subdivision': [
+        224,
+        52,
+    ],
+    'Quebec, Canada__Canadian Census Subdivision': [
+        105,
+        105,
+        66,
+    ],
+    'Saskatchewan, Canada__Canadian Census Subdivision': [
+        139,
+        137,
     ],
 }
 export default value

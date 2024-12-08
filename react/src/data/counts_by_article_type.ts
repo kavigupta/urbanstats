@@ -118,7 +118,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
                 1,
             ],
             [
-                181133,
+                187474,
                 1,
             ],
             [
@@ -154,7 +154,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
                 3,
             ],
             [
-                181133,
+                187474,
                 1,
             ],
             [
@@ -162,7 +162,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
                 6,
             ],
             [
-                357,
+                6698,
                 5,
             ],
             [
@@ -314,7 +314,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
                 4,
             ],
             [
-                357,
+                6698,
                 1,
             ],
             [
@@ -350,7 +350,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
                 3,
             ],
             [
-                357,
+                6698,
                 1,
             ],
             [
@@ -1326,7 +1326,53 @@ const value: Record<string, Record<string, [number, number][]>> = {
                 29,
             ],
         ],
-        'Census Division': [
+        'Canadian CMA': [
+            [
+                0,
+                54,
+            ],
+            [
+                155,
+                1,
+            ],
+            [
+                0,
+                12,
+            ],
+            [
+                155,
+                1,
+            ],
+            [
+                0,
+                6,
+            ],
+            [
+                155,
+                5,
+            ],
+            [
+                0,
+                129,
+            ],
+            [
+                155,
+                1,
+            ],
+            [
+                0,
+                17,
+            ],
+            [
+                155,
+                1,
+            ],
+            [
+                0,
+                49,
+            ],
+        ],
+        'Canadian Census Division': [
             [
                 0,
                 54,
@@ -1365,6 +1411,144 @@ const value: Record<string, Record<string, [number, number][]>> = {
             ],
             [
                 293,
+                1,
+            ],
+            [
+                0,
+                49,
+            ],
+        ],
+        'Canadian Census Subdivision': [
+            [
+                0,
+                54,
+            ],
+            [
+                4823,
+                1,
+            ],
+            [
+                0,
+                12,
+            ],
+            [
+                4823,
+                1,
+            ],
+            [
+                0,
+                6,
+            ],
+            [
+                4823,
+                5,
+            ],
+            [
+                0,
+                129,
+            ],
+            [
+                4823,
+                1,
+            ],
+            [
+                0,
+                17,
+            ],
+            [
+                4823,
+                1,
+            ],
+            [
+                0,
+                49,
+            ],
+        ],
+        'Canadian Population Center': [
+            [
+                0,
+                54,
+            ],
+            [
+                1025,
+                1,
+            ],
+            [
+                0,
+                12,
+            ],
+            [
+                1025,
+                1,
+            ],
+            [
+                0,
+                6,
+            ],
+            [
+                1025,
+                5,
+            ],
+            [
+                0,
+                129,
+            ],
+            [
+                1025,
+                1,
+            ],
+            [
+                0,
+                17,
+            ],
+            [
+                1025,
+                1,
+            ],
+            [
+                0,
+                49,
+            ],
+        ],
+        'Canadian Riding': [
+            [
+                0,
+                54,
+            ],
+            [
+                338,
+                1,
+            ],
+            [
+                0,
+                12,
+            ],
+            [
+                338,
+                1,
+            ],
+            [
+                0,
+                6,
+            ],
+            [
+                338,
+                5,
+            ],
+            [
+                0,
+                129,
+            ],
+            [
+                338,
+                1,
+            ],
+            [
+                0,
+                17,
+            ],
+            [
+                338,
                 1,
             ],
             [
@@ -6812,7 +6996,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
                 1,
             ],
             [
-                164719,
+                171060,
                 1,
             ],
             [
@@ -6848,7 +7032,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
                 3,
             ],
             [
-                164719,
+                171060,
                 1,
             ],
             [
@@ -6856,7 +7040,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
                 6,
             ],
             [
-                357,
+                6698,
                 5,
             ],
             [
@@ -7008,7 +7192,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
                 4,
             ],
             [
-                357,
+                6698,
                 1,
             ],
             [
@@ -7044,7 +7228,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
                 3,
             ],
             [
-                357,
+                6698,
                 1,
             ],
             [
@@ -8020,7 +8204,53 @@ const value: Record<string, Record<string, [number, number][]>> = {
                 29,
             ],
         ],
-        'Census Division': [
+        'Canadian CMA': [
+            [
+                0,
+                54,
+            ],
+            [
+                155,
+                1,
+            ],
+            [
+                0,
+                12,
+            ],
+            [
+                155,
+                1,
+            ],
+            [
+                0,
+                6,
+            ],
+            [
+                155,
+                5,
+            ],
+            [
+                0,
+                129,
+            ],
+            [
+                155,
+                1,
+            ],
+            [
+                0,
+                17,
+            ],
+            [
+                155,
+                1,
+            ],
+            [
+                0,
+                49,
+            ],
+        ],
+        'Canadian Census Division': [
             [
                 0,
                 54,
@@ -8059,6 +8289,144 @@ const value: Record<string, Record<string, [number, number][]>> = {
             ],
             [
                 293,
+                1,
+            ],
+            [
+                0,
+                49,
+            ],
+        ],
+        'Canadian Census Subdivision': [
+            [
+                0,
+                54,
+            ],
+            [
+                4823,
+                1,
+            ],
+            [
+                0,
+                12,
+            ],
+            [
+                4823,
+                1,
+            ],
+            [
+                0,
+                6,
+            ],
+            [
+                4823,
+                5,
+            ],
+            [
+                0,
+                129,
+            ],
+            [
+                4823,
+                1,
+            ],
+            [
+                0,
+                17,
+            ],
+            [
+                4823,
+                1,
+            ],
+            [
+                0,
+                49,
+            ],
+        ],
+        'Canadian Population Center': [
+            [
+                0,
+                54,
+            ],
+            [
+                1025,
+                1,
+            ],
+            [
+                0,
+                12,
+            ],
+            [
+                1025,
+                1,
+            ],
+            [
+                0,
+                6,
+            ],
+            [
+                1025,
+                5,
+            ],
+            [
+                0,
+                129,
+            ],
+            [
+                1025,
+                1,
+            ],
+            [
+                0,
+                17,
+            ],
+            [
+                1025,
+                1,
+            ],
+            [
+                0,
+                49,
+            ],
+        ],
+        'Canadian Riding': [
+            [
+                0,
+                54,
+            ],
+            [
+                338,
+                1,
+            ],
+            [
+                0,
+                12,
+            ],
+            [
+                338,
+                1,
+            ],
+            [
+                0,
+                6,
+            ],
+            [
+                338,
+                5,
+            ],
+            [
+                0,
+                129,
+            ],
+            [
+                338,
+                1,
+            ],
+            [
+                0,
+                17,
+            ],
+            [
+                338,
                 1,
             ],
             [
@@ -22001,7 +22369,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
                 54,
             ],
             [
-                396,
+                6737,
                 1,
             ],
             [
@@ -22009,7 +22377,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
                 12,
             ],
             [
-                396,
+                6737,
                 1,
             ],
             [
@@ -22017,7 +22385,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
                 6,
             ],
             [
-                357,
+                6698,
                 5,
             ],
             [
@@ -22037,7 +22405,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
                 107,
             ],
             [
-                357,
+                6698,
                 1,
             ],
             [
@@ -22045,7 +22413,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
                 17,
             ],
             [
-                357,
+                6698,
                 1,
             ],
             [
@@ -22305,7 +22673,53 @@ const value: Record<string, Record<string, [number, number][]>> = {
                 49,
             ],
         ],
-        'Census Division': [
+        'Canadian CMA': [
+            [
+                0,
+                54,
+            ],
+            [
+                155,
+                1,
+            ],
+            [
+                0,
+                12,
+            ],
+            [
+                155,
+                1,
+            ],
+            [
+                0,
+                6,
+            ],
+            [
+                155,
+                5,
+            ],
+            [
+                0,
+                129,
+            ],
+            [
+                155,
+                1,
+            ],
+            [
+                0,
+                17,
+            ],
+            [
+                155,
+                1,
+            ],
+            [
+                0,
+                49,
+            ],
+        ],
+        'Canadian Census Division': [
             [
                 0,
                 54,
@@ -22344,6 +22758,144 @@ const value: Record<string, Record<string, [number, number][]>> = {
             ],
             [
                 293,
+                1,
+            ],
+            [
+                0,
+                49,
+            ],
+        ],
+        'Canadian Census Subdivision': [
+            [
+                0,
+                54,
+            ],
+            [
+                4823,
+                1,
+            ],
+            [
+                0,
+                12,
+            ],
+            [
+                4823,
+                1,
+            ],
+            [
+                0,
+                6,
+            ],
+            [
+                4823,
+                5,
+            ],
+            [
+                0,
+                129,
+            ],
+            [
+                4823,
+                1,
+            ],
+            [
+                0,
+                17,
+            ],
+            [
+                4823,
+                1,
+            ],
+            [
+                0,
+                49,
+            ],
+        ],
+        'Canadian Population Center': [
+            [
+                0,
+                54,
+            ],
+            [
+                1025,
+                1,
+            ],
+            [
+                0,
+                12,
+            ],
+            [
+                1025,
+                1,
+            ],
+            [
+                0,
+                6,
+            ],
+            [
+                1025,
+                5,
+            ],
+            [
+                0,
+                129,
+            ],
+            [
+                1025,
+                1,
+            ],
+            [
+                0,
+                17,
+            ],
+            [
+                1025,
+                1,
+            ],
+            [
+                0,
+                49,
+            ],
+        ],
+        'Canadian Riding': [
+            [
+                0,
+                54,
+            ],
+            [
+                338,
+                1,
+            ],
+            [
+                0,
+                12,
+            ],
+            [
+                338,
+                1,
+            ],
+            [
+                0,
+                6,
+            ],
+            [
+                338,
+                5,
+            ],
+            [
+                0,
+                129,
+            ],
+            [
+                338,
+                1,
+            ],
+            [
+                0,
+                17,
+            ],
+            [
+                338,
                 1,
             ],
             [
@@ -187735,7 +188287,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
                 54,
             ],
             [
-                26,
+                602,
                 1,
             ],
             [
@@ -187743,7 +188295,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
                 12,
             ],
             [
-                26,
+                602,
                 1,
             ],
             [
@@ -187751,7 +188303,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
                 6,
             ],
             [
-                21,
+                597,
                 5,
             ],
             [
@@ -187767,7 +188319,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
                 107,
             ],
             [
-                21,
+                597,
                 1,
             ],
             [
@@ -187775,7 +188327,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
                 17,
             ],
             [
-                21,
+                597,
                 1,
             ],
             [
@@ -187927,7 +188479,53 @@ const value: Record<string, Record<string, [number, number][]>> = {
                 49,
             ],
         ],
-        'Census Division': [
+        'Canadian CMA': [
+            [
+                0,
+                54,
+            ],
+            [
+                17,
+                1,
+            ],
+            [
+                0,
+                12,
+            ],
+            [
+                17,
+                1,
+            ],
+            [
+                0,
+                6,
+            ],
+            [
+                17,
+                5,
+            ],
+            [
+                0,
+                129,
+            ],
+            [
+                17,
+                1,
+            ],
+            [
+                0,
+                17,
+            ],
+            [
+                17,
+                1,
+            ],
+            [
+                0,
+                49,
+            ],
+        ],
+        'Canadian Census Division': [
             [
                 0,
                 54,
@@ -187966,6 +188564,144 @@ const value: Record<string, Record<string, [number, number][]>> = {
             ],
             [
                 19,
+                1,
+            ],
+            [
+                0,
+                49,
+            ],
+        ],
+        'Canadian Census Subdivision': [
+            [
+                0,
+                54,
+            ],
+            [
+                406,
+                1,
+            ],
+            [
+                0,
+                12,
+            ],
+            [
+                406,
+                1,
+            ],
+            [
+                0,
+                6,
+            ],
+            [
+                406,
+                5,
+            ],
+            [
+                0,
+                129,
+            ],
+            [
+                406,
+                1,
+            ],
+            [
+                0,
+                17,
+            ],
+            [
+                406,
+                1,
+            ],
+            [
+                0,
+                49,
+            ],
+        ],
+        'Canadian Population Center': [
+            [
+                0,
+                54,
+            ],
+            [
+                119,
+                1,
+            ],
+            [
+                0,
+                12,
+            ],
+            [
+                119,
+                1,
+            ],
+            [
+                0,
+                6,
+            ],
+            [
+                119,
+                5,
+            ],
+            [
+                0,
+                129,
+            ],
+            [
+                119,
+                1,
+            ],
+            [
+                0,
+                17,
+            ],
+            [
+                119,
+                1,
+            ],
+            [
+                0,
+                49,
+            ],
+        ],
+        'Canadian Riding': [
+            [
+                0,
+                54,
+            ],
+            [
+                34,
+                1,
+            ],
+            [
+                0,
+                12,
+            ],
+            [
+                34,
+                1,
+            ],
+            [
+                0,
+                6,
+            ],
+            [
+                34,
+                5,
+            ],
+            [
+                0,
+                129,
+            ],
+            [
+                34,
+                1,
+            ],
+            [
+                0,
+                17,
+            ],
+            [
+                34,
                 1,
             ],
             [
@@ -188035,7 +188771,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
                 54,
             ],
             [
-                36,
+                855,
                 1,
             ],
             [
@@ -188043,7 +188779,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
                 12,
             ],
             [
-                36,
+                855,
                 1,
             ],
             [
@@ -188051,7 +188787,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
                 6,
             ],
             [
-                30,
+                849,
                 5,
             ],
             [
@@ -188067,7 +188803,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
                 107,
             ],
             [
-                30,
+                849,
                 1,
             ],
             [
@@ -188075,7 +188811,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
                 17,
             ],
             [
-                30,
+                849,
                 1,
             ],
             [
@@ -188173,7 +188909,53 @@ const value: Record<string, Record<string, [number, number][]>> = {
                 175,
             ],
         ],
-        'Census Division': [
+        'Canadian CMA': [
+            [
+                0,
+                54,
+            ],
+            [
+                28,
+                1,
+            ],
+            [
+                0,
+                12,
+            ],
+            [
+                28,
+                1,
+            ],
+            [
+                0,
+                6,
+            ],
+            [
+                28,
+                5,
+            ],
+            [
+                0,
+                129,
+            ],
+            [
+                28,
+                1,
+            ],
+            [
+                0,
+                17,
+            ],
+            [
+                28,
+                1,
+            ],
+            [
+                0,
+                49,
+            ],
+        ],
+        'Canadian Census Division': [
             [
                 0,
                 54,
@@ -188212,6 +188994,144 @@ const value: Record<string, Record<string, [number, number][]>> = {
             ],
             [
                 29,
+                1,
+            ],
+            [
+                0,
+                49,
+            ],
+        ],
+        'Canadian Census Subdivision': [
+            [
+                0,
+                54,
+            ],
+            [
+                641,
+                1,
+            ],
+            [
+                0,
+                12,
+            ],
+            [
+                641,
+                1,
+            ],
+            [
+                0,
+                6,
+            ],
+            [
+                641,
+                5,
+            ],
+            [
+                0,
+                129,
+            ],
+            [
+                641,
+                1,
+            ],
+            [
+                0,
+                17,
+            ],
+            [
+                641,
+                1,
+            ],
+            [
+                0,
+                49,
+            ],
+        ],
+        'Canadian Population Center': [
+            [
+                0,
+                54,
+            ],
+            [
+                108,
+                1,
+            ],
+            [
+                0,
+                12,
+            ],
+            [
+                108,
+                1,
+            ],
+            [
+                0,
+                6,
+            ],
+            [
+                108,
+                5,
+            ],
+            [
+                0,
+                129,
+            ],
+            [
+                108,
+                1,
+            ],
+            [
+                0,
+                17,
+            ],
+            [
+                108,
+                1,
+            ],
+            [
+                0,
+                49,
+            ],
+        ],
+        'Canadian Riding': [
+            [
+                0,
+                54,
+            ],
+            [
+                42,
+                1,
+            ],
+            [
+                0,
+                12,
+            ],
+            [
+                42,
+                1,
+            ],
+            [
+                0,
+                6,
+            ],
+            [
+                42,
+                5,
+            ],
+            [
+                0,
+                129,
+            ],
+            [
+                42,
+                1,
+            ],
+            [
+                0,
+                17,
+            ],
+            [
+                42,
                 1,
             ],
             [
@@ -188281,7 +189201,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
                 54,
             ],
             [
-                27,
+                322,
                 1,
             ],
             [
@@ -188289,7 +189209,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
                 12,
             ],
             [
-                27,
+                322,
                 1,
             ],
             [
@@ -188297,7 +189217,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
                 6,
             ],
             [
-                24,
+                319,
                 5,
             ],
             [
@@ -188313,7 +189233,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
                 107,
             ],
             [
-                24,
+                319,
                 1,
             ],
             [
@@ -188321,7 +189241,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
                 17,
             ],
             [
-                24,
+                319,
                 1,
             ],
             [
@@ -188419,7 +189339,53 @@ const value: Record<string, Record<string, [number, number][]>> = {
                 175,
             ],
         ],
-        'Census Division': [
+        'Canadian CMA': [
+            [
+                0,
+                54,
+            ],
+            [
+                6,
+                1,
+            ],
+            [
+                0,
+                12,
+            ],
+            [
+                6,
+                1,
+            ],
+            [
+                0,
+                6,
+            ],
+            [
+                6,
+                5,
+            ],
+            [
+                0,
+                129,
+            ],
+            [
+                6,
+                1,
+            ],
+            [
+                0,
+                17,
+            ],
+            [
+                6,
+                1,
+            ],
+            [
+                0,
+                49,
+            ],
+        ],
+        'Canadian Census Division': [
             [
                 0,
                 54,
@@ -188458,6 +189424,144 @@ const value: Record<string, Record<string, [number, number][]>> = {
             ],
             [
                 23,
+                1,
+            ],
+            [
+                0,
+                49,
+            ],
+        ],
+        'Canadian Census Subdivision': [
+            [
+                0,
+                54,
+            ],
+            [
+                221,
+                1,
+            ],
+            [
+                0,
+                12,
+            ],
+            [
+                221,
+                1,
+            ],
+            [
+                0,
+                6,
+            ],
+            [
+                221,
+                5,
+            ],
+            [
+                0,
+                129,
+            ],
+            [
+                221,
+                1,
+            ],
+            [
+                0,
+                17,
+            ],
+            [
+                221,
+                1,
+            ],
+            [
+                0,
+                49,
+            ],
+        ],
+        'Canadian Population Center': [
+            [
+                0,
+                54,
+            ],
+            [
+                54,
+                1,
+            ],
+            [
+                0,
+                12,
+            ],
+            [
+                54,
+                1,
+            ],
+            [
+                0,
+                6,
+            ],
+            [
+                54,
+                5,
+            ],
+            [
+                0,
+                129,
+            ],
+            [
+                54,
+                1,
+            ],
+            [
+                0,
+                17,
+            ],
+            [
+                54,
+                1,
+            ],
+            [
+                0,
+                49,
+            ],
+        ],
+        'Canadian Riding': [
+            [
+                0,
+                54,
+            ],
+            [
+                14,
+                1,
+            ],
+            [
+                0,
+                12,
+            ],
+            [
+                14,
+                1,
+            ],
+            [
+                0,
+                6,
+            ],
+            [
+                14,
+                5,
+            ],
+            [
+                0,
+                129,
+            ],
+            [
+                14,
+                1,
+            ],
+            [
+                0,
+                17,
+            ],
+            [
+                14,
                 1,
             ],
             [
@@ -188527,7 +189631,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
                 54,
             ],
             [
-                17,
+                329,
                 1,
             ],
             [
@@ -188535,7 +189639,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
                 12,
             ],
             [
-                17,
+                329,
                 1,
             ],
             [
@@ -188543,7 +189647,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
                 6,
             ],
             [
-                16,
+                328,
                 5,
             ],
             [
@@ -188559,7 +189663,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
                 107,
             ],
             [
-                16,
+                328,
                 1,
             ],
             [
@@ -188567,7 +189671,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
                 17,
             ],
             [
-                16,
+                328,
                 1,
             ],
             [
@@ -188605,7 +189709,53 @@ const value: Record<string, Record<string, [number, number][]>> = {
                 175,
             ],
         ],
-        'Census Division': [
+        'Canadian CMA': [
+            [
+                0,
+                54,
+            ],
+            [
+                7,
+                1,
+            ],
+            [
+                0,
+                12,
+            ],
+            [
+                7,
+                1,
+            ],
+            [
+                0,
+                6,
+            ],
+            [
+                7,
+                5,
+            ],
+            [
+                0,
+                129,
+            ],
+            [
+                7,
+                1,
+            ],
+            [
+                0,
+                17,
+            ],
+            [
+                7,
+                1,
+            ],
+            [
+                0,
+                49,
+            ],
+        ],
+        'Canadian Census Division': [
             [
                 0,
                 54,
@@ -188644,6 +189794,144 @@ const value: Record<string, Record<string, [number, number][]>> = {
             ],
             [
                 15,
+                1,
+            ],
+            [
+                0,
+                49,
+            ],
+        ],
+        'Canadian Census Subdivision': [
+            [
+                0,
+                54,
+            ],
+            [
+                264,
+                1,
+            ],
+            [
+                0,
+                12,
+            ],
+            [
+                264,
+                1,
+            ],
+            [
+                0,
+                6,
+            ],
+            [
+                264,
+                5,
+            ],
+            [
+                0,
+                129,
+            ],
+            [
+                264,
+                1,
+            ],
+            [
+                0,
+                17,
+            ],
+            [
+                264,
+                1,
+            ],
+            [
+                0,
+                49,
+            ],
+        ],
+        'Canadian Population Center': [
+            [
+                0,
+                54,
+            ],
+            [
+                31,
+                1,
+            ],
+            [
+                0,
+                12,
+            ],
+            [
+                31,
+                1,
+            ],
+            [
+                0,
+                6,
+            ],
+            [
+                31,
+                5,
+            ],
+            [
+                0,
+                129,
+            ],
+            [
+                31,
+                1,
+            ],
+            [
+                0,
+                17,
+            ],
+            [
+                31,
+                1,
+            ],
+            [
+                0,
+                49,
+            ],
+        ],
+        'Canadian Riding': [
+            [
+                0,
+                54,
+            ],
+            [
+                10,
+                1,
+            ],
+            [
+                0,
+                12,
+            ],
+            [
+                10,
+                1,
+            ],
+            [
+                0,
+                6,
+            ],
+            [
+                10,
+                5,
+            ],
+            [
+                0,
+                129,
+            ],
+            [
+                10,
+                1,
+            ],
+            [
+                0,
+                17,
+            ],
+            [
+                10,
                 1,
             ],
             [
@@ -188713,7 +190001,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
                 54,
             ],
             [
-                12,
+                413,
                 1,
             ],
             [
@@ -188721,7 +190009,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
                 12,
             ],
             [
-                12,
+                413,
                 1,
             ],
             [
@@ -188729,7 +190017,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
                 6,
             ],
             [
-                12,
+                413,
                 5,
             ],
             [
@@ -188745,7 +190033,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
                 107,
             ],
             [
-                12,
+                413,
                 1,
             ],
             [
@@ -188753,7 +190041,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
                 17,
             ],
             [
-                12,
+                413,
                 1,
             ],
             [
@@ -188761,7 +190049,53 @@ const value: Record<string, Record<string, [number, number][]>> = {
                 49,
             ],
         ],
-        'Census Division': [
+        'Canadian CMA': [
+            [
+                0,
+                54,
+            ],
+            [
+                4,
+                1,
+            ],
+            [
+                0,
+                12,
+            ],
+            [
+                4,
+                1,
+            ],
+            [
+                0,
+                6,
+            ],
+            [
+                4,
+                5,
+            ],
+            [
+                0,
+                129,
+            ],
+            [
+                4,
+                1,
+            ],
+            [
+                0,
+                17,
+            ],
+            [
+                4,
+                1,
+            ],
+            [
+                0,
+                49,
+            ],
+        ],
+        'Canadian Census Division': [
             [
                 0,
                 54,
@@ -188800,6 +190134,144 @@ const value: Record<string, Record<string, [number, number][]>> = {
             ],
             [
                 11,
+                1,
+            ],
+            [
+                0,
+                49,
+            ],
+        ],
+        'Canadian Census Subdivision': [
+            [
+                0,
+                54,
+            ],
+            [
+                363,
+                1,
+            ],
+            [
+                0,
+                12,
+            ],
+            [
+                363,
+                1,
+            ],
+            [
+                0,
+                6,
+            ],
+            [
+                363,
+                5,
+            ],
+            [
+                0,
+                129,
+            ],
+            [
+                363,
+                1,
+            ],
+            [
+                0,
+                17,
+            ],
+            [
+                363,
+                1,
+            ],
+            [
+                0,
+                49,
+            ],
+        ],
+        'Canadian Population Center': [
+            [
+                0,
+                54,
+            ],
+            [
+                27,
+                1,
+            ],
+            [
+                0,
+                12,
+            ],
+            [
+                27,
+                1,
+            ],
+            [
+                0,
+                6,
+            ],
+            [
+                27,
+                5,
+            ],
+            [
+                0,
+                129,
+            ],
+            [
+                27,
+                1,
+            ],
+            [
+                0,
+                17,
+            ],
+            [
+                27,
+                1,
+            ],
+            [
+                0,
+                49,
+            ],
+        ],
+        'Canadian Riding': [
+            [
+                0,
+                54,
+            ],
+            [
+                7,
+                1,
+            ],
+            [
+                0,
+                12,
+            ],
+            [
+                7,
+                1,
+            ],
+            [
+                0,
+                6,
+            ],
+            [
+                7,
+                5,
+            ],
+            [
+                0,
+                129,
+            ],
+            [
+                7,
+                1,
+            ],
+            [
+                0,
+                17,
+            ],
+            [
+                7,
                 1,
             ],
             [
@@ -188869,7 +190341,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
                 54,
             ],
             [
-                7,
+                50,
                 1,
             ],
             [
@@ -188877,7 +190349,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
                 12,
             ],
             [
-                7,
+                50,
                 1,
             ],
             [
@@ -188885,7 +190357,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
                 6,
             ],
             [
-                7,
+                50,
                 5,
             ],
             [
@@ -188901,7 +190373,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
                 107,
             ],
             [
-                7,
+                50,
                 1,
             ],
             [
@@ -188909,7 +190381,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
                 17,
             ],
             [
-                7,
+                50,
                 1,
             ],
             [
@@ -188917,7 +190389,53 @@ const value: Record<string, Record<string, [number, number][]>> = {
                 49,
             ],
         ],
-        'Census Division': [
+        'Canadian CMA': [
+            [
+                0,
+                54,
+            ],
+            [
+                1,
+                1,
+            ],
+            [
+                0,
+                12,
+            ],
+            [
+                1,
+                1,
+            ],
+            [
+                0,
+                6,
+            ],
+            [
+                1,
+                5,
+            ],
+            [
+                0,
+                129,
+            ],
+            [
+                1,
+                1,
+            ],
+            [
+                0,
+                17,
+            ],
+            [
+                1,
+                1,
+            ],
+            [
+                0,
+                49,
+            ],
+        ],
+        'Canadian Census Division': [
             [
                 0,
                 54,
@@ -188956,6 +190474,144 @@ const value: Record<string, Record<string, [number, number][]>> = {
             ],
             [
                 6,
+                1,
+            ],
+            [
+                0,
+                49,
+            ],
+        ],
+        'Canadian Census Subdivision': [
+            [
+                0,
+                54,
+            ],
+            [
+                37,
+                1,
+            ],
+            [
+                0,
+                12,
+            ],
+            [
+                37,
+                1,
+            ],
+            [
+                0,
+                6,
+            ],
+            [
+                37,
+                5,
+            ],
+            [
+                0,
+                129,
+            ],
+            [
+                37,
+                1,
+            ],
+            [
+                0,
+                17,
+            ],
+            [
+                37,
+                1,
+            ],
+            [
+                0,
+                49,
+            ],
+        ],
+        'Canadian Population Center': [
+            [
+                0,
+                54,
+            ],
+            [
+                4,
+                1,
+            ],
+            [
+                0,
+                12,
+            ],
+            [
+                4,
+                1,
+            ],
+            [
+                0,
+                6,
+            ],
+            [
+                4,
+                5,
+            ],
+            [
+                0,
+                129,
+            ],
+            [
+                4,
+                1,
+            ],
+            [
+                0,
+                17,
+            ],
+            [
+                4,
+                1,
+            ],
+            [
+                0,
+                49,
+            ],
+        ],
+        'Canadian Riding': [
+            [
+                0,
+                54,
+            ],
+            [
+                1,
+                1,
+            ],
+            [
+                0,
+                12,
+            ],
+            [
+                1,
+                1,
+            ],
+            [
+                0,
+                6,
+            ],
+            [
+                1,
+                5,
+            ],
+            [
+                0,
+                129,
+            ],
+            [
+                1,
+                1,
+            ],
+            [
+                0,
+                17,
+            ],
+            [
+                1,
                 1,
             ],
             [
@@ -189025,7 +190681,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
                 54,
             ],
             [
-                19,
+                164,
                 1,
             ],
             [
@@ -189033,7 +190689,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
                 12,
             ],
             [
-                19,
+                164,
                 1,
             ],
             [
@@ -189041,7 +190697,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
                 6,
             ],
             [
-                19,
+                164,
                 5,
             ],
             [
@@ -189057,7 +190713,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
                 107,
             ],
             [
-                19,
+                164,
                 1,
             ],
             [
@@ -189065,7 +190721,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
                 17,
             ],
             [
-                19,
+                164,
                 1,
             ],
             [
@@ -189073,7 +190729,53 @@ const value: Record<string, Record<string, [number, number][]>> = {
                 49,
             ],
         ],
-        'Census Division': [
+        'Canadian CMA': [
+            [
+                0,
+                54,
+            ],
+            [
+                5,
+                1,
+            ],
+            [
+                0,
+                12,
+            ],
+            [
+                5,
+                1,
+            ],
+            [
+                0,
+                6,
+            ],
+            [
+                5,
+                5,
+            ],
+            [
+                0,
+                129,
+            ],
+            [
+                5,
+                1,
+            ],
+            [
+                0,
+                17,
+            ],
+            [
+                5,
+                1,
+            ],
+            [
+                0,
+                49,
+            ],
+        ],
+        'Canadian Census Division': [
             [
                 0,
                 54,
@@ -189112,6 +190814,144 @@ const value: Record<string, Record<string, [number, number][]>> = {
             ],
             [
                 18,
+                1,
+            ],
+            [
+                0,
+                49,
+            ],
+        ],
+        'Canadian Census Subdivision': [
+            [
+                0,
+                54,
+            ],
+            [
+                92,
+                1,
+            ],
+            [
+                0,
+                12,
+            ],
+            [
+                92,
+                1,
+            ],
+            [
+                0,
+                6,
+            ],
+            [
+                92,
+                5,
+            ],
+            [
+                0,
+                129,
+            ],
+            [
+                92,
+                1,
+            ],
+            [
+                0,
+                17,
+            ],
+            [
+                92,
+                1,
+            ],
+            [
+                0,
+                49,
+            ],
+        ],
+        'Canadian Population Center': [
+            [
+                0,
+                54,
+            ],
+            [
+                37,
+                1,
+            ],
+            [
+                0,
+                12,
+            ],
+            [
+                37,
+                1,
+            ],
+            [
+                0,
+                6,
+            ],
+            [
+                37,
+                5,
+            ],
+            [
+                0,
+                129,
+            ],
+            [
+                37,
+                1,
+            ],
+            [
+                0,
+                17,
+            ],
+            [
+                37,
+                1,
+            ],
+            [
+                0,
+                49,
+            ],
+        ],
+        'Canadian Riding': [
+            [
+                0,
+                54,
+            ],
+            [
+                11,
+                1,
+            ],
+            [
+                0,
+                12,
+            ],
+            [
+                11,
+                1,
+            ],
+            [
+                0,
+                6,
+            ],
+            [
+                11,
+                5,
+            ],
+            [
+                0,
+                129,
+            ],
+            [
+                11,
+                1,
+            ],
+            [
+                0,
+                17,
+            ],
+            [
+                11,
                 1,
             ],
             [
@@ -189181,7 +191021,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
                 54,
             ],
             [
-                4,
+                37,
                 1,
             ],
             [
@@ -189189,7 +191029,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
                 12,
             ],
             [
-                4,
+                37,
                 1,
             ],
             [
@@ -189197,7 +191037,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
                 6,
             ],
             [
-                4,
+                37,
                 5,
             ],
             [
@@ -189213,7 +191053,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
                 107,
             ],
             [
-                4,
+                37,
                 1,
             ],
             [
@@ -189221,7 +191061,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
                 17,
             ],
             [
-                4,
+                37,
                 1,
             ],
             [
@@ -189229,7 +191069,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
                 49,
             ],
         ],
-        'Census Division': [
+        'Canadian Census Division': [
             [
                 0,
                 54,
@@ -189268,6 +191108,144 @@ const value: Record<string, Record<string, [number, number][]>> = {
             ],
             [
                 3,
+                1,
+            ],
+            [
+                0,
+                49,
+            ],
+        ],
+        'Canadian Census Subdivision': [
+            [
+                0,
+                54,
+            ],
+            [
+                26,
+                1,
+            ],
+            [
+                0,
+                12,
+            ],
+            [
+                26,
+                1,
+            ],
+            [
+                0,
+                6,
+            ],
+            [
+                26,
+                5,
+            ],
+            [
+                0,
+                129,
+            ],
+            [
+                26,
+                1,
+            ],
+            [
+                0,
+                17,
+            ],
+            [
+                26,
+                1,
+            ],
+            [
+                0,
+                49,
+            ],
+        ],
+        'Canadian Population Center': [
+            [
+                0,
+                54,
+            ],
+            [
+                6,
+                1,
+            ],
+            [
+                0,
+                12,
+            ],
+            [
+                6,
+                1,
+            ],
+            [
+                0,
+                6,
+            ],
+            [
+                6,
+                5,
+            ],
+            [
+                0,
+                129,
+            ],
+            [
+                6,
+                1,
+            ],
+            [
+                0,
+                17,
+            ],
+            [
+                6,
+                1,
+            ],
+            [
+                0,
+                49,
+            ],
+        ],
+        'Canadian Riding': [
+            [
+                0,
+                54,
+            ],
+            [
+                1,
+                1,
+            ],
+            [
+                0,
+                12,
+            ],
+            [
+                1,
+                1,
+            ],
+            [
+                0,
+                6,
+            ],
+            [
+                1,
+                5,
+            ],
+            [
+                0,
+                129,
+            ],
+            [
+                1,
+                1,
+            ],
+            [
+                0,
+                17,
+            ],
+            [
+                1,
                 1,
             ],
             [
@@ -189337,7 +191315,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
                 54,
             ],
             [
-                73,
+                1093,
                 1,
             ],
             [
@@ -189345,7 +191323,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
                 12,
             ],
             [
-                73,
+                1093,
                 1,
             ],
             [
@@ -189353,7 +191331,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
                 6,
             ],
             [
-                52,
+                1072,
                 5,
             ],
             [
@@ -189373,7 +191351,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
                 107,
             ],
             [
-                52,
+                1072,
                 1,
             ],
             [
@@ -189381,7 +191359,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
                 17,
             ],
             [
-                52,
+                1072,
                 1,
             ],
             [
@@ -189593,7 +191571,53 @@ const value: Record<string, Record<string, [number, number][]>> = {
                 175,
             ],
         ],
-        'Census Division': [
+        'Canadian CMA': [
+            [
+                0,
+                54,
+            ],
+            [
+                43,
+                1,
+            ],
+            [
+                0,
+                12,
+            ],
+            [
+                43,
+                1,
+            ],
+            [
+                0,
+                6,
+            ],
+            [
+                43,
+                5,
+            ],
+            [
+                0,
+                129,
+            ],
+            [
+                43,
+                1,
+            ],
+            [
+                0,
+                17,
+            ],
+            [
+                43,
+                1,
+            ],
+            [
+                0,
+                49,
+            ],
+        ],
+        'Canadian Census Division': [
             [
                 0,
                 54,
@@ -189632,6 +191656,144 @@ const value: Record<string, Record<string, [number, number][]>> = {
             ],
             [
                 49,
+                1,
+            ],
+            [
+                0,
+                49,
+            ],
+        ],
+        'Canadian Census Subdivision': [
+            [
+                0,
+                54,
+            ],
+            [
+                559,
+                1,
+            ],
+            [
+                0,
+                12,
+            ],
+            [
+                559,
+                1,
+            ],
+            [
+                0,
+                6,
+            ],
+            [
+                559,
+                5,
+            ],
+            [
+                0,
+                129,
+            ],
+            [
+                559,
+                1,
+            ],
+            [
+                0,
+                17,
+            ],
+            [
+                559,
+                1,
+            ],
+            [
+                0,
+                49,
+            ],
+        ],
+        'Canadian Population Center': [
+            [
+                0,
+                54,
+            ],
+            [
+                297,
+                1,
+            ],
+            [
+                0,
+                12,
+            ],
+            [
+                297,
+                1,
+            ],
+            [
+                0,
+                6,
+            ],
+            [
+                297,
+                5,
+            ],
+            [
+                0,
+                129,
+            ],
+            [
+                297,
+                1,
+            ],
+            [
+                0,
+                17,
+            ],
+            [
+                297,
+                1,
+            ],
+            [
+                0,
+                49,
+            ],
+        ],
+        'Canadian Riding': [
+            [
+                0,
+                54,
+            ],
+            [
+                121,
+                1,
+            ],
+            [
+                0,
+                12,
+            ],
+            [
+                121,
+                1,
+            ],
+            [
+                0,
+                6,
+            ],
+            [
+                121,
+                5,
+            ],
+            [
+                0,
+                129,
+            ],
+            [
+                121,
+                1,
+            ],
+            [
+                0,
+                17,
+            ],
+            [
+                121,
                 1,
             ],
             [
@@ -189701,7 +191863,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
                 54,
             ],
             [
-                4,
+                112,
                 1,
             ],
             [
@@ -189709,7 +191871,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
                 12,
             ],
             [
-                4,
+                112,
                 1,
             ],
             [
@@ -189717,7 +191879,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
                 6,
             ],
             [
-                4,
+                112,
                 5,
             ],
             [
@@ -189733,7 +191895,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
                 107,
             ],
             [
-                4,
+                112,
                 1,
             ],
             [
@@ -189741,7 +191903,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
                 17,
             ],
             [
-                4,
+                112,
                 1,
             ],
             [
@@ -189749,7 +191911,53 @@ const value: Record<string, Record<string, [number, number][]>> = {
                 49,
             ],
         ],
-        'Census Division': [
+        'Canadian CMA': [
+            [
+                0,
+                54,
+            ],
+            [
+                2,
+                1,
+            ],
+            [
+                0,
+                12,
+            ],
+            [
+                2,
+                1,
+            ],
+            [
+                0,
+                6,
+            ],
+            [
+                2,
+                5,
+            ],
+            [
+                0,
+                129,
+            ],
+            [
+                2,
+                1,
+            ],
+            [
+                0,
+                17,
+            ],
+            [
+                2,
+                1,
+            ],
+            [
+                0,
+                49,
+            ],
+        ],
+        'Canadian Census Division': [
             [
                 0,
                 54,
@@ -189788,6 +191996,144 @@ const value: Record<string, Record<string, [number, number][]>> = {
             ],
             [
                 3,
+                1,
+            ],
+            [
+                0,
+                49,
+            ],
+        ],
+        'Canadian Census Subdivision': [
+            [
+                0,
+                54,
+            ],
+            [
+                98,
+                1,
+            ],
+            [
+                0,
+                12,
+            ],
+            [
+                98,
+                1,
+            ],
+            [
+                0,
+                6,
+            ],
+            [
+                98,
+                5,
+            ],
+            [
+                0,
+                129,
+            ],
+            [
+                98,
+                1,
+            ],
+            [
+                0,
+                17,
+            ],
+            [
+                98,
+                1,
+            ],
+            [
+                0,
+                49,
+            ],
+        ],
+        'Canadian Population Center': [
+            [
+                0,
+                54,
+            ],
+            [
+                4,
+                1,
+            ],
+            [
+                0,
+                12,
+            ],
+            [
+                4,
+                1,
+            ],
+            [
+                0,
+                6,
+            ],
+            [
+                4,
+                5,
+            ],
+            [
+                0,
+                129,
+            ],
+            [
+                4,
+                1,
+            ],
+            [
+                0,
+                17,
+            ],
+            [
+                4,
+                1,
+            ],
+            [
+                0,
+                49,
+            ],
+        ],
+        'Canadian Riding': [
+            [
+                0,
+                54,
+            ],
+            [
+                4,
+                1,
+            ],
+            [
+                0,
+                12,
+            ],
+            [
+                4,
+                1,
+            ],
+            [
+                0,
+                6,
+            ],
+            [
+                4,
+                5,
+            ],
+            [
+                0,
+                129,
+            ],
+            [
+                4,
+                1,
+            ],
+            [
+                0,
+                17,
+            ],
+            [
+                4,
                 1,
             ],
             [
@@ -189857,7 +192203,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
                 54,
             ],
             [
-                110,
+                1690,
                 1,
             ],
             [
@@ -189865,7 +192211,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
                 12,
             ],
             [
-                110,
+                1690,
                 1,
             ],
             [
@@ -189873,7 +192219,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
                 6,
             ],
             [
-                100,
+                1680,
                 5,
             ],
             [
@@ -189889,7 +192235,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
                 107,
             ],
             [
-                100,
+                1680,
                 1,
             ],
             [
@@ -189897,7 +192243,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
                 17,
             ],
             [
-                100,
+                1680,
                 1,
             ],
             [
@@ -190079,7 +192425,53 @@ const value: Record<string, Record<string, [number, number][]>> = {
                 49,
             ],
         ],
-        'Census Division': [
+        'Canadian CMA': [
+            [
+                0,
+                54,
+            ],
+            [
+                33,
+                1,
+            ],
+            [
+                0,
+                12,
+            ],
+            [
+                33,
+                1,
+            ],
+            [
+                0,
+                6,
+            ],
+            [
+                33,
+                5,
+            ],
+            [
+                0,
+                129,
+            ],
+            [
+                33,
+                1,
+            ],
+            [
+                0,
+                17,
+            ],
+            [
+                33,
+                1,
+            ],
+            [
+                0,
+                49,
+            ],
+        ],
+        'Canadian Census Division': [
             [
                 0,
                 54,
@@ -190118,6 +192510,144 @@ const value: Record<string, Record<string, [number, number][]>> = {
             ],
             [
                 98,
+                1,
+            ],
+            [
+                0,
+                49,
+            ],
+        ],
+        'Canadian Census Subdivision': [
+            [
+                0,
+                54,
+            ],
+            [
+                1194,
+                1,
+            ],
+            [
+                0,
+                12,
+            ],
+            [
+                1194,
+                1,
+            ],
+            [
+                0,
+                6,
+            ],
+            [
+                1194,
+                5,
+            ],
+            [
+                0,
+                129,
+            ],
+            [
+                1194,
+                1,
+            ],
+            [
+                0,
+                17,
+            ],
+            [
+                1194,
+                1,
+            ],
+            [
+                0,
+                49,
+            ],
+        ],
+        'Canadian Population Center': [
+            [
+                0,
+                54,
+            ],
+            [
+                275,
+                1,
+            ],
+            [
+                0,
+                12,
+            ],
+            [
+                275,
+                1,
+            ],
+            [
+                0,
+                6,
+            ],
+            [
+                275,
+                5,
+            ],
+            [
+                0,
+                129,
+            ],
+            [
+                275,
+                1,
+            ],
+            [
+                0,
+                17,
+            ],
+            [
+                275,
+                1,
+            ],
+            [
+                0,
+                49,
+            ],
+        ],
+        'Canadian Riding': [
+            [
+                0,
+                54,
+            ],
+            [
+                78,
+                1,
+            ],
+            [
+                0,
+                12,
+            ],
+            [
+                78,
+                1,
+            ],
+            [
+                0,
+                6,
+            ],
+            [
+                78,
+                5,
+            ],
+            [
+                0,
+                129,
+            ],
+            [
+                78,
+                1,
+            ],
+            [
+                0,
+                17,
+            ],
+            [
+                78,
                 1,
             ],
             [
@@ -190187,7 +192717,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
                 54,
             ],
             [
-                24,
+                1011,
                 1,
             ],
             [
@@ -190195,7 +192725,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
                 12,
             ],
             [
-                24,
+                1011,
                 1,
             ],
             [
@@ -190203,7 +192733,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
                 6,
             ],
             [
-                20,
+                1007,
                 5,
             ],
             [
@@ -190219,7 +192749,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
                 107,
             ],
             [
-                20,
+                1007,
                 1,
             ],
             [
@@ -190227,7 +192757,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
                 17,
             ],
             [
-                20,
+                1007,
                 1,
             ],
             [
@@ -190409,7 +192939,53 @@ const value: Record<string, Record<string, [number, number][]>> = {
                 49,
             ],
         ],
-        'Census Division': [
+        'Canadian CMA': [
+            [
+                0,
+                54,
+            ],
+            [
+                10,
+                1,
+            ],
+            [
+                0,
+                12,
+            ],
+            [
+                10,
+                1,
+            ],
+            [
+                0,
+                6,
+            ],
+            [
+                10,
+                5,
+            ],
+            [
+                0,
+                129,
+            ],
+            [
+                10,
+                1,
+            ],
+            [
+                0,
+                17,
+            ],
+            [
+                10,
+                1,
+            ],
+            [
+                0,
+                49,
+            ],
+        ],
+        'Canadian Census Division': [
             [
                 0,
                 54,
@@ -190448,6 +193024,144 @@ const value: Record<string, Record<string, [number, number][]>> = {
             ],
             [
                 18,
+                1,
+            ],
+            [
+                0,
+                49,
+            ],
+        ],
+        'Canadian Census Subdivision': [
+            [
+                0,
+                54,
+            ],
+            [
+                899,
+                1,
+            ],
+            [
+                0,
+                12,
+            ],
+            [
+                899,
+                1,
+            ],
+            [
+                0,
+                6,
+            ],
+            [
+                899,
+                5,
+            ],
+            [
+                0,
+                129,
+            ],
+            [
+                899,
+                1,
+            ],
+            [
+                0,
+                17,
+            ],
+            [
+                899,
+                1,
+            ],
+            [
+                0,
+                49,
+            ],
+        ],
+        'Canadian Population Center': [
+            [
+                0,
+                54,
+            ],
+            [
+                64,
+                1,
+            ],
+            [
+                0,
+                12,
+            ],
+            [
+                64,
+                1,
+            ],
+            [
+                0,
+                6,
+            ],
+            [
+                64,
+                5,
+            ],
+            [
+                0,
+                129,
+            ],
+            [
+                64,
+                1,
+            ],
+            [
+                0,
+                17,
+            ],
+            [
+                64,
+                1,
+            ],
+            [
+                0,
+                49,
+            ],
+        ],
+        'Canadian Riding': [
+            [
+                0,
+                54,
+            ],
+            [
+                14,
+                1,
+            ],
+            [
+                0,
+                12,
+            ],
+            [
+                14,
+                1,
+            ],
+            [
+                0,
+                6,
+            ],
+            [
+                14,
+                5,
+            ],
+            [
+                0,
+                129,
+            ],
+            [
+                14,
+                1,
+            ],
+            [
+                0,
+                17,
+            ],
+            [
+                14,
                 1,
             ],
             [
@@ -190517,6 +193231,198 @@ const value: Record<string, Record<string, [number, number][]>> = {
                 54,
             ],
             [
+                37,
+                1,
+            ],
+            [
+                0,
+                12,
+            ],
+            [
+                37,
+                1,
+            ],
+            [
+                0,
+                6,
+            ],
+            [
+                37,
+                5,
+            ],
+            [
+                0,
+                15,
+            ],
+            [
+                1,
+                7,
+            ],
+            [
+                0,
+                107,
+            ],
+            [
+                37,
+                1,
+            ],
+            [
+                0,
+                17,
+            ],
+            [
+                37,
+                1,
+            ],
+            [
+                0,
+                49,
+            ],
+        ],
+        'Canadian CMA': [
+            [
+                0,
+                54,
+            ],
+            [
+                1,
+                1,
+            ],
+            [
+                0,
+                12,
+            ],
+            [
+                1,
+                1,
+            ],
+            [
+                0,
+                6,
+            ],
+            [
+                1,
+                5,
+            ],
+            [
+                0,
+                129,
+            ],
+            [
+                1,
+                1,
+            ],
+            [
+                0,
+                17,
+            ],
+            [
+                1,
+                1,
+            ],
+            [
+                0,
+                49,
+            ],
+        ],
+        'Canadian Census Division': [
+            [
+                0,
+                54,
+            ],
+            [
+                1,
+                1,
+            ],
+            [
+                0,
+                12,
+            ],
+            [
+                1,
+                1,
+            ],
+            [
+                0,
+                6,
+            ],
+            [
+                1,
+                5,
+            ],
+            [
+                0,
+                129,
+            ],
+            [
+                1,
+                1,
+            ],
+            [
+                0,
+                17,
+            ],
+            [
+                1,
+                1,
+            ],
+            [
+                0,
+                49,
+            ],
+        ],
+        'Canadian Census Subdivision': [
+            [
+                0,
+                54,
+            ],
+            [
+                31,
+                1,
+            ],
+            [
+                0,
+                12,
+            ],
+            [
+                31,
+                1,
+            ],
+            [
+                0,
+                6,
+            ],
+            [
+                31,
+                5,
+            ],
+            [
+                0,
+                129,
+            ],
+            [
+                31,
+                1,
+            ],
+            [
+                0,
+                17,
+            ],
+            [
+                31,
+                1,
+            ],
+            [
+                0,
+                49,
+            ],
+        ],
+        'Canadian Population Center': [
+            [
+                0,
+                54,
+            ],
+            [
                 2,
                 1,
             ],
@@ -190538,15 +193444,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
             ],
             [
                 0,
-                15,
-            ],
-            [
-                1,
-                7,
-            ],
-            [
-                0,
-                107,
+                129,
             ],
             [
                 2,
@@ -190565,7 +193463,7 @@ const value: Record<string, Record<string, [number, number][]>> = {
                 49,
             ],
         ],
-        'Census Division': [
+        'Canadian Riding': [
             [
                 0,
                 54,

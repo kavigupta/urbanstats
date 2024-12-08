@@ -167,6 +167,11 @@ const value: Record<string, number[]> = {
         11,
         1,
     ],
+    'world__Canadian Census Subdivision': [
+        106,
+        106,
+        64,
+    ],
     'world__City': [
         13,
         13,
@@ -429,6 +434,11 @@ const value: Record<string, number[]> = {
         11,
         1,
     ],
+    'North America__Canadian Census Subdivision': [
+        106,
+        106,
+        64,
+    ],
     'North America__City': [
         13,
         13,
@@ -531,6 +541,17 @@ const value: Record<string, number[]> = {
         13,
         13,
         3,
+    ],
+    'Canada__overall': [
+        75,
+        75,
+        75,
+        51,
+    ],
+    'Canada__Canadian Census Subdivision': [
+        106,
+        106,
+        64,
     ],
     'China__overall': [
         207,
