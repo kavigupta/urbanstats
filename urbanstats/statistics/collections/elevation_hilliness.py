@@ -2,6 +2,7 @@ import numpy as np
 
 from urbanstats.data.elevation import (
     elevation_statistics_for_american_shapefile,
+    elevation_statistics_for_canada_shapefile,
     elevation_statistics_for_shapefile,
 )
 from urbanstats.statistics.statistic_collection import (
@@ -17,7 +18,7 @@ POPULATION_WEIGHTED_EXPLANATION = (
 
 
 class ElevationHillinessStatistics(GeographicStatistics):
-    version = 5
+    version = 6
 
     def name_for_each_statistic(self):
         return {
@@ -55,6 +56,17 @@ class ElevationHillinessStatistics(GeographicStatistics):
         if just_usa:
             return usa_stats
 
+        just_canada, canada_stats = compute_subset_statistics(
+            shapefile,
+            existing_statistics,
+            shapefile_table,
+            subset="Canada",
+            compute_function=self.compute_canada,
+        )
+
+        if just_canada:
+            return canada_stats
+
         intl_stats = self.compute_intl(shapefile)
         if not usa_stats:
             return intl_stats
@@ -80,6 +92,14 @@ class ElevationHillinessStatistics(GeographicStatistics):
     def compute_usa(self, *, shapefile, existing_statistics, shapefile_table):
         del existing_statistics, shapefile_table
         table = elevation_statistics_for_american_shapefile(shapefile)
+        return {
+            "gridded_hilliness": table["hilliness"],
+            "gridded_elevation": table["elevation"],
+        }
+
+    def compute_canada(self, *, shapefile, existing_statistics, shapefile_table):
+        del existing_statistics, shapefile_table
+        table = elevation_statistics_for_canada_shapefile(shapefile)
         return {
             "gridded_hilliness": table["hilliness"],
             "gridded_elevation": table["elevation"],
