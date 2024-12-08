@@ -36,7 +36,7 @@ async function registerUser(userId: string, secureID: string): Promise<boolean> 
         },
     })
     const json = await response.json() as { error?: string, registration_error?: boolean }
-    return (json.error !== undefined) && (json.registration_error ?? false)
+    return (json.error === undefined) && (json.registration_error ?? false)
 }
 
 async function reportToServerGeneric(whole_history: QuizHistory, endpoint_latest: string, endpoint_store: string, parse_day: (day: string) => number): Promise<boolean> {
