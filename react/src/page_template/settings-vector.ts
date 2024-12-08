@@ -395,8 +395,8 @@ export function useVector(): string {
     return encodeVector(settings)
 }
 
-export function getVector(settings: Settings): string {
-    return encodeVector(settings.getMultiple(activeVectorKeys))
+export function getVector(settings: Settings, settingOverrides?: Partial<VectorSettingsDictionary>): string {
+    return encodeVector({ ...settings.getMultiple(activeVectorKeys), ...settingOverrides })
 }
 
 function encodeVector(settings: VectorSettingsDictionary): string {

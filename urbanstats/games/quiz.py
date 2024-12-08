@@ -28,6 +28,7 @@ from urbanstats.statistics.output_statistics_metadata import (
 )
 from urbanstats.universe.universe_list import universe_by_universe_type
 from urbanstats.website_data.table import shapefile_without_ordinals
+from urbanstats.statistics.stat_path import get_statistic_column_path
 
 from .fixed import juxtastat as fixed_up_to
 from .quiz_custom import get_custom_quizzes
@@ -228,6 +229,7 @@ def full_quiz(seed):
         out = {}
         stat_column_original = q.pop("stat_column_original")
         out["stat_column"] = statistic_internal_to_display_name()[stat_column_original]
+        out["stat_path"] = get_statistic_column_path(stat_column_original)
         out["question"] = stats_to_display[stat_column_original]
         out.update(q)
         outs.append(out)

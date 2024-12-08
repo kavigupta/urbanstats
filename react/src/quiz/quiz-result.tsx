@@ -5,6 +5,9 @@ import { Statistic } from '../components/table'
 import { Navigator } from '../navigation/navigator'
 import { JuxtastatColors } from '../page_template/color-themes'
 import { useColors, useJuxtastatColors } from '../page_template/colors'
+import { Settings } from '../page_template/settings'
+import { getVector, VectorSettingsDictionary } from '../page_template/settings-vector'
+import { allGroups, allYears, statParents, StatPath } from '../page_template/statistic-tree'
 
 import { render_time_remaining } from './dates'
 import { ENDPOINT, JuxtaQuestion, QuizDescriptor, QuizHistory, QuizQuestion, RetroQuestion, a_correct, nameOfQuizKind } from './quiz'
@@ -388,16 +391,18 @@ function Value({ stat, stat_column }: { stat: number, stat_column: string }): Re
 
 function JuxtastatQuizResultRow(props: QuizResultRowProps & { question: JuxtaQuestion }): ReactNode {
     return (
-        <GenericQuizResultRow
-            {...props}
-            get_label={() => (
-                <span className="serif quiz_results_question">
-                    {props.question.stat_column}
-                </span>
-            )}
-            get_option={letter => <Clickable longname={props.question[`longname_${letter}`]} />}
-            get_stat={stat => <Value stat={props.question[`stat_${stat}`]} stat_column={props.question.stat_column} />}
-        />
+        <ComparisonLink question={props.question}>
+            <GenericQuizResultRow
+                {...props}
+                get_label={() => (
+                    <span className="serif quiz_results_question">
+                        {props.question.stat_column}
+                    </span>
+                )}
+                get_option={letter => props.question[`longname_${letter}`]}
+                get_stat={stat => <Value stat={props.question[`stat_${stat}`]} stat_column={props.question.stat_column} />}
+            />
+        </ComparisonLink>
     )
 }
 
@@ -414,21 +419,23 @@ function RetrostatQuizResultRow(props: QuizResultRowProps & { question: RetroQue
                 const style = letter === 'a' ? { marginLeft: '20%' } : { marginRight: '20%' }
                 const q = props.question[letter]
                 return (
-                    <div style={{ zoom: 0.5 }}>
-                        <div>{render_question(q.question)}</div>
-                        <div style={style}>
-                            <div>
-                                <Clickable longname={q.longname_a} />
-                                {' '}
-                                <Value stat={q.stat_a} stat_column={q.stat_column} />
-                            </div>
-                            <div>
-                                <Clickable longname={q.longname_b} />
-                                {' '}
-                                <Value stat={q.stat_b} stat_column={q.stat_column} />
+                    <ComparisonLink question={q}>
+                        <div style={{ zoom: 0.5 }}>
+                            <div>{render_question(q.question)}</div>
+                            <div style={style}>
+                                <div>
+                                    {q.longname_a}
+                                    {' '}
+                                    <Value stat={q.stat_a} stat_column={q.stat_column} />
+                                </div>
+                                <div>
+                                    {q.longname_b}
+                                    {' '}
+                                    <Value stat={q.stat_b} stat_column={q.stat_column} />
+                                </div>
                             </div>
                         </div>
-                    </div>
+                    </ComparisonLink>
                 )
             }}
             get_stat={stat => <Value stat={props.question[`${stat}_ease`]} stat_column="%" />}
@@ -436,22 +443,39 @@ function RetrostatQuizResultRow(props: QuizResultRowProps & { question: RetroQue
     )
 }
 
-export function Clickable({ longname }: { longname: string }): ReactNode {
+function ComparisonLink({ question, children }: { question: JuxtaQuestion, children: ReactNode }): ReactNode {
     const navContext = useContext(Navigator.Context)
+    const settings = useContext(Settings.Context)
+    const colors = useColors()
     return (
         <a
-            {
-                ...navContext.link({
-                    kind: 'article',
-                    longname,
-                })
-            }
-            style={{ textDecoration: 'none', color: 'inherit' }}
+            {...navContext.link({
+                kind: 'comparison',
+                longnames: [question.longname_a, question.longname_b],
+                s: getVector(settings, settingsOverrides(question.stat_path)),
+            })}
+            style={{ textDecoration: 'none', color: colors.textMain }}
         >
-            {longname}
+            {children}
+
         </a>
     )
 }
+
+function settingsOverrides(questionStatPath: StatPath): Partial<VectorSettingsDictionary> {
+    const parents = statParents.get(questionStatPath)
+    if (parents === undefined) {
+        return {}
+    }
+    const categoryId = parents.group.parent.id
+    const year = parents.year
+
+    return Object.fromEntries([
+        ...allGroups.map(group => [`show_stat_group_${group.id}`, group.parent.id === categoryId] as const),
+        ...(year !== null ? allYears.map(y => [`show_stat_year_${y}`, y === year] as const) : []),
+    ])
+}
+
 export function red_and_green_squares(juxtaColors: JuxtastatColors, correct_pattern: boolean[]): string {
     return correct_pattern.map(function (x) {
     // red square emoji for wrong, green for right
