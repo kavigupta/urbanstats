@@ -57,7 +57,6 @@ def sample_quiz_type(rng):
 
 def validate():
     types = {x.meta["type"] for x in shapefiles.values()} | set(unlocalization_map)
-    print(unlocalization_map)
     unrecognized = set(QUIZ_REGION_TYPES_ALL) - types
     if unrecognized:
         raise ValueError(f"Unrecognized region types: {unrecognized}")
