@@ -140,6 +140,26 @@ export default [
         'Media Market',
     ],
     [
+        'CA Census Division',
+        'CA Census Division',
+    ],
+    [
+        'CA Census Subdivision',
+        'CA Census Subdivision',
+    ],
+    [
+        'CA Population Center',
+        'CA Population Center',
+    ],
+    [
+        'CA CMA',
+        'CA CMA',
+    ],
+    [
+        'CA Riding',
+        'CA Riding',
+    ],
+    [
         'Continent',
         'Continent',
     ],

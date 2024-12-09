@@ -2,6 +2,7 @@ import numpy as np
 
 from urbanstats.data.elevation import (
     elevation_statistics_for_american_shapefile,
+    elevation_statistics_for_canada_shapefile,
     elevation_statistics_for_shapefile,
 )
 from urbanstats.statistics.statistic_collection import (
@@ -17,7 +18,7 @@ POPULATION_WEIGHTED_EXPLANATION = (
 
 
 class ElevationHillinessStatistics(GeographicStatistics):
-    version = 5
+    version = 8
 
     def name_for_each_statistic(self):
         return {
@@ -45,26 +46,35 @@ class ElevationHillinessStatistics(GeographicStatistics):
     def compute_statistics_dictionary(
         self, *, shapefile, existing_statistics, shapefile_table
     ):
-        just_usa, usa_stats = compute_subset_statistics(
-            shapefile,
-            existing_statistics,
-            shapefile_table,
-            subset="USA",
-            compute_function=self.compute_usa,
-        )
-        if just_usa:
-            return usa_stats
+        subsets = []
+        for subset_name, subset_fn in [
+            ("USA", self.compute_usa),
+            ("Canada", self.compute_canada),
+        ]:
+            just_subset, subset_stats = compute_subset_statistics(
+                shapefile,
+                existing_statistics,
+                shapefile_table,
+                subset=subset_name,
+                compute_function=subset_fn,
+            )
+            if just_subset:
+                return subset_stats
+            if subset_stats:
+                subsets.append(subset_stats)
 
         intl_stats = self.compute_intl(shapefile)
-        if not usa_stats:
+        if not subsets:
             return intl_stats
 
-        assert intl_stats.keys() == usa_stats.keys()
+        for subset_stats in subsets:
+            assert set(subset_stats.keys()) == set(intl_stats.keys())
 
         intl_stats = {k: np.array(v) for k, v in intl_stats.items()}
 
-        for k, v in usa_stats.items():
-            intl_stats[k][~np.isnan(v)] = v[~np.isnan(v)]
+        for subset_stats in subsets:
+            for k, v in subset_stats.items():
+                intl_stats[k][~np.isnan(v)] = v[~np.isnan(v)]
 
         return intl_stats
 
@@ -80,6 +90,14 @@ class ElevationHillinessStatistics(GeographicStatistics):
     def compute_usa(self, *, shapefile, existing_statistics, shapefile_table):
         del existing_statistics, shapefile_table
         table = elevation_statistics_for_american_shapefile(shapefile)
+        return {
+            "gridded_hilliness": table["hilliness"],
+            "gridded_elevation": table["elevation"],
+        }
+
+    def compute_canada(self, *, shapefile, existing_statistics, shapefile_table):
+        del existing_statistics, shapefile_table
+        table = elevation_statistics_for_canada_shapefile(shapefile)
         return {
             "gridded_hilliness": table["hilliness"],
             "gridded_elevation": table["elevation"],

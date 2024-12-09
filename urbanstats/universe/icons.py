@@ -8,7 +8,11 @@ import requests
 import us
 from PIL import Image
 
-from urbanstats.universe.universe_list import all_universes, get_universe_name_for_state
+from urbanstats.universe.universe_list import (
+    all_universes,
+    get_universe_name_for_state,
+    universe_by_universe_type,
+)
 
 from .universe_constants import CONTINENTS, COUNTRIES
 
@@ -72,6 +76,20 @@ def download_all_us_state_icons():
         )
 
 
+def province_flag_name(province):
+    if province == "Northwest Territories, Canada":
+        return "File:Flag_of_the_Northwest_Territories.svg"
+    return f"File:Flag_of_{province.replace(', Canada', '').replace(' ', '_')}.svg"
+
+
+def download_all_canadian_province_icons():
+    for province in universe_by_universe_type()["province"]:
+        download_and_convert_flag(
+            province_flag_name(province),
+            province,
+        )
+
+
 def download_all_country_icons():
     for name in COUNTRIES:
         wikiname = internal_country_to_wikipedia.get(name, name.replace(" ", "_"))
@@ -89,6 +107,7 @@ def convert_continent_icons():
 def download_all_icons():
     download_all_country_icons()
     download_all_us_state_icons()
+    download_all_canadian_province_icons()
     download_and_convert_flag("File:Flag_of_the_United_States.svg", "USA")
     download_and_convert_flag("File:Flag_of_the_United_Nations.svg", "world")
     download_and_convert_flag(

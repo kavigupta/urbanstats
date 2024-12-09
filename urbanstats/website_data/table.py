@@ -16,7 +16,7 @@ from urbanstats.universe.universe_provider.compute_universes import (
 
 
 @permacache(
-    "population_density/stats_for_shapefile/compute_statistics_for_shapefile_30",
+    "population_density/stats_for_shapefile/compute_statistics_for_shapefile_31",
     key_function=dict(
         sf=lambda x: x.hash_key,
         shapefiles=lambda x: {k: v.hash_key for k, v in x.items()},
@@ -78,6 +78,7 @@ def combined_shapefile():
 
 def merge_population_estimates(full):
     popu = np.array(full.population)
+    popu[np.isnan(popu)] = full.population_2021_canada[np.isnan(popu)]
     popu[np.isnan(popu)] = full.gpw_population[np.isnan(popu)]
     full["best_population_estimate"] = popu
     return full

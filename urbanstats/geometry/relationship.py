@@ -173,8 +173,12 @@ tiers = [
         "20M Person Circle",
         "10M Person Circle",
         "5M Person Circle",
+        "CA CMA",
+        "CA Census Division",
+        "CA Riding",
+        "CA Population Center",
     ],
-    ["CCD", "City", "School District"],
+    ["CCD", "City", "School District", "CA Census Subdivision"],
     ["Neighborhood", "ZIP"],
 ]
 
