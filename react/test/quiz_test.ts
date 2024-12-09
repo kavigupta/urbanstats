@@ -540,6 +540,7 @@ quiz_fixture('import quiz progress', `${TARGET}/quiz.html?date=90`,
             },
         }),
         persistent_id: 'deadbeef',
+        secure_id: 'decea5ed',
     },
     '',
 )
@@ -563,6 +564,9 @@ test('import quiz progress', async (t) => {
     // Should transfer over the user id
     await t.expect(Selector('.juxtastat-user-id').withText('b0bacafe').exists).ok()
 
+    // Should transfer over secure id
+    await t.expect(await t.eval(() => localStorage.getItem('secure_id'))).eql('baddecaf')
+
     // Quiz 91 should still be there
     await t.eval(() => {
         document.location.href = '/quiz.html?date=91'
@@ -583,7 +587,7 @@ test('import quiz progress conflict', async (t) => {
     // Write the file to upload
     const tempfile = `${tempfile_name()}.json`
     writeFileSync(tempfile, JSON.stringify({
-        persistent_id: 'b0bacafe',
+        ...expectedExportWithoutDate,
         quiz_history: {
             90: expectedExportWithoutDate.quiz_history[90],
             91: {
@@ -650,4 +654,10 @@ test('import quiz progress conflict', async (t) => {
 
     await t.navigateTo('/quiz.html?mode=retro&date=40')
     await check_text(t, 'No! No!! 😠 1/5', '🟩🟥🟥🟥🟥')
+
+    // Should transfer over the user id
+    await t.expect(Selector('.juxtastat-user-id').withText('b0bacafe').exists).ok()
+
+    // Should transfer over secure id
+    await t.expect(await t.eval(() => localStorage.getItem('secure_id'))).eql('baddecaf')
 })
