@@ -75,7 +75,7 @@ async function main(): Promise<void> {
             })
         }
 
-        const failedTests = await runner.run()
+        const failedTests = await runner.run({ assertionTimeout: options.proxy ? 5000 : 3000 })
 
         return failedTests + await runTest()
     }

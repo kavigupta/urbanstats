@@ -97,13 +97,22 @@ export default tseslint.config(
             'no-restricted-syntax': [
                 'error', 
                 'ExportNamedDeclaration:not([declaration])', 
-                'MemberExpression[object.name=location][property.name=reload]'
+                'MemberExpression[object.name=location][property.name=reload]',
+                'MemberExpression[property.name=replaceState]',
+                'MemberExpression[property.name=pushState]',
+                'MemberExpression[object.name=window][property.name=location]',
+                'JSXAttribute[name.name=href][value.value=/^\\u002F.*$/]', // https://github.com/eslint/eslint/issues/16555  
+                // Protect branding
+                'JSXText[value=/(^|\\s)((u|U)rban(s|S)tats|urban stats|Urban stats|urban Stats)($|\\s)/]',
+                'Literal[value=/(^|\\s)((u|U)rban(s|S)tats|urban stats|Urban stats|urban Stats)($|\\s)/]',
+                //
             ],
             'react/prop-types': 'off',
             'no-shadow': 'error',
             'eslint-comments/require-description': ['error', {
                 ignore: ['eslint-enable']
             }],
+            "@typescript-eslint/method-signature-style": ["error", "property"], // https://www.totaltypescript.com/method-shorthand-syntax-considered-harmful
         },
     },
     {

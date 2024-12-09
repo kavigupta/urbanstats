@@ -99,11 +99,16 @@ function OffscreenCategoryContents({ category, heightCallback }: { category: Cat
     const sidebar_section_content = useSidebarSectionContentClassName()
     const listRef = useRef<HTMLUListElement>(null)
     useLayoutEffect(() => {
+        let zoom = 1
+        // For testing, since we use CSS zoom
+        if ('currentCSSZoom' in listRef.current! && typeof listRef.current.currentCSSZoom === 'number') {
+            zoom = listRef.current.currentCSSZoom
+        }
         const resizeObserver = new ResizeObserver(() => {
-            heightCallback(listRef.current!.getBoundingClientRect().height)
+            heightCallback(listRef.current!.getBoundingClientRect().height / zoom)
         })
         resizeObserver.observe(listRef.current!)
-        heightCallback(listRef.current!.getBoundingClientRect().height)
+        heightCallback(listRef.current!.getBoundingClientRect().height / zoom)
         return () => { resizeObserver.disconnect() }
     }, [heightCallback])
     return (

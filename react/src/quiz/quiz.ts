@@ -1,8 +1,7 @@
 import { saveAs } from 'file-saver'
 import { z } from 'zod'
 
-import { loadQuizHistory } from '../components/quiz-panel'
-import { cancelled, uploadFile } from '../upload-util'
+import { cancelled, uploadFile } from '../utils/upload'
 
 import { unique_persistent_id } from './statistics'
 
@@ -81,38 +80,60 @@ export async function importQuizPersona(): Promise<void> {
     try {
         const text = await file.text()
         const persona = quizPersonaSchema.parse(JSON.parse(text))
-        switch (promptUserForImportChoice()) {
-            case 'merge':
-                localStorage.setItem('quiz_history', JSON.stringify({ ...loadQuizHistory(), ...persona.quiz_history }))
-                localStorage.setItem('persistent_id', persona.persistent_id)
-                window.location.reload()
-                break
-            case 'replace':
-                localStorage.setItem('quiz_history', JSON.stringify(persona.quiz_history))
-                localStorage.setItem('persistent_id', persona.persistent_id)
-                window.location.reload()
-                break
-            case null:
-                break
+
+        const currentHistory = loadQuizHistory()
+        let newHistory: QuizHistory
+
+        const conflicts = Object.keys(persona.quiz_history)
+            .filter(key =>
+                key in currentHistory
+                && JSON.stringify(persona.quiz_history[key]) !== JSON.stringify(currentHistory[key]))
+
+        if (conflicts.length > 0) {
+            if (confirm(`The following quiz results exist both locally and in the uploaded file, and are different:
+
+${
+                conflicts.map(key => `• ${key.startsWith('W') ? 'Retrostat' : 'Juxtastat'} ${key}`).join('\n')
+                }
+
+Are you sure you want to merge them? (The lowest score will be used)`)) {
+                newHistory = {
+                    ...currentHistory, ...Object.fromEntries(conflicts.map((key) => {
+                        const currentCorrect = currentHistory[key].correct_pattern.filter(value => value).length
+                        const importCorrect = persona.quiz_history[key].correct_pattern.filter(value => value).length
+                        return [key, importCorrect >= currentCorrect ? currentHistory[key] : persona.quiz_history[key]]
+                    })),
+                }
+            }
+            else {
+                return
+            }
         }
+        else {
+            // There is not a conflict
+            newHistory = { ...currentHistory, ...persona.quiz_history }
+        }
+
+        localStorage.setItem('quiz_history', JSON.stringify(newHistory))
+        localStorage.setItem('persistent_id', persona.persistent_id)
+        // eslint-disable-next-line no-restricted-syntax -- Localstorage is not reactive
+        window.location.reload()
     }
     catch (error) {
         alert(`Could not parse file. Error: ${error}`)
     }
 }
 
-function promptUserForImportChoice(previousInput?: string): 'merge' | 'replace' | null {
-    const userChoice = prompt(`${previousInput !== undefined ? `Unknown option "${previousInput}".\n\n` : ''}Type "merge" to merge the uploaded quiz history for both Juxtastat and Retrostat with your current progress.
+export function loadQuizHistory(): QuizHistory {
+    const history = JSON.parse(localStorage.getItem('quiz_history') ?? '{}') as QuizHistory
 
-Type "replace" to ERASE ALL your current Juxtastat and Retrostat progress, and replace it with the uploaded history.
-        
-Recommend downloading your current progress so you can restore it later.`)?.toLowerCase()
-    switch (userChoice) {
-        case 'merge':
-        case 'replace':
-        case null:
-            return userChoice
-        default:
-            return promptUserForImportChoice(userChoice)
+    // set 42's correct_pattern's 0th element to true
+    if ('42' in history) {
+        if ('correct_pattern' in history['42']) {
+            if (history['42'].correct_pattern.length > 0) {
+                history['42'].correct_pattern[0] = true
+            }
+        }
     }
+    return history
 }

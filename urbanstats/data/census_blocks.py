@@ -6,7 +6,7 @@ import geopandas as gpd
 import numpy as np
 import pandas as pd
 
-from urbanstats.geometry.ellipse import locate_blocks
+from urbanstats.geometry.ellipse import compute_density_for_radius
 
 RADII = (0.25, 0.5, 1, 2, 4)
 
@@ -68,9 +68,7 @@ def load_raw_census(year=2020, filter_zero_pop=True):
 
 def density_in_radius(radius, year):
     _, population, _, _, coordinates = load_raw_census(year)
-    return locate_blocks(
-        coordinates=coordinates, population=population, radius=radius
-    ) / (np.pi * radius**2)
+    return compute_density_for_radius(radius, population, coordinates)
 
 
 def all_densities(year):

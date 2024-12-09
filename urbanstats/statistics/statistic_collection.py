@@ -73,14 +73,6 @@ class StatisticCollection(ABC):
         :return: A dictionary of statistics to add to the existing statistics table.
         """
 
-    @abstractmethod
-    def for_america(self):
-        pass
-
-    @abstractmethod
-    def for_international(self):
-        pass
-
     def same_for_each_name(self, value):
         return {name: value for name in self.name_for_each_statistic()}
 
@@ -92,23 +84,11 @@ class StatisticCollection(ABC):
 
 
 class GeographicStatistics(StatisticCollection):
-    def for_america(self):
-        return True
-
-    def for_international(self):
-        return True
-
     def quiz_question_types(self):
         return QUIZ_REGION_TYPES_ALL
 
 
 class InternationalStatistics(StatisticCollection):
-    def for_america(self):
-        return False
-
-    def for_international(self):
-        return True
-
     def quiz_question_types(self):
         return QUIZ_REGION_TYPES_INTERNATIONAL
 
@@ -131,55 +111,62 @@ class InternationalStatistics(StatisticCollection):
 
 
 class USAStatistics(StatisticCollection):
-    def for_america(self):
-        return True
-
-    def for_international(self):
-        return False
-
     def quiz_question_types(self):
         return QUIZ_REGION_TYPES_USA
 
     def compute_statistics_dictionary(
         self, *, shapefile, existing_statistics, shapefile_table
     ):
-        if "USA" not in shapefile.subset_masks:
-            return {}
-
-        shapefile_subset = shapefile.subset_shapefile("USA")
-        if shapefile_subset is shapefile:
-            return self.compute_statistics_dictionary_usa(
-                shapefile=shapefile,
-                existing_statistics=existing_statistics,
-                shapefile_table=shapefile_table,
-            )
-        try:
-            shapefile_subset.load_file()
-        except EmptyShapefileError:
-            return {}
-        mask = shapefile_table[subset_mask_key("USA")]
-        [idxs] = np.where(mask)
-        for_subset = self.compute_statistics_dictionary_usa(
-            shapefile=shapefile_subset,
-            existing_statistics={
-                k: existing_statistics[k][mask] for k in existing_statistics
-            },
-            shapefile_table=shapefile_table[mask],
+        _, result = compute_subset_statistics(
+            shapefile,
+            existing_statistics,
+            shapefile_table,
+            subset="USA",
+            compute_function=self.compute_statistics_dictionary_usa,
         )
-
-        full = {}
-        for k in for_subset:
-            result = [np.nan] * len(shapefile_table)
-            for idx, value in zip(idxs, for_subset[k]):
-                result[idx] = value
-            full[k] = pd.Series(result, index=shapefile_table.index)
-        return full
+        return result
 
     @abstractmethod
     def compute_statistics_dictionary_usa(
         self, *, shapefile, existing_statistics, shapefile_table
     ):
         pass
+
+
+def compute_subset_statistics(
+    shapefile, existing_statistics, shapefile_table, *, subset, compute_function
+):
+    if subset not in shapefile.subset_masks:
+        return False, {}
+
+    shapefile_subset = shapefile.subset_shapefile(subset)
+    if shapefile_subset is shapefile:
+        return True, compute_function(
+            shapefile=shapefile,
+            existing_statistics=existing_statistics,
+            shapefile_table=shapefile_table,
+        )
+    try:
+        shapefile_subset.load_file()
+    except EmptyShapefileError:
+        return True, {}
+    mask = shapefile_table[subset_mask_key(subset)]
+    [idxs] = np.where(mask)
+    for_subset = compute_function(
+        shapefile=shapefile_subset,
+        existing_statistics={
+            k: existing_statistics[k][mask] for k in existing_statistics
+        },
+        shapefile_table=shapefile_table[mask],
+    )
+
+    full = {}
+    for k in for_subset:
+        result = [np.nan] * len(shapefile_table)
+        for idx, value in zip(idxs, for_subset[k]):
+            result[idx] = value
+        full[k] = pd.Series(result, index=shapefile_table.index)
+    return False, full
 
 
 class ACSStatisticsColection(USAStatistics):

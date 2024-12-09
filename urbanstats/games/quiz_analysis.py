@@ -22,6 +22,7 @@ named_users = dict(
     #     ashjubilee=846814263642105530,
     april=0x1D2EFE90871F22B,
     violetncs=0x523FF09C66F52F4,
+    violetncs_mother=0xEEA892F929650B4,
 )
 
 

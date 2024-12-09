@@ -7,7 +7,7 @@ import { dataSources } from '../data/statistics_tree'
 import article_types_other from '../data/type_to_type_category'
 import { DefaultMap } from '../utils/DefaultMap'
 
-import { Theme } from './colors'
+import { Theme } from './color-themes'
 import { allGroups, allYears, CategoryIdentifier, DataSource, GroupIdentifier, SourceCategoryIdentifier, SourceIdentifier, StatPath, statsTree, Year } from './statistic-tree'
 
 export type RelationshipKey = `related__${string}__${string}`
@@ -26,6 +26,8 @@ export type StatSourceKey<C extends SourceCategoryIdentifier = SourceCategoryIde
 
 export type TemperatureUnit = 'fahrenheit' | 'celsius'
 
+export type MobileArticlePointers = 'pointer_in_class' | 'pointer_overall'
+
 export type SettingsDictionary = {
     [relationshipKey: RelationshipKey]: boolean | undefined
     show_historical_cds: boolean
@@ -37,6 +39,7 @@ export type SettingsDictionary = {
     colorblind_mode: boolean
     clean_background: boolean
     temperature_unit: TemperatureUnit
+    mobile_article_pointers: MobileArticlePointers
 }
 & { [G in GroupIdentifier as StatGroupKey<G>]: boolean }
 & { [C in CategoryIdentifier as StatCategorySavedIndeterminateKey<C>]: GroupIdentifier[] }
@@ -89,6 +92,7 @@ export const defaultSettingsList = [
     ['clean_background', false] as const,
     ...statPathsWithExtra.map(statPath => [`expanded__${statPath}`, false] as const),
     ['temperature_unit', 'fahrenheit'],
+    ['mobile_article_pointers', 'pointer_in_class'],
 ] as const
 
 // Having a default settings object allows us to statically check that we have default values for all settings
@@ -101,12 +105,13 @@ export interface SettingInfo<K extends keyof SettingsDictionary> {
 }
 
 export class Settings {
+    /* eslint-disable react-hooks/rules-of-hooks -- This is a custom logic class */
     /**
      * Basic Settings
      */
     private readonly settings: SettingsDictionary
 
-    constructor() {
+    private constructor() {
         const savedSettings = localStorage.getItem('settings')
         const loadedSettings = JSON.parse(savedSettings ?? '{}') as Partial<SettingsDictionary>
         this.settings = { ...defaultSettings, ...loadedSettings }
@@ -115,19 +120,17 @@ export class Settings {
     private readonly settingValueObservers = new DefaultMap<keyof SettingsDictionary, Set<() => void>>(() => new Set())
 
     useSettings<K extends keyof SettingsDictionary>(keys: K[]): Pick<SettingsDictionary, K> {
-        // eslint-disable-next-line react-hooks/rules-of-hooks -- This is a custom hook
-        const [result, setResult] = useState(this.getMultiple(keys))
-        // eslint-disable-next-line react-hooks/rules-of-hooks -- This is a custom hook
+        const [, setCounter] = useState(0)
         useEffect(() => {
-            setResult(this.getMultiple(keys)) // So that if `key` changes we change our result immediately
-            const observer = (): void => { setResult(this.getMultiple(keys)) }
+            setCounter(counter => counter + 1) // So that if `key` changes we change our result immediately
+            const observer = (): void => { setCounter(counter => counter + 1) }
             keys.forEach(key => this.settingValueObservers.get(key).add(observer))
             return () => {
                 keys.forEach(key => this.settingValueObservers.get(key).delete(observer))
             }
         // eslint-disable-next-line react-hooks/exhaustive-deps -- Our dependencies are the keys
-        }, keys)
-        return result
+        }, [JSON.stringify(keys)])
+        return this.getMultiple(keys)
     }
 
     setSetting<K extends keyof SettingsDictionary>(key: K, newValue: SettingsDictionary[K], save = true): void {
@@ -159,7 +162,8 @@ export class Settings {
     }
 
     // Singular settings means we can use observers
-    static Context = createContext(new Settings())
+    static shared = new Settings()
+    static Context = createContext(this.shared)
 
     /**
      * Staged Mode
@@ -222,20 +226,18 @@ export class Settings {
     private readonly stagedKeysObservers = new Set<() => void>()
 
     useStagedKeys(): (keyof SettingsDictionary)[] | undefined {
-        // eslint-disable-next-line react-hooks/rules-of-hooks -- This is a custom hook
-        const [result, setResult] = useState(this.getStagedKeys())
-        // eslint-disable-next-line react-hooks/rules-of-hooks -- This is a custom hook
+        const [, setCounter] = useState(0)
         useEffect(() => {
-            setResult(this.getStagedKeys())
+            setCounter(counter => counter + 1)
             const observer = (): void => {
-                setResult(this.getStagedKeys())
+                setCounter(counter => counter + 1)
             }
             this.stagedKeysObservers.add(observer)
             return () => {
                 this.stagedKeysObservers.delete(observer)
             }
         }, [])
-        return result
+        return this.getStagedKeys()
     }
 
     getSettingInfo<K extends keyof SettingsDictionary>(key: K): SettingInfo<K> {
@@ -258,12 +260,10 @@ export class Settings {
     }
 
     useSettingsInfo<K extends keyof SettingsDictionary>(keys: K[]): { [T in K]: SettingInfo<T> } {
-        // eslint-disable-next-line react-hooks/rules-of-hooks -- This is a custom hook
-        const [result, setResult] = useState(this.getSettingsInfo(keys))
-        // eslint-disable-next-line react-hooks/rules-of-hooks -- This is a custom hook
+        const [, setCounter] = useState(0)
         useEffect(() => {
-            setResult(this.getSettingsInfo(keys)) // So that if `key` changes we change our result immediately
-            const observer = (): void => { setResult(this.getSettingsInfo(keys)) }
+            setCounter(counter => counter + 1)
+            const observer = (): void => { setCounter(counter => counter + 1) }
             keys.forEach(key => this.settingValueObservers.get(key).add(observer))
             this.stagedKeysObservers.add(observer)
             return () => {
@@ -271,9 +271,10 @@ export class Settings {
                 this.stagedKeysObservers.delete(observer)
             }
         // eslint-disable-next-line react-hooks/exhaustive-deps -- Our dependencies are the keys
-        }, keys)
-        return result
+        }, [JSON.stringify(keys)])
+        return this.getSettingsInfo(keys)
     }
+    /* eslint-enable react-hooks/rules-of-hooks */
 }
 
 export function useSetting<K extends keyof SettingsDictionary>(key: K): [SettingsDictionary[K], (newValue: SettingsDictionary[K]) => void] {

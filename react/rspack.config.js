@@ -1,23 +1,16 @@
-const path = require('path')
+import path, { resolve } from 'path'
 
-const NodePolyfillPlugin = require('node-polyfill-webpack-plugin')
-const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin')
+import NodePolyfillPlugin from 'node-polyfill-webpack-plugin'
+import ForkTsCheckerWebpackPlugin from 'fork-ts-checker-webpack-plugin'
 
-module.exports = env => ({
+export default env => ({
     entry: {
-        'article': ['./src/article.tsx'],
-        'quiz': ['./src/quiz.tsx'],
         'index': ['./src/index.tsx'],
-        'random': ['./src/random.ts'],
-        'about': ['./src/about.tsx'],
-        'data-credit': ['./src/data-credit.tsx'],
-        'mapper': ['./src/mapper.tsx'],
-        'comparison': ['./src/comparison.tsx'],
-        'statistic': ['./src/statistic.tsx'],
+        'loading': ['./src/loading.ts']
     },
     output: {
         filename: '[name].js',
-        path: path.resolve(__dirname, '..', 'dist'),
+        path: path.resolve(import.meta.dirname, '..', 'dist'),
         clean: true,
     },
     resolve: {
@@ -31,7 +24,7 @@ module.exports = env => ({
     module: {
         rules: [
             { test: /\.tsx?$/, loader: 'builtin:swc-loader' },
-            { test: /\.js$/, loader: 'builtin:swc-loader' },
+            { test: /\.m?js$/, loader: 'builtin:swc-loader', resolve: { fullySpecified: false } },
             {
                 test: /\.css$/i,
                 use: ['style-loader', 'css-loader'],

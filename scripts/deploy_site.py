@@ -49,10 +49,10 @@ def update_scripts(branch):
     subprocess.run(["git", "push", "origin", branch], cwd=PATH)
 
 
-def get_current_branch():
+def get_current_branch(path=PATH):
     current_branch = subprocess.run(
         ["git", "rev-parse", "--abbrev-ref", "HEAD"],
-        cwd=PATH,
+        cwd=path,
         capture_output=True,
         text=True,
     ).stdout.strip()

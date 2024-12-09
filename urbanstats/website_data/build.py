@@ -23,7 +23,10 @@ from urbanstats.statistics.output_statistics_metadata import (
     internal_statistic_names,
     output_statistics_metadata,
 )
-from urbanstats.universe.icons import place_icons_in_site_folder
+from urbanstats.universe.icons import (
+    all_image_aspect_ratios,
+    place_icons_in_site_folder,
+)
 from urbanstats.universe.universe_list import all_universes, default_universes
 from urbanstats.website_data.create_article_gzips import (
     create_article_gzips,
@@ -61,6 +64,11 @@ def link_scripts_folder(site_folder, mode):
 def create_react_jsons():
     with open("react/src/data/map_relationship.ts", "w") as f:
         output_typescript(map_relationships_by_type, f)
+
+    with open("react/src/data/flag_dimensions.ts", "w") as f:
+        output_typescript(
+            all_image_aspect_ratios(), f, data_type="Record<string, number>"
+        )
 
     with open("react/src/data/type_to_type_category.ts", "w") as f:
         output_typescript(type_to_type_category, f, data_type="Record<string, string>")
@@ -138,6 +146,7 @@ def build_react_site(site_folder, mode):
     link_scripts_folder(site_folder, mode)
 
 
+# pylint: disable-next=too-many-branches
 def build_urbanstats(
     site_folder,
     *,
@@ -195,15 +204,27 @@ def build_urbanstats(
 
         full_consolidated_data(site_folder)
 
-    shutil.copy("html_templates/article.html", f"{site_folder}")
-    shutil.copy("html_templates/comparison.html", f"{site_folder}")
-    shutil.copy("html_templates/statistic.html", f"{site_folder}")
-    shutil.copy("html_templates/index.html", f"{site_folder}/")
-    shutil.copy("html_templates/random.html", f"{site_folder}")
-    shutil.copy("html_templates/about.html", f"{site_folder}/")
-    shutil.copy("html_templates/data-credit.html", f"{site_folder}/")
-    shutil.copy("html_templates/mapper.html", f"{site_folder}/")
-    shutil.copy("html_templates/quiz.html", f"{site_folder}")
+    for entrypoint in [
+        "index",
+        "article",
+        "comparison",
+        "statistic",
+        "random",
+        "about",
+        "data-credit",
+        "mapper",
+    ]:
+        with open(f"{site_folder}/{entrypoint}.html", "w") as f:
+            f.write(html_index())
+
+    with open(f"{site_folder}/quiz.html", "w") as f:
+        f.write(
+            html_index(
+                title="Juxtastat",
+                image="https://urbanstats.org/juxtastat-link-preview.png",  # Image url must be absolute, or gets messed up from juxtastat.org
+                description="Test your knowledge of geography and statistics! New game every day",
+            )
+        )
 
     shutil.copy("icons/main/thumbnail.png", f"{site_folder}/")
     shutil.copy("icons/main/banner.png", f"{site_folder}/")
@@ -212,6 +233,8 @@ def build_urbanstats(
     shutil.copy("icons/main/share.png", f"{site_folder}/")
     shutil.copy("icons/main/screenshot.png", f"{site_folder}/")
     shutil.copy("icons/main/download.png", f"{site_folder}/")
+    shutil.copy("icons/main/link-preview.png", f"{site_folder}/")
+    shutil.copy("icons/main/juxtastat-link-preview.png", f"{site_folder}/")
 
     with open(f"{site_folder}/CNAME", "w") as f:
         f.write("urbanstats.org")
@@ -226,3 +249,100 @@ def build_urbanstats(
     if not no_juxta:
         generate_quizzes(f"{site_folder}/quiz/")
     generate_retrostats(f"{site_folder}/retrostat")
+
+
+def html_index(
+    title="Urban Stats",
+    image="/link-preview.png",
+    description="Urban Stats is a database of statistics related to density, housing, race, transportation, elections, and climate change.",
+):
+    return f"""<html>
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" type="image/png" href="/thumbnail.png" />
+    <title>{title}</title>
+    <meta property="og:title" content="{title}" />
+    <meta property="og:type" content="website" />
+    <meta property="og:image" content="{image}" />
+    <meta
+      property="og:description"
+      content="{description}"
+    />
+    <meta name="twitter:card" content="summary_large_image" />
+    <style>
+      @keyframes loading-spinner {{
+        100% {{
+          transform: rotate(360deg);
+        }}
+      }}
+    </style>
+  </head>
+
+  <body>
+    <div id="loading">
+      <div
+        style="
+          position: fixed;
+          inset: 0px;
+          background-color: var(--loading-background);
+        "
+      >
+        <span
+          style="
+            display: inherit;
+            position: absolute;
+            width: 78px;
+            height: 78px;
+            animation: 0.6s linear 0s infinite normal forwards running
+              loading-spinner;
+            top: calc(50% - 39px);
+            left: calc(50% - 39px);
+          "
+          ><span
+            style="
+              width: 9px;
+              height: 9px;
+              border-radius: 100%;
+              background-color: var(--loading-main);
+              opacity: 0.8;
+              position: absolute;
+              top: 25.5px;
+              animation: 0.6s linear 0s infinite normal forwards running
+                loading-spinner;
+            "
+          ></span
+          ><span
+            style="
+              width: 60px;
+              height: 60px;
+              border-radius: 100%;
+              border: 9px solid var(--loading-main);
+              opacity: 0.1;
+              box-sizing: content-box;
+              position: absolute;
+            "
+          ></span
+        ></span>
+      </div>
+    </div>
+    <div id="root"></div>
+    <script src="/scripts/loading.js"></script>
+    <script async src="/scripts/index.js"></script>
+
+    <!-- Google tag (gtag.js) -->
+    <script
+      async
+      src="https://www.googletagmanager.com/gtag/js?id=G-CM105FFYFC"
+    ></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag() {{
+        dataLayer.push(arguments);
+      }}
+      gtag("js", new Date());
+
+      gtag("config", "G-CM105FFYFC");
+    </script>
+  </body>
+</html>
+"""

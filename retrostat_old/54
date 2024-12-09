@@ -1,0 +1,107 @@
+[
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "PW Density (r=4km) [GHS-POP]",
+      "question": "higher population-weighted density (r=4km)!TOOLTIP Population-weighted density is computed by computing the density within the given radius for each person in the region and then averaging the results. This is a better measure of the density that people actually experience.",
+      "longname_a": "Hungary",
+      "longname_b": "Laos",
+      "stat_a": 1307.743408203125,
+      "stat_b": 235.09286499023438
+    },
+    "b": {
+      "stat_column": "Population Change (2000-2020)",
+      "question": "higher % increase in population from 2000 to 2020",
+      "longname_a": "Rockford MSA, IL, USA",
+      "longname_b": "Lancaster MSA, PA, USA",
+      "stat_a": 0.058069230865323354,
+      "stat_b": 0.17491681858164526
+    },
+    "a_ease": 0.25997782705099776,
+    "b_ease": 0.6703524533517623
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Life, physical, and social science occupations %",
+      "question": "higher % of workers employed in life, physical, and social science occupations!TOOLTIP biological scientists, chemists, physicists, geologists, food scientists, economists, phychologists, urban planners, sociologists, scientific technicians, etc.",
+      "longname_a": "Volusia County, Florida, USA",
+      "longname_b": "Nueces County, Texas, USA",
+      "stat_a": 0.005522321297933625,
+      "stat_b": 0.013115407855815728
+    },
+    "b": {
+      "stat_column": "Uninsured %",
+      "question": "higher % of people who are uninsured",
+      "longname_a": "Knoxville [Urban Area], TN, USA",
+      "longname_b": "McAllen [Urban Area], TX, USA",
+      "stat_a": 0.11606736618925628,
+      "stat_b": 0.43622442058184807
+    },
+    "a_ease": 0.35199556541019955,
+    "b_ease": 0.7584229390681003
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "COPD %",
+      "question": "higher % of adults with COPD !TOOLTIP (Chronic obstructive pulmonary disease, a lung disease linked to smoking)",
+      "longname_a": "Lexington-Fayette urban county, Kentucky, USA",
+      "longname_b": "Plano city, Texas, USA",
+      "stat_a": 0.06993504739031613,
+      "stat_b": 0.044771476442180616
+    },
+    "b": {
+      "stat_column": "Population Change (2010-2020)",
+      "question": "higher % increase in population from 2010 to 2020",
+      "longname_a": "TX-15, USA",
+      "longname_b": "NE-02, USA",
+      "stat_a": 0.12013874183066195,
+      "stat_b": 0.14741805623313128
+    },
+    "a_ease": 0.6374695863746959,
+    "b_ease": 0.23411764705882354
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "PW Density (r=4km) [GHS-POP]",
+      "question": "higher population-weighted density (r=4km)!TOOLTIP Population-weighted density is computed by computing the density within the given radius for each person in the region and then averaging the results. This is a better measure of the density that people actually experience.",
+      "longname_a": "Karachi Urban Center, Pakistan",
+      "longname_b": "Tel Aviv Urban Center, Israel",
+      "stat_a": 37993.796875,
+      "stat_b": 6822.36328125
+    },
+    "b": {
+      "stat_column": "Obesity %",
+      "question": "higher % of adults with obesity",
+      "longname_a": "Newark city, New Jersey, USA",
+      "longname_b": "Chandler city, Arizona, USA",
+      "stat_a": 0.3814233030257434,
+      "stat_b": 0.2845251258776612
+    },
+    "a_ease": 0.8308243727598567,
+    "b_ease": 0.39920273348519364
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Farming, fishing, and forestry occupations %",
+      "question": "higher % of workers employed in farming, fishing, and forestry occupations!TOOLTIP farmers, ranchers, fishers, loggers, forest workers, etc.",
+      "longname_a": "Denver-Aurora [Urban Area], CO, USA",
+      "longname_b": "Indio-Palm Desert-Palm Springs [Urban Area], CA, USA",
+      "stat_a": 0.0025719142080520506,
+      "stat_b": 0.012942602466230005
+    },
+    "b": {
+      "stat_column": "PW Density (r=4km) [GHS-POP]",
+      "question": "higher population-weighted density (r=4km)!TOOLTIP Population-weighted density is computed by computing the density within the given radius for each person in the region and then averaging the results. This is a better measure of the density that people actually experience.",
+      "longname_a": "Ahmedabad Urban Center, India",
+      "longname_b": "Johannesburg Urban Center, South Africa",
+      "stat_a": 29049.94921875,
+      "stat_b": 6284.89990234375
+    },
+    "a_ease": 0.49544419134396356,
+    "b_ease": 0.8997926744989634
+  }
+]

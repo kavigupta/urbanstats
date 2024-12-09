@@ -93,9 +93,18 @@ def load_concatenated(prefix, path):
 
 @permacache("urbanstats/data/gpw/load_full_ghs_2")
 def load_full_ghs():
-    gt = GeoTiff(
-        "named_region_shapefiles/gpw/GHS_POP_E2020_GLOBE_R2023A_4326_30ss_V1_0.tif"
-    )
+    path = "named_region_shapefiles/gpw/GHS_POP_E2020_GLOBE_R2023A_4326_30ss_V1_0.tif"
+    return load_ghs_from_path(path)
+
+
+@permacache("urbanstats/data/gpw/load_full_ghs_2015")
+def load_full_ghs_2015():
+    path = "named_region_shapefiles/gpw/GHS_POP_E2015_GLOBE_R2023A_4326_30ss_V1_0.tif"
+    return load_ghs_from_path(path)
+
+
+def load_ghs_from_path(path):
+    gt = GeoTiff(path)
     ghs = np.array(gt.read())
     popu = np.zeros((180 * 120, 360 * 120), dtype=np.float32)
     min_lon, max_lat = gt.get_coords(0, 0)
@@ -314,6 +323,25 @@ def produce_histogram(density_data, population_data):
     population_data = population_data.flatten()
 
     return compute_bins(density_data, population_data, bin_size=0.1)
+
+
+def compute_gpw_weighted_for_shape(
+    shape, glo_pop, gridded_statistics, *, do_histograms
+):
+    row_selected, col_selected = lattice_cells_contained(glo_pop, shape)
+    pop = glo_pop[row_selected, col_selected]
+    result = {}
+    hists = {}
+    for name, (data, pop_weight) in gridded_statistics.items():
+        data_selected = data[row_selected, col_selected]
+        if pop_weight:
+            result[name] = np.nansum(pop * data_selected) / np.nansum(pop)
+        else:
+            result[name] = np.nansum(data_selected)
+        if do_histograms:
+            assert pop_weight, "pop_weight is required for histograms"
+            hists[name] = produce_histogram(data_selected, pop)
+    return result, hists
 
 
 @permacache(

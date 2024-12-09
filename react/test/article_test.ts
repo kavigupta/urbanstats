@@ -178,3 +178,23 @@ test('paste C link', async (t) => {
     await t.expect(Selector('span').withText('28.8').exists).ok()
     await screencap(t)
 })
+
+urbanstatsFixture('no-domestic-stats', '/article.html?longname=US+Virgin+Islands%2C+USA')
+
+test('virgin-islands', async (t) => {
+    await screencap(t)
+})
+
+urbanstatsFixture('some-stats-missing', '/article.html?longname=Pueblo East CDP%2C+Texas%2C+USA')
+
+test('pueblo-east-cdp', async (t) => {
+    await check_textboxes(t, ['Transportation'])
+    await screencap(t)
+})
+
+urbanstatsFixture('4 digit election swing', '/article.html?longname=Corpus+Christi+city%2C+Texas%2C+USA&s=4EWiZCQEgxLku')
+
+test('overflows correctly on mobile', async (t) => {
+    await t.resizeWindow(400, 800)
+    await screencap(t)
+})

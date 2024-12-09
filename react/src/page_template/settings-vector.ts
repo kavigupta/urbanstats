@@ -4,7 +4,7 @@
 
 import * as base58 from 'base58-js'
 
-import { defaultSettingsList, HistogramType, RelationshipKey, Settings, SettingsDictionary, StatCategoryExpandedKey, StatCategorySavedIndeterminateKey, TemperatureUnit, useSettings } from './settings'
+import { defaultSettingsList, RelationshipKey, Settings, SettingsDictionary, StatCategoryExpandedKey, StatCategorySavedIndeterminateKey, useSettings } from './settings'
 
 const underflow = Symbol()
 
@@ -29,7 +29,8 @@ class ActiveSetting<const K extends keyof SettingsDictionary> {
 }
 
 class DeprecatedSetting<const K extends string> {
-    constructor(readonly props: { key: K, coder: SettingCoder<unknown> }) {} // How many bits is our data going to consume
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Necessary use of any
+    constructor(readonly props: { key: K, coder: SettingCoder<any> }) {}
 
     encode(): boolean[] {
         return this.props.coder.encode()
@@ -48,8 +49,8 @@ class DeprecatedSetting<const K extends string> {
 }
 
 interface SettingCoder<T> {
-    encode(value?: T): boolean[]
-    decode(bits: boolean[]): T | typeof underflow
+    encode: (value?: T) => boolean[]
+    decode: (bits: boolean[]) => T | typeof underflow
 }
 
 const BooleanSettingCoder: SettingCoder<boolean> = {
@@ -65,58 +66,54 @@ const BooleanSettingCoder: SettingCoder<boolean> = {
     },
 }
 
-const HistogramTypeSettingCoder: SettingCoder<HistogramType> = {
-    encode(value = 'Line') {
-        switch (value) {
-            case 'Line':
-                return [false, false]
-            case 'Line (cumulative)':
-                return [false, true]
-            case 'Bar':
-                return [true, false]
+type Double<T extends readonly unknown[]> = [...T, ...T]
+type Min2<T extends readonly unknown[]> = [...T] extends [unknown, infer X, ...infer R] ? T | Min2<[X, ...R]> : never
+
+/**
+ * Do not modify `bits` once deployed.
+ * Only append to `array` once deployed.
+ */
+class BitmapCoder<const Value> implements SettingCoder<Value> {
+    constructor(bits: 1, array: [Value, Value])
+    constructor(bits: 2, array: Min2<Double<[Value, Value]>>)
+    constructor(bits: 3, array: Min2<Double<Double<[Value, Value]>>>)
+    constructor(bits: 4, array: Min2<Double<Double<Double<[Value, Value]>>>>)
+    constructor(readonly numBits: number, readonly array: Value[]) {}
+
+    encode(value: Value = this.array[0]): boolean[] {
+        const number = this.array.indexOf(value)
+        const result: boolean[] = []
+        for (let b = this.numBits - 1; b >= 0; b--) {
+            result.push(((number >> b) & 1) === 1 ? true : false)
         }
-    },
-    decode(bits) {
-        switch (bits.length) {
-            case 0:
-                return underflow
-            case 1:
-                throw new Error('Something bad has happened with settings decoding')
-            default:
-                switch ((bits.shift()! ? (1 << 1) : 0) | (bits.shift()! ? (1 << 0) : 0)) {
-                    case 0:
-                        return 'Line'
-                    case 1:
-                        return 'Line (cumulative)'
-                    case 2:
-                        return 'Bar'
-                    default:
-                        return 'Line' // For backwards/forwards compatibility
-                }
+        return result
+    }
+
+    decode(bits: boolean[]): Value | typeof underflow {
+        if (bits.length === 0) {
+            return underflow
         }
-    },
+        if (bits.length < this.numBits) {
+            throw new Error('Something bad has happened with settings decoding')
+        }
+        let number = 0
+        for (let b = this.numBits - 1; b >= 0; b--) {
+            number |= (bits.shift() ? 1 : 0) << b
+        }
+        return this.array[number] ?? underflow
+    }
 }
 
-const TemperatureUnitCoder: SettingCoder<TemperatureUnit> = {
-    encode(value = 'fahrenheit') {
-        switch (value) {
-            case 'fahrenheit':
-                return [false]
-            case 'celsius':
-                return [true]
-        }
-    },
-    decode(bits) {
-        switch (bits.shift()) {
-            case false:
-                return 'fahrenheit'
-            case true:
-                return 'celsius'
-            case undefined:
-                return underflow
-        }
-    },
-}
+const HistogramTypeSettingCoder = new BitmapCoder(2, [
+    'Line',
+    'Line (cumulative)',
+    'Bar',
+])
+
+const TemperatureUnitCoder = new BitmapCoder(1, ['fahrenheit', 'celsius'])
+
+// Too many bits for expansion
+const MobileArticlePointersCoder = new BitmapCoder(2, ['pointer_in_class', 'pointer_overall'])
 
 /**
  * DO NOT REORDER, ONLY ADD
@@ -364,7 +361,11 @@ const settingsVector = [
     new ActiveSetting({ key: 'histogram_relative', coder: BooleanSettingCoder }),
     new ActiveSetting({ key: 'histogram_type', coder: HistogramTypeSettingCoder }),
     new ActiveSetting({ key: 'temperature_unit', coder: TemperatureUnitCoder }),
-] satisfies (ActiveSetting<keyof SettingsDictionary> | DeprecatedSetting<string>)[]
+    new ActiveSetting({ key: 'show_stat_group_gridded_elevation', coder: BooleanSettingCoder }),
+    new ActiveSetting({ key: 'show_stat_group_gridded_hilliness', coder: BooleanSettingCoder }),
+    new ActiveSetting({ key: 'mobile_article_pointers', coder: MobileArticlePointersCoder }),
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- Necessary use of any
+] satisfies (ActiveSetting<any> | DeprecatedSetting<string>)[]
 
 type NotIncludedInSettingsVector = (
     RelationshipKey
@@ -391,6 +392,14 @@ const checkOverlap: CheckOverlap = 'no overlap'
 
 export function useVector(): string {
     const settings = useSettings(activeVectorKeys)
+    return encodeVector(settings)
+}
+
+export function getVector(settings: Settings): string {
+    return encodeVector(settings.getMultiple(activeVectorKeys))
+}
+
+function encodeVector(settings: VectorSettingsDictionary): string {
     const booleans = settingsVector.flatMap((coder) => {
         if (coder.deprecated) {
             return coder.encode()
@@ -400,9 +409,11 @@ export function useVector(): string {
     return base58.binary_to_base58(compressBooleans(booleans))
 }
 
-export function fromVector(vector: string, settings: Settings): { [K in VectorSettingKey]: SettingsDictionary[K] } {
+export type VectorSettingsDictionary = { [K in VectorSettingKey]: SettingsDictionary[K] }
+
+export function fromVector(vector: string, settings: Settings): VectorSettingsDictionary {
     const array = decompressBooleans(base58.base58_to_binary(vector))
-    const result = {} as { [K in VectorSettingKey]: SettingsDictionary[K] }
+    const result = {} as VectorSettingsDictionary
     for (const setting of settingsVector) {
         if (setting.deprecated) {
             setting.decode(array)

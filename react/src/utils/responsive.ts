@@ -2,6 +2,10 @@ import { useSyncExternalStore } from 'react'
 
 import { useColors } from '../page_template/colors'
 
+export function isMobileLayout(): boolean {
+    return window.innerWidth <= 1100
+}
+
 export function useMobileLayout(): boolean {
     return useSyncExternalStore((listener) => {
         const myListener = (): void => {
@@ -12,7 +16,7 @@ export function useMobileLayout(): boolean {
         }
         window.addEventListener('resize', myListener)
         return () => { window.removeEventListener('resize', myListener) }
-    }, () => window.innerWidth <= 1100)
+    }, isMobileLayout)
 }
 
 export function useHeaderTextClass(): string {

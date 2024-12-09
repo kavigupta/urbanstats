@@ -1,16 +1,19 @@
-import React, { CSSProperties, ReactNode, useEffect, useRef, useState } from 'react'
+import React, { CSSProperties, ReactNode, useContext, useEffect, useRef, useState } from 'react'
 import ContentEditable, { ContentEditableEvent } from 'react-contenteditable'
 
 import { load_ordering } from '../load_json'
-import { article_link, statistic_link } from '../navigation/links'
 import './table.css'
+import { statisticDescriptor } from '../navigation/links'
+import { Navigator } from '../navigation/navigator'
+import { Colors } from '../page_template/color-themes'
 import { useColors } from '../page_template/colors'
-import { row_expanded_key, useSetting } from '../page_template/settings'
+import { MobileArticlePointers, row_expanded_key, Settings, useSetting } from '../page_template/settings'
 import { useUniverse } from '../universe'
 import { is_historical_cd } from '../utils/is_historical'
+import { isMobileLayout, useMobileLayout } from '../utils/responsive'
 import { display_type } from '../utils/text'
 
-import { ArticleRow } from './load-article'
+import { ArticleRow, Disclaimer } from './load-article'
 import { useScreenshotMode } from './screenshot'
 
 export type ColumnIdentifier = 'statname' | 'statval' | 'statval_unit' | 'statistic_percentile' | 'statistic_ordinal' | 'pointer_in_class' | 'pointer_overall'
@@ -44,9 +47,10 @@ interface ColumnLayoutProps {
         columnIdentifier: ColumnIdentifier
         widthPercentage: number
         content: ReactNode
-        textAlign: React.CSSProperties['textAlign']
+        style: CSSProperties
     }[]
     onlyColumns?: string[]
+    blankColumns?: string[]
     totalWidth: number
 }
 
@@ -54,12 +58,17 @@ interface ColumnLayoutProps {
 function ColumnLayout(props: ColumnLayoutProps): JSX.Element[] {
     const cellPercentages: number[] = []
     const cellContents = []
-    for (const { widthPercentage, columnIdentifier, content, textAlign } of props.cells) {
+    for (const { widthPercentage, columnIdentifier, content, style } of props.cells) {
         if (props.onlyColumns && !props.onlyColumns.includes(columnIdentifier)) {
             continue
         }
         cellPercentages.push(widthPercentage)
-        cellContents.push({ content, textAlign })
+        if (props.blankColumns?.includes(columnIdentifier)) {
+            cellContents.push({ content: <span></span>, style })
+        }
+        else {
+            cellContents.push({ content, style })
+        }
     }
 
     // normalize cell percentages
@@ -69,8 +78,8 @@ function ColumnLayout(props: ColumnLayoutProps): JSX.Element[] {
     }
 
     const contents = cellContents.map(
-        ({ content, textAlign }, i) => {
-            const sty: React.CSSProperties = { width: `${cellPercentages[i]}%`, padding: '1px', textAlign }
+        ({ content, style }, i) => {
+            const sty: React.CSSProperties = { width: `${cellPercentages[i]}%`, padding: '1px', ...style }
             return (
                 <div key={i} style={sty}>
                     {content}
@@ -91,8 +100,6 @@ export function StatisticHeaderCells(props: { simpleOrdinals: boolean, totalWidt
         textAlign: 'right',
     }
 
-    const screenshotMode = useScreenshotMode()
-
     const cells = [
         {
             columnIdentifier: 'statname',
@@ -102,7 +109,7 @@ export function StatisticHeaderCells(props: { simpleOrdinals: boolean, totalWidt
                     Statistic
                 </span>
             ),
-            textAlign: 'center',
+            style: { textAlign: 'center' },
         },
         {
             columnIdentifier: 'statval',
@@ -112,7 +119,7 @@ export function StatisticHeaderCells(props: { simpleOrdinals: boolean, totalWidt
                     Value
                 </span>
             ),
-            textAlign: 'center',
+            style: { textAlign: 'center' },
         },
         {
             widthPercentage: props.simpleOrdinals ? 7 : 17,
@@ -125,7 +132,7 @@ export function StatisticHeaderCells(props: { simpleOrdinals: boolean, totalWidt
                     }
                 </span>
             ),
-            textAlign: 'center',
+            style: { textAlign: 'center' },
         },
         {
             widthPercentage: props.simpleOrdinals ? 8 : 25,
@@ -137,25 +144,9 @@ export function StatisticHeaderCells(props: { simpleOrdinals: boolean, totalWidt
                     }
                 </span>
             ),
-            textAlign: 'center',
+            style: { textAlign: 'center' },
         },
-        ...(screenshotMode
-            ? []
-            : [
-                {
-                    widthPercentage: 8,
-                    columnIdentifier: 'pointer_in_class',
-                    content: <span className="serif" style={ordinal_style}>Within Type</span>,
-                    textAlign: 'center',
-
-                },
-                {
-                    widthPercentage: 8,
-                    columnIdentifier: 'pointer_overall',
-                    content: <span className="serif" style={ordinal_style}>Overall</span>,
-                    textAlign: 'center',
-                },
-            ] satisfies ColumnLayoutProps['cells']),
+        ...PointerHeaderCells({ ordinal_style }),
     ] satisfies ColumnLayoutProps['cells']
 
     return (
@@ -167,12 +158,96 @@ export function StatisticHeaderCells(props: { simpleOrdinals: boolean, totalWidt
     )
 }
 
+function PointerHeaderCells(props: { ordinal_style: CSSProperties }): ColumnLayoutProps['cells'] {
+    const pointerInClassCell: ColumnLayoutProps['cells'][number] = {
+        widthPercentage: 8,
+        columnIdentifier: 'pointer_in_class',
+        content: <span className="serif" style={props.ordinal_style}>Within Type</span>,
+        style: { textAlign: 'center' },
+
+    }
+    const pointerOverallCell: ColumnLayoutProps['cells'][number] = {
+        widthPercentage: 8,
+        columnIdentifier: 'pointer_overall',
+        content: <span className="serif" style={props.ordinal_style}>Overall</span>,
+        style: { textAlign: 'center' },
+    }
+
+    // Must be outside branch because uses hooks
+    const selectorCell = PointerHeaderSelectorCell()
+
+    const screenshotMode = useScreenshotMode()
+    const singlePointerCell = useSinglePointerCell()
+
+    if (screenshotMode) {
+        return []
+    }
+    else if (singlePointerCell) {
+        return [selectorCell]
+    }
+    else {
+        return [pointerInClassCell, pointerOverallCell]
+    }
+}
+
+function PointerHeaderSelectorCell(): ColumnLayoutProps['cells'][number] {
+    const [preferredPointerCell, setPreferredPointerCell] = useSetting('mobile_article_pointers')
+
+    const selectWidth = 'clamp(45px, 100%, 65px)'
+    const arrowWidth = '12px'
+
+    const selectStyle: CSSProperties = {
+        height: '2lh',
+        whiteSpace: 'wrap',
+        width: selectWidth,
+        textAlign: 'left',
+        appearance: 'none',
+        padding: '0px 1px',
+    }
+
+    const arrowStyle: CSSProperties = {
+        position: 'absolute',
+        left: `calc((max(0px, 100% - ${selectWidth}) / 2) + ${selectWidth} - (${arrowWidth}))`,
+        pointerEvents: 'none',
+        height: arrowWidth,
+        width: arrowWidth,
+        fontSize: arrowWidth,
+        bottom: `5px`,
+    }
+
+    return {
+        widthPercentage: 8,
+        columnIdentifier: preferredPointerCell,
+        content: (
+            <>
+                <select
+                    style={selectStyle}
+                    value={preferredPointerCell}
+                    onChange={(e) => { setPreferredPointerCell(e.target.value as MobileArticlePointers) }}
+                    data-test-id="tablePointerSelect"
+                >
+                    <option value="pointer_in_class">Within Type</option>
+                    <option value="pointer_overall">Overall</option>
+                </select>
+                <span style={arrowStyle}>
+                    {'▼\ufe0e'}
+                </span>
+            </>
+        ),
+        style: {
+            textAlign: 'center',
+            position: 'relative',
+        },
+    }
+}
+
 export function StatisticRowCells(props: {
     totalWidth: number
     longname: string
     statisticStyle?: CSSProperties
     row: ArticleRow
     onlyColumns?: string[]
+    blankColumns?: string[]
     onNavigate?: (newArticle: string) => void
     simpleOrdinals: boolean
 }): ReactNode {
@@ -184,8 +259,6 @@ export function StatisticRowCells(props: {
         color: colors.ordinalTextColor,
         margin: 0,
     }
-
-    const screenshotMode = useScreenshotMode()
 
     const cells = [
         {
@@ -200,7 +273,7 @@ export function StatisticRowCells(props: {
                     />
                 </span>
             ),
-            textAlign: 'left',
+            style: { textAlign: 'left' },
         },
         {
             widthPercentage: 15,
@@ -215,7 +288,7 @@ export function StatisticRowCells(props: {
                     />
                 </span>
             ),
-            textAlign: 'right',
+            style: { textAlign: 'right' },
         },
         {
             widthPercentage: 10,
@@ -231,7 +304,7 @@ export function StatisticRowCells(props: {
                     </span>
                 </div>
             ),
-            textAlign: 'right',
+            style: { textAlign: 'right' },
         },
         {
             widthPercentage: props.simpleOrdinals ? 7 : 17,
@@ -246,7 +319,7 @@ export function StatisticRowCells(props: {
                     />
                 </span>
             ),
-            textAlign: 'right',
+            style: { textAlign: 'right' },
         },
         {
             widthPercentage: props.simpleOrdinals ? 8 : 25,
@@ -263,42 +336,9 @@ export function StatisticRowCells(props: {
                     />
                 </span>
             ),
-            textAlign: 'right',
+            style: { textAlign: 'right' },
         },
-        ...(screenshotMode
-            ? []
-            : [
-                {
-                    widthPercentage: 8,
-                    columnIdentifier: 'pointer_in_class',
-                    content: (
-                        <span key="pointer_in_class" className="serif" style={{ display: 'flex', ...ordinal_style }}>
-                            <PointerButtonsIndex
-                                ordinal={props.row.ordinal}
-                                statpath={props.row.statpath}
-                                type={props.row.articleType}
-                                total={props.row.total_count_in_class}
-                            />
-                        </span>
-                    ),
-                    textAlign: 'right',
-                },
-                {
-                    widthPercentage: 8,
-                    columnIdentifier: 'pointer_overall',
-                    content: (
-                        <span className="serif" style={{ display: 'flex', ...ordinal_style }}>
-                            <PointerButtonsIndex
-                                ordinal={props.row.overallOrdinal}
-                                statpath={props.row.statpath}
-                                type="overall"
-                                total={props.row.total_count_overall}
-                            />
-                        </span>
-                    ),
-                    textAlign: 'right',
-                },
-            ] satisfies ColumnLayoutProps['cells']),
+        ...PointerRowCells({ ordinal_style, row: props.row }),
     ] satisfies ColumnLayoutProps['cells']
 
     return (
@@ -306,8 +346,83 @@ export function StatisticRowCells(props: {
             cells={cells}
             totalWidth={props.totalWidth}
             onlyColumns={props.onlyColumns}
+            blankColumns={props.blankColumns}
         />
     )
+}
+
+// Reactive and non-reactive versions of the same function
+function useSinglePointerCell(): boolean {
+    const isMobile = useMobileLayout()
+    const [simpleOrdinals] = useSetting('simple_ordinals')
+    return isMobile && !simpleOrdinals
+}
+
+export function isSinglePointerCell(settings: Settings): boolean {
+    return isMobileLayout() && !settings.get('simple_ordinals')
+}
+
+function PointerRowCells(props: { ordinal_style: CSSProperties, row: ArticleRow }): ColumnLayoutProps['cells'] {
+    const screenshotMode = useScreenshotMode()
+
+    const singlePointerCell = useSinglePointerCell()
+    const [preferredPointerCell] = useSetting('mobile_article_pointers')
+
+    const pointerInClassCell: ColumnLayoutProps['cells'][number] = {
+        widthPercentage: 8,
+        columnIdentifier: 'pointer_in_class',
+        content: (
+            <span key="pointer_in_class" className="serif" style={{ display: 'flex', ...props.ordinal_style }}>
+                <PointerButtonsIndex
+                    ordinal={props.row.ordinal}
+                    statpath={props.row.statpath}
+                    type={props.row.articleType}
+                    total={props.row.total_count_in_class}
+                />
+            </span>
+        ),
+        style: { textAlign: 'right' },
+    }
+
+    const pointerOverallCell: ColumnLayoutProps['cells'][number] = {
+        widthPercentage: 8,
+        columnIdentifier: 'pointer_overall',
+        content: (
+            <span className="serif" style={{ display: 'flex', ...props.ordinal_style }}>
+                <PointerButtonsIndex
+                    ordinal={props.row.overallOrdinal}
+                    statpath={props.row.statpath}
+                    type="overall"
+                    total={props.row.total_count_overall}
+                />
+            </span>
+        ),
+        style: { textAlign: 'right' },
+    }
+
+    if (screenshotMode) {
+        return []
+    }
+    else if (singlePointerCell) {
+        switch (preferredPointerCell) {
+            case 'pointer_in_class':
+                return [pointerInClassCell]
+            case 'pointer_overall':
+                return [pointerOverallCell]
+        }
+    }
+    else {
+        return [pointerInClassCell, pointerOverallCell]
+    }
+}
+
+function articleStatnameButtonStyle(colors: Colors): React.CSSProperties {
+    return {
+        cursor: 'pointer', border: `1px solid ${colors.textMain}`,
+        padding: 0, borderRadius: '3px', fontSize: '75%',
+        minWidth: '1.5em', minHeight: '1.5em', textAlign: 'center',
+        lineHeight: '1.2em',
+    }
 }
 
 function StatisticName(props: {
@@ -317,22 +432,47 @@ function StatisticName(props: {
 }): ReactNode {
     const [expanded, setExpanded] = useSetting(row_expanded_key(props.row.statpath))
     const colors = useColors()
+    const navContext = useContext(Navigator.Context)
     const link = (
         <a
             style={{ textDecoration: 'none', color: colors.textMain }}
-            href={
-                statistic_link(
-                    props.curr_universe,
-                    props.row.statname, props.row.articleType, props.row.ordinal,
-                    20, undefined, props.longname,
-                )
+            {
+                ...navContext.link(statisticDescriptor({
+                    universe: props.curr_universe,
+                    statname: props.row.statname,
+                    article_type: props.row.articleType,
+                    start: props.row.ordinal,
+                    amount: 20,
+                    order: 'descending',
+                    highlight: props.longname,
+                }))
             }
         >
             {props.row.rendered_statname}
         </a>
     )
     const screenshot_mode = useScreenshotMode()
+    const elements = [link]
     if (props.row.extra_stat !== undefined && !screenshot_mode) {
+        elements.push(
+            <div
+                className="expand-toggle"
+                onClick={() => { setExpanded(!expanded) }}
+                style={articleStatnameButtonStyle(colors)}
+            >
+                {expanded ? '-' : '+'}
+            </div>,
+        )
+    }
+    if (props.row.disclaimer !== undefined) {
+        elements.push(<StatisticNameDisclaimer disclaimer={props.row.disclaimer} />)
+    }
+    if (elements.length > 1) {
+        const paddedElements = [elements[0]]
+        for (let i = 1; i < elements.length; i++) {
+            paddedElements.push(<div key={i} style={{ marginLeft: '0.3em' }} />)
+            paddedElements.push(elements[i])
+        }
         return (
             <span style={{
                 display: 'flex',
@@ -340,24 +480,51 @@ function StatisticName(props: {
                 flexDirection: 'row',
             }}
             >
-                {link}
-                <div style={{ marginLeft: '0.3em' }} />
-                <div
-                    className="expand-toggle"
-                    onClick={() => { setExpanded(!expanded) }}
-                    style={{
-                        cursor: 'pointer', border: `1px solid ${colors.textMain}`,
-                        padding: 0, borderRadius: '3px', fontSize: '75%',
-                        minWidth: '1.5em', minHeight: '1.5em', textAlign: 'center',
-                        lineHeight: '1.2em',
-                    }}
-                >
-                    {expanded ? '-' : '+'}
-                </div>
+                {...paddedElements}
             </span>
         )
     }
     return link
+}
+
+function computeDisclaimerText(disclaimer: Disclaimer): string {
+    switch (disclaimer) {
+        case 'heterogenous-sources':
+            return 'This statistic is based on data from multiple sources, which may not be consistent with each other.'
+    }
+}
+
+function StatisticNameDisclaimer(props: { disclaimer: Disclaimer }): ReactNode {
+    // little disclaimer icon that pops up a tooltip when clicked
+    const [show, setShow] = useState(false)
+    const colors = useColors()
+    const tooltipStyle: React.CSSProperties = {
+        position: 'absolute',
+        backgroundColor: colors.slightlyDifferentBackgroundFocused,
+        color: colors.textMain,
+        padding: '0.5em',
+        borderRadius: '0.5em',
+        border: `1px solid ${colors.textMain}`,
+        zIndex: 100000,
+        display: show ? 'block' : 'none',
+    }
+    return (
+        <span>
+            <span
+                className="disclaimer-toggle"
+                style={{ ...articleStatnameButtonStyle(colors), display: 'inline-block' }}
+                onClick={() => { setShow(!show) }}
+            >
+                !
+            </span>
+            <div
+                style={tooltipStyle}
+                onClick={() => { setShow(false) }}
+            >
+                {computeDisclaimerText(props.disclaimer)}
+            </div>
+        </span>
+    )
 }
 
 export function TableRowContainer({ children, index }: { children: React.ReactNode, index: number }): React.ReactNode {
@@ -384,7 +551,7 @@ export function Statistic(props: { style?: React.CSSProperties, statname: string
             const name = props.statname
             let value = props.value
             const is_unit = props.is_unit
-            if (name.includes('%') || name.includes('Change')) {
+            if (name.includes('%') || name.includes('Change') || name.includes('(Grade)')) {
                 if (is_unit) {
                     return <span>%</span>
                 }
@@ -425,6 +592,17 @@ export function Statistic(props: { style?: React.CSSProperties, statname: string
                     )
                 }
                 return <span>{value.toFixed(places)}</span>
+            }
+            else if (name.includes('Elevation')) {
+                let unit_name = 'm'
+                if (use_imperial) {
+                    unit_name = 'ft'
+                    value *= 3.28084
+                }
+                if (is_unit) {
+                    return <span>{unit_name}</span>
+                }
+                return <span>{value.toFixed(0)}</span>
             }
             else if (name.startsWith('Population')) {
                 if (value > 1e9) {
@@ -575,10 +753,7 @@ export function Statistic(props: { style?: React.CSSProperties, statname: string
         }
     })()
 
-    if (props.style) {
-        return <span style={props.style}>{content}</span>
-    }
-    return content
+    return <span style={props.style}>{content}</span>
 }
 
 function ElectionResult(props: { value: number }): ReactNode {
@@ -592,8 +767,14 @@ function ElectionResult(props: { value: number }): ReactNode {
     const text = value.toFixed(places)
     const party = props.value > 0 ? 'D' : 'R'
     const party_color = props.value > 0 ? colors.hueColors.blue : colors.hueColors.red
+    const spanStyle: CSSProperties = {
+        color: party_color,
+        // So that on 4 digits, we overflow left
+        display: 'flex',
+        justifyContent: 'flex-end',
+    }
     return (
-        <span style={{ color: party_color }}>
+        <span style={spanStyle}>
             {party}
             +
             {text}
@@ -744,7 +925,7 @@ function PointerButtonsIndex(props: { ordinal: number, statpath: string, type: s
     const curr_universe = useUniverse()
     const get_data = async (): Promise<string[]> => await load_ordering(curr_universe, props.statpath, props.type)
     return (
-        <span style={{ margin: 'auto' }}>
+        <span style={{ margin: 'auto', whiteSpace: 'nowrap' }}>
             <PointerButtonIndex
                 get_data={get_data}
                 original_pos={props.ordinal}
@@ -767,8 +948,9 @@ function PointerButtonIndex(props: {
     direction: -1 | 1
     total: number
 }): ReactNode {
-    const curr_universe = useUniverse()
+    const universe = useUniverse()
     const colors = useColors()
+    const navigation = useContext(Navigator.Context)
     const [show_historical_cds] = useSetting('show_historical_cds')
     const out_of_bounds = (pos: number): boolean => pos < 0 || pos >= props.total
     const onClick = async (pos: number): Promise<void> => {
@@ -780,7 +962,11 @@ function PointerButtonIndex(props: {
                     pos += props.direction
                     continue
                 }
-                document.location = article_link(curr_universe, name)
+                void navigation.navigate({
+                    kind: 'article',
+                    longname: name,
+                    universe,
+                }, 'push')
                 return
             }
         }

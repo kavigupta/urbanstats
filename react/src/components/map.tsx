@@ -1,13 +1,14 @@
 import { GeoJSON2SVG } from 'geojson2svg'
 import L from 'leaflet'
+import 'leaflet/dist/leaflet.css'
 import React, { ReactNode } from 'react'
 
 import { loadProtobuf } from '../load_json'
 import { Basemap } from '../mapper/settings'
-import { article_link, shape_link } from '../navigation/links'
+import { shape_link } from '../navigation/links'
+import { Navigator } from '../navigation/navigator'
 import { useColors } from '../page_template/colors'
 import { relatedSettingsKeys, relationship_key, useSetting, useSettings } from '../page_template/settings'
-import { UNIVERSE_CONTEXT } from '../universe'
 import { random_color } from '../utils/color'
 import { is_historical_cd } from '../utils/is_historical'
 import { Feature, IRelatedButton, IRelatedButtons } from '../utils/protos'
@@ -244,9 +245,25 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
     }
 
     async add_polygons(map: L.Map, names: string[], styles: Record<string, unknown>[], zoom_to: number): Promise<void> {
-        for (let i = 0; i < names.length; i++) {
-            await this.add_polygon(map, names[i], i === zoom_to, styles[i])
+        /*
+         * We want to parallelize polygon loading, but we also need to add the polygons in a deterministic order for testing purposes (as well as to show contained polygons atop their parent)
+         * So, we start all the loads asynchronously, but actually add the polygons to the map only as they finish loading in order
+         * Waiting for all the polygons to load before adding them produces an unacceptable delay
+         */
+        let adderIndex = 0
+        const adders = new Map<number, () => void>()
+        const addDone = (): void => {
+            while (adders.has(adderIndex)) {
+                adders.get(adderIndex)!()
+                adders.delete(adderIndex)
+                adderIndex++
+            }
         }
+        await Promise.all(names.map(async (name, i) => {
+            const adder = await this.add_polygon(map, name, i === zoom_to, styles[i])
+            adders.set(i, adder)
+            addDone()
+        }))
     }
 
     async polygon_geojson(name: string): Promise<GeoJSON.Feature> {
@@ -286,33 +303,43 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
         return geojson
     }
 
-    async add_polygon(map: L.Map, name: string, fit_bounds: boolean, style: Record<string, unknown>, add_callback = true, add_to_bottom = false): Promise<void> {
+    /*
+     * Returns a function that adds the polygon.
+     * The reason for this is so that we can add the polygons in a specific order independent of the order in which they end up loading
+     */
+    async add_polygon(map: L.Map, name: string, fit_bounds: boolean, style: Record<string, unknown>, add_callback = true, add_to_bottom = false): Promise<() => void> {
         this.exist_this_time.push(name)
         if (this.polygon_by_name.has(name)) {
             this.polygon_by_name.get(name)!.setStyle(style)
-            return
+            return () => undefined
         }
         const geojson = await this.polygon_geojson(name)
-        const group = L.featureGroup()
-        let polygon = L.geoJson(geojson, {
-            style,
-            // @ts-expect-error smoothFactor not included in library type definitions
-            smoothFactor: 0.1,
-            className: `tag-${name.replace(/ /g, '_')}`,
-        })
-        if (add_callback) {
-            polygon = polygon.on('click', () => {
-                window.location.href = article_link(this.context, name)
+        return () => {
+            const group = L.featureGroup()
+            let polygon = L.geoJson(geojson, {
+                style,
+                // @ts-expect-error smoothFactor not included in library type definitions
+                smoothFactor: 0.1,
+                className: `tag-${name.replace(/ /g, '_')}`,
             })
-        }
+            if (add_callback) {
+                polygon = polygon.on('click', () => {
+                    void this.context.navigate({
+                        kind: 'article',
+                        universe: this.context.universe,
+                        longname: name,
+                    }, 'push')
+                })
+            }
 
-        // @ts-expect-error Second parameter not included in library type definitions
-        group.addLayer(polygon, add_to_bottom)
-        if (fit_bounds) {
-            map.fitBounds(group.getBounds(), { animate: false })
+            // @ts-expect-error Second parameter not included in library type definitions
+            group.addLayer(polygon, add_to_bottom)
+            if (fit_bounds) {
+                map.fitBounds(group.getBounds(), { animate: false })
+            }
+            map.addLayer(group)
+            this.polygon_by_name.set(name, group)
         }
-        map.addLayer(group)
-        this.polygon_by_name.set(name, group)
     }
 
     zoom_to_all(): void {
@@ -329,9 +356,9 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
         this.map!.fitBounds(this.polygon_by_name.get(name)!.getBounds())
     }
 
-    static override contextType = UNIVERSE_CONTEXT
+    static override contextType = Navigator.Context
 
-    declare context: React.ContextType<typeof UNIVERSE_CONTEXT>
+    declare context: React.ContextType<typeof Navigator.Context>
 }
 
 const MapBody = (props: { id: string, height: string | undefined, buttons: ReactNode }): ReactNode => {

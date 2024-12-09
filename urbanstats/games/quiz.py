@@ -34,7 +34,7 @@ from .quiz_custom import get_custom_quizzes
 
 min_pop = 250_000
 min_pop_international = 2_500_000
-version_numeric = 76
+version_numeric = 78
 
 version = str(version_numeric) + stable_hash(statistic_collections)
 
@@ -74,6 +74,7 @@ difficulties = {
     "industry": 2,
     "occupation": 2,
     "weather": 0.3,
+    "topography": 1,
 }
 
 skip_category_probs = {
