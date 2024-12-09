@@ -191,3 +191,10 @@ test('pueblo-east-cdp', async (t) => {
     await check_textboxes(t, ['Transportation'])
     await screencap(t)
 })
+
+urbanstatsFixture('4 digit election swing', '/article.html?longname=Corpus+Christi+city%2C+Texas%2C+USA&s=4EWiZCQEgxLku')
+
+test('overflows correctly on mobile', async (t) => {
+    await t.resizeWindow(400, 800)
+    await screencap(t)
+})
