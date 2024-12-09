@@ -181,12 +181,17 @@ def look_up(full_image, lat, lon):
     return top * (1 - y_frac) + bottom * y_frac
 
 
-def disaggregate_to_blocks(function, year):
-    _, _, _, _, coordinates = load_raw_census(year)
+def disaggregate_to_blocks(function, coordinates):
     lat, lon = coordinates.T
     full_img = create_full_image(function, 1)
     by_block = look_up(full_img, lat, lon)
     return by_block
+
+
+def disaggregate_both_to_blocks(coordinates):
+    elevation = disaggregate_to_blocks(aggregated_elevation, coordinates)
+    hilliness = disaggregate_to_blocks(aggregated_hilliness, coordinates)
+    return pd.DataFrame(dict(elevation=elevation, hilliness=hilliness))
 
 
 @lru_cache(maxsize=1)
@@ -201,9 +206,8 @@ def full_hilliness():
 
 @permacache("urbanstats/data/elevation/stats_by_blocks")
 def stats_by_blocks(year):
-    elevation = disaggregate_to_blocks(aggregated_elevation, year)
-    hilliness = disaggregate_to_blocks(aggregated_hilliness, year)
-    return pd.DataFrame(dict(elevation=elevation, hilliness=hilliness))
+    _, _, _, _, coordinates = load_raw_census(year)
+    return disaggregate_both_to_blocks(coordinates)
 
 
 @permacache(
