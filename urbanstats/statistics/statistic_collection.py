@@ -173,7 +173,7 @@ def compute_subset_statistics(
     try:
         shapefile_subset.load_file()
     except EmptyShapefileError:
-        return True, {}
+        return False, {}
     mask = shapefile_table[subset_mask_key(subset)]
     [idxs] = np.where(mask)
     for_subset = compute_function(
