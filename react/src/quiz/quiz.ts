@@ -98,7 +98,7 @@ ${
 
 Are you sure you want to merge them? (The lowest score will be used)`)) {
                 newHistory = {
-                    ...currentHistory, ...Object.fromEntries(conflicts.map((key) => {
+                    ...currentHistory, ...persona.quiz_history, ...Object.fromEntries(conflicts.map((key) => {
                         const currentCorrect = currentHistory[key].correct_pattern.filter(value => value).length
                         const importCorrect = persona.quiz_history[key].correct_pattern.filter(value => value).length
                         return [key, importCorrect >= currentCorrect ? currentHistory[key] : persona.quiz_history[key]]

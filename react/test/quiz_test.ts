@@ -478,13 +478,21 @@ quiz_fixture('import quiz progress', `${TARGET}/quiz.html?date=90`,
                 choices: ['A', 'A', 'A', 'A', 'A'],
                 correct_pattern: [true, true, true, true, true],
             },
+            W39: {
+                choices: ['A', 'A', 'A', 'A', 'A'],
+                correct_pattern: [false, false, false, false, false],
+            },
+            W40: {
+                choices: ['A', 'A', 'A', 'A', 'A'],
+                correct_pattern: [true, false, false, false, false],
+            },
         }),
         persistent_id: 'deadbeef',
     },
     '',
 )
 
-test('import quiz progress merge', async (t) => {
+test('import quiz progress', async (t) => {
     // Write the file to upload
     const tempfile = `${tempfile_name()}.json`
     writeFileSync(tempfile, JSON.stringify(expectedExportWithoutDate, null, 2))
@@ -508,4 +516,86 @@ test('import quiz progress merge', async (t) => {
         document.location.href = '/quiz.html?date=91'
     })
     await check_text(t, 'Perfect! 🔥 5/5', '🟩🟩🟩🟩🟩')
+
+    // Retro 39 should still be there
+    await t.eval(() => {
+        document.location.href = '/quiz.html?mode=retro&date=39'
+    })
+    await check_text(t, 'Impressively Bad Job! 🤷 0/5', '🟥🟥🟥🟥🟥')
+})
+
+test('import quiz progress conflict', async (t) => {
+    await t.navigateTo(`/quiz.html?date=91`)
+    await check_text(t, 'Perfect! 🔥 5/5', '🟩🟩🟩🟩🟩')
+
+    // Write the file to upload
+    const tempfile = `${tempfile_name()}.json`
+    writeFileSync(tempfile, JSON.stringify({
+        persistent_id: 'b0bacafe',
+        quiz_history: {
+            90: expectedExportWithoutDate.quiz_history[90],
+            91: {
+                choices: [
+                    'A',
+                    'A',
+                    'A',
+                    'A',
+                    'A',
+                ],
+                correct_pattern: [
+                    true,
+                    true,
+                    true,
+                    true,
+                    false,
+                ],
+            },
+            W39: {
+                choices: [
+                    'A',
+                    'A',
+                    'A',
+                    'A',
+                    'A',
+                ],
+                correct_pattern: [
+                    true,
+                    false,
+                    true,
+                    false,
+                    true,
+                ],
+            },
+        },
+    }, null, 2))
+
+    await t.setNativeDialogHandler(() => true)
+    await t.click(Selector('button').withText('Import Quiz History'))
+    await t.setFilesToUpload('input[type=file]', [tempfile])
+    await t.expect(await t.getNativeDialogHistory()).eql([
+        {
+            text: 'The following quiz results exist both locally and in the uploaded file, and are different:\n'
+            + '\n'
+            + '• Juxtastat 91\n'
+            + '• Retrostat W39\n'
+            + '\n'
+            + 'Are you sure you want to merge them? (The lowest score will be used)',
+            type: 'confirm',
+            url: 'http://localhost:8000/quiz.html?date=91',
+        },
+    ])
+
+    // Score decreased becaues upload is less
+    await check_text(t, 'Excellent! 😊 4/5', '🟩🟩🟩🟩🟥')
+
+    // Score not increased although import is better
+    await t.navigateTo('/quiz.html?mode=retro&date=39')
+    await check_text(t, 'Impressively Bad Job! 🤷 0/5', '🟥🟥🟥🟥🟥')
+
+    // Non-conflicing imported quizes exist
+    await t.navigateTo(`/quiz.html?date=90`)
+    await check_text(t, 'Excellent! 😊 4/5', '🟩🟩🟩🟩🟥')
+
+    await t.navigateTo('/quiz.html?mode=retro&date=40')
+    await check_text(t, 'No! No!! 😠 1/5', '🟩🟥🟥🟥🟥')
 })
