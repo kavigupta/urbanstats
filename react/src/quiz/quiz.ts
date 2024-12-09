@@ -3,7 +3,7 @@ import { z } from 'zod'
 
 import { cancelled, uploadFile } from '../utils/upload'
 
-import { unique_persistent_id } from './statistics'
+import { unique_persistent_id, unique_secure_id } from './statistics'
 
 export type QuizDescriptor = { kind: 'juxtastat', name: number } | { kind: 'retrostat', name: string }
 
@@ -55,6 +55,7 @@ export type QuizHistory = z.infer<typeof quizHistorySchema>
 
 export const quizPersonaSchema = z.object({
     persistent_id: z.string(),
+    secure_id: z.string(),
     quiz_history: quizHistorySchema,
     date_exported: z.optional(z.string().pipe(z.coerce.date())),
 }).strict()
@@ -65,6 +66,7 @@ export function exportQuizPersona(): void {
     const exported: QuizPersona = {
         date_exported: new Date(),
         persistent_id: unique_persistent_id(),
+        secure_id: unique_secure_id(),
         quiz_history: loadQuizHistory(),
     }
     const data = JSON.stringify(exported, null, 2)
@@ -116,6 +118,7 @@ Are you sure you want to merge them? (The lowest score will be used)`)) {
 
         localStorage.setItem('quiz_history', JSON.stringify(newHistory))
         localStorage.setItem('persistent_id', persona.persistent_id)
+        localStorage.setItem('secure_id', persona.secure_id)
         // eslint-disable-next-line no-restricted-syntax -- Localstorage is not reactive
         window.location.reload()
     }

@@ -16,8 +16,8 @@ from permacache import permacache, stable_hash
 
 from urbanstats.games.quiz_columns import stats, stats_to_display, stats_to_types
 from urbanstats.games.quiz_region_types import (
-    QUIZ_REGION_TYPES_ALL,
     QUIZ_REGION_TYPES_INTERNATIONAL,
+    sample_quiz_type,
 )
 from urbanstats.geometry.shapefiles.shapefiles_list import filter_table_for_type
 from urbanstats.shortener import shorten
@@ -152,7 +152,7 @@ def sample_quiz_question(
     rng, banned_categories, banned_type_categories, distance_pct_bot, distance_pct_top
 ):
     while True:
-        typ = rng.choice(QUIZ_REGION_TYPES_ALL)
+        typ = sample_quiz_type(rng)
         if type_ban_categorize(typ) in banned_type_categories:
             continue
         at_pop, universes = filter_for_pop(typ)
