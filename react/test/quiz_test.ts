@@ -74,6 +74,8 @@ function quiz_fixture(fix_name: string, url: string, new_localstorage: Record<st
         await t.eval(() => {
             localStorage.setItem('testHostname', 'urbanstats.org')
         })
+        // Must reload after setting localstorage so page picks it up
+        await safeReload(t)
     })
         .afterEach(async (t) => {
             exec('killall gunicorn')
