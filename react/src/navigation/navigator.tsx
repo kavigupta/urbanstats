@@ -114,7 +114,7 @@ function pageDescriptorFromURL(url: URL): PageDescriptor {
             return { kind: 'index' }
         case '/quiz.html':
             /**
-             * We use hash params for quizzes since the juxtastat.org params don't preserve query params
+             * We use hash params for quizzes since the juxtastat.org redirect doesn't preserve query params
              */
             const hashParams = Object.fromEntries(new URLSearchParams(url.hash.slice(1)).entries())
             return { kind: 'quiz', ...quizSchema.parse(hashParams) }
