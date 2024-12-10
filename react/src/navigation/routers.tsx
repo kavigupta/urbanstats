@@ -36,7 +36,7 @@ export function Router(): ReactNode {
     const url = urlFromPageDescriptor(pageState.current.descriptor)
 
     useEffect(() => {
-        if (url.hash !== '') {
+        if (url.hash !== '' && pageState.current.descriptor.kind !== 'initialLoad') {
             /* eslint-disable no-restricted-syntax -- Core navigation functionality */
             window.location.replace(url.hash)
             history.replaceState(pageState.current.descriptor, '')
