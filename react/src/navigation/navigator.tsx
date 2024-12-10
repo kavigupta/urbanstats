@@ -34,7 +34,7 @@ const articleSchema = z.object({
 })
 
 const comparisonSchema = z.object({
-    longnames: z.preprocess(value => JSON.parse(value as string), z.array(z.string())).transform(followSymlinks),
+    longnames: z.string().transform(value => z.array(z.string()).parse(JSON.parse(value))).transform(followSymlinks),
     universe: z.optional(z.string()),
     s: z.optional(z.string()),
 })
@@ -64,16 +64,32 @@ const mapperSchema = z.object({
     view: z.union([z.undefined().transform(() => false), z.literal('true').transform(() => true), z.literal('false').transform(() => false)]),
 })
 
+const pageDescriptorSchema = z.union([
+    z.object({ kind: z.literal('article') }).and(articleSchema),
+    z.object({ kind: z.literal('comparison') }).and(comparisonSchema),
+    z.object({ kind: z.literal('statistic') }).and(statisticSchema),
+    z.object({ kind: z.literal('random') }).and(randomSchema),
+    z.object({ kind: z.literal('index') }),
+    z.object({ kind: z.literal('about') }),
+    z.object({ kind: z.literal('dataCredit'), hash: z.string() }),
+    z.object({ kind: z.literal('quiz') }).and(quizSchema),
+    z.object({ kind: z.literal('mapper') }).and(mapperSchema),
+])
+
+const historyStateSchema = z.object({
+    pageDescriptor: pageDescriptorSchema,
+    scrollPosition: z.number(),
+})
+
+type HistoryState = z.infer<typeof historyStateSchema>
+
+const history = window.history as {
+    replaceState: (data: HistoryState, unused: string, url?: string | URL | null) => void
+    pushState: (data: HistoryState, unused: string, url?: string | URL | null) => void
+}
+
 export type PageDescriptor =
-    ({ kind: 'article' } & z.infer<typeof articleSchema>)
-    | ({ kind: 'comparison' } & z.infer<typeof comparisonSchema>)
-    | ({ kind: 'statistic' } & z.infer<typeof statisticSchema>)
-    | ({ kind: 'random' } & z.infer<typeof randomSchema>)
-    | { kind: 'index' }
-    | { kind: 'about' }
-    | { kind: 'dataCredit', hash: string }
-    | ({ kind: 'quiz' } & z.infer<typeof quizSchema>)
-    | ({ kind: 'mapper' } & z.infer<typeof mapperSchema>)
+    z.infer<typeof pageDescriptorSchema>
     | { kind: 'initialLoad', url: URL }
     | { kind: 'error', url: URL }
 
@@ -94,7 +110,7 @@ export type PageData =
     }
     | { kind: 'initialLoad' }
 
-function pageDescriptorFromURL(url: URL): PageDescriptor {
+function pageDescriptorFromURL(url: URL): z.infer<typeof pageDescriptorSchema> {
     /**
      * Remember: When adding a new entrypoint here, you'll also need to add the actual file in `build.py` in order to support initial navigation.
      */
@@ -218,7 +234,7 @@ export function urlFromPageDescriptor(pageDescriptor: PageDescriptor): URL {
 }
 
 // Should not do side-effects in this function, since it can race with other calls of itself. Instead, return effects in the effects result value
-async function loadPageDescriptor(newDescriptor: PageDescriptor, settings: Settings): Promise<{ pageData: PageData, newPageDescriptor: PageDescriptor, effects: () => void }> {
+async function loadPageDescriptor(newDescriptor: PageDescriptor, settings: Settings): Promise<{ pageData: PageData, newPageDescriptor: z.infer<typeof pageDescriptorSchema>, effects: () => void }> {
     switch (newDescriptor.kind) {
         case 'article':
             const article = await loadProtobuf(data_link(newDescriptor.longname), 'Article')
@@ -402,7 +418,7 @@ async function loadPageDescriptor(newDescriptor: PageDescriptor, settings: Setti
     }
 }
 
-type PageState = { kind: 'loading', loading: { descriptor: PageDescriptor }, current: { data: PageData, descriptor: PageDescriptor }, loadStartTime: number }
+type PageState = { kind: 'loading', loading: { descriptor: z.infer<typeof pageDescriptorSchema> }, current: { data: PageData, descriptor: PageDescriptor }, loadStartTime: number }
     | { kind: 'loaded', current: { data: PageData, descriptor: PageDescriptor } }
 
 type SubsequentLoadingState = { kind: 'notLoading', updateAt: undefined } | { kind: 'quickLoad', updateAt: number } | { kind: 'longLoad', updateAt: undefined }
@@ -452,32 +468,31 @@ export class Navigator {
                 // When we use window.location.replace for hashes
                 return
             }
-            void this.navigate(popStateEvent.state as PageDescriptor, null)
+            const parseResult = historyStateSchema.safeParse(popStateEvent.state)
+            if (parseResult.success) {
+                void this.navigate(parseResult.data.pageDescriptor, null, parseResult.data.scrollPosition)
+            }
+            else {
+                location.reload()
+            }
         })
     }
 
-    private onSuccessfulNavigate(pageState: Extract<PageState, { kind: 'loaded' }>): void {
-        const url = urlFromPageDescriptor(pageState.current.descriptor)
-
-        // Jump to hash
-        if (url.hash !== '') {
-            window.location.replace(url.hash)
-            history.replaceState(pageState.current.descriptor, '')
-        }
-
-        // If we're going to a page that doesn't use a settings param, exit staging mode if we're in it
-        if (!['article', 'comparison'].includes(pageState.current.descriptor.kind) && Settings.shared.getStagedKeys() !== undefined) {
-            Settings.shared.exitStagedMode('discard')
-        }
-    }
-
-    async navigate(newDescriptor: PageDescriptor, kind: 'push' | 'replace' | null): Promise<void> {
+    async navigate(newDescriptor: z.infer<typeof pageDescriptorSchema>, kind: 'push' | 'replace' | null, scrollPosition?: number): Promise<void> {
         switch (kind) {
             case 'push':
-                history.pushState(newDescriptor, '', urlFromPageDescriptor(newDescriptor))
+                switch (this.pageState.current.descriptor.kind) {
+                    case 'initialLoad':
+                    case 'error':
+                        break
+                    default:
+                        // Save old scroll position as we navigate away
+                        history.replaceState({ pageDescriptor: this.pageState.current.descriptor, scrollPosition: window.scrollY }, '')
+                }
+                history.pushState({ pageDescriptor: newDescriptor, scrollPosition: scrollPosition ?? window.scrollY }, '', urlFromPageDescriptor(newDescriptor))
                 break
             case 'replace':
-                history.replaceState(newDescriptor, '', urlFromPageDescriptor(newDescriptor))
+                history.replaceState({ pageDescriptor: newDescriptor, scrollPosition: scrollPosition ?? window.scrollY }, '', urlFromPageDescriptor(newDescriptor))
                 break
             case null:
                 break
@@ -492,11 +507,29 @@ export class Navigator {
                 // Another load has started, don't race it
                 return
             }
-            history.replaceState(newPageDescriptor, '', urlFromPageDescriptor(newPageDescriptor))
+            const url = urlFromPageDescriptor(newPageDescriptor)
+            history.replaceState({ pageDescriptor: newPageDescriptor, scrollPosition: scrollPosition ?? window.scrollY }, '', url)
             this.pageState = { kind: 'loaded', current: { data: pageData, descriptor: newPageDescriptor } }
             this.pageStateObservers.forEach((observer) => { observer() })
             effects()
-            this.onSuccessfulNavigate(this.pageState)
+
+            // On successful navigate
+
+            // Jump to hash
+            if (url.hash !== '' && scrollPosition === undefined) {
+                window.location.replace(url.hash)
+                history.replaceState({ pageDescriptor: newPageDescriptor, scrollPosition: window.scrollY }, '')
+            }
+
+            // If we're going to a page that doesn't use a settings param, exit staging mode if we're in it
+            if (!['article', 'comparison'].includes(this.pageState.current.descriptor.kind) && Settings.shared.getStagedKeys() !== undefined) {
+                Settings.shared.exitStagedMode('discard')
+            }
+
+            // Jump to the scroll position
+            if (scrollPosition !== undefined) {
+                window.scrollTo({ top: scrollPosition })
+            }
         }
         catch (error) {
             if (this.pageState.kind !== 'loading' || this.pageState.loading.descriptor !== newDescriptor) {
@@ -513,7 +546,7 @@ export class Navigator {
         }
     }
 
-    link(pageDescriptor: PageDescriptor, postNavigationCallback?: () => void): { href: string, onClick: (e: React.MouseEvent) => Promise<void> } {
+    link(pageDescriptor: z.infer<typeof pageDescriptorSchema>, postNavigationCallback?: () => void): { href: string, onClick: (e: React.MouseEvent) => Promise<void> } {
         const url = urlFromPageDescriptor(pageDescriptor)
         return {
             href: url.pathname + url.search,
@@ -609,7 +642,7 @@ export class Navigator {
             case 'article':
             case 'comparison':
                 this.pageState.current.descriptor.s = newVector
-                history.replaceState(this.pageState.current.descriptor, '', urlFromPageDescriptor(this.pageState.current.descriptor))
+                history.replaceState({ pageDescriptor: this.pageState.current.descriptor, scrollPosition: window.scrollY }, '', urlFromPageDescriptor(this.pageState.current.descriptor))
                 break
             default:
                 throw new Error(`Page descriptor kind ${this.pageState.current.descriptor.kind} does not have a settings vector`)
@@ -620,7 +653,7 @@ export class Navigator {
         switch (this.pageState.current.descriptor.kind) {
             case 'mapper':
                 this.pageState.current.descriptor.settings = newSettings
-                history.replaceState(this.pageState.current.descriptor, '', urlFromPageDescriptor(this.pageState.current.descriptor))
+                history.replaceState({ pageDescriptor: this.pageState.current.descriptor, scrollPosition: window.scrollY }, '', urlFromPageDescriptor(this.pageState.current.descriptor))
                 break
             default:
                 throw new Error(`Page descriptor kind ${this.pageState.current.descriptor.kind} does not have mapper settings`)
