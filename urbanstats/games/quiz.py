@@ -234,24 +234,6 @@ def full_quiz(seed):
     return outs
 
 
-def custom_quiz_link(seed, name, *, localhost):
-    quiz = full_quiz(seed)
-    quiz_long = base64.b64encode(
-        gzip.compress(json.dumps(quiz).encode("utf-8"))
-    ).decode("utf-8")
-    long = dict(
-        mode="custom",
-        name=name,
-        quiz=quiz_long,
-    )
-    long = urllib.parse.urlencode(long)
-    short = shorten(long)
-    params = urllib.parse.urlencode(dict(short=short))
-    if localhost:
-        return f"http://localhost:8000/quiz.html?{params}"
-    return f"https://urbanstats.org/quiz.html?{params}"
-
-
 def check_quiz_is_guaranteed_future(number):
     fractional_days = compute_fractional_days("Pacific/Kiritimati")
     if number <= fractional_days:
