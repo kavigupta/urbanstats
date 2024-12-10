@@ -2,7 +2,7 @@ import React, { ReactNode, useContext, useEffect, useRef, useState } from 'react
 import { isFirefox, isMobile } from 'react-device-detect'
 
 import { Statistic } from '../components/table'
-import { Navigator } from '../navigation/navigator'
+import { Navigator, urlFromPageDescriptor } from '../navigation/navigator'
 import { JuxtastatColors } from '../page_template/color-themes'
 import { useColors, useJuxtastatColors } from '../page_template/colors'
 
@@ -303,10 +303,7 @@ export function summary(juxtaColors: JuxtastatColors, today_name: string, correc
 
     text += '\n'
 
-    let url = 'https://juxtastat.org'
-    if (parameters !== '') {
-        url += `/?${parameters}`
-    }
+    const url = `https://juxtastat.org${urlFromPageDescriptor({ kind: 'quiz', mode: quiz_kind === 'retrostat' ? 'retro' : undefined }).hash}`
     return [text, url]
 }
 
