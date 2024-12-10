@@ -1,10 +1,7 @@
-import base64
 import copy
-import gzip
 import json
 import os
 import shutil
-import urllib
 from datetime import datetime
 from functools import lru_cache
 
@@ -20,7 +17,6 @@ from urbanstats.games.quiz_region_types import (
     sample_quiz_type,
 )
 from urbanstats.geometry.shapefiles.shapefiles_list import filter_table_for_type
-from urbanstats.shortener import shorten
 from urbanstats.statistics.collections_list import statistic_collections
 from urbanstats.statistics.output_statistics_metadata import (
     get_statistic_categories,
