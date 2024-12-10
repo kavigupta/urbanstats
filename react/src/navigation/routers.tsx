@@ -36,7 +36,7 @@ export function Router(): ReactNode {
     const url = urlFromPageDescriptor(pageState.current.descriptor)
 
     useEffect(() => {
-        if (url.hash !== '') {
+        if (url.hash !== '' && !['initialLoad', 'error'].includes(pageState.current.descriptor.kind)) {
             /* eslint-disable no-restricted-syntax -- Core navigation functionality */
             window.location.replace(url.hash)
             history.replaceState(pageState.current.descriptor, '')
@@ -172,7 +172,6 @@ function PageRouter({ pageData }: { pageData: PageData }): ReactNode {
                     quizDescriptor={pageData.quizDescriptor}
                     today_name={pageData.todayName}
                     todays_quiz={pageData.quiz}
-                    parameters={pageData.parameters}
                 />
             )
         case 'mapper':

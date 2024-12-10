@@ -113,7 +113,8 @@ function pageDescriptorFromURL(url: URL): PageDescriptor {
         case '/index.html':
             return { kind: 'index' }
         case '/quiz.html':
-            return { kind: 'quiz', ...quizSchema.parse(params) }
+            const hashParams = Object.fromEntries(new URLSearchParams(url.hash.slice(1)).entries())
+            return { kind: 'quiz', ...quizSchema.parse({ ...params, ...hashParams }) }
         case '/mapper.html':
             return { kind: 'mapper', ...mapperSchema.parse(params) }
         case '/about.html':
@@ -179,12 +180,20 @@ export function urlFromPageDescriptor(pageDescriptor: PageDescriptor): URL {
             hash = pageDescriptor.hash
             break
         case 'quiz':
-            pathname = '/quiz.html'
-            searchParams = {
+            /**
+             * We use hash params for quizzes since the juxtastat.org redirect doesn't preserve query params
+             */
+            // eslint-disable-next-line no-restricted-syntax -- Core navigation functions
+            const quizResult = new URL(window.location.origin)
+            quizResult.pathname = '/quiz.html'
+            const hashParams = new URLSearchParams(Object.entries({
                 mode: pageDescriptor.mode,
                 date: pageDescriptor.date?.toString(),
+            }).flatMap(([key, value]) => value !== undefined ? [[key, value]] : []))
+            if (hashParams.size > 0) {
+                quizResult.hash = `#${hashParams.toString()}`
             }
-            break
+            return quizResult
         case 'mapper':
             pathname = '/mapper.html'
             searchParams = {
@@ -430,6 +439,9 @@ export class Navigator {
                 },
             }
         }
+        window.addEventListener('hashchange', () => {
+            void this.navigate(pageDescriptorFromURL(new URL(discordFix(window.location.href))), 'replace')
+        })
     }
 
     async navigate(newDescriptor: PageDescriptor, kind: 'push' | 'replace' | null): Promise<void> {

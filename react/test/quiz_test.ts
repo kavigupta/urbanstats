@@ -74,6 +74,8 @@ function quiz_fixture(fix_name: string, url: string, new_localstorage: Record<st
         await t.eval(() => {
             localStorage.setItem('testHostname', 'urbanstats.org')
         })
+        // Must reload after setting localstorage so page picks it up
+        await safeReload(t)
     })
         .afterEach(async (t) => {
             exec('killall gunicorn')
@@ -122,7 +124,7 @@ function example_quiz_history(min_quiz: number, max_quiz: number, min_retro?: nu
 
 quiz_fixture(
     'quiz clickthrough test on empty background',
-    `${TARGET}/quiz.html?date=99`,
+    `${TARGET}/quiz.html#date=99`,
     { persistent_id: '000000000000007' },
     '',
 )
@@ -154,7 +156,7 @@ test('quiz-clickthrough-test', async (t) => {
 
 quiz_fixture(
     'report old quiz results too',
-    `${TARGET}/quiz.html?date=99`,
+    `${TARGET}/quiz.html#date=99`,
     { persistent_id: '000000000000007', secure_id: '00000003', quiz_history: JSON.stringify(example_quiz_history(87, 90)) },
     '',
 )
@@ -178,7 +180,7 @@ test('quiz-report-old-results', async (t) => {
 
 quiz_fixture(
     'trust on first use',
-    `${TARGET}/quiz.html?date=99`,
+    `${TARGET}/quiz.html#date=99`,
     { persistent_id: '000000000000007', secure_id: '00000003', quiz_history: JSON.stringify(example_quiz_history(87, 90)) },
     `
     CREATE TABLE IF NOT EXISTS JuxtaStatIndividualStats
@@ -196,7 +198,7 @@ test('quiz-trust-on-first-use', async (t) => {
 
 quiz_fixture(
     'auth failure',
-    `${TARGET}/quiz.html?date=99`,
+    `${TARGET}/quiz.html#date=99`,
     { persistent_id: '000000000000007', secure_id: '00000003', quiz_history: JSON.stringify(example_quiz_history(87, 90)) },
     `
     CREATE TABLE IF NOT EXISTS JuxtaStatIndividualStats
@@ -218,7 +220,7 @@ test('quiz-auth-failure', async (t) => {
 
 quiz_fixture(
     'do not report stale quiz results',
-    `${TARGET}/quiz.html?date=99`,
+    `${TARGET}/quiz.html#date=99`,
     { persistent_id: '000000000000007', quiz_history: JSON.stringify(example_quiz_history(87, 92)) },
     `
     CREATE TABLE IF NOT EXISTS JuxtaStatIndividualStats
@@ -247,7 +249,7 @@ test('quiz-do-not-report-stale-results', async (t) => {
 
 quiz_fixture(
     'percentage correct test',
-    `${TARGET}/quiz.html?date=99`,
+    `${TARGET}/quiz.html#date=99`,
     { persistent_id: '000000000000007' },
     `
     CREATE TABLE IF NOT EXISTS JuxtaStatIndividualStats
@@ -291,7 +293,7 @@ test('quiz-percentage-correct', async (t) => {
 
 quiz_fixture(
     'new user',
-    `${TARGET}/quiz.html?date=99`,
+    `${TARGET}/quiz.html#date=99`,
     {},
     '',
 )
@@ -324,7 +326,7 @@ test('quiz-new-user', async (t) => {
 
 quiz_fixture(
     'retrostat',
-    `${TARGET}/quiz.html?date=99`,
+    `${TARGET}/quiz.html#date=99`,
     { persistent_id: '000000000000007', quiz_history: JSON.stringify(example_quiz_history(87, 93, 27, 33)) },
     `
     CREATE TABLE IF NOT EXISTS JuxtaStatIndividualStats
@@ -355,7 +357,7 @@ test('quiz-retrostat-regular-quiz-reporting', async (t) => {
 })
 
 test('quiz-retrostat-retrostat-reporting', async (t) => {
-    const url = `${TARGET}/quiz.html?mode=retro&date=38`
+    const url = `${TARGET}/quiz.html#mode=retro&date=38`
     await t.navigateTo(url)
     await safeReload(t)
     await click_buttons(t, ['a', 'a', 'a', 'a', 'a'])
@@ -374,7 +376,7 @@ test('quiz-retrostat-retrostat-reporting', async (t) => {
 
 quiz_fixture(
     'quiz result test',
-    `${TARGET}/quiz.html?date=100`,
+    `${TARGET}/quiz.html#date=100`,
     { quiz_history: JSON.stringify(example_quiz_history(2, 100)) },
     '',
 )
@@ -393,7 +395,7 @@ test('quiz-results-test', async (t) => {
     await check_text(t, 'Excellent! 😊 4/5', '🟩🟩🟩🟩🟥')
 })
 
-quiz_fixture('several quiz results', `${TARGET}/quiz.html?date=90`,
+quiz_fixture('several quiz results', `${TARGET}/quiz.html#date=90`,
     {
         quiz_history: JSON.stringify({
             90: {
@@ -431,29 +433,19 @@ test('several-quiz-results-test', async (t) => {
     // true true true true false
     await check_text(t, 'Excellent! 😊 4/5', '🟩🟩🟩🟩🟥')
     // go to the next quiz via changing the href
-    await t.eval(() => {
-        document.location.href = '/quiz.html?date=91'
-    })
+    await t.navigateTo('/quiz.html#date=91')
     await check_text(t, 'Good! 🙃 3/5', '🟩🟥🟩🟥🟩')
-    await t.eval(() => {
-        document.location.href = '/quiz.html?date=92'
-    })
+    await t.navigateTo('/quiz.html#date=92')
     await check_text(t, 'Perfect! 🔥 5/5', '🟩🟩🟩🟩🟩')
-    await t.eval(() => {
-        document.location.href = '/quiz.html?date=93'
-    })
+    await t.navigateTo('/quiz.html#date=93')
     await check_text(t, 'Impressively Bad Job! 🤷 0/5', '🟥🟥🟥🟥🟥')
-    await t.eval(() => {
-        document.location.href = '/quiz.html?date=94'
-    })
+    await t.navigateTo('/quiz.html#date=94')
     await check_text(t, 'Better luck next time! 🫤 2/5', '🟥🟥🟥🟩🟩')
-    await t.eval(() => {
-        document.location.href = '/quiz.html?date=95'
-    })
+    await t.navigateTo('/quiz.html#date=95')
     await check_text(t, 'Excellent! 😊 4/5', '🟩🟩🟩🟩🟥')
 })
 
-quiz_fixture('export quiz progress', `${TARGET}/quiz.html?date=90`,
+quiz_fixture('export quiz progress', `${TARGET}/quiz.html#date=90`,
     {
         quiz_history: JSON.stringify({
             90: {
@@ -523,7 +515,7 @@ test('export quiz progress', async (t) => {
     await t.expect(JSON.stringify(downloadContents, null, 2)).eql(JSON.stringify(expectedExportWithoutDate, null, 2))
 })
 
-quiz_fixture('import quiz progress', `${TARGET}/quiz.html?date=90`,
+quiz_fixture('import quiz progress', `${TARGET}/quiz.html#date=90`,
     {
         quiz_history: JSON.stringify({
             91: {
@@ -555,9 +547,7 @@ test('import quiz progress', async (t) => {
     await t.setFilesToUpload('input[type=file]', [tempfile])
     await check_text(t, 'Excellent! 😊 4/5', '🟩🟩🟩🟩🟥')
 
-    await t.eval(() => {
-        document.location.href = '/quiz.html?mode=retro&date=38'
-    })
+    await t.navigateTo('/quiz.html#mode=retro&date=38')
     // Should transfer over retro results
     await check_text(t, 'Good! 🙃 3/5', '🟩🟥🟩🟥🟩')
 
@@ -568,20 +558,16 @@ test('import quiz progress', async (t) => {
     await t.expect(await t.eval(() => localStorage.getItem('secure_id'))).eql('baddecaf')
 
     // Quiz 91 should still be there
-    await t.eval(() => {
-        document.location.href = '/quiz.html?date=91'
-    })
+    await t.navigateTo('/quiz.html#date=91')
     await check_text(t, 'Perfect! 🔥 5/5', '🟩🟩🟩🟩🟩')
 
     // Retro 39 should still be there
-    await t.eval(() => {
-        document.location.href = '/quiz.html?mode=retro&date=39'
-    })
+    await t.navigateTo('/quiz.html#mode=retro&date=39')
     await check_text(t, 'Impressively Bad Job! 🤷 0/5', '🟥🟥🟥🟥🟥')
 })
 
 test('import quiz progress conflict', async (t) => {
-    await t.navigateTo(`/quiz.html?date=91`)
+    await t.navigateTo(`/quiz.html#date=91`)
     await check_text(t, 'Perfect! 🔥 5/5', '🟩🟩🟩🟩🟩')
 
     // Write the file to upload
@@ -637,7 +623,7 @@ test('import quiz progress conflict', async (t) => {
             + '\n'
             + 'Are you sure you want to merge them? (The lowest score will be used)',
             type: 'confirm',
-            url: 'http://localhost:8000/quiz.html?date=91',
+            url: 'http://localhost:8000/quiz.html#date=91',
         },
     ])
 
@@ -645,14 +631,14 @@ test('import quiz progress conflict', async (t) => {
     await check_text(t, 'Excellent! 😊 4/5', '🟩🟩🟩🟩🟥')
 
     // Score not increased although import is better
-    await t.navigateTo('/quiz.html?mode=retro&date=39')
+    await t.navigateTo('/quiz.html#mode=retro&date=39')
     await check_text(t, 'Impressively Bad Job! 🤷 0/5', '🟥🟥🟥🟥🟥')
 
     // Non-conflicing imported quizes exist
-    await t.navigateTo(`/quiz.html?date=90`)
+    await t.navigateTo(`/quiz.html#date=90`)
     await check_text(t, 'Excellent! 😊 4/5', '🟩🟩🟩🟩🟥')
 
-    await t.navigateTo('/quiz.html?mode=retro&date=40')
+    await t.navigateTo('/quiz.html#mode=retro&date=40')
     await check_text(t, 'No! No!! 😠 1/5', '🟩🟥🟥🟥🟥')
 
     // Should transfer over the user id
@@ -660,4 +646,9 @@ test('import quiz progress conflict', async (t) => {
 
     // Should transfer over secure id
     await t.expect(await t.eval(() => localStorage.getItem('secure_id'))).eql('baddecaf')
+})
+
+test('support old retro links', async (t) => {
+    await t.navigateTo('/quiz.html?mode=retro')
+    await t.expect(Selector('.headertext').withText('Retrostat').exists).ok()
 })

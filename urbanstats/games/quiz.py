@@ -1,10 +1,7 @@
-import base64
 import copy
-import gzip
 import json
 import os
 import shutil
-import urllib
 from datetime import datetime
 from functools import lru_cache
 
@@ -20,7 +17,6 @@ from urbanstats.games.quiz_region_types import (
     sample_quiz_type,
 )
 from urbanstats.geometry.shapefiles.shapefiles_list import filter_table_for_type
-from urbanstats.shortener import shorten
 from urbanstats.statistics.collections_list import statistic_collections
 from urbanstats.statistics.output_statistics_metadata import (
     get_statistic_categories,
@@ -232,24 +228,6 @@ def full_quiz(seed):
         out.update(q)
         outs.append(out)
     return outs
-
-
-def custom_quiz_link(seed, name, *, localhost):
-    quiz = full_quiz(seed)
-    quiz_long = base64.b64encode(
-        gzip.compress(json.dumps(quiz).encode("utf-8"))
-    ).decode("utf-8")
-    long = dict(
-        mode="custom",
-        name=name,
-        quiz=quiz_long,
-    )
-    long = urllib.parse.urlencode(long)
-    short = shorten(long)
-    params = urllib.parse.urlencode(dict(short=short))
-    if localhost:
-        return f"http://localhost:8000/quiz.html?{params}"
-    return f"https://urbanstats.org/quiz.html?{params}"
 
 
 def check_quiz_is_guaranteed_future(number):
