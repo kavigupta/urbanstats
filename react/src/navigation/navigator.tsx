@@ -217,7 +217,8 @@ export function urlFromPageDescriptor(pageDescriptor: PageDescriptor): URL {
     return result
 }
 
-async function loadPageDescriptor(newDescriptor: PageDescriptor, settings: Settings): Promise<{ pageData: PageData, newPageDescriptor: PageDescriptor }> {
+// Should not do side-effects in this function, since it can race with other calls of itself. Instead, return effects in the effects result value
+async function loadPageDescriptor(newDescriptor: PageDescriptor, settings: Settings): Promise<{ pageData: PageData, newPageDescriptor: PageDescriptor, effects: () => void }> {
     switch (newDescriptor.kind) {
         case 'article':
             const article = await loadProtobuf(data_link(newDescriptor.longname), 'Article')
@@ -229,11 +230,6 @@ async function loadPageDescriptor(newDescriptor: PageDescriptor, settings: Setti
             const displayUniverse = articleUniverse === defaultUniverse ? undefined : articleUniverse
 
             const { rows: articleRows, statPaths: articleStatPaths } = load_articles([article], articleUniverse)
-
-            if (newDescriptor.s !== undefined) {
-                const config = settingsConnectionConfig({ pageKind: 'article', statPaths: articleStatPaths, settings })
-                applySettingsParam(newDescriptor.s, settings, articleStatPaths, config)
-            }
 
             return {
                 pageData: {
@@ -248,7 +244,12 @@ async function loadPageDescriptor(newDescriptor: PageDescriptor, settings: Setti
                     universe: displayUniverse,
                     s: getVector(settings),
                 },
-
+                effects() {
+                    if (newDescriptor.s !== undefined) {
+                        const config = settingsConnectionConfig({ pageKind: 'article', statPaths: articleStatPaths, settings })
+                        applySettingsParam(newDescriptor.s, settings, articleStatPaths, config)
+                    }
+                },
             }
         case 'comparison':
             const articles = await Promise.all(newDescriptor.longnames.map(name => loadProtobuf(data_link(name), 'Article')))
@@ -264,11 +265,6 @@ async function loadPageDescriptor(newDescriptor: PageDescriptor, settings: Setti
 
             const { rows: comparisonRows, statPaths: comparisonStatPaths } = load_articles(articles, comparisonUniverse)
 
-            if (newDescriptor.s !== undefined) {
-                const config = settingsConnectionConfig({ pageKind: 'comparison', statPaths: comparisonStatPaths, settings })
-                applySettingsParam(newDescriptor.s, settings, comparisonStatPaths, config)
-            }
-
             return {
                 pageData: {
                     kind: 'comparison',
@@ -282,6 +278,12 @@ async function loadPageDescriptor(newDescriptor: PageDescriptor, settings: Setti
                     ...newDescriptor,
                     universe: displayComparisonUniverse,
                     s: getVector(settings),
+                },
+                effects() {
+                    if (newDescriptor.s !== undefined) {
+                        const config = settingsConnectionConfig({ pageKind: 'comparison', statPaths: comparisonStatPaths, settings })
+                        applySettingsParam(newDescriptor.s, settings, comparisonStatPaths, config)
+                    }
                 },
             }
         case 'statistic':
@@ -328,6 +330,7 @@ async function loadPageDescriptor(newDescriptor: PageDescriptor, settings: Setti
                     universe: displayStatUniverse,
                     highlight: undefined,
                 },
+                effects: () => undefined,
             }
         case 'random':
             const settingsValues = settings.getMultiple(['show_historical_cds'])
@@ -350,7 +353,7 @@ async function loadPageDescriptor(newDescriptor: PageDescriptor, settings: Setti
         case 'index':
         case 'about':
         case 'dataCredit':
-            return { pageData: newDescriptor, newPageDescriptor: newDescriptor }
+            return { pageData: newDescriptor, newPageDescriptor: newDescriptor, effects: () => undefined }
         case 'quiz':
             let quiz: QuizQuestion[]
             let quizDescriptor: QuizDescriptor
@@ -380,6 +383,7 @@ async function loadPageDescriptor(newDescriptor: PageDescriptor, settings: Setti
                     todayName,
                 },
                 newPageDescriptor: newDescriptor,
+                effects: () => undefined,
             }
         case 'mapper':
             return {
@@ -389,6 +393,7 @@ async function loadPageDescriptor(newDescriptor: PageDescriptor, settings: Setti
                     settings: mapSettingsFromURLParam(newDescriptor.settings),
                 },
                 newPageDescriptor: newDescriptor,
+                effects: () => undefined,
             }
         case 'initialLoad':
             throw new Error('cannot navigate to initialLoad')
@@ -442,6 +447,28 @@ export class Navigator {
         window.addEventListener('hashchange', () => {
             void this.navigate(pageDescriptorFromURL(new URL(discordFix(window.location.href))), 'replace')
         })
+        window.addEventListener('popstate', (popStateEvent: PopStateEvent): void => {
+            if (popStateEvent.state === null) {
+                // When we use window.location.replace for hashes
+                return
+            }
+            void this.navigate(popStateEvent.state as PageDescriptor, null)
+        })
+    }
+
+    private onSuccessfulNavigate(pageState: Extract<PageState, { kind: 'loaded' }>): void {
+        const url = urlFromPageDescriptor(pageState.current.descriptor)
+
+        // Jump to hash
+        if (url.hash !== '') {
+            window.location.replace(url.hash)
+            history.replaceState(pageState.current.descriptor, '')
+        }
+
+        // If we're going to a page that doesn't use a settings param, exit staging mode if we're in it
+        if (!['article', 'comparison'].includes(pageState.current.descriptor.kind) && Settings.shared.getStagedKeys() !== undefined) {
+            Settings.shared.exitStagedMode('discard')
+        }
     }
 
     async navigate(newDescriptor: PageDescriptor, kind: 'push' | 'replace' | null): Promise<void> {
@@ -459,7 +486,7 @@ export class Navigator {
         this.pageState = { kind: 'loading', loading: { descriptor: newDescriptor }, current: this.pageState.current, loadStartTime: Date.now() }
         this.pageStateObservers.forEach((observer) => { observer() })
         try {
-            const { pageData, newPageDescriptor } = await loadPageDescriptor(newDescriptor, Settings.shared)
+            const { pageData, newPageDescriptor, effects } = await loadPageDescriptor(newDescriptor, Settings.shared)
             // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- Async function, pageState can change during await
             if (this.pageState.kind !== 'loading' || this.pageState.loading.descriptor !== newDescriptor) {
                 // Another load has started, don't race it
@@ -468,6 +495,8 @@ export class Navigator {
             history.replaceState(newPageDescriptor, '', urlFromPageDescriptor(newPageDescriptor))
             this.pageState = { kind: 'loaded', current: { data: pageData, descriptor: newPageDescriptor } }
             this.pageStateObservers.forEach((observer) => { observer() })
+            effects()
+            this.onSuccessfulNavigate(this.pageState)
         }
         catch (error) {
             if (this.pageState.kind !== 'loading' || this.pageState.loading.descriptor !== newDescriptor) {
