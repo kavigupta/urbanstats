@@ -648,7 +648,7 @@ test('import quiz progress conflict', async (t) => {
     await t.expect(await t.eval(() => localStorage.getItem('secure_id'))).eql('baddecaf')
 })
 
-test.only('support old retro links', async (t) => {
+test('support old retro links', async (t) => {
     await t.navigateTo('/quiz.html?mode=retro')
     await t.expect(Selector('.headertext').withText('Retrostat').exists).ok()
 })
