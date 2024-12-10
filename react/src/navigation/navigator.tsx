@@ -118,6 +118,7 @@ const historyStateSchema = z.object({
 
 type HistoryState = z.infer<typeof historyStateSchema>
 
+window.history.scrollRestoration = 'manual'
 const history = window.history as {
     replaceState: (data: HistoryState, unused: string, url?: string | URL | null) => void
     pushState: (data: HistoryState, unused: string, url?: string | URL | null) => void
@@ -470,6 +471,10 @@ export class Navigator {
     private pageState: PageState
     private pageStateObservers = new Set<() => void>()
 
+    // Read by the router to apply React effects on rerender
+    // Using this wierd communication with react allows for smooth rendering, as opposed to setting a timeout sometime after the react render
+    effects: (() => void)[] = []
+
     constructor() {
         try {
             const url = new URL(discordFix(window.location.href))
@@ -511,6 +516,8 @@ export class Navigator {
     }
 
     async navigate(newDescriptor: PageDescriptor, kind: 'push' | 'replace' | null, scrollPosition?: number): Promise<void> {
+        this.effects = [] // If we're starting another navigation, don't clear previous effects
+
         switch (kind) {
             case 'push':
                 switch (this.pageState.current.descriptor.kind) {
@@ -545,7 +552,8 @@ export class Navigator {
             history.replaceState({ pageDescriptor: newPageDescriptor, scrollPosition: scrollPosition ?? window.scrollY }, '', url)
             this.pageState = { kind: 'loaded', current: { data: pageData, descriptor: newPageDescriptor } }
             this.pageStateObservers.forEach((observer) => { observer() })
-            effects()
+
+            this.effects.push(effects)
 
             // On successful navigate
 
@@ -557,16 +565,14 @@ export class Navigator {
             // Jump to
             if (scrollPosition !== undefined) {
                 // higher priority than hash because we're going back to a page that might have a hash, and we don't want the hash to override the saved scroll position
-                setTimeout(() => {
-                    window.scrollTo({ top: scrollPosition })
-                }, 0)
+                this.effects.push(() => { window.scrollTo({ top: scrollPosition }) })
             }
             else if (url.hash !== '') {
                 window.location.replace(url.hash)
                 history.replaceState({ pageDescriptor: newPageDescriptor, scrollPosition: window.scrollY }, '')
             }
             else if (oldData.kind !== this.pageState.current.data.kind) {
-                window.scrollTo({ top: 0 })
+                this.effects.push(() => { window.scrollTo({ top: 0 }) })
             }
         }
         catch (error) {

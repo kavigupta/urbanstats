@@ -1,4 +1,4 @@
-import React, { CSSProperties, ReactNode, useContext } from 'react'
+import React, { CSSProperties, ReactNode, useContext, useEffect } from 'react'
 import { ZodError } from 'zod'
 
 import { AboutPanel } from '../components/AboutPanel'
@@ -18,6 +18,12 @@ import { Navigator, PageData } from './navigator'
 export function Router(): ReactNode {
     const navigator = useContext(Navigator.Context)
     const pageState = navigator.usePageState()
+
+    useEffect(() => {
+        // Execute the navigator's effects
+        navigator.effects.forEach((effect) => { effect() })
+        navigator.effects = []
+    })
 
     return (
         <>
