@@ -439,6 +439,9 @@ export class Navigator {
                 },
             }
         }
+        window.addEventListener('hashchange', () => {
+            void this.navigate(pageDescriptorFromURL(new URL(discordFix(window.location.href))), 'replace')
+        })
     }
 
     async navigate(newDescriptor: PageDescriptor, kind: 'push' | 'replace' | null): Promise<void> {

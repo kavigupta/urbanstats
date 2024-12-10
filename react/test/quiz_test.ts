@@ -431,25 +431,15 @@ test('several-quiz-results-test', async (t) => {
     // true true true true false
     await check_text(t, 'Excellent! 😊 4/5', '🟩🟩🟩🟩🟥')
     // go to the next quiz via changing the href
-    await t.eval(() => {
-        document.location.href = '/quiz.html#date=91'
-    })
+    await t.navigateTo('/quiz.html#date=91')
     await check_text(t, 'Good! 🙃 3/5', '🟩🟥🟩🟥🟩')
-    await t.eval(() => {
-        document.location.href = '/quiz.html#date=92'
-    })
+    await t.navigateTo('/quiz.html#date=92')
     await check_text(t, 'Perfect! 🔥 5/5', '🟩🟩🟩🟩🟩')
-    await t.eval(() => {
-        document.location.href = '/quiz.html#date=93'
-    })
+    await t.navigateTo('/quiz.html#date=93')
     await check_text(t, 'Impressively Bad Job! 🤷 0/5', '🟥🟥🟥🟥🟥')
-    await t.eval(() => {
-        document.location.href = '/quiz.html#date=94'
-    })
+    await t.navigateTo('/quiz.html#date=94')
     await check_text(t, 'Better luck next time! 🫤 2/5', '🟥🟥🟥🟩🟩')
-    await t.eval(() => {
-        document.location.href = '/quiz.html#date=95'
-    })
+    await t.navigateTo('/quiz.html#date=95')
     await check_text(t, 'Excellent! 😊 4/5', '🟩🟩🟩🟩🟥')
 })
 
@@ -555,9 +545,7 @@ test('import quiz progress', async (t) => {
     await t.setFilesToUpload('input[type=file]', [tempfile])
     await check_text(t, 'Excellent! 😊 4/5', '🟩🟩🟩🟩🟥')
 
-    await t.eval(() => {
-        document.location.href = '/quiz.html#mode=retro&date=38'
-    })
+    await t.navigateTo('/quiz.html#mode=retro&date=38')
     // Should transfer over retro results
     await check_text(t, 'Good! 🙃 3/5', '🟩🟥🟩🟥🟩')
 
@@ -568,15 +556,11 @@ test('import quiz progress', async (t) => {
     await t.expect(await t.eval(() => localStorage.getItem('secure_id'))).eql('baddecaf')
 
     // Quiz 91 should still be there
-    await t.eval(() => {
-        document.location.href = '/quiz.html#date=91'
-    })
+    await t.navigateTo('/quiz.html#date=91')
     await check_text(t, 'Perfect! 🔥 5/5', '🟩🟩🟩🟩🟩')
 
     // Retro 39 should still be there
-    await t.eval(() => {
-        document.location.href = '/quiz.html#mode=retro&date=39'
-    })
+    await t.navigateTo('/quiz.html#mode=retro&date=39')
     await check_text(t, 'Impressively Bad Job! 🤷 0/5', '🟥🟥🟥🟥🟥')
 })
 
