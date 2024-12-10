@@ -498,6 +498,8 @@ export class Navigator {
                 break
         }
 
+        const oldData = this.pageState.current.data
+
         this.pageState = { kind: 'loading', loading: { descriptor: newDescriptor }, current: this.pageState.current, loadStartTime: Date.now() }
         this.pageStateObservers.forEach((observer) => { observer() })
         try {
@@ -515,20 +517,22 @@ export class Navigator {
 
             // On successful navigate
 
-            // Jump to hash
-            if (url.hash !== '' && scrollPosition === undefined) {
-                window.location.replace(url.hash)
-                history.replaceState({ pageDescriptor: newPageDescriptor, scrollPosition: window.scrollY }, '')
-            }
-
             // If we're going to a page that doesn't use a settings param, exit staging mode if we're in it
             if (!['article', 'comparison'].includes(this.pageState.current.descriptor.kind) && Settings.shared.getStagedKeys() !== undefined) {
                 Settings.shared.exitStagedMode('discard')
             }
 
-            // Jump to the scroll position
+            // Jump to
             if (scrollPosition !== undefined) {
+                // higher priority than hash because we're going back to a page that might have a hash, and we don't want the hash to override the saved scroll position
                 window.scrollTo({ top: scrollPosition })
+            }
+            else if (url.hash !== '') {
+                window.location.replace(url.hash)
+                history.replaceState({ pageDescriptor: newPageDescriptor, scrollPosition: window.scrollY }, '')
+            }
+            else if (oldData.kind !== this.pageState.current.data.kind) {
+                window.scrollTo({ top: 0 })
             }
         }
         catch (error) {
