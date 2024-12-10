@@ -33,13 +33,35 @@ const articleSchema = z.object({
     s: z.optional(z.string()),
 })
 
+const articleSchemaFromParams = z.object({
+    longname: z.string().transform(followSymlink),
+    universe: z.optional(z.string()),
+    s: z.optional(z.string()),
+})
+
 const comparisonSchema = z.object({
+    longnames: z.array(z.string()),
+    universe: z.optional(z.string()),
+    s: z.optional(z.string()),
+})
+
+const comparisonSchemaFromParams = z.object({
     longnames: z.string().transform(value => z.array(z.string()).parse(JSON.parse(value))).transform(followSymlinks),
     universe: z.optional(z.string()),
     s: z.optional(z.string()),
 })
 
 const statisticSchema = z.object({
+    article_type: z.string(),
+    statname: z.string() as z.ZodType<StatName, z.ZodTypeDef, StatName>,
+    start: z.number().int(),
+    amount: z.union([z.literal('All'), z.number().int()]),
+    order: z.union([z.literal('descending'), z.literal('ascending')]),
+    highlight: z.optional(z.string()),
+    universe: z.optional(z.string()),
+})
+
+const statisticSchemaFromParams = z.object({
     article_type: z.string(),
     statname: z.string().transform(s => s.replaceAll('__PCT__', '%') as StatName),
     start: z.optional(z.coerce.number().int()).default(1),
@@ -50,6 +72,11 @@ const statisticSchema = z.object({
 })
 
 const randomSchema = z.object({
+    sampleby: z.union([z.literal('uniform'), z.literal('population')]),
+    us_only: z.boolean(),
+})
+
+const randomSchemaForParams = z.object({
     sampleby: z.union([z.literal('uniform'), z.literal('population'), z.undefined().transform(() => 'uniform' as const)]),
     us_only: z.union([z.literal('true').transform(() => true), z.literal('false').transform(() => false), z.undefined().transform(() => false)]),
 })
@@ -60,6 +87,11 @@ const quizSchema = z.object({
 })
 
 const mapperSchema = z.object({
+    settings: z.optional(z.string()),
+    view: z.boolean(),
+})
+
+const mapperSchemaForParams = z.object({
     settings: z.optional(z.string()),
     view: z.union([z.undefined().transform(() => false), z.literal('true').transform(() => true), z.literal('false').transform(() => false)]),
 })
@@ -79,7 +111,10 @@ const pageDescriptorSchema = z.union([
 const historyStateSchema = z.object({
     pageDescriptor: pageDescriptorSchema,
     scrollPosition: z.number(),
-})
+});
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars -- This is a typecheck. Ensures that history does not have effects
+((typeCheck: z.ZodType<HistoryState, z.ZodTypeDef, HistoryState>): void => undefined)(historyStateSchema)
 
 type HistoryState = z.infer<typeof historyStateSchema>
 
@@ -88,8 +123,8 @@ const history = window.history as {
     pushState: (data: HistoryState, unused: string, url?: string | URL | null) => void
 }
 
-export type PageDescriptor =
-    z.infer<typeof pageDescriptorSchema>
+export type PageDescriptor = z.infer<typeof pageDescriptorSchema>
+type ExceptionalPageDescriptor = PageDescriptor
     | { kind: 'initialLoad', url: URL }
     | { kind: 'error', url: URL }
 
@@ -110,20 +145,20 @@ export type PageData =
     }
     | { kind: 'initialLoad' }
 
-function pageDescriptorFromURL(url: URL): z.infer<typeof pageDescriptorSchema> {
+function pageDescriptorFromURL(url: URL): PageDescriptor {
     /**
      * Remember: When adding a new entrypoint here, you'll also need to add the actual file in `build.py` in order to support initial navigation.
      */
     const params = Object.fromEntries(url.searchParams.entries())
     switch (url.pathname) {
         case '/article.html':
-            return { kind: 'article', ...articleSchema.parse(params) }
+            return { kind: 'article', ...articleSchemaFromParams.parse(params) }
         case '/comparison.html':
-            return { kind: 'comparison', ...comparisonSchema.parse(params) }
+            return { kind: 'comparison', ...comparisonSchemaFromParams.parse(params) }
         case '/statistic.html':
-            return { kind: 'statistic', ...statisticSchema.parse(params) }
+            return { kind: 'statistic', ...statisticSchemaFromParams.parse(params) }
         case '/random.html':
-            return { kind: 'random', ...randomSchema.parse(params) }
+            return { kind: 'random', ...randomSchemaForParams.parse(params) }
         case '/':
         case '':
         case '/index.html':
@@ -132,7 +167,7 @@ function pageDescriptorFromURL(url: URL): z.infer<typeof pageDescriptorSchema> {
             const hashParams = Object.fromEntries(new URLSearchParams(url.hash.slice(1)).entries())
             return { kind: 'quiz', ...quizSchema.parse({ ...params, ...hashParams }) }
         case '/mapper.html':
-            return { kind: 'mapper', ...mapperSchema.parse(params) }
+            return { kind: 'mapper', ...mapperSchemaForParams.parse(params) }
         case '/about.html':
             return { kind: 'about' }
         case '/data-credit.html':
@@ -142,7 +177,7 @@ function pageDescriptorFromURL(url: URL): z.infer<typeof pageDescriptorSchema> {
     }
 }
 
-export function urlFromPageDescriptor(pageDescriptor: PageDescriptor): URL {
+export function urlFromPageDescriptor(pageDescriptor: ExceptionalPageDescriptor): URL {
     let pathname: string
     let searchParams: Record<string, string | undefined>
     let hash = ''
@@ -234,7 +269,7 @@ export function urlFromPageDescriptor(pageDescriptor: PageDescriptor): URL {
 }
 
 // Should not do side-effects in this function, since it can race with other calls of itself. Instead, return effects in the effects result value
-async function loadPageDescriptor(newDescriptor: PageDescriptor, settings: Settings): Promise<{ pageData: PageData, newPageDescriptor: z.infer<typeof pageDescriptorSchema>, effects: () => void }> {
+async function loadPageDescriptor(newDescriptor: PageDescriptor, settings: Settings): Promise<{ pageData: PageData, newPageDescriptor: PageDescriptor, effects: () => void }> {
     switch (newDescriptor.kind) {
         case 'article':
             const article = await loadProtobuf(data_link(newDescriptor.longname), 'Article')
@@ -411,15 +446,11 @@ async function loadPageDescriptor(newDescriptor: PageDescriptor, settings: Setti
                 newPageDescriptor: newDescriptor,
                 effects: () => undefined,
             }
-        case 'initialLoad':
-            throw new Error('cannot navigate to initialLoad')
-        case 'error':
-            throw new Error('should not attempt to load error descriptor')
     }
 }
 
-type PageState = { kind: 'loading', loading: { descriptor: z.infer<typeof pageDescriptorSchema> }, current: { data: PageData, descriptor: PageDescriptor }, loadStartTime: number }
-    | { kind: 'loaded', current: { data: PageData, descriptor: PageDescriptor } }
+type PageState = { kind: 'loading', loading: { descriptor: PageDescriptor }, current: { data: PageData, descriptor: ExceptionalPageDescriptor }, loadStartTime: number }
+    | { kind: 'loaded', current: { data: PageData, descriptor: ExceptionalPageDescriptor } }
 
 type SubsequentLoadingState = { kind: 'notLoading', updateAt: undefined } | { kind: 'quickLoad', updateAt: number } | { kind: 'longLoad', updateAt: undefined }
 
@@ -473,12 +504,13 @@ export class Navigator {
                 void this.navigate(parseResult.data.pageDescriptor, null, parseResult.data.scrollPosition)
             }
             else {
+                console.warn(`Failed to parse history state! ${parseResult.error}`)
                 location.reload()
             }
         })
     }
 
-    async navigate(newDescriptor: z.infer<typeof pageDescriptorSchema>, kind: 'push' | 'replace' | null, scrollPosition?: number): Promise<void> {
+    async navigate(newDescriptor: PageDescriptor, kind: 'push' | 'replace' | null, scrollPosition?: number): Promise<void> {
         switch (kind) {
             case 'push':
                 switch (this.pageState.current.descriptor.kind) {
@@ -525,7 +557,9 @@ export class Navigator {
             // Jump to
             if (scrollPosition !== undefined) {
                 // higher priority than hash because we're going back to a page that might have a hash, and we don't want the hash to override the saved scroll position
-                window.scrollTo({ top: scrollPosition })
+                setTimeout(() => {
+                    window.scrollTo({ top: scrollPosition })
+                }, 0)
             }
             else if (url.hash !== '') {
                 window.location.replace(url.hash)
@@ -550,7 +584,7 @@ export class Navigator {
         }
     }
 
-    link(pageDescriptor: z.infer<typeof pageDescriptorSchema>, postNavigationCallback?: () => void): { href: string, onClick: (e: React.MouseEvent) => Promise<void> } {
+    link(pageDescriptor: PageDescriptor, postNavigationCallback?: () => void): { href: string, onClick: (e: React.MouseEvent) => Promise<void> } {
         const url = urlFromPageDescriptor(pageDescriptor)
         return {
             href: url.pathname + url.search,
