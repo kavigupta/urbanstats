@@ -113,7 +113,7 @@ const historyStateSchema = z.object({
     scrollPosition: z.number(),
 });
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars -- This is a typecheck. Ensures that history does not have effects
+// eslint-disable-next-line @typescript-eslint/no-unused-vars -- Ensures that history does not have effects. (aka that stored history state will be able to be parsed)
 ((typeCheck: z.ZodType<HistoryState, z.ZodTypeDef, HistoryState>): void => undefined)(historyStateSchema)
 
 type HistoryState = z.infer<typeof historyStateSchema>
