@@ -517,6 +517,17 @@ export class Navigator {
         window.addEventListener('scroll', () => {
             history.replaceState({ ...history.state, scrollPosition: window.scrollY }, '')
         })
+
+        /*
+         * Don't have the patience to debug #728 https://github.com/kavigupta/urbanstats/issues/728
+         * So let's try a hack.
+         */
+        window.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'visible' && this.pageState.kind === 'loading') {
+                console.warn('focused during loading, navigating again')
+                void this.navigate(this.pageState.loading.descriptor, null)
+            }
+        })
     }
 
     async navigate(newDescriptor: PageDescriptor, kind: 'push' | 'replace' | null, scrollPosition?: number): Promise<void> {
