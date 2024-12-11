@@ -110,7 +110,18 @@ export async function reportToServer(whole_history: QuizHistory, kind: 'juxtasta
 
 export interface PerQuestionStats { total: number, per_question: number[] }
 
+const questionStatsCache = new Map<string, PerQuestionStats>()
+
+// These are separate sync and async functions to eliminate flashing in the UI
+export function getCachedPerQuestionStats(descriptor: QuizDescriptor): PerQuestionStats | undefined {
+    return questionStatsCache.get(JSON.stringify(descriptor))
+}
+
 export async function getPerQuestionStats(descriptor: QuizDescriptor): Promise<PerQuestionStats> {
+    return getCachedPerQuestionStats(descriptor) ?? await fetchPerQuestionStats(descriptor)
+}
+
+async function fetchPerQuestionStats(descriptor: QuizDescriptor): Promise<PerQuestionStats> {
     let response: Response
     switch (descriptor.kind) {
         case 'juxtastat':
@@ -132,5 +143,7 @@ export async function getPerQuestionStats(descriptor: QuizDescriptor): Promise<P
             })
             break
     }
-    return await response.json() as PerQuestionStats
+    const result = await response.json() as PerQuestionStats
+    questionStatsCache.set(JSON.stringify(descriptor), result)
+    return result
 }

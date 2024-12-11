@@ -19,7 +19,6 @@ import { StatGroupSettings } from '../page_template/statistic-settings'
 import { StatName, StatPath } from '../page_template/statistic-tree'
 import { get_daily_offset_number, get_retrostat_offset_number } from '../quiz/dates'
 import { JuxtaQuestionJSON, load_juxta, load_retro, QuizDescriptor, QuizQuestion, RetroQuestionJSON } from '../quiz/quiz'
-import { getPerQuestionStats, PerQuestionStats } from '../quiz/statistics'
 import { default_article_universe, default_comparison_universe } from '../universe'
 import { Article, IDataList } from '../utils/protos'
 import { followSymlink, followSymlinks } from '../utils/symlinks'
@@ -138,15 +137,7 @@ export type PageData =
     | { kind: 'index' }
     | { kind: 'about' }
     | { kind: 'dataCredit' }
-    | {
-        kind: 'quiz'
-        quizDescriptor: QuizDescriptor
-        quiz: QuizQuestion[]
-        parameters: string
-        todayName: string
-        /** Provides a hook that has pre-cached stats, but also gets them again when called for the first time */
-        usePerQuestionStats: () => PerQuestionStats
-    }
+    | { kind: 'quiz', quizDescriptor: QuizDescriptor, quiz: QuizQuestion[], parameters: string, todayName: string }
     | { kind: 'mapper', settings: MapSettings, view: boolean }
     | {
         kind: 'error'
@@ -420,7 +411,6 @@ async function loadPageDescriptor(newDescriptor: PageDescriptor, settings: Setti
             let quiz: QuizQuestion[]
             let quizDescriptor: QuizDescriptor
             let todayName: string
-            let prefetchedStatsPromise: Promise<PerQuestionStats>
             switch (newDescriptor.mode) {
                 case 'retro':
                     const retro = newDescriptor.date ?? get_retrostat_offset_number()
@@ -428,20 +418,15 @@ async function loadPageDescriptor(newDescriptor: PageDescriptor, settings: Setti
                         kind: 'retrostat',
                         name: `W${retro}`,
                     }
-                    prefetchedStatsPromise = getPerQuestionStats(quizDescriptor)
                     quiz = (await loadJSON(`/retrostat/${retro}`) as RetroQuestionJSON[]).map(load_retro)
                     todayName = `Week ${retro}`
                     break
                 case undefined:
                     const today = newDescriptor.date ?? get_daily_offset_number()
                     quizDescriptor = { kind: 'juxtastat', name: today }
-                    prefetchedStatsPromise = getPerQuestionStats(quizDescriptor)
                     quiz = (await loadJSON(`/quiz/${today}`) as JuxtaQuestionJSON[]).map(load_juxta)
                     todayName = today.toString()
             }
-            let doneSecondStatsLoad = false
-            const waitForStatsDuration = 3000
-            await Promise.any([new Promise(resolve => setTimeout(resolve, waitForStatsDuration)), prefetchedStatsPromise])
             return {
                 pageData: {
                     kind: 'quiz',
@@ -449,24 +434,6 @@ async function loadPageDescriptor(newDescriptor: PageDescriptor, settings: Setti
                     quiz,
                     parameters: urlFromPageDescriptor(newDescriptor).searchParams.toString(),
                     todayName,
-                    usePerQuestionStats() {
-                        const [result, setResult] = useState({ total: 0, per_question: [0, 0, 0, 0, 0] })
-                        useEffect(() => {
-                            void prefetchedStatsPromise.then((fetchedStats) => {
-                                // Complex setResult to avoid races
-                                setResult(resultAfterFetch => resultAfterFetch === result ? fetchedStats : resultAfterFetch)
-                            })
-                        // eslint-disable-next-line react-hooks/exhaustive-deps -- This is changed when a new descriptor loads
-                        }, [prefetchedStatsPromise])
-                        if (!doneSecondStatsLoad) {
-                            doneSecondStatsLoad = true
-                            void getPerQuestionStats(quizDescriptor).then((fetchedStats) => {
-                                // Complex setResult to avoid races
-                                setResult(resultAfterFetch => resultAfterFetch === result ? fetchedStats : resultAfterFetch)
-                            })
-                        }
-                        return result
-                    },
                 },
                 newPageDescriptor: newDescriptor,
                 effects: () => undefined,

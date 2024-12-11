@@ -11,7 +11,7 @@ import { JuxtaQuestion, QuizDescriptor, QuizHistory, QuizQuestion, RetroQuestion
 import { ExportImport, Header, UserId } from './quiz-components'
 import { render_question } from './quiz-question'
 import { AudienceStatistics, QuizStatistics } from './quiz-statistics'
-import { PerQuestionStats, reportToServer } from './statistics'
+import { getCachedPerQuestionStats, getPerQuestionStats, PerQuestionStats, reportToServer } from './statistics'
 
 interface QuizResultProps {
     quizDescriptor: QuizDescriptor
@@ -22,20 +22,17 @@ interface QuizResultProps {
     }
     whole_history: QuizHistory
     quiz: QuizQuestion[]
-    usePerQuestionStats: () => PerQuestionStats
 }
 
 export function QuizResult(props: QuizResultProps): ReactNode {
     const button = useRef<HTMLButtonElement>(null)
-    const stats = props.usePerQuestionStats()
+    const [stats, setStats] = useState<PerQuestionStats>(getCachedPerQuestionStats(props.quizDescriptor) ?? { total: 0, per_question: [0, 0, 0, 0, 0] })
     const [authError, setAuthError] = useState(false)
 
     useEffect(() => {
-        void (async () => {
-            const isError = await reportToServer(props.whole_history, props.quizDescriptor.kind)
-            setAuthError(isError)
-        })()
-    }, [props.whole_history, props.quizDescriptor.kind])
+        void reportToServer(props.whole_history, props.quizDescriptor.kind).then(setAuthError)
+        void getPerQuestionStats(props.quizDescriptor).then(setStats)
+    }, [props.whole_history, props.quizDescriptor])
 
     const colors = useColors()
     const today_name = props.today_name
