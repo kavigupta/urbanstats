@@ -14,6 +14,7 @@ test('two randoms mobile', async (t) => {
     await t.expect(Selector('a').withText('Weighted by Population (US only)').exists).notOk()
     await t.click('.hamburgermenu')
     await t.click(Selector('a').withText('Weighted by Population (US only)'))
+    await t.wait(5000) // Wait for random
     await t.expect(Selector('a').withText('Weighted by Population (US only)').exists).notOk()
 })
 
