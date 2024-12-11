@@ -122,6 +122,7 @@ window.history.scrollRestoration = 'manual'
 const history = window.history as {
     replaceState: (data: HistoryState, unused: string, url?: string | URL | null) => void
     pushState: (data: HistoryState, unused: string, url?: string | URL | null) => void
+    state: HistoryState
 }
 
 export type PageDescriptor = z.infer<typeof pageDescriptorSchema>
@@ -513,21 +514,16 @@ export class Navigator {
                 location.reload()
             }
         })
+        window.addEventListener('scroll', () => {
+            history.replaceState({ ...history.state, scrollPosition: window.scrollY }, '')
+        })
     }
 
     async navigate(newDescriptor: PageDescriptor, kind: 'push' | 'replace' | null, scrollPosition?: number): Promise<void> {
-        this.effects = [] // If we're starting another navigation, don't clear previous effects
+        this.effects = [] // If we're starting another navigation, don't use previous effects
 
         switch (kind) {
             case 'push':
-                switch (this.pageState.current.descriptor.kind) {
-                    case 'initialLoad':
-                    case 'error':
-                        break
-                    default:
-                        // Save old scroll position as we navigate away
-                        history.replaceState({ pageDescriptor: this.pageState.current.descriptor, scrollPosition: window.scrollY }, '')
-                }
                 history.pushState({ pageDescriptor: newDescriptor, scrollPosition: scrollPosition ?? window.scrollY }, '', urlFromPageDescriptor(newDescriptor))
                 break
             case 'replace':
