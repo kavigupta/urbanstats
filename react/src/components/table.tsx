@@ -753,10 +753,7 @@ export function Statistic(props: { style?: React.CSSProperties, statname: string
         }
     })()
 
-    if (props.style) {
-        return <span style={props.style}>{content}</span>
-    }
-    return content
+    return <span style={props.style}>{content}</span>
 }
 
 function ElectionResult(props: { value: number }): ReactNode {
@@ -770,8 +767,14 @@ function ElectionResult(props: { value: number }): ReactNode {
     const text = value.toFixed(places)
     const party = props.value > 0 ? 'D' : 'R'
     const party_color = props.value > 0 ? colors.hueColors.blue : colors.hueColors.red
+    const spanStyle: CSSProperties = {
+        color: party_color,
+        // So that on 4 digits, we overflow left
+        display: 'flex',
+        justifyContent: 'flex-end',
+    }
     return (
-        <span style={{ color: party_color }}>
+        <span style={spanStyle}>
             {party}
             +
             {text}

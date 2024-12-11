@@ -124,12 +124,12 @@ async function dataValues(): Promise<string[]> {
     return values
 }
 
-const ONLY_US_CENSUS = '7aScwAoYX'
-const NEITHER = 'W2c5c5XY2Z'
+const ONLY_US_AND_CANADA_CENSUS = 'AkWGLJMDBPzz5'
+const NEITHER = 'AkWGLJ6mbMkR7'
 
 urbanstatsFixture(
     'comparison-non-overlapping-population-stats',
-    `${TARGET}/comparison.html?longnames=%5B"Cambridge+city%2C+Massachusetts%2C+USA"%2C"Chinandega%2C+Nicaragua"%5D&s=${ONLY_US_CENSUS}`,
+    `${TARGET}/comparison.html?longnames=%5B"Cambridge+city%2C+Massachusetts%2C+USA"%2C"Chinandega%2C+Nicaragua"%5D&s=${ONLY_US_AND_CANADA_CENSUS}`,
 )
 
 test('comparison-2-non-overlapping-population-stats', async (t) => {
@@ -144,7 +144,7 @@ test('comparison-2-non-overlapping-population-stats', async (t) => {
 
 urbanstatsFixture(
     'comparison-both-american-states-population-stats',
-    `${TARGET}/comparison.html?longnames=%5B"Cambridge+city%2C+Massachusetts%2C+USA"%2C"California%2C+USA"%5D&s=${ONLY_US_CENSUS}`,
+    `${TARGET}/comparison.html?longnames=%5B"Cambridge+city%2C+Massachusetts%2C+USA"%2C"California%2C+USA"%5D&s=${ONLY_US_AND_CANADA_CENSUS}`,
 )
 
 test('comparison-both-american-states-population-stats', async (t) => {
@@ -156,8 +156,28 @@ test('comparison-both-american-states-population-stats', async (t) => {
 })
 
 urbanstatsFixture(
+    'comparison-american-vs-canada-population-stats',
+    `${TARGET}/comparison.html?longnames=%5B"Ontario%2C+Canada"%2C"California%2C+USA"%5D&s=${ONLY_US_AND_CANADA_CENSUS}`,
+)
+
+test('comparison-american-vs-canada-population-stats', async (t) => {
+    // forces GHSL onto the screen. US Census is only enabled by the checkbox
+    await t.expect(await checkboxStatus('US Census')).eql('enabled')
+    await t.expect(await checkboxStatus('Canadian Census')).eql('enabled')
+    await t.expect(await checkboxStatus('GHSL')).eql('enabled')
+    // these are the values for the US Census
+    await t.expect(await dataValues()).eql(['14.2', '39.5'])
+    await check_textboxes(t, ['US Census'])
+    // these are the values for StatCan
+    await t.expect(await dataValues()).eql(['14.2', 'NaN'])
+    // enable everything
+    await check_textboxes(t, ['US Census', 'GHSL'])
+    await t.expect(await dataValues()).eql(['14.2', '39.5', '14.3', '40.2'])
+})
+
+urbanstatsFixture(
     'comparison-american-vs-international-population-stats',
-    `${TARGET}/comparison.html?longnames=%5B"Ontario%2C+Canada"%2C"California%2C+USA"%5D&s=${ONLY_US_CENSUS}`,
+    `${TARGET}/comparison.html?longnames=%5B"Delhi%2C+India"%2C"California%2C+USA"%5D&s=${ONLY_US_AND_CANADA_CENSUS}`,
 )
 
 let ghslLocation: string
@@ -167,11 +187,11 @@ test('comparison-american-vs-international-population-stats', async (t) => {
     await t.expect(await checkboxStatus('US Census')).eql('enabled')
     await t.expect(await checkboxStatus('GHSL')).eql('disabled')
     // these are the values for the US Census
-    await t.expect(await dataValues()).eql(['NaN', '39.5', '14.3', '40.2'])
+    await t.expect(await dataValues()).eql(['NaN', '39.5', '20.7', '40.2'])
     await check_textboxes(t, ['US Census'])
     ghslLocation = await getLocation()
     // these are the values for GHSL
-    await t.expect(await dataValues()).eql(['14.3', '40.2'])
+    await t.expect(await dataValues()).eql(['20.7', '40.2'])
     // disabled so this does nothing
     await check_textboxes(t, ['GHSL'])
     await t.expect(getLocation()).eql(ghslLocation)
@@ -186,7 +206,7 @@ test('settings param works correctly on url with just ghsl source checked', asyn
 
 urbanstatsFixture(
     'comparison-usa-vs-usa',
-    `${TARGET}/comparison.html?longnames=%5B"Massachusetts%2C+USA"%2C"California%2C+USA"%5D&s=${ONLY_US_CENSUS}`,
+    `${TARGET}/comparison.html?longnames=%5B"Massachusetts%2C+USA"%2C"California%2C+USA"%5D&s=${ONLY_US_AND_CANADA_CENSUS}`,
 )
 
 test('comparison-usa-vs-usa', async (t) => {

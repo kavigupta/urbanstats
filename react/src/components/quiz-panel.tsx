@@ -7,7 +7,7 @@ import { QuizDescriptor, QuizHistory, QuizQuestion, a_correct, loadQuizHistory }
 import { QuizQuestionDispatch } from '../quiz/quiz-question'
 import { QuizResult } from '../quiz/quiz-result'
 
-export function QuizPanel(props: { quizDescriptor: QuizDescriptor, today_name: string, todays_quiz: QuizQuestion[], parameters: string }): ReactNode {
+export function QuizPanel(props: { quizDescriptor: QuizDescriptor, today_name: string, todays_quiz: QuizQuestion[] }): ReactNode {
     const [quiz_history, set_quiz_history] = useState(loadQuizHistory())
     const [waiting, setWaiting] = useState(false)
 
@@ -68,7 +68,6 @@ export function QuizPanel(props: { quizDescriptor: QuizDescriptor, today_name: s
                             whole_history={quiz_history}
                             history={history}
                             today_name={props.today_name}
-                            parameters={props.parameters}
                             quizDescriptor={props.quizDescriptor}
                         />
                     )

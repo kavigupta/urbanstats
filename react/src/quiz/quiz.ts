@@ -4,7 +4,7 @@ import { z } from 'zod'
 import { StatPath } from '../page_template/statistic-tree'
 import { cancelled, uploadFile } from '../utils/upload'
 
-import { unique_persistent_id } from './statistics'
+import { unique_persistent_id, unique_secure_id } from './statistics'
 
 export type QuizDescriptor = { kind: 'juxtastat', name: number } | { kind: 'retrostat', name: string }
 
@@ -57,6 +57,7 @@ export type QuizHistory = z.infer<typeof quizHistorySchema>
 
 export const quizPersonaSchema = z.object({
     persistent_id: z.string(),
+    secure_id: z.string(),
     quiz_history: quizHistorySchema,
     date_exported: z.optional(z.string().pipe(z.coerce.date())),
 }).strict()
@@ -67,6 +68,7 @@ export function exportQuizPersona(): void {
     const exported: QuizPersona = {
         date_exported: new Date(),
         persistent_id: unique_persistent_id(),
+        secure_id: unique_secure_id(),
         quiz_history: loadQuizHistory(),
     }
     const data = JSON.stringify(exported, null, 2)
@@ -82,18 +84,45 @@ export async function importQuizPersona(): Promise<void> {
     try {
         const text = await file.text()
         const persona = quizPersonaSchema.parse(JSON.parse(text))
-        if (confirm(`The uploaded progress will REPLACE ALL your Juxtastat and Retrostat progress.
 
-Your existing Juxtastat and Retrostat progress will be lost. 
+        const currentHistory = loadQuizHistory()
+        let newHistory: QuizHistory
 
-Recommend downloading your current progress so you can restore it later.
+        const conflicts = Object.keys(persona.quiz_history)
+            .filter(key =>
+                key in currentHistory
+                && JSON.stringify(persona.quiz_history[key]) !== JSON.stringify(currentHistory[key]))
 
-Continue?`)) {
-            localStorage.setItem('quiz_history', JSON.stringify(persona.quiz_history))
-            localStorage.setItem('persistent_id', persona.persistent_id)
-            // eslint-disable-next-line no-restricted-syntax -- Localstorage is not reactive
-            window.location.reload()
+        if (conflicts.length > 0) {
+            if (confirm(`The following quiz results exist both locally and in the uploaded file, and are different:
+
+${
+                conflicts.map(key => `• ${key.startsWith('W') ? 'Retrostat' : 'Juxtastat'} ${key}`).join('\n')
+                }
+
+Are you sure you want to merge them? (The lowest score will be used)`)) {
+                newHistory = {
+                    ...currentHistory, ...persona.quiz_history, ...Object.fromEntries(conflicts.map((key) => {
+                        const currentCorrect = currentHistory[key].correct_pattern.filter(value => value).length
+                        const importCorrect = persona.quiz_history[key].correct_pattern.filter(value => value).length
+                        return [key, importCorrect >= currentCorrect ? currentHistory[key] : persona.quiz_history[key]]
+                    })),
+                }
+            }
+            else {
+                return
+            }
         }
+        else {
+            // There is not a conflict
+            newHistory = { ...currentHistory, ...persona.quiz_history }
+        }
+
+        localStorage.setItem('quiz_history', JSON.stringify(newHistory))
+        localStorage.setItem('persistent_id', persona.persistent_id)
+        localStorage.setItem('secure_id', persona.secure_id)
+        // eslint-disable-next-line no-restricted-syntax -- Localstorage is not reactive
+        window.location.reload()
     }
     catch (error) {
         alert(`Could not parse file. Error: ${error}`)

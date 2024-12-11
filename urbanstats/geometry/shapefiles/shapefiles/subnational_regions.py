@@ -8,7 +8,10 @@ from urbanstats.universe.universe_provider.combined_universe_provider import (
     CombinedUniverseProvider,
 )
 from urbanstats.universe.universe_provider.constants import INTERNATIONAL_PROVIDERS
-from urbanstats.universe.universe_provider.contained_within import STATE_PROVIDER
+from urbanstats.universe.universe_provider.contained_within import (
+    PROVINCE_PROVIDER,
+    STATE_PROVIDER,
+)
 
 
 def valid_state(x):
@@ -31,11 +34,14 @@ SUBNATIONAL_REGIONS = Shapefile(
     meta=dict(type="Subnational Region", source="ESRI", type_category="US Subdivision"),
     special_data_sources=["international_gridded_data"],
     universe_provider=CombinedUniverseProvider(
-        [*INTERNATIONAL_PROVIDERS, STATE_PROVIDER]
+        [*INTERNATIONAL_PROVIDERS, STATE_PROVIDER, PROVINCE_PROVIDER]
     ),
     subset_masks={
         "USA": FilteringSubset(
             "State", lambda x: extract_country_longname(x) == "USA" and valid_state(x)
-        )
+        ),
+        "Canada": FilteringSubset(
+            "Province", lambda x: extract_country_longname(x) == "Canada"
+        ),
     },
 )

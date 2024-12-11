@@ -53,7 +53,7 @@ export function Help(props: { quiz_kind: 'juxtastat' | 'retrostat' }): ReactNode
             {text()}
             {' '}
             {UserId()}
-            {DownloadUpload()}
+            {ExportImport()}
         </div>
     )
 }
@@ -67,15 +67,15 @@ export function UserId(): ReactNode {
     )
 }
 
-export function DownloadUpload(): ReactNode {
+export function ExportImport(): ReactNode {
     return (
         <div style={{ marginTop: '5px' }}>
             <button onClick={() => { exportQuizPersona() }}>
-                Download Quiz History
+                Export Quiz History
             </button>
             {' '}
             <button onClick={() => { void importQuizPersona() }}>
-                Upload Quiz History
+                Import Quiz History
             </button>
         </div>
     )

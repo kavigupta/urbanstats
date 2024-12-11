@@ -11,7 +11,7 @@ import { allGroups, allYears, statParents, StatPath } from '../page_template/sta
 
 import { render_time_remaining } from './dates'
 import { ENDPOINT, JuxtaQuestion, QuizDescriptor, QuizHistory, QuizQuestion, RetroQuestion, a_correct, nameOfQuizKind } from './quiz'
-import { DownloadUpload, Header, UserId } from './quiz-components'
+import { ExportImport, Header, UserId } from './quiz-components'
 import { render_question } from './quiz-question'
 import { AudienceStatistics, QuizStatistics } from './quiz-statistics'
 import { reportToServer, reportToServerRetro } from './statistics'
@@ -23,7 +23,6 @@ interface QuizResultProps {
         correct_pattern: boolean[]
         choices: ('A' | 'B')[]
     }
-    parameters: string
     whole_history: QuizHistory
     quiz: QuizQuestion[]
 }
@@ -32,12 +31,14 @@ export function QuizResult(props: QuizResultProps): ReactNode {
     const button = useRef<HTMLButtonElement>(null)
     const [total, setTotal] = useState(0)
     const [per_question, set_per_question] = useState([0, 0, 0, 0, 0])
+    const [authError, setAuthError] = useState(false)
 
     useEffect(() => {
         void (async () => {
             let response: Response | undefined
+            let isError: Promise<boolean> | undefined
             if (props.quizDescriptor.kind === 'juxtastat') {
-                void reportToServer(props.whole_history)
+                isError = reportToServer(props.whole_history)
                 // POST to endpoint /juxtastat/get_per_question_stats with the current day
                 response = await fetch(`${ENDPOINT}/juxtastat/get_per_question_stats`, {
                     method: 'POST',
@@ -48,7 +49,7 @@ export function QuizResult(props: QuizResultProps): ReactNode {
                 })
             }
             if (props.quizDescriptor.kind === 'retrostat') {
-                void reportToServerRetro(props.whole_history)
+                isError = reportToServerRetro(props.whole_history)
                 response = await fetch(`${ENDPOINT}/retrostat/get_per_question_stats`, {
                     method: 'POST',
                     body: JSON.stringify({ week: parseInt(props.quizDescriptor.name.substring(1)) }),
@@ -62,9 +63,13 @@ export function QuizResult(props: QuizResultProps): ReactNode {
                 setTotal(responseJson.total)
                 set_per_question(responseJson.per_question)
             }
+            if (isError !== undefined) {
+                setAuthError(await isError)
+            }
         })()
     }, [props.whole_history, props.quizDescriptor.kind, props.quizDescriptor.name])
 
+    const colors = useColors()
     const today_name = props.today_name
     const correct_pattern = props.history.correct_pattern
     const total_correct = correct_pattern.reduce((partialSum, a) => partialSum + (a ? 1 : 0), 0)
@@ -73,11 +78,28 @@ export function QuizResult(props: QuizResultProps): ReactNode {
         <div>
             <Header quiz={props.quizDescriptor} />
             <div className="gap"></div>
+            {authError
+                ? (
+                        <div
+                            className="serif"
+                            style={{
+                                backgroundColor: colors.slightlyDifferentBackgroundFocused, width: '75%', margin: 'auto',
+                                fontSize: '1.5em',
+                                padding: '0.5em',
+                                textAlign: 'center',
+                            }}
+                        >
+                            <b>
+                                Warning! Someone is possibly attempting to hijack your account.
+                                Please contact us at security@urbanstats.org, and send your persistent ID.
+                            </b>
+                        </div>
+                    )
+                : undefined}
             <Summary correct_pattern={correct_pattern} total_correct={total_correct} total={correct_pattern.length} />
             <div className="gap_small"></div>
             <ShareButton
                 button_ref={button}
-                parameters={props.parameters}
                 today_name={today_name}
                 correct_pattern={correct_pattern}
                 total_correct={total_correct}
@@ -113,7 +135,7 @@ export function QuizResult(props: QuizResultProps): ReactNode {
             )}
             <div className="centered_text serif">
                 <UserId />
-                <DownloadUpload />
+                <ExportImport />
             </div>
         </div>
     )
@@ -121,14 +143,13 @@ export function QuizResult(props: QuizResultProps): ReactNode {
 
 interface ShareButtonProps {
     button_ref: React.RefObject<HTMLButtonElement>
-    parameters: string
     today_name: string
     correct_pattern: boolean[]
     total_correct: number
     quiz_kind: 'juxtastat' | 'retrostat'
 }
 
-function ShareButton({ button_ref, parameters, today_name, correct_pattern, total_correct, quiz_kind }: ShareButtonProps): ReactNode {
+function ShareButton({ button_ref, today_name, correct_pattern, total_correct, quiz_kind }: ShareButtonProps): ReactNode {
     const colors = useColors()
     const juxtaColors = useJuxtastatColors()
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- We need to check the condition for browser compatibility.
@@ -154,7 +175,7 @@ function ShareButton({ button_ref, parameters, today_name, correct_pattern, tota
             }}
             ref={button_ref}
             onClick={async () => {
-                const [text, url] = summary(juxtaColors, today_name, correct_pattern, total_correct, parameters, quiz_kind)
+                const [text, url] = summary(juxtaColors, today_name, correct_pattern, total_correct, quiz_kind)
 
                 async function copy_to_clipboard(): Promise<void> {
                     await navigator.clipboard.writeText(`${text}\n${url}`)
@@ -271,7 +292,7 @@ export function Summary(props: { total_correct: number, total: number, correct_p
     )
 }
 
-export function summary(juxtaColors: JuxtastatColors, today_name: string, correct_pattern: boolean[], total_correct: number, parameters: string, quiz_kind: 'juxtastat' | 'retrostat'): [string, string] {
+export function summary(juxtaColors: JuxtastatColors, today_name: string, correct_pattern: boolean[], total_correct: number, quiz_kind: 'juxtastat' | 'retrostat'): [string, string] {
     // wordle-style summary
     let text = `${nameOfQuizKind(quiz_kind)} ${today_name} ${total_correct}/${correct_pattern.length}`
 
@@ -282,11 +303,10 @@ export function summary(juxtaColors: JuxtastatColors, today_name: string, correc
 
     text += '\n'
 
-    let url = 'https://juxtastat.org'
-    if (parameters !== '') {
-        url += `/?${parameters}`
-    }
-    return [text, url]
+    // eslint-disable-next-line no-restricted-syntax -- Sharing
+    const url = new URL(window.location.href)
+    url.host = 'juxtastat.org'
+    return [text, url.toString()]
 }
 
 function QuizResultRow(props: QuizResultRowProps & { question: QuizQuestion }): ReactNode {
