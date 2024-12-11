@@ -3,9 +3,9 @@ import { writeFileSync, readFileSync } from 'fs'
 import { promisify } from 'util'
 
 import { execa } from 'execa'
-import { RequestHook, Selector } from 'testcafe'
+import { ClientFunction, RequestHook, Selector } from 'testcafe'
 
-import { TARGET, most_recent_download_path, safeReload, screencap, urbanstatsFixture } from './test_utils'
+import { TARGET, getLocation, most_recent_download_path, safeReload, screencap, urbanstatsFixture } from './test_utils'
 
 async function quiz_screencap(t: TestController): Promise<void> {
     await t.eval(() => {
@@ -651,4 +651,27 @@ test('import quiz progress conflict', async (t) => {
 test('support old retro links', async (t) => {
     await t.navigateTo('/quiz.html?mode=retro')
     await t.expect(Selector('.headertext').withText('Retrostat').exists).ok()
+})
+
+quiz_fixture('completed juxta 465', `${TARGET}/quiz.html#date=465`,
+    {
+        quiz_history: JSON.stringify({
+            465: {
+                choices: ['A', 'A', 'A', 'A', 'A'],
+                correct_pattern: [true, true, true, true, false],
+            },
+        }),
+        persistent_id: 'b0bacafe',
+        secure_id: 'baddecaf',
+    },
+    '',
+)
+
+test.only('quiz results go to compare pages', async (t) => {
+    await t.click(Selector('a').withText('Hawaii, USA'))
+    await t.expect(getLocation()).eql(`${TARGET}/comparison.html?longnames=%5B%22Hawaii%2C+USA%22%2C%22Wisconsin%2C+USA%22%5D&s=9E6YPpo6BAa37d3`)
+    await screencap(t)
+    await ClientFunction(() => { history.back() })()
+    await t.click(Selector('a').withText('Cleveland city, Ohio, USA'))
+    await t.expect(getLocation()).eql(`${TARGET}/comparison.html?longnames=%5B%22Gilbert+town%2C+Arizona%2C+USA%22%2C%22Cleveland+city%2C+Ohio%2C+USA%22%5D&s=FGeAR7KSCZ9hmB`)
 })
