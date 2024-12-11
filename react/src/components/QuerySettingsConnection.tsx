@@ -101,9 +101,6 @@ export function settingsConnectionConfig({ pageKind, statPaths, settings }: { pa
 export function applySettingsParam(settingsVector: string, settings: Settings, availableStatPaths: StatPath[][], { stagedSettingsKeys, applySettingsKeys }: SettingsConnectionConfig): void {
     const settingsFromQueryParams = fromVector(settingsVector, settings)
     if (stagedSettingsKeys.some(key => JSON.stringify(settingsFromQueryParams[key]) !== JSON.stringify(settings.get(key)))) {
-        if (settings.getStagedKeys() !== undefined) {
-            settings.exitStagedMode('discard')
-        }
         settings.enterStagedMode(Object.fromEntries(stagedSettingsKeys.map(key => [key, settingsFromQueryParams[key]])) as unknown as Partial<SettingsDictionary>)
         // If we haven't saved any previous settings, just save these staged settings
         // This ensures that the new user doesn't get non-default values for settings that aren't relevant to their linked page
