@@ -1,4 +1,4 @@
-import { QuizHistory } from './quiz'
+import { QuizDescriptor, QuizHistory } from './quiz'
 
 const ENDPOINT = 'https://persistent.urbanstats.org'
 
@@ -99,10 +99,38 @@ function parse_retrostat_week(day: string): number {
     return parseInt(day.substring(1))
 }
 
-export async function reportToServer(whole_history: QuizHistory): Promise<boolean> {
-    return await reportToServerGeneric(whole_history, '/juxtastat/latest_day', '/juxtastat/store_user_stats', parse_juxtastat_day)
+export async function reportToServer(whole_history: QuizHistory, kind: 'juxtastat' | 'retrostat'): Promise<boolean> {
+    switch (kind) {
+        case 'juxtastat':
+            return await reportToServerGeneric(whole_history, '/juxtastat/latest_day', '/juxtastat/store_user_stats', parse_juxtastat_day)
+        case 'retrostat':
+            return await reportToServerGeneric(whole_history, '/retrostat/latest_week', '/retrostat/store_user_stats', parse_retrostat_week)
+    }
 }
 
-export async function reportToServerRetro(whole_history: QuizHistory): Promise<boolean> {
-    return await reportToServerGeneric(whole_history, '/retrostat/latest_week', '/retrostat/store_user_stats', parse_retrostat_week)
+export interface PerQuestionStats { total: number, per_question: number[] }
+
+export async function getPerQuestionStats(descriptor: QuizDescriptor): Promise<PerQuestionStats> {
+    let response: Response
+    switch (descriptor.kind) {
+        case 'juxtastat':
+            response = await fetch(`${ENDPOINT}/juxtastat/get_per_question_stats`, {
+                method: 'POST',
+                body: JSON.stringify({ day: descriptor.name }),
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            })
+            break
+        case 'retrostat':
+            response = await fetch(`${ENDPOINT}/retrostat/get_per_question_stats`, {
+                method: 'POST',
+                body: JSON.stringify({ week: parseInt(descriptor.name.substring(1)) }),
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            })
+            break
+    }
+    return await response.json() as PerQuestionStats
 }

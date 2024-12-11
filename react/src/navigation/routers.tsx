@@ -152,6 +152,7 @@ function PageRouter({ pageData }: { pageData: PageData }): ReactNode {
                     quizDescriptor={pageData.quizDescriptor}
                     today_name={pageData.todayName}
                     todays_quiz={pageData.quiz}
+                    prefetchedStats={pageData.prefetchedStats}
                 />
             )
         case 'mapper':

@@ -7,11 +7,11 @@ import { JuxtastatColors } from '../page_template/color-themes'
 import { useColors, useJuxtastatColors } from '../page_template/colors'
 
 import { render_time_remaining } from './dates'
-import { ENDPOINT, JuxtaQuestion, QuizDescriptor, QuizHistory, QuizQuestion, RetroQuestion, a_correct, nameOfQuizKind } from './quiz'
+import { JuxtaQuestion, QuizDescriptor, QuizHistory, QuizQuestion, RetroQuestion, a_correct, nameOfQuizKind } from './quiz'
 import { ExportImport, Header, UserId } from './quiz-components'
 import { render_question } from './quiz-question'
 import { AudienceStatistics, QuizStatistics } from './quiz-statistics'
-import { reportToServer, reportToServerRetro } from './statistics'
+import { getPerQuestionStats, PerQuestionStats, reportToServer } from './statistics'
 
 interface QuizResultProps {
     quizDescriptor: QuizDescriptor
@@ -22,49 +22,33 @@ interface QuizResultProps {
     }
     whole_history: QuizHistory
     quiz: QuizQuestion[]
+    /**
+     * We have prefetched stats from the navigator so we don't jump the page layout waiting for stats to load
+     * When this component shows up again, it refreshes those stats
+     */
+    prefetchedStats?: PerQuestionStats
 }
 
 export function QuizResult(props: QuizResultProps): ReactNode {
     const button = useRef<HTMLButtonElement>(null)
-    const [total, setTotal] = useState(0)
-    const [per_question, set_per_question] = useState([0, 0, 0, 0, 0])
+    const [stats, setStats] = useState(props.prefetchedStats ?? { total: 0, per_question: [0, 0, 0, 0, 0] })
     const [authError, setAuthError] = useState(false)
 
     useEffect(() => {
+        if (props.prefetchedStats !== undefined) {
+            setStats(props.prefetchedStats)
+        }
+    }, [props.prefetchedStats])
+
+    useEffect(() => {
         void (async () => {
-            let response: Response | undefined
-            let isError: Promise<boolean> | undefined
-            if (props.quizDescriptor.kind === 'juxtastat') {
-                isError = reportToServer(props.whole_history)
-                // POST to endpoint /juxtastat/get_per_question_stats with the current day
-                response = await fetch(`${ENDPOINT}/juxtastat/get_per_question_stats`, {
-                    method: 'POST',
-                    body: JSON.stringify({ day: props.quizDescriptor.name }),
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                })
-            }
-            if (props.quizDescriptor.kind === 'retrostat') {
-                isError = reportToServerRetro(props.whole_history)
-                response = await fetch(`${ENDPOINT}/retrostat/get_per_question_stats`, {
-                    method: 'POST',
-                    body: JSON.stringify({ week: parseInt(props.quizDescriptor.name.substring(1)) }),
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                })
-            }
-            if (response !== undefined) {
-                const responseJson = await response.json() as { total: number, per_question: number[] }
-                setTotal(responseJson.total)
-                set_per_question(responseJson.per_question)
-            }
-            if (isError !== undefined) {
-                setAuthError(await isError)
-            }
+            const isError = await reportToServer(props.whole_history, props.quizDescriptor.kind)
+            setAuthError(isError)
+
+            const perQuestionStats = await getPerQuestionStats(props.quizDescriptor)
+            setStats(perQuestionStats)
         })()
-    }, [props.whole_history, props.quizDescriptor.kind, props.quizDescriptor.name])
+    }, [props.whole_history, props.quizDescriptor.kind, props.quizDescriptor])
 
     const colors = useColors()
     const today_name = props.today_name
@@ -104,10 +88,10 @@ export function QuizResult(props: QuizResultProps): ReactNode {
             />
             <div className="gap" />
             <div className="gap"></div>
-            {total > 30
+            {stats.total > 30
                 ? (
                         <div>
-                            <AudienceStatistics total={total} per_question={per_question} />
+                            <AudienceStatistics {...stats} />
                             <div className="gap"></div>
                             <div className="gap"></div>
                         </div>
