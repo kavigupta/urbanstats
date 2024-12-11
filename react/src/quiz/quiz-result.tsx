@@ -7,8 +7,9 @@ import { JuxtastatColors } from '../page_template/color-themes'
 import { useColors, useJuxtastatColors } from '../page_template/colors'
 
 import { render_time_remaining } from './dates'
-import { ENDPOINT, JuxtaQuestion, QuizDescriptor, QuizHistory, QuizQuestion, RetroQuestion, a_correct, nameOfQuizKind } from './quiz'
+import { ENDPOINT, JuxtaQuestion, QuizDescriptor, QuizFriends, QuizHistory, QuizQuestion, RetroQuestion, a_correct, loadQuizFriends, nameOfQuizKind } from './quiz'
 import { DownloadUpload, Header, UserId } from './quiz-components'
+import { QuizFriendsPanel } from './quiz-friends'
 import { render_question } from './quiz-question'
 import { AudienceStatistics, QuizStatistics } from './quiz-statistics'
 import { reportToServer, reportToServerRetro } from './statistics'
@@ -30,6 +31,14 @@ export function QuizResult(props: QuizResultProps): ReactNode {
     const [total, setTotal] = useState(0)
     const [per_question, set_per_question] = useState([0, 0, 0, 0, 0])
     const [authError, setAuthError] = useState(false)
+    const [quizFriends, setQuizFriendsDirect] = useState(loadQuizFriends())
+
+    const setQuizFriends = (qf: QuizFriends): void => {
+        setQuizFriendsDirect(qf)
+        localStorage.setItem('quiz_friends', JSON.stringify(qf))
+    }
+
+    console.log(quizFriends)
 
     useEffect(() => {
         void (async () => {
@@ -132,6 +141,9 @@ export function QuizResult(props: QuizResultProps): ReactNode {
                     />
                 ),
             )}
+            {props.quizDescriptor.kind === 'juxtastat'
+                ? <QuizFriendsPanel quizFriends={quizFriends} date={props.quizDescriptor.name} setQuizFriends={setQuizFriends} />
+                : undefined}
             <div className="centered_text serif">
                 <UserId />
                 <DownloadUpload />
@@ -478,7 +490,7 @@ export function Clickable({ longname }: { longname: string }): ReactNode {
 }
 export function red_and_green_squares(juxtaColors: JuxtastatColors, correct_pattern: boolean[]): string {
     return correct_pattern.map(function (x) {
-    // red square emoji for wrong, green for right
+        // red square emoji for wrong, green for right
         return x ? juxtaColors.correctEmoji : juxtaColors.incorrectEmoji
     }).join('')
 }

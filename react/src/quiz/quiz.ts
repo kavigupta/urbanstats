@@ -7,7 +7,7 @@ import { unique_persistent_id, unique_secure_id } from './statistics'
 
 export type QuizDescriptor = { kind: 'juxtastat', name: number } | { kind: 'retrostat', name: string }
 
-export const ENDPOINT = 'https://persistent.urbanstats.org'
+export const ENDPOINT = 'http://0.0.0.0:54579'
 
 export interface JuxtaQuestionJSON { stat_a: number, stat_b: number, question: string, longname_a: string, longname_b: string, stat_column: string };
 export interface JuxtaQuestion extends JuxtaQuestionJSON { kind: 'juxtastat' }
@@ -53,10 +53,16 @@ export const quizHistorySchema = z.record(
 
 export type QuizHistory = z.infer<typeof quizHistorySchema>
 
+// list of [string, string] pairs
+export const quizFriends = z.array(z.tuple([z.string(), z.string()]))
+
+export type QuizFriends = z.infer<typeof quizFriends>
+
 export const quizPersonaSchema = z.object({
     persistent_id: z.string(),
     secure_id: z.string(),
     quiz_history: quizHistorySchema,
+    quiz_friends: quizFriends,
     date_exported: z.optional(z.string().pipe(z.coerce.date())),
 }).strict()
 
@@ -68,6 +74,7 @@ export function exportQuizPersona(): void {
         persistent_id: unique_persistent_id(),
         secure_id: unique_secure_id(),
         quiz_history: loadQuizHistory(),
+        quiz_friends: loadQuizFriends(),
     }
     const data = JSON.stringify(exported, null, 2)
     saveAs(new Blob([data], { type: 'application/json' }), `urbanstats_quiz_${exported.persistent_id}.json`)
@@ -90,6 +97,7 @@ Recommend downloading your current progress so you can restore it later.
 
 Continue?`)) {
             localStorage.setItem('quiz_history', JSON.stringify(persona.quiz_history))
+            localStorage.setItem('quiz_friends', JSON.stringify(persona.quiz_friends))
             localStorage.setItem('persistent_id', persona.persistent_id)
             localStorage.setItem('secure_id', persona.secure_id)
             // eslint-disable-next-line no-restricted-syntax -- Localstorage is not reactive
@@ -113,4 +121,8 @@ export function loadQuizHistory(): QuizHistory {
         }
     }
     return history
+}
+
+export function loadQuizFriends(): QuizFriends {
+    return JSON.parse(localStorage.getItem('quiz_friends') ?? '[]') as QuizFriends
 }

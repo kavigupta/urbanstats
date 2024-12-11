@@ -6,6 +6,8 @@ from flask_cors import CORS
 
 from .juxtastat_stats import (
     check_secureid,
+    friend_request,
+    friends_status,
     get_per_question_stats,
     get_per_question_stats_retrostat,
     latest_day,
@@ -14,6 +16,8 @@ from .juxtastat_stats import (
     store_user_stats,
     get_full_database,
     store_user_stats_retrostat,
+    todays_score_for,
+    unfriend,
 )
 from .shorten import shorten_and_save, retreive_and_lengthen
 
@@ -117,6 +121,7 @@ def juxtastat_store_user_stats_request():
     store_user_stats(form["user"], json.loads(form["day_stats"]))
     return flask.jsonify(dict())
 
+
 @app.route("/retrostat/store_user_stats", methods=["POST"])
 def retrostat_store_user_stats_request():
     form = flask_form()
@@ -157,6 +162,52 @@ def retrostat_get_per_question_stats_request():
     if "week" in form:
         return flask.jsonify(get_per_question_stats_retrostat(form["week"]))
     return flask.jsonify({"error": "Needs parameter week!"}), 200
+
+
+@app.route("/juxtastat/friend_request", methods=["POST"])
+def juxtastat_friend_request():
+    print("FRIEND REQUEST")
+    print(flask_form())
+    success, error = get_authenticated_user(["user", "requestee"])
+    if not success:
+        return error
+    form = flask_form()
+    friend_request(form["user"], form["requestee"])
+    return flask.jsonify(dict())
+
+
+@app.route("/juxtastat/unfriend", methods=["POST"])
+def juxtastat_unfriend():
+    success, error = get_authenticated_user(["user", "requestee"])
+    if not success:
+        return error
+    form = flask_form()
+    unfriend(form["user"], form["requestee"])
+    return flask.jsonify(dict())
+
+
+@app.route("/juxtastat/todays_score_for", methods=["POST"])
+def juxtastat_todays_score_for():
+    success, error = get_authenticated_user(["requesters", "date"])
+    if not success:
+        return error
+    form = flask_form()
+    res = dict(results=todays_score_for(form["user"], form["requesters"], form["date"]))
+    print("TODAYS SCORE FOR", res)
+    return flask.jsonify(res)
+
+
+@app.route("/juxtastat/friends_status", methods=["POST"])
+def juxtastat_friends_status():
+    print("FRIENDS STATUS")
+    print(flask_form())
+    success, error = get_authenticated_user(["user"])
+    if not success:
+        return error
+    form = flask_form()
+    result = dict(results=friends_status(form["user"]))
+    print("FRIENDS STATUS RESULT", result)
+    return flask.jsonify(result)
 
 
 import logging
