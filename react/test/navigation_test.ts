@@ -26,12 +26,14 @@ test('maintain and restore scroll position back-forward', async (t) => {
     await t.navigateTo('/article.html?longname=Texas%2C+USA')
     await t.scroll(0, 200)
     await t.click(Selector('a').withExactText('Population'))
+    await t.expect(Selector('.headertext').withText('Population').exists).ok()
     await t.expect(getScroll()).eql(0) // Resets scroll on different page type
     await t.scroll(0, 100)
     await t.click(Selector('a').withText('New York'))
+    await t.expect(Selector('.headertext').withText('New York').exists).ok()
     await t.scroll(0, 400)
-    await screencap(t, { fullPage: false })
     await t.click(Selector('a').withText('Connecticut'))
+    await t.expect(Selector('.headertext').withText('Connecticut').exists).ok()
     await t.expect(getScroll()).eql(400) // Does not reset scroll on same page type
     await t.scroll(0, 500)
     await goBack()
