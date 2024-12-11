@@ -9,10 +9,14 @@ import shapely
 import tqdm.auto as tqdm
 from permacache import permacache, stable_hash
 
+from urbanstats.data.canada.canada_blocks import load_canada_db_shapefile
 from urbanstats.data.census_blocks import load_raw_census
 from urbanstats.data.gpw import compute_gpw_weighted_for_shape, load_full_ghs
 from urbanstats.data.nasa import get_nasa_data
-from urbanstats.geometry.census_aggregation import aggregate_by_census_block
+from urbanstats.geometry.census_aggregation import (
+    aggregate_by_census_block,
+    aggregate_by_census_block_canada,
+)
 
 PER_CELL = 3600
 CHUNK = 15  # double GPW's 30 arcsecond resolution
@@ -210,8 +214,15 @@ def stats_by_blocks(year):
     return disaggregate_both_to_blocks(coordinates)
 
 
+@permacache("urbanstats/data/elevation/stats_by_canada_blocks_2")
+def stats_by_canada_blocks(year):
+    geos = load_canada_db_shapefile(year).geometry
+    coordinates = np.array([geos.y, geos.x]).T
+    return disaggregate_both_to_blocks(coordinates)
+
+
 @permacache(
-    "urbanstats/data/elevation/elevation_statistics_for_american_shapefile",
+    "urbanstats/data/elevation/elevation_statistics_for_american_shapefile_2",
     key_function=dict(sf=lambda x: x.hash_key),
 )
 def elevation_statistics_for_american_shapefile(sf):
@@ -223,6 +234,27 @@ def elevation_statistics_for_american_shapefile(sf):
         result[k] = result[k] / result.population
     del result["population"]
     return result
+
+
+@permacache(
+    "urbanstats/data/elevation/elevation_statistics_for_canada_shapefile",
+    key_function=dict(sf=lambda x: x.hash_key),
+)
+def elevation_statistics_for_canada_shapefile(sf, year=2021):
+    canada_db = load_canada_db_shapefile(year)
+    stats_times_population = (
+        stats_by_canada_blocks(year) * np.array(canada_db.population)[:, None]
+    )
+    stats_times_population["population"] = canada_db.population
+    agg = aggregate_by_census_block_canada(
+        year,
+        sf,
+        stats_times_population,
+    )
+    for k in agg.columns[:-1]:
+        agg[k] = agg[k] / agg.population
+    del agg["population"]
+    return agg
 
 
 @permacache(

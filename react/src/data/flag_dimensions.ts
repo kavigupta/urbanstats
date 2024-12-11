@@ -285,5 +285,18 @@ const value: Record<string, number> = {
     'Puerto Rico, USA': 1.4981273408239701,
     'US Virgin Islands, USA': 1.4981273408239701,
     'District of Columbia, USA': 2.0,
+    'Alberta, Canada': 2.0,
+    'British Columbia, Canada': 1.6666666666666667,
+    'Manitoba, Canada': 2.0,
+    'New Brunswick, Canada': 1.6,
+    'Newfoundland and Labrador, Canada': 2.0,
+    'Northwest Territories, Canada': 2.0,
+    'Nova Scotia, Canada': 2.0,
+    'Nunavut, Canada': 1.7777777777777777,
+    'Ontario, Canada': 2.0,
+    'Prince Edward Island, Canada': 1.4598540145985401,
+    'Quebec, Canada': 1.4981273408239701,
+    'Saskatchewan, Canada': 2.0,
+    'Yukon, Canada': 2.0,
 }
 export default value

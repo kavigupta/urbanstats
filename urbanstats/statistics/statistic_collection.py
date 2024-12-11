@@ -6,6 +6,7 @@ import pandas as pd
 from urbanstats.acs.load import aggregated_acs_data, aggregated_acs_data_us_pr
 from urbanstats.games.quiz_region_types import (
     QUIZ_REGION_TYPES_ALL,
+    QUIZ_REGION_TYPES_CANADA,
     QUIZ_REGION_TYPES_INTERNATIONAL,
     QUIZ_REGION_TYPES_USA,
 )
@@ -133,6 +134,29 @@ class USAStatistics(StatisticCollection):
         pass
 
 
+class CanadaStatistics(StatisticCollection):
+    def quiz_question_types(self):
+        return QUIZ_REGION_TYPES_CANADA
+
+    def compute_statistics_dictionary(
+        self, *, shapefile, existing_statistics, shapefile_table
+    ):
+        _, result = compute_subset_statistics(
+            shapefile,
+            existing_statistics,
+            shapefile_table,
+            subset="Canada",
+            compute_function=self.compute_statistics_dictionary_canada,
+        )
+        return result
+
+    @abstractmethod
+    def compute_statistics_dictionary_canada(
+        self, *, shapefile, existing_statistics, shapefile_table
+    ):
+        pass
+
+
 def compute_subset_statistics(
     shapefile, existing_statistics, shapefile_table, *, subset, compute_function
 ):
@@ -149,7 +173,7 @@ def compute_subset_statistics(
     try:
         shapefile_subset.load_file()
     except EmptyShapefileError:
-        return True, {}
+        return False, {}
     mask = shapefile_table[subset_mask_key(subset)]
     [idxs] = np.where(mask)
     for_subset = compute_function(

@@ -7,6 +7,7 @@ from urbanstats.universe.universe_provider.constant_provider import (
     ConstantUniverseProvider,
 )
 from urbanstats.universe.universe_provider.contained_within import (
+    PROVINCE_PROVIDER,
     STATE_PROVIDER,
     ContainedWithinUniverseProvider,
 )
@@ -65,6 +66,18 @@ def us_domestic_provider(overrides=None):
             USContinentProvider(state_provider),
             ConstantUniverseProvider(["USA"]),
             state_provider,
+        ]
+    )
+
+
+def canada_domestic_provider(overrides=None):
+    province_provider = PROVINCE_PROVIDER
+    if overrides is not None:
+        province_provider = OverrideUniverseProvider(overrides, province_provider)
+    return CombinedUniverseProvider(
+        [
+            ConstantUniverseProvider(["world", "North America", "Canada"]),
+            province_provider,
         ]
     )
 

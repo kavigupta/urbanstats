@@ -6,6 +6,7 @@ from urbanstats.statistics.collections.census import (
     CensusChange2000,
     CensusChange2010,
 )
+from urbanstats.statistics.collections.census_canada import CensusCanada
 from urbanstats.statistics.collections.education_gender_gap import (
     EducationGenderGapStatistics,
 )
@@ -66,6 +67,7 @@ statistic_collections = (
     CensusChange2010(),
     Census2000(),
     CensusChange2000(),
+    CensusCanada(),
     GPWStatistics(),
     SegregationStatistics(),
     NationalOriginCitizenshipStatistics(),

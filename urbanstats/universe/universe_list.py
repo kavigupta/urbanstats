@@ -6,7 +6,7 @@ from urbanstats.universe.universe_constants import CONTINENTS, COUNTRIES
 
 # universes that are assigned by default to articles. An article's default universe is the most specific universe that
 # lies in the default_universes list.
-default_universes = ["world", "USA"]
+default_universes = ["world", "USA", "Canada"]
 
 
 def get_universe_name_for_state(state):
@@ -25,6 +25,21 @@ def universe_by_universe_type():
         "country": COUNTRIES,
         "state": [
             get_universe_name_for_state(x) for x in us.states.STATES_AND_TERRITORIES
+        ],
+        "province": [
+            "Alberta, Canada",
+            "British Columbia, Canada",
+            "Manitoba, Canada",
+            "New Brunswick, Canada",
+            "Newfoundland and Labrador, Canada",
+            "Northwest Territories, Canada",
+            "Nova Scotia, Canada",
+            "Nunavut, Canada",
+            "Ontario, Canada",
+            "Prince Edward Island, Canada",
+            "Quebec, Canada",
+            "Saskatchewan, Canada",
+            "Yukon, Canada",
         ],
     }
 

@@ -7,8 +7,8 @@ import { JuxtastatColors } from '../page_template/color-themes'
 import { useColors, useJuxtastatColors } from '../page_template/colors'
 
 import { render_time_remaining } from './dates'
-import { ENDPOINT, JuxtaQuestion, QuizDescriptor, QuizFriends, QuizHistory, QuizQuestion, RetroQuestion, a_correct, loadQuizFriends, nameOfQuizKind } from './quiz'
-import { DownloadUpload, Header, UserId } from './quiz-components'
+import { ENDPOINT, JuxtaQuestion, QuizDescriptor, QuizHistory, QuizQuestion, RetroQuestion, a_correct, QuizFriends, loadQuizFriends, nameOfQuizKind } from './quiz'
+import { ExportImport, Header, UserId } from './quiz-components'
 import { QuizFriendsPanel } from './quiz-friends'
 import { render_question } from './quiz-question'
 import { AudienceStatistics, QuizStatistics } from './quiz-statistics'
@@ -21,7 +21,6 @@ interface QuizResultProps {
         correct_pattern: boolean[]
         choices: ('A' | 'B')[]
     }
-    parameters: string
     whole_history: QuizHistory
     quiz: QuizQuestion[]
 }
@@ -107,7 +106,6 @@ export function QuizResult(props: QuizResultProps): ReactNode {
             <div className="gap_small"></div>
             <ShareButton
                 button_ref={button}
-                parameters={props.parameters}
                 today_name={today_name}
                 correct_pattern={correct_pattern}
                 total_correct={total_correct}
@@ -146,7 +144,7 @@ export function QuizResult(props: QuizResultProps): ReactNode {
                 : undefined}
             <div className="centered_text serif">
                 <UserId />
-                <DownloadUpload />
+                <ExportImport />
             </div>
         </div>
     )
@@ -154,14 +152,13 @@ export function QuizResult(props: QuizResultProps): ReactNode {
 
 interface ShareButtonProps {
     button_ref: React.RefObject<HTMLButtonElement>
-    parameters: string
     today_name: string
     correct_pattern: boolean[]
     total_correct: number
     quiz_kind: 'juxtastat' | 'retrostat'
 }
 
-function ShareButton({ button_ref, parameters, today_name, correct_pattern, total_correct, quiz_kind }: ShareButtonProps): ReactNode {
+function ShareButton({ button_ref, today_name, correct_pattern, total_correct, quiz_kind }: ShareButtonProps): ReactNode {
     const colors = useColors()
     const juxtaColors = useJuxtastatColors()
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- We need to check the condition for browser compatibility.
@@ -187,7 +184,7 @@ function ShareButton({ button_ref, parameters, today_name, correct_pattern, tota
             }}
             ref={button_ref}
             onClick={async () => {
-                const [text, url] = summary(juxtaColors, today_name, correct_pattern, total_correct, parameters, quiz_kind)
+                const [text, url] = summary(juxtaColors, today_name, correct_pattern, total_correct, quiz_kind)
 
                 async function copy_to_clipboard(): Promise<void> {
                     await navigator.clipboard.writeText(`${text}\n${url}`)
@@ -304,7 +301,7 @@ export function Summary(props: { total_correct: number, total: number, correct_p
     )
 }
 
-export function summary(juxtaColors: JuxtastatColors, today_name: string, correct_pattern: boolean[], total_correct: number, parameters: string, quiz_kind: 'juxtastat' | 'retrostat'): [string, string] {
+export function summary(juxtaColors: JuxtastatColors, today_name: string, correct_pattern: boolean[], total_correct: number, quiz_kind: 'juxtastat' | 'retrostat'): [string, string] {
     // wordle-style summary
     let text = `${nameOfQuizKind(quiz_kind)} ${today_name} ${total_correct}/${correct_pattern.length}`
 
@@ -315,11 +312,10 @@ export function summary(juxtaColors: JuxtastatColors, today_name: string, correc
 
     text += '\n'
 
-    let url = 'https://juxtastat.org'
-    if (parameters !== '') {
-        url += `/?${parameters}`
-    }
-    return [text, url]
+    // eslint-disable-next-line no-restricted-syntax -- Sharing
+    const url = new URL(window.location.href)
+    url.host = 'juxtastat.org'
+    return [text, url.toString()]
 }
 
 function QuizResultRow(props: QuizResultRowProps & { question: QuizQuestion }): ReactNode {

@@ -20,6 +20,16 @@ QUIZ_REGION_TYPES_USA = [
     "Judicial Circuit",
 ]
 
+QUIZ_REGION_TYPES_CANADA = [
+    "Province",
+    "CA Census Division",
+    "CA Population Center",
+    "CA CMA",
+]
+for region_type in QUIZ_REGION_TYPES_CANADA:
+    # really need to downweight these so they don't show up as often
+    quiz_weights[region_type] = 0.1
+
 QUIZ_REGION_TYPES_INTERNATIONAL = [
     "Country",
     "Subnational Region",
@@ -28,6 +38,7 @@ QUIZ_REGION_TYPES_INTERNATIONAL = [
 
 QUIZ_REGION_TYPES_ALL = [
     *QUIZ_REGION_TYPES_USA,
+    *QUIZ_REGION_TYPES_CANADA,
     *QUIZ_REGION_TYPES_INTERNATIONAL,
 ]
 

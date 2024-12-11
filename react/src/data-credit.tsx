@@ -634,7 +634,7 @@ export function DataCreditPanel(): ReactNode {
                             <a href="#explanation_gpw">GPW</a>
                             {' '}
                             data to compute the population weighted average of these statistics for each geography
-                            for large regions. For American regions, we disaggregate to the block level (starting
+                            for large regions. For American and Canadian regions, we disaggregate to the block level (starting
                             with 15 arc-second blocks) via bilinear interpolation and then use the population of each
                             block as a weight.
                         </div>
@@ -759,6 +759,31 @@ export function DataCreditPanel(): ReactNode {
                             we are using for the US data. To compute PW density, we treat each cell as effectively homogenous,
                             but since the cells are all smaller than 1 square kilometer, this should not be a major issue for
                             radii above 1km (which is the smallest radius we use for GHS-POP data).
+                        </div>
+                        <h1>Canadian Data</h1>
+                        <div>
+                            <h2>Geography</h2>
+                            <div>
+                                <p>
+                                    We source Canadian geography data from
+                                    {' '}
+                                    <a href="https://www12.statcan.gc.ca/census-recensement/2021/geo/sip-pis/boundary-limites/index2021-eng.cfm?year=21">StatCan</a>
+                                    . Specifically, we use digital boundary files
+                                    for provinces/torritories, census divisions, census subdivisions, population centers,
+                                    federal electoral districts, and census metropolitan areas. For all of these, we clip
+                                    to the international subnational regions as we define them in general, since the
+                                    digital boundary files provided by StatCan include unnecessarily large water areas.
+                                </p>
+                            </div>
+                            <NRef name="canadian_census" h="h2">Census Dissemination Block Data</NRef>
+                            <div>
+                                We use dissemination block data from the 2021 Canada Census. It is available
+                                {' '}
+                                <a href="https://www12.statcan.gc.ca/census-recensement/2021/geo/aip-pia/geosuite/index2021-eng.cfm?year=21">from StatCan</a>
+                                . We use the same metrics as for the US Census to compute population
+                                and population density statistics, except using dissemination blocks instead
+                                of census blocks.
+                            </div>
                         </div>
                         <h1> Flags </h1>
                         <div>
