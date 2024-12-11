@@ -30,6 +30,7 @@ test('maintain and restore scroll position back/forward', async (t) => {
     await t.scroll(0, 100)
     await t.click(Selector('a').withText('New York'))
     await t.scroll(0, 400)
+    await screencap(t)
     await t.click(Selector('a').withText('Connecticut'))
     await t.expect(getScroll()).eql(400) // Does not reset scroll on same page type
     await t.scroll(0, 500)
