@@ -8,7 +8,7 @@ import { QuizQuestionDispatch } from '../quiz/quiz-question'
 import { QuizResult } from '../quiz/quiz-result'
 import { PerQuestionStats } from '../quiz/statistics'
 
-export function QuizPanel(props: { quizDescriptor: QuizDescriptor, today_name: string, todays_quiz: QuizQuestion[], prefetchedStats?: PerQuestionStats }): ReactNode {
+export function QuizPanel(props: { quizDescriptor: QuizDescriptor, today_name: string, todays_quiz: QuizQuestion[], usePerQuestionStats: () => PerQuestionStats }): ReactNode {
     const [quiz_history, set_quiz_history] = useState(loadQuizHistory())
     const [waiting, setWaiting] = useState(false)
 
@@ -70,7 +70,7 @@ export function QuizPanel(props: { quizDescriptor: QuizDescriptor, today_name: s
                             history={history}
                             today_name={props.today_name}
                             quizDescriptor={props.quizDescriptor}
-                            prefetchedStats={props.prefetchedStats}
+                            usePerQuestionStats={props.usePerQuestionStats}
                         />
                     )
                 }

@@ -11,7 +11,7 @@ import { JuxtaQuestion, QuizDescriptor, QuizHistory, QuizQuestion, RetroQuestion
 import { ExportImport, Header, UserId } from './quiz-components'
 import { render_question } from './quiz-question'
 import { AudienceStatistics, QuizStatistics } from './quiz-statistics'
-import { getPerQuestionStats, PerQuestionStats, reportToServer } from './statistics'
+import { PerQuestionStats, reportToServer } from './statistics'
 
 interface QuizResultProps {
     quizDescriptor: QuizDescriptor
@@ -22,33 +22,20 @@ interface QuizResultProps {
     }
     whole_history: QuizHistory
     quiz: QuizQuestion[]
-    /**
-     * We have prefetched stats from the navigator so we don't jump the page layout waiting for stats to load
-     * When this component shows up again, it refreshes those stats
-     */
-    prefetchedStats?: PerQuestionStats
+    usePerQuestionStats: () => PerQuestionStats
 }
 
 export function QuizResult(props: QuizResultProps): ReactNode {
     const button = useRef<HTMLButtonElement>(null)
-    const [stats, setStats] = useState(props.prefetchedStats ?? { total: 0, per_question: [0, 0, 0, 0, 0] })
+    const stats = props.usePerQuestionStats()
     const [authError, setAuthError] = useState(false)
-
-    useEffect(() => {
-        if (props.prefetchedStats !== undefined) {
-            setStats(props.prefetchedStats)
-        }
-    }, [props.prefetchedStats])
 
     useEffect(() => {
         void (async () => {
             const isError = await reportToServer(props.whole_history, props.quizDescriptor.kind)
             setAuthError(isError)
-
-            const perQuestionStats = await getPerQuestionStats(props.quizDescriptor)
-            setStats(perQuestionStats)
         })()
-    }, [props.whole_history, props.quizDescriptor.kind, props.quizDescriptor])
+    }, [props.whole_history, props.quizDescriptor.kind])
 
     const colors = useColors()
     const today_name = props.today_name
