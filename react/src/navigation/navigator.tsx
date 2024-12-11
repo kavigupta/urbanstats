@@ -564,8 +564,11 @@ export class Navigator {
                 this.effects.push(() => { window.scrollTo({ top: scrollPosition }) })
             }
             else if (url.hash !== '') {
-                window.location.replace(url.hash)
-                history.replaceState({ pageDescriptor: newPageDescriptor, scrollPosition: window.scrollY }, '')
+                this.effects.push(() => {
+                    window.location.replace(url.hash)
+                    // Above statement clears state
+                    history.replaceState({ pageDescriptor: newPageDescriptor, scrollPosition: window.scrollY }, '')
+                })
             }
             else if (oldData.kind !== this.pageState.current.data.kind) {
                 this.effects.push(() => { window.scrollTo({ top: 0 }) })
