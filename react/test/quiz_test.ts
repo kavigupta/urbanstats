@@ -667,7 +667,7 @@ quiz_fixture('completed juxta 465', `${TARGET}/quiz.html#date=465`,
     '',
 )
 
-test.only('quiz results go to compare pages', async (t) => {
+test('quiz results go to compare pages', async (t) => {
     await t.click(Selector('a').withText('Hawaii, USA'))
     await t.expect(getLocation()).eql(`${TARGET}/comparison.html?longnames=%5B%22Hawaii%2C+USA%22%2C%22Wisconsin%2C+USA%22%5D&s=9E6YPpo6BAa37d3`)
     await screencap(t)
