@@ -1,6 +1,4 @@
-import { QuizHistory } from './quiz'
-
-const ENDPOINT = 'https://persistent.urbanstats.org'
+import { ENDPOINT, QuizHistory } from './quiz'
 
 function create_and_store_id(key: string): string {
     // (domain name, id stored in local storage)

@@ -30,6 +30,11 @@ def table():
         CREATE TABLE IF NOT EXISTS JuxtaStatUserSecureID (user integer PRIMARY KEY, secure_id integer)
         """
     )
+    c.execute(
+        """
+        CREATE TABLE IF NOT EXISTS FriendRequests (requestee integer, requester integer)
+        """
+    )
     # ADD THESE LATER IF WE NEED THEM
     # For now, we can just calculate them from the individual stats
     # We don't have enough users to worry about performance
@@ -87,6 +92,7 @@ def register_user(user, secure_id, domain):
     )
     conn.commit()
     return False
+
 
 def check_secureid(user, secure_id):
     """
@@ -203,3 +209,88 @@ def get_full_database():
         """
     )
     return c.fetchall()
+
+
+def friend_request(requestee, requester):
+    requestee = int(requestee, 16)
+    requester = int(requester, 16)
+    conn, c = table()
+    c.execute(
+        "INSERT INTO FriendRequests VALUES (?, ?)",
+        (requestee, requester),
+    )
+    print("ABC")
+    conn.commit()
+
+
+def unfriend(requestee, requester):
+    requestee = int(requestee, 16)
+    requester = int(requester, 16)
+    conn, c = table()
+    c.execute(
+        "DELETE FROM FriendRequests WHERE requestee=? AND requester=?",
+        (requestee, requester),
+    )
+    conn.commit()
+
+
+def todays_score_for(requestee, requesters, date):
+    """
+    For each `requseter` returns the pattern of correct answers if `(requester, requestee)` is a friend pair.
+    """
+
+    requestee = int(requestee, 16)
+    requesters = [int(x, 16) for x in requesters]
+
+    _, c = table()
+    # query the table to see if each pair is a friend pair
+
+    c.execute(
+        "SELECT requester FROM FriendRequests WHERE requestee=?",
+        (requestee,),
+    )
+    friends = c.fetchall()
+    friends = {x[0] for x in friends}
+
+    results = []
+    for requester in requesters:
+        if requester in friends:
+            c.execute(
+                "SELECT corrects FROM JuxtaStatIndividualStats WHERE user=? AND day=?",
+                (requester, date),
+            )
+            res = c.fetchone()
+            if res is None:
+                results.append(dict(friends=True, corrects=None))
+            else:
+                results.append(
+                    dict(friends=True, corrects=bitvector_to_corrects(res[0]))
+                )
+        else:
+            results.append(dict(friends=False))
+    return results
+
+
+def friends_status(user):
+    """
+    Get two lists, one of people who have friended user and one of people who user has friended.
+    """
+    user = int(user, 16)
+    _, c = table()
+    c.execute(
+        "SELECT requester FROM FriendRequests WHERE requestee=?",
+        (user,),
+    )
+    outgoing_requests = c.fetchall()
+    outgoing_requests = [x[0] for x in outgoing_requests]
+    c.execute(
+        "SELECT requestee FROM FriendRequests WHERE requester=?",
+        (user,),
+    )
+    incoming_requests = c.fetchall()
+    incoming_requests = [x[0] for x in incoming_requests]
+    outgoing_requests = [hex(x)[2:] for x in outgoing_requests]
+    incoming_requests = [hex(x)[2:] for x in incoming_requests]
+    return dict(
+        outgoing_requests=outgoing_requests, incoming_requests=incoming_requests
+    )
