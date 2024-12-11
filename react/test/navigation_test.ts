@@ -1,4 +1,4 @@
-import { RequestHook, Selector } from 'testcafe'
+import { ClientFunction, RequestHook, Selector } from 'testcafe'
 
 import { getLocation, screencap, SEARCH_FIELD, TARGET, urbanstatsFixture } from './test_utils'
 
@@ -15,6 +15,41 @@ test('two randoms mobile', async (t) => {
     await t.click('.hamburgermenu')
     await t.click(Selector('a').withText('Weighted by Population (US only)'))
     await t.expect(Selector('a').withText('Weighted by Population (US only)').exists).notOk()
+})
+
+const goBack = ClientFunction(() => { window.history.back() })
+const goForward = ClientFunction(() => { window.history.forward() })
+const getScroll = ClientFunction(() => window.scrollY)
+
+test('maintain and restore scroll position back/forward', async (t) => {
+    await t.navigateTo('/article.html?longname=Texas%2C+USA')
+    await t.scroll(0, 200)
+    await t.click(Selector('a').withExactText('Population'))
+    await t.expect(getScroll()).eql(0) // Resets scroll on different page type
+    await t.scroll(0, 100)
+    await t.click(Selector('a').withText('New York'))
+    await t.scroll(0, 400)
+    await t.click(Selector('a').withText('Connecticut'))
+    await t.expect(getScroll()).eql(400) // Does not reset scroll on same page type
+    await t.scroll(0, 500)
+    await goBack()
+    await t.expect(Selector('.headertext').withText('New York').exists).ok()
+    await t.expect(getScroll()).eql(400)
+    await goBack()
+    await t.expect(Selector('.headertext').withText('Population').exists).ok()
+    await t.expect(getScroll()).eql(100)
+    await goForward()
+    await t.expect(Selector('.headertext').withText('New York').exists).ok()
+    await t.expect(getScroll()).eql(400)
+    await goBack()
+    await t.expect(Selector('.headertext').withText('Population').exists).ok()
+    await t.expect(getScroll()).eql(100)
+    await goBack()
+    await t.expect(Selector('.headertext').withText('Texas').exists).ok()
+    await t.expect(getScroll()).eql(200)
+    await goForward()
+    await t.expect(Selector('.headertext').withText('Population').exists).ok()
+    await t.expect(getScroll()).eql(100)
 })
 
 urbanstatsFixture('stats page', '/statistic.html?statname=Population&article_type=Judicial+District&start=1&amount=20&universe=USA')
