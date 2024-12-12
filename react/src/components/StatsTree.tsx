@@ -1,7 +1,7 @@
-import React, { ReactNode, useContext, useLayoutEffect, useRef, useState } from 'react'
+import React, { ReactNode, useContext, useEffect, useLayoutEffect, useRef, useState } from 'react'
 
 import { useColors } from '../page_template/colors'
-import { Settings, useSetting, useSettingInfo, useSettingsInfo } from '../page_template/settings'
+import { Settings, useSetting, useSettingInfo, useSettingsInfo, useStagedSettingKeys } from '../page_template/settings'
 import { changeStatGroupSetting, groupKeys, useAvailableCategories, useAvailableGroups, useCategoryStatus, useChangeCategorySetting } from '../page_template/statistic-settings'
 import { Category, Group } from '../page_template/statistic-tree'
 import { useMobileLayout } from '../utils/responsive'
@@ -9,10 +9,67 @@ import { useMobileLayout } from '../utils/responsive'
 import { CheckboxSettingCustom, useSidebarSectionContentClassName } from './sidebar'
 
 export function StatsTree(): ReactNode {
-    return useAvailableCategories().map(category => <CategoryComponent key={category.id} category={category} />)
+    const [searchTerm, setSearchTerm] = useState('')
+    const staging = useStagedSettingKeys() !== undefined
+
+    useEffect(() => {
+        if (staging) {
+            setSearchTerm('') // Don't want to hide staged stat groups
+        }
+    }, [staging])
+
+    const categories = filterSearch(searchTerm, useAvailableCategories()).map(category => (
+        <CategoryComponent
+            key={category.id}
+            category={category}
+            hasSearchMatch={searchTerm !== ''}
+        />
+    ))
+
+    const isMobile = useMobileLayout()
+
+    return (
+        <div style={{ position: 'relative' }}>
+            <input
+                type="text"
+                placeholder="Search Statistics"
+                className="serif"
+                style={{
+                    paddingLeft: '1.25em',
+                    marginBottom: isMobile ? '1.5em' : '0.5em',
+                    marginTop: isMobile ? '1em' : '1px',
+                    fontSize: '16px',
+                    width: isMobile ? 'calc(100% / var(--mobile-sidebar-input-scale))' : '100%',
+                }}
+                onFocus={e => setTimeout(() => {
+                    e.target.select()
+                }, 0)}
+                value={searchTerm}
+                onChange={(e) => { setSearchTerm(e.target.value) }}
+                data-test-id="stats-search"
+            >
+
+            </input>
+            {categories}
+        </div>
+    )
 }
 
-function CategoryComponent({ category }: { category: Category }): ReactNode {
+function searchMatch(searchTerm: string, targetString: string): boolean {
+    return targetString.toLowerCase().includes(searchTerm.toLowerCase())
+}
+
+function filterSearch(searchTerm: string, categories: Category[]): Category[] {
+    return categories.flatMap((category) => {
+        if (searchMatch(searchTerm, category.name)) {
+            return [category]
+        }
+        const contents = category.contents.filter(group => searchMatch(searchTerm, group.name))
+        return contents.length > 0 ? [{ ...category, contents }] : []
+    })
+}
+
+function CategoryComponent({ category, hasSearchMatch }: { category: Category, hasSearchMatch: boolean }): ReactNode {
     const categoryStatus = useCategoryStatus(category)
     const [isExpanded, setIsExpanded] = useSetting(`stat_category_expanded_${category.id}`)
     const isMobileLayout = useMobileLayout()
@@ -26,14 +83,18 @@ function CategoryComponent({ category }: { category: Category }): ReactNode {
     return (
         <li>
             <div style={{ position: 'relative' }}>
-                <button
-                    data-category-id={category.id}
-                    onClick={() => { setIsExpanded(!isExpanded) }}
-                    className="expandButton"
-                    style={{ transform: isExpanded ? `rotate(${isMobileLayout ? -90 : 90}deg)` : 'rotate(0deg)', color: colors.ordinalTextColor }}
-                >
-                    {isMobileLayout ? '◀\ufe0e' : '▶\ufe0e' /* Arrows are on the right on mobile to be used with both thumbs */}
-                </button>
+                {hasSearchMatch
+                    ? null
+                    : (
+                            <button
+                                data-category-id={category.id}
+                                onClick={() => { setIsExpanded(!isExpanded) }}
+                                className="expandButton"
+                                style={{ transform: isExpanded ? `rotate(${isMobileLayout ? -90 : 90}deg)` : 'rotate(0deg)', color: colors.ordinalTextColor }}
+                            >
+                                {isMobileLayout ? '◀\ufe0e' : '▶\ufe0e' /* Arrows are on the right on mobile to be used with both thumbs */}
+                            </button>
+                        )}
                 <CheckboxSettingCustom
                     name={category.name}
                     checked={categoryStatus === true}
@@ -43,7 +104,11 @@ function CategoryComponent({ category }: { category: Category }): ReactNode {
                     highlight={highlight}
                 />
             </div>
-            <CategoryContents key={category.id} category={category} isExpanded={isExpanded} />
+            <CategoryContents
+                key={category.id}
+                category={category}
+                isExpanded={isExpanded || hasSearchMatch}
+            />
         </li>
     )
 }
