@@ -172,7 +172,7 @@ def juxtastat_friend_request():
     if not success:
         return error
     form = flask_form()
-    friend_request(form["user"], form["requestee"])
+    friend_request(form["requestee"], form["user"])
     return flask.jsonify(dict())
 
 
@@ -182,17 +182,17 @@ def juxtastat_unfriend():
     if not success:
         return error
     form = flask_form()
-    unfriend(form["user"], form["requestee"])
+    unfriend(form["requestee"], form["user"])
     return flask.jsonify(dict())
 
 
 @app.route("/juxtastat/todays_score_for", methods=["POST"])
 def juxtastat_todays_score_for():
-    success, error = get_authenticated_user(["requesters", "date"])
+    success, error = get_authenticated_user(["requesters", "date", "quiz_kind"])
     if not success:
         return error
     form = flask_form()
-    res = dict(results=todays_score_for(form["user"], form["requesters"], form["date"]))
+    res = dict(results=todays_score_for(form["user"], form["requesters"], form["date"], form["quiz_kind"]))
     print("TODAYS SCORE FOR", res)
     return flask.jsonify(res)
 

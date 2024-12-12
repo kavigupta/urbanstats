@@ -2,6 +2,16 @@ import sqlite3
 import time
 from typing import List, Tuple
 
+table_for_quiz_kind = {
+    'juxtastat': 'JuxtaStatIndividualStats',
+    'retrostat': 'JuxtaStatIndividualStatsRetrostat'
+}
+
+problem_id_for_quiz_kind = {
+    'juxtastat': 'day',
+    'retrostat': 'week'
+}
+
 
 def table():
     conn = sqlite3.connect("db.sqlite3")
@@ -32,7 +42,7 @@ def table():
     )
     c.execute(
         """
-        CREATE TABLE IF NOT EXISTS FriendRequests (requestee integer, requester integer)
+        CREATE TABLE IF NOT EXISTS FriendRequests (requestee integer, requester integer, UNIQUE(requestee, requester))
         """
     )
     # ADD THESE LATER IF WE NEED THEM
@@ -234,7 +244,7 @@ def unfriend(requestee, requester):
     conn.commit()
 
 
-def todays_score_for(requestee, requesters, date):
+def todays_score_for(requestee, requesters, date, quiz_kind):
     """
     For each `requseter` returns the pattern of correct answers if `(requester, requestee)` is a friend pair.
     """
@@ -256,7 +266,7 @@ def todays_score_for(requestee, requesters, date):
     for requester in requesters:
         if requester in friends:
             c.execute(
-                "SELECT corrects FROM JuxtaStatIndividualStats WHERE user=? AND day=?",
+                f"SELECT corrects FROM {table_for_quiz_kind[quiz_kind]} WHERE user=? AND {problem_id_for_quiz_kind[quiz_kind]}=?",
                 (requester, date),
             )
             res = c.fetchone()
@@ -278,13 +288,13 @@ def friends_status(user):
     user = int(user, 16)
     _, c = table()
     c.execute(
-        "SELECT requester FROM FriendRequests WHERE requestee=?",
+        "SELECT requestee FROM FriendRequests WHERE requester=?",
         (user,),
     )
     outgoing_requests = c.fetchall()
     outgoing_requests = [x[0] for x in outgoing_requests]
     c.execute(
-        "SELECT requestee FROM FriendRequests WHERE requester=?",
+        "SELECT requester FROM FriendRequests WHERE requestee=?",
         (user,),
     )
     incoming_requests = c.fetchall()

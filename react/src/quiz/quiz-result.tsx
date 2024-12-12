@@ -12,7 +12,7 @@ import { ExportImport, Header, UserId } from './quiz-components'
 import { QuizFriendsPanel } from './quiz-friends'
 import { render_question } from './quiz-question'
 import { AudienceStatistics, QuizStatistics } from './quiz-statistics'
-import { reportToServer, reportToServerRetro } from './statistics'
+import { parse_time_identifier, reportToServer, reportToServerRetro } from './statistics'
 
 interface QuizResultProps {
     quizDescriptor: QuizDescriptor
@@ -139,9 +139,17 @@ export function QuizResult(props: QuizResultProps): ReactNode {
                     />
                 ),
             )}
-            {props.quizDescriptor.kind === 'juxtastat'
-                ? <QuizFriendsPanel quizFriends={quizFriends} date={props.quizDescriptor.name} setQuizFriends={setQuizFriends} />
-                : undefined}
+            <div className="gap_small"></div>
+            <div style={{ margin: 'auto', width: '50%' }}>
+                <QuizFriendsPanel
+                    quizFriends={quizFriends}
+                    date={parse_time_identifier(props.quizDescriptor.kind, props.quizDescriptor.name.toString())}
+                    quizKind={props.quizDescriptor.kind}
+                    setQuizFriends={setQuizFriends}
+                    myCorrects={correct_pattern}
+                />
+            </div>
+            <div className="gap_small"></div>
             <div className="centered_text serif">
                 <UserId />
                 <ExportImport />
