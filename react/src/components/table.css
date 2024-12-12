@@ -2,8 +2,3 @@
     text-align: left;
     padding-right: 1em;
 }
-
-.editable_number {
-    min-width: 2em;
-    display: inline-block;
-}

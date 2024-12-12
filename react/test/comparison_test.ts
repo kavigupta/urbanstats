@@ -84,7 +84,7 @@ test('comparison-3-replace-second', async (t) => {
 })
 
 test('comparison-3-editable-number-third', async (t) => {
-    const editableNumber = Selector('span').withAttribute('class', 'editable_number').nth(2)
+    const editableNumber = Selector('span').withAttribute('class', 'editable_content').nth(2)
     await t
         .click(editableNumber)
     // select all and delete

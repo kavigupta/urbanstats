@@ -49,7 +49,7 @@ test('article-universe-right-arrow', async (t) => {
 
 test('article-universe-ordinal', async (t) => {
     // click the ordinal for the universe
-    const editableNumber = Selector('span').withAttribute('class', 'editable_number').nth(0)
+    const editableNumber = Selector('span').withAttribute('class', 'editable_content').nth(0)
     await t
         .click(editableNumber)
     // select all and delete
