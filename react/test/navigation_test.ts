@@ -56,6 +56,12 @@ test('maintain and restore scroll position back-forward', async (t) => {
     await t.expect(getScroll()).eql(100)
 })
 
+test('control click new tab', async (t) => {
+    const openInNewTabModifiers = process.platform === 'darwin' ? { meta: true } : { ctrl: true }
+    await t.click(Selector('a').withText('Data Credit'), { modifiers: openInNewTabModifiers })
+    await t.expect(getLocation()).eql(`${TARGET}/`)
+})
+
 urbanstatsFixture('stats page', '/statistic.html?statname=Population&article_type=Judicial+District&start=1&amount=20&universe=USA')
 
 test('data credit hash from stats page', async (t) => {
