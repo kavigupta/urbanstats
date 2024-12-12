@@ -156,7 +156,13 @@ test('invalid url', async (t) => {
 
 test('loading error', async (t) => {
     await t.navigateTo(`${TARGET}/article.html?longname=Kalamazoo+city%2C+Michigan%2C+US`) // Should be USA
-    await t.expect(Selector('h1').withText('Error Loading Page').exists).ok()
+    try {
+        await t.expect(Selector('h1').withText('Error Loading Page').exists).ok()
+    }
+    catch (error) {
+        await screencap(t, { wait: false })
+        throw error
+    }
     await screencap(t, { wait: false })
 })
 
