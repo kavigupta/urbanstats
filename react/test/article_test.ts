@@ -42,8 +42,8 @@ test('san-marino-article-test', async (t) => {
 })
 
 test('editable-number', async (t) => {
-    // span with class editable_number
-    const editableNumber = Selector('span').withAttribute('class', 'editable_number').nth(0)
+    // span with class editable_content
+    const editableNumber = Selector('span').withAttribute('class', 'editable_content').nth(0)
     await t
         .click(editableNumber)
     // select all and delete
