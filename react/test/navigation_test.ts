@@ -160,6 +160,7 @@ test('loading error', async (t) => {
         await t.expect(Selector('h1').withText('Error Loading Page').exists).ok()
     }
     catch (error) {
+        // Trying to catch flaky test in CI... hopefully this screenshot will reveal the problem
         await screencap(t, { wait: false })
         throw error
     }
