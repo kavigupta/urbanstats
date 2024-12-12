@@ -106,6 +106,8 @@ export default tseslint.config(
                 'JSXText[value=/(^|\\s)((u|U)rban(s|S)tats|urban stats|Urban stats|urban Stats)($|\\s)/]',
                 'Literal[value=/(^|\\s)((u|U)rban(s|S)tats|urban stats|Urban stats|urban Stats)($|\\s)/]',
                 //
+                // Require height on MathJax
+                'JSXOpeningElement[name.name=MathJax]:not(:has(JSXAttribute[name.name=style], JSXAttribute[name.name=inline]))'
             ],
             'react/prop-types': 'off',
             'no-shadow': 'error',
