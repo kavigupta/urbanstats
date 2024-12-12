@@ -1,5 +1,6 @@
 import React, { ReactNode, useEffect, useState } from 'react'
 
+import { EditableString } from '../components/table'
 import { useColors } from '../page_template/colors'
 import { mixWithBackground } from '../utils/color'
 
@@ -53,7 +54,7 @@ export function QuizFriendsPanel(props: {
             console.log('scores dict', scoresDict)
             setFriendScores(friendScoresResponse.results.map((x, idx) => ({ name: quizIDtoName[requesters[idx]], corrects: x.corrects, friends: x.friends })))
         })()
-    }, [props.date, props.quizFriends])
+    }, [props.date, props.quizFriends, props.quizKind])
 
     // const displayFriend = (id: string): ReactNode => {
     //     console.log('friend scores', friendScores)
@@ -85,6 +86,10 @@ export function QuizFriendsPanel(props: {
                                 console.log('new quiz friends', newQuizFriends)
                                 props.setQuizFriends(newQuizFriends)
                             }}
+                            renameFriend={(name: string) => {
+                                const newQuizFriends = props.quizFriends.map(x => (x[0] === friendScore.name ? [name, x[1]] : x) satisfies [string, string])
+                                props.setQuizFriends(newQuizFriends)
+                            }}
                         />
                     ),
                     )
@@ -105,7 +110,7 @@ export function QuizFriendsPanel(props: {
 const SCORE_CORRECT_HEIGHT = '2em'
 const ADD_FRIEND_HEIGHT = '1.5em'
 
-function FriendScore(props: { friendScore: FriendScore, removeFriend?: () => void, renameFriend?: () => void }): ReactNode {
+function FriendScore(props: { friendScore: FriendScore, removeFriend?: () => void, renameFriend?: (name: string) => void }): ReactNode {
     console.log('friend score', props.friendScore)
     return (
         <div style={{ display: 'flex', flexDirection: 'row', height: SCORE_CORRECT_HEIGHT, alignItems: 'center' }}>
@@ -130,12 +135,19 @@ function FriendScore(props: { friendScore: FriendScore, removeFriend?: () => voi
     )
 }
 
-function FriendScoreName(props: { name?: string, renameFriend?: () => void }): ReactNode {
+function FriendScoreName(props: { name?: string, renameFriend?: (name: string) => void }): ReactNode {
     const name = props.name ?? 'Unknown'
     if (props.renameFriend === undefined) {
         return <div>{name}</div>
     }
-    return <div>{name}</div>
+    return (
+        <EditableString
+            content={name}
+            onNewContent={props.renameFriend}
+            style={{ width: '100%', height: '100%' }}
+            inputMode="text"
+        />
+    )
 }
 
 function FriendScoreCorrects(props: FriendScore): ReactNode {
@@ -148,7 +160,7 @@ function FriendScoreCorrects(props: FriendScore): ReactNode {
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center',
-        border: border,
+        border,
     }
     if (!props.friends) {
         return (
@@ -169,7 +181,7 @@ function FriendScoreCorrects(props: FriendScore): ReactNode {
                     style={{
                         backgroundColor: correct ? colors.hueColors.green : colors.hueColors.red,
                         width: `${100 / corrects.length}%`,
-                        border: border,
+                        border,
                     }}
                 >
                 </div>

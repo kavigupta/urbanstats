@@ -849,7 +849,7 @@ function EditableNumber(props: { number: number, onNewNumber: (number: number) =
     )
 };
 
-function EditableString(props: { content: string, onNewContent: (content: string) => void, style: CSSProperties, inputMode: 'text' | 'decimal' }): ReactNode {
+export function EditableString(props: { content: string, onNewContent: (content: string) => void, style: CSSProperties, inputMode: 'text' | 'decimal' }): ReactNode {
     /*
      * This code is weird because the `ContentEditable` needs to use refs.
      * See https://www.npmjs.com/package/react-contenteditable

@@ -15,7 +15,7 @@ import { ExportImport, Header, UserId } from './quiz-components'
 import { QuizFriendsPanel } from './quiz-friends'
 import { render_question } from './quiz-question'
 import { AudienceStatistics, QuizStatistics } from './quiz-statistics'
-import { getCachedPerQuestionStats, getPerQuestionStats, PerQuestionStats, parse_time_identifier, reportToServer, reportToServerRetro } from './statistics'
+import { getCachedPerQuestionStats, getPerQuestionStats, PerQuestionStats, parse_time_identifier, reportToServer } from './statistics'
 
 interface QuizResultProps {
     quizDescriptor: QuizDescriptor
