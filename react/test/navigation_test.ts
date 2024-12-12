@@ -56,7 +56,7 @@ test('maintain and restore scroll position back-forward', async (t) => {
     await t.expect(getScroll()).eql(100)
 })
 
-test.only('control click new tab', async (t) => {
+test('control click new tab', async (t) => {
     const openInNewTabModifiers = process.platform === 'darwin' ? { meta: true } : { ctrl: true }
     await t.click(Selector('a').withText('Data Credit'), { modifiers: openInNewTabModifiers })
     await t.expect(getLocation()).eql(`${TARGET}/`)
