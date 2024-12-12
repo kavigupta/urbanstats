@@ -85,10 +85,12 @@ export class DelayRequests extends RequestHook {
     private delayFilter?: Filter
     private delayedRequests: (() => void)[] = []
 
-    removeFilter(): void {
+    removeFilter(): number {
+        const result = this.delayedRequests.length
         this.delayFilter = undefined
         this.delayedRequests.forEach((resolve) => { resolve() })
         this.delayedRequests = []
+        return result
     }
 
     setFilter(filter: Filter): void {
@@ -112,9 +114,9 @@ const delayRequests = new DelayRequests()
 const dataFilter: Filter = options => options.path.startsWith('/data')
 const indexFilter: Filter = options => options.path === '/scripts/index.js'
 
-urbanstatsFixture('loading tests', '/', () => {
+urbanstatsFixture('loading tests', '/', async (t) => {
     delayRequests.removeFilter()
-    return Promise.resolve()
+    await (await t.getCurrentCDPSession()).Network.setCacheDisabled({ cacheDisabled: true })
 }).requestHooks(delayRequests)
 
 // Prevents flashes when navigating to a hash below MathJax on the data credit page (MathJax loads from CloudFlare)
@@ -151,7 +153,7 @@ test('quick load', async (t) => {
     await t.pressKey('enter')
     await t.expect(Selector('[data-test-id=quickLoad]').exists).ok()
     await screencap(t, { fullPage: false, wait: false })
-    delayRequests.removeFilter()
+    await t.expect(delayRequests.removeFilter()).eql(1)
     await t.expect(Selector('[data-test-id=quickLoad]').exists).notOk()
 })
 
