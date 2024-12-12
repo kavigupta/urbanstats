@@ -120,7 +120,7 @@ function FriendScore(props: { friendScore: FriendScore, removeFriend?: () => voi
             <div style={{ width: '50%' }}>
                 <FriendScoreCorrects {...props.friendScore} />
             </div>
-            <div style={{ width: '25%', display: 'flex', height: '100%' }}>
+            <div style={{ width: '25%', display: 'flex', height: ADD_FRIEND_HEIGHT }}>
                 {props.removeFriend !== undefined
                 && (
                     <button
