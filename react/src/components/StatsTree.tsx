@@ -46,6 +46,7 @@ export function StatsTree(): ReactNode {
                 }, 0)}
                 value={searchTerm}
                 onChange={(e) => { setSearchTerm(e.target.value) }}
+                data-test-id="stats-search"
             >
 
             </input>
