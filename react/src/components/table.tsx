@@ -833,27 +833,44 @@ function Ordinal(props: {
 }
 
 function EditableNumber(props: { number: number, onNewNumber: (number: number) => void }): ReactNode {
+    const onNewContent = (content: string): void => {
+        const number = parseInt(content)
+        if (!Number.isNaN(number) && number !== props.number) {
+            props.onNewNumber(number)
+        }
+    }
+    return (
+        <EditableString
+            content={props.number.toString()}
+            onNewContent={onNewContent}
+            style={{ minWidth: '2em', display: 'inline-block' }}
+            inputMode="decimal"
+        />
+    )
+};
+
+function EditableString(props: { content: string, onNewContent: (content: string) => void, style: CSSProperties, inputMode: 'text' | 'decimal' }): ReactNode {
     /*
      * This code is weird because the `ContentEditable` needs to use refs.
      * See https://www.npmjs.com/package/react-contenteditable
      */
 
     const contentEditable: React.Ref<HTMLElement> = useRef(null)
-    const [html, setHtml] = useState(props.number.toString())
+    const [html, setHtml] = useState(props.content.toString())
 
     // Otherwise, this component can display the wrong number when props change
     useEffect(() => {
-        setHtml(props.number.toString())
-    }, [props.number])
+        setHtml(props.content.toString())
+    }, [props.content])
 
     const handleChange = (evt: ContentEditableEvent): void => {
         setHtml(evt.target.value)
     }
 
     const handleSubmit = (): void => {
-        const number = parseInt(contentEditable.current!.innerText)
-        if (!Number.isNaN(number) && number !== props.number) {
-            props.onNewNumber(number)
+        const content = contentEditable.current!.innerText
+        if (content !== props.content) {
+            props.onNewContent(content)
         }
     }
 
@@ -869,7 +886,7 @@ function EditableNumber(props: { number: number, onNewNumber: (number: number) =
 
     return (
         <ContentEditable
-            className="editable_number"
+            style={props.style}
             innerRef={contentEditable}
             html={html}
             disabled={false}
@@ -882,7 +899,7 @@ function EditableNumber(props: { number: number, onNewNumber: (number: number) =
             }}
             onBlur={handleSubmit}
             tagName="span" // Use a custom HTML tag (uses a div by default)
-            inputMode="decimal"
+            inputMode={props.inputMode}
             onFocus={selectAll}
         />
     )

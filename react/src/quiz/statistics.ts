@@ -1,4 +1,4 @@
-import { ENDPOINT, QuizHistory } from './quiz'
+import { ENDPOINT, QuizDescriptor, QuizHistory } from './quiz'
 
 function create_and_store_id(key: string): string {
     // (domain name, id stored in local storage)
@@ -97,10 +97,51 @@ function parse_retrostat_week(day: string): number {
     return parseInt(day.substring(1))
 }
 
-export async function reportToServer(whole_history: QuizHistory): Promise<boolean> {
-    return await reportToServerGeneric(whole_history, '/juxtastat/latest_day', '/juxtastat/store_user_stats', parse_juxtastat_day)
+export async function reportToServer(whole_history: QuizHistory, kind: 'juxtastat' | 'retrostat'): Promise<boolean> {
+    switch (kind) {
+        case 'juxtastat':
+            return await reportToServerGeneric(whole_history, '/juxtastat/latest_day', '/juxtastat/store_user_stats', parse_juxtastat_day)
+        case 'retrostat':
+            return await reportToServerGeneric(whole_history, '/retrostat/latest_week', '/retrostat/store_user_stats', parse_retrostat_week)
+    }
 }
 
-export async function reportToServerRetro(whole_history: QuizHistory): Promise<boolean> {
-    return await reportToServerGeneric(whole_history, '/retrostat/latest_week', '/retrostat/store_user_stats', parse_retrostat_week)
+export interface PerQuestionStats { total: number, per_question: number[] }
+
+const questionStatsCache = new Map<string, PerQuestionStats>()
+
+// These are separate sync and async functions to eliminate flashing in the UI
+export function getCachedPerQuestionStats(descriptor: QuizDescriptor): PerQuestionStats | undefined {
+    return questionStatsCache.get(JSON.stringify(descriptor))
+}
+
+export async function getPerQuestionStats(descriptor: QuizDescriptor): Promise<PerQuestionStats> {
+    return getCachedPerQuestionStats(descriptor) ?? await fetchPerQuestionStats(descriptor)
+}
+
+async function fetchPerQuestionStats(descriptor: QuizDescriptor): Promise<PerQuestionStats> {
+    let response: Response
+    switch (descriptor.kind) {
+        case 'juxtastat':
+            response = await fetch(`${ENDPOINT}/juxtastat/get_per_question_stats`, {
+                method: 'POST',
+                body: JSON.stringify({ day: descriptor.name }),
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            })
+            break
+        case 'retrostat':
+            response = await fetch(`${ENDPOINT}/retrostat/get_per_question_stats`, {
+                method: 'POST',
+                body: JSON.stringify({ week: parseInt(descriptor.name.substring(1)) }),
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            })
+            break
+    }
+    const result = await response.json() as PerQuestionStats
+    questionStatsCache.set(JSON.stringify(descriptor), result)
+    return result
 }

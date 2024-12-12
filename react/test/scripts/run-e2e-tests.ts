@@ -26,6 +26,7 @@ async function main(): Promise<void> {
             headless: booleanArgument({ defaultValue: true }),
             video: booleanArgument({ defaultValue: false }),
             compare: booleanArgument({ defaultValue: false }),
+            timeLimitSeconds: z.optional(z.coerce.number().int()),
         }).strict(),
     }).parse(process.argv.slice(2))
 
@@ -80,7 +81,16 @@ async function main(): Promise<void> {
         return failedTests + await runTest()
     }
 
+    const startRunningTests = Date.now()
+
     const testsFailed = (await Promise.all(Array.from({ length: options.parallel }).map(runTest))).reduce((a, n) => a + n, 0)
+
+    const testsDurationSeconds = Math.round((Date.now() - startRunningTests) / 1000)
+
+    if (options.timeLimitSeconds !== undefined && testsDurationSeconds > options.timeLimitSeconds) {
+        console.error(`Test suite took too long! (Took ${testsDurationSeconds}s, allowed duration ${options.timeLimitSeconds}s)`)
+        process.exit(1)
+    }
 
     if (options.compare) {
         const comparisonResults = await Promise.all(tests.map(test => execa('python', ['tests/check_images.py', `--test=${test}`], {
