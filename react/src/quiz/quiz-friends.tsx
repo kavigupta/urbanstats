@@ -1,7 +1,7 @@
 import React, { ReactNode, useEffect, useState } from 'react'
 
 import { EditableString } from '../components/table'
-import { useColors } from '../page_template/colors'
+import { useColors, useJuxtastatColors } from '../page_template/colors'
 import { mixWithBackground } from '../utils/color'
 
 import { ENDPOINT, QuizFriends } from './quiz'
@@ -152,6 +152,7 @@ function FriendScoreName(props: { name?: string, renameFriend?: (name: string) =
 
 function FriendScoreCorrects(props: FriendScore): ReactNode {
     const colors = useColors()
+    const juxtaColors = useJuxtastatColors()
     const border = `1px solid ${colors.background}`
     const greyedOut = {
         backgroundColor: mixWithBackground(colors.hueColors.orange, 0.5, colors.background),
@@ -179,7 +180,7 @@ function FriendScoreCorrects(props: FriendScore): ReactNode {
                 <div
                     key={idx}
                     style={{
-                        backgroundColor: correct ? colors.hueColors.green : colors.hueColors.red,
+                        backgroundColor: correct ? juxtaColors.correct : juxtaColors.incorrect,
                         width: `${100 / corrects.length}%`,
                         border,
                     }}
