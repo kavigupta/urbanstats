@@ -886,7 +886,7 @@ export function EditableString(props: { content: string, onNewContent: (content:
 
     return (
         <ContentEditable
-            className='editable_content'
+            className="editable_content"
             style={props.style}
             innerRef={contentEditable}
             html={html}
