@@ -117,6 +117,20 @@ urbanstatsFixture('loading tests', '/', () => {
     return Promise.resolve()
 }).requestHooks(delayRequests)
 
+// Prevents flashes when navigating to a hash below MathJax on the data credit page (MathJax loads from CloudFlare)
+// Also prevents test flakiness on the data credit page
+test('data credit page height should be the same before and after cloudflare load', async (t) => {
+    delayRequests.setFilter(options => options.hostname === 'cdnjs.cloudflare.com')
+    await t.navigateTo('data-credit.html#explanation_population')
+    await screencap(t, { fullPage: true })
+    const heightBefore = await t.eval(() => document.body.getBoundingClientRect().height) as number
+    delayRequests.removeFilter()
+    await t.wait(1000)
+    await screencap(t, { fullPage: true })
+    const heightAfter = await t.eval(() => document.body.getBoundingClientRect().height) as number
+    await t.expect(heightAfter).eql(heightBefore)
+})
+
 test('initial load', async (t) => {
     delayRequests.setFilter(dataFilter)
     await t.navigateTo(`${TARGET}/article.html?longname=Avon+Central+School+District%2C+New+York%2C+USA`)
