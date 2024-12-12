@@ -605,6 +605,10 @@ export class Navigator {
         return {
             href: url.pathname + url.search,
             onClick: async (e: React.MouseEvent) => {
+                if (e.altKey || e.ctrlKey || e.metaKey || e.shiftKey) {
+                    // Some sort of shortcut to open in new tab, etc.
+                    return
+                }
                 e.preventDefault()
                 await this.navigate(pageDescriptor, 'push')
                 postNavigationCallback?.()
