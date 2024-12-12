@@ -26,13 +26,21 @@ export function StatsTree(): ReactNode {
         />
     ))
 
+    const isMobile = useMobileLayout()
+
     return (
         <div style={{ position: 'relative' }}>
             <input
                 type="text"
                 placeholder="Search Statistics"
                 className="serif"
-                style={{ paddingLeft: '1.25em', marginBottom: '0.5em', fontSize: '16px', width: '100%' }}
+                style={{
+                    paddingLeft: '1.25em',
+                    marginBottom: isMobile ? '1.5em' : '0.5em',
+                    marginTop: isMobile ? '1em' : '1px',
+                    fontSize: '16px',
+                    width: isMobile ? 'calc(100% / var(--mobile-sidebar-input-scale))' : '100%',
+                }}
                 onFocus={e => setTimeout(() => {
                     e.target.select()
                 }, 0)}
@@ -74,14 +82,18 @@ function CategoryComponent({ category, hasSearchMatch }: { category: Category, h
     return (
         <li>
             <div style={{ position: 'relative' }}>
-                <button
-                    data-category-id={category.id}
-                    onClick={() => { if (!hasSearchMatch) { setIsExpanded(!isExpanded) } }}
-                    className="expandButton"
-                    style={{ transform: isExpanded || hasSearchMatch ? `rotate(${isMobileLayout ? -90 : 90}deg)` : 'rotate(0deg)', color: colors.ordinalTextColor }}
-                >
-                    {isMobileLayout ? '◀\ufe0e' : '▶\ufe0e' /* Arrows are on the right on mobile to be used with both thumbs */}
-                </button>
+                {hasSearchMatch
+                    ? null
+                    : (
+                            <button
+                                data-category-id={category.id}
+                                onClick={() => { setIsExpanded(!isExpanded) }}
+                                className="expandButton"
+                                style={{ transform: isExpanded ? `rotate(${isMobileLayout ? -90 : 90}deg)` : 'rotate(0deg)', color: colors.ordinalTextColor }}
+                            >
+                                {isMobileLayout ? '◀\ufe0e' : '▶\ufe0e' /* Arrows are on the right on mobile to be used with both thumbs */}
+                            </button>
+                        )}
                 <CheckboxSettingCustom
                     name={category.name}
                     checked={categoryStatus === true}

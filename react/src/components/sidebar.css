@@ -37,17 +37,21 @@
     margin-bottom: 0.75rem;
 }
 
+.sidebar_mobile {
+    --mobile-sidebar-input-scale: 1.6;
+}
+
 .sidebar_mobile input {
-    transform: scale(1.6);
+    transform: scale(var(--mobile-sidebar-input-scale));
     transform-origin: left;
 }
 
 .sidebar_mobile button {
-    transform: scale(1.6);
+    transform: scale(var(--mobile-sidebar-input-scale));
 }
 
 .sidebar_mobile select {
-    transform: scale(1.6);
+    transform: scale(var(--mobile-sidebar-input-scale));
     transform-origin: left;
 }
 
