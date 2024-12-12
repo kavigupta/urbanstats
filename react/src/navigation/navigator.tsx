@@ -514,8 +514,14 @@ export class Navigator {
                 location.reload()
             }
         })
+
+        let lastScroll = -1
         window.addEventListener('scroll', () => {
-            history.replaceState({ ...history.state, scrollPosition: window.scrollY }, '')
+            // Must limit how often we replaceState or safari gets mad
+            if (Date.now() - lastScroll >= 100) {
+                lastScroll = Date.now()
+                history.replaceState({ ...history.state, scrollPosition: window.scrollY }, '')
+            }
         })
 
         /*
