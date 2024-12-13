@@ -43,16 +43,16 @@ export function QuizFriendsPanel(props: {
                 },
             }).then(x => x.json())
             // const friendsStatus = (await friendsStatusPromise) as { results: { outgoing_requests: string[], incoming_requests: string[] } }
-            // console.log('HI')
-            // console.log(friendsStatus)
-            // console.log(friendsStatus.results.outgoing_requests)
-            // console.log(friendsStatus.results.incoming_requests)
-            const friendScoresResponse = (await friendScoresPromise) as { results: { corrects: boolean[] | null, friends: boolean }[] }
-            const scoresDict = {} as Record<string, boolean[]>
+            const friendScoresResponse = (await friendScoresPromise) as { results: { corrects: boolean[] | null, friends: boolean }[] } | { error: string }
+            if ('error' in friendScoresResponse) {
+                // probably some kind of auth error. Handled elsewhere
+                return
+            }
             // setOutgoingRequests(friendsStatus.results.outgoing_requests)
             // setPendingRequests(friendsStatus.results.incoming_requests)
-            console.log('scores dict', scoresDict)
-            setFriendScores(friendScoresResponse.results.map((x, idx) => ({ name: quizIDtoName[requesters[idx]], corrects: x.corrects, friends: x.friends })))
+            setFriendScores(friendScoresResponse.results.map(
+                (x, idx) => ({ name: quizIDtoName[requesters[idx]], corrects: x.corrects, friends: x.friends })
+            ))
         })()
     }, [props.date, props.quizFriends, props.quizKind])
 
