@@ -56,15 +56,6 @@ export function QuizFriendsPanel(props: {
         })()
     }, [props.date, props.quizFriends, props.quizKind])
 
-    // const displayFriend = (id: string): ReactNode => {
-    //     console.log('friend scores', friendScores)
-    //     if (!pendingRequests.includes(id)) {
-    //         return <div key={id}>Request not approved</div>
-    //     }
-    //     const score = friendScores[id]
-    //     return <div key={id}>{JSON.stringify(score)}</div>
-    // }
-
     return (
         <div>
             <div style={{ margin: 'auto', width: '100%' }}>
@@ -122,14 +113,14 @@ function FriendScore(props: { friendScore: FriendScore, removeFriend?: () => voi
             </div>
             <div style={{ width: '25%', display: 'flex', height: ADD_FRIEND_HEIGHT }}>
                 {props.removeFriend !== undefined
-                && (
-                    <button
-                        onClick={props.removeFriend}
-                        style={{ marginLeft: '1em' }}
-                    >
-                        Remove
-                    </button>
-                )}
+                    && (
+                        <button
+                            onClick={props.removeFriend}
+                            style={{ marginLeft: '1em' }}
+                        >
+                            Remove
+                        </button>
+                    )}
             </div>
         </div>
     )
@@ -175,9 +166,13 @@ function FriendScoreCorrects(props: FriendScore): ReactNode {
     }
     const corrects = props.corrects
     return (
-        <div style={{ display: 'flex', flexDirection: 'row', height: SCORE_CORRECT_HEIGHT }}>
+        <div
+            className="testing-friend-score"
+            style={{ display: 'flex', flexDirection: 'row', height: SCORE_CORRECT_HEIGHT }}
+        >
             {corrects.map((correct, idx) => (
                 <div
+                    className={correct ? 'testing-friend-score-correct' : 'testing-friend-score-incorrect'}
                     key={idx}
                     style={{
                         backgroundColor: correct ? juxtaColors.correct : juxtaColors.incorrect,
