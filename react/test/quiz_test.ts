@@ -5,7 +5,7 @@ import { promisify } from 'util'
 import { execa } from 'execa'
 import { ClientFunction, RequestHook, Selector } from 'testcafe'
 
-import { TARGET, getLocation, most_recent_download_path, safeReload, screencap, urbanstatsFixture } from './test_utils'
+import { target, getLocation, mostRecentDownloadPath, safeReload, screencap, urbanstatsFixture } from './test_utils'
 
 async function quiz_screencap(t: TestController): Promise<void> {
     await t.eval(() => {
@@ -124,7 +124,7 @@ function example_quiz_history(min_quiz: number, max_quiz: number, min_retro?: nu
 
 quiz_fixture(
     'quiz clickthrough test on empty background',
-    `${TARGET}/quiz.html#date=99`,
+    `${target}/quiz.html#date=99`,
     { persistent_id: '000000000000007' },
     '',
 )
@@ -156,7 +156,7 @@ test('quiz-clickthrough-test', async (t) => {
 
 quiz_fixture(
     'report old quiz results too',
-    `${TARGET}/quiz.html#date=99`,
+    `${target}/quiz.html#date=99`,
     { persistent_id: '000000000000007', secure_id: '00000003', quiz_history: JSON.stringify(example_quiz_history(87, 90)) },
     '',
 )
@@ -180,7 +180,7 @@ test('quiz-report-old-results', async (t) => {
 
 quiz_fixture(
     'trust on first use',
-    `${TARGET}/quiz.html#date=99`,
+    `${target}/quiz.html#date=99`,
     { persistent_id: '000000000000007', secure_id: '00000003', quiz_history: JSON.stringify(example_quiz_history(87, 90)) },
     `
     CREATE TABLE IF NOT EXISTS JuxtaStatIndividualStats
@@ -198,7 +198,7 @@ test('quiz-trust-on-first-use', async (t) => {
 
 quiz_fixture(
     'auth failure',
-    `${TARGET}/quiz.html#date=99`,
+    `${target}/quiz.html#date=99`,
     { persistent_id: '000000000000007', secure_id: '00000003', quiz_history: JSON.stringify(example_quiz_history(87, 90)) },
     `
     CREATE TABLE IF NOT EXISTS JuxtaStatIndividualStats
@@ -220,7 +220,7 @@ test('quiz-auth-failure', async (t) => {
 
 quiz_fixture(
     'do not report stale quiz results',
-    `${TARGET}/quiz.html#date=99`,
+    `${target}/quiz.html#date=99`,
     { persistent_id: '000000000000007', quiz_history: JSON.stringify(example_quiz_history(87, 92)) },
     `
     CREATE TABLE IF NOT EXISTS JuxtaStatIndividualStats
@@ -249,7 +249,7 @@ test('quiz-do-not-report-stale-results', async (t) => {
 
 quiz_fixture(
     'percentage correct test',
-    `${TARGET}/quiz.html#date=99`,
+    `${target}/quiz.html#date=99`,
     { persistent_id: '000000000000007' },
     `
     CREATE TABLE IF NOT EXISTS JuxtaStatIndividualStats
@@ -293,7 +293,7 @@ test('quiz-percentage-correct', async (t) => {
 
 quiz_fixture(
     'new user',
-    `${TARGET}/quiz.html#date=99`,
+    `${target}/quiz.html#date=99`,
     {},
     '',
 )
@@ -326,7 +326,7 @@ test('quiz-new-user', async (t) => {
 
 quiz_fixture(
     'retrostat',
-    `${TARGET}/quiz.html#date=99`,
+    `${target}/quiz.html#date=99`,
     { persistent_id: '000000000000007', quiz_history: JSON.stringify(example_quiz_history(87, 93, 27, 33)) },
     `
     CREATE TABLE IF NOT EXISTS JuxtaStatIndividualStats
@@ -357,7 +357,7 @@ test('quiz-retrostat-regular-quiz-reporting', async (t) => {
 })
 
 test('quiz-retrostat-retrostat-reporting', async (t) => {
-    const url = `${TARGET}/quiz.html#mode=retro&date=38`
+    const url = `${target}/quiz.html#mode=retro&date=38`
     await t.navigateTo(url)
     await safeReload(t)
     await click_buttons(t, ['a', 'a', 'a', 'a', 'a'])
@@ -376,7 +376,7 @@ test('quiz-retrostat-retrostat-reporting', async (t) => {
 
 quiz_fixture(
     'quiz result test',
-    `${TARGET}/quiz.html#date=100`,
+    `${target}/quiz.html#date=100`,
     { quiz_history: JSON.stringify(example_quiz_history(2, 100)) },
     '',
 )
@@ -395,7 +395,7 @@ test('quiz-results-test', async (t) => {
     await check_text(t, 'Excellent! 😊 4/5', '🟩🟩🟩🟩🟥')
 })
 
-quiz_fixture('several quiz results', `${TARGET}/quiz.html#date=90`,
+quiz_fixture('several quiz results', `${target}/quiz.html#date=90`,
     {
         quiz_history: JSON.stringify({
             90: {
@@ -445,7 +445,7 @@ test('several-quiz-results-test', async (t) => {
     await check_text(t, 'Excellent! 😊 4/5', '🟩🟩🟩🟩🟥')
 })
 
-quiz_fixture('export quiz progress', `${TARGET}/quiz.html#date=90`,
+quiz_fixture('export quiz progress', `${target}/quiz.html#date=90`,
     {
         quiz_history: JSON.stringify({
             90: {
@@ -508,14 +508,14 @@ test('export quiz progress', async (t) => {
     // Give it a second to download...
     await t.wait(1000)
 
-    const { date_exported, ...downloadContents } = JSON.parse(readFileSync(most_recent_download_path()).toString()) as Record<string, unknown>
+    const { date_exported, ...downloadContents } = JSON.parse(readFileSync(mostRecentDownloadPath()).toString()) as Record<string, unknown>
 
     await t.expect(typeof date_exported === 'string').ok()
 
     await t.expect(JSON.stringify(downloadContents, null, 2)).eql(JSON.stringify(expectedExportWithoutDate, null, 2))
 })
 
-quiz_fixture('import quiz progress', `${TARGET}/quiz.html#date=90`,
+quiz_fixture('import quiz progress', `${target}/quiz.html#date=90`,
     {
         quiz_history: JSON.stringify({
             91: {
@@ -653,7 +653,7 @@ test('support old retro links', async (t) => {
     await t.expect(Selector('.headertext').withText('Retrostat').exists).ok()
 })
 
-quiz_fixture('completed juxta 465', `${TARGET}/quiz.html#date=465`,
+quiz_fixture('completed juxta 465', `${target}/quiz.html#date=465`,
     {
         quiz_history: JSON.stringify({
             465: {
@@ -669,9 +669,9 @@ quiz_fixture('completed juxta 465', `${TARGET}/quiz.html#date=465`,
 
 test('quiz results go to compare pages', async (t) => {
     await t.click(Selector('a').withText('Hawaii, USA'))
-    await t.expect(getLocation()).eql(`${TARGET}/comparison.html?longnames=%5B%22Hawaii%2C+USA%22%2C%22Wisconsin%2C+USA%22%5D&s=9E6YPpo6BAa37d3`)
+    await t.expect(getLocation()).eql(`${target}/comparison.html?longnames=%5B%22Hawaii%2C+USA%22%2C%22Wisconsin%2C+USA%22%5D&s=9E6YPpo6BAa37d3`)
     await screencap(t)
     await ClientFunction(() => { history.back() })()
     await t.click(Selector('a').withText('Cleveland city, Ohio, USA'))
-    await t.expect(getLocation()).eql(`${TARGET}/comparison.html?longnames=%5B%22Gilbert+town%2C+Arizona%2C+USA%22%2C%22Cleveland+city%2C+Ohio%2C+USA%22%5D&s=FGeAR7KSCZ9hmB`)
+    await t.expect(getLocation()).eql(`${target}/comparison.html?longnames=%5B%22Gilbert+town%2C+Arizona%2C+USA%22%2C%22Cleveland+city%2C+Ohio%2C+USA%22%5D&s=FGeAR7KSCZ9hmB`)
 })

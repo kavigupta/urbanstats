@@ -17,7 +17,7 @@ interface MapProps extends MapGenericProps {
 }
 
 class Map extends MapGeneric<MapProps> {
-    override compute_polygons(): Promise<Polygons> {
+    override computePolygons(): Promise<Polygons> {
         const style = { interactive: false, fillOpacity: 0.5, weight: 1, color: this.props.color, fillColor: this.props.color }
         return Promise.resolve([[this.props.longname], [style], [{}], 0])
     }

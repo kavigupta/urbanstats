@@ -155,7 +155,7 @@ function PageRouter({ pageData }: { pageData: PageData }): ReactNode {
                 />
             )
         case 'mapper':
-            return <MapperPanel map_settings={pageData.settings} view={pageData.view} />
+            return <MapperPanel mapSettings={pageData.settings} view={pageData.view} />
         case 'error':
             return <ErrorScreen data={pageData} />
         case 'initialLoad':

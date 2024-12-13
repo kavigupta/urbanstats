@@ -2,9 +2,10 @@ import '../style.css'
 import '../common.css'
 
 import { loadJSON, loadProtobuf } from '../load_json'
-import { is_historical_cd } from '../utils/is_historical'
+import { Settings } from '../page_template/settings'
+import { isHistoricalCD } from '../utils/is_historical'
 
-export async function by_population(settings: { show_historical_cds: boolean }, domestic_only = false): Promise<string> {
+export async function byPopulation(domesticOnly: boolean): Promise<string> {
     const values = (await loadProtobuf('/index/pages.gz', 'StringList')).elements
     const populations = await loadJSON('/index/best_population_estimate.json') as number[]
     const totalWeight = populations.reduce((sum, x) => sum + x)
@@ -26,13 +27,13 @@ export async function by_population(settings: { show_historical_cds: boolean }, 
             }
         }
 
-        if (!settings.show_historical_cds && is_historical_cd(x!)) {
+        if (!Settings.shared.get('show_historical_cds') && isHistoricalCD(x!)) {
             continue
         }
 
         // this is specifically looking for stuff that's only in the US.
         // so it makes sense.
-        if (domestic_only && (!(x!.endsWith(', USA') || (x!) === 'USA'))) {
+        if (domesticOnly && (!(x!.endsWith(', USA') || (x!) === 'USA'))) {
             continue
         }
 
@@ -40,12 +41,12 @@ export async function by_population(settings: { show_historical_cds: boolean }, 
     }
 }
 
-export async function uniform(settings: { show_historical_cds: boolean }): Promise<string> {
+export async function uniform(): Promise<string> {
     const values = (await loadProtobuf('/index/pages.gz', 'StringList')).elements
     while (true) {
         const randomIndex = Math.floor(Math.random() * values.length)
         const x = values[randomIndex]
-        if (!settings.show_historical_cds && is_historical_cd(x)) {
+        if (!Settings.shared.get('show_historical_cds') && isHistoricalCD(x)) {
             continue
         }
         return x

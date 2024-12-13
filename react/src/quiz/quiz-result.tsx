@@ -366,12 +366,12 @@ function Value({ stat, stat_column }: { stat: number, stat_column: string }): Re
             <Statistic
                 statname={stat_column}
                 value={stat}
-                is_unit={false}
+                isUnit={false}
             />
             <Statistic
                 statname={stat_column}
                 value={stat}
-                is_unit={true}
+                isUnit={true}
             />
         </span>
     )

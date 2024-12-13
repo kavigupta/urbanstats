@@ -6,7 +6,7 @@ import { useColors, useJuxtastatColors } from '../page_template/colors'
 import { useHeaderTextClass } from '../utils/responsive'
 
 import { exportQuizPersona, importQuizPersona, nameOfQuizKind, QuizHistory } from './quiz'
-import { unique_persistent_id } from './statistics'
+import { uniquePersistentId } from './statistics'
 
 export function Header({ quiz }: { quiz: { kind: 'juxtastat' | 'retrostat', name: string | number } }): ReactNode {
     let text = nameOfQuizKind(quiz.kind)
@@ -62,7 +62,7 @@ export function UserId(): ReactNode {
     return (
         <div>
             {'Your user id is '}
-            <span className="juxtastat-user-id">{unique_persistent_id()}</span>
+            <span className="juxtastat-user-id">{uniquePersistentId()}</span>
         </div>
     )
 }

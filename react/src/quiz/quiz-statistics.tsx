@@ -3,7 +3,7 @@ import React, { ReactNode } from 'react'
 import { useColors, useJuxtastatColors } from '../page_template/colors'
 
 import { QuizDescriptor, QuizHistory } from './quiz'
-import { parse_time_identifier } from './statistics'
+import { parseTimeIdentifier } from './statistics'
 
 interface QuizStatisticsProps {
     quiz: QuizDescriptor
@@ -21,7 +21,7 @@ export function QuizStatistics(props: QuizStatisticsProps): ReactNode {
         }
     }
 
-    const today = parse_time_identifier(props.quiz.kind, props.quiz.name.toString())
+    const today = parseTimeIdentifier(props.quiz.kind, props.quiz.name.toString())
     const historical_correct = new Array(today + 1).fill(-1)
     const frequencies = new Array<number>(6).fill(0)
     const played_games = []

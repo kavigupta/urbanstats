@@ -4,7 +4,7 @@ import { z } from 'zod'
 import { StatPath } from '../page_template/statistic-tree'
 import { cancelled, uploadFile } from '../utils/upload'
 
-import { unique_persistent_id, unique_secure_id } from './statistics'
+import { uniquePersistentId, uniqueSecureId } from './statistics'
 
 export type QuizDescriptor = { kind: 'juxtastat', name: number } | { kind: 'retrostat', name: string }
 
@@ -67,8 +67,8 @@ export type QuizPersona = z.infer<typeof quizPersonaSchema>
 export function exportQuizPersona(): void {
     const exported: QuizPersona = {
         date_exported: new Date(),
-        persistent_id: unique_persistent_id(),
-        secure_id: unique_secure_id(),
+        persistent_id: uniquePersistentId(),
+        secure_id: uniqueSecureId(),
         quiz_history: loadQuizHistory(),
     }
     const data = JSON.stringify(exported, null, 2)

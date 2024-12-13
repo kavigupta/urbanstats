@@ -4,8 +4,8 @@ import path from 'path'
 import downloadsFolder from 'downloads-folder'
 import { ClientFunction, Selector } from 'testcafe'
 
-export const TARGET = process.env.URBANSTATS_TEST_TARGET ?? 'http://localhost:8000'
-export const SEARCH_FIELD = Selector('input').withAttribute('placeholder', 'Search Urban Stats')
+export const target = process.env.URBANSTATS_TEST_TARGET ?? 'http://localhost:8000'
+export const searchField = Selector('input').withAttribute('placeholder', 'Search Urban Stats')
 export const getLocation = ClientFunction(() => document.location.href)
 export const getLocationWithoutSettings = ClientFunction(() => {
     const url = new URL(document.location.href)
@@ -13,15 +13,15 @@ export const getLocationWithoutSettings = ClientFunction(() => {
     return url.toString()
 })
 
-export const IS_TESTING = true
+export const isTesting = true
 
-export function comparison_page(locations: string[]): string {
+export function comparisonPage(locations: string[]): string {
     const params = new URLSearchParams()
     params.set('longnames', JSON.stringify(locations))
-    return `${TARGET}/comparison.html?${params.toString()}`
+    return `${target}/comparison.html?${params.toString()}`
 }
 
-export async function check_textboxes(t: TestController, txts: string[]): Promise<void> {
+export async function checkTextboxes(t: TestController, txts: string[]): Promise<void> {
     await withHamburgerMenu(t, async () => {
         for (const txt of txts) {
             const checkbox = Selector('div.checkbox-setting:not([inert] *)')
@@ -45,7 +45,7 @@ export async function withHamburgerMenu(t: TestController, block: () => Promise<
     }
 }
 
-export async function check_all_category_boxes(t: TestController): Promise<void> {
+export async function checkAllCategoryBoxes(t: TestController): Promise<void> {
     await withHamburgerMenu(t, async () => {
         const checkboxes = Selector('div.checkbox-setting:not([inert] *)')
             .filter((node) => {
@@ -75,7 +75,7 @@ export async function waitForLoading(t: TestController): Promise<void> {
     await t.wait(1000) // Wait for map to finish rendering
 }
 
-async function prep_for_image(t: TestController, options: { hover: boolean, wait: boolean }): Promise<void> {
+async function prepForImage(t: TestController, options: { hover: boolean, wait: boolean }): Promise<void> {
     if (options.hover) {
         await t.hover('#searchbox') // Ensure the mouse pointer isn't hovering over any elements that change appearance when hovered over
     }
@@ -113,81 +113,81 @@ async function prep_for_image(t: TestController, options: { hover: boolean, wait
     await waitForLoading(t)
 }
 
-let screenshot_number = 0
+let screenshotNumber = 0
 
-function screenshot_path(t: TestController): string {
-    screenshot_number++
-    return `${t.browser.name}/${t.test.name}-${screenshot_number}.png`
+function screenshotPath(t: TestController): string {
+    screenshotNumber++
+    return `${t.browser.name}/${t.test.name}-${screenshotNumber}.png`
 }
 
 export async function screencap(t: TestController, { fullPage = true, wait = true }: { fullPage?: boolean, wait?: boolean } = {}): Promise<void> {
-    await prep_for_image(t, { hover: fullPage, wait })
+    await prepForImage(t, { hover: fullPage, wait })
     return t.takeScreenshot({
     // include the browser name in the screenshot path
-        path: screenshot_path(t),
+        path: screenshotPath(t),
         fullPage,
     })
 }
 
-export async function grab_download(t: TestController, button: Selector): Promise<void> {
-    await prep_for_image(t, { hover: true, wait: true })
+export async function grabDownload(t: TestController, button: Selector): Promise<void> {
+    await prepForImage(t, { hover: true, wait: true })
     await t
         .click(button)
     await t.wait(3000)
-    copy_most_recent_file(t)
+    copyMostRecentFile(t)
 }
 
-export async function download_image(t: TestController): Promise<void> {
+export async function downloadImage(t: TestController): Promise<void> {
     const download = Selector('img').withAttribute('src', '/screenshot.png')
-    await grab_download(t, download)
+    await grabDownload(t, download)
 }
 
-export async function download_histogram(t: TestController, nth: number): Promise<void> {
+export async function downloadHistogram(t: TestController, nth: number): Promise<void> {
     const download = Selector('img').withAttribute('src', '/download.png').nth(nth)
-    await grab_download(t, download)
+    await grabDownload(t, download)
 }
 
-export function most_recent_download_path(): string {
+export function mostRecentDownloadPath(): string {
     // get the most recent file in the downloads folder
     const files = fs.readdirSync(downloadsFolder())
     const sorted = files.map(x => path.join(downloadsFolder(), x)).sort((a, b) => fs.statSync(b).mtimeMs - fs.statSync(a).mtimeMs)
     return sorted[0]
 }
 
-function copy_most_recent_file(t: TestController): void {
+function copyMostRecentFile(t: TestController): void {
     // copy the file to the screenshots folder
     // @ts-expect-error -- TestCafe doesn't have a public API for the screenshots folder
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access -- TestCafe doesn't have a public API for the screenshots folder
     const screenshotsFolder: string = t.testRun.opts.screenshots.path ?? (() => { throw new Error() })()
-    fs.copyFileSync(most_recent_download_path(), path.join(screenshotsFolder, screenshot_path(t)))
+    fs.copyFileSync(mostRecentDownloadPath(), path.join(screenshotsFolder, screenshotPath(t)))
 }
 
-export async function download_or_check_string(t: TestController, string: string, name: string): Promise<void> {
-    const path_to_file = path.join(__dirname, '..', '..', 'tests', 'reference_strings', `${name}.txt`)
+export async function downloadOrCheckString(t: TestController, string: string, name: string): Promise<void> {
+    const pathToFile = path.join(__dirname, '..', '..', 'tests', 'reference_strings', `${name}.txt`)
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- We might want to change this variable
-    if (IS_TESTING) {
-        const expected = fs.readFileSync(path_to_file, 'utf8')
+    if (isTesting) {
+        const expected = fs.readFileSync(pathToFile, 'utf8')
         await t.expect(string).eql(expected)
     }
     else {
-        fs.writeFileSync(path_to_file, string)
+        fs.writeFileSync(pathToFile, string)
     }
 }
 
 export function urbanstatsFixture(name: string, url: string, beforeEach: undefined | ((t: TestController) => Promise<void>) = undefined): FixtureFn {
     if (url.startsWith('/')) {
-        url = TARGET + url
+        url = target + url
     }
     else {
         // assert url starts with TARGET
-        if (!url.startsWith(TARGET)) {
-            throw new Error(`URL ${url} does not start with ${TARGET}`)
+        if (!url.startsWith(target)) {
+            throw new Error(`URL ${url} does not start with ${target}`)
         }
     }
     return fixture(name)
         .page(url)
         .beforeEach(async (t) => {
-            screenshot_number = 0
+            screenshotNumber = 0
             await t.eval(() => { localStorage.clear() })
             await t.resizeWindow(1400, 800)
             if (beforeEach !== undefined) {

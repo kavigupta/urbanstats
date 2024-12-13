@@ -15,13 +15,13 @@ export interface TimeSeriesPlotProps {
 export function TimeSeriesPlot(props: { stats: TimeSeriesPlotProps[] }): ReactNode {
     // TODO this is largely unfinished. We need to make several improvements to this component
     // for it to be production-ready.
-    const settings_element = (): ReactElement => <div></div>
+    const settingsElement = (): ReactElement => <div></div>
 
-    const plot_spec = useMemo(
+    const plotSpec = useMemo(
         () => {
             const marks = props.stats.map((stat) => {
                 const x = stat.stat.years
-                const y = stat.stat.time_series
+                const y = stat.stat.timeSeries
                 return Plot.line(
                     x.map((xval, i) => [xval, y[i]]),
                     { stroke: stat.color, strokeWidth: 2 },
@@ -44,8 +44,8 @@ export function TimeSeriesPlot(props: { stats: TimeSeriesPlotProps[] }): ReactNo
 
     return (
         <PlotComponent
-            plot_spec={plot_spec}
-            settings_element={settings_element}
+            plotSpec={plotSpec}
+            settingsElement={settingsElement}
         />
     )
 }

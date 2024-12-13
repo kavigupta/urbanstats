@@ -131,7 +131,7 @@ function GroupComponent({ group }: { group: Group }): ReactNode {
 }
 
 function CategoryContents({ category, isExpanded }: { category: Category, isExpanded: boolean }): ReactNode {
-    const sidebar_section_content = useSidebarSectionContentClassName()
+    const sidebarSectionContent = useSidebarSectionContentClassName()
     /*
      * start high so we don't animate initially
      *
@@ -150,7 +150,7 @@ function CategoryContents({ category, isExpanded }: { category: Category, isExpa
             <ul
                 // @ts-expect-error -- inert is not in the type definitions yet
                 inert={isExpanded ? undefined : ''}
-                className={sidebar_section_content}
+                className={sidebarSectionContent}
                 style={{ maxHeight, marginTop, opacity: 1, padding: 0 }}
             >
                 <CategoryCoreContents category={category} />
@@ -161,7 +161,7 @@ function CategoryContents({ category, isExpanded }: { category: Category, isExpa
 
 // Used for calculating size during animations
 function OffscreenCategoryContents({ category, heightCallback }: { category: Category, heightCallback: (height: number) => void }): ReactNode {
-    const sidebar_section_content = useSidebarSectionContentClassName()
+    const sidebarSectionContent = useSidebarSectionContentClassName()
     const listRef = useRef<HTMLUListElement>(null)
     useLayoutEffect(() => {
         let zoom = 1
@@ -180,7 +180,7 @@ function OffscreenCategoryContents({ category, heightCallback }: { category: Cat
         <ul
             // @ts-expect-error -- inert is not in the type definitions yet
             inert=""
-            className={`${sidebar_section_content} hidden`}
+            className={`${sidebarSectionContent} hidden`}
             style={{ opacity: 0, position: 'absolute' }}
             ref={listRef}
         >

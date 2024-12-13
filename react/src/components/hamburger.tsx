@@ -53,10 +53,10 @@ function Hamburger({ isOpen }: { isOpen: boolean }): ReactNode {
     )
 }
 
-export function Nav({ hamburger_open, set_hamburger_open }: { hamburger_open: boolean, set_hamburger_open: (newValue: boolean) => void }): ReactNode {
+export function Nav({ hamburgerOpen, setHamburgerOpen }: { hamburgerOpen: boolean, setHamburgerOpen: (newValue: boolean) => void }): ReactNode {
     const colors = useColors()
     const toggleHamburger = (): void => {
-        set_hamburger_open(!hamburger_open)
+        setHamburgerOpen(!hamburgerOpen)
     }
 
     return (
@@ -66,7 +66,7 @@ export function Nav({ hamburger_open, set_hamburger_open }: { hamburger_open: bo
                     {left_panel()}
                 </div> */}
                 <div className="hamburgermenu" onClick={toggleHamburger}>
-                    <Hamburger isOpen={hamburger_open} />
+                    <Hamburger isOpen={hamburgerOpen} />
                 </div>
             </div>
 
@@ -98,7 +98,7 @@ export function Nav({ hamburger_open, set_hamburger_open }: { hamburger_open: bo
             
                 
                 .navigation-entry {
-                    display: ${hamburger_open ? 'inline' : 'none'};
+                    display: ${hamburgerOpen ? 'inline' : 'none'};
                     background-color: ${colors.background};
                     min-height: 100vh;
                     width: 75vw;

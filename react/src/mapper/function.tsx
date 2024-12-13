@@ -50,9 +50,9 @@ export class FunctionColorStat implements ColorStat {
     }
 }
 
-const operator_style: React.CSSProperties = { width: '2em', minWidth: '2em', textAlign: 'center' }
+const operatorStyle: React.CSSProperties = { width: '2em', minWidth: '2em', textAlign: 'center' }
 
-function VariableNameSelector({ variable_name, set_variable_name, placeholder }: { variable_name: string, set_variable_name: (newValue: string) => void, placeholder: string }): ReactNode {
+function VariableNameSelector({ variableName, setVariableName, placeholder }: { variableName: string, setVariableName: (newValue: string) => void, placeholder: string }): ReactNode {
     const colors = useColors()
     // freeform input for variable name
     return (
@@ -60,13 +60,13 @@ function VariableNameSelector({ variable_name, set_variable_name, placeholder }:
             type="text"
             style={{ width: '100%', backgroundColor: colors.background, color: colors.textMain }}
             placeholder={`e.g., "${placeholder}"`}
-            value={variable_name}
-            onChange={(e) => { set_variable_name(e.target.value) }}
+            value={variableName}
+            onChange={(e) => { setVariableName(e.target.value) }}
         />
     )
 }
 
-function RegressionSelector(props: { regression: RegressionDescriptor, set_regression: (newValue: RegressionDescriptor) => void, delete_regression: () => void, names: readonly StatName[] }): ReactNode {
+function RegressionSelector(props: { regression: RegressionDescriptor, setRegression: (newValue: RegressionDescriptor) => void, deleteRegression: () => void, names: readonly StatName[] }): ReactNode {
     // Create several rows organized as
     // [stat selector] = [coefficient textbox] * [stat selector]
     //                 + [coefficient textbox] * [stat selector]
@@ -74,82 +74,82 @@ function RegressionSelector(props: { regression: RegressionDescriptor, set_regre
     //                 + [coefficient textbox] (intercept)
     //                 + [coefficient textbox] (residue)
 
-    const set_coefficient_var = (i: number, value: string): void => {
+    const setCoefficientVar = (i: number, value: string): void => {
         const coefficients = props.regression.var_coefficients
-        props.set_regression({
+        props.setRegression({
             ...props.regression,
             var_coefficients: coefficients.map((c, j) => i === j ? value : c),
         })
     }
-    const set_intercept_var = (value: string): void => {
-        props.set_regression({
+    const setInterceptVar = (value: string): void => {
+        props.setRegression({
             ...props.regression,
             var_intercept: value,
         })
     }
-    const set_residue_var = (value: string): void => {
-        props.set_regression({
+    const setResidueVar = (value: string): void => {
+        props.setRegression({
             ...props.regression,
             var_residue: value,
         })
     }
-    const set_dependent_expr = (i: number, value: ColorStatDescriptor): void => {
+    const setDependentExpr = (i: number, value: ColorStatDescriptor): void => {
         const dependents = props.regression.dependents
-        props.set_regression({
+        props.setRegression({
             ...props.regression,
             dependents: dependents.map((c, j) => i === j ? value : c),
         })
     }
 
-    const remove_dependent_expr = (i: number): void => {
-        const var_coefficients = props.regression.var_coefficients
+    const removeDependentExpr = (i: number): void => {
+        const varCoefficients = props.regression.var_coefficients
         const dependents = props.regression.dependents
-        props.set_regression({
+        props.setRegression({
             ...props.regression,
-            var_coefficients: var_coefficients.filter((_, j) => i !== j),
+            var_coefficients: varCoefficients.filter((_, j) => i !== j),
             dependents: dependents.filter((_, j) => i !== j),
         })
     }
 
-    const rhs_params: { variable_name: string, set_variable_name: (newValue: string) => void, name: string, dependent?: ColorStatDescriptor, set_dependent: (newValue: ColorStatDescriptor) => void, descriptor?: string }[] = props.regression.dependents.map((dependent, i) => {
+    const rhsParams: { variableName: string, setVariableName: (newValue: string) => void, name: string, dependent?: ColorStatDescriptor, setDependent: (newValue: ColorStatDescriptor) => void, descriptor?: string }[] = props.regression.dependents.map((dependent, i) => {
         return {
-            variable_name: props.regression.var_coefficients[i],
-            set_variable_name: (value: string) => { set_coefficient_var(i, value) },
+            variableName: props.regression.var_coefficients[i],
+            setVariableName: (value: string) => { setCoefficientVar(i, value) },
             name: `m_${i + 1}`,
             dependent: props.regression.dependents[i],
-            set_dependent: (value: ColorStatDescriptor) => { set_dependent_expr(i, value) },
+            setDependent: (value: ColorStatDescriptor) => { setDependentExpr(i, value) },
         }
     })
 
-    rhs_params.push({
-        variable_name: props.regression.var_intercept,
-        set_variable_name: (value) => { set_intercept_var(value) },
+    rhsParams.push({
+        variableName: props.regression.var_intercept,
+        setVariableName: (value) => { setInterceptVar(value) },
         name: `b`,
         descriptor: `[intercept]`,
-        set_dependent: () => { throw new Error('Intercept should not have a dependent') },
+        setDependent: () => { throw new Error('Intercept should not have a dependent') },
     })
-    rhs_params.push({
-        variable_name: props.regression.var_residue,
-        set_variable_name: (value) => { set_residue_var(value) },
+    rhsParams.push({
+        variableName: props.regression.var_residue,
+        setVariableName: (value) => { setResidueVar(value) },
         name: `e`,
         descriptor: `[residue]`,
-        set_dependent: () => { throw new Error('Residue should not have a dependent') },
+        setDependent: () => { throw new Error('Residue should not have a dependent') },
     })
 
-    const dependents = rhs_params.map((param, i) => (
+    const dependents = rhsParams.map((param, i) => (
         <div key={i} style={{ display: 'flex' }}>
             {/* Text field!!! free enttry for variable entry */}
-            <div style={operator_style}>
+            <div style={operatorStyle}>
                 {i === 0 ? '=' : '+'}
             </div>
             <div style={{ width: '20%' }}>
                 <VariableNameSelector
-                    variable_name={param.variable_name}
-                    set_variable_name={param.set_variable_name}
+                    variableName={param.variableName}
+                    setVariableName={param.setVariableName}
                     placeholder={param.name}
                 />
             </div>
-            <div style={operator_style}>
+            <div style={operatorStyle}>
                 {param.dependent === undefined ? '' : <span>&times;</span>}
             </div>
             {
@@ -159,12 +159,12 @@ function RegressionSelector(props: { regression: RegressionDescriptor, set_regre
                             <>
                                 <StatisticSelector
                                     statistic={param.dependent}
-                                    overall_name={undefined}
-                                    set_statistic={param.set_dependent}
+                                    overallName={undefined}
+                                    setStatistic={param.setDependent}
                                     names={props.names}
                                     simple={true}
                                 />
-                                <button onClick={() => { remove_dependent_expr(i) }}>
+                                <button onClick={() => { removeDependentExpr(i) }}>
                                     -
                                 </button>
                             </>
@@ -182,14 +182,14 @@ function RegressionSelector(props: { regression: RegressionDescriptor, set_regre
         </div>
     ))
 
-    const rhs_stack = (
+    const rhsStack = (
         <div style={{ display: 'flex', flexDirection: 'column' }}>
             {dependents}
             {/* Add a dependent button */}
             <div style={{ width: '100%' }}>
                 <button
                     onClick={() => {
-                        props.set_regression({
+                        props.setRegression({
                             ...props.regression,
                             dependents: [...props.regression.dependents, undefined],
                             var_coefficients: [...props.regression.var_coefficients, ''],
@@ -205,9 +205,9 @@ function RegressionSelector(props: { regression: RegressionDescriptor, set_regre
     const lhs = (
         <StatisticSelector
             statistic={props.regression.independent}
-            overall_name={undefined}
-            set_statistic={(stat) => {
-                props.set_regression({
+            overallName={undefined}
+            setStatistic={(stat) => {
+                props.setRegression({
                     ...props.regression,
                     independent: stat,
                 })
@@ -223,12 +223,12 @@ function RegressionSelector(props: { regression: RegressionDescriptor, set_regre
                 {lhs}
             </div>
             <div style={{ width: '70%' }}>
-                {rhs_stack}
+                {rhsStack}
                 <CheckboxSettingCustom
                     name="Weighted by Population"
                     checked={props.regression.weight_by_population}
                     onChange={(value) => {
-                        props.set_regression({
+                        props.setRegression({
                             ...props.regression,
                             weight_by_population: value,
                         })
@@ -244,7 +244,7 @@ function RegressionSelector(props: { regression: RegressionDescriptor, set_regre
                 {main}
             </div>
             <div style={{ width: '3%' }}>
-                <button style={{ width: '100%', height: '100%' }} onClick={() => { props.delete_regression() }}>
+                <button style={{ width: '100%', height: '100%' }} onClick={() => { props.deleteRegression() }}>
                     -
                 </button>
             </div>
@@ -252,15 +252,15 @@ function RegressionSelector(props: { regression: RegressionDescriptor, set_regre
     )
 }
 
-function VariableSelector(props: { variable: VariableDescriptor, set_variable: (newValue: VariableDescriptor) => void, delete_variable: () => void, names: readonly StatName[] }): ReactNode {
+function VariableSelector(props: { variable: VariableDescriptor, setVariable: (newValue: VariableDescriptor) => void, deleteVariable: () => void, names: readonly StatName[] }): ReactNode {
     const colors = useColors()
     const variable = props.variable
-    const names_full = ['', ...props.names]
-    const initial_value = variable.expr !== undefined && names_full.includes(variable.expr.value) ? variable.expr.value : ''
+    const namesFull = ['', ...props.names]
+    const initialValue = variable.expr !== undefined && namesFull.includes(variable.expr.value) ? variable.expr.value : ''
     return (
         <div style={{ display: 'flex' }}>
             {/* Button that deletes this variable */}
-            <button onClick={() => { props.delete_variable() }}>
+            <button onClick={() => { props.deleteVariable() }}>
                 -
             </button>
             <div style={{ width: '0.5em' }} />
@@ -271,7 +271,7 @@ function VariableSelector(props: { variable: VariableDescriptor, set_variable: (
                     placeholder='Name, e.g., "a"'
                     value={variable.name}
                     onChange={(e) => {
-                        props.set_variable({
+                        props.setVariable({
                             ...variable,
                             name: e.target.value,
                         })
@@ -281,7 +281,7 @@ function VariableSelector(props: { variable: VariableDescriptor, set_variable: (
             <div style={{ width: '0.5em' }} />
             <select
                 onChange={(e) => {
-                    props.set_variable({
+                    props.setVariable({
                         ...variable,
                         expr: {
                             ...variable.expr,
@@ -291,10 +291,10 @@ function VariableSelector(props: { variable: VariableDescriptor, set_variable: (
                     })
                 }}
                 style={{ width: '100%', backgroundColor: colors.background, color: colors.textMain }}
-                value={initial_value}
+                value={initialValue}
             >
                 {
-                    names_full.map((name, i) => (
+                    namesFull.map((name, i) => (
                         <option key={i} value={name}>{name}</option>
                     ))
                 }
@@ -303,7 +303,7 @@ function VariableSelector(props: { variable: VariableDescriptor, set_variable: (
     )
 }
 
-export function FunctionSelector(props: { function: ColorStatDescriptor, set_function: (newValue: ColorStatDescriptor) => void, names: readonly StatName[], simple?: boolean, no_name_field?: boolean, placeholder?: string }): ReactNode {
+export function FunctionSelector(props: { function: ColorStatDescriptor, setFunction: (newValue: ColorStatDescriptor) => void, names: readonly StatName[], simple?: boolean, noNameField?: boolean, placeholder?: string }): ReactNode {
     const colors = useColors()
     const func = props.function
     if (func.variables === undefined) {
@@ -316,7 +316,7 @@ export function FunctionSelector(props: { function: ColorStatDescriptor, set_fun
             placeholder={props.placeholder ?? 'Expression, e.g., "a + b"'}
             value={func.expression}
             onChange={(e) => {
-                props.set_function({
+                props.setFunction({
                     ...func,
                     expression: e.target.value,
                 })
@@ -331,7 +331,7 @@ export function FunctionSelector(props: { function: ColorStatDescriptor, set_fun
     return (
         <div style={{ paddingLeft: '1em' }}>
             {
-                props.no_name_field
+                props.noNameField
                     ? <div />
                     : (
                             <input
@@ -340,7 +340,7 @@ export function FunctionSelector(props: { function: ColorStatDescriptor, set_fun
                                 placeholder="Name for this function"
                                 value={func.name}
                                 onChange={(e) => {
-                                    props.set_function({
+                                    props.setFunction({
                                         ...func,
                                         name: e.target.value,
                                     })
@@ -349,9 +349,9 @@ export function FunctionSelector(props: { function: ColorStatDescriptor, set_fun
                         )
             }
             <VariablesSelector
-                get_variables={() => func.variables ?? []}
-                set_variables={(variables) => {
-                    props.set_function({
+                getVariables={() => func.variables ?? []}
+                setVariables={(variables) => {
+                    props.setFunction({
                         ...func,
                         variables,
                     })
@@ -360,9 +360,9 @@ export function FunctionSelector(props: { function: ColorStatDescriptor, set_fun
             />
             <div style={{ marginBottom: '0.25em' }} />
             <RegressionsSelector
-                get_regressions={() => func.regressions ?? []}
-                set_regressions={(regressions) => {
-                    props.set_function({
+                getRegressions={() => func.regressions ?? []}
+                setRegressions={(regressions) => {
+                    props.setFunction({
                         ...func,
                         regressions,
                     })
@@ -375,17 +375,17 @@ export function FunctionSelector(props: { function: ColorStatDescriptor, set_fun
     )
 }
 
-function VariablesSelector({ get_variables, set_variables, names }: { get_variables: () => VariableDescriptor[], set_variables: (newValue: VariableDescriptor[]) => void, names: readonly StatName[] },
+function VariablesSelector({ getVariables: getVariables, setVariables: setVariables, names }: { getVariables: () => VariableDescriptor[], setVariables: (newValue: VariableDescriptor[]) => void, names: readonly StatName[] },
 ): ReactNode {
     return (
         <>
             {
-                get_variables().map((variable: VariableDescriptor, i: number) => (
+                getVariables().map((variable: VariableDescriptor, i: number) => (
                     <VariableSelector
                         key={i}
                         variable={variable}
-                        set_variable={(v: VariableDescriptor) => { set_variables(get_variables().map((v2, j) => i === j ? v : v2)) }}
-                        delete_variable={() => { set_variables(get_variables().filter((v2, j) => i !== j)) }}
+                        setVariable={(v: VariableDescriptor) => { setVariables(getVariables().map((v2, j) => i === j ? v : v2)) }}
+                        deleteVariable={() => { setVariables(getVariables().filter((v2, j) => i !== j)) }}
                         names={names}
                     />
                 ))
@@ -394,7 +394,7 @@ function VariablesSelector({ get_variables, set_variables, names }: { get_variab
             <div style={{ width: '100%' }}>
                 <button
                     onClick={() => {
-                        set_variables([...get_variables(), {
+                        setVariables([...getVariables(), {
                             name: '',
                             expr: undefined,
                         }])
@@ -407,8 +407,8 @@ function VariablesSelector({ get_variables, set_variables, names }: { get_variab
     )
 }
 
-function RegressionsSelector({ get_regressions, set_regressions, names }: { get_regressions: () => RegressionDescriptor[], set_regressions: (newValue: RegressionDescriptor[]) => void, names: readonly StatName[] }): ReactNode {
-    const gr: () => RegressionDescriptor[] = () => get_regressions()
+function RegressionsSelector({ getRegressions, setRegressions, names }: { getRegressions: () => RegressionDescriptor[], setRegressions: (newValue: RegressionDescriptor[]) => void, names: readonly StatName[] }): ReactNode {
+    const gr: () => RegressionDescriptor[] = () => getRegressions()
 
     return (
         <>
@@ -417,10 +417,10 @@ function RegressionsSelector({ get_regressions, set_regressions, names }: { get_
                     <RegressionSelector
                         key={i}
                         regression={regression}
-                        set_regression={(r) => {
-                            set_regressions(gr().map((r2, j) => i === j ? r : r2))
+                        setRegression={(r) => {
+                            setRegressions(gr().map((r2, j) => i === j ? r : r2))
                         }}
-                        delete_regression={() => { set_regressions(gr().filter((r2, j) => i !== j)) }}
+                        deleteRegression={() => { setRegressions(gr().filter((r2, j) => i !== j)) }}
                         names={names}
                     />
                 ))
@@ -429,7 +429,7 @@ function RegressionsSelector({ get_regressions, set_regressions, names }: { get_
             <div style={{ width: '100%' }}>
                 <button
                     onClick={() => {
-                        set_regressions([...gr(), {
+                        setRegressions([...gr(), {
                             independent: undefined, dependents: [undefined],
                             var_residue: '', var_intercept: '', var_coefficients: [''],
                             weight_by_population: false,
@@ -443,7 +443,7 @@ function RegressionsSelector({ get_regressions, set_regressions, names }: { get_
     )
 }
 
-export function FilterSelector(props: { filter: FilterSettings, set_filter: (newValue: FilterSettings) => void, names: readonly StatName[] }): ReactNode {
+export function FilterSelector(props: { filter: FilterSettings, setFilter: (newValue: FilterSettings) => void, names: readonly StatName[] }): ReactNode {
     const colors = useColors()
     const filter = props.filter
     // like FunctionSelector, but has a checkmark for whether the filter is enabled
@@ -454,7 +454,7 @@ export function FilterSelector(props: { filter: FilterSettings, set_filter: (new
                     type="checkbox"
                     checked={filter.enabled}
                     onChange={(e) => {
-                        props.set_filter({
+                        props.setFilter({
                             ...filter,
                             enabled: e.target.checked,
                         })
@@ -468,10 +468,10 @@ export function FilterSelector(props: { filter: FilterSettings, set_filter: (new
                 filter.enabled
                     ? (
                             <FunctionSelector
-                                no_name_field={true}
+                                noNameField={true}
                                 function={filter.function}
-                                set_function={(f) => {
-                                    props.set_filter({
+                                setFunction={(f) => {
+                                    props.setFilter({
                                         ...filter,
                                         function: f,
                                     })
@@ -485,15 +485,15 @@ export function FilterSelector(props: { filter: FilterSettings, set_filter: (new
         </div>
     )
 }
-export function StatisticSelector({ statistic, set_statistic, names, overall_name, simple }: { statistic: ColorStatDescriptor | undefined, set_statistic: (newValue: ColorStatDescriptor) => void, names: readonly StatName[], overall_name: string | undefined, simple: boolean }): ReactNode {
+export function StatisticSelector({ statistic, setStatistic, names, overallName, simple }: { statistic: ColorStatDescriptor | undefined, setStatistic: (newValue: ColorStatDescriptor) => void, names: readonly StatName[], overallName: string | undefined, simple: boolean }): ReactNode {
     return (
         <div style={{ width: '100%' }}>
             <DataListSelector
-                overall_name={overall_name}
+                overallName={overallName}
                 names={['Function', ...names]}
-                initial_value={statistic?.value}
+                initialValue={statistic?.value}
                 onChange={(name) => {
-                    set_statistic(name !== 'Function'
+                    setStatistic(name !== 'Function'
                         ? {
                                 ...statistic,
                                 type: 'single',
@@ -514,7 +514,7 @@ export function StatisticSelector({ statistic, set_statistic, names, overall_nam
                 ? (
                         <FunctionSelector
                             function={statistic}
-                            set_function={set_statistic}
+                            setFunction={setStatistic}
                             names={names}
                             simple={simple}
                         />

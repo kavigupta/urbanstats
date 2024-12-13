@@ -6,7 +6,7 @@ import './sidebar.css'
 import { Navigator } from '../navigation/navigator'
 import { Theme } from '../page_template/color-themes'
 import { useColors, useCurrentTheme } from '../page_template/colors'
-import { checkbox_category_name, SettingsDictionary, source_enabled_key, TemperatureUnit, useSetting, useSettingInfo, useStagedSettingKeys } from '../page_template/settings'
+import { checkboxCategoryName, SettingsDictionary, sourceEnabledKey, TemperatureUnit, useSetting, useSettingInfo, useStagedSettingKeys } from '../page_template/settings'
 import { useDataSourceCheckboxes } from '../page_template/statistic-settings'
 import { useMobileLayout } from '../utils/responsive'
 
@@ -15,11 +15,11 @@ import { StatsTree } from './StatsTree'
 import { Years } from './Years'
 
 export function useSidebarSectionContentClassName(): string {
-    let sidebar_section_content = 'sidebar-section-content'
+    let sidebarSectionContent = 'sidebar-section-content'
     if (useMobileLayout()) {
-        sidebar_section_content += ' sidebar-section-content_mobile'
+        sidebarSectionContent += ' sidebar-section-content_mobile'
     }
-    return sidebar_section_content
+    return sidebarSectionContent
 }
 
 export function useSidebarSectionTitleStyle(): CSSProperties {
@@ -34,10 +34,10 @@ export function useSidebarSectionTitleStyle(): CSSProperties {
 export function Sidebar({ onNavigate }: { onNavigate: () => void }): ReactNode {
     const colors = useColors()
     const currentTheme = useCurrentTheme()
-    const link_style = { color: colors.blueLink }
-    const sidebar_section_title = useSidebarSectionTitleStyle()
+    const linkStyle = { color: colors.blueLink }
+    const sidebarSectionTitle = useSidebarSectionTitleStyle()
 
-    const sidebar_section_content = useSidebarSectionContentClassName()
+    const sidebarSectionContent = useSidebarSectionContentClassName()
 
     const navContext = useContext(Navigator.Context)
 
@@ -52,44 +52,44 @@ export function Sidebar({ onNavigate }: { onNavigate: () => void }): ReactNode {
             }}
         >
             <div className="sidebar-section">
-                <div style={sidebar_section_title}>Main Menu</div>
-                <ul className={sidebar_section_content}>
+                <div style={sidebarSectionTitle}>Main Menu</div>
+                <ul className={sidebarSectionContent}>
                     <li>
-                        <a style={link_style} {...navContext.link({ kind: 'index' }, onNavigate)}>Home</a>
+                        <a style={linkStyle} {...navContext.link({ kind: 'index' }, onNavigate)}>Home</a>
                     </li>
                     <li>
-                        <a style={link_style} {...navContext.link({ kind: 'about' }, onNavigate)}>About Urban Stats</a>
+                        <a style={linkStyle} {...navContext.link({ kind: 'about' }, onNavigate)}>About Urban Stats</a>
                     </li>
                     <li>
-                        <a style={link_style} {...navContext.link({ kind: 'dataCredit', hash: '' }, onNavigate)}>Data Credit</a>
+                        <a style={linkStyle} {...navContext.link({ kind: 'dataCredit', hash: '' }, onNavigate)}>Data Credit</a>
                     </li>
                     <li>
-                        <a style={link_style} {...navContext.link({ kind: 'mapper', view: false }, onNavigate)}>Mapper (beta)</a>
-                    </li>
-                </ul>
-            </div>
-            <div className="sidebar-section">
-                <div style={sidebar_section_title}>Random</div>
-                <ul className={sidebar_section_content}>
-                    <li>
-                        <a style={link_style} {...navContext.link({ kind: 'random', sampleby: 'uniform', us_only: false }, onNavigate)}>Unweighted</a>
-                    </li>
-                    <li>
-                        <a style={link_style} {...navContext.link({ kind: 'random', sampleby: 'population', us_only: false }, onNavigate)}>Weighted by Population</a>
-                    </li>
-                    <li>
-                        <a style={link_style} {...navContext.link({ kind: 'random', sampleby: 'population', us_only: true }, onNavigate)}>Weighted by Population (US only)</a>
+                        <a style={linkStyle} {...navContext.link({ kind: 'mapper', view: false }, onNavigate)}>Mapper (beta)</a>
                     </li>
                 </ul>
             </div>
             <div className="sidebar-section">
-                <div style={sidebar_section_title}>Games</div>
-                <ul className={sidebar_section_content}>
+                <div style={sidebarSectionTitle}>Random</div>
+                <ul className={sidebarSectionContent}>
                     <li>
-                        <a style={link_style} {...navContext.link({ kind: 'quiz' }, onNavigate)}>Juxtastat</a>
+                        <a style={linkStyle} {...navContext.link({ kind: 'random', sampleby: 'uniform', us_only: false }, onNavigate)}>Unweighted</a>
                     </li>
                     <li>
-                        <a style={link_style} {...navContext.link({ kind: 'quiz', mode: 'retro' }, onNavigate)}>Retrostat</a>
+                        <a style={linkStyle} {...navContext.link({ kind: 'random', sampleby: 'population', us_only: false }, onNavigate)}>Weighted by Population</a>
+                    </li>
+                    <li>
+                        <a style={linkStyle} {...navContext.link({ kind: 'random', sampleby: 'population', us_only: true }, onNavigate)}>Weighted by Population (US only)</a>
+                    </li>
+                </ul>
+            </div>
+            <div className="sidebar-section">
+                <div style={sidebarSectionTitle}>Games</div>
+                <ul className={sidebarSectionContent}>
+                    <li>
+                        <a style={linkStyle} {...navContext.link({ kind: 'quiz' }, onNavigate)}>Juxtastat</a>
+                    </li>
+                    <li>
+                        <a style={linkStyle} {...navContext.link({ kind: 'quiz', mode: 'retro' }, onNavigate)}>Retrostat</a>
                     </li>
                 </ul>
             </div>
@@ -98,33 +98,33 @@ export function Sidebar({ onNavigate }: { onNavigate: () => void }): ReactNode {
                     ? null
                     : (
                             <div className="sidebar-section">
-                                <div style={sidebar_section_title}>Link Settings</div>
-                                <ul className={sidebar_section_content}>
+                                <div style={sidebarSectionTitle}>Link Settings</div>
+                                <ul className={sidebarSectionContent}>
                                     <StagingControls />
                                 </ul>
                             </div>
                         )
             }
             <div className="sidebar-section">
-                <div style={sidebar_section_title}>Settings</div>
-                <ul className={sidebar_section_content}>
+                <div style={sidebarSectionTitle}>Settings</div>
+                <ul className={sidebarSectionContent}>
                     <li>
                         <CheckboxSetting
                             name="Use Imperial Units"
-                            setting_key="use_imperial"
+                            settingKey="use_imperial"
                             testId="use_imperial"
                         />
                     </li>
                     <li>
                         <CheckboxSetting
                             name="Include Historical Districts"
-                            setting_key="show_historical_cds"
+                            settingKey="show_historical_cds"
                         />
                     </li>
                     <li>
                         <CheckboxSetting
                             name="Simple Ordinals"
-                            setting_key="simple_ordinals"
+                            settingKey="simple_ordinals"
                         />
                     </li>
                     <li>
@@ -136,21 +136,21 @@ export function Sidebar({ onNavigate }: { onNavigate: () => void }): ReactNode {
                 ? <SidebarForStatisticChoice />
                 : null}
             <div className="sidebar-section">
-                <div style={sidebar_section_title}>Appearance</div>
-                <ul className={sidebar_section_content}>
+                <div style={sidebarSectionTitle}>Appearance</div>
+                <ul className={sidebarSectionContent}>
                     <li>
                         <ColorThemeSetting />
                     </li>
                     <li>
                         <CheckboxSetting
                             name="Colorblind Mode"
-                            setting_key="colorblind_mode"
+                            settingKey="colorblind_mode"
                         />
                     </li>
                     <li>
                         <CheckboxSetting
                             name={`${currentTheme === 'Dark Mode' ? 'Black' : 'White'} Background`}
-                            setting_key="clean_background"
+                            settingKey="clean_background"
                         />
                     </li>
                 </ul>
@@ -160,21 +160,21 @@ export function Sidebar({ onNavigate }: { onNavigate: () => void }): ReactNode {
 }
 
 export function SidebarForStatisticChoice(): ReactNode {
-    const sidebar_section_content = useSidebarSectionContentClassName()
-    const sidebar_section_title = useSidebarSectionTitleStyle()
+    const sidebarSectionContent = useSidebarSectionContentClassName()
+    const sidebarSectionTitle = useSidebarSectionTitleStyle()
     const checkboxes = useDataSourceCheckboxes()
     return (
         <>
             {checkboxes.map(({ category, checkboxSpecs }) => (
                 <div className="sidebar-section" key={category}>
-                    <div style={sidebar_section_title}>{checkbox_category_name(category)}</div>
-                    <ul className={sidebar_section_content}>
+                    <div style={sidebarSectionTitle}>{checkboxCategoryName(category)}</div>
+                    <ul className={sidebarSectionContent}>
                         {
                             checkboxSpecs.map(({ name, forcedOn }) => (
                                 <li key={name}>
                                     <CheckboxSetting
                                         name={name}
-                                        setting_key={source_enabled_key({ category, name })}
+                                        settingKey={sourceEnabledKey({ category, name })}
                                         forcedOn={forcedOn}
                                         testId={`source ${category} ${name}`}
                                     />
@@ -185,14 +185,14 @@ export function SidebarForStatisticChoice(): ReactNode {
                 </div>
             ))}
             <div className="sidebar-section">
-                <div style={sidebar_section_title}>Years</div>
-                <ul className={sidebar_section_content}>
+                <div style={sidebarSectionTitle}>Years</div>
+                <ul className={sidebarSectionContent}>
                     <Years />
                 </ul>
             </div>
             <div className="sidebar-section">
-                <div style={sidebar_section_title}>Statistic Categories</div>
-                <ul className={sidebar_section_content}>
+                <div style={sidebarSectionTitle}>Statistic Categories</div>
+                <ul className={sidebarSectionContent}>
                     <StatsTree />
                 </ul>
             </div>
@@ -203,9 +203,9 @@ export function SidebarForStatisticChoice(): ReactNode {
 // type representing a key of SettingsDictionary that have boolean values
 type BooleanSettingKey = keyof { [K in keyof SettingsDictionary as SettingsDictionary[K] extends boolean | undefined ? K : never]: boolean }
 
-export function CheckboxSetting(props: { name: string, setting_key: BooleanSettingKey, classNameToUse?: string, id?: string, testId?: string, forcedOn?: boolean }): ReactNode {
-    const [checked, setChecked] = useSetting(props.setting_key)
-    const info = useSettingInfo(props.setting_key)
+export function CheckboxSetting(props: { name: string, settingKey: BooleanSettingKey, classNameToUse?: string, id?: string, testId?: string, forcedOn?: boolean }): ReactNode {
+    const [checked, setChecked] = useSetting(props.settingKey)
+    const info = useSettingInfo(props.settingKey)
 
     return (
         <CheckboxSettingCustom

@@ -1,6 +1,6 @@
 import { Keypoints } from '../mapper/ramps'
 
-export function random_color(name: string): string {
+export function randomColor(name: string): string {
     // randomly choose a color hex code where H is between 0 and 360,
     // S is between 50 and 100, and L is between 20 and 50
     // seed random with the hash of longname
@@ -19,7 +19,7 @@ export function random_color(name: string): string {
     return `hsl(${random() * 360}, ${50 + random() * 50}%, ${20 + random() * 30}%)`
 }
 
-export function interpolate_color(ramp: Keypoints, item: number): string {
+export function interpolateColor(ramp: Keypoints, item: number): string {
     // ramp is a list of [value, color] pairs
     // item is a value
 
@@ -63,5 +63,5 @@ export function mixWithBackground(color: string, fraction: number, background: s
         throw new Error('color is not a string')
     }
     const ramp: [number, string][] = [[0, color], [1, background]]
-    return interpolate_color(ramp, fraction)
+    return interpolateColor(ramp, fraction)
 }

@@ -2,11 +2,11 @@ import domtoimage from 'dom-to-image-more'
 import { saveAs } from 'file-saver'
 import React, { createContext, ReactNode, useContext } from 'react'
 
-import { universe_path } from '../navigation/links'
+import { universePath } from '../navigation/links'
 import { Colors } from '../page_template/color-themes'
 
 export function ScreenshotButton(props: { onClick: () => void }): ReactNode {
-    const screencap_button = (
+    const screencapButton = (
         <div
             onClick={props.onClick}
             style={{
@@ -20,7 +20,7 @@ export function ScreenshotButton(props: { onClick: () => void }): ReactNode {
     // if screenshot mode is on, put a loading circle over the image
     if (useScreenshotMode()) {
         const pad = 10 // pct
-        const loading_circle = (
+        const loadingCircle = (
             <div style={{
                 position: 'absolute',
                 height: `${100 - 2 * pad}%`,
@@ -37,7 +37,7 @@ export function ScreenshotButton(props: { onClick: () => void }): ReactNode {
             >
             </div>
         )
-        const dim_filter = (
+        const dimFilter = (
             <div style={{
                 position: 'absolute',
                 height: '100%',
@@ -52,46 +52,46 @@ export function ScreenshotButton(props: { onClick: () => void }): ReactNode {
         )
         return (
             <div style={{ position: 'relative', height: '100%', aspectRatio: '1/1' }}>
-                {screencap_button}
-                {dim_filter}
-                {loading_circle}
+                {screencapButton}
+                {dimFilter}
+                {loadingCircle}
             </div>
         )
     }
-    return screencap_button
+    return screencapButton
 }
 
 export interface ScreencapElements {
     path: string
-    overall_width: number
-    elements_to_render: HTMLElement[]
-    height_multiplier?: number
+    overallWidth: number
+    elementsToRender: HTMLElement[]
+    heightMultiplier?: number
 }
 
-export async function create_screenshot(config: ScreencapElements, universe: string | undefined, colors: Colors): Promise<void> {
-    const overall_width = config.overall_width
-    const height_multiplier = config.height_multiplier ?? 1
+export async function createScreenshot(config: ScreencapElements, universe: string | undefined, colors: Colors): Promise<void> {
+    const overallWidth = config.overallWidth
+    const heightMultiplier = config.heightMultiplier ?? 1
 
-    async function screencap_element(ref: HTMLElement): Promise<[string, number]> {
-        const scale_factor = overall_width / ref.offsetWidth
+    async function screencapElement(ref: HTMLElement): Promise<[string, number]> {
+        const scaleFactor = overallWidth / ref.offsetWidth
         const link = await domtoimage.toPng(ref, {
             bgcolor: colors.background,
-            height: ref.offsetHeight * scale_factor * height_multiplier,
-            width: ref.offsetWidth * scale_factor,
+            height: ref.offsetHeight * scaleFactor * heightMultiplier,
+            width: ref.offsetWidth * scaleFactor,
             style: {
-                transform: `scale(${scale_factor})`,
+                transform: `scale(${scaleFactor})`,
                 transformOrigin: 'top left',
             },
         })
-        return [link, scale_factor * ref.offsetHeight * height_multiplier]
+        return [link, scaleFactor * ref.offsetHeight * heightMultiplier]
     }
 
-    const png_links = []
+    const pngLinks = []
     const heights = []
-    for (const ref of config.elements_to_render) {
+    for (const ref of config.elementsToRender) {
         try {
-            const [png_link, height] = await screencap_element(ref)
-            png_links.push(png_link)
+            const [pngLink, height] = await screencapElement(ref)
+            pngLinks.push(pngLink)
             heights.push(height)
         }
         catch (e) {
@@ -101,8 +101,8 @@ export async function create_screenshot(config: ScreencapElements, universe: str
 
     const canvas = document.createElement('canvas')
 
-    const pad_around = 100
-    const pad_between = 50
+    const padAround = 100
+    const padBetween = 50
 
     const banner = new Image()
     await new Promise<void>((resolve) => {
@@ -110,18 +110,18 @@ export async function create_screenshot(config: ScreencapElements, universe: str
         banner.src = '/screenshot_footer.svg'
     })
 
-    const banner_scale = overall_width / banner.width
-    const banner_height = banner.height * banner_scale
+    const bannerScale = overallWidth / banner.width
+    const bannerHeight = banner.height * bannerScale
 
-    canvas.width = pad_around * 2 + overall_width
-    canvas.height = pad_around + pad_between * (png_links.length - 1) + heights.reduce((a, b) => a + b, 0) + banner_height
+    canvas.width = padAround * 2 + overallWidth
+    canvas.height = padAround + padBetween * (pngLinks.length - 1) + heights.reduce((a, b) => a + b, 0) + bannerHeight
 
     const ctx = canvas.getContext('2d')!
     const imgs = []
 
-    for (const png_link of png_links) {
+    for (const pngLink of pngLinks) {
         const img = new Image()
-        img.src = png_link
+        img.src = pngLink
         imgs.push(img)
     }
     ctx.fillStyle = colors.background
@@ -132,27 +132,27 @@ export async function create_screenshot(config: ScreencapElements, universe: str
             img.onload = () => { resolve() }
         })
     }
-    let start = pad_around
+    let start = padAround
     for (const img of imgs) {
-        ctx.drawImage(img, pad_around, start)
-        start += img.height + pad_between
+        ctx.drawImage(img, padAround, start)
+        start += img.height + padBetween
     }
 
-    start -= pad_between
+    start -= padBetween
 
-    ctx.drawImage(banner, pad_around, start, overall_width, banner_height)
+    ctx.drawImage(banner, padAround, start, overallWidth, bannerHeight)
 
     if (universe !== undefined) {
         const flag = new Image()
-        flag.src = universe_path(universe)
+        flag.src = universePath(universe)
         await new Promise<void>((resolve) => {
             flag.onload = () => { resolve() }
         })
         // draw on bottom left, same height as banner
-        const flag_height = banner_height / 2
-        const offset = flag_height / 2
-        const flag_width = flag.width * flag_height / flag.height
-        ctx.drawImage(flag, pad_around + offset, start + offset, flag_width, flag_height)
+        const flagHeight = bannerHeight / 2
+        const offset = flagHeight / 2
+        const flagWidth = flag.width * flagHeight / flag.height
+        ctx.drawImage(flag, padAround + offset, start + offset, flagWidth, flagHeight)
     }
 
     canvas.toBlob(function (blob) {
@@ -160,6 +160,7 @@ export async function create_screenshot(config: ScreencapElements, universe: str
     })
 }
 
+// eslint-disable-next-line no-restricted-syntax -- Context declaration
 export const ScreenshotContext = createContext(false)
 
 export function useScreenshotMode(): boolean {

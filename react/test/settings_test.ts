@@ -3,23 +3,23 @@ import fs from 'fs'
 import { Selector } from 'testcafe'
 
 import {
-    SEARCH_FIELD, TARGET, check_textboxes, getLocation,
+    searchField, target, checkTextboxes, getLocation,
     safeReload,
     screencap,
     urbanstatsFixture,
 } from './test_utils'
 
-const testLocation = `${TARGET}/article.html?longname=San+Marino+city%2C+California%2C+USA`
+const testLocation = `${target}/article.html?longname=San+Marino+city%2C+California%2C+USA`
 
 urbanstatsFixture('settings regression test', testLocation,
     async (t) => {
-        const EG_SETTINGS = fs.readFileSync('test/assets/saved-settings-1.json').toString()
+        const egSettings = fs.readFileSync('test/assets/saved-settings-1.json').toString()
         await t.eval(() => {
-            localStorage.setItem('settings', EG_SETTINGS)
+            localStorage.setItem('settings', egSettings)
             // Delete settings param so old settings don't persist after navigation
             // eslint-disable-next-line no-restricted-syntax -- Test file
             window.location.href = testLocation
-        }, { dependencies: { EG_SETTINGS, testLocation } })
+        }, { dependencies: { EG_SETTINGS: egSettings, testLocation } })
     })
 
 test('check-settings-loaded', async (t) => {
@@ -41,11 +41,11 @@ test('check-settings-loaded-desktop', async (t) => {
 test('check-settings-persistent', async (t) => {
     await t.expect(Selector('span').withText('mi').exists).ok()
     // navigate to Pasadena via search
-    await t.typeText(SEARCH_FIELD, 'Pasadena, CA, USA')
+    await t.typeText(searchField, 'Pasadena, CA, USA')
     await t.pressKey('enter')
     await t.expect(getLocation()).match(/\/article\.html\?longname=Pasadena\+city%2C\+California%2C\+USA/)
     // check box "Imperial"
-    await check_textboxes(t, ['Use Imperial Units'])
+    await checkTextboxes(t, ['Use Imperial Units'])
     // assert mi not in page
     await t.expect(Selector('span').withText('mi').exists).notOk()
     // go back to San Marino
@@ -55,7 +55,7 @@ test('check-settings-persistent', async (t) => {
 
 test('check-related-button-checkboxes-page-specific', async (t) => {
     // navigate to 91108
-    await t.typeText(SEARCH_FIELD, '91108')
+    await t.typeText(searchField, '91108')
     await t.pressKey('enter')
     await t.expect(getLocation()).match(/\/article\.html\?longname=91108%2C\+USA/)
     // this should not be page specific
@@ -69,16 +69,16 @@ test('check-related-button-checkboxes-page-specific', async (t) => {
 test('checkboxes-can-be-checked', async (t) => {
     // check that Pasadena CCD is not present
     await t.expect(Selector('path').withAttribute('class', /tag-Pasadena_CCD/).exists).notOk()
-    const pasadena_ccd = Selector('li').withAttribute('class', 'list_of_lists')
+    const pasadenaCCD = Selector('li').withAttribute('class', 'list_of_lists')
         .withText('Pasadena CCD')
     // find a checkbox inside it
         .find('input')
     await t
-        .click(pasadena_ccd)
+        .click(pasadenaCCD)
     // check that Pasadena CCD is now present
     await t.expect(Selector('path').withAttribute('class', /tag-Pasadena_CCD/).exists).ok()
     // check that this is persistent by going to Berkeley and checking that Briones CCD is present
-    await t.typeText(SEARCH_FIELD, 'Berkeley, CA, USA')
+    await t.typeText(searchField, 'Berkeley, CA, USA')
     await t.pressKey('enter')
     await t.expect(getLocation()).match(/\/article\.html\?longname=Berkeley\+city%2C\+California%2C\+USA/)
     await t.expect(Selector('path').withAttribute('class', /tag-Briones_CCD/).exists).ok()

@@ -3,17 +3,17 @@ import React, { CSSProperties, ReactNode, useEffect, useMemo, useRef, useState }
 import { loadProtobuf } from '../load_json'
 import { useColors } from '../page_template/colors'
 import { useSetting } from '../page_template/settings'
-import { is_historical_cd } from '../utils/is_historical'
+import { isHistoricalCD } from '../utils/is_historical'
 import '../common.css'
 
-export const SearchBox = (props: {
-    on_change: (inp: string) => void
+export function SearchBox(props: {
+    onChange: (inp: string) => void
     autoFocus: boolean
     placeholder: string
     style: CSSProperties
-}): ReactNode => {
+}): ReactNode {
     const colors = useColors()
-    const [show_historical_cds] = useSetting('show_historical_cds')
+    const [showHistoricalCDs] = useSetting('show_historical_cds')
 
     const [matches, setMatches] = useState<string[]>([])
 
@@ -35,7 +35,7 @@ export const SearchBox = (props: {
         setFocused(0)
     }
 
-    const searchbox_dropdown_item_style = (idx: number): CSSProperties => {
+    const searchboxDropdownItemStyle = (idx: number): CSSProperties => {
         return {
             padding: '0.5em',
             cursor: 'pointer',
@@ -47,7 +47,7 @@ export const SearchBox = (props: {
         event.preventDefault()
         const terms = matches
         if (terms.length > 0) {
-            props.on_change(terms[focused])
+            props.onChange(terms[focused])
             reset()
         }
         return false
@@ -79,24 +79,24 @@ export const SearchBox = (props: {
                 return
             }
 
-            let matches_new = []
+            let matchesNew = []
             for (let i = 0; i < elements.length; i++) {
-                const match_count = is_a_match(searchQuery, normalize(elements[i]))
-                if (match_count === 0) {
+                const matchCount = isAMatch(searchQuery, normalize(elements[i]))
+                if (matchCount === 0) {
                     continue
                 }
-                if (!show_historical_cds) {
-                    if (is_historical_cd(elements[i])) {
+                if (!showHistoricalCDs) {
+                    if (isHistoricalCD(elements[i])) {
                         continue
                     }
                 }
-                matches_new.push([match_count, i, match_count - priorities[i] / 10])
+                matchesNew.push([matchCount, i, matchCount - priorities[i] / 10])
             }
-            matches_new = top_10(matches_new)
-            matches_new = matches_new.map(idx => elements[idx])
-            setMatches(matches_new)
+            matchesNew = top10(matchesNew)
+            matchesNew = matchesNew.map(idx => elements[idx])
+            setMatches(matchesNew)
         })
-    }, [searchQuery, indexCache, show_historical_cds])
+    }, [searchQuery, indexCache, showHistoricalCDs])
 
     return (
         <form
@@ -139,9 +139,9 @@ export const SearchBox = (props: {
                             <div
                                 key={location}
                                 className="serif searchbox-dropdown-item"
-                                style={searchbox_dropdown_item_style(idx)}
+                                style={searchboxDropdownItemStyle(idx)}
                                 onClick={() => {
-                                    props.on_change(matches[idx])
+                                    props.onChange(matches[idx])
                                     reset()
                                 }}
                                 onMouseOver={() => { setFocused(idx) }}
@@ -159,9 +159,9 @@ export const SearchBox = (props: {
     )
 }
 
-function top_10(matches: number[][]): number[] {
-    const num_prioritized = 3
-    const sort_key = (idx: number) => {
+function top10(matches: number[][]): number[] {
+    const numPrioritized = 3
+    const sortKey = (idx: number) => {
         return (a: number[], b: number[]) => {
             if (a[idx] !== b[idx]) {
                 return b[idx] - a[idx]
@@ -169,44 +169,44 @@ function top_10(matches: number[][]): number[] {
             return a[1] - b[1]
         }
     }
-    matches.sort(sort_key(2))
-    const overall_matches = []
-    for (let i = 0; i < Math.min(num_prioritized, matches.length); i++) {
-        overall_matches.push(matches[i][1])
+    matches.sort(sortKey(2))
+    const overallMatches = []
+    for (let i = 0; i < Math.min(numPrioritized, matches.length); i++) {
+        overallMatches.push(matches[i][1])
         matches[i][0] = -100
     }
-    matches.sort(sort_key(0))
-    for (let i = 0; i < Math.min(10 - num_prioritized, matches.length); i++) {
+    matches.sort(sortKey(0))
+    for (let i = 0; i < Math.min(10 - numPrioritized, matches.length); i++) {
         if (matches[i][0] === -100) {
             break
         }
-        overall_matches.push(matches[i][1])
+        overallMatches.push(matches[i][1])
     }
-    return overall_matches
+    return overallMatches
 }
 
 /*
     Check whether a is a substring of b (does not have to be contiguous)
 
 */
-function is_a_match(a: string, b: string): number {
+function isAMatch(a: string, b: string): number {
     let i = 0
-    let match_count = 0
-    let prev_match = true
+    let matchCount = 0
+    let prevMatch = true
     // eslint-disable-next-line @typescript-eslint/prefer-for-of -- b is a string
     for (let j = 0; j < b.length; j++) {
         if (a[i] === b[j]) {
             i++
-            if (prev_match) {
-                match_count++
+            if (prevMatch) {
+                matchCount++
             }
-            prev_match = true
+            prevMatch = true
         }
         else {
-            prev_match = false
+            prevMatch = false
         }
         if (i === a.length) {
-            return match_count + 1
+            return matchCount + 1
         }
     }
     return 0

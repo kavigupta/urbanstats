@@ -2,6 +2,7 @@ import RAMPS from '../data/mapper/ramps'
 // eslint-disable-next-line no-restricted-syntax -- Reexporting
 export { default as RAMPS } from '../data/mapper/ramps'
 
+// eslint-disable-next-line no-restricted-syntax -- Represents encoded data
 export type EncodedColorMap = { type: 'none' } | { type: 'custom', custom_colormap: string } | { type: 'preset', name: string }
 
 export type ColorMap = [number, string][]
@@ -9,23 +10,25 @@ export type ColorMap = [number, string][]
 export type Keypoints = Readonly<[number, string]>[]
 
 export interface Ramp {
-    create_ramp: (values: number[]) => Readonly<[Keypoints, number[]]>
+    createRamp: (values: number[]) => Readonly<[Keypoints, number[]]>
 }
 
 interface CommonRampDescriptor {
     colormap: EncodedColorMap
     reversed?: boolean
 }
+/* eslint-disable no-restricted-syntax -- Represents encoded data */
 export interface ConstantRampDescriptor extends CommonRampDescriptor {
     type: 'constant'
     lower_bound?: string
     upper_bound?: string
 }
+/* eslint-enable no-restricted-syntax */
 export type RampDescriptor = ConstantRampDescriptor | CommonRampDescriptor & { type: 'linear' } | CommonRampDescriptor & { type: 'geometric' }
 
-export function parse_custom_colormap(custom_colormap: string): ColorMap | undefined {
+export function parseCustomColormap(customColormap: string): ColorMap | undefined {
     try {
-        const result = JSON.parse(custom_colormap) as unknown
+        const result = JSON.parse(customColormap) as unknown
         if (result instanceof Array
             && result.every(x => x instanceof Array
             && x.length === 2
@@ -42,13 +45,13 @@ export function parse_custom_colormap(custom_colormap: string): ColorMap | undef
     return undefined
 }
 
-function parse_colormap(cmap: EncodedColorMap): ColorMap {
+function parseColormap(cmap: EncodedColorMap): ColorMap {
     if (cmap.type === 'none') {
     // default
         return RAMPS.Gray
     }
     else if (cmap.type === 'custom') {
-        return parse_custom_colormap(cmap.custom_colormap) ?? RAMPS.Gray
+        return parseCustomColormap(cmap.custom_colormap) ?? RAMPS.Gray
     }
     else {
         if (cmap.name === '') {
@@ -58,8 +61,8 @@ function parse_colormap(cmap: EncodedColorMap): ColorMap {
     }
 }
 
-function parse_ramp_base(ramp: RampDescriptor): ConstantRamp | LinearRamp | GeometricRamp {
-    const cmap = parse_colormap(ramp.colormap)
+function parseRampBase(ramp: RampDescriptor): ConstantRamp | LinearRamp | GeometricRamp {
+    const cmap = parseColormap(ramp.colormap)
     if (ramp.type === 'constant') {
         return new ConstantRamp(cmap,
             ramp.lower_bound === undefined || ramp.lower_bound === '' ? 0 : parseFloat(ramp.lower_bound),
@@ -74,9 +77,9 @@ function parse_ramp_base(ramp: RampDescriptor): ConstantRamp | LinearRamp | Geom
     }
 }
 
-export function parse_ramp(ramp: RampDescriptor): Ramp {
+export function parseRamp(ramp: RampDescriptor): Ramp {
     // handles modifiers like reversed
-    let base: Ramp = parse_ramp_base(ramp)
+    let base: Ramp = parseRampBase(ramp)
     if (ramp.reversed) {
         base = new ReversedRamp(base)
     }
@@ -90,13 +93,13 @@ class ConstantRamp implements Ramp {
         const a0 = keypoints[0][0]
         const b0 = keypoints[keypoints.length - 1][0]
         this.values = keypoints.map(([value, color]) => {
-            const new_value = (value - a0) / (b0 - a0) * (b - a) + a
-            return [new_value, color]
+            const newValue = (value - a0) / (b0 - a0) * (b - a) + a
+            return [newValue, color]
         })
     }
 
-    create_ramp(): Readonly<[Keypoints, number[]]> {
-        return [this.values, linear_values(this.values[0][0], this.values[this.values.length - 1][0])] as const
+    createRamp(): Readonly<[Keypoints, number[]]> {
+        return [this.values, linearValues(this.values[0][0], this.values[this.values.length - 1][0])] as const
     }
 }
 
@@ -104,23 +107,23 @@ class LinearRamp implements Ramp {
     constructor(private readonly values: Keypoints) {
     }
 
-    create_ramp(values: number[]): Readonly<[Keypoints, number[]]> {
+    createRamp(values: number[]): Readonly<[Keypoints, number[]]> {
         values = values.filter(x => !isNaN(x))
         const minimum = Math.min(...values)
         const maximum = Math.max(...values)
         const range = maximum - minimum
-        const ramp_min = Math.min(...this.values.map(([value]) => value))
-        const ramp_max = Math.max(...this.values.map(([value]) => value))
-        const ramp_range = ramp_max - ramp_min
+        const rampMin = Math.min(...this.values.map(([value]) => value))
+        const rampMax = Math.max(...this.values.map(([value]) => value))
+        const rampRange = rampMax - rampMin
         const ramp: [number, string][] = this.values.map(x => [x[0], x[1]])
         for (const i of ramp.keys()) {
-            ramp[i][0] = (ramp[i][0] - ramp_min) / ramp_range * range + minimum
+            ramp[i][0] = (ramp[i][0] - rampMin) / rampRange * range + minimum
         }
-        return [ramp, linear_values(minimum, maximum)] as const
+        return [ramp, linearValues(minimum, maximum)] as const
     }
 }
 
-function linear_values(minimum: number, maximum: number): number[] {
+function linearValues(minimum: number, maximum: number): number[] {
     const steps = 10
     const range = maximum - minimum
     const values = Array(steps).fill(0).map((_, i) => minimum + range * i / (steps - 1))
@@ -131,12 +134,12 @@ class GeometricRamp implements Ramp {
     constructor(private readonly values: Keypoints) {
     }
 
-    create_ramp(values: number[]): Readonly<[Keypoints, number[]]> {
-        const log_values = values.map(x => Math.log(x))
-        const [log_ramp, log_ramp_values] = new LinearRamp(this.values).create_ramp(log_values)
-        const ramp = log_ramp.map(x => [Math.exp(x[0]), x[1]] as const)
-        const ramp_values = log_ramp_values.map(x => Math.exp(x))
-        return [ramp, ramp_values] as const
+    createRamp(values: number[]): Readonly<[Keypoints, number[]]> {
+        const logValues = values.map(x => Math.log(x))
+        const [lobRamp, logRampValues] = new LinearRamp(this.values).createRamp(logValues)
+        const ramp = lobRamp.map(x => [Math.exp(x[0]), x[1]] as const)
+        const rampValues = logRampValues.map(x => Math.exp(x))
+        return [ramp, rampValues] as const
     }
 }
 
@@ -145,10 +148,10 @@ class ReversedRamp implements Ramp {
 
     }
 
-    create_ramp(values: number[]): Readonly<[Keypoints, number[]]> {
-        const [ramp, ramp_values] = this.base.create_ramp(values)
-        const reversed_colors = ramp.map(x => x[1]).reverse()
-        const ramp_reversed = reversed_colors.map((x, i) => [ramp[i][0], x] as const)
-        return [ramp_reversed, ramp_values] as const
+    createRamp(values: number[]): Readonly<[Keypoints, number[]]> {
+        const [ramp, rampValues] = this.base.createRamp(values)
+        const reversedColors = ramp.map(x => x[1]).reverse()
+        const rampReversed = reversedColors.map((x, i) => [ramp[i][0], x] as const)
+        return [rampReversed, rampValues] as const
     }
 }
