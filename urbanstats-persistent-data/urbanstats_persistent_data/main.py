@@ -69,12 +69,13 @@ def juxtastat_register_user_request():
 
     print("RECV", form)
 
-    if "user" in form and "secureID" in form and "domain" in form:
-        registration_error = register_user(
-            form["user"], form["secureID"], form["domain"]
-        )
-        return flask.jsonify(dict(registration_error=registration_error))
-    return flask.jsonify({"error": "Needs parameters user, secureID, and domain!"}), 200
+    success, autherror, error = get_authenticated_user(["domain"])
+    if autherror:
+        return flask.jsonify(dict(registration_error=False)), 200
+    if not success:
+        return error
+    register_user(form["user"], form["domain"])
+    return flask.jsonify(dict(registration_error=False)), 200
 
 
 def get_authenticated_user(additional_required_params=()):
@@ -83,19 +84,19 @@ def get_authenticated_user(additional_required_params=()):
     required_params = ["user", "secureID"] + list(additional_required_params)
 
     if not all([param in form for param in required_params]):
-        return False, (
+        return False, False, (
             flask.jsonify({"error": f"Needs parameters {required_params}!"}),
             200,
         )
     if not check_secureid(form["user"], form["secureID"]):
-        return False, (flask.jsonify({"error": "Invalid secureID!"}), 200)
-    return True, None
+        return False, True, (flask.jsonify({"error": "Invalid secureID!"}), 200)
+    return True, False ,None
 
 
 @app.route("/juxtastat/latest_day", methods=["POST"])
 def juxtastat_latest_day_request():
     form = flask_form()
-    success, error = get_authenticated_user()
+    success, _, error = get_authenticated_user()
     if not success:
         return error
     ld = latest_day(form["user"])
@@ -105,7 +106,7 @@ def juxtastat_latest_day_request():
 @app.route("/retrostat/latest_week", methods=["POST"])
 def retrostat_latest_week_request():
     form = flask_form()
-    success, error = get_authenticated_user()
+    success, _, error = get_authenticated_user()
     if not success:
         return error
     ld = latest_week_retrostat(form["user"])
@@ -115,7 +116,7 @@ def retrostat_latest_week_request():
 @app.route("/juxtastat/store_user_stats", methods=["POST"])
 def juxtastat_store_user_stats_request():
     form = flask_form()
-    success, error = get_authenticated_user(["day_stats"])
+    success, _, error = get_authenticated_user(["day_stats"])
     if not success:
         return error
     store_user_stats(form["user"], json.loads(form["day_stats"]))
@@ -126,7 +127,7 @@ def juxtastat_store_user_stats_request():
 def retrostat_store_user_stats_request():
     form = flask_form()
 
-    success, error = get_authenticated_user(["day_stats"])
+    success, _, error = get_authenticated_user(["day_stats"])
     if not success:
         return error
     store_user_stats_retrostat(form["user"], json.loads(form["day_stats"]))

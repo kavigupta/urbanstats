@@ -462,6 +462,7 @@ quiz_fixture('import quiz progress', `${TARGET}/quiz.html#date=90`,
         }),
         persistent_id: 'deadbeef',
         secure_id: 'decea5ed',
+        quiz_friends: '[]',
     },
     '',
 )
