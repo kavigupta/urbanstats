@@ -59,27 +59,6 @@ def lengthen_request():
     return flask.jsonify({"error": "Needs parameter shortened!"}), 200
 
 
-def authenticate(fields):
-    def wrapper(fn):
-        success, error = get_authenticated_user(fields)
-        if not success:
-            return error
-        return fn()
-
-    return wrapper
-
-
-@app.route("/juxtastat/register_user", methods=["POST"])
-@authenticate(["domain"])
-def juxtastat_register_user_request():
-    form = flask_form()
-
-    print("RECV", form)
-
-    register_user(form["user"], form["domain"])
-    return flask.jsonify(dict()), 200
-
-
 def get_authenticated_user(additional_required_params=()):
     form = flask_form()
 
@@ -101,6 +80,27 @@ def get_authenticated_user(additional_required_params=()):
             200,
         )
     return True, None
+
+
+def authenticate(fields):
+    def wrapper(fn):
+        success, error = get_authenticated_user(fields)
+        if not success:
+            return error
+        return fn()
+
+    return wrapper
+
+
+@app.route("/juxtastat/register_user", methods=["POST"])
+@authenticate(["domain"])
+def juxtastat_register_user_request():
+    form = flask_form()
+
+    print("RECV", form)
+
+    register_user(form["user"], form["domain"])
+    return flask.jsonify(dict()), 200
 
 
 @app.route("/juxtastat/latest_day", methods=["POST"])
