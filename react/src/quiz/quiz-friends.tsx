@@ -16,8 +16,8 @@ export function QuizFriendsPanel(props: {
     date: number
     myCorrects: boolean[]
 }): ReactNode {
-    const [outgoingRequests, setOutgoingRequests] = useState([] as string[])
-    const [pendingRequests, setPendingRequests] = useState([] as string[])
+    // const [outgoingRequests, setOutgoingRequests] = useState([] as string[])
+    // const [pendingRequests, setPendingRequests] = useState([] as string[])
     const [friendScores, setFriendScores] = useState([] as FriendScore[])
 
     useEffect(() => {
@@ -28,13 +28,13 @@ export function QuizFriendsPanel(props: {
             console.log('requesters', requesters)
             const user = unique_persistent_id()
             const secureID = unique_secure_id()
-            const friendsStatusPromise = fetch(`${ENDPOINT}/juxtastat/friends_status`, {
-                method: 'POST',
-                body: JSON.stringify({ user, secureID }),
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-            }).then(x => x.json())
+            // const friendsStatusPromise = fetch(`${ENDPOINT}/juxtastat/friends_status`, {
+            //     method: 'POST',
+            //     body: JSON.stringify({ user, secureID }),
+            //     headers: {
+            //         'Content-Type': 'application/json',
+            //     },
+            // }).then(x => x.json())
             const friendScoresPromise = fetch(`${ENDPOINT}/juxtastat/todays_score_for`, {
                 method: 'POST',
                 body: JSON.stringify({ user, secureID, date: props.date, requesters, quiz_kind: props.quizKind }),
@@ -42,15 +42,15 @@ export function QuizFriendsPanel(props: {
                     'Content-Type': 'application/json',
                 },
             }).then(x => x.json())
-            const friendsStatus = (await friendsStatusPromise) as { results: { outgoing_requests: string[], incoming_requests: string[] } }
-            console.log('HI')
-            console.log(friendsStatus)
-            console.log(friendsStatus.results.outgoing_requests)
-            console.log(friendsStatus.results.incoming_requests)
+            // const friendsStatus = (await friendsStatusPromise) as { results: { outgoing_requests: string[], incoming_requests: string[] } }
+            // console.log('HI')
+            // console.log(friendsStatus)
+            // console.log(friendsStatus.results.outgoing_requests)
+            // console.log(friendsStatus.results.incoming_requests)
             const friendScoresResponse = (await friendScoresPromise) as { results: { corrects: boolean[] | null, friends: boolean }[] }
             const scoresDict = {} as Record<string, boolean[]>
-            setOutgoingRequests(friendsStatus.results.outgoing_requests)
-            setPendingRequests(friendsStatus.results.incoming_requests)
+            // setOutgoingRequests(friendsStatus.results.outgoing_requests)
+            // setPendingRequests(friendsStatus.results.incoming_requests)
             console.log('scores dict', scoresDict)
             setFriendScores(friendScoresResponse.results.map((x, idx) => ({ name: quizIDtoName[requesters[idx]], corrects: x.corrects, friends: x.friends })))
         })()
