@@ -52,19 +52,31 @@ def table():
     return conn, c
 
 
-def register_user(user, secure_id, domain):
+def register_user(user, domain):
     """
-    Register a user with a secure id and domain. First checks
-    if the user is already registered, if so checks if the secure id is correct.
-    If the secure id is incorrect, returns True. Otherwise, updates the domain
-    and secure id and returns False.
-
+    Register a user with a secure id and domain.
     This is Trust on First Use (TOFU) authentication.
+    """
+    user = int(user, 16)
+    conn, c = table()
+    c.execute(
+        "INSERT OR REPLACE INTO JuxtaStatUserDomain VALUES (?, ?)",
+        (user, domain),
+    )
+    conn.commit()
+
+
+def check_secureid(user, secure_id):
+    """
+    Returns True iff the secure_id is correct for the given user.
+
+    First checks if the user is already registered, if so checks
+    if the secure id is correct. If the secure id is incorrect, returns False.
+    Otherwise, updates the secure id and returns True.
     """
     user = int(user, 16)
     secure_id = int(secure_id, 16)
     conn, c = table()
-    # check if secure id is already in the database
     c.execute(
         "SELECT secure_id FROM JuxtaStatUserSecureID WHERE user=?",
         (user,),
@@ -76,32 +88,8 @@ def register_user(user, secure_id, domain):
             "INSERT INTO JuxtaStatUserSecureID VALUES (?, ?)",
             (user, secure_id),
         )
-    else:
-        # Ensure that the secure id is correct
-        if res[0] != secure_id:
-            # Security error! Return True to indicate that the user is not authenticated
-            return True
-    c.execute(
-        "INSERT OR REPLACE INTO JuxtaStatUserDomain VALUES (?, ?)",
-        (user, domain),
-    )
-    conn.commit()
-    return False
-
-def check_secureid(user, secure_id):
-    """
-    Returns True iff the secure_id is correct for the given user.
-    """
-    user = int(user, 16)
-    secure_id = int(secure_id, 16)
-    _, c = table()
-    c.execute(
-        "SELECT secure_id FROM JuxtaStatUserSecureID WHERE user=?",
-        (user,),
-    )
-    res = c.fetchone()
-    if res is None:
-        return False
+        conn.commit()
+        return True
     return res[0] == secure_id
 
 

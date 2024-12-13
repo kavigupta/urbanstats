@@ -2,36 +2,10 @@ import { exec } from 'child_process'
 import { writeFileSync, readFileSync } from 'fs'
 import { promisify } from 'util'
 
-import { execa } from 'execa'
-import { ClientFunction, RequestHook, Selector } from 'testcafe'
+import { ClientFunction, Selector } from 'testcafe'
 
-import { target, getLocation, mostRecentDownloadPath, safeReload, screencap, urbanstatsFixture } from './test_utils'
-
-async function quiz_screencap(t: TestController): Promise<void> {
-    await t.eval(() => {
-        const elem = document.getElementById('quiz-timer')
-        if (elem) {
-            elem.remove()
-        }
-    })
-    await t.wait(1000)
-    await screencap(t)
-}
-
-export class ProxyPersistent extends RequestHook {
-    override onRequest(e: { requestOptions: RequestMockOptions }): void {
-        if (e.requestOptions.hostname === 'persistent.urbanstats.org') {
-            e.requestOptions.hostname = 'localhost'
-            e.requestOptions.port = 54579
-            e.requestOptions.protocol = 'http:'
-            e.requestOptions.path = e.requestOptions.path.replace('https://persistent.urbanstats.org', 'localhost:54579')
-            e.requestOptions.host = 'localhost:54579'
-        }
-    }
-
-    // eslint-disable-next-line @typescript-eslint/no-empty-function -- TestCafe complains if we don't have this
-    override onResponse(): void { }
-}
+import { click_button, click_buttons, quiz_fixture, quiz_screencap, tempfile_name } from './quiz_test_utils'
+import { target, getLocation, mostRecentDownloadPath, safeReload, screencap } from './test_utils'
 
 async function run_query(query: string): Promise<string> {
     // dump given query to a string
@@ -50,51 +24,6 @@ function retrostat_table(): Promise<string> {
 
 function secure_id_table(): Promise<string> {
     return run_query('SELECT user, secure_id from JuxtaStatUserSecureID')
-}
-
-function tempfile_name(): string {
-    return `/tmp/quiz_test_${Math.floor(Math.random() * 1000000)}`
-}
-
-function quiz_fixture(fix_name: string, url: string, new_localstorage: Record<string, string>, sql_statements: string): void {
-    urbanstatsFixture(fix_name, url, async (t) => {
-        // create a temporary file
-        const tempfile = `${tempfile_name()}.sql`
-        // write the sql statements to the temporary file
-        writeFileSync(tempfile, sql_statements)
-        await promisify(exec)(`rm -f ../urbanstats-persistent-data/db.sqlite3; cd ../urbanstats-persistent-data; cat ${tempfile} | sqlite3 db.sqlite3; cd -`)
-        void execa('bash', ['../urbanstats-persistent-data/run_for_test.sh'], { stdio: 'inherit' })
-        await t.wait(2000)
-        await t.eval(() => {
-            localStorage.clear()
-            for (const k of Object.keys(new_localstorage)) {
-                localStorage.setItem(k, new_localstorage[k])
-            }
-        }, { dependencies: { new_localstorage } })
-        await t.eval(() => {
-            localStorage.setItem('testHostname', 'urbanstats.org')
-        })
-        // Must reload after setting localstorage so page picks it up
-        await safeReload(t)
-    })
-        .afterEach(async (t) => {
-            exec('killall gunicorn')
-            await t.wait(1000)
-        })
-        .requestHooks(new ProxyPersistent())
-}
-
-// click the kth button with id quiz-answer-button-$which
-function click_button(t: TestController, which: string): TestControllerPromise {
-    return t.click(Selector('div').withAttribute('id', `quiz-answer-button-${which}`))
-}
-
-async function click_buttons(t: TestController, whichs: string[]): Promise<void> {
-    for (const which of whichs) {
-        await click_button(t, which)
-        await t.wait(500)
-    }
-    await t.wait(2000)
 }
 
 function example_quiz_history(min_quiz: number, max_quiz: number, min_retro?: number, max_retro?: number): Record<string | number, { choices: ('A' | 'B')[], correct_pattern: [boolean, boolean, boolean, boolean, boolean] }> {
@@ -653,12 +582,12 @@ test('support old retro links', async (t) => {
     await t.expect(Selector('.headertext').withText('Retrostat').exists).ok()
 })
 
-quiz_fixture('completed juxta 465', `${target}/quiz.html#date=465`,
+quiz_fixture('completed juxta 468', `${target}/quiz.html#date=468`,
     {
         quiz_history: JSON.stringify({
-            465: {
+            468: {
                 choices: ['A', 'A', 'A', 'A', 'A'],
-                correct_pattern: [true, true, true, true, false],
+                correct_pattern: [false, false, true, false, true],
             },
         }),
         persistent_id: 'b0bacafe',
@@ -668,10 +597,11 @@ quiz_fixture('completed juxta 465', `${target}/quiz.html#date=465`,
 )
 
 test('quiz results go to compare pages', async (t) => {
-    await t.click(Selector('a').withText('Hawaii, USA'))
-    await t.expect(getLocation()).eql(`${target}/comparison.html?longnames=%5B%22Hawaii%2C+USA%22%2C%22Wisconsin%2C+USA%22%5D&s=9E6YPpo6BAa37d3`)
+    await t.click(Selector('a').withText('Colorado, USA'))
+    await t.expect(getLocation()).eql(`${target}/comparison.html?longnames=%5B%22Colorado%2C+USA%22%2C%22Puerto+Rico%2C+USA%22%5D&s=25z46g1nuqK7JodT`)
     await screencap(t)
     await ClientFunction(() => { history.back() })()
-    await t.click(Selector('a').withText('Cleveland city, Ohio, USA'))
-    await t.expect(getLocation()).eql(`${target}/comparison.html?longnames=%5B%22Gilbert+town%2C+Arizona%2C+USA%22%2C%22Cleveland+city%2C+Ohio%2C+USA%22%5D&s=FGeAR7KSCZ9hmB`)
+    await t.click(Selector('a').withText('Toronto CDR, Ontario, Canada'))
+    await t.expect(getLocation()).eql(`${target}/comparison.html?longnames=%5B%22Toronto+CDR%2C+Ontario%2C+Canada%22%2C%22Longueuil+Territory%2C+Quebec%2C+Canada%22%5D&s=25z46g1nuqK7s3rq`)
+    await screencap(t)
 })
