@@ -429,6 +429,7 @@ const expectedExportWithoutDate = {
             ],
         },
     },
+    quiz_friends: '[]',
 }
 
 test('export quiz progress', async (t) => {
