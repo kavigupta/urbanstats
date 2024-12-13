@@ -110,14 +110,20 @@ def check_secureid(user, secure_id):
     """
     user = int(user, 16)
     secure_id = int(secure_id, 16)
-    _, c = table()
+    conn, c = table()
     c.execute(
         "SELECT secure_id FROM JuxtaStatUserSecureID WHERE user=?",
         (user,),
     )
     res = c.fetchone()
     if res is None:
-        return False
+        # trust on first use
+        c.execute(
+            "INSERT INTO JuxtaStatUserSecureID VALUES (?, ?)",
+            (user, secure_id),
+        )
+        conn.commit()
+        return True
     return res[0] == secure_id
 
 
