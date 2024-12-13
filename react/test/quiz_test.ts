@@ -4,8 +4,8 @@ import { promisify } from 'util'
 
 import { ClientFunction, Selector } from 'testcafe'
 
-import { TARGET, getLocation, most_recent_download_path, safeReload, screencap } from './test_utils'
 import { click_button, click_buttons, quiz_fixture, quiz_screencap, tempfile_name } from './quiz_test_utils'
+import { TARGET, getLocation, most_recent_download_path, safeReload, screencap } from './test_utils'
 
 async function run_query(query: string): Promise<string> {
     // dump given query to a string
