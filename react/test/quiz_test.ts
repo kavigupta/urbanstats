@@ -582,12 +582,12 @@ test('support old retro links', async (t) => {
     await t.expect(Selector('.headertext').withText('Retrostat').exists).ok()
 })
 
-quiz_fixture('completed juxta 465', `${TARGET}/quiz.html#date=465`,
+quiz_fixture('completed juxta 468', `${TARGET}/quiz.html#date=468`,
     {
         quiz_history: JSON.stringify({
-            465: {
+            468: {
                 choices: ['A', 'A', 'A', 'A', 'A'],
-                correct_pattern: [true, true, true, true, false],
+                correct_pattern: [false, false, true, false, true],
             },
         }),
         persistent_id: 'b0bacafe',
@@ -596,11 +596,13 @@ quiz_fixture('completed juxta 465', `${TARGET}/quiz.html#date=465`,
     '',
 )
 
-test('quiz results go to compare pages', async (t) => {
-    await t.click(Selector('a').withText('Hawaii, USA'))
-    await t.expect(getLocation()).eql(`${TARGET}/comparison.html?longnames=%5B%22Hawaii%2C+USA%22%2C%22Wisconsin%2C+USA%22%5D&s=9E6YPpo6BAa37d3`)
+test.only('quiz results go to compare pages', async (t) => {
+    await screencap(t)
+    await t.click(Selector('a').withText('Colorado, USA'))
+    await t.expect(getLocation()).eql(`${TARGET}/comparison.html?longnames=%5B%22Colorado%2C+USA%22%2C%22Puerto+Rico%2C+USA%22%5D&s=25z46g1nuqK7JodT`)
     await screencap(t)
     await ClientFunction(() => { history.back() })()
-    await t.click(Selector('a').withText('Cleveland city, Ohio, USA'))
-    await t.expect(getLocation()).eql(`${TARGET}/comparison.html?longnames=%5B%22Gilbert+town%2C+Arizona%2C+USA%22%2C%22Cleveland+city%2C+Ohio%2C+USA%22%5D&s=FGeAR7KSCZ9hmB`)
+    await t.click(Selector('a').withText('Toronto CDR, Ontario, Canada'))
+    await t.expect(getLocation()).eql(`${TARGET}/comparison.html?longnames=%5B%22Toronto+CDR%2C+Ontario%2C+Canada%22%2C%22Longueuil+Territory%2C+Quebec%2C+Canada%22%5D&s=25z46g1nuqK7s3rq`)
+    await screencap(t)
 })
