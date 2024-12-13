@@ -51,7 +51,7 @@ export function QuizFriendsPanel(props: {
             // setOutgoingRequests(friendsStatus.results.outgoing_requests)
             // setPendingRequests(friendsStatus.results.incoming_requests)
             setFriendScores(friendScoresResponse.results.map(
-                (x, idx) => ({ name: quizIDtoName[requesters[idx]], corrects: x.corrects, friends: x.friends })
+                (x, idx) => ({ name: quizIDtoName[requesters[idx]], corrects: x.corrects, friends: x.friends }),
             ))
         })()
     }, [props.date, props.quizFriends, props.quizKind])
@@ -72,10 +72,20 @@ export function QuizFriendsPanel(props: {
                             key={idx}
                             friendScore={friendScore}
                             removeFriend={() => {
-                                console.log('current quiz friends', props.quizFriends)
-                                const newQuizFriends = props.quizFriends.filter(x => x[0] !== friendScore.name)
-                                console.log('new quiz friends', newQuizFriends)
-                                props.setQuizFriends(newQuizFriends)
+                                console.log("REMOVE FRIEND", props.quizFriends[idx][1])
+                                void (async () => {
+                                    console.log("REMOVE FRIEND [in thread]", props.quizFriends[idx][1])
+                                    const response = await fetch(`${ENDPOINT}/juxtastat/unfriend`, {
+                                        method: 'POST',
+                                        body: JSON.stringify({ user: unique_persistent_id(), secureID: unique_secure_id(), requestee: props.quizFriends[idx][1] }),
+                                        headers: {
+                                            'Content-Type': 'application/json',
+                                        },
+                                    })
+                                    console.log(response.json())
+                                    const newQuizFriends = props.quizFriends.filter(x => x[0] !== friendScore.name)
+                                    props.setQuizFriends(newQuizFriends)
+                                })()
                             }}
                             renameFriend={(name: string) => {
                                 const newQuizFriends = props.quizFriends.map(x => (x[0] === friendScore.name ? [name, x[1]] : x) satisfies [string, string])
@@ -104,7 +114,10 @@ const ADD_FRIEND_HEIGHT = '1.5em'
 function FriendScore(props: { friendScore: FriendScore, removeFriend?: () => void, renameFriend?: (name: string) => void }): ReactNode {
     console.log('friend score', props.friendScore)
     return (
-        <div style={{ display: 'flex', flexDirection: 'row', height: SCORE_CORRECT_HEIGHT, alignItems: 'center' }}>
+        <div
+            style={{ display: 'flex', flexDirection: 'row', height: SCORE_CORRECT_HEIGHT, alignItems: 'center' }}
+            className="testing-friends-section"
+        >
             <div style={{ width: '25%' }}>
                 <FriendScoreName name={props.friendScore.name} renameFriend={props.renameFriend} />
             </div>
@@ -113,14 +126,14 @@ function FriendScore(props: { friendScore: FriendScore, removeFriend?: () => voi
             </div>
             <div style={{ width: '25%', display: 'flex', height: ADD_FRIEND_HEIGHT }}>
                 {props.removeFriend !== undefined
-                    && (
-                        <button
-                            onClick={props.removeFriend}
-                            style={{ marginLeft: '1em' }}
-                        >
-                            Remove
-                        </button>
-                    )}
+                && (
+                    <button
+                        onClick={props.removeFriend}
+                        style={{ marginLeft: '1em' }}
+                    >
+                        Remove
+                    </button>
+                )}
             </div>
         </div>
     )
@@ -170,18 +183,23 @@ function FriendScoreCorrects(props: FriendScore): ReactNode {
             className="testing-friend-score"
             style={{ display: 'flex', flexDirection: 'row', height: SCORE_CORRECT_HEIGHT }}
         >
-            {corrects.map((correct, idx) => (
-                <div
-                    className={correct ? 'testing-friend-score-correct' : 'testing-friend-score-incorrect'}
-                    key={idx}
-                    style={{
-                        backgroundColor: correct ? juxtaColors.correct : juxtaColors.incorrect,
-                        width: `${100 / corrects.length}%`,
-                        border,
-                    }}
-                >
-                </div>
-            ))}
+            {corrects.map((correct, idx) => {
+                const color = correct ? juxtaColors.correct : juxtaColors.incorrect
+                return (
+                    <div
+                        className={correct ? 'testing-friend-score-correct' : 'testing-friend-score-incorrect'}
+                        key={idx}
+                        style={{
+                            backgroundColor: color,
+                            color,
+                            width: `${100 / corrects.length}%`,
+                            border,
+                        }}
+                    >
+                        {correct ? 'y' : 'n'}
+                    </div>
+                )
+            })}
         </div>
     )
 }
@@ -213,7 +231,7 @@ function AddFriend(props: {
             >
                 <input
                     type="text"
-                    placeholder="Friend name"
+                    placeholder="Friend Name"
                     value={friendName}
                     style={{ width: '100%', height: '100%' }}
                     onChange={(e) => { setFriendName(e.target.value) }}

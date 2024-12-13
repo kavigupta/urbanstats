@@ -188,6 +188,7 @@ def juxtastat_friend_request():
 @authenticate(["requestee"])
 def juxtastat_unfriend():
     form = flask_form()
+    print("unfriend initiated", form)
     unfriend(form["requestee"], form["user"])
     return flask.jsonify(dict())
 
