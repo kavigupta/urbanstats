@@ -175,32 +175,26 @@ def retrostat_get_per_question_stats_request():
 
 
 @app.route("/juxtastat/friend_request", methods=["POST"])
+@authenticate(["requestee"])
 def juxtastat_friend_request():
     print("FRIEND REQUEST")
     print(flask_form())
-    success, error = get_authenticated_user(["user", "requestee"])
-    if not success:
-        return error
     form = flask_form()
     friend_request(form["requestee"], form["user"])
     return flask.jsonify(dict())
 
 
 @app.route("/juxtastat/unfriend", methods=["POST"])
+@authenticate(["requestee"])
 def juxtastat_unfriend():
-    success, error = get_authenticated_user(["user", "requestee"])
-    if not success:
-        return error
     form = flask_form()
     unfriend(form["requestee"], form["user"])
     return flask.jsonify(dict())
 
 
 @app.route("/juxtastat/todays_score_for", methods=["POST"])
+@authenticate(["requesters", "date", "quiz_kind"])
 def juxtastat_todays_score_for():
-    success, error = get_authenticated_user(["requesters", "date", "quiz_kind"])
-    if not success:
-        return error
     form = flask_form()
     res = dict(
         results=todays_score_for(
@@ -212,12 +206,10 @@ def juxtastat_todays_score_for():
 
 
 @app.route("/juxtastat/friends_status", methods=["POST"])
+@authenticate([])
 def juxtastat_friends_status():
     print("FRIENDS STATUS")
     print(flask_form())
-    success, error = get_authenticated_user(["user"])
-    if not success:
-        return error
     form = flask_form()
     result = dict(results=friends_status(form["user"]))
     print("FRIENDS STATUS RESULT", result)
