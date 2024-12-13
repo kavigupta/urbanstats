@@ -1,3 +1,4 @@
+import functools
 import json
 import flask
 import hashlib
@@ -83,13 +84,16 @@ def get_authenticated_user(additional_required_params=()):
 
 
 def authenticate(fields):
-    def wrapper(fn):
-        success, error = get_authenticated_user(fields)
-        if not success:
-            return error
-        return fn()
+    def decorator(fn):
+        @functools.wraps(fn)
+        def wrapper():
+            success, error = get_authenticated_user(fields)
+            if not success:
+                return error
+            return fn()
+        return wrapper
 
-    return wrapper
+    return decorator
 
 
 @app.route("/juxtastat/register_user", methods=["POST"])
