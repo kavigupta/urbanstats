@@ -251,6 +251,18 @@ export function statsTreeTest(platform: 'mobile' | 'desktop'): void {
         })
     })
 
+    const statsSearchInput = Selector('input[data-test-id=stats-search]')
+
+    test('search-smoke', async (t) => {
+        await withHamburgerMenu(t, async () => {
+            await t.click(statsSearchInput).pressKey('g e n e')
+            await screencap(t)
+            await t.click('input[data-test-id=group_generation_genx]:not([inert] *)') // Deselects search field so that it's fully selected when we reselect it
+            await t.click(statsSearchInput).pressKey('backspace')
+            await screencap(t)
+        })
+    })
+
     /** Universe Tests */
 
     urbanstatsFixture('stats tree universe test', `${TARGET}/article.html?longname=USA`)

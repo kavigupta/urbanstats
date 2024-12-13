@@ -246,7 +246,7 @@ export function DataCreditPanel(): ReactNode {
                                 </ul>
                                 <p>
                                     Massey and Denton use the following metric of isolation:
-                                    <MathJax style={{ height: '78px' }}>
+                                    <MathJax style={{ height: '80px', overflow: 'hidden' }}>
                                         {
                                             `\\[I(r) = \\sum_{b \\in B} v_b[r] \\frac{p_b v_b[r]}{\\sum_{b'} p_b v_{b'}[r]}\\]`
                                         }
@@ -267,13 +267,13 @@ export function DataCreditPanel(): ReactNode {
                                     Generalizing this isolation index to more than two groups is relatively straightforward,
                                     we simply take the mean of the isolation index for each group, weighted by the population
                                     of the group. This yields the metric
-                                    <MathJax style={{ height: '78px' }}>
+                                    <MathJax style={{ height: '80px', overflow: 'hidden' }}>
                                         {
                                             `\\[I(B) = \\sum_{b \\in B} \\sum_r v_b[r] \\frac{p_b v_b[r]}{\\sum_{b'} p_{b'}}\\]`
                                         }
                                     </MathJax>
                                     which can be rearranged to
-                                    <MathJax style={{ height: '78px' }}>
+                                    <MathJax style={{ height: '80px', overflow: 'hidden' }}>
                                         {
                                             `\\[I(B) = \\mathbb E_{b \\in B} \\left[\\sum_r v_b[r] v_b[r]\\right]\\]`
                                         }
@@ -284,14 +284,14 @@ export function DataCreditPanel(): ReactNode {
                                     {' '}
                                     with
                                     the proportion of people who are of that race in nearby blocks, which we define as
-                                    <MathJax style={{ height: '53px' }}>
+                                    <MathJax style={{ height: '53px', overflow: 'hidden' }}>
                                         {
                                             `\\[w_b[r] = \\mathbb E_{b' \\in n(b)} [v_{b'}[r]]\\]`
                                         }
                                     </MathJax>
                                     We define a &ldquo;nearby block&rdquo; similarly to the PW density metric, as a block within a certain
                                     radius of the block in question. Putting this together, we have our homogenity metric:
-                                    <MathJax style={{ height: '78px' }}>
+                                    <MathJax style={{ height: '80px', overflow: 'hidden' }}>
                                         {
                                             `\\[H(B) = \\mathbb E_{b \\in B} \\left[\\sum_r v_b[r] w_b[r]\\right] = \\mathbb E_{b \\in B} [v_b^T w_b]\\]`
                                         }
@@ -309,13 +309,13 @@ export function DataCreditPanel(): ReactNode {
                                     isolation index, then dividing by 1 minus the minimum possible value.
 
                                     We do the same, creating the metric
-                                    <MathJax style={{ height: '78px' }}>
+                                    <MathJax style={{ height: '80px', overflow: 'hidden' }}>
                                         {
                                             `\\[S(B) = \\frac{H(B) - H_{\\text{min}}(B)}{1 - H_{\\text{min}}(B)}\\]`
                                         }
                                     </MathJax>
                                     where we can compute
-                                    <MathJax style={{ height: '53px' }}>
+                                    <MathJax style={{ height: '53px', overflow: 'hidden' }}>
                                         {
                                             `\\[H_{\\text{min}}(B) = \\mathbb E_{b \\in B} [v_b^T] \\mathbb E_{b \\in B} [w_b]\\]`
                                         }
@@ -354,13 +354,13 @@ export function DataCreditPanel(): ReactNode {
                                 <p>
                                     As such, we define a local region block segregation as the segregation metric
                                     in a large region around a block (circle of radius 10km).
-                                    <MathJax style={{ height: '53px' }}>
+                                    <MathJax style={{ height: '53px', overflow: 'hidden' }}>
                                         {
                                             `\\[S^{\\{10\\}}_{b}(B) = S(n_{10}(b))\\]`
                                         }
                                     </MathJax>
                                     We then compute the average of this metric for each block.
-                                    <MathJax style={{ height: '53px' }}>
+                                    <MathJax style={{ height: '53px', overflow: 'hidden' }}>
                                         {
                                             `\\[S^{\\{10\\}}(B) = \\mathbb E_{b \\in B} [S^{\\{10\\}}_{b}(B)]\\]`
                                         }

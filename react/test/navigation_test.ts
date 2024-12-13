@@ -56,6 +56,12 @@ test('maintain and restore scroll position back-forward', async (t) => {
     await t.expect(getScroll()).eql(100)
 })
 
+test('control click new tab', async (t) => {
+    const openInNewTabModifiers = process.platform === 'darwin' ? { meta: true } : { ctrl: true }
+    await t.click(Selector('a').withText('Data Credit'), { modifiers: openInNewTabModifiers })
+    await t.expect(getLocation()).eql(`${TARGET}/`)
+})
+
 urbanstatsFixture('stats page', '/statistic.html?statname=Population&article_type=Judicial+District&start=1&amount=20&universe=USA')
 
 test('data credit hash from stats page', async (t) => {
@@ -79,10 +85,12 @@ export class DelayRequests extends RequestHook {
     private delayFilter?: Filter
     private delayedRequests: (() => void)[] = []
 
-    removeFilter(): void {
+    removeFilter(): number {
+        const result = this.delayedRequests.length
         this.delayFilter = undefined
         this.delayedRequests.forEach((resolve) => { resolve() })
         this.delayedRequests = []
+        return result
     }
 
     setFilter(filter: Filter): void {
@@ -106,10 +114,24 @@ const delayRequests = new DelayRequests()
 const dataFilter: Filter = options => options.path.startsWith('/data')
 const indexFilter: Filter = options => options.path === '/scripts/index.js'
 
-urbanstatsFixture('loading tests', '/', () => {
+urbanstatsFixture('loading tests', '/', async (t) => {
     delayRequests.removeFilter()
-    return Promise.resolve()
+    await (await t.getCurrentCDPSession()).Network.setCacheDisabled({ cacheDisabled: true })
 }).requestHooks(delayRequests)
+
+// Prevents flashes when navigating to a hash below MathJax on the data credit page (MathJax loads from CloudFlare)
+// Also prevents test flakiness on the data credit page
+test('data credit page height should be the same before and after cloudflare load', async (t) => {
+    delayRequests.setFilter(options => options.hostname === 'cdnjs.cloudflare.com')
+    await t.navigateTo('data-credit.html#explanation_population')
+    await screencap(t, { fullPage: true })
+    const heightBefore = await t.eval(() => document.body.getBoundingClientRect().height) as number
+    delayRequests.removeFilter()
+    await t.wait(1000)
+    await screencap(t, { fullPage: true })
+    const heightAfter = await t.eval(() => document.body.getBoundingClientRect().height) as number
+    await t.expect(heightAfter).eql(heightBefore)
+})
 
 test('initial load', async (t) => {
     delayRequests.setFilter(dataFilter)
@@ -131,7 +153,7 @@ test('quick load', async (t) => {
     await t.pressKey('enter')
     await t.expect(Selector('[data-test-id=quickLoad]').exists).ok()
     await screencap(t, { fullPage: false, wait: false })
-    delayRequests.removeFilter()
+    await t.expect(delayRequests.removeFilter()).eql(1)
     await t.expect(Selector('[data-test-id=quickLoad]').exists).notOk()
 })
 
