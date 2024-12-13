@@ -79,12 +79,20 @@ def get_authenticated_user(additional_required_params=()):
 
     if not all([param in form for param in required_params]):
         return False, (
-            flask.jsonify({"error": f"Needs parameters {required_params}!", "code": "needs_params"}),
+            flask.jsonify(
+                {
+                    "error": f"Needs parameters {required_params}!",
+                    "code": "needs_params",
+                }
+            ),
             200,
         )
     if not check_secureid(form["user"], form["secureID"]):
-        return False, (flask.jsonify({"error": "Invalid secureID!", "code": "bad_secureid"}), 200)
-    return True ,None
+        return False, (
+            flask.jsonify({"error": "Invalid secureID!", "code": "bad_secureid"}),
+            200,
+        )
+    return True, None
 
 
 @app.route("/juxtastat/latest_day", methods=["POST"])
