@@ -63,22 +63,22 @@ export function PageTemplate({
 
     const hasScreenshotButton = screencapElements !== undefined
 
-    const screencap = async (curr_universe: string | undefined): Promise<void> => {
+    const screencap = async (currentUniverse: string | undefined): Promise<void> => {
         if (screencapElements === undefined) {
             return
         }
         try {
-            await createScreenshot(screencapElements(), curr_universe, colors)
+            await createScreenshot(screencapElements(), currentUniverse, colors)
         }
         catch (e) {
             console.error(e)
         }
     }
 
-    const initiateScreenshot = (curr_universe: string | undefined): void => {
+    const initiateScreenshot = (currentUniverse: string | undefined): void => {
         setScreenshotMode(true)
         setTimeout(async () => {
-            await screencap(curr_universe)
+            await screencap(currentUniverse)
             setScreenshotMode(false)
         })
     }
@@ -104,7 +104,7 @@ export function PageTemplate({
                     hasScreenshot={hasScreenshotButton}
                     hasUniverseSelector={hasUniverseSelector}
                     allUniverses={universes}
-                    initiateScreenshot={(curr_universe) => { initiateScreenshot(curr_universe) }}
+                    initiateScreenshot={(currentUniverse) => { initiateScreenshot(currentUniverse) }}
                 />
                 <div style={{ marginBlockEnd: '16px' }}></div>
                 <BodyPanel

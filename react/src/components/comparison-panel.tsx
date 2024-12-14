@@ -46,8 +46,8 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
         return 100 * leftMarginPercent
     }
 
-    const cell = (is_left: boolean, i: number, contents: React.ReactNode): ReactNode => {
-        if (is_left) {
+    const cell = (isLeft: boolean, i: number, contents: React.ReactNode): ReactNode => {
+        if (isLeft) {
             return (
                 <div key={i} style={{ width: `${leftMargin()}%` }}>
                     {contents}
@@ -196,15 +196,15 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
                             </TableHeaderContainer>
 
                             {
-                                rows[0].map((_, row_idx) => (
+                                rows[0].map((_, rowIdx) => (
                                     <ComparisonRowBody
-                                        key={rows[0][row_idx].statpath}
-                                        index={row_idx}
-                                        rows={rows.map(row => row[row_idx])}
+                                        key={rows[0][rowIdx].statpath}
+                                        index={rowIdx}
+                                        rows={rows.map(row => row[rowIdx])}
                                         articles={props.articles}
                                         names={names}
                                         onlyColumns={onlyColumns}
-                                        blankColumns={validOrdinals[row_idx] ? [] : ['statistic_ordinal', 'statistic_percentile']}
+                                        blankColumns={validOrdinals[rowIdx] ? [] : ['statistic_ordinal', 'statistic_percentile']}
                                     />
                                 ),
                                 )
@@ -255,7 +255,7 @@ function ComparisonRowBody({ rows, articles, names, onlyColumns, blankColumns, i
 }): ReactNode {
     const colors = useColors()
     const [expanded] = useSetting(rowExpandedKey(rows[0].statpath))
-    const plotProps = rows.map((row, data_idx) => ({ ...row, color: color(colors.hueColors, data_idx), shortname: articles[data_idx].shortname }))
+    const plotProps = rows.map((row, dataIdx) => ({ ...row, color: color(colors.hueColors, dataIdx), shortname: articles[dataIdx].shortname }))
     return (
         <WithPlot plotProps={plotProps} expanded={expanded ?? false}>
             <TableRowContainer index={index}>
