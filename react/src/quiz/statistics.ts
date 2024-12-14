@@ -1,6 +1,4 @@
-import { QuizDescriptor, QuizHistory } from './quiz'
-
-const endpoint = 'https://persistent.urbanstats.org'
+import { endpoint, QuizDescriptor, QuizHistory } from './quiz'
 
 function createAndStoreId(key: string): string {
     // (domain name, id stored in local storage)
@@ -54,6 +52,7 @@ async function reportToServerGeneric(wholeHistory: QuizHistory, endpointLatest: 
             'Content-Type': 'application/json',
         },
     })
+    // eslint-disable-next-line no-restricted-syntax -- Data from server
     const latestDayJson = await latestDayResponse.json() as { latest_day: number }
     const latestDay = latestDayJson.latest_day
     const filteredDays = Object.keys(wholeHistory).filter(day => parseDay(day) > latestDay)
@@ -108,6 +107,7 @@ export async function reportToServer(wholeHistory: QuizHistory, kind: 'juxtastat
     }
 }
 
+// eslint-disable-next-line no-restricted-syntax -- Data from server
 export interface PerQuestionStats { total: number, per_question: number[] }
 
 const questionStatsCache = new Map<string, PerQuestionStats>()

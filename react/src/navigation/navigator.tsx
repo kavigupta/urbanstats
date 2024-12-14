@@ -17,8 +17,8 @@ import { Settings } from '../page_template/settings'
 import { getVector } from '../page_template/settings-vector'
 import { StatGroupSettings } from '../page_template/statistic-settings'
 import { StatName, StatPath } from '../page_template/statistic-tree'
-import { get_daily_offset_number, get_retrostat_offset_number } from '../quiz/dates'
-import { JuxtaQuestionJSON, load_juxta, load_retro, QuizDescriptor, QuizQuestion, RetroQuestionJSON } from '../quiz/quiz'
+import { getDailyOffsetNumber, getRetrostatOffsetNumber } from '../quiz/dates'
+import { JuxtaQuestionJSON, loadJuxta, loadRetro, QuizDescriptor, QuizQuestion, RetroQuestionJSON } from '../quiz/quiz'
 import { defaultArticleUniverse, defaultComparisonUniverse } from '../universe'
 import { Article, IDataList } from '../utils/protos'
 import { followSymlink, followSymlinks } from '../utils/symlinks'
@@ -411,18 +411,18 @@ async function loadPageDescriptor(newDescriptor: PageDescriptor, settings: Setti
             let todayName: string
             switch (newDescriptor.mode) {
                 case 'retro':
-                    const retro = newDescriptor.date ?? get_retrostat_offset_number()
+                    const retro = newDescriptor.date ?? getRetrostatOffsetNumber()
                     quizDescriptor = {
                         kind: 'retrostat',
                         name: `W${retro}`,
                     }
-                    quiz = (await loadJSON(`/retrostat/${retro}`) as RetroQuestionJSON[]).map(load_retro)
+                    quiz = (await loadJSON(`/retrostat/${retro}`) as RetroQuestionJSON[]).map(loadRetro)
                     todayName = `Week ${retro}`
                     break
                 case undefined:
-                    const today = newDescriptor.date ?? get_daily_offset_number()
+                    const today = newDescriptor.date ?? getDailyOffsetNumber()
                     quizDescriptor = { kind: 'juxtastat', name: today }
-                    quiz = (await loadJSON(`/quiz/${today}`) as JuxtaQuestionJSON[]).map(load_juxta)
+                    quiz = (await loadJSON(`/quiz/${today}`) as JuxtaQuestionJSON[]).map(loadJuxta)
                     todayName = today.toString()
             }
             return {
@@ -574,9 +574,38 @@ export class Navigator {
             }
             else if (url.hash !== '') {
                 this.effects.push(() => {
-                    window.location.replace(url.hash)
-                    // Above statement clears state
-                    history.replaceState({ pageDescriptor: newPageDescriptor, scrollPosition: window.scrollY }, '')
+                    const seekToHash = (): void => {
+                        window.location.replace(url.hash)
+                        // Above statement clears state
+                        history.replaceState({ pageDescriptor: newPageDescriptor, scrollPosition: window.scrollY }, '')
+                    }
+
+                    seekToHash()
+
+                    // If the body height changes, and the user hasn't scrolled yet, this means something (e.g. fonts) have loaded and our hash seek isn't correct.
+                    // Keep track of the state where we're seeking so we don't keep trying to seek on another page
+                    const seekedState = this.pageState
+
+                    const destroyObservers = (): void => {
+                        resizeObserver.unobserve(document.body)
+                    }
+
+                    const resizeObserver = new ResizeObserver(() => {
+                        if (this.pageState === seekedState) {
+                            seekToHash()
+                        }
+                        else {
+                            destroyObservers()
+                        }
+                    })
+
+                    resizeObserver.observe(document.body)
+                    // First scroll is triggered on hash navigate
+                    window.addEventListener('scroll', () => {
+                        window.addEventListener('scroll', () => {
+                            destroyObservers()
+                        }, { once: true })
+                    }, { once: true })
                 })
             }
             else if (oldData.kind !== this.pageState.current.data.kind) {

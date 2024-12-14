@@ -38,9 +38,9 @@ export function Footer(props: { length: number, history: QuizHistory[string] }):
     )
 }
 
-export function Help(props: { quiz_kind: 'juxtastat' | 'retrostat' }): ReactNode {
+export function Help(props: { quizKind: 'juxtastat' | 'retrostat' }): ReactNode {
     const text = (): string => {
-        if (props.quiz_kind === 'juxtastat') {
+        if (props.quizKind === 'juxtastat') {
             return 'Select the geographical region answering the question. The questions get harder as you go on.'
         }
         else {

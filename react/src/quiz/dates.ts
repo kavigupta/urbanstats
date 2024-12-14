@@ -2,7 +2,7 @@ import { QuizDescriptor } from './quiz'
 
 const reference = new Date(2023, 8, 2) // 2023-09-02. 8 is September, since months are 0-indexed for some fucking reason
 
-export function get_daily_offset_number(): number {
+export function getDailyOffsetNumber(): number {
     // fractional days since reference
     // today's date without the time
     const today = new Date()
@@ -17,78 +17,78 @@ export function get_daily_offset_number(): number {
     return offset
 }
 
-export function get_retrostat_offset_number(): number {
-    const daily = get_daily_offset_number()
+export function getRetrostatOffsetNumber(): number {
+    const daily = getDailyOffsetNumber()
     // 78 through 84 --> 0
     return Math.floor((daily - 1) / 7) - 11
 }
 
-function day_start(offset: number): Date {
+function dayStart(offset: number): Date {
     const date = new Date(reference)
     date.setDate(date.getDate() + offset)
     return date
 }
 
-function day_end(offset: number): number {
-    const start = day_start(offset)
+function dayEnd(offset: number): number {
+    const start = dayStart(offset)
     start.setDate(start.getDate() + 1)
     return start.valueOf()
 }
 
-function week_start(week_id: string): Date {
+function weekStart(weekId: string): Date {
     // check that week_id is W + number
-    if (!week_id.startsWith('W')) {
+    if (!weekId.startsWith('W')) {
         throw new Error('week_id must start with W')
     }
-    const week_number = parseInt(week_id.slice(1))
-    return day_start((week_number + 11) * 7 + 1)
+    const weekNumber = parseInt(weekId.slice(1))
+    return dayStart((weekNumber + 11) * 7 + 1)
 }
 
-function week_end(week_id: string): number {
-    const start = week_start(week_id)
+function weekEnd(weekId: string): number {
+    const start = weekStart(weekId)
     start.setDate(start.getDate() + 7)
     return start.valueOf()
 }
 
-function time_to_end_of_day(offset: number): number {
-    return day_end(offset) - Date.now()
+function timeToEndOfDay(offset: number): number {
+    return dayEnd(offset) - Date.now()
 }
 
-function time_to_end_of_week(week_id: string): number {
-    return week_end(week_id) - Date.now()
+function timeToEndOfWeek(weekId: string): number {
+    return weekEnd(weekId) - Date.now()
 }
 
-function render_time_within_day(ms: number): string {
+function renderTimeWithinDay(ms: number): string {
     // render HH:MM:SS from ms. Make sure to pad with 0s.
     const seconds = Math.floor(ms / 1000)
     const minutes = Math.floor(seconds / 60)
     const hours = Math.floor(minutes / 60)
-    const seconds_remainder = seconds % 60
-    const minutes_remainder = minutes % 60
-    const hours_remainder = hours % 24
+    const secondRemainder = seconds % 60
+    const minutesRemainder = minutes % 60
+    const hoursRemainder = hours % 24
 
-    const seconds_string = seconds_remainder.toString().padStart(2, '0')
-    const minutes_string = minutes_remainder.toString().padStart(2, '0')
-    const hours_string = hours_remainder.toString().padStart(2, '0')
+    const secondsString = secondRemainder.toString().padStart(2, '0')
+    const minutesString = minutesRemainder.toString().padStart(2, '0')
+    const hoursString = hoursRemainder.toString().padStart(2, '0')
 
-    return `${hours_string}:${minutes_string}:${seconds_string}`
+    return `${hoursString}:${minutesString}:${secondsString}`
 }
 
-function render_time_within_week(ms: number): string {
+function renderTimeWithinWeek(ms: number): string {
     // render X days, HH:MM:SS from ms. Make sure to pad with 0s.
-    const ms_per_day = 1000 * 60 * 60 * 24
-    const days = Math.floor(ms / ms_per_day)
-    const without_days = ms % ms_per_day
-    const time_string = render_time_within_day(without_days)
+    const msPerDay = 1000 * 60 * 60 * 24
+    const days = Math.floor(ms / msPerDay)
+    const withoutDays = ms % msPerDay
+    const timeString = renderTimeWithinDay(withoutDays)
     // const s_if_plural = days === 1 ? '' : 's';
-    return `${days}d ${time_string}`
+    return `${days}d ${timeString}`
 }
 
-export function render_time_remaining({ kind, name }: QuizDescriptor): string {
+export function renderTimeRemaining({ kind, name }: QuizDescriptor): string {
     switch (kind) {
         case 'juxtastat':
-            return render_time_within_day(time_to_end_of_day(name))
+            return renderTimeWithinDay(timeToEndOfDay(name))
         case 'retrostat':
-            return render_time_within_week(time_to_end_of_week(name))
+            return renderTimeWithinWeek(timeToEndOfWeek(name))
     }
 }

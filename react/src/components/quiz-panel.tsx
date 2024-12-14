@@ -3,19 +3,19 @@ import React, { ReactNode, useEffect, useState } from 'react'
 import { PageTemplate } from '../page_template/template'
 import '../common.css'
 import './quiz.css'
-import { QuizDescriptor, QuizHistory, QuizQuestion, a_correct, loadQuizHistory } from '../quiz/quiz'
+import { QuizDescriptor, QuizHistory, QuizQuestion, aCorrect, loadQuizHistory } from '../quiz/quiz'
 import { QuizQuestionDispatch } from '../quiz/quiz-question'
 import { QuizResult } from '../quiz/quiz-result'
 
-export function QuizPanel(props: { quizDescriptor: QuizDescriptor, today_name: string, todays_quiz: QuizQuestion[] }): ReactNode {
-    const [quiz_history, set_quiz_history] = useState(loadQuizHistory())
+export function QuizPanel(props: { quizDescriptor: QuizDescriptor, todayName: string, todaysQuiz: QuizQuestion[] }): ReactNode {
+    const [quizHistory, setQuizHistory] = useState(loadQuizHistory())
     const [waiting, setWaiting] = useState(false)
 
-    const todays_quiz_history = quiz_history[props.quizDescriptor.name] ?? { choices: [], correct_pattern: [] }
+    const todaysQuizHistory = quizHistory[props.quizDescriptor.name] ?? { choices: [], correct_pattern: [] }
 
-    const set_todays_quiz_history = (history_today: QuizHistory[string]): void => {
-        const newHistory = { ...quiz_history, [props.quizDescriptor.name]: history_today }
-        set_quiz_history(newHistory)
+    const setTodaysQuizHistory = (history_today: QuizHistory[string]): void => {
+        const newHistory = { ...quizHistory, [props.quizDescriptor.name]: history_today }
+        setQuizHistory(newHistory)
         setWaiting(true)
         switch (props.quizDescriptor.kind) {
             case 'juxtastat':
@@ -26,16 +26,16 @@ export function QuizPanel(props: { quizDescriptor: QuizDescriptor, today_name: s
         }
     }
 
-    const on_select = (selected: 'A' | 'B'): void => {
+    const onSelect = (selected: 'A' | 'B'): void => {
         if (waiting) {
             return
         }
-        const history = todays_quiz_history
+        const history = todaysQuizHistory
         const idx = history.correct_pattern.length
-        const question = (props.todays_quiz)[idx]
+        const question = (props.todaysQuiz)[idx]
         history.choices.push(selected)
-        history.correct_pattern.push((selected === 'A') === a_correct(question))
-        set_todays_quiz_history(history)
+        history.correct_pattern.push((selected === 'A') === aCorrect(question))
+        setTodaysQuizHistory(history)
         setTimeout(() => { setWaiting(false) }, 500)
     }
 
@@ -53,8 +53,8 @@ export function QuizPanel(props: { quizDescriptor: QuizDescriptor, today_name: s
     return (
         <PageTemplate>
             {(() => {
-                const quiz = props.todays_quiz
-                const history = todays_quiz_history
+                const quiz = props.todaysQuiz
+                const history = todaysQuizHistory
 
                 let index = history.choices.length
                 if (waiting) {
@@ -65,9 +65,9 @@ export function QuizPanel(props: { quizDescriptor: QuizDescriptor, today_name: s
                     return (
                         <QuizResult
                             quiz={quiz}
-                            whole_history={quiz_history}
+                            wholeHistory={quizHistory}
                             history={history}
-                            today_name={props.today_name}
+                            todayName={props.todayName}
                             quizDescriptor={props.quizDescriptor}
                         />
                     )
@@ -79,11 +79,11 @@ export function QuizPanel(props: { quizDescriptor: QuizDescriptor, today_name: s
                         question={quiz[index]}
                         history={history}
                         length={quiz.length}
-                        on_select={on_select}
+                        onSelect={onSelect}
                         waiting={waiting}
                         nested={false}
-                        no_header={false}
-                        no_footer={false}
+                        noHeader={false}
+                        noFooter={false}
                     />
                 )
             })()}
