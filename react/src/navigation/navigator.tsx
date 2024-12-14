@@ -17,8 +17,8 @@ import { Settings } from '../page_template/settings'
 import { getVector } from '../page_template/settings-vector'
 import { StatGroupSettings } from '../page_template/statistic-settings'
 import { StatName, StatPath } from '../page_template/statistic-tree'
-import { get_daily_offset_number, get_retrostat_offset_number } from '../quiz/dates'
-import { JuxtaQuestionJSON, load_juxta, load_retro, QuizDescriptor, QuizQuestion, RetroQuestionJSON } from '../quiz/quiz'
+import { getDailyOffsetNumber, getRetrostatOffsetNumber } from '../quiz/dates'
+import { JuxtaQuestionJSON, loadJuxta, loadRetro, QuizDescriptor, QuizQuestion, RetroQuestionJSON } from '../quiz/quiz'
 import { defaultArticleUniverse, defaultComparisonUniverse } from '../universe'
 import { Article, IDataList } from '../utils/protos'
 import { followSymlink, followSymlinks } from '../utils/symlinks'
@@ -411,18 +411,18 @@ async function loadPageDescriptor(newDescriptor: PageDescriptor, settings: Setti
             let todayName: string
             switch (newDescriptor.mode) {
                 case 'retro':
-                    const retro = newDescriptor.date ?? get_retrostat_offset_number()
+                    const retro = newDescriptor.date ?? getRetrostatOffsetNumber()
                     quizDescriptor = {
                         kind: 'retrostat',
                         name: `W${retro}`,
                     }
-                    quiz = (await loadJSON(`/retrostat/${retro}`) as RetroQuestionJSON[]).map(load_retro)
+                    quiz = (await loadJSON(`/retrostat/${retro}`) as RetroQuestionJSON[]).map(loadRetro)
                     todayName = `Week ${retro}`
                     break
                 case undefined:
-                    const today = newDescriptor.date ?? get_daily_offset_number()
+                    const today = newDescriptor.date ?? getDailyOffsetNumber()
                     quizDescriptor = { kind: 'juxtastat', name: today }
-                    quiz = (await loadJSON(`/quiz/${today}`) as JuxtaQuestionJSON[]).map(load_juxta)
+                    quiz = (await loadJSON(`/quiz/${today}`) as JuxtaQuestionJSON[]).map(loadJuxta)
                     todayName = today.toString()
             }
             return {

@@ -8,7 +8,7 @@ import { MapGeneric, MapGenericProps, Polygons } from '../components/map'
 import { useColors } from '../page_template/colors'
 import { useMobileLayout } from '../utils/responsive'
 
-import { JuxtaQuestion, QuizHistory, RetroQuestion, a_correct } from './quiz'
+import { JuxtaQuestion, QuizHistory, RetroQuestion, aCorrect } from './quiz'
 import { Footer, Header, Help } from './quiz-components'
 
 interface MapProps extends MapGenericProps {
@@ -40,37 +40,37 @@ interface QuizQuestionProps {
     waiting: boolean
     history: QuizHistory[string]
     nested: boolean
-    no_header: boolean
-    no_footer: boolean
+    noHeader: boolean
+    noFooter: boolean
     quiz: { kind: 'juxtastat' | 'retrostat', name: number | string }
-    on_select: (letter: 'A' | 'B') => void
+    onSelect: (letter: 'A' | 'B') => void
     length: number
 }
 
 function QuizQuestion(props: QuizQuestionProps & {
-    get_question: () => ReactNode
-    get_option: (letter: 'a' | 'b') => ReactNode
-    get_demo: (letter: 'a' | 'b') => ReactNode
+    getQuestion: () => ReactNode
+    getOption: (letter: 'a' | 'b') => ReactNode
+    getDemo: (letter: 'a' | 'b') => ReactNode
 }): ReactNode {
-    let button_a = 'quiz_clickable'
-    let button_b = 'quiz_clickable'
+    let buttonA = 'quiz_clickable'
+    let buttonB = 'quiz_clickable'
     if (props.waiting) {
         const choices = props.history.choices
         const pattern = props.history.correct_pattern
         const choice = choices[choices.length - 1]
         const correct = pattern[pattern.length - 1]
-        const css_class = correct ? ' quiz_correct' : ' quiz_incorrect'
+        const cssClass = correct ? ' quiz_correct' : ' quiz_incorrect'
         if (choice === 'A') {
-            button_a += css_class
+            buttonA += cssClass
         }
         else {
-            button_b += css_class
+            buttonB += cssClass
         }
     }
 
-    const question = props.get_question()
+    const question = props.getQuestion()
 
-    const button_style: React.CSSProperties = {
+    const buttonStyle: React.CSSProperties = {
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center',
@@ -78,54 +78,54 @@ function QuizQuestion(props: QuizQuestionProps & {
         padding: '0.5em',
     }
 
-    const row_style = { display: 'flex', justifyContent: 'center', width: '90%', margin: 'auto' }
+    const rowStyle = { display: 'flex', justifyContent: 'center', width: '90%', margin: 'auto' }
 
-    let quiztext_css = useMobileLayout() ? 'quiztext_mobile' : 'quiztext'
+    let quizTextCSS = useMobileLayout() ? 'quiztext_mobile' : 'quiztext'
     if (props.nested) {
-        quiztext_css += '_nested'
+        quizTextCSS += '_nested'
     }
 
     return (
         <div>
-            {props.no_header ? undefined : <Header quiz={props.quiz} />}
-            <div className={`centered_text ${quiztext_css}`}>
+            {props.noHeader ? undefined : <Header quiz={props.quiz} />}
+            <div className={`centered_text ${quizTextCSS}`}>
                 {question}
             </div>
             <div className="gap"></div>
-            <div style={row_style}>
+            <div style={rowStyle}>
                 <div style={{ width: '50%', padding: '0.5em' }}>
-                    <div role="button" id="quiz-answer-button-a" className={button_a} onClick={() => { props.on_select('A') }} style={button_style}>
+                    <div role="button" id="quiz-answer-button-a" className={buttonA} onClick={() => { props.onSelect('A') }} style={buttonStyle}>
                         <span style={{ margin: 'auto' }}>
-                            <div className={`centered_text ${quiztext_css}`}>
-                                {props.get_option('a')}
+                            <div className={`centered_text ${quizTextCSS}`}>
+                                {props.getOption('a')}
                             </div>
                         </span>
                     </div>
                 </div>
                 <div style={{ width: '50%', padding: '0.5em' }}>
-                    <div role="button" id="quiz-answer-button-b" className={button_b} onClick={() => { props.on_select('B') }} style={button_style}>
+                    <div role="button" id="quiz-answer-button-b" className={buttonB} onClick={() => { props.onSelect('B') }} style={buttonStyle}>
                         <span style={{ margin: 'auto' }}>
-                            <div className={`centered_text ${quiztext_css}`}>
-                                {props.get_option('b')}
+                            <div className={`centered_text ${quizTextCSS}`}>
+                                {props.getOption('b')}
                             </div>
                         </span>
                     </div>
                 </div>
             </div>
-            <div style={row_style}>
+            <div style={rowStyle}>
                 <div style={{ width: '50%', padding: '0.5em' }}>
-                    {props.get_demo('a')}
+                    {props.getDemo('a')}
                 </div>
                 <div style={{ width: '50%', padding: '0.5em' }}>
-                    {props.get_demo('b')}
+                    {props.getDemo('b')}
                 </div>
             </div>
-            {props.no_footer
+            {props.noFooter
                 ? undefined
                 : (
                         <>
                             <Footer history={props.history} length={props.length} />
-                            <Help quiz_kind={props.quiz.kind} />
+                            <Help quizKind={props.quiz.kind} />
                         </>
                     )}
         </div>
@@ -133,19 +133,19 @@ function QuizQuestion(props: QuizQuestionProps & {
 }
 
 function RetroQuizQuestion(props: QuizQuestionProps & { question: RetroQuestion }): ReactNode {
-    const get_demo = (key: 'a' | 'b'): ReactNode => {
-        const key_upper = a_correct(props.question[key]) ? 'A' : 'B'
+    const getDemo = (key: 'a' | 'b'): ReactNode => {
+        const keyUpper = aCorrect(props.question[key]) ? 'A' : 'B'
         return (
             <div style={{ zoom: 0.5 }}>
                 <JuxtastatQuizQuestion
                     question={props.question[key]}
-                    history={{ choices: [key_upper], correct_pattern: [true] }}
+                    history={{ choices: [keyUpper], correct_pattern: [true] }}
                     length={5}
-                    on_select={() => undefined}
+                    onSelect={() => undefined}
                     waiting={true}
                     quiz={{ kind: 'juxtastat', name: 'demo' }}
-                    no_header={true}
-                    no_footer={true}
+                    noHeader={true}
+                    noFooter={true}
                     nested={isFirefox} // Firefox doesn't support zoom so we use special CSS for nested questions
                 />
             </div>
@@ -155,9 +155,9 @@ function RetroQuizQuestion(props: QuizQuestionProps & { question: RetroQuestion 
     return (
         <QuizQuestion
             {...props}
-            get_question={() => 'Which question was easier?'}
-            get_option={letter => `Question ${letter.toUpperCase()}`}
-            get_demo={get_demo}
+            getQuestion={() => 'Which question was easier?'}
+            getOption={letter => `Question ${letter.toUpperCase()}`}
+            getDemo={getDemo}
         />
     )
 }
@@ -169,9 +169,9 @@ function JuxtastatQuizQuestion(props: QuizQuestionProps & {
     return (
         <QuizQuestion
             {...props}
-            get_question={() => render_question(props.question.question)}
-            get_option={letter => props.question[`longname_${letter}`]}
-            get_demo={letter => (
+            getQuestion={() => renderQuestion(props.question.question)}
+            getOption={letter => props.question[`longname_${letter}`]}
+            getDemo={letter => (
                 <Map
                     longname={props.question[`longname_${letter}`]}
                     basemap={{ type: 'osm' }}
@@ -182,24 +182,24 @@ function JuxtastatQuizQuestion(props: QuizQuestionProps & {
     )
 }
 
-export function question_string(question: string): string {
+export function questionString(question: string): string {
     if (question.startsWith('!FULL ')) {
         return question.slice(6)
     }
     return `Which has a ${question}?`
 }
 
-export function render_question(question_text: string): ReactNode {
-    if (question_text.includes('!TOOLTIP')) {
-        const [question, tooltip] = question_text.split('!TOOLTIP ')
+export function renderQuestion(questionText: string): ReactNode {
+    if (questionText.includes('!TOOLTIP')) {
+        const [question, tooltip] = questionText.split('!TOOLTIP ')
         return (
             <span>
-                {question_string(question)}
+                {questionString(question)}
                 <Tooltip content={tooltip} />
             </span>
         )
     }
-    const q = question_string(question_text)
+    const q = questionString(questionText)
     return q
 }
 

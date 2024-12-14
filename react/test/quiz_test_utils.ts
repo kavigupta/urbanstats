@@ -7,7 +7,7 @@ import { RequestHook, Selector } from 'testcafe'
 
 import { safeReload, screencap, urbanstatsFixture } from './test_utils'
 
-export async function quiz_screencap(t: TestController): Promise<void> {
+export async function quizScreencap(t: TestController): Promise<void> {
     await t.eval(() => {
         const elem = document.getElementById('quiz-timer')
         if (elem) {
@@ -18,33 +18,33 @@ export async function quiz_screencap(t: TestController): Promise<void> {
     await screencap(t)
 }
 
-export async function click_buttons(t: TestController, whichs: string[]): Promise<void> {
+export async function clickButtons(t: TestController, whichs: string[]): Promise<void> {
     for (const which of whichs) {
-        await click_button(t, which)
+        await clickButton(t, which)
         await t.wait(500)
     }
     await t.wait(2000)
 }
 // click the kth button with id quiz-answer-button-$which
 
-export function click_button(t: TestController, which: string): TestControllerPromise {
+export function clickButton(t: TestController, which: string): TestControllerPromise {
     return t.click(Selector('div').withAttribute('id', `quiz-answer-button-${which}`))
 }
-export function quiz_fixture(fix_name: string, url: string, new_localstorage: Record<string, string>, sql_statements: string): void {
-    urbanstatsFixture(fix_name, url, async (t) => {
+export function quizFixture(fixName: string, url: string, newLocalstorage: Record<string, string>, sqlStatements: string): void {
+    urbanstatsFixture(fixName, url, async (t) => {
         // create a temporary file
-        const tempfile = `${tempfile_name()}.sql`
+        const tempfile = `${tempfileName()}.sql`
         // write the sql statements to the temporary file
-        writeFileSync(tempfile, sql_statements)
+        writeFileSync(tempfile, sqlStatements)
         await promisify(exec)(`rm -f ../urbanstats-persistent-data/db.sqlite3; cd ../urbanstats-persistent-data; cat ${tempfile} | sqlite3 db.sqlite3; cd -`)
         void execa('bash', ['../urbanstats-persistent-data/run_for_test.sh'], { stdio: 'inherit' })
         await t.wait(2000)
         await t.eval(() => {
             localStorage.clear()
-            for (const k of Object.keys(new_localstorage)) {
-                localStorage.setItem(k, new_localstorage[k])
+            for (const k of Object.keys(newLocalstorage)) {
+                localStorage.setItem(k, newLocalstorage[k])
             }
-        }, { dependencies: { new_localstorage } })
+        }, { dependencies: { new_localstorage: newLocalstorage } })
         await t.eval(() => {
             localStorage.setItem('testHostname', 'urbanstats.org')
         })
@@ -72,6 +72,6 @@ export class ProxyPersistent extends RequestHook {
     override onResponse(): void { }
 }
 
-export function tempfile_name(): string {
+export function tempfileName(): string {
     return `/tmp/quiz_test_${Math.floor(Math.random() * 1000000)}`
 }
