@@ -278,6 +278,7 @@ const retro10 = 'quiz.html#date=10&mode=retro'
 
 testsGeneric(
     {
+        name: 'juxta',
         alicePattern: aliceJuxta99,
         alicePatternPrev: aliceJuxta98,
         aliceOtherPattern: aliceRetro11,
@@ -289,6 +290,7 @@ testsGeneric(
 
 testsGeneric(
     {
+        name: 'retro',
         alicePattern: aliceRetro11,
         alicePatternPrev: aliceRetro10,
         aliceOtherPattern: aliceJuxta99,
