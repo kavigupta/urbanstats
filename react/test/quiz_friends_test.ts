@@ -67,7 +67,7 @@ async function friendsText(t: TestController): Promise<string[]> {
 }
 
 async function addFriend(t: TestController, friendName: string, friendID: string): Promise<void> {
-    const friendNameField = Selector('input').withAttribute('placeholder', 'Friend Name')
+    const friendNameField = Selector('input', { timeout: 1000 }).withAttribute('placeholder', 'Friend Name')
     await t.click(friendNameField)
     // clear the field
     await t.pressKey('ctrl+a delete')
@@ -235,6 +235,29 @@ function testsGeneric(
         await t.expect(await friendsText(t)).eql([`You${alicePattern}`, `Bob${bobPattern}Remove`, 'CharliePending Friend RequestRemove'])
         // check that the text 'Friend name already exists' is displayed
         await t.expect(Selector('div').withText('Friend name already exists').exists).ok()
+    })
+
+    test(`${props.name}-friends-invalid-id`, async (t) => {
+        const state = await aliceBobFriends(t, false)
+        await restoreUser(t, 'Alice', state)
+        await addFriend(t, 'Bob2', 'this id does not work')
+        // Bob2 added but shows up as an invalid user
+        await t.expect(await friendsText(t)).eql([`You${alicePattern}`, `Bob${bobPattern}Remove`, 'Bob2Invalid User IDRemove'])
+        // after a reload, same invalid user
+        await safeReload(t)
+        await t.wait(1000)
+        await t.expect(await friendsText(t)).eql([`You${alicePattern}`, `Bob${bobPattern}Remove`, 'Bob2Invalid User IDRemove'])
+        await addFriend(t, 'Bob3', '000000b   ')
+        // duplicate error
+        await t.expect(await friendsText(t)).eql([`You${alicePattern}`, `Bob${bobPattern}Remove`, 'Bob2Invalid User IDRemove'])
+        await t.expect(Selector('div').withText('Friend ID 000000b already exists as Bob').exists).ok()
+        // remove Bob
+        await removeFriend(t, 0)
+        await t.expect(await friendsText(t)).eql([`You${alicePattern}`, 'Bob2Invalid User IDRemove'])
+        // add Bob3
+        await addFriend(t, 'Bob3', '000000b    ')
+        // Bob3 added
+        await t.expect(await friendsText(t)).eql([`You${alicePattern}`, 'Bob2Invalid User IDRemove', `Bob3${bobPattern}Remove`])
     })
 
     test(`${props.name}-same-on-juxta-and-retro`, async (t) => {

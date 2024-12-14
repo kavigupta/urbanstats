@@ -7,7 +7,7 @@ import { mixWithBackground } from '../utils/color'
 import { endpoint, QuizFriends } from './quiz'
 import { uniquePersistentId, uniqueSecureId } from './statistics'
 
-interface FriendScore { name?: string, corrects: boolean[] | null, friends: boolean }
+interface FriendScore { name?: string, corrects: boolean[] | null, friends: boolean, idError?: string }
 
 export function QuizFriendsPanel(props: {
     quizFriends: QuizFriends
@@ -32,13 +32,13 @@ export function QuizFriendsPanel(props: {
                     'Content-Type': 'application/json',
                 },
             }).then(x => x.json())
-            const friendScoresResponse = (await friendScoresPromise) as { results: { corrects: boolean[] | null, friends: boolean }[] } | { error: string }
+            const friendScoresResponse = (await friendScoresPromise) as { results: { corrects: boolean[] | null, friends: boolean, idError?: string }[] } | { error: string }
             if ('error' in friendScoresResponse) {
                 // probably some kind of auth error. Handled elsewhere
                 return
             }
             setFriendScores(friendScoresResponse.results.map(
-                (x, idx) => ({ name: quizIDtoName[requesters[idx]], corrects: x.corrects, friends: x.friends }),
+                (x, idx) => ({ name: quizIDtoName[requesters[idx]], corrects: x.corrects, friends: x.friends, idError: x.idError }),
             ))
         })()
     }, [props.date, props.quizFriends, props.quizKind])
@@ -172,6 +172,11 @@ function FriendScoreCorrects(props: FriendScore): ReactNode {
         alignItems: 'center',
         border,
     }
+    if (props.idError !== undefined) {
+        return (
+            <div style={greyedOut}>{props.idError}</div>
+        )
+    }
     if (!props.friends) {
         return (
             <div style={greyedOut}>Pending Friend Request</div>
@@ -213,11 +218,13 @@ function AddFriend(props: {
     quizFriends: QuizFriends
     setQuizFriends: (x: QuizFriends) => void
 }): ReactNode {
-    const [friendName, setFriendName] = useState('')
-    const [friendID, setFriendID] = useState('')
+    const [friendNameField, setFriendNameField] = useState('')
+    const [friendIDField, setFriendIDField] = useState('')
     const [error, setError] = useState<string | undefined>(undefined)
 
     const addFriend = async (): Promise<void> => {
+        const friendID = friendIDField.trim()
+        const friendName = friendNameField.trim()
         if (friendName === '') {
             setError('Friend name cannot be empty')
             return
@@ -250,8 +257,8 @@ function AddFriend(props: {
         })
         props.setQuizFriends([...props.quizFriends, [friendName, friendID]])
         setError(undefined)
-        setFriendName('')
-        setFriendID('')
+        setFriendNameField('')
+        setFriendIDField('')
     }
 
     const form = (
@@ -262,9 +269,9 @@ function AddFriend(props: {
                 <input
                     type="text"
                     placeholder="Friend Name"
-                    value={friendName}
+                    value={friendNameField}
                     style={{ width: '100%', height: '100%' }}
-                    onChange={(e) => { setFriendName(e.target.value) }}
+                    onChange={(e) => { setFriendNameField(e.target.value) }}
                 />
             </div>
             <div
@@ -273,9 +280,9 @@ function AddFriend(props: {
                 <input
                     type="text"
                     placeholder="Friend ID"
-                    value={friendID}
+                    value={friendIDField}
                     style={{ width: '100%', height: '100%' }}
-                    onChange={(e) => { setFriendID(e.target.value) }}
+                    onChange={(e) => { setFriendIDField(e.target.value) }}
                 />
             </div>
             <div style={{ width: '25%', display: 'flex', height: addFriendHeight }}>
