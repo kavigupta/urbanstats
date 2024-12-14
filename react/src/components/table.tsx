@@ -11,7 +11,7 @@ import { MobileArticlePointers, rowExpandedKey, Settings, useSetting } from '../
 import { useUniverse } from '../universe'
 import { isHistoricalCD } from '../utils/is_historical'
 import { isMobileLayout, useMobileLayout } from '../utils/responsive'
-import { displayType } from '../utils/text'
+import { displayType, separateNumber } from '../utils/text'
 
 import { ArticleRow, Disclaimer } from './load-article'
 import { useScreenshotMode } from './screenshot'
@@ -561,7 +561,7 @@ export function Statistic(props: { style?: React.CSSProperties, statname: string
                 if (isUnit) {
                     return <span>&nbsp;</span>
                 }
-                return <span>{value.toFixed(0)}</span>
+                return <span>{separateNumber(value.toFixed(0))}</span>
             }
             else if (name.includes('Fatalities Per Capita')) {
                 if (isUnit) {
@@ -591,7 +591,7 @@ export function Statistic(props: { style?: React.CSSProperties, statname: string
                         </span>
                     )
                 }
-                return <span>{value.toFixed(places)}</span>
+                return <span>{separateNumber(value.toFixed(places))}</span>
             }
             else if (name.includes('Elevation')) {
                 let unitName = 'm'
@@ -602,7 +602,7 @@ export function Statistic(props: { style?: React.CSSProperties, statname: string
                 if (isUnit) {
                     return <span>{unitName}</span>
                 }
-                return <span>{value.toFixed(0)}</span>
+                return <span>{separateNumber(value.toFixed(0))}</span>
             }
             else if (name.startsWith('Population')) {
                 if (value > 1e9) {
@@ -627,7 +627,7 @@ export function Statistic(props: { style?: React.CSSProperties, statname: string
                     if (isUnit) {
                         return <span>&nbsp;</span>
                     }
-                    return <span>{value.toFixed(0)}</span>
+                    return <span>{separateNumber(value.toFixed(0))}</span>
                 }
             }
             else if (name === 'Area') {
@@ -671,7 +671,7 @@ export function Statistic(props: { style?: React.CSSProperties, statname: string
                 }
                 else {
                     if (value > 100) {
-                        return <span>{value.toFixed(0)}</span>
+                        return <span>{separateNumber(value.toFixed(0))}</span>
                     }
                     else if (value > 10) {
                         return <span>{value.toFixed(1)}</span>
