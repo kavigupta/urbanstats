@@ -11,7 +11,7 @@ import '@fontsource/jost/900.css'
 import React, { ReactNode, useEffect, useState } from 'react'
 
 import { Header } from '../components/header'
-import { ScreencapElements, ScreenshotContext, create_screenshot } from '../components/screenshot'
+import { ScreencapElements, ScreenshotContext, createScreenshot } from '../components/screenshot'
 import { Sidebar } from '../components/sidebar'
 import '../common.css'
 import '../components/article.css'
@@ -20,20 +20,20 @@ import { useMobileLayout } from '../utils/responsive'
 import { useColors, useJuxtastatColors } from './colors'
 
 export function PageTemplate({
-    screencap_elements = undefined,
-    has_universe_selector = false,
+    screencapElements = undefined,
+    hasUniverseSelector = false,
     universes = [],
     children,
     showFooter = true,
 }: {
-    screencap_elements?: () => ScreencapElements
-    has_universe_selector?: boolean
+    screencapElements?: () => ScreencapElements
+    hasUniverseSelector?: boolean
     universes?: readonly string[]
     children?: React.ReactNode
     showFooter?: boolean
 }): ReactNode {
-    const [hamburger_open, set_hamburger_open] = useState(false)
-    const [screenshot_mode, set_screenshot_mode] = useState(false)
+    const [hamburgerOpen, setHamburgerOpen] = useState(false)
+    const [screenshotMode, setScreenshotMode] = useState(false)
     const colors = useColors()
     const juxtaColors = useJuxtastatColors()
     const mobileLayout = useMobileLayout()
@@ -56,30 +56,30 @@ export function PageTemplate({
     }, [colors, juxtaColors])
 
     useEffect(() => {
-        if (!mobileLayout && hamburger_open) {
-            set_hamburger_open(false)
+        if (!mobileLayout && hamburgerOpen) {
+            setHamburgerOpen(false)
         }
-    }, [hamburger_open, mobileLayout])
+    }, [hamburgerOpen, mobileLayout])
 
-    const has_screenshot_button = screencap_elements !== undefined
+    const hasScreenshotButton = screencapElements !== undefined
 
     const screencap = async (curr_universe: string | undefined): Promise<void> => {
-        if (screencap_elements === undefined) {
+        if (screencapElements === undefined) {
             return
         }
         try {
-            await create_screenshot(screencap_elements(), curr_universe, colors)
+            await createScreenshot(screencapElements(), curr_universe, colors)
         }
         catch (e) {
             console.error(e)
         }
     }
 
-    const initiate_screenshot = (curr_universe: string | undefined): void => {
-        set_screenshot_mode(true)
+    const initiateScreenshot = (curr_universe: string | undefined): void => {
+        setScreenshotMode(true)
         setTimeout(async () => {
             await screencap(curr_universe)
-            set_screenshot_mode(false)
+            setScreenshotMode(false)
         })
     }
 
@@ -87,7 +87,7 @@ export function PageTemplate({
     const runningInTestCafe = (window as unknown as { '%hammerhead%': unknown })['%hammerhead%'] !== undefined
 
     return (
-        <ScreenshotContext.Provider value={screenshot_mode}>
+        <ScreenshotContext.Provider value={screenshotMode}>
             <meta name="viewport" content="width=device-width, initial-scale=0.75" />
             <div
                 className={mobileLayout ? 'main_panel_mobile' : 'main_panel'}
@@ -99,19 +99,19 @@ export function PageTemplate({
                 }}
             >
                 <Header
-                    hamburger_open={hamburger_open}
-                    set_hamburger_open={set_hamburger_open}
-                    has_screenshot={has_screenshot_button}
-                    has_universe_selector={has_universe_selector}
-                    all_universes={universes}
-                    initiate_screenshot={(curr_universe) => { initiate_screenshot(curr_universe) }}
+                    hamburgerOpen={hamburgerOpen}
+                    setHamburgerOpen={setHamburgerOpen}
+                    hasScreenshot={hasScreenshotButton}
+                    hasUniverseSelector={hasUniverseSelector}
+                    allUniverses={universes}
+                    initiateScreenshot={(curr_universe) => { initiateScreenshot(curr_universe) }}
                 />
                 <div style={{ marginBlockEnd: '16px' }}></div>
                 <BodyPanel
-                    hamburger_open={hamburger_open}
-                    main_content={children}
+                    hamburgerOpen={hamburgerOpen}
+                    mainContent={children}
                     showFooter={showFooter}
-                    setHamburgerOpen={set_hamburger_open}
+                    setHamburgerOpen={setHamburgerOpen}
                 />
             </div>
         </ScreenshotContext.Provider>
@@ -157,17 +157,17 @@ function OtherCredits(): ReactNode {
     )
 }
 
-function BodyPanel({ hamburger_open, main_content, showFooter, setHamburgerOpen }: { hamburger_open: boolean, main_content: React.ReactNode, showFooter: boolean, setHamburgerOpen: (open: boolean) => void }): ReactNode {
+function BodyPanel({ hamburgerOpen, mainContent, showFooter, setHamburgerOpen }: { hamburgerOpen: boolean, mainContent: React.ReactNode, showFooter: boolean, setHamburgerOpen: (open: boolean) => void }): ReactNode {
     const mobileLayout = useMobileLayout()
 
-    if (hamburger_open) {
+    if (hamburgerOpen) {
         return <LeftPanel setHamburgerOpen={setHamburgerOpen} />
     }
     return (
         <div className="body_panel">
             {mobileLayout ? undefined : <LeftPanel setHamburgerOpen={setHamburgerOpen} />}
             <div className={mobileLayout ? 'content_panel_mobile' : 'right_panel'}>
-                {main_content}
+                {mainContent}
                 <div className="gap"></div>
                 { showFooter ? <TemplateFooter /> : null }
             </div>

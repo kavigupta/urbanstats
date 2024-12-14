@@ -1,7 +1,7 @@
 import { Selector } from 'testcafe'
 
-import { quiz_fixture, click_buttons, quiz_screencap } from './quiz_test_utils'
-import { safeReload, TARGET } from './test_utils'
+import { quizFixture, clickButtons, quizScreencap } from './quiz_test_utils'
+import { safeReload, target } from './test_utils'
 
 type Storage = Record<string, string>
 
@@ -10,7 +10,7 @@ interface JuxtastatUserState {
     allUserState: Map<string, Storage>
 }
 
-async function switch_away_from_user(t: TestController, state: JuxtastatUserState): Promise<void> {
+async function switchAwayFromUser(t: TestController, state: JuxtastatUserState): Promise<void> {
     if (state.currentUser !== undefined) {
         const localStorage = await t.eval(() => {
             return JSON.parse(JSON.stringify(window.localStorage)) as object
@@ -24,8 +24,8 @@ async function switch_away_from_user(t: TestController, state: JuxtastatUserStat
     state.currentUser = undefined
 }
 
-async function create_user(t: TestController, user: string, userId: string, state: JuxtastatUserState): Promise<void> {
-    await switch_away_from_user(t, state)
+async function createUser(t: TestController, user: string, userId: string, state: JuxtastatUserState): Promise<void> {
+    await switchAwayFromUser(t, state)
     await t.expect(state.allUserState.has(user)).eql(false)
     await t.eval(() => {
         localStorage.setItem('persistent_id', userId)
@@ -34,8 +34,8 @@ async function create_user(t: TestController, user: string, userId: string, stat
     state.currentUser = user
 }
 
-async function restore_user(t: TestController, user: string, state: JuxtastatUserState): Promise<void> {
-    await switch_away_from_user(t, state)
+async function restoreUser(t: TestController, user: string, state: JuxtastatUserState): Promise<void> {
+    await switchAwayFromUser(t, state)
     await t.expect(state.allUserState.has(user)).eql(true)
     const storage = state.allUserState.get(user)!
     await t.eval(() => {
@@ -47,7 +47,7 @@ async function restore_user(t: TestController, user: string, state: JuxtastatUse
     state.currentUser = user
 }
 
-function starting_state(): JuxtastatUserState {
+function startingState(): JuxtastatUserState {
     return {
         currentUser: undefined,
         allUserState: new Map(),
@@ -120,32 +120,32 @@ function testsGeneric(
     const charliePattern = toCharliePattern(alicePattern)
     const charliePatternPrev = toCharliePattern(alicePatternPrev)
 
-    quiz_fixture(
+    quizFixture(
         `${props.name} friends test`,
-        `${TARGET}/${today}`,
+        `${target}/${today}`,
         { },
         '',
     )
 
     async function aliceBobFriends(t: TestController, screenshots: boolean): Promise<JuxtastatUserState> {
-        const state = starting_state()
+        const state = startingState()
         // Alice does the quiz
-        await create_user(t, 'Alice', '000000a', state)
-        await click_buttons(t, ['a', 'a', 'a', 'a', 'a'])
+        await createUser(t, 'Alice', '000000a', state)
+        await clickButtons(t, ['a', 'a', 'a', 'a', 'a'])
         await t.expect(await friendsText(t)).eql([`You${alicePattern}`])
-        await create_user(t, 'Bob', '000000b', state)
-        await click_buttons(t, ['b', 'b', 'b', 'b', 'b'])
+        await createUser(t, 'Bob', '000000b', state)
+        await clickButtons(t, ['b', 'b', 'b', 'b', 'b'])
         await t.expect(await friendsText(t)).eql([`You${bobPattern}`])
         await addFriend(t, 'Alice', '000000a')
         if (screenshots) {
-            await quiz_screencap(t) // screencap of pending friend request
+            await quizScreencap(t) // screencap of pending friend request
         }
         await t.expect(await friendsText(t)).eql([`You${bobPattern}`, 'AlicePending Friend RequestRemove'])
-        await restore_user(t, 'Alice', state)
+        await restoreUser(t, 'Alice', state)
         await addFriend(t, 'Bob', '000000b')
         // Alice and Bob are now friends
         if (screenshots) {
-            await quiz_screencap(t) // screencap of friends' score
+            await quizScreencap(t) // screencap of friends' score
         }
         await t.expect(await friendsText(t)).eql([`You${alicePattern}`, `Bob${bobPattern}Remove`])
         return state
@@ -154,33 +154,33 @@ function testsGeneric(
     test(`${props.name}-basic-friends-test`, async (t) => {
         const state = await aliceBobFriends(t, true)
         // Charlie hasn't done the quiz yet (they register on #98 instead)
-        await create_user(t, 'Charlie', '000000c', state)
-        await t.navigateTo(`${TARGET}/${yesterday}`)
-        await click_buttons(t, ['a', 'b', 'a', 'b', 'a'])
+        await createUser(t, 'Charlie', '000000c', state)
+        await t.navigateTo(`${target}/${yesterday}`)
+        await clickButtons(t, ['a', 'b', 'a', 'b', 'a'])
         await addFriend(t, 'Alice', '000000a')
         await t.expect(await friendsText(t)).eql([`You${charliePatternPrev}`, 'AlicePending Friend RequestRemove'])
-        await restore_user(t, 'Alice', state)
-        await t.navigateTo(`${TARGET}/${today}`)
+        await restoreUser(t, 'Alice', state)
+        await t.navigateTo(`${target}/${today}`)
         await addFriend(t, 'Charlie', '000000c')
         // Alice and Charlie are now friends
-        await quiz_screencap(t) // screencap of friend who hasn't done the quiz yet
+        await quizScreencap(t) // screencap of friend who hasn't done the quiz yet
         await t.expect(await friendsText(t)).eql([`You${alicePattern}`, `Bob${bobPattern}Remove`, 'CharlieNot Done YetRemove'])
         // Charlie now does the quiz
-        await restore_user(t, 'Charlie', state)
-        await click_buttons(t, ['a', 'b', 'a', 'b', 'a'])
+        await restoreUser(t, 'Charlie', state)
+        await clickButtons(t, ['a', 'b', 'a', 'b', 'a'])
         await t.expect(await friendsText(t)).eql([`You${charliePattern}`, `Alice${alicePattern}Remove`])
-        await restore_user(t, 'Alice', state)
-        await quiz_screencap(t) // multiple friends who have done the quiz
+        await restoreUser(t, 'Alice', state)
+        await quizScreencap(t) // multiple friends who have done the quiz
         await t.expect(await friendsText(t)).eql([`You${alicePattern}`, `Bob${bobPattern}Remove`, `Charlie${charliePattern}Remove`])
         // Alice unfriends Bob
         await removeFriend(t, 0)
         // wait until there's only one Remove button. up to 1 second
         await t.expect(Selector('button').withText('Remove').count).eql(1, { timeout: 1000 })
-        await quiz_screencap(t) // unfriended Bob
+        await quizScreencap(t) // unfriended Bob
         await t.expect(await friendsText(t)).eql([`You${alicePattern}`, `Charlie${charliePattern}Remove`])
         // Bob no longer sees Alice's score
-        await restore_user(t, 'Bob', state)
-        await quiz_screencap(t) // Bob no longer sees Alice's score
+        await restoreUser(t, 'Bob', state)
+        await quizScreencap(t) // Bob no longer sees Alice's score
         await t.expect(await friendsText(t)).eql([`You${bobPattern}`, 'AlicePending Friend RequestRemove'])
         // rename Alice to Alice2 by clicking on the Alice name and changing it
         const aliceName = Selector('span').withAttribute('class', 'editable_content').nth(0)
@@ -196,7 +196,7 @@ function testsGeneric(
 
     test(`${props.name}-friends-bad-naming-test`, async (t) => {
         const state = await aliceBobFriends(t, false)
-        await restore_user(t, 'Alice', state)
+        await restoreUser(t, 'Alice', state)
         // should error because we are attempting to add the same user under a different name
         await addFriend(t, 'Bob2', '000000b')
         // Bob2 not added
@@ -240,8 +240,8 @@ function testsGeneric(
     test(`${props.name}-same-on-juxta-and-retro`, async (t) => {
         await aliceBobFriends(t, false)
         // same on retrostat
-        await t.navigateTo(`${TARGET}/${other}`)
-        await click_buttons(t, ['a', 'a', 'a', 'a', 'a'])
+        await t.navigateTo(`${target}/${other}`)
+        await clickButtons(t, ['a', 'a', 'a', 'a', 'a'])
         await t.expect(await friendsText(t)).eql([`You${aliceOtherPattern}`, 'BobNot Done YetRemove'])
     })
 }

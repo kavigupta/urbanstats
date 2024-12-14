@@ -4,8 +4,8 @@ import { EditableString } from '../components/table'
 import { useColors, useJuxtastatColors } from '../page_template/colors'
 import { mixWithBackground } from '../utils/color'
 
-import { ENDPOINT, QuizFriends } from './quiz'
-import { unique_persistent_id, unique_secure_id } from './statistics'
+import { endpoint, QuizFriends } from './quiz'
+import { uniquePersistentId, uniqueSecureId } from './statistics'
 
 interface FriendScore { name?: string, corrects: boolean[] | null, friends: boolean }
 
@@ -23,9 +23,9 @@ export function QuizFriendsPanel(props: {
             // map name to id for quizFriends
             const quizIDtoName = Object.fromEntries(props.quizFriends.map(x => [x[1], x[0]]))
             const requesters = props.quizFriends.map(x => x[1])
-            const user = unique_persistent_id()
-            const secureID = unique_secure_id()
-            const friendScoresPromise = fetch(`${ENDPOINT}/juxtastat/todays_score_for`, {
+            const user = uniquePersistentId()
+            const secureID = uniqueSecureId()
+            const friendScoresPromise = fetch(`${endpoint}/juxtastat/todays_score_for`, {
                 method: 'POST',
                 body: JSON.stringify({ user, secureID, date: props.date, requesters, quiz_kind: props.quizKind }),
                 headers: {
@@ -64,9 +64,9 @@ export function QuizFriendsPanel(props: {
                             friendScore={friendScore}
                             removeFriend={() => {
                                 void (async () => {
-                                    await fetch(`${ENDPOINT}/juxtastat/unfriend`, {
+                                    await fetch(`${endpoint}/juxtastat/unfriend`, {
                                         method: 'POST',
-                                        body: JSON.stringify({ user: unique_persistent_id(), secureID: unique_secure_id(), requestee: props.quizFriends[idx][1] }),
+                                        body: JSON.stringify({ user: uniquePersistentId(), secureID: uniqueSecureId(), requestee: props.quizFriends[idx][1] }),
                                         headers: {
                                             'Content-Type': 'application/json',
                                         },
@@ -88,8 +88,8 @@ export function QuizFriendsPanel(props: {
     )
 }
 
-const SCORE_CORRECT_HEIGHT = '2em'
-const ADD_FRIEND_HEIGHT = '1.5em'
+const scoreCorrectHeight = '2em'
+const addFriendHeight = '1.5em'
 
 function FriendScore(props: {
     index: number
@@ -119,7 +119,7 @@ function FriendScore(props: {
 
     const row = (
         <div
-            style={{ display: 'flex', flexDirection: 'row', height: SCORE_CORRECT_HEIGHT, alignItems: 'center' }}
+            style={{ display: 'flex', flexDirection: 'row', height: scoreCorrectHeight, alignItems: 'center' }}
             className="testing-friends-section"
         >
             <div style={{ width: '25%' }}>
@@ -128,7 +128,7 @@ function FriendScore(props: {
             <div style={{ width: '50%' }}>
                 <FriendScoreCorrects {...props.friendScore} />
             </div>
-            <div style={{ width: '25%', display: 'flex', height: ADD_FRIEND_HEIGHT }}>
+            <div style={{ width: '25%', display: 'flex', height: addFriendHeight }}>
                 {props.removeFriend !== undefined
                 && (
                     <button
@@ -166,7 +166,7 @@ function FriendScoreCorrects(props: FriendScore): ReactNode {
     const greyedOut = {
         backgroundColor: mixWithBackground(colors.hueColors.orange, 0.5, colors.background),
         width: '100%',
-        height: SCORE_CORRECT_HEIGHT,
+        height: scoreCorrectHeight,
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center',
@@ -186,7 +186,7 @@ function FriendScoreCorrects(props: FriendScore): ReactNode {
     return (
         <div
             className="testing-friend-score"
-            style={{ display: 'flex', flexDirection: 'row', height: SCORE_CORRECT_HEIGHT }}
+            style={{ display: 'flex', flexDirection: 'row', height: scoreCorrectHeight }}
         >
             {corrects.map((correct, idx) => {
                 const color = correct ? juxtaColors.correct : juxtaColors.incorrect
@@ -226,7 +226,7 @@ function AddFriend(props: {
             setError('Friend ID cannot be empty')
             return
         }
-        if (friendID === unique_persistent_id()) {
+        if (friendID === uniquePersistentId()) {
             setError('Friend ID cannot be your own ID')
             return
         }
@@ -239,9 +239,9 @@ function AddFriend(props: {
             setError(`Friend ID ${friendID} already exists as ${friendNameDup}`)
             return
         }
-        const user = unique_persistent_id()
-        const secureID = unique_secure_id()
-        await fetch(`${ENDPOINT}/juxtastat/friend_request`, {
+        const user = uniquePersistentId()
+        const secureID = uniqueSecureId()
+        await fetch(`${endpoint}/juxtastat/friend_request`, {
             method: 'POST',
             body: JSON.stringify({ user, secureID, requestee: friendID }),
             headers: {
@@ -255,7 +255,7 @@ function AddFriend(props: {
     }
 
     const form = (
-        <div style={{ display: 'flex', flexDirection: 'row', height: ADD_FRIEND_HEIGHT, alignItems: 'center' }}>
+        <div style={{ display: 'flex', flexDirection: 'row', height: addFriendHeight, alignItems: 'center' }}>
             <div
                 style={{ width: '37.5%', padding: '0 0.2em' }}
             >
@@ -268,7 +268,7 @@ function AddFriend(props: {
                 />
             </div>
             <div
-                style={{ width: '37.5%', padding: '0 0.2em', height: ADD_FRIEND_HEIGHT }}
+                style={{ width: '37.5%', padding: '0 0.2em', height: addFriendHeight }}
             >
                 <input
                     type="text"
@@ -278,7 +278,7 @@ function AddFriend(props: {
                     onChange={(e) => { setFriendID(e.target.value) }}
                 />
             </div>
-            <div style={{ width: '25%', display: 'flex', height: ADD_FRIEND_HEIGHT }}>
+            <div style={{ width: '25%', display: 'flex', height: addFriendHeight }}>
                 <button
                     onClick={addFriend}
                     style={{ marginLeft: '1em', height: '100%' }}

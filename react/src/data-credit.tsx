@@ -50,6 +50,7 @@ function ExplanationTable(props: { name: string, link: string, table: readonly (
     )
 }
 
+// eslint-disable-next-line no-restricted-syntax -- Header so we can use as tsx tag name
 function NRef({ children, name, h: Header = 'h2' }: { children: React.ReactNode, name: string, h?: 'h1' | 'h2' }): ReactNode {
     return (
         <Header id={`explanation_${name}`}>

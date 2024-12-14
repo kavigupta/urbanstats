@@ -8,12 +8,12 @@ import React, { ReactNode, useContext, useEffect, useRef, useState } from 'react
 import valid_geographies from '../data/mapper/used_geographies'
 import statNames from '../data/statistic_name_list'
 import { loadProtobuf } from '../load_json'
-import { Keypoints, Ramp, parse_ramp } from '../mapper/ramps'
-import { Basemap, ColorStat, ColorStatDescriptor, FilterSettings, LineStyle, MapSettings, MapperSettings, parse_color_stat } from '../mapper/settings'
-import { consolidated_shape_link, consolidated_stats_link } from '../navigation/links'
+import { Keypoints, Ramp, parseRamp } from '../mapper/ramps'
+import { Basemap, ColorStat, ColorStatDescriptor, FilterSettings, LineStyle, MapSettings, MapperSettings, parseColorStat } from '../mapper/settings'
+import { consolidatedShapeLink, consolidatedStatsLink } from '../navigation/links'
 import { Navigator } from '../navigation/navigator'
 import { PageTemplate } from '../page_template/template'
-import { interpolate_color } from '../utils/color'
+import { interpolateColor } from '../utils/color'
 import { ConsolidatedShapes, ConsolidatedStatistics, Feature, IAllStats } from '../utils/protos'
 import { useHeaderTextClass } from '../utils/responsive'
 import { NormalizeProto } from '../utils/types'
@@ -22,14 +22,14 @@ import { MapGeneric, MapGenericProps, Polygons } from './map'
 import { Statistic } from './table'
 
 interface DisplayedMapProps extends MapGenericProps {
-    color_stat: ColorStat
+    colorStat: ColorStat
     filter: ColorStat | undefined
-    geography_kind: string
-    underlying_shapes: Promise<ConsolidatedShapes>
-    underlying_stats: Promise<ConsolidatedStatistics>
+    geographyKind: string
+    underlyingShapes: Promise<ConsolidatedShapes>
+    underlyingStats: Promise<ConsolidatedStatistics>
     ramp: Ramp
-    ramp_callback: (newRamp: EmpiricalRamp) => void
-    line_style: LineStyle
+    rampCallback: (newRamp: EmpiricalRamp) => void
+    lineStyle: LineStyle
     basemap: Basemap
     height: string | undefined
 }
@@ -37,54 +37,54 @@ interface DisplayedMapProps extends MapGenericProps {
 class DisplayedMap extends MapGeneric<DisplayedMapProps> {
     name_to_index: undefined | Map<string, number>
 
-    async guarantee_name_to_index(): Promise<void> {
+    async guaranteeNameToIndex(): Promise<void> {
         if (this.name_to_index === undefined) {
-            const result = (await this.props.underlying_shapes).longnames
+            const result = (await this.props.underlyingShapes).longnames
             this.name_to_index = new Map(result.map((r, i) => [r, i]))
         }
     }
 
     override async loadShape(name: string): Promise<NormalizeProto<Feature>> {
-        await this.guarantee_name_to_index()
+        await this.guaranteeNameToIndex()
         const index = this.name_to_index!.get(name)!
-        const data = (await this.props.underlying_shapes).shapes[index]
+        const data = (await this.props.underlyingShapes).shapes[index]
         return data as NormalizeProto<Feature>
     }
 
-    override async compute_polygons(): Promise<Polygons> {
+    override async computePolygons(): Promise<Polygons> {
     // reset index
         this.name_to_index = undefined
-        await this.guarantee_name_to_index()
+        await this.guaranteeNameToIndex()
 
-        const line_style = this.props.line_style
+        const lineStyle = this.props.lineStyle
 
-        let stats: { stats: NormalizeProto<IAllStats>[], longnames: string[] } = (await this.props.underlying_stats) as NormalizeProto<ConsolidatedStatistics>
+        let stats: { stats: NormalizeProto<IAllStats>[], longnames: string[] } = (await this.props.underlyingStats) as NormalizeProto<ConsolidatedStatistics>
         // TODO correct this!
         if (this.props.filter !== undefined) {
-            const filter_vals = this.props.filter.compute(stats.stats)
+            const filterVals = this.props.filter.compute(stats.stats)
             stats = {
-                stats: stats.stats.filter((x, i) => filter_vals[i]),
-                longnames: stats.longnames.filter((x, i) => filter_vals[i]),
+                stats: stats.stats.filter((x, i) => filterVals[i]),
+                longnames: stats.longnames.filter((x, i) => filterVals[i]),
             }
         }
-        const stat_vals = this.props.color_stat.compute(stats.stats)
+        const statVals = this.props.colorStat.compute(stats.stats)
         const names = stats.longnames
-        const [ramp, interpolations] = this.props.ramp.create_ramp(stat_vals)
-        this.props.ramp_callback({ ramp, interpolations })
-        const colors = stat_vals.map(
-            val => interpolate_color(ramp, val),
+        const [ramp, interpolations] = this.props.ramp.createRamp(statVals)
+        this.props.rampCallback({ ramp, interpolations })
+        const colors = statVals.map(
+            val => interpolateColor(ramp, val),
         )
         const styles = colors.map(
             // no outline, set color fill, alpha=1
             color => ({
                 fillColor: color,
                 fillOpacity: 1,
-                color: line_style.color,
+                color: lineStyle.color,
                 opacity: 1,
-                weight: line_style.weight,
+                weight: lineStyle.weight,
             }),
         )
-        const metas = stat_vals.map((x) => { return { statistic: x } })
+        const metas = statVals.map((x) => { return { statistic: x } })
         return [names, styles, metas, -1] as const
     }
 
@@ -108,18 +108,18 @@ function Colorbar(props: { name: string, ramp: EmpiricalRamp | undefined }): Rea
     }
     const values = props.ramp.interpolations
 
-    const create_value = (stat: number): ReactNode => {
+    const createValue = (stat: number): ReactNode => {
         return (
             <div className="centered_text">
                 <Statistic
                     statname={props.name}
                     value={stat}
-                    is_unit={false}
+                    isUnit={false}
                 />
                 <Statistic
                     statname={props.name}
                     value={stat}
-                    is_unit={true}
+                    isUnit={true}
                 />
             </div>
         )
@@ -137,7 +137,7 @@ function Colorbar(props: { name: string, ramp: EmpiricalRamp | undefined }): Rea
                                     style={
                                         {
                                             width: '10%', height: '1em',
-                                            backgroundColor: interpolate_color(props.ramp!.ramp, x),
+                                            backgroundColor: interpolateColor(props.ramp!.ramp, x),
                                         }
                                     }
                                 >
@@ -149,7 +149,7 @@ function Colorbar(props: { name: string, ramp: EmpiricalRamp | undefined }): Rea
                         {
                             values.map((x, i) => (
                                 <td key={i} style={{ width: '10%', height: '1em' }}>
-                                    {create_value(x)}
+                                    {createValue(x)}
                                 </td>
                             ))
                         }
@@ -164,14 +164,14 @@ function Colorbar(props: { name: string, ramp: EmpiricalRamp | undefined }): Rea
 }
 
 interface MapComponentProps {
-    underlying_shapes: Promise<ConsolidatedShapes>
-    underlying_stats: Promise<ConsolidatedStatistics>
-    geography_kind: string
+    underlyingShapes: Promise<ConsolidatedShapes>
+    underlyingStats: Promise<ConsolidatedStatistics>
+    geographyKind: string
     ramp: Ramp
-    color_stat: ColorStatDescriptor | undefined
+    colorStat: ColorStatDescriptor | undefined
     filter: FilterSettings
-    map_ref: React.RefObject<DisplayedMap>
-    line_style: LineStyle
+    mapRef: React.RefObject<DisplayedMap>
+    lineStyle: LineStyle
     basemap: Basemap
     height: string | undefined
 }
@@ -182,10 +182,10 @@ interface EmpiricalRamp {
 }
 
 function MapComponent(props: MapComponentProps): ReactNode {
-    const color_stat = parse_color_stat(name_to_index, props.color_stat)
-    const filter = props.filter.enabled ? parse_color_stat(name_to_index, props.filter.function) : undefined
+    const colorStat = parseColorStat(nameToIndex, props.colorStat)
+    const filter = props.filter.enabled ? parseColorStat(nameToIndex, props.filter.function) : undefined
 
-    const [empirical_ramp, set_empirical_ramp] = useState<EmpiricalRamp | undefined>(undefined)
+    const [empiricalRamp, setEmpiricalRamp] = useState<EmpiricalRamp | undefined>(undefined)
 
     return (
         <div style={{
@@ -196,23 +196,23 @@ function MapComponent(props: MapComponentProps): ReactNode {
         >
             <div style={{ height: '90%', width: '100%' }}>
                 <DisplayedMap
-                    color_stat={color_stat}
+                    colorStat={colorStat}
                     filter={filter}
-                    geography_kind={props.geography_kind}
-                    underlying_shapes={props.underlying_shapes}
-                    underlying_stats={props.underlying_stats}
+                    geographyKind={props.geographyKind}
+                    underlyingShapes={props.underlyingShapes}
+                    underlyingStats={props.underlyingStats}
                     ramp={props.ramp}
-                    ramp_callback={(newRamp) => { set_empirical_ramp(newRamp) }}
-                    ref={props.map_ref}
-                    line_style={props.line_style}
+                    rampCallback={(newRamp) => { setEmpiricalRamp(newRamp) }}
+                    ref={props.mapRef}
+                    lineStyle={props.lineStyle}
                     basemap={props.basemap}
                     height={props.height}
                 />
             </div>
             <div style={{ height: '8%', width: '100%' }}>
                 <Colorbar
-                    name={color_stat.name()}
-                    ramp={empirical_ramp}
+                    name={colorStat.name()}
+                    ramp={empiricalRamp}
                 />
             </div>
         </div>
@@ -230,20 +230,20 @@ function saveAsFile(filename: string, data: string, type: string): void {
     document.body.removeChild(link)
 }
 
-function Export(props: { map_ref: React.RefObject<DisplayedMap> }): ReactNode {
+function Export(props: { mapRef: React.RefObject<DisplayedMap> }): ReactNode {
     const exportAsSvg = async (): Promise<void> => {
-        if (props.map_ref.current === null) {
+        if (props.mapRef.current === null) {
             return
         }
-        const svg = await props.map_ref.current.exportAsSvg()
+        const svg = await props.mapRef.current.exportAsSvg()
         saveAsFile('map.svg', svg, 'image/svg+xml')
     }
 
     const exportAsGeoJSON = async (): Promise<void> => {
-        if (props.map_ref.current === null) {
+        if (props.mapRef.current === null) {
             return
         }
-        const geojson = await props.map_ref.current.exportAsGeoJSON()
+        const geojson = await props.mapRef.current.exportAsGeoJSON()
         saveAsFile('map.geojson', geojson, 'application/geo+json')
     }
 
@@ -275,67 +275,67 @@ function Export(props: { map_ref: React.RefObject<DisplayedMap> }): ReactNode {
     )
 }
 
-const name_to_index = new Map(statNames.map((name, i) => [name, i]))
+const nameToIndex = new Map(statNames.map((name, i) => [name, i]))
 
-export function MapperPanel(props: { map_settings: MapSettings, view: boolean }): ReactNode {
-    const [map_settings, set_map_settings] = useState(props.map_settings)
+export function MapperPanel(props: { mapSettings: MapSettings, view: boolean }): ReactNode {
+    const [mapSettings, setMapSettings] = useState(props.mapSettings)
 
     useEffect(() => {
         // So that map settings are updated when the prop changes
-        set_map_settings(props.map_settings)
-    }, [props.map_settings])
+        setMapSettings(props.mapSettings)
+    }, [props.mapSettings])
 
-    const [underlying_shapes, set_underlying_shapes] = useState<Promise<ConsolidatedShapes> | undefined>(undefined)
-    const [underlying_stats, set_underlying_stats] = useState<Promise<ConsolidatedStatistics> | undefined>(undefined)
+    const [underlyingShapes, setUnderlyingShapes] = useState<Promise<ConsolidatedShapes> | undefined>(undefined)
+    const [underlyingStats, setUnderlyingStats] = useState<Promise<ConsolidatedStatistics> | undefined>(undefined)
 
     useEffect(() => {
-        if (valid_geographies.includes(map_settings.geography_kind)) {
-            set_underlying_shapes(loadProtobuf(
-                consolidated_shape_link(map_settings.geography_kind),
+        if (valid_geographies.includes(mapSettings.geography_kind)) {
+            setUnderlyingShapes(loadProtobuf(
+                consolidatedShapeLink(mapSettings.geography_kind),
                 'ConsolidatedShapes',
             ))
-            set_underlying_stats(loadProtobuf(
-                consolidated_stats_link(map_settings.geography_kind),
+            setUnderlyingStats(loadProtobuf(
+                consolidatedStatsLink(mapSettings.geography_kind),
                 'ConsolidatedStatistics',
             ))
         }
-    }, [map_settings.geography_kind])
+    }, [mapSettings.geography_kind])
 
-    const map_ref = useRef<DisplayedMap>(null)
+    const mapRef = useRef<DisplayedMap>(null)
 
-    const jsoned_settings = JSON.stringify(map_settings)
+    const jsonedSettings = JSON.stringify(mapSettings)
 
     const navContext = useContext(Navigator.Context)
 
     useEffect(() => {
-        if (props.map_settings !== map_settings) {
+        if (props.mapSettings !== mapSettings) {
             // gzip then base64 encode
-            const encoded_settings = gzipSync(jsoned_settings).toString('base64')
-            navContext.setMapperSettings(encoded_settings)
+            const encodedSettings = gzipSync(jsonedSettings).toString('base64')
+            navContext.setMapperSettings(encodedSettings)
         }
     // eslint-disable-next-line react-hooks/exhaustive-deps -- props.view won't be set except from the navigator
-    }, [jsoned_settings, navContext])
+    }, [jsonedSettings, navContext])
 
-    const mapper_panel = (height: string | undefined): ReactNode => {
-        const ramp = parse_ramp(map_settings.ramp)
-        const geography_kind = map_settings.geography_kind
-        const color_stat = map_settings.color_stat
-        const filter = map_settings.filter
-        const valid = valid_geographies.includes(geography_kind)
+    const mapperPanel = (height: string | undefined): ReactNode => {
+        const ramp = parseRamp(mapSettings.ramp)
+        const geographyKind = mapSettings.geography_kind
+        const colorStat = mapSettings.color_stat
+        const filter = mapSettings.filter
+        const valid = valid_geographies.includes(geographyKind)
 
         return !valid
             ? <div>Invalid geography kind</div>
             : (
                     <MapComponent
-                        underlying_shapes={underlying_shapes!}
-                        underlying_stats={underlying_stats!}
-                        geography_kind={geography_kind}
+                        underlyingShapes={underlyingShapes!}
+                        underlyingStats={underlyingStats!}
+                        geographyKind={geographyKind}
                         ramp={ramp}
-                        color_stat={color_stat}
+                        colorStat={colorStat}
                         filter={filter}
-                        map_ref={map_ref}
-                        line_style={map_settings.line_style}
-                        basemap={map_settings.basemap}
+                        mapRef={mapRef}
+                        lineStyle={mapSettings.line_style}
+                        basemap={mapSettings.basemap}
                         height={height}
                     />
                 )
@@ -344,7 +344,7 @@ export function MapperPanel(props: { map_settings: MapSettings, view: boolean })
     const headerTextClass = useHeaderTextClass()
 
     if (props.view) {
-        return mapper_panel('100%')
+        return mapperPanel('100%')
     }
 
     return (
@@ -353,15 +353,15 @@ export function MapperPanel(props: { map_settings: MapSettings, view: boolean })
                 <div className={headerTextClass}>Urban Stats Mapper (beta)</div>
                 <MapperSettings
                     names={statNames}
-                    valid_geographies={valid_geographies}
-                    map_settings={map_settings}
-                    set_map_settings={set_map_settings}
+                    validGeographies={valid_geographies}
+                    mapSettings={mapSettings}
+                    setMapSettings={setMapSettings}
                 />
                 <Export
-                    map_ref={map_ref}
+                    mapRef={mapRef}
                 />
                 {
-                    mapper_panel(undefined) // use default height
+                    mapperPanel(undefined) // use default height
                 }
             </div>
         </PageTemplate>

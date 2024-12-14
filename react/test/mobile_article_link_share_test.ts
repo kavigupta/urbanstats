@@ -1,14 +1,14 @@
 import { Selector } from 'testcafe'
 
-import { screencap, TARGET, urbanstatsFixture, withHamburgerMenu } from './test_utils'
+import { screencap, target, urbanstatsFixture, withHamburgerMenu } from './test_utils'
 
 urbanstatsFixture(
     'paste simple ordinals link with overall pointer selection',
-    TARGET,
+    target,
     async (t) => {
         await t.resizeWindow(400, 800)
         // Must navigate AFTER resize otherwise settings are not applied correctly
-        await t.navigateTo(`${TARGET}/article.html?longname=Concord+Urban+Center%2C+USA&s=oWHKo6pbBn2h`)
+        await t.navigateTo(`${target}/article.html?longname=Concord+Urban+Center%2C+USA&s=oWHKo6pbBn2h`)
     },
 )
 
@@ -23,11 +23,11 @@ test('with simple ordinals, does not apply pointer selection setting', async (t)
 
 urbanstatsFixture(
     'paste with overall pointer selection (no simple ordinals)',
-    TARGET,
+    target,
     async (t) => {
         await t.resizeWindow(400, 800)
         // Must navigate AFTER resize otherwise settings are not applied correctly
-        await t.navigateTo(`${TARGET}/article.html?longname=Concord+Urban+Center%2C+USA&s=oWHKo6omkB1f`)
+        await t.navigateTo(`${target}/article.html?longname=Concord+Urban+Center%2C+USA&s=oWHKo6omkB1f`)
     },
 )
 

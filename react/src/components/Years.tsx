@@ -14,7 +14,7 @@ function YearCheckbox({ year }: { year: Year }): ReactNode {
         <li>
             <CheckboxSetting
                 name={year.toString()}
-                setting_key={`show_stat_year_${year}`}
+                settingKey={`show_stat_year_${year}`}
                 testId={`year_${year}`}
             />
         </li>

@@ -40,7 +40,7 @@ export async function startProxy(): Promise<void> {
         userResHeaderDecorator(headers, userReq) {
             const fileExtension = (/\.(.+)$/.exec(userReq.path))?.[1]
             const mimeType = fileExtension ? { html: 'text/html', js: 'text/javascript' }[fileExtension] : undefined
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars -- We're removing the context-security-policy header via destructuring
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars, no-restricted-syntax -- We're removing the context-security-policy header via destructuring
             const { 'content-security-policy': _, ...filteredHeaders } = headers
             return {
                 ...filteredHeaders,

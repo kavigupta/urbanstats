@@ -3,7 +3,7 @@ import { useContext } from 'react'
 import { dataSources } from '../data/statistics_tree'
 import { Navigator } from '../navigation/navigator'
 
-import { Settings, source_enabled_key, StatGroupKey, StatYearKey, StatSourceKey, useSettings } from './settings'
+import { Settings, sourceEnabledKey, StatGroupKey, StatYearKey, StatSourceKey, useSettings } from './settings'
 import { allGroups, allYears, AmbiguousSources, Category, DataSource, DataSourceCheckboxes, findAmbiguousSourcesAll, Group, sourceDisambiguation, statParents, StatPath, statsTree, Year, yearStatPaths } from './statistic-tree'
 
 export type StatGroupSettings = Record<StatGroupKey | StatYearKey | StatSourceKey, boolean>
@@ -22,7 +22,7 @@ export function sourceApplies(source: DataSource, settings: StatGroupSettings, s
     if (!sourcesByCategory.get(source.category)!.chooseable.has(source.name)) {
         return true
     }
-    return settings[source_enabled_key(source) satisfies StatSourceKey]
+    return settings[sourceEnabledKey(source) satisfies StatSourceKey]
 }
 
 export function groupKeys(groups: Group[]): StatGroupKey[] {
@@ -37,7 +37,7 @@ export function groupYearKeys(): (keyof StatGroupSettings)[] {
     return [
         ...groupKeys(allGroups),
         ...allYears.map(year => `show_stat_year_${year}` as const),
-        ...dataSources.flatMap(({ category, sources }) => sources.map(({ source }) => source_enabled_key({ category, name: source }))),
+        ...dataSources.flatMap(({ category, sources }) => sources.map(({ source }) => sourceEnabledKey({ category, name: source }))),
     ]
 }
 

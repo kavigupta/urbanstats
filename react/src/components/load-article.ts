@@ -13,14 +13,14 @@ export interface HistogramExtraStat {
     binMin: number
     binSize: number
     counts: number[]
-    universe_total: number
+    universeTotal: number
 }
 
 export interface TimeSeriesExtraStat {
     type: 'time_series'
     name: string
     years: number[]
-    time_series: number[]
+    timeSeries: number[]
 }
 
 export type ExtraStat = HistogramExtraStat | TimeSeriesExtraStat
@@ -33,21 +33,21 @@ export interface ArticleRow {
     statval: number
     ordinal: number
     overallOrdinal: number
-    percentile_by_population: number
+    percentileByPopulation: number
     statcol: StatCol
     statname: StatName
     statpath: StatPath
-    explanation_page: string
+    explanationPage: string
     articleType: string
-    total_count_in_class: number
-    total_count_overall: number
-    _index: number
-    rendered_statname: string
-    extra_stat?: ExtraStat
+    totalCountInClass: number
+    totalCountOverall: number
+    index: number
+    renderedStatname: string
+    extraStat?: ExtraStat
     disclaimer?: Disclaimer
 }
 
-function lookup_in_compressed_sequence(seq: [number, number][], idx: number): number {
+function lookupInCompressedSequence(seq: [number, number][], idx: number): number {
     // translation of sharding.py::lookup_in_compressed_sequence
     for (const [value, length] of seq) {
         if (idx < length) {
@@ -58,7 +58,7 @@ function lookup_in_compressed_sequence(seq: [number, number][], idx: number): nu
     throw new Error('Index out of bounds')
 }
 
-export function for_type(universe: string, statcol: StatCol, typ: string): number {
+export function forType(universe: string, statcol: StatCol, typ: string): number {
     const idx = stats.indexOf(statcol) // Works because `require` is global
     if (!(universe in counts_by_article_type)) {
         return 0
@@ -66,9 +66,9 @@ export function for_type(universe: string, statcol: StatCol, typ: string): numbe
     if (!(typ in counts_by_article_type[universe])) {
         return 0
     }
-    const counts_by_type = counts_by_article_type[universe][typ]
+    const countsByType = counts_by_article_type[universe][typ]
 
-    return lookup_in_compressed_sequence(counts_by_type, idx)
+    return lookupInCompressedSequence(countsByType, idx)
 }
 
 function unpackBytes(bytes: Uint8Array): number[] {
@@ -84,59 +84,59 @@ function unpackBytes(bytes: Uint8Array): number[] {
     return result
 }
 
-export function load_single_article(data: Article, universe: string): ArticleRow[] {
+export function loadSingleArticle(data: Article, universe: string): ArticleRow[] {
     // index of universe in data.universes
-    const universe_index = data.universes.indexOf(universe)
-    const article_type = data.articleType
+    const universeIndex = data.universes.indexOf(universe)
+    const articleType = data.articleType
 
-    const extra_stat_idx_to_col: number[] = extra_stats.map(xy => xy[0])
+    const extraStatIdxToCol: number[] = extra_stats.map(xy => xy[0])
 
     const indices = unpackBytes(data.statisticIndicesPacked)
 
     return data.rows.map((row_original, row_index) => {
         const i = indices[row_index]
         // fresh row object
-        let extra_stat: ExtraStat | undefined = undefined
-        if (extra_stat_idx_to_col.includes(i)) {
-            const extra_stat_idx = extra_stat_idx_to_col.indexOf(i)
-            const [, spec] = extra_stats[extra_stat_idx]
+        let extraStat: ExtraStat | undefined = undefined
+        if (extraStatIdxToCol.includes(i)) {
+            const extraStatIdx = extraStatIdxToCol.indexOf(i)
+            const [, spec] = extra_stats[extraStatIdx]
             // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- this is for future proofing
             if (spec.type === 'histogram') {
-                const universe_total_idx = spec.universe_total_idx
-                const histogram = data.extraStats[extra_stat_idx].histogram!
-                extra_stat = {
+                const universeTotalIdx = spec.universe_total_idx
+                const histogram = data.extraStats[extraStatIdx].histogram!
+                extraStat = {
                     type: 'histogram',
                     binMin: histogram.binMin,
                     binSize: histogram.binSize,
                     counts: histogram.counts,
-                    universe_total: data.rows.find((_, universe_row_index) => indices[universe_row_index] === universe_total_idx)!.statval!,
+                    universeTotal: data.rows.find((_, universe_row_index) => indices[universe_row_index] === universeTotalIdx)!.statval!,
                 } as HistogramExtraStat
             }
         }
         return {
             statval: row_original.statval!,
-            ordinal: row_original.ordinalByUniverse![universe_index],
-            overallOrdinal: row_original.overallOrdinalByUniverse![universe_index],
-            percentile_by_population: row_original.percentileByPopulationByUniverse![universe_index],
+            ordinal: row_original.ordinalByUniverse![universeIndex],
+            overallOrdinal: row_original.overallOrdinalByUniverse![universeIndex],
+            percentileByPopulation: row_original.percentileByPopulationByUniverse![universeIndex],
             statcol: stats[i],
             statname: names[i],
             statpath: paths[i],
-            explanation_page: explanation_page[i],
-            articleType: article_type,
-            total_count_in_class: for_type(universe, stats[i], article_type),
-            total_count_overall: for_type(universe, stats[i], 'overall'),
-            _index: i,
-            rendered_statname: names[i],
-            extra_stat,
+            explanationPage: explanation_page[i],
+            articleType,
+            totalCountInClass: forType(universe, stats[i], articleType),
+            totalCountOverall: forType(universe, stats[i], 'overall'),
+            index: i,
+            renderedStatname: names[i],
+            extraStat,
         } satisfies ArticleRow
     })
 }
 
-export function load_articles(datas: Article[], universe: string): {
+export function loadArticles(datas: Article[], universe: string): {
     rows: (settings: StatGroupSettings) => ArticleRow[][]
     statPaths: StatPath[][]
 } {
-    const availableRowsAll = datas.map(data => load_single_article(data, universe))
+    const availableRowsAll = datas.map(data => loadSingleArticle(data, universe))
     const statPathsEach = availableRowsAll.map((availableRows) => {
         const statPathsThis = new Set<StatPath>()
         availableRows.forEach((row) => {
@@ -153,52 +153,52 @@ export function load_articles(datas: Article[], universe: string): {
             // sort by order in statistics tree.
             .sort((a, b) => statPathToOrder.get(a.statpath)! - statPathToOrder.get(b.statpath)!),
         )
-        const rowsNothingMissing = insert_missing(rows)
+        const rowsNothingMissing = insertMissing(rows)
         const rowsCollapsed = collapseAlternateSources(rowsNothingMissing)
         return rowsCollapsed
     }, statPaths: statPathsEach }
 }
 
-function insert_missing(rows: ArticleRow[][]): ArticleRow[][] {
-    const idxs = rows.map(row => row.map(x => x._index))
+function insertMissing(rows: ArticleRow[][]): ArticleRow[][] {
+    const idxs = rows.map(row => row.map(x => x.index))
 
-    const empty_row_example: Record<number, ArticleRow> = {}
-    for (const data_i of rows.keys()) {
-        for (const row_i of rows[data_i].keys()) {
-            const idx = idxs[data_i][row_i]
-            empty_row_example[idx] = JSON.parse(JSON.stringify(rows[data_i][row_i])) as typeof rows[number][number]
-            for (const key of Object.keys(empty_row_example[idx]) as (keyof ArticleRow)[]) {
-                if (typeof empty_row_example[idx][key] === 'number') {
+    const emptyRowExample: Record<number, ArticleRow> = {}
+    for (const dataI of rows.keys()) {
+        for (const rowI of rows[dataI].keys()) {
+            const idx = idxs[dataI][rowI]
+            emptyRowExample[idx] = JSON.parse(JSON.stringify(rows[dataI][rowI])) as typeof rows[number][number]
+            for (const key of Object.keys(emptyRowExample[idx]) as (keyof ArticleRow)[]) {
+                if (typeof emptyRowExample[idx][key] === 'number') {
                     // @ts-expect-error Typescript is fucking up this assignment
-                    empty_row_example[idx][key] = NaN
+                    emptyRowExample[idx][key] = NaN
                 }
-                else if (key === 'extra_stat') {
-                    empty_row_example[idx][key] = undefined
+                else if (key === 'extraStat') {
+                    emptyRowExample[idx][key] = undefined
                 }
             }
-            empty_row_example[idx].articleType = 'none' // doesn't matter since we are using simple mode
+            emptyRowExample[idx].articleType = 'none' // doesn't matter since we are using simple mode
         }
     }
 
-    const all_idxs = idxs.flat().filter((x, i, a) => a.indexOf(x) === i)
+    const allIdxs = idxs.flat().filter((x, i, a) => a.indexOf(x) === i)
     // sort all_idxs in ascending order numerically
-    all_idxs.sort((a, b) => statDataOrderToOrder.get(a)! - statDataOrderToOrder.get(b)!)
+    allIdxs.sort((a, b) => statDataOrderToOrder.get(a)! - statDataOrderToOrder.get(b)!)
 
-    const new_rows_all = []
-    for (const data_i of rows.keys()) {
-        const new_rows = []
-        for (const idx of all_idxs) {
-            if (idxs[data_i].includes(idx)) {
-                const index_to_pull = idxs[data_i].findIndex(x => x === idx)
-                new_rows.push(rows[data_i][index_to_pull])
+    const newRowsAll = []
+    for (const dataI of rows.keys()) {
+        const newRows = []
+        for (const idx of allIdxs) {
+            if (idxs[dataI].includes(idx)) {
+                const indexToPull = idxs[dataI].findIndex(x => x === idx)
+                newRows.push(rows[dataI][indexToPull])
             }
             else {
-                new_rows.push(empty_row_example[idx])
+                newRows.push(emptyRowExample[idx])
             }
         }
-        new_rows_all.push(new_rows)
+        newRowsAll.push(newRows)
     }
-    return new_rows_all
+    return newRowsAll
 }
 
 function collapseAlternateSources(rows: ArticleRow[][]): ArticleRow[][] {
@@ -308,7 +308,7 @@ function collapse(rows: ArticleRow[][], groupYearName: string): ArticleRow[] {
         }
         // row is a copy of rowsWithValues[0]
         const row = JSON.parse(JSON.stringify(rowsWithValues[0])) as ArticleRow
-        row.rendered_statname = groupYearName
+        row.renderedStatname = groupYearName
         row.disclaimer = 'heterogenous-sources'
         return row
     })

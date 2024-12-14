@@ -1,6 +1,6 @@
-import { TARGET, getLocation, urbanstatsFixture } from './test_utils'
+import { target, getLocation, urbanstatsFixture } from './test_utils'
 
-urbanstatsFixture('random', `${TARGET}/random.html?sampleby=population&us_only=true`)
+urbanstatsFixture('random', `${target}/random.html?sampleby=population&us_only=true`)
 
 test('random-usa', async (t) => {
     // wait for load

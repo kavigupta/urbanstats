@@ -12,16 +12,16 @@ interface DetailedPlotSpec {
 }
 
 export function PlotComponent(props: {
-    plot_spec: DetailedPlotSpec
-    settings_element: (plot_ref: React.RefObject<HTMLDivElement>) => ReactElement
+    plotSpec: DetailedPlotSpec
+    settingsElement: (plot_ref: React.RefObject<HTMLDivElement>) => ReactElement
 }): ReactElement {
-    const plot_ref = useRef<HTMLDivElement>(null)
+    const plotRef = useRef<HTMLDivElement>(null)
     useEffect(() => {
-        if (plot_ref.current) {
-            const { marks, xlabel, ylabel, ydomain, legend } = props.plot_spec
+        if (plotRef.current) {
+            const { marks, xlabel, ylabel, ydomain, legend } = props.plotSpec
             // y grid marks
             // marks.push(Plot.gridY([0, 25, 50, 75, 100]));
-            const plot_config = {
+            const plotConfig = {
                 marks,
                 x: {
                     label: xlabel,
@@ -42,11 +42,11 @@ export function PlotComponent(props: {
                 marginLeft: 80,
                 color: legend,
             }
-            const plot = Plot.plot(plot_config)
-            plot_ref.current.innerHTML = ''
-            plot_ref.current.appendChild(plot)
+            const plot = Plot.plot(plotConfig)
+            plotRef.current.innerHTML = ''
+            plotRef.current.appendChild(plot)
         }
-    }, [props.plot_spec])
+    }, [props.plotSpec])
 
     const screenshotMode = useScreenshotMode()
 
@@ -55,7 +55,7 @@ export function PlotComponent(props: {
         <div style={{ width: '100%', position: 'relative' }}>
             <div
                 className="histogram-svg-panel"
-                ref={plot_ref}
+                ref={plotRef}
                 style={
                     {
                         width: '100%',
@@ -68,7 +68,7 @@ export function PlotComponent(props: {
                 ? undefined
                 : (
                         <div style={{ zIndex: 1000, position: 'absolute', top: 0, right: 0 }}>
-                            {props.settings_element(plot_ref)}
+                            {props.settingsElement(plotRef)}
                         </div>
                     )}
         </div>

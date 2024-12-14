@@ -8,21 +8,21 @@ import { useUniverse } from '../universe'
 import { IHistogram } from '../utils/protos'
 
 import { PlotComponent } from './plots-general'
-import { create_screenshot } from './screenshot'
+import { createScreenshot } from './screenshot'
 import { CheckboxSetting } from './sidebar'
 
-const Y_PAD = 0.025
+const yPad = 0.025
 
 interface HistogramProps {
     shortname: string
     histogram: IHistogram
     color: string
-    universe_total: number
+    universeTotal: number
 }
 
 export function Histogram(props: { histograms: HistogramProps[] }): ReactNode {
-    const [histogram_type] = useSetting('histogram_type')
-    const [use_imperial] = useSetting('use_imperial')
+    const [histogramType] = useSetting('histogram_type')
+    const [useImperial] = useSetting('use_imperial')
     const [relative] = useSetting('histogram_relative')
     const binMin = props.histograms[0].histogram.binMin!
     const binSize = props.histograms[0].histogram.binSize!
@@ -31,51 +31,51 @@ export function Histogram(props: { histograms: HistogramProps[] }): ReactNode {
             throw new Error('histograms have different binMin or binSize')
         }
     }
-    const settings_element = (plot_ref: React.RefObject<HTMLDivElement>): ReactElement => (
-        <HistogramSettings plot_ref={plot_ref} shortnames={props.histograms.map(h => h.shortname)} />
+    const settingsElement = (plot_ref: React.RefObject<HTMLDivElement>): ReactElement => (
+        <HistogramSettings plotRef={plot_ref} shortnames={props.histograms.map(h => h.shortname)} />
     )
 
-    const plot_spec = useMemo(
+    const plotSpec = useMemo(
         () => {
             const title = props.histograms.length === 1 ? props.histograms[0].shortname : ''
             const colors = props.histograms.map(h => h.color)
             const shortnames = props.histograms.map(h => h.shortname)
-            const render_y = relative ? (y: number) => `${y.toFixed(2)}%` : (y: number) => render_number_highly_rounded(y, 2)
+            const renderY = relative ? (y: number) => `${y.toFixed(2)}%` : (y: number) => renderNumberHighlyRounded(y, 2)
 
-            const [x_idx_start, x_idx_end] = histogramBounds(props.histograms)
-            const xidxs = Array.from({ length: x_idx_end - x_idx_start }, (_, i) => i + x_idx_start)
-            const [x_axis_marks, render_x] = x_axis(xidxs, binSize, binMin, use_imperial)
-            const [marks, max_value] = createHistogramMarks(props.histograms, xidxs, histogram_type, relative, render_x, render_y)
+            const [xIdxStart, xIdxEnd] = histogramBounds(props.histograms)
+            const xidxs = Array.from({ length: xIdxEnd - xIdxStart }, (_, i) => i + xIdxStart)
+            const [xAxisMarks, renderX] = xAxis(xidxs, binSize, binMin, useImperial)
+            const [marks, maxValue] = createHistogramMarks(props.histograms, xidxs, histogramType, relative, renderX, renderY)
             marks.push(
-                ...x_axis_marks,
-                ...y_axis(max_value),
+                ...xAxisMarks,
+                ...yAxis(maxValue),
             )
             marks.push(Plot.text([title], { frameAnchor: 'top', dy: -40 }))
-            const xlabel = `Density (/${use_imperial ? 'mi' : 'km'}²)`
+            const xlabel = `Density (/${useImperial ? 'mi' : 'km'}²)`
             const ylabel = relative ? '% of total' : 'Population'
-            const ydomain: [number, number] = [max_value * (-Y_PAD), max_value * (1 + Y_PAD)]
+            const ydomain: [number, number] = [maxValue * (-yPad), maxValue * (1 + yPad)]
             const legend = props.histograms.length === 1
                 ? undefined
                 : { legend: true, range: colors, domain: shortnames }
             return { marks, xlabel, ylabel, ydomain, legend }
         },
-        [props.histograms, binMin, binSize, relative, histogram_type, use_imperial],
+        [props.histograms, binMin, binSize, relative, histogramType, useImperial],
     )
 
     return (
         <PlotComponent
-            plot_spec={plot_spec}
-            settings_element={settings_element}
+            plotSpec={plotSpec}
+            settingsElement={settingsElement}
         />
     )
 }
 
 function HistogramSettings(props: {
     shortnames: string[]
-    plot_ref: React.RefObject<HTMLDivElement>
+    plotRef: React.RefObject<HTMLDivElement>
 }): ReactNode {
     const universe = useUniverse()
-    const [histogram_type, setHistogramType] = useSetting('histogram_type')
+    const [histogramType, setHistogramType] = useSetting('histogram_type')
     const colors = useColors()
     // dropdown for histogram type
     return (
@@ -89,13 +89,13 @@ function HistogramSettings(props: {
             <img
                 src="/download.png"
                 onClick={() => {
-                    if (props.plot_ref.current) {
-                        void create_screenshot(
+                    if (props.plotRef.current) {
+                        void createScreenshot(
                             {
                                 path: `${props.shortnames.join('_')}_histogram`,
-                                overall_width: props.plot_ref.current.offsetWidth * 2,
-                                elements_to_render: [props.plot_ref.current],
-                                height_multiplier: 1.2,
+                                overallWidth: props.plotRef.current.offsetWidth * 2,
+                                elementsToRender: [props.plotRef.current],
+                                heightMultiplier: 1.2,
                             },
                             universe,
                             colors,
@@ -106,7 +106,7 @@ function HistogramSettings(props: {
                 height="20"
             />
             <select
-                value={histogram_type}
+                value={histogramType}
                 style={{ backgroundColor: colors.background, color: colors.textMain }}
                 onChange={(e) => { setHistogramType(e.target.value as HistogramType) }}
                 className="serif"
@@ -116,39 +116,39 @@ function HistogramSettings(props: {
                 <option value="Line (cumulative)">Line (cumulative)</option>
                 <option value="Bar">Bar</option>
             </select>
-            <CheckboxSetting name="Relative Histograms" setting_key="histogram_relative" testId="histogram_relative" />
+            <CheckboxSetting name="Relative Histograms" settingKey="histogram_relative" testId="histogram_relative" />
         </div>
     )
 }
 
 function histogramBounds(histograms: HistogramProps[]): [number, number] {
-    let x_idx_end = Math.max(...histograms.map(histogram => histogram.histogram.counts!.length))
-    x_idx_end += 1
-    const zeros_at_front = (arr: number[]): number => {
+    let xIdxEnd = Math.max(...histograms.map(histogram => histogram.histogram.counts!.length))
+    xIdxEnd += 1
+    const zerosAtFront = (arr: number[]): number => {
         let i = 0
         while (i < arr.length && arr[i] === 0) {
             i++
         }
         return i
     }
-    let x_idx_start = Math.min(...histograms.map(histogram => zeros_at_front(histogram.histogram.counts!)))
+    let xIdxStart = Math.min(...histograms.map(histogram => zerosAtFront(histogram.histogram.counts!)))
 
-    if (x_idx_start > 0) {
-        x_idx_start--
+    if (xIdxStart > 0) {
+        xIdxStart--
     }
 
     // round x_idx_start down to the nearest number which, when divided by 10, has a remainder of 0, 3, or 7
 
-    while (x_idx_start % 10 !== 0 && x_idx_start % 10 !== 3 && x_idx_start % 10 !== 7) {
-        x_idx_start--
+    while (xIdxStart % 10 !== 0 && xIdxStart % 10 !== 3 && xIdxStart % 10 !== 7) {
+        xIdxStart--
     }
 
     // same for x_idx_end
-    while (x_idx_end % 10 !== 0 && x_idx_end % 10 !== 3 && x_idx_end % 10 !== 7) {
-        x_idx_end++
+    while (xIdxEnd % 10 !== 0 && xIdxEnd % 10 !== 3 && xIdxEnd % 10 !== 7) {
+        xIdxEnd++
     }
 
-    return [x_idx_start, x_idx_end]
+    return [xIdxStart, xIdxEnd]
 }
 
 interface Series {
@@ -156,14 +156,14 @@ interface Series {
     color: string
 }
 
-function mulitipleSeriesConsistentLength(histograms: HistogramProps[], xidxs: number[], relative: boolean, is_cumulative: boolean): Series[] {
+function mulitipleSeriesConsistentLength(histograms: HistogramProps[], xidxs: number[], relative: boolean, isCumulative: boolean): Series[] {
     // Create a list of series, each with the same length
     const sum = (arr: number[]): number => arr.reduce((a, b) => a + b, 0)
-    const sum_each = histograms.map(histogram => sum(histogram.histogram.counts!))
+    const sumEach = histograms.map(histogram => sum(histogram.histogram.counts!))
     const series = histograms.map((histogram, histogram_idx) => {
         const counts = [...histogram.histogram.counts!]
-        const after_val = 0
-        if (is_cumulative) {
+        const afterVal = 0
+        if (isCumulative) {
             for (let i = counts.length - 2; i >= 0; i--) {
                 counts[i] += counts[i + 1]
             }
@@ -174,9 +174,9 @@ function mulitipleSeriesConsistentLength(histograms: HistogramProps[], xidxs: nu
                 xidx,
                 y: (
                     xidx >= counts.length
-                        ? after_val
-                        : counts[xidx] / sum_each[histogram_idx]
-                ) * (relative ? 100 : histogram.universe_total),
+                        ? afterVal
+                        : counts[xidx] / sumEach[histogram_idx]
+                ) * (relative ? 100 : histogram.universeTotal),
             })),
             color: histogram.color,
         }
@@ -184,83 +184,83 @@ function mulitipleSeriesConsistentLength(histograms: HistogramProps[], xidxs: nu
     return series
 }
 
-function dovetailSequences(series: { values: { xidx: number, y: number, name: string }[], color: string }[]): { xidx_left: number, xidx_right: number, y: number, color: string }[] {
-    const series_single: { xidx_left: number, xidx_right: number, y: number, color: string }[] = []
+function dovetailSequences(series: { values: { xidx: number, y: number, name: string }[], color: string }[]): { xidxLeft: number, xidxRight: number, y: number, color: string }[] {
+    const seriesSingle: { xidxLeft: number, xidxRight: number, y: number, color: string }[] = []
     for (let i = 0; i < series.length; i++) {
         const s = series[i]
         const width = 1 / (series.length) * 0.8
         const off = (i - (series.length - 1) / 2) * width
-        series_single.push(...s.values
+        seriesSingle.push(...s.values
             .map(v => ({
-                xidx_left: v.xidx + off, xidx_right: v.xidx + off + width,
+                xidxLeft: v.xidx + off, xidxRight: v.xidx + off + width,
                 y: v.y, color: s.color, name: v.name,
             })),
         )
     }
-    return series_single
+    return seriesSingle
 }
 
 function maxSequences(series: { values: { xidx: number, y: number, name: string }[] }[]): { xidx: number, y: number, names: string[], ys: number[] }[] {
-    const series_max: { xidx: number, y: number, names: string[], ys: number[] }[] = []
+    const seriesMax: { xidx: number, y: number, names: string[], ys: number[] }[] = []
     for (let i = 0; i < series[0].values.length; i++) {
-        series_max.push({
+        seriesMax.push({
             xidx: series[0].values[i].xidx,
             y: Math.max(...series.map(s => s.values[i].y)),
             names: series.map(s => s.values[i].name),
             ys: series.map(s => s.values[i].y),
         })
     }
-    return series_max
+    return seriesMax
 }
 
-function x_axis(xidxs: number[], binSize: number, binMin: number, use_imperial: boolean): [Plot.Markish[], (x: number) => string] {
-    const x_keypoints: number[] = []
+function xAxis(xidxs: number[], binSize: number, binMin: number, useImperial: boolean): [Plot.Markish[], (x: number) => string] {
+    const xKeypoints: number[] = []
     for (const xidx of xidxs) {
-        let last_digit = xidx % 10
-        if (use_imperial) {
-            last_digit = (last_digit + 4) % 10
+        let lastDigit = xidx % 10
+        if (useImperial) {
+            lastDigit = (lastDigit + 4) % 10
         }
-        if (last_digit === 0 || last_digit === 3 || last_digit === 7) {
-            x_keypoints.push(xidx)
+        if (lastDigit === 0 || lastDigit === 3 || lastDigit === 7) {
+            xKeypoints.push(xidx)
         }
     }
-    const adjustment = use_imperial ? Math.log10(1.60934) * 2 : 0
+    const adjustment = useImperial ? Math.log10(1.60934) * 2 : 0
     return [
         [
-            Plot.axisX(x_keypoints, { tickFormat: d => render_pow10(d * binSize + binMin + adjustment) }),
-            Plot.gridX(x_keypoints),
+            Plot.axisX(xKeypoints, { tickFormat: d => renderPow10(d * binSize + binMin + adjustment) }),
+            Plot.gridX(xKeypoints),
         ],
-        x => `${render_number_highly_rounded(Math.pow(10, x * binSize + binMin + adjustment), 2)}/${use_imperial ? 'mi' : 'km'}²`,
+        x => `${renderNumberHighlyRounded(Math.pow(10, x * binSize + binMin + adjustment), 2)}/${useImperial ? 'mi' : 'km'}²`,
     ]
 }
 
-function y_axis(max_value: number): (Plot.CompoundMark | Plot.RuleY)[] {
-    const MIN_N_Y_TICKS = 5
-    const ideal_tick_gap = max_value / MIN_N_Y_TICKS
-    const log10_tick_gap_times_3 = Math.floor(Math.log10(ideal_tick_gap) * 3)
-    const tick_gap_oom = Math.pow(10, Math.floor(log10_tick_gap_times_3 / 3))
-    const tick_gap_mantissa = log10_tick_gap_times_3 % 3 === 0 ? 1 : log10_tick_gap_times_3 % 3 === 1 ? 2 : 5
-    const tick_gap = tick_gap_mantissa * tick_gap_oom
-    const max_value_rounded = Math.ceil(max_value / tick_gap) * tick_gap
-    const y_keypoints = Array.from({ length: Math.floor(max_value_rounded / tick_gap) + 1 }, (_, i) => i * tick_gap)
+function yAxis(maxValue: number): (Plot.CompoundMark | Plot.RuleY)[] {
+    const minNYTicks = 5
+    const idealTickGap = maxValue / minNYTicks
+    const log10TickGapTimes3 = Math.floor(Math.log10(idealTickGap) * 3)
+    const tickGapOom = Math.pow(10, Math.floor(log10TickGapTimes3 / 3))
+    const tickGapMantissa = log10TickGapTimes3 % 3 === 0 ? 1 : log10TickGapTimes3 % 3 === 1 ? 2 : 5
+    const tickGap = tickGapMantissa * tickGapOom
+    const maxValueRounded = Math.ceil(maxValue / tickGap) * tickGap
+    const yKeypoints = Array.from({ length: Math.floor(maxValueRounded / tickGap) + 1 }, (_, i) => i * tickGap)
 
     return [
-        Plot.axisY(y_keypoints, { tickFormat: (d: number) => render_number_highly_rounded(d, 1) }),
-        Plot.gridY(y_keypoints),
+        Plot.axisY(yKeypoints, { tickFormat: (d: number) => renderNumberHighlyRounded(d, 1) }),
+        Plot.gridY(yKeypoints),
     ]
 }
 
-function pow10_moral(x: number): number {
+function pow10Moral(x: number): number {
     // 10 ** x, but "morally" so, i.e., 10 ** 0.3 = 2
     if (x < 0) {
-        return 1 / pow10_moral(-x)
+        return 1 / pow10Moral(-x)
     }
     if (x >= 1) {
-        return 10 ** Math.floor(x) * pow10_moral(x - Math.floor(x))
+        return 10 ** Math.floor(x) * pow10Moral(x - Math.floor(x))
     }
     const x10 = x * 10
-    const error_round = Math.abs(x10 - Math.round(x10))
-    if (error_round > 0.2) {
+    const errorRound = Math.abs(x10 - Math.round(x10))
+    if (errorRound > 0.2) {
         return 10 ** x
     }
     if (Math.round(x10) === 0) {
@@ -275,13 +275,13 @@ function pow10_moral(x: number): number {
     return 10 ** x
 }
 
-function render_pow10(x: number): string {
-    const p10 = pow10_moral(x)
+function renderPow10(x: number): string {
+    const p10 = pow10Moral(x)
 
-    return render_number_highly_rounded(p10)
+    return renderNumberHighlyRounded(p10)
 }
 
-function render_number_highly_rounded(x: number, places = 0): string {
+function renderNumberHighlyRounded(x: number, places = 0): string {
     if (x < 1000) {
         return x.toFixed(0)
     }
@@ -299,30 +299,30 @@ function render_number_highly_rounded(x: number, places = 0): string {
 
 function createHistogramMarks(
     histograms: HistogramProps[], xidxs: number[],
-    histogram_type: HistogramType, relative: boolean,
-    render_x: (x: number) => string,
-    render_y: (y: number) => string,
+    histogramType: HistogramType, relative: boolean,
+    renderX: (x: number) => string,
+    renderY: (y: number) => string,
 ): [Plot.Markish[], number] {
-    const series = mulitipleSeriesConsistentLength(histograms, xidxs, relative, histogram_type === 'Line (cumulative)')
-    const series_single = dovetailSequences(series)
+    const series = mulitipleSeriesConsistentLength(histograms, xidxs, relative, histogramType === 'Line (cumulative)')
+    const seriesSingle = dovetailSequences(series)
 
-    const max_value = Math.max(...series.map(s => Math.max(...s.values.map(v => v.y))))
+    const maxValue = Math.max(...series.map(s => Math.max(...s.values.map(v => v.y))))
     const tip = Plot.tip(maxSequences(series), Plot.pointerX({
         x: 'xidx', y: 'y',
         title: (d: { names: string[], xidx: number, ys: number[] }) => {
-            let result = `Density: ${render_x(d.xidx)}\n`
+            let result = `Density: ${renderX(d.xidx)}\n`
             if (d.names.length > 1) {
-                result += d.names.map((name: string, i: number) => `${name}: ${render_y(d.ys[i])}`).join('\n')
+                result += d.names.map((name: string, i: number) => `${name}: ${renderY(d.ys[i])}`).join('\n')
             }
             else {
-                result += `Frequency: ${render_y(d.ys[0])}`
+                result += `Frequency: ${renderY(d.ys[0])}`
             }
             return result
         },
     }))
     const color = histograms.length === 1 ? histograms[0].color : 'name'
     const marks: Plot.Markish[] = []
-    if (histogram_type === 'Line' || histogram_type === 'Line (cumulative)') {
+    if (histogramType === 'Line' || histogramType === 'Line (cumulative)') {
         marks.push(
             ...series.map(s => Plot.line(s.values, {
                 x: 'xidx', y: 'y', stroke: color, strokeWidth: 4,
@@ -331,7 +331,7 @@ function createHistogramMarks(
     }
     else {
         marks.push(
-            Plot.rectY(series_single, {
+            Plot.rectY(seriesSingle, {
                 x1: 'xidx_left',
                 x2: 'xidx_right',
                 y: 'y',
@@ -340,5 +340,5 @@ function createHistogramMarks(
         )
     }
     marks.push(tip)
-    return [marks, max_value]
+    return [marks, maxValue]
 }
