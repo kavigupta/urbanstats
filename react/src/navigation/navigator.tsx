@@ -576,9 +576,38 @@ export class Navigator {
             }
             else if (url.hash !== '') {
                 this.effects.push(() => {
-                    window.location.replace(url.hash)
-                    // Above statement clears state
-                    history.replaceState({ pageDescriptor: newPageDescriptor, scrollPosition: window.scrollY }, '')
+                    const seekToHash = (): void => {
+                        window.location.replace(url.hash)
+                        // Above statement clears state
+                        history.replaceState({ pageDescriptor: newPageDescriptor, scrollPosition: window.scrollY }, '')
+                    }
+
+                    seekToHash()
+
+                    // If the body height changes, and the user hasn't scrolled yet, this means something (e.g. fonts) have loaded and our hash seek isn't correct.
+                    // Keep track of the state where we're seeking so we don't keep trying to seek on another page
+                    const seekedState = this.pageState
+
+                    const destroyObservers = (): void => {
+                        resizeObserver.unobserve(document.body)
+                    }
+
+                    const resizeObserver = new ResizeObserver(() => {
+                        if (this.pageState === seekedState) {
+                            seekToHash()
+                        }
+                        else {
+                            destroyObservers()
+                        }
+                    })
+
+                    resizeObserver.observe(document.body)
+                    // First scroll is triggered on hash navigate
+                    window.addEventListener('scroll', () => {
+                        window.addEventListener('scroll', () => {
+                            destroyObservers()
+                        }, { once: true })
+                    }, { once: true })
                 })
             }
             else if (oldData.kind !== this.pageState.current.data.kind) {
