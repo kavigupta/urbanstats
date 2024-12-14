@@ -7,6 +7,7 @@ from flask_cors import CORS
 
 from .juxtastat_stats import (
     check_secureid,
+    friend_request,
     get_per_question_stats,
     get_per_question_stats_retrostat,
     latest_day,
@@ -15,6 +16,8 @@ from .juxtastat_stats import (
     store_user_stats,
     get_full_database,
     store_user_stats_retrostat,
+    todays_score_for,
+    unfriend,
 )
 from .shorten import shorten_and_save, retreive_and_lengthen
 
@@ -168,6 +171,38 @@ def retrostat_get_per_question_stats_request():
     if "week" in form:
         return flask.jsonify(get_per_question_stats_retrostat(form["week"]))
     return flask.jsonify({"error": "Needs parameter week!"}), 200
+
+
+@app.route("/juxtastat/friend_request", methods=["POST"])
+@authenticate(["requestee"])
+def juxtastat_friend_request():
+    print("FRIEND REQUEST")
+    print(flask_form())
+    form = flask_form()
+    friend_request(form["requestee"], form["user"])
+    return flask.jsonify(dict())
+
+
+@app.route("/juxtastat/unfriend", methods=["POST"])
+@authenticate(["requestee"])
+def juxtastat_unfriend():
+    form = flask_form()
+    print("unfriend initiated", form)
+    unfriend(form["requestee"], form["user"])
+    return flask.jsonify(dict())
+
+
+@app.route("/juxtastat/todays_score_for", methods=["POST"])
+@authenticate(["requesters", "date", "quiz_kind"])
+def juxtastat_todays_score_for():
+    form = flask_form()
+    res = dict(
+        results=todays_score_for(
+            form["user"], form["requesters"], form["date"], form["quiz_kind"]
+        )
+    )
+    print("TODAYS SCORE FOR", res)
+    return flask.jsonify(res)
 
 
 import logging

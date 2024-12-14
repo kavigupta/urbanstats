@@ -429,6 +429,7 @@ const expectedExportWithoutDate = {
             ],
         },
     },
+    quiz_friends: [],
 }
 
 test('export quiz progress', async (t) => {
@@ -462,6 +463,7 @@ quiz_fixture('import quiz progress', `${target}/quiz.html#date=90`,
         }),
         persistent_id: 'deadbeef',
         secure_id: 'decea5ed',
+        quiz_friends: '[]',
     },
     '',
 )
