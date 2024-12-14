@@ -155,18 +155,12 @@ function testsGeneric(
         const state = await aliceBobFriends(t, true)
         // Charlie hasn't done the quiz yet (they register on #98 instead)
         await create_user(t, 'Charlie', '000000c', state)
-        await t.eval(() => {
-            // eslint-disable-next-line no-restricted-syntax -- Localstorage is not reactive
-            window.location.href = `${window.location.origin}/${yesterday}`
-        }, { dependencies: { yesterday } })
+        await t.navigateTo(`${TARGET}/${yesterday}`)
         await click_buttons(t, ['a', 'b', 'a', 'b', 'a'])
         await addFriend(t, 'Alice', '000000a')
         await t.expect(await friendsText(t)).eql([`You${charliePatternPrev}`, 'AlicePending Friend RequestRemove'])
         await restore_user(t, 'Alice', state)
-        await t.eval(() => {
-            // eslint-disable-next-line no-restricted-syntax -- Localstorage is not reactive
-            window.location.href = `${window.location.origin}/${today}`
-        }, { dependencies: { today } })
+        await t.navigateTo(`${TARGET}/${today}`)
         await addFriend(t, 'Charlie', '000000c')
         // Alice and Charlie are now friends
         await quiz_screencap(t) // screencap of friend who hasn't done the quiz yet
@@ -246,10 +240,7 @@ function testsGeneric(
     test(`${props.name}-same-on-juxta-and-retro`, async (t) => {
         await aliceBobFriends(t, false)
         // same on retrostat
-        await t.eval(() => {
-            // eslint-disable-next-line no-restricted-syntax -- Localstorage is not reactive
-            window.location.href = `${window.location.origin}/${other}`
-        }, { dependencies: { other } })
+        await t.navigateTo(`${TARGET}/${other}`)
         await click_buttons(t, ['a', 'a', 'a', 'a', 'a'])
         await t.expect(await friendsText(t)).eql([`You${aliceOtherPattern}`, 'BobNot Done YetRemove'])
     })
