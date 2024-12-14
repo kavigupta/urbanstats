@@ -19,7 +19,7 @@ urbanstatsFixture('settings regression test', testLocation,
             // Delete settings param so old settings don't persist after navigation
             // eslint-disable-next-line no-restricted-syntax -- Test file
             window.location.href = testLocation
-        }, { dependencies: { EG_SETTINGS: egSettings, testLocation } })
+        }, { dependencies: { egSettings, testLocation } })
     })
 
 test('check-settings-loaded', async (t) => {
