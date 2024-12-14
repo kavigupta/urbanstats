@@ -95,15 +95,37 @@ async function removeFriend(t: TestController, nth: number): Promise<void> {
     await t.click(Selector('button').withText('Remove').nth(nth))
 }
 
-function testsGeneric(): void {
-    const alicePattern = 'yyyyn'
-    const bobPattern = 'nnnny'
-    const charliePattern = 'ynynn'
-    const charliePatternPrev = 'nnnny'
-    const aliceOtherPattern = 'yyynn'
-    const today = 'quiz.html#date=99'
-    const yesterday = 'quiz.html#date=98'
-    const other = 'quiz.html#date=11&mode=retro'
+function toBobPattern(alicePattern: string): string {
+    return alicePattern.split('').map((c: string) => (c === 'y' ? 'n' : 'y')).join('')
+}
+
+function toCharliePattern(alicePattern: string): string {
+    const bobPattern = toBobPattern(alicePattern)
+    return alicePattern[0] + bobPattern[1] + alicePattern[2] + bobPattern[3] + alicePattern[4]
+}
+
+function testsGeneric(
+    props: {
+        alicePattern: string
+        alicePatternPrev: string
+        aliceOtherPattern: string
+        today: string
+        yesterday: string
+        other: string
+    },
+): void {
+    const {
+        alicePattern,
+        alicePatternPrev,
+        aliceOtherPattern,
+        today,
+        yesterday,
+        other,
+    } = props
+
+    const bobPattern = toBobPattern(alicePattern)
+    const charliePattern = toCharliePattern(alicePattern)
+    const charliePatternPrev = toCharliePattern(alicePatternPrev)
 
     quiz_fixture(
         'juxtastat friends test',
@@ -244,4 +266,33 @@ function testsGeneric(): void {
     })
 }
 
-testsGeneric()
+const aliceJuxta99 = 'yyyyn'
+const aliceJuxta98 = 'nynyy'
+const aliceRetro11 = 'yyynn'
+const aliceRetro10 = 'nnnny'
+const juxta99 = 'quiz.html#date=99'
+const juxta98 = 'quiz.html#date=98'
+const retro11 = 'quiz.html#date=11&mode=retro'
+const retro10 = 'quiz.html#date=10&mode=retro'
+
+testsGeneric(
+    {
+        alicePattern: aliceJuxta99,
+        alicePatternPrev: aliceJuxta98,
+        aliceOtherPattern: aliceRetro11,
+        today: juxta99,
+        yesterday: juxta98,
+        other: retro11,
+    },
+)
+
+testsGeneric(
+    {
+        alicePattern: aliceRetro11,
+        alicePatternPrev: aliceRetro10,
+        aliceOtherPattern: aliceJuxta99,
+        today: retro11,
+        yesterday: retro10,
+        other: juxta99,
+    },
+)
