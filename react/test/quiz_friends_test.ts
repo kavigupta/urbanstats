@@ -95,7 +95,7 @@ quiz_fixture(
     '',
 )
 
-test('basic-friends-test', async (t) => {
+async function aliceBobFriends(t: TestController, screenshots: boolean): Promise<JuxtastatUserState> {
     const state = starting_state()
     // Alice does the quiz
     await create_user(t, 'Alice', '000000a', state)
@@ -104,14 +104,23 @@ test('basic-friends-test', async (t) => {
     await create_user(t, 'Bob', '000000b', state)
     await click_buttons(t, ['b', 'b', 'b', 'b', 'b'])
     await t.expect(await friendsText(t)).eql(['Younnnny'])
-    await addFriend(t, 'Alice', '000000a') // screencap of pending friend request
-    await quiz_screencap(t)
+    await addFriend(t, 'Alice', '000000a')
+    if (screenshots) {
+        await quiz_screencap(t) // screencap of pending friend request
+    }
     await t.expect(await friendsText(t)).eql(['Younnnny', 'AlicePending Friend RequestRemove'])
     await restore_user(t, 'Alice', state)
     await addFriend(t, 'Bob', '000000b')
     // Alice and Bob are now friends
-    await quiz_screencap(t) // screencap of friends' score
+    if (screenshots) {
+        await quiz_screencap(t) // screencap of friends' score
+    }
     await t.expect(await friendsText(t)).eql(['Youyyyyn', 'BobnnnnyRemove'])
+    return state
+}
+
+test('basic-friends-test', async (t) => {
+    const state = await aliceBobFriends(t, true)
     // Charlie hasn't done the quiz yet (they register on #98 instead)
     await create_user(t, 'Charlie', '000000c', state)
     await t.eval(() => {
