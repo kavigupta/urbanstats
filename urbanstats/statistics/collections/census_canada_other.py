@@ -108,7 +108,7 @@ class CensusCanadaGeneration(CensusCanadaOther):
 
 
 class CensusCanadaMarriage(CensusCanadaOther):
-    version = 2
+    version = 4
 
     def census_tables(self) -> CensusTables:
         return CensusTables(
@@ -119,21 +119,21 @@ class CensusCanadaMarriage(CensusCanadaOther):
                 None: [
                     "Total - Marital status for the total population aged 15 years and over - 100% data",
                     "  Married or living common-law",
-                    "      Living common law - Never married",
-                    "      Living common law - Separated",
-                    "      Living common law - Divorced",
-                    "      Living common law - Widowed",
+                    "    Living common-law",
                     "  Not married and not living common-law",
                 ],
                 "marriage_never_married_canada": [
                     "    Not married and not living common law - Never married",
-                    "    Living common-law",
+                    "      Living common law - Never married",
                 ],
                 "marriage_married_not_divorced_canada": [
                     "    Married",
+                    "      Living common law - Separated",
+                    "      Living common law - Widowed",
                     "    Not married and not living common law - Widowed",
                 ],
                 "marriage_divorced_canada": [
+                    "      Living common law - Divorced",
                     "    Not married and not living common law - Separated",
                     "    Not married and not living common law - Divorced",
                 ],
