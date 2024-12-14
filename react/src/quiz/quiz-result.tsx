@@ -10,11 +10,12 @@ import { getVector, VectorSettingsDictionary } from '../page_template/settings-v
 import { allGroups, allYears, statParents, StatPath } from '../page_template/statistic-tree'
 
 import { render_time_remaining } from './dates'
-import { JuxtaQuestion, QuizDescriptor, QuizHistory, QuizQuestion, RetroQuestion, a_correct, nameOfQuizKind } from './quiz'
+import { JuxtaQuestion, QuizDescriptor, QuizHistory, QuizQuestion, RetroQuestion, a_correct, QuizFriends, loadQuizFriends, nameOfQuizKind } from './quiz'
 import { ExportImport, Header, UserId } from './quiz-components'
+import { QuizFriendsPanel } from './quiz-friends'
 import { render_question } from './quiz-question'
 import { AudienceStatistics, QuizStatistics } from './quiz-statistics'
-import { getCachedPerQuestionStats, getPerQuestionStats, PerQuestionStats, reportToServer } from './statistics'
+import { getCachedPerQuestionStats, getPerQuestionStats, PerQuestionStats, parse_time_identifier, reportToServer } from './statistics'
 
 interface QuizResultProps {
     quizDescriptor: QuizDescriptor
@@ -31,6 +32,12 @@ export function QuizResult(props: QuizResultProps): ReactNode {
     const button = useRef<HTMLButtonElement>(null)
     const [stats, setStats] = useState<PerQuestionStats>(getCachedPerQuestionStats(props.quizDescriptor) ?? { total: 0, per_question: [0, 0, 0, 0, 0] })
     const [authError, setAuthError] = useState(false)
+    const [quizFriends, setQuizFriendsDirect] = useState(loadQuizFriends())
+
+    const setQuizFriends = (qf: QuizFriends): void => {
+        setQuizFriendsDirect(qf)
+        localStorage.setItem('quiz_friends', JSON.stringify(qf))
+    }
 
     useEffect(() => {
         void reportToServer(props.whole_history, props.quizDescriptor.kind).then(setAuthError)
@@ -101,6 +108,17 @@ export function QuizResult(props: QuizResultProps): ReactNode {
                     />
                 ),
             )}
+            <div className="gap_small"></div>
+            <div style={{ margin: 'auto', width: '50%' }}>
+                <QuizFriendsPanel
+                    quizFriends={quizFriends}
+                    date={parse_time_identifier(props.quizDescriptor.kind, props.quizDescriptor.name.toString())}
+                    quizKind={props.quizDescriptor.kind}
+                    setQuizFriends={setQuizFriends}
+                    myCorrects={correct_pattern}
+                />
+            </div>
+            <div className="gap_small"></div>
             <div className="centered_text serif">
                 <UserId />
                 <ExportImport />
@@ -471,7 +489,7 @@ function settingsOverrides(questionStatPath?: StatPath): Partial<VectorSettingsD
 
 export function red_and_green_squares(juxtaColors: JuxtastatColors, correct_pattern: boolean[]): string {
     return correct_pattern.map(function (x) {
-    // red square emoji for wrong, green for right
+        // red square emoji for wrong, green for right
         return x ? juxtaColors.correctEmoji : juxtaColors.incorrectEmoji
     }).join('')
 }

@@ -55,10 +55,16 @@ export const quizHistorySchema = z.record(
 
 export type QuizHistory = z.infer<typeof quizHistorySchema>
 
+// list of [string, string] pairs
+export const quizFriends = z.array(z.tuple([z.string(), z.string()]))
+
+export type QuizFriends = z.infer<typeof quizFriends>
+
 export const quizPersonaSchema = z.object({
     persistent_id: z.string(),
     secure_id: z.string(),
     quiz_history: quizHistorySchema,
+    quiz_friends: quizFriends,
     date_exported: z.optional(z.string().pipe(z.coerce.date())),
 }).strict()
 
@@ -70,6 +76,7 @@ export function exportQuizPersona(): void {
         persistent_id: unique_persistent_id(),
         secure_id: unique_secure_id(),
         quiz_history: loadQuizHistory(),
+        quiz_friends: loadQuizFriends(),
     }
     const data = JSON.stringify(exported, null, 2)
     saveAs(new Blob([data], { type: 'application/json' }), `urbanstats_quiz_${exported.persistent_id}.json`)
@@ -119,6 +126,7 @@ Are you sure you want to merge them? (The lowest score will be used)`)) {
         }
 
         localStorage.setItem('quiz_history', JSON.stringify(newHistory))
+        localStorage.setItem('quiz_friends', JSON.stringify(persona.quiz_friends))
         localStorage.setItem('persistent_id', persona.persistent_id)
         localStorage.setItem('secure_id', persona.secure_id)
         // eslint-disable-next-line no-restricted-syntax -- Localstorage is not reactive
@@ -141,4 +149,8 @@ export function loadQuizHistory(): QuizHistory {
         }
     }
     return history
+}
+
+export function loadQuizFriends(): QuizFriends {
+    return JSON.parse(localStorage.getItem('quiz_friends') ?? '[]') as QuizFriends
 }
