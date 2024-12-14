@@ -1,8 +1,6 @@
-from permacache import permacache, stable_hash
-
 import geopandas as gpd
 import shapely
-
+from permacache import permacache, stable_hash
 
 pruid_to_province = {
     "48": "Alberta, Canada",

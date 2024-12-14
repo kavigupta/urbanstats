@@ -280,7 +280,6 @@ def elevation_statistics_for_shapefile(shapefile):
     sf = shapefile.load_file()
     result = {"elevation": [], "hilliness": []}
     for shape in tqdm.tqdm(sf.geometry):
-        print(shape)
         stats, _ = elevation_statistics_for_shape(shape)
         result["elevation"].append(stats["elevation"])
         result["hilliness"].append(stats["hilliness"])
