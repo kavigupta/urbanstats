@@ -121,8 +121,12 @@ def sample_quiz(rng):
 
 def difficulty_multiplier(stat_column_original, typ):
     if typ in QUIZ_REGION_TYPES_INTERNATIONAL:
-        return 4
-    return difficulties[get_statistic_categories()[stat_column_original]]
+        raw_diff = 4
+    else:
+        raw_diff = difficulties[get_statistic_categories()[stat_column_original]]
+    if "mean_high_temp" in stat_column_original:
+        raw_diff = raw_diff * 0.25
+    return raw_diff
 
 
 def compute_difficulty(stat_a, stat_b, stat_column_original, typ):
@@ -130,8 +134,6 @@ def compute_difficulty(stat_a, stat_b, stat_column_original, typ):
     if diff > ranges[0][1]:
         return float("inf")
     diff = diff / difficulty_multiplier(stat_column_original, typ)
-    if "mean_high_temp" in stat_column_original:
-        diff = diff / 0.25
     return diff
 
 
