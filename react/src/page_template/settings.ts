@@ -290,7 +290,7 @@ export function useSettings<K extends keyof SettingsDictionary>(keys: K[]): Pick
 }
 
 export function relatedSettingsKeys(articleTypeThis: string): RelationshipKey[] {
-    return Object.keys(article_types_other).map(article_type_other => relationshipKey(articleTypeThis, article_type_other))
+    return Object.keys(article_types_other).map(articleTypeOther => relationshipKey(articleTypeThis, articleTypeOther))
 }
 
 export function useSettingInfo<K extends keyof SettingsDictionary>(key: K): SettingInfo<K> {

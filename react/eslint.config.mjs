@@ -120,6 +120,8 @@ export default tseslint.config(
                 'ObjectPattern > Property[shorthand=false] .value[name=/^[^a-z]|[^A-Za-z0-9]/]',
                 'MethodDefinition > Identifier.key[name=/^[^a-z]|[^A-Za-z0-9]/]',
                 'FunctionExpression > .params Identifier.parameter[name=/^[^a-z_]|.[^A-Za-z0-9]/]', // Constructors
+                'ArrowFunctionExpression > Identifier.params[name=/^[^a-z_]|^[^_].*[^A-Za-z0-9]/]', // Allow_
+                'TSFunctionType > Identifier.params[name=/^[^a-z]|[^A-Za-z0-9]/]',
             ],
             'react/prop-types': 'off',
             'no-shadow': 'error',

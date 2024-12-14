@@ -93,8 +93,8 @@ export function loadSingleArticle(data: Article, universe: string): ArticleRow[]
 
     const indices = unpackBytes(data.statisticIndicesPacked)
 
-    return data.rows.map((row_original, row_index) => {
-        const i = indices[row_index]
+    return data.rows.map((rowOriginal, rowIndex) => {
+        const i = indices[rowIndex]
         // fresh row object
         let extraStat: ExtraStat | undefined = undefined
         if (extraStatIdxToCol.includes(i)) {
@@ -109,15 +109,15 @@ export function loadSingleArticle(data: Article, universe: string): ArticleRow[]
                     binMin: histogram.binMin,
                     binSize: histogram.binSize,
                     counts: histogram.counts,
-                    universeTotal: data.rows.find((_, universe_row_index) => indices[universe_row_index] === universeTotalIdx)!.statval!,
+                    universeTotal: data.rows.find((_, universeRowIndex) => indices[universeRowIndex] === universeTotalIdx)!.statval!,
                 } as HistogramExtraStat
             }
         }
         return {
-            statval: row_original.statval!,
-            ordinal: row_original.ordinalByUniverse![universeIndex],
-            overallOrdinal: row_original.overallOrdinalByUniverse![universeIndex],
-            percentileByPopulation: row_original.percentileByPopulationByUniverse![universeIndex],
+            statval: rowOriginal.statval!,
+            ordinal: rowOriginal.ordinalByUniverse![universeIndex],
+            overallOrdinal: rowOriginal.overallOrdinalByUniverse![universeIndex],
+            percentileByPopulation: rowOriginal.percentileByPopulationByUniverse![universeIndex],
             statcol: stats[i],
             statname: names[i],
             statpath: paths[i],

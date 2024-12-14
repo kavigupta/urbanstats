@@ -71,10 +71,10 @@ export function StatisticPanel(props: StatisticPanelProps): ReactNode {
         return result
     }, [props.start, props.amount, props.count, isAscending])
 
-    const swapAscendingDescending = (curr_universe: string | undefined): void => {
+    const swapAscendingDescending = (currentUniverse: string | undefined): void => {
         const newOrder = isAscending ? 'descending' : 'ascending'
         void navContext.navigate(statisticDescriptor({
-            universe: curr_universe,
+            universe: currentUniverse,
             statname: props.statname,
             articleType: props.articleType,
             start: 1,
@@ -83,29 +83,29 @@ export function StatisticPanel(props: StatisticPanelProps): ReactNode {
         }), 'push')
     }
 
-    const backgroundColor = (row_idx: number): string => {
-        if (row_idx > 0) {
-            const nameAtIdx = props.articleNames[indexRange[row_idx - 1]]
+    const backgroundColor = (rowIdx: number): string => {
+        if (rowIdx > 0) {
+            const nameAtIdx = props.articleNames[indexRange[rowIdx - 1]]
             if (nameAtIdx === props.highlight) {
                 return colors.highlight
             }
         }
-        if (row_idx % 2 === 1) {
+        if (rowIdx % 2 === 1) {
             return colors.slightlyDifferentBackground
         }
         return colors.background
     }
 
-    const style = (col_idx: number, row_idx: number): CSSProperties => {
+    const style = (colIdx: number, rowIdx: number): CSSProperties => {
         let result: CSSProperties = { ...tableStyle }
-        if (row_idx === 0) {
+        if (rowIdx === 0) {
             // header, add a line at the bottom
             result.borderBottom = `1px solid ${colors.textMain}`
             result.fontWeight = 500
         }
-        result.backgroundColor = backgroundColor(row_idx)
-        result.width = columnWidths[col_idx]
-        result = { ...result, ...columnStyles[col_idx] }
+        result.backgroundColor = backgroundColor(rowIdx)
+        result.width = columnWidths[colIdx]
+        result = { ...result, ...columnStyles[colIdx] }
         return result
     }
 
@@ -146,7 +146,7 @@ export function StatisticPanel(props: StatisticPanelProps): ReactNode {
                                 return (
                                     <div key={name} style={{ ...style(i, 0), display: 'flex', justifyContent: 'space-between', flexDirection: 'row' }}>
                                         <div>{name}</div>
-                                        <AscendingVsDescending onClick={(curr_universe) => { swapAscendingDescending(curr_universe) }} isAscending={isAscending} />
+                                        <AscendingVsDescending onClick={(currentUniverse) => { swapAscendingDescending(currentUniverse) }} isAscending={isAscending} />
                                     </div>
                                 )
                             }
@@ -154,32 +154,32 @@ export function StatisticPanel(props: StatisticPanelProps): ReactNode {
                         })}
                     </div>
                     {
-                        indexRange.map((i, row_idx) => (
+                        indexRange.map((i, rowIdx) => (
                             <div
                                 key={i}
                                 style={{
-                                    display: 'flex', alignItems: 'baseline', backgroundColor: backgroundColor(row_idx + 1),
+                                    display: 'flex', alignItems: 'baseline', backgroundColor: backgroundColor(rowIdx + 1),
                                 }}
                             >
-                                <div style={style(0, row_idx + 1)}>{i + 1}</div>
-                                <div style={style(1, row_idx + 1)}>
+                                <div style={style(0, rowIdx + 1)}>{i + 1}</div>
+                                <div style={style(1, rowIdx + 1)}>
                                     <ArticleLink longname={props.articleNames[i]} />
                                 </div>
-                                <div style={style(2, row_idx + 1)} className="value">
+                                <div style={style(2, rowIdx + 1)} className="value">
                                     <Statistic
                                         statname={props.statname}
                                         value={props.data.value[i]}
                                         isUnit={false}
                                     />
                                 </div>
-                                <div style={style(3, row_idx + 1)} className="value_unit value">
+                                <div style={style(3, rowIdx + 1)} className="value_unit value">
                                     <Statistic
                                         statname={props.statname}
                                         value={props.data.value[i]}
                                         isUnit={true}
                                     />
                                 </div>
-                                <div style={style(4, row_idx + 1)}>
+                                <div style={style(4, rowIdx + 1)}>
                                     <AutoPercentile
                                         ordinal={0}
                                         totalCountInClass={0}
@@ -216,26 +216,26 @@ function Pagination(props: {
 
     const navContext = useContext(Navigator.Context)
 
-    const changeStart = (new_start: number): void => {
+    const changeStart = (newStart: number): void => {
         void navContext.navigate(statisticDescriptor({
             universe: currentUniverse,
             ...props,
-            start: new_start,
+            start: newStart,
         }), 'push')
     }
 
-    const changeAmount = (new_amount: string | number): void => {
+    const changeAmount = (newAmount: string | number): void => {
         let start = props.start
         let newAmountNum: number
-        if (new_amount === 'All') {
+        if (newAmount === 'All') {
             start = 1
             newAmountNum = props.count
         }
-        else if (typeof new_amount === 'string') {
-            newAmountNum = parseInt(new_amount)
+        else if (typeof newAmount === 'string') {
+            newAmountNum = parseInt(newAmount)
         }
         else {
-            newAmountNum = new_amount
+            newAmountNum = newAmount
         }
         if (start > props.count - newAmountNum) {
             start = props.count - newAmountNum + 1
@@ -245,7 +245,7 @@ function Pagination(props: {
             statname: props.statname,
             articleType: props.articleType,
             start,
-            amount: new_amount === 'All' ? 'All' : newAmountNum,
+            amount: newAmount === 'All' ? 'All' : newAmountNum,
             order: props.order,
         }), 'push')
     }
@@ -260,14 +260,14 @@ function Pagination(props: {
     const currentPage = Math.ceil(current / perPage)
 
     useEffect(() => {
-        const goToPage = (new_page: number): void => {
+        const goToPage = (newPage: number): void => {
             void navContext.navigate(statisticDescriptor({
                 universe: currentUniverse,
                 statname: props.statname,
                 articleType: props.articleType,
                 amount: props.amount,
                 order: props.order,
-                start: (new_page - 1) * perPage + 1,
+                start: (newPage - 1) * perPage + 1,
             }), 'replace')
         }
 
@@ -281,7 +281,7 @@ function Pagination(props: {
 
     const selectPage = (
         <SelectPage
-            changeStart={(new_start) => { changeStart(new_start) }}
+            changeStart={(newStart) => { changeStart(newStart) }}
             currentPage={currentPage}
             maxPages={maxPages}
             prevPage={prev}
@@ -314,7 +314,7 @@ function Pagination(props: {
                 <PerPageSelector
                     perPage={perPage}
                     total={total}
-                    changeAmount={(new_amount) => { changeAmount(new_amount) }}
+                    changeAmount={(newAmount) => { changeAmount(newAmount) }}
                 />
             </div>
         </div>
@@ -356,7 +356,7 @@ function SelectPage(props: {
     currentPage: number
     maxPages: number
     perPage: number
-    changeStart: (new_start: number) => void
+    changeStart: (newStart: number) => void
     nextPage: number
 }): ReactNode {
     // low-key style for the buttons

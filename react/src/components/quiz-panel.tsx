@@ -13,8 +13,8 @@ export function QuizPanel(props: { quizDescriptor: QuizDescriptor, todayName: st
 
     const todaysQuizHistory = quizHistory[props.quizDescriptor.name] ?? { choices: [], correct_pattern: [] }
 
-    const setTodaysQuizHistory = (history_today: QuizHistory[string]): void => {
-        const newHistory = { ...quizHistory, [props.quizDescriptor.name]: history_today }
+    const setTodaysQuizHistory = (historyToday: QuizHistory[string]): void => {
+        const newHistory = { ...quizHistory, [props.quizDescriptor.name]: historyToday }
         setQuizHistory(newHistory)
         setWaiting(true)
         switch (props.quizDescriptor.kind) {

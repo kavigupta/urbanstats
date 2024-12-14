@@ -13,7 +13,7 @@ interface DetailedPlotSpec {
 
 export function PlotComponent(props: {
     plotSpec: DetailedPlotSpec
-    settingsElement: (plot_ref: React.RefObject<HTMLDivElement>) => ReactElement
+    settingsElement: (plotRef: React.RefObject<HTMLDivElement>) => ReactElement
 }): ReactElement {
     const plotRef = useRef<HTMLDivElement>(null)
     useEffect(() => {
