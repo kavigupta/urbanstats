@@ -137,6 +137,8 @@ function HeaderImage(): ReactNode {
     )
 }
 
+const showSearchThreshold = 10
+
 function UniverseSelector(
     { allUniverses }: { allUniverses: readonly string[] },
 ): ReactNode {
@@ -168,7 +170,7 @@ function UniverseSelector(
             borderRadius: '0.25em',
             display: dropdownOpen ? 'block' : 'none',
             width: '500%',
-            maxHeight: '20em',
+            maxHeight: allUniverses.length > showSearchThreshold ? '22em' : '20em',
             overflowY: 'auto',
         }}
         >
@@ -242,7 +244,7 @@ function UniverseDropdown(
                 Select universe for statistics
             </div>
             {
-                allUniverses.length > 10
+                allUniverses.length > showSearchThreshold
                     ? (
                             <div style={{
                                 padding: '0.5em',
