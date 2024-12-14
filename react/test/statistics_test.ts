@@ -81,9 +81,10 @@ test('statistics-navigation-last-page', async (t) => {
 
 urbanstatsFixture('statistic universe selector test', `${target}/statistic.html?statname=Population&article_type=City&start=3461&amount=20`)
 
+const universeSelector = 'img.universe-selector'
+
 test('statistic-universe-selector-test', async (t) => {
-    await t
-        .click(Selector('img').withAttribute('class', 'universe-selector'))
+    await t.click(universeSelector)
     await screencap(t)
     await t
         .click(
@@ -93,6 +94,13 @@ test('statistic-universe-selector-test', async (t) => {
     await t.expect(getLocation())
         .eql(`${target}/statistic.html?statname=Population&article_type=City&start=261&amount=20&universe=Puerto+Rico%2C+USA`)
     await screencap(t)
+})
+
+test('universe search field', async (t) => {
+    await t.click(universeSelector).typeText('[data-test-id=universe-search]', 'new')
+    await screencap(t)
+    await t.click(Selector('div').withExactText('New Mexico, USA'))
+    await t.expect(getLocation()).eql(`${target}/statistic.html?statname=Population&article_type=City&start=501&amount=20&universe=New+Mexico%2C+USA`)
 })
 
 urbanstatsFixture('statistic universe availability test', `${target}/statistic.html?statname=Commute+Car+__PCT__&article_type=Subnational+Region&start=21&amount=20&universe=USA`)
