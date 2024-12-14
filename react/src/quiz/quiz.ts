@@ -49,7 +49,7 @@ export const quizHistorySchema = z.record(
     z.string(),
     z.object({
         choices: z.array(z.union([z.literal('A'), z.literal('B')])),
-        correct_pattern: z.array(z.boolean()),
+        correct_pattern: z.array(z.union([z.boolean(), z.literal(0), z.literal(1)])),
     })
         .strict()
         .refine(quiz => quiz.choices.length === quiz.correct_pattern.length, { message: 'Quiz choices must be the same length as quiz correct_pattern' }),

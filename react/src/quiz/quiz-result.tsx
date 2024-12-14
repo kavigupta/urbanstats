@@ -17,12 +17,14 @@ import { renderQuestion } from './quiz-question'
 import { AudienceStatistics, QuizStatistics } from './quiz-statistics'
 import { getCachedPerQuestionStats, getPerQuestionStats, PerQuestionStats, parseTimeIdentifier, reportToServer } from './statistics'
 
+export type CorrectPattern = (boolean | 0 | 1)[]
+
 interface QuizResultProps {
     quizDescriptor: QuizDescriptor
     todayName: string
     history: {
         // eslint-disable-next-line no-restricted-syntax -- Persistent data
-        correct_pattern: boolean[]
+        correct_pattern: CorrectPattern
         choices: ('A' | 'B')[]
     }
     wholeHistory: QuizHistory
@@ -47,7 +49,7 @@ export function QuizResult(props: QuizResultProps): ReactNode {
 
     const colors = useColors()
     const correctPattern = props.history.correct_pattern
-    const totalCorrect = correctPattern.reduce((partialSum, a) => partialSum + (a ? 1 : 0), 0)
+    const totalCorrect = correctPattern.reduce((partialSum: number, a) => partialSum + (a ? 1 : 0), 0)
 
     return (
         <div>
@@ -130,7 +132,7 @@ export function QuizResult(props: QuizResultProps): ReactNode {
 interface ShareButtonProps {
     buttonRef: React.RefObject<HTMLButtonElement>
     todayName: string
-    correctPattern: boolean[]
+    correctPattern: CorrectPattern
     totalCorrect: number
     quizKind: 'juxtastat' | 'retrostat'
 }
@@ -244,7 +246,7 @@ function TimeToNextQuiz({ quiz }: { quiz: QuizDescriptor }): ReactNode {
     )
 }
 
-export function Summary(props: { totalCorrect: number, total: number, correctPattern: boolean[] }): ReactNode {
+export function Summary(props: { totalCorrect: number, total: number, correctPattern: CorrectPattern }): ReactNode {
     const juxtaColors = useJuxtastatColors()
     let show = 'error'
     // let frac = this.props.total_correct / this.props.total_correct;
@@ -278,7 +280,7 @@ export function Summary(props: { totalCorrect: number, total: number, correctPat
     )
 }
 
-export function summary(juxtaColors: JuxtastatColors, todayName: string, correctPattern: boolean[], totalCorrect: number, quizKind: 'juxtastat' | 'retrostat'): [string, string] {
+export function summary(juxtaColors: JuxtastatColors, todayName: string, correctPattern: CorrectPattern, totalCorrect: number, quizKind: 'juxtastat' | 'retrostat'): [string, string] {
     // wordle-style summary
     let text = `${nameOfQuizKind(quizKind)} ${todayName} ${totalCorrect}/${correctPattern.length}`
 
@@ -307,7 +309,7 @@ function QuizResultRow(props: QuizResultRowProps & { question: QuizQuestion }): 
 interface QuizResultRowProps {
     question: QuizQuestion
     choice: 'A' | 'B'
-    correct: boolean
+    correct: boolean | 0 | 1
     index: number
 }
 
@@ -487,7 +489,7 @@ function settingsOverrides(questionStatPath?: StatPath): Partial<VectorSettingsD
     ])
 }
 
-export function redAndGreenSquares(juxtaColors: JuxtastatColors, correctPattern: boolean[]): string {
+export function redAndGreenSquares(juxtaColors: JuxtastatColors, correctPattern: CorrectPattern): string {
     return correctPattern.map(function (x) {
         // red square emoji for wrong, green for right
         return x ? juxtaColors.correctEmoji : juxtaColors.incorrectEmoji
