@@ -44,7 +44,7 @@ export function quizFixture(fixName: string, url: string, newLocalstorage: Recor
             for (const k of Object.keys(newLocalstorage)) {
                 localStorage.setItem(k, newLocalstorage[k])
             }
-        }, { dependencies: { new_localstorage: newLocalstorage } })
+        }, { dependencies: { newLocalstorage } })
         await t.eval(() => {
             localStorage.setItem('testHostname', 'urbanstats.org')
         })
