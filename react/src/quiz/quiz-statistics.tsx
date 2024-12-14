@@ -7,7 +7,7 @@ import { parseTimeIdentifier } from './statistics'
 
 interface QuizStatisticsProps {
     quiz: QuizDescriptor
-    whole_history: QuizHistory
+    wholeHistory: QuizHistory
 }
 
 export function QuizStatistics(props: QuizStatisticsProps): ReactNode {
@@ -15,63 +15,63 @@ export function QuizStatistics(props: QuizStatisticsProps): ReactNode {
     const history = (i: number): QuizHistory[string] | undefined => {
         switch (props.quiz.kind) {
             case 'juxtastat':
-                return props.whole_history[i]
+                return props.wholeHistory[i]
             case 'retrostat':
-                return props.whole_history[`W${i}`]
+                return props.wholeHistory[`W${i}`]
         }
     }
 
     const today = parseTimeIdentifier(props.quiz.kind, props.quiz.name.toString())
-    const historical_correct = new Array(today + 1).fill(-1)
+    const historicalCorrect = new Array(today + 1).fill(-1)
     const frequencies = new Array<number>(6).fill(0)
-    const played_games = []
+    const playedGames = []
     for (let i = 0; i <= today; i++) {
-        const hist_i = history(i)
-        if (hist_i === undefined) {
+        const histI = history(i)
+        if (histI === undefined) {
             continue
         }
         else {
-            const amount = hist_i.correct_pattern.reduce((partialSum, a) => partialSum + (a ? 1 : 0), 0)
-            historical_correct[i] = amount
+            const amount = histI.correct_pattern.reduce((partialSum, a) => partialSum + (a ? 1 : 0), 0)
+            historicalCorrect[i] = amount
             frequencies[amount] += 1
-            played_games.push(amount)
+            playedGames.push(amount)
         }
     }
-    const max_streaks = new Array<number>(historical_correct.length).fill(0)
-    for (let val = 0; val < max_streaks.length; val++) {
-        if (historical_correct[val] >= 3) {
-            max_streaks[val] = (val > 0 ? max_streaks[val - 1] : 0) + 1
+    const maxStreaks = new Array<number>(historicalCorrect.length).fill(0)
+    for (let val = 0; val < maxStreaks.length; val++) {
+        if (historicalCorrect[val] >= 3) {
+            maxStreaks[val] = (val > 0 ? maxStreaks[val - 1] : 0) + 1
         }
     }
-    const max_streak = Math.max(...max_streaks)
-    const current_streak = max_streaks[today]
-    const total_freq = frequencies.reduce((partialSum, a) => partialSum + a, 0)
+    const maxStreak = Math.max(...maxStreaks)
+    const currentStreak = maxStreaks[today]
+    const totalFreq = frequencies.reduce((partialSum, a) => partialSum + a, 0)
     const statistics = [
         {
             name: 'Played',
-            value: played_games.length.toString(),
+            value: playedGames.length.toString(),
         },
         {
             name: 'Mean score',
             value: (
-                played_games.reduce((partialSum, a) => partialSum + a, 0)
-                / played_games.length
+                playedGames.reduce((partialSum, a) => partialSum + a, 0)
+                / playedGames.length
             ).toFixed(2),
         },
         {
             name: 'Win Rate (3+)',
             value: `${(
-                played_games.filter(x => x >= 3).length
-                / played_games.length * 100
+                playedGames.filter(x => x >= 3).length
+                / playedGames.length * 100
             ).toFixed(0)}%`,
         },
         {
             name: 'Current Streak (3+)',
-            value: current_streak.toString(),
+            value: currentStreak.toString(),
         },
         {
             name: 'Max Streak (3+)',
-            value: max_streak.toString(),
+            value: maxStreak.toString(),
         },
     ]
     return (
@@ -88,7 +88,7 @@ export function QuizStatistics(props: QuizStatisticsProps): ReactNode {
                                 /5
                             </td>
                             <td className="quiz_bar_td serif">
-                                <span className="quiz_bar" style={{ width: `${amt / total_freq * 20}em`, backgroundColor: colors.hueColors.blue }}>
+                                <span className="quiz_bar" style={{ width: `${amt / totalFreq * 20}em`, backgroundColor: colors.hueColors.blue }}>
                                 </span>
                                 {amt > 0
                                     ? (
@@ -96,7 +96,7 @@ export function QuizStatistics(props: QuizStatisticsProps): ReactNode {
                                                 {amt}
                                                 {' '}
                                                 (
-                                                {(amt / total_freq * 100).toFixed(1)}
+                                                {(amt / totalFreq * 100).toFixed(1)}
                                                 %)
                                             </span>
                                         )
@@ -110,13 +110,13 @@ export function QuizStatistics(props: QuizStatisticsProps): ReactNode {
         </div>
     )
 }
-export function AudienceStatistics({ total, per_question }: { total: number, per_question: number[] }): ReactNode {
+export function AudienceStatistics({ total, perQuestion }: { total: number, perQuestion: number[] }): ReactNode {
     const juxtaColors = useJuxtastatColors()
     // two flexboxes of the scores for each
     return (
         <div id="quiz-audience-statistics">
             <div className="serif quiz_summary">Question Difficulty</div>
-            <DisplayedStats statistics={per_question.map((x, i) => {
+            <DisplayedStats statistics={perQuestion.map((x, i) => {
                 return {
                     name: `Q${i + 1} Correct`,
                     value: `${(x / total * 100).toFixed(0)}%`,
@@ -129,7 +129,7 @@ export function AudienceStatistics({ total, per_question }: { total: number, per
         </div>
     )
 }
-export function DisplayedStats({ statistics }: { statistics: { value: string, name: string, addtl_class?: string, color?: string }[] }): ReactNode {
+export function DisplayedStats({ statistics }: { statistics: { value: string, name: string, additionalClass?: string, color?: string }[] }): ReactNode {
     return (
         <div
             className="serif"
@@ -138,16 +138,16 @@ export function DisplayedStats({ statistics }: { statistics: { value: string, na
                 display: 'flex', flexWrap: 'wrap', justifyContent: 'center',
             }}
         >
-            {statistics.map((stat, i) => <DisplayedStat key={i} number={stat.value} name={stat.name} addtl_class={stat.addtl_class} color={stat.color} />,
+            {statistics.map((stat, i) => <DisplayedStat key={i} number={stat.value} name={stat.name} additionalClass={stat.additionalClass} color={stat.color} />,
             )}
         </div>
     )
 }
-export function DisplayedStat({ number, name, addtl_class, color }: { number: string, name: string, addtl_class?: string, color?: string }): ReactNode {
+export function DisplayedStat({ number, name, additionalClass, color }: { number: string, name: string, additionalClass?: string, color?: string }): ReactNode {
     // large font for numbers, small for names. Center-aligned using flexbox
     return (
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '0.3em' }}>
-            <div className={`serif ${addtl_class ?? ''}`} style={{ fontSize: '1.5em', color }}>{number}</div>
+            <div className={`serif ${additionalClass ?? ''}`} style={{ fontSize: '1.5em', color }}>{number}</div>
             <div className="serif" style={{ fontSize: '0.5em' }}>{name}</div>
         </div>
     )

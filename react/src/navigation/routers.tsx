@@ -150,8 +150,8 @@ function PageRouter({ pageData }: { pageData: PageData }): ReactNode {
             return (
                 <QuizPanel
                     quizDescriptor={pageData.quizDescriptor}
-                    today_name={pageData.todayName}
-                    todays_quiz={pageData.quiz}
+                    todayName={pageData.todayName}
+                    todaysQuiz={pageData.quiz}
                 />
             )
         case 'mapper':
