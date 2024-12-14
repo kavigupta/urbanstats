@@ -31,7 +31,7 @@ export function QuizStatistics(props: QuizStatisticsProps): ReactNode {
             continue
         }
         else {
-            const amount = histI.correct_pattern.reduce((partialSum, a) => partialSum + (a ? 1 : 0), 0)
+            const amount = histI.correct_pattern.reduce((partialSum: number, a) => partialSum + (a ? 1 : 0), 0)
             historicalCorrect[i] = amount
             frequencies[amount] += 1
             playedGames.push(amount)

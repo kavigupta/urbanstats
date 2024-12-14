@@ -5,16 +5,17 @@ import { useColors, useJuxtastatColors } from '../page_template/colors'
 import { mixWithBackground } from '../utils/color'
 
 import { endpoint, QuizFriends } from './quiz'
+import { CorrectPattern } from './quiz-result'
 import { uniquePersistentId, uniqueSecureId } from './statistics'
 
-interface FriendScore { name?: string, corrects: boolean[] | null, friends: boolean, idError?: string }
+interface FriendScore { name?: string, corrects: CorrectPattern | null, friends: boolean, idError?: string }
 
 export function QuizFriendsPanel(props: {
     quizFriends: QuizFriends
     setQuizFriends: (quizFriends: QuizFriends) => void
     quizKind: 'juxtastat' | 'retrostat'
     date: number
-    myCorrects: boolean[]
+    myCorrects: CorrectPattern
 }): ReactNode {
     const [friendScores, setFriendScores] = useState([] as FriendScore[])
 
@@ -32,7 +33,7 @@ export function QuizFriendsPanel(props: {
                     'Content-Type': 'application/json',
                 },
             }).then(x => x.json())
-            const friendScoresResponse = (await friendScoresPromise) as { results: { corrects: boolean[] | null, friends: boolean, idError?: string }[] } | { error: string }
+            const friendScoresResponse = (await friendScoresPromise) as { results: { corrects: CorrectPattern | null, friends: boolean, idError?: string }[] } | { error: string }
             if ('error' in friendScoresResponse) {
                 // probably some kind of auth error. Handled elsewhere
                 return
