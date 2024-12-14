@@ -106,6 +106,7 @@ function toCharliePattern(alicePattern: string): string {
 
 function testsGeneric(
     props: {
+        name: string
         alicePattern: string
         alicePatternPrev: string
         aliceOtherPattern: string
@@ -128,7 +129,7 @@ function testsGeneric(
     const charliePatternPrev = toCharliePattern(alicePatternPrev)
 
     quiz_fixture(
-        'juxtastat friends test',
+        `${props.name} friends test`,
         `${TARGET}/${today}`,
         { },
         '',
@@ -158,7 +159,7 @@ function testsGeneric(
         return state
     }
 
-    test('basic-friends-test', async (t) => {
+    test(`${props.name}-basic-friends-test`, async (t) => {
         const state = await aliceBobFriends(t, true)
         // Charlie hasn't done the quiz yet (they register on #98 instead)
         await create_user(t, 'Charlie', '000000c', state)
@@ -211,7 +212,7 @@ function testsGeneric(
         await t.expect(await friendsText(t)).eql([`You${bobPattern}`, 'Alice2Pending Friend RequestRemove'])
     })
 
-    test('friends-bad-naming-test', async (t) => {
+    test(`${props.name}-friends-bad-naming-test`, async (t) => {
         const state = await aliceBobFriends(t, false)
         await restore_user(t, 'Alice', state)
         // should error because we are attempting to add the same user under a different name
@@ -254,7 +255,7 @@ function testsGeneric(
         await t.expect(Selector('div').withText('Friend name already exists').exists).ok()
     })
 
-    test('same-on-juxta-and-retro', async (t) => {
+    test(`${props.name}-same-on-juxta-and-retro`, async (t) => {
         await aliceBobFriends(t, false)
         // same on retrostat
         await t.eval(() => {
