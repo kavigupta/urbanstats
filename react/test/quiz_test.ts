@@ -587,6 +587,46 @@ test('support old retro links', async (t) => {
     await t.expect(Selector('.headertext').withText('Retrostat').exists).ok()
 })
 
+const expectedExportWithoutDateNumbers = {
+    persistent_id: 'b0bacafe',
+    secure_id: 'baddecaf',
+    quiz_history: {
+        90: {
+            choices: [
+                'A',
+                'A',
+                'A',
+                'A',
+                'A',
+            ],
+            correct_pattern: [
+                1,
+                1,
+                1,
+                1,
+                0,
+            ],
+        },
+    },
+    quiz_friends: [],
+}
+
+quizFixture('import quiz progress with numbers', `${target}/quiz.html#date=90`,
+    {},
+    '',
+)
+
+test.only('import quiz progress with numbers', async (t) => {
+    // Write the file to upload
+    const tempfile = `${tempfileName()}.json`
+    writeFileSync(tempfile, JSON.stringify(expectedExportWithoutDateNumbers, null, 2))
+
+    await t.setNativeDialogHandler(() => 'merge')
+    await t.click(Selector('button').withText('Import Quiz History'))
+    await t.setFilesToUpload('input[type=file]', [tempfile])
+    await checkText(t, 'Excellent! 😊 4/5', '🟩🟩🟩🟩🟥')
+})
+
 quizFixture('completed juxta 468', `${target}/quiz.html#date=468`,
     {
         quiz_history: JSON.stringify({
