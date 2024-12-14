@@ -31,8 +31,8 @@ export function Histogram(props: { histograms: HistogramProps[] }): ReactNode {
             throw new Error('histograms have different binMin or binSize')
         }
     }
-    const settingsElement = (plot_ref: React.RefObject<HTMLDivElement>): ReactElement => (
-        <HistogramSettings plotRef={plot_ref} shortnames={props.histograms.map(h => h.shortname)} />
+    const settingsElement = (plotRef: React.RefObject<HTMLDivElement>): ReactElement => (
+        <HistogramSettings plotRef={plotRef} shortnames={props.histograms.map(h => h.shortname)} />
     )
 
     const plotSpec = useMemo(
@@ -160,7 +160,7 @@ function mulitipleSeriesConsistentLength(histograms: HistogramProps[], xidxs: nu
     // Create a list of series, each with the same length
     const sum = (arr: number[]): number => arr.reduce((a, b) => a + b, 0)
     const sumEach = histograms.map(histogram => sum(histogram.histogram.counts!))
-    const series = histograms.map((histogram, histogram_idx) => {
+    const series = histograms.map((histogram, histogramIdx) => {
         const counts = [...histogram.histogram.counts!]
         const afterVal = 0
         if (isCumulative) {
@@ -175,7 +175,7 @@ function mulitipleSeriesConsistentLength(histograms: HistogramProps[], xidxs: nu
                 y: (
                     xidx >= counts.length
                         ? afterVal
-                        : counts[xidx] / sumEach[histogram_idx]
+                        : counts[xidx] / sumEach[histogramIdx]
                 ) * (relative ? 100 : histogram.universeTotal),
             })),
             color: histogram.color,
