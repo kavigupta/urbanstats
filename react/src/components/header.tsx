@@ -1,4 +1,4 @@
-import React, { ReactNode, useContext } from 'react'
+import React, { ReactNode, useContext, useState } from 'react'
 
 import '../common.css'
 import './header.css'
@@ -227,6 +227,9 @@ function UniverseDropdown(
 ): ReactNode {
     const colors = useColors()
     const navContext = useContext(Navigator.Context)
+    const [searchTerm, setSearchTerm] = useState('')
+    const filteredUniverses = allUniverses.filter(universe => universe.toLowerCase().includes(searchTerm.toLowerCase()))
+
     return (
         <div>
             <div
@@ -238,7 +241,38 @@ function UniverseDropdown(
             >
                 Select universe for statistics
             </div>
-            {allUniverses.map((alt_universe) => {
+            {
+                allUniverses.length > 10
+                    ? (
+                            <div style={{
+                                padding: '0.5em',
+                                width: '100%',
+                                backgroundColor: colors.slightlyDifferentBackground,
+                            }}
+                            >
+                                <input
+                                    type="text"
+                                    placeholder="Search Universes"
+                                    className="serif"
+                                    style={{
+                                        paddingLeft: '1.25em',
+                                        fontSize: '16px',
+                                        width: '100%',
+                                    }}
+                                    onFocus={e => setTimeout(() => {
+                                        e.target.select()
+                                    }, 0)}
+                                    value={searchTerm}
+                                    onChange={(e) => { setSearchTerm(e.target.value) }}
+                                    data-test-id="universe-search"
+                                >
+
+                                </input>
+                            </div>
+                        )
+                    : null
+            }
+            {filteredUniverses.map((alt_universe) => {
                 return (
                     <div
                         key={alt_universe}
