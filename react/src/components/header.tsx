@@ -1,4 +1,4 @@
-import React, { ReactNode, useContext } from 'react'
+import React, { ReactNode, useContext, useState } from 'react'
 
 import '../common.css'
 import './header.css'
@@ -137,6 +137,8 @@ function HeaderImage(): ReactNode {
     )
 }
 
+const showSearchThreshold = 10
+
 function UniverseSelector(
     { allUniverses }: { allUniverses: readonly string[] },
 ): ReactNode {
@@ -168,7 +170,7 @@ function UniverseSelector(
             borderRadius: '0.25em',
             display: dropdownOpen ? 'block' : 'none',
             width: '500%',
-            maxHeight: '20em',
+            maxHeight: allUniverses.length > showSearchThreshold ? '22em' : '20em',
             overflowY: 'auto',
         }}
         >
@@ -227,6 +229,9 @@ function UniverseDropdown(
 ): ReactNode {
     const colors = useColors()
     const navContext = useContext(Navigator.Context)
+    const [searchTerm, setSearchTerm] = useState('')
+    const filteredUniverses = allUniverses.filter(universe => universe.toLowerCase().includes(searchTerm.toLowerCase()))
+
     return (
         <div>
             <div
@@ -238,7 +243,38 @@ function UniverseDropdown(
             >
                 Select universe for statistics
             </div>
-            {allUniverses.map((altUniverse) => {
+            {
+                allUniverses.length > showSearchThreshold
+                    ? (
+                            <div style={{
+                                padding: '0.5em',
+                                width: '100%',
+                                backgroundColor: colors.slightlyDifferentBackground,
+                            }}
+                            >
+                                <input
+                                    type="text"
+                                    placeholder="Search Universes"
+                                    className="serif"
+                                    style={{
+                                        paddingLeft: '1.25em',
+                                        fontSize: '16px',
+                                        width: '100%',
+                                    }}
+                                    onFocus={e => setTimeout(() => {
+                                        e.target.select()
+                                    }, 0)}
+                                    value={searchTerm}
+                                    onChange={(e) => { setSearchTerm(e.target.value) }}
+                                    data-test-id="universe-search"
+                                >
+
+                                </input>
+                            </div>
+                        )
+                    : null
+            }
+            {filteredUniverses.map((altUniverse) => {
                 return (
                     <div
                         key={altUniverse}
