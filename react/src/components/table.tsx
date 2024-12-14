@@ -561,7 +561,7 @@ export function Statistic(props: { style?: React.CSSProperties, statname: string
                 if (isUnit) {
                     return <span>&nbsp;</span>
                 }
-                return <span>{value.toFixed(0)}</span>
+                return <span>{separateNumber(value.toFixed(0))}</span>
             }
             else if (name.includes('Fatalities Per Capita')) {
                 if (isUnit) {
@@ -602,7 +602,7 @@ export function Statistic(props: { style?: React.CSSProperties, statname: string
                 if (isUnit) {
                     return <span>{unitName}</span>
                 }
-                return <span>{value.toFixed(0)}</span>
+                return <span>{separateNumber(value.toFixed(0))}</span>
             }
             else if (name.startsWith('Population')) {
                 if (value > 1e9) {
@@ -627,7 +627,7 @@ export function Statistic(props: { style?: React.CSSProperties, statname: string
                     if (isUnit) {
                         return <span>&nbsp;</span>
                     }
-                    return <span>{value.toFixed(0)}</span>
+                    return <span>{separateNumber(value.toFixed(0))}</span>
                 }
             }
             else if (name === 'Area') {
