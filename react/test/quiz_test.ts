@@ -616,7 +616,7 @@ quizFixture('import quiz progress with numbers', `${target}/quiz.html#date=90`,
     '',
 )
 
-test.only('import quiz progress with numbers', async (t) => {
+test('import quiz progress with numbers', async (t) => {
     // Write the file to upload
     const tempfile = `${tempfileName()}.json`
     writeFileSync(tempfile, JSON.stringify(expectedExportWithoutDateNumbers, null, 2))
