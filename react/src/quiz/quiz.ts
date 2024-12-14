@@ -8,8 +8,7 @@ import { unique_persistent_id, unique_secure_id } from './statistics'
 
 export type QuizDescriptor = { kind: 'juxtastat', name: number } | { kind: 'retrostat', name: string }
 
-// export const ENDPOINT = 'https://persistent.urbanstats.org'
-export const ENDPOINT = 'http://0.0.0.0:54579'
+export const ENDPOINT = 'https://persistent.urbanstats.org'
 
 // stat_path is optional for backwards compatibility
 export interface JuxtaQuestionJSON { stat_a: number, stat_b: number, question: string, longname_a: string, longname_b: string, stat_column: string, stat_path?: StatPath };
