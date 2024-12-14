@@ -24,7 +24,7 @@ export function Header(props: {
     hasUniverseSelector: boolean
     allUniverses: readonly string[]
     hasScreenshot: boolean
-    initiateScreenshot: (curr_universe: string | undefined) => void
+    initiateScreenshot: (currentUniverse: string | undefined) => void
 }): ReactNode {
     const navContext = useContext(Navigator.Context)
     const currentUniverse = navContext.useUniverse()
@@ -61,11 +61,11 @@ export function Header(props: {
                     <div style={{ flexGrow: 1 }}>
                         <SearchBox
                             onChange={
-                                (new_location) => {
+                                (newLocation) => {
                                     void navContext.navigate({
                                         kind: 'article',
                                         universe: currentUniverse,
-                                        longname: new_location,
+                                        longname: newLocation,
                                     }, 'push')
                                 }
                             }
@@ -238,12 +238,12 @@ function UniverseDropdown(
             >
                 Select universe for statistics
             </div>
-            {allUniverses.map((alt_universe) => {
+            {allUniverses.map((altUniverse) => {
                 return (
                     <div
-                        key={alt_universe}
+                        key={altUniverse}
                         onClick={() => {
-                            navContext.setUniverse(alt_universe)
+                            navContext.setUniverse(altUniverse)
                             closeDropdown()
                         }}
                     >
@@ -261,11 +261,11 @@ function UniverseDropdown(
                         >
                             <Flag
                                 height={flagSize}
-                                universe={alt_universe}
+                                universe={altUniverse}
                                 classNameToUse="universe-selector-option"
                             />
                             <div className="serif">
-                                {alt_universe === 'world' ? 'World' : alt_universe}
+                                {altUniverse === 'world' ? 'World' : altUniverse}
                             </div>
                         </div>
                     </div>

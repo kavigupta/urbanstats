@@ -32,11 +32,11 @@ export function RampColormapSelector(props: { ramp: RampDescriptor, setRamp: (ne
         setColormap(colormap)
     }
 
-    const setCustomColormap = (custom_colormap: string): void => {
+    const setCustomColormap = (customColormap: string): void => {
         setColormap({
             ...colormap,
             type: 'custom',
-            custom_colormap,
+            custom_colormap: customColormap,
         })
     }
 
@@ -79,7 +79,7 @@ export function RampColormapSelector(props: { ramp: RampDescriptor, setRamp: (ne
                             <span>
                                 <CustomColormapSelector
                                     colormap={colormap.custom_colormap}
-                                    setColormap={(custom_colormap) => { setCustomColormap(custom_colormap) }}
+                                    setColormap={(customColormap) => { setCustomColormap(customColormap) }}
                                 />
                             </span>
                         )
@@ -151,20 +151,20 @@ function CustomColormapSelector(props: { colormap: string, setColormap: (newValu
     }
     // colormap :: [[number, string]]
 
-    const addCell = (at_index: number): void => {
+    const addCell = (atIndex: number): void => {
         const newColormap = colormap.slice()
         let value = 0
-        if (at_index === 0) {
+        if (atIndex === 0) {
             value = colormap[0][0] - 1
         }
-        else if (at_index === colormap.length) {
+        else if (atIndex === colormap.length) {
             value = colormap[colormap.length - 1][0] + 1
         }
         else {
-            value = (colormap[at_index - 1][0] + colormap[at_index][0]) / 2
+            value = (colormap[atIndex - 1][0] + colormap[atIndex][0]) / 2
         }
         const color = interpolateColor(colormap, value)
-        newColormap.splice(at_index, 0, [value, color])
+        newColormap.splice(atIndex, 0, [value, color])
         props.setColormap(
             JSON.stringify(newColormap),
         )

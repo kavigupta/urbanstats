@@ -82,8 +82,8 @@ function RelatedList(props: { articleType: string, buttonType: string, regions: 
                 </div>
                 <ul className="list_of_lists">
                     {
-                        Object.keys(props.regions).map((relationship_type, j) => {
-                            const regions = props.regions[relationship_type]
+                        Object.keys(props.regions).map((relationshipType, j) => {
+                            const regions = props.regions[relationshipType]
                             return (
                                 <ul key={j} className="linklist">
                                     <li
@@ -95,7 +95,7 @@ function RelatedList(props: { articleType: string, buttonType: string, regions: 
                                         }}
                                     >
                                         <label htmlFor={checkId}>
-                                            {displayName(relationship_type)}
+                                            {displayName(relationshipType)}
                                         </label>
                                     </li>
                                     {

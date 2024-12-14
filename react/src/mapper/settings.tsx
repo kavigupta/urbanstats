@@ -14,7 +14,7 @@ export type StatisticsForGeography = { stats: number[] }[]
 
 export interface ColorStat {
     name: () => string
-    compute: (statistics_for_geography: StatisticsForGeography, vars?: Record<string, number[]>) => number[]
+    compute: (statisticsForGeography: StatisticsForGeography, vars?: Record<string, number[]>) => number[]
 }
 
 /* eslint-disable no-restricted-syntax -- This represents persitent links */
@@ -363,10 +363,10 @@ export function MapperSettings(props: { mapSettings: MapSettings, validGeographi
             <StatisticSelector
                 overallName="Statistic for Color:"
                 statistic={props.mapSettings.color_stat}
-                setStatistic={(color_stat) => {
+                setStatistic={(colorStat) => {
                     props.setMapSettings({
                         ...props.mapSettings,
-                        color_stat,
+                        color_stat: colorStat,
                     })
                 }}
                 names={props.names}
@@ -383,10 +383,10 @@ export function MapperSettings(props: { mapSettings: MapSettings, validGeographi
             />
             <LineStyleSelector
                 lineStyle={props.mapSettings.line_style}
-                setLineStyle={(line_style) => {
+                setLineStyle={(lineStyle) => {
                     props.setMapSettings({
                         ...props.mapSettings,
-                        line_style,
+                        line_style: lineStyle,
                     })
                 }}
             />
