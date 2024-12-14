@@ -64,17 +64,21 @@ export function QuizFriendsPanel(props: {
             <>
                 <FriendScore
                     friendScore={{ name: 'You', corrects: props.myCorrects, friends: true }}
+                    index={-1}
+                    quizFriends={props.quizFriends}
+                    setQuizFriends={props.setQuizFriends}
                 />
 
                 {
                     friendScores.map((friendScore, idx) => (
                         <FriendScore
                             key={idx}
+                            index={idx}
                             friendScore={friendScore}
                             removeFriend={() => {
-                                console.log("REMOVE FRIEND", props.quizFriends[idx][1])
+                                console.log('REMOVE FRIEND', props.quizFriends[idx][1])
                                 void (async () => {
-                                    console.log("REMOVE FRIEND [in thread]", props.quizFriends[idx][1])
+                                    console.log('REMOVE FRIEND [in thread]', props.quizFriends[idx][1])
                                     const response = await fetch(`${ENDPOINT}/juxtastat/unfriend`, {
                                         method: 'POST',
                                         body: JSON.stringify({ user: unique_persistent_id(), secureID: unique_secure_id(), requestee: props.quizFriends[idx][1] }),
@@ -87,10 +91,8 @@ export function QuizFriendsPanel(props: {
                                     props.setQuizFriends(newQuizFriends)
                                 })()
                             }}
-                            renameFriend={(name: string) => {
-                                const newQuizFriends = props.quizFriends.map(x => (x[0] === friendScore.name ? [name, x[1]] : x) satisfies [string, string])
-                                props.setQuizFriends(newQuizFriends)
-                            }}
+                            quizFriends={props.quizFriends}
+                            setQuizFriends={props.setQuizFriends}
                         />
                     ),
                     )
@@ -111,15 +113,39 @@ export function QuizFriendsPanel(props: {
 const SCORE_CORRECT_HEIGHT = '2em'
 const ADD_FRIEND_HEIGHT = '1.5em'
 
-function FriendScore(props: { friendScore: FriendScore, removeFriend?: () => void, renameFriend?: (name: string) => void }): ReactNode {
-    console.log('friend score', props.friendScore)
-    return (
+function FriendScore(props: {
+    index: number
+    friendScore: FriendScore
+    removeFriend?: () => void
+    quizFriends: QuizFriends
+    setQuizFriends: (x: QuizFriends) => void
+}): ReactNode {
+    const [error, setError] = useState<string | undefined>(undefined)
+
+    const renameFriend = props.removeFriend === undefined
+        ? undefined
+        : (name: string): void => {
+                if (name === '') {
+                    setError('Friend name cannot be empty')
+                    return
+                }
+                if (props.quizFriends.map(x => x[0]).includes(name)) {
+                    setError('Friend name already exists')
+                    return
+                }
+                const newQuizFriends = [...props.quizFriends]
+                newQuizFriends[props.index] = [name, props.quizFriends[props.index][1]]
+                props.setQuizFriends(newQuizFriends)
+                setError(undefined)
+            }
+
+    const row = (
         <div
             style={{ display: 'flex', flexDirection: 'row', height: SCORE_CORRECT_HEIGHT, alignItems: 'center' }}
             className="testing-friends-section"
         >
             <div style={{ width: '25%' }}>
-                <FriendScoreName name={props.friendScore.name} renameFriend={props.renameFriend} />
+                <FriendScoreName name={props.friendScore.name} renameFriend={renameFriend} />
             </div>
             <div style={{ width: '50%' }}>
                 <FriendScoreCorrects {...props.friendScore} />
@@ -137,6 +163,7 @@ function FriendScore(props: { friendScore: FriendScore, removeFriend?: () => voi
             </div>
         </div>
     )
+    return <WithError error={error} content={row} />
 }
 
 function FriendScoreName(props: { name?: string, renameFriend?: (name: string) => void }): ReactNode {
@@ -210,8 +237,31 @@ function AddFriend(props: {
 }): ReactNode {
     const [friendName, setFriendName] = useState('')
     const [friendID, setFriendID] = useState('')
+    const [error, setError] = useState<string | undefined>(undefined)
+    const colors = useColors()
 
     const addFriend = async (): Promise<void> => {
+        if (friendName === '') {
+            setError('Friend name cannot be empty')
+            return
+        }
+        if (friendID === '') {
+            setError('Friend ID cannot be empty')
+            return
+        }
+        if (friendID === unique_persistent_id()) {
+            setError('Friend ID cannot be your own ID')
+            return
+        }
+        if (props.quizFriends.map(x => x[0]).includes(friendName)) {
+            setError('Friend name already exists')
+            return
+        }
+        if (props.quizFriends.map(x => x[1]).includes(friendID)) {
+            const friendNameDup = props.quizFriends.find(x => x[1] === friendID)![0]
+            setError(`Friend ID ${friendID} already exists as ${friendNameDup}`)
+            return
+        }
         const user = unique_persistent_id()
         const secureID = unique_secure_id()
         await fetch(`${ENDPOINT}/juxtastat/friend_request`, {
@@ -222,9 +272,12 @@ function AddFriend(props: {
             },
         })
         props.setQuizFriends([...props.quizFriends, [friendName, friendID]])
+        setError(undefined)
+        setFriendName('')
+        setFriendID('')
     }
 
-    return (
+    const form = (
         <div style={{ display: 'flex', flexDirection: 'row', height: ADD_FRIEND_HEIGHT, alignItems: 'center' }}>
             <div
                 style={{ width: '37.5%', padding: '0 0.2em' }}
@@ -258,4 +311,20 @@ function AddFriend(props: {
             </div>
         </div>
     )
+    return <WithError error={error} content={form} />
+}
+
+function WithError(props: { error?: string, content: ReactNode }): ReactNode {
+    const colors = useColors()
+    if (props.error !== undefined) {
+        return (
+            <div>
+                {props.content}
+                <div style={{ backgroundColor: colors.slightlyDifferentBackgroundFocused, padding: '0 0.5em', marginRight: '25%' }}>
+                    {props.error}
+                </div>
+            </div>
+        )
+    }
+    return props.content
 }

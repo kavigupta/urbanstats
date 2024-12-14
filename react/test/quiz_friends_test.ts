@@ -77,10 +77,17 @@ async function friendsText(t: TestController): Promise<string[]> {
 async function addFriend(t: TestController, friendName: string, friendID: string): Promise<void> {
     const friendNameField = Selector('input').withAttribute('placeholder', 'Friend Name')
     await t.click(friendNameField)
-    await t.typeText(friendNameField, friendName)
+    // clear the field
+    await t.pressKey('ctrl+a delete')
+    if (friendName !== '') {
+        await t.typeText(friendNameField, friendName)
+    }
     const friendIDField = Selector('input').withAttribute('placeholder', 'Friend ID')
     await t.click(friendIDField)
-    await t.typeText(friendIDField, friendID)
+    await t.pressKey('ctrl+a delete')
+    if (friendID !== '') {
+        await t.typeText(friendIDField, friendID)
+    }
     await t.click(Selector('button').withText('Add'))
 }
 
@@ -156,4 +163,61 @@ test('basic-friends-test', async (t) => {
     await restore_user(t, 'Bob', state)
     await quiz_screencap(t) // Bob no longer sees Alice's score
     await t.expect(await friendsText(t)).eql(['Younnnny', 'AlicePending Friend RequestRemove'])
+    // rename Alice to Alice2 by clicking on the Alice name and changing it
+    const aliceName = Selector('span').withAttribute('class', 'editable_content').nth(0)
+    await t.click(aliceName)
+    await t.pressKey('ctrl+a')
+    await t.typeText(aliceName, 'Alice2')
+    await t.pressKey('enter')
+    await t.expect(await friendsText(t)).eql(['Younnnny', 'Alice2Pending Friend RequestRemove'])
+    // refresh
+    await t.eval(() => {
+        // eslint-disable-next-line no-restricted-syntax -- Make sure changes are saved
+        window.location.reload()
+    })
+    await t.wait(1000)
+    await t.expect(await friendsText(t)).eql(['Younnnny', 'Alice2Pending Friend RequestRemove'])
+})
+
+test('friends-bad-naming-test', async (t) => {
+    const state = await aliceBobFriends(t, false)
+    await restore_user(t, 'Alice', state)
+    // should error because we are attempting to add the same user under a different name
+    await addFriend(t, 'Bob2', '000000b')
+    // Bob2 not added
+    await t.expect(await friendsText(t)).eql(['Youyyyyn', 'BobnnnnyRemove'])
+    // check that the text 'Friend ID 000000b already exists as Bob' is displayed
+    await t.expect(Selector('div').withText('Friend ID 000000b already exists as Bob').exists).ok()
+    // should error because we are attempting to add a duplicate name
+    await addFriend(t, 'Bob', 'abc')
+    // Bob not added
+    await t.expect(await friendsText(t)).eql(['Youyyyyn', 'BobnnnnyRemove'])
+    // check that the text 'Friend Name Bob already exists' is displayed
+    await t.expect(Selector('div').withText('Friend name already exists').exists).ok()
+    // should error because we are attempting to add an empty name
+    await addFriend(t, '', 'abc')
+    // empty name not added
+    await t.expect(await friendsText(t)).eql(['Youyyyyn', 'BobnnnnyRemove'])
+    // check that the text 'Friend name cannot be empty' is displayed
+    await t.expect(Selector('div').withText('Friend name cannot be empty').exists).ok()
+    // should error because we are attempting to add an empty ID
+    await addFriend(t, 'Bob2', '')
+    // empty ID not added
+    await t.expect(await friendsText(t)).eql(['Youyyyyn', 'BobnnnnyRemove'])
+    // check that the text 'Friend ID cannot be empty' is displayed
+    await t.expect(Selector('div').withText('Friend ID cannot be empty').exists).ok()
+    // add an additional friend
+    await addFriend(t, 'Charlie', '000000c')
+    // Charlie added
+    await t.expect(await friendsText(t)).eql(['Youyyyyn', 'BobnnnnyRemove', 'CharliePending Friend RequestRemove'])
+    // attempting to rename Charlie to Bob should error
+    const charlieName = Selector('span').withAttribute('class', 'editable_content').nth(1)
+    await t.click(charlieName)
+    await t.pressKey('ctrl+a')
+    await t.typeText(charlieName, 'Bob')
+    await t.pressKey('enter')
+    // Charlie not renamed
+    await t.expect(await friendsText(t)).eql(['Youyyyyn', 'BobnnnnyRemove', 'CharliePending Friend RequestRemove'])
+    // check that the text 'Friend name already exists' is displayed
+    await t.expect(Selector('div').withText('Friend name already exists').exists).ok()
 })
