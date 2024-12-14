@@ -23,5 +23,5 @@ function localize(universe: string, type: string): string {
 }
 
 export function separateNumber(number: string): string {
-    return number.replaceAll(/(?<!^)([0-9]{3})(?=([0-9]{3})*($|\.))/g, '\u2009$1')
+    return number.replaceAll(/(?<!^)([0-9]{3})(?=([0-9]{3})*($|\.))/g, '\u202f$1')
 }
