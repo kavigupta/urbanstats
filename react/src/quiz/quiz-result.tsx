@@ -39,8 +39,6 @@ export function QuizResult(props: QuizResultProps): ReactNode {
         localStorage.setItem('quiz_friends', JSON.stringify(qf))
     }
 
-    console.log(quizFriends)
-
     useEffect(() => {
         void reportToServer(props.whole_history, props.quizDescriptor.kind).then(setAuthError)
         void getPerQuestionStats(props.quizDescriptor).then(setStats)

@@ -3,14 +3,11 @@ import time
 from typing import List, Tuple
 
 table_for_quiz_kind = {
-    'juxtastat': 'JuxtaStatIndividualStats',
-    'retrostat': 'JuxtaStatIndividualStatsRetrostat'
+    "juxtastat": "JuxtaStatIndividualStats",
+    "retrostat": "JuxtaStatIndividualStatsRetrostat",
 }
 
-problem_id_for_quiz_kind = {
-    'juxtastat': 'day',
-    'retrostat': 'week'
-}
+problem_id_for_quiz_kind = {"juxtastat": "day", "retrostat": "week"}
 
 
 def table():
@@ -266,28 +263,3 @@ def todays_score_for(requestee, requesters, date, quiz_kind):
         else:
             results.append(dict(friends=False))
     return results
-
-
-def friends_status(user):
-    """
-    Get two lists, one of people who have friended user and one of people who user has friended.
-    """
-    user = int(user, 16)
-    _, c = table()
-    c.execute(
-        "SELECT requestee FROM FriendRequests WHERE requester=?",
-        (user,),
-    )
-    outgoing_requests = c.fetchall()
-    outgoing_requests = [x[0] for x in outgoing_requests]
-    c.execute(
-        "SELECT requester FROM FriendRequests WHERE requestee=?",
-        (user,),
-    )
-    incoming_requests = c.fetchall()
-    incoming_requests = [x[0] for x in incoming_requests]
-    outgoing_requests = [hex(x)[2:] for x in outgoing_requests]
-    incoming_requests = [hex(x)[2:] for x in incoming_requests]
-    return dict(
-        outgoing_requests=outgoing_requests, incoming_requests=incoming_requests
-    )

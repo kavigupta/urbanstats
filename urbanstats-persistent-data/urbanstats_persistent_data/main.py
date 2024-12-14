@@ -8,7 +8,6 @@ from flask_cors import CORS
 from .juxtastat_stats import (
     check_secureid,
     friend_request,
-    friends_status,
     get_per_question_stats,
     get_per_question_stats_retrostat,
     latest_day,
@@ -204,17 +203,6 @@ def juxtastat_todays_score_for():
     )
     print("TODAYS SCORE FOR", res)
     return flask.jsonify(res)
-
-
-@app.route("/juxtastat/friends_status", methods=["POST"])
-@authenticate([])
-def juxtastat_friends_status():
-    print("FRIENDS STATUS")
-    print(flask_form())
-    form = flask_form()
-    result = dict(results=friends_status(form["user"]))
-    print("FRIENDS STATUS RESULT", result)
-    return flask.jsonify(result)
 
 
 import logging
