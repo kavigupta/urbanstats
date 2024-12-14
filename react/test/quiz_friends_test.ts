@@ -1,7 +1,7 @@
 import { Selector } from 'testcafe'
 
 import { quiz_fixture, click_buttons, quiz_screencap } from './quiz_test_utils'
-import { TARGET } from './test_utils'
+import { safeReload, TARGET } from './test_utils'
 
 type Storage = Record<string, string>
 
@@ -30,11 +30,7 @@ async function create_user(t: TestController, user: string, userId: string, stat
     await t.eval(() => {
         localStorage.setItem('persistent_id', userId)
     }, { dependencies: { userId } })
-    // reload
-    await t.eval(() => {
-        // eslint-disable-next-line no-restricted-syntax -- Localstorage is not reactive
-        window.location.reload()
-    })
+    await safeReload(t)
     state.currentUser = user
 }
 
@@ -47,11 +43,7 @@ async function restore_user(t: TestController, user: string, state: JuxtastatUse
             localStorage.setItem(key, storage[key])
         }
     }, { dependencies: { storage } })
-    // reload
-    await t.eval(() => {
-        // eslint-disable-next-line no-restricted-syntax -- Localstorage is not reactive
-        window.location.reload()
-    })
+    await safeReload(t)
     state.currentUser = user
 }
 
@@ -203,11 +195,7 @@ function testsGeneric(
         await t.typeText(aliceName, 'Alice2')
         await t.pressKey('enter')
         await t.expect(await friendsText(t)).eql([`You${bobPattern}`, 'Alice2Pending Friend RequestRemove'])
-        // refresh
-        await t.eval(() => {
-            // eslint-disable-next-line no-restricted-syntax -- Make sure changes are saved
-            window.location.reload()
-        })
+        await safeReload(t)
         await t.wait(1000)
         await t.expect(await friendsText(t)).eql([`You${bobPattern}`, 'Alice2Pending Friend RequestRemove'])
     })
