@@ -67,7 +67,7 @@ async function friendsText(t: TestController): Promise<string[]> {
 }
 
 async function addFriend(t: TestController, friendName: string, friendID: string): Promise<void> {
-    const friendNameField = Selector('input').withAttribute('placeholder', 'Friend Name')
+    const friendNameField = Selector('input', { timeout: 1000 }).withAttribute('placeholder', 'Friend Name')
     await t.click(friendNameField)
     // clear the field
     await t.pressKey('ctrl+a delete')
