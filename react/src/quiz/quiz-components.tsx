@@ -6,7 +6,7 @@ import { useColors, useJuxtastatColors } from '../page_template/colors'
 import { useHeaderTextClass } from '../utils/responsive'
 
 import { exportQuizPersona, importQuizPersona, nameOfQuizKind, QuizHistory } from './quiz'
-import { unique_persistent_id } from './statistics'
+import { uniquePersistentId } from './statistics'
 
 export function Header({ quiz }: { quiz: { kind: 'juxtastat' | 'retrostat', name: string | number } }): ReactNode {
     let text = nameOfQuizKind(quiz.kind)
@@ -38,9 +38,9 @@ export function Footer(props: { length: number, history: QuizHistory[string] }):
     )
 }
 
-export function Help(props: { quiz_kind: 'juxtastat' | 'retrostat' }): ReactNode {
+export function Help(props: { quizKind: 'juxtastat' | 'retrostat' }): ReactNode {
     const text = (): string => {
-        if (props.quiz_kind === 'juxtastat') {
+        if (props.quizKind === 'juxtastat') {
             return 'Select the geographical region answering the question. The questions get harder as you go on.'
         }
         else {
@@ -53,7 +53,7 @@ export function Help(props: { quiz_kind: 'juxtastat' | 'retrostat' }): ReactNode
             {text()}
             {' '}
             {UserId()}
-            {DownloadUpload()}
+            {ExportImport()}
         </div>
     )
 }
@@ -62,20 +62,20 @@ export function UserId(): ReactNode {
     return (
         <div>
             {'Your user id is '}
-            <span className="juxtastat-user-id">{unique_persistent_id()}</span>
+            <span className="juxtastat-user-id">{uniquePersistentId()}</span>
         </div>
     )
 }
 
-export function DownloadUpload(): ReactNode {
+export function ExportImport(): ReactNode {
     return (
         <div style={{ marginTop: '5px' }}>
             <button onClick={() => { exportQuizPersona() }}>
-                Download Quiz History
+                Export Quiz History
             </button>
             {' '}
             <button onClick={() => { void importQuizPersona() }}>
-                Upload Quiz History
+                Import Quiz History
             </button>
         </div>
     )

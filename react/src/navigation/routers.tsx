@@ -13,37 +13,17 @@ import { useColors } from '../page_template/colors'
 import { PageTemplate } from '../page_template/template'
 
 import { InitialLoad, SubsequentLoad } from './loading'
-import { Navigator, PageData, PageDescriptor, urlFromPageDescriptor } from './navigator'
+import { Navigator, PageData } from './navigator'
 
 export function Router(): ReactNode {
     const navigator = useContext(Navigator.Context)
-
-    useEffect(() => {
-        // Hook into the browser back/forward buttons
-        const listener = (popStateEvent: PopStateEvent): void => {
-            if (popStateEvent.state === null) {
-                // When we use window.location.replace below
-                return
-            }
-            void navigator.navigate(popStateEvent.state as PageDescriptor, null)
-        }
-        window.addEventListener('popstate', listener)
-        return () => { window.removeEventListener('popstate', listener) }
-    }, [navigator])
-
     const pageState = navigator.usePageState()
 
-    const url = urlFromPageDescriptor(pageState.current.descriptor)
-
     useEffect(() => {
-        if (url.hash !== '') {
-            /* eslint-disable no-restricted-syntax -- Core navigation functionality */
-            window.location.replace(url.hash)
-            history.replaceState(pageState.current.descriptor, '')
-            /* eslint-enable no-restricted-syntax */
-        }
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- Should only execute when the hash changes
-    }, [url.hash])
+        // Execute the navigator's effects
+        navigator.effects.forEach((effect) => { effect() })
+        navigator.effects = []
+    })
 
     return (
         <>
@@ -170,13 +150,12 @@ function PageRouter({ pageData }: { pageData: PageData }): ReactNode {
             return (
                 <QuizPanel
                     quizDescriptor={pageData.quizDescriptor}
-                    today_name={pageData.todayName}
-                    todays_quiz={pageData.quiz}
-                    parameters={pageData.parameters}
+                    todayName={pageData.todayName}
+                    todaysQuiz={pageData.quiz}
                 />
             )
         case 'mapper':
-            return <MapperPanel map_settings={pageData.settings} view={pageData.view} />
+            return <MapperPanel mapSettings={pageData.settings} view={pageData.view} />
         case 'error':
             return <ErrorScreen data={pageData} />
         case 'initialLoad':

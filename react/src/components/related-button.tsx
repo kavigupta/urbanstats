@@ -6,7 +6,7 @@ import type_to_type_category from '../data/type_to_type_category'
 import { Navigator } from '../navigation/navigator'
 import { HueColors } from '../page_template/color-themes'
 import { useColors } from '../page_template/colors'
-import { relationship_key, useSetting } from '../page_template/settings'
+import { relationshipKey, useSetting } from '../page_template/settings'
 import { useUniverse } from '../universe'
 import { mixWithBackground } from '../utils/color'
 import { useMobileLayout } from '../utils/responsive'
@@ -30,22 +30,22 @@ function colorsEach(colors: HueColors): Record<string, string> {
 }
 
 function RelatedButton(props: { region: Region }): ReactNode {
-    const curr_universe = useUniverse()
+    const currentUniverse = useUniverse()
     const colors = useColors()
-    const type_category = type_to_type_category[props.region.rowType]
+    const typeCategory = type_to_type_category[props.region.rowType]
     const navContext = useContext(Navigator.Context)
 
     let classes = `serif button_related`
     if (useMobileLayout()) {
         classes += ' button_related_mobile'
     }
-    const color = colorsEach(colors.hueColors)[type_category]
+    const color = colorsEach(colors.hueColors)[typeCategory]
     return (
         <li className={`linklistel${useMobileLayout() ? ' linklistel_mobile' : ''}`}>
             <a
                 className={classes}
                 style={{ color: colors.textMain, backgroundColor: mixWithBackground(color, colors.mixPct / 100, colors.background) }}
-                {...navContext.link({ kind: 'article', longname: props.region.longname, universe: curr_universe })}
+                {...navContext.link({ kind: 'article', longname: props.region.longname, universe: currentUniverse })}
             >
                 {props.region.shortname}
             </a>
@@ -54,7 +54,7 @@ function RelatedButton(props: { region: Region }): ReactNode {
 }
 
 function RelatedList(props: { articleType: string, buttonType: string, regions: Record<string, Region[]> }): ReactNode {
-    const setting_key = relationship_key(props.articleType, props.buttonType)
+    const settingKey = relationshipKey(props.articleType, props.buttonType)
     function displayName(name: string): string {
         name = name.replace('_', ' ')
         // title case
@@ -74,7 +74,7 @@ function RelatedList(props: { articleType: string, buttonType: string, regions: 
                     <div style={{ paddingTop: '2pt' }}>
                         <CheckboxSetting
                             name=""
-                            setting_key={setting_key}
+                            settingKey={settingKey}
                             classNameToUse="related_checkbox"
                             id={checkId}
                         />
@@ -82,8 +82,8 @@ function RelatedList(props: { articleType: string, buttonType: string, regions: 
                 </div>
                 <ul className="list_of_lists">
                     {
-                        Object.keys(props.regions).map((relationship_type, j) => {
-                            const regions = props.regions[relationship_type]
+                        Object.keys(props.regions).map((relationshipType, j) => {
+                            const regions = props.regions[relationshipType]
                             return (
                                 <ul key={j} className="linklist">
                                     <li
@@ -95,7 +95,7 @@ function RelatedList(props: { articleType: string, buttonType: string, regions: 
                                         }}
                                     >
                                         <label htmlFor={checkId}>
-                                            {displayName(relationship_type)}
+                                            {displayName(relationshipType)}
                                         </label>
                                     </li>
                                     {
@@ -118,31 +118,31 @@ function RelatedList(props: { articleType: string, buttonType: string, regions: 
     )
 }
 
-export function Related(props: { article_type: string, related: { relationshipType: string, buttons: Region[] }[] }): ReactNode {
+export function Related(props: { articleType: string, related: { relationshipType: string, buttons: Region[] }[] }): ReactNode {
     // buttons[rowType][relationshipType] = <list of buttons>
     const [showHistoricalCds] = useSetting('show_historical_cds')
     const buttons: Record<string, Record<string, Region[]>> = {}
     for (const relateds of props.related) {
-        const relationship_type = relateds.relationshipType
+        const relationshipType = relateds.relationshipType
         for (const button of relateds.buttons) {
-            const row_type = button.rowType
-            if (!(row_type in buttons)) {
-                buttons[row_type] = {}
+            const rowType = button.rowType
+            if (!(rowType in buttons)) {
+                buttons[rowType] = {}
             }
-            if (!(relationship_type in buttons[row_type])) {
-                buttons[row_type][relationship_type] = []
+            if (!(relationshipType in buttons[rowType])) {
+                buttons[rowType][relationshipType] = []
             }
-            buttons[row_type][relationship_type].push(button)
+            buttons[rowType][relationshipType].push(button)
         }
     }
 
     // get a sorted list of keys of buttons
-    const button_keys = Object.keys(buttons).sort((a, b) =>
+    const buttonKeys = Object.keys(buttons).sort((a, b) =>
         type_ordering_idx[a] - type_ordering_idx[b],
     )
 
     const elements = []
-    for (const key of button_keys) {
+    for (const key of buttonKeys) {
         if (!showHistoricalCds) {
             if (key === 'Historical Congressional District') {
                 continue
@@ -153,7 +153,7 @@ export function Related(props: { article_type: string, related: { relationshipTy
                 key={key}
                 buttonType={key}
                 regions={buttons[key]}
-                articleType={props.article_type}
+                articleType={props.articleType}
             />,
         )
     }

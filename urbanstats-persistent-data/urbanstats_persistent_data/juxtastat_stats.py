@@ -2,6 +2,13 @@ import sqlite3
 import time
 from typing import List, Tuple
 
+table_for_quiz_kind = {
+    "juxtastat": "JuxtaStatIndividualStats",
+    "retrostat": "JuxtaStatIndividualStatsRetrostat",
+}
+
+problem_id_for_quiz_kind = {"juxtastat": "day", "retrostat": "week"}
+
 
 def table():
     conn = sqlite3.connect("db.sqlite3")
@@ -22,6 +29,17 @@ def table():
     c.execute(
         """
         CREATE TABLE IF NOT EXISTS JuxtaStatUserDomain (user integer PRIMARY KEY, domain text)
+        """
+    )
+    # user to secure id
+    c.execute(
+        """
+        CREATE TABLE IF NOT EXISTS JuxtaStatUserSecureID (user integer PRIMARY KEY, secure_id integer)
+        """
+    )
+    c.execute(
+        """
+        CREATE TABLE IF NOT EXISTS FriendRequests (requestee integer, requester integer, UNIQUE(requestee, requester))
         """
     )
     # ADD THESE LATER IF WE NEED THEM
@@ -47,6 +65,10 @@ def table():
 
 
 def register_user(user, domain):
+    """
+    Register a user with a secure id and domain.
+    This is Trust on First Use (TOFU) authentication.
+    """
     user = int(user, 16)
     conn, c = table()
     c.execute(
@@ -54,6 +76,33 @@ def register_user(user, domain):
         (user, domain),
     )
     conn.commit()
+
+
+def check_secureid(user, secure_id):
+    """
+    Returns True iff the secure_id is correct for the given user.
+
+    First checks if the user is already registered, if so checks
+    if the secure id is correct. If the secure id is incorrect, returns False.
+    Otherwise, updates the secure id and returns True.
+    """
+    user = int(user, 16)
+    secure_id = int(secure_id, 16)
+    conn, c = table()
+    c.execute(
+        "SELECT secure_id FROM JuxtaStatUserSecureID WHERE user=?",
+        (user,),
+    )
+    res = c.fetchone()
+    if res is None:
+        # trust on first use
+        c.execute(
+            "INSERT INTO JuxtaStatUserSecureID VALUES (?, ?)",
+            (user, secure_id),
+        )
+        conn.commit()
+        return True
+    return res[0] == secure_id
 
 
 def latest_day_from_table(user, table_name, column):
@@ -82,7 +131,9 @@ def bitvector_to_corrects(bitvector: int) -> List[bool]:
     return [bool(bitvector & (2**i)) for i in range(5)]
 
 
-def store_user_stats_into_table(user, day_stats: List[Tuple[int, List[bool]]], table_name):
+def store_user_stats_into_table(
+    user, day_stats: List[Tuple[int, List[bool]]], table_name
+):
     user = int(user, 16)
     conn, c = table()
     # ignore latest day here, it is up to the client to filter out old stats
@@ -98,11 +149,14 @@ def store_user_stats_into_table(user, day_stats: List[Tuple[int, List[bool]]], t
     )
     conn.commit()
 
+
 def store_user_stats(user, day_stats: List[Tuple[int, List[bool]]]):
     store_user_stats_into_table(user, day_stats, "JuxtaStatIndividualStats")
 
+
 def store_user_stats_retrostat(user, week_stats: List[Tuple[int, List[bool]]]):
     store_user_stats_into_table(user, week_stats, "JuxtaStatIndividualStatsRetrostat")
+
 
 def get_per_question_stats_from_table(day, table_name, column):
     day = int(day)
@@ -149,3 +203,70 @@ def get_full_database():
         """
     )
     return c.fetchall()
+
+
+def friend_request(requestee, requester):
+    try:
+        requestee = int(requestee, 16)
+    except ValueError:
+        return
+    requester = int(requester, 16)
+    conn, c = table()
+    c.execute(
+        "INSERT INTO FriendRequests VALUES (?, ?)",
+        (requestee, requester),
+    )
+    print("ABC")
+    conn.commit()
+
+
+def unfriend(requestee, requester):
+    requestee = int(requestee, 16)
+    requester = int(requester, 16)
+    conn, c = table()
+    c.execute(
+        "DELETE FROM FriendRequests WHERE requestee=? AND requester=?",
+        (requestee, requester),
+    )
+    conn.commit()
+
+
+def todays_score_for(requestee, requesters, date, quiz_kind):
+    """
+    For each `requseter` returns the pattern of correct answers if `(requester, requestee)` is a friend pair.
+    """
+
+    requestee = int(requestee, 16)
+
+    _, c = table()
+    # query the table to see if each pair is a friend pair
+
+    c.execute(
+        "SELECT requester FROM FriendRequests WHERE requestee=?",
+        (requestee,),
+    )
+    friends = c.fetchall()
+    friends = {x[0] for x in friends}
+
+    results = []
+    for requester in requesters:
+        try:
+            requester = int(requester, 16)
+        except ValueError:
+            results.append(dict(friends=False, idError="Invalid User ID"))
+            continue
+        if requester in friends:
+            c.execute(
+                f"SELECT corrects FROM {table_for_quiz_kind[quiz_kind]} WHERE user=? AND {problem_id_for_quiz_kind[quiz_kind]}=?",
+                (requester, date),
+            )
+            res = c.fetchone()
+            if res is None:
+                results.append(dict(friends=True, corrects=None))
+            else:
+                results.append(
+                    dict(friends=True, corrects=bitvector_to_corrects(res[0]))
+                )
+        else:
+            results.append(dict(friends=False))
+    return results

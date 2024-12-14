@@ -1,12 +1,12 @@
 import React, { ReactNode } from 'react'
 
 import { useColors } from '../page_template/colors'
-import { interpolate_color } from '../utils/color'
+import { interpolateColor } from '../utils/color'
 
-import { ColorMap, EncodedColorMap, RAMPS, RampDescriptor, parse_custom_colormap } from './ramps'
+import { ColorMap, EncodedColorMap, RAMPS, RampDescriptor, parseCustomColormap } from './ramps'
 import { useSettingSubNameStyle } from './style'
 
-export function RampColormapSelector(props: { ramp: RampDescriptor, set_ramp: (newValue: RampDescriptor) => void, name?: string }): ReactNode {
+export function RampColormapSelector(props: { ramp: RampDescriptor, setRamp: (newValue: RampDescriptor) => void, name?: string }): ReactNode {
     // dropdown selector for either a custom ramp or a ramp from a list of presets
     // if custom ramp, then add a text box for the ramp
 
@@ -14,14 +14,14 @@ export function RampColormapSelector(props: { ramp: RampDescriptor, set_ramp: (n
 
     const colormap = props.ramp.colormap
 
-    const set_colormap = (encodedColormap: EncodedColorMap): void => {
-        props.set_ramp({
+    const setColormap = (encodedColormap: EncodedColorMap): void => {
+        props.setRamp({
             ...props.ramp,
             colormap: encodedColormap,
         })
     }
 
-    const set_selected = (name: string): void => {
+    const setSelected = (name: string): void => {
         if (name === 'Custom') {
             colormap.type = 'custom'
         }
@@ -29,14 +29,14 @@ export function RampColormapSelector(props: { ramp: RampDescriptor, set_ramp: (n
             colormap.type = 'preset';
             (colormap as { name: string }).name = name
         }
-        set_colormap(colormap)
+        setColormap(colormap)
     }
 
-    const set_custom_colormap = (custom_colormap: string): void => {
-        set_colormap({
+    const setCustomColormap = (customColormap: string): void => {
+        setColormap({
             ...colormap,
             type: 'custom',
-            custom_colormap,
+            custom_colormap: customColormap,
         })
     }
 
@@ -63,7 +63,7 @@ export function RampColormapSelector(props: { ramp: RampDescriptor, set_ramp: (n
                 {props.name}
             </div>
             <select
-                onChange={(e) => { set_selected(e.target.value) }}
+                onChange={(e) => { setSelected(e.target.value) }}
                 style={{ width: '100%', backgroundColor: colors.background, color: colors.textMain }}
                 value={colormapSelection}
             >
@@ -79,7 +79,7 @@ export function RampColormapSelector(props: { ramp: RampDescriptor, set_ramp: (n
                             <span>
                                 <CustomColormapSelector
                                     colormap={colormap.custom_colormap}
-                                    set_colormap={(custom_colormap) => { set_custom_colormap(custom_colormap) }}
+                                    setColormap={(customColormap) => { setCustomColormap(customColormap) }}
                                 />
                             </span>
                         )
@@ -89,7 +89,7 @@ export function RampColormapSelector(props: { ramp: RampDescriptor, set_ramp: (n
     )
 }
 
-function SinglePointSelector({ value, color, cell, set_cell, remove_cell }: { value: number, color: string, cell: [number, string], set_cell: (newValue: [number, string]) => void, remove_cell: () => void }): ReactNode {
+function SinglePointSelector({ value, color, cell, setCell, removeCell }: { value: number, color: string, cell: [number, string], setCell: (newValue: [number, string]) => void, removeCell: () => void }): ReactNode {
     const colors = useColors()
     return (
         <div
@@ -106,7 +106,7 @@ function SinglePointSelector({ value, color, cell, set_cell, remove_cell }: { va
                 type="color"
                 value={color}
                 onChange={(e) => {
-                    set_cell([
+                    setCell([
                         cell[0],
                         e.target.value,
                     ])
@@ -118,14 +118,14 @@ function SinglePointSelector({ value, color, cell, set_cell, remove_cell }: { va
                 value={value}
                 style={{ width: '4em', backgroundColor: colors.background, color: colors.textMain }}
                 onChange={(e) => {
-                    set_cell([
+                    setCell([
                         parseFloat(e.target.value),
                         cell[1],
                     ])
                 }}
             />
             <button
-                onClick={() => { remove_cell() }}
+                onClick={() => { removeCell() }}
             >
                 -
             </button>
@@ -133,54 +133,54 @@ function SinglePointSelector({ value, color, cell, set_cell, remove_cell }: { va
     )
 }
 
-function CustomColormapSelector(props: { colormap: string, set_colormap: (newValue: string) => void }): ReactNode {
+function CustomColormapSelector(props: { colormap: string, setColormap: (newValue: string) => void }): ReactNode {
     // flexbox containing several color tabs
     // each color tab is a vertical flexbox containing a color picker and a text box
     // at the end there is a plus button to add a new color tab
     // each color tab has a minus button to remove itself
     const colors = useColors()
-    let colormap_text = props.colormap
-    const parsed_colormap = parse_custom_colormap(colormap_text)
+    let colormapText = props.colormap
+    const parsedColormap = parseCustomColormap(colormapText)
     let colormap: ColorMap
-    if (parsed_colormap !== undefined) {
-        colormap = parsed_colormap.sort((a, b) => a[0] - b[0])
-        colormap_text = JSON.stringify(colormap)
+    if (parsedColormap !== undefined) {
+        colormap = parsedColormap.sort((a, b) => a[0] - b[0])
+        colormapText = JSON.stringify(colormap)
     }
     else {
         colormap = []
     }
     // colormap :: [[number, string]]
 
-    const add_cell = (at_index: number): void => {
-        const new_colormap = colormap.slice()
+    const addCell = (atIndex: number): void => {
+        const newColormap = colormap.slice()
         let value = 0
-        if (at_index === 0) {
+        if (atIndex === 0) {
             value = colormap[0][0] - 1
         }
-        else if (at_index === colormap.length) {
+        else if (atIndex === colormap.length) {
             value = colormap[colormap.length - 1][0] + 1
         }
         else {
-            value = (colormap[at_index - 1][0] + colormap[at_index][0]) / 2
+            value = (colormap[atIndex - 1][0] + colormap[atIndex][0]) / 2
         }
-        const color = interpolate_color(colormap, value)
-        new_colormap.splice(at_index, 0, [value, color])
-        props.set_colormap(
-            JSON.stringify(new_colormap),
+        const color = interpolateColor(colormap, value)
+        newColormap.splice(atIndex, 0, [value, color])
+        props.setColormap(
+            JSON.stringify(newColormap),
         )
     }
 
-    function AddCellButton({ at_index }: { at_index: number }): ReactNode {
+    function AddCellButton({ atIndex }: { atIndex: number }): ReactNode {
         return (
             <button
-                onClick={() => { add_cell(at_index) }}
+                onClick={() => { addCell(atIndex) }}
             >
                 +
             </button>
         )
     }
 
-    const color_tabs = (
+    const colorTabs = (
         <div
             style={{
                 display: 'flex',
@@ -191,7 +191,7 @@ function CustomColormapSelector(props: { colormap: string, set_colormap: (newVal
                 alignContent: 'flex-start',
             }}
         >
-            <AddCellButton at_index={0} key={-1} />
+            <AddCellButton atIndex={0} key={-1} />
             {
                 colormap.flatMap(([value, color], i) => [
                     <SinglePointSelector
@@ -199,35 +199,35 @@ function CustomColormapSelector(props: { colormap: string, set_colormap: (newVal
                         value={value}
                         color={color}
                         cell={colormap[i]}
-                        set_cell={(cell) => {
-                            const new_colormap = colormap.slice()
-                            new_colormap[i] = cell
-                            props.set_colormap(
-                                JSON.stringify(new_colormap),
+                        setCell={(cell) => {
+                            const newColormap = colormap.slice()
+                            newColormap[i] = cell
+                            props.setColormap(
+                                JSON.stringify(newColormap),
                             )
                         }}
-                        remove_cell={() => {
-                            const new_colormap = colormap.slice()
-                            new_colormap.splice(i, 1)
-                            props.set_colormap(
-                                JSON.stringify(new_colormap),
+                        removeCell={() => {
+                            const newColormap = colormap.slice()
+                            newColormap.splice(i, 1)
+                            props.setColormap(
+                                JSON.stringify(newColormap),
                             )
                         }}
                     />,
-                    <AddCellButton key={2 * i + 1} at_index={i + 1} />,
+                    <AddCellButton key={2 * i + 1} atIndex={i + 1} />,
                 ])
             }
 
         </div>
     )
     // then an input textbox
-    const input_textbox = (
+    const inputTextbox = (
         <input
             type="text"
             style={{ width: '100%', backgroundColor: colors.background, color: colors.textMain }}
             placeholder='Custom map, e.g., [[0, "#ff0000"], [1, "#0000ff"]]'
-            value={colormap_text}
-            onChange={(e) => { props.set_colormap(e.target.value) }}
+            value={colormapText}
+            onChange={(e) => { props.setColormap(e.target.value) }}
         />
     )
     return (
@@ -235,8 +235,8 @@ function CustomColormapSelector(props: { colormap: string, set_colormap: (newVal
             <div style={useSettingSubNameStyle()}>
                 Custom Colormap
             </div>
-            {color_tabs}
-            {input_textbox}
+            {colorTabs}
+            {inputTextbox}
         </div>
     )
 }

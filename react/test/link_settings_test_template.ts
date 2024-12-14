@@ -1,6 +1,6 @@
 import { Selector } from 'testcafe'
 
-import { arrayFromSelector, getLocation, safeReload, screencap, TARGET, urbanstatsFixture } from './test_utils'
+import { arrayFromSelector, getLocation, safeReload, screencap, target, urbanstatsFixture } from './test_utils'
 
 export function linkSettingsTests(baseLink: string): void {
     urbanstatsFixture('generate link', baseLink, async (t) => {
@@ -20,7 +20,7 @@ export function linkSettingsTests(baseLink: string): void {
         expectedLink = await getLocation()
     })
 
-    urbanstatsFixture('paste link new visitor', TARGET, async (t) => {
+    urbanstatsFixture('paste link new visitor', target, async (t) => {
         await t.navigateTo(expectedLink)
     })
 
@@ -202,7 +202,7 @@ export function linkSettingsTests(baseLink: string): void {
         histogramLinkWithBar = await getLocation()
     })
 
-    urbanstatsFixture('paste histogram link', TARGET, async (t) => {
+    urbanstatsFixture('paste histogram link', target, async (t) => {
         await t.navigateTo(histogramLink)
     })
 
@@ -226,7 +226,7 @@ export function linkSettingsTests(baseLink: string): void {
         await t.expect(Selector('.histogram-svg-panel').exists).ok()
     })
 
-    urbanstatsFixture('paste histogram relative changed link', TARGET, async (t) => {
+    urbanstatsFixture('paste histogram relative changed link', target, async (t) => {
         await t.navigateTo(histogramLinkWithRelativeChanged)
     })
 
@@ -240,7 +240,7 @@ export function linkSettingsTests(baseLink: string): void {
         await t.expect(Selector('[data-test-id=staging_controls]').exists).notOk()
     })
 
-    urbanstatsFixture('paste histogram bar link', TARGET, async (t) => {
+    urbanstatsFixture('paste histogram bar link', target, async (t) => {
         await t.navigateTo(histogramLinkWithBar)
     })
 
@@ -265,7 +265,7 @@ export function linkSettingsTests(baseLink: string): void {
         hiddenHistogramLink = await getLocation()
     })
 
-    urbanstatsFixture('visit hidden histogram link and reopen stats', TARGET, async (t) => {
+    urbanstatsFixture('visit hidden histogram link and reopen stats', target, async (t) => {
         await t.navigateTo(hiddenHistogramLink)
         await t.click(Selector('[data-test-id=category_main]'))
     })

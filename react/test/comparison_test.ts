@@ -1,14 +1,14 @@
 import { Selector } from 'testcafe'
 
-import { TARGET, check_textboxes, comparison_page, download_image, getLocation, getLocationWithoutSettings, screencap, urbanstatsFixture } from './test_utils'
+import { target, checkTextboxes, comparisonPage, downloadImage, getLocation, getLocationWithoutSettings, screencap, urbanstatsFixture } from './test_utils'
 
-export const upper_sgv = 'Upper San Gabriel Valley CCD [CCD], Los Angeles County, California, USA'
+export const upperSGV = 'Upper San Gabriel Valley CCD [CCD], Los Angeles County, California, USA'
 export const pasadena = 'Pasadena CCD [CCD], Los Angeles County, California, USA'
-export const sw_sgv = 'Southwest San Gabriel Valley CCD [CCD], Los Angeles County, California, USA'
-export const east_sgv = 'East San Gabriel Valley CCD [CCD], Los Angeles County, California, USA'
+export const swSGV = 'Southwest San Gabriel Valley CCD [CCD], Los Angeles County, California, USA'
+export const eastSGV = 'East San Gabriel Valley CCD [CCD], Los Angeles County, California, USA'
 export const chicago = 'Chicago city [CCD], Cook County, Illinois, USA'
 
-urbanstatsFixture('comparison test heterogenous', comparison_page(['San Marino city, California, USA', pasadena, sw_sgv]))
+urbanstatsFixture('comparison test heterogenous', comparisonPage(['San Marino city, California, USA', pasadena, swSGV]))
 
 test('comparison-3-desktop-heterogenous', async (t) => {
     await t.resizeWindow(1400, 800)
@@ -20,14 +20,14 @@ test('comparison-3-mobile-heterogenous', async (t) => {
     await screencap(t)
 })
 
-urbanstatsFixture('comparison test homogenous (2)', comparison_page([upper_sgv, sw_sgv]))
+urbanstatsFixture('comparison test homogenous (2)', comparisonPage([upperSGV, swSGV]))
 
 test('comparison-2-mobile', async (t) => {
     await t.resizeWindow(400, 800)
     await screencap(t)
 })
 
-urbanstatsFixture('comparison test homogenous (3)', comparison_page([upper_sgv, pasadena, sw_sgv]))
+urbanstatsFixture('comparison test homogenous (3)', comparisonPage([upperSGV, pasadena, swSGV]))
 
 test('comparison-3-desktop', async (t) => {
     await t.resizeWindow(1400, 800)
@@ -41,7 +41,7 @@ test('comparison-3-mobile', async (t) => {
 
 test('comparison-3-download', async (t) => {
     await t.resizeWindow(1400, 800)
-    await download_image(t)
+    await downloadImage(t)
 })
 
 test('comparison-3-add', async (t) => {
@@ -51,7 +51,7 @@ test('comparison-3-add', async (t) => {
         .typeText(otherRegion, 'san marino city california')
         .pressKey('enter')
     await t.expect(getLocationWithoutSettings())
-        .eql(comparison_page([upper_sgv, pasadena, sw_sgv, 'San Marino city, California, USA']))
+        .eql(comparisonPage([upperSGV, pasadena, swSGV, 'San Marino city, California, USA']))
 })
 
 test('comparison-3-remove-first', async (t) => {
@@ -59,7 +59,7 @@ test('comparison-3-remove-first', async (t) => {
     await t
         .click(remove)
     await t.expect(getLocationWithoutSettings())
-        .eql(comparison_page([pasadena, sw_sgv]))
+        .eql(comparisonPage([pasadena, swSGV]))
 })
 
 test('comparison-3-remove-second', async (t) => {
@@ -67,7 +67,7 @@ test('comparison-3-remove-second', async (t) => {
     await t
         .click(remove)
     await t.expect(getLocationWithoutSettings())
-        .eql(comparison_page([upper_sgv, sw_sgv]))
+        .eql(comparisonPage([upperSGV, swSGV]))
 })
 
 test('comparison-3-replace-second', async (t) => {
@@ -80,11 +80,11 @@ test('comparison-3-replace-second', async (t) => {
         .typeText(otherRegion, 'East San Gabriel Valley')
         .pressKey('enter')
     await t.expect(getLocationWithoutSettings())
-        .eql(comparison_page([upper_sgv, east_sgv, sw_sgv]))
+        .eql(comparisonPage([upperSGV, eastSGV, swSGV]))
 })
 
 test('comparison-3-editable-number-third', async (t) => {
-    const editableNumber = Selector('span').withAttribute('class', 'editable_number').nth(2)
+    const editableNumber = Selector('span').withAttribute('class', 'editable_content').nth(2)
     await t
         .click(editableNumber)
     // select all and delete
@@ -93,10 +93,10 @@ test('comparison-3-editable-number-third', async (t) => {
         .pressKey('enter')
     await t.expect(editableNumber.innerText).eql('3')
     await t.expect(getLocationWithoutSettings())
-        .eql(comparison_page([upper_sgv, pasadena, chicago]))
+        .eql(comparisonPage([upperSGV, pasadena, chicago]))
 })
 
-urbanstatsFixture('plotted-across-180', `${TARGET}/comparison.html?longnames=%5B%22England%2C+United+Kingdom%22%2C%22Alaska%2C+USA%22%2C%22Chukotskiy+avtonomnyy+okrug%2C+Russian+Federation%22%5D`)
+urbanstatsFixture('plotted-across-180', `${target}/comparison.html?longnames=%5B%22England%2C+United+Kingdom%22%2C%22Alaska%2C+USA%22%2C%22Chukotskiy+avtonomnyy+okrug%2C+Russian+Federation%22%5D`)
 
 test('comparison-3-plotted-across-180', async (t) => {
     await t.resizeWindow(1400, 800)
@@ -124,12 +124,12 @@ async function dataValues(): Promise<string[]> {
     return values
 }
 
-const ONLY_US_CENSUS = '7aScwAoYX'
-const NEITHER = 'W2c5c5XY2Z'
+const onlyUSAndCanadaCensus = 'AkWGLJMDBPzz5'
+const neither = 'AkWGLJ6mbMkR7'
 
 urbanstatsFixture(
     'comparison-non-overlapping-population-stats',
-    `${TARGET}/comparison.html?longnames=%5B"Cambridge+city%2C+Massachusetts%2C+USA"%2C"Chinandega%2C+Nicaragua"%5D&s=${ONLY_US_CENSUS}`,
+    `${target}/comparison.html?longnames=%5B"Cambridge+city%2C+Massachusetts%2C+USA"%2C"Chinandega%2C+Nicaragua"%5D&s=${onlyUSAndCanadaCensus}`,
 )
 
 test('comparison-2-non-overlapping-population-stats', async (t) => {
@@ -144,7 +144,7 @@ test('comparison-2-non-overlapping-population-stats', async (t) => {
 
 urbanstatsFixture(
     'comparison-both-american-states-population-stats',
-    `${TARGET}/comparison.html?longnames=%5B"Cambridge+city%2C+Massachusetts%2C+USA"%2C"California%2C+USA"%5D&s=${ONLY_US_CENSUS}`,
+    `${target}/comparison.html?longnames=%5B"Cambridge+city%2C+Massachusetts%2C+USA"%2C"California%2C+USA"%5D&s=${onlyUSAndCanadaCensus}`,
 )
 
 test('comparison-both-american-states-population-stats', async (t) => {
@@ -156,8 +156,28 @@ test('comparison-both-american-states-population-stats', async (t) => {
 })
 
 urbanstatsFixture(
+    'comparison-american-vs-canada-population-stats',
+    `${target}/comparison.html?longnames=%5B"Ontario%2C+Canada"%2C"California%2C+USA"%5D&s=${onlyUSAndCanadaCensus}`,
+)
+
+test('comparison-american-vs-canada-population-stats', async (t) => {
+    // forces GHSL onto the screen. US Census is only enabled by the checkbox
+    await t.expect(await checkboxStatus('US Census')).eql('enabled')
+    await t.expect(await checkboxStatus('Canadian Census')).eql('enabled')
+    await t.expect(await checkboxStatus('GHSL')).eql('enabled')
+    // these are the values for the US Census
+    await t.expect(await dataValues()).eql(['14.2', '39.5'])
+    await checkTextboxes(t, ['US Census'])
+    // these are the values for StatCan
+    await t.expect(await dataValues()).eql(['14.2', 'NaN'])
+    // enable everything
+    await checkTextboxes(t, ['US Census', 'GHSL'])
+    await t.expect(await dataValues()).eql(['14.2', '39.5', '14.3', '40.2'])
+})
+
+urbanstatsFixture(
     'comparison-american-vs-international-population-stats',
-    `${TARGET}/comparison.html?longnames=%5B"Ontario%2C+Canada"%2C"California%2C+USA"%5D&s=${ONLY_US_CENSUS}`,
+    `${target}/comparison.html?longnames=%5B"Delhi%2C+India"%2C"California%2C+USA"%5D&s=${onlyUSAndCanadaCensus}`,
 )
 
 let ghslLocation: string
@@ -167,13 +187,13 @@ test('comparison-american-vs-international-population-stats', async (t) => {
     await t.expect(await checkboxStatus('US Census')).eql('enabled')
     await t.expect(await checkboxStatus('GHSL')).eql('disabled')
     // these are the values for the US Census
-    await t.expect(await dataValues()).eql(['NaN', '39.5', '14.3', '40.2'])
-    await check_textboxes(t, ['US Census'])
+    await t.expect(await dataValues()).eql(['NaN', '39.5', '20.7', '40.2'])
+    await checkTextboxes(t, ['US Census'])
     ghslLocation = await getLocation()
     // these are the values for GHSL
-    await t.expect(await dataValues()).eql(['14.3', '40.2'])
+    await t.expect(await dataValues()).eql(['20.7', '40.2'])
     // disabled so this does nothing
-    await check_textboxes(t, ['GHSL'])
+    await checkTextboxes(t, ['GHSL'])
     await t.expect(getLocation()).eql(ghslLocation)
 })
 
@@ -186,7 +206,7 @@ test('settings param works correctly on url with just ghsl source checked', asyn
 
 urbanstatsFixture(
     'comparison-usa-vs-usa',
-    `${TARGET}/comparison.html?longnames=%5B"Massachusetts%2C+USA"%2C"California%2C+USA"%5D&s=${ONLY_US_CENSUS}`,
+    `${target}/comparison.html?longnames=%5B"Massachusetts%2C+USA"%2C"California%2C+USA"%5D&s=${onlyUSAndCanadaCensus}`,
 )
 
 test('comparison-usa-vs-usa', async (t) => {
@@ -199,7 +219,7 @@ test('comparison-usa-vs-usa', async (t) => {
 
 urbanstatsFixture(
     'comparison-usa-vs-usa-netiher',
-    `${TARGET}/comparison.html?longnames=%5B"Massachusetts%2C+USA"%2C"California%2C+USA"%5D&s=${NEITHER}`,
+    `${target}/comparison.html?longnames=%5B"Massachusetts%2C+USA"%2C"California%2C+USA"%5D&s=${neither}`,
 )
 
 test('comparison-usa-vs-usa-netiher', async (t) => {
@@ -209,7 +229,7 @@ test('comparison-usa-vs-usa-netiher', async (t) => {
 
 urbanstatsFixture(
     'comparison-city-vs-city',
-    `${TARGET}/comparison.html?longnames=%5B"Boston+city%2C+Massachusetts%2C+USA"%2C"Cambridge+city%2C+Massachusetts%2C+USA"%5D`,
+    `${target}/comparison.html?longnames=%5B"Boston+city%2C+Massachusetts%2C+USA"%2C"Cambridge+city%2C+Massachusetts%2C+USA"%5D`,
 )
 
 test('comparison-city-vs-city', async (t) => {
@@ -219,7 +239,7 @@ test('comparison-city-vs-city', async (t) => {
 
 urbanstatsFixture(
     'comparison-uc-vs-uc-intl',
-    `${TARGET}/comparison.html?longnames=%5B"Delhi+%5BNew+Delhi%5D+Urban+Center%2C+India"%2C"Mumbai+Urban+Center%2C+India"%5D`,
+    `${target}/comparison.html?longnames=%5B"Delhi+%5BNew+Delhi%5D+Urban+Center%2C+India"%2C"Mumbai+Urban+Center%2C+India"%5D`,
 )
 
 test('comparison-uc-vs-uc-intl', async (t) => {
@@ -227,7 +247,7 @@ test('comparison-uc-vs-uc-intl', async (t) => {
     await t.expect(Selector('img.universe-selector').getAttribute('alt')).eql('world')
 })
 
-urbanstatsFixture('comparison with histogram with data only for second comparee', `${TARGET}/comparison.html?longnames=%5B%22China%22%2C%22USA%22%5D&s=4gm8ETCK5SCX`)
+urbanstatsFixture('comparison with histogram with data only for second comparee', `${target}/comparison.html?longnames=%5B%22China%22%2C%22USA%22%5D&s=4gm8ETCK5SCX`)
 
 test('renders successfully', async (t) => {
     await screencap(t)

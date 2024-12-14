@@ -1,13 +1,13 @@
 import { Selector } from 'testcafe'
 
-import { arrayFromSelector, safeReload, screencap, TARGET, urbanstatsFixture, withHamburgerMenu } from './test_utils'
+import { arrayFromSelector, safeReload, screencap, target, urbanstatsFixture, withHamburgerMenu } from './test_utils'
 
 const mainCheck = 'input[data-test-id=category_main]'
 const mainExpand = '.expandButton[data-category-id=main]'
 const populationCheck = 'input[data-test-id=group_population]:not([inert] *)' // Need :not([inert] *) because groups are rerendered offscreen
 
 export function statsTreeTest(platform: 'mobile' | 'desktop'): void {
-    urbanstatsFixture('stats tree test', `${TARGET}/article.html?longname=San+Francisco+city%2C+California%2C+USA`, async (t) => {
+    urbanstatsFixture('stats tree test', `${target}/article.html?longname=San+Francisco+city%2C+California%2C+USA`, async (t) => {
         switch (platform) {
             case 'mobile':
                 await t.resizeWindow(400, 800)
@@ -251,9 +251,21 @@ export function statsTreeTest(platform: 'mobile' | 'desktop'): void {
         })
     })
 
+    const statsSearchInput = Selector('input[data-test-id=stats-search]')
+
+    test('search-smoke', async (t) => {
+        await withHamburgerMenu(t, async () => {
+            await t.click(statsSearchInput).pressKey('g e n e')
+            await screencap(t)
+            await t.click('input[data-test-id=group_generation_genx]:not([inert] *)') // Deselects search field so that it's fully selected when we reselect it
+            await t.click(statsSearchInput).pressKey('backspace')
+            await screencap(t)
+        })
+    })
+
     /** Universe Tests */
 
-    urbanstatsFixture('stats tree universe test', `${TARGET}/article.html?longname=USA`)
+    urbanstatsFixture('stats tree universe test', `${target}/article.html?longname=USA`)
 
     test('switch-universe-indeterminate', async (t) => {
         /**

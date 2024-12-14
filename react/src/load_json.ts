@@ -3,7 +3,7 @@ import { gunzipSync } from 'zlib'
 import data_links from './data/data_links'
 import order_links from './data/order_links'
 import statistic_path_list from './data/statistic_path_list'
-import { index_link, ordering_data_link, ordering_link } from './navigation/links'
+import { indexLink, orderingDataLink, orderingLink } from './navigation/links'
 import {
     Article, ConsolidatedShapes, ConsolidatedStatistics, DataLists,
     Feature, IDataList, IOrderList, OrderList,
@@ -37,8 +37,8 @@ export async function loadProtobuf(filePath: string, name: string): Promise<Arti
     if (response.status < 200 || response.status > 299) {
         throw new Error(`Expected response status 2xx for ${filePath}, got ${response.status}: ${response.statusText}`)
     }
-    const compressed_buffer = await response.arrayBuffer()
-    const buffer = gunzipSync(Buffer.from(compressed_buffer))
+    const compressedBuffer = await response.arrayBuffer()
+    const buffer = gunzipSync(Buffer.from(compressedBuffer))
     const arr = new Uint8Array(buffer)
     if (name === 'Article') {
         return Article.decode(arr)
@@ -69,7 +69,7 @@ export async function loadProtobuf(filePath: string, name: string): Promise<Arti
     }
 }
 
-function pull_key(arr: number[], key: string): number {
+function pullKey(arr: number[], key: string): number {
     const idx = statistic_path_list.indexOf(key as ElementOf<typeof statistic_path_list>)
     if (idx === -1) {
         throw new Error(`statistic path not found: ${key}`)
@@ -84,30 +84,30 @@ function pull_key(arr: number[], key: string): number {
     throw new Error('index not found')
 }
 
-export async function load_ordering_protobuf(universe: string, statpath: string, type: string, is_data: true): Promise<IDataList>
-export async function load_ordering_protobuf(universe: string, statpath: string, type: string, is_data: boolean): Promise<IOrderList>
-export async function load_ordering_protobuf(universe: string, statpath: string, type: string, is_data: boolean): Promise<IDataList | IOrderList> {
-    const links = is_data ? data_links : order_links
+export async function loadOrderingProtobuf(universe: string, statpath: string, type: string, isData: true): Promise<IDataList>
+export async function loadOrderingProtobuf(universe: string, statpath: string, type: string, isData: boolean): Promise<IOrderList>
+export async function loadOrderingProtobuf(universe: string, statpath: string, type: string, isData: boolean): Promise<IDataList | IOrderList> {
+    const links = isData ? data_links : order_links
     const key = `${universe}__${type}`
-    const idx = key in links ? pull_key(links[key], statpath) : 0
-    const order_link = is_data ? ordering_data_link(universe, type, idx) : ordering_link(universe, type, idx)
-    if (is_data) {
-        const dataLists = await loadProtobuf(order_link, 'DataLists')
+    const idx = key in links ? pullKey(links[key], statpath) : 0
+    const orderLink = isData ? orderingDataLink(universe, type, idx) : orderingLink(universe, type, idx)
+    if (isData) {
+        const dataLists = await loadProtobuf(orderLink, 'DataLists')
         const index = dataLists.statnames.indexOf(statpath)
         return dataLists.dataLists[index]
     }
     else {
-        const orderLists = await loadProtobuf(order_link, 'OrderLists')
+        const orderLists = await loadProtobuf(orderLink, 'OrderLists')
         const index = orderLists.statnames.indexOf(statpath)
         return orderLists.orderLists[index]
     }
 }
 
-export async function load_ordering(universe: string, statpath: string, type: string): Promise<string[]> {
-    const idx_link = index_link(universe, type)
-    const data_promise = loadProtobuf(idx_link, 'StringList')
-    const ordering_promise = load_ordering_protobuf(universe, statpath, type, false)
-    const [data, ordering] = await Promise.all([data_promise, ordering_promise])
-    const names_in_order = (ordering as OrderList).orderIdxs.map((i: number) => data.elements[i])
-    return names_in_order
+export async function loadOrdering(universe: string, statpath: string, type: string): Promise<string[]> {
+    const idxLink = indexLink(universe, type)
+    const dataPromise = loadProtobuf(idxLink, 'StringList')
+    const orderingPromise = loadOrderingProtobuf(universe, statpath, type, false)
+    const [data, ordering] = await Promise.all([dataPromise, orderingPromise])
+    const namesInOrder = (ordering as OrderList).orderIdxs.map((i: number) => data.elements[i])
+    return namesInOrder
 }

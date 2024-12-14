@@ -1,7 +1,7 @@
 import { Selector } from 'testcafe'
 
 import {
-    TARGET, check_all_category_boxes, check_textboxes, comparison_page, download_image,
+    target, checkAllCategoryBoxes, checkTextboxes, comparisonPage, downloadImage,
     getLocationWithoutSettings, safeReload, screencap,
     urbanstatsFixture,
 } from './test_utils'
@@ -18,7 +18,7 @@ test('neighboring-state-test', async (t) => {
     await t
         .click(Selector('path').withAttribute('class', /tag-Arizona,_USA/))
     await t.expect(getLocationWithoutSettings())
-        .eql(`${TARGET}/article.html?longname=Arizona%2C+USA`)
+        .eql(`${target}/article.html?longname=Arizona%2C+USA`)
 })
 
 urbanstatsFixture('cross-country test', '/article.html?longname=Tijuana+Urban+Center%2C+Mexico-USA')
@@ -42,8 +42,8 @@ test('san-marino-article-test', async (t) => {
 })
 
 test('editable-number', async (t) => {
-    // span with class editable_number
-    const editableNumber = Selector('span').withAttribute('class', 'editable_number').nth(0)
+    // span with class editable_content
+    const editableNumber = Selector('span').withAttribute('class', 'editable_content').nth(0)
     await t
         .click(editableNumber)
     // select all and delete
@@ -52,45 +52,45 @@ test('editable-number', async (t) => {
         .pressKey('enter')
     await t.expect(editableNumber.innerText).eql('3')
     await t.expect(getLocationWithoutSettings())
-        .eql(`${TARGET}/article.html?longname=Chicago+city%2C+Illinois%2C+USA`)
+        .eql(`${target}/article.html?longname=Chicago+city%2C+Illinois%2C+USA`)
 })
 
 test('lr-buttons', async (t) => {
     // button with a < on it
     const prev = Selector('button[data-test-id="-1"]').nth(0)
     const next = Selector('button[data-test-id="1"]').nth(0)
-    const prev_overall = Selector('button[data-test-id="-1"]').nth(1)
-    const next_overall = Selector('button[data-test-id="1"]').nth(1)
+    const prevOverall = Selector('button[data-test-id="-1"]').nth(1)
+    const nextOverall = Selector('button[data-test-id="1"]').nth(1)
     await t
         .click(prev)
     await t.expect(getLocationWithoutSettings())
-        .eql(`${TARGET}/article.html?longname=Fortuna+city%2C+California%2C+USA`)
+        .eql(`${target}/article.html?longname=Fortuna+city%2C+California%2C+USA`)
     await t
         .click(next)
     await t.expect(getLocationWithoutSettings())
-        .eql(`${TARGET}/article.html?longname=San+Marino+city%2C+California%2C+USA`)
+        .eql(`${target}/article.html?longname=San+Marino+city%2C+California%2C+USA`)
     await t
         .click(next)
     await t.expect(getLocationWithoutSettings())
-        .eql(`${TARGET}/article.html?longname=Lakewood+Park+CDP%2C+Florida%2C+USA`)
+        .eql(`${target}/article.html?longname=Lakewood+Park+CDP%2C+Florida%2C+USA`)
     await t
         .click(prev)
     await t.expect(getLocationWithoutSettings())
-        .eql(`${TARGET}/article.html?longname=San+Marino+city%2C+California%2C+USA`)
+        .eql(`${target}/article.html?longname=San+Marino+city%2C+California%2C+USA`)
 
-    await t.click(prev_overall)
+    await t.click(prevOverall)
     await t.expect(getLocationWithoutSettings())
-        .eql(`${TARGET}/article.html?longname=Havre+High+School+District%2C+Montana%2C+USA`)
-    await t.click(next_overall)
+        .eql(`${target}/article.html?longname=Havre+High+School+District%2C+Montana%2C+USA`)
+    await t.click(nextOverall)
     await t.expect(getLocationWithoutSettings())
-        .eql(`${TARGET}/article.html?longname=San+Marino+city%2C+California%2C+USA`)
-    await t.click(next_overall)
+        .eql(`${target}/article.html?longname=San+Marino+city%2C+California%2C+USA`)
+    await t.click(nextOverall)
     await t.expect(getLocationWithoutSettings())
-        .eql(`${TARGET}/article.html?longname=78225%2C+USA`)
+        .eql(`${target}/article.html?longname=78225%2C+USA`)
 })
 
 test('san-marino-2010-health', async (t) => {
-    await check_textboxes(t, ['2010', 'Health'])
+    await checkTextboxes(t, ['2010', 'Health'])
     await screencap(t)
 })
 
@@ -98,7 +98,7 @@ test('uncheck-box-mobile', async (t) => {
     // Find div with class checkbox-setting containing a label with text "Race"
     // and a checkbox, then find the checkbox
     await t.resizeWindow(400, 800)
-    await check_textboxes(t, ['Race'])
+    await checkTextboxes(t, ['Race'])
 
     await screencap(t)
     // refresh
@@ -109,7 +109,7 @@ test('uncheck-box-mobile', async (t) => {
 test('uncheck-box-desktop', async (t) => {
     await t.resizeWindow(1400, 800)
 
-    await check_textboxes(t, ['Race'])
+    await checkTextboxes(t, ['Race'])
 
     await screencap(t)
     // refresh
@@ -120,13 +120,13 @@ test('uncheck-box-desktop', async (t) => {
 test('simple', async (t) => {
     await t.resizeWindow(1400, 800)
 
-    await check_textboxes(t, ['Simple Ordinals'])
+    await checkTextboxes(t, ['Simple Ordinals'])
 
     await screencap(t)
 })
 
 test('download-article', async (t) => {
-    await download_image(t)
+    await downloadImage(t)
 })
 
 test('create-comparison-from-article', async (t) => {
@@ -136,14 +136,14 @@ test('create-comparison-from-article', async (t) => {
         .typeText(otherRegion, 'pasadena city california')
         .pressKey('enter')
     await t.expect(getLocationWithoutSettings())
-        .eql(comparison_page(['San Marino city, California, USA', 'Pasadena city, California, USA']))
+        .eql(comparisonPage(['San Marino city, California, USA', 'Pasadena city, California, USA']))
 })
 
 urbanstatsFixture('all stats test', `/article.html?longname=California%2C+USA`)
 
 test('california-all-stats', async (t) => {
     await t.resizeWindow(1400, 800)
-    await check_all_category_boxes(t)
+    await checkAllCategoryBoxes(t)
     await screencap(t)
 })
 
@@ -152,7 +152,7 @@ urbanstatsFixture('all stats test regression', `/article.html?longname=Charlotte
 
 test('charlotte-all-stats', async (t) => {
     await t.resizeWindow(1400, 800)
-    await check_all_category_boxes(t)
+    await checkAllCategoryBoxes(t)
     await screencap(t)
 })
 
@@ -172,7 +172,7 @@ test('change to C and back to F', async (t) => {
 })
 
 test('paste C link', async (t) => {
-    await check_textboxes(t, ['Simple Ordinals']) // to save settings
+    await checkTextboxes(t, ['Simple Ordinals']) // to save settings
     await t.navigateTo('/article.html?longname=California%2C+USA&s=jV3GG2h8Vfs')
     await t.expect(Selector('[data-test-id=staging_controls]').exists).ok()
     await t.expect(Selector('span').withText('28.8').exists).ok()
@@ -188,6 +188,13 @@ test('virgin-islands', async (t) => {
 urbanstatsFixture('some-stats-missing', '/article.html?longname=Pueblo East CDP%2C+Texas%2C+USA')
 
 test('pueblo-east-cdp', async (t) => {
-    await check_textboxes(t, ['Transportation'])
+    await checkTextboxes(t, ['Transportation'])
+    await screencap(t)
+})
+
+urbanstatsFixture('4 digit election swing', '/article.html?longname=Corpus+Christi+city%2C+Texas%2C+USA&s=4EWiZCQEgxLku')
+
+test('overflows correctly on mobile', async (t) => {
+    await t.resizeWindow(400, 800)
     await screencap(t)
 })

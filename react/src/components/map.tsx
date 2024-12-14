@@ -5,12 +5,12 @@ import React, { ReactNode } from 'react'
 
 import { loadProtobuf } from '../load_json'
 import { Basemap } from '../mapper/settings'
-import { shape_link } from '../navigation/links'
+import { shapeLink } from '../navigation/links'
 import { Navigator } from '../navigation/navigator'
 import { useColors } from '../page_template/colors'
-import { relatedSettingsKeys, relationship_key, useSetting, useSettings } from '../page_template/settings'
-import { random_color } from '../utils/color'
-import { is_historical_cd } from '../utils/is_historical'
+import { relatedSettingsKeys, relationshipKey, useSetting, useSettings } from '../page_template/settings'
+import { randomColor } from '../utils/color'
+import { isHistoricalCD } from '../utils/is_historical'
 import { Feature, IRelatedButton, IRelatedButtons } from '../utils/protos'
 import { NormalizeProto } from '../utils/types'
 
@@ -56,7 +56,7 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
         return <></>
     }
 
-    compute_polygons(): Promise<Polygons> {
+    computePolygons(): Promise<Polygons> {
         /**
          * Should return [names, styles, metas, zoom_index]
          * names: list of names of polygons to draw
@@ -74,7 +74,7 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
     }
 
     async loadShape(name: string): Promise<NormalizeProto<Feature>> {
-        return await loadProtobuf(shape_link(name), 'Feature') as NormalizeProto<Feature>
+        return await loadProtobuf(shapeLink(name), 'Feature') as NormalizeProto<Feature>
     }
 
     override async componentDidMount(): Promise<void> {
@@ -92,13 +92,13 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
      * @returns string svg
      */
     async exportAsSvg(): Promise<string> {
-        const [names, styles] = await this.compute_polygons()
-        const map_bounds = this.map!.getBounds()
+        const [names, styles] = await this.computePolygons()
+        const mapBounds = this.map!.getBounds()
         const bounds = {
-            left: map_bounds.getWest(),
-            right: map_bounds.getEast(),
-            top: map_bounds.getNorth(),
-            bottom: map_bounds.getSouth(),
+            left: mapBounds.getWest(),
+            right: mapBounds.getEast(),
+            top: mapBounds.getNorth(),
+            bottom: mapBounds.getSouth(),
         }
         const width = 1000
         const height = width * (bounds.top - bounds.bottom) / (bounds.right - bounds.left)
@@ -115,36 +115,36 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
         })
 
         function toSvgStyle(style: Record<string, unknown> & { weight?: number }): string {
-            let svg_style = ''
+            let svgStyle = ''
             for (const key of Object.keys(style)) {
                 if (key === 'fillColor') {
-                    svg_style += `fill:${style[key]};`
+                    svgStyle += `fill:${style[key]};`
                     continue
                 }
                 else if (key === 'fillOpacity') {
-                    svg_style += `fill-opacity:${style[key]};`
+                    svgStyle += `fill-opacity:${style[key]};`
                     continue
                 }
                 else if (key === 'color') {
-                    svg_style += `stroke:${style[key]};`
+                    svgStyle += `stroke:${style[key]};`
                     continue
                 }
                 else if (key === 'weight') {
-                    svg_style += `stroke-width:${style[key]! / 10};`
+                    svgStyle += `stroke-width:${style[key]! / 10};`
                     continue
                 }
-                svg_style += `${key}:${style[key]};`
+                svgStyle += `${key}:${style[key]};`
             }
-            return svg_style
+            return svgStyle
         }
 
-        const overall_svg = []
+        const overallSvg = []
 
         for (let i = 0; i < names.length; i++) {
-            const geojson = await this.polygon_geojson(names[i])
+            const geojson = await this.polygonGeojson(names[i])
             const svg = converter.convert(geojson, { attributes: { style: toSvgStyle(styles[i]) } })
             for (const elem of svg) {
-                overall_svg.push(elem)
+                overallSvg.push(elem)
             }
         }
         const header = `<?xml version="1.0" encoding="UTF-8" standalone="no"?>
@@ -159,17 +159,17 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
             xmlns="http://www.w3.org/2000/svg"
             xmlns:svg="http://www.w3.org/2000/svg">`
         const footer = '</svg>'
-        return header + overall_svg.join('') + footer
+        return header + overallSvg.join('') + footer
     }
 
     async exportAsGeoJSON(): Promise<string> {
-        const [names, , metas] = await this.compute_polygons()
+        const [names, , metas] = await this.computePolygons()
         const geojson: GeoJSON.FeatureCollection = {
             type: 'FeatureCollection',
             features: [],
         }
         for (let i = 0; i < names.length; i++) {
-            let feature = await this.polygon_geojson(names[i])
+            let feature = await this.polygonGeojson(names[i])
             feature = JSON.parse(JSON.stringify(feature)) as typeof feature
             for (const key of Object.keys(metas[i])) {
                 feature.properties![key] = metas[i][key]
@@ -210,9 +210,9 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
 
         this.attachBasemap()
 
-        const [names, styles, , zoom_index] = await this.compute_polygons()
+        const [names, styles, , zoomIndex] = await this.computePolygons()
 
-        await this.add_polygons(map, names, styles, zoom_index)
+        await this.addPolygons(map, names, styles, zoomIndex)
 
         await this.mapDidRender()
 
@@ -244,7 +244,7 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
         this.map!.addLayer(this.basemap_layer)
     }
 
-    async add_polygons(map: L.Map, names: string[], styles: Record<string, unknown>[], zoom_to: number): Promise<void> {
+    async addPolygons(map: L.Map, names: string[], styles: Record<string, unknown>[], zoom_to: number): Promise<void> {
         /*
          * We want to parallelize polygon loading, but we also need to add the polygons in a deterministic order for testing purposes (as well as to show contained polygons atop their parent)
          * So, we start all the loads asynchronously, but actually add the polygons to the map only as they finish loading in order
@@ -260,13 +260,13 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
             }
         }
         await Promise.all(names.map(async (name, i) => {
-            const adder = await this.add_polygon(map, name, i === zoom_to, styles[i])
+            const adder = await this.addPolygon(map, name, i === zoom_to, styles[i])
             adders.set(i, adder)
             addDone()
         }))
     }
 
-    async polygon_geojson(name: string): Promise<GeoJSON.Feature> {
+    async polygonGeojson(name: string): Promise<GeoJSON.Feature> {
         // https://stackoverflow.com/a/35970894/1549476
         const poly = await this.loadShape(name)
         let geometry: GeoJSON.Geometry
@@ -307,13 +307,13 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
      * Returns a function that adds the polygon.
      * The reason for this is so that we can add the polygons in a specific order independent of the order in which they end up loading
      */
-    async add_polygon(map: L.Map, name: string, fit_bounds: boolean, style: Record<string, unknown>, add_callback = true, add_to_bottom = false): Promise<() => void> {
+    async addPolygon(map: L.Map, name: string, fit_bounds: boolean, style: Record<string, unknown>, add_callback = true, add_to_bottom = false): Promise<() => void> {
         this.exist_this_time.push(name)
         if (this.polygon_by_name.has(name)) {
             this.polygon_by_name.get(name)!.setStyle(style)
             return () => undefined
         }
-        const geojson = await this.polygon_geojson(name)
+        const geojson = await this.polygonGeojson(name)
         return () => {
             const group = L.featureGroup()
             let polygon = L.geoJson(geojson, {
@@ -342,7 +342,7 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
         }
     }
 
-    zoom_to_all(): void {
+    zoomToAll(): void {
     // zoom such that all polygons are visible
         const bounds = new L.LatLngBounds([])
         for (const polygon of this.polygon_by_name.values()) {
@@ -351,7 +351,7 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
         this.map!.fitBounds(bounds)
     }
 
-    zoom_to(name: string): void {
+    zoomTo(name: string): void {
         // zoom to a specific polygon
         this.map!.fitBounds(this.polygon_by_name.get(name)!.getBounds())
     }
@@ -361,7 +361,7 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
     declare context: React.ContextType<typeof Navigator.Context>
 }
 
-const MapBody = (props: { id: string, height: string | undefined, buttons: ReactNode }): ReactNode => {
+function MapBody(props: { id: string, height: string | undefined, buttons: ReactNode }): ReactNode {
     const colors = useColors()
     return (
         <div className="map-container-for-testing">
@@ -391,11 +391,11 @@ const MapBody = (props: { id: string, height: string | undefined, buttons: React
 interface MapProps extends MapGenericProps {
     longname: string
     related: NormalizeProto<IRelatedButtons>[]
-    article_type: string
+    articleType: string
 }
 
 interface ArticleMapProps extends MapProps {
-    show_historical_cds: boolean
+    showHistoricalCDs: boolean
     settings: Record<string, unknown>
     color: string
 }
@@ -404,13 +404,13 @@ interface ArticleMapProps extends MapProps {
 export { MapComponent as Map }
 function MapComponent(props: MapProps): ReactNode {
     const colors = useColors()
-    const [show_historical_cds] = useSetting('show_historical_cds')
-    const related_checkbox_settings = useSettings(relatedSettingsKeys(props.article_type))
+    const [showHistoricalCDs] = useSetting('show_historical_cds')
+    const relatedCheckboxSettings = useSettings(relatedSettingsKeys(props.articleType))
     return (
         <ArticleMap
             {...props}
-            show_historical_cds={show_historical_cds}
-            settings={related_checkbox_settings}
+            showHistoricalCDs={showHistoricalCDs}
+            settings={relatedCheckboxSettings}
             color={colors.hueColors.blue}
         />
     )
@@ -419,13 +419,13 @@ function MapComponent(props: MapProps): ReactNode {
 class ArticleMap extends MapGeneric<ArticleMapProps> {
     private already_fit_bounds: string | undefined = undefined
 
-    override compute_polygons(): Promise<Polygons> {
+    override computePolygons(): Promise<Polygons> {
         const relateds = []
-        relateds.push(...this.get_related('contained_by'))
-        relateds.push(...this.get_related('intersects'))
-        relateds.push(...this.get_related('borders'))
-        relateds.push(...this.get_related('contains'))
-        relateds.push(...this.get_related('same_geography'))
+        relateds.push(...this.getRelated('contained_by'))
+        relateds.push(...this.getRelated('intersects'))
+        relateds.push(...this.getRelated('borders'))
+        relateds.push(...this.getRelated('contains'))
+        relateds.push(...this.getRelated('same_geography'))
 
         const names = []
         const styles = []
@@ -433,15 +433,15 @@ class ArticleMap extends MapGeneric<ArticleMapProps> {
         names.push(this.props.longname)
         styles.push({ interactive: false, fillOpacity: 0.5, weight: 1, color: this.props.color, fillColor: this.props.color })
 
-        const [related_names, related_styles] = this.related_polygons(relateds)
-        names.push(...related_names)
-        styles.push(...related_styles)
+        const [relatedNames, relatedStyles] = this.relatedPolygons(relateds)
+        names.push(...relatedNames)
+        styles.push(...relatedStyles)
 
-        const zoom_index = this.already_fit_bounds !== this.props.longname ? 0 : -1
+        const zoomIndex = this.already_fit_bounds !== this.props.longname ? 0 : -1
 
         const metas = names.map(() => ({}))
 
-        return Promise.resolve([names, styles, metas, zoom_index] as const)
+        return Promise.resolve([names, styles, metas, zoomIndex] as const)
     }
 
     override mapDidRender(): Promise<void> {
@@ -449,26 +449,26 @@ class ArticleMap extends MapGeneric<ArticleMapProps> {
         return Promise.resolve()
     }
 
-    get_related(key: string): NormalizeProto<IRelatedButton>[] {
+    getRelated(key: string): NormalizeProto<IRelatedButton>[] {
         const element = this.props.related.filter(
             x => x.relationshipType === key)
             .map(x => x.buttons)[0]
         return element
     }
 
-    related_polygons(related: NormalizeProto<IRelatedButton>[]): [Polygons[0], Polygons[1]] {
+    relatedPolygons(related: NormalizeProto<IRelatedButton>[]): [Polygons[0], Polygons[1]] {
         const names = []
         const styles = []
         for (let i = related.length - 1; i >= 0; i--) {
-            if (!this.props.show_historical_cds && is_historical_cd(related[i].rowType)) {
+            if (!this.props.showHistoricalCDs && isHistoricalCD(related[i].rowType)) {
                 continue
             }
-            const key = relationship_key(this.props.article_type, related[i].rowType)
+            const key = relationshipKey(this.props.articleType, related[i].rowType)
             if (!this.props.settings[key]) {
                 continue
             }
 
-            const color = random_color(related[i].longname)
+            const color = randomColor(related[i].longname)
             const style = { color, weight: 1, fillColor: color, fillOpacity: 0.1 }
             names.push(related[i].longname)
             styles.push(style)

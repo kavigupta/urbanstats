@@ -140,24 +140,24 @@ export default [
         'Media Market',
     ],
     [
-        'Canadian Census Division',
-        'Canadian Census Division',
+        'CA Census Division',
+        'CA Census Division',
     ],
     [
-        'Canadian Census Subdivision',
-        'Canadian Census Subdivision',
+        'CA Census Subdivision',
+        'CA Census Subdivision',
     ],
     [
-        'Canadian Population Center',
-        'Canadian Population Center',
+        'CA Population Center',
+        'CA Population Center',
     ],
     [
-        'Canadian CMA',
-        'Canadian CMA',
+        'CA CMA',
+        'CA CMA',
     ],
     [
-        'Canadian Riding',
-        'Canadian Riding',
+        'CA Riding',
+        'CA Riding',
     ],
     [
         'Continent',

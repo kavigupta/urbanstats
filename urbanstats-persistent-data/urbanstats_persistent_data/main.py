@@ -1,3 +1,4 @@
+import functools
 import json
 import flask
 import hashlib
@@ -5,6 +6,8 @@ import hashlib
 from flask_cors import CORS
 
 from .juxtastat_stats import (
+    check_secureid,
+    friend_request,
     get_per_question_stats,
     get_per_question_stats_retrostat,
     latest_day,
@@ -13,6 +16,8 @@ from .juxtastat_stats import (
     store_user_stats,
     get_full_database,
     store_user_stats_retrostat,
+    todays_score_for,
+    unfriend,
 )
 from .shorten import shorten_and_save, retreive_and_lengthen
 
@@ -58,56 +63,83 @@ def lengthen_request():
     return flask.jsonify({"error": "Needs parameter shortened!"}), 200
 
 
+def get_authenticated_user(additional_required_params=()):
+    form = flask_form()
+
+    required_params = ["user", "secureID"] + list(additional_required_params)
+
+    if not all([param in form for param in required_params]):
+        return False, (
+            flask.jsonify(
+                {
+                    "error": f"Needs parameters {required_params}!",
+                    "code": "needs_params",
+                }
+            ),
+            200,
+        )
+    if not check_secureid(form["user"], form["secureID"]):
+        return False, (
+            flask.jsonify({"error": "Invalid secureID!", "code": "bad_secureid"}),
+            200,
+        )
+    return True, None
+
+
+def authenticate(fields):
+    def decorator(fn):
+        @functools.wraps(fn)
+        def wrapper():
+            success, error = get_authenticated_user(fields)
+            if not success:
+                return error
+            return fn()
+        return wrapper
+
+    return decorator
+
+
 @app.route("/juxtastat/register_user", methods=["POST"])
+@authenticate(["domain"])
 def juxtastat_register_user_request():
     form = flask_form()
 
     print("RECV", form)
 
-    if "user" in form and "domain" in form:
-        register_user(form["user"], form["domain"])
-        return flask.jsonify(dict(success=True))
-    return flask.jsonify({"error": "Needs parameters user and domain!"}), 200
+    register_user(form["user"], form["domain"])
+    return flask.jsonify(dict()), 200
 
 
 @app.route("/juxtastat/latest_day", methods=["POST"])
+@authenticate([])
 def juxtastat_latest_day_request():
     form = flask_form()
-
-    if "user" in form:
-        ld = latest_day(form["user"])
-        return flask.jsonify(dict(latest_day=ld))
-    return flask.jsonify({"error": "Needs parameter user!"}), 200
+    ld = latest_day(form["user"])
+    return flask.jsonify(dict(latest_day=ld))
 
 
 @app.route("/retrostat/latest_week", methods=["POST"])
+@authenticate([])
 def retrostat_latest_week_request():
     form = flask_form()
-
-    if "user" in form:
-        ld = latest_week_retrostat(form["user"])
-        return flask.jsonify(dict(latest_day=ld))
-    return flask.jsonify({"error": "Needs parameter user!"}), 200
+    ld = latest_week_retrostat(form["user"])
+    return flask.jsonify(dict(latest_day=ld))
 
 
 @app.route("/juxtastat/store_user_stats", methods=["POST"])
+@authenticate(["day_stats"])
 def juxtastat_store_user_stats_request():
     form = flask_form()
-
-    if "user" in form and "day_stats" in form:
-        store_user_stats(form["user"], json.loads(form["day_stats"]))
-        return flask.jsonify(dict(success=True))
-    return flask.jsonify({"error": "Needs parameters user and day_stats!"}), 200
+    store_user_stats(form["user"], json.loads(form["day_stats"]))
+    return flask.jsonify(dict())
 
 
 @app.route("/retrostat/store_user_stats", methods=["POST"])
+@authenticate(["day_stats"])
 def retrostat_store_user_stats_request():
     form = flask_form()
-
-    if "user" in form and "day_stats" in form:
-        store_user_stats_retrostat(form["user"], json.loads(form["day_stats"]))
-        return flask.jsonify(dict(success=True))
-    return flask.jsonify({"error": "Needs parameters user and day_stats!"}), 200
+    store_user_stats_retrostat(form["user"], json.loads(form["day_stats"]))
+    return flask.jsonify(dict())
 
 
 @app.route("/juxtastat/get_full_database", methods=["POST"])
@@ -139,6 +171,38 @@ def retrostat_get_per_question_stats_request():
     if "week" in form:
         return flask.jsonify(get_per_question_stats_retrostat(form["week"]))
     return flask.jsonify({"error": "Needs parameter week!"}), 200
+
+
+@app.route("/juxtastat/friend_request", methods=["POST"])
+@authenticate(["requestee"])
+def juxtastat_friend_request():
+    print("FRIEND REQUEST")
+    print(flask_form())
+    form = flask_form()
+    friend_request(form["requestee"], form["user"])
+    return flask.jsonify(dict())
+
+
+@app.route("/juxtastat/unfriend", methods=["POST"])
+@authenticate(["requestee"])
+def juxtastat_unfriend():
+    form = flask_form()
+    print("unfriend initiated", form)
+    unfriend(form["requestee"], form["user"])
+    return flask.jsonify(dict())
+
+
+@app.route("/juxtastat/todays_score_for", methods=["POST"])
+@authenticate(["requesters", "date", "quiz_kind"])
+def juxtastat_todays_score_for():
+    form = flask_form()
+    res = dict(
+        results=todays_score_for(
+            form["user"], form["requesters"], form["date"], form["quiz_kind"]
+        )
+    )
+    print("TODAYS SCORE FOR", res)
+    return flask.jsonify(res)
 
 
 import logging

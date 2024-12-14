@@ -26,8 +26,8 @@ def load_cmas():
     ]
 
     mask = data["CMANAME"].apply(lambda x: x in to_merge)
-    merge_rows = data[[x for x in mask]].copy()
-    data = data[[x for x in ~mask]].copy()
+    merge_rows = data[list(mask)].copy()
+    data = data[list(~mask)].copy()
 
     merge_row = merge_rows.dissolve()
     merge_row = merge_row.iloc[0]
@@ -58,7 +58,7 @@ CANADIAN_CENSUS_METROPOLITAN_AREAS = Shapefile(
     longname_extractor=longname_extractor,
     filter=lambda x: True,
     meta=dict(
-        type="Canadian CMA",
+        type="CA CMA",
         source="StatCan",
         type_category="Census",
     ),

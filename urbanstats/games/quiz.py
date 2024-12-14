@@ -1,10 +1,7 @@
-import base64
 import copy
-import gzip
 import json
 import os
 import shutil
-import urllib
 from datetime import datetime
 from functools import lru_cache
 
@@ -16,16 +13,16 @@ from permacache import permacache, stable_hash
 
 from urbanstats.games.quiz_columns import stats, stats_to_display, stats_to_types
 from urbanstats.games.quiz_region_types import (
-    QUIZ_REGION_TYPES_ALL,
     QUIZ_REGION_TYPES_INTERNATIONAL,
+    sample_quiz_type,
 )
 from urbanstats.geometry.shapefiles.shapefiles_list import filter_table_for_type
-from urbanstats.shortener import shorten
 from urbanstats.statistics.collections_list import statistic_collections
 from urbanstats.statistics.output_statistics_metadata import (
     get_statistic_categories,
     statistic_internal_to_display_name,
 )
+from urbanstats.statistics.stat_path import get_statistic_column_path
 from urbanstats.universe.universe_list import universe_by_universe_type
 from urbanstats.website_data.table import shapefile_without_ordinals
 
@@ -34,7 +31,7 @@ from .quiz_custom import get_custom_quizzes
 
 min_pop = 250_000
 min_pop_international = 2_500_000
-version_numeric = 78
+version_numeric = 79
 
 version = str(version_numeric) + stable_hash(statistic_collections)
 
@@ -152,7 +149,7 @@ def sample_quiz_question(
     rng, banned_categories, banned_type_categories, distance_pct_bot, distance_pct_top
 ):
     while True:
-        typ = rng.choice(QUIZ_REGION_TYPES_ALL)
+        typ = sample_quiz_type(rng)
         if type_ban_categorize(typ) in banned_type_categories:
             continue
         at_pop, universes = filter_for_pop(typ)
@@ -228,28 +225,11 @@ def full_quiz(seed):
         out = {}
         stat_column_original = q.pop("stat_column_original")
         out["stat_column"] = statistic_internal_to_display_name()[stat_column_original]
+        out["stat_path"] = get_statistic_column_path(stat_column_original)
         out["question"] = stats_to_display[stat_column_original]
         out.update(q)
         outs.append(out)
     return outs
-
-
-def custom_quiz_link(seed, name, *, localhost):
-    quiz = full_quiz(seed)
-    quiz_long = base64.b64encode(
-        gzip.compress(json.dumps(quiz).encode("utf-8"))
-    ).decode("utf-8")
-    long = dict(
-        mode="custom",
-        name=name,
-        quiz=quiz_long,
-    )
-    long = urllib.parse.urlencode(long)
-    short = shorten(long)
-    params = urllib.parse.urlencode(dict(short=short))
-    if localhost:
-        return f"http://localhost:8000/quiz.html?{params}"
-    return f"https://urbanstats.org/quiz.html?{params}"
 
 
 def check_quiz_is_guaranteed_future(number):

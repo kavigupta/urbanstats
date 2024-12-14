@@ -50,6 +50,7 @@ function ExplanationTable(props: { name: string, link: string, table: readonly (
     )
 }
 
+// eslint-disable-next-line no-restricted-syntax -- Header so we can use as tsx tag name
 function NRef({ children, name, h: Header = 'h2' }: { children: React.ReactNode, name: string, h?: 'h1' | 'h2' }): ReactNode {
     return (
         <Header id={`explanation_${name}`}>
@@ -246,7 +247,7 @@ export function DataCreditPanel(): ReactNode {
                                 </ul>
                                 <p>
                                     Massey and Denton use the following metric of isolation:
-                                    <MathJax>
+                                    <MathJax style={{ height: '80px', overflow: 'hidden' }}>
                                         {
                                             `\\[I(r) = \\sum_{b \\in B} v_b[r] \\frac{p_b v_b[r]}{\\sum_{b'} p_b v_{b'}[r]}\\]`
                                         }
@@ -267,13 +268,13 @@ export function DataCreditPanel(): ReactNode {
                                     Generalizing this isolation index to more than two groups is relatively straightforward,
                                     we simply take the mean of the isolation index for each group, weighted by the population
                                     of the group. This yields the metric
-                                    <MathJax>
+                                    <MathJax style={{ height: '80px', overflow: 'hidden' }}>
                                         {
                                             `\\[I(B) = \\sum_{b \\in B} \\sum_r v_b[r] \\frac{p_b v_b[r]}{\\sum_{b'} p_{b'}}\\]`
                                         }
                                     </MathJax>
                                     which can be rearranged to
-                                    <MathJax>
+                                    <MathJax style={{ height: '80px', overflow: 'hidden' }}>
                                         {
                                             `\\[I(B) = \\mathbb E_{b \\in B} \\left[\\sum_r v_b[r] v_b[r]\\right]\\]`
                                         }
@@ -284,14 +285,14 @@ export function DataCreditPanel(): ReactNode {
                                     {' '}
                                     with
                                     the proportion of people who are of that race in nearby blocks, which we define as
-                                    <MathJax>
+                                    <MathJax style={{ height: '53px', overflow: 'hidden' }}>
                                         {
                                             `\\[w_b[r] = \\mathbb E_{b' \\in n(b)} [v_{b'}[r]]\\]`
                                         }
                                     </MathJax>
                                     We define a &ldquo;nearby block&rdquo; similarly to the PW density metric, as a block within a certain
                                     radius of the block in question. Putting this together, we have our homogenity metric:
-                                    <MathJax>
+                                    <MathJax style={{ height: '80px', overflow: 'hidden' }}>
                                         {
                                             `\\[H(B) = \\mathbb E_{b \\in B} \\left[\\sum_r v_b[r] w_b[r]\\right] = \\mathbb E_{b \\in B} [v_b^T w_b]\\]`
                                         }
@@ -309,13 +310,13 @@ export function DataCreditPanel(): ReactNode {
                                     isolation index, then dividing by 1 minus the minimum possible value.
 
                                     We do the same, creating the metric
-                                    <MathJax>
+                                    <MathJax style={{ height: '80px', overflow: 'hidden' }}>
                                         {
                                             `\\[S(B) = \\frac{H(B) - H_{\\text{min}}(B)}{1 - H_{\\text{min}}(B)}\\]`
                                         }
                                     </MathJax>
                                     where we can compute
-                                    <MathJax>
+                                    <MathJax style={{ height: '53px', overflow: 'hidden' }}>
                                         {
                                             `\\[H_{\\text{min}}(B) = \\mathbb E_{b \\in B} [v_b^T] \\mathbb E_{b \\in B} [w_b]\\]`
                                         }
@@ -354,13 +355,13 @@ export function DataCreditPanel(): ReactNode {
                                 <p>
                                     As such, we define a local region block segregation as the segregation metric
                                     in a large region around a block (circle of radius 10km).
-                                    <MathJax>
+                                    <MathJax style={{ height: '53px', overflow: 'hidden' }}>
                                         {
                                             `\\[S^{\\{10\\}}_{b}(B) = S(n_{10}(b))\\]`
                                         }
                                     </MathJax>
                                     We then compute the average of this metric for each block.
-                                    <MathJax>
+                                    <MathJax style={{ height: '53px', overflow: 'hidden' }}>
                                         {
                                             `\\[S^{\\{10\\}}(B) = \\mathbb E_{b \\in B} [S^{\\{10\\}}_{b}(B)]\\]`
                                         }
@@ -634,7 +635,7 @@ export function DataCreditPanel(): ReactNode {
                             <a href="#explanation_gpw">GPW</a>
                             {' '}
                             data to compute the population weighted average of these statistics for each geography
-                            for large regions. For American regions, we disaggregate to the block level (starting
+                            for large regions. For American and Canadian regions, we disaggregate to the block level (starting
                             with 15 arc-second blocks) via bilinear interpolation and then use the population of each
                             block as a weight.
                         </div>
@@ -759,6 +760,31 @@ export function DataCreditPanel(): ReactNode {
                             we are using for the US data. To compute PW density, we treat each cell as effectively homogenous,
                             but since the cells are all smaller than 1 square kilometer, this should not be a major issue for
                             radii above 1km (which is the smallest radius we use for GHS-POP data).
+                        </div>
+                        <h1>Canadian Data</h1>
+                        <div>
+                            <h2>Geography</h2>
+                            <div>
+                                <p>
+                                    We source Canadian geography data from
+                                    {' '}
+                                    <a href="https://www12.statcan.gc.ca/census-recensement/2021/geo/sip-pis/boundary-limites/index2021-eng.cfm?year=21">StatCan</a>
+                                    . Specifically, we use digital boundary files
+                                    for provinces/torritories, census divisions, census subdivisions, population centers,
+                                    federal electoral districts, and census metropolitan areas. For all of these, we clip
+                                    to the international subnational regions as we define them in general, since the
+                                    digital boundary files provided by StatCan include unnecessarily large water areas.
+                                </p>
+                            </div>
+                            <NRef name="canadian_census" h="h2">Census Dissemination Block Data</NRef>
+                            <div>
+                                We use dissemination block data from the 2021 Canada Census. It is available
+                                {' '}
+                                <a href="https://www12.statcan.gc.ca/census-recensement/2021/geo/aip-pia/geosuite/index2021-eng.cfm?year=21">from StatCan</a>
+                                . We use the same metrics as for the US Census to compute population
+                                and population density statistics, except using dissemination blocks instead
+                                of census blocks.
+                            </div>
                         </div>
                         <h1> Flags </h1>
                         <div>

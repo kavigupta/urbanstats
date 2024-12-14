@@ -1,24 +1,24 @@
 import React, { CSSProperties, ReactNode, useContext, useEffect, useRef, useState } from 'react'
 import ContentEditable, { ContentEditableEvent } from 'react-contenteditable'
 
-import { load_ordering } from '../load_json'
+import { loadOrdering } from '../load_json'
 import './table.css'
 import { statisticDescriptor } from '../navigation/links'
 import { Navigator } from '../navigation/navigator'
 import { Colors } from '../page_template/color-themes'
 import { useColors } from '../page_template/colors'
-import { MobileArticlePointers, row_expanded_key, Settings, useSetting } from '../page_template/settings'
+import { MobileArticlePointers, rowExpandedKey, Settings, useSetting } from '../page_template/settings'
 import { useUniverse } from '../universe'
-import { is_historical_cd } from '../utils/is_historical'
+import { isHistoricalCD } from '../utils/is_historical'
 import { isMobileLayout, useMobileLayout } from '../utils/responsive'
-import { display_type } from '../utils/text'
+import { displayType, separateNumber } from '../utils/text'
 
 import { ArticleRow, Disclaimer } from './load-article'
 import { useScreenshotMode } from './screenshot'
 
 export type ColumnIdentifier = 'statname' | 'statval' | 'statval_unit' | 'statistic_percentile' | 'statistic_ordinal' | 'pointer_in_class' | 'pointer_overall'
 
-const table_row_style: React.CSSProperties = {
+const tableRowStyle: React.CSSProperties = {
     display: 'flex',
     flexDirection: 'row',
 }
@@ -27,7 +27,7 @@ export function TableHeaderContainer({ children }: { children: ReactNode }): Rea
     const colors = useColors()
 
     const style = {
-        ...table_row_style,
+        ...tableRowStyle,
         borderTop: `1pt solid ${colors.textMain}`,
         borderBottom: `1pt solid ${colors.textMain}`,
         fontWeight: 500,
@@ -50,6 +50,7 @@ interface ColumnLayoutProps {
         style: CSSProperties
     }[]
     onlyColumns?: string[]
+    blankColumns?: string[]
     totalWidth: number
 }
 
@@ -62,7 +63,12 @@ function ColumnLayout(props: ColumnLayoutProps): JSX.Element[] {
             continue
         }
         cellPercentages.push(widthPercentage)
-        cellContents.push({ content, style })
+        if (props.blankColumns?.includes(columnIdentifier)) {
+            cellContents.push({ content: <span></span>, style })
+        }
+        else {
+            cellContents.push({ content, style })
+        }
     }
 
     // normalize cell percentages
@@ -86,7 +92,7 @@ function ColumnLayout(props: ColumnLayoutProps): JSX.Element[] {
 
 export function StatisticHeaderCells(props: { simpleOrdinals: boolean, totalWidth: number, onlyColumns?: ColumnIdentifier[] }): ReactNode {
     const colors = useColors()
-    const ordinal_style: React.CSSProperties = {
+    const ordinalStyle: React.CSSProperties = {
         fontSize: '14px',
         fontWeight: 400,
         color: colors.ordinalTextColor,
@@ -119,9 +125,9 @@ export function StatisticHeaderCells(props: { simpleOrdinals: boolean, totalWidt
             widthPercentage: props.simpleOrdinals ? 7 : 17,
             columnIdentifier: 'statistic_percentile',
             content: (
-                <span className="serif" key="ordinal" style={ordinal_style}>
+                <span className="serif" key="ordinal" style={ordinalStyle}>
                     {
-                        (props.simpleOrdinals ? right_align('%ile') : 'Percentile')
+                        (props.simpleOrdinals ? rightAlign('%ile') : 'Percentile')
 
                     }
                 </span>
@@ -132,15 +138,15 @@ export function StatisticHeaderCells(props: { simpleOrdinals: boolean, totalWidt
             widthPercentage: props.simpleOrdinals ? 8 : 25,
             columnIdentifier: 'statistic_ordinal',
             content: (
-                <span className="serif" key="statistic_ordinal" style={ordinal_style}>
+                <span className="serif" key="statistic_ordinal" style={ordinalStyle}>
                     {
-                        (props.simpleOrdinals ? right_align('Ord') : 'Ordinal')
+                        (props.simpleOrdinals ? rightAlign('Ord') : 'Ordinal')
                     }
                 </span>
             ),
             style: { textAlign: 'center' },
         },
-        ...PointerHeaderCells({ ordinal_style }),
+        ...PointerHeaderCells({ ordinalStyle }),
     ] satisfies ColumnLayoutProps['cells']
 
     return (
@@ -152,18 +158,18 @@ export function StatisticHeaderCells(props: { simpleOrdinals: boolean, totalWidt
     )
 }
 
-function PointerHeaderCells(props: { ordinal_style: CSSProperties }): ColumnLayoutProps['cells'] {
+function PointerHeaderCells(props: { ordinalStyle: CSSProperties }): ColumnLayoutProps['cells'] {
     const pointerInClassCell: ColumnLayoutProps['cells'][number] = {
         widthPercentage: 8,
         columnIdentifier: 'pointer_in_class',
-        content: <span className="serif" style={props.ordinal_style}>Within Type</span>,
+        content: <span className="serif" style={props.ordinalStyle}>Within Type</span>,
         style: { textAlign: 'center' },
 
     }
     const pointerOverallCell: ColumnLayoutProps['cells'][number] = {
         widthPercentage: 8,
         columnIdentifier: 'pointer_overall',
-        content: <span className="serif" style={props.ordinal_style}>Overall</span>,
+        content: <span className="serif" style={props.ordinalStyle}>Overall</span>,
         style: { textAlign: 'center' },
     }
 
@@ -241,12 +247,13 @@ export function StatisticRowCells(props: {
     statisticStyle?: CSSProperties
     row: ArticleRow
     onlyColumns?: string[]
+    blankColumns?: string[]
     onNavigate?: (newArticle: string) => void
     simpleOrdinals: boolean
 }): ReactNode {
     const currentUniverse = useUniverse()
     const colors = useColors()
-    const ordinal_style: React.CSSProperties = {
+    const ordinalStyle: React.CSSProperties = {
         fontSize: '14px',
         fontWeight: 400,
         color: colors.ordinalTextColor,
@@ -262,7 +269,7 @@ export function StatisticRowCells(props: {
                     <StatisticName
                         row={props.row}
                         longname={props.longname}
-                        curr_universe={currentUniverse}
+                        currentUniverse={currentUniverse}
                     />
                 </span>
             ),
@@ -276,7 +283,7 @@ export function StatisticRowCells(props: {
                     <Statistic
                         statname={props.row.statname}
                         value={props.row.statval}
-                        is_unit={false}
+                        isUnit={false}
                         style={props.statisticStyle ?? {}}
                     />
                 </span>
@@ -292,7 +299,7 @@ export function StatisticRowCells(props: {
                         <Statistic
                             statname={props.row.statname}
                             value={props.row.statval}
-                            is_unit={true}
+                            isUnit={true}
                         />
                     </span>
                 </div>
@@ -303,11 +310,11 @@ export function StatisticRowCells(props: {
             widthPercentage: props.simpleOrdinals ? 7 : 17,
             columnIdentifier: 'statistic_percentile',
             content: (
-                <span className="serif" style={ordinal_style}>
+                <span className="serif" style={ordinalStyle}>
                     <Percentile
                         ordinal={props.row.ordinal}
-                        total={props.row.total_count_in_class}
-                        percentile_by_population={props.row.percentile_by_population}
+                        total={props.row.totalCountInClass}
+                        percentileByPopulation={props.row.percentileByPopulation}
                         simpleOrdinals={props.simpleOrdinals}
                     />
                 </span>
@@ -318,10 +325,10 @@ export function StatisticRowCells(props: {
             widthPercentage: props.simpleOrdinals ? 8 : 25,
             columnIdentifier: 'statistic_ordinal',
             content: (
-                <span className="serif" style={ordinal_style}>
+                <span className="serif" style={ordinalStyle}>
                     <Ordinal
                         ordinal={props.row.ordinal}
-                        total={props.row.total_count_in_class}
+                        total={props.row.totalCountInClass}
                         type={props.row.articleType}
                         statpath={props.row.statpath}
                         simpleOrdinals={props.simpleOrdinals}
@@ -331,7 +338,7 @@ export function StatisticRowCells(props: {
             ),
             style: { textAlign: 'right' },
         },
-        ...PointerRowCells({ ordinal_style, row: props.row }),
+        ...PointerRowCells({ ordinalStyle, row: props.row }),
     ] satisfies ColumnLayoutProps['cells']
 
     return (
@@ -339,6 +346,7 @@ export function StatisticRowCells(props: {
             cells={cells}
             totalWidth={props.totalWidth}
             onlyColumns={props.onlyColumns}
+            blankColumns={props.blankColumns}
         />
     )
 }
@@ -354,7 +362,7 @@ export function isSinglePointerCell(settings: Settings): boolean {
     return isMobileLayout() && !settings.get('simple_ordinals')
 }
 
-function PointerRowCells(props: { ordinal_style: CSSProperties, row: ArticleRow }): ColumnLayoutProps['cells'] {
+function PointerRowCells(props: { ordinalStyle: CSSProperties, row: ArticleRow }): ColumnLayoutProps['cells'] {
     const screenshotMode = useScreenshotMode()
 
     const singlePointerCell = useSinglePointerCell()
@@ -364,12 +372,12 @@ function PointerRowCells(props: { ordinal_style: CSSProperties, row: ArticleRow 
         widthPercentage: 8,
         columnIdentifier: 'pointer_in_class',
         content: (
-            <span key="pointer_in_class" className="serif" style={{ display: 'flex', ...props.ordinal_style }}>
+            <span key="pointer_in_class" className="serif" style={{ display: 'flex', ...props.ordinalStyle }}>
                 <PointerButtonsIndex
                     ordinal={props.row.ordinal}
                     statpath={props.row.statpath}
                     type={props.row.articleType}
-                    total={props.row.total_count_in_class}
+                    total={props.row.totalCountInClass}
                 />
             </span>
         ),
@@ -380,12 +388,12 @@ function PointerRowCells(props: { ordinal_style: CSSProperties, row: ArticleRow 
         widthPercentage: 8,
         columnIdentifier: 'pointer_overall',
         content: (
-            <span className="serif" style={{ display: 'flex', ...props.ordinal_style }}>
+            <span className="serif" style={{ display: 'flex', ...props.ordinalStyle }}>
                 <PointerButtonsIndex
                     ordinal={props.row.overallOrdinal}
                     statpath={props.row.statpath}
                     type="overall"
-                    total={props.row.total_count_overall}
+                    total={props.row.totalCountOverall}
                 />
             </span>
         ),
@@ -420,9 +428,9 @@ function articleStatnameButtonStyle(colors: Colors): React.CSSProperties {
 function StatisticName(props: {
     row: ArticleRow
     longname: string
-    curr_universe: string
+    currentUniverse: string
 }): ReactNode {
-    const [expanded, setExpanded] = useSetting(row_expanded_key(props.row.statpath))
+    const [expanded, setExpanded] = useSetting(rowExpandedKey(props.row.statpath))
     const colors = useColors()
     const navContext = useContext(Navigator.Context)
     const link = (
@@ -430,9 +438,9 @@ function StatisticName(props: {
             style={{ textDecoration: 'none', color: colors.textMain }}
             {
                 ...navContext.link(statisticDescriptor({
-                    universe: props.curr_universe,
+                    universe: props.currentUniverse,
                     statname: props.row.statname,
-                    article_type: props.row.articleType,
+                    articleType: props.row.articleType,
                     start: props.row.ordinal,
                     amount: 20,
                     order: 'descending',
@@ -440,12 +448,12 @@ function StatisticName(props: {
                 }))
             }
         >
-            {props.row.rendered_statname}
+            {props.row.renderedStatname}
         </a>
     )
-    const screenshot_mode = useScreenshotMode()
+    const screenshotMode = useScreenshotMode()
     const elements = [link]
-    if (props.row.extra_stat !== undefined && !screenshot_mode) {
+    if (props.row.extraStat !== undefined && !screenshotMode) {
         elements.push(
             <div
                 className="expand-toggle"
@@ -522,7 +530,7 @@ function StatisticNameDisclaimer(props: { disclaimer: Disclaimer }): ReactNode {
 export function TableRowContainer({ children, index }: { children: React.ReactNode, index: number }): React.ReactNode {
     const colors = useColors()
     const style: React.CSSProperties = {
-        ...table_row_style,
+        ...tableRowStyle,
         backgroundColor: index % 2 === 1 ? colors.slightlyDifferentBackground : undefined,
         alignItems: 'last baseline',
     }
@@ -535,36 +543,36 @@ export function TableRowContainer({ children, index }: { children: React.ReactNo
     )
 }
 
-export function Statistic(props: { style?: React.CSSProperties, statname: string, value: number, is_unit: boolean }): ReactNode {
-    const [use_imperial] = useSetting('use_imperial')
+export function Statistic(props: { style?: React.CSSProperties, statname: string, value: number, isUnit: boolean }): ReactNode {
+    const [useImperial] = useSetting('use_imperial')
     const [temperatureUnit] = useSetting('temperature_unit')
     const content = (() => {
         {
             const name = props.statname
             let value = props.value
-            const is_unit = props.is_unit
+            const isUnit = props.isUnit
             if (name.includes('%') || name.includes('Change') || name.includes('(Grade)')) {
-                if (is_unit) {
+                if (isUnit) {
                     return <span>%</span>
                 }
                 return <span>{(value * 100).toFixed(2)}</span>
             }
             else if (name.includes('Total') && name.includes('Fatalities')) {
-                if (is_unit) {
+                if (isUnit) {
                     return <span>&nbsp;</span>
                 }
-                return <span>{value.toFixed(0)}</span>
+                return <span>{separateNumber(value.toFixed(0))}</span>
             }
             else if (name.includes('Fatalities Per Capita')) {
-                if (is_unit) {
+                if (isUnit) {
                     return <span>/100k</span>
                 }
                 return <span>{(100_000 * value).toFixed(2)}</span>
             }
             else if (name.includes('Density')) {
-                let unit_name = 'km'
-                if (use_imperial) {
-                    unit_name = 'mi'
+                let unitName = 'km'
+                if (useImperial) {
+                    unitName = 'mi'
                     value *= 1.60934 * 1.60934
                 }
                 let places = 2
@@ -574,57 +582,57 @@ export function Statistic(props: { style?: React.CSSProperties, statname: string
                 else if (value > 1) {
                     places = 1
                 }
-                if (is_unit) {
+                if (isUnit) {
                     return (
                         <span>
                             /&nbsp;
-                            {unit_name}
+                            {unitName}
                             <sup>2</sup>
                         </span>
                     )
                 }
-                return <span>{value.toFixed(places)}</span>
+                return <span>{separateNumber(value.toFixed(places))}</span>
             }
             else if (name.includes('Elevation')) {
-                let unit_name = 'm'
-                if (use_imperial) {
-                    unit_name = 'ft'
+                let unitName = 'm'
+                if (useImperial) {
+                    unitName = 'ft'
                     value *= 3.28084
                 }
-                if (is_unit) {
-                    return <span>{unit_name}</span>
+                if (isUnit) {
+                    return <span>{unitName}</span>
                 }
-                return <span>{value.toFixed(0)}</span>
+                return <span>{separateNumber(value.toFixed(0))}</span>
             }
             else if (name.startsWith('Population')) {
                 if (value > 1e9) {
-                    if (is_unit) {
+                    if (isUnit) {
                         return <span>B</span>
                     }
                     return <span>{(value / 1e9).toPrecision(3)}</span>
                 }
                 if (value > 1e6) {
-                    if (is_unit) {
+                    if (isUnit) {
                         return <span>m</span>
                     }
                     return <span>{(value / 1e6).toPrecision(3)}</span>
                 }
                 else if (value > 1e4) {
-                    if (is_unit) {
+                    if (isUnit) {
                         return <span>k</span>
                     }
                     return <span>{(value / 1e3).toPrecision(3)}</span>
                 }
                 else {
-                    if (is_unit) {
+                    if (isUnit) {
                         return <span>&nbsp;</span>
                     }
-                    return <span>{value.toFixed(0)}</span>
+                    return <span>{separateNumber(value.toFixed(0))}</span>
                 }
             }
             else if (name === 'Area') {
                 let unit: string | React.ReactElement = 'null'
-                if (use_imperial) {
+                if (useImperial) {
                     value /= 1.60934 * 1.60934
                     if (value < 1) {
                         unit = <span>acres</span>
@@ -658,12 +666,12 @@ export function Statistic(props: { style?: React.CSSProperties, statname: string
                         )
                     }
                 }
-                if (is_unit) {
+                if (isUnit) {
                     return unit
                 }
                 else {
                     if (value > 100) {
-                        return <span>{value.toFixed(0)}</span>
+                        return <span>{separateNumber(value.toFixed(0))}</span>
                     }
                     else if (value > 10) {
                         return <span>{value.toFixed(1)}</span>
@@ -678,11 +686,11 @@ export function Statistic(props: { style?: React.CSSProperties, statname: string
             }
             else if (name.includes('Mean distance')) {
                 let unit = <span>km</span>
-                if (use_imperial) {
+                if (useImperial) {
                     unit = <span>mi</span>
                     value /= 1.60934
                 }
-                if (is_unit) {
+                if (isUnit) {
                     return unit
                 }
                 else {
@@ -690,7 +698,7 @@ export function Statistic(props: { style?: React.CSSProperties, statname: string
                 }
             }
             else if (name.includes('Election') || name.includes('Swing')) {
-                if (is_unit) {
+                if (isUnit) {
                     return <span>%</span>
                 }
                 return <ElectionResult value={value} />
@@ -701,13 +709,13 @@ export function Statistic(props: { style?: React.CSSProperties, statname: string
                     unit = <span>&deg;C</span>
                     value = (value - 32) * (5 / 9)
                 }
-                if (is_unit) {
+                if (isUnit) {
                     return unit
                 }
                 return <span>{value.toFixed(1)}</span>
             }
             else if (name === 'Mean sunny hours') {
-                if (is_unit) {
+                if (isUnit) {
                     return <span>&nbsp;</span>
                 }
                 const hours = Math.floor(value)
@@ -724,11 +732,11 @@ export function Statistic(props: { style?: React.CSSProperties, statname: string
             else if (name === 'Rainfall' || name === 'Snowfall [rain-equivalent]') {
                 value *= 100
                 let unit = 'cm'
-                if (use_imperial) {
+                if (useImperial) {
                     unit = 'in'
                     value /= 2.54
                 }
-                if (is_unit) {
+                if (isUnit) {
                     return (
                         <span>
                             {unit}
@@ -738,17 +746,14 @@ export function Statistic(props: { style?: React.CSSProperties, statname: string
                 }
                 return <span>{value.toFixed(1)}</span>
             }
-            if (is_unit) {
+            if (isUnit) {
                 return <span>&nbsp;</span>
             }
             return <span>{value.toFixed(3)}</span>
         }
     })()
 
-    if (props.style) {
-        return <span style={props.style}>{content}</span>
-    }
-    return content
+    return <span style={props.style}>{content}</span>
 }
 
 function ElectionResult(props: { value: number }): ReactNode {
@@ -761,9 +766,15 @@ function ElectionResult(props: { value: number }): ReactNode {
     const places = value > 10 ? 1 : value > 1 ? 2 : value > 0.1 ? 3 : 4
     const text = value.toFixed(places)
     const party = props.value > 0 ? 'D' : 'R'
-    const party_color = props.value > 0 ? colors.hueColors.blue : colors.hueColors.red
+    const partyColor = props.value > 0 ? colors.hueColors.blue : colors.hueColors.red
+    const spanStyle: CSSProperties = {
+        color: partyColor,
+        // So that on 4 digits, we overflow left
+        display: 'flex',
+        justifyContent: 'flex-end',
+    }
     return (
-        <span style={{ color: party_color }}>
+        <span style={spanStyle}>
             {party}
             +
             {text}
@@ -779,7 +790,7 @@ function Ordinal(props: {
     simpleOrdinals: boolean
     onNavigate?: (newArticle: string) => void
 }): ReactNode {
-    const curr_universe = useUniverse()
+    const currentUniverse = useUniverse()
     const onNewNumber = async (number: number): Promise<void> => {
         let num = number
         if (num < 0) {
@@ -792,7 +803,7 @@ function Ordinal(props: {
         if (num <= 0) {
             num = 1
         }
-        const data = await load_ordering(curr_universe, props.statpath, props.type)
+        const data = await loadOrdering(currentUniverse, props.statpath, props.type)
         props.onNavigate?.(data[num - 1])
     }
     const ordinal = props.ordinal
@@ -808,7 +819,7 @@ function Ordinal(props: {
         />
     )
     if (props.simpleOrdinals) {
-        return right_align(en)
+        return rightAlign(en)
     }
     return (
         <div className="serif" style={{ textAlign: 'right' }}>
@@ -816,33 +827,50 @@ function Ordinal(props: {
             {' of '}
             {total}
             {' '}
-            {display_type(curr_universe, type)}
+            {displayType(currentUniverse, type)}
         </div>
     )
 }
 
 function EditableNumber(props: { number: number, onNewNumber: (number: number) => void }): ReactNode {
+    const onNewContent = (content: string): void => {
+        const number = parseInt(content)
+        if (!Number.isNaN(number) && number !== props.number) {
+            props.onNewNumber(number)
+        }
+    }
+    return (
+        <EditableString
+            content={props.number.toString()}
+            onNewContent={onNewContent}
+            style={{ minWidth: '2em', display: 'inline-block' }}
+            inputMode="decimal"
+        />
+    )
+};
+
+export function EditableString(props: { content: string, onNewContent: (content: string) => void, style: CSSProperties, inputMode: 'text' | 'decimal' }): ReactNode {
     /*
      * This code is weird because the `ContentEditable` needs to use refs.
      * See https://www.npmjs.com/package/react-contenteditable
      */
 
     const contentEditable: React.Ref<HTMLElement> = useRef(null)
-    const [html, setHtml] = useState(props.number.toString())
+    const [html, setHtml] = useState(props.content.toString())
 
     // Otherwise, this component can display the wrong number when props change
     useEffect(() => {
-        setHtml(props.number.toString())
-    }, [props.number])
+        setHtml(props.content.toString())
+    }, [props.content])
 
     const handleChange = (evt: ContentEditableEvent): void => {
         setHtml(evt.target.value)
     }
 
     const handleSubmit = (): void => {
-        const number = parseInt(contentEditable.current!.innerText)
-        if (!Number.isNaN(number) && number !== props.number) {
-            props.onNewNumber(number)
+        const content = contentEditable.current!.innerText
+        if (content !== props.content) {
+            props.onNewContent(content)
         }
     }
 
@@ -858,7 +886,8 @@ function EditableNumber(props: { number: number, onNewNumber: (number: number) =
 
     return (
         <ContentEditable
-            className="editable_number"
+            className="editable_content"
+            style={props.style}
             innerRef={contentEditable}
             html={html}
             disabled={false}
@@ -871,7 +900,7 @@ function EditableNumber(props: { number: number, onNewNumber: (number: number) =
             }}
             onBlur={handleSubmit}
             tagName="span" // Use a custom HTML tag (uses a div by default)
-            inputMode="decimal"
+            inputMode={props.inputMode}
             onFocus={selectAll}
         />
     )
@@ -880,7 +909,7 @@ function EditableNumber(props: { number: number, onNewNumber: (number: number) =
 export function Percentile(props: {
     ordinal: number
     total: number
-    percentile_by_population: number
+    percentileByPopulation: number
     simpleOrdinals: boolean
 }): ReactNode {
     const ordinal = props.ordinal
@@ -890,10 +919,10 @@ export function Percentile(props: {
     }
     // percentile as an integer
     // used to be keyed by a setting, but now we always use percentile_by_population
-    const quantile = props.percentile_by_population
+    const quantile = props.percentileByPopulation
     const percentile = Math.floor(100 * quantile)
     if (props.simpleOrdinals) {
-        return right_align(`${percentile.toString()}%`)
+        return rightAlign(`${percentile.toString()}%`)
     }
     // something like Xth percentile
     let text = `${percentile}th percentile`
@@ -911,19 +940,19 @@ export function Percentile(props: {
 
 // Lacks some customization since its column is not show in the comparison view
 function PointerButtonsIndex(props: { ordinal: number, statpath: string, type: string, total: number }): ReactNode {
-    const curr_universe = useUniverse()
-    const get_data = async (): Promise<string[]> => await load_ordering(curr_universe, props.statpath, props.type)
+    const currentUniverse = useUniverse()
+    const getData = async (): Promise<string[]> => await loadOrdering(currentUniverse, props.statpath, props.type)
     return (
         <span style={{ margin: 'auto', whiteSpace: 'nowrap' }}>
             <PointerButtonIndex
-                get_data={get_data}
-                original_pos={props.ordinal}
+                getData={getData}
+                originalPos={props.ordinal}
                 direction={-1}
                 total={props.total}
             />
             <PointerButtonIndex
-                get_data={get_data}
-                original_pos={props.ordinal}
+                getData={getData}
+                originalPos={props.ordinal}
                 direction={+1}
                 total={props.total}
             />
@@ -932,22 +961,22 @@ function PointerButtonsIndex(props: { ordinal: number, statpath: string, type: s
 }
 
 function PointerButtonIndex(props: {
-    get_data: () => Promise<string[]>
-    original_pos: number
+    getData: () => Promise<string[]>
+    originalPos: number
     direction: -1 | 1
     total: number
 }): ReactNode {
     const universe = useUniverse()
     const colors = useColors()
     const navigation = useContext(Navigator.Context)
-    const [show_historical_cds] = useSetting('show_historical_cds')
-    const out_of_bounds = (pos: number): boolean => pos < 0 || pos >= props.total
+    const [showHistoricalCDs] = useSetting('show_historical_cds')
+    const outOfBounds = (pos: number): boolean => pos < 0 || pos >= props.total
     const onClick = async (pos: number): Promise<void> => {
         {
-            const data = await props.get_data()
-            while (!out_of_bounds(pos)) {
+            const data = await props.getData()
+            while (!outOfBounds(pos)) {
                 const name = data[pos]
-                if (!show_historical_cds && is_historical_cd(name)) {
+                if (!showHistoricalCDs && isHistoricalCD(name)) {
                     pos += props.direction
                     continue
                 }
@@ -976,8 +1005,8 @@ function PointerButtonIndex(props: {
         backgroundColor: 'transparent',
     }
 
-    const pos = props.original_pos - 1 + +props.direction
-    const disabled = out_of_bounds(pos) || props.original_pos > props.total
+    const pos = props.originalPos - 1 + +props.direction
+    const disabled = outOfBounds(pos) || props.originalPos > props.total
 
     const buttonRef = useRef<HTMLButtonElement>(null) // Need the ref otherwise the mouse enter and leave events can be sent to the wrong elem
 
@@ -1000,7 +1029,7 @@ function PointerButtonIndex(props: {
     )
 }
 
-function right_align(value: React.ReactNode): ReactNode {
+function rightAlign(value: React.ReactNode): ReactNode {
     return (
         <span
             style={{ float: 'right', marginRight: '5px' }}

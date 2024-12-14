@@ -1,8 +1,6 @@
 from permacache import permacache
-from urbanstats.geometry.shapefiles.load_canada_shapefile import (
-    load_canadian_shapefile,
-    pruid_to_province,
-)
+
+from urbanstats.geometry.shapefiles.load_canada_shapefile import load_canadian_shapefile
 from urbanstats.geometry.shapefiles.shapefile import Shapefile
 from urbanstats.geometry.shapefiles.shapefile_subset import SelfSubset
 from urbanstats.geometry.shapefiles.shapefiles.canadian_census_divisions import (
@@ -117,7 +115,7 @@ CANADIAN_CENSUS_SUBDIVISIONS = Shapefile(
     + row.division_longname,
     filter=lambda x: True,
     meta=dict(
-        type="Canadian Census Subdivision",
+        type="CA Census Subdivision",
         source="StatCan",
         type_category="Census",
     ),

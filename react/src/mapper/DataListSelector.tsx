@@ -2,31 +2,31 @@ import React, { ReactNode } from 'react'
 
 import { useColors } from '../page_template/colors'
 
-import { setting_name_style } from './style'
+import { settingNameStyle } from './style'
 
-export function DataListSelector<T extends string>({ overall_name, initial_value, names, onChange, no_neutral, header_style }: { overall_name: string | undefined, initial_value: T | undefined, names: T[], onChange: (newValue: T) => void, no_neutral?: boolean, header_style?: React.CSSProperties }): ReactNode {
+export function DataListSelector<T extends string>({ overallName, initialValue, names, onChange, noNeutral, headerStyle }: { overallName: string | undefined, initialValue: T | undefined, names: T[], onChange: (newValue: T) => void, noNeutral?: boolean, headerStyle?: React.CSSProperties }): ReactNode {
     const colors = useColors()
-    const names_full = no_neutral ? names : ['', ...names]
-    const set_initial = initial_value !== undefined && names_full.includes(initial_value)
-    const actual_selector = (
+    const namesFull = noNeutral ? names : ['', ...names]
+    const setInitial = initialValue !== undefined && namesFull.includes(initialValue)
+    const actualSelector = (
         <select
             onChange={(e) => { onChange(e.target.value as T) }}
             style={{ width: '100%', backgroundColor: colors.background, color: colors.textMain }}
-            value={set_initial ? initial_value : ''}
+            value={setInitial ? initialValue : ''}
         >
-            {names_full.map((name, i) => (
+            {namesFull.map((name, i) => (
                 <option key={i} value={name}>{name}</option>
             ))}
         </select>
     )
-    if (overall_name === undefined) return actual_selector
+    if (overallName === undefined) return actualSelector
     return (
         <div>
             <div>
-                <div style={header_style ?? setting_name_style}>
-                    {overall_name}
+                <div style={headerStyle ?? settingNameStyle}>
+                    {overallName}
                 </div>
-                {actual_selector}
+                {actualSelector}
                 <div style={{ marginBottom: '0.25em' }} />
             </div>
         </div>

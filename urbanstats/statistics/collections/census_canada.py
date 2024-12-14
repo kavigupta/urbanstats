@@ -4,9 +4,7 @@ from permacache import permacache
 from urbanstats.data.canada.canada_density import canada_shapefile_with_densities
 from urbanstats.data.census_blocks import RADII
 from urbanstats.data.census_histogram import census_histogram_canada
-from urbanstats.geometry.census_aggregation import (
-    aggregate_by_census_block_canada,
-)
+from urbanstats.geometry.census_aggregation import aggregate_by_census_block_canada
 from urbanstats.statistics.collections.census import (
     DENSITY_EXPLANATION_PW,
     format_radius,
@@ -17,7 +15,7 @@ from urbanstats.statistics.statistic_collection import CanadaStatistics
 
 class CensusCanada(CanadaStatistics):
     version = 2
-    
+
     def name_for_each_statistic(self):
         return {
             "population_2021_canada": "Population [StatCan]",

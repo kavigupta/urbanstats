@@ -1,7 +1,7 @@
 import React, { ReactNode } from 'react'
 
 import { useColors } from '../page_template/colors'
-import { checkbox_category_name, source_enabled_key, useSettings } from '../page_template/settings'
+import { checkboxCategoryName, sourceEnabledKey, useSettings } from '../page_template/settings'
 import { groupYearKeys, useAvailableYears, useDataSourceCheckboxes, useGroupsMissingYearSelection, useSelectedGroups } from '../page_template/statistic-settings'
 import { Category, Group } from '../page_template/statistic-tree'
 
@@ -17,7 +17,7 @@ export function ArticleWarnings(): ReactNode {
 
     const allUncheckedSourceGroups = dataSourceCheckboxes
         .filter(({ category, checkboxSpecs }) => checkboxSpecs
-            .every(({ name, forcedOn }) => !forcedOn && !settings[source_enabled_key({ category, name })]))
+            .every(({ name, forcedOn }) => !forcedOn && !settings[sourceEnabledKey({ category, name })]))
 
     if (screenshotMode) {
         return null
@@ -43,7 +43,7 @@ export function ArticleWarnings(): ReactNode {
                     <>
                         All statistics from the
                         {' '}
-                        <b>{checkbox_category_name(category)}</b>
+                        <b>{checkboxCategoryName(category)}</b>
                         {' '}
                         are disabled.
                     </>

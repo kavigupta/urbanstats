@@ -8,7 +8,10 @@ from urbanstats.universe.universe_provider.combined_universe_provider import (
     CombinedUniverseProvider,
 )
 from urbanstats.universe.universe_provider.constants import INTERNATIONAL_PROVIDERS
-from urbanstats.universe.universe_provider.contained_within import PROVINCE_PROVIDER, STATE_PROVIDER
+from urbanstats.universe.universe_provider.contained_within import (
+    PROVINCE_PROVIDER,
+    STATE_PROVIDER,
+)
 
 
 def valid_state(x):

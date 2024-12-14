@@ -1,6 +1,6 @@
 import localized_type_names from '../data/localized_type_names'
 
-export function display_type(universe: string, type: string): string {
+export function displayType(universe: string, type: string): string {
     return pluralize(localize(universe, type))
 }
 
@@ -20,4 +20,8 @@ function localize(universe: string, type: string): string {
         }
     }
     return type
+}
+
+export function separateNumber(number: string): string {
+    return number.replaceAll(/(?<!^)([0-9]{3})(?=([0-9]{3})*($|\.))/g, '\u202f$1')
 }

@@ -13,6 +13,7 @@ from urbanstats.geometry.shapefiles.shapefiles.subnational_regions import (
 )
 from urbanstats.universe.universe_provider.constants import canada_domestic_provider
 
+
 @permacache(
     "urbanstats/geometry/shapefiles/shapefiles/canadian_population_centers/load_pcs_2",
 )
@@ -42,7 +43,6 @@ def load_pcs():
     return table
 
 
-
 def shortname_extractor(row):
     return row.PCNAME + " Population Center"
 
@@ -59,7 +59,7 @@ CANADIAN_CENSUS_POPULATION_CENTERS = Shapefile(
     longname_extractor=longname_extractor,
     filter=lambda x: True,
     meta=dict(
-        type="Canadian Population Center",
+        type="CA Population Center",
         source="StatCan",
         type_category="US Subdivision",
     ),

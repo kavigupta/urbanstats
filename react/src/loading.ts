@@ -1,6 +1,7 @@
 import { colorThemes } from './page_template/color-themes'
 
 const savedSettings = localStorage.getItem('settings')
+// eslint-disable-next-line no-restricted-syntax -- Represents persisted data
 const loadedSettings = JSON.parse(savedSettings ?? '{}') as { theme?: string, clean_background?: boolean }
 
 let theme: 'Dark Mode' | 'Light Mode'
