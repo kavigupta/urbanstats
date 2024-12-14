@@ -206,7 +206,10 @@ def get_full_database():
 
 
 def friend_request(requestee, requester):
-    requestee = int(requestee, 16)
+    try:
+        requestee = int(requestee, 16)
+    except ValueError:
+        return
     requester = int(requester, 16)
     conn, c = table()
     c.execute(
@@ -234,7 +237,6 @@ def todays_score_for(requestee, requesters, date, quiz_kind):
     """
 
     requestee = int(requestee, 16)
-    requesters = [int(x, 16) for x in requesters]
 
     _, c = table()
     # query the table to see if each pair is a friend pair
@@ -248,6 +250,11 @@ def todays_score_for(requestee, requesters, date, quiz_kind):
 
     results = []
     for requester in requesters:
+        try:
+            requester = int(requester, 16)
+        except ValueError:
+            results.append(dict(friends=False, idError="Invalid User ID"))
+            continue
         if requester in friends:
             c.execute(
                 f"SELECT corrects FROM {table_for_quiz_kind[quiz_kind]} WHERE user=? AND {problem_id_for_quiz_kind[quiz_kind]}=?",
