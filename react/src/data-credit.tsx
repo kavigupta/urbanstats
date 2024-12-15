@@ -797,7 +797,7 @@ export function DataCreditPanel(): ReactNode {
                                     dissemination block.
                                 </p>
                                 <p>
-                                    For Generation, Marriage, and Commute time, we are able to use identical definitions to the US data.
+                                    For Generation, Marriage, Industry, and Commute time, we are able to use identical definitions to the US data.
                                 </p>
                             </div>
                         </div>
