@@ -274,7 +274,8 @@ def just_2020_with_canada(*col_names, year=2020):
                         col_name,
                     )
                 ]
-            }
+            },
+            group_name_statcol=col_name,
         )
         for col_name in col_names
     }
