@@ -104,3 +104,7 @@ def export_statistics_tree(path):
             f"export const dataSources = {json.dumps(result, indent=4)} as const\n\n"
         )
         f.write(f"export const rawStatsTree = {fst} as const\n")
+
+
+# Just ensuring that the columns have no errors
+statistic_internal_to_display_name()
