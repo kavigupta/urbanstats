@@ -1,7 +1,9 @@
 from abc import abstractmethod
 from urbanstats.data.canada.canadian_da_data import CensusTables
 from urbanstats.statistics.collections.generation import GenerationStatistics
+from urbanstats.statistics.collections.industry import IndustryStatistics
 from urbanstats.statistics.collections.marriage import MarriageStatistics
+from urbanstats.statistics.collections.occupation import OccupationStatistics
 from urbanstats.statistics.collections.transportation_commute_time import (
     TransportationCommuteTimeStatistics,
 )
@@ -9,7 +11,10 @@ from urbanstats.statistics.statistic_collection import CanadaStatistics
 from urbanstats.statistics.utils import fractionalize
 
 
-class CensusCanadaOther(CanadaStatistics):
+class CensusCanadaSameAsUS(CanadaStatistics):
+    """
+    Represents a collection of statistics that are the same as the US statistic tables.
+    """
     @abstractmethod
     def census_tables(self) -> CensusTables:
         pass
@@ -51,7 +56,7 @@ class CensusCanadaOther(CanadaStatistics):
         return statistic_table
 
 
-class CensusCanadaGeneration(CensusCanadaOther):
+class CensusCanadaGeneration(CensusCanadaSameAsUS):
     version = 2
 
     def census_tables(self) -> CensusTables:
@@ -107,7 +112,7 @@ class CensusCanadaGeneration(CensusCanadaOther):
         return GenerationStatistics()
 
 
-class CensusCanadaMarriage(CensusCanadaOther):
+class CensusCanadaMarriage(CensusCanadaSameAsUS):
     version = 4
 
     def census_tables(self) -> CensusTables:
@@ -145,7 +150,7 @@ class CensusCanadaMarriage(CensusCanadaOther):
         return MarriageStatistics()
 
 
-class CensusCanadaCommuteTime(CensusCanadaOther):
+class CensusCanadaCommuteTime(CensusCanadaSameAsUS):
     version = 2
 
     def census_tables(self) -> CensusTables:
@@ -178,8 +183,92 @@ class CensusCanadaCommuteTime(CensusCanadaOther):
         return TransportationCommuteTimeStatistics()
 
 
-census_canada_other = [
+class CensusCanadaIndustry(CensusCanadaSameAsUS):
+    version = 2
+
+    def census_tables(self) -> CensusTables:
+        return CensusTables(
+            [
+                "Total - Labour force aged 15 years and over by industry - Sectors - North American Industry Classification System (NAICS) 2017 - 25% sample data (194)",
+            ],
+            {
+                None: [
+                    "Total - Labour force aged 15 years and over by industry - Sectors - North American Industry Classification System (NAICS) 2017 - 25% sample data (194)",
+                    "  Industry - not applicable (190)",
+                    "  All industries (191)",
+                ],
+                "industry_agriculture,_forestry,_fishing_and_hunting_canada": [
+                    "    11 Agriculture, forestry, fishing and hunting",
+                ],
+                # "industry_mining,_quarrying,_and_oil_and_gas_extraction": "higher % of workers employed in the mining, quarrying, and oil/gas extraction industries",
+                "industry_mining,_quarrying,_and_oil_and_gas_extraction_canada": [
+                    "    21 Mining, quarrying, and oil and gas extraction",
+                ],
+                "industry_accommodation_and_food_services_canada": [
+                    "    72 Accommodation and food services",
+                ],
+                "industry_arts,_entertainment,_and_recreation_canada": [
+                    "    71 Arts, entertainment and recreation",
+                ],
+                "industry_construction_canada": [
+                    "    23 Construction",
+                ],
+                "industry_educational_services_canada": [
+                    "    61 Educational services",
+                ],
+                "industry_health_care_and_social_assistance_canada": [
+                    "    62 Health care and social assistance",
+                ],
+                "industry_finance_and_insurance_canada": [
+                    "    52 Finance and insurance",
+                ],
+                "industry_real_estate_and_rental_and_leasing_canada": [
+                    "    53 Real estate and rental and leasing",
+                ],
+                "industry_information_canada": [
+                    "    51 Information and cultural industries",
+                ],
+                "industry_manufacturing_canada": [
+                    "    31-33 Manufacturing",
+                ],
+                "industry_other_services,_except_public_administration_canada": [
+                    "    81 Other services (except public administration)",
+                ],
+                "industry_administrative_and_support_and_waste_management_services_canada": [
+                    "    56 Administrative and support, waste management and remediation services",
+                ],
+                "industry_management_of_companies_and_enterprises_canada": [
+                    "    55 Management of companies and enterprises",
+                ],
+                "industry_professional,_scientific,_and_technical_services_canada": [
+                    "    54 Professional, scientific and technical services",
+                ],
+                "industry_public_administration_canada": [
+                    "    91 Public administration",
+                ],
+                "industry_retail_trade_canada": [
+                    "    44-45 Retail trade",
+                ],
+                "industry_transportation_and_warehousing_canada": [
+                    "    48-49 Transportation and warehousing",
+                ],
+                "industry_utilities_canada": [
+                    "    22 Utilities",
+                ],
+                "industry_wholesale_trade_canada": [
+                    "    41 Wholesale trade",
+                ],
+            },
+            "population",
+        )
+
+    def us_equivalent(self):
+        return IndustryStatistics()
+
+
+census_canada_same_as_us = [
     CensusCanadaCommuteTime(),
     CensusCanadaGeneration(),
     CensusCanadaMarriage(),
+    CensusCanadaIndustry(),
 ]

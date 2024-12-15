@@ -117,6 +117,7 @@ get_to_these_later = [
 completed = [
     "Total - Age groups of the population - 100% data",
     "Total - Marital status for the total population aged 15 years and over - 100% data",
+    "Total - Labour force aged 15 years and over by industry - Sectors - North American Industry Classification System (NAICS) 2017 - 25% sample data (194)",
     "Total - Commuting duration for the employed labour force aged 15 years and over with a usual place of work or no fixed workplace address - 25% sample data (201)",
 ]
 
@@ -146,7 +147,6 @@ get_to_these_now = [
     "Total - Highest certificate, diploma or degree for the population aged 25 to 64 years in private households - 25% sample data (165)",
     "Total - Major field of study - Classification of Instructional Programs (CIP) 2021 for the population aged 25 to 64 years in private households - 25% sample data (172)",
     "Total - Labour force aged 15 years and over by occupation - Broad category - National Occupational Classification (NOC) 2021 - 25% sample data (193)",
-    "Total - Labour force aged 15 years and over by industry - Sectors - North American Industry Classification System (NAICS) 2017 - 25% sample data (194)",
     # together these allow us to compute commute mode %
     *[
         "Total - Place of work status for the employed labour force aged 15 years and over - 25% sample data (198)",

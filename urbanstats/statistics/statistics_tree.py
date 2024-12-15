@@ -261,11 +261,39 @@ def just_2020(*col_names, year=2020):
     }
 
 
+def just_2020_with_canada(*col_names, year=2020):
+    return {
+        col_name: StatisticGroup(
+            {
+                year: [
+                    MultiSource(
+                        {
+                            population_census: col_name,
+                            population_canada: col_name + "_canada",
+                        },
+                        col_name,
+                    )
+                ]
+            }
+        )
+        for col_name in col_names
+    }
+
+
 def just_2020_category(cat_key, cat_name, *col_names, year=2020):
     return {
         cat_key: StatisticCategory(
             name=cat_name,
             contents=just_2020(*col_names, year=year),
+        )
+    }
+
+
+def just_2020_category_with_canada(cat_key, cat_name, *col_names, year=2020):
+    return {
+        cat_key: StatisticCategory(
+            name=cat_name,
+            contents=just_2020_with_canada(*col_names, year=year),
         )
     }
 
@@ -356,7 +384,7 @@ statistics_tree = StatisticTree(
             "female_ugrad_gap_4",
             "female_grad_gap_4",
         ),
-        **just_2020_category(
+        **just_2020_category_with_canada(
             "generation",
             "Generation",
             "generation_silent",
@@ -402,25 +430,32 @@ statistics_tree = StatisticTree(
                 ),
             },
         ),
-        **just_2020_category(
-            "transportation",
-            "Transportation",
-            "transportation_means_car",
-            "transportation_means_bike",
-            "transportation_means_walk",
-            "transportation_means_transit",
-            "transportation_means_worked_at_home",
-            "transportation_commute_time_under_15",
-            "transportation_commute_time_15_to_29",
-            "transportation_commute_time_30_to_59",
-            "transportation_commute_time_over_60",
-            "vehicle_ownership_none",
-            "vehicle_ownership_at_least_1",
-            "vehicle_ownership_at_least_2",
-            "traffic_fatalities_last_decade_per_capita",
-            "traffic_fatalities_ped_last_decade_per_capita",
-            "traffic_fatalities_last_decade",
-            "traffic_fatalities_ped_last_decade",
+        "transportation": StatisticCategory(
+            name="Transportation",
+            contents={
+                **just_2020(
+                    "transportation_means_car",
+                    "transportation_means_bike",
+                    "transportation_means_walk",
+                    "transportation_means_transit",
+                    "transportation_means_worked_at_home",
+                ),
+                **just_2020_with_canada(
+                    "transportation_commute_time_under_15",
+                    "transportation_commute_time_15_to_29",
+                    "transportation_commute_time_30_to_59",
+                    "transportation_commute_time_over_60",
+                ),
+                **just_2020(
+                    "vehicle_ownership_none",
+                    "vehicle_ownership_at_least_1",
+                    "vehicle_ownership_at_least_2",
+                    "traffic_fatalities_last_decade_per_capita",
+                    "traffic_fatalities_ped_last_decade_per_capita",
+                    "traffic_fatalities_last_decade",
+                    "traffic_fatalities_ped_last_decade",
+                ),
+            },
         ),
         **just_2020_category(
             "health",
@@ -462,7 +497,7 @@ statistics_tree = StatisticTree(
             "heating_other",
             "heating_no",
         ),
-        **just_2020_category(
+        **just_2020_category_with_canada(
             "industry",
             "Industry",
             "industry_agriculture,_forestry,_fishing_and_hunting",
@@ -515,17 +550,22 @@ statistics_tree = StatisticTree(
             "occupation_firefighting_and_prevention,_and_other_protective_service_workers_including_supervisors",
             "occupation_law_enforcement_workers_including_supervisors",
         ),
-        **just_2020_category(
-            "relationships",
-            "Relationships",
-            "sors_unpartnered_householder",
-            "sors_cohabiting_partnered_gay",
-            "sors_cohabiting_partnered_straight",
-            "sors_child",
-            "sors_other",
-            "marriage_never_married",
-            "marriage_married_not_divorced",
-            "marriage_divorced",
+        "relationships": StatisticCategory(
+            name="Relationships",
+            contents={
+                **just_2020(
+                    "sors_unpartnered_householder",
+                    "sors_cohabiting_partnered_gay",
+                    "sors_cohabiting_partnered_straight",
+                    "sors_child",
+                    "sors_other",
+                ),
+                **just_2020_with_canada(
+                    "marriage_never_married",
+                    "marriage_married_not_divorced",
+                    "marriage_divorced",
+                ),
+            },
         ),
         **just_2020_category(
             "election",
