@@ -103,5 +103,5 @@ statistic_collections = (
     InsuranceTypeStatistics(),
     MarriageStatistics(),
     ElevationHillinessStatistics(),
-    *census_canada_same_as_us
+    *census_canada_same_as_us,
 )

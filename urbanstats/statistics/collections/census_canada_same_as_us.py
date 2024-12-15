@@ -1,9 +1,9 @@
 from abc import abstractmethod
+
 from urbanstats.data.canada.canadian_da_data import CensusTables
 from urbanstats.statistics.collections.generation import GenerationStatistics
 from urbanstats.statistics.collections.industry import IndustryStatistics
 from urbanstats.statistics.collections.marriage import MarriageStatistics
-from urbanstats.statistics.collections.occupation import OccupationStatistics
 from urbanstats.statistics.collections.transportation_commute_time import (
     TransportationCommuteTimeStatistics,
 )
@@ -15,16 +15,13 @@ class CensusCanadaSameAsUS(CanadaStatistics):
     """
     Represents a collection of statistics that are the same as the US statistic tables.
     """
+
     @abstractmethod
     def census_tables(self) -> CensusTables:
         pass
 
     @abstractmethod
     def us_equivalent(self):
-        pass
-
-    @abstractmethod
-    def post_process(self, statistic_table, existing_statistics):
         pass
 
     def name_for_each_statistic(self):
@@ -46,12 +43,12 @@ class CensusCanadaSameAsUS(CanadaStatistics):
         self, *, shapefile, existing_statistics, shapefile_table
     ):
         st = self.census_tables().compute(2021, shapefile)
-        return self.post_process(st, existing_statistics)
+        return self.post_process(st)
 
     def explanation_page_for_each_statistic(self):
         return self.same_for_each_name("canadian-census-disaggregated")
 
-    def post_process(self, statistic_table, existing_statistics):
+    def post_process(self, statistic_table):
         fractionalize(statistic_table, *self.name_for_each_statistic().keys())
         return statistic_table
 
@@ -154,6 +151,7 @@ class CensusCanadaCommuteTime(CensusCanadaSameAsUS):
     version = 2
 
     def census_tables(self) -> CensusTables:
+        # pylint: disable=line-too-long
         return CensusTables(
             [
                 "Total - Commuting duration for the employed labour force aged 15 years and over with a usual place of work or no fixed workplace address - 25% sample data (201)"
@@ -187,6 +185,7 @@ class CensusCanadaIndustry(CensusCanadaSameAsUS):
     version = 2
 
     def census_tables(self) -> CensusTables:
+        # pylint: disable=line-too-long
         return CensusTables(
             [
                 "Total - Labour force aged 15 years and over by industry - Sectors - North American Industry Classification System (NAICS) 2017 - 25% sample data (194)",

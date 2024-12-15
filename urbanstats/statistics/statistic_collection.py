@@ -9,7 +9,6 @@ from urbanstats.games.quiz_region_types import (
     QUIZ_REGION_TYPES_CANADA,
     QUIZ_REGION_TYPES_INTERNATIONAL,
     QUIZ_REGION_TYPES_USA,
-    QUIZ_REGION_TYPES_CANADA,
 )
 from urbanstats.geometry.shapefiles.shapefile import (
     EmptyShapefileError,

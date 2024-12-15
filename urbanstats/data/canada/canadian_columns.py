@@ -1,3 +1,5 @@
+# pylint: disable=line-too-long
+
 unused = [
     # have block-level data
     "Population, 2021 (1)",
