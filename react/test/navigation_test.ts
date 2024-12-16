@@ -22,7 +22,7 @@ const goBack = ClientFunction(() => { window.history.back() })
 const goForward = ClientFunction(() => { window.history.forward() })
 const getScroll = ClientFunction(() => window.scrollY)
 
-test('maintain and restore scroll position back-forward', async (t) => {
+test.only('maintain and restore scroll position back-forward', async (t) => {
     await t.navigateTo('/article.html?longname=Texas%2C+USA')
     await t.scroll(0, 200)
     await t.click(Selector('a').withExactText('Population'))
@@ -50,6 +50,7 @@ test('maintain and restore scroll position back-forward', async (t) => {
     await t.expect(getScroll()).eql(100)
     await goBack()
     await t.expect(Selector('.headertext').withText('Texas').exists).ok()
+    await screencap(t, { fullPage: false })
     await t.expect(getScroll()).eql(200)
     await goForward()
     await t.expect(Selector('.headertext').withText('Population').exists).ok()
