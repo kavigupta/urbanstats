@@ -798,6 +798,9 @@ export function DataCreditPanel(): ReactNode {
                                 </p>
                                 <p>
                                     For Generation, Marriage, Industry, and Commute time, we are able to use identical definitions to the US data.
+                                    For Income, LICO-AT, and ..., we use similar definitions to the US data, but with Canadian-specific
+                                    thresholds (e.g., the income thresholds are in CAD, not USD, and we use LICO-AT rather than US Census&apos;s
+                                    poverty thresholds).
                                 </p>
                             </div>
                         </div>

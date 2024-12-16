@@ -52,8 +52,14 @@ def get_da_table(table_names, remapping, year, disagg_universe):
 
 def compute_remapping(table_names, remapping):
     all_rows = metadata_by_table()
-    rows = [row for table_name in table_names for row in all_rows[table_name]]
-    row_name_to_id = {row.text: row.index for row in rows}
+    rows = []
+    for table_name in table_names:
+        table_name, table_id = (
+            table_name if isinstance(table_name, tuple) else (table_name, "")
+        )
+        for row in all_rows[table_name]:
+            rows.append((row, table_id))
+    row_name_to_id = {table_prefix + row.text: row.index for row, table_prefix in rows}
     assert len(row_name_to_id) == len(rows)
     remapping_forward = {}
     for sum_cat, names in remapping.items():

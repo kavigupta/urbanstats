@@ -1,3 +1,4 @@
+from urbanstats.statistics.collections.census_canada_simple import census_canada_simple
 from urbanstats.statistics.collections.cdc_statistics import CDCStatistics
 from urbanstats.statistics.collections.census import (
     Census2000,
@@ -104,4 +105,5 @@ statistic_collections = (
     MarriageStatistics(),
     ElevationHillinessStatistics(),
     *census_canada_same_as_us,
+    *census_canada_simple,
 )

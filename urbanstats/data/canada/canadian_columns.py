@@ -121,12 +121,13 @@ completed = [
     "Total - Marital status for the total population aged 15 years and over - 100% data",
     "Total - Labour force aged 15 years and over by industry - Sectors - North American Industry Classification System (NAICS) 2017 - 25% sample data (194)",
     "Total - Commuting duration for the employed labour force aged 15 years and over with a usual place of work or no fixed workplace address - 25% sample data (201)",
-]
-
-get_to_these_now = [
     "Total - Total income groups in 2020 for the population aged 15 years and over in private households - 100% data (21)",
     "Total - Household total income groups in 2020 for private households - 100% data (21)",
     "In low income based on the Low-income cut-offs, after tax (LICO-AT)",
+    "Total - Highest certificate, diploma or degree for the population aged 25 to 64 years in private households - 25% sample data (165)",
+]
+
+get_to_these_now = [
     "Total - Language spoken most often at home for the total population excluding institutional residents - 100% data (41)",
     "Total - Occupied private dwellings by period of construction - 25% sample data (56)",
     "Total - Owner and tenant households with household total income greater than zero, in non-farm, non-reserve private dwellings by shelter-cost-to-income ratio - 25% sample data (61)",
@@ -146,7 +147,6 @@ get_to_these_now = [
         "Total - Visible minority for the population in private households - 25% sample data (117)",
     ],
     "Total - Religion for the population in private households - 25% sample data (161)",
-    "Total - Highest certificate, diploma or degree for the population aged 25 to 64 years in private households - 25% sample data (165)",
     "Total - Major field of study - Classification of Instructional Programs (CIP) 2021 for the population aged 25 to 64 years in private households - 25% sample data (172)",
     "Total - Labour force aged 15 years and over by occupation - Broad category - National Occupational Classification (NOC) 2021 - 25% sample data (193)",
     # together these allow us to compute commute mode %
