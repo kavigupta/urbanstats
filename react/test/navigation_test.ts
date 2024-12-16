@@ -27,7 +27,7 @@ async function checkScroll(t: TestController, scroll: number): Promise<void> {
     await t.expect(getScroll()).eql(scroll)
 }
 
-test.only('maintain and restore scroll position back-forward', async (t) => {
+test('maintain and restore scroll position back-forward', async (t) => {
     await t.navigateTo('/article.html?longname=Texas%2C+USA')
     await t.scroll(0, 200)
     await t.click(Selector('a').withExactText('Population'))
