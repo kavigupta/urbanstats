@@ -370,6 +370,16 @@ const settingsVector = [
     new ActiveSetting({ key: 'expanded__density_2021_pw_1_canada', coder: booleanSettingCoder }),
     new ActiveSetting({ key: 'expanded__density_2021_pw_2_canada', coder: booleanSettingCoder }),
     new ActiveSetting({ key: 'expanded__density_2021_pw_4_canada', coder: booleanSettingCoder }),
+    new ActiveSetting({ key: 'show_stat_group_lico_at_canada', coder: booleanSettingCoder }),
+    new ActiveSetting({ key: 'show_stat_group_individual_income_under_50cad', coder: booleanSettingCoder }),
+    new ActiveSetting({ key: 'show_stat_group_individual_income_50_to_100cad', coder: booleanSettingCoder }),
+    new ActiveSetting({ key: 'show_stat_group_individual_income_above_100_cad', coder: booleanSettingCoder }),
+    new ActiveSetting({ key: 'show_stat_group_household_income_under_50cad', coder: booleanSettingCoder }),
+    new ActiveSetting({ key: 'show_stat_group_household_income_50_to_100cad', coder: booleanSettingCoder }),
+    new ActiveSetting({ key: 'show_stat_group_household_income_above_100_cad', coder: booleanSettingCoder }),
+    new ActiveSetting({ key: 'show_stat_group_education_high_school_canada', coder: booleanSettingCoder }),
+    new ActiveSetting({ key: 'show_stat_group_education_ugrad_canada', coder: booleanSettingCoder }),
+    new ActiveSetting({ key: 'show_stat_group_education_grad_canada', coder: booleanSettingCoder }),
 // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Necessary use of any
 ] satisfies (ActiveSetting<any> | DeprecatedSetting<string>)[]
 
