@@ -5,7 +5,7 @@ import { promisify } from 'util'
 import { ClientFunction, Selector } from 'testcafe'
 
 import { clickButton, clickButtons, quizFixture, quizScreencap, tempfileName } from './quiz_test_utils'
-import { target, getLocation, mostRecentDownloadPath, safeReload, screencap } from './test_utils'
+import { target, mostRecentDownloadPath, safeReload, screencap } from './test_utils'
 
 async function runQuery(query: string): Promise<string> {
     // dump given query to a string
@@ -642,11 +642,10 @@ quizFixture('completed juxta 468', `${target}/quiz.html#date=468`,
 )
 
 test('quiz results go to compare pages', async (t) => {
+    // only using the image tests because the links are not stable across versions
     await t.click(Selector('a').withText('Colorado, USA'))
-    await t.expect(getLocation()).eql(`${target}/comparison.html?longnames=%5B%22Colorado%2C+USA%22%2C%22Puerto+Rico%2C+USA%22%5D&s=25z46g1nuqK7JodT`)
     await screencap(t)
     await ClientFunction(() => { history.back() })()
     await t.click(Selector('a').withText('Toronto CDR, Ontario, Canada'))
-    await t.expect(getLocation()).eql(`${target}/comparison.html?longnames=%5B%22Toronto+CDR%2C+Ontario%2C+Canada%22%2C%22Longueuil+Territory%2C+Quebec%2C+Canada%22%5D&s=25z46g1nuqK7s3rq`)
     await screencap(t)
 })
