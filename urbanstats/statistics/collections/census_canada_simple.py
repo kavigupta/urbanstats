@@ -1,12 +1,6 @@
 from abc import abstractmethod
 
 from urbanstats.data.canada.canadian_da_data import CensusTables
-from urbanstats.statistics.collections.generation import GenerationStatistics
-from urbanstats.statistics.collections.industry import IndustryStatistics
-from urbanstats.statistics.collections.marriage import MarriageStatistics
-from urbanstats.statistics.collections.transportation_commute_time import (
-    TransportationCommuteTimeStatistics,
-)
 from urbanstats.statistics.statistic_collection import CanadaStatistics
 from urbanstats.statistics.utils import fractionalize
 
@@ -162,6 +156,7 @@ class CensusCanadaLICOAT(CensusCanadaSimple):
         return []
 
     def census_tables(self) -> CensusTables:
+        # pylint: disable=line-too-long
         return CensusTables(
             [
                 "In low income based on the Low-income cut-offs, after tax (LICO-AT)",
@@ -221,6 +216,7 @@ class CensusCanadaEducation(CensusCanadaSimple):
         return []
 
     def census_tables(self) -> CensusTables:
+        # pylint: disable=line-too-long
         return CensusTables(
             [
                 "Total - Highest certificate, diploma or degree for the population aged 25 to 64 years in private households - 25% sample data (165)",
@@ -283,6 +279,8 @@ class CensusCanadaEducation(CensusCanadaSimple):
             + statistic_table.education_grad_canada
         )
         del statistic_table["education_no_canada"]
+        # mutating in place. should not use .items()
+        # pylint: disable=consider-iterating-dictionary
         for column in self.name_for_each_statistic().keys():
             statistic_table[column] = statistic_table[column] / total
         statistic_table["education_ugrad_canada"] += statistic_table[
