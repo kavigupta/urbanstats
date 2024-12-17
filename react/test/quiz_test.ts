@@ -4,7 +4,7 @@ import { promisify } from 'util'
 
 import { ClientFunction, Selector } from 'testcafe'
 
-import { clickButton, clickButtons, quizFixture, quizScreencap, tempfileName } from './quiz_test_utils'
+import { clickButton, clickButtons, quizFixture, quizScreencap, tempfileName, withMockedClipboard } from './quiz_test_utils'
 import { target, mostRecentDownloadPath, safeReload, screencap } from './test_utils'
 
 async function runQuery(query: string): Promise<string> {
@@ -325,6 +325,13 @@ test('quiz-results-test', async (t) => {
     await safeReload(t)
     await quizScreencap(t)
     await checkText(t, 'Excellent! 😊 4/5', '🟩🟩🟩🟩🟥')
+})
+
+test('share button copy', async (t) => {
+    const copies = await withMockedClipboard(t, async () => {
+        await t.click(Selector('button').withText('Copy'))
+    })
+    await t.expect(copies).eql(['Juxtastat 100 4/5\n\n🟩🟩🟩🟩🟥\n\nhttps://juxtastat.org/#date=100'])
 })
 
 quizFixture('several quiz results', `${target}/quiz.html#date=90`,
@@ -648,4 +655,28 @@ test('quiz results go to compare pages', async (t) => {
     await ClientFunction(() => { history.back() })()
     await t.click(Selector('a').withText('Toronto CDR, Ontario, Canada'))
     await screencap(t)
+})
+
+quizFixture('current juxta', `${target}/quiz.html`, {}, '')
+
+test('share link current juxta', async (t) => {
+    await clickButtons(t, ['a', 'a', 'a', 'a', 'a'])
+    const copies = await withMockedClipboard(t, async () => {
+        await t.click(Selector('button').withText('Copy'))
+    })
+    await t.expect(copies.length).eql(1)
+    // Emoji are double length
+    await t.expect(copies[0]).match(/Juxtastat [0-9]+ [012345]\/5\n\n[🟩🟥]{10}\n\nhttps:\/\/juxtastat\.org/)
+})
+
+quizFixture('current retro', `${target}/quiz.html#mode=retro`, {}, '')
+
+test('share link current retro', async (t) => {
+    await clickButtons(t, ['a', 'a', 'a', 'a', 'a'])
+    const copies = await withMockedClipboard(t, async () => {
+        await t.click(Selector('button').withText('Copy'))
+    })
+    await t.expect(copies.length).eql(1)
+    // Emoji are double length
+    await t.expect(copies[0]).match(/Retrostat Week [0-9]+ [012345]\/5\n\n[🟩🟥]{10}\n\nhttps:\/\/juxtastat\.org\/#mode=retro/)
 })

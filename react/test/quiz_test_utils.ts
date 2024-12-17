@@ -75,3 +75,17 @@ export class ProxyPersistent extends RequestHook {
 export function tempfileName(): string {
     return `/tmp/quiz_test_${Math.floor(Math.random() * 1000000)}`
 }
+
+export async function withMockedClipboard(t: TestController, runner: () => Promise<void>): Promise<string[]> {
+    await t.eval(() => {
+        const mock: ((text: string) => Promise<void>) & { calls: string[] } = function (text: string) {
+            mock.calls.push(text)
+            return Promise.resolve()
+        }
+        mock.calls = []
+        navigator.clipboard.writeText = mock
+    })
+    await runner()
+    const calls = await t.eval(() => (navigator.clipboard.writeText as unknown as { calls: string[] }).calls) as string[]
+    return calls
+}
