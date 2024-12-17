@@ -38,10 +38,12 @@ export async function withHamburgerMenu(t: TestController, block: () => Promise<
     const hamburgerMenu = Selector('div').withAttribute('class', 'hamburgermenu')
     if (await hamburgerMenu.exists) {
         await t.click(hamburgerMenu)
+        await t.expect(Selector('.sidebar_mobile').exists).ok()
     }
     await block()
     if (await hamburgerMenu.exists) {
         await t.click(hamburgerMenu)
+        await t.expect(Selector('.sidebar_mobile').exists).notOk()
     }
 }
 
