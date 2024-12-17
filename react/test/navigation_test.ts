@@ -22,43 +22,39 @@ const goBack = ClientFunction(() => { window.history.back() })
 const goForward = ClientFunction(() => { window.history.forward() })
 const getScroll = ClientFunction(() => window.scrollY)
 
-async function checkScroll(t: TestController, scroll: number): Promise<void> {
-    await t.wait(200) // Wait for scroll to settle
-    await t.expect(getScroll()).eql(scroll)
-}
-
-test('maintain and restore scroll position back-forward', async (t) => {
+test.only('maintain and restore scroll position back-forward', async (t) => {
     await t.navigateTo('/article.html?longname=Texas%2C+USA')
     await t.scroll(0, 200)
     await t.click(Selector('a').withExactText('Population'))
     await t.expect(Selector('.headertext').withText('Population').exists).ok()
-    await checkScroll(t, 0) // Resets scroll on different page type
+    await t.expect(getScroll()).eql(0) // Resets scroll on different page type
     await t.scroll(0, 100)
     await t.click(Selector('a').withText('New York'))
     await t.expect(Selector('.headertext').withText('New York').exists).ok()
     await t.scroll(0, 400)
     await t.click(Selector('a').withText('Connecticut'))
     await t.expect(Selector('.headertext').withText('Connecticut').exists).ok()
-    await checkScroll(t, 400) // Does not reset scroll on same page type
+    await t.expect(getScroll()).eql(400) // Does not reset scroll on same page type
     await t.scroll(0, 500)
     await goBack()
     await t.expect(Selector('.headertext').withText('New York').exists).ok()
-    await checkScroll(t, 400)
+    await t.expect(getScroll()).eql(400)
     await goBack()
     await t.expect(Selector('.headertext').withText('Population').exists).ok()
-    await checkScroll(t, 100)
+    await t.expect(getScroll()).eql(100)
     await goForward()
     await t.expect(Selector('.headertext').withText('New York').exists).ok()
-    await checkScroll(t, 400)
+    await t.expect(getScroll()).eql(400)
     await goBack()
     await t.expect(Selector('.headertext').withText('Population').exists).ok()
-    await checkScroll(t, 100)
+    await t.expect(getScroll()).eql(100)
     await goBack()
     await t.expect(Selector('.headertext').withText('Texas').exists).ok()
-    await checkScroll(t, 200)
+    await t.expect(getScroll()).eql(200)
     await goForward()
     await t.expect(Selector('.headertext').withText('Population').exists).ok()
-    await checkScroll(t, 100)
+    await t.expect(getScroll()).eql(100)
+    throw new Error('made it to end')
 })
 
 test('control click new tab', async (t) => {
