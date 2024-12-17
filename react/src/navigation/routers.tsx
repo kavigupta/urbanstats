@@ -27,6 +27,7 @@ export function Router(): ReactNode {
 
     return (
         <>
+            <input type="hidden" id="pageState_kind" value={pageState.kind} />
             <PageRouter pageData={pageState.current.data} />
             <SubsequentLoad />
         </>
