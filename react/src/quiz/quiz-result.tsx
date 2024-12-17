@@ -292,9 +292,8 @@ export function summary(juxtaColors: JuxtastatColors, todayName: string, correct
     text += '\n'
 
     // eslint-disable-next-line no-restricted-syntax -- Sharing
-    const url = new URL(window.location.href)
-    url.host = 'juxtastat.org'
-    return [text, url.toString()]
+    const hash = window.location.hash
+    return [text, `https://juxtastat.org${hash === '' ? '' : `/${hash}`}`]
 }
 
 function QuizResultRow(props: QuizResultRowProps & { question: QuizQuestion }): ReactNode {
