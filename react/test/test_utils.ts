@@ -203,5 +203,5 @@ export async function arrayFromSelector(selector: Selector): Promise<Selector[]>
 export async function safeReload(t: TestController): Promise<void> {
     // eslint-disable-next-line no-restricted-syntax -- This is the utility that replaces location.reload()
     await t.eval(() => setTimeout(() => { location.reload() }, 0))
-    await t.expect(Selector('[data-test-id=initialLoad]').exists).notOk() // Wait for initial loading to finish
+    await t.expect(Selector('.top_panel').exists).ok() // Wait for initial loading to finish
 }
