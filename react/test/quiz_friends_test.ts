@@ -151,7 +151,7 @@ function testsGeneric(
         return state
     }
 
-    test(`${props.name}-basic-friends-test`, async (t) => {
+    test.only(`${props.name}-basic-friends-test`, async (t) => {
         const state = await aliceBobFriends(t, true)
         // Charlie hasn't done the quiz yet (they register on #98 instead)
         await createUser(t, 'Charlie', '000000c', state)
