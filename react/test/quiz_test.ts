@@ -666,7 +666,7 @@ test('share link current juxta', async (t) => {
     })
     await t.expect(copies.length).eql(1)
     // Emoji are double length
-    await t.expect(copies[0]).match(/Juxtastat [0-9]+ [012345]\/5\n\n[🟩🟥]{10}\n\nhttps:\/\/juxtastat\.org/)
+    await t.expect(copies[0]).match(/^Juxtastat [0-9]+ [012345]\/5\n\n[🟩🟥]{10}\n\nhttps:\/\/juxtastat\.org$/)
 })
 
 quizFixture('current retro', `${target}/quiz.html#mode=retro`, {}, '')
@@ -678,5 +678,5 @@ test('share link current retro', async (t) => {
     })
     await t.expect(copies.length).eql(1)
     // Emoji are double length
-    await t.expect(copies[0]).match(/Retrostat Week [0-9]+ [012345]\/5\n\n[🟩🟥]{10}\n\nhttps:\/\/juxtastat\.org\/#mode=retro/)
+    await t.expect(copies[0]).match(/^Retrostat Week [0-9]+ [012345]\/5\n\n[🟩🟥]{10}\n\nhttps:\/\/juxtastat\.org\/#mode=retro$/)
 })
