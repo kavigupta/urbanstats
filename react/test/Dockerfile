@@ -25,7 +25,4 @@ RUN apt-get -y install fluxbox
 # needed for downloads directory in TestCafe
 RUN apt-get -y install xdg-user-dirs
 
-# Needed for killall in quiz_test
-RUN apt-get -y install psmisc
-
 ENTRYPOINT [ "/bin/bash" ] 
