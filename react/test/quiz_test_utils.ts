@@ -2,7 +2,7 @@ import { exec } from 'child_process'
 import { writeFileSync } from 'fs'
 import { promisify } from 'util'
 
-import { execa } from 'execa'
+import { execa, execaSync } from 'execa'
 import { RequestHook, Selector } from 'testcafe'
 
 import { safeReload, screencap, urbanstatsFixture } from './test_utils'
@@ -31,12 +31,15 @@ export function clickButton(t: TestController, which: string): TestControllerPro
     return t.click(Selector('div').withAttribute('id', `quiz-answer-button-${which}`))
 }
 
-let setup: Promise<unknown> | undefined
-function setupForTest(): Promise<unknown> {
-    if (setup === undefined) {
-        setup = execa('bash', ['../urbanstats-persistent-data/setup_for_test.sh'], { stdio: 'inherit' })
+let server: Promise<unknown> | undefined
+async function runForTest(): Promise<void> {
+    if (server === undefined) {
+        server = execa('bash', ['../urbanstats-persistent-data/run_for_test.sh'], { stdio: 'inherit', cleanup: true })
+        process.on('exit', () => {
+            execaSync('pkill', ['-f', 'urbanstats-persistent-data'])
+        })
+        await waitForServerToBeAvailable()
     }
-    return setup
 }
 
 async function waitForServerToBeAvailable(): Promise<void> {
@@ -50,28 +53,18 @@ async function waitForServerToBeAvailable(): Promise<void> {
     }
 }
 
-async function waitForServerToBeUnavailable(): Promise<void> {
-    while (true) {
-        try {
-            await fetch('http://localhost:54579')
-        }
-        catch {
-            break
-        }
-        await new Promise(resolve => setTimeout(resolve, 100))
-    }
-}
-
 export function quizFixture(fixName: string, url: string, newLocalstorage: Record<string, string>, sqlStatements: string): void {
     urbanstatsFixture(fixName, url, async (t) => {
-        // create a temporary file
         const tempfile = `${tempfileName()}.sql`
-        // write the sql statements to the temporary file
-        writeFileSync(tempfile, sqlStatements)
-        await promisify(exec)(`rm -f ../urbanstats-persistent-data/db.sqlite3; cd ../urbanstats-persistent-data; cat ${tempfile} | sqlite3 db.sqlite3; cd -`)
-        await setupForTest()
-        void execa('bash', ['../urbanstats-persistent-data/run_for_test.sh'], { stdio: 'inherit', cleanup: true })
-        await waitForServerToBeAvailable()
+        // Drop the database (https://stackoverflow.com/a/65743498/724702) then execute teh statements
+        writeFileSync(tempfile, `PRAGMA writable_schema = 1;
+DELETE FROM sqlite_master;
+PRAGMA writable_schema = 0;
+VACUUM;
+PRAGMA integrity_check;
+${sqlStatements}`)
+        await promisify(exec)(`cd ../urbanstats-persistent-data; cat ${tempfile} | sqlite3 db.sqlite3; cd -`)
+        await runForTest()
         await t.eval(() => {
             localStorage.clear()
             for (const k of Object.keys(newLocalstorage)) {
@@ -84,10 +77,6 @@ export function quizFixture(fixName: string, url: string, newLocalstorage: Recor
         // Must reload after setting localstorage so page picks it up
         await safeReload(t)
     })
-        .afterEach(async () => {
-            await execa('pkill', ['-f', 'urbanstats-persistent-data'])
-            await waitForServerToBeUnavailable()
-        })
         .requestHooks(new ProxyPersistent())
 }
 export class ProxyPersistent extends RequestHook {
