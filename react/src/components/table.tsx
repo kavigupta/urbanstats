@@ -856,15 +856,17 @@ export function EditableString(props: { content: string, onNewContent: (content:
      */
 
     const contentEditable: React.Ref<HTMLElement> = useRef(null)
-    const [html, setHtml] = useState(props.content.toString())
+    const html = useRef(props.content.toString())
+    const [, setCounter] = useState(0)
 
     // Otherwise, this component can display the wrong number when props change
     useEffect(() => {
-        setHtml(props.content.toString())
+        html.current = props.content.toString()
+        setCounter(count => count + 1)
     }, [props.content])
 
     const handleChange = (evt: ContentEditableEvent): void => {
-        setHtml(evt.target.value)
+        html.current = evt.target.value
     }
 
     const handleSubmit = (): void => {
@@ -889,7 +891,7 @@ export function EditableString(props: { content: string, onNewContent: (content:
             className="editable_content"
             style={props.style}
             innerRef={contentEditable}
-            html={html}
+            html={html.current}
             disabled={false}
             onChange={handleChange}
             onKeyDown={(e: React.KeyboardEvent) => {
