@@ -87,12 +87,12 @@ export function statisticDescriptor(props: {
 export function sanitize(longname: string, spaces_around_slash = true): string {
     let x = longname
     if (spaces_around_slash) {
-        x = x.replace('/', ' slash ')
+        x = x.replaceAll('/', ' slash ')
     }
     else {
-        x = x.replace('/', 'slash')
+        x = x.replaceAll('/', 'slash')
     }
-    x = x.replace('%', '%25')
+    x = x.replaceAll('%', '%25')
     return x
 }
 

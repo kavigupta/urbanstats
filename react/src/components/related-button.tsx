@@ -56,7 +56,7 @@ function RelatedButton(props: { region: Region }): ReactNode {
 function RelatedList(props: { articleType: string, buttonType: string, regions: Record<string, Region[]> }): ReactNode {
     const settingKey = relationshipKey(props.articleType, props.buttonType)
     function displayName(name: string): string {
-        name = name.replace('_', ' ')
+        name = name.replaceAll('_', ' ')
         // title case
         name = name.replace(/\w\S*/g, function (txt) {
             return txt.charAt(0).toUpperCase() + txt.slice(1).toLowerCase()

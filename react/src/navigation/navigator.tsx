@@ -24,7 +24,7 @@ import { Article, IDataList } from '../utils/protos'
 import { followSymlink, followSymlinks } from '../utils/symlinks'
 import { NormalizeProto } from '../utils/types'
 
-import { dataLink, sanitize } from './links'
+import { dataLink } from './links'
 import { byPopulation, uniform } from './random'
 
 const articleSchema = z.object({
@@ -187,7 +187,7 @@ export function urlFromPageDescriptor(pageDescriptor: ExceptionalPageDescriptor)
         case 'article':
             pathname = '/article.html'
             searchParams = {
-                longname: sanitize(pageDescriptor.longname),
+                longname: pageDescriptor.longname,
                 universe: pageDescriptor.universe,
                 s: pageDescriptor.s,
             }
@@ -195,7 +195,7 @@ export function urlFromPageDescriptor(pageDescriptor: ExceptionalPageDescriptor)
         case 'comparison':
             pathname = '/comparison.html'
             searchParams = {
-                longnames: JSON.stringify(pageDescriptor.longnames.map(n => sanitize(n))),
+                longnames: JSON.stringify(pageDescriptor.longnames.map(n => n)),
                 universe: pageDescriptor.universe,
                 s: pageDescriptor.s,
             }
