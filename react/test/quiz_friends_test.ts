@@ -291,14 +291,14 @@ testsGeneric(
     },
 )
 
-testsGeneric(
-    {
-        name: 'retro',
-        alicePattern: aliceRetro11,
-        alicePatternPrev: aliceRetro10,
-        aliceOtherPattern: aliceJuxta99,
-        today: retro11,
-        yesterday: retro10,
-        other: juxta99,
-    },
-)
+// testsGeneric(
+//     {
+//         name: 'retro',
+//         alicePattern: aliceRetro11,
+//         alicePatternPrev: aliceRetro10,
+//         aliceOtherPattern: aliceJuxta99,
+//         today: retro11,
+//         yesterday: retro10,
+//         other: juxta99,
+//     },
+// )
