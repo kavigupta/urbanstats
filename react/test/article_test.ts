@@ -4,6 +4,7 @@ import {
     target, checkAllCategoryBoxes, checkTextboxes, comparisonPage, downloadImage,
     getLocationWithoutSettings, safeReload, screencap,
     urbanstatsFixture,
+    getLocation,
 } from './test_utils'
 
 urbanstatsFixture('longer article test', '/article.html?longname=California%2C+USA')
@@ -197,4 +198,14 @@ urbanstatsFixture('4 digit election swing', '/article.html?longname=Corpus+Chris
 test('overflows correctly on mobile', async (t) => {
     await t.resizeWindow(400, 800)
     await screencap(t)
+})
+
+urbanstatsFixture('article with many /', '/article.html?longname=Victory+Manor%2FEast+Hill%2FDonwood+Neighborhood%2C+Savannah+City%2C+Georgia%2C+USA')
+
+test('loads successfully', async (t) => {
+    await t.expect(Selector('div').withText('Victory Manor/East Hill/Donwood, Savannah').exists).ok()
+})
+
+test('has the correct URL after loading', async (t) => {
+    await t.expect(getLocation()).match(/article\.html\?longname=Victory\+Manor%2FEast\+Hill%2FDonwood\+Neighborhood%2C\+Savannah\+City%2C\+Georgia%2C\+USA/)
 })

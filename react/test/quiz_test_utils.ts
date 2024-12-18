@@ -63,7 +63,7 @@ export class ProxyPersistent extends RequestHook {
             e.requestOptions.hostname = 'localhost'
             e.requestOptions.port = 54579
             e.requestOptions.protocol = 'http:'
-            e.requestOptions.path = e.requestOptions.path.replace('https://persistent.urbanstats.org', 'localhost:54579')
+            e.requestOptions.path = e.requestOptions.path.replaceAll('https://persistent.urbanstats.org', 'localhost:54579')
             e.requestOptions.host = 'localhost:54579'
         }
     }

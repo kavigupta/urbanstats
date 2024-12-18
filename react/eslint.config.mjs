@@ -122,6 +122,8 @@ export default tseslint.config(
                 'FunctionExpression > .params Identifier.parameter[name=/^[^a-z_]|.[^A-Za-z0-9]/]', // Constructors
                 'ArrowFunctionExpression > Identifier.params[name=/^[^a-z_]|^[^_].*[^A-Za-z0-9]/]', // Allow_
                 'TSFunctionType > Identifier.params[name=/^[^a-z]|[^A-Za-z0-9]/]',
+                //
+                'CallExpression[arguments.1][callee.property.name=replace]:not([arguments.0.regex.flags=g])', // Prevent accidentally using `replace` without a global regex, which just replaces the first instance
             ],
             'react/prop-types': 'off',
             'no-shadow': 'error',
