@@ -192,6 +192,7 @@ function testsGeneric(
         await safeReload(t)
         await t.wait(1000)
         await t.expect(await friendsText(t)).eql([`You${bobPattern}`, 'Alice2Pending Friend RequestRemove'])
+        throw new Error('got to end of test')
     })
 
     test(`${props.name}-friends-bad-naming-test`, async (t) => {
