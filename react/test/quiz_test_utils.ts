@@ -30,6 +30,38 @@ export async function clickButtons(t: TestController, whichs: string[]): Promise
 export function clickButton(t: TestController, which: string): TestControllerPromise {
     return t.click(Selector('div').withAttribute('id', `quiz-answer-button-${which}`))
 }
+
+let setup: Promise<unknown> | undefined
+function setupForTest(): Promise<unknown> {
+    if (setup === undefined) {
+        setup = execa('bash', ['../urbanstats-persistent-data/setup_for_test.sh'], { stdio: 'inherit' })
+    }
+    return setup
+}
+
+async function waitForServerToBeAvailable(): Promise<void> {
+    while (true) {
+        try {
+            await fetch('http://localhost:54579')
+            break
+        }
+        catch {}
+        await new Promise(resolve => setTimeout(resolve, 100))
+    }
+}
+
+async function waitForServerToBeUnavailable(): Promise<void> {
+    while (true) {
+        try {
+            await fetch('http://localhost:54579')
+        }
+        catch {
+            break
+        }
+        await new Promise(resolve => setTimeout(resolve, 100))
+    }
+}
+
 export function quizFixture(fixName: string, url: string, newLocalstorage: Record<string, string>, sqlStatements: string): void {
     urbanstatsFixture(fixName, url, async (t) => {
         // create a temporary file
@@ -37,8 +69,9 @@ export function quizFixture(fixName: string, url: string, newLocalstorage: Recor
         // write the sql statements to the temporary file
         writeFileSync(tempfile, sqlStatements)
         await promisify(exec)(`rm -f ../urbanstats-persistent-data/db.sqlite3; cd ../urbanstats-persistent-data; cat ${tempfile} | sqlite3 db.sqlite3; cd -`)
-        void execa('bash', ['../urbanstats-persistent-data/run_for_test.sh'], { stdio: 'inherit' })
-        await t.wait(2000)
+        await setupForTest()
+        void execa('bash', ['../urbanstats-persistent-data/run_for_test.sh'], { stdio: 'inherit', cleanup: true })
+        await waitForServerToBeAvailable()
         await t.eval(() => {
             localStorage.clear()
             for (const k of Object.keys(newLocalstorage)) {
@@ -51,9 +84,9 @@ export function quizFixture(fixName: string, url: string, newLocalstorage: Recor
         // Must reload after setting localstorage so page picks it up
         await safeReload(t)
     })
-        .afterEach(async (t) => {
-            exec('killall gunicorn')
-            await t.wait(1000)
+        .afterEach(async () => {
+            await execa('pkill', ['-f', 'urbanstats-persistent-data'])
+            await waitForServerToBeUnavailable()
         })
         .requestHooks(new ProxyPersistent())
 }
