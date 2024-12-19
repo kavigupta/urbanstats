@@ -62,18 +62,16 @@ test('control click new tab', async (t) => {
     await t.expect(getLocation()).eql(`${target}/`)
 })
 
-urbanstatsFixture('stats page', '/statistic.html?statname=Population&article_type=Judicial+District&start=1&amount=20&universe=USA')
-
-test('data credit hash from stats page', async (t) => {
-    await t.click(Selector('a').withText('Data Explanation and Credit'))
+test('navigates to hash', async (t) => {
+    await t.navigateTo('data-credit.html#explanation_population')
     await t.expect(getLocation()).eql(`${target}/data-credit.html#explanation_population`)
     await screencap(t, { fullPage: false })
 })
 
-urbanstatsFixture('data credit page direct', '/')
+urbanstatsFixture('stats page', '/statistic.html?statname=Population&article_type=Judicial+District&start=1&amount=20&universe=USA')
 
-test('navigates to hash', async (t) => {
-    await t.navigateTo('data-credit.html#explanation_population')
+test('data credit hash from stats page', async (t) => {
+    await t.click(Selector('a').withText('Data Explanation and Credit'))
     await t.expect(getLocation()).eql(`${target}/data-credit.html#explanation_population`)
     await screencap(t, { fullPage: false })
 })
