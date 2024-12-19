@@ -1,6 +1,6 @@
 import { ClientFunction, RequestHook, Selector } from 'testcafe'
 
-import { getLocation, openInNewTabModifiers, screencap, searchField, target, urbanstatsFixture } from './test_utils'
+import { getLocation, openInNewTabModifiers, screencap, searchField, target, urbanstatsFixture, waitForPageLoaded } from './test_utils'
 
 urbanstatsFixture('navigation test', '/')
 
@@ -76,11 +76,20 @@ test('data credit hash from stats page', async (t) => {
     await screencap(t, { fullPage: false })
 })
 
-urbanstatsFixture('article page', '/article.html?longname=MN-08+in+Washington+County%2C+USA&s=CD6Y2tC2TDNZtJLeYUq')
+urbanstatsFixture('article page', '/article.html?longname=MN-08+in+Washington+County%2C+USA&s=CPiCUKKL5WuCCLpM24V')
 
 test('going to related resets scroll', async (t) => {
     await t.click(Selector('a').withText('WI-07'))
     await t.expect(t.eval(() => window.scrollY)).eql(0)
+})
+
+test.only('using pointers preserves scroll', async (t) => {
+    const lastPointer = Selector('button[data-test-id="1"]').nth(-1)
+    await t.hover(lastPointer)
+    const scrollBefore: unknown = await t.eval(() => window.scrollY)
+    await t.click(lastPointer)
+    await waitForPageLoaded(t)
+    await t.expect(t.eval(() => window.scrollY)).eql(scrollBefore)
 })
 
 // Artificially induce lag for cetrain requests for testing purposes
