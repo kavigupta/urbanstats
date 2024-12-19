@@ -131,6 +131,8 @@ function TemplateFooter(): ReactNode {
             <OtherCredits />
             {' Not for commercial use. '}
             <Support />
+            {' '}
+            <Store />
         </div>
     )
 }
@@ -188,6 +190,18 @@ function Support(): ReactNode {
         <span>
             {'If you find Urban Stats useful, please donate on '}
             <a href="https://ko-fi.com/notkavi">kofi</a>
+            !
+        </span>
+    )
+}
+
+function Store(): ReactNode {
+    return (
+        <span>
+            {'Check out the '}
+            <a href="https://urban-stats.printify.me">
+                Urban Stats Store
+            </a>
             !
         </span>
     )
