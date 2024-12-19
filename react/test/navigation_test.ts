@@ -1,6 +1,6 @@
 import { ClientFunction, RequestHook, Selector } from 'testcafe'
 
-import { getLocation, openInNewTabModifiers, screencap, searchField, target, urbanstatsFixture } from './test_utils'
+import { getLocation, openInNewTabModifiers, screencap, searchField, target, urbanstatsFixture, waitForPageLoaded } from './test_utils'
 
 urbanstatsFixture('navigation test', '/')
 
@@ -33,9 +33,9 @@ test('maintain and restore scroll position back-forward', async (t) => {
     await t.click(Selector('a').withText('New York'))
     await t.expect(Selector('.headertext').withText('New York').exists).ok()
     await t.scroll(0, 400)
-    await t.click(Selector('a').withText('Connecticut'))
+    await t.click(Selector('path[class*="Connecticut"]'))
     await t.expect(Selector('.headertext').withText('Connecticut').exists).ok()
-    await t.expect(getScroll()).eql(400) // Does not reset scroll on same page type
+    await t.expect(getScroll()).eql(400) // Does not reset scroll on map navigation
     await t.scroll(0, 500)
     await goBack()
     await t.expect(Selector('.headertext').withText('New York').exists).ok()
@@ -62,6 +62,12 @@ test('control click new tab', async (t) => {
     await t.expect(getLocation()).eql(`${target}/`)
 })
 
+test('navigates to hash', async (t) => {
+    await t.navigateTo('data-credit.html#explanation_population')
+    await t.expect(getLocation()).eql(`${target}/data-credit.html#explanation_population`)
+    await screencap(t, { fullPage: false })
+})
+
 urbanstatsFixture('stats page', '/statistic.html?statname=Population&article_type=Judicial+District&start=1&amount=20&universe=USA')
 
 test('data credit hash from stats page', async (t) => {
@@ -70,12 +76,20 @@ test('data credit hash from stats page', async (t) => {
     await screencap(t, { fullPage: false })
 })
 
-urbanstatsFixture('data credit page direct', '/')
+urbanstatsFixture('article page', '/article.html?longname=MN-08+in+Washington+County%2C+USA&s=CPiCUKKL5WuCCLpM24V')
 
-test('navigates to hash', async (t) => {
-    await t.navigateTo('data-credit.html#explanation_population')
-    await t.expect(getLocation()).eql(`${target}/data-credit.html#explanation_population`)
-    await screencap(t, { fullPage: false })
+test('going to related resets scroll', async (t) => {
+    await t.click(Selector('a').withText('WI-07'))
+    await t.expect(t.eval(() => window.scrollY)).eql(0)
+})
+
+test('using pointers preserves scroll', async (t) => {
+    const lastPointer = Selector('button[data-test-id="1"]').nth(-1)
+    await t.hover(lastPointer)
+    const scrollBefore: unknown = await t.eval(() => window.scrollY)
+    await t.click(lastPointer)
+    await waitForPageLoaded(t)
+    await t.expect(t.eval(() => window.scrollY)).eql(scrollBefore)
 })
 
 // Artificially induce lag for cetrain requests for testing purposes

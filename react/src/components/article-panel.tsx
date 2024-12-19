@@ -116,7 +116,7 @@ function ComparisonSearchBox({ longname }: { longname: string }): ReactNode {
                 kind: 'comparison',
                 universe: currentUniverse,
                 longnames: [longname, x],
-            })}
+            }, { scroll: 0 })}
             autoFocus={false}
         />
     )
@@ -150,7 +150,7 @@ function StatisticTableRow(props: { shortname: string, longname: string, row: Ar
                             kind: 'article',
                             longname: newArticle,
                             universe: currentUniverse,
-                        }, 'push')
+                        }, { history: 'push', scroll: null })
                     }}
                     simpleOrdinals={simpleOrdinals}
                 />

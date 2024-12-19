@@ -80,7 +80,10 @@ export function StatisticPanel(props: StatisticPanelProps): ReactNode {
             start: 1,
             amount: props.amount,
             order: newOrder,
-        }), 'push')
+        }), {
+            history: 'push',
+            scroll: null,
+        })
     }
 
     const backgroundColor = (rowIdx: number): string => {
@@ -221,7 +224,10 @@ function Pagination(props: {
             universe: currentUniverse,
             ...props,
             start: newStart,
-        }), 'push')
+        }), {
+            history: 'push',
+            scroll: null,
+        })
     }
 
     const changeAmount = (newAmount: string | number): void => {
@@ -247,7 +253,10 @@ function Pagination(props: {
             start,
             amount: newAmount === 'All' ? 'All' : newAmountNum,
             order: props.order,
-        }), 'push')
+        }), {
+            history: 'push',
+            scroll: null,
+        })
     }
 
     const current = props.start
@@ -268,7 +277,10 @@ function Pagination(props: {
                 amount: props.amount,
                 order: props.order,
                 start: (newPage - 1) * perPage + 1,
-            }), 'replace')
+            }), {
+                history: 'replace',
+                scroll: null,
+            })
         }
 
         if (currentPage > maxPages) {
@@ -302,7 +314,14 @@ function Pagination(props: {
         >
             <div style={{ width: '25%' }}>
                 <div style={{ margin: 'auto', textAlign: 'center' }}>
-                    <a {...navContext.link({ kind: 'dataCredit', hash: `#explanation_${sanitize(props.explanationPage)}` })}>Data Explanation and Credit</a>
+                    <a
+                        {...navContext.link(
+                            { kind: 'dataCredit', hash: `#explanation_${sanitize(props.explanationPage)}` },
+                            { scroll: null },
+                        )}
+                    >
+                        Data Explanation and Credit
+                    </a>
                 </div>
             </div>
             <div style={{ width: '50%' }}>
@@ -453,7 +472,7 @@ function ArticleLink(props: { longname: string }): ReactNode {
                 kind: 'article',
                 longname: props.longname,
                 universe: currentUniverse,
-            })}
+            }, { scroll: 0 })}
             style={{ fontWeight: 500, color: colors.textMain, textDecoration: 'none' }}
         >
             {props.longname}

@@ -150,7 +150,7 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
                                         kind: 'comparison',
                                         universe: currentUniverse,
                                         longnames: [...names, x],
-                                    })}
+                                    }, { scroll: null })}
                                 autoFocus={false}
                             />
                         </div>
@@ -174,14 +174,14 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
                                                         kind: 'comparison',
                                                         universe: currentUniverse,
                                                         longnames: names.filter((_, index) => index !== i),
-                                                    }, 'push')
+                                                    }, { history: 'push', scroll: null })
                                                 }}
                                                 onReplace={x =>
                                                     navContext.link({
                                                         kind: 'comparison',
                                                         universe: currentUniverse,
                                                         longnames: names.map((value, index) => index === i ? x : value),
-                                                    })}
+                                                    }, { scroll: null })}
                                             />
                                         </div>,
                                     ),
@@ -311,7 +311,7 @@ function ComparisonCells({ names, rows, onlyColumns, blankColumns }: {
                         kind: 'comparison',
                         universe: navContext.universe,
                         longnames: names.map((value, index) => index === i ? x : value),
-                    }, 'push')
+                    }, { history: 'push', scroll: null })
                 }}
                 totalWidth={each(rows)}
             />
@@ -410,7 +410,7 @@ function HeadingDisplay({ longname, includeDelete, onDelete, onReplace }: { long
                         kind: 'article',
                         longname,
                         universe: currentUniverse,
-                    })
+                    }, { scroll: 0 })
                 }
                 style={{ textDecoration: 'none' }}
             >

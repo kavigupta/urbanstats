@@ -328,7 +328,7 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
                         kind: 'article',
                         universe: this.context.universe,
                         longname: name,
-                    }, 'push')
+                    }, { history: 'push', scroll: null })
                 })
             }
 

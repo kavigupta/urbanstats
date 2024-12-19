@@ -463,6 +463,11 @@ function loadingStateFromPageState(pageState: PageState): SubsequentLoadingState
     return Date.now() - pageState.loadStartTime >= quickThresholdDuration ? { kind: 'longLoad', updateAt: undefined } : { kind: 'quickLoad', updateAt: pageState.loadStartTime + quickThresholdDuration }
 }
 
+export interface NavigationOptions {
+    history: 'push' | 'replace' | null // What should we do with this browser history? `null` means nothing, usually you want 'push' or 'replace'
+    scroll: number | null // Where should we scroll to after the navigation? `null` maintains the current scroll position, a number scrolls to that position (0 for top of page). If you're navigating to a hash, passing `null` means we'll scroll to the hash anchor
+}
+
 export class Navigator {
     /* eslint-disable react-hooks/rules-of-hooks, no-restricted-syntax -- This is a logic class with custom hooks and core navigation functions */
     static Context = createContext(new Navigator())
@@ -483,7 +488,7 @@ export class Navigator {
                 current: { descriptor: { kind: 'initialLoad', url }, data: { kind: 'initialLoad' } },
                 loadStartTime: Date.now(),
             }
-            void this.navigate(this.pageState.loading.descriptor, 'replace')
+            void this.navigate(this.pageState.loading.descriptor, { history: 'replace', scroll: null })
         }
         catch (error) {
             const url = new URL(window.location.href)
@@ -496,7 +501,7 @@ export class Navigator {
             }
         }
         window.addEventListener('hashchange', () => {
-            void this.navigate(pageDescriptorFromURL(new URL(discordFix(window.location.href))), 'replace')
+            void this.navigate(pageDescriptorFromURL(new URL(discordFix(window.location.href))), { history: 'replace', scroll: null })
         })
         window.addEventListener('popstate', (popStateEvent: PopStateEvent): void => {
             if (popStateEvent.state === null) {
@@ -505,7 +510,10 @@ export class Navigator {
             }
             const parseResult = historyStateSchema.safeParse(popStateEvent.state)
             if (parseResult.success) {
-                void this.navigate(parseResult.data.pageDescriptor, null, parseResult.data.scrollPosition)
+                void this.navigate(parseResult.data.pageDescriptor, {
+                    history: null,
+                    scroll: parseResult.data.scrollPosition,
+                })
             }
             else {
                 console.warn(`Failed to parse history state! ${parseResult.error}`)
@@ -523,26 +531,24 @@ export class Navigator {
         window.addEventListener('visibilitychange', () => {
             if (document.visibilityState === 'visible' && this.pageState.kind === 'loading') {
                 console.warn('focused during loading, navigating again')
-                void this.navigate(this.pageState.loading.descriptor, null)
+                void this.navigate(this.pageState.loading.descriptor, { history: null, scroll: null })
             }
         })
     }
 
-    async navigate(newDescriptor: PageDescriptor, kind: 'push' | 'replace' | null, scrollPosition?: number): Promise<void> {
+    async navigate(newDescriptor: PageDescriptor, options: NavigationOptions): Promise<void> {
         this.effects = [] // If we're starting another navigation, don't use previous effects
 
-        switch (kind) {
+        switch (options.history) {
             case 'push':
-                history.pushState({ pageDescriptor: newDescriptor, scrollPosition: scrollPosition ?? window.scrollY }, '', urlFromPageDescriptor(newDescriptor))
+                history.pushState({ pageDescriptor: newDescriptor, scrollPosition: options.scroll ?? window.scrollY }, '', urlFromPageDescriptor(newDescriptor))
                 break
             case 'replace':
-                history.replaceState({ pageDescriptor: newDescriptor, scrollPosition: scrollPosition ?? window.scrollY }, '', urlFromPageDescriptor(newDescriptor))
+                history.replaceState({ pageDescriptor: newDescriptor, scrollPosition: options.scroll ?? window.scrollY }, '', urlFromPageDescriptor(newDescriptor))
                 break
             case null:
                 break
         }
-
-        const oldData = this.pageState.current.data
 
         this.pageState = { kind: 'loading', loading: { descriptor: newDescriptor }, current: this.pageState.current, loadStartTime: Date.now() }
         this.pageStateObservers.forEach((observer) => { observer() })
@@ -554,7 +560,7 @@ export class Navigator {
                 return
             }
             const url = urlFromPageDescriptor(newPageDescriptor)
-            history.replaceState({ pageDescriptor: newPageDescriptor, scrollPosition: scrollPosition ?? window.scrollY }, '', url)
+            history.replaceState({ pageDescriptor: newPageDescriptor, scrollPosition: options.scroll ?? window.scrollY }, '', url)
             this.pageState = { kind: 'loaded', current: { data: pageData, descriptor: newPageDescriptor } }
             this.pageStateObservers.forEach((observer) => { observer() })
 
@@ -568,9 +574,9 @@ export class Navigator {
             }
 
             // Jump to
-            if (scrollPosition !== undefined) {
+            if (options.scroll !== null) {
                 // higher priority than hash because we're going back to a page that might have a hash, and we don't want the hash to override the saved scroll position
-                this.effects.push(() => { window.scrollTo({ top: scrollPosition }) })
+                this.effects.push(() => { window.scrollTo({ top: options.scroll! }) })
             }
             else if (url.hash !== '') {
                 this.effects.push(() => {
@@ -608,9 +614,6 @@ export class Navigator {
                     }, { once: true })
                 })
             }
-            else if (oldData.kind !== this.pageState.current.data.kind) {
-                this.effects.push(() => { window.scrollTo({ top: 0 }) })
-            }
         }
         catch (error) {
             if (this.pageState.kind !== 'loading' || this.pageState.loading.descriptor !== newDescriptor) {
@@ -627,7 +630,10 @@ export class Navigator {
         }
     }
 
-    link(pageDescriptor: PageDescriptor, postNavigationCallback?: () => void): { href: string, onClick: (e?: React.MouseEvent) => Promise<void> } {
+    link(pageDescriptor: PageDescriptor, options: {
+        scroll: NavigationOptions['scroll']
+        postNavigationCallback?: () => void
+    }): { href: string, onClick: (e?: React.MouseEvent) => Promise<void> } {
         const url = urlFromPageDescriptor(pageDescriptor)
         return {
             href: url.pathname + url.search,
@@ -637,8 +643,11 @@ export class Navigator {
                     return
                 }
                 e?.preventDefault()
-                await this.navigate(pageDescriptor, 'push')
-                postNavigationCallback?.()
+                await this.navigate(pageDescriptor, {
+                    history: 'push',
+                    scroll: options.scroll,
+                })
+                options.postNavigationCallback?.()
             },
         }
     }
@@ -691,7 +700,10 @@ export class Navigator {
                 void this.navigate({
                     ...this.pageState.current.descriptor,
                     universe: newUniverse,
-                }, 'push')
+                }, {
+                    history: 'push',
+                    scroll: null,
+                })
                 break
             default:
                 throw new Error(`Page descriptor kind ${this.pageState.current.descriptor.kind} does not have a universe`)
