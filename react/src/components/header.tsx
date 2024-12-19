@@ -60,14 +60,12 @@ export function Header(props: {
                     <div className="hgap"></div>
                     <div style={{ flexGrow: 1 }}>
                         <SearchBox
-                            onChange={
-                                (newLocation) => {
-                                    void navContext.navigate({
-                                        kind: 'article',
-                                        universe: currentUniverse,
-                                        longname: newLocation,
-                                    }, 'push')
-                                }
+                            link={
+                                newLocation => navContext.link({
+                                    kind: 'article',
+                                    universe: currentUniverse,
+                                    longname: newLocation,
+                                })
                             }
                             placeholder="Search Urban Stats"
                             style={{

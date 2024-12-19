@@ -627,16 +627,16 @@ export class Navigator {
         }
     }
 
-    link(pageDescriptor: PageDescriptor, postNavigationCallback?: () => void): { href: string, onClick: (e: React.MouseEvent) => Promise<void> } {
+    link(pageDescriptor: PageDescriptor, postNavigationCallback?: () => void): { href: string, onClick: (e?: React.MouseEvent) => Promise<void> } {
         const url = urlFromPageDescriptor(pageDescriptor)
         return {
             href: url.pathname + url.search,
-            onClick: async (e: React.MouseEvent) => {
-                if (e.altKey || e.ctrlKey || e.metaKey || e.shiftKey) {
+            onClick: async (e?: React.MouseEvent) => {
+                if (e?.altKey || e?.ctrlKey || e?.metaKey || e?.shiftKey) {
                     // Some sort of shortcut to open in new tab, etc.
                     return
                 }
-                e.preventDefault()
+                e?.preventDefault()
                 await this.navigate(pageDescriptor, 'push')
                 postNavigationCallback?.()
             },

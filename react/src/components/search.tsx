@@ -1,13 +1,15 @@
 import React, { CSSProperties, ReactNode, useEffect, useMemo, useRef, useState } from 'react'
 
 import { loadProtobuf } from '../load_json'
+import { Navigator } from '../navigation/navigator'
 import { useColors } from '../page_template/colors'
 import { useSetting } from '../page_template/settings'
 import { isHistoricalCD } from '../utils/is_historical'
 import '../common.css'
 
 export function SearchBox(props: {
-    onChange: (inp: string) => void
+    onChange?: (inp: string) => void
+    link: (inp: string) => ReturnType<Navigator['link']>
     autoFocus: boolean
     placeholder: string
     style: CSSProperties
@@ -47,7 +49,8 @@ export function SearchBox(props: {
         event.preventDefault()
         const terms = matches
         if (terms.length > 0) {
-            props.onChange(terms[focused])
+            void props.link(terms[focused]).onClick()
+            props.onChange?.(terms[focused])
             reset()
         }
         return false
@@ -136,21 +139,29 @@ export function SearchBox(props: {
                 {
                     matches.map((location, idx) =>
                         (
-                            <div
+                            <a
                                 key={location}
-                                className="serif searchbox-dropdown-item"
-                                style={searchboxDropdownItemStyle(idx)}
-                                onClick={() => {
-                                    props.onChange(matches[idx])
-                                    reset()
+                                {...props.link(matches[idx])}
+                                style={{
+                                    textDecoration: 'none',
+                                    color: colors.textMain,
                                 }}
-                                onMouseOver={() => { setFocused(idx) }}
                             >
-                                {' '}
-                                {location}
-                                {' '}
+                                <div
+                                    className="serif searchbox-dropdown-item"
+                                    style={searchboxDropdownItemStyle(idx)}
+                                    onClick={() => {
+                                        props.onChange?.(matches[idx])
+                                        reset()
+                                    }}
+                                    onMouseOver={() => { setFocused(idx) }}
+                                >
+                                    {' '}
+                                    {location}
+                                    {' '}
 
-                            </div>
+                                </div>
+                            </a>
                         ),
                     )
                 }

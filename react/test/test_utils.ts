@@ -205,3 +205,5 @@ export async function safeReload(t: TestController): Promise<void> {
     await t.eval(() => setTimeout(() => { location.reload() }, 0))
     await t.expect(Selector('#pageState_kind').value).eql('loaded') // Wait for initial loading to finish
 }
+
+export const openInNewTabModifiers = process.platform === 'darwin' ? { meta: true } : { ctrl: true }

@@ -3,6 +3,8 @@ import { Selector } from 'testcafe'
 import {
     searchField, target, getLocationWithoutSettings, screencap,
     urbanstatsFixture,
+    getLocation,
+    openInNewTabModifiers,
 } from './test_utils'
 
 urbanstatsFixture('shorter article test', `${target}/article.html?longname=San+Marino+city%2C+California%2C+USA`)
@@ -61,4 +63,12 @@ test('tab tab type', async (t) => {
     await t.pressKey('tab').pressKey('tab')
     await t.expect(Selector(searchField).focused).ok()
     await t.pressKey('a')
+})
+
+test('control click search result to open in new tab', async (t) => {
+    await t
+        .click(searchField)
+        .typeText(searchField, 'Pasadena')
+    await t.click(Selector('a').withText('Pasadena'), { modifiers: openInNewTabModifiers })
+    await t.expect(getLocation()).match(/article\.html\?longname=San\+Marino\+city%2C\+California%2C\+USA/)
 })
