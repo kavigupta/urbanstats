@@ -460,7 +460,7 @@ function ComparisonLink({ question, children }: { question: JuxtaQuestion, child
                 kind: 'comparison',
                 longnames: [question.longname_a, question.longname_b],
                 s: getVector(settings, settingsOverrides(question.stat_path)),
-            })}
+            }, { scroll: 0 })}
             style={{ textDecoration: 'none', color: colors.textMain }}
         >
             {children}

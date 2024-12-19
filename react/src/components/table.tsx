@@ -445,7 +445,7 @@ function StatisticName(props: {
                     amount: 20,
                     order: 'descending',
                     highlight: props.longname,
-                }))
+                }), { scroll: 0 })
             }
         >
             {props.row.renderedStatname}
@@ -986,7 +986,7 @@ function PointerButtonIndex(props: {
                     kind: 'article',
                     longname: name,
                     universe,
-                }, 'push')
+                }, { history: 'push', scroll: null })
                 return
             }
         }
