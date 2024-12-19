@@ -112,13 +112,11 @@ function ComparisonSearchBox({ longname }: { longname: string }): ReactNode {
         <SearchBox
             style={{ ...useComparisonHeadStyle(), width: '100%' }}
             placeholder="Other region..."
-            onChange={(x) => {
-                void navContext.navigate({
-                    kind: 'comparison',
-                    universe: currentUniverse,
-                    longnames: [longname, x],
-                }, 'push')
-            }}
+            link={x => navContext.link({
+                kind: 'comparison',
+                universe: currentUniverse,
+                longnames: [longname, x],
+            })}
             autoFocus={false}
         />
     )
