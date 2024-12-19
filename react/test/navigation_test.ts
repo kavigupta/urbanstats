@@ -83,7 +83,7 @@ test('going to related resets scroll', async (t) => {
     await t.expect(t.eval(() => window.scrollY)).eql(0)
 })
 
-test.only('using pointers preserves scroll', async (t) => {
+test('using pointers preserves scroll', async (t) => {
     const lastPointer = Selector('button[data-test-id="1"]').nth(-1)
     await t.hover(lastPointer)
     const scrollBefore: unknown = await t.eval(() => window.scrollY)
