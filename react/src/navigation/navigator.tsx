@@ -550,8 +550,6 @@ export class Navigator {
                 break
         }
 
-        const oldData = this.pageState.current.data
-
         this.pageState = { kind: 'loading', loading: { descriptor: newDescriptor }, current: this.pageState.current, loadStartTime: Date.now() }
         this.pageStateObservers.forEach((observer) => { observer() })
         try {
