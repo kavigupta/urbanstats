@@ -76,6 +76,13 @@ test('data credit hash from stats page', async (t) => {
     await screencap(t, { fullPage: false })
 })
 
+urbanstatsFixture('article page', '/article.html?longname=MN-08+in+Washington+County%2C+USA&s=CD6Y2tC2TDNZtJLeYUq')
+
+test('going to related resets scroll', async (t) => {
+    await t.click(Selector('a').withText('WI-07'))
+    await t.expect(t.eval(() => window.scrollY)).eql(0)
+})
+
 // Artificially induce lag for cetrain requests for testing purposes
 
 type Filter = (options: RequestMockOptions) => boolean
