@@ -110,7 +110,7 @@ export const StatisticRow = $root.StatisticRow = (() => {
         if (message.percentileByPopulationByUniverse != null && message.percentileByPopulationByUniverse.length) {
             writer.uint32(/* id 4, wireType 2 =*/34).fork();
             for (let i = 0; i < message.percentileByPopulationByUniverse.length; ++i)
-                writer.float(message.percentileByPopulationByUniverse[i]);
+                writer.int32(message.percentileByPopulationByUniverse[i]);
             writer.ldelim();
         }
         return writer;
@@ -179,9 +179,9 @@ export const StatisticRow = $root.StatisticRow = (() => {
                     if ((tag & 7) === 2) {
                         let end2 = reader.uint32() + reader.pos;
                         while (reader.pos < end2)
-                            message.percentileByPopulationByUniverse.push(reader.float());
+                            message.percentileByPopulationByUniverse.push(reader.int32());
                     } else
-                        message.percentileByPopulationByUniverse.push(reader.float());
+                        message.percentileByPopulationByUniverse.push(reader.int32());
                     break;
                 }
             default:
@@ -240,8 +240,8 @@ export const StatisticRow = $root.StatisticRow = (() => {
             if (!Array.isArray(message.percentileByPopulationByUniverse))
                 return "percentileByPopulationByUniverse: array expected";
             for (let i = 0; i < message.percentileByPopulationByUniverse.length; ++i)
-                if (typeof message.percentileByPopulationByUniverse[i] !== "number")
-                    return "percentileByPopulationByUniverse: number[] expected";
+                if (!$util.isInteger(message.percentileByPopulationByUniverse[i]))
+                    return "percentileByPopulationByUniverse: integer[] expected";
         }
         return null;
     };
@@ -279,7 +279,7 @@ export const StatisticRow = $root.StatisticRow = (() => {
                 throw TypeError(".StatisticRow.percentileByPopulationByUniverse: array expected");
             message.percentileByPopulationByUniverse = [];
             for (let i = 0; i < object.percentileByPopulationByUniverse.length; ++i)
-                message.percentileByPopulationByUniverse[i] = Number(object.percentileByPopulationByUniverse[i]);
+                message.percentileByPopulationByUniverse[i] = object.percentileByPopulationByUniverse[i] | 0;
         }
         return message;
     };
@@ -319,7 +319,7 @@ export const StatisticRow = $root.StatisticRow = (() => {
         if (message.percentileByPopulationByUniverse && message.percentileByPopulationByUniverse.length) {
             object.percentileByPopulationByUniverse = [];
             for (let j = 0; j < message.percentileByPopulationByUniverse.length; ++j)
-                object.percentileByPopulationByUniverse[j] = options.json && !isFinite(message.percentileByPopulationByUniverse[j]) ? String(message.percentileByPopulationByUniverse[j]) : message.percentileByPopulationByUniverse[j];
+                object.percentileByPopulationByUniverse[j] = message.percentileByPopulationByUniverse[j];
         }
         return object;
     };
@@ -4124,7 +4124,7 @@ export const DataList = $root.DataList = (() => {
         if (message.populationPercentile != null && message.populationPercentile.length) {
             writer.uint32(/* id 2, wireType 2 =*/18).fork();
             for (let i = 0; i < message.populationPercentile.length; ++i)
-                writer.float(message.populationPercentile[i]);
+                writer.int32(message.populationPercentile[i]);
             writer.ldelim();
         }
         return writer;
@@ -4178,9 +4178,9 @@ export const DataList = $root.DataList = (() => {
                     if ((tag & 7) === 2) {
                         let end2 = reader.uint32() + reader.pos;
                         while (reader.pos < end2)
-                            message.populationPercentile.push(reader.float());
+                            message.populationPercentile.push(reader.int32());
                     } else
-                        message.populationPercentile.push(reader.float());
+                        message.populationPercentile.push(reader.int32());
                     break;
                 }
             default:
@@ -4229,8 +4229,8 @@ export const DataList = $root.DataList = (() => {
             if (!Array.isArray(message.populationPercentile))
                 return "populationPercentile: array expected";
             for (let i = 0; i < message.populationPercentile.length; ++i)
-                if (typeof message.populationPercentile[i] !== "number")
-                    return "populationPercentile: number[] expected";
+                if (!$util.isInteger(message.populationPercentile[i]))
+                    return "populationPercentile: integer[] expected";
         }
         return null;
     };
@@ -4259,7 +4259,7 @@ export const DataList = $root.DataList = (() => {
                 throw TypeError(".DataList.populationPercentile: array expected");
             message.populationPercentile = [];
             for (let i = 0; i < object.populationPercentile.length; ++i)
-                message.populationPercentile[i] = Number(object.populationPercentile[i]);
+                message.populationPercentile[i] = object.populationPercentile[i] | 0;
         }
         return message;
     };
@@ -4289,7 +4289,7 @@ export const DataList = $root.DataList = (() => {
         if (message.populationPercentile && message.populationPercentile.length) {
             object.populationPercentile = [];
             for (let j = 0; j < message.populationPercentile.length; ++j)
-                object.populationPercentile[j] = options.json && !isFinite(message.populationPercentile[j]) ? String(message.populationPercentile[j]) : message.populationPercentile[j];
+                object.populationPercentile[j] = message.populationPercentile[j];
         }
         return object;
     };

@@ -78,7 +78,7 @@ def output_data_files(order_info, site_folder, universe, typ):
             universe, typ, statistic_column
         )
         data_list.value.extend(ordered_values)
-        data_list.population_percentile.extend(ordered_percentile)
+        data_list.population_percentile.extend([int(x) for x in ordered_percentile * 100])
         outputter.notify(data_list.ByteSize())
         outputter.flush()
     outputter.flush(force=True)

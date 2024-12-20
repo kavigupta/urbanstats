@@ -6,7 +6,7 @@ message StatisticRow {
     float statval = 1;
     repeated int32 ordinal_by_universe = 2;
     repeated int32 overall_ordinal_by_universe = 3;
-    repeated float percentile_by_population_by_universe = 4;
+    repeated int32 percentile_by_population_by_universe = 4;
 }
 
 message RelatedButton {
@@ -94,7 +94,7 @@ message OrderList {
 
 message DataList {
     repeated float value = 1;
-    repeated float population_percentile = 2;
+    repeated int32 population_percentile = 2;
 }
 
 message OrderLists {

@@ -921,8 +921,7 @@ export function Percentile(props: {
     }
     // percentile as an integer
     // used to be keyed by a setting, but now we always use percentile_by_population
-    const quantile = props.percentileByPopulation
-    const percentile = Math.floor(100 * quantile)
+    const percentile = props.percentileByPopulation
     if (props.simpleOrdinals) {
         return rightAlign(`${percentile.toString()}%`)
     }

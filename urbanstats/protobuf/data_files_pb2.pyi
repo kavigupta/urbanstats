@@ -25,15 +25,13 @@ class StatisticRow(_message.Message):
     statval: float
     ordinal_by_universe: _containers.RepeatedScalarFieldContainer[int]
     overall_ordinal_by_universe: _containers.RepeatedScalarFieldContainer[int]
-    percentile_by_population_by_universe: _containers.RepeatedScalarFieldContainer[
-        float
-    ]
+    percentile_by_population_by_universe: _containers.RepeatedScalarFieldContainer[int]
     def __init__(
         self,
         statval: _Optional[float] = ...,
         ordinal_by_universe: _Optional[_Iterable[int]] = ...,
         overall_ordinal_by_universe: _Optional[_Iterable[int]] = ...,
-        percentile_by_population_by_universe: _Optional[_Iterable[float]] = ...,
+        percentile_by_population_by_universe: _Optional[_Iterable[int]] = ...,
     ) -> None: ...
 
 class RelatedButton(_message.Message):
@@ -220,11 +218,11 @@ class DataList(_message.Message):
     VALUE_FIELD_NUMBER: _ClassVar[int]
     POPULATION_PERCENTILE_FIELD_NUMBER: _ClassVar[int]
     value: _containers.RepeatedScalarFieldContainer[float]
-    population_percentile: _containers.RepeatedScalarFieldContainer[float]
+    population_percentile: _containers.RepeatedScalarFieldContainer[int]
     def __init__(
         self,
         value: _Optional[_Iterable[float]] = ...,
-        population_percentile: _Optional[_Iterable[float]] = ...,
+        population_percentile: _Optional[_Iterable[int]] = ...,
     ) -> None: ...
 
 class OrderLists(_message.Message):

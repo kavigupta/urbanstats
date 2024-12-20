@@ -55,7 +55,7 @@ def create_article_gzip(
         ):
             statrow.ordinal_by_universe.append(int(ordinal_by_type))
             statrow.overall_ordinal_by_universe.append(int(ordinal_overall))
-            statrow.percentile_by_population_by_universe.append(percentile_by_type)
+            statrow.percentile_by_population_by_universe.append(int(percentile_by_type * 100))
     for _, extra_stat in sorted(extra_stats().items()):
         data.extra_stats.append(extra_stat.create(row))
     for relationship_type in relationships:
