@@ -199,7 +199,7 @@ function Store(): ReactNode {
     return (
         <span>
             {'Check out the '}
-            <a href="https://urban-stats.printify.me">
+            <a href="https://urban-stats.printify.me" target="_blank" rel="noreferrer">
                 Urban Stats Store
             </a>
             !
