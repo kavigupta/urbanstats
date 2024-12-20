@@ -112,13 +112,11 @@ function ComparisonSearchBox({ longname }: { longname: string }): ReactNode {
         <SearchBox
             style={{ ...useComparisonHeadStyle(), width: '100%' }}
             placeholder="Other region..."
-            onChange={(x) => {
-                void navContext.navigate({
-                    kind: 'comparison',
-                    universe: currentUniverse,
-                    longnames: [longname, x],
-                }, 'push')
-            }}
+            link={x => navContext.link({
+                kind: 'comparison',
+                universe: currentUniverse,
+                longnames: [longname, x],
+            }, { scroll: 0 })}
             autoFocus={false}
         />
     )
@@ -152,7 +150,7 @@ function StatisticTableRow(props: { shortname: string, longname: string, row: Ar
                             kind: 'article',
                             longname: newArticle,
                             universe: currentUniverse,
-                        }, 'push')
+                        }, { history: 'push', scroll: null })
                     }}
                     simpleOrdinals={simpleOrdinals}
                 />

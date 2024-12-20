@@ -200,8 +200,14 @@ export async function arrayFromSelector(selector: Selector): Promise<Selector[]>
     return Array.from({ length: await selector.count }, (_, n) => selector.nth(n))
 }
 
+export async function waitForPageLoaded(t: TestController): Promise<void> {
+    await t.expect(Selector('#pageState_kind').value).eql('loaded') // Wait for initial loading to finish
+}
+
 export async function safeReload(t: TestController): Promise<void> {
     // eslint-disable-next-line no-restricted-syntax -- This is the utility that replaces location.reload()
     await t.eval(() => setTimeout(() => { location.reload() }, 0))
-    await t.expect(Selector('#pageState_kind').value).eql('loaded') // Wait for initial loading to finish
+    await waitForPageLoaded(t)
 }
+
+export const openInNewTabModifiers = process.platform === 'darwin' ? { meta: true } : { ctrl: true }

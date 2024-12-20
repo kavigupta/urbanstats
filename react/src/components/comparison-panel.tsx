@@ -145,13 +145,12 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
                             <SearchBox
                                 style={{ ...searchComparisonStyle, width: '100%' }}
                                 placeholder="Name"
-                                onChange={(x) => {
-                                    void navContext.navigate({
+                                link={x =>
+                                    navContext.link({
                                         kind: 'comparison',
                                         universe: currentUniverse,
                                         longnames: [...names, x],
-                                    }, 'push')
-                                }}
+                                    }, { scroll: null })}
                                 autoFocus={false}
                             />
                         </div>
@@ -170,20 +169,19 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
                                             <HeadingDisplay
                                                 longname={data.longname}
                                                 includeDelete={props.articles.length > 1}
-                                                onClick={() => {
+                                                onDelete={() => {
                                                     void navContext.navigate({
                                                         kind: 'comparison',
                                                         universe: currentUniverse,
                                                         longnames: names.filter((_, index) => index !== i),
-                                                    }, 'push')
+                                                    }, { history: 'push', scroll: null })
                                                 }}
-                                                onChange={(x) => {
-                                                    void navContext.navigate({
+                                                onReplace={x =>
+                                                    navContext.link({
                                                         kind: 'comparison',
                                                         universe: currentUniverse,
                                                         longnames: names.map((value, index) => index === i ? x : value),
-                                                    }, 'push')
-                                                }}
+                                                    }, { scroll: null })}
                                             />
                                         </div>,
                                     ),
@@ -313,7 +311,7 @@ function ComparisonCells({ names, rows, onlyColumns, blankColumns }: {
                         kind: 'comparison',
                         universe: navContext.universe,
                         longnames: names.map((value, index) => index === i ? x : value),
-                    }, 'push')
+                    }, { history: 'push', scroll: null })
                 }}
                 totalWidth={each(rows)}
             />
@@ -374,7 +372,7 @@ function ManipulationButton({ color: buttonColor, onClick, text }: { color: stri
     )
 }
 
-function HeadingDisplay({ longname, includeDelete, onClick, onChange }: { longname: string, includeDelete: boolean, onClick: () => void, onChange: (q: string) => void }): ReactNode {
+function HeadingDisplay({ longname, includeDelete, onDelete, onReplace }: { longname: string, includeDelete: boolean, onDelete: () => void, onReplace: (q: string) => ReturnType<Navigator['link']> }): ReactNode {
     const colors = useColors()
     const [isEditing, setIsEditing] = React.useState(false)
     const currentUniverse = useUniverse()
@@ -389,7 +387,7 @@ function HeadingDisplay({ longname, includeDelete, onClick, onChange }: { longna
                     : (
                             <>
                                 <div style={{ width: '5px' }} />
-                                <ManipulationButton color={colors.unselectedButton} onClick={onClick} text="delete" />
+                                <ManipulationButton color={colors.unselectedButton} onClick={onDelete} text="delete" />
                             </>
                         )}
                 <div style={{ width: '5px' }} />
@@ -412,7 +410,7 @@ function HeadingDisplay({ longname, includeDelete, onClick, onChange }: { longna
                         kind: 'article',
                         longname,
                         universe: currentUniverse,
-                    })
+                    }, { scroll: 0 })
                 }
                 style={{ textDecoration: 'none' }}
             >
@@ -424,10 +422,10 @@ function HeadingDisplay({ longname, includeDelete, onClick, onChange }: { longna
                             autoFocus={true}
                             style={{ ...comparisonHeadStyle, width: '100%' }}
                             placeholder="Replacement"
-                            onChange={(q) => {
+                            onChange={() => {
                                 setIsEditing(false)
-                                onChange(q)
                             }}
+                            link={onReplace}
                         />
                     )
                 : null}

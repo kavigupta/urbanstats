@@ -60,14 +60,12 @@ export function Header(props: {
                     <div className="hgap"></div>
                     <div style={{ flexGrow: 1 }}>
                         <SearchBox
-                            onChange={
-                                (newLocation) => {
-                                    void navContext.navigate({
-                                        kind: 'article',
-                                        universe: currentUniverse,
-                                        longname: newLocation,
-                                    }, 'push')
-                                }
+                            link={
+                                newLocation => navContext.link({
+                                    kind: 'article',
+                                    universe: currentUniverse,
+                                    longname: newLocation,
+                                }, { scroll: 0 })
                             }
                             placeholder="Search Urban Stats"
                             style={{
@@ -124,7 +122,7 @@ function HeaderImage(): ReactNode {
     const navContext = useContext(Navigator.Context)
     return (
         <a
-            {...navContext.link({ kind: 'index' })}
+            {...navContext.link({ kind: 'index' }, { scroll: 0 })}
         >
             <img
                 src={path}
