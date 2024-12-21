@@ -13,7 +13,7 @@ import { isHistoricalCD } from '../utils/is_historical'
 import { isMobileLayout, useMobileLayout } from '../utils/responsive'
 import { displayType, separateNumber } from '../utils/text'
 
-import { ArticleRow, Disclaimer } from './load-article'
+import { ArticleRow, Disclaimer, FirstLastStatus } from './load-article'
 import { useScreenshotMode } from './screenshot'
 
 export type ColumnIdentifier = 'statname' | 'statval' | 'statval_unit' | 'statistic_percentile' | 'statistic_ordinal' | 'pointer_in_class' | 'pointer_overall'
@@ -395,6 +395,7 @@ function PointerRowCells(props: { ordinalStyle: CSSProperties, row: ArticleRow, 
                     type="overall"
                     total={props.row.totalCountOverall}
                     longname={props.longname}
+                    overallFirstLast={props.row.overallFirstLast}
                 />
             </span>
         ),
@@ -941,7 +942,7 @@ export function Percentile(props: {
 }
 
 // Lacks some customization since its column is not show in the comparison view
-function PointerButtonsIndex(props: { ordinal?: number, statpath: string, type: string, total: number, longname: string }): ReactNode {
+function PointerButtonsIndex(props: { ordinal?: number, statpath: string, type: string, total: number, longname: string, overallFirstLast?: FirstLastStatus }): ReactNode {
     const currentUniverse = useUniverse()
     const getData = async (): Promise<string[]> => await loadOrdering(currentUniverse, props.statpath, props.type)
     return (
@@ -952,6 +953,7 @@ function PointerButtonsIndex(props: { ordinal?: number, statpath: string, type: 
                 direction={-1}
                 total={props.total}
                 longname={props.longname}
+                disable={props.overallFirstLast?.isFirst}
             />
             <PointerButtonIndex
                 getData={getData}
@@ -959,6 +961,7 @@ function PointerButtonsIndex(props: { ordinal?: number, statpath: string, type: 
                 direction={+1}
                 total={props.total}
                 longname={props.longname}
+                disable={props.overallFirstLast?.isLast}
             />
         </span>
     )
@@ -970,6 +973,7 @@ function PointerButtonIndex(props: {
     direction: -1 | 1
     total: number
     longname: string
+    disable?: boolean
 }): ReactNode {
     const universe = useUniverse()
     const colors = useColors()
@@ -1016,11 +1020,9 @@ function PointerButtonIndex(props: {
     }
 
     let pos: number | undefined
-    let disabled: boolean
+    let disabled: boolean = props.disable ?? false
     if (props.originalPos === undefined) {
         pos = undefined
-        // TODO handle this
-        disabled = false
     } else {
         pos = newPos(props.originalPos)
         disabled = outOfBounds(pos) || props.originalPos > props.total

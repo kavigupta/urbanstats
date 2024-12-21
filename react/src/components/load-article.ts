@@ -6,7 +6,7 @@ import names from '../data/statistic_name_list'
 import paths from '../data/statistic_path_list'
 import { StatGroupSettings, statIsEnabled } from '../page_template/statistic-settings'
 import { findAmbiguousSourcesAll, statDataOrderToOrder, statParents, StatName, StatPath, statPathToOrder } from '../page_template/statistic-tree'
-import { Article } from '../utils/protos'
+import { Article, IFirstOrLast } from '../utils/protos'
 
 export interface HistogramExtraStat {
     type: 'histogram'
@@ -29,6 +29,8 @@ export type StatCol = (typeof stats)[number]
 
 export type Disclaimer = 'heterogenous-sources'
 
+export interface FirstLastStatus { isFirst: boolean, isLast: boolean }
+
 export interface ArticleRow {
     statval: number
     ordinal: number
@@ -44,6 +46,7 @@ export interface ArticleRow {
     renderedStatname: string
     extraStat?: ExtraStat
     disclaimer?: Disclaimer
+    overallFirstLast: FirstLastStatus
 }
 
 function lookupInCompressedSequence(seq: [number, number][], idx: number): number {
@@ -92,6 +95,8 @@ export function loadSingleArticle(data: Article, universe: string): ArticleRow[]
 
     const indices = unpackBytes(data.statisticIndicesPacked)
 
+    const overallFirstOrLast = data.overallFirstOrLast.filter((x: IFirstOrLast) => x.articleUniversesIdx === universeIndex)
+
     return data.rows.map((rowOriginal, rowIndex) => {
         const i = indices[rowIndex]
         // fresh row object
@@ -112,6 +117,7 @@ export function loadSingleArticle(data: Article, universe: string): ArticleRow[]
                 } as HistogramExtraStat
             }
         }
+        const overallFirstLastThis = overallFirstOrLast.filter((x: IFirstOrLast) => x.articleRowIdx === rowIndex)
         return {
             statval: rowOriginal.statval!,
             ordinal: rowOriginal.ordinalByUniverse![universeIndex],
@@ -126,6 +132,10 @@ export function loadSingleArticle(data: Article, universe: string): ArticleRow[]
             index: i,
             renderedStatname: names[i],
             extraStat,
+            overallFirstLast: {
+                isFirst: overallFirstLastThis.some((x: IFirstOrLast) => x.isFirst),
+                isLast: overallFirstLastThis.some((x: IFirstOrLast) => !x.isFirst),
+            },
         } satisfies ArticleRow
     })
 }
