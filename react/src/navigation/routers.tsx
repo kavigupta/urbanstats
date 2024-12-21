@@ -27,6 +27,7 @@ export function Router(): ReactNode {
 
     return (
         <>
+            <input type="hidden" id="pageState_kind" value={pageState.kind} />
             <PageRouter pageData={pageState.current.data} />
             <SubsequentLoad />
         </>
@@ -150,12 +151,12 @@ function PageRouter({ pageData }: { pageData: PageData }): ReactNode {
             return (
                 <QuizPanel
                     quizDescriptor={pageData.quizDescriptor}
-                    today_name={pageData.todayName}
-                    todays_quiz={pageData.quiz}
+                    todayName={pageData.todayName}
+                    todaysQuiz={pageData.quiz}
                 />
             )
         case 'mapper':
-            return <MapperPanel map_settings={pageData.settings} view={pageData.view} />
+            return <MapperPanel mapSettings={pageData.settings} view={pageData.view} />
         case 'error':
             return <ErrorScreen data={pageData} />
         case 'initialLoad':

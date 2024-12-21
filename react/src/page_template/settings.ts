@@ -28,6 +28,7 @@ export type TemperatureUnit = 'fahrenheit' | 'celsius'
 
 export type MobileArticlePointers = 'pointer_in_class' | 'pointer_overall'
 
+/* eslint-disable no-restricted-syntax -- These keys are persistent */
 export type SettingsDictionary = {
     [relationshipKey: RelationshipKey]: boolean | undefined
     show_historical_cds: boolean
@@ -41,6 +42,7 @@ export type SettingsDictionary = {
     temperature_unit: TemperatureUnit
     mobile_article_pointers: MobileArticlePointers
 }
+/* eslint-enable no-restricted-syntax */
 & { [G in GroupIdentifier as StatGroupKey<G>]: boolean }
 & { [C in CategoryIdentifier as StatCategorySavedIndeterminateKey<C>]: GroupIdentifier[] }
 & { [C in CategoryIdentifier as StatCategoryExpandedKey<C>]: boolean }
@@ -49,19 +51,19 @@ export type SettingsDictionary = {
 & { [P in StatPathWithExtra as RowExpandedKey<P>]: boolean }
 & { [P in Exclude<StatPath, StatPathWithExtra> as RowExpandedKey<P>]?: undefined }
 
-export function relationship_key(article_type: string, other_type: string): RelationshipKey {
-    return `related__${article_type}__${other_type}`
+export function relationshipKey(articleType: string, otherType: string): RelationshipKey {
+    return `related__${articleType}__${otherType}`
 }
 
-export function row_expanded_key<P extends StatPath>(statpath: P): RowExpandedKey<P> {
+export function rowExpandedKey<P extends StatPath>(statpath: P): RowExpandedKey<P> {
     return `expanded__${statpath}`
 }
 
-export function source_enabled_key<C extends SourceCategoryIdentifier, S extends SourceIdentifier>(d: { category: C, name: S }): StatSourceKey<C, S> {
+export function sourceEnabledKey<C extends SourceCategoryIdentifier, S extends SourceIdentifier>(d: { category: C, name: S }): StatSourceKey<C, S> {
     return `show_stat_source_${d.category}_${d.name}`
 }
 
-export function checkbox_category_name(category: SourceCategoryIdentifier): string {
+export function checkboxCategoryName(category: SourceCategoryIdentifier): string {
     return `${category} Sources`
 }
 
@@ -73,7 +75,7 @@ const defaultEnabledYears = new Set(
 
 export const defaultSettingsList = [
     ...map_relationship.map(
-        ([article_type, other_type]) => [relationship_key(article_type, other_type), true] as const,
+        ([article_type, other_type]) => [relationshipKey(article_type, other_type), true] as const,
     ),
     ...allGroups.map(group => [`show_stat_group_${group.id}` as const, defaultCategorySelections.has(group.parent.id)] as const),
     ...statsTree.map(category => [`stat_category_saved_indeterminate_${category.id}` as const, [] as GroupIdentifier[]] as const),
@@ -81,7 +83,7 @@ export const defaultSettingsList = [
     ...allYears.map(year => [`show_stat_year_${year}` as const, defaultEnabledYears.has(year)] as const),
     ...dataSources
         .flatMap(({ category, sources }) => sources
-            .map(({ source, is_default }) => [source_enabled_key({ category, name: source }), is_default] as const)),
+            .map(({ source, is_default }) => [sourceEnabledKey({ category, name: source }), is_default] as const)),
     ['show_historical_cds', false] as const,
     ['simple_ordinals', false] as const,
     ['use_imperial', false] as const,
@@ -287,8 +289,8 @@ export function useSettings<K extends keyof SettingsDictionary>(keys: K[]): Pick
     return settings.useSettings(keys)
 }
 
-export function relatedSettingsKeys(article_type_this: string): RelationshipKey[] {
-    return Object.keys(article_types_other).map(article_type_other => relationship_key(article_type_this, article_type_other))
+export function relatedSettingsKeys(articleTypeThis: string): RelationshipKey[] {
+    return Object.keys(article_types_other).map(articleTypeOther => relationshipKey(articleTypeThis, articleTypeOther))
 }
 
 export function useSettingInfo<K extends keyof SettingsDictionary>(key: K): SettingInfo<K> {

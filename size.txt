@@ -318,3 +318,24 @@ added elevation and hilliness data
 1724    order
 2183    data
 5148    total
+
+add canada
+
+5	quiz
+11	consolidated
+27	scripts
+30	index
+1219	shape
+1967	order
+2244	data
+5506	total
+
+use integers for percentiles and don't save overall ordinal
+
+5       quiz
+11      consolidated
+30      index
+1219    shape
+1328    order
+1457    data
+4053    total

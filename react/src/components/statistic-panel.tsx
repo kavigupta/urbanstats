@@ -11,15 +11,15 @@ import '../common.css'
 import './article.css'
 import { useUniverse } from '../universe'
 import { useHeaderTextClass, useSubHeaderTextClass } from '../utils/responsive'
-import { display_type } from '../utils/text'
+import { displayType } from '../utils/text'
 
-import { for_type, StatCol } from './load-article'
+import { forType, StatCol } from './load-article'
 import { Percentile, PointerArrow, Statistic } from './table'
 
-const table_style = { display: 'flex', flexDirection: 'column', padding: '1px' } as const
-const column_names = ['Ordinal', 'Name', 'Value', '', 'Percentile']
-const column_widths = ['15%', '60%', '20%', '10%', '20%']
-const column_styles = [
+const tableStyle = { display: 'flex', flexDirection: 'column', padding: '1px' } as const
+const columnNames = ['Ordinal', 'Name', 'Value', '', 'Percentile']
+const columnWidths = ['15%', '60%', '20%', '10%', '20%']
+const columnStyles = [
     { textAlign: 'right', paddingRight: '1em' },
     { textAlign: 'left' },
     { textAlign: 'right' },
@@ -32,30 +32,30 @@ export interface StatisticPanelProps {
     amount: number
     count: number
     order: 'ascending' | 'descending'
-    joined_string: string
+    joinedString: string
     statcol: StatCol
     statname: StatName
-    article_type: string
-    article_names: string[]
+    articleType: string
+    articleNames: string[]
     highlight: string | undefined
-    rendered_statname: string
+    renderedStatname: string
     data: {
         value: number[]
         populationPercentile: number[]
     }
-    explanation_page: string
+    explanationPage: string
 }
 
 export function StatisticPanel(props: StatisticPanelProps): ReactNode {
     const colors = useColors()
-    const headers_ref = useRef<HTMLDivElement>(null)
-    const table_ref = useRef<HTMLDivElement>(null)
+    const headersRef = useRef<HTMLDivElement>(null)
+    const tableRef = useRef<HTMLDivElement>(null)
 
-    const is_ascending = props.order === 'ascending'
+    const isAscending = props.order === 'ascending'
 
     const navContext = useContext(Navigator.Context)
 
-    const index_range = useMemo(() => {
+    const indexRange = useMemo(() => {
         const start = props.start - 1
         let end = start + props.amount
         if (end + props.amount >= props.count) {
@@ -63,56 +63,59 @@ export function StatisticPanel(props: StatisticPanelProps): ReactNode {
         }
         const total = props.count
         const result = Array.from({ length: end - start }, (_, i) => {
-            if (is_ascending) {
+            if (isAscending) {
                 return total - start - i - 1
             }
             return start + i
         })
         return result
-    }, [props.start, props.amount, props.count, is_ascending])
+    }, [props.start, props.amount, props.count, isAscending])
 
-    const swap_ascending_descending = (curr_universe: string | undefined): void => {
-        const new_order = is_ascending ? 'descending' : 'ascending'
+    const swapAscendingDescending = (currentUniverse: string | undefined): void => {
+        const newOrder = isAscending ? 'descending' : 'ascending'
         void navContext.navigate(statisticDescriptor({
-            universe: curr_universe,
+            universe: currentUniverse,
             statname: props.statname,
-            article_type: props.article_type,
+            articleType: props.articleType,
             start: 1,
             amount: props.amount,
-            order: new_order,
-        }), 'push')
+            order: newOrder,
+        }), {
+            history: 'push',
+            scroll: null,
+        })
     }
 
-    const background_color = (row_idx: number): string => {
-        if (row_idx > 0) {
-            const name_at_idx = props.article_names[index_range[row_idx - 1]]
-            if (name_at_idx === props.highlight) {
+    const backgroundColor = (rowIdx: number): string => {
+        if (rowIdx > 0) {
+            const nameAtIdx = props.articleNames[indexRange[rowIdx - 1]]
+            if (nameAtIdx === props.highlight) {
                 return colors.highlight
             }
         }
-        if (row_idx % 2 === 1) {
+        if (rowIdx % 2 === 1) {
             return colors.slightlyDifferentBackground
         }
         return colors.background
     }
 
-    const style = (col_idx: number, row_idx: number): CSSProperties => {
-        let result: CSSProperties = { ...table_style }
-        if (row_idx === 0) {
+    const style = (colIdx: number, rowIdx: number): CSSProperties => {
+        let result: CSSProperties = { ...tableStyle }
+        if (rowIdx === 0) {
             // header, add a line at the bottom
             result.borderBottom = `1px solid ${colors.textMain}`
             result.fontWeight = 500
         }
-        result.backgroundColor = background_color(row_idx)
-        result.width = column_widths[col_idx]
-        result = { ...result, ...column_styles[col_idx] }
+        result.backgroundColor = backgroundColor(rowIdx)
+        result.width = columnWidths[colIdx]
+        result = { ...result, ...columnStyles[colIdx] }
         return result
     }
 
     const textHeaderClass = useHeaderTextClass()
 
-    const universes_filtered = universes_ordered.filter(
-        universe => for_type(universe, props.statcol, props.article_type) > 0,
+    const universesFiltered = universes_ordered.filter(
+        universe => forType(universe, props.statcol, props.articleType) > 0,
     )
 
     useEffect(() => {
@@ -121,32 +124,32 @@ export function StatisticPanel(props: StatisticPanelProps): ReactNode {
 
     return (
         <PageTemplate
-            screencap_elements={() => ({
-                path: `${sanitize(props.joined_string)}.png`,
-                overall_width: table_ref.current!.offsetWidth * 2,
-                elements_to_render: [headers_ref.current!, table_ref.current!],
+            screencapElements={() => ({
+                path: `${sanitize(props.joinedString)}.png`,
+                overallWidth: tableRef.current!.offsetWidth * 2,
+                elementsToRender: [headersRef.current!, tableRef.current!],
             })}
-            has_universe_selector={true}
-            universes={universes_filtered}
+            hasUniverseSelector={true}
+            universes={universesFiltered}
         >
             <div>
-                <div ref={headers_ref}>
-                    <div className={textHeaderClass}>{props.rendered_statname}</div>
+                <div ref={headersRef}>
+                    <div className={textHeaderClass}>{props.renderedStatname}</div>
                     {/* // TODO plural */}
                     <StatisticPanelSubhead
-                        article_type={props.article_type}
-                        rendered_order={props.order}
+                        articleType={props.articleType}
+                        renderedOther={props.order}
                     />
                 </div>
                 <div style={{ marginBlockEnd: '16px' }}></div>
-                <div className="serif" ref={table_ref}>
+                <div className="serif" ref={tableRef}>
                     <div style={{ display: 'flex' }}>
-                        {column_names.map((name, i) => {
+                        {columnNames.map((name, i) => {
                             if (i === 0) {
                                 return (
                                     <div key={name} style={{ ...style(i, 0), display: 'flex', justifyContent: 'space-between', flexDirection: 'row' }}>
                                         <div>{name}</div>
-                                        <AscendingVsDescending on_click={(curr_universe) => { swap_ascending_descending(curr_universe) }} is_ascending={is_ascending} />
+                                        <AscendingVsDescending onClick={(currentUniverse) => { swapAscendingDescending(currentUniverse) }} isAscending={isAscending} />
                                     </div>
                                 )
                             }
@@ -154,35 +157,35 @@ export function StatisticPanel(props: StatisticPanelProps): ReactNode {
                         })}
                     </div>
                     {
-                        index_range.map((i, row_idx) => (
+                        indexRange.map((i, rowIdx) => (
                             <div
                                 key={i}
                                 style={{
-                                    display: 'flex', alignItems: 'baseline', backgroundColor: background_color(row_idx + 1),
+                                    display: 'flex', alignItems: 'baseline', backgroundColor: backgroundColor(rowIdx + 1),
                                 }}
                             >
-                                <div style={style(0, row_idx + 1)}>{i + 1}</div>
-                                <div style={style(1, row_idx + 1)}>
-                                    <ArticleLink longname={props.article_names[i]} />
+                                <div style={style(0, rowIdx + 1)}>{i + 1}</div>
+                                <div style={style(1, rowIdx + 1)}>
+                                    <ArticleLink longname={props.articleNames[i]} />
                                 </div>
-                                <div style={style(2, row_idx + 1)} className="value">
+                                <div style={style(2, rowIdx + 1)} className="value">
                                     <Statistic
                                         statname={props.statname}
                                         value={props.data.value[i]}
-                                        is_unit={false}
+                                        isUnit={false}
                                     />
                                 </div>
-                                <div style={style(3, row_idx + 1)} className="value_unit value">
+                                <div style={style(3, rowIdx + 1)} className="value_unit value">
                                     <Statistic
                                         statname={props.statname}
                                         value={props.data.value[i]}
-                                        is_unit={true}
+                                        isUnit={true}
                                     />
                                 </div>
-                                <div style={style(4, row_idx + 1)}>
+                                <div style={style(4, rowIdx + 1)}>
                                     <AutoPercentile
                                         ordinal={0}
-                                        total_count_in_class={0}
+                                        totalCountInClass={0}
                                         data={props.data}
                                         i={i}
                                     />
@@ -204,89 +207,98 @@ function Pagination(props: {
     start: number
     count: number
     amount: number
-    explanation_page: string
+    explanationPage: string
     statname: StatName
-    article_type: string
+    articleType: string
     order: 'ascending' | 'descending'
 }): ReactNode {
     // next and previous buttons, along with the current range (editable to jump to a specific page)
     // also a button to change the number of items per page
 
-    const curr_universe = useUniverse()
+    const currentUniverse = useUniverse()
 
     const navContext = useContext(Navigator.Context)
 
-    const change_start = (new_start: number): void => {
+    const changeStart = (newStart: number): void => {
         void navContext.navigate(statisticDescriptor({
-            universe: curr_universe,
+            universe: currentUniverse,
             ...props,
-            start: new_start,
-        }), 'push')
+            start: newStart,
+        }), {
+            history: 'push',
+            scroll: null,
+        })
     }
 
-    const change_amount = (new_amount: string | number): void => {
+    const changeAmount = (newAmount: string | number): void => {
         let start = props.start
-        let new_amount_num: number
-        if (new_amount === 'All') {
+        let newAmountNum: number
+        if (newAmount === 'All') {
             start = 1
-            new_amount_num = props.count
+            newAmountNum = props.count
         }
-        else if (typeof new_amount === 'string') {
-            new_amount_num = parseInt(new_amount)
+        else if (typeof newAmount === 'string') {
+            newAmountNum = parseInt(newAmount)
         }
         else {
-            new_amount_num = new_amount
+            newAmountNum = newAmount
         }
-        if (start > props.count - new_amount_num) {
-            start = props.count - new_amount_num + 1
+        if (start > props.count - newAmountNum) {
+            start = props.count - newAmountNum + 1
         }
         void navContext.navigate(statisticDescriptor({
-            universe: curr_universe,
+            universe: currentUniverse,
             statname: props.statname,
-            article_type: props.article_type,
+            articleType: props.articleType,
             start,
-            amount: new_amount === 'All' ? 'All' : new_amount_num,
+            amount: newAmount === 'All' ? 'All' : newAmountNum,
             order: props.order,
-        }), 'push')
+        }), {
+            history: 'push',
+            scroll: null,
+        })
     }
 
     const current = props.start
     const total = props.count
-    const per_page = props.amount
-    const prev = Math.max(1, current - per_page)
-    const max_pages = Math.max(Math.floor(total / per_page), 1)
-    const max_page_start = (max_pages - 1) * per_page + 1
-    const next = Math.min(max_page_start, current + per_page)
-    const current_page = Math.ceil(current / per_page)
+    const perPage = props.amount
+    const prev = Math.max(1, current - perPage)
+    const maxPages = Math.max(Math.floor(total / perPage), 1)
+    const maxPageStart = (maxPages - 1) * perPage + 1
+    const next = Math.min(maxPageStart, current + perPage)
+    const currentPage = Math.ceil(current / perPage)
 
     useEffect(() => {
-        const goToPage = (new_page: number): void => {
+        const goToPage = (newPage: number): void => {
             void navContext.navigate(statisticDescriptor({
-                universe: curr_universe,
+                universe: currentUniverse,
                 statname: props.statname,
-                article_type: props.article_type,
+                articleType: props.articleType,
                 amount: props.amount,
                 order: props.order,
-                start: (new_page - 1) * per_page + 1,
-            }), 'replace')
+                start: (newPage - 1) * perPage + 1,
+            }), {
+                history: 'replace',
+                scroll: null,
+            })
         }
 
-        if (current_page > max_pages) {
-            goToPage(max_pages)
+        if (currentPage > maxPages) {
+            goToPage(maxPages)
         }
-        else if (current_page < 1) {
+        else if (currentPage < 1) {
             goToPage(1)
         }
-    }, [current_page, max_pages, curr_universe, per_page, props.statname, props.article_type, props.amount, props.order, navContext])
+    }, [currentPage, maxPages, currentUniverse, perPage, props.statname, props.articleType, props.amount, props.order, navContext])
 
-    const select_page = (
+    const selectPage = (
         <SelectPage
-            change_start={(new_start) => { change_start(new_start) }}
-            current_page={current_page}
-            max_pages={max_pages}
-            prev_page={prev}
-            next_page={next}
-            per_page={per_page}
+            changeStart={(newStart) => { changeStart(newStart) }}
+            currentPage={currentPage}
+            maxPages={maxPages}
+            prevPage={prev}
+            nextPage={next}
+            perPage={perPage}
         />
     )
 
@@ -302,19 +314,26 @@ function Pagination(props: {
         >
             <div style={{ width: '25%' }}>
                 <div style={{ margin: 'auto', textAlign: 'center' }}>
-                    <a {...navContext.link({ kind: 'dataCredit', hash: `#explanation_${sanitize(props.explanation_page)}` })}>Data Explanation and Credit</a>
+                    <a
+                        {...navContext.link(
+                            { kind: 'dataCredit', hash: `#explanation_${sanitize(props.explanationPage)}` },
+                            { scroll: null },
+                        )}
+                    >
+                        Data Explanation and Credit
+                    </a>
                 </div>
             </div>
             <div style={{ width: '50%' }}>
                 <div style={{ margin: 'auto', textAlign: 'center' }}>
-                    {select_page}
+                    {selectPage}
                 </div>
             </div>
             <div style={{ width: '25%' }}>
                 <PerPageSelector
-                    per_page={per_page}
+                    perPage={perPage}
                     total={total}
-                    change_amount={(new_amount) => { change_amount(new_amount) }}
+                    changeAmount={(newAmount) => { changeAmount(newAmount) }}
                 />
             </div>
         </div>
@@ -322,9 +341,9 @@ function Pagination(props: {
 }
 
 function PerPageSelector(props: {
-    per_page: number
+    perPage: number
     total: number
-    change_amount: (targetValue: string) => void
+    changeAmount: (targetValue: string) => void
 }): ReactNode {
     const colors = useColors()
     return (
@@ -333,9 +352,9 @@ function PerPageSelector(props: {
                 <select
                     style={{ backgroundColor: colors.background, color: colors.textMain }}
                     defaultValue={
-                        props.per_page === props.total ? 'All' : props.per_page
+                        props.perPage === props.total ? 'All' : props.perPage
                     }
-                    onChange={(e) => { props.change_amount(e.target.value) }}
+                    onChange={(e) => { props.changeAmount(e.target.value) }}
                     className="serif"
                 >
                     <option value="10">10</option>
@@ -352,52 +371,52 @@ function PerPageSelector(props: {
 }
 
 function SelectPage(props: {
-    prev_page: number
-    current_page: number
-    max_pages: number
-    per_page: number
-    change_start: (new_start: number) => void
-    next_page: number
+    prevPage: number
+    currentPage: number
+    maxPages: number
+    perPage: number
+    changeStart: (newStart: number) => void
+    nextPage: number
 }): ReactNode {
     // low-key style for the buttons
-    const button_style = {
+    const buttonStyle = {
         margin: '0.5em',
     }
 
-    const [pageNumber, setPageNumber] = useState(props.current_page.toString())
+    const [pageNumber, setPageNumber] = useState(props.currentPage.toString())
 
     const pageField = useRef<HTMLInputElement>(null)
 
     useEffect(() => {
-        setPageNumber(props.current_page.toString())
+        setPageNumber(props.currentPage.toString())
         if (document.activeElement === pageField.current) {
             pageField.current!.select()
         }
-    }, [props.current_page])
+    }, [props.currentPage])
 
     const handleSubmit = (): void => {
-        let new_page = parseInt(pageNumber)
-        if (new_page < 1) {
-            new_page = 1
+        let newPage = parseInt(pageNumber)
+        if (newPage < 1) {
+            newPage = 1
         }
-        if (new_page > props.max_pages) {
-            new_page = props.max_pages
+        if (newPage > props.maxPages) {
+            newPage = props.maxPages
         }
-        const new_start = (new_page - 1) * props.per_page + 1
-        props.change_start(new_start)
+        const newStart = (newPage - 1) * props.perPage + 1
+        props.changeStart(newStart)
     }
 
     const disabled = {
-        left: props.current_page === 1,
-        right: props.current_page === props.max_pages,
+        left: props.currentPage === 1,
+        right: props.currentPage === props.maxPages,
     }
 
     return (
         <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
             <button
-                onClick={() => { props.change_start(props.prev_page) }}
+                onClick={() => { props.changeStart(props.prevPage) }}
                 className="serif"
-                style={{ ...button_style, visibility: disabled.left ? 'hidden' : 'visible' }}
+                style={{ ...buttonStyle, visibility: disabled.left ? 'hidden' : 'visible' }}
                 disabled={disabled.left}
                 data-test-id="-1"
             >
@@ -427,13 +446,13 @@ function SelectPage(props: {
                 />
                 <span>
                     {' of '}
-                    {props.max_pages}
+                    {props.maxPages}
                 </span>
             </div>
             <button
-                onClick={() => { props.change_start(props.next_page) }}
+                onClick={() => { props.changeStart(props.nextPage) }}
                 className="serif"
-                style={{ ...button_style, visibility: disabled.right ? 'hidden' : 'visible' }}
+                style={{ ...buttonStyle, visibility: disabled.right ? 'hidden' : 'visible' }}
                 disabled={disabled.right}
                 data-test-id="1"
             >
@@ -444,7 +463,7 @@ function SelectPage(props: {
 }
 
 function ArticleLink(props: { longname: string }): ReactNode {
-    const curr_universe = useUniverse()
+    const currentUniverse = useUniverse()
     const colors = useColors()
     const navContext = useContext(Navigator.Context)
     return (
@@ -452,8 +471,8 @@ function ArticleLink(props: { longname: string }): ReactNode {
             {...navContext.link({
                 kind: 'article',
                 longname: props.longname,
-                universe: curr_universe,
-            })}
+                universe: currentUniverse,
+            }, { scroll: 0 })}
             style={{ fontWeight: 500, color: colors.textMain, textDecoration: 'none' }}
         >
             {props.longname}
@@ -461,14 +480,14 @@ function ArticleLink(props: { longname: string }): ReactNode {
     )
 }
 
-function StatisticPanelSubhead(props: { article_type: string, rendered_order: string }): ReactNode {
-    const curr_universe = useUniverse()
+function StatisticPanelSubhead(props: { articleType: string, renderedOther: string }): ReactNode {
+    const currentUniverse = useUniverse()
     return (
         <div className={useSubHeaderTextClass()}>
-            {display_type(curr_universe, props.article_type)}
+            {displayType(currentUniverse, props.articleType)}
             {' '}
             (
-            {props.rendered_order}
+            {props.renderedOther}
             )
         </div>
     )
@@ -476,7 +495,7 @@ function StatisticPanelSubhead(props: { article_type: string, rendered_order: st
 
 function AutoPercentile(props: {
     ordinal: number
-    total_count_in_class: number
+    totalCountInClass: number
     data: { populationPercentile: number[] }
     i: number
 }): ReactNode {
@@ -484,20 +503,20 @@ function AutoPercentile(props: {
     return (
         <Percentile
             ordinal={props.ordinal}
-            total={props.total_count_in_class}
-            percentile_by_population={props.data.populationPercentile[props.i]}
+            total={props.totalCountInClass}
+            percentileByPopulation={props.data.populationPercentile[props.i]}
             simpleOrdinals={simpleOrdinals}
         />
     )
 }
 
-function AscendingVsDescending({ on_click, is_ascending }: { on_click: (curr_universe: string | undefined) => void, is_ascending: boolean }): ReactNode {
-    const curr_universe = useUniverse()
+function AscendingVsDescending({ onClick, isAscending }: { onClick: (currentUniverse: string | undefined) => void, isAscending: boolean }): ReactNode {
+    const currentUniverse = useUniverse()
     // either an up or down arrow, depending on the current ordering
     return (
         <div style={{ display: 'flex', alignItems: 'center' }}>
-            <div style={{ cursor: 'pointer' }} onClick={() => { on_click(curr_universe) }} id="statistic-panel-order-swap">
-                {is_ascending ? '▲\ufe0e' : '▼\ufe0e'}
+            <div style={{ cursor: 'pointer' }} onClick={() => { onClick(currentUniverse) }} id="statistic-panel-order-swap">
+                {isAscending ? '▲\ufe0e' : '▼\ufe0e'}
             </div>
         </div>
     )

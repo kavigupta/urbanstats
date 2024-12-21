@@ -6,7 +6,7 @@ import React, { ReactNode, useContext, useEffect, useRef } from 'react'
 import { sanitize } from '../navigation/links'
 import { Navigator } from '../navigation/navigator'
 import { useColors } from '../page_template/colors'
-import { row_expanded_key, useSetting, useSettings } from '../page_template/settings'
+import { rowExpandedKey, useSetting, useSettings } from '../page_template/settings'
 import { groupYearKeys, StatGroupSettings } from '../page_template/statistic-settings'
 import { PageTemplate } from '../page_template/template'
 import { useUniverse } from '../universe'
@@ -25,14 +25,14 @@ import { SearchBox } from './search'
 import { StatisticHeaderCells, StatisticRowCells, TableHeaderContainer, TableRowContainer } from './table'
 
 export function ArticlePanel({ article, rows }: { article: Article, rows: (settings: StatGroupSettings) => ArticleRow[][] }): ReactNode {
-    const headers_ref = useRef<HTMLDivElement>(null)
-    const table_ref = useRef<HTMLDivElement>(null)
-    const map_ref = useRef<HTMLDivElement>(null)
+    const headersRef = useRef<HTMLDivElement>(null)
+    const tableRef = useRef<HTMLDivElement>(null)
+    const mapRef = useRef<HTMLDivElement>(null)
 
-    const screencap_elements = (): ScreencapElements => ({
+    const screencapElements = (): ScreencapElements => ({
         path: `${sanitize(article.longname)}.png`,
-        overall_width: table_ref.current!.offsetWidth * 2,
-        elements_to_render: [headers_ref.current!, table_ref.current!, map_ref.current!],
+        overallWidth: tableRef.current!.offsetWidth * 2,
+        elementsToRender: [headersRef.current!, tableRef.current!, mapRef.current!],
     })
 
     const headerTextClass = useHeaderTextClass()
@@ -40,7 +40,7 @@ export function ArticlePanel({ article, rows }: { article: Article, rows: (setti
     const comparisonHeadStyle = useComparisonHeadStyle('right')
 
     const settings = useSettings(groupYearKeys())
-    const filtered_rows = rows(settings)[0]
+    const filteredRows = rows(settings)[0]
 
     useEffect(() => {
         document.title = article.shortname
@@ -49,17 +49,17 @@ export function ArticlePanel({ article, rows }: { article: Article, rows: (setti
     return (
         <>
             <QuerySettingsConnection />
-            <PageTemplate screencap_elements={screencap_elements} has_universe_selector={true} universes={article.universes}>
+            <PageTemplate screencapElements={screencapElements} hasUniverseSelector={true} universes={article.universes}>
                 <div>
-                    <div ref={headers_ref}>
+                    <div ref={headersRef}>
                         <div className={headerTextClass}>{article.shortname}</div>
                         <div className={subHeaderTextClass}>{article.longname}</div>
                     </div>
                     <div style={{ marginBlockEnd: '16px' }}></div>
 
-                    <div className="stats_table" ref={table_ref}>
+                    <div className="stats_table" ref={tableRef}>
                         <StatisticTableHeader />
-                        {filtered_rows.map((row, index) => (
+                        {filteredRows.map((row, index) => (
                             <StatisticTableRow
                                 row={row}
                                 index={index}
@@ -73,11 +73,11 @@ export function ArticlePanel({ article, rows }: { article: Article, rows: (setti
 
                     <p></p>
 
-                    <div ref={map_ref}>
+                    <div ref={mapRef}>
                         <Map
                             longname={article.longname}
                             related={article.related as NormalizeProto<IRelatedButtons>[]}
-                            article_type={article.articleType}
+                            articleType={article.articleType}
                             basemap={{ type: 'osm' }}
                         />
                     </div>
@@ -97,7 +97,7 @@ export function ArticlePanel({ article, rows }: { article: Article, rows: (setti
 
                     <Related
                         related={article.related as NormalizeProto<IRelatedButtons>[]}
-                        article_type={article.articleType}
+                        articleType={article.articleType}
                     />
                 </div>
             </PageTemplate>
@@ -106,19 +106,17 @@ export function ArticlePanel({ article, rows }: { article: Article, rows: (setti
 }
 
 function ComparisonSearchBox({ longname }: { longname: string }): ReactNode {
-    const curr_universe = useUniverse()
+    const currentUniverse = useUniverse()
     const navContext = useContext(Navigator.Context)
     return (
         <SearchBox
             style={{ ...useComparisonHeadStyle(), width: '100%' }}
             placeholder="Other region..."
-            on_change={(x) => {
-                void navContext.navigate({
-                    kind: 'comparison',
-                    universe: curr_universe,
-                    longnames: [longname, x],
-                }, 'push')
-            }}
+            link={x => navContext.link({
+                kind: 'comparison',
+                universe: currentUniverse,
+                longnames: [longname, x],
+            }, { scroll: 0 })}
             autoFocus={false}
         />
     )
@@ -135,13 +133,13 @@ function StatisticTableHeader(): ReactNode {
 
 function StatisticTableRow(props: { shortname: string, longname: string, row: ArticleRow, index: number }): ReactNode {
     const colors = useColors()
-    const [expanded] = useSetting(row_expanded_key(props.row.statpath))
+    const [expanded] = useSetting(rowExpandedKey(props.row.statpath))
     const currentUniverse = useUniverse()
     const [simpleOrdinals] = useSetting('simple_ordinals')
     const navContext = useContext(Navigator.Context)
 
     return (
-        <WithPlot plot_props={[{ ...props.row, color: colors.hueColors.blue, shortname: props.shortname }]} expanded={expanded ?? false}>
+        <WithPlot plotProps={[{ ...props.row, color: colors.hueColors.blue, shortname: props.shortname }]} expanded={expanded ?? false}>
             <TableRowContainer index={props.index}>
                 <StatisticRowCells
                     totalWidth={100}
@@ -152,7 +150,7 @@ function StatisticTableRow(props: { shortname: string, longname: string, row: Ar
                             kind: 'article',
                             longname: newArticle,
                             universe: currentUniverse,
-                        }, 'push')
+                        }, { history: 'push', scroll: null })
                     }}
                     simpleOrdinals={simpleOrdinals}
                 />

@@ -7,7 +7,7 @@ import { sanitize } from '../navigation/links'
 import { Navigator } from '../navigation/navigator'
 import { HueColors } from '../page_template/color-themes'
 import { useColors } from '../page_template/colors'
-import { row_expanded_key, useSetting, useSettings } from '../page_template/settings'
+import { rowExpandedKey, useSetting, useSettings } from '../page_template/settings'
 import { groupYearKeys, StatGroupSettings } from '../page_template/statistic-settings'
 import { PageTemplate } from '../page_template/template'
 import { useUniverse } from '../universe'
@@ -24,32 +24,32 @@ import { ScreencapElements, useScreenshotMode } from './screenshot'
 import { SearchBox } from './search'
 import { TableRowContainer, StatisticRowCells, TableHeaderContainer, StatisticHeaderCells, ColumnIdentifier } from './table'
 
-const left_bar_margin = 0.02
-const left_margin_pct = 0.18
-const bar_height = '5px'
+const leftBarMargin = 0.02
+const leftMarginPercent = 0.18
+const barHeight = '5px'
 
 export function ComparisonPanel(props: { universes: string[], articles: Article[], rows: (settings: StatGroupSettings) => ArticleRow[][] }): ReactNode {
     const colors = useColors()
-    const table_ref = useRef<HTMLDivElement>(null)
-    const map_ref = useRef(null)
+    const tableRef = useRef<HTMLDivElement>(null)
+    const mapRef = useRef(null)
 
-    const joined_string = props.articles.map(x => x.shortname).join(' vs ')
+    const joinedString = props.articles.map(x => x.shortname).join(' vs ')
     const names = props.articles.map(a => a.longname)
 
-    const screencap_elements = (): ScreencapElements => ({
-        path: `${sanitize(joined_string)}.png`,
-        overall_width: table_ref.current!.offsetWidth * 2,
-        elements_to_render: [table_ref.current!, map_ref.current!],
+    const screencapElements = (): ScreencapElements => ({
+        path: `${sanitize(joinedString)}.png`,
+        overallWidth: tableRef.current!.offsetWidth * 2,
+        elementsToRender: [tableRef.current!, mapRef.current!],
     })
 
-    const left_margin = (): number => {
-        return 100 * left_margin_pct
+    const leftMargin = (): number => {
+        return 100 * leftMarginPercent
     }
 
-    const cell = (is_left: boolean, i: number, contents: React.ReactNode): ReactNode => {
-        if (is_left) {
+    const cell = (isLeft: boolean, i: number, contents: React.ReactNode): ReactNode => {
+        if (isLeft) {
             return (
-                <div key={i} style={{ width: `${left_margin()}%` }}>
+                <div key={i} style={{ width: `${leftMargin()}%` }}>
                     {contents}
                 </div>
             )
@@ -72,7 +72,7 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
                             key={i}
                             style={{
                                 width: `${each(props.articles)}%`,
-                                height: bar_height,
+                                height: barHeight,
                                 backgroundColor: color(colors.hueColors, i),
                             }}
                         />
@@ -119,39 +119,38 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
     const comparisonRightStyle = useComparisonHeadStyle('right')
     const searchComparisonStyle = useComparisonHeadStyle()
 
-    const curr_universe = useUniverse()
+    const currentUniverse = useUniverse()
 
     useEffect(() => {
-        document.title = joined_string
-    }, [joined_string])
+        document.title = joinedString
+    }, [joinedString])
 
     const navContext = useContext(Navigator.Context)
 
     return (
         <>
             <QuerySettingsConnection />
-            <PageTemplate screencap_elements={screencap_elements} has_universe_selector={true} universes={props.universes}>
+            <PageTemplate screencapElements={screencapElements} hasUniverseSelector={true} universes={props.universes}>
                 <div>
                     <div className={headerTextClass}>Comparison</div>
-                    <div className={subHeaderTextClass}>{joined_string}</div>
+                    <div className={subHeaderTextClass}>{joinedString}</div>
                     <div style={{ marginBlockEnd: '16px' }}></div>
 
                     <div style={{ display: 'flex' }}>
-                        <div style={{ width: `${100 * left_margin_pct}%` }} />
-                        <div style={{ width: `${50 * (1 - left_margin_pct)}%`, marginRight: '1em' }}>
+                        <div style={{ width: `${100 * leftMarginPercent}%` }} />
+                        <div style={{ width: `${50 * (1 - leftMarginPercent)}%`, marginRight: '1em' }}>
                             <div className="serif" style={comparisonRightStyle}>Add another region:</div>
                         </div>
-                        <div style={{ width: `${50 * (1 - left_margin_pct)}%` }}>
+                        <div style={{ width: `${50 * (1 - leftMarginPercent)}%` }}>
                             <SearchBox
                                 style={{ ...searchComparisonStyle, width: '100%' }}
                                 placeholder="Name"
-                                on_change={(x) => {
-                                    void navContext.navigate({
+                                link={x =>
+                                    navContext.link({
                                         kind: 'comparison',
-                                        universe: curr_universe,
+                                        universe: currentUniverse,
                                         longnames: [...names, x],
-                                    }, 'push')
-                                }}
+                                    }, { scroll: null })}
                                 autoFocus={false}
                             />
                         </div>
@@ -160,7 +159,7 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
                     <div style={{ marginBlockEnd: '1em' }}></div>
 
                     {maybeScroll(
-                        <div ref={table_ref}>
+                        <div ref={tableRef}>
                             {bars()}
                             <div style={{ display: 'flex' }}>
                                 {cell(true, 0, <div></div>)}
@@ -169,21 +168,20 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
                                         <div>
                                             <HeadingDisplay
                                                 longname={data.longname}
-                                                include_delete={props.articles.length > 1}
-                                                on_click={() => {
+                                                includeDelete={props.articles.length > 1}
+                                                onDelete={() => {
                                                     void navContext.navigate({
                                                         kind: 'comparison',
-                                                        universe: curr_universe,
+                                                        universe: currentUniverse,
                                                         longnames: names.filter((_, index) => index !== i),
-                                                    }, 'push')
+                                                    }, { history: 'push', scroll: null })
                                                 }}
-                                                on_change={(x) => {
-                                                    void navContext.navigate({
+                                                onReplace={x =>
+                                                    navContext.link({
                                                         kind: 'comparison',
-                                                        universe: curr_universe,
+                                                        universe: currentUniverse,
                                                         longnames: names.map((value, index) => index === i ? x : value),
-                                                    }, 'push')
-                                                }}
+                                                    }, { scroll: null })}
                                             />
                                         </div>,
                                     ),
@@ -196,15 +194,15 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
                             </TableHeaderContainer>
 
                             {
-                                rows[0].map((_, row_idx) => (
+                                rows[0].map((_, rowIdx) => (
                                     <ComparisonRowBody
-                                        key={rows[0][row_idx].statpath}
-                                        index={row_idx}
-                                        rows={rows.map(row => row[row_idx])}
+                                        key={rows[0][rowIdx].statpath}
+                                        index={rowIdx}
+                                        rows={rows.map(row => row[rowIdx])}
                                         articles={props.articles}
                                         names={names}
                                         onlyColumns={onlyColumns}
-                                        blankColumns={validOrdinals[row_idx] ? [] : ['statistic_ordinal', 'statistic_percentile']}
+                                        blankColumns={validOrdinals[rowIdx] ? [] : ['statistic_ordinal', 'statistic_percentile']}
                                     />
                                 ),
                                 )
@@ -214,7 +212,7 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
                     )}
                     <div className="gap"></div>
 
-                    <div ref={map_ref}>
+                    <div ref={mapRef}>
                         <ComparisonMap
                             longnames={props.articles.map(x => x.longname)}
                             colors={props.articles.map((_, i) => color(colors.hueColors, i))}
@@ -228,7 +226,7 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
 }
 
 function color(colors: HueColors, i: number): string {
-    const color_cycle = [
+    const colorCycle = [
         colors.blue,
         colors.orange,
         colors.purple,
@@ -238,11 +236,11 @@ function color(colors: HueColors, i: number): string {
         colors.yellow,
         colors.green,
     ]
-    return color_cycle[i % color_cycle.length]
+    return colorCycle[i % colorCycle.length]
 }
 
 function each({ length }: { length: number }): number {
-    return 100 * (1 - left_margin_pct) / length
+    return 100 * (1 - leftMarginPercent) / length
 }
 
 function ComparisonRowBody({ rows, articles, names, onlyColumns, blankColumns, index }: {
@@ -254,10 +252,10 @@ function ComparisonRowBody({ rows, articles, names, onlyColumns, blankColumns, i
     index: number
 }): ReactNode {
     const colors = useColors()
-    const [expanded] = useSetting(row_expanded_key(rows[0].statpath))
-    const plot_props = rows.map((row, data_idx) => ({ ...row, color: color(colors.hueColors, data_idx), shortname: articles[data_idx].shortname }))
+    const [expanded] = useSetting(rowExpandedKey(rows[0].statpath))
+    const plotProps = rows.map((row, dataIdx) => ({ ...row, color: color(colors.hueColors, dataIdx), shortname: articles[dataIdx].shortname }))
     return (
-        <WithPlot plot_props={plot_props} expanded={expanded ?? false}>
+        <WithPlot plotProps={plotProps} expanded={expanded ?? false}>
             <TableRowContainer index={index}>
                 <ComparisonCells
                     rows={rows}
@@ -295,8 +293,8 @@ function ComparisonCells({ names, rows, onlyColumns, blankColumns }: {
             key="statname"
             onlyColumns={['statname']}
             longname={names[0]}
-            totalWidth={100 * (left_margin_pct - left_bar_margin)}
-            row={rows.find(row => row.extra_stat !== undefined) ?? rows[0]} // So that we show the expand if there's a least one extra
+            totalWidth={100 * (leftMarginPercent - leftBarMargin)}
+            row={rows.find(row => row.extraStat !== undefined) ?? rows[0]} // So that we show the expand if there's a least one extra
             simpleOrdinals={true}
         />,
         ...rows.map((row, i) => (
@@ -313,7 +311,7 @@ function ComparisonCells({ names, rows, onlyColumns, blankColumns }: {
                         kind: 'comparison',
                         universe: navContext.universe,
                         longnames: names.map((value, index) => index === i ? x : value),
-                    }, 'push')
+                    }, { history: 'push', scroll: null })
                 }}
                 totalWidth={each(rows)}
             />
@@ -324,7 +322,7 @@ function ComparisonCells({ names, rows, onlyColumns, blankColumns }: {
 function ComparisonHeaders({ onlyColumns, length }: { onlyColumns: ColumnIdentifier[], length: number }): ReactNode {
     return [
         <ComparisonColorBar key="color" highlightIndex={undefined} />,
-        <StatisticHeaderCells key="statname" onlyColumns={['statname']} simpleOrdinals={true} totalWidth={100 * (left_margin_pct - left_bar_margin)} />,
+        <StatisticHeaderCells key="statname" onlyColumns={['statname']} simpleOrdinals={true} totalWidth={100 * (leftMarginPercent - leftBarMargin)} />,
         ...Array.from({ length })
             .map((_, index) => <StatisticHeaderCells key={index} onlyColumns={onlyColumns} simpleOrdinals={true} totalWidth={each({ length })} />),
     ]
@@ -337,7 +335,7 @@ function ComparisonColorBar({ highlightIndex }: { highlightIndex: number | undef
         <div
             key="color"
             style={{
-                width: `${100 * left_bar_margin}%`,
+                width: `${100 * leftBarMargin}%`,
                 alignSelf: 'stretch',
             }}
         >
@@ -352,14 +350,14 @@ function ComparisonColorBar({ highlightIndex }: { highlightIndex: number | undef
     )
 }
 
-const manipulation_button_height = '24px'
+const manipulationButtonHeight = '24px'
 
-function ManipulationButton({ color: buttonColor, on_click, text }: { color: string, on_click: () => void, text: string }): ReactNode {
+function ManipulationButton({ color: buttonColor, onClick, text }: { color: string, onClick: () => void, text: string }): ReactNode {
     return (
         <div
             style={{
-                height: manipulation_button_height,
-                lineHeight: manipulation_button_height,
+                height: manipulationButtonHeight,
+                lineHeight: manipulationButtonHeight,
                 cursor: 'pointer',
                 paddingLeft: '0.5em', paddingRight: '0.5em',
                 borderRadius: '0.25em',
@@ -367,29 +365,29 @@ function ManipulationButton({ color: buttonColor, on_click, text }: { color: str
                 backgroundColor: buttonColor,
             }}
             className={`serif manipulation-button-${text}`}
-            onClick={on_click}
+            onClick={onClick}
         >
             {text}
         </div>
     )
 }
 
-function HeadingDisplay({ longname, include_delete, on_click, on_change: on_search_change }: { longname: string, include_delete: boolean, on_click: () => void, on_change: (q: string) => void }): ReactNode {
+function HeadingDisplay({ longname, includeDelete, onDelete, onReplace }: { longname: string, includeDelete: boolean, onDelete: () => void, onReplace: (q: string) => ReturnType<Navigator['link']> }): ReactNode {
     const colors = useColors()
-    const [is_editing, set_is_editing] = React.useState(false)
-    const curr_universe = useUniverse()
+    const [isEditing, setIsEditing] = React.useState(false)
+    const currentUniverse = useUniverse()
     const comparisonHeadStyle = useComparisonHeadStyle()
 
-    const manipulation_buttons = (
-        <div style={{ height: manipulation_button_height }}>
+    const manipulationButtons = (
+        <div style={{ height: manipulationButtonHeight }}>
             <div style={{ display: 'flex', justifyContent: 'flex-end', height: '100%' }}>
-                <ManipulationButton color={colors.unselectedButton} on_click={() => { set_is_editing(!is_editing) }} text="replace" />
-                {!include_delete
+                <ManipulationButton color={colors.unselectedButton} onClick={() => { setIsEditing(!isEditing) }} text="replace" />
+                {!includeDelete
                     ? null
                     : (
                             <>
                                 <div style={{ width: '5px' }} />
-                                <ManipulationButton color={colors.unselectedButton} on_click={on_click} text="delete" />
+                                <ManipulationButton color={colors.unselectedButton} onClick={onDelete} text="delete" />
                             </>
                         )}
                 <div style={{ width: '5px' }} />
@@ -397,13 +395,13 @@ function HeadingDisplay({ longname, include_delete, on_click, on_change: on_sear
         </div>
     )
 
-    const screenshot_mode = useScreenshotMode()
+    const screenshotMode = useScreenshotMode()
 
     const navContext = useContext(Navigator.Context)
 
     return (
         <div>
-            {screenshot_mode ? undefined : manipulation_buttons}
+            {screenshotMode ? undefined : manipulationButtons}
             <div style={{ height: '5px' }} />
             <a
                 className="serif"
@@ -411,23 +409,23 @@ function HeadingDisplay({ longname, include_delete, on_click, on_change: on_sear
                     ...navContext.link({
                         kind: 'article',
                         longname,
-                        universe: curr_universe,
-                    })
+                        universe: currentUniverse,
+                    }, { scroll: 0 })
                 }
                 style={{ textDecoration: 'none' }}
             >
                 <div style={useComparisonHeadStyle()}>{longname}</div>
             </a>
-            {is_editing
+            {isEditing
                 ? (
                         <SearchBox
                             autoFocus={true}
                             style={{ ...comparisonHeadStyle, width: '100%' }}
                             placeholder="Replacement"
-                            on_change={(q) => {
-                                set_is_editing(false)
-                                on_search_change(q)
+                            onChange={() => {
+                                setIsEditing(false)
                             }}
+                            link={onReplace}
                         />
                     )
                 : null}
@@ -441,7 +439,7 @@ class ComparisonMap extends MapGeneric<MapGenericProps & { longnames: string[], 
         return <ComparisonMapButtons map={this} />
     }
 
-    zoom_button(i: number, buttonColor: string, onClick: () => void): ReactNode {
+    zoomButton(i: number, buttonColor: string, onClick: () => void): ReactNode {
         return (
             <div
                 key={i}
@@ -455,7 +453,7 @@ class ComparisonMap extends MapGeneric<MapGenericProps & { longnames: string[], 
         )
     }
 
-    override compute_polygons(): Promise<Polygons> {
+    override computePolygons(): Promise<Polygons> {
         const names = []
         const styles = []
 
@@ -464,15 +462,15 @@ class ComparisonMap extends MapGeneric<MapGenericProps & { longnames: string[], 
             styles.push({ color: this.props.colors[i], fillColor: this.props.colors[i], fillOpacity: 0.5, weight: 1 })
         }
 
-        const zoom_index = -1
+        const zoomIndex = -1
 
         const metas = names.map(() => { return {} })
 
-        return Promise.resolve([names, styles, metas, zoom_index])
+        return Promise.resolve([names, styles, metas, zoomIndex])
     }
 
     override mapDidRender(): Promise<void> {
-        this.zoom_to_all()
+        this.zoomToAll()
         return Promise.resolve()
     }
 }
@@ -487,9 +485,9 @@ export function ComparisonMapButtons(props: { map: ComparisonMap }): ReactNode {
         >
             <span className="serif" style={{ fontSize: '15px', fontWeight: 500 }}>Zoom to:</span>
             <div style={{ width: '0.25em' }} />
-            {props.map.zoom_button(-1, colors.textMain, () => { props.map.zoom_to_all() })}
+            {props.map.zoomButton(-1, colors.textMain, () => { props.map.zoomToAll() })}
             {props.map.props.longnames.map((longname, i) => {
-                return props.map.zoom_button(i, props.map.props.colors[i], () => { props.map.zoom_to(longname) })
+                return props.map.zoomButton(i, props.map.props.colors[i], () => { props.map.zoomTo(longname) })
             })}
         </div>
     )

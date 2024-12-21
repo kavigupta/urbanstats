@@ -9,21 +9,25 @@ import { Settings } from '../page_template/settings'
 import { getVector, VectorSettingsDictionary } from '../page_template/settings-vector'
 import { allGroups, allYears, statParents, StatPath } from '../page_template/statistic-tree'
 
-import { render_time_remaining } from './dates'
-import { JuxtaQuestion, QuizDescriptor, QuizHistory, QuizQuestion, RetroQuestion, a_correct, nameOfQuizKind } from './quiz'
+import { renderTimeRemaining } from './dates'
+import { JuxtaQuestion, QuizDescriptor, QuizHistory, QuizQuestion, RetroQuestion, aCorrect, QuizFriends, loadQuizFriends, nameOfQuizKind } from './quiz'
 import { ExportImport, Header, UserId } from './quiz-components'
-import { render_question } from './quiz-question'
+import { QuizFriendsPanel } from './quiz-friends'
+import { renderQuestion } from './quiz-question'
 import { AudienceStatistics, QuizStatistics } from './quiz-statistics'
-import { getCachedPerQuestionStats, getPerQuestionStats, PerQuestionStats, reportToServer } from './statistics'
+import { getCachedPerQuestionStats, getPerQuestionStats, PerQuestionStats, parseTimeIdentifier, reportToServer } from './statistics'
+
+export type CorrectPattern = (boolean | 0 | 1)[]
 
 interface QuizResultProps {
     quizDescriptor: QuizDescriptor
-    today_name: string
+    todayName: string
     history: {
-        correct_pattern: boolean[]
+        // eslint-disable-next-line no-restricted-syntax -- Persistent data
+        correct_pattern: CorrectPattern
         choices: ('A' | 'B')[]
     }
-    whole_history: QuizHistory
+    wholeHistory: QuizHistory
     quiz: QuizQuestion[]
 }
 
@@ -31,16 +35,21 @@ export function QuizResult(props: QuizResultProps): ReactNode {
     const button = useRef<HTMLButtonElement>(null)
     const [stats, setStats] = useState<PerQuestionStats>(getCachedPerQuestionStats(props.quizDescriptor) ?? { total: 0, per_question: [0, 0, 0, 0, 0] })
     const [authError, setAuthError] = useState(false)
+    const [quizFriends, setQuizFriendsDirect] = useState(loadQuizFriends())
+
+    const setQuizFriends = (qf: QuizFriends): void => {
+        setQuizFriendsDirect(qf)
+        localStorage.setItem('quiz_friends', JSON.stringify(qf))
+    }
 
     useEffect(() => {
-        void reportToServer(props.whole_history, props.quizDescriptor.kind).then(setAuthError)
+        void reportToServer(props.wholeHistory, props.quizDescriptor.kind).then(setAuthError)
         void getPerQuestionStats(props.quizDescriptor).then(setStats)
-    }, [props.whole_history, props.quizDescriptor])
+    }, [props.wholeHistory, props.quizDescriptor])
 
     const colors = useColors()
-    const today_name = props.today_name
-    const correct_pattern = props.history.correct_pattern
-    const total_correct = correct_pattern.reduce((partialSum, a) => partialSum + (a ? 1 : 0), 0)
+    const correctPattern = props.history.correct_pattern
+    const totalCorrect = correctPattern.reduce((partialSum: number, a) => partialSum + (a ? 1 : 0), 0)
 
     return (
         <div>
@@ -64,21 +73,21 @@ export function QuizResult(props: QuizResultProps): ReactNode {
                         </div>
                     )
                 : undefined}
-            <Summary correct_pattern={correct_pattern} total_correct={total_correct} total={correct_pattern.length} />
+            <Summary correctPattern={correctPattern} totalCorrect={totalCorrect} total={correctPattern.length} />
             <div className="gap_small"></div>
             <ShareButton
-                button_ref={button}
-                today_name={today_name}
-                correct_pattern={correct_pattern}
-                total_correct={total_correct}
-                quiz_kind={props.quizDescriptor.kind}
+                buttonRef={button}
+                todayName={props.todayName}
+                correctPattern={correctPattern}
+                totalCorrect={totalCorrect}
+                quizKind={props.quizDescriptor.kind}
             />
             <div className="gap" />
             <div className="gap"></div>
             {stats.total > 30
                 ? (
                         <div>
-                            <AudienceStatistics {...stats} />
+                            <AudienceStatistics total={stats.total} perQuestion={stats.per_question} />
                             <div className="gap"></div>
                             <div className="gap"></div>
                         </div>
@@ -86,7 +95,7 @@ export function QuizResult(props: QuizResultProps): ReactNode {
                 : undefined}
             <TimeToNextQuiz quiz={props.quizDescriptor} />
             <div className="gap"></div>
-            <QuizStatistics whole_history={props.whole_history} quiz={props.quizDescriptor} />
+            <QuizStatistics wholeHistory={props.wholeHistory} quiz={props.quizDescriptor} />
             <div className="gap"></div>
             <span className="serif quiz_summary">Details (spoilers, don&apos;t share!)</span>
             <div className="gap_small"></div>
@@ -97,10 +106,21 @@ export function QuizResult(props: QuizResultProps): ReactNode {
                         key={index}
                         index={index}
                         choice={props.history.choices[index]}
-                        correct={correct_pattern[index]}
+                        correct={correctPattern[index]}
                     />
                 ),
             )}
+            <div className="gap_small"></div>
+            <div style={{ margin: 'auto', width: '50%' }}>
+                <QuizFriendsPanel
+                    quizFriends={quizFriends}
+                    date={parseTimeIdentifier(props.quizDescriptor.kind, props.quizDescriptor.name.toString())}
+                    quizKind={props.quizDescriptor.kind}
+                    setQuizFriends={setQuizFriends}
+                    myCorrects={correctPattern}
+                />
+            </div>
+            <div className="gap_small"></div>
             <div className="centered_text serif">
                 <UserId />
                 <ExportImport />
@@ -110,19 +130,19 @@ export function QuizResult(props: QuizResultProps): ReactNode {
 }
 
 interface ShareButtonProps {
-    button_ref: React.RefObject<HTMLButtonElement>
-    today_name: string
-    correct_pattern: boolean[]
-    total_correct: number
-    quiz_kind: 'juxtastat' | 'retrostat'
+    buttonRef: React.RefObject<HTMLButtonElement>
+    todayName: string
+    correctPattern: CorrectPattern
+    totalCorrect: number
+    quizKind: 'juxtastat' | 'retrostat'
 }
 
-function ShareButton({ button_ref, today_name, correct_pattern, total_correct, quiz_kind }: ShareButtonProps): ReactNode {
+function ShareButton({ buttonRef, todayName, correctPattern, totalCorrect, quizKind }: ShareButtonProps): ReactNode {
     const colors = useColors()
     const juxtaColors = useJuxtastatColors()
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- We need to check the condition for browser compatibility.
-    const can_share = navigator.canShare?.({ url: 'https://juxtastat.org', text: 'test' }) ?? false
-    const is_share = isMobile && can_share && !isFirefox
+    const canShare = navigator.canShare?.({ url: 'https://juxtastat.org', text: 'test' }) ?? false
+    const isShare = isMobile && canShare && !isFirefox
 
     return (
         <button
@@ -141,16 +161,16 @@ function ShareButton({ button_ref, today_name, correct_pattern, total_correct, q
                 border: 'none',
                 color: '#fff',
             }}
-            ref={button_ref}
+            ref={buttonRef}
             onClick={async () => {
-                const [text, url] = summary(juxtaColors, today_name, correct_pattern, total_correct, quiz_kind)
+                const [text, url] = summary(juxtaColors, todayName, correctPattern, totalCorrect, quizKind)
 
-                async function copy_to_clipboard(): Promise<void> {
+                async function copyToClipboard(): Promise<void> {
                     await navigator.clipboard.writeText(`${text}\n${url}`)
-                    button_ref.current!.textContent = 'Copied!'
+                    buttonRef.current!.textContent = 'Copied!'
                 }
 
-                if (is_share) {
+                if (isShare) {
                     try {
                         await navigator.share({
                             url,
@@ -158,15 +178,15 @@ function ShareButton({ button_ref, today_name, correct_pattern, total_correct, q
                         })
                     }
                     catch {
-                        await copy_to_clipboard()
+                        await copyToClipboard()
                     }
                 }
                 else {
-                    await copy_to_clipboard()
+                    await copyToClipboard()
                 }
             }}
         >
-            <div>{is_share ? 'Share' : 'Copy'}</div>
+            <div>{isShare ? 'Share' : 'Copy'}</div>
             <div style={{ marginInline: '0.25em' }}></div>
             <img src="/share.png" className="icon" style={{ width: '1em', height: '1em' }} />
         </button>
@@ -202,7 +222,7 @@ function Timer({ quiz }: { quiz: QuizDescriptor }): ReactNode {
             }}
             id="quiz-timer"
         >
-            <span>{render_time_remaining(quiz)}</span>
+            <span>{renderTimeRemaining(quiz)}</span>
         </div>
     )
 }
@@ -226,12 +246,12 @@ function TimeToNextQuiz({ quiz }: { quiz: QuizDescriptor }): ReactNode {
     )
 }
 
-export function Summary(props: { total_correct: number, total: number, correct_pattern: boolean[] }): ReactNode {
+export function Summary(props: { totalCorrect: number, total: number, correctPattern: CorrectPattern }): ReactNode {
     const juxtaColors = useJuxtastatColors()
     let show = 'error'
     // let frac = this.props.total_correct / this.props.total_correct;
-    const correct = props.total_correct
-    const incorrect = props.total - props.total_correct
+    const correct = props.totalCorrect
+    const incorrect = props.total - props.totalCorrect
 
     if (correct === 0) {
         show = 'Impressively Bad Job! 🤷'
@@ -255,26 +275,25 @@ export function Summary(props: { total_correct: number, total: number, correct_p
     return (
         <div>
             <span className="serif quiz_summary" id="quiz-result-summary-words">{show}</span>
-            <span className="serif quiz_summary" id="quiz-result-summary-emoji">{red_and_green_squares(juxtaColors, props.correct_pattern)}</span>
+            <span className="serif quiz_summary" id="quiz-result-summary-emoji">{redAndGreenSquares(juxtaColors, props.correctPattern)}</span>
         </div>
     )
 }
 
-export function summary(juxtaColors: JuxtastatColors, today_name: string, correct_pattern: boolean[], total_correct: number, quiz_kind: 'juxtastat' | 'retrostat'): [string, string] {
+export function summary(juxtaColors: JuxtastatColors, todayName: string, correctPattern: CorrectPattern, totalCorrect: number, quizKind: 'juxtastat' | 'retrostat'): [string, string] {
     // wordle-style summary
-    let text = `${nameOfQuizKind(quiz_kind)} ${today_name} ${total_correct}/${correct_pattern.length}`
+    let text = `${nameOfQuizKind(quizKind)} ${todayName} ${totalCorrect}/${correctPattern.length}`
 
     text += '\n'
     text += '\n'
 
-    text += red_and_green_squares(juxtaColors, correct_pattern)
+    text += redAndGreenSquares(juxtaColors, correctPattern)
 
     text += '\n'
 
     // eslint-disable-next-line no-restricted-syntax -- Sharing
-    const url = new URL(window.location.href)
-    url.host = 'juxtastat.org'
-    return [text, url.toString()]
+    const hash = window.location.hash
+    return [text, `https://juxtastat.org${hash === '' ? '' : `/${hash}`}`]
 }
 
 function QuizResultRow(props: QuizResultRowProps & { question: QuizQuestion }): ReactNode {
@@ -289,20 +308,20 @@ function QuizResultRow(props: QuizResultRowProps & { question: QuizQuestion }): 
 interface QuizResultRowProps {
     question: QuizQuestion
     choice: 'A' | 'B'
-    correct: boolean
+    correct: boolean | 0 | 1
     index: number
 }
 
 interface GenericQuizResultRowProps extends QuizResultRowProps {
-    get_label: () => ReactNode
-    get_option: (letter: 'a' | 'b') => ReactNode
-    get_stat: (letter: 'a' | 'b') => ReactNode
+    getLabel: () => ReactNode
+    getOption: (letter: 'a' | 'b') => ReactNode
+    getStat: (letter: 'a' | 'b') => ReactNode
 }
 
 export function GenericQuizResultRow(props: GenericQuizResultRowProps): ReactNode {
     const colors = useColors()
     const juxtaColors = useJuxtastatColors()
-    const comparison = a_correct(props.question)
+    const comparison = aCorrect(props.question)
         ? (<span>&gt;</span>)
         : (<span>&lt;</span>)
     let firstStyle: React.CSSProperties = {}
@@ -318,7 +337,7 @@ export function GenericQuizResultRow(props: GenericQuizResultRowProps): ReactNod
 
     return (
         <div key={props.index}>
-            {props.get_label()}
+            {props.getLabel()}
             <table
                 className="stats_table"
                 style={{
@@ -334,19 +353,19 @@ export function GenericQuizResultRow(props: GenericQuizResultRowProps): ReactNod
                 <tbody style={{ color: colors.textMain }}>
                     <tr>
                         <td className="serif quiz_result_name_left" style={firstStyle}>
-                            {props.get_option('a')}
+                            {props.getOption('a')}
                         </td>
                         <td style={{ fontWeight: 400 }} className="serif quiz_result_value_left">
-                            {props.get_stat('a')}
+                            {props.getStat('a')}
                         </td>
                         <td className="serif quiz_result_symbol">
                             {comparison}
                         </td>
                         <td style={{ fontWeight: 400 }} className="serif quiz_result_value_right">
-                            {props.get_stat('b')}
+                            {props.getStat('b')}
                         </td>
                         <td className="serif quiz_result_name_right" style={secondStyle}>
-                            {props.get_option('b')}
+                            {props.getOption('b')}
                         </td>
                         <td className="serif quiz_result_symbol">
                             {result}
@@ -360,18 +379,18 @@ export function GenericQuizResultRow(props: GenericQuizResultRowProps): ReactNod
     )
 }
 
-function Value({ stat, stat_column }: { stat: number, stat_column: string }): ReactNode {
+function Value({ stat, statColumn }: { stat: number, statColumn: string }): ReactNode {
     return (
         <span>
             <Statistic
-                statname={stat_column}
+                statname={statColumn}
                 value={stat}
-                is_unit={false}
+                isUnit={false}
             />
             <Statistic
-                statname={stat_column}
+                statname={statColumn}
                 value={stat}
-                is_unit={true}
+                isUnit={true}
             />
         </span>
     )
@@ -382,13 +401,13 @@ function JuxtastatQuizResultRow(props: QuizResultRowProps & { question: JuxtaQue
         <ComparisonLink question={props.question}>
             <GenericQuizResultRow
                 {...props}
-                get_label={() => (
+                getLabel={() => (
                     <span className="serif quiz_results_question">
                         {props.question.stat_column}
                     </span>
                 )}
-                get_option={letter => props.question[`longname_${letter}`]}
-                get_stat={stat => <Value stat={props.question[`stat_${stat}`]} stat_column={props.question.stat_column} />}
+                getOption={letter => props.question[`longname_${letter}`]}
+                getStat={stat => <Value stat={props.question[`stat_${stat}`]} statColumn={props.question.stat_column} />}
             />
         </ComparisonLink>
     )
@@ -398,35 +417,35 @@ function RetrostatQuizResultRow(props: QuizResultRowProps & { question: RetroQue
     return (
         <GenericQuizResultRow
             {...props}
-            get_label={() => (
+            getLabel={() => (
                 <span className="serif quiz_results_question">
                     Juxtastat Users Who Got This Question Right %
                 </span>
             )}
-            get_option={(letter) => {
+            getOption={(letter) => {
                 const style = letter === 'a' ? { marginLeft: '20%' } : { marginRight: '20%' }
                 const q = props.question[letter]
                 return (
                     <ComparisonLink question={q}>
                         <div style={{ zoom: 0.5 }}>
-                            <div>{render_question(q.question)}</div>
+                            <div>{renderQuestion(q.question)}</div>
                             <div style={style}>
                                 <div>
                                     {q.longname_a}
                                     {' '}
-                                    <Value stat={q.stat_a} stat_column={q.stat_column} />
+                                    <Value stat={q.stat_a} statColumn={q.stat_column} />
                                 </div>
                                 <div>
                                     {q.longname_b}
                                     {' '}
-                                    <Value stat={q.stat_b} stat_column={q.stat_column} />
+                                    <Value stat={q.stat_b} statColumn={q.stat_column} />
                                 </div>
                             </div>
                         </div>
                     </ComparisonLink>
                 )
             }}
-            get_stat={stat => <Value stat={props.question[`${stat}_ease`]} stat_column="%" />}
+            getStat={stat => <Value stat={props.question[`${stat}_ease`]} statColumn="%" />}
         />
     )
 }
@@ -441,7 +460,7 @@ function ComparisonLink({ question, children }: { question: JuxtaQuestion, child
                 kind: 'comparison',
                 longnames: [question.longname_a, question.longname_b],
                 s: getVector(settings, settingsOverrides(question.stat_path)),
-            })}
+            }, { scroll: 0 })}
             style={{ textDecoration: 'none', color: colors.textMain }}
         >
             {children}
@@ -469,9 +488,9 @@ function settingsOverrides(questionStatPath?: StatPath): Partial<VectorSettingsD
     ])
 }
 
-export function red_and_green_squares(juxtaColors: JuxtastatColors, correct_pattern: boolean[]): string {
-    return correct_pattern.map(function (x) {
-    // red square emoji for wrong, green for right
+export function redAndGreenSquares(juxtaColors: JuxtastatColors, correctPattern: CorrectPattern): string {
+    return correctPattern.map(function (x) {
+        // red square emoji for wrong, green for right
         return x ? juxtaColors.correctEmoji : juxtaColors.incorrectEmoji
     }).join('')
 }

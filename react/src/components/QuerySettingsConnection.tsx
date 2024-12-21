@@ -3,7 +3,7 @@ import { useContext, useEffect } from 'react'
 import extra_stats from '../data/extra_stats'
 import stat_path_list from '../data/statistic_path_list'
 import { Navigator } from '../navigation/navigator'
-import { Settings, SettingsDictionary, source_enabled_key, statPathsWithExtra } from '../page_template/settings'
+import { Settings, SettingsDictionary, sourceEnabledKey, statPathsWithExtra } from '../page_template/settings'
 import { fromVector, useVector, VectorSettingKey } from '../page_template/settings-vector'
 import { getAvailableGroups, getAvailableYears, getDataSourceCheckboxes, groupYearKeys, statIsEnabled, useStatPathsAll } from '../page_template/statistic-settings'
 import { findAmbiguousSourcesAll, StatPath } from '../page_template/statistic-tree'
@@ -68,7 +68,7 @@ export function getStagedSettingsKeys(statPaths: StatPath[][]): readonly VectorS
             .flatMap(({ category, checkboxSpecs }) =>
                 checkboxSpecs.flatMap(({ name, forcedOn }) => forcedOn
                     ? []
-                    : [source_enabled_key({ category, name })]),
+                    : [sourceEnabledKey({ category, name })]),
             ),
         'temperature_unit',
     ] as const

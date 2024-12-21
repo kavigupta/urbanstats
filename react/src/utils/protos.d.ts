@@ -9,9 +9,6 @@ export interface IStatisticRow {
     /** StatisticRow ordinalByUniverse */
     ordinalByUniverse?: (number[]|null);
 
-    /** StatisticRow overallOrdinalByUniverse */
-    overallOrdinalByUniverse?: (number[]|null);
-
     /** StatisticRow percentileByPopulationByUniverse */
     percentileByPopulationByUniverse?: (number[]|null);
 }
@@ -30,9 +27,6 @@ export class StatisticRow implements IStatisticRow {
 
     /** StatisticRow ordinalByUniverse. */
     public ordinalByUniverse: number[];
-
-    /** StatisticRow overallOrdinalByUniverse. */
-    public overallOrdinalByUniverse: number[];
 
     /** StatisticRow percentileByPopulationByUniverse. */
     public percentileByPopulationByUniverse: number[];
@@ -109,6 +103,115 @@ export class StatisticRow implements IStatisticRow {
 
     /**
      * Gets the default type url for StatisticRow
+     * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns The default type url
+     */
+    public static getTypeUrl(typeUrlPrefix?: string): string;
+}
+
+/** Properties of a FirstOrLast. */
+export interface IFirstOrLast {
+
+    /** FirstOrLast articleRowIdx */
+    articleRowIdx?: (number|null);
+
+    /** FirstOrLast articleUniversesIdx */
+    articleUniversesIdx?: (number|null);
+
+    /** FirstOrLast isFirst */
+    isFirst?: (boolean|null);
+}
+
+/** Represents a FirstOrLast. */
+export class FirstOrLast implements IFirstOrLast {
+
+    /**
+     * Constructs a new FirstOrLast.
+     * @param [properties] Properties to set
+     */
+    constructor(properties?: IFirstOrLast);
+
+    /** FirstOrLast articleRowIdx. */
+    public articleRowIdx: number;
+
+    /** FirstOrLast articleUniversesIdx. */
+    public articleUniversesIdx: number;
+
+    /** FirstOrLast isFirst. */
+    public isFirst: boolean;
+
+    /**
+     * Creates a new FirstOrLast instance using the specified properties.
+     * @param [properties] Properties to set
+     * @returns FirstOrLast instance
+     */
+    public static create(properties?: IFirstOrLast): FirstOrLast;
+
+    /**
+     * Encodes the specified FirstOrLast message. Does not implicitly {@link FirstOrLast.verify|verify} messages.
+     * @param message FirstOrLast message or plain object to encode
+     * @param [writer] Writer to encode to
+     * @returns Writer
+     */
+    public static encode(message: IFirstOrLast, writer?: $protobuf.Writer): $protobuf.Writer;
+
+    /**
+     * Encodes the specified FirstOrLast message, length delimited. Does not implicitly {@link FirstOrLast.verify|verify} messages.
+     * @param message FirstOrLast message or plain object to encode
+     * @param [writer] Writer to encode to
+     * @returns Writer
+     */
+    public static encodeDelimited(message: IFirstOrLast, writer?: $protobuf.Writer): $protobuf.Writer;
+
+    /**
+     * Decodes a FirstOrLast message from the specified reader or buffer.
+     * @param reader Reader or buffer to decode from
+     * @param [length] Message length if known beforehand
+     * @returns FirstOrLast
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): FirstOrLast;
+
+    /**
+     * Decodes a FirstOrLast message from the specified reader or buffer, length delimited.
+     * @param reader Reader or buffer to decode from
+     * @returns FirstOrLast
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): FirstOrLast;
+
+    /**
+     * Verifies a FirstOrLast message.
+     * @param message Plain object to verify
+     * @returns `null` if valid, otherwise the reason why it is not
+     */
+    public static verify(message: { [k: string]: any }): (string|null);
+
+    /**
+     * Creates a FirstOrLast message from a plain object. Also converts values to their respective internal types.
+     * @param object Plain object
+     * @returns FirstOrLast
+     */
+    public static fromObject(object: { [k: string]: any }): FirstOrLast;
+
+    /**
+     * Creates a plain object from a FirstOrLast message. Also converts values to other types if specified.
+     * @param message FirstOrLast
+     * @param [options] Conversion options
+     * @returns Plain object
+     */
+    public static toObject(message: FirstOrLast, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+    /**
+     * Converts this FirstOrLast to JSON.
+     * @returns JSON object
+     */
+    public toJSON(): { [k: string]: any };
+
+    /**
+     * Gets the default type url for FirstOrLast
      * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
      * @returns The default type url
      */
@@ -663,6 +766,9 @@ export interface IArticle {
     /** Article rows */
     rows?: (IStatisticRow[]|null);
 
+    /** Article overallFirstOrLast */
+    overallFirstOrLast?: (IFirstOrLast[]|null);
+
     /** Article related */
     related?: (IRelatedButtons[]|null);
 
@@ -699,6 +805,9 @@ export class Article implements IArticle {
 
     /** Article rows. */
     public rows: IStatisticRow[];
+
+    /** Article overallFirstOrLast. */
+    public overallFirstOrLast: IFirstOrLast[];
 
     /** Article related. */
     public related: IRelatedButtons[];

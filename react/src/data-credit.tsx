@@ -50,6 +50,7 @@ function ExplanationTable(props: { name: string, link: string, table: readonly (
     )
 }
 
+// eslint-disable-next-line no-restricted-syntax -- Header so we can use as tsx tag name
 function NRef({ children, name, h: Header = 'h2' }: { children: React.ReactNode, name: string, h?: 'h1' | 'h2' }): ReactNode {
     return (
         <Header id={`explanation_${name}`}>
@@ -775,14 +776,32 @@ export function DataCreditPanel(): ReactNode {
                                     digital boundary files provided by StatCan include unnecessarily large water areas.
                                 </p>
                             </div>
-                            <NRef name="canadian_census" h="h2">Census Dissemination Block Data</NRef>
+                            <NRef name="canadian-census" h="h2">Census Dissemination Block Data</NRef>
                             <div>
                                 We use dissemination block data from the 2021 Canada Census. It is available
                                 {' '}
                                 <a href="https://www12.statcan.gc.ca/census-recensement/2021/geo/aip-pia/geosuite/index2021-eng.cfm?year=21">from StatCan</a>
                                 . We use the same metrics as for the US Census to compute population
                                 and population density statistics, except using dissemination blocks instead
-                                of census blocks.
+                                of census blocks. We use this for population and density statistics.
+                            </div>
+                            <NRef name="canadian-census-disaggregated" h="h2">Census Dissemination Block Data</NRef>
+                            <div>
+                                <p>
+                                    We also use dissemination area data for all statistics other than population and density. This data
+                                    is found
+                                    {' '}
+                                    <a href="https://www12.statcan.gc.ca/census-recensement/2021/dp-pd/prof/details/download-telecharger.cfm?Lang=E">here</a>
+                                    . We disaggregate this data to the dissemination block level using either population or
+                                    occupied housing units as a weight. We then aggregate to the geography of interest based on the
+                                    dissemination block.
+                                </p>
+                                <p>
+                                    For Generation, Marriage, Industry, and Commute time, we are able to use identical definitions to the US data.
+                                    For Income, LICO-AT, and ..., we use similar definitions to the US data, but with Canadian-specific
+                                    thresholds (e.g., the income thresholds are in CAD, not USD, and we use LICO-AT rather than US Census&apos;s
+                                    poverty thresholds).
+                                </p>
                             </div>
                         </div>
                         <h1> Flags </h1>

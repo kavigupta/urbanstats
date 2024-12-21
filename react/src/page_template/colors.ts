@@ -13,9 +13,9 @@ export function useCurrentTheme(): Theme {
 
 export function useColors(): Colors {
     const theme = useCurrentTheme()
-    const [clean_background] = useSetting('clean_background')
+    const [cleanBackground] = useSetting('clean_background')
     const themeDict = { ...colorThemes[theme] }
-    if (clean_background) {
+    if (cleanBackground) {
         themeDict.background = themeDict.cleanBackground
         themeDict.slightlyDifferentBackground = themeDict.cleanSlightlyDifferentBackground
     }
@@ -24,10 +24,10 @@ export function useColors(): Colors {
 
 export function useJuxtastatColors(): JuxtastatColors {
     const colors = useColors()
-    const [colorblind_mode] = useSetting('colorblind_mode')
+    const [colorblindMode] = useSetting('colorblind_mode')
     return {
-        correct: colorblind_mode ? '#65fe08' : colors.hueColors.green,
-        incorrect: colorblind_mode ? mixWithBackground(colors.hueColors.red, 0.3, '#000000') : colors.hueColors.red,
+        correct: colorblindMode ? '#65fe08' : colors.hueColors.green,
+        incorrect: colorblindMode ? mixWithBackground(colors.hueColors.red, 0.3, '#000000') : colors.hueColors.red,
         correctEmoji: '🟩',
         incorrectEmoji: '🟥',
     }

@@ -222,7 +222,7 @@ def build_urbanstats(
             html_index(
                 title="Juxtastat",
                 image="https://urbanstats.org/juxtastat-link-preview.png",  # Image url must be absolute, or gets messed up from juxtastat.org
-                description="Test your knowledge of geography and statistics! New game every day",
+                description="Test your knowledge of geography and statistics! New quiz every day",
             )
         )
 

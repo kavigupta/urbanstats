@@ -4,28 +4,28 @@ import React, { createContext, useEffect, useState } from 'react'
 import { z } from 'zod'
 
 import { applySettingsParam, settingsConnectionConfig } from '../components/QuerySettingsConnection'
-import { ArticleRow, for_type, load_articles } from '../components/load-article'
+import { ArticleRow, forType, loadArticles } from '../components/load-article'
 import type { StatisticPanelProps } from '../components/statistic-panel'
 import explanation_pages from '../data/explanation_page'
 import stats from '../data/statistic_list'
 import names from '../data/statistic_name_list' // TODO: Maybe dynamically import these
 import paths from '../data/statistic_path_list'
 import { discordFix } from '../discord-fix'
-import { load_ordering, load_ordering_protobuf, loadJSON, loadProtobuf } from '../load_json'
-import { default_settings, MapSettings } from '../mapper/settings'
+import { loadOrdering, loadOrderingProtobuf, loadJSON, loadProtobuf } from '../load_json'
+import { defaultSettings, MapSettings } from '../mapper/settings'
 import { Settings } from '../page_template/settings'
 import { getVector } from '../page_template/settings-vector'
 import { StatGroupSettings } from '../page_template/statistic-settings'
 import { StatName, StatPath } from '../page_template/statistic-tree'
-import { get_daily_offset_number, get_retrostat_offset_number } from '../quiz/dates'
-import { JuxtaQuestionJSON, load_juxta, load_retro, QuizDescriptor, QuizQuestion, RetroQuestionJSON } from '../quiz/quiz'
-import { default_article_universe, default_comparison_universe } from '../universe'
+import { getDailyOffsetNumber, getRetrostatOffsetNumber } from '../quiz/dates'
+import { JuxtaQuestionJSON, loadJuxta, loadRetro, QuizDescriptor, QuizQuestion, RetroQuestionJSON } from '../quiz/quiz'
+import { defaultArticleUniverse, defaultComparisonUniverse } from '../universe'
 import { Article, IDataList } from '../utils/protos'
 import { followSymlink, followSymlinks } from '../utils/symlinks'
 import { NormalizeProto } from '../utils/types'
 
-import { data_link, sanitize } from './links'
-import { by_population, uniform } from './random'
+import { dataLink } from './links'
+import { byPopulation, uniform } from './random'
 
 const articleSchema = z.object({
     longname: z.string().transform(followSymlink),
@@ -187,7 +187,7 @@ export function urlFromPageDescriptor(pageDescriptor: ExceptionalPageDescriptor)
         case 'article':
             pathname = '/article.html'
             searchParams = {
-                longname: sanitize(pageDescriptor.longname),
+                longname: pageDescriptor.longname,
                 universe: pageDescriptor.universe,
                 s: pageDescriptor.s,
             }
@@ -195,7 +195,7 @@ export function urlFromPageDescriptor(pageDescriptor: ExceptionalPageDescriptor)
         case 'comparison':
             pathname = '/comparison.html'
             searchParams = {
-                longnames: JSON.stringify(pageDescriptor.longnames.map(n => sanitize(n))),
+                longnames: JSON.stringify(pageDescriptor.longnames.map(n => n)),
                 universe: pageDescriptor.universe,
                 s: pageDescriptor.s,
             }
@@ -274,15 +274,15 @@ export function urlFromPageDescriptor(pageDescriptor: ExceptionalPageDescriptor)
 async function loadPageDescriptor(newDescriptor: PageDescriptor, settings: Settings): Promise<{ pageData: PageData, newPageDescriptor: PageDescriptor, effects: () => void }> {
     switch (newDescriptor.kind) {
         case 'article':
-            const article = await loadProtobuf(data_link(newDescriptor.longname), 'Article')
+            const article = await loadProtobuf(dataLink(newDescriptor.longname), 'Article')
 
-            const defaultUniverse = default_article_universe(article.universes)
+            const defaultUniverse = defaultArticleUniverse(article.universes)
 
             const articleUniverse = newDescriptor.universe !== undefined && article.universes.includes(newDescriptor.universe) ? newDescriptor.universe : defaultUniverse
 
             const displayUniverse = articleUniverse === defaultUniverse ? undefined : articleUniverse
 
-            const { rows: articleRows, statPaths: articleStatPaths } = load_articles([article], articleUniverse)
+            const { rows: articleRows, statPaths: articleStatPaths } = loadArticles([article], articleUniverse)
 
             return {
                 pageData: {
@@ -305,18 +305,18 @@ async function loadPageDescriptor(newDescriptor: PageDescriptor, settings: Setti
                 },
             }
         case 'comparison':
-            const articles = await Promise.all(newDescriptor.longnames.map(name => loadProtobuf(data_link(name), 'Article')))
+            const articles = await Promise.all(newDescriptor.longnames.map(name => loadProtobuf(dataLink(name), 'Article')))
             // intersection of all the data.universes
             const articleUniverses = articles.map(x => x.universes)
             const universes = articleUniverses.reduce((a, b) => a.filter(c => b.includes(c)))
 
-            const defaultComparisonUniverse = default_comparison_universe(articleUniverses, universes)
+            const defaultUniverseComparison = defaultComparisonUniverse(articleUniverses, universes)
 
-            const comparisonUniverse = newDescriptor.universe !== undefined && universes.includes(newDescriptor.universe) ? newDescriptor.universe : defaultComparisonUniverse
+            const comparisonUniverse = newDescriptor.universe !== undefined && universes.includes(newDescriptor.universe) ? newDescriptor.universe : defaultUniverseComparison
 
-            const displayComparisonUniverse = comparisonUniverse === defaultComparisonUniverse ? undefined : comparisonUniverse
+            const displayComparisonUniverse = comparisonUniverse === defaultUniverseComparison ? undefined : comparisonUniverse
 
-            const { rows: comparisonRows, statPaths: comparisonStatPaths } = load_articles(articles, comparisonUniverse)
+            const { rows: comparisonRows, statPaths: comparisonStatPaths } = loadArticles(articles, comparisonUniverse)
 
             return {
                 pageData: {
@@ -346,14 +346,14 @@ async function loadPageDescriptor(newDescriptor: PageDescriptor, settings: Setti
             const statIndex = names.indexOf(newDescriptor.statname)
             const statpath = paths[statIndex]
             const statcol = stats[statIndex]
-            const explanation_page = explanation_pages[statIndex]
+            const explanationPage = explanation_pages[statIndex]
 
-            const data = load_ordering_protobuf(statUniverse, statpath, newDescriptor.article_type, true).then(result => result as NormalizeProto<IDataList>)
-            const article_names = await load_ordering(statUniverse, statpath, newDescriptor.article_type)
+            const data = loadOrderingProtobuf(statUniverse, statpath, newDescriptor.article_type, true).then(result => result as NormalizeProto<IDataList>)
+            const articleNames = await loadOrdering(statUniverse, statpath, newDescriptor.article_type)
 
             let parsedAmount: number
             if (newDescriptor.amount === 'All') {
-                parsedAmount = article_names.length
+                parsedAmount = articleNames.length
             }
             else {
                 parsedAmount = newDescriptor.amount
@@ -364,17 +364,17 @@ async function loadPageDescriptor(newDescriptor: PageDescriptor, settings: Setti
                     kind: 'statistic',
                     statcol,
                     statname: newDescriptor.statname,
-                    count: for_type(statUniverse, statcol, newDescriptor.article_type),
-                    explanation_page,
+                    count: forType(statUniverse, statcol, newDescriptor.article_type),
+                    explanationPage,
                     order: newDescriptor.order,
                     highlight: newDescriptor.highlight ?? undefined,
-                    article_type: newDescriptor.article_type,
-                    joined_string: statpath,
+                    articleType: newDescriptor.article_type,
+                    joinedString: statpath,
                     start: newDescriptor.start,
                     amount: parsedAmount,
-                    article_names,
+                    articleNames,
                     data: await data,
-                    rendered_statname: newDescriptor.statname,
+                    renderedStatname: newDescriptor.statname,
                     universe: statUniverse,
 
                 },
@@ -386,15 +386,13 @@ async function loadPageDescriptor(newDescriptor: PageDescriptor, settings: Setti
                 effects: () => undefined,
             }
         case 'random':
-            const settingsValues = settings.getMultiple(['show_historical_cds'])
-
             let longname: string
             switch (newDescriptor.sampleby) {
                 case 'uniform':
-                    longname = await uniform(settingsValues)
+                    longname = await uniform()
                     break
                 case 'population':
-                    longname = await by_population(settingsValues, newDescriptor.us_only)
+                    longname = await byPopulation(newDescriptor.us_only)
                     break
             }
 
@@ -413,18 +411,18 @@ async function loadPageDescriptor(newDescriptor: PageDescriptor, settings: Setti
             let todayName: string
             switch (newDescriptor.mode) {
                 case 'retro':
-                    const retro = newDescriptor.date ?? get_retrostat_offset_number()
+                    const retro = newDescriptor.date ?? getRetrostatOffsetNumber()
                     quizDescriptor = {
                         kind: 'retrostat',
                         name: `W${retro}`,
                     }
-                    quiz = (await loadJSON(`/retrostat/${retro}`) as RetroQuestionJSON[]).map(load_retro)
+                    quiz = (await loadJSON(`/retrostat/${retro}`) as RetroQuestionJSON[]).map(loadRetro)
                     todayName = `Week ${retro}`
                     break
                 case undefined:
-                    const today = newDescriptor.date ?? get_daily_offset_number()
+                    const today = newDescriptor.date ?? getDailyOffsetNumber()
                     quizDescriptor = { kind: 'juxtastat', name: today }
-                    quiz = (await loadJSON(`/quiz/${today}`) as JuxtaQuestionJSON[]).map(load_juxta)
+                    quiz = (await loadJSON(`/quiz/${today}`) as JuxtaQuestionJSON[]).map(loadJuxta)
                     todayName = today.toString()
             }
             return {
@@ -465,6 +463,11 @@ function loadingStateFromPageState(pageState: PageState): SubsequentLoadingState
     return Date.now() - pageState.loadStartTime >= quickThresholdDuration ? { kind: 'longLoad', updateAt: undefined } : { kind: 'quickLoad', updateAt: pageState.loadStartTime + quickThresholdDuration }
 }
 
+export interface NavigationOptions {
+    history: 'push' | 'replace' | null // What should we do with this browser history? `null` means nothing, usually you want 'push' or 'replace'
+    scroll: number | null // Where should we scroll to after the navigation? `null` maintains the current scroll position, a number scrolls to that position (0 for top of page). If you're navigating to a hash, passing `null` means we'll scroll to the hash anchor
+}
+
 export class Navigator {
     /* eslint-disable react-hooks/rules-of-hooks, no-restricted-syntax -- This is a logic class with custom hooks and core navigation functions */
     static Context = createContext(new Navigator())
@@ -485,7 +488,7 @@ export class Navigator {
                 current: { descriptor: { kind: 'initialLoad', url }, data: { kind: 'initialLoad' } },
                 loadStartTime: Date.now(),
             }
-            void this.navigate(this.pageState.loading.descriptor, 'replace')
+            void this.navigate(this.pageState.loading.descriptor, { history: 'replace', scroll: null })
         }
         catch (error) {
             const url = new URL(window.location.href)
@@ -498,7 +501,7 @@ export class Navigator {
             }
         }
         window.addEventListener('hashchange', () => {
-            void this.navigate(pageDescriptorFromURL(new URL(discordFix(window.location.href))), 'replace')
+            void this.navigate(pageDescriptorFromURL(new URL(discordFix(window.location.href))), { history: 'replace', scroll: null })
         })
         window.addEventListener('popstate', (popStateEvent: PopStateEvent): void => {
             if (popStateEvent.state === null) {
@@ -507,7 +510,10 @@ export class Navigator {
             }
             const parseResult = historyStateSchema.safeParse(popStateEvent.state)
             if (parseResult.success) {
-                void this.navigate(parseResult.data.pageDescriptor, null, parseResult.data.scrollPosition)
+                void this.navigate(parseResult.data.pageDescriptor, {
+                    history: null,
+                    scroll: parseResult.data.scrollPosition,
+                })
             }
             else {
                 console.warn(`Failed to parse history state! ${parseResult.error}`)
@@ -525,26 +531,24 @@ export class Navigator {
         window.addEventListener('visibilitychange', () => {
             if (document.visibilityState === 'visible' && this.pageState.kind === 'loading') {
                 console.warn('focused during loading, navigating again')
-                void this.navigate(this.pageState.loading.descriptor, null)
+                void this.navigate(this.pageState.loading.descriptor, { history: null, scroll: null })
             }
         })
     }
 
-    async navigate(newDescriptor: PageDescriptor, kind: 'push' | 'replace' | null, scrollPosition?: number): Promise<void> {
+    async navigate(newDescriptor: PageDescriptor, options: NavigationOptions): Promise<void> {
         this.effects = [] // If we're starting another navigation, don't use previous effects
 
-        switch (kind) {
+        switch (options.history) {
             case 'push':
-                history.pushState({ pageDescriptor: newDescriptor, scrollPosition: scrollPosition ?? window.scrollY }, '', urlFromPageDescriptor(newDescriptor))
+                history.pushState({ pageDescriptor: newDescriptor, scrollPosition: options.scroll ?? window.scrollY }, '', urlFromPageDescriptor(newDescriptor))
                 break
             case 'replace':
-                history.replaceState({ pageDescriptor: newDescriptor, scrollPosition: scrollPosition ?? window.scrollY }, '', urlFromPageDescriptor(newDescriptor))
+                history.replaceState({ pageDescriptor: newDescriptor, scrollPosition: options.scroll ?? window.scrollY }, '', urlFromPageDescriptor(newDescriptor))
                 break
             case null:
                 break
         }
-
-        const oldData = this.pageState.current.data
 
         this.pageState = { kind: 'loading', loading: { descriptor: newDescriptor }, current: this.pageState.current, loadStartTime: Date.now() }
         this.pageStateObservers.forEach((observer) => { observer() })
@@ -556,7 +560,7 @@ export class Navigator {
                 return
             }
             const url = urlFromPageDescriptor(newPageDescriptor)
-            history.replaceState({ pageDescriptor: newPageDescriptor, scrollPosition: scrollPosition ?? window.scrollY }, '', url)
+            history.replaceState({ pageDescriptor: newPageDescriptor, scrollPosition: options.scroll ?? window.scrollY }, '', url)
             this.pageState = { kind: 'loaded', current: { data: pageData, descriptor: newPageDescriptor } }
             this.pageStateObservers.forEach((observer) => { observer() })
 
@@ -570,19 +574,45 @@ export class Navigator {
             }
 
             // Jump to
-            if (scrollPosition !== undefined) {
+            if (options.scroll !== null) {
                 // higher priority than hash because we're going back to a page that might have a hash, and we don't want the hash to override the saved scroll position
-                this.effects.push(() => { window.scrollTo({ top: scrollPosition }) })
+                this.effects.push(() => { window.scrollTo({ top: options.scroll! }) })
             }
             else if (url.hash !== '') {
                 this.effects.push(() => {
-                    window.location.replace(url.hash)
-                    // Above statement clears state
-                    history.replaceState({ pageDescriptor: newPageDescriptor, scrollPosition: window.scrollY }, '')
+                    const seekToHash = (): void => {
+                        window.location.replace(url.hash)
+                        // Above statement clears state
+                        history.replaceState({ pageDescriptor: newPageDescriptor, scrollPosition: window.scrollY }, '')
+                    }
+
+                    seekToHash()
+
+                    // If the body height changes, and the user hasn't scrolled yet, this means something (e.g. fonts) have loaded and our hash seek isn't correct.
+                    // Keep track of the state where we're seeking so we don't keep trying to seek on another page
+                    const seekedState = this.pageState
+
+                    const destroyObservers = (): void => {
+                        resizeObserver.unobserve(document.body)
+                    }
+
+                    const resizeObserver = new ResizeObserver(() => {
+                        if (this.pageState === seekedState) {
+                            seekToHash()
+                        }
+                        else {
+                            destroyObservers()
+                        }
+                    })
+
+                    resizeObserver.observe(document.body)
+                    // First scroll is triggered on hash navigate
+                    window.addEventListener('scroll', () => {
+                        window.addEventListener('scroll', () => {
+                            destroyObservers()
+                        }, { once: true })
+                    }, { once: true })
                 })
-            }
-            else if (oldData.kind !== this.pageState.current.data.kind) {
-                this.effects.push(() => { window.scrollTo({ top: 0 }) })
             }
         }
         catch (error) {
@@ -600,18 +630,24 @@ export class Navigator {
         }
     }
 
-    link(pageDescriptor: PageDescriptor, postNavigationCallback?: () => void): { href: string, onClick: (e: React.MouseEvent) => Promise<void> } {
+    link(pageDescriptor: PageDescriptor, options: {
+        scroll: NavigationOptions['scroll']
+        postNavigationCallback?: () => void
+    }): { href: string, onClick: (e?: React.MouseEvent) => Promise<void> } {
         const url = urlFromPageDescriptor(pageDescriptor)
         return {
             href: url.pathname + url.search,
-            onClick: async (e: React.MouseEvent) => {
-                if (e.altKey || e.ctrlKey || e.metaKey || e.shiftKey) {
+            onClick: async (e?: React.MouseEvent) => {
+                if (e?.altKey || e?.ctrlKey || e?.metaKey || e?.shiftKey) {
                     // Some sort of shortcut to open in new tab, etc.
                     return
                 }
-                e.preventDefault()
-                await this.navigate(pageDescriptor, 'push')
-                postNavigationCallback?.()
+                e?.preventDefault()
+                await this.navigate(pageDescriptor, {
+                    history: 'push',
+                    scroll: options.scroll,
+                })
+                options.postNavigationCallback?.()
             },
         }
     }
@@ -664,7 +700,10 @@ export class Navigator {
                 void this.navigate({
                     ...this.pageState.current.descriptor,
                     universe: newUniverse,
-                }, 'push')
+                }, {
+                    history: 'push',
+                    scroll: null,
+                })
                 break
             default:
                 throw new Error(`Page descriptor kind ${this.pageState.current.descriptor.kind} does not have a universe`)
@@ -746,11 +785,11 @@ export class Navigator {
     /* eslint-enable react-hooks/rules-of-hooks, no-restricted-syntax */
 }
 
-function mapSettingsFromURLParam(encoded_settings: string | undefined): MapSettings {
+function mapSettingsFromURLParam(encodedSettings: string | undefined): MapSettings {
     let settings: Partial<MapSettings> = {}
-    if (encoded_settings !== undefined) {
-        const jsoned_settings = gunzipSync(Buffer.from(encoded_settings, 'base64')).toString()
-        settings = JSON.parse(jsoned_settings) as Partial<MapSettings>
+    if (encodedSettings !== undefined) {
+        const jsonedSettings = gunzipSync(Buffer.from(encodedSettings, 'base64')).toString()
+        settings = JSON.parse(jsonedSettings) as Partial<MapSettings>
     }
-    return default_settings(settings)
+    return defaultSettings(settings)
 }

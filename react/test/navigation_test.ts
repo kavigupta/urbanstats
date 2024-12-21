@@ -1,6 +1,6 @@
 import { ClientFunction, RequestHook, Selector } from 'testcafe'
 
-import { getLocation, screencap, SEARCH_FIELD, TARGET, urbanstatsFixture } from './test_utils'
+import { getLocation, openInNewTabModifiers, screencap, searchField, target, urbanstatsFixture, waitForPageLoaded } from './test_utils'
 
 urbanstatsFixture('navigation test', '/')
 
@@ -24,6 +24,7 @@ const getScroll = ClientFunction(() => window.scrollY)
 
 test('maintain and restore scroll position back-forward', async (t) => {
     await t.navigateTo('/article.html?longname=Texas%2C+USA')
+    await t.expect(Selector('.headertext').withText('Texas').exists).ok() // Must wait for Texas to load, otherwise scrolling on the loading page is ineffective
     await t.scroll(0, 200)
     await t.click(Selector('a').withExactText('Population'))
     await t.expect(Selector('.headertext').withText('Population').exists).ok()
@@ -32,9 +33,9 @@ test('maintain and restore scroll position back-forward', async (t) => {
     await t.click(Selector('a').withText('New York'))
     await t.expect(Selector('.headertext').withText('New York').exists).ok()
     await t.scroll(0, 400)
-    await t.click(Selector('a').withText('Connecticut'))
+    await t.click(Selector('path[class*="Connecticut"]'))
     await t.expect(Selector('.headertext').withText('Connecticut').exists).ok()
-    await t.expect(getScroll()).eql(400) // Does not reset scroll on same page type
+    await t.expect(getScroll()).eql(400) // Does not reset scroll on map navigation
     await t.scroll(0, 500)
     await goBack()
     await t.expect(Selector('.headertext').withText('New York').exists).ok()
@@ -57,25 +58,38 @@ test('maintain and restore scroll position back-forward', async (t) => {
 })
 
 test('control click new tab', async (t) => {
-    const openInNewTabModifiers = process.platform === 'darwin' ? { meta: true } : { ctrl: true }
     await t.click(Selector('a').withText('Data Credit'), { modifiers: openInNewTabModifiers })
-    await t.expect(getLocation()).eql(`${TARGET}/`)
+    await t.expect(getLocation()).eql(`${target}/`)
+})
+
+test('navigates to hash', async (t) => {
+    await t.navigateTo('data-credit.html#explanation_population')
+    await t.expect(getLocation()).eql(`${target}/data-credit.html#explanation_population`)
+    await screencap(t, { fullPage: false })
 })
 
 urbanstatsFixture('stats page', '/statistic.html?statname=Population&article_type=Judicial+District&start=1&amount=20&universe=USA')
 
 test('data credit hash from stats page', async (t) => {
     await t.click(Selector('a').withText('Data Explanation and Credit'))
-    await t.expect(getLocation()).eql(`${TARGET}/data-credit.html#explanation_population`)
+    await t.expect(getLocation()).eql(`${target}/data-credit.html#explanation_population`)
     await screencap(t, { fullPage: false })
 })
 
-urbanstatsFixture('data credit page direct', '/')
+urbanstatsFixture('article page', '/article.html?longname=MN-08+in+Washington+County%2C+USA&s=CPiCUKKL5WuCCLpM24V')
 
-test('navigates to hash', async (t) => {
-    await t.navigateTo('data-credit.html#explanation_population')
-    await t.expect(getLocation()).eql(`${TARGET}/data-credit.html#explanation_population`)
-    await screencap(t, { fullPage: false })
+test('going to related resets scroll', async (t) => {
+    await t.click(Selector('a').withText('WI-07'))
+    await t.expect(t.eval(() => window.scrollY)).eql(0)
+})
+
+test('using pointers preserves scroll', async (t) => {
+    const lastPointer = Selector('button[data-test-id="1"]').nth(-1)
+    await t.hover(lastPointer)
+    const scrollBefore: unknown = await t.eval(() => window.scrollY)
+    await t.click(lastPointer)
+    await waitForPageLoaded(t)
+    await t.expect(t.eval(() => window.scrollY)).eql(scrollBefore)
 })
 
 // Artificially induce lag for cetrain requests for testing purposes
@@ -135,7 +149,7 @@ test('data credit page height should be the same before and after cloudflare loa
 
 test('initial load', async (t) => {
     delayRequests.setFilter(dataFilter)
-    await t.navigateTo(`${TARGET}/article.html?longname=Avon+Central+School+District%2C+New+York%2C+USA`)
+    await t.navigateTo(`${target}/article.html?longname=Avon+Central+School+District%2C+New+York%2C+USA`)
     await t.expect(Selector('[data-test-id=initialLoad]').exists).ok()
     await screencap(t, { fullPage: false })
     delayRequests.removeFilter()
@@ -147,8 +161,8 @@ test('quick load', async (t) => {
         (window as { testQuickNavigationDuration?: number }).testQuickNavigationDuration = 10000
     })
     await t
-        .click(SEARCH_FIELD)
-        .typeText(SEARCH_FIELD, 'Kalamazoo city')
+        .click(searchField)
+        .typeText(searchField, 'Kalamazoo city')
     delayRequests.setFilter(dataFilter)
     await t.pressKey('enter')
     await t.expect(Selector('[data-test-id=quickLoad]').exists).ok()
@@ -159,8 +173,8 @@ test('quick load', async (t) => {
 
 test('long load', async (t) => {
     await t
-        .click(SEARCH_FIELD)
-        .typeText(SEARCH_FIELD, 'Kalamazoo city')
+        .click(searchField)
+        .typeText(searchField, 'Kalamazoo city')
     delayRequests.setFilter(dataFilter)
     await t.pressKey('enter')
     await t.wait(3000)
@@ -171,20 +185,20 @@ test('long load', async (t) => {
 })
 
 test('invalid url', async (t) => {
-    await t.navigateTo(`${TARGET}/article.html`)
+    await t.navigateTo(`${target}/article.html`)
     await t.expect(Selector('li').withText('Parameter longname is Required').exists).ok()
     await screencap(t, { wait: false })
 })
 
 test('loading error', async (t) => {
-    await t.navigateTo(`${TARGET}/article.html?longname=Kalamazoo+city%2C+Michigan%2C+US`) // Should be USA
+    await t.navigateTo(`${target}/article.html?longname=Kalamazoo+city%2C+Michigan%2C+US`) // Should be USA
     await t.expect(Selector('h1').withText('Error Loading Page').exists).ok()
     await screencap(t, { wait: false })
 })
 
 test('before main bundle loads', async (t) => {
     delayRequests.setFilter(indexFilter)
-    await t.navigateTo(TARGET)
+    await t.navigateTo(target)
     await t.expect(Selector('#loading').exists).ok()
     await screencap(t, { wait: false, fullPage: false })
     delayRequests.removeFilter()

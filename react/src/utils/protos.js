@@ -15,7 +15,6 @@ export const StatisticRow = $root.StatisticRow = (() => {
      * @interface IStatisticRow
      * @property {number|null} [statval] StatisticRow statval
      * @property {Array.<number>|null} [ordinalByUniverse] StatisticRow ordinalByUniverse
-     * @property {Array.<number>|null} [overallOrdinalByUniverse] StatisticRow overallOrdinalByUniverse
      * @property {Array.<number>|null} [percentileByPopulationByUniverse] StatisticRow percentileByPopulationByUniverse
      */
 
@@ -29,7 +28,6 @@ export const StatisticRow = $root.StatisticRow = (() => {
      */
     function StatisticRow(properties) {
         this.ordinalByUniverse = [];
-        this.overallOrdinalByUniverse = [];
         this.percentileByPopulationByUniverse = [];
         if (properties)
             for (let keys = Object.keys(properties), i = 0; i < keys.length; ++i)
@@ -52,14 +50,6 @@ export const StatisticRow = $root.StatisticRow = (() => {
      * @instance
      */
     StatisticRow.prototype.ordinalByUniverse = $util.emptyArray;
-
-    /**
-     * StatisticRow overallOrdinalByUniverse.
-     * @member {Array.<number>} overallOrdinalByUniverse
-     * @memberof StatisticRow
-     * @instance
-     */
-    StatisticRow.prototype.overallOrdinalByUniverse = $util.emptyArray;
 
     /**
      * StatisticRow percentileByPopulationByUniverse.
@@ -101,16 +91,10 @@ export const StatisticRow = $root.StatisticRow = (() => {
                 writer.int32(message.ordinalByUniverse[i]);
             writer.ldelim();
         }
-        if (message.overallOrdinalByUniverse != null && message.overallOrdinalByUniverse.length) {
-            writer.uint32(/* id 3, wireType 2 =*/26).fork();
-            for (let i = 0; i < message.overallOrdinalByUniverse.length; ++i)
-                writer.int32(message.overallOrdinalByUniverse[i]);
-            writer.ldelim();
-        }
         if (message.percentileByPopulationByUniverse != null && message.percentileByPopulationByUniverse.length) {
             writer.uint32(/* id 4, wireType 2 =*/34).fork();
             for (let i = 0; i < message.percentileByPopulationByUniverse.length; ++i)
-                writer.float(message.percentileByPopulationByUniverse[i]);
+                writer.int32(message.percentileByPopulationByUniverse[i]);
             writer.ldelim();
         }
         return writer;
@@ -162,26 +146,15 @@ export const StatisticRow = $root.StatisticRow = (() => {
                         message.ordinalByUniverse.push(reader.int32());
                     break;
                 }
-            case 3: {
-                    if (!(message.overallOrdinalByUniverse && message.overallOrdinalByUniverse.length))
-                        message.overallOrdinalByUniverse = [];
-                    if ((tag & 7) === 2) {
-                        let end2 = reader.uint32() + reader.pos;
-                        while (reader.pos < end2)
-                            message.overallOrdinalByUniverse.push(reader.int32());
-                    } else
-                        message.overallOrdinalByUniverse.push(reader.int32());
-                    break;
-                }
             case 4: {
                     if (!(message.percentileByPopulationByUniverse && message.percentileByPopulationByUniverse.length))
                         message.percentileByPopulationByUniverse = [];
                     if ((tag & 7) === 2) {
                         let end2 = reader.uint32() + reader.pos;
                         while (reader.pos < end2)
-                            message.percentileByPopulationByUniverse.push(reader.float());
+                            message.percentileByPopulationByUniverse.push(reader.int32());
                     } else
-                        message.percentileByPopulationByUniverse.push(reader.float());
+                        message.percentileByPopulationByUniverse.push(reader.int32());
                     break;
                 }
             default:
@@ -229,19 +202,12 @@ export const StatisticRow = $root.StatisticRow = (() => {
                 if (!$util.isInteger(message.ordinalByUniverse[i]))
                     return "ordinalByUniverse: integer[] expected";
         }
-        if (message.overallOrdinalByUniverse != null && message.hasOwnProperty("overallOrdinalByUniverse")) {
-            if (!Array.isArray(message.overallOrdinalByUniverse))
-                return "overallOrdinalByUniverse: array expected";
-            for (let i = 0; i < message.overallOrdinalByUniverse.length; ++i)
-                if (!$util.isInteger(message.overallOrdinalByUniverse[i]))
-                    return "overallOrdinalByUniverse: integer[] expected";
-        }
         if (message.percentileByPopulationByUniverse != null && message.hasOwnProperty("percentileByPopulationByUniverse")) {
             if (!Array.isArray(message.percentileByPopulationByUniverse))
                 return "percentileByPopulationByUniverse: array expected";
             for (let i = 0; i < message.percentileByPopulationByUniverse.length; ++i)
-                if (typeof message.percentileByPopulationByUniverse[i] !== "number")
-                    return "percentileByPopulationByUniverse: number[] expected";
+                if (!$util.isInteger(message.percentileByPopulationByUniverse[i]))
+                    return "percentileByPopulationByUniverse: integer[] expected";
         }
         return null;
     };
@@ -267,19 +233,12 @@ export const StatisticRow = $root.StatisticRow = (() => {
             for (let i = 0; i < object.ordinalByUniverse.length; ++i)
                 message.ordinalByUniverse[i] = object.ordinalByUniverse[i] | 0;
         }
-        if (object.overallOrdinalByUniverse) {
-            if (!Array.isArray(object.overallOrdinalByUniverse))
-                throw TypeError(".StatisticRow.overallOrdinalByUniverse: array expected");
-            message.overallOrdinalByUniverse = [];
-            for (let i = 0; i < object.overallOrdinalByUniverse.length; ++i)
-                message.overallOrdinalByUniverse[i] = object.overallOrdinalByUniverse[i] | 0;
-        }
         if (object.percentileByPopulationByUniverse) {
             if (!Array.isArray(object.percentileByPopulationByUniverse))
                 throw TypeError(".StatisticRow.percentileByPopulationByUniverse: array expected");
             message.percentileByPopulationByUniverse = [];
             for (let i = 0; i < object.percentileByPopulationByUniverse.length; ++i)
-                message.percentileByPopulationByUniverse[i] = Number(object.percentileByPopulationByUniverse[i]);
+                message.percentileByPopulationByUniverse[i] = object.percentileByPopulationByUniverse[i] | 0;
         }
         return message;
     };
@@ -299,7 +258,6 @@ export const StatisticRow = $root.StatisticRow = (() => {
         let object = {};
         if (options.arrays || options.defaults) {
             object.ordinalByUniverse = [];
-            object.overallOrdinalByUniverse = [];
             object.percentileByPopulationByUniverse = [];
         }
         if (options.defaults)
@@ -311,15 +269,10 @@ export const StatisticRow = $root.StatisticRow = (() => {
             for (let j = 0; j < message.ordinalByUniverse.length; ++j)
                 object.ordinalByUniverse[j] = message.ordinalByUniverse[j];
         }
-        if (message.overallOrdinalByUniverse && message.overallOrdinalByUniverse.length) {
-            object.overallOrdinalByUniverse = [];
-            for (let j = 0; j < message.overallOrdinalByUniverse.length; ++j)
-                object.overallOrdinalByUniverse[j] = message.overallOrdinalByUniverse[j];
-        }
         if (message.percentileByPopulationByUniverse && message.percentileByPopulationByUniverse.length) {
             object.percentileByPopulationByUniverse = [];
             for (let j = 0; j < message.percentileByPopulationByUniverse.length; ++j)
-                object.percentileByPopulationByUniverse[j] = options.json && !isFinite(message.percentileByPopulationByUniverse[j]) ? String(message.percentileByPopulationByUniverse[j]) : message.percentileByPopulationByUniverse[j];
+                object.percentileByPopulationByUniverse[j] = message.percentileByPopulationByUniverse[j];
         }
         return object;
     };
@@ -351,6 +304,256 @@ export const StatisticRow = $root.StatisticRow = (() => {
     };
 
     return StatisticRow;
+})();
+
+export const FirstOrLast = $root.FirstOrLast = (() => {
+
+    /**
+     * Properties of a FirstOrLast.
+     * @exports IFirstOrLast
+     * @interface IFirstOrLast
+     * @property {number|null} [articleRowIdx] FirstOrLast articleRowIdx
+     * @property {number|null} [articleUniversesIdx] FirstOrLast articleUniversesIdx
+     * @property {boolean|null} [isFirst] FirstOrLast isFirst
+     */
+
+    /**
+     * Constructs a new FirstOrLast.
+     * @exports FirstOrLast
+     * @classdesc Represents a FirstOrLast.
+     * @implements IFirstOrLast
+     * @constructor
+     * @param {IFirstOrLast=} [properties] Properties to set
+     */
+    function FirstOrLast(properties) {
+        if (properties)
+            for (let keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                if (properties[keys[i]] != null)
+                    this[keys[i]] = properties[keys[i]];
+    }
+
+    /**
+     * FirstOrLast articleRowIdx.
+     * @member {number} articleRowIdx
+     * @memberof FirstOrLast
+     * @instance
+     */
+    FirstOrLast.prototype.articleRowIdx = 0;
+
+    /**
+     * FirstOrLast articleUniversesIdx.
+     * @member {number} articleUniversesIdx
+     * @memberof FirstOrLast
+     * @instance
+     */
+    FirstOrLast.prototype.articleUniversesIdx = 0;
+
+    /**
+     * FirstOrLast isFirst.
+     * @member {boolean} isFirst
+     * @memberof FirstOrLast
+     * @instance
+     */
+    FirstOrLast.prototype.isFirst = false;
+
+    /**
+     * Creates a new FirstOrLast instance using the specified properties.
+     * @function create
+     * @memberof FirstOrLast
+     * @static
+     * @param {IFirstOrLast=} [properties] Properties to set
+     * @returns {FirstOrLast} FirstOrLast instance
+     */
+    FirstOrLast.create = function create(properties) {
+        return new FirstOrLast(properties);
+    };
+
+    /**
+     * Encodes the specified FirstOrLast message. Does not implicitly {@link FirstOrLast.verify|verify} messages.
+     * @function encode
+     * @memberof FirstOrLast
+     * @static
+     * @param {IFirstOrLast} message FirstOrLast message or plain object to encode
+     * @param {$protobuf.Writer} [writer] Writer to encode to
+     * @returns {$protobuf.Writer} Writer
+     */
+    FirstOrLast.encode = function encode(message, writer) {
+        if (!writer)
+            writer = $Writer.create();
+        if (message.articleRowIdx != null && Object.hasOwnProperty.call(message, "articleRowIdx"))
+            writer.uint32(/* id 1, wireType 0 =*/8).int32(message.articleRowIdx);
+        if (message.articleUniversesIdx != null && Object.hasOwnProperty.call(message, "articleUniversesIdx"))
+            writer.uint32(/* id 2, wireType 0 =*/16).int32(message.articleUniversesIdx);
+        if (message.isFirst != null && Object.hasOwnProperty.call(message, "isFirst"))
+            writer.uint32(/* id 3, wireType 0 =*/24).bool(message.isFirst);
+        return writer;
+    };
+
+    /**
+     * Encodes the specified FirstOrLast message, length delimited. Does not implicitly {@link FirstOrLast.verify|verify} messages.
+     * @function encodeDelimited
+     * @memberof FirstOrLast
+     * @static
+     * @param {IFirstOrLast} message FirstOrLast message or plain object to encode
+     * @param {$protobuf.Writer} [writer] Writer to encode to
+     * @returns {$protobuf.Writer} Writer
+     */
+    FirstOrLast.encodeDelimited = function encodeDelimited(message, writer) {
+        return this.encode(message, writer).ldelim();
+    };
+
+    /**
+     * Decodes a FirstOrLast message from the specified reader or buffer.
+     * @function decode
+     * @memberof FirstOrLast
+     * @static
+     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+     * @param {number} [length] Message length if known beforehand
+     * @returns {FirstOrLast} FirstOrLast
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    FirstOrLast.decode = function decode(reader, length) {
+        if (!(reader instanceof $Reader))
+            reader = $Reader.create(reader);
+        let end = length === undefined ? reader.len : reader.pos + length, message = new $root.FirstOrLast();
+        while (reader.pos < end) {
+            let tag = reader.uint32();
+            switch (tag >>> 3) {
+            case 1: {
+                    message.articleRowIdx = reader.int32();
+                    break;
+                }
+            case 2: {
+                    message.articleUniversesIdx = reader.int32();
+                    break;
+                }
+            case 3: {
+                    message.isFirst = reader.bool();
+                    break;
+                }
+            default:
+                reader.skipType(tag & 7);
+                break;
+            }
+        }
+        return message;
+    };
+
+    /**
+     * Decodes a FirstOrLast message from the specified reader or buffer, length delimited.
+     * @function decodeDelimited
+     * @memberof FirstOrLast
+     * @static
+     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+     * @returns {FirstOrLast} FirstOrLast
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    FirstOrLast.decodeDelimited = function decodeDelimited(reader) {
+        if (!(reader instanceof $Reader))
+            reader = new $Reader(reader);
+        return this.decode(reader, reader.uint32());
+    };
+
+    /**
+     * Verifies a FirstOrLast message.
+     * @function verify
+     * @memberof FirstOrLast
+     * @static
+     * @param {Object.<string,*>} message Plain object to verify
+     * @returns {string|null} `null` if valid, otherwise the reason why it is not
+     */
+    FirstOrLast.verify = function verify(message) {
+        if (typeof message !== "object" || message === null)
+            return "object expected";
+        if (message.articleRowIdx != null && message.hasOwnProperty("articleRowIdx"))
+            if (!$util.isInteger(message.articleRowIdx))
+                return "articleRowIdx: integer expected";
+        if (message.articleUniversesIdx != null && message.hasOwnProperty("articleUniversesIdx"))
+            if (!$util.isInteger(message.articleUniversesIdx))
+                return "articleUniversesIdx: integer expected";
+        if (message.isFirst != null && message.hasOwnProperty("isFirst"))
+            if (typeof message.isFirst !== "boolean")
+                return "isFirst: boolean expected";
+        return null;
+    };
+
+    /**
+     * Creates a FirstOrLast message from a plain object. Also converts values to their respective internal types.
+     * @function fromObject
+     * @memberof FirstOrLast
+     * @static
+     * @param {Object.<string,*>} object Plain object
+     * @returns {FirstOrLast} FirstOrLast
+     */
+    FirstOrLast.fromObject = function fromObject(object) {
+        if (object instanceof $root.FirstOrLast)
+            return object;
+        let message = new $root.FirstOrLast();
+        if (object.articleRowIdx != null)
+            message.articleRowIdx = object.articleRowIdx | 0;
+        if (object.articleUniversesIdx != null)
+            message.articleUniversesIdx = object.articleUniversesIdx | 0;
+        if (object.isFirst != null)
+            message.isFirst = Boolean(object.isFirst);
+        return message;
+    };
+
+    /**
+     * Creates a plain object from a FirstOrLast message. Also converts values to other types if specified.
+     * @function toObject
+     * @memberof FirstOrLast
+     * @static
+     * @param {FirstOrLast} message FirstOrLast
+     * @param {$protobuf.IConversionOptions} [options] Conversion options
+     * @returns {Object.<string,*>} Plain object
+     */
+    FirstOrLast.toObject = function toObject(message, options) {
+        if (!options)
+            options = {};
+        let object = {};
+        if (options.defaults) {
+            object.articleRowIdx = 0;
+            object.articleUniversesIdx = 0;
+            object.isFirst = false;
+        }
+        if (message.articleRowIdx != null && message.hasOwnProperty("articleRowIdx"))
+            object.articleRowIdx = message.articleRowIdx;
+        if (message.articleUniversesIdx != null && message.hasOwnProperty("articleUniversesIdx"))
+            object.articleUniversesIdx = message.articleUniversesIdx;
+        if (message.isFirst != null && message.hasOwnProperty("isFirst"))
+            object.isFirst = message.isFirst;
+        return object;
+    };
+
+    /**
+     * Converts this FirstOrLast to JSON.
+     * @function toJSON
+     * @memberof FirstOrLast
+     * @instance
+     * @returns {Object.<string,*>} JSON object
+     */
+    FirstOrLast.prototype.toJSON = function toJSON() {
+        return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+    };
+
+    /**
+     * Gets the default type url for FirstOrLast
+     * @function getTypeUrl
+     * @memberof FirstOrLast
+     * @static
+     * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns {string} The default type url
+     */
+    FirstOrLast.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+        if (typeUrlPrefix === undefined) {
+            typeUrlPrefix = "type.googleapis.com";
+        }
+        return typeUrlPrefix + "/FirstOrLast";
+    };
+
+    return FirstOrLast;
 })();
 
 export const RelatedButton = $root.RelatedButton = (() => {
@@ -1636,6 +1839,7 @@ export const Article = $root.Article = (() => {
      * @property {string|null} [articleType] Article articleType
      * @property {Uint8Array|null} [statisticIndicesPacked] Article statisticIndicesPacked
      * @property {Array.<IStatisticRow>|null} [rows] Article rows
+     * @property {Array.<IFirstOrLast>|null} [overallFirstOrLast] Article overallFirstOrLast
      * @property {Array.<IRelatedButtons>|null} [related] Article related
      * @property {Array.<string>|null} [universes] Article universes
      * @property {Array.<IExtraStatistic>|null} [extraStats] Article extraStats
@@ -1651,6 +1855,7 @@ export const Article = $root.Article = (() => {
      */
     function Article(properties) {
         this.rows = [];
+        this.overallFirstOrLast = [];
         this.related = [];
         this.universes = [];
         this.extraStats = [];
@@ -1707,6 +1912,14 @@ export const Article = $root.Article = (() => {
      * @instance
      */
     Article.prototype.rows = $util.emptyArray;
+
+    /**
+     * Article overallFirstOrLast.
+     * @member {Array.<IFirstOrLast>} overallFirstOrLast
+     * @memberof Article
+     * @instance
+     */
+    Article.prototype.overallFirstOrLast = $util.emptyArray;
 
     /**
      * Article related.
@@ -1778,6 +1991,9 @@ export const Article = $root.Article = (() => {
                 $root.ExtraStatistic.encode(message.extraStats[i], writer.uint32(/* id 8, wireType 2 =*/66).fork()).ldelim();
         if (message.statisticIndicesPacked != null && Object.hasOwnProperty.call(message, "statisticIndicesPacked"))
             writer.uint32(/* id 9, wireType 2 =*/74).bytes(message.statisticIndicesPacked);
+        if (message.overallFirstOrLast != null && message.overallFirstOrLast.length)
+            for (let i = 0; i < message.overallFirstOrLast.length; ++i)
+                $root.FirstOrLast.encode(message.overallFirstOrLast[i], writer.uint32(/* id 10, wireType 2 =*/82).fork()).ldelim();
         return writer;
     };
 
@@ -1836,6 +2052,12 @@ export const Article = $root.Article = (() => {
                     if (!(message.rows && message.rows.length))
                         message.rows = [];
                     message.rows.push($root.StatisticRow.decode(reader, reader.uint32()));
+                    break;
+                }
+            case 10: {
+                    if (!(message.overallFirstOrLast && message.overallFirstOrLast.length))
+                        message.overallFirstOrLast = [];
+                    message.overallFirstOrLast.push($root.FirstOrLast.decode(reader, reader.uint32()));
                     break;
                 }
             case 6: {
@@ -1915,6 +2137,15 @@ export const Article = $root.Article = (() => {
                     return "rows." + error;
             }
         }
+        if (message.overallFirstOrLast != null && message.hasOwnProperty("overallFirstOrLast")) {
+            if (!Array.isArray(message.overallFirstOrLast))
+                return "overallFirstOrLast: array expected";
+            for (let i = 0; i < message.overallFirstOrLast.length; ++i) {
+                let error = $root.FirstOrLast.verify(message.overallFirstOrLast[i]);
+                if (error)
+                    return "overallFirstOrLast." + error;
+            }
+        }
         if (message.related != null && message.hasOwnProperty("related")) {
             if (!Array.isArray(message.related))
                 return "related: array expected";
@@ -1978,6 +2209,16 @@ export const Article = $root.Article = (() => {
                 message.rows[i] = $root.StatisticRow.fromObject(object.rows[i]);
             }
         }
+        if (object.overallFirstOrLast) {
+            if (!Array.isArray(object.overallFirstOrLast))
+                throw TypeError(".Article.overallFirstOrLast: array expected");
+            message.overallFirstOrLast = [];
+            for (let i = 0; i < object.overallFirstOrLast.length; ++i) {
+                if (typeof object.overallFirstOrLast[i] !== "object")
+                    throw TypeError(".Article.overallFirstOrLast: object expected");
+                message.overallFirstOrLast[i] = $root.FirstOrLast.fromObject(object.overallFirstOrLast[i]);
+            }
+        }
         if (object.related) {
             if (!Array.isArray(object.related))
                 throw TypeError(".Article.related: array expected");
@@ -2026,6 +2267,7 @@ export const Article = $root.Article = (() => {
             object.related = [];
             object.universes = [];
             object.extraStats = [];
+            object.overallFirstOrLast = [];
         }
         if (options.defaults) {
             object.shortname = "";
@@ -2070,6 +2312,11 @@ export const Article = $root.Article = (() => {
         }
         if (message.statisticIndicesPacked != null && message.hasOwnProperty("statisticIndicesPacked"))
             object.statisticIndicesPacked = options.bytes === String ? $util.base64.encode(message.statisticIndicesPacked, 0, message.statisticIndicesPacked.length) : options.bytes === Array ? Array.prototype.slice.call(message.statisticIndicesPacked) : message.statisticIndicesPacked;
+        if (message.overallFirstOrLast && message.overallFirstOrLast.length) {
+            object.overallFirstOrLast = [];
+            for (let j = 0; j < message.overallFirstOrLast.length; ++j)
+                object.overallFirstOrLast[j] = $root.FirstOrLast.toObject(message.overallFirstOrLast[j], options);
+        }
         return object;
     };
 
@@ -4124,7 +4371,7 @@ export const DataList = $root.DataList = (() => {
         if (message.populationPercentile != null && message.populationPercentile.length) {
             writer.uint32(/* id 2, wireType 2 =*/18).fork();
             for (let i = 0; i < message.populationPercentile.length; ++i)
-                writer.float(message.populationPercentile[i]);
+                writer.int32(message.populationPercentile[i]);
             writer.ldelim();
         }
         return writer;
@@ -4178,9 +4425,9 @@ export const DataList = $root.DataList = (() => {
                     if ((tag & 7) === 2) {
                         let end2 = reader.uint32() + reader.pos;
                         while (reader.pos < end2)
-                            message.populationPercentile.push(reader.float());
+                            message.populationPercentile.push(reader.int32());
                     } else
-                        message.populationPercentile.push(reader.float());
+                        message.populationPercentile.push(reader.int32());
                     break;
                 }
             default:
@@ -4229,8 +4476,8 @@ export const DataList = $root.DataList = (() => {
             if (!Array.isArray(message.populationPercentile))
                 return "populationPercentile: array expected";
             for (let i = 0; i < message.populationPercentile.length; ++i)
-                if (typeof message.populationPercentile[i] !== "number")
-                    return "populationPercentile: number[] expected";
+                if (!$util.isInteger(message.populationPercentile[i]))
+                    return "populationPercentile: integer[] expected";
         }
         return null;
     };
@@ -4259,7 +4506,7 @@ export const DataList = $root.DataList = (() => {
                 throw TypeError(".DataList.populationPercentile: array expected");
             message.populationPercentile = [];
             for (let i = 0; i < object.populationPercentile.length; ++i)
-                message.populationPercentile[i] = Number(object.populationPercentile[i]);
+                message.populationPercentile[i] = object.populationPercentile[i] | 0;
         }
         return message;
     };
@@ -4289,7 +4536,7 @@ export const DataList = $root.DataList = (() => {
         if (message.populationPercentile && message.populationPercentile.length) {
             object.populationPercentile = [];
             for (let j = 0; j < message.populationPercentile.length; ++j)
-                object.populationPercentile[j] = options.json && !isFinite(message.populationPercentile[j]) ? String(message.populationPercentile[j]) : message.populationPercentile[j];
+                object.populationPercentile[j] = message.populationPercentile[j];
         }
         return object;
     };

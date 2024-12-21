@@ -95,7 +95,8 @@ export default tseslint.config(
             'guard-for-in': 'error',
             'object-shorthand': 'error',
             'no-restricted-syntax': [
-                'error', 
+                'error',
+                // Good tool for writing these https://astexplorer.net
                 'ExportNamedDeclaration:not([declaration])', 
                 'MemberExpression[object.name=location][property.name=reload]',
                 'MemberExpression[property.name=replaceState]',
@@ -107,7 +108,22 @@ export default tseslint.config(
                 'Literal[value=/(^|\\s)((u|U)rban(s|S)tats|urban stats|Urban stats|urban Stats)($|\\s)/]',
                 //
                 // Require height on MathJax
-                'JSXOpeningElement[name.name=MathJax]:not(:has(JSXAttribute[name.name=style], JSXAttribute[name.name=inline]))'
+                'JSXOpeningElement[name.name=MathJax]:not(:has(JSXAttribute[name.name=style], JSXAttribute[name.name=inline]))',
+                // Rules for identifiers
+                'TSInterfaceDeclaration[id.name=/^[^A-Z]|[^A-Za-z]/]',
+                'VariableDeclarator > Identifier.id[name=/^[^a-z]|[^A-Za-z0-9]/]',
+                'VariableDeclarator > ArrayPattern.id > Identifier.elements[name=/^[^a-z]|[^A-Za-z0-9]/]',
+                'FunctionDeclaration > Identifier.id[name=/[^A-Za-z0-9]/]',
+                'FunctionDeclaration > Identifier.params[name=/^[^a-z]|[^A-Za-z0-9]/]',
+                'TSPropertySignature > Identifier.key[name=/^[^a-z]|[^A-Za-z0-9]/]',
+                'ObjectPattern > Property .value Identifier[name=/^[^a-z]|[^A-Za-z0-9]/]',
+                'ObjectPattern > Property[shorthand=false] .value[name=/^[^a-z]|[^A-Za-z0-9]/]',
+                'MethodDefinition > Identifier.key[name=/^[^a-z]|[^A-Za-z0-9]/]',
+                'FunctionExpression > .params Identifier.parameter[name=/^[^a-z_]|.[^A-Za-z0-9]/]', // Constructors
+                'ArrowFunctionExpression > Identifier.params[name=/^[^a-z_]|^[^_].*[^A-Za-z0-9]/]', // Allow_
+                'TSFunctionType > Identifier.params[name=/^[^a-z]|[^A-Za-z0-9]/]',
+                //
+                'CallExpression[arguments.1][callee.property.name=replace]:not([arguments.0.regex.flags=g])', // Prevent accidentally using `replace` without a global regex, which just replaces the first instance
             ],
             'react/prop-types': 'off',
             'no-shadow': 'error',

@@ -1,6 +1,6 @@
 import { useColors } from '../page_template/colors'
 
-export const setting_name_style = {
+export const settingNameStyle = {
     fontWeight: 500,
     fontSize: '1.2em',
     marginBottom: '0.125em',

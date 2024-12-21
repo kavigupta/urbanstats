@@ -41,7 +41,7 @@ export interface GroupYear {
 
 export interface MultiSourceStatistic {
     name: string
-    by_source: Statistic[]
+    bySource: Statistic[]
 }
 
 export interface Statistic {
@@ -62,7 +62,7 @@ export const statsTree: StatsTree = rawStatsTree.map(category => (
                 year,
                 stats: stats_by_source.map(({ name, stats }) => ({
                     name,
-                    by_source: stats.map(({ source, column }) => ({
+                    bySource: stats.map(({ source, column }) => ({
                         source,
                         path: statPaths[column],
                         name: statNames[column],
@@ -89,8 +89,8 @@ for (const category of statsTree) {
         group.parent = category
         for (const yearGroup of group.contents) {
             yearGroup.parent = group
-            for (const stats_by_source of yearGroup.stats) {
-                for (const stat of stats_by_source.by_source) {
+            for (const statsBySource of yearGroup.stats) {
+                for (const stat of statsBySource.bySource) {
                     stat.parent = yearGroup
                     group.statPaths.add(stat.path)
                     category.statPaths.add(stat.path)
@@ -125,7 +125,7 @@ interface StatParent {
 const statParentsList: [StatPath, StatParent][] = allGroups
     .flatMap(group => group.contents
         .flatMap(({ year, stats }) => stats
-            .flatMap(stat => stat.by_source
+            .flatMap(stat => stat.bySource
                 .map(({ source, path }) =>
                     [path, { group, year, groupYearName: stat.name, source }] satisfies [StatPath, StatParent]))))
 

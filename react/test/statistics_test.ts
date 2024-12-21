@@ -1,8 +1,8 @@
 import { Selector } from 'testcafe'
 
-import { TARGET, getLocation, screencap, urbanstatsFixture } from './test_utils'
+import { target, getLocation, screencap, urbanstatsFixture } from './test_utils'
 
-urbanstatsFixture('statistics', `${TARGET}/article.html?longname=Indianapolis+IN+HRR%2C+USA`)
+urbanstatsFixture('statistics', `${target}/article.html?longname=Indianapolis+IN+HRR%2C+USA`)
 
 test('statistics-page', async (t) => {
     await t.resizeWindow(1400, 800)
@@ -11,7 +11,7 @@ test('statistics-page', async (t) => {
         .click(Selector('a').withText(/^Population$/))
     // assert url is https://urbanstats.org/statistic.html?statname=Population&article_type=Hospital+Referral+Region&start=21&amount=20
     await t.expect(getLocation())
-        .eql(`${TARGET}/statistic.html?statname=Population&article_type=Hospital+Referral+Region&start=21&amount=20&universe=USA`)
+        .eql(`${target}/statistic.html?statname=Population&article_type=Hospital+Referral+Region&start=21&amount=20&universe=USA`)
     await screencap(t)
     const count = Selector('div').withAttribute('style', /background-color: rgb\(212, 181, 226\);/)
         .withText(/Indianapolis IN HRR, USA/)
@@ -20,15 +20,15 @@ test('statistics-page', async (t) => {
     await t
         .click(Selector('a').withText(/^Data Explanation and Credit$/))
     await t.expect(getLocation())
-        .eql(`${TARGET}/data-credit.html#explanation_population`)
+        .eql(`${target}/data-credit.html#explanation_population`)
 })
 
-urbanstatsFixture('statistics-navigation', `${TARGET}/statistic.html?statname=Population&article_type=Hospital+Referral+Region&start=21&amount=20`)
+urbanstatsFixture('statistics-navigation', `${target}/statistic.html?statname=Population&article_type=Hospital+Referral+Region&start=21&amount=20`)
 
 test('statistics-navigation-left', async (t) => {
     await t
         .click(Selector('button[data-test-id="-1"]'))
-    const url = `${TARGET}/statistic.html?statname=Population&article_type=Hospital+Referral+Region&start=1&amount=20`
+    const url = `${target}/statistic.html?statname=Population&article_type=Hospital+Referral+Region&start=1&amount=20`
     await t.expect(getLocation())
         .eql(url)
     // going left again is not an option
@@ -39,7 +39,7 @@ test('statistics-navigation-right', async (t) => {
     await t
         .click(Selector('button[data-test-id="1"]'))
     await t.expect(getLocation())
-        .eql(`${TARGET}/statistic.html?statname=Population&article_type=Hospital+Referral+Region&start=41&amount=20`)
+        .eql(`${target}/statistic.html?statname=Population&article_type=Hospital+Referral+Region&start=41&amount=20`)
 })
 
 test('statistics-navigation-amount', async (t) => {
@@ -49,14 +49,14 @@ test('statistics-navigation-amount', async (t) => {
         .click(amount)
         .click(Selector('option').withText('50'))
     await t.expect(getLocation())
-        .eql(`${TARGET}/statistic.html?statname=Population&article_type=Hospital+Referral+Region&start=1&amount=50`)
+        .eql(`${target}/statistic.html?statname=Population&article_type=Hospital+Referral+Region&start=1&amount=50`)
     await screencap(t)
     // set to All
     await t
         .click(amount)
         .click(Selector('option').withText('All'))
     await t.expect(getLocation())
-        .eql(`${TARGET}/statistic.html?statname=Population&article_type=Hospital+Referral+Region&start=1&amount=All`)
+        .eql(`${target}/statistic.html?statname=Population&article_type=Hospital+Referral+Region&start=1&amount=All`)
     await screencap(t)
 })
 
@@ -69,7 +69,7 @@ test('statistics-navigation-last-page', async (t) => {
         .typeText(page, '15')
         .pressKey('enter')
 
-    const url = `${TARGET}/statistic.html?statname=Population&article_type=Hospital+Referral+Region&start=281&amount=20`
+    const url = `${target}/statistic.html?statname=Population&article_type=Hospital+Referral+Region&start=281&amount=20`
 
     await t.expect(getLocation())
         .eql(url)
@@ -79,11 +79,12 @@ test('statistics-navigation-last-page', async (t) => {
     await t.expect(Selector('button[data-test-id="1"][disabled]').exists).ok()
 })
 
-urbanstatsFixture('statistic universe selector test', `${TARGET}/statistic.html?statname=Population&article_type=City&start=3461&amount=20`)
+urbanstatsFixture('statistic universe selector test', `${target}/statistic.html?statname=Population&article_type=City&start=3461&amount=20`)
+
+const universeSelector = 'img.universe-selector'
 
 test('statistic-universe-selector-test', async (t) => {
-    await t
-        .click(Selector('img').withAttribute('class', 'universe-selector'))
+    await t.click(universeSelector)
     await screencap(t)
     await t
         .click(
@@ -91,11 +92,18 @@ test('statistic-universe-selector-test', async (t) => {
                 .withAttribute('class', 'universe-selector-option')
                 .withAttribute('alt', 'Puerto Rico, USA'))
     await t.expect(getLocation())
-        .eql(`${TARGET}/statistic.html?statname=Population&article_type=City&start=261&amount=20&universe=Puerto+Rico%2C+USA`)
+        .eql(`${target}/statistic.html?statname=Population&article_type=City&start=261&amount=20&universe=Puerto+Rico%2C+USA`)
     await screencap(t)
 })
 
-urbanstatsFixture('statistic universe availability test', `${TARGET}/statistic.html?statname=Commute+Car+__PCT__&article_type=Subnational+Region&start=21&amount=20&universe=USA`)
+test('universe search field', async (t) => {
+    await t.click(universeSelector).typeText('[data-test-id=universe-search]', 'new')
+    await screencap(t)
+    await t.click(Selector('div').withExactText('New Mexico, USA'))
+    await t.expect(getLocation()).eql(`${target}/statistic.html?statname=Population&article_type=City&start=501&amount=20&universe=New+Mexico%2C+USA`)
+})
+
+urbanstatsFixture('statistic universe availability test', `${target}/statistic.html?statname=Commute+Car+__PCT__&article_type=Subnational+Region&start=21&amount=20&universe=USA`)
 
 test('statistic-universe availability test', async (t) => {
     await t
@@ -103,11 +111,11 @@ test('statistic-universe availability test', async (t) => {
     const options = Selector('img').withAttribute('class', 'universe-selector-option')
     await t.expect(options.count).eql(56)
     // take the first 10 options and get the alt attribute
-    const first10: (string | null)[] = []
+    const firstTen: (string | null)[] = []
     for (let i = 0; i < 10; i++) {
-        first10.push(await options.nth(i).getAttribute('alt'))
+        firstTen.push(await options.nth(i).getAttribute('alt'))
     }
-    await t.expect(first10).eql([
+    await t.expect(firstTen).eql([
         'world',
         'North America',
         'Oceania',
@@ -121,7 +129,7 @@ test('statistic-universe availability test', async (t) => {
     ])
 })
 
-urbanstatsFixture('statistic ascending descending', `${TARGET}/statistic.html?statname=Population&article_type=Subnational+Region&start=1&amount=10`)
+urbanstatsFixture('statistic ascending descending', `${target}/statistic.html?statname=Population&article_type=Subnational+Region&start=1&amount=10`)
 
 // get elements on page
 
@@ -161,7 +169,7 @@ test('statistic-ascending-descending-check-click', async (t) => {
     await t.wait(1000)
     // check the url
     await t.expect(getLocation())
-        .eql(`${TARGET}/statistic.html?statname=Population&article_type=Subnational+Region&start=1&amount=10&order=ascending`)
+        .eql(`${target}/statistic.html?statname=Population&article_type=Subnational+Region&start=1&amount=10&order=ascending`)
 
     await t.expect(await getElements()).eql([
         'Wyoming, USA',
@@ -179,11 +187,11 @@ test('statistic-ascending-descending-check-click', async (t) => {
     await t.click(Selector('#statistic-panel-order-swap'))
     // check the url again
     await t.expect(getLocation())
-        .eql(`${TARGET}/statistic.html?statname=Population&article_type=Subnational+Region&start=1&amount=10`)
+        .eql(`${target}/statistic.html?statname=Population&article_type=Subnational+Region&start=1&amount=10`)
     await t.expect(Selector('div').withText('▼').exists).ok()
 })
 
-urbanstatsFixture('statistic ascending', `${TARGET}/statistic.html?statname=Households+With+no+Vehicle+%25&article_type=Subnational+Region&start=21&amount=20&order=ascending&universe=USA`)
+urbanstatsFixture('statistic ascending', `${target}/statistic.html?statname=Households+With+no+Vehicle+%25&article_type=Subnational+Region&start=21&amount=20&order=ascending&universe=USA`)
 
 test('statistic-ascending-page', async (t) => {
     // We should see the state with the least vehicles, which is DC
@@ -191,7 +199,7 @@ test('statistic-ascending-page', async (t) => {
     await t.expect(Selector('div').withText('District of Columbia, USA').exists).ok()
 })
 
-urbanstatsFixture('stats page without enough geos to fill', `${TARGET}/statistic.html?statname=Population&article_type=County&start=1&amount=20&universe=Arizona%2C+USA`)
+urbanstatsFixture('stats page without enough geos to fill', `${target}/statistic.html?statname=Population&article_type=County&start=1&amount=20&universe=Arizona%2C+USA`)
 
 test('displays without error', async (t) => {
     await screencap(t)

@@ -2,7 +2,7 @@ import { StatName } from '../page_template/statistic-tree'
 
 import { PageDescriptor } from './navigator'
 
-function shard_bytes(longname: string): [string, string] {
+function shardBytes(longname: string): [string, string] {
     // as bytes, in utf-8
     const bytes = new TextEncoder().encode(longname)
     const hash = new Uint32Array([0])
@@ -22,44 +22,44 @@ function shard_bytes(longname: string): [string, string] {
     ]
 }
 
-export function sharded_name(longname: string): string {
-    const sanitized_name = sanitize(longname)
-    const [a, b] = shard_bytes(sanitized_name)
-    return `${a}/${b}/${sanitized_name}`
+export function shardedName(longname: string): string {
+    const sanitizedName = sanitize(longname)
+    const [a, b] = shardBytes(sanitizedName)
+    return `${a}/${b}/${sanitizedName}`
 }
 
-export function shape_link(longname: string): string {
-    return `/shape/${sharded_name(longname)}.gz`
+export function shapeLink(longname: string): string {
+    return `/shape/${shardedName(longname)}.gz`
 }
 
-export function data_link(longname: string): string {
-    return `/data/${sharded_name(longname)}.gz`
+export function dataLink(longname: string): string {
+    return `/data/${shardedName(longname)}.gz`
 }
 
-export function index_link(universe: string, typ: string): string {
+export function indexLink(universe: string, typ: string): string {
     return `/index/${universe}/${sanitize(typ, false)}.gz`
 }
 
-export function ordering_link(universe: string, type: string, idx: number): string {
+export function orderingLink(universe: string, type: string, idx: number): string {
     return `/order/${universe}/${sanitize(type, false)}_${idx}.gz`
 }
 
-export function ordering_data_link(universe: string, type: string, idx: number): string {
+export function orderingDataLink(universe: string, type: string, idx: number): string {
     return `/order/${universe}/${sanitize(type, false)}_${idx}_data.gz`
 }
 
-export function consolidated_shape_link(typ: string): string {
+export function consolidatedShapeLink(typ: string): string {
     return `/consolidated/shapes__${sanitize(typ)}.gz`
 }
 
-export function consolidated_stats_link(typ: string): string {
+export function consolidatedStatsLink(typ: string): string {
     return `/consolidated/stats__${sanitize(typ)}.gz`
 }
 
 export function statisticDescriptor(props: {
     universe: string | undefined
     statname: StatName
-    article_type: string
+    articleType: string
     start: number
     amount: number | 'All'
     order: 'ascending' | 'descending'
@@ -75,7 +75,7 @@ export function statisticDescriptor(props: {
     return {
         kind: 'statistic',
         statname: props.statname,
-        article_type: props.article_type,
+        article_type: props.articleType,
         start,
         amount: props.amount,
         order: props.order,
@@ -87,15 +87,15 @@ export function statisticDescriptor(props: {
 export function sanitize(longname: string, spaces_around_slash = true): string {
     let x = longname
     if (spaces_around_slash) {
-        x = x.replace('/', ' slash ')
+        x = x.replaceAll('/', ' slash ')
     }
     else {
-        x = x.replace('/', 'slash')
+        x = x.replaceAll('/', 'slash')
     }
-    x = x.replace('%', '%25')
+    x = x.replaceAll('%', '%25')
     return x
 }
 
-export function universe_path(universe: string): string {
+export function universePath(universe: string): string {
     return `/icons/flags/${universe}.png`
 }

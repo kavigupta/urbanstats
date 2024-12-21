@@ -1,4 +1,6 @@
+import itertools
 import re
+from functools import lru_cache
 
 import numpy as np
 import tqdm.auto as tqdm
@@ -9,6 +11,7 @@ from urbanstats.protobuf import data_files_pb2
 from urbanstats.protobuf.utils import write_gzip
 from urbanstats.statistics.collections_list import statistic_collections
 from urbanstats.statistics.output_statistics_metadata import internal_statistic_names
+from urbanstats.universe.universe_list import all_universes
 from urbanstats.website_data.sharding import create_filename
 
 
@@ -28,6 +31,7 @@ def create_article_gzip(
     long_to_type,
     long_to_idx,
     flat_ords,
+    counts_overall,
 ):
     # pylint: disable=too-many-locals,too-many-arguments
     statistic_names = internal_statistic_names()
@@ -42,20 +46,43 @@ def create_article_gzip(
 
     ords, percs = flat_ords.query(long_to_idx[row.longname])
 
-    for idx in idxs:
+    u_to_i = universe_to_idx()
+    universe_idxs = [u_to_i[u] for u in row.universes]
+
+    counts_this = counts_overall[:, universe_idxs]
+
+    for article_row_idx, idx in enumerate(idxs):
         stat = statistic_names[idx]
+        counts_for_stat = counts_this[idx]
         statrow = data.rows.add()
         statrow.statval = float(row[stat])
 
         ordinals_by_type, ordinals_overall = ords[idx]
         percs_by_typ, _ = percs[idx]
 
-        for ordinal_by_type, ordinal_overall, percentile_by_type in zip(
-            ordinals_by_type, ordinals_overall, percs_by_typ
+        for (
+            article_universes_idx,
+            ordinal_by_type,
+            ordinal_overall,
+            count,
+            percentile_by_type,
+        ) in zip(
+            itertools.count(),
+            ordinals_by_type,
+            ordinals_overall,
+            counts_for_stat,
+            percs_by_typ,
         ):
             statrow.ordinal_by_universe.append(int(ordinal_by_type))
-            statrow.overall_ordinal_by_universe.append(int(ordinal_overall))
-            statrow.percentile_by_population_by_universe.append(percentile_by_type)
+            ordinal_overall = int(ordinal_overall)
+            if ordinal_overall in {1, count}:
+                fol = data.overall_first_or_last.add()
+                fol.article_row_idx = article_row_idx
+                fol.article_universes_idx = article_universes_idx
+                fol.is_first = ordinal_overall == 1
+            statrow.percentile_by_population_by_universe.append(
+                int(percentile_by_type * 100)
+            )
     for _, extra_stat in sorted(extra_stats().items()):
         data.extra_stats.append(extra_stat.create(row))
     for relationship_type in relationships:
@@ -87,6 +114,24 @@ def create_article_gzips(site_folder, full, ordering):
     flat_ords = compute_flat_ordinals(full, ordering)
 
     relationships = full_relationships(long_to_type)
+
+    counts = ordering.counts_by_type_universe_col()
+    counts_overall = {
+        column: {
+            typ: count
+            for (typ, universe), count in for_column.items()
+            if universe == "overall"
+        }
+        for column, for_column in counts.items()
+        if for_column
+    }
+    counts_overall = np.array(
+        [
+            [counts_overall[col].get(universe, 0) for universe in all_universes()]
+            for col in internal_statistic_names()
+        ]
+    )
+
     for i in tqdm.trange(full.shape[0], desc="creating pages"):
         row = full.iloc[i]
         create_article_gzip(
@@ -98,7 +143,13 @@ def create_article_gzips(site_folder, full, ordering):
             long_to_type=long_to_type,
             long_to_idx=long_to_idx,
             flat_ords=flat_ords,
+            counts_overall=counts_overall,
         )
+
+
+@lru_cache(maxsize=None)
+def universe_to_idx():
+    return {u: i for i, u in enumerate(all_universes())}
 
 
 def order_key_for_relatioships(longname, typ):

@@ -8,15 +8,16 @@ import { FilterSelector, FunctionColorStat, StatisticSelector } from './function
 import { RampColormapSelector } from './ramp-selector'
 import { ConstantRampDescriptor, RampDescriptor } from './ramps'
 import { Regression } from './regression'
-import { setting_name_style, useSettingSubNameStyle } from './style'
+import { settingNameStyle, useSettingSubNameStyle } from './style'
 
 export type StatisticsForGeography = { stats: number[] }[]
 
 export interface ColorStat {
     name: () => string
-    compute: (statistics_for_geography: StatisticsForGeography, vars?: Record<string, number[]>) => number[]
+    compute: (statisticsForGeography: StatisticsForGeography, vars?: Record<string, number[]>) => number[]
 }
 
+/* eslint-disable no-restricted-syntax -- This represents persitent links */
 export interface RegressionDescriptor {
     var_coefficients: string[]
     var_intercept: string
@@ -26,6 +27,7 @@ export interface RegressionDescriptor {
     weight_by_population: boolean
     dependents: (ColorStatDescriptor | undefined)[]
 }
+/* eslint-enable no-restricted-syntax */
 
 export type ColorStatDescriptor = (
     { type: 'single', value: string, variables?: { name: string, expr: (ColorStatDescriptor | undefined) }[], regressions?: RegressionDescriptor[], name?: string, expression?: string }
@@ -48,6 +50,7 @@ export interface FilterSettings {
     function: ColorStatDescriptor
 };
 
+/* eslint-disable no-restricted-syntax -- This represents persitent links */
 export interface MapSettings {
     geography_kind: string
     filter: FilterSettings
@@ -56,8 +59,9 @@ export interface MapSettings {
     line_style: LineStyle
     basemap: Basemap
 }
+/* eslint-enable no-restricted-syntax */
 
-export function default_settings(add_to: Partial<MapSettings>): MapSettings {
+export function defaultSettings(addTo: Partial<MapSettings>): MapSettings {
     const defaults: MapSettings = {
         geography_kind: '',
         filter: {
@@ -84,62 +88,62 @@ export function default_settings(add_to: Partial<MapSettings>): MapSettings {
             type: 'osm',
         },
     }
-    return merge(add_to, defaults)
+    return merge(addTo, defaults)
 }
 
-function merge<T>(add_to: Partial<T>, add_from: T): T {
+function merge<T>(addTo: Partial<T>, addFrom: T): T {
     let key: keyof T
-    for (key in add_from) {
-        if (add_to[key] === undefined) {
-            add_to[key] = add_from[key]
+    for (key in addFrom) {
+        if (addTo[key] === undefined) {
+            addTo[key] = addFrom[key]
         }
-        else if (typeof add_to[key] === 'object') {
-            merge(add_to[key] as object, add_from[key])
+        else if (typeof addTo[key] === 'object') {
+            merge(addTo[key] as object, addFrom[key])
         }
     }
-    return add_to as T
+    return addTo as T
 }
 
-function parse_regression(name_to_index: ReadonlyMap<string, number>, regr: RegressionDescriptor): Regression {
-    const independent_fn = parse_color_stat(name_to_index, regr.independent)
-    const dependent_fns = regr.dependents.map(dependent => parse_color_stat(name_to_index, dependent))
-    const dependent_names = regr.var_coefficients
-    const intercept_name = regr.var_intercept
-    const residual_name = regr.var_residue
-    const weight_by_population = regr.weight_by_population
+function parseRegression(nameToIndex: ReadonlyMap<string, number>, regr: RegressionDescriptor): Regression {
+    const independentFn = parseColorStat(nameToIndex, regr.independent)
+    const dependentFns = regr.dependents.map(dependent => parseColorStat(nameToIndex, dependent))
+    const dependentNames = regr.var_coefficients
+    const interceptName = regr.var_intercept
+    const residualName = regr.var_residue
+    const weightByPopulation = regr.weight_by_population
 
     return new Regression(
-        independent_fn,
-        dependent_fns,
-        dependent_names,
-        intercept_name,
-        residual_name,
-        weight_by_population,
-        name_to_index.get('Population')!,
+        independentFn,
+        dependentFns,
+        dependentNames,
+        interceptName,
+        residualName,
+        weightByPopulation,
+        nameToIndex.get('Population')!,
     )
 }
 
-export function parse_color_stat(name_to_index: ReadonlyMap<string, number>, color_stat: ColorStatDescriptor | undefined): ColorStat {
-    if (color_stat === undefined) {
+export function parseColorStat(nameToIndex: ReadonlyMap<string, number>, colorStat: ColorStatDescriptor | undefined): ColorStat {
+    if (colorStat === undefined) {
         return new InvalidColorStat()
     }
-    const type = color_stat.type
+    const type = colorStat.type
     if (type === 'single') {
-        const value = color_stat.value
-        if (name_to_index.has(value)) {
-            return new SingleColorStat(name_to_index.get(value)!, value)
+        const value = colorStat.value
+        if (nameToIndex.has(value)) {
+            return new SingleColorStat(nameToIndex.get(value)!, value)
         }
         return new InvalidColorStat()
     }
     else {
-        const variables = color_stat.variables.map((variable) => {
+        const variables = colorStat.variables.map((variable) => {
             return {
                 name: variable.name,
-                expr: parse_color_stat(name_to_index, variable.expr),
+                expr: parseColorStat(nameToIndex, variable.expr),
             }
         })
-        const regressions = (color_stat.regressions ?? []).map(regr => parse_regression(name_to_index, regr))
-        return new FunctionColorStat(color_stat.name, variables, regressions, color_stat.expression)
+        const regressions = (colorStat.regressions ?? []).map(regr => parseRegression(nameToIndex, regr))
+        return new FunctionColorStat(colorStat.name, variables, regressions, colorStat.expression)
     }
 }
 
@@ -166,7 +170,7 @@ class InvalidColorStat implements ColorStat {
     }
 }
 
-function ConstantParametersSelector({ ramp, set_ramp }: { ramp: ConstantRampDescriptor, set_ramp: (newValue: ConstantRampDescriptor) => void }): ReactNode {
+function ConstantParametersSelector({ ramp, setRamp }: { ramp: ConstantRampDescriptor, setRamp: (newValue: ConstantRampDescriptor) => void }): ReactNode {
     const colors = useColors()
     return (
         <div style={{ display: 'flex' }}>
@@ -178,7 +182,7 @@ function ConstantParametersSelector({ ramp, set_ramp }: { ramp: ConstantRampDesc
                 style={{ width: '5em', backgroundColor: colors.background, color: colors.textMain }}
                 value={ramp.lower_bound}
                 onChange={(e) => {
-                    set_ramp({
+                    setRamp({
                         ...ramp,
                         lower_bound: e.target.value,
                     })
@@ -193,7 +197,7 @@ function ConstantParametersSelector({ ramp, set_ramp }: { ramp: ConstantRampDesc
                 style={{ width: '5em', backgroundColor: colors.background, color: colors.textMain }}
                 value={ramp.upper_bound}
                 onChange={(e) => {
-                    set_ramp({
+                    setRamp({
                         ...ramp,
                         upper_bound: e.target.value,
                     })
@@ -203,25 +207,25 @@ function ConstantParametersSelector({ ramp, set_ramp }: { ramp: ConstantRampDesc
     )
 }
 
-function RampSelector(props: { ramp: RampDescriptor, set_ramp: (newValue: RampDescriptor) => void }): ReactNode {
+function RampSelector(props: { ramp: RampDescriptor, setRamp: (newValue: RampDescriptor) => void }): ReactNode {
     const colors = useColors()
     return (
         <div>
-            <div style={setting_name_style}>
+            <div style={settingNameStyle}>
                 Ramp:
             </div>
             <RampColormapSelector
                 ramp={props.ramp}
-                set_ramp={(ramp) => { props.set_ramp(ramp) }}
+                setRamp={(ramp) => { props.setRamp(ramp) }}
             />
             <DataListSelector
-                overall_name="Ramp Type:"
+                overallName="Ramp Type:"
                 names={['linear', 'constant', 'geometric'] as const}
-                no_neutral={true}
-                header_style={useSettingSubNameStyle()}
-                initial_value={props.ramp.type}
+                noNeutral={true}
+                headerStyle={useSettingSubNameStyle()}
+                initialValue={props.ramp.type}
                 onChange={(name) => {
-                    props.set_ramp({
+                    props.setRamp({
                         ...props.ramp,
                         type: name,
                     })
@@ -232,7 +236,7 @@ function RampSelector(props: { ramp: RampDescriptor, set_ramp: (newValue: RampDe
                     ? (
                             <ConstantParametersSelector
                                 ramp={props.ramp}
-                                set_ramp={props.set_ramp}
+                                setRamp={props.setRamp}
                             />
                         )
                     : <div></div>
@@ -246,7 +250,7 @@ function RampSelector(props: { ramp: RampDescriptor, set_ramp: (newValue: RampDe
                     style={{ backgroundColor: colors.background, color: colors.textMain }}
                     checked={props.ramp.reversed ?? false}
                     onChange={(e) => {
-                        props.set_ramp({
+                        props.setRamp({
                             ...props.ramp,
                             reversed: e.target.checked,
                         })
@@ -257,11 +261,11 @@ function RampSelector(props: { ramp: RampDescriptor, set_ramp: (newValue: RampDe
     )
 }
 
-function LineStyleSelector(props: { line_style: LineStyle, set_line_style: (newValue: LineStyle) => void }): ReactNode {
+function LineStyleSelector(props: { lineStyle: LineStyle, setLineStyle: (newValue: LineStyle) => void }): ReactNode {
     const colors = useColors()
     return (
         <div>
-            <div style={setting_name_style}>
+            <div style={settingNameStyle}>
                 Line Style:
             </div>
             <div style={{ display: 'flex' }}>
@@ -271,10 +275,10 @@ function LineStyleSelector(props: { line_style: LineStyle, set_line_style: (newV
                 <input
                     type="color"
                     style={{ backgroundColor: colors.background, color: colors.textMain }}
-                    value={props.line_style.color}
+                    value={props.lineStyle.color}
                     onChange={(e) => {
-                        props.set_line_style({
-                            ...props.line_style,
+                        props.setLineStyle({
+                            ...props.lineStyle,
                             color: e.target.value,
                         })
                     }}
@@ -287,10 +291,10 @@ function LineStyleSelector(props: { line_style: LineStyle, set_line_style: (newV
                 <input
                     type="number"
                     style={{ width: '5em', backgroundColor: colors.background, color: colors.textMain }}
-                    value={props.line_style.weight}
+                    value={props.lineStyle.weight}
                     onChange={(e) => {
-                        props.set_line_style({
-                            ...props.line_style,
+                        props.setLineStyle({
+                            ...props.lineStyle,
                             weight: parseFloat(e.target.value),
                         })
                     }}
@@ -300,12 +304,12 @@ function LineStyleSelector(props: { line_style: LineStyle, set_line_style: (newV
     )
 }
 
-function BaseMapSelector({ basemap, set_basemap }: { basemap: Basemap, set_basemap: (newValue: Basemap) => void }): ReactNode {
+function BaseMapSelector({ basemap, setBasemap }: { basemap: Basemap, setBasemap: (newValue: Basemap) => void }): ReactNode {
     // just a checkbox for now
     const colors = useColors()
     return (
         <div>
-            <div style={setting_name_style}>
+            <div style={settingNameStyle}>
                 Basemap:
             </div>
             <div style={{ display: 'flex' }}>
@@ -317,7 +321,7 @@ function BaseMapSelector({ basemap, set_basemap }: { basemap: Basemap, set_basem
                     style={{ backgroundColor: colors.background, color: colors.textMain }}
                     checked={basemap.type !== 'none'}
                     onChange={(e) => {
-                        set_basemap({
+                        setBasemap({
                             type: e.target.checked ? 'osm' : 'none',
                         })
                     }}
@@ -327,70 +331,70 @@ function BaseMapSelector({ basemap, set_basemap }: { basemap: Basemap, set_basem
     )
 }
 
-export function MapperSettings(props: { map_settings: MapSettings, valid_geographies: string[], set_map_settings: (newValue: MapSettings) => void, names: readonly StatName[] }): ReactNode {
+export function MapperSettings(props: { mapSettings: MapSettings, validGeographies: string[], setMapSettings: (newValue: MapSettings) => void, names: readonly StatName[] }): ReactNode {
     return (
         <div>
             <DataListSelector
-                overall_name="Geography Kind:"
+                overallName="Geography Kind:"
                 names={
-                    props.valid_geographies
+                    props.validGeographies
                 }
-                initial_value={props.map_settings.geography_kind}
+                initialValue={props.mapSettings.geography_kind}
                 onChange={
                     (name) => {
-                        props.set_map_settings({
-                            ...props.map_settings,
+                        props.setMapSettings({
+                            ...props.mapSettings,
                             geography_kind: name,
                         })
                     }
                 }
             />
-            <div style={setting_name_style}>Filter</div>
+            <div style={settingNameStyle}>Filter</div>
             <FilterSelector
-                filter={props.map_settings.filter}
-                set_filter={(filter) => {
-                    props.set_map_settings({
-                        ...props.map_settings,
+                filter={props.mapSettings.filter}
+                setFilter={(filter) => {
+                    props.setMapSettings({
+                        ...props.mapSettings,
                         filter,
                     })
                 }}
                 names={props.names}
             />
             <StatisticSelector
-                overall_name="Statistic for Color:"
-                statistic={props.map_settings.color_stat}
-                set_statistic={(color_stat) => {
-                    props.set_map_settings({
-                        ...props.map_settings,
-                        color_stat,
+                overallName="Statistic for Color:"
+                statistic={props.mapSettings.color_stat}
+                setStatistic={(colorStat) => {
+                    props.setMapSettings({
+                        ...props.mapSettings,
+                        color_stat: colorStat,
                     })
                 }}
                 names={props.names}
                 simple={false}
             />
             <RampSelector
-                ramp={props.map_settings.ramp}
-                set_ramp={(ramp) => {
-                    props.set_map_settings({
-                        ...props.map_settings,
+                ramp={props.mapSettings.ramp}
+                setRamp={(ramp) => {
+                    props.setMapSettings({
+                        ...props.mapSettings,
                         ramp,
                     })
                 }}
             />
             <LineStyleSelector
-                line_style={props.map_settings.line_style}
-                set_line_style={(line_style) => {
-                    props.set_map_settings({
-                        ...props.map_settings,
-                        line_style,
+                lineStyle={props.mapSettings.line_style}
+                setLineStyle={(lineStyle) => {
+                    props.setMapSettings({
+                        ...props.mapSettings,
+                        line_style: lineStyle,
                     })
                 }}
             />
             <BaseMapSelector
-                basemap={props.map_settings.basemap}
-                set_basemap={(basemap) => {
-                    props.set_map_settings({
-                        ...props.map_settings,
+                basemap={props.mapSettings.basemap}
+                setBasemap={(basemap) => {
+                    props.setMapSettings({
+                        ...props.mapSettings,
                         basemap,
                     })
                 }}
