@@ -1,5 +1,3 @@
-from permacache import stable_hash
-
 from urbanstats.games.quiz_question_metadata import QuizQuestionSkip
 from urbanstats.statistics.collections_list import statistic_collections
 from urbanstats.statistics.output_statistics_metadata import (

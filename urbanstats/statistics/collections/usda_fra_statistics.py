@@ -1,7 +1,6 @@
 from urbanstats.census_2010.usda_food_research_atlas import aggregated_usda_fra
 from urbanstats.games.quiz_question_metadata import (
     FEATURE_DIST,
-    WEATHER,
     QuizQuestionDescriptor,
     QuizQuestionSkip,
 )
