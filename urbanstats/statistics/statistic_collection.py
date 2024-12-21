@@ -4,6 +4,11 @@ import numpy as np
 import pandas as pd
 
 from urbanstats.acs.load import aggregated_acs_data, aggregated_acs_data_us_pr
+from urbanstats.games.quiz_question_metadata import (
+    QuizQuestionCollection,
+    QuizQuestionDescriptor,
+    QuizQuestionSkip,
+)
 from urbanstats.games.quiz_region_types import (
     QUIZ_REGION_TYPES_ALL,
     QUIZ_REGION_TYPES_CANADA,
@@ -21,15 +26,7 @@ ORDER_CATEGORY_OTHER_DENSITIES = 1
 
 class StatisticCollection(ABC):
     def __init__(self):
-        quiz_overlaps = set(self.quiz_question_unused()) & set(
-            self.quiz_question_names()
-        )
-        assert (
-            not quiz_overlaps
-        ), f"Quiz questions both used and unused: {quiz_overlaps}"
-        quiz_questions = set(self.quiz_question_names()) | set(
-            self.quiz_question_unused()
-        )
+        quiz_questions = set(self.quiz_question_descriptors())
         all_columns = set(self.name_for_each_statistic())
         extra_quiz_questions = quiz_questions - all_columns
         assert not extra_quiz_questions, f"Extra quiz questions: {extra_quiz_questions}"
@@ -46,7 +43,6 @@ class StatisticCollection(ABC):
     def explanation_page_for_each_statistic(self):
         pass
 
-    @abstractmethod
     def quiz_question_names(self):
         pass
 
@@ -56,6 +52,14 @@ class StatisticCollection(ABC):
 
     def quiz_question_unused(self):
         return ()
+
+    def quiz_question_descriptors(self):
+        results = {
+            k: QuizQuestionDescriptor(v, QuizQuestionCollection("Urban Statistics"))
+            for k, v in self.quiz_question_names().items()
+        }
+        results.update({k: QuizQuestionSkip() for k in self.quiz_question_unused()})
+        return results
 
     def dependencies(self):
         return ()
