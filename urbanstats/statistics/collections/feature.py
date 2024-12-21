@@ -4,6 +4,11 @@ from permacache import permacache
 from urbanstats.data.census_blocks import all_densities_gpd
 from urbanstats.features.extract_data import feature_data
 from urbanstats.features.feature import feature_columns
+from urbanstats.games.quiz_question_metadata import (
+    FEATURE_DIST,
+    QuizQuestionDescriptor,
+    QuizQuestionSkip,
+)
 from urbanstats.geometry.census_aggregation import aggregate_by_census_block
 from urbanstats.osm.parks import park_overlap_percentages_all
 from urbanstats.statistics.statistic_collection import USAStatistics
@@ -31,25 +36,27 @@ class USFeatureDistanceStatistics(USAStatistics):
             "mean_dist_Active Superfund Site_updated": "superfund",
         }
 
-    def quiz_question_names(self):
+    def quiz_question_descriptors(self):
         # pylint: disable=line-too-long
         return {
-            "park_percent_1km_v2": "!FULL Which has more access to parks (higher % of area within 1km of a park, population weighted)?",
-            "mean_dist_Hospital_updated": "!FULL Which has less access to hospitals (higher population-weighted mean distance)?",
-            "mean_dist_Active Superfund Site_updated": "!FULL Which has less exposure to active EPA superfund sites (higher population-weighted mean distance)?"
-            "!TOOLTIP EPA superfund sites are hazardous waste sites identified by the Environmental Protection Agency.",
-            "mean_dist_Airport_updated": "!FULL Which has less access to airports (higher population-weighted mean distance)?",
-            "mean_dist_Public School_updated": "!FULL Which has less access to public schools (higher population-weighted mean distance)?",
+            **QuizQuestionDescriptor.several(
+                FEATURE_DIST,
+                {
+                    "park_percent_1km_v2": "!FULL Which has more access to parks (higher % of area within 1km of a park, population weighted)?",
+                    "mean_dist_Hospital_updated": "!FULL Which has less access to hospitals (higher population-weighted mean distance)?",
+                    "mean_dist_Active Superfund Site_updated": "!FULL Which has less exposure to active EPA superfund sites (higher population-weighted mean distance)?"
+                    "!TOOLTIP EPA superfund sites are hazardous waste sites identified by the Environmental Protection Agency.",
+                    "mean_dist_Airport_updated": "!FULL Which has less access to airports (higher population-weighted mean distance)?",
+                    "mean_dist_Public School_updated": "!FULL Which has less access to public schools (higher population-weighted mean distance)?",
+                },
+            ),
+            **QuizQuestionSkip.several(
+                "within_Active Superfund Site_10",
+                "within_Airport_30",
+                "within_Public School_2",
+                "within_Hospital_10",
+            ),
         }
-
-    def quiz_question_unused(self):
-        return [
-            # duplicates
-            "within_Active Superfund Site_10",
-            "within_Airport_30",
-            "within_Public School_2",
-            "within_Hospital_10",
-        ]
 
     def dependencies(self):
         return ["population"]

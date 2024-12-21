@@ -1,4 +1,9 @@
 from urbanstats.acs.load import ACSDataEntity
+from urbanstats.games.quiz_question_metadata import (
+    INCOME,
+    QuizQuestionDescriptor,
+    QuizQuestionSkip,
+)
 from urbanstats.statistics.statistic_collection import ACSStatisticsColection
 from urbanstats.statistics.utils import fractionalize
 
@@ -14,16 +19,17 @@ class IncomeFamily(ACSStatisticsColection):
     def explanation_page_for_each_statistic(self):
         return self.same_for_each_name("income")
 
-    def quiz_question_names(self):
+    def quiz_question_descriptors(self):
         return {
-            "household_income_under_50k": "higher % of households who have household income under $50k",
-            "household_income_over_100k": "higher % of households who have household income over $100k",
+            **QuizQuestionDescriptor.several(
+                INCOME,
+                {
+                    "household_income_under_50k": "higher % of households who have household income under $50k",
+                    "household_income_over_100k": "higher % of households who have household income over $100k",
+                },
+            ),
+            **QuizQuestionSkip.several("household_income_50k_to_100k"),
         }
-
-    def quiz_question_unused(self):
-        return [
-            "household_income_50k_to_100k",
-        ]
 
     def mutate_acs_results(self, statistics_table):
         fractionalize(

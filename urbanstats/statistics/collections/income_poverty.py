@@ -1,4 +1,5 @@
 from urbanstats.acs.load import ACSDataEntity
+from urbanstats.games.quiz_question_metadata import POVERTY, QuizQuestionDescriptor
 from urbanstats.statistics.statistic_collection import ACSStatisticsColection
 from urbanstats.statistics.utils import fractionalize
 
@@ -12,13 +13,13 @@ class IncomePoverty(ACSStatisticsColection):
     def explanation_page_for_each_statistic(self):
         return self.same_for_each_name("income")
 
-    def quiz_question_names(self):
-        return {
-            "poverty_below_line": "higher % of people who are in poverty",
-        }
-
-    def quiz_question_unused(self):
-        return []
+    def quiz_question_descriptors(self):
+        return QuizQuestionDescriptor.several(
+            POVERTY,
+            {
+                "poverty_below_line": "higher % of people who are in poverty",
+            },
+        )
 
     def mutate_acs_results(self, statistics_table):
         fractionalize(

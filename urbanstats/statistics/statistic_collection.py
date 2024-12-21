@@ -21,15 +21,7 @@ ORDER_CATEGORY_OTHER_DENSITIES = 1
 
 class StatisticCollection(ABC):
     def __init__(self):
-        quiz_overlaps = set(self.quiz_question_unused()) & set(
-            self.quiz_question_names()
-        )
-        assert (
-            not quiz_overlaps
-        ), f"Quiz questions both used and unused: {quiz_overlaps}"
-        quiz_questions = set(self.quiz_question_names()) | set(
-            self.quiz_question_unused()
-        )
+        quiz_questions = set(self.quiz_question_descriptors())
         all_columns = set(self.name_for_each_statistic())
         extra_quiz_questions = quiz_questions - all_columns
         assert not extra_quiz_questions, f"Extra quiz questions: {extra_quiz_questions}"
@@ -46,16 +38,12 @@ class StatisticCollection(ABC):
     def explanation_page_for_each_statistic(self):
         pass
 
-    @abstractmethod
     def quiz_question_names(self):
         pass
 
     @abstractmethod
-    def quiz_question_types(self):
+    def quiz_question_descriptors(self):
         pass
-
-    def quiz_question_unused(self):
-        return ()
 
     def dependencies(self):
         return ()

@@ -1,4 +1,5 @@
 from urbanstats.data.election_data import aggregated_election_results, vest_elections
+from urbanstats.games.quiz_question_metadata import ELECTION, QuizQuestionDescriptor
 from urbanstats.statistics.statistic_collection import USAStatistics
 
 
@@ -12,21 +13,24 @@ class USElectionStatistics(USAStatistics):
     def explanation_page_for_each_statistic(self):
         return self.same_for_each_name("election")
 
-    def quiz_question_names(self):
-        return {
-            (
-                "2020 Presidential Election",
-                "margin",
-            ): "!FULL Which voted more for Biden in the 2020 presidential election?",
-            (
-                "2016 Presidential Election",
-                "margin",
-            ): "!FULL Which voted more for Clinton in the 2016 presidential election?",
-            (
-                "2016-2020 Swing",
-                "margin",
-            ): "!FULL Which swung towards Democrats more from 2016 to 2020?",
-        }
+    def quiz_question_descriptors(self):
+        return QuizQuestionDescriptor.several(
+            ELECTION,
+            {
+                (
+                    "2020 Presidential Election",
+                    "margin",
+                ): "!FULL Which voted more for Biden in the 2020 presidential election?",
+                (
+                    "2016 Presidential Election",
+                    "margin",
+                ): "!FULL Which voted more for Clinton in the 2016 presidential election?",
+                (
+                    "2016-2020 Swing",
+                    "margin",
+                ): "!FULL Which swung towards Democrats more from 2016 to 2020?",
+            },
+        )
 
     def compute_statistics_dictionary_usa(
         self, *, shapefile, existing_statistics, shapefile_table

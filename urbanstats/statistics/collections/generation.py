@@ -1,5 +1,6 @@
 # pylint: disable=duplicate-code
 from urbanstats.acs.load import ACSDataEntity
+from urbanstats.games.quiz_question_metadata import GENERATION, QuizQuestionDescriptor
 from urbanstats.statistics.statistic_collection import ACSStatisticsColection
 from urbanstats.statistics.utils import fractionalize
 
@@ -18,15 +19,18 @@ class GenerationStatistics(ACSStatisticsColection):
     def explanation_page_for_each_statistic(self):
         return self.same_for_each_name("generation")
 
-    def quiz_question_names(self):
-        return {
-            "generation_silent": "higher % of people who are silent generation!TOOLTIP born before 1946",
-            "generation_boomer": "higher % of people who are boomers!TOOLTIP born between 1946 and 1966",
-            "generation_genx": "higher % of people who are gen x!TOOLTIP born between 1967 and 1981",
-            "generation_millenial": "higher % of people who are millennials!TOOLTIP born between 1982 and 1996",
-            "generation_genz": "higher % of people who are gen z!TOOLTIP born between 1997 and 2011",
-            "generation_genalpha": "higher % of people who are gen alpha!TOOLTIP born between 2012 and 2021",
-        }
+    def quiz_question_descriptors(self):
+        return QuizQuestionDescriptor.several(
+            GENERATION,
+            {
+                "generation_silent": "higher % of people who are silent generation!TOOLTIP born before 1946",
+                "generation_boomer": "higher % of people who are boomers!TOOLTIP born between 1946 and 1966",
+                "generation_genx": "higher % of people who are gen x!TOOLTIP born between 1967 and 1981",
+                "generation_millenial": "higher % of people who are millennials!TOOLTIP born between 1982 and 1996",
+                "generation_genz": "higher % of people who are gen z!TOOLTIP born between 1997 and 2011",
+                "generation_genalpha": "higher % of people who are gen alpha!TOOLTIP born between 2012 and 2021",
+            },
+        )
 
     def quiz_question_unused(self):
         return []

@@ -2,6 +2,11 @@ import pandas as pd
 from permacache import permacache
 
 from urbanstats.data.census_blocks import all_densities_gpd
+from urbanstats.games.quiz_question_metadata import (
+    WEATHER,
+    QuizQuestionDescriptor,
+    QuizQuestionSkip,
+)
 from urbanstats.geometry.census_aggregation import aggregate_by_census_block
 from urbanstats.statistics.statistic_collection import USAStatistics
 from urbanstats.weather.stats import era5_statistics
@@ -23,7 +28,7 @@ class USWeatherStatistics(USAStatistics):
     def explanation_page_for_each_statistic(self):
         return self.same_for_each_name("weather")
 
-    def quiz_question_names(self):
+    def quiz_question_descriptors(self):
         shortnames = {
             "mean_high_temp_4": "higher mean daily high temperature (population weighted)",
             "mean_high_temp_winter_4": "higher mean daily high temperature in winter (population weighted)",
@@ -41,17 +46,20 @@ class USWeatherStatistics(USAStatistics):
             "rainfall_4": "higher rainfall (population weighted)",
             "hours_sunny_4": "!FULL Which has more hours of sun per day on average? (population weighted)",
         }
-        return {k: v + POPULATION_WEIGHTED_EXPLANATION for k, v in shortnames.items()}
-
-    def quiz_question_unused(self):
-        return [
-            # middle / obscure
-            "days_dewpoint_50_70_4",
-            "days_between_40_and_90_4",
-            "mean_high_dewpoint_4",
-            "days_dewpoint_70_inf_4",
-            "days_dewpoint_-inf_50_4",
-        ]
+        return {
+            **QuizQuestionDescriptor.several(
+                WEATHER,
+                {k: v + POPULATION_WEIGHTED_EXPLANATION for k, v in shortnames.items()},
+            ),
+            **QuizQuestionSkip.several(
+                # middle / obscure
+                "days_dewpoint_50_70_4",
+                "days_between_40_and_90_4",
+                "mean_high_dewpoint_4",
+                "days_dewpoint_70_inf_4",
+                "days_dewpoint_-inf_50_4",
+            ),
+        }
 
     def dependencies(self):
         return ["population"]

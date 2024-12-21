@@ -10,6 +10,15 @@ from urbanstats.data.census_blocks import (
     racial_demographics,
 )
 from urbanstats.data.census_histogram import census_histogram
+from urbanstats.games.quiz_question_metadata import (
+    HOUSING,
+    POPULATION,
+    POPULATION_DENSITY,
+    POPULATION_OR_DENSITY_CHANGE,
+    RACE,
+    QuizQuestionDescriptor,
+    QuizQuestionSkip,
+)
 from urbanstats.geometry.census_aggregation import aggregate_by_census_block
 from urbanstats.statistics.extra_statistics import HistogramSpec
 from urbanstats.statistics.statistic_collection import USAStatistics
@@ -80,11 +89,8 @@ class CensusForPreviousYear(USAStatistics):
     def explanation_page_for_each_statistic(self):
         return self.same_for_each_name(str(self.year()))
 
-    def quiz_question_names(self):
-        return {}
-
-    def quiz_question_unused(self):
-        return list(self.name_for_each_statistic().keys())
+    def quiz_question_descriptors(self):
+        return {k: QuizQuestionSkip() for k in self.name_for_each_statistic()}
 
     def dependencies(self):
         return ["area"]
@@ -168,20 +174,23 @@ class CensusChange(USAStatistics):
     def explanation_page_for_each_statistic(self):
         return self.same_for_each_name(str(self.year()))
 
-    def quiz_question_names(self):
+    def quiz_question_descriptors(self):
         year = self.year()
         return {
-            f"population_change_{year}": f"higher % increase in population from {year} to 2020",
-            f"ad_1_change_{year}": f"higher % increase in population-weighted density (r=1km) from {year} to 2020"
-            + DENSITY_EXPLANATION_PW,
+            f"population_change_{year}": QuizQuestionDescriptor(
+                f"higher % increase in population from {year} to 2020",
+                POPULATION_OR_DENSITY_CHANGE,
+            ),
+            f"ad_1_change_{year}": QuizQuestionDescriptor(
+                f"higher % increase in population-weighted density (r=1km) from {year} to 2020"
+                + DENSITY_EXPLANATION_PW,
+                POPULATION_OR_DENSITY_CHANGE,
+            ),
+            f"ad_0.25_change_{year}": QuizQuestionSkip(),
+            f"ad_0.5_change_{year}": QuizQuestionSkip(),
+            f"ad_2_change_{year}": QuizQuestionSkip(),
+            f"ad_4_change_{year}": QuizQuestionSkip(),
         }
-
-    def quiz_question_unused(self):
-        year = self.year()
-        return [
-            f"{x}_{year}"
-            for x in ["ad_0.5_change", "ad_4_change", "ad_0.25_change", "ad_2_change"]
-        ]
 
     def dependencies(self):
         return [
@@ -243,33 +252,40 @@ class Census2020(CensusForPreviousYear):
             for k in self.name_for_each_statistic()
         }
 
-    def quiz_question_names(self):
+    def quiz_question_descriptors(self):
         return {
-            "population": "higher population",
-            "ad_1": "higher population-weighted density (r=1km)"
-            + DENSITY_EXPLANATION_PW,
-            "white": "higher % of people who are White",
-            "hispanic": "higher % of people who are Hispanic",
-            "black": "higher % of people who are Black",
-            "asian": "higher % of people who are Asian",
-            "housing_per_pop": "higher number of housing units per adult",
-            "vacancy": "higher % of units that are vacant",
-        }
-
-    def quiz_question_unused(self):
-        return [
-            # no sd because it's antithetical to the purpose of this site
-            "sd",
+            "population": QuizQuestionDescriptor("higher population", POPULATION),
             # duplicate
-            "ad_0.25",
-            "ad_0.5",
-            "ad_2",
-            "ad_4",
+            "ad_0.25": QuizQuestionSkip(),
+            "ad_0.5": QuizQuestionSkip(),
+            "ad_1": QuizQuestionDescriptor(
+                "higher population-weighted density (r=1km)" + DENSITY_EXPLANATION_PW,
+                POPULATION_DENSITY,
+            ),
+            # duplicate
+            "ad_2": QuizQuestionSkip(),
+            "ad_4": QuizQuestionSkip(),
+            # no sd because it's antithetical to the purpose of this site
+            "sd": QuizQuestionSkip(),
+            "white": QuizQuestionDescriptor("higher % of people who are White", RACE),
+            "hispanic": QuizQuestionDescriptor(
+                "higher % of people who are Hispanic", RACE
+            ),
+            "black": QuizQuestionDescriptor("higher % of people who are Black", RACE),
+            "asian": QuizQuestionDescriptor("higher % of people who are Asian", RACE),
             # too small
-            "native",
-            "hawaiian_pi",
-            "other / mixed",
-        ]
+            "native": QuizQuestionSkip(),
+            "hawaiian_pi": QuizQuestionSkip(),
+            "other / mixed": QuizQuestionSkip(),
+            "housing_per_pop": QuizQuestionDescriptor(
+                "higher number of housing units per adult",
+                HOUSING,
+            ),
+            "vacancy": QuizQuestionDescriptor(
+                "higher % of units that are vacant",
+                HOUSING,
+            ),
+        }
 
 
 class Census2010(CensusForPreviousYear):

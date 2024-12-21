@@ -1,4 +1,5 @@
 from urbanstats.acs.load import ACSDataEntity
+from urbanstats.games.quiz_question_metadata import INTERNET, QuizQuestionDescriptor
 from urbanstats.statistics.statistic_collection import ACSStatisticsColection
 from urbanstats.statistics.utils import fractionalize
 
@@ -12,10 +13,13 @@ class InternetAccessStatistics(ACSStatisticsColection):
     def explanation_page_for_each_statistic(self):
         return self.same_for_each_name("internet")
 
-    def quiz_question_names(self):
-        return {
-            "internet_no_access": "higher % of people who have no internet access",
-        }
+    def quiz_question_descriptors(self):
+        return QuizQuestionDescriptor.several(
+            INTERNET,
+            {
+                "internet_no_access": "higher % of people who have no internet access",
+            },
+        )
 
     def mutate_acs_results(self, statistics_table):
         fractionalize(

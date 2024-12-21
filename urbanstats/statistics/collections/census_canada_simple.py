@@ -1,6 +1,13 @@
 from abc import abstractmethod
 
 from urbanstats.data.canada.canadian_da_data import CensusTables
+from urbanstats.games.quiz_question_metadata import (
+    EDUCATION_LEVEL,
+    INCOME,
+    POVERTY,
+    QuizQuestionDescriptor,
+    QuizQuestionSkip,
+)
 from urbanstats.statistics.statistic_collection import CanadaStatistics
 from urbanstats.statistics.utils import fractionalize
 
@@ -77,14 +84,17 @@ class CensusCanadaIncomeIndividual(CensusCanadaSimple):
     def explanation_page_for_each_statistic(self):
         return self.same_for_each_name("canadian-census-disaggregated")
 
-    def quiz_question_names(self):
+    def quiz_question_descriptors(self):
         return {
-            "individual_income_under_50cad": "higher % of people who have individual income under C$50k",
-            "individual_income_above_100_cad": "higher % of people who have individual income over C$100k",
+            **QuizQuestionDescriptor.several(
+                INCOME,
+                {
+                    "individual_income_under_50cad": "higher % of people who have individual income under C$50k",
+                    "individual_income_above_100_cad": "higher % of people who have individual income over C$100k",
+                },
+            ),
+            **QuizQuestionSkip.several("individual_income_50_to_100cad"),
         }
-
-    def quiz_question_unused(self):
-        return ["individual_income_50_to_100cad"]
 
 
 class CensusCanadaIncomeHousehold(CensusCanadaSimple):
@@ -139,14 +149,17 @@ class CensusCanadaIncomeHousehold(CensusCanadaSimple):
     def explanation_page_for_each_statistic(self):
         return self.same_for_each_name("canadian-census-disaggregated")
 
-    def quiz_question_names(self):
+    def quiz_question_descriptors(self):
         return {
-            "household_income_under_50cad": "higher % of households that have household income under C$50k",
-            "household_income_above_100_cad": "higher % of households that have household income over C$100k",
+            **QuizQuestionDescriptor.several(
+                INCOME,
+                {
+                    "household_income_under_50cad": "higher % of households that have household income under C$50k",
+                    "household_income_above_100_cad": "higher % of households that have household income over C$100k",
+                },
+            ),
+            **QuizQuestionSkip.several("household_income_50_to_100cad"),
         }
-
-    def quiz_question_unused(self):
-        return ["household_income_50_to_100cad"]
 
 
 class CensusCanadaLICOAT(CensusCanadaSimple):
@@ -194,9 +207,14 @@ class CensusCanadaLICOAT(CensusCanadaSimple):
     def explanation_page_for_each_statistic(self):
         return self.same_for_each_name("canadian-census-disaggregated")
 
-    def quiz_question_names(self):
+    def quiz_question_descriptors(self):
         return {
-            "lico_at_canada": "higher % of people who are low income based on the Low-income cut-offs, after tax (LICO-AT)",
+            **QuizQuestionDescriptor.several(
+                POVERTY,
+                {
+                    "lico_at_canada": "higher % of people who are low income based on the Low-income cut-offs, after tax (LICO-AT)",
+                },
+            ),
         }
 
     def post_process(self, statistic_table, existing_statistics):
@@ -262,11 +280,16 @@ class CensusCanadaEducation(CensusCanadaSimple):
     def explanation_page_for_each_statistic(self):
         return self.same_for_each_name("canadian-census-disaggregated")
 
-    def quiz_question_names(self):
+    def quiz_question_descriptors(self):
         return {
-            "education_high_school_canada": "higher % of people between 25 and 64 who have at least a high school diploma",
-            "education_ugrad_canada": "higher % of people between 25 and 64 who have at least an undergrad degree",
-            "education_grad_canada": "higher % of people between 25 and 64 who have a graduate degree",
+            **QuizQuestionDescriptor.several(
+                EDUCATION_LEVEL,
+                {
+                    "education_high_school_canada": "higher % of people between 25 and 64 who have at least a high school diploma",
+                    "education_ugrad_canada": "higher % of people between 25 and 64 who have at least an undergrad degree",
+                    "education_grad_canada": "higher % of people between 25 and 64 who have a graduate degree",
+                },
+            ),
         }
 
     def post_process(self, statistic_table, existing_statistics):

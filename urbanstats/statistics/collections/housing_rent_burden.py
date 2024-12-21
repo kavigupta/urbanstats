@@ -1,4 +1,9 @@
 from urbanstats.acs.load import ACSDataEntity
+from urbanstats.games.quiz_question_metadata import (
+    RENT_BURDEN,
+    QuizQuestionDescriptor,
+    QuizQuestionSkip,
+)
 from urbanstats.statistics.statistic_collection import ACSStatisticsColection
 from urbanstats.statistics.utils import fractionalize
 
@@ -14,16 +19,18 @@ class HousingRentBurden(ACSStatisticsColection):
     def explanation_page_for_each_statistic(self):
         return self.same_for_each_name("housing-acs")
 
-    def quiz_question_names(self):
+    def quiz_question_descriptors(self):
         return {
-            "rent_burden_under_20": "higher % of people whose rent is less than 20% of their income",
-            "rent_burden_over_40": "higher % of people whose rent is greater than 40% of their income",
+            "rent_burden_under_20": QuizQuestionDescriptor(
+                "higher % of people whose rent is less than 20% of their income",
+                RENT_BURDEN,
+            ),
+            "rent_burden_20_to_40": QuizQuestionSkip(),
+            "rent_burden_over_40": QuizQuestionDescriptor(
+                "higher % of people whose rent is greater than 40% of their income",
+                RENT_BURDEN,
+            ),
         }
-
-    def quiz_question_unused(self):
-        return [
-            "rent_burden_20_to_40",
-        ]
 
     def mutate_acs_results(self, statistics_table):
         fractionalize(
