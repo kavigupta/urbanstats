@@ -338,7 +338,7 @@ export function StatisticRowCells(props: {
             ),
             style: { textAlign: 'right' },
         },
-        ...PointerRowCells({ ordinalStyle, row: props.row }),
+        ...PointerRowCells({ ordinalStyle, row: props.row, longname: props.longname }),
     ] satisfies ColumnLayoutProps['cells']
 
     return (
@@ -362,7 +362,7 @@ export function isSinglePointerCell(settings: Settings): boolean {
     return isMobileLayout() && !settings.get('simple_ordinals')
 }
 
-function PointerRowCells(props: { ordinalStyle: CSSProperties, row: ArticleRow }): ColumnLayoutProps['cells'] {
+function PointerRowCells(props: { ordinalStyle: CSSProperties, row: ArticleRow, longname: string }): ColumnLayoutProps['cells'] {
     const screenshotMode = useScreenshotMode()
 
     const singlePointerCell = useSinglePointerCell()
@@ -378,6 +378,7 @@ function PointerRowCells(props: { ordinalStyle: CSSProperties, row: ArticleRow }
                     statpath={props.row.statpath}
                     type={props.row.articleType}
                     total={props.row.totalCountInClass}
+                    longname={props.longname}
                 />
             </span>
         ),
@@ -394,6 +395,7 @@ function PointerRowCells(props: { ordinalStyle: CSSProperties, row: ArticleRow }
                     statpath={props.row.statpath}
                     type="overall"
                     total={props.row.totalCountOverall}
+                    longname={props.longname}
                 />
             </span>
         ),
@@ -941,7 +943,7 @@ export function Percentile(props: {
 }
 
 // Lacks some customization since its column is not show in the comparison view
-function PointerButtonsIndex(props: { ordinal: number, statpath: string, type: string, total: number }): ReactNode {
+function PointerButtonsIndex(props: { ordinal: number, statpath: string, type: string, total: number, longname: string }): ReactNode {
     const currentUniverse = useUniverse()
     const getData = async (): Promise<string[]> => await loadOrdering(currentUniverse, props.statpath, props.type)
     return (
@@ -951,12 +953,14 @@ function PointerButtonsIndex(props: { ordinal: number, statpath: string, type: s
                 originalPos={props.ordinal}
                 direction={-1}
                 total={props.total}
+                longname={props.longname}
             />
             <PointerButtonIndex
                 getData={getData}
                 originalPos={props.ordinal}
                 direction={+1}
                 total={props.total}
+                longname={props.longname}
             />
         </span>
     )
@@ -967,15 +971,18 @@ function PointerButtonIndex(props: {
     originalPos: number
     direction: -1 | 1
     total: number
+    longname: string
 }): ReactNode {
     const universe = useUniverse()
     const colors = useColors()
     const navigation = useContext(Navigator.Context)
     const [showHistoricalCDs] = useSetting('show_historical_cds')
     const outOfBounds = (pos: number): boolean => pos < 0 || pos >= props.total
-    const onClick = async (pos: number): Promise<void> => {
+    const newPos = (oldPos: number): number => oldPos - 1 + props.direction
+    const onClick = async (): Promise<void> => {
         {
             const data = await props.getData()
+            let pos = newPos(data.indexOf(props.longname) + 1)
             while (!outOfBounds(pos)) {
                 const name = data[pos]
                 if (!showHistoricalCDs && isHistoricalCD(name)) {
@@ -1007,8 +1014,7 @@ function PointerButtonIndex(props: {
         backgroundColor: 'transparent',
     }
 
-    const pos = props.originalPos - 1 + +props.direction
-    const disabled = outOfBounds(pos) || props.originalPos > props.total
+    const disabled = outOfBounds(newPos(props.originalPos)) || props.originalPos > props.total
 
     const buttonRef = useRef<HTMLButtonElement>(null) // Need the ref otherwise the mouse enter and leave events can be sent to the wrong elem
 
@@ -1016,7 +1022,7 @@ function PointerButtonIndex(props: {
         <button
             disabled={disabled}
             style={buttonStyle}
-            onClick={() => onClick(pos)}
+            onClick={onClick}
             data-test-id={props.direction}
             ref={buttonRef}
             onMouseEnter={() => {
