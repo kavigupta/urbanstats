@@ -153,10 +153,10 @@ test('lr-overall-other-stat', async (t) => {
         .click(prevOverallArea)
     await t.expect(getLocationWithoutSettings())
         .eql(`${target}/article.html?longname=49633%2C+USA&universe=world`)
-    await screencap(t)
+    await t.wait(100)
     await t
         .click(nextOverallArea)
-    await screencap(t)
+    await t.wait(100)
     await t.expect(getLocationWithoutSettings())
         .eql(`${target}/article.html?longname=Nairobi+%28Center%29+5MPC%2C+Kenya`)
     // check that prevOverallCompactness is disabled
