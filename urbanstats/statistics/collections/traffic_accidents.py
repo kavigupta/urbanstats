@@ -1,6 +1,11 @@
 import numpy as np
 
 from urbanstats.data.accidents import accidents_by_region
+from urbanstats.games.quiz_question_metadata import (
+    TRAFFIC_ACCIDENTS,
+    QuizQuestionDescriptor,
+    QuizQuestionSkip,
+)
 from urbanstats.statistics.collections.census import (
     compute_population,
     population_by_year,
@@ -22,23 +27,27 @@ class NHTSAAccidentStatistics(USAStatistics):
     def explanation_page_for_each_statistic(self):
         return self.same_for_each_name("nhtsa_accidents")
 
-    def quiz_question_names(self):
+    def quiz_question_descriptors(self):
         return {
-            "traffic_fatalities_last_decade_per_capita": (
-                "higher traffic "
-                "fatalities per capita between 2013 and 2022"
-                "!TOOLTIP traffic fatalities in the region, divided by the population of the region"
+            **QuizQuestionDescriptor.several(
+                TRAFFIC_ACCIDENTS,
+                {
+                    "traffic_fatalities_last_decade_per_capita": (
+                        "higher traffic "
+                        "fatalities per capita between 2013 and 2022"
+                        "!TOOLTIP traffic fatalities in the region, divided by the population of the region"
+                    ),
+                    "traffic_fatalities_ped_last_decade_per_capita": (
+                        "higher pedestrian/cyclist "
+                        "fatalities per capita between 2013 and 2022"
+                        "!TOOLTIP pedestrian and cyclist fatalities in the region, divided by the population of the region"
+                    ),
+                },
             ),
-            "traffic_fatalities_ped_last_decade_per_capita": (
-                "higher pedestrian/cyclist "
-                "fatalities per capita between 2013 and 2022"
-                "!TOOLTIP pedestrian and cyclist fatalities in the region, divided by the population of the region"
+            **QuizQuestionSkip.several(
+                "traffic_fatalities_last_decade", "traffic_fatalities_ped_last_decade"
             ),
         }
-
-    def quiz_question_unused(self):
-        # do not include the non-per-capita version in the quiz
-        return ["traffic_fatalities_last_decade", "traffic_fatalities_ped_last_decade"]
 
     def compute_statistics_dictionary_usa(
         self, *, shapefile, existing_statistics, shapefile_table

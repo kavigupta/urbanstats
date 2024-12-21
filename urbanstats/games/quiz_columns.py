@@ -19,12 +19,6 @@ for collection in statistic_collections:
             stats_to_display[name] = desc.name
         stats_to_types[name] = collection.quiz_question_types()
 
-assert (
-    stable_hash([stats_to_display, sorted(not_included)])
-    == "11ef6babbb501e9ef66e2ea02106b6ab71f427affb8a7a4340abd843830f7c4a"
-)
-1 / 0
-
 stats = sorted(stats_to_display, key=str)
 categories = sorted({get_statistic_categories()[x] for x in stats})
 

@@ -4,11 +4,6 @@ import numpy as np
 import pandas as pd
 
 from urbanstats.acs.load import aggregated_acs_data, aggregated_acs_data_us_pr
-from urbanstats.games.quiz_question_metadata import (
-    QuizQuestionCollection,
-    QuizQuestionDescriptor,
-    QuizQuestionSkip,
-)
 from urbanstats.games.quiz_region_types import (
     QUIZ_REGION_TYPES_ALL,
     QUIZ_REGION_TYPES_CANADA,
@@ -47,19 +42,8 @@ class StatisticCollection(ABC):
         pass
 
     @abstractmethod
-    def quiz_question_types(self):
-        pass
-
-    def quiz_question_unused(self):
-        return ()
-
     def quiz_question_descriptors(self):
-        results = {
-            k: QuizQuestionDescriptor(v, QuizQuestionCollection("Urban Statistics"))
-            for k, v in self.quiz_question_names().items()
-        }
-        results.update({k: QuizQuestionSkip() for k in self.quiz_question_unused()})
-        return results
+        pass
 
     def dependencies(self):
         return ()

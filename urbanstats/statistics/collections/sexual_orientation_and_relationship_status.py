@@ -1,4 +1,9 @@
 from urbanstats.acs.load import ACSDataEntity
+from urbanstats.games.quiz_question_metadata import (
+    SORS,
+    QuizQuestionDescriptor,
+    QuizQuestionSkip,
+)
 from urbanstats.statistics.statistic_collection import ACSStatisticsColection
 from urbanstats.statistics.utils import fractionalize
 
@@ -16,18 +21,21 @@ class SexualOrientationRelationshipStatusStatistics(ACSStatisticsColection):
     def explanation_page_for_each_statistic(self):
         return self.same_for_each_name("sors")
 
-    def quiz_question_names(self):
+    def quiz_question_descriptors(self):
         return {
-            "sors_cohabiting_partnered_gay": "higher % of people who are gay and cohabiting with a partner/spouse",
+            **QuizQuestionDescriptor.several(
+                SORS,
+                {
+                    "sors_cohabiting_partnered_gay": "higher % of people who are gay and cohabiting with a partner/spouse",
+                },
+            ),
+            **QuizQuestionSkip.several(
+                "sors_unpartnered_householder",
+                "sors_cohabiting_partnered_straight",
+                "sors_child",
+                "sors_other",
+            ),
         }
-
-    def quiz_question_unused(self):
-        return [
-            "sors_unpartnered_householder",
-            "sors_cohabiting_partnered_straight",
-            "sors_child",
-            "sors_other",
-        ]
 
     def mutate_acs_results(self, statistics_table):
         fractionalize(
