@@ -1,6 +1,9 @@
 from dataclasses import dataclass
+from functools import cached_property
+from typing import List
 import numpy as np
 from scipy.sparse import coo_matrix
+import torch
 
 from urbanstats.games.quiz import difficulty_multiplier, ranges
 
@@ -142,3 +145,35 @@ def renormalize_by_stat(
 
 def mean_abs_geo(renormalizers):
     return np.abs(np.log(renormalizers)).mean()
+
+
+@dataclass
+class QuizQuestionPossibilities:
+    questions_by_number: List[ValidQuizQuestions]
+    all_geographies: List[str]
+    all_stats: List[str]
+
+    def aggregate_torch(self, p):
+        g = torch.zeros(len(self.all_geographies))
+        ps = [torch.softmax(p[rang], axis=0) for rang in self.normalization_ranges]
+        for q, p_q in zip(self.questions_by_number, ps):
+            g.index_add_(0, torch.tensor(q.geography_index_a), p_q)
+            g.index_add_(0, torch.tensor(q.geography_index_b), p_q)
+        g = g / len(self.questions_by_number) / 2
+        s = torch.zeros(len(self.all_stats))
+        for q, p_q in zip(self.questions_by_number, ps):
+            s.index_add_(0, torch.tensor(q.stat_indices), p_q)
+        s = s / len(self.questions_by_number)
+        return g, s
+
+    @cached_property
+    def normalization_ranges(self):
+        res = []
+        start = 0
+        for q in self.questions_by_number:
+            res.append(slice(start, start + len(q)))
+            start += len(q)
+        return res
+
+    def __len__(self):
+        return sum(len(q) for q in self.questions_by_number)
