@@ -153,6 +153,7 @@ test('lr-overall-other-stat', async (t) => {
         .click(prevOverallArea)
     await t.expect(getLocationWithoutSettings())
         .eql(`${target}/article.html?longname=49633%2C+USA&universe=world`)
+    await screencap(t)
     await t
         .click(nextOverallArea)
     await t.expect(getLocationWithoutSettings())
