@@ -980,14 +980,11 @@ function PointerButtonIndex(props: {
     const navigation = useContext(Navigator.Context)
     const [showHistoricalCDs] = useSetting('show_historical_cds')
     const outOfBounds = (pos: number): boolean => pos < 0 || pos >= props.total
-    const newPos = (oldPos: number): number => oldPos - 1 +props.direction
-    const onClick = async (pos: number | undefined): Promise<void> => {
+    const newPos = (oldPos: number): number => oldPos - 1 + props.direction
+    const onClick = async (): Promise<void> => {
         {
             const data = await props.getData()
-            if (pos === undefined) {
-                // index of longname in data
-                pos = newPos(data.indexOf(props.longname) + 1)
-            }
+            let pos = newPos(data.indexOf(props.longname) + 1)
             while (!outOfBounds(pos)) {
                 const name = data[pos]
                 if (!showHistoricalCDs && isHistoricalCD(name)) {
@@ -1021,11 +1018,8 @@ function PointerButtonIndex(props: {
 
     let pos: number | undefined
     let disabled: boolean = props.disable ?? false
-    if (props.originalPos === undefined) {
-        pos = undefined
-    } else {
-        pos = newPos(props.originalPos)
-        disabled = outOfBounds(pos) || props.originalPos > props.total
+    if (props.originalPos !== undefined) {
+        outOfBounds(newPos(props.originalPos)) || props.originalPos > props.total
     }
 
     const buttonRef = useRef<HTMLButtonElement>(null) // Need the ref otherwise the mouse enter and leave events can be sent to the wrong elem
@@ -1034,7 +1028,7 @@ function PointerButtonIndex(props: {
         <button
             disabled={disabled}
             style={buttonStyle}
-            onClick={() => onClick(pos)}
+            onClick={onClick}
             data-test-id={props.direction}
             ref={buttonRef}
             onMouseEnter={() => {
