@@ -1,5 +1,10 @@
 # pylint: disable=duplicate-code
 from urbanstats.acs.load import ACSDataEntity
+from urbanstats.games.quiz_question_metadata import (
+    HOUSING_YEAR,
+    QuizQuestionDescriptor,
+    QuizQuestionSkip,
+)
 from urbanstats.statistics.statistic_collection import ACSStatisticsColection
 from urbanstats.statistics.utils import fractionalize
 
@@ -18,19 +23,22 @@ class HousingYearBuiltStatistics(ACSStatisticsColection):
     def explanation_page_for_each_statistic(self):
         return self.same_for_each_name("housing-acs")
 
-    def quiz_question_names(self):
+    def quiz_question_descriptors(self):
         return {
-            "year_built_1969_or_earlier": "higher % units built pre-1970",
-            "year_built_2010_or_later": "higher % units built in 2010s+",
+            **QuizQuestionDescriptor.several(
+                HOUSING_YEAR,
+                {
+                    "year_built_1969_or_earlier": "higher % units built pre-1970",
+                    "year_built_2010_or_later": "higher % units built in 2010s+",
+                },
+            ),
+            **QuizQuestionSkip.several(
+                "year_built_1970_to_1979",
+                "year_built_1980_to_1989",
+                "year_built_1990_to_1999",
+                "year_built_2000_to_2009",
+            ),
         }
-
-    def quiz_question_unused(self):
-        return [
-            "year_built_1970_to_1979",
-            "year_built_1980_to_1989",
-            "year_built_1990_to_1999",
-            "year_built_2000_to_2009",
-        ]
 
     def mutate_acs_results(self, statistics_table):
         fractionalize(

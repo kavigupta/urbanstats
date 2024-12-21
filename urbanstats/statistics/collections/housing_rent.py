@@ -1,4 +1,9 @@
 from urbanstats.acs.load import ACSDataEntity
+from urbanstats.games.quiz_question_metadata import (
+    RENT,
+    QuizQuestionDescriptor,
+    QuizQuestionSkip,
+)
 from urbanstats.statistics.statistic_collection import ACSStatisticsColection
 from urbanstats.statistics.utils import fractionalize
 
@@ -17,19 +22,22 @@ class HousingRent(ACSStatisticsColection):
     def explanation_page_for_each_statistic(self):
         return self.same_for_each_name("housing-acs")
 
-    def quiz_question_names(self):
+    def quiz_question_descriptors(self):
         return {
-            "rent_1br_under_750": "higher % of units with 1br rent under $750",
-            "rent_1br_over_1500": "higher % of units with 1br rent over $1500",
-            "rent_2br_under_750": "higher % of units with 2br rent under $750",
-            "rent_2br_over_1500": "higher % of units with 2br rent over $1500",
+            **QuizQuestionDescriptor.several(
+                RENT,
+                {
+                    "rent_1br_under_750": "higher % of units with 1br rent under $750",
+                    "rent_1br_over_1500": "higher % of units with 1br rent over $1500",
+                    "rent_2br_under_750": "higher % of units with 2br rent under $750",
+                    "rent_2br_over_1500": "higher % of units with 2br rent over $1500",
+                },
+            ),
+            **QuizQuestionSkip.several(
+                "rent_1br_750_to_1500",
+                "rent_2br_750_to_1500",
+            ),
         }
-
-    def quiz_question_unused(self):
-        return [
-            "rent_1br_750_to_1500",
-            "rent_2br_750_to_1500",
-        ]
 
     def mutate_acs_results(self, statistics_table):
         fractionalize(

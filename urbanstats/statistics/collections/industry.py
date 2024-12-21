@@ -1,5 +1,6 @@
 from urbanstats.acs import industry
 from urbanstats.acs.load import ACSDataEntity
+from urbanstats.games.quiz_question_metadata import INDUSTRY, QuizQuestionDescriptor
 from urbanstats.statistics.statistic_collection import ACSStatisticsColection
 from urbanstats.statistics.utils import fractionalize
 
@@ -17,7 +18,7 @@ class IndustryStatistics(ACSStatisticsColection):
     def explanation_page_for_each_statistic(self):
         return self.same_for_each_name("industry_and_occupation")
 
-    def quiz_question_names(self):
+    def quiz_question_descriptors(self):
         # pylint: disable=line-too-long
         quick_names = {
             "industry_agriculture,_forestry,_fishing_and_hunting": "higher % of workers employed in the agriculture, forestry, fishing, and hunting industries",
@@ -41,10 +42,13 @@ class IndustryStatistics(ACSStatisticsColection):
             "industry_utilities": "higher % of workers employed in the utilities industry",
             "industry_wholesale_trade": "higher % of workers employed in the wholesale trade industry",
         }
-        return {
-            k: v + "!TOOLTIP " + self.industry_name_to_description()[k]
-            for k, v in quick_names.items()
-        }
+        return QuizQuestionDescriptor.several(
+            INDUSTRY,
+            {
+                k: v + "!TOOLTIP " + self.industry_name_to_description()[k]
+                for k, v in quick_names.items()
+            },
+        )
 
     def table(self):
         return [
