@@ -1016,10 +1016,9 @@ function PointerButtonIndex(props: {
         backgroundColor: 'transparent',
     }
 
-    let pos: number | undefined
     let disabled: boolean = props.disable ?? false
     if (props.originalPos !== undefined) {
-        outOfBounds(newPos(props.originalPos)) || props.originalPos > props.total
+        disabled = outOfBounds(newPos(props.originalPos)) || props.originalPos > props.total
     }
 
     const buttonRef = useRef<HTMLButtonElement>(null) // Need the ref otherwise the mouse enter and leave events can be sent to the wrong elem
