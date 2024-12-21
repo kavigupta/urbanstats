@@ -13,7 +13,7 @@ import { isHistoricalCD } from '../utils/is_historical'
 import { isMobileLayout, useMobileLayout } from '../utils/responsive'
 import { displayType, separateNumber } from '../utils/text'
 
-import { ArticleRow, Disclaimer } from './load-article'
+import { ArticleRow, Disclaimer, FirstLastStatus } from './load-article'
 import { useScreenshotMode } from './screenshot'
 
 export type ColumnIdentifier = 'statname' | 'statval' | 'statval_unit' | 'statistic_percentile' | 'statistic_ordinal' | 'pointer_in_class' | 'pointer_overall'
@@ -391,11 +391,11 @@ function PointerRowCells(props: { ordinalStyle: CSSProperties, row: ArticleRow, 
         content: (
             <span className="serif" style={{ display: 'flex', ...props.ordinalStyle }}>
                 <PointerButtonsIndex
-                    ordinal={props.row.overallOrdinal}
                     statpath={props.row.statpath}
                     type="overall"
                     total={props.row.totalCountOverall}
                     longname={props.longname}
+                    overallFirstLast={props.row.overallFirstLast}
                 />
             </span>
         ),
@@ -923,8 +923,7 @@ export function Percentile(props: {
     }
     // percentile as an integer
     // used to be keyed by a setting, but now we always use percentile_by_population
-    const quantile = props.percentileByPopulation
-    const percentile = Math.floor(100 * quantile)
+    const percentile = props.percentileByPopulation
     if (props.simpleOrdinals) {
         return rightAlign(`${percentile.toString()}%`)
     }
@@ -943,7 +942,7 @@ export function Percentile(props: {
 }
 
 // Lacks some customization since its column is not show in the comparison view
-function PointerButtonsIndex(props: { ordinal: number, statpath: string, type: string, total: number, longname: string }): ReactNode {
+function PointerButtonsIndex(props: { ordinal?: number, statpath: string, type: string, total: number, longname: string, overallFirstLast?: FirstLastStatus }): ReactNode {
     const currentUniverse = useUniverse()
     const getData = async (): Promise<string[]> => await loadOrdering(currentUniverse, props.statpath, props.type)
     return (
@@ -954,6 +953,7 @@ function PointerButtonsIndex(props: { ordinal: number, statpath: string, type: s
                 direction={-1}
                 total={props.total}
                 longname={props.longname}
+                disable={props.overallFirstLast?.isFirst}
             />
             <PointerButtonIndex
                 getData={getData}
@@ -961,6 +961,7 @@ function PointerButtonsIndex(props: { ordinal: number, statpath: string, type: s
                 direction={+1}
                 total={props.total}
                 longname={props.longname}
+                disable={props.overallFirstLast?.isLast}
             />
         </span>
     )
@@ -968,10 +969,11 @@ function PointerButtonsIndex(props: { ordinal: number, statpath: string, type: s
 
 function PointerButtonIndex(props: {
     getData: () => Promise<string[]>
-    originalPos: number
+    originalPos?: number
     direction: -1 | 1
     total: number
     longname: string
+    disable?: boolean
 }): ReactNode {
     const universe = useUniverse()
     const colors = useColors()
@@ -1014,7 +1016,10 @@ function PointerButtonIndex(props: {
         backgroundColor: 'transparent',
     }
 
-    const disabled = outOfBounds(newPos(props.originalPos)) || props.originalPos > props.total
+    let disabled: boolean = props.disable ?? false
+    if (props.originalPos !== undefined) {
+        disabled = outOfBounds(newPos(props.originalPos)) || props.originalPos > props.total
+    }
 
     const buttonRef = useRef<HTMLButtonElement>(null) // Need the ref otherwise the mouse enter and leave events can be sent to the wrong elem
 
