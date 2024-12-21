@@ -32,7 +32,6 @@ export type Disclaimer = 'heterogenous-sources'
 export interface ArticleRow {
     statval: number
     ordinal: number
-    overallOrdinal: number
     percentileByPopulation: number
     statcol: StatCol
     statname: StatName
@@ -116,7 +115,6 @@ export function loadSingleArticle(data: Article, universe: string): ArticleRow[]
         return {
             statval: rowOriginal.statval!,
             ordinal: rowOriginal.ordinalByUniverse![universeIndex],
-            overallOrdinal: rowOriginal.overallOrdinalByUniverse![universeIndex],
             percentileByPopulation: rowOriginal.percentileByPopulationByUniverse![universeIndex],
             statcol: stats[i],
             statname: names[i],

@@ -5,8 +5,15 @@ syntax = "proto3";
 message StatisticRow {
     float statval = 1;
     repeated int32 ordinal_by_universe = 2;
-    repeated int32 overall_ordinal_by_universe = 3;
     repeated int32 percentile_by_population_by_universe = 4;
+}
+
+message FirstOrLast {
+    // index into article.rows
+    int32 article_row_idx = 1;
+    // index into article.universes
+    int32 article_universes_idx = 2;
+    bool is_first = 3;
 }
 
 message RelatedButton {
@@ -43,6 +50,7 @@ message Article {
     string article_type = 4;
     bytes statistic_indices_packed = 9;
     repeated StatisticRow rows = 5;
+    repeated FirstOrLast overall_first_or_last = 10;
     repeated RelatedButtons related = 6;
     repeated string universes = 7;
     repeated ExtraStatistic extra_stats = 8;

@@ -15,23 +15,34 @@ class StatisticRow(_message.Message):
     __slots__ = (
         "statval",
         "ordinal_by_universe",
-        "overall_ordinal_by_universe",
         "percentile_by_population_by_universe",
     )
     STATVAL_FIELD_NUMBER: _ClassVar[int]
     ORDINAL_BY_UNIVERSE_FIELD_NUMBER: _ClassVar[int]
-    OVERALL_ORDINAL_BY_UNIVERSE_FIELD_NUMBER: _ClassVar[int]
     PERCENTILE_BY_POPULATION_BY_UNIVERSE_FIELD_NUMBER: _ClassVar[int]
     statval: float
     ordinal_by_universe: _containers.RepeatedScalarFieldContainer[int]
-    overall_ordinal_by_universe: _containers.RepeatedScalarFieldContainer[int]
     percentile_by_population_by_universe: _containers.RepeatedScalarFieldContainer[int]
     def __init__(
         self,
         statval: _Optional[float] = ...,
         ordinal_by_universe: _Optional[_Iterable[int]] = ...,
-        overall_ordinal_by_universe: _Optional[_Iterable[int]] = ...,
         percentile_by_population_by_universe: _Optional[_Iterable[int]] = ...,
+    ) -> None: ...
+
+class FirstOrLast(_message.Message):
+    __slots__ = ("article_row_idx", "article_universes_idx", "is_first")
+    ARTICLE_ROW_IDX_FIELD_NUMBER: _ClassVar[int]
+    ARTICLE_UNIVERSES_IDX_FIELD_NUMBER: _ClassVar[int]
+    IS_FIRST_FIELD_NUMBER: _ClassVar[int]
+    article_row_idx: int
+    article_universes_idx: int
+    is_first: bool
+    def __init__(
+        self,
+        article_row_idx: _Optional[int] = ...,
+        article_universes_idx: _Optional[int] = ...,
+        is_first: bool = ...,
     ) -> None: ...
 
 class RelatedButton(_message.Message):
@@ -102,6 +113,7 @@ class Article(_message.Message):
         "article_type",
         "statistic_indices_packed",
         "rows",
+        "overall_first_or_last",
         "related",
         "universes",
         "extra_stats",
@@ -112,6 +124,7 @@ class Article(_message.Message):
     ARTICLE_TYPE_FIELD_NUMBER: _ClassVar[int]
     STATISTIC_INDICES_PACKED_FIELD_NUMBER: _ClassVar[int]
     ROWS_FIELD_NUMBER: _ClassVar[int]
+    OVERALL_FIRST_OR_LAST_FIELD_NUMBER: _ClassVar[int]
     RELATED_FIELD_NUMBER: _ClassVar[int]
     UNIVERSES_FIELD_NUMBER: _ClassVar[int]
     EXTRA_STATS_FIELD_NUMBER: _ClassVar[int]
@@ -121,6 +134,7 @@ class Article(_message.Message):
     article_type: str
     statistic_indices_packed: bytes
     rows: _containers.RepeatedCompositeFieldContainer[StatisticRow]
+    overall_first_or_last: _containers.RepeatedCompositeFieldContainer[FirstOrLast]
     related: _containers.RepeatedCompositeFieldContainer[RelatedButtons]
     universes: _containers.RepeatedScalarFieldContainer[str]
     extra_stats: _containers.RepeatedCompositeFieldContainer[ExtraStatistic]
@@ -132,6 +146,9 @@ class Article(_message.Message):
         article_type: _Optional[str] = ...,
         statistic_indices_packed: _Optional[bytes] = ...,
         rows: _Optional[_Iterable[_Union[StatisticRow, _Mapping]]] = ...,
+        overall_first_or_last: _Optional[
+            _Iterable[_Union[FirstOrLast, _Mapping]]
+        ] = ...,
         related: _Optional[_Iterable[_Union[RelatedButtons, _Mapping]]] = ...,
         universes: _Optional[_Iterable[str]] = ...,
         extra_stats: _Optional[_Iterable[_Union[ExtraStatistic, _Mapping]]] = ...,
