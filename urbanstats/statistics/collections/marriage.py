@@ -1,4 +1,9 @@
 from urbanstats.acs.load import ACSDataEntity
+from urbanstats.games.quiz_question_metadata import (
+    MARRIAGE,
+    QuizQuestionDescriptor,
+    QuizQuestionSkip,
+)
 from urbanstats.statistics.statistic_collection import ACSStatisticsColection
 from urbanstats.statistics.utils import fractionalize
 
@@ -14,13 +19,15 @@ class MarriageStatistics(ACSStatisticsColection):
     def explanation_page_for_each_statistic(self):
         return self.same_for_each_name("marriage")
 
-    def quiz_question_names(self):
+    def quiz_question_descriptors(self):
         return {
-            "marriage_divorced": "higher % of people who are divorced",
+            "marriage_divorced": QuizQuestionDescriptor(
+                "higher % of people who are divorced", MARRIAGE
+            ),
+            **QuizQuestionSkip.several(
+                "marriage_married_not_divorced", "marriage_never_married"
+            ),
         }
-
-    def quiz_question_unused(self):
-        return ["marriage_married_not_divorced", "marriage_never_married"]
 
     def mutate_acs_results(self, statistics_table):
         fractionalize(

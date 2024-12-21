@@ -1,4 +1,10 @@
 from urbanstats.data.gpw import compute_gpw_data_for_shapefile
+from urbanstats.games.quiz_question_metadata import (
+    POPULATION,
+    POPULATION_DENSITY,
+    QuizQuestionDescriptor,
+    QuizQuestionSkip,
+)
 from urbanstats.statistics.collections.census import DENSITY_EXPLANATION_PW
 from urbanstats.statistics.extra_statistics import HistogramSpec
 from urbanstats.statistics.statistic_collection import InternationalStatistics
@@ -20,15 +26,17 @@ class GPWStatistics(InternationalStatistics):
     def explanation_page_for_each_statistic(self):
         return self.same_for_each_name("gpw")
 
-    def quiz_question_names(self):
+    def quiz_question_descriptors(self):
         return {
-            "gpw_population": "higher population",
-            "gpw_pw_density_4": "higher population-weighted density (r=4km)"
-            + DENSITY_EXPLANATION_PW,
+            "gpw_population": QuizQuestionDescriptor("higher population", POPULATION),
+            "gpw_pw_density_4": QuizQuestionDescriptor(
+                "higher population-weighted density (r=4km)" + DENSITY_EXPLANATION_PW,
+                POPULATION_DENSITY,
+            ),
+            **QuizQuestionSkip.several(
+                "gpw_pw_density_1", "gpw_pw_density_2", "gpw_aw_density"
+            ),
         }
-
-    def quiz_question_unused(self):
-        return ["gpw_pw_density_2", "gpw_pw_density_1", "gpw_aw_density"]
 
     def dependencies(self):
         return ["area"]

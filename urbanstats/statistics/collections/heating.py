@@ -1,4 +1,9 @@
 from urbanstats.acs.load import ACSDataEntity
+from urbanstats.games.quiz_question_metadata import (
+    HEATING,
+    QuizQuestionDescriptor,
+    QuizQuestionSkip,
+)
 from urbanstats.statistics.statistic_collection import ACSStatisticsColection
 from urbanstats.statistics.utils import fractionalize
 
@@ -17,19 +22,22 @@ class HouseHeating(ACSStatisticsColection):
     def explanation_page_for_each_statistic(self):
         return self.same_for_each_name("climate-acs")
 
-    def quiz_question_names(self):
+    def quiz_question_descriptors(self):
         return {
-            "heating_utility_gas": "!FULL Which has a larger % of homes heated using utility gas?",
-            "heating_electricity": "!FULL Which has a larger % of homes heated using electricity?",
+            **QuizQuestionDescriptor.several(
+                HEATING,
+                {
+                    "heating_utility_gas": "!FULL Which has a larger % of homes heated using utility gas?",
+                    "heating_electricity": "!FULL Which has a larger % of homes heated using electricity?",
+                },
+            ),
+            **QuizQuestionSkip.several(
+                "heating_bottled_tank_lp_gas",
+                "heating_feul_oil_kerosene",
+                "heating_other",
+                "heating_no",
+            ),
         }
-
-    def quiz_question_unused(self):
-        return [
-            "heating_bottled_tank_lp_gas",
-            "heating_feul_oil_kerosene",
-            "heating_other",
-            "heating_no",
-        ]
 
     def mutate_acs_results(self, statistics_table):
         fractionalize(statistics_table, *self.name_for_each_statistic().keys())

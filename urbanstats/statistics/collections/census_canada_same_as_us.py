@@ -30,14 +30,11 @@ class CensusCanadaSameAsUS(CanadaStatistics):
             for k, v in self.us_equivalent().name_for_each_statistic().items()
         }
 
-    def quiz_question_names(self):
+    def quiz_question_descriptors(self):
         return {
-            f"{k}_canada": v
-            for k, v in self.us_equivalent().quiz_question_names().items()
+            f"{k}_canada": self.us_equivalent().quiz_question_descriptors()[k]
+            for k in self.us_equivalent().quiz_question_descriptors()
         }
-
-    def quiz_question_unused(self):
-        return [f"{k}_canada" for k in self.us_equivalent().quiz_question_unused()]
 
     def compute_statistics_dictionary_canada(
         self, *, shapefile, existing_statistics, shapefile_table
