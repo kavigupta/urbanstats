@@ -1,6 +1,6 @@
-from functools import lru_cache
 import itertools
 import re
+from functools import lru_cache
 
 import numpy as np
 import tqdm.auto as tqdm
@@ -50,7 +50,7 @@ def create_article_gzip(
     universe_idxs = [u_to_i[u] for u in row.universes]
 
     counts_this = counts_overall[:, universe_idxs]
-    
+
     for article_row_idx, idx in enumerate(idxs):
         stat = statistic_names[idx]
         counts_for_stat = counts_this[idx]
@@ -60,13 +60,22 @@ def create_article_gzip(
         ordinals_by_type, ordinals_overall = ords[idx]
         percs_by_typ, _ = percs[idx]
 
-        for article_universes_idx, ordinal_by_type, ordinal_overall, count, percentile_by_type in zip(
+        for (
+            article_universes_idx,
+            ordinal_by_type,
+            ordinal_overall,
+            count,
+            percentile_by_type,
+        ) in zip(
             itertools.count(),
-            ordinals_by_type, ordinals_overall, counts_for_stat, percs_by_typ
+            ordinals_by_type,
+            ordinals_overall,
+            counts_for_stat,
+            percs_by_typ,
         ):
             statrow.ordinal_by_universe.append(int(ordinal_by_type))
             ordinal_overall = int(ordinal_overall)
-            if ordinal_overall == 1 or ordinal_overall == count:
+            if ordinal_overall in {1, count}:
                 fol = data.overall_first_or_last.add()
                 fol.article_row_idx = article_row_idx
                 fol.article_universes_idx = article_universes_idx

@@ -26,7 +26,6 @@ def save_ordered_list(ordered_list, path):
     write_gzip(res, path)
 
 
-
 def write_gzip(proto, path):
     folder = os.path.dirname(path)
     try:
