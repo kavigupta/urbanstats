@@ -1,4 +1,8 @@
 from urbanstats.acs.load import ACSDataEntity
+from urbanstats.games.quiz_question_metadata import (
+    NATIONAL_ORIGIN,
+    QuizQuestionDescriptor,
+)
 from urbanstats.statistics.statistic_collection import ACSUSPRStatisticsColection
 from urbanstats.statistics.utils import fractionalize
 
@@ -14,15 +18,15 @@ class NationalOriginCitizenshipStatistics(ACSUSPRStatisticsColection):
     def explanation_page_for_each_statistic(self):
         return self.same_for_each_name("citizenship")
 
-    def quiz_question_names(self):
-        return {
-            "citizenship_citizen_by_birth": "higher % of residents who are citizens by birth",
-            "citizenship_citizen_by_naturalization": "higher % of residents who are citizens by naturalization",
-            "citizenship_not_citizen": "higher % of residents who are non-citizens",
-        }
-
-    def quiz_question_unused(self):
-        return []
+    def quiz_question_descriptors(self):
+        return QuizQuestionDescriptor.several(
+            NATIONAL_ORIGIN,
+            {
+                "citizenship_citizen_by_birth": "higher % of residents who are citizens by birth",
+                "citizenship_citizen_by_naturalization": "higher % of residents who are citizens by naturalization",
+                "citizenship_not_citizen": "higher % of residents who are non-citizens",
+            },
+        )
 
     def mutate_acs_results(self, statistics_table):
         fractionalize(

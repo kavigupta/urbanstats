@@ -1,3 +1,8 @@
+from urbanstats.games.quiz_question_metadata import (
+    SEGREGATION,
+    QuizQuestionDescriptor,
+    QuizQuestionSkip,
+)
 from urbanstats.geometry.segregation import compute_homogenity_statistics
 from urbanstats.statistics.statistic_collection import USAStatistics
 
@@ -29,26 +34,31 @@ class SegregationStatistics(USAStatistics):
     def explanation_page_for_each_statistic(self):
         return self.same_for_each_name("segregation")
 
-    def quiz_question_names(self):
+    def quiz_question_descriptors(self):
         return {
-            "homogeneity_250_2020": "higher racial homogeneity"
-            + homogeneity_explanation,
-            "homogeneity_250_diff_2010": "higher increase (or smaller decrease) in racial homogeneity from 2010 to 2020"
-            + homogeneity_explanation,
-            "homogeneity_250_diff_2000": "higher increase (or smaller decrease) in racial homogeneity from 2000 to 2020"
-            + homogeneity_explanation,
+            **QuizQuestionDescriptor.several(
+                SEGREGATION,
+                {
+                    "homogeneity_250_2020": "higher racial homogeneity"
+                    + homogeneity_explanation,
+                    "homogeneity_250_diff_2010": "higher increase (or smaller decrease) in racial homogeneity from 2010 to 2020"
+                    + homogeneity_explanation,
+                    "homogeneity_250_diff_2000": "higher increase (or smaller decrease) in racial homogeneity from 2000 to 2020"
+                    + homogeneity_explanation,
+                },
+            ),
+            **QuizQuestionSkip.several(
+                *[
+                    x
+                    for x in self.name_for_each_statistic()
+                    if
+                    # too hard to explain succinctly in a tooltip
+                    not x.startswith("homogeneity")
+                    # non-dleta, redundant with 2020 ish
+                    or "diff" not in x and "2020" not in x
+                ]
+            ),
         }
-
-    def quiz_question_unused(self):
-        return [
-            x
-            for x in self.name_for_each_statistic()
-            if
-            # too hard to explain succinctly in a tooltip
-            not x.startswith("homogeneity")
-            # non-dleta, redundant with 2020 ish
-            or "diff" not in x and "2020" not in x
-        ]
 
     def compute_stats_for_year(self, year, shapefile):
         homogeneity, segregation, segregation_10 = compute_homogenity_statistics(

@@ -1,5 +1,6 @@
 # pylint: disable=duplicate-code
 from urbanstats.acs.load import ACSDataEntity
+from urbanstats.games.quiz_question_metadata import QuizQuestionSkip
 from urbanstats.statistics.statistic_collection import ACSStatisticsColection
 from urbanstats.statistics.utils import fractionalize
 
@@ -15,15 +16,12 @@ class EducationGenderGapStatistics(ACSStatisticsColection):
     def explanation_page_for_each_statistic(self):
         return self.same_for_each_name("education")
 
-    def quiz_question_names(self):
-        return {}
-
-    def quiz_question_unused(self):
-        return [
+    def quiz_question_descriptors(self):
+        return QuizQuestionSkip.several(
             "female_hs_gap_4",
             "female_ugrad_gap_4",
             "female_grad_gap_4",
-        ]
+        )
 
     def mutate_acs_results(self, statistics_table):
         fractionalize(

@@ -1,5 +1,10 @@
 from urbanstats.acs import occupation
 from urbanstats.acs.load import ACSDataEntity
+from urbanstats.games.quiz_question_metadata import (
+    OCCUPATION,
+    QuizQuestionDescriptor,
+    QuizQuestionSkip,
+)
 from urbanstats.statistics.statistic_collection import ACSStatisticsColection
 from urbanstats.statistics.utils import fractionalize
 
@@ -17,7 +22,7 @@ class OccupationStatistics(ACSStatisticsColection):
     def explanation_page_for_each_statistic(self):
         return self.same_for_each_name("industry_and_occupation")
 
-    def quiz_question_names(self):
+    def quiz_question_descriptors(self):
         # pylint: disable=line-too-long
         quick_names = {
             "occupation_architecture_and_engineering_occupations": "higher % of workers employed as architects and engineers",
@@ -46,8 +51,14 @@ class OccupationStatistics(ACSStatisticsColection):
             "occupation_law_enforcement_workers_including_supervisors": "higher % of workers employed as law enforcement workers including supervisors",
         }
         return {
-            k: v + "!TOOLTIP " + self.occupation_name_to_description()[k]
-            for k, v in quick_names.items()
+            **QuizQuestionDescriptor.several(
+                OCCUPATION,
+                {
+                    k: v + "!TOOLTIP " + self.occupation_name_to_description()[k]
+                    for k, v in quick_names.items()
+                },
+            ),
+            **QuizQuestionSkip.several("occupation_production_occupations"),
         }
 
     def table(self):
@@ -132,9 +143,6 @@ class OccupationStatistics(ACSStatisticsColection):
             "occupation_material_moving_occupations": "forklift operators, stock clerks, conveyor operators,"
             " etc.",
         }
-
-    def quiz_question_unused(self):
-        return ["occupation_production_occupations"]
 
     def mutate_acs_results(self, statistics_table):
         fractionalize(statistics_table, *self.name_for_each_statistic())

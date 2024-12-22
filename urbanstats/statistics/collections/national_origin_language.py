@@ -1,4 +1,9 @@
 from urbanstats.acs.load import ACSDataEntity
+from urbanstats.games.quiz_question_metadata import (
+    LANGUAGE,
+    QuizQuestionDescriptor,
+    QuizQuestionSkip,
+)
 from urbanstats.statistics.statistic_collection import ACSStatisticsColection
 from urbanstats.statistics.utils import fractionalize
 
@@ -14,14 +19,17 @@ class NationalOriginLanguageStatistics(ACSStatisticsColection):
     def explanation_page_for_each_statistic(self):
         return self.same_for_each_name("language")
 
-    def quiz_question_names(self):
+    def quiz_question_descriptors(self):
         return {
-            "language_english_only": "higher % of people who only speak english at home",
-            "language_spanish": "higher % of people who speak spanish at home",
+            **QuizQuestionDescriptor.several(
+                LANGUAGE,
+                {
+                    "language_english_only": "higher % of people who only speak english at home",
+                    "language_spanish": "higher % of people who speak spanish at home",
+                },
+            ),
+            **QuizQuestionSkip.several("language_other"),
         }
-
-    def quiz_question_unused(self):
-        return ["language_other"]
 
     def mutate_acs_results(self, statistics_table):
         fractionalize(

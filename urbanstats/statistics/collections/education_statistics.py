@@ -1,4 +1,9 @@
 from urbanstats.acs.load import ACSDataEntity
+from urbanstats.games.quiz_question_metadata import (
+    EDUCATION_FIELD,
+    EDUCATION_LEVEL,
+    QuizQuestionDescriptor,
+)
 from urbanstats.statistics.statistic_collection import ACSStatisticsColection
 
 
@@ -16,14 +21,24 @@ class EducationStatistics(ACSStatisticsColection):
     def explanation_page_for_each_statistic(self):
         return self.same_for_each_name("education")
 
-    def quiz_question_names(self):
+    def quiz_question_descriptors(self):
         return {
-            "education_high_school": "higher % of people who have at least a high school diploma",
-            "education_ugrad": "higher % of people who have at least an undergrad degree",
-            "education_grad": "higher % of people who have a graduate degree",
-            "education_field_stem": "!FULL Which has more people with a STEM degree, as a percentage of the overall population?",
-            "education_field_humanities": "!FULL Which has more people with a humanities degree, as a percentage of the overall population?",
-            "education_field_business": "!FULL Which has more people with a business degree, as a percentage of the overall population?",
+            **QuizQuestionDescriptor.several(
+                EDUCATION_LEVEL,
+                {
+                    "education_high_school": "higher % of people who have at least a high school diploma",
+                    "education_ugrad": "higher % of people who have at least an undergrad degree",
+                    "education_grad": "higher % of people who have a graduate degree",
+                },
+            ),
+            **QuizQuestionDescriptor.several(
+                EDUCATION_FIELD,
+                {
+                    "education_field_stem": "!FULL Which has more people with a STEM degree, as a percentage of the overall population?",
+                    "education_field_humanities": "!FULL Which has more people with a humanities degree, as a percentage of the overall population?",
+                    "education_field_business": "!FULL Which has more people with a business degree, as a percentage of the overall population?",
+                },
+            ),
         }
 
     def quiz_question_unused(self):

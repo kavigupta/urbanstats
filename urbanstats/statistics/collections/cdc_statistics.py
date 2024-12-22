@@ -1,4 +1,9 @@
 from urbanstats.census_2010.cdc import aggregated_cdc_table
+from urbanstats.games.quiz_question_metadata import (
+    HEALTH_CDC,
+    QuizQuestionDescriptor,
+    QuizQuestionSkip,
+)
 from urbanstats.statistics.statistic_collection import USAStatistics
 
 
@@ -63,40 +68,43 @@ class CDCStatistics(USAStatistics):
     def explanation_page_for_each_statistic(self):
         return self.same_for_each_name("health")
 
-    def quiz_question_names(self):
+    def quiz_question_descriptors(self):
         return {
-            "GHLTH_cdc_2": "higher % of adults with a fair or poor self-rated health status",
-            "ARTHRITIS_cdc_2": "higher % of adults with arthritis",
-            "CASTHMA_cdc_2": "higher % of adults with asthma",
-            "BPHIGH_cdc_2": "higher % of adults with high blood pressure",
-            "CANCER_cdc_2": "higher % of adults with cancer (excluding skin cancer)",
-            "KIDNEY_cdc_2": "higher % of adults with chronic kidney disease",
-            "COPD_cdc_2": "higher % of adults with COPD !TOOLTIP (Chronic obstructive pulmonary disease, a lung disease linked to smoking)",
-            "CHD_cdc_2": "higher % of adults with coronary heart disease",
-            "DIABETES_cdc_2": "higher % of adults with diagnosed diabetes",
-            "OBESITY_cdc_2": "higher % of adults with obesity",
-            "STROKE_cdc_2": "higher % of adults who have had a stroke",
-            "DISABILITY_cdc_2": "higher % of adults with a disability",
-            "HEARING_cdc_2": "higher % of adults with a hearing disability",
-            "VISION_cdc_2": "higher % of adults with a vision disability",
-            "COGNITION_cdc_2": "higher % of adults with a cognitive disability",
-            "MOBILITY_cdc_2": "higher % of adults with a mobility disability",
-            "SELFCARE_cdc_2": "higher % of adults with a self-care disability",
-            "INDEPLIVE_cdc_2": "higher % of adults with an independent living disability",
-            "BINGE_cdc_2": "higher % of adults who binge drink",
-            "CSMOKING_cdc_2": "higher % of adults who smoke",
-            "LPA_cdc_2": "higher % of adults who don't exercise (do leisure-time physical activity)",
-            "SLEEP_cdc_2": "higher % of adults who sleep less than 7 hours",
+            **QuizQuestionDescriptor.several(
+                HEALTH_CDC,
+                {
+                    "GHLTH_cdc_2": "higher % of adults with a fair or poor self-rated health status",
+                    "ARTHRITIS_cdc_2": "higher % of adults with arthritis",
+                    "CASTHMA_cdc_2": "higher % of adults with asthma",
+                    "BPHIGH_cdc_2": "higher % of adults with high blood pressure",
+                    "CANCER_cdc_2": "higher % of adults with cancer (excluding skin cancer)",
+                    "KIDNEY_cdc_2": "higher % of adults with chronic kidney disease",
+                    "COPD_cdc_2": "higher % of adults with COPD !TOOLTIP (Chronic obstructive pulmonary disease, a lung disease linked to smoking)",
+                    "CHD_cdc_2": "higher % of adults with coronary heart disease",
+                    "DIABETES_cdc_2": "higher % of adults with diagnosed diabetes",
+                    "OBESITY_cdc_2": "higher % of adults with obesity",
+                    "STROKE_cdc_2": "higher % of adults who have had a stroke",
+                    "DISABILITY_cdc_2": "higher % of adults with a disability",
+                    "HEARING_cdc_2": "higher % of adults with a hearing disability",
+                    "VISION_cdc_2": "higher % of adults with a vision disability",
+                    "COGNITION_cdc_2": "higher % of adults with a cognitive disability",
+                    "MOBILITY_cdc_2": "higher % of adults with a mobility disability",
+                    "SELFCARE_cdc_2": "higher % of adults with a self-care disability",
+                    "INDEPLIVE_cdc_2": "higher % of adults with an independent living disability",
+                    "BINGE_cdc_2": "higher % of adults who binge drink",
+                    "CSMOKING_cdc_2": "higher % of adults who smoke",
+                    "LPA_cdc_2": "higher % of adults who don't exercise (do leisure-time physical activity)",
+                    "SLEEP_cdc_2": "higher % of adults who sleep less than 7 hours",
+                },
+            ),
+            **QuizQuestionSkip.several(
+                # too hard to explain
+                "CHOLSCREEN_cdc_2",
+                "CHECKUP_cdc_2",
+                "PHLTH_cdc_2",
+                "DENTAL_cdc_2",
+            ),
         }
-
-    def quiz_question_unused(self):
-        return [
-            # too hard to explain
-            "CHOLSCREEN_cdc_2",
-            "CHECKUP_cdc_2",
-            "PHLTH_cdc_2",
-            "DENTAL_cdc_2",
-        ]
 
     def dependencies(self):
         return ["population_18_2010"]

@@ -1,4 +1,9 @@
 from urbanstats.census_2010.usda_food_research_atlas import aggregated_usda_fra
+from urbanstats.games.quiz_question_metadata import (
+    FEATURE_DIST,
+    QuizQuestionDescriptor,
+    QuizQuestionSkip,
+)
 from urbanstats.statistics.statistic_collection import USAStatistics
 
 
@@ -17,20 +22,23 @@ class USDAFRAStatistics(USAStatistics):
     def explanation_page_for_each_statistic(self):
         return self.same_for_each_name("usda_fra")
 
-    def quiz_question_names(self):
+    def quiz_question_descriptors(self):
         return {
-            "lapop1share_usda_fra_1": "!FULL Which has more access to grocery stores (higher % of people within 1mi of a grocery store)?"
-            + self.tooltip,
+            **QuizQuestionDescriptor.several(
+                FEATURE_DIST,
+                {
+                    "lapop1share_usda_fra_1": "!FULL Which has more access to grocery stores (higher % of people within 1mi of a grocery store)?"
+                    + self.tooltip,
+                },
+            ),
+            **QuizQuestionSkip.several(
+                # duplicate
+                "lapophalfshare_usda_fra_1",
+                # too low variance (almost all are 100%)
+                "lapop10share_usda_fra_1",
+                "lapop20share_usda_fra_1",
+            ),
         }
-
-    def quiz_question_unused(self):
-        return [
-            # duplicate
-            "lapophalfshare_usda_fra_1",
-            # too low variance (almost all are 100%)
-            "lapop10share_usda_fra_1",
-            "lapop20share_usda_fra_1",
-        ]
 
     def dependencies(self):
         return ["population_2010"]

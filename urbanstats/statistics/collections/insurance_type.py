@@ -1,4 +1,8 @@
 from urbanstats.acs.load import ACSDataEntity
+from urbanstats.games.quiz_question_metadata import (
+    HEALTH_INSURANCE,
+    QuizQuestionDescriptor,
+)
 from urbanstats.statistics.statistic_collection import ACSStatisticsColection
 from urbanstats.statistics.utils import fractionalize
 
@@ -14,12 +18,15 @@ class InsuranceTypeStatistics(ACSStatisticsColection):
     def explanation_page_for_each_statistic(self):
         return self.same_for_each_name("insurance")
 
-    def quiz_question_names(self):
-        return {
-            "insurance_coverage_none": "higher % of people who are uninsured",
-            "insurance_coverage_govt": "higher % of people who are on public insurance",
-            "insurance_coverage_private": "higher % of people who are on private insurance",
-        }
+    def quiz_question_descriptors(self):
+        return QuizQuestionDescriptor.several(
+            HEALTH_INSURANCE,
+            {
+                "insurance_coverage_none": "higher % of people who are uninsured",
+                "insurance_coverage_govt": "higher % of people who are on public insurance",
+                "insurance_coverage_private": "higher % of people who are on private insurance",
+            },
+        )
 
     def mutate_acs_results(self, statistics_table):
         fractionalize(

@@ -5,6 +5,11 @@ from urbanstats.data.elevation import (
     elevation_statistics_for_canada_shapefile,
     elevation_statistics_for_shapefile,
 )
+from urbanstats.games.quiz_question_metadata import (
+    ELEVATION,
+    QuizQuestionDescriptor,
+    QuizQuestionSkip,
+)
 from urbanstats.statistics.statistic_collection import (
     GeographicStatistics,
     compute_subset_statistics,
@@ -29,16 +34,15 @@ class ElevationHillinessStatistics(GeographicStatistics):
     def explanation_page_for_each_statistic(self):
         return self.same_for_each_name("elevation_hilliness")
 
-    def quiz_question_names(self):
+    def quiz_question_descriptors(self):
         return {
-            "gridded_elevation": "higher population-weighted mean elevation !TOOLTIP "
-            + POPULATION_WEIGHTED_EXPLANATION,
+            "gridded_elevation": QuizQuestionDescriptor(
+                "higher population-weighted mean elevation !TOOLTIP "
+                + POPULATION_WEIGHTED_EXPLANATION,
+                ELEVATION,
+            ),
+            "gridded_hilliness": QuizQuestionSkip(),
         }
-
-    def quiz_question_unused(self):
-        # apparently this is "too confusing" and "a weird metric"
-        # I think they're just coping
-        return ["gridded_hilliness"]
 
     def dependencies(self):
         return []

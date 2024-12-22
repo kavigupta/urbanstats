@@ -4,6 +4,12 @@ from permacache import permacache
 from urbanstats.data.canada.canada_density import canada_shapefile_with_densities
 from urbanstats.data.census_blocks import RADII
 from urbanstats.data.census_histogram import census_histogram_canada
+from urbanstats.games.quiz_question_metadata import (
+    POPULATION,
+    POPULATION_DENSITY,
+    QuizQuestionDescriptor,
+    QuizQuestionSkip,
+)
 from urbanstats.geometry.census_aggregation import aggregate_by_census_block_canada
 from urbanstats.statistics.collections.census import (
     DENSITY_EXPLANATION_PW,
@@ -29,17 +35,21 @@ class CensusCanada(CanadaStatistics):
     def explanation_page_for_each_statistic(self):
         return self.same_for_each_name("canadian-census")
 
-    def quiz_question_names(self):
+    def quiz_question_descriptors(self):
         return {
-            "population_2021_canada": "higher population",
-            "density_2021_pw_1_canada": "higher population-weighted density (r=1km)"
-            + DENSITY_EXPLANATION_PW,
+            "population_2021_canada": QuizQuestionDescriptor(
+                "higher population", POPULATION
+            ),
+            "density_2021_pw_0.25_canada": QuizQuestionSkip(),
+            "density_2021_pw_0.5_canada": QuizQuestionSkip(),
+            "density_2021_pw_1_canada": QuizQuestionDescriptor(
+                "higher population-weighted density (r=1km)" + DENSITY_EXPLANATION_PW,
+                POPULATION_DENSITY,
+            ),
+            "density_2021_pw_2_canada": QuizQuestionSkip(),
+            "density_2021_pw_4_canada": QuizQuestionSkip(),
+            "sd_2021_canada": QuizQuestionSkip(),
         }
-
-    def quiz_question_unused(self):
-        return [f"density_2021_pw_{r}_canada" for r in RADII if r != 1] + [
-            "sd_2021_canada"
-        ]
 
     def dependencies(self):
         return ["area"]

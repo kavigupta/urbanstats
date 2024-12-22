@@ -1,3 +1,4 @@
+from urbanstats.games.quiz_question_metadata import QuizQuestionSkip
 from urbanstats.statistics.collections_list import statistic_collections
 from urbanstats.statistics.output_statistics_metadata import (
     get_statistic_categories,
@@ -6,16 +7,15 @@ from urbanstats.statistics.output_statistics_metadata import (
 
 stats_to_display = {}
 stats_to_types = {}
-
-for collection in statistic_collections:
-    stats_to_display.update(collection.quiz_question_names())
-    for name in collection.quiz_question_names():
-        stats_to_types[name] = collection.quiz_question_types()
-
 not_included = set()
 
 for collection in statistic_collections:
-    not_included.update(collection.quiz_question_unused())
+    for name, desc in collection.quiz_question_descriptors().items():
+        if isinstance(desc, QuizQuestionSkip):
+            not_included.add(name)
+        else:
+            stats_to_display[name] = desc.name
+        stats_to_types[name] = collection.quiz_question_types()
 
 stats = sorted(stats_to_display, key=str)
 categories = sorted({get_statistic_categories()[x] for x in stats})

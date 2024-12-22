@@ -1,5 +1,6 @@
 # pylint: disable=duplicate-code
 from urbanstats.acs.load import ACSDataEntity
+from urbanstats.games.quiz_question_metadata import COMMUTE_MODE, QuizQuestionDescriptor
 from urbanstats.statistics.statistic_collection import ACSStatisticsColection
 from urbanstats.statistics.utils import fractionalize
 
@@ -17,14 +18,17 @@ class TransportationModeStatistics(ACSStatisticsColection):
     def explanation_page_for_each_statistic(self):
         return self.same_for_each_name("transportation")
 
-    def quiz_question_names(self):
-        return {
-            "transportation_means_car": "higher % of people who commute by car",
-            "transportation_means_bike": "higher % of people who commute by bike",
-            "transportation_means_walk": "higher % of people who commute by walking",
-            "transportation_means_transit": "higher % of people who commute by transit",
-            "transportation_means_worked_at_home": "higher % of people who work from home",
-        }
+    def quiz_question_descriptors(self):
+        return QuizQuestionDescriptor.several(
+            COMMUTE_MODE,
+            {
+                "transportation_means_car": "higher % of people who commute by car",
+                "transportation_means_bike": "higher % of people who commute by bike",
+                "transportation_means_walk": "higher % of people who commute by walking",
+                "transportation_means_transit": "higher % of people who commute by transit",
+                "transportation_means_worked_at_home": "higher % of people who work from home",
+            },
+        )
 
     def mutate_acs_results(self, statistics_table):
         fractionalize(

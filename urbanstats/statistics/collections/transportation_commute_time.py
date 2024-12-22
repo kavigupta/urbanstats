@@ -1,4 +1,9 @@
 from urbanstats.acs.load import ACSDataEntity
+from urbanstats.games.quiz_question_metadata import (
+    COMMUTE_TIME,
+    QuizQuestionDescriptor,
+    QuizQuestionSkip,
+)
 from urbanstats.statistics.statistic_collection import ACSStatisticsColection
 from urbanstats.statistics.utils import fractionalize
 
@@ -15,17 +20,20 @@ class TransportationCommuteTimeStatistics(ACSStatisticsColection):
     def explanation_page_for_each_statistic(self):
         return self.same_for_each_name("transportation")
 
-    def quiz_question_names(self):
+    def quiz_question_descriptors(self):
         return {
-            "transportation_commute_time_under_15": "higher % of people who have commute time under 15 min",
-            "transportation_commute_time_over_60": "higher % of people who have commute time over 60 min",
+            **QuizQuestionDescriptor.several(
+                COMMUTE_TIME,
+                {
+                    "transportation_commute_time_under_15": "higher % of people who have commute time under 15 min",
+                    "transportation_commute_time_over_60": "higher % of people who have commute time over 60 min",
+                },
+            ),
+            **QuizQuestionSkip.several(
+                "transportation_commute_time_15_to_29",
+                "transportation_commute_time_30_to_59",
+            ),
         }
-
-    def quiz_question_unused(self):
-        return [
-            "transportation_commute_time_15_to_29",
-            "transportation_commute_time_30_to_59",
-        ]
 
     def mutate_acs_results(self, statistics_table):
         fractionalize(
