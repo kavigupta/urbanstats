@@ -10,7 +10,6 @@ export type QuizDescriptor = { kind: 'juxtastat', name: number } | { kind: 'retr
 
 export type QuizKind = QuizDescriptor['kind']
 
-export type QuizKind = QuizDescriptor['kind']
 export type QuizKindWithStats = 'juxtastat' | 'retrostat'
 
 export const endpoint = 'https://persistent.urbanstats.org'
