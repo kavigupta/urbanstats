@@ -749,7 +749,13 @@ function customQuizURL(): string {
     return url
 }
 
-quizFixture('custom quiz', customQuizURL(), {}, '')
+quizFixture('custom quiz', customQuizURL(), {}, `
+    CREATE TABLE IF NOT EXISTS JuxtaStatIndividualStats
+        (user integer, day integer, corrects integer, time integer, PRIMARY KEY (user, day));
+
+    CREATE TABLE IF NOT EXISTS JuxtaStatIndividualStatsRetrostat
+        (user integer, week integer, corrects integer, time integer, PRIMARY KEY (user, week));
+`)
 
 test('custom-quiz', async (t) => {
     const checkFirstQuestionPage = async (): Promise<void> => {
