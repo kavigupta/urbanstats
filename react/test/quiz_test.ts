@@ -753,7 +753,7 @@ quizFixture('custom quiz', customQuizURL(), {}, '')
 
 test('custom-quiz', async (t) => {
     const checkFirstQuestionPage = async (): Promise<void> => {
-        await t.expect(Selector('#quiztext').innerText).eql('higher % increase in population-weighted density (r=1km) from 2010 to 2020')
+        await t.expect(Selector('.quiztext').innerText).eql('higher % increase in population-weighted density (r=1km) from 2010 to 2020')
     }
 
     await checkFirstQuestionPage()
