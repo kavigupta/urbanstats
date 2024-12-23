@@ -10,6 +10,9 @@ export type QuizDescriptor = { kind: 'juxtastat', name: number } | { kind: 'retr
 
 export type QuizKind = QuizDescriptor['kind']
 
+export type QuizKind = QuizDescriptor['kind']
+export type QuizKindWithStats = 'juxtastat' | 'retrostat'
+
 export const endpoint = 'https://persistent.urbanstats.org'
 
 /* eslint-disable no-restricted-syntax -- Data from server */
@@ -20,7 +23,7 @@ export interface RetroQuestionJSON { a_ease: number, b_ease: number, a: JuxtaQue
 export interface RetroQuestion { kind: 'retrostat', a_ease: number, b_ease: number, a: JuxtaQuestion, b: JuxtaQuestion }
 export type QuizQuestion = JuxtaQuestion | RetroQuestion
 export interface CustomQuizContent { name: string, questions: QuizQuestion[] }
-export type QuizDescriptorWithStats = QuizDescriptor & { kind: 'juxtastat' | 'retrostat' }
+export type QuizDescriptorWithStats = QuizDescriptor & { kind: QuizKindWithStats }
 
 /* eslint-enable no-restricted-syntax */
 

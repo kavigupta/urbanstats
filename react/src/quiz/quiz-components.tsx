@@ -40,17 +40,15 @@ export function Footer(props: { length: number, history: QuizHistory[string] }):
 
 export function Help(props: { quizKind: QuizKind }): ReactNode {
     const text = (): string => {
-        if (props.quizKind === 'juxtastat') {
-            return 'Select the geographical region answering the question. The questions get harder as you go on.'
-        }
-        else if (props.quizKind === 'retrostat') {
-            return 'Select the easier question. A question is considered easier if more people got it right.'
-        }
-        else {
-            return 'Select the geographical region answering the question.'
+        switch (props.quizKind) {
+            case 'juxtastat':
+                return 'Select the geographical region answering the question. The questions get harder as you go on.'
+            case 'retrostat':
+                return 'Select the easier question. A question is considered easier if more people got it right.'
+            case 'custom':
+                return 'Select the geographical region answering the question.'
         }
     }
-
     return (
         <div className="centered_text serif">
             {text()}
