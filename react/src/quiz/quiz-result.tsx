@@ -10,7 +10,7 @@ import { getVector, VectorSettingsDictionary } from '../page_template/settings-v
 import { allGroups, allYears, statParents, StatPath } from '../page_template/statistic-tree'
 
 import { renderTimeRemaining } from './dates'
-import { JuxtaQuestion, QuizDescriptor, QuizHistory, QuizQuestion, RetroQuestion, aCorrect, QuizFriends, loadQuizFriends, nameOfQuizKind } from './quiz'
+import { JuxtaQuestion, QuizDescriptor, QuizDescriptorWithStats, QuizHistory, QuizQuestion, RetroQuestion, aCorrect, QuizFriends, loadQuizFriends, nameOfQuizKind, QuizKind } from './quiz'
 import { ExportImport, Header, UserId } from './quiz-components'
 import { QuizFriendsPanel } from './quiz-friends'
 import { renderQuestion } from './quiz-question'
@@ -134,7 +134,7 @@ interface ShareButtonProps {
     todayName: string
     correctPattern: CorrectPattern
     totalCorrect: number
-    quizKind: 'juxtastat' | 'retrostat'
+    quizKind: QuizKind
 }
 
 function ShareButton({ buttonRef, todayName, correctPattern, totalCorrect, quizKind }: ShareButtonProps): ReactNode {
@@ -193,7 +193,7 @@ function ShareButton({ buttonRef, todayName, correctPattern, totalCorrect, quizK
     )
 }
 
-function Timer({ quiz }: { quiz: QuizDescriptor }): ReactNode {
+function Timer({ quiz }: { quiz: QuizDescriptorWithStats }): ReactNode {
     const colors = useColors()
     const [, setTime] = useState(0)
     useEffect(() => {
@@ -227,7 +227,7 @@ function Timer({ quiz }: { quiz: QuizDescriptor }): ReactNode {
     )
 }
 
-function TimeToNextQuiz({ quiz }: { quiz: QuizDescriptor }): ReactNode {
+function TimeToNextQuiz({ quiz }: { quiz: QuizDescriptorWithStats }): ReactNode {
     return (
         <div style={{ margin: 'auto' }}>
             <div style={{
@@ -280,7 +280,7 @@ export function Summary(props: { totalCorrect: number, total: number, correctPat
     )
 }
 
-export function summary(juxtaColors: JuxtastatColors, todayName: string, correctPattern: CorrectPattern, totalCorrect: number, quizKind: 'juxtastat' | 'retrostat'): [string, string] {
+export function summary(juxtaColors: JuxtastatColors, todayName: string, correctPattern: CorrectPattern, totalCorrect: number, quizKind: QuizKind): [string, string] {
     // wordle-style summary
     let text = `${nameOfQuizKind(quizKind)} ${todayName} ${totalCorrect}/${correctPattern.length}`
 

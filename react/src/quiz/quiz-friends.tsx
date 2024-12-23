@@ -4,7 +4,7 @@ import { EditableString } from '../components/table'
 import { useColors, useJuxtastatColors } from '../page_template/colors'
 import { mixWithBackground } from '../utils/color'
 
-import { endpoint, QuizFriends } from './quiz'
+import { endpoint, QuizFriends, QuizKindWithStats } from './quiz'
 import { CorrectPattern } from './quiz-result'
 import { uniquePersistentId, uniqueSecureId } from './statistics'
 
@@ -13,7 +13,7 @@ interface FriendScore { name?: string, corrects: CorrectPattern | null, friends:
 export function QuizFriendsPanel(props: {
     quizFriends: QuizFriends
     setQuizFriends: (quizFriends: QuizFriends) => void
-    quizKind: 'juxtastat' | 'retrostat'
+    quizKind: QuizKindWithStats
     date: number
     myCorrects: CorrectPattern
 }): ReactNode {

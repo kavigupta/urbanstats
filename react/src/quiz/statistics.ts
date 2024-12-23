@@ -1,4 +1,4 @@
-import { endpoint, QuizDescriptor, QuizHistory } from './quiz'
+import { endpoint, QuizDescriptorWithStats, QuizHistory, QuizKindWithStats } from './quiz'
 
 function createAndStoreId(key: string): string {
     // (domain name, id stored in local storage)
@@ -73,7 +73,7 @@ async function reportToServerGeneric(wholeHistory: QuizHistory, endpointLatest: 
     return false
 }
 
-export function parseTimeIdentifier(quizKind: 'juxtastat' | 'retrostat', today: string): number {
+export function parseTimeIdentifier(quizKind: QuizKindWithStats, today: string): number {
     switch (quizKind) {
         case 'juxtastat':
             return parseJuxtastatDay(today)
@@ -98,7 +98,7 @@ function parseRetrostatWeek(day: string): number {
     return parseInt(day.substring(1))
 }
 
-export async function reportToServer(wholeHistory: QuizHistory, kind: 'juxtastat' | 'retrostat'): Promise<boolean> {
+export async function reportToServer(wholeHistory: QuizHistory, kind: QuizKindWithStats): Promise<boolean> {
     switch (kind) {
         case 'juxtastat':
             return await reportToServerGeneric(wholeHistory, '/juxtastat/latest_day', '/juxtastat/store_user_stats', parseJuxtastatDay)
@@ -113,15 +113,15 @@ export interface PerQuestionStats { total: number, per_question: number[] }
 const questionStatsCache = new Map<string, PerQuestionStats>()
 
 // These are separate sync and async functions to eliminate flashing in the UI
-export function getCachedPerQuestionStats(descriptor: QuizDescriptor): PerQuestionStats | undefined {
+export function getCachedPerQuestionStats(descriptor: QuizDescriptorWithStats): PerQuestionStats | undefined {
     return questionStatsCache.get(JSON.stringify(descriptor))
 }
 
-export async function getPerQuestionStats(descriptor: QuizDescriptor): Promise<PerQuestionStats> {
+export async function getPerQuestionStats(descriptor: QuizDescriptorWithStats): Promise<PerQuestionStats> {
     return getCachedPerQuestionStats(descriptor) ?? await fetchPerQuestionStats(descriptor)
 }
 
-async function fetchPerQuestionStats(descriptor: QuizDescriptor): Promise<PerQuestionStats> {
+async function fetchPerQuestionStats(descriptor: QuizDescriptorWithStats): Promise<PerQuestionStats> {
     let response: Response
     switch (descriptor.kind) {
         case 'juxtastat':

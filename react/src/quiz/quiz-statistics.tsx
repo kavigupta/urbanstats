@@ -2,11 +2,11 @@ import React, { ReactNode } from 'react'
 
 import { useColors, useJuxtastatColors } from '../page_template/colors'
 
-import { QuizDescriptor, QuizHistory } from './quiz'
+import { QuizDescriptorWithStats, QuizHistory } from './quiz'
 import { parseTimeIdentifier } from './statistics'
 
 interface QuizStatisticsProps {
-    quiz: QuizDescriptor
+    quiz: QuizDescriptorWithStats
     wholeHistory: QuizHistory
 }
 
