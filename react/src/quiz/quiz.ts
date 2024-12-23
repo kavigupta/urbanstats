@@ -8,6 +8,8 @@ import { uniquePersistentId, uniqueSecureId } from './statistics'
 
 export type QuizDescriptor = { kind: 'juxtastat', name: number } | { kind: 'retrostat', name: string }
 
+export type QuizKind = QuizDescriptor['kind']
+
 export const endpoint = 'https://persistent.urbanstats.org'
 
 /* eslint-disable no-restricted-syntax -- Data from server */
@@ -28,7 +30,7 @@ export function aCorrect(quiz: QuizQuestion): boolean {
     }
 }
 
-export function nameOfQuizKind(quizKind: 'juxtastat' | 'retrostat'): string {
+export function nameOfQuizKind(quizKind: QuizKind): string {
     return quizKind.replace(
         /\w\S*/g,
         function (txt) {

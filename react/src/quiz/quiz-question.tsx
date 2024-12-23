@@ -8,7 +8,7 @@ import { MapGeneric, MapGenericProps, Polygons } from '../components/map'
 import { useColors } from '../page_template/colors'
 import { useMobileLayout } from '../utils/responsive'
 
-import { JuxtaQuestion, QuizHistory, RetroQuestion, aCorrect } from './quiz'
+import { JuxtaQuestion, QuizHistory, QuizKind, RetroQuestion, aCorrect } from './quiz'
 import { Footer, Header, Help } from './quiz-components'
 
 interface MapProps extends MapGenericProps {
@@ -42,7 +42,7 @@ interface QuizQuestionProps {
     nested: boolean
     noHeader: boolean
     noFooter: boolean
-    quiz: { kind: 'juxtastat' | 'retrostat', name: number | string }
+    quiz: { kind: QuizKind, name: number | string }
     onSelect: (letter: 'A' | 'B') => void
     length: number
 }
