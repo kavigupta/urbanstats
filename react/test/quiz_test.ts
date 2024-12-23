@@ -752,6 +752,12 @@ function customQuizURL(): string {
 quizFixture('custom quiz', customQuizURL(), {}, '')
 
 test('custom-quiz', async (t) => {
+    const checkFirstQuestionPage = async (): Promise<void> => {
+        await t.expect(Selector('#quiztext').innerText).eql('higher % increase in population-weighted density (r=1km) from 2010 to 2020')
+    }
+
+    await checkFirstQuestionPage()
+
     await screencap(t)
     await clickButtons(t, ['a', 'b', 'a', 'b', 'a'])
     await t.expect(Selector('#quiz-result-summary-words').innerText).eql('Better luck next time! 🫤 2/5')
@@ -759,4 +765,7 @@ test('custom-quiz', async (t) => {
     await screencap(t)
     // no change to the database
     await t.expect(await juxtastatTable()).eql('')
+    // refreshing brings us back to the same quiz
+    await safeReload(t)
+    await checkFirstQuestionPage()
 })
