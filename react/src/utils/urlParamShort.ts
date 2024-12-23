@@ -5,8 +5,5 @@ export function base64Gzip(data: string): string {
 }
 
 export function base64Gunzip(data: string): string {
-    console.log('data', data)
-    const dataBytes = Buffer.from(data, 'base64')
-    console.log('dataBytes', dataBytes)
-    return gunzipSync(dataBytes).toString()
+    return gunzipSync(Buffer.from(data, 'base64')).toString()
 }
