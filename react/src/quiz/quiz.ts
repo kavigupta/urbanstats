@@ -9,8 +9,6 @@ import { uniquePersistentId, uniqueSecureId } from './statistics'
 export type QuizDescriptor = { kind: 'juxtastat', name: number } | { kind: 'retrostat', name: string } | { kind: 'custom', name: string }
 
 export type QuizKind = QuizDescriptor['kind']
-
-export type QuizKind = QuizDescriptor['kind']
 export type QuizKindWithStats = 'juxtastat' | 'retrostat'
 
 export const endpoint = 'https://persistent.urbanstats.org'
