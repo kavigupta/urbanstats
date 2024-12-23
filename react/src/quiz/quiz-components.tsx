@@ -5,10 +5,10 @@ import '../components/quiz.css'
 import { useColors, useJuxtastatColors } from '../page_template/colors'
 import { useHeaderTextClass } from '../utils/responsive'
 
-import { exportQuizPersona, importQuizPersona, nameOfQuizKind, QuizHistory } from './quiz'
+import { exportQuizPersona, importQuizPersona, nameOfQuizKind, QuizHistory, QuizKind } from './quiz'
 import { uniquePersistentId } from './statistics'
 
-export function Header({ quiz }: { quiz: { kind: 'juxtastat' | 'retrostat', name: string | number } }): ReactNode {
+export function Header({ quiz }: { quiz: { kind: QuizKind, name: string | number } }): ReactNode {
     let text = nameOfQuizKind(quiz.kind)
     if (typeof quiz.name !== 'number') {
         text += ` ${quiz.name}`
@@ -38,13 +38,16 @@ export function Footer(props: { length: number, history: QuizHistory[string] }):
     )
 }
 
-export function Help(props: { quizKind: 'juxtastat' | 'retrostat' }): ReactNode {
+export function Help(props: { quizKind: QuizKind }): ReactNode {
     const text = (): string => {
         if (props.quizKind === 'juxtastat') {
             return 'Select the geographical region answering the question. The questions get harder as you go on.'
         }
-        else {
+        else if (props.quizKind === 'retrostat') {
             return 'Select the easier question. A question is considered easier if more people got it right.'
+        }
+        else {
+            return 'Select the geographical region answering the question.'
         }
     }
 

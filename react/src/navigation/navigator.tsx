@@ -18,11 +18,12 @@ import { getVector } from '../page_template/settings-vector'
 import { StatGroupSettings } from '../page_template/statistic-settings'
 import { StatName, StatPath } from '../page_template/statistic-tree'
 import { getDailyOffsetNumber, getRetrostatOffsetNumber } from '../quiz/dates'
-import { JuxtaQuestionJSON, loadJuxta, loadRetro, QuizDescriptor, QuizQuestion, RetroQuestionJSON } from '../quiz/quiz'
+import { CustomQuizContent, JuxtaQuestionJSON, loadJuxta, loadRetro, QuizDescriptor, QuizQuestion, RetroQuestionJSON } from '../quiz/quiz'
 import { defaultArticleUniverse, defaultComparisonUniverse } from '../universe'
 import { Article, IDataList } from '../utils/protos'
 import { followSymlink, followSymlinks } from '../utils/symlinks'
 import { NormalizeProto } from '../utils/types'
+import { base64Gunzip } from '../utils/urlParamShort'
 
 import { dataLink } from './links'
 import { byPopulation, uniform } from './random'
@@ -82,8 +83,9 @@ const randomSchemaForParams = z.object({
 })
 
 const quizSchema = z.object({
-    mode: z.union([z.undefined(), z.literal('retro')]),
+    mode: z.union([z.undefined(), z.literal('retro'), z.literal('custom')]),
     date: z.optional(z.coerce.number().int()),
+    quizContent: z.optional(z.string()),
 })
 
 const mapperSchema = z.object({
@@ -242,6 +244,7 @@ export function urlFromPageDescriptor(pageDescriptor: ExceptionalPageDescriptor)
             const hashParams = new URLSearchParams(Object.entries({
                 mode: pageDescriptor.mode,
                 date: pageDescriptor.date?.toString(),
+                quizContent: pageDescriptor.quizContent,
             }).flatMap(([key, value]) => value !== undefined ? [[key, value]] : []))
             if (hashParams.size > 0) {
                 quizResult.hash = `#${hashParams.toString()}`
@@ -410,6 +413,17 @@ async function loadPageDescriptor(newDescriptor: PageDescriptor, settings: Setti
             let quizDescriptor: QuizDescriptor
             let todayName: string
             switch (newDescriptor.mode) {
+                case 'custom':
+                    console.log(newDescriptor.quizContent)
+                    console.log(base64Gunzip(newDescriptor.quizContent ?? ''))
+                    const custom = JSON.parse(base64Gunzip(newDescriptor.quizContent ?? '')) as CustomQuizContent
+                    quizDescriptor = {
+                        kind: 'custom',
+                        name: custom.name,
+                    }
+                    quiz = custom.questions
+                    todayName = custom.name
+                    break
                 case 'retro':
                     const retro = newDescriptor.date ?? getRetrostatOffsetNumber()
                     quizDescriptor = {

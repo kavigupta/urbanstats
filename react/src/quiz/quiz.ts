@@ -6,7 +6,9 @@ import { cancelled, uploadFile } from '../utils/upload'
 
 import { uniquePersistentId, uniqueSecureId } from './statistics'
 
-export type QuizDescriptor = { kind: 'juxtastat', name: number } | { kind: 'retrostat', name: string }
+export type QuizDescriptor = { kind: 'juxtastat', name: number } | { kind: 'retrostat', name: string } | { kind: 'custom', name: string }
+
+export type QuizKind = QuizDescriptor['kind']
 
 export const endpoint = 'https://persistent.urbanstats.org'
 
@@ -17,6 +19,9 @@ export interface JuxtaQuestion extends JuxtaQuestionJSON { kind: 'juxtastat' }
 export interface RetroQuestionJSON { a_ease: number, b_ease: number, a: JuxtaQuestionJSON, b: JuxtaQuestionJSON };
 export interface RetroQuestion { kind: 'retrostat', a_ease: number, b_ease: number, a: JuxtaQuestion, b: JuxtaQuestion }
 export type QuizQuestion = JuxtaQuestion | RetroQuestion
+export interface CustomQuizContent { name: string, questions: QuizQuestion[] }
+export type QuizDescriptorWithStats = QuizDescriptor & { kind: 'juxtastat' | 'retrostat' }
+
 /* eslint-enable no-restricted-syntax */
 
 export function aCorrect(quiz: QuizQuestion): boolean {
@@ -28,7 +33,7 @@ export function aCorrect(quiz: QuizQuestion): boolean {
     }
 }
 
-export function nameOfQuizKind(quizKind: 'juxtastat' | 'retrostat'): string {
+export function nameOfQuizKind(quizKind: QuizKind): string {
     return quizKind.replace(
         /\w\S*/g,
         function (txt) {

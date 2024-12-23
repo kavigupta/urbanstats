@@ -1,4 +1,4 @@
-import { endpoint, QuizDescriptor, QuizHistory } from './quiz'
+import { endpoint, QuizDescriptorWithStats, QuizHistory } from './quiz'
 
 function createAndStoreId(key: string): string {
     // (domain name, id stored in local storage)
@@ -113,15 +113,15 @@ export interface PerQuestionStats { total: number, per_question: number[] }
 const questionStatsCache = new Map<string, PerQuestionStats>()
 
 // These are separate sync and async functions to eliminate flashing in the UI
-export function getCachedPerQuestionStats(descriptor: QuizDescriptor): PerQuestionStats | undefined {
+export function getCachedPerQuestionStats(descriptor: QuizDescriptorWithStats): PerQuestionStats | undefined {
     return questionStatsCache.get(JSON.stringify(descriptor))
 }
 
-export async function getPerQuestionStats(descriptor: QuizDescriptor): Promise<PerQuestionStats> {
+export async function getPerQuestionStats(descriptor: QuizDescriptorWithStats): Promise<PerQuestionStats> {
     return getCachedPerQuestionStats(descriptor) ?? await fetchPerQuestionStats(descriptor)
 }
 
-async function fetchPerQuestionStats(descriptor: QuizDescriptor): Promise<PerQuestionStats> {
+async function fetchPerQuestionStats(descriptor: QuizDescriptorWithStats): Promise<PerQuestionStats> {
     let response: Response
     switch (descriptor.kind) {
         case 'juxtastat':

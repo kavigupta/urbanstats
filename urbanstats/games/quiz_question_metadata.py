@@ -1,12 +1,13 @@
 from dataclasses import dataclass
 
 
-@dataclass
+@dataclass(frozen=True)
 class QuizQuestionCollection:
     name: str
+    weight_entire_collection: float = 1.0
 
 
-@dataclass
+@dataclass(frozen=True)
 class QuizQuestionDescriptor:
     name: str
     collection: QuizQuestionCollection
@@ -16,17 +17,17 @@ class QuizQuestionDescriptor:
         return {key: cls(name, collection) for key, name in key_to_name.items()}
 
 
-@dataclass
+@dataclass(frozen=True)
 class QuizQuestionSkip:
     @classmethod
     def several(cls, *keys):
         return {key: cls() for key in keys}
 
 
-POPULATION = QuizQuestionCollection("Population")
+POPULATION = QuizQuestionCollection("Population", 2)
 POPULATION_OR_DENSITY_CHANGE = QuizQuestionCollection("Population Change")
-POPULATION_DENSITY = QuizQuestionCollection("Population Density")
-HEALTH_CDC = QuizQuestionCollection("Health CDC")
+POPULATION_DENSITY = QuizQuestionCollection("Population Density", 2)
+HEALTH_CDC = QuizQuestionCollection("Health CDC", 3)
 INCOME = QuizQuestionCollection("Income")
 POVERTY = QuizQuestionCollection("Poverty")
 EDUCATION_LEVEL = QuizQuestionCollection("Education Level")

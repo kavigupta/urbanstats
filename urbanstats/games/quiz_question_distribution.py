@@ -1,11 +1,17 @@
 from dataclasses import dataclass
 from functools import cached_property
-from typing import List
+from typing import Counter, List
 import numpy as np
-from scipy.sparse import coo_matrix
+import pandas as pd
 import torch
+import tqdm.auto as tqdm
 
 from urbanstats.games.quiz import difficulty_multiplier, ranges
+from urbanstats.games.quiz_regions import get_quiz_stats
+from urbanstats.universe.universe_list import (
+    default_universes,
+    universe_by_universe_type,
+)
 
 
 MAX_PCT_DIFF = 500
@@ -32,25 +38,57 @@ class ValidQuizQuestions:
     def __len__(self):
         return len(self.stat_indices)
 
+    def __getitem__(self, item):
+        return ValidQuizQuestions(
+            geography_index_a=self.geography_index_a[item],
+            geography_index_b=self.geography_index_b[item],
+            stat_indices=self.stat_indices[item],
+        )
 
-def compute_adjusted_difficulties(typ, stats):
-    values = np.array(stats).T
-    columns = list(stats.columns)
+
+def compute_adjusted_difficulties(qt):
+    values = np.array(qt.data).T
     vals_a, vals_b = values[:, None], values[:, :, None]
     raw_pct_diff = (
         np.abs(vals_a - vals_b) / np.minimum(np.abs(vals_a), np.abs(vals_b)) * 100
     )
-    # TODO handle universe overlaps
     raw_pct_diff[raw_pct_diff > MAX_PCT_DIFF] = np.inf
-    diffmults = np.array([difficulty_multiplier(stat_col, typ) for stat_col in columns])
-    adj_pct_diff = raw_pct_diff / diffmults[:, None, None]
+    adj_pct_diff = raw_pct_diff / compute_difficulty_multipliers(qt)
     return adj_pct_diff
 
 
-def each_question(typ, stats, stat_to_index, geo_to_index):
-    remap_stats = np.array([stat_to_index[stat] for stat in stats])
-    remap_geos = np.array([geo_to_index[geo] for geo in stats.index])
-    adj_difficulties = compute_adjusted_difficulties(typ, stats)
+def universe_overlap_mask(qt):
+    excluded_universes = set(default_universes) | set(
+        universe_by_universe_type()["continent"]
+    )
+    non_default_non_continent_universes = [
+        {u for u in us if u not in excluded_universes} for us in qt.universes
+    ]
+    return np.array(
+        [
+            [bool(a & b) for a in non_default_non_continent_universes]
+            for b in non_default_non_continent_universes
+        ]
+    )
+
+
+def compute_difficulty_multipliers(qt):
+    diffmults = np.array(
+        [difficulty_multiplier(stat_col) for stat_col in list(qt.data.columns)]
+    )[:, None, None]
+    diffmults = np.repeat(diffmults, len(qt.data), axis=1)
+    diffmults = np.repeat(diffmults, len(qt.data), axis=2)
+    lrm = qt.local_region_mask
+    diffmults[:, ~lrm, :] = 4
+    diffmults[:, :, ~lrm] = 4
+    diffmults[:, universe_overlap_mask(qt)] = 0
+    return diffmults
+
+
+def each_question(qt, stat_to_index, geo_to_index):
+    remap_stats = np.array([stat_to_index[stat] for stat in qt.data])
+    remap_geos = np.array([geo_to_index[geo] for geo in qt.data.index])
+    adj_difficulties = compute_adjusted_difficulties(qt)
     results = []
     for lo, hi in ranges:
         mask = (adj_difficulties >= lo) & (adj_difficulties < hi)
@@ -68,94 +106,44 @@ def each_question(typ, stats, stat_to_index, geo_to_index):
     return results
 
 
-def question_index_constraint(questions_by_number, question_weights, num_geos):
-    const = 0
-    for q, qw in zip(questions_by_number, question_weights):
-        matrs = [
-            coo_matrix(
-                (np.ones(len(q)), (idxs, np.arange(len(q)))), shape=(num_geos, len(q))
-            )
-            for idxs in (q.geography_index_a, q.geography_index_b)
-        ]
-        const += (matrs[0] + matrs[1]) / 2 @ qw
-    return const == len(questions_by_number) / num_geos
-
-
-def statistics_constraint(questions_by_number, question_weights, num_stats):
-    const = 0
-    for q, qw in zip(questions_by_number, question_weights):
-        matr = coo_matrix(
-            (np.ones(len(q)), (q.stat_indices, np.arange(len(q)))),
-            shape=(num_stats, len(q)),
-        )
-        const += matr @ qw
-    return const == len(questions_by_number) / num_stats
-
-
-def marginal_geography_probability(
-    probability_array, normalization_ranges, questions_by_number, num_geos
-):
-    by_geo = np.zeros(num_geos)
-    for idx, q in enumerate(questions_by_number):
-        np.add.at(
-            by_geo, q.geography_index_a, probability_array[normalization_ranges[idx]]
-        )
-        np.add.at(
-            by_geo, q.geography_index_b, probability_array[normalization_ranges[idx]]
-        )
-    by_geo /= 2 * len(questions_by_number)
-    return by_geo
-
-
-def renormalize_by_geo(
-    probability_array, normalization_ranges, questions_by_number, geo_target
-):
-    by_geo = marginal_geography_probability(
-        probability_array, normalization_ranges, questions_by_number, len(geo_target)
-    )
-    renormalizers = geo_target / (by_geo + 1e-5)
-    for idx, q in enumerate(questions_by_number):
-        probability_array[normalization_ranges[idx]] *= (
-            renormalizers[q.geography_index_a] + renormalizers[q.geography_index_b]
-        ) / 2
-    return renormalizers
-
-
-def marginal_stat_probability(
-    probability_array, normalization_ranges, questions_by_number, num_stats
-):
-    by_stat = np.zeros(num_stats)
-    for idx, q in enumerate(questions_by_number):
-        np.add.at(by_stat, q.stat_indices, probability_array[normalization_ranges[idx]])
-    by_stat /= len(questions_by_number)
-    return by_stat
-
-
-def renormalize_by_stat(
-    probability_array, normalization_ranges, questions_by_number, stat_target
-):
-    by_stat = marginal_stat_probability(
-        probability_array, normalization_ranges, questions_by_number, len(stat_target)
-    )
-    renormalizers = stat_target / (by_stat + 1e-5)
-    for idx, q in enumerate(questions_by_number):
-        probability_array[normalization_ranges[idx]] *= renormalizers[q.stat_indices]
-    return renormalizers
-
-
-def mean_abs_geo(renormalizers):
-    return np.abs(np.log(renormalizers)).mean()
-
-
 @dataclass
 class QuizQuestionPossibilities:
     questions_by_number: List[ValidQuizQuestions]
     all_geographies: List[str]
     all_stats: List[str]
 
-    def aggregate_torch(self, p):
+    @classmethod
+    def compute_quiz_question_possibilities(cls, tables_by_type):
+        all_stats = sorted(
+            {s for qt in tables_by_type.values() for s in qt.data}, key=str
+        )
+        all_geographies = sorted(
+            {s for qt in tables_by_type.values() for s in qt.data.index}, key=str
+        )
+        stat_to_index = {k: i for i, k in enumerate(all_stats)}
+        geo_to_index = {k: i for i, k in enumerate(all_geographies)}
+        questions = []
+        for typ in tqdm.tqdm(tables_by_type):
+            qt = tables_by_type[typ]
+            questions.append(each_question(qt, stat_to_index, geo_to_index))
+        questions_by_number = [ValidQuizQuestions.join(x) for x in zip(*questions)]
+        return cls(
+            questions_by_number=questions_by_number,
+            all_geographies=all_geographies,
+            all_stats=all_stats,
+        )
+
+    def aggregate(self, ps):
+        ps = [torch.tensor(p, dtype=torch.float32) for p in ps]
+        # p = torch.tensor(np.log(np.concatenate(ps)), dtype=torch.float32)
+        return [x.numpy() for x in self._aggregate_torch(ps)]
+
+    def probabilities_each(self, p):
+        p = torch.tensor(p, dtype=torch.float32)
+        return [x.numpy() for x in self._probabilities_each_torch(p)]
+
+    def _aggregate_torch(self, ps):
         g = torch.zeros(len(self.all_geographies))
-        ps = [torch.softmax(p[rang], axis=0) for rang in self.normalization_ranges]
         for q, p_q in zip(self.questions_by_number, ps):
             g.index_add_(0, torch.tensor(q.geography_index_a), p_q)
             g.index_add_(0, torch.tensor(q.geography_index_b), p_q)
@@ -165,6 +153,43 @@ class QuizQuestionPossibilities:
             s.index_add_(0, torch.tensor(q.stat_indices), p_q)
         s = s / len(self.questions_by_number)
         return g, s
+
+    def _probabilities_each_torch(self, p):
+        ps = [torch.softmax(p[rang], axis=0) for rang in self.normalization_ranges]
+        return ps
+
+    def delta(self, p, q):
+        return (p * (torch.log(p) - torch.log(q))).sum()
+
+    def h(self, p):
+        hactual = (-p * torch.log(p)).sum()
+        huniform = np.log(len(p))
+        return huniform - hactual
+
+    def train(self, geo_target, stat_target, weight_h=0.1, weight_s=10):
+        g_target = torch.tensor(geo_target, dtype=torch.float32)
+        s_target = torch.tensor(stat_target, dtype=torch.float32)
+        p = torch.ones(len(self), requires_grad=True, dtype=torch.float32)
+        opt = torch.optim.Adam([p], lr=0.5)
+        prev = float("inf")
+        for idx in range(1000):
+            ps = self._probabilities_each_torch(p)
+            g, s = self._aggregate_torch(ps)
+            loss = (
+                weight_s * self.delta(s_target, s)
+                + self.delta(g_target, g)
+                + weight_h * sum(self.h(pi) for pi in ps) / len(ps)
+            )
+            if idx % 10 == 0:
+                print(idx, loss.item())
+                if (loss.item() - prev) / prev > -0.01:
+                    break
+                prev = loss.item()
+            opt.zero_grad()
+            loss.backward()
+            opt.step()
+        ps = self._probabilities_each_torch(p)
+        return [x.detach().numpy() for x in ps]
 
     @cached_property
     def normalization_ranges(self):
@@ -177,3 +202,39 @@ class QuizQuestionPossibilities:
 
     def __len__(self):
         return sum(len(q) for q in self.questions_by_number)
+
+
+def compute_geo_target(qqp, geographies_by_type):
+    geo_weight = pd.concat(
+        [
+            qt.weight_internal
+            / qt.weight_internal.sum()
+            * qt.weight_internal.shape[0] ** 0.5
+            for _, qt in geographies_by_type.items()
+        ]
+    )
+    geo_weight /= geo_weight.sum()
+    geo_target = np.array(geo_weight.loc[qqp.all_geographies])
+
+    return geo_target
+
+
+def compute_stat_target(qqp):
+    collections = {
+        col: descriptor.collection for col, descriptor, _ in get_quiz_stats()
+    }
+    collections = [collections[x] for x in qqp.all_stats]
+    count_collections = Counter(collections)
+    stat_target = np.array(
+        [c.weight_entire_collection / count_collections[c] ** 0.5 for c in collections]
+    )
+    stat_target /= stat_target.sum()
+    return stat_target
+
+
+def produce_quiz_question_weights(tables_by_type):
+    qqp = QuizQuestionPossibilities.compute_quiz_question_possibilities(tables_by_type)
+    geo_target = compute_geo_target(qqp, tables_by_type)
+    stat_target = compute_stat_target(qqp)
+    ps = qqp.train(geo_target, stat_target)
+    return dict(ps=ps, geo_target=geo_target, stat_target=stat_target, qqp=qqp)

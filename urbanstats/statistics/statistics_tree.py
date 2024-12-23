@@ -12,7 +12,8 @@ class Source:
 
     category: str
     name: str
-    is_default: bool = False
+    is_default: bool
+    priority: int
 
     def json(self):
         return {"category": self.category, "name": self.name}
@@ -51,12 +52,15 @@ class MultiSource:
             )
         return dict(name=self.compute_name(name_map), stats=result)
 
-    def compute_name(self, name_map):
+    def canonical_column(self):
         if self.multi_source_colname is not None:
-            return name_map[self.multi_source_colname]
+            return self.multi_source_colname
         assert len(self.by_source) == 1
         col = next(iter(self.by_source.values()))
-        return name_map[col]
+        return col
+
+    def compute_name(self, name_map):
+        return name_map[self.canonical_column()]
 
 
 @dataclass
@@ -299,9 +303,9 @@ def just_2020_category_with_canada(cat_key, cat_name, *col_names, year=2020):
     }
 
 
-population_census = Source("Population", "US Census", is_default=True)
-population_canada = Source("Population", "Canadian Census", is_default=True)
-population_ghsl = Source("Population", "GHSL")
+population_census = Source("Population", "US Census", is_default=True, priority=1)
+population_canada = Source("Population", "Canadian Census", is_default=True, priority=2)
+population_ghsl = Source("Population", "GHSL", is_default=False, priority=10)
 
 
 def census_basics_with_ghs_and_canada(col_name, gpw_name, canada_name, *, change):

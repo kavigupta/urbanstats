@@ -5,12 +5,14 @@ from urbanstats.statistics.output_statistics_metadata import (
     internal_statistic_names,
 )
 
+all_descriptors = {}
 stats_to_display = {}
 stats_to_types = {}
 not_included = set()
 
 for collection in statistic_collections:
     for name, desc in collection.quiz_question_descriptors().items():
+        all_descriptors[name] = desc
         if isinstance(desc, QuizQuestionSkip):
             not_included.add(name)
         else:

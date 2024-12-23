@@ -72,6 +72,7 @@ difficulties = {
     "occupation": 2,
     "weather": 0.3,
     "topography": 1,
+    "other_densities": 0.25,
 }
 
 skip_category_probs = {
@@ -119,11 +120,8 @@ def sample_quiz(rng):
     return result
 
 
-def difficulty_multiplier(stat_column_original, typ):
-    if typ in QUIZ_REGION_TYPES_INTERNATIONAL:
-        raw_diff = 4
-    else:
-        raw_diff = difficulties[get_statistic_categories()[stat_column_original]]
+def difficulty_multiplier(stat_column_original):
+    raw_diff = difficulties[get_statistic_categories()[stat_column_original]]
     if "mean_high_temp" in stat_column_original:
         raw_diff = raw_diff * 0.25
     return raw_diff
@@ -221,6 +219,9 @@ def generate_quiz(seed):
 
 def full_quiz(seed):
     res = generate_quiz(seed)
+    return finish_quiz(res)
+
+def finish_quiz(res):
     res = copy.deepcopy(res)
     outs = []
     for q in res:
