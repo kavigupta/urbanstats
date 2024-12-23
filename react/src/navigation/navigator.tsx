@@ -414,8 +414,6 @@ async function loadPageDescriptor(newDescriptor: PageDescriptor, settings: Setti
             let todayName: string
             switch (newDescriptor.mode) {
                 case 'custom':
-                    console.log(newDescriptor.quizContent)
-                    console.log(base64Gunzip(newDescriptor.quizContent ?? ''))
                     const custom = JSON.parse(base64Gunzip(newDescriptor.quizContent ?? '')) as CustomQuizContent
                     quizDescriptor = {
                         kind: 'custom',
