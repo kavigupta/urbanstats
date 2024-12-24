@@ -82,7 +82,7 @@ ${sqlStatements}`)
 
 const interceptingSessions = new Set<unknown>()
 
-export async function interceptRequests(t: TestController): Promise<void> {
+async function interceptRequests(t: TestController): Promise<void> {
     const cdpSesh = await t.getCurrentCDPSession()
     if (interceptingSessions.has(cdpSesh)) {
         return
