@@ -35,12 +35,11 @@ export function aCorrect(quiz: QuizQuestion): boolean {
 }
 
 export function nameOfQuizKind(quizKind: QuizKind): string {
-    return quizKind.replace(
-        /\w\S*/g,
-        function (txt) {
-            return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase()
-        },
-    )
+    switch (quizKind) {
+        case 'juxtastat': return 'Juxtastat'
+        case 'retrostat': return 'Retrostat'
+        case 'custom': return 'Juxtastat Custom'
+    }
 }
 
 export function loadJuxta(quiz: JuxtaQuestionJSON): JuxtaQuestion {

@@ -10,7 +10,7 @@ import { getVector, VectorSettingsDictionary } from '../page_template/settings-v
 import { allGroups, allYears, statParents, StatPath } from '../page_template/statistic-tree'
 
 import { renderTimeRemaining } from './dates'
-import { JuxtaQuestion, QuizDescriptor, QuizDescriptorWithStats, QuizHistory, QuizQuestion, RetroQuestion, aCorrect, QuizFriends, loadQuizFriends, nameOfQuizKind, QuizKind } from './quiz'
+import { JuxtaQuestion, QuizDescriptor, QuizDescriptorWithStats, QuizHistory, QuizQuestion, RetroQuestion, aCorrect, QuizFriends, loadQuizFriends, nameOfQuizKind, QuizKind, endpoint } from './quiz'
 import { ExportImport, Header, UserId } from './quiz-components'
 import { QuizFriendsPanel } from './quiz-friends'
 import { renderQuestion } from './quiz-question'
@@ -184,7 +184,7 @@ function ShareButton({ buttonRef, todayName, correctPattern, totalCorrect, quizK
             }}
             ref={buttonRef}
             onClick={async () => {
-                const [text, url] = summary(juxtaColors, todayName, correctPattern, totalCorrect, quizKind)
+                const [text, url] = await summary(juxtaColors, todayName, correctPattern, totalCorrect, quizKind)
 
                 async function copyToClipboard(): Promise<void> {
                     await navigator.clipboard.writeText(`${text}\n${url}`)
@@ -301,7 +301,7 @@ export function Summary(props: { totalCorrect: number, total: number, correctPat
     )
 }
 
-export function summary(juxtaColors: JuxtastatColors, todayName: string, correctPattern: CorrectPattern, totalCorrect: number, quizKind: QuizKind): [string, string] {
+export async function summary(juxtaColors: JuxtastatColors, todayName: string, correctPattern: CorrectPattern, totalCorrect: number, quizKind: QuizKind): Promise<[string, string]> {
     // wordle-style summary
     let text = `${nameOfQuizKind(quizKind)} ${todayName} ${totalCorrect}/${correctPattern.length}`
 
@@ -314,7 +314,20 @@ export function summary(juxtaColors: JuxtastatColors, todayName: string, correct
 
     // eslint-disable-next-line no-restricted-syntax -- Sharing
     const hash = window.location.hash
-    return [text, `https://juxtastat.org${hash === '' ? '' : `/${hash}`}`]
+    let url = `https://juxtastat.org${hash === '' ? '' : `/${hash}`}`
+    if (hash.length > 20) {
+        // current url is too long, shorten it. get the current url without the origin or slash
+        // eslint-disable-next-line no-restricted-syntax -- Sharing
+        const thisURL = window.location.href.substring(window.location.origin.length + 1)
+        const shortened = await fetch(`${endpoint}/shorten`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ full_text: thisURL }),
+        })
+        const json = await shortened.json() as { shortened: string }
+        url = `https://s.urbanstats.org/s?c=${json.shortened}`
+    }
+    return [text, url]
 }
 
 function QuizResultRow(props: QuizResultRowProps & { question: QuizQuestion }): ReactNode {
