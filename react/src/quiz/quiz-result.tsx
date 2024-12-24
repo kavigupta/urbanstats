@@ -33,7 +33,11 @@ interface QuizResultProps {
 
 export function QuizResult(props: QuizResultProps): ReactNode {
     const button = useRef<HTMLButtonElement>(null)
-    const [stats, setStats] = useState<PerQuestionStats>(getCachedPerQuestionStats(props.quizDescriptor) ?? { total: 0, per_question: [0, 0, 0, 0, 0] })
+    const [stats, setStats] = useState<PerQuestionStats>((
+        props.quizDescriptor.kind === 'custom'
+            ? undefined
+            : getCachedPerQuestionStats(props.quizDescriptor)
+    ) ?? { total: 0, per_question: [0, 0, 0, 0, 0] })
     const [authError, setAuthError] = useState(false)
     const [quizFriends, setQuizFriendsDirect] = useState(loadQuizFriends())
 
@@ -43,6 +47,9 @@ export function QuizResult(props: QuizResultProps): ReactNode {
     }
 
     useEffect(() => {
+        if (props.quizDescriptor.kind === 'custom') {
+            return
+        }
         void reportToServer(props.wholeHistory, props.quizDescriptor.kind).then(setAuthError)
         void getPerQuestionStats(props.quizDescriptor).then(setStats)
     }, [props.wholeHistory, props.quizDescriptor])
@@ -93,9 +100,17 @@ export function QuizResult(props: QuizResultProps): ReactNode {
                         </div>
                     )
                 : undefined}
-            <TimeToNextQuiz quiz={props.quizDescriptor} />
+            {
+                props.quizDescriptor.kind === 'custom'
+                    ? undefined
+                    : <TimeToNextQuiz quiz={props.quizDescriptor} />
+            }
             <div className="gap"></div>
-            <QuizStatistics wholeHistory={props.wholeHistory} quiz={props.quizDescriptor} />
+            {
+                props.quizDescriptor.kind === 'custom'
+                    ? undefined
+                    : <QuizStatistics wholeHistory={props.wholeHistory} quiz={props.quizDescriptor} />
+            }
             <div className="gap"></div>
             <span className="serif quiz_summary">Details (spoilers, don&apos;t share!)</span>
             <div className="gap_small"></div>
@@ -111,15 +126,21 @@ export function QuizResult(props: QuizResultProps): ReactNode {
                 ),
             )}
             <div className="gap_small"></div>
-            <div style={{ margin: 'auto', width: '50%' }}>
-                <QuizFriendsPanel
-                    quizFriends={quizFriends}
-                    date={parseTimeIdentifier(props.quizDescriptor.kind, props.quizDescriptor.name.toString())}
-                    quizKind={props.quizDescriptor.kind}
-                    setQuizFriends={setQuizFriends}
-                    myCorrects={correctPattern}
-                />
-            </div>
+            {
+                props.quizDescriptor.kind === 'custom'
+                    ? undefined
+                    : (
+                            <div style={{ margin: 'auto', width: '50%' }}>
+                                <QuizFriendsPanel
+                                    quizFriends={quizFriends}
+                                    date={parseTimeIdentifier(props.quizDescriptor.kind, props.quizDescriptor.name.toString())}
+                                    quizKind={props.quizDescriptor.kind}
+                                    setQuizFriends={setQuizFriends}
+                                    myCorrects={correctPattern}
+                                />
+                            </div>
+                        )
+            }
             <div className="gap_small"></div>
             <div className="centered_text serif">
                 <UserId />
