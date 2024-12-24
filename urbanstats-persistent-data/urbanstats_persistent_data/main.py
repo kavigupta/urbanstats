@@ -46,9 +46,7 @@ def shorten_request():
     form = flask_form()
 
     if "full_text" in form:
-        print("SHORTENING", form["full_text"])
         shortened = shorten_and_save(form["full_text"])
-        print("SHORTENED", shortened)
         return flask.jsonify(dict(shortened=shortened))
     return flask.jsonify({"error": "Needs parameter full_text!"}), 200
 
@@ -58,7 +56,6 @@ def lengthen_request():
     form = flask_form()
 
     if "shortened" in form:
-        print(repr(form["shortened"]))
         full_text = retreive_and_lengthen(form["shortened"])
         if full_text is None:
             return flask.jsonify({"error": "Shortened text not found!"}), 404
@@ -68,20 +65,12 @@ def lengthen_request():
 
 @app.route("/s", methods=["GET"])
 def s():
-    # form = flask_form()
-    # post_url = retreive_and_lengthen(form["c"])
-    # if post_url is None:
-    #     return flask.jsonify({"error": "Shortened text not found!"}), 404
-    # return flask.redirect("https://urbanstats.org/" + post_url[0])
     c = flask.request.args.get("c")
-    print("C", repr(c))
     post_url = retreive_and_lengthen(c)
-    print("POST URL", post_url)
     if post_url is None:
         print("Shortened text not found!")
         return flask.jsonify({"error": "Shortened text not found!"}), 404
     url = "https://urbanstats.org/" + post_url[0]
-    print("REDIRECTING TO", url)
     return flask.redirect(url)
 
 
