@@ -91,7 +91,7 @@ export class ProxyPersistent extends RequestHook {
         }
     }
 
-    override onResponse(e: { statusCode: number, headers: Record<striqng, string | undefined>, body: string }): void {
+    override onResponse(e: { statusCode: number, headers: Record<string, string | undefined>, body: string }): void {
         console.log(e)
         // redirect with urbanstats.org should be rewritten to localhost
         if (e.statusCode === 302 && e.headers.location?.includes('urbanstats.org')) {
