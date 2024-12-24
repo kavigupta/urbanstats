@@ -623,7 +623,7 @@ export class Navigator {
                     }
 
                     const seekToHash = (): void => {
-                        const element = document.querySelector(url.hash)
+                        const element = document.getElementById(url.hash.substring(1))
                         if (element !== null) {
                             const position = element.getBoundingClientRect().top + window.scrollY
                             if (Math.round(position) !== Math.round(window.scrollY)) {
