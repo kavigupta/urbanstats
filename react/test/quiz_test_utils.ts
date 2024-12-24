@@ -5,7 +5,7 @@ import { promisify } from 'util'
 import { execa, execaSync } from 'execa'
 import { Selector } from 'testcafe'
 
-import { safeReload, screencap, target, urbanstatsFixture } from './test_utils'
+import { safeReload, screencap, urbanstatsFixture } from './test_utils'
 
 export async function quizScreencap(t: TestController): Promise<void> {
     await t.eval(() => {
