@@ -1,6 +1,4 @@
-import { Selector } from 'testcafe'
-
-import { interceptRequests, quizFixture } from './quiz_test_utils'
+import { quizFixture } from './quiz_test_utils'
 import { getLocation, target } from './test_utils'
 
 quizFixture(
