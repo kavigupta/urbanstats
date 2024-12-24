@@ -68,6 +68,13 @@ test('navigates to hash', async (t) => {
     await screencap(t, { fullPage: false })
 })
 
+test('navigates to hash 2', async (t) => {
+    // One at the bottom of the page to really that the scroll position holds up as things load
+    await t.navigateTo('data-credit.html#explanation_gpw')
+    await t.expect(getLocation()).eql(`${target}/data-credit.html#explanation_gpw`)
+    await screencap(t, { fullPage: false })
+})
+
 urbanstatsFixture('stats page', '/statistic.html?statname=Population&article_type=Judicial+District&start=1&amount=20&universe=USA')
 
 test('data credit hash from stats page', async (t) => {
