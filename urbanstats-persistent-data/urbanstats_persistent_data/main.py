@@ -63,6 +63,17 @@ def lengthen_request():
     return flask.jsonify({"error": "Needs parameter shortened!"}), 200
 
 
+@app.route("/s", methods=["GET"])
+def s():
+    c = flask.request.args.get("c")
+    post_url = retreive_and_lengthen(c)
+    if post_url is None:
+        print("Shortened text not found!")
+        return flask.jsonify({"error": "Shortened text not found!"}), 404
+    url = "https://urbanstats.org/" + post_url[0]
+    return flask.redirect(url)
+
+
 def get_authenticated_user(additional_required_params=()):
     form = flask_form()
 
