@@ -4,7 +4,6 @@ import { FootnoteRef, Footnotes, FootnotesProvider } from 'react-a11y-footnotes'
 
 import './style.css'
 import './common.css'
-import './data-credit.css'
 import industry_occupation_table from './data/explanation_industry_occupation_table'
 import { useColors } from './page_template/colors'
 import { PageTemplate } from './page_template/template'
