@@ -3,7 +3,7 @@ import { writeFileSync } from 'fs'
 import { promisify } from 'util'
 
 import { execa, execaSync } from 'execa'
-import { RequestHook, Selector } from 'testcafe'
+import { Selector } from 'testcafe'
 
 import { safeReload, screencap, urbanstatsFixture } from './test_utils'
 
@@ -55,6 +55,7 @@ async function waitForServerToBeAvailable(): Promise<void> {
 
 export function quizFixture(fixName: string, url: string, newLocalstorage: Record<string, string>, sqlStatements: string): void {
     urbanstatsFixture(fixName, url, async (t) => {
+        await interceptRequests(t)
         const tempfile = `${tempfileName()}.sql`
         // Drop the database (https://stackoverflow.com/a/65743498/724702) then execute teh statements
         writeFileSync(tempfile, `PRAGMA writable_schema = 1;
@@ -77,21 +78,38 @@ ${sqlStatements}`)
         // Must reload after setting localstorage so page picks it up
         await safeReload(t)
     })
-        .requestHooks(new ProxyPersistent())
 }
-export class ProxyPersistent extends RequestHook {
-    override onRequest(e: { requestOptions: RequestMockOptions }): void {
-        if (e.requestOptions.hostname === 'persistent.urbanstats.org') {
-            e.requestOptions.hostname = 'localhost'
-            e.requestOptions.port = 54579
-            e.requestOptions.protocol = 'http:'
-            e.requestOptions.path = e.requestOptions.path.replaceAll('https://persistent.urbanstats.org', 'localhost:54579')
-            e.requestOptions.host = 'localhost:54579'
-        }
-    }
 
-    // eslint-disable-next-line @typescript-eslint/no-empty-function -- TestCafe complains if we don't have this
-    override onResponse(): void { }
+const interceptingSessions = new Set<unknown>()
+
+export async function interceptRequests(t: TestController): Promise<void> {
+    const cdpSesh = await t.getCurrentCDPSession()
+    if (interceptingSessions.has(cdpSesh)) {
+        return
+    }
+    else {
+        interceptingSessions.add(cdpSesh)
+    }
+    cdpSesh.Fetch.on('requestPaused', async (event) => {
+        try {
+            if (event.responseStatusCode !== undefined) {
+                // This is a response, just send it back
+                await cdpSesh.Fetch.continueResponse({ requestId: event.requestId })
+            }
+            else {
+                // We're using the persistent backend in some other way, send the request to localhost
+                await cdpSesh.Fetch.continueRequest({ requestId: event.requestId, url: event.request.url.replace(/https:\/\/.+\.urbanstats\.org/g, 'http://localhost:54579') })
+            }
+        }
+        catch (e) {
+            console.error(`Failure in CDP requestPaused handler: ${e}`)
+        }
+    })
+    await cdpSesh.Fetch.enable({
+        patterns: [{
+            urlPattern: 'https://persistent.urbanstats.org/*',
+        }],
+    })
 }
 
 export function tempfileName(): string {
