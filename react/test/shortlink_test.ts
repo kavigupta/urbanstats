@@ -21,9 +21,39 @@ test('shortlink-found', async (t) => {
         headers: {
             'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ full_text: '/index.html' }),
+        body: JSON.stringify({ full_text: 'data-credit.html' }),
     })
     const json = await shortenR.json() as { shortened: string }
+    const cdpSesh = await t.getCurrentCDPSession()
+    cdpSesh.Fetch.on('requestPaused', async (event) => {
+        try {
+            const response = await fetch(event.request.url.replaceAll('https://s.urbanstats.org', 'http://localhost:54579'), {
+                ...event.request,
+                redirect: 'manual',
+            })
+            const responseHeaders: { name: string, value: string }[] = []
+            response.headers.forEach((value, name) => {
+                if (name === 'location') {
+                    responseHeaders.push({
+                        name,
+                        value: value.replaceAll('https://urbanstats.org', 'http://localhost:8000'),
+                    })
+                }
+                else {
+                    responseHeaders.push({ name, value })
+                }
+            })
+            await cdpSesh.Fetch.fulfillRequest({ requestId: event.requestId, responseHeaders, responseCode: response.status })
+        }
+        catch (e) {
+            console.error(`Failure in CDP requestPaused handler: ${e}`)
+        }
+    })
+    await cdpSesh.Fetch.enable({
+        patterns: [{
+            urlPattern: 'https://s.urbanstats.org/*',
+        }],
+    })
     await t.navigateTo(`https://s.urbanstats.org/s?c=${json.shortened}`)
-    await t.expect(getLocation()).eql(`${target}/index.html`)
+    await t.expect(getLocation()).eql(`${target}/data-credit.html`)
 })
