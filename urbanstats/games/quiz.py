@@ -16,6 +16,7 @@ from urbanstats.games.quiz_region_types import (
     QUIZ_REGION_TYPES_INTERNATIONAL,
     sample_quiz_type,
 )
+from urbanstats.games.quiz_regions import get_quiz_stats
 from urbanstats.geometry.shapefiles.shapefiles_list import filter_table_for_type
 from urbanstats.statistics.collections_list import statistic_collections
 from urbanstats.statistics.output_statistics_metadata import (
@@ -222,6 +223,7 @@ def full_quiz(seed):
     return finish_quiz(res)
 
 def finish_quiz(res):
+    names = {k: d.name for k, d, _ in get_quiz_stats()}
     res = copy.deepcopy(res)
     outs = []
     for q in res:
@@ -229,7 +231,7 @@ def finish_quiz(res):
         stat_column_original = q.pop("stat_column_original")
         out["stat_column"] = statistic_internal_to_display_name()[stat_column_original]
         out["stat_path"] = get_statistic_column_path(stat_column_original)
-        out["question"] = stats_to_display[stat_column_original]
+        out["question"] = names[stat_column_original]
         out.update(q)
         outs.append(out)
     return outs

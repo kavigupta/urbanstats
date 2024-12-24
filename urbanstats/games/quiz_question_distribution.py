@@ -5,6 +5,7 @@ import numpy as np
 import pandas as pd
 import torch
 import tqdm.auto as tqdm
+from permacache import permacache, stable_hash
 
 from urbanstats.games.quiz import difficulty_multiplier, ranges
 from urbanstats.games.quiz_regions import get_quiz_stats
@@ -226,12 +227,16 @@ def compute_stat_target(qqp):
     collections = [collections[x] for x in qqp.all_stats]
     count_collections = Counter(collections)
     stat_target = np.array(
-        [c.weight_entire_collection / count_collections[c] ** 0.5 for c in collections]
+        [c.weight_entire_collection / count_collections[c] ** 0.1 for c in collections]
     )
     stat_target /= stat_target.sum()
     return stat_target
 
 
+@permacache(
+    "urbanstats/games/quiz_question_distribution/produce_quiz_question_weights_2",
+    key_function=dict(tables_by_type=stable_hash),
+)
 def produce_quiz_question_weights(tables_by_type):
     qqp = QuizQuestionPossibilities.compute_quiz_question_possibilities(tables_by_type)
     geo_target = compute_geo_target(qqp, tables_by_type)

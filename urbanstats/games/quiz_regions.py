@@ -3,6 +3,7 @@ from typing import Callable, List
 
 import numpy as np
 import pandas as pd
+from permacache import stable_hash
 
 from urbanstats.games.quiz_question_metadata import QuizQuestionSkip
 from urbanstats.statistics.statistics_tree import statistics_tree
@@ -15,6 +16,16 @@ class QuizTable:
     universes: pd.Series
     local_region_mask: pd.Series
     weight_internal: pd.Series
+
+    def __permacache_hash__(self):
+        return stable_hash(
+            dict(
+                data=[list(self.data.columns), list(self.data.index), self.data.values],
+                universes=self.universes,
+                local_region_mask=self.local_region_mask,
+                weight_internal=self.weight_internal,
+            )
+        )
 
 
 @dataclass
