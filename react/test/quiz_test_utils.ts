@@ -80,8 +80,16 @@ ${sqlStatements}`)
     })
 }
 
+const interceptingSessions = new Set<unknown>()
+
 export async function interceptRequests(t: TestController): Promise<void> {
     const cdpSesh = await t.getCurrentCDPSession()
+    if (interceptingSessions.has(cdpSesh)) {
+        return
+    }
+    else {
+        interceptingSessions.add(cdpSesh)
+    }
     cdpSesh.Fetch.on('requestPaused', async (event) => {
         try {
             if (event.responseStatusCode !== undefined) {
