@@ -792,6 +792,6 @@ test.only('custom-quiz-sharelink', async (t) => {
     await t.expect(lines[3]).eql('')
     await t.expect(lines[4]).match(/^https:\/\/s\.urbanstats\.org\/s\?c=.*$/)
     // navigate to the url, should bring us back to the same quiz
-    await t.navigateTo(lines[2])
+    await t.navigateTo(lines[4])
     await t.expect(getLocation()).eql(customQuizURL())
 })
