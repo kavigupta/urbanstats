@@ -55,6 +55,7 @@ async function waitForServerToBeAvailable(): Promise<void> {
 
 export function quizFixture(fixName: string, url: string, newLocalstorage: Record<string, string>, sqlStatements: string): void {
     urbanstatsFixture(fixName, url, async (t) => {
+        await interceptRequests(t)
         const tempfile = `${tempfileName()}.sql`
         // Drop the database (https://stackoverflow.com/a/65743498/724702) then execute teh statements
         writeFileSync(tempfile, `PRAGMA writable_schema = 1;
@@ -77,29 +78,53 @@ ${sqlStatements}`)
         // Must reload after setting localstorage so page picks it up
         await safeReload(t)
     })
-        .requestHooks(new ProxyPersistent())
 }
-export class ProxyPersistent extends RequestHook {
-    override onRequest(e: { requestOptions: RequestMockOptions }): void {
-        if (e.requestOptions.hostname === 'persistent.urbanstats.org' || e.requestOptions.hostname === 's.urbanstats.org') {
-            e.requestOptions.hostname = 'localhost'
-            e.requestOptions.port = 54579
-            e.requestOptions.protocol = 'http:'
-            e.requestOptions.path = e.requestOptions.path.replaceAll('https://persistent.urbanstats.org', 'localhost:54579')
-            e.requestOptions.path = e.requestOptions.path.replaceAll('https://s.urbanstats.org', 'localhost:54579')
-            e.requestOptions.host = 'localhost:54579'
-        }
-    }
 
-    override onResponse(e: { statusCode: number, headers: Record<string, string | undefined>, body: string }): void {
-        console.log(e)
-        // redirect with urbanstats.org should be rewritten to localhost
-        if (e.statusCode === 302 && e.headers.location?.includes('urbanstats.org')) {
-            e.headers.location = e.headers.location.replaceAll('https://persistent.urbanstats.org', 'http://localhost:54579')
-            e.headers.location = e.headers.location.replaceAll('https://s.urbanstats.org', 'http://localhost:54579')
-            e.headers.location = e.headers.location.replaceAll('https://urbanstats.org', target)
+export async function interceptRequests(t: TestController): Promise<void> {
+    const cdpSesh = await t.getCurrentCDPSession()
+    cdpSesh.Fetch.on('requestPaused', async (event) => {
+        try {
+            if (event.responseStatusCode !== undefined) {
+                // This is a response, just send it back
+                await cdpSesh.Fetch.continueResponse({ requestId: event.requestId })
+            }
+            else if (event.request.url.startsWith('https://s.urbanstats.org/s?')) {
+                // We're doing a GET from the link shortener, send the request to the local persistent, and override the location to go to localhost instead of urbanstats.org
+                // Chrome doesn't support overriding the response later, so we must fulfill the request by making a fetch
+                const response = await fetch(event.request.url.replaceAll('https://s.urbanstats.org', 'http://localhost:54579'), {
+                    ...event.request,
+                    redirect: 'manual',
+                })
+                const responseHeaders: { name: string, value: string }[] = []
+                response.headers.forEach((value, name) => {
+                    if (name === 'location') {
+                        responseHeaders.push({
+                            name,
+                            value: value.replaceAll('https://urbanstats.org', 'http://localhost:8000'),
+                        })
+                    }
+                    else {
+                        responseHeaders.push({ name, value })
+                    }
+                })
+                await cdpSesh.Fetch.fulfillRequest({ requestId: event.requestId, responseHeaders, responseCode: response.status })
+            }
+            else {
+                // We're using the persistent backend in some other way, send the request to localhost
+                await cdpSesh.Fetch.continueRequest({ requestId: event.requestId, url: event.request.url.replace(/https:\/\/.+\.urbanstats\.org/g, 'http://localhost:54579') })
+            }
         }
-    }
+        catch (e) {
+            console.error(`Failure in CDP requestPaused handler: ${e}`)
+        }
+    })
+    await cdpSesh.Fetch.enable({
+        patterns: [{
+            urlPattern: 'https://s.urbanstats.org/*',
+        }, {
+            urlPattern: 'https://persistent.urbanstats.org/*',
+        }],
+    })
 }
 
 export function tempfileName(): string {
