@@ -82,7 +82,7 @@ ${sqlStatements}`)
 
 const interceptingSessions = new Set<unknown>()
 
-export async function interceptRequests(t: TestController): Promise<void> {
+async function interceptRequests(t: TestController): Promise<void> {
     const cdpSesh = await t.getCurrentCDPSession()
     if (interceptingSessions.has(cdpSesh)) {
         return
@@ -96,6 +96,27 @@ export async function interceptRequests(t: TestController): Promise<void> {
                 // This is a response, just send it back
                 await cdpSesh.Fetch.continueResponse({ requestId: event.requestId })
             }
+            else if (event.request.url.startsWith('https://s.urbanstats.org/s?')) {
+                // We're doing a GET from the link shortener, send the request to the local persistent, and override the location to go to localhost instead of urbanstats.org
+                // Chrome doesn't support overriding the response later, so we must fulfill the request by making a fetch
+                const response = await fetch(event.request.url.replaceAll('https://s.urbanstats.org', 'http://localhost:54579'), {
+                    ...event.request,
+                    redirect: 'manual',
+                })
+                const responseHeaders: { name: string, value: string }[] = []
+                response.headers.forEach((value, name) => {
+                    if (name === 'location') {
+                        responseHeaders.push({
+                            name,
+                            value: value.replaceAll('https://urbanstats.org', 'http://localhost:8000'),
+                        })
+                    }
+                    else {
+                        responseHeaders.push({ name, value })
+                    }
+                })
+                await cdpSesh.Fetch.fulfillRequest({ requestId: event.requestId, responseHeaders, responseCode: response.status })
+            }
             else {
                 // We're using the persistent backend in some other way, send the request to localhost
                 await cdpSesh.Fetch.continueRequest({ requestId: event.requestId, url: event.request.url.replace(/https:\/\/.+\.urbanstats\.org/g, 'http://localhost:54579') })
@@ -107,6 +128,8 @@ export async function interceptRequests(t: TestController): Promise<void> {
     })
     await cdpSesh.Fetch.enable({
         patterns: [{
+            urlPattern: 'https://s.urbanstats.org/*',
+        }, {
             urlPattern: 'https://persistent.urbanstats.org/*',
         }],
     })
