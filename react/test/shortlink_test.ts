@@ -8,11 +8,6 @@ quizFixture(
     '',
 )
 
-// test('shortlink-not-found', async (t) => {
-//     await t.navigateTo(`https://s.urbanstats.org/s?c=abc`)
-//     await t.expect(Selector('h1').innerText).eql('Not Found')
-// })
-
 test('shortlink-found', async (t) => {
     const shortenR = await fetch('http://0.0.0.0:54579/shorten', {
         method: 'POST',
