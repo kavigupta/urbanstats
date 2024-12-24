@@ -5,7 +5,7 @@ import { promisify } from 'util'
 import { execa, execaSync } from 'execa'
 import { RequestHook, Selector } from 'testcafe'
 
-import { safeReload, screencap, urbanstatsFixture } from './test_utils'
+import { safeReload, screencap, target, urbanstatsFixture } from './test_utils'
 
 export async function quizScreencap(t: TestController): Promise<void> {
     await t.eval(() => {
@@ -81,17 +81,25 @@ ${sqlStatements}`)
 }
 export class ProxyPersistent extends RequestHook {
     override onRequest(e: { requestOptions: RequestMockOptions }): void {
-        if (e.requestOptions.hostname === 'persistent.urbanstats.org') {
+        if (e.requestOptions.hostname === 'persistent.urbanstats.org' || e.requestOptions.hostname === 's.urbanstats.org') {
             e.requestOptions.hostname = 'localhost'
             e.requestOptions.port = 54579
             e.requestOptions.protocol = 'http:'
             e.requestOptions.path = e.requestOptions.path.replaceAll('https://persistent.urbanstats.org', 'localhost:54579')
+            e.requestOptions.path = e.requestOptions.path.replaceAll('https://s.urbanstats.org', 'localhost:54579')
             e.requestOptions.host = 'localhost:54579'
         }
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-empty-function -- TestCafe complains if we don't have this
-    override onResponse(): void { }
+    override onResponse(e: { statusCode: number, headers: Record<striqng, string | undefined>, body: string }): void {
+        console.log(e)
+        // redirect with urbanstats.org should be rewritten to localhost
+        if (e.statusCode === 302 && e.headers.location?.includes('urbanstats.org')) {
+            e.headers.location = e.headers.location.replaceAll('https://persistent.urbanstats.org', 'http://localhost:54579')
+            e.headers.location = e.headers.location.replaceAll('https://s.urbanstats.org', 'http://localhost:54579')
+            e.headers.location = e.headers.location.replaceAll('https://urbanstats.org', target)
+        }
+    }
 }
 
 export function tempfileName(): string {
