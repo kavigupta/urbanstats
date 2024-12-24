@@ -6,7 +6,7 @@ import { gzipSync } from 'zlib'
 import { ClientFunction, Selector } from 'testcafe'
 
 import { clickButton, clickButtons, quizFixture, quizScreencap, tempfileName, withMockedClipboard } from './quiz_test_utils'
-import { target, mostRecentDownloadPath, safeReload, screencap } from './test_utils'
+import { target, mostRecentDownloadPath, safeReload, screencap, getLocation } from './test_utils'
 
 async function runQuery(query: string): Promise<string> {
     // dump given query to a string
@@ -774,4 +774,24 @@ test('custom-quiz', async (t) => {
     // refreshing brings us back to the same quiz
     await safeReload(t)
     await checkFirstQuestionPage()
+})
+
+test.only('custom-quiz-sharelink', async (t) => {
+    await clickButtons(t, ['a', 'b', 'a', 'b', 'a'])
+    const copies = await withMockedClipboard(t, async () => {
+        await t.click(Selector('button').withText('Copy'))
+    })
+    await t.expect(copies.length).eql(1)
+    const copy = copies[0]
+    // split by line
+    const lines = copy.split('\n')
+    await t.expect(lines.length).eql(5)
+    await t.expect(lines[0]).eql('Juxtastat Custom this is a testing quiz 2/5')
+    await t.expect(lines[1]).eql('')
+    await t.expect(lines[2]).eql('🟥🟩🟩🟥🟥')
+    await t.expect(lines[3]).eql('')
+    await t.expect(lines[4]).match(/^https:\/\/s\.urbanstats\.org\/s\?c=.*$/)
+    // navigate to the url, should bring us back to the same quiz
+    await t.navigateTo(lines[2])
+    await t.expect(getLocation()).eql(customQuizURL())
 })
