@@ -776,7 +776,7 @@ test('custom-quiz', async (t) => {
     await checkFirstQuestionPage()
 })
 
-test.only('custom-quiz-sharelink', async (t) => {
+test('custom-quiz-sharelink', async (t) => {
     await clickButtons(t, ['a', 'b', 'a', 'b', 'a'])
     const copies = await withMockedClipboard(t, async () => {
         await t.click(Selector('button').withText('Copy'))
