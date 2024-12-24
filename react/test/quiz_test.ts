@@ -1,6 +1,7 @@
 import { exec } from 'child_process'
 import { writeFileSync, readFileSync } from 'fs'
 import { promisify } from 'util'
+import { gzipSync } from 'zlib'
 
 import { ClientFunction, Selector } from 'testcafe'
 
@@ -679,4 +680,98 @@ test('share link current retro', async (t) => {
     await t.expect(copies.length).eql(1)
     // Emoji are double length
     await t.expect(copies[0]).match(/^Retrostat Week [0-9]+ [012345]\/5\n\n[🟩🟥]{10}\n\nhttps:\/\/juxtastat\.org\/#mode=retro$/)
+})
+
+function customQuizURL(): string {
+    const quiz = {
+        name: 'this is a testing quiz',
+        questions: [
+            {
+                stat_column: 'PW Density (r=1km) Change (2010-2020)',
+                stat_path: 'ad_1_change_2010',
+                question: 'higher % increase in population-weighted density (r=1km) from 2010 to 2020!TOOLTIP Population-weighted density is computed by computing the density within the given radius for each person in the region and then averaging the results. This is a better measure of the density that people actually experience.',
+                longname_a: 'Wichita-Hutchinson KS Media Market, USA',
+                longname_b: 'Colorado Springs-Pueblo CO Media Market, USA',
+                stat_a: -0.013566195644550461,
+                stat_b: 0.052631086846664205,
+                kind: 'juxtastat',
+            },
+            {
+                stat_column: '2BR Rent < $750 %',
+                stat_path: 'rent_2br_under_750',
+                question: 'higher % of units with 2br rent under $750',
+                longname_a: 'Urban Honolulu MSA, HI, USA',
+                longname_b: 'Springfield MSA, MA, USA',
+                stat_a: 0.05628738569130583,
+                stat_b: 0.19354157872520084,
+                kind: 'juxtastat',
+            },
+            {
+                stat_column: 'Within 1mi of a grocery store %',
+                stat_path: 'lapop1share_usda_fra_1',
+                question: '!FULL Which has more access to grocery stores (higher % of people within 1mi of a grocery store)?!TOOLTIP The USDA defines a grocery store as a \'supermarket, supercenter, or large grocery store.\'',
+                longname_a: 'TX-09, USA',
+                longname_b: 'WI-07, USA',
+                stat_a: 0.786293727440369,
+                stat_b: 0.300920896509278,
+                kind: 'juxtastat',
+            },
+            {
+                stat_column: 'Obesity %',
+                stat_path: 'OBESITY_cdc_2',
+                question: 'higher % of adults with obesity',
+                longname_a: 'Philadelphia city, Pennsylvania, USA',
+                longname_b: 'San Francisco city, California, USA',
+                stat_a: 0.3105878164213836,
+                stat_b: 0.19007954296263044,
+                kind: 'juxtastat',
+            },
+            {
+                stat_column: 'Gen Alpha %',
+                stat_path: 'generation_genalpha',
+                question: 'higher % of people who are gen alpha!TOOLTIP born between 2012 and 2021',
+                longname_a: 'Washoe County, Nevada, USA',
+                longname_b: 'Cumberland County, North Carolina, USA',
+                stat_a: 0.11647330529141768,
+                stat_b: 0.14569730980688378,
+                kind: 'juxtastat',
+            },
+        ],
+    }
+    const quizStr = JSON.stringify(quiz)
+    const quizBuffer = Buffer.from(quizStr)
+    const quizBufferGzip = gzipSync(quizBuffer)
+    const quizBase64 = quizBufferGzip.toString('base64')
+    const params = new URLSearchParams()
+    params.set('mode', 'custom')
+    params.set('quizContent', quizBase64)
+    const url = `${target}/quiz.html#${params.toString()}`
+    return url
+}
+
+quizFixture('custom quiz', customQuizURL(), {}, `
+    CREATE TABLE IF NOT EXISTS JuxtaStatIndividualStats
+        (user integer, day integer, corrects integer, time integer, PRIMARY KEY (user, day));
+
+    CREATE TABLE IF NOT EXISTS JuxtaStatIndividualStatsRetrostat
+        (user integer, week integer, corrects integer, time integer, PRIMARY KEY (user, week));
+`)
+
+test('custom-quiz', async (t) => {
+    const checkFirstQuestionPage = async (): Promise<void> => {
+        await t.expect(Selector('.quiztext').innerText).eql('Which has a higher % increase in population-weighted density (r=1km) from 2010 to 2020?ℹ️')
+    }
+
+    await checkFirstQuestionPage()
+
+    await screencap(t)
+    await clickButtons(t, ['a', 'b', 'a', 'b', 'a'])
+    await t.expect(Selector('#quiz-result-summary-words').innerText).eql('Better luck next time! 🫤 2/5')
+    await t.expect(Selector('#quiz-result-summary-emoji').innerText).eql('🟥🟩🟩🟥🟥')
+    await screencap(t)
+    // no change to the database
+    await t.expect(await juxtastatTable()).eql('')
+    // refreshing brings us back to the same quiz
+    await safeReload(t)
+    await checkFirstQuestionPage()
 })

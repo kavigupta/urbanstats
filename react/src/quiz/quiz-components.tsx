@@ -45,6 +45,8 @@ export function Help(props: { quizKind: QuizKind }): ReactNode {
                 return 'Select the geographical region answering the question. The questions get harder as you go on.'
             case 'retrostat':
                 return 'Select the easier question. A question is considered easier if more people got it right.'
+            case 'custom':
+                return 'Select the geographical region answering the question.'
         }
     }
     return (

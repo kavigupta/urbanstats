@@ -6,7 +6,7 @@ import { cancelled, uploadFile } from '../utils/upload'
 
 import { uniquePersistentId, uniqueSecureId } from './statistics'
 
-export type QuizDescriptor = { kind: 'juxtastat', name: number } | { kind: 'retrostat', name: string }
+export type QuizDescriptor = { kind: 'juxtastat', name: number } | { kind: 'retrostat', name: string } | { kind: 'custom', name: string }
 
 export type QuizKind = QuizDescriptor['kind']
 export type QuizKindWithStats = 'juxtastat' | 'retrostat'
