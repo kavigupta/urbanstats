@@ -3,7 +3,7 @@ import { writeFileSync } from 'fs'
 import { promisify } from 'util'
 
 import { execa, execaSync } from 'execa'
-import { RequestHook, Selector } from 'testcafe'
+import { Selector } from 'testcafe'
 
 import { safeReload, screencap, target, urbanstatsFixture } from './test_utils'
 
