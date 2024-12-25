@@ -1,5 +1,5 @@
-import React, { ReactNode, useEffect, useState } from 'react'
-import { GridLoader } from 'react-spinners'
+import React, { CSSProperties, ReactNode, useEffect, useState } from 'react'
+import { GridLoader, MoonLoader } from 'react-spinners'
 
 import { EditableString } from '../components/table'
 import { useColors, useJuxtastatColors } from '../page_template/colors'
@@ -18,34 +18,47 @@ export function QuizFriendsPanel(props: {
     date: number
     myCorrects: CorrectPattern
 }): ReactNode {
+    const colors = useColors()
+
     const [friendScores, setFriendScores] = useState([] as FriendScore[])
+    const [isLoading, setIsLoading] = useState(false)
+    const [error, setError] = useState<string | undefined>(undefined)
 
     useEffect(() => {
         void (async () => {
-            // map name to id for quizFriends
-            const quizIDtoName = Object.fromEntries(props.quizFriends.map(x => [x[1], x[0]]))
-            const requesters = props.quizFriends.map(x => x[1])
-            const user = uniquePersistentId()
-            const secureID = uniqueSecureId()
-            const friendScoresPromise = fetch(`${endpoint}/juxtastat/todays_score_for`, {
-                method: 'POST',
-                body: JSON.stringify({ user, secureID, date: props.date, requesters, quiz_kind: props.quizKind }),
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-            }).then(x => x.json())
-            const friendScoresResponse = (await friendScoresPromise) as { results: { corrects: CorrectPattern | null, friends: boolean, idError?: string }[] } | { error: string }
-            if ('error' in friendScoresResponse) {
+            setIsLoading(true)
+            setError(undefined)
+            try {
+                // map name to id for quizFriends
+                const quizIDtoName = Object.fromEntries(props.quizFriends.map(x => [x[1], x[0]]))
+                const requesters = props.quizFriends.map(x => x[1])
+                const user = uniquePersistentId()
+                const secureID = uniqueSecureId()
+                const friendScoresResponse = await fetch(`${endpoint}/juxtastat/todays_score_for`, {
+                    method: 'POST',
+                    body: JSON.stringify({ user, secureID, date: props.date, requesters, quiz_kind: props.quizKind }),
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                }).then(x => x.json()) as { results: { corrects: CorrectPattern | null, friends: boolean, idError?: string }[] } | { error: string }
+                if ('error' in friendScoresResponse) {
                 // probably some kind of auth error. Handled elsewhere
-                return
+                    return
+                }
+                setFriendScores(friendScoresResponse.results.map(
+                    (x, idx) => ({ name: quizIDtoName[requesters[idx]], corrects: x.corrects, friends: x.friends, idError: x.idError }),
+                ))
             }
-            setFriendScores(friendScoresResponse.results.map(
-                (x, idx) => ({ name: quizIDtoName[requesters[idx]], corrects: x.corrects, friends: x.friends, idError: x.idError }),
-            ))
+            catch {
+                setError('Network Error')
+            }
+            finally {
+                setIsLoading(false)
+            }
         })()
     }, [props.date, props.quizFriends, props.quizKind])
 
-    return (
+    const content = (
         <div>
             <div style={{ margin: 'auto', width: '100%' }}>
                 <div className="quiz_summary">Friends</div>
@@ -86,6 +99,22 @@ export function QuizFriendsPanel(props: {
             </>
             <div style={{ height: '1em' }} />
             <AddFriend quizFriends={props.quizFriends} setQuizFriends={props.setQuizFriends} />
+        </div>
+    )
+
+    const spinnerSize = '78px'
+    const spinnerStyle: CSSProperties = {
+        position: 'absolute',
+        left: `calc(50% - ${spinnerSize} / 2)`,
+        top: `calc(50% - ${spinnerSize} / 2)`,
+    }
+
+    return (
+        <div style={{ position: 'relative' }}>
+            <div style={{ opacity: isLoading ? 0.5 : 1, pointerEvents: isLoading ? 'none' : undefined }}>
+                <WithError content={content} error={error} />
+            </div>
+            { isLoading ? <MoonLoader size={spinnerSize} color={colors.textMain} cssOverride={spinnerStyle} /> : null}
         </div>
     )
 }
