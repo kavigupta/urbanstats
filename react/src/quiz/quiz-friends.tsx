@@ -180,7 +180,13 @@ function FriendScoreCorrects(props: FriendScore): ReactNode {
     }
     if (!props.friends) {
         return (
-            <div style={greyedOut}>Pending Friend Request</div>
+            <div style={greyedOut}>
+                Ask
+                {' '}
+                {props.name}
+                {' '}
+                to add you
+            </div>
         )
     }
     if (props.corrects === null) {
