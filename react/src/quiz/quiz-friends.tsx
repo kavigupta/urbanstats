@@ -1,4 +1,5 @@
 import React, { ReactNode, useEffect, useState } from 'react'
+import { GridLoader } from 'react-spinners'
 
 import { EditableString } from '../components/table'
 import { useColors, useJuxtastatColors } from '../page_template/colors'
@@ -225,9 +226,12 @@ function AddFriend(props: {
     quizFriends: QuizFriends
     setQuizFriends: (x: QuizFriends) => void
 }): ReactNode {
+    const colors = useColors()
+
     const [friendNameField, setFriendNameField] = useState('')
     const [friendIDField, setFriendIDField] = useState('')
     const [error, setError] = useState<string | undefined>(undefined)
+    const [loading, setLoading] = useState(false)
 
     const addFriend = async (): Promise<void> => {
         const friendID = friendIDField.trim()
@@ -255,17 +259,26 @@ function AddFriend(props: {
         }
         const user = uniquePersistentId()
         const secureID = uniqueSecureId()
-        await fetch(`${endpoint}/juxtastat/friend_request`, {
-            method: 'POST',
-            body: JSON.stringify({ user, secureID, requestee: friendID }),
-            headers: {
-                'Content-Type': 'application/json',
-            },
-        })
-        props.setQuizFriends([...props.quizFriends, [friendName, friendID]])
-        setError(undefined)
-        setFriendNameField('')
-        setFriendIDField('')
+        try {
+            setLoading(true)
+            await fetch(`${endpoint}/juxtastat/friend_request`, {
+                method: 'POST',
+                body: JSON.stringify({ user, secureID, requestee: friendID }),
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            })
+            props.setQuizFriends([...props.quizFriends, [friendName, friendID]])
+            setError(undefined)
+            setFriendNameField('')
+            setFriendIDField('')
+        }
+        catch {
+            setError('Network error')
+        }
+        finally {
+            setLoading(false)
+        }
     }
 
     const form = (
@@ -279,6 +292,7 @@ function AddFriend(props: {
                     value={friendNameField}
                     style={{ width: '100%', height: '100%' }}
                     onChange={(e) => { setFriendNameField(e.target.value) }}
+                    disabled={loading}
                 />
             </div>
             <div
@@ -290,15 +304,18 @@ function AddFriend(props: {
                     value={friendIDField}
                     style={{ width: '100%', height: '100%' }}
                     onChange={(e) => { setFriendIDField(e.target.value) }}
+                    disabled={loading}
                 />
             </div>
             <div style={{ width: '25%', display: 'flex', height: addFriendHeight }}>
                 <button
                     onClick={addFriend}
                     style={{ marginLeft: '1em', height: '100%' }}
+                    disabled={loading}
                 >
                     Add
                 </button>
+                {loading ? <GridLoader color={colors.textMain} size="4px" cssOverride={{ marginLeft: '10px' }} /> : null}
             </div>
         </div>
     )
