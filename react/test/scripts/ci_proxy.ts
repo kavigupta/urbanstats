@@ -12,7 +12,7 @@ import proxy from 'express-http-proxy'
 
 export async function startProxy(): Promise<void> {
     if (process.env.GITHUB_TOKEN === undefined) {
-        console.warn('GITHUB_TOKEN is not present')
+        console.warn('GITHUB_TOKEN is not present, may get 429 too many requests')
     }
 
     /**
