@@ -129,6 +129,8 @@ jobs:
             --compare=true \
             --time-limit-seconds=300
         working-directory: react
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - uses: actions/upload-artifact@v4
         if: "!cancelled()"
         with:
