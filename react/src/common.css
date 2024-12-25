@@ -73,7 +73,7 @@ button, select {
     border: 1px solid var(--ordinal-text-color);
 }
 
-button:hover {
+button:hover:not(:disabled) {
     background-color: var(--slightly-different-background-focused);
 }
 
