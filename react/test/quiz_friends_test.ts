@@ -140,7 +140,7 @@ function testsGeneric(
         if (screenshots) {
             await quizScreencap(t) // screencap of pending friend request
         }
-        await t.expect(await friendsText(t)).eql([`You${bobPattern}`, 'AliceAsk "Alice" to add youRemove'])
+        await t.expect(await friendsText(t)).eql([`You${bobPattern}`, 'AliceAsk Alice to add youRemove'])
         await restoreUser(t, 'Alice', state)
         await addFriend(t, 'Bob', '000000b')
         // Alice and Bob are now friends
@@ -158,7 +158,7 @@ function testsGeneric(
         await t.navigateTo(`${target}/${yesterday}`)
         await clickButtons(t, ['a', 'b', 'a', 'b', 'a'])
         await addFriend(t, 'Alice', '000000a')
-        await t.expect(await friendsText(t)).eql([`You${charliePatternPrev}`, 'AliceAsk "Alice" to add youRemove'])
+        await t.expect(await friendsText(t)).eql([`You${charliePatternPrev}`, 'AliceAsk Alice to add youRemove'])
         await restoreUser(t, 'Alice', state)
         await t.navigateTo(`${target}/${today}`)
         await addFriend(t, 'Charlie', '000000c')
@@ -181,17 +181,17 @@ function testsGeneric(
         // Bob no longer sees Alice's score
         await restoreUser(t, 'Bob', state)
         await quizScreencap(t) // Bob no longer sees Alice's score
-        await t.expect(await friendsText(t)).eql([`You${bobPattern}`, 'AliceAsk "Alice" to add youRemove'])
+        await t.expect(await friendsText(t)).eql([`You${bobPattern}`, 'AliceAsk Alice to add youRemove'])
         // rename Alice to Alice2 by clicking on the Alice name and changing it
         const aliceName = Selector('span').withAttribute('class', 'editable_content').nth(0)
         await t.click(aliceName)
         await t.pressKey('ctrl+a')
         await t.typeText(aliceName, 'Alice2')
         await t.pressKey('enter')
-        await t.expect(await friendsText(t)).eql([`You${bobPattern}`, 'Alice2Ask "Alice2" to add youRemove'])
+        await t.expect(await friendsText(t)).eql([`You${bobPattern}`, 'Alice2Ask Alice2 to add youRemove'])
         await safeReload(t)
         await t.wait(1000)
-        await t.expect(await friendsText(t)).eql([`You${bobPattern}`, 'Alice2Ask "Alice2" to add youRemove'])
+        await t.expect(await friendsText(t)).eql([`You${bobPattern}`, 'Alice2Ask Alice2 to add youRemove'])
     })
 
     test(`${props.name}-friends-bad-naming-test`, async (t) => {
@@ -224,7 +224,7 @@ function testsGeneric(
         // add an additional friend
         await addFriend(t, 'Charlie', '000000c')
         // Charlie added
-        await t.expect(await friendsText(t)).eql([`You${alicePattern}`, `Bob${bobPattern}Remove`, 'CharlieAsk "Charlie" to add youRemove'])
+        await t.expect(await friendsText(t)).eql([`You${alicePattern}`, `Bob${bobPattern}Remove`, 'CharlieAsk Charlie to add youRemove'])
         // attempting to rename Charlie to Bob should error
         const charlieName = Selector('span').withAttribute('class', 'editable_content').nth(1)
         await t.click(charlieName)
@@ -232,7 +232,7 @@ function testsGeneric(
         await t.typeText(charlieName, 'Bob')
         await t.pressKey('enter')
         // Charlie not renamed
-        await t.expect(await friendsText(t)).eql([`You${alicePattern}`, `Bob${bobPattern}Remove`, 'CharlieAsk "Charlie" to add youRemove'])
+        await t.expect(await friendsText(t)).eql([`You${alicePattern}`, `Bob${bobPattern}Remove`, 'CharlieAsk Charlie to add youRemove'])
         // check that the text 'Friend name already exists' is displayed
         await t.expect(Selector('div').withText('Friend name already exists').exists).ok()
     })
