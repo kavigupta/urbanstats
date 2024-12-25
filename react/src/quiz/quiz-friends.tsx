@@ -182,9 +182,9 @@ function FriendScoreCorrects(props: FriendScore): ReactNode {
         return (
             <div style={greyedOut}>
                 Ask
-                {' '}
+                {' "'}
                 {props.name}
-                {' '}
+                {'" '}
                 to add you
             </div>
         )
