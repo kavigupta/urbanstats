@@ -95,6 +95,3 @@ class TestComputeBinsSameAsSlow(unittest.TestCase):
 
         result2 = compute_bins(data, weight, bin_size=bin_size)
         self.assertTrue(np.allclose(result, result2))
-
-    def test_bad(self):
-        1/0
