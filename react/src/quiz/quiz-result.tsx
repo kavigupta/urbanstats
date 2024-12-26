@@ -1,4 +1,4 @@
-import React, { ReactNode, useContext, useEffect, useRef, useState } from 'react'
+import React, { CSSProperties, ReactNode, useContext, useEffect, useRef, useState } from 'react'
 import { isFirefox, isMobile } from 'react-device-detect'
 
 import { Statistic } from '../components/table'
@@ -9,7 +9,7 @@ import { Settings } from '../page_template/settings'
 import { getVector, VectorSettingsDictionary } from '../page_template/settings-vector'
 import { allGroups, allYears, statParents, StatPath } from '../page_template/statistic-tree'
 
-import { renderTimeRemaining } from './dates'
+import { msRemaining, renderTimeRemaining } from './dates'
 import { JuxtaQuestion, QuizDescriptor, QuizDescriptorWithStats, QuizHistory, QuizQuestion, RetroQuestion, aCorrect, QuizFriends, nameOfQuizKind, QuizKind, endpoint, QuizLocalStorage } from './quiz'
 import { ExportImport, Header, UserId } from './quiz-components'
 import { QuizFriendsPanel } from './quiz-friends'
@@ -213,7 +213,7 @@ function ShareButton({ buttonRef, todayName, correctPattern, totalCorrect, quizK
     )
 }
 
-function Timer({ quiz }: { quiz: QuizDescriptorWithStats }): ReactNode {
+function TimeToNextQuiz({ quiz }: { quiz: QuizDescriptorWithStats }): ReactNode {
     const colors = useColors()
     const [, setTime] = useState(0)
     useEffect(() => {
@@ -222,32 +222,65 @@ function Timer({ quiz }: { quiz: QuizDescriptorWithStats }): ReactNode {
     })
 
     const w = quiz.kind === 'juxtastat' ? '5em' : '6.5em'
-    return (
-        <div
-            className="serif"
-            style={{
-                width: w,
-                margin: 0,
-                backgroundColor: colors.hueColors.blue,
-                textAlign: 'center',
-                fontSize: '2em',
-                display: 'flex',
-                justifyContent: 'center',
-                alignItems: 'center',
-                flexDirection: 'row',
-                padding: '0.25em 0.25em',
-                borderRadius: '0.25em',
-                border: 'none',
-                color: '#fff',
-            }}
-            id="quiz-timer"
-        >
-            <span>{renderTimeRemaining(quiz)}</span>
-        </div>
-    )
-}
 
-function TimeToNextQuiz({ quiz }: { quiz: QuizDescriptorWithStats }): ReactNode {
+    const timerStyle: CSSProperties = {
+        width: w,
+        margin: 0,
+        backgroundColor: colors.hueColors.blue,
+        textAlign: 'center',
+        fontSize: '2em',
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        flexDirection: 'row',
+        padding: '0.25em 0.25em',
+        borderRadius: '0.25em',
+        border: 'none',
+        color: '#fff',
+    }
+
+    const navigator = useContext(Navigator.Context)
+
+    let contents: ReactNode
+
+    if (msRemaining(quiz) < 0 && navigator.currentDescriptor.kind === 'quiz') {
+        contents = (
+            <a
+                {...navigator.link({
+                    kind: 'quiz',
+                    mode: quiz.kind === 'retrostat' ? 'retro' : undefined,
+                    date: navigator.currentDescriptor.date !== undefined ? navigator.currentDescriptor.date + 1 : undefined,
+                }, { scroll: 0 })}
+                style={{ textDecoration: 'none' }}
+            >
+                <div
+                    className="serif"
+                    style={{
+                        ...timerStyle,
+                        width: undefined,
+                        padding: '0.25em 1em',
+                    }}
+                >
+                    Next Quiz
+                </div>
+            </a>
+        )
+    }
+    else {
+        contents = (
+            <>
+                <div className="serif quiz_summary" style={{ margin: 'auto 0' }}>Next quiz in </div>
+                <div
+                    className="serif"
+                    style={timerStyle}
+                    id="quiz-timer"
+                >
+                    <span>{renderTimeRemaining(quiz)}</span>
+                </div>
+            </>
+        )
+    }
+
     return (
         <div style={{ margin: 'auto' }}>
             <div style={{
@@ -259,8 +292,7 @@ function TimeToNextQuiz({ quiz }: { quiz: QuizDescriptorWithStats }): ReactNode 
                 gap: '1em',
             }}
             >
-                <div className="serif quiz_summary" style={{ margin: 'auto 0' }}>Next quiz in </div>
-                <Timer quiz={quiz} />
+                {contents}
             </div>
         </div>
     )
