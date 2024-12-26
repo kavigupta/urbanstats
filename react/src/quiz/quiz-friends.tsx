@@ -148,7 +148,7 @@ function PlayerScore(props: { correctPattern: CorrectPattern }): ReactNode {
                     onClick={copyFriendLink}
                     style={{ marginLeft: '1em' }}
                 >
-                    Copy Friend Link
+                    Copy Link
                 </button>
             </div>
         </div>
