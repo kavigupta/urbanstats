@@ -214,21 +214,21 @@ Are you sure you want to merge them? (The lowest score will be used)`)) {
     async addFriend(friendID: string, friendName: string): Promise<undefined | { errorMessage: string, problemDomain: 'friendID' | 'friendName' | 'other' }> {
         const user = this.uniquePersistentId.value
         const secureID = this.uniqueSecureId.value
-        if (friendName === '') {
-            return { errorMessage: 'Friend name cannot be empty', problemDomain: 'friendName' }
-        }
         if (friendID === '') {
             return { errorMessage: 'Friend ID cannot be empty', problemDomain: 'friendID' }
         }
         if (friendID === user) {
             return { errorMessage: 'Friend ID cannot be your own ID', problemDomain: 'friendID' }
         }
-        if (this.friends.value.map(x => x[0]).includes(friendName)) {
-            return { errorMessage: 'Friend name already exists', problemDomain: 'friendName' }
-        }
         if (this.friends.value.map(x => x[1]).includes(friendID)) {
             const friendNameDup = this.friends.value.find(x => x[1] === friendID)![0]
             return { errorMessage: `Friend ID ${friendID} already exists as ${friendNameDup}`, problemDomain: 'friendID' }
+        }
+        if (friendName === '') {
+            return { errorMessage: 'Friend name cannot be empty', problemDomain: 'friendName' }
+        }
+        if (this.friends.value.map(x => x[0]).includes(friendName)) {
+            return { errorMessage: 'Friend name already exists', problemDomain: 'friendName' }
         }
         try {
             await fetch(`${endpoint}/juxtastat/friend_request`, {

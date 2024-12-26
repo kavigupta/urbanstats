@@ -463,7 +463,12 @@ async function loadPageDescriptor(newDescriptor: PageDescriptor, settings: Setti
                     parameters: urlFromPageDescriptor(newDescriptor).searchParams.toString(),
                     todayName,
                 },
-                newPageDescriptor: newDescriptor,
+                newPageDescriptor: {
+                    ...newDescriptor,
+                    // Remove friend stuff so it doesn't get triggered again
+                    friendId: undefined,
+                    friendName: undefined,
+                },
                 effects: () => {
                     if (newDescriptor.friendId !== undefined && newDescriptor.friendName !== undefined) {
                         void addFriendFromLink(newDescriptor.friendId, newDescriptor.friendName.trim())
