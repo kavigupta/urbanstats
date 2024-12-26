@@ -51,12 +51,15 @@ class MultiSource:
             )
         return dict(name=self.compute_name(name_map), stats=result)
 
-    def compute_name(self, name_map):
+    def canonical_column(self):
         if self.multi_source_colname is not None:
-            return name_map[self.multi_source_colname]
+            return self.multi_source_colname
         assert len(self.by_source) == 1
         col = next(iter(self.by_source.values()))
-        return name_map[col]
+        return col
+
+    def compute_name(self, name_map):
+        return name_map[self.canonical_column()]
 
 
 @dataclass
