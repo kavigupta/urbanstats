@@ -56,7 +56,6 @@ class TestComputeBinsSlowWorksAsIntended(unittest.TestCase):
         np.random.seed(seed)
         data = np.random.randn(1000) * 0.5
         weight = np.random.randn(1000)
-        max_value = np.abs(np.random.randn()) * np.max(data)
         bin_size = np.clip(np.abs(np.random.randn()), 0.01, None)
         result = compute_bins_slow(data, weight, bin_size=bin_size)
         self.assertAlmostEqual(np.sum(result), np.sum(weight), places=5)

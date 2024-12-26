@@ -76,6 +76,13 @@ jobs:
           # if there's a difference
           bash -c '[ $(git status --porcelain --untracked-files=no | wc -c) -eq 0 ]  || (git status; git diff; exit 1)'
 
+  test-python:
+    runs-on: ubuntu-22.04
+
+    needs: build-and-push-common-image
+    container:
+      image: ${{ needs.build-and-push-common-image.outputs.image }}
+
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/python_environment
