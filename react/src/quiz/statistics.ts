@@ -1,27 +1,4 @@
-import { endpoint, QuizDescriptorWithStats, QuizHistory, QuizKindWithStats } from './quiz'
-
-function createAndStoreId(key: string): string {
-    // (domain name, id stored in local storage)
-    // random 60 bit hex number
-    // (15 hex digits)
-    if (localStorage.getItem(key) === null) {
-        let randomHex = ''
-        for (let i = 0; i < 15; i++) {
-            randomHex += Math.floor(Math.random() * 16).toString(16)[0]
-        }
-        // register
-        localStorage.setItem(key, randomHex)
-    }
-    return localStorage.getItem(key)!
-}
-
-export function uniquePersistentId(): string {
-    return createAndStoreId('persistent_id')
-}
-
-export function uniqueSecureId(): string {
-    return createAndStoreId('secure_id')
-}
+import { endpoint, QuizDescriptorWithStats, QuizHistory, QuizKindWithStats, QuizLocalStorage } from './quiz'
 
 async function registerUser(userId: string, secureID: string): Promise<boolean> {
     // Idempotent
@@ -38,8 +15,8 @@ async function registerUser(userId: string, secureID: string): Promise<boolean> 
 }
 
 async function reportToServerGeneric(wholeHistory: QuizHistory, endpointLatest: string, endpointStore: string, parseDay: (day: string) => number): Promise<boolean> {
-    const user = uniquePersistentId()
-    const secureID = uniqueSecureId()
+    const user = QuizLocalStorage.shared.uniquePersistentId.value
+    const secureID = QuizLocalStorage.shared.uniqueSecureId.value
     const isError = await registerUser(user, secureID)
     if (isError) {
         return true

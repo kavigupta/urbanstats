@@ -5,9 +5,8 @@ import { EditableString } from '../components/table'
 import { useColors, useJuxtastatColors } from '../page_template/colors'
 import { mixWithBackground } from '../utils/color'
 
-import { endpoint, QuizFriends, QuizKindWithStats } from './quiz'
+import { endpoint, QuizFriends, QuizKindWithStats, QuizLocalStorage } from './quiz'
 import { CorrectPattern } from './quiz-result'
-import { uniquePersistentId, uniqueSecureId } from './statistics'
 
 interface FriendScore { name?: string, corrects: CorrectPattern | null, friends: boolean, idError?: string }
 
@@ -24,6 +23,9 @@ export function QuizFriendsPanel(props: {
     const [isLoading, setIsLoading] = useState(false)
     const [error, setError] = useState<string | undefined>(undefined)
 
+    const user = QuizLocalStorage.shared.uniquePersistentId.use()
+    const secureID = QuizLocalStorage.shared.uniqueSecureId.use()
+
     useEffect(() => {
         void (async () => {
             setIsLoading(true)
@@ -32,8 +34,6 @@ export function QuizFriendsPanel(props: {
                 // map name to id for quizFriends
                 const quizIDtoName = Object.fromEntries(props.quizFriends.map(x => [x[1], x[0]]))
                 const requesters = props.quizFriends.map(x => x[1])
-                const user = uniquePersistentId()
-                const secureID = uniqueSecureId()
                 const friendScoresResponse = await fetch(`${endpoint}/juxtastat/todays_score_for`, {
                     method: 'POST',
                     body: JSON.stringify({ user, secureID, date: props.date, requesters, quiz_kind: props.quizKind }),
@@ -56,7 +56,7 @@ export function QuizFriendsPanel(props: {
                 setIsLoading(false)
             }
         })()
-    }, [props.date, props.quizFriends, props.quizKind])
+    }, [props.date, props.quizFriends, props.quizKind, user, secureID])
 
     const content = (
         <div>
@@ -80,7 +80,7 @@ export function QuizFriendsPanel(props: {
                             removeFriend={async () => {
                                 await fetch(`${endpoint}/juxtastat/unfriend`, {
                                     method: 'POST',
-                                    body: JSON.stringify({ user: uniquePersistentId(), secureID: uniqueSecureId(), requestee: props.quizFriends[idx][1] }),
+                                    body: JSON.stringify({ user, secureID, requestee: props.quizFriends[idx][1] }),
                                     headers: {
                                         'Content-Type': 'application/json',
                                     },
@@ -285,6 +285,8 @@ function AddFriend(props: {
     const addFriend = async (): Promise<void> => {
         const friendID = friendIDField.trim()
         const friendName = friendNameField.trim()
+        const user = QuizLocalStorage.shared.uniquePersistentId.value
+        const secureID = QuizLocalStorage.shared.uniqueSecureId.value
         if (friendName === '') {
             setError('Friend name cannot be empty')
             return
@@ -293,7 +295,7 @@ function AddFriend(props: {
             setError('Friend ID cannot be empty')
             return
         }
-        if (friendID === uniquePersistentId()) {
+        if (friendID === user) {
             setError('Friend ID cannot be your own ID')
             return
         }
@@ -306,8 +308,6 @@ function AddFriend(props: {
             setError(`Friend ID ${friendID} already exists as ${friendNameDup}`)
             return
         }
-        const user = uniquePersistentId()
-        const secureID = uniqueSecureId()
         try {
             setLoading(true)
             await fetch(`${endpoint}/juxtastat/friend_request`, {
