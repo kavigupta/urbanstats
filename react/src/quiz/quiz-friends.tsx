@@ -147,6 +147,7 @@ function PlayerScore(props: { correctPattern: CorrectPattern }): ReactNode {
                 <button
                     onClick={copyFriendLink}
                     style={{ marginLeft: '1em' }}
+                    data-test-id="friend-link-button"
                 >
                     Copy Link
                 </button>

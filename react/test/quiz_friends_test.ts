@@ -1,6 +1,6 @@
 import { Selector } from 'testcafe'
 
-import { quizFixture, clickButtons, quizScreencap } from './quiz_test_utils'
+import { quizFixture, clickButtons, quizScreencap, friendsText } from './quiz_test_utils'
 import { safeReload, target } from './test_utils'
 
 type Storage = Record<string, string>
@@ -52,18 +52,6 @@ function startingState(): JuxtastatUserState {
         currentUser: undefined,
         allUserState: new Map(),
     }
-}
-
-async function friendsText(t: TestController): Promise<string[]> {
-    return await t.eval(() => {
-        const elements = document.getElementsByClassName('testing-friends-section')
-        const results: string[] = []
-        // eslint-disable-next-line @typescript-eslint/prefer-for-of -- No need to convert to array
-        for (let i = 0; i < elements.length; i++) {
-            results.push(elements[i].textContent!)
-        }
-        return results
-    }) as string[]
 }
 
 async function addFriend(t: TestController, friendName: string, friendID: string): Promise<void> {
