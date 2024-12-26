@@ -7,7 +7,7 @@ import torch
 import tqdm.auto as tqdm
 from permacache import permacache, stable_hash
 
-from urbanstats.games.quiz import difficulty_multiplier, ranges
+from urbanstats.games.quiz import difficulty_multiplier
 from urbanstats.games.quiz_regions import get_quiz_stats
 from urbanstats.universe.universe_list import (
     default_universes,
@@ -16,6 +16,14 @@ from urbanstats.universe.universe_list import (
 
 
 MAX_PCT_DIFF = 500
+INTERNATIONAL_DIFFICULTY_MULTIPLIER = 2
+RANGES = [
+    (200, 500),
+    (125, 200),
+    (75, 125),
+    (40, 75),
+    (5, 40),
+]
 
 
 @dataclass
@@ -80,10 +88,19 @@ def compute_difficulty_multipliers(qt):
     diffmults = np.repeat(diffmults, len(qt.data), axis=1)
     diffmults = np.repeat(diffmults, len(qt.data), axis=2)
     lrm = qt.local_region_mask
-    diffmults[:, ~lrm, :] = 4
-    diffmults[:, :, ~lrm] = 4
+    diffmults[:, ~lrm, :] = INTERNATIONAL_DIFFICULTY_MULTIPLIER
+    diffmults[:, :, ~lrm] = INTERNATIONAL_DIFFICULTY_MULTIPLIER
     diffmults[:, universe_overlap_mask(qt)] = 0
     return diffmults
+
+
+def compute_difficulty(stat_a, stat_b, stat_column_original, a, b):
+    diffmult = difficulty_multiplier(stat_column_original)
+    if not any(x.endswith("USA") or x.endswith("Canada") for x in (a, b)):
+        diffmult = 4
+    diff = abs(stat_a - stat_b) / min(abs(stat_a), abs(stat_b)) * 100
+    diff = diff / diffmult
+    return diff
 
 
 def each_question(qt, stat_to_index, geo_to_index):
@@ -91,7 +108,7 @@ def each_question(qt, stat_to_index, geo_to_index):
     remap_geos = np.array([geo_to_index[geo] for geo in qt.data.index])
     adj_difficulties = compute_adjusted_difficulties(qt)
     results = []
-    for lo, hi in ranges:
+    for lo, hi in RANGES:
         mask = (adj_difficulties >= lo) & (adj_difficulties < hi)
         stat_indices, a_indices, b_indices = np.where(mask)
         a_lt_b_mask = a_indices < b_indices
@@ -221,10 +238,7 @@ def compute_geo_target(qqp, geographies_by_type):
 
 
 def compute_stat_target(qqp):
-    collections = {
-        col: descriptor.collection for col, descriptor, _ in get_quiz_stats()
-    }
-    collections = [collections[x] for x in qqp.all_stats]
+    collections = collections_each(qqp)
     count_collections = Counter(collections)
     stat_target = np.array(
         [c.weight_entire_collection / count_collections[c] ** 0.1 for c in collections]
@@ -233,13 +247,44 @@ def compute_stat_target(qqp):
     return stat_target
 
 
+def collections_each(qqp):
+    collections = {
+        col: descriptor.collection for col, descriptor, _ in get_quiz_stats()
+    }
+    collections = [collections[x] for x in qqp.all_stats]
+    return collections
+
+
+def collections_index(qqp):
+    collections = collections_each(qqp)
+    collection_to_i = {
+        col: i for i, col in enumerate(sorted(set(collections), key=str))
+    }
+    return np.array([collection_to_i[x] for x in collections])
+
+
 @permacache(
-    "urbanstats/games/quiz_question_distribution/produce_quiz_question_weights_2",
+    "urbanstats/games/quiz_question_distribution/compute_quiz_question_possibilities",
     key_function=dict(tables_by_type=stable_hash),
 )
+def compute_quiz_question_possibilities(tables_by_type):
+    return QuizQuestionPossibilities.compute_quiz_question_possibilities(tables_by_type)
+
+
 def produce_quiz_question_weights(tables_by_type):
-    qqp = QuizQuestionPossibilities.compute_quiz_question_possibilities(tables_by_type)
+    qqp = compute_quiz_question_possibilities(tables_by_type)
     geo_target = compute_geo_target(qqp, tables_by_type)
     stat_target = compute_stat_target(qqp)
+    return produce_quiz_question_weights_direct(tables_by_type, geo_target, stat_target)
+
+
+@permacache(
+    "urbanstats/games/quiz_question_distribution/produce_quiz_question_weights_direct",
+    key_function=dict(
+        tables_by_type=stable_hash, geo_target=stable_hash, stat_target=stable_hash
+    ),
+)
+def produce_quiz_question_weights_direct(tables_by_type, geo_target, stat_target):
+    qqp = compute_quiz_question_possibilities(tables_by_type)
     ps = qqp.train(geo_target, stat_target)
     return dict(ps=ps, geo_target=geo_target, stat_target=stat_target, qqp=qqp)

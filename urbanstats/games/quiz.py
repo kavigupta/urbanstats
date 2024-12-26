@@ -128,13 +128,6 @@ def difficulty_multiplier(stat_column_original):
     return raw_diff
 
 
-def compute_difficulty(stat_a, stat_b, stat_column_original, typ):
-    diff = pct_diff(stat_a, stat_b)
-    if diff > ranges[0][1]:
-        return float("inf")
-    diff = diff / difficulty_multiplier(stat_column_original, typ)
-    return diff
-
 
 @lru_cache(maxsize=None)
 def state_universes():
@@ -221,6 +214,7 @@ def generate_quiz(seed):
 def full_quiz(seed):
     res = generate_quiz(seed)
     return finish_quiz(res)
+
 
 def finish_quiz(res):
     names = {k: d.name for k, d, _ in get_quiz_stats()}
@@ -365,4 +359,13 @@ renamed = {
     "higher % of days with high temp < 40": "days_below_40_4",
     "higher % of days with high temp under 40°F (population weighted)": "days_below_40_4",
     "higher % of people who were born in the us and born outside their state of residence": "birthplace_us_not_state",
+    "!FULL Which has less exposure to EPA superfund sites (higher population-weighted mean distance)?": "mean_dist_Active Superfund Site_updated",
+    "higher % of workers employed as health diagnosing and treating practitioners and other technical occupations": "occupation_health_diagnosing_and_treating_practitioners_and_other_technical_occupations",
+    "higher % of workers employed as legal occupations": "occupation_legal_occupations",
+    "higher % of workers employed as management occupations": "occupation_management_occupations",
+    "higher % change in population from 2010 to 2020": "population_change_2010",
+    "higher % change in population-weighted density (r=1km) from 2010 to 2020": "ad_1_change_2010",
+    "higher % of adults with smoke": "CSMOKING_cdc_2",
+    '% of people who are gay and cohabiting with a partner/spouse': 'sors_cohabiting_partnered_gay',
+    'increase in racial homogeneity from 2010 to 2020': 'homogeneity_250_diff_2010'
 }
