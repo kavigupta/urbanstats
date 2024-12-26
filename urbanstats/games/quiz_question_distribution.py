@@ -1,19 +1,19 @@
 from dataclasses import dataclass
 from functools import cached_property
 from typing import Counter, List
+
 import numpy as np
 import pandas as pd
 import torch
 import tqdm.auto as tqdm
 from permacache import permacache, stable_hash
 
-from urbanstats.games.quiz_regions import get_quiz_stats
+from urbanstats.games.quiz_columns import get_quiz_stats
 from urbanstats.statistics.output_statistics_metadata import get_statistic_categories
 from urbanstats.universe.universe_list import (
     default_universes,
     universe_by_universe_type,
 )
-
 
 MAX_PCT_DIFF = 500
 INTERNATIONAL_DIFFICULTY_MULTIPLIER = 2
@@ -24,6 +24,9 @@ RANGES = [
     (40, 75),
     (5, 40),
 ]
+
+MIN_POP = 250_000
+MIN_POP_INTERNATIONAL = 2_500_000
 
 
 @dataclass

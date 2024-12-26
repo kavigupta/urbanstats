@@ -9,7 +9,7 @@ import pytz
 import tqdm.auto as tqdm
 from permacache import stable_hash
 
-from urbanstats.games.quiz_columns import stats_to_display
+from urbanstats.games.quiz_columns import stat_to_quiz_name
 from urbanstats.games.quiz_sampling import sample_quiz
 from urbanstats.statistics.output_statistics_metadata import (
     statistic_internal_to_display_name,
@@ -18,9 +18,6 @@ from urbanstats.statistics.stat_path import get_statistic_column_path
 
 from .fixed import juxtastat as fixed_up_to
 from .quiz_custom import get_custom_quizzes
-
-min_pop = 250_000
-min_pop_international = 2_500_000
 
 
 def generate_quiz(seed):
@@ -47,7 +44,7 @@ def finish_quiz(res):
         stat_column_original = q.pop("stat_column_original")
         out["stat_column"] = statistic_internal_to_display_name()[stat_column_original]
         out["stat_path"] = get_statistic_column_path(stat_column_original)
-        out["question"] = stats_to_display[stat_column_original]
+        out["question"] = stat_to_quiz_name()[stat_column_original]
         out.update(q)
         outs.append(out)
     return outs

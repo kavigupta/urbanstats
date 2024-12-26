@@ -1,11 +1,10 @@
 from functools import lru_cache
 
+from urbanstats.games.quiz_columns import stat_to_quiz_name
 from urbanstats.statistics.output_statistics_metadata import (
     statistic_internal_to_display_name,
 )
 from urbanstats.website_data.table import shapefile_without_ordinals
-
-from .quiz_columns import stats_to_display
 
 
 @lru_cache(maxsize=None)
@@ -18,7 +17,7 @@ def custom_quiz_question(stat_column_name, longname_a, longname_b):
     stat_column_internal = {
         v: k for k, v in statistic_internal_to_display_name().items()
     }[stat_column_name]
-    stat_column_question = stats_to_display[stat_column_internal]
+    stat_column_question = stat_to_quiz_name()[stat_column_internal]
     stat_column_internal_original = stat_column_internal
     if stat_column_internal == "population":
         stat_column_internal = "best_population_estimate"

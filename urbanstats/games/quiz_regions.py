@@ -5,9 +5,7 @@ import numpy as np
 import pandas as pd
 from permacache import stable_hash
 
-from urbanstats.games.quiz_question_metadata import QuizQuestionSkip
-from urbanstats.statistics.statistics_tree import statistics_tree
-from .quiz_columns import all_descriptors
+from urbanstats.games.quiz_columns import get_quiz_stats
 
 
 @dataclass
@@ -34,7 +32,6 @@ class QuizRegion:
     internal_weighting_function: Callable[[pd.Series], float] = lambda _: 1.0
 
     def load_quiz_table(self, filtered_for_pop):
-        # TODO unequal sharing
         result = filtered_for_pop[filtered_for_pop.type.isin(self.regions)].set_index(
             "longname"
         )
@@ -52,32 +49,6 @@ class QuizRegion:
             result["local_region_mask"],
             result.apply(self.internal_weighting_function, axis=1),
         )
-
-
-def get_quiz_stats():
-    statistics_grouped_by_source = []
-    for cat in statistics_tree.categories.values():
-        for group in cat.contents.values():
-            for for_year in group.by_year.values():
-                for by_source in for_year:
-                    stat = list(by_source.by_source.items())
-                    stat = [
-                        (source, col)
-                        for source, col in stat
-                        if not isinstance(all_descriptors[col], QuizQuestionSkip)
-                    ]
-                    if not stat:
-                        continue
-                    if len(stat) > 1:
-                        stat = sorted(stat, key=lambda sc: sc[0].priority)
-                    stat = [c for _, c in stat]
-                    descriptors = {all_descriptors[c] for c in stat}
-                    assert len(descriptors) == 1, descriptors
-                    [descriptor] = descriptors
-                    statistics_grouped_by_source += [
-                        (by_source.canonical_column(), descriptor, stat)
-                    ]
-    return statistics_grouped_by_source
 
 
 region_map = {

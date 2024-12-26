@@ -1,15 +1,14 @@
 from functools import lru_cache
+
 import numpy as np
 import pandas as pd
+
+from urbanstats.games.quiz_question_distribution import MIN_POP, MIN_POP_INTERNATIONAL
 from urbanstats.utils import DiscreteDistribution
 from urbanstats.website_data.table import shapefile_without_ordinals
 
-from urbanstats.website_data.table import shapefile_without_ordinals
-
-from urbanstats.games.quiz import finish_quiz, min_pop, min_pop_international
-
-from .quiz_regions import region_map
 from .quiz_question_distribution import collections_index, produce_quiz_question_weights
+from .quiz_regions import region_map
 
 
 @lru_cache()
@@ -29,7 +28,7 @@ def compute_geographies_by_type():
     t["local_region_mask"] = t.universes.apply(lambda x: "Canada" in x or "USA" in x)
     filtered_for_pop = t[
         t.best_population_estimate
-        > t.local_region_mask.apply(lambda x: min_pop if x else min_pop_international)
+        > t.local_region_mask.apply(lambda x: MIN_POP if x else MIN_POP_INTERNATIONAL)
     ]
     geographies_by_type = {
         k: r.load_quiz_table(filtered_for_pop) for k, r in region_map.items()
@@ -76,5 +75,4 @@ def sample_quiz(seed):
                 stat_b=stat_b,
             )
         )
-    fq = [{**q, "kind": "juxtastat"} for q in finish_quiz(quiz)]
-    return fq
+    return quiz

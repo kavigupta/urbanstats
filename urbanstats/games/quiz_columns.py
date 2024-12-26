@@ -1,22 +1,42 @@
+from functools import lru_cache
+
 from urbanstats.games.quiz_question_metadata import QuizQuestionSkip
-from urbanstats.games.quiz_regions import get_quiz_stats
 from urbanstats.statistics.collections_list import statistic_collections
-from urbanstats.statistics.output_statistics_metadata import (
-    get_statistic_categories,
-    internal_statistic_names,
-)
+from urbanstats.statistics.statistics_tree import statistics_tree
 
-all_descriptors = {}
-stats_to_types = {}
-not_included = set()
 
-for collection in statistic_collections:
-    for name, desc in collection.quiz_question_descriptors().items():
-        all_descriptors[name] = desc
-        if isinstance(desc, QuizQuestionSkip):
-            not_included.add(name)
-        stats_to_types[name] = collection.quiz_question_types()
+@lru_cache(maxsize=None)
+def get_quiz_stats():
+    all_descriptors = {}
 
-stats_to_display = {k: d.name for k, d, _ in get_quiz_stats()}
-stats = sorted(stats_to_display, key=str)
-categories = sorted({get_statistic_categories()[x] for x in stats})
+    for collection in statistic_collections:
+        for name, desc in collection.quiz_question_descriptors().items():
+            all_descriptors[name] = desc
+    statistics_grouped_by_source = []
+    for cat in statistics_tree.categories.values():
+        for group in cat.contents.values():
+            for for_year in group.by_year.values():
+                for by_source in for_year:
+                    stat = list(by_source.by_source.items())
+                    stat = [
+                        (source, col)
+                        for source, col in stat
+                        if not isinstance(all_descriptors[col], QuizQuestionSkip)
+                    ]
+                    if not stat:
+                        continue
+                    if len(stat) > 1:
+                        stat = sorted(stat, key=lambda sc: sc[0].priority)
+                    stat = [c for _, c in stat]
+                    descriptors = {all_descriptors[c] for c in stat}
+                    assert len(descriptors) == 1, descriptors
+                    [descriptor] = descriptors
+                    statistics_grouped_by_source += [
+                        (by_source.canonical_column(), descriptor, stat)
+                    ]
+    return statistics_grouped_by_source
+
+
+@lru_cache(maxsize=None)
+def stat_to_quiz_name():
+    return {k: d.name for k, d, _ in get_quiz_stats()}
