@@ -80,7 +80,7 @@ class StoredProperty<T> {
     private _value: T
     private observers = new Set<() => void>()
 
-    constructor(readonly localStorageKey: string, load: (storageValue: string | null) => T) {
+    constructor(readonly localStorageKey: string, load: (storageValue: string | null) => T, private readonly store: (value: T) => string) {
         this._value = load(localStorage.getItem(localStorageKey))
     }
 
@@ -90,7 +90,7 @@ class StoredProperty<T> {
 
     set value(newValue: T) {
         this._value = newValue
-        localStorage.setItem(this.localStorageKey, JSON.stringify(newValue))
+        localStorage.setItem(this.localStorageKey, this.store(newValue))
         this.observers.forEach((observer) => { observer() })
     }
 
@@ -118,27 +118,35 @@ export class QuizLocalStorage {
 
     static shared = new QuizLocalStorage()
 
-    readonly history = new StoredProperty<QuizHistory>('quiz_history', (storedValue) => {
-        const history = JSON.parse(storedValue ?? '{}') as QuizHistory
+    readonly history = new StoredProperty<QuizHistory>(
+        'quiz_history',
+        (storedValue) => {
+            const history = JSON.parse(storedValue ?? '{}') as QuizHistory
 
-        // set 42's correct_pattern's 0th element to true
-        if ('42' in history) {
-            if ('correct_pattern' in history['42']) {
-                if (history['42'].correct_pattern.length > 0) {
-                    history['42'].correct_pattern[0] = true
+            // set 42's correct_pattern's 0th element to true
+            if ('42' in history) {
+                if ('correct_pattern' in history['42']) {
+                    if (history['42'].correct_pattern.length > 0) {
+                        history['42'].correct_pattern[0] = true
+                    }
                 }
             }
-        }
-        return history
-    })
+            return history
+        },
+        value => JSON.stringify(value),
+    )
 
-    readonly friends = new StoredProperty<QuizFriends>('quiz_friends', (storedValue) => {
-        return JSON.parse(storedValue ?? '[]') as QuizFriends
-    })
+    readonly friends = new StoredProperty<QuizFriends>(
+        'quiz_friends',
+        (storedValue) => {
+            return JSON.parse(storedValue ?? '[]') as QuizFriends
+        },
+        value => JSON.stringify(value),
+    )
 
-    readonly uniquePersistentId = new StoredProperty<string>('persistent_id', () => createAndStoreId('persistent_id'))
+    readonly uniquePersistentId = new StoredProperty<string>('persistent_id', () => createAndStoreId('persistent_id'), value => value)
 
-    readonly uniqueSecureId = new StoredProperty<string>('secure_id', () => createAndStoreId('secure_id'))
+    readonly uniqueSecureId = new StoredProperty<string>('secure_id', () => createAndStoreId('secure_id'), value => value)
 
     exportQuizPersona(): void {
         const exported: QuizPersona = {
