@@ -172,12 +172,10 @@ export class QuizLocalStorage {
 
             if (conflicts.length > 0) {
                 if (confirm(`The following quiz results exist both locally and in the uploaded file, and are different:
-    
-    ${
-                    conflicts.map(key => `• ${key.startsWith('W') ? 'Retrostat' : 'Juxtastat'} ${key}`).join('\n')
-                    }
-    
-    Are you sure you want to merge them? (The lowest score will be used)`)) {
+
+${conflicts.map(key => `• ${key.startsWith('W') ? 'Retrostat' : 'Juxtastat'} ${key}`).join('\n')}
+
+Are you sure you want to merge them? (The lowest score will be used)`)) {
                     newHistory = {
                         ...currentHistory, ...persona.quiz_history, ...Object.fromEntries(conflicts.map((key) => {
                             const currentCorrect = currentHistory[key].correct_pattern.filter(value => value).length
