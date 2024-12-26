@@ -97,8 +97,8 @@ const quizSchema = z.intersection(
         }),
     ]),
     z.object({
-        friendName: z.optional(z.string()),
-        friendId: z.optional(z.string()),
+        name: z.optional(z.string()),
+        id: z.optional(z.string()),
     }),
 )
 
@@ -261,8 +261,8 @@ export function urlFromPageDescriptor(pageDescriptor: ExceptionalPageDescriptor)
                 mode: pageDescriptor.mode,
                 date: pageDescriptor.date?.toString(),
                 quizContent: pageDescriptor.quizContent,
-                friendName: pageDescriptor.friendName,
-                friendId: pageDescriptor.friendId,
+                name: pageDescriptor.name,
+                id: pageDescriptor.id,
             }).flatMap(([key, value]) => value !== undefined ? [[key, value]] : []))
             if (hashParams.size > 0) {
                 quizResult.hash = `#${hashParams.toString()}`
@@ -466,12 +466,12 @@ async function loadPageDescriptor(newDescriptor: PageDescriptor, settings: Setti
                 newPageDescriptor: {
                     ...newDescriptor,
                     // Remove friend stuff so it doesn't get triggered again
-                    friendId: undefined,
-                    friendName: undefined,
+                    id: undefined,
+                    name: undefined,
                 },
                 effects: () => {
-                    if (newDescriptor.friendId !== undefined && newDescriptor.friendName !== undefined) {
-                        void addFriendFromLink(newDescriptor.friendId, newDescriptor.friendName.trim())
+                    if (newDescriptor.id !== undefined && newDescriptor.name !== undefined) {
+                        void addFriendFromLink(newDescriptor.id, newDescriptor.name.trim())
                     }
                 },
             }

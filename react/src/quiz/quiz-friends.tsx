@@ -124,7 +124,7 @@ function PlayerScore(props: { correctPattern: CorrectPattern }): ReactNode {
             return
         }
 
-        const hash = urlFromPageDescriptor({ kind: 'quiz', friendId: QuizLocalStorage.shared.uniquePersistentId.value, friendName: playerName }).hash
+        const hash = urlFromPageDescriptor({ kind: 'quiz', id: QuizLocalStorage.shared.uniquePersistentId.value, name: playerName }).hash
         const url = `https://juxtastat.org/${hash}`
 
         await navigator.clipboard.writeText(url)
