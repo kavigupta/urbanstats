@@ -28,7 +28,7 @@ def generate_quiz(seed):
             return cq[seed[1]]
 
     rng = np.random.default_rng(int(stable_hash(seed), 16))
-    return sample_quiz(rng.randint(2**32))
+    return sample_quiz(rng)
 
 
 def full_quiz(seed):

@@ -49,9 +49,8 @@ def sample_quiz_indices(rng):
                 return indices[:, i]
 
 
-def sample_quiz(seed):
+def sample_quiz(rng):
     data, qqp, _ = compute_quiz_question_distribution()
-    rng = np.random.RandomState(seed)
     indices = sample_quiz_indices(rng)
     quiz = []
     for qs, idx in zip(qqp.questions_by_number, indices):
@@ -60,7 +59,7 @@ def sample_quiz(seed):
             qqp.all_geographies[q.geography_index_a],
             qqp.all_geographies[q.geography_index_b],
         )
-        if rng.rand() < 0.5:
+        if rng.random() < 0.5:
             a, b = b, a
         s = qqp.all_stats[q.stat_indices]
         stat_a, stat_b = data[
