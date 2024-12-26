@@ -125,6 +125,8 @@ const history = window.history as {
     replaceState: (data: HistoryState, unused: string, url?: string | URL | null) => void
     pushState: (data: HistoryState, unused: string, url?: string | URL | null) => void
     state: HistoryState
+    forward: () => void
+    back: () => void
 }
 
 export type PageDescriptor = z.infer<typeof pageDescriptorSchema>
@@ -592,21 +594,19 @@ export class Navigator {
             }
             else if (url.hash !== '') {
                 this.effects.push(() => {
-                    const seekToHash = (): void => {
-                        window.location.replace(url.hash)
-                        // Above statement clears state
-                        history.replaceState({ pageDescriptor: newPageDescriptor, scrollPosition: window.scrollY }, '')
+                    let nextScrollEventIsSeek = false
+
+                    const scrollObserver = (): void => {
+                        if (!nextScrollEventIsSeek) {
+                            destroyObservers()
+                        }
+                        else {
+                            nextScrollEventIsSeek = false
+                        }
                     }
 
-                    seekToHash()
-
-                    // If the body height changes, and the user hasn't scrolled yet, this means something (e.g. fonts) have loaded and our hash seek isn't correct.
                     // Keep track of the state where we're seeking so we don't keep trying to seek on another page
                     const seekedState = this.pageState
-
-                    const destroyObservers = (): void => {
-                        resizeObserver.unobserve(document.body)
-                    }
 
                     const resizeObserver = new ResizeObserver(() => {
                         if (this.pageState === seekedState) {
@@ -617,13 +617,28 @@ export class Navigator {
                         }
                     })
 
+                    const destroyObservers = (): void => {
+                        resizeObserver.unobserve(document.body)
+                        window.removeEventListener('scroll', scrollObserver)
+                    }
+
+                    const seekToHash = (): void => {
+                        const element = document.getElementById(url.hash.substring(1))
+                        if (element !== null) {
+                            const position = element.getBoundingClientRect().top + window.scrollY
+                            if (Math.round(position) !== Math.round(window.scrollY)) {
+                                nextScrollEventIsSeek = true
+                                window.scrollTo(0, position)
+                            }
+                        }
+                    }
+
+                    // If the body height changes, and the user hasn't scrolled yet, this means something (e.g. fonts) have loaded and our hash seek isn't correct.
                     resizeObserver.observe(document.body)
-                    // First scroll is triggered on hash navigate
-                    window.addEventListener('scroll', () => {
-                        window.addEventListener('scroll', () => {
-                            destroyObservers()
-                        }, { once: true })
-                    }, { once: true })
+                    // Scrolling from the user should cancel the hash lock, but not scrolling because we've seeked to the hash
+                    window.addEventListener('scroll', scrollObserver)
+
+                    seekToHash()
                 })
             }
         }

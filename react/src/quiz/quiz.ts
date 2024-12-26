@@ -62,7 +62,7 @@ export const quizHistorySchema = z.record(
 
 export type QuizHistory = z.infer<typeof quizHistorySchema>
 
-// list of [string, string] pairs
+// list of [name, id] pairs
 export const quizFriends = z.array(z.tuple([z.string(), z.string()]))
 
 export type QuizFriends = z.infer<typeof quizFriends>
