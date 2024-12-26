@@ -252,7 +252,6 @@ function TimeToNextQuiz({ quiz }: { quiz: QuizDescriptorWithStats }): ReactNode 
                     date: navigator.currentDescriptor.date !== undefined ? navigator.currentDescriptor.date + 1 : undefined,
                 }, { scroll: 0 })}
                 style={{ textDecoration: 'none' }}
-                id="quiz-timer"
             >
                 <div
                     className="serif"
@@ -274,7 +273,6 @@ function TimeToNextQuiz({ quiz }: { quiz: QuizDescriptorWithStats }): ReactNode 
                 <div
                     className="serif"
                     style={timerStyle}
-                    id="quiz-timer"
                 >
                     <span>{renderTimeRemaining(quiz)}</span>
                 </div>
@@ -283,7 +281,10 @@ function TimeToNextQuiz({ quiz }: { quiz: QuizDescriptorWithStats }): ReactNode 
     }
 
     return (
-        <div style={{ margin: 'auto' }}>
+        <div
+            style={{ margin: 'auto' }}
+            id="quiz-timer"
+        >
             <div style={{
                 display: 'flex',
                 flexDirection: 'row',
