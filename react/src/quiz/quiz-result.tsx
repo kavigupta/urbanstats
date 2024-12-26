@@ -252,6 +252,7 @@ function TimeToNextQuiz({ quiz }: { quiz: QuizDescriptorWithStats }): ReactNode 
                     date: navigator.currentDescriptor.date !== undefined ? navigator.currentDescriptor.date + 1 : undefined,
                 }, { scroll: 0 })}
                 style={{ textDecoration: 'none' }}
+                id="quiz-timer"
             >
                 <div
                     className="serif"
