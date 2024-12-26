@@ -3,203 +3,26 @@ import json
 import os
 import shutil
 from datetime import datetime
-from functools import lru_cache
 
 import numpy as np
-import pandas as pd
 import pytz
 import tqdm.auto as tqdm
-from permacache import permacache, stable_hash
+from permacache import stable_hash
 
-from urbanstats.games.quiz_columns import stats, stats_to_display, stats_to_types
-from urbanstats.games.quiz_region_types import (
-    QUIZ_REGION_TYPES_INTERNATIONAL,
-    sample_quiz_type,
-)
-from urbanstats.games.quiz_regions import get_quiz_stats
-from urbanstats.geometry.shapefiles.shapefiles_list import filter_table_for_type
-from urbanstats.statistics.collections_list import statistic_collections
+from urbanstats.games.quiz_columns import stats_to_display
+from urbanstats.games.quiz_sampling import sample_quiz
 from urbanstats.statistics.output_statistics_metadata import (
-    get_statistic_categories,
     statistic_internal_to_display_name,
 )
 from urbanstats.statistics.stat_path import get_statistic_column_path
-from urbanstats.universe.universe_list import universe_by_universe_type
-from urbanstats.website_data.table import shapefile_without_ordinals
 
 from .fixed import juxtastat as fixed_up_to
 from .quiz_custom import get_custom_quizzes
 
 min_pop = 250_000
 min_pop_international = 2_500_000
-version_numeric = 79
-
-version = str(version_numeric) + stable_hash(statistic_collections)
-
-# ranges = [
-#     (0.7, 1),
-#     (0.5, 0.7),
-#     (0.35, 0.5),
-#     (0.25, 0.35),
-#     (0.25 * 0.7, 0.25),
-# ]
-
-ranges = [
-    (200, 500),
-    (125, 200),
-    (75, 125),
-    (40, 75),
-    (5, 40),
-]
-
-difficulties = {
-    "education": 0.5,
-    "election": 3,
-    "feature": 1.5,
-    "generation": 2,
-    "housing": 1.5,
-    "2010": 1.5,
-    "2000": 1.5,
-    "health": 1.5,
-    "climate": 1.5,
-    "relationships": 0.5,
-    "income": 0.6,
-    "main": 0.25,
-    "misc": 2,
-    "national_origin": 1.5,
-    "race": 0.75,
-    "transportation": 3,
-    "industry": 2,
-    "occupation": 2,
-    "weather": 0.3,
-    "topography": 1,
-    "other_densities": 0.25,
-}
-
-skip_category_probs = {
-    "industry": 0.75,
-    "occupation": 0.75,
-}
 
 
-def pct_diff(x, y):
-    if np.isnan(x) or np.isnan(y):
-        return 0
-    return abs(x - y) / min(abs(y), abs(y)) * 100
-
-
-def randomize_q(rng, q):
-    q = copy.deepcopy(q)
-    if rng.choice(2):
-        q["longname_a"], q["longname_b"] = q["longname_b"], q["longname_a"]
-        q["stat_a"], q["stat_b"] = q["stat_b"], q["stat_a"]
-    return q
-
-
-def randomize_quiz(rng, quiz):
-    return [randomize_q(rng, q) for q in quiz]
-
-
-def sample_quiz(rng):
-    banned_categories = []
-    banned_types = []
-    if rng.uniform() < 0.75:
-        banned_types.append("Judicial Circuit")
-    if rng.uniform() < 0.35:
-        banned_types.append("Media Market")
-    if rng.uniform() < 0.5:
-        banned_types.append("international")
-    result = []
-    for r in ranges:
-        typ, question = sample_quiz_question(rng, banned_categories, banned_types, *r)
-        banned_categories.append(
-            get_statistic_categories()[question["stat_column_original"]]
-        )
-        banned_types.append(type_ban_categorize(typ))
-        result.append(question)
-    result = randomize_quiz(rng, result)
-    return result
-
-
-def difficulty_multiplier(stat_column_original):
-    raw_diff = difficulties[get_statistic_categories()[stat_column_original]]
-    if "mean_high_temp" in stat_column_original:
-        raw_diff = raw_diff * 0.25
-    return raw_diff
-
-
-
-@lru_cache(maxsize=None)
-def state_universes():
-    return set(universe_by_universe_type()["state"])
-
-
-def same_state(a, b):
-    shared_states = set(a) & set(b) & state_universes()
-    return bool(shared_states)
-
-
-def sample_quiz_question(
-    rng, banned_categories, banned_type_categories, distance_pct_bot, distance_pct_top
-):
-    while True:
-        typ = sample_quiz_type(rng)
-        if type_ban_categorize(typ) in banned_type_categories:
-            continue
-        at_pop, universes = filter_for_pop(typ)
-        stat_column_original = rng.choice(at_pop.columns)
-        cat = get_statistic_categories()[stat_column_original]
-        if rng.uniform() < skip_category_probs.get(cat, 0):
-            continue
-        if cat in banned_categories:
-            continue
-        for _ in range(1000):
-            a, b = rng.choice(at_pop.index, size=2)
-            if typ == "State":
-                if "District of Columbia, USA" in (a, b):
-                    continue
-            if same_state(universes.loc[a], universes.loc[b]):
-                continue
-            stat_a, stat_b = (
-                at_pop.loc[a][stat_column_original],
-                at_pop.loc[b][stat_column_original],
-            )
-            stat_a, stat_b = float(stat_a), float(stat_b)
-            if np.isnan(stat_a) or np.isnan(stat_b) or stat_a == 0 or stat_b == 0:
-                continue
-            diff = compute_difficulty(stat_a, stat_b, stat_column_original, typ)
-            if distance_pct_bot <= diff <= distance_pct_top:
-                return typ, dict(
-                    stat_column_original=stat_column_original,
-                    longname_a=a,
-                    longname_b=b,
-                    stat_a=stat_a,
-                    stat_b=stat_b,
-                )
-        print("FAILED", typ, stat_column_original, distance_pct_bot, distance_pct_top)
-
-
-@permacache(f"urbanstats/games/quiz/filter_for_pop_{version}")
-def filter_for_pop(typ):
-    full = shapefile_without_ordinals()
-    filt = filter_table_for_type(full, typ)
-    at_pop = filt[filt.best_population_estimate >= minimum_population(typ)].set_index(
-        "longname"
-    )
-    universes = at_pop["universes"]
-    at_pop = pd.DataFrame({s: at_pop[s] for s in stats if typ in stats_to_types[s]})
-    mask = ~at_pop.applymap(np.isnan).all()
-    assert mask.all()
-    return at_pop, universes
-
-
-def minimum_population(typ):
-    if typ in QUIZ_REGION_TYPES_INTERNATIONAL:
-        return min_pop_international
-    return min_pop
-
-
-@permacache(f"urbanstats/games/quiz/generate_quiz_{version}")
 def generate_quiz(seed):
     if isinstance(seed, tuple) and seed[0] == "daily":
         check_quiz_is_guaranteed_future(seed[1])
@@ -208,7 +31,7 @@ def generate_quiz(seed):
             return cq[seed[1]]
 
     rng = np.random.default_rng(int(stable_hash(seed), 16))
-    return sample_quiz(rng)
+    return sample_quiz(rng.randint(2**32))
 
 
 def full_quiz(seed):
@@ -217,7 +40,6 @@ def full_quiz(seed):
 
 
 def finish_quiz(res):
-    names = {k: d.name for k, d, _ in get_quiz_stats()}
     res = copy.deepcopy(res)
     outs = []
     for q in res:
@@ -225,7 +47,7 @@ def finish_quiz(res):
         stat_column_original = q.pop("stat_column_original")
         out["stat_column"] = statistic_internal_to_display_name()[stat_column_original]
         out["stat_path"] = get_statistic_column_path(stat_column_original)
-        out["question"] = names[stat_column_original]
+        out["question"] = stats_to_display[stat_column_original]
         out.update(q)
         outs.append(out)
     return outs
@@ -268,8 +90,8 @@ def generate_quizzes(folder):
     for i in range(fixed_up_to + 1):
         shutil.copy(f"quiz_old/{i}", path(i))
     for i in tqdm.trange(fixed_up_to + 1, 365 * 3):
+        outs = full_quiz(("daily", i))
         with open(path(i), "w") as f:
-            outs = full_quiz(("daily", i))
             json.dump(outs, f)
 
 
@@ -292,12 +114,6 @@ def discordify_question(question):
 
 def discordify(quiz):
     return "\n\n".join(discordify_question(q) for q in quiz)
-
-
-def type_ban_categorize(typ):
-    if typ in QUIZ_REGION_TYPES_INTERNATIONAL:
-        return "international"
-    return typ
 
 
 renamed = {
@@ -366,6 +182,6 @@ renamed = {
     "higher % change in population from 2010 to 2020": "population_change_2010",
     "higher % change in population-weighted density (r=1km) from 2010 to 2020": "ad_1_change_2010",
     "higher % of adults with smoke": "CSMOKING_cdc_2",
-    '% of people who are gay and cohabiting with a partner/spouse': 'sors_cohabiting_partnered_gay',
-    'increase in racial homogeneity from 2010 to 2020': 'homogeneity_250_diff_2010'
+    "% of people who are gay and cohabiting with a partner/spouse": "sors_cohabiting_partnered_gay",
+    "increase in racial homogeneity from 2010 to 2020": "homogeneity_250_diff_2010",
 }

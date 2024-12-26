@@ -7,8 +7,8 @@ import torch
 import tqdm.auto as tqdm
 from permacache import permacache, stable_hash
 
-from urbanstats.games.quiz import difficulty_multiplier
 from urbanstats.games.quiz_regions import get_quiz_stats
+from urbanstats.statistics.output_statistics_metadata import get_statistic_categories
 from urbanstats.universe.universe_list import (
     default_universes,
     universe_by_universe_type,
@@ -79,6 +79,38 @@ def universe_overlap_mask(qt):
             for b in non_default_non_continent_universes
         ]
     )
+
+
+difficulties = {
+    "education": 0.5,
+    "election": 3,
+    "feature": 1.5,
+    "generation": 2,
+    "housing": 1.5,
+    "2010": 1.5,
+    "2000": 1.5,
+    "health": 1.5,
+    "climate": 1.5,
+    "relationships": 0.5,
+    "income": 0.6,
+    "main": 0.25,
+    "misc": 2,
+    "national_origin": 1.5,
+    "race": 0.75,
+    "transportation": 3,
+    "industry": 2,
+    "occupation": 2,
+    "weather": 0.3,
+    "topography": 1,
+    "other_densities": 0.25,
+}
+
+
+def difficulty_multiplier(stat_column_original):
+    raw_diff = difficulties[get_statistic_categories()[stat_column_original]]
+    if "mean_high_temp" in stat_column_original:
+        raw_diff = raw_diff * 0.25
+    return raw_diff
 
 
 def compute_difficulty_multipliers(qt):

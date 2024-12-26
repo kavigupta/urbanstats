@@ -61,6 +61,8 @@ def sample_quiz(seed):
             qqp.all_geographies[q.geography_index_a],
             qqp.all_geographies[q.geography_index_b],
         )
+        if rng.rand() < 0.5:
+            a, b = b, a
         s = qqp.all_stats[q.stat_indices]
         stat_a, stat_b = data[
             [q.geography_index_a, q.geography_index_b], q.stat_indices
