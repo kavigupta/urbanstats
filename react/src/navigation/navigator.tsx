@@ -18,7 +18,7 @@ import { getVector } from '../page_template/settings-vector'
 import { StatGroupSettings } from '../page_template/statistic-settings'
 import { StatName, StatPath } from '../page_template/statistic-tree'
 import { getDailyOffsetNumber, getRetrostatOffsetNumber } from '../quiz/dates'
-import { CustomQuizContent, JuxtaQuestionJSON, loadJuxta, loadRetro, QuizDescriptor, QuizQuestion, RetroQuestionJSON } from '../quiz/quiz'
+import { addFriendFromLink, CustomQuizContent, JuxtaQuestionJSON, loadJuxta, loadRetro, QuizDescriptor, QuizQuestion, RetroQuestionJSON } from '../quiz/quiz'
 import { defaultArticleUniverse, defaultComparisonUniverse } from '../universe'
 import { Article, IDataList } from '../utils/protos'
 import { followSymlink, followSymlinks } from '../utils/symlinks'
@@ -82,36 +82,25 @@ const randomSchemaForParams = z.object({
     us_only: z.union([z.literal('true').transform(() => true), z.literal('false').transform(() => false), z.undefined().transform(() => false)]),
 })
 
-const quizSchemaWithoutFriends = z.union([
-    z.object({
-        mode: z.union([z.undefined(), z.literal('retro')]),
-        date: z.optional(z.coerce.number().int()),
-        quizContent: z.optional(z.undefined()),
-    }),
-    z.object({
-        mode: z.literal('custom'),
-        date: z.optional(z.undefined()),
-        quizContent: z.string(),
-    }),
-])
-
 // Should either have all or none friends parameters
-const quizSchema = z.union([
-    z.intersection(
-        quizSchemaWithoutFriends,
+const quizSchema = z.intersection(
+    z.union([
         z.object({
-            friendName: z.optional(z.undefined()),
-            friendId: z.optional(z.undefined()),
+            mode: z.union([z.undefined(), z.literal('retro')]),
+            date: z.optional(z.coerce.number().int()),
+            quizContent: z.optional(z.undefined()),
         }),
-    ),
-    z.intersection(
-        quizSchemaWithoutFriends,
         z.object({
-            friendName: z.string(),
-            friendId: z.string(),
+            mode: z.literal('custom'),
+            date: z.optional(z.undefined()),
+            quizContent: z.string(),
         }),
-    ),
-])
+    ]),
+    z.object({
+        friendName: z.optional(z.string()),
+        friendId: z.optional(z.string()),
+    }),
+)
 
 const mapperSchema = z.object({
     settings: z.optional(z.string()),
@@ -475,7 +464,11 @@ async function loadPageDescriptor(newDescriptor: PageDescriptor, settings: Setti
                     todayName,
                 },
                 newPageDescriptor: newDescriptor,
-                effects: () => undefined,
+                effects: () => {
+                    if (newDescriptor.friendId !== undefined && newDescriptor.friendName !== undefined) {
+                        void addFriendFromLink(newDescriptor.friendId, newDescriptor.friendName.trim())
+                    }
+                },
             }
         case 'mapper':
             return {

@@ -261,3 +261,21 @@ function createAndStoreId(key: string): string {
     }
     return localStorage.getItem(key)!
 }
+
+export async function addFriendFromLink(friendID: string, friendName: string): Promise<void> {
+    const result = await QuizLocalStorage.shared.addFriend(friendID, friendName)
+    if (result === undefined) {
+        alert(`Friend added: ${friendName} !`)
+    }
+    else {
+        if (result.problemDomain === 'friendName') {
+            const newFriendName = prompt(`Could not add friend: ${result.errorMessage}\n\nPlease correct the friend name:`, friendName)
+            if (newFriendName !== null) {
+                await addFriendFromLink(friendID, newFriendName.trim())
+            }
+        }
+        else {
+            alert(`Could not add friend: ${result.errorMessage}`)
+        }
+    }
+}
