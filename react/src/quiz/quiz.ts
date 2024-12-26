@@ -210,6 +210,41 @@ Are you sure you want to merge them? (The lowest score will be used)`)) {
             alert(`Could not parse file. Error: ${error}`)
         }
     }
+
+    async addFriend(friendID: string, friendName: string): Promise<undefined | { errorMessage: string, problemDomain: 'friendID' | 'friendName' | 'other' }> {
+        const user = this.uniquePersistentId.value
+        const secureID = this.uniqueSecureId.value
+        if (friendID === '') {
+            return { errorMessage: 'Friend ID cannot be empty', problemDomain: 'friendID' }
+        }
+        if (friendID === user) {
+            return { errorMessage: 'Friend ID cannot be your own ID', problemDomain: 'friendID' }
+        }
+        if (this.friends.value.map(x => x[1]).includes(friendID)) {
+            const friendNameDup = this.friends.value.find(x => x[1] === friendID)![0]
+            return { errorMessage: `Friend ID ${friendID} already exists as ${friendNameDup}`, problemDomain: 'friendID' }
+        }
+        if (friendName === '') {
+            return { errorMessage: 'Friend name cannot be empty', problemDomain: 'friendName' }
+        }
+        if (this.friends.value.map(x => x[0]).includes(friendName)) {
+            return { errorMessage: 'Friend name already exists', problemDomain: 'friendName' }
+        }
+        try {
+            await fetch(`${endpoint}/juxtastat/friend_request`, {
+                method: 'POST',
+                body: JSON.stringify({ user, secureID, requestee: friendID }),
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            })
+            this.friends.value = [...this.friends.value, [friendName, friendID]]
+            return undefined
+        }
+        catch {
+            return { errorMessage: 'Network Error', problemDomain: 'other' }
+        }
+    }
 }
 
 function createAndStoreId(key: string): string {
@@ -225,4 +260,22 @@ function createAndStoreId(key: string): string {
         localStorage.setItem(key, randomHex)
     }
     return localStorage.getItem(key)!
+}
+
+export async function addFriendFromLink(friendID: string, friendName: string): Promise<void> {
+    const result = await QuizLocalStorage.shared.addFriend(friendID, friendName)
+    if (result === undefined) {
+        alert(`Friend added: ${friendName} !`)
+    }
+    else {
+        if (result.problemDomain === 'friendName') {
+            const newFriendName = prompt(`Could not add friend: ${result.errorMessage}\n\nPlease correct the friend name:`, friendName)
+            if (newFriendName !== null) {
+                await addFriendFromLink(friendID, newFriendName.trim())
+            }
+        }
+        else {
+            alert(`Could not add friend: ${result.errorMessage}`)
+        }
+    }
 }
