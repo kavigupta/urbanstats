@@ -82,11 +82,36 @@ const randomSchemaForParams = z.object({
     us_only: z.union([z.literal('true').transform(() => true), z.literal('false').transform(() => false), z.undefined().transform(() => false)]),
 })
 
-const quizSchema = z.object({
-    mode: z.union([z.undefined(), z.literal('retro'), z.literal('custom')]),
-    date: z.optional(z.coerce.number().int()),
-    quizContent: z.optional(z.string()),
-})
+const quizSchemaWithoutFriends = z.union([
+    z.object({
+        mode: z.union([z.undefined(), z.literal('retro')]),
+        date: z.optional(z.coerce.number().int()),
+        quizContent: z.optional(z.undefined()),
+    }),
+    z.object({
+        mode: z.literal('custom'),
+        date: z.optional(z.undefined()),
+        quizContent: z.string(),
+    }),
+])
+
+// Should either have all or none friends parameters
+const quizSchema = z.union([
+    z.intersection(
+        quizSchemaWithoutFriends,
+        z.object({
+            friendName: z.optional(z.undefined()),
+            friendId: z.optional(z.undefined()),
+        }),
+    ),
+    z.intersection(
+        quizSchemaWithoutFriends,
+        z.object({
+            friendName: z.string(),
+            friendId: z.string(),
+        }),
+    ),
+])
 
 const mapperSchema = z.object({
     settings: z.optional(z.string()),
@@ -247,6 +272,8 @@ export function urlFromPageDescriptor(pageDescriptor: ExceptionalPageDescriptor)
                 mode: pageDescriptor.mode,
                 date: pageDescriptor.date?.toString(),
                 quizContent: pageDescriptor.quizContent,
+                friendName: pageDescriptor.friendName,
+                friendId: pageDescriptor.friendId,
             }).flatMap(([key, value]) => value !== undefined ? [[key, value]] : []))
             if (hashParams.size > 0) {
                 quizResult.hash = `#${hashParams.toString()}`
@@ -416,7 +443,7 @@ async function loadPageDescriptor(newDescriptor: PageDescriptor, settings: Setti
             let todayName: string
             switch (newDescriptor.mode) {
                 case 'custom':
-                    const custom = JSON.parse(base64Gunzip(newDescriptor.quizContent ?? '')) as CustomQuizContent
+                    const custom = JSON.parse(base64Gunzip(newDescriptor.quizContent)) as CustomQuizContent
                     quizDescriptor = {
                         kind: 'custom',
                         name: custom.name,
