@@ -1,4 +1,5 @@
 import json
+from dataclasses import dataclass
 
 import numpy as np
 from permacache import stable_hash
@@ -53,3 +54,21 @@ def output_typescript(data, file, data_type="const"):
         file.write(f"export default {content} as const")
     else:
         file.write(f"const value: {data_type} = {content}\nexport default value")
+
+
+@dataclass
+class DiscreteDistribution:
+    cumulative_dist: np.ndarray
+
+    def __post_init__(self):
+        assert np.allclose(self.cumulative_dist[-1], 1)
+
+    @classmethod
+    def of(cls, weights):
+        pcumu = np.cumsum(weights)
+        pcumu = pcumu / pcumu[-1]
+        return cls(pcumu)
+
+    def sample(self, rng, *args):
+        r = rng.rand(*args)
+        return np.searchsorted(self.cumulative_dist, r, side="left")
