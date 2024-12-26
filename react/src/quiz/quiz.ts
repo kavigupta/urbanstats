@@ -1,10 +1,9 @@
 import { saveAs } from 'file-saver'
+import { useEffect, useState } from 'react'
 import { z } from 'zod'
 
 import { StatPath } from '../page_template/statistic-tree'
 import { cancelled, uploadFile } from '../utils/upload'
-
-import { uniquePersistentId, uniqueSecureId } from './statistics'
 
 export type QuizDescriptor = { kind: 'juxtastat', name: number } | { kind: 'retrostat', name: string } | { kind: 'custom', name: string }
 
@@ -62,7 +61,7 @@ export const quizHistorySchema = z.record(
 
 export type QuizHistory = z.infer<typeof quizHistorySchema>
 
-// list of [string, string] pairs
+// list of [name, id] pairs
 export const quizFriends = z.array(z.tuple([z.string(), z.string()]))
 
 export type QuizFriends = z.infer<typeof quizFriends>
@@ -77,87 +76,153 @@ export const quizPersonaSchema = z.object({
 
 export type QuizPersona = z.infer<typeof quizPersonaSchema>
 
-export function exportQuizPersona(): void {
-    const exported: QuizPersona = {
-        date_exported: new Date(),
-        persistent_id: uniquePersistentId(),
-        secure_id: uniqueSecureId(),
-        quiz_history: loadQuizHistory(),
-        quiz_friends: loadQuizFriends(),
+class StoredProperty<T> {
+    private _value: T
+    private observers = new Set<() => void>()
+
+    constructor(readonly localStorageKey: string, load: (storageValue: string | null) => T, private readonly store: (value: T) => string) {
+        this._value = load(localStorage.getItem(localStorageKey))
     }
-    const data = JSON.stringify(exported, null, 2)
-    saveAs(new Blob([data], { type: 'application/json' }), `urbanstats_quiz_${exported.persistent_id}.json`)
+
+    get value(): T {
+        return this._value
+    }
+
+    set value(newValue: T) {
+        this._value = newValue
+        localStorage.setItem(this.localStorageKey, this.store(newValue))
+        this.observers.forEach((observer) => { observer() })
+    }
+
+    /* eslint-disable react-hooks/rules-of-hooks -- Custom hook method */
+    use(): T {
+        const [, setCounter] = useState(0)
+        useEffect(() => {
+            const observer = (): void => {
+                setCounter(counter => counter + 1)
+            }
+            this.observers.add(observer)
+            return () => {
+                this.observers.delete(observer)
+            }
+        }, [])
+        return this.value
+    }
+    /* eslint-enable react-hooks/rules-of-hooks */
 }
 
-export async function importQuizPersona(): Promise<void> {
-    const file = await uploadFile('.json')
-    if (file === cancelled) {
-        return
+export class QuizLocalStorage {
+    private constructor() {
+        // Private constructor
     }
 
-    try {
-        const text = await file.text()
-        const persona = quizPersonaSchema.parse(JSON.parse(text))
+    static shared = new QuizLocalStorage()
 
-        const currentHistory = loadQuizHistory()
-        let newHistory: QuizHistory
+    readonly history = new StoredProperty<QuizHistory>(
+        'quiz_history',
+        (storedValue) => {
+            const history = JSON.parse(storedValue ?? '{}') as QuizHistory
 
-        const conflicts = Object.keys(persona.quiz_history)
-            .filter(key =>
-                key in currentHistory
-                && JSON.stringify(persona.quiz_history[key]) !== JSON.stringify(currentHistory[key]))
-
-        if (conflicts.length > 0) {
-            if (confirm(`The following quiz results exist both locally and in the uploaded file, and are different:
-
-${
-                conflicts.map(key => `• ${key.startsWith('W') ? 'Retrostat' : 'Juxtastat'} ${key}`).join('\n')
+            // set 42's correct_pattern's 0th element to true
+            if ('42' in history) {
+                if ('correct_pattern' in history['42']) {
+                    if (history['42'].correct_pattern.length > 0) {
+                        history['42'].correct_pattern[0] = true
+                    }
                 }
+            }
+            return history
+        },
+        value => JSON.stringify(value),
+    )
+
+    readonly friends = new StoredProperty<QuizFriends>(
+        'quiz_friends',
+        (storedValue) => {
+            return JSON.parse(storedValue ?? '[]') as QuizFriends
+        },
+        value => JSON.stringify(value),
+    )
+
+    readonly uniquePersistentId = new StoredProperty<string>('persistent_id', () => createAndStoreId('persistent_id'), value => value)
+
+    readonly uniqueSecureId = new StoredProperty<string>('secure_id', () => createAndStoreId('secure_id'), value => value)
+
+    exportQuizPersona(): void {
+        const exported: QuizPersona = {
+            date_exported: new Date(),
+            persistent_id: this.uniquePersistentId.value,
+            secure_id: this.uniqueSecureId.value,
+            quiz_history: this.history.value,
+            quiz_friends: this.friends.value,
+        }
+        const data = JSON.stringify(exported, null, 2)
+        saveAs(new Blob([data], { type: 'application/json' }), `urbanstats_quiz_${exported.persistent_id}.json`)
+    }
+
+    async importQuizPersona(): Promise<void> {
+        const file = await uploadFile('.json')
+        if (file === cancelled) {
+            return
+        }
+
+        try {
+            const text = await file.text()
+            const persona = quizPersonaSchema.parse(JSON.parse(text))
+
+            const currentHistory = this.history.value
+            let newHistory: QuizHistory
+
+            const conflicts = Object.keys(persona.quiz_history)
+                .filter(key =>
+                    key in currentHistory
+                    && JSON.stringify(persona.quiz_history[key]) !== JSON.stringify(currentHistory[key]))
+
+            if (conflicts.length > 0) {
+                if (confirm(`The following quiz results exist both locally and in the uploaded file, and are different:
+
+${conflicts.map(key => `• ${key.startsWith('W') ? 'Retrostat' : 'Juxtastat'} ${key}`).join('\n')}
 
 Are you sure you want to merge them? (The lowest score will be used)`)) {
-                newHistory = {
-                    ...currentHistory, ...persona.quiz_history, ...Object.fromEntries(conflicts.map((key) => {
-                        const currentCorrect = currentHistory[key].correct_pattern.filter(value => value).length
-                        const importCorrect = persona.quiz_history[key].correct_pattern.filter(value => value).length
-                        return [key, importCorrect >= currentCorrect ? currentHistory[key] : persona.quiz_history[key]]
-                    })),
+                    newHistory = {
+                        ...currentHistory, ...persona.quiz_history, ...Object.fromEntries(conflicts.map((key) => {
+                            const currentCorrect = currentHistory[key].correct_pattern.filter(value => value).length
+                            const importCorrect = persona.quiz_history[key].correct_pattern.filter(value => value).length
+                            return [key, importCorrect >= currentCorrect ? currentHistory[key] : persona.quiz_history[key]]
+                        })),
+                    }
+                }
+                else {
+                    return
                 }
             }
             else {
-                return
+                // There is not a conflict
+                newHistory = { ...currentHistory, ...persona.quiz_history }
             }
-        }
-        else {
-            // There is not a conflict
-            newHistory = { ...currentHistory, ...persona.quiz_history }
-        }
 
-        localStorage.setItem('quiz_history', JSON.stringify(newHistory))
-        localStorage.setItem('quiz_friends', JSON.stringify(persona.quiz_friends))
-        localStorage.setItem('persistent_id', persona.persistent_id)
-        localStorage.setItem('secure_id', persona.secure_id)
-        // eslint-disable-next-line no-restricted-syntax -- Localstorage is not reactive
-        window.location.reload()
-    }
-    catch (error) {
-        alert(`Could not parse file. Error: ${error}`)
+            this.history.value = newHistory
+            this.friends.value = persona.quiz_friends
+            this.uniquePersistentId.value = persona.persistent_id
+            this.uniqueSecureId.value = persona.secure_id
+        }
+        catch (error) {
+            alert(`Could not parse file. Error: ${error}`)
+        }
     }
 }
 
-export function loadQuizHistory(): QuizHistory {
-    const history = JSON.parse(localStorage.getItem('quiz_history') ?? '{}') as QuizHistory
-
-    // set 42's correct_pattern's 0th element to true
-    if ('42' in history) {
-        if ('correct_pattern' in history['42']) {
-            if (history['42'].correct_pattern.length > 0) {
-                history['42'].correct_pattern[0] = true
-            }
+function createAndStoreId(key: string): string {
+    // (domain name, id stored in local storage)
+    // random 60 bit hex number
+    // (15 hex digits)
+    if (localStorage.getItem(key) === null) {
+        let randomHex = ''
+        for (let i = 0; i < 15; i++) {
+            randomHex += Math.floor(Math.random() * 16).toString(16)[0]
         }
+        // register
+        localStorage.setItem(key, randomHex)
     }
-    return history
-}
-
-export function loadQuizFriends(): QuizFriends {
-    return JSON.parse(localStorage.getItem('quiz_friends') ?? '[]') as QuizFriends
+    return localStorage.getItem(key)!
 }

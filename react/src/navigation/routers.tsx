@@ -13,7 +13,7 @@ import { useColors } from '../page_template/colors'
 import { PageTemplate } from '../page_template/template'
 
 import { InitialLoad, SubsequentLoad } from './loading'
-import { Navigator, PageData } from './navigator'
+import { Navigator, PageData, urlFromPageDescriptor } from './navigator'
 
 export function Router(): ReactNode {
     const navigator = useContext(Navigator.Context)
@@ -30,8 +30,24 @@ export function Router(): ReactNode {
             <input type="hidden" id="pageState_kind" value={pageState.kind} />
             <PageRouter pageData={pageState.current.data} />
             <SubsequentLoad />
+            <HighlightHash />
         </>
     )
+}
+
+function HighlightHash(): ReactNode {
+    const navigator = useContext(Navigator.Context)
+    const pageState = navigator.usePageState()
+    const hash = urlFromPageDescriptor(pageState.current.descriptor).hash
+    return hash !== ''
+        ? (
+                <style>
+                    {`${hash} {
+background-color: var(--highlight);
+}`}
+                </style>
+            )
+        : null
 }
 
 function ErrorScreen({ data }: { data: Extract<PageData, { kind: 'error' }> }): ReactNode {

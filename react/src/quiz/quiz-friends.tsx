@@ -1,12 +1,12 @@
-import React, { ReactNode, useEffect, useState } from 'react'
+import React, { CSSProperties, ReactNode, useEffect, useState } from 'react'
+import { GridLoader, MoonLoader } from 'react-spinners'
 
 import { EditableString } from '../components/table'
 import { useColors, useJuxtastatColors } from '../page_template/colors'
 import { mixWithBackground } from '../utils/color'
 
-import { endpoint, QuizFriends, QuizKindWithStats } from './quiz'
+import { endpoint, QuizFriends, QuizKindWithStats, QuizLocalStorage } from './quiz'
 import { CorrectPattern } from './quiz-result'
-import { uniquePersistentId, uniqueSecureId } from './statistics'
 
 interface FriendScore { name?: string, corrects: CorrectPattern | null, friends: boolean, idError?: string }
 
@@ -17,34 +17,48 @@ export function QuizFriendsPanel(props: {
     date: number
     myCorrects: CorrectPattern
 }): ReactNode {
+    const colors = useColors()
+
     const [friendScores, setFriendScores] = useState([] as FriendScore[])
+    const [isLoading, setIsLoading] = useState(false)
+    const [error, setError] = useState<string | undefined>(undefined)
+
+    const user = QuizLocalStorage.shared.uniquePersistentId.use()
+    const secureID = QuizLocalStorage.shared.uniqueSecureId.use()
 
     useEffect(() => {
         void (async () => {
-            // map name to id for quizFriends
-            const quizIDtoName = Object.fromEntries(props.quizFriends.map(x => [x[1], x[0]]))
-            const requesters = props.quizFriends.map(x => x[1])
-            const user = uniquePersistentId()
-            const secureID = uniqueSecureId()
-            const friendScoresPromise = fetch(`${endpoint}/juxtastat/todays_score_for`, {
-                method: 'POST',
-                body: JSON.stringify({ user, secureID, date: props.date, requesters, quiz_kind: props.quizKind }),
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-            }).then(x => x.json())
-            const friendScoresResponse = (await friendScoresPromise) as { results: { corrects: CorrectPattern | null, friends: boolean, idError?: string }[] } | { error: string }
-            if ('error' in friendScoresResponse) {
+            setIsLoading(true)
+            setError(undefined)
+            try {
+                // map name to id for quizFriends
+                const quizIDtoName = Object.fromEntries(props.quizFriends.map(x => [x[1], x[0]]))
+                const requesters = props.quizFriends.map(x => x[1])
+                const friendScoresResponse = await fetch(`${endpoint}/juxtastat/todays_score_for`, {
+                    method: 'POST',
+                    body: JSON.stringify({ user, secureID, date: props.date, requesters, quiz_kind: props.quizKind }),
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                }).then(x => x.json()) as { results: { corrects: CorrectPattern | null, friends: boolean, idError?: string }[] } | { error: string }
+                if ('error' in friendScoresResponse) {
                 // probably some kind of auth error. Handled elsewhere
-                return
+                    return
+                }
+                setFriendScores(friendScoresResponse.results.map(
+                    (x, idx) => ({ name: quizIDtoName[requesters[idx]], corrects: x.corrects, friends: x.friends, idError: x.idError }),
+                ))
             }
-            setFriendScores(friendScoresResponse.results.map(
-                (x, idx) => ({ name: quizIDtoName[requesters[idx]], corrects: x.corrects, friends: x.friends, idError: x.idError }),
-            ))
+            catch {
+                setError('Network Error')
+            }
+            finally {
+                setIsLoading(false)
+            }
         })()
-    }, [props.date, props.quizFriends, props.quizKind])
+    }, [props.date, props.quizFriends, props.quizKind, user, secureID])
 
-    return (
+    const content = (
         <div>
             <div style={{ margin: 'auto', width: '100%' }}>
                 <div className="quiz_summary">Friends</div>
@@ -63,18 +77,16 @@ export function QuizFriendsPanel(props: {
                             key={idx}
                             index={idx}
                             friendScore={friendScore}
-                            removeFriend={() => {
-                                void (async () => {
-                                    await fetch(`${endpoint}/juxtastat/unfriend`, {
-                                        method: 'POST',
-                                        body: JSON.stringify({ user: uniquePersistentId(), secureID: uniqueSecureId(), requestee: props.quizFriends[idx][1] }),
-                                        headers: {
-                                            'Content-Type': 'application/json',
-                                        },
-                                    })
-                                    const newQuizFriends = props.quizFriends.filter(x => x[0] !== friendScore.name)
-                                    props.setQuizFriends(newQuizFriends)
-                                })()
+                            removeFriend={async () => {
+                                await fetch(`${endpoint}/juxtastat/unfriend`, {
+                                    method: 'POST',
+                                    body: JSON.stringify({ user, secureID, requestee: props.quizFriends[idx][1] }),
+                                    headers: {
+                                        'Content-Type': 'application/json',
+                                    },
+                                })
+                                const newQuizFriends = props.quizFriends.filter(x => x[0] !== friendScore.name)
+                                props.setQuizFriends(newQuizFriends)
                             }}
                             quizFriends={props.quizFriends}
                             setQuizFriends={props.setQuizFriends}
@@ -87,6 +99,22 @@ export function QuizFriendsPanel(props: {
             <AddFriend quizFriends={props.quizFriends} setQuizFriends={props.setQuizFriends} />
         </div>
     )
+
+    const spinnerSize = '78px'
+    const spinnerStyle: CSSProperties = {
+        position: 'absolute',
+        left: `calc(50% - ${spinnerSize} / 2)`,
+        top: `calc(50% - ${spinnerSize} / 2)`,
+    }
+
+    return (
+        <div style={{ position: 'relative' }}>
+            <div style={{ opacity: isLoading ? 0.5 : 1, pointerEvents: isLoading ? 'none' : undefined }}>
+                <WithError content={content} error={error} />
+            </div>
+            { isLoading ? <MoonLoader size={spinnerSize} color={colors.textMain} cssOverride={spinnerStyle} /> : null}
+        </div>
+    )
 }
 
 const scoreCorrectHeight = '2em'
@@ -95,11 +123,14 @@ const addFriendHeight = '1.5em'
 function FriendScore(props: {
     index: number
     friendScore: FriendScore
-    removeFriend?: () => void
+    removeFriend?: () => Promise<void>
     quizFriends: QuizFriends
     setQuizFriends: (x: QuizFriends) => void
 }): ReactNode {
+    const colors = useColors()
+
     const [error, setError] = useState<string | undefined>(undefined)
+    const [loading, setLoading] = useState(false)
 
     const renameFriend = props.removeFriend === undefined
         ? undefined
@@ -118,6 +149,21 @@ function FriendScore(props: {
                 setError(undefined)
             }
 
+    const removeFriend = props.removeFriend === undefined
+        ? undefined
+        : async (): Promise<void> => {
+            setLoading(true)
+            try {
+                await props.removeFriend!()
+            }
+            catch {
+                setError('Network Error')
+            }
+            finally {
+                setLoading(false)
+            }
+        }
+
     const row = (
         <div
             style={{ display: 'flex', flexDirection: 'row', height: scoreCorrectHeight, alignItems: 'center' }}
@@ -132,12 +178,16 @@ function FriendScore(props: {
             <div style={{ width: '25%', display: 'flex', height: addFriendHeight }}>
                 {props.removeFriend !== undefined
                 && (
-                    <button
-                        onClick={props.removeFriend}
-                        style={{ marginLeft: '1em' }}
-                    >
-                        Remove
-                    </button>
+                    <>
+                        <button
+                            onClick={removeFriend}
+                            style={{ marginLeft: '1em' }}
+                            disabled={loading}
+                        >
+                            Remove
+                        </button>
+                        {loading ? <GridLoader color={colors.textMain} size="4px" cssOverride={{ marginLeft: '10px' }} /> : null}
+                    </>
                 )}
             </div>
         </div>
@@ -180,7 +230,13 @@ function FriendScoreCorrects(props: FriendScore): ReactNode {
     }
     if (!props.friends) {
         return (
-            <div style={greyedOut}>Pending Friend Request</div>
+            <div style={greyedOut}>
+                Ask&nbsp;
+                <b>
+                    {props.name}
+                </b>
+                &nbsp;to add you
+            </div>
         )
     }
     if (props.corrects === null) {
@@ -219,13 +275,18 @@ function AddFriend(props: {
     quizFriends: QuizFriends
     setQuizFriends: (x: QuizFriends) => void
 }): ReactNode {
+    const colors = useColors()
+
     const [friendNameField, setFriendNameField] = useState('')
     const [friendIDField, setFriendIDField] = useState('')
     const [error, setError] = useState<string | undefined>(undefined)
+    const [loading, setLoading] = useState(false)
 
     const addFriend = async (): Promise<void> => {
         const friendID = friendIDField.trim()
         const friendName = friendNameField.trim()
+        const user = QuizLocalStorage.shared.uniquePersistentId.value
+        const secureID = QuizLocalStorage.shared.uniqueSecureId.value
         if (friendName === '') {
             setError('Friend name cannot be empty')
             return
@@ -234,7 +295,7 @@ function AddFriend(props: {
             setError('Friend ID cannot be empty')
             return
         }
-        if (friendID === uniquePersistentId()) {
+        if (friendID === user) {
             setError('Friend ID cannot be your own ID')
             return
         }
@@ -247,19 +308,26 @@ function AddFriend(props: {
             setError(`Friend ID ${friendID} already exists as ${friendNameDup}`)
             return
         }
-        const user = uniquePersistentId()
-        const secureID = uniqueSecureId()
-        await fetch(`${endpoint}/juxtastat/friend_request`, {
-            method: 'POST',
-            body: JSON.stringify({ user, secureID, requestee: friendID }),
-            headers: {
-                'Content-Type': 'application/json',
-            },
-        })
-        props.setQuizFriends([...props.quizFriends, [friendName, friendID]])
-        setError(undefined)
-        setFriendNameField('')
-        setFriendIDField('')
+        try {
+            setLoading(true)
+            await fetch(`${endpoint}/juxtastat/friend_request`, {
+                method: 'POST',
+                body: JSON.stringify({ user, secureID, requestee: friendID }),
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            })
+            props.setQuizFriends([...props.quizFriends, [friendName, friendID]])
+            setError(undefined)
+            setFriendNameField('')
+            setFriendIDField('')
+        }
+        catch {
+            setError('Network error')
+        }
+        finally {
+            setLoading(false)
+        }
     }
 
     const form = (
@@ -273,6 +341,7 @@ function AddFriend(props: {
                     value={friendNameField}
                     style={{ width: '100%', height: '100%' }}
                     onChange={(e) => { setFriendNameField(e.target.value) }}
+                    disabled={loading}
                 />
             </div>
             <div
@@ -284,15 +353,18 @@ function AddFriend(props: {
                     value={friendIDField}
                     style={{ width: '100%', height: '100%' }}
                     onChange={(e) => { setFriendIDField(e.target.value) }}
+                    disabled={loading}
                 />
             </div>
             <div style={{ width: '25%', display: 'flex', height: addFriendHeight }}>
                 <button
                     onClick={addFriend}
                     style={{ marginLeft: '1em', height: '100%' }}
+                    disabled={loading}
                 >
                     Add
                 </button>
+                {loading ? <GridLoader color={colors.textMain} size="4px" cssOverride={{ marginLeft: '10px' }} /> : null}
             </div>
         </div>
     )

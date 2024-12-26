@@ -73,7 +73,7 @@ button, select {
     border: 1px solid var(--ordinal-text-color);
 }
 
-button:hover {
+button:hover:not(:disabled) {
     background-color: var(--slightly-different-background-focused);
 }
 
@@ -114,4 +114,5 @@ input[type=text] {
     border-radius: 5px;
     color: var(--text-main);
     border: 1px solid var(--ordinal-text-color);
+    font-family: 'Jost', 'Arial', sans-serif;
 }

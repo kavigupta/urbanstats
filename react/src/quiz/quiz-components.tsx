@@ -5,8 +5,7 @@ import '../components/quiz.css'
 import { useColors, useJuxtastatColors } from '../page_template/colors'
 import { useHeaderTextClass } from '../utils/responsive'
 
-import { exportQuizPersona, importQuizPersona, nameOfQuizKind, QuizHistory, QuizKind } from './quiz'
-import { uniquePersistentId } from './statistics'
+import { nameOfQuizKind, QuizHistory, QuizKind, QuizLocalStorage } from './quiz'
 
 export function Header({ quiz }: { quiz: { kind: QuizKind, name: string | number } }): ReactNode {
     let text = nameOfQuizKind(quiz.kind)
@@ -60,10 +59,11 @@ export function Help(props: { quizKind: QuizKind }): ReactNode {
 }
 
 export function UserId(): ReactNode {
+    const user = QuizLocalStorage.shared.uniquePersistentId.use()
     return (
         <div>
             {'Your user id is '}
-            <span className="juxtastat-user-id">{uniquePersistentId()}</span>
+            <span className="juxtastat-user-id">{user}</span>
         </div>
     )
 }
@@ -71,11 +71,11 @@ export function UserId(): ReactNode {
 export function ExportImport(): ReactNode {
     return (
         <div style={{ marginTop: '5px' }}>
-            <button onClick={() => { exportQuizPersona() }}>
+            <button onClick={() => { QuizLocalStorage.shared.exportQuizPersona() }}>
                 Export Quiz History
             </button>
             {' '}
-            <button onClick={() => { void importQuizPersona() }}>
+            <button onClick={() => { void QuizLocalStorage.shared.importQuizPersona() }}>
                 Import Quiz History
             </button>
         </div>
