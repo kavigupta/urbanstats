@@ -1,5 +1,6 @@
 import os
 import shutil
+import sys
 
 import numpy as np
 from PIL import Image
@@ -23,6 +24,7 @@ def plurality_color(arr):
     arr = arr.astype(np.uint32) << np.arange(24, -1, -8)
     arr = arr.sum(-1)
     arr = arr.flatten()
+    # pylint: disable=unpacking-non-sequence
     unique, counts = np.unique(arr, return_counts=True)
     plur = unique[counts.argmax()]
     return np.array([(plur >> x) & 0xFF for x in range(24, -1, -8)])
@@ -70,21 +72,20 @@ def test_paths(reference, actual, delta_path, changed_path):
     ref = np.array(Image.open(reference))
     act = np.array(Image.open(actual))
     diff, delta = compute_delta_image(ref, act)
-    if diff:
-        os.makedirs(os.path.dirname(delta_path), exist_ok=True)
-        Image.fromarray(delta).save(delta_path)
-        print(f"{reference} and {actual} are different")
-        os.makedirs(os.path.dirname(changed_path), exist_ok=True)
-        shutil.copy(actual, changed_path)
-        return False
-    else:
+    if not diff:
         return True
+    os.makedirs(os.path.dirname(delta_path), exist_ok=True)
+    Image.fromarray(delta).save(delta_path)
+    print(f"{reference} and {actual} are different")
+    os.makedirs(os.path.dirname(changed_path), exist_ok=True)
+    shutil.copy(actual, changed_path)
+    return False
 
 
 def test_all_same(reference, actual, delta, changed):
     shutil.rmtree(delta, ignore_errors=True)
     errors = 0
-    for root, dirs, files in os.walk(actual):
+    for root, _, files in os.walk(actual):
         for file in files:
             actual_path = os.path.join(root, file)
             relative = os.path.relpath(actual_path, actual)
@@ -95,7 +96,7 @@ def test_all_same(reference, actual, delta, changed):
                 print(f"Expected reference file {reference_path} not found")
                 os.makedirs(os.path.dirname(changed_path), exist_ok=True)
                 shutil.copy(actual_path, changed_path)
-    for root, dirs, files in os.walk(reference):
+    for root, _, files in os.walk(reference):
         for file in files:
             reference_path = os.path.join(root, file)
             relative = os.path.relpath(reference_path, reference)
@@ -111,7 +112,7 @@ def test_all_same(reference, actual, delta, changed):
             )
     if errors:
         print(f"{errors} errors found")
-        exit(1)
+        sys.exit(1)
     else:
         print("All tests passed")
 
@@ -134,5 +135,5 @@ if __name__ == "__main__":
             reference="reference_test_screenshots",
             actual="react/screenshots",
             delta="react/delta",
-            changed=f"react/changed_screenshots",
+            changed="react/changed_screenshots",
         )
