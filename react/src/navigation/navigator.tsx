@@ -18,7 +18,7 @@ import { getVector } from '../page_template/settings-vector'
 import { StatGroupSettings } from '../page_template/statistic-settings'
 import { StatName, StatPath } from '../page_template/statistic-tree'
 import { getDailyOffsetNumber, getRetrostatOffsetNumber } from '../quiz/dates'
-import { CustomQuizContent, JuxtaQuestionJSON, loadJuxta, loadRetro, QuizDescriptor, QuizQuestion, RetroQuestionJSON } from '../quiz/quiz'
+import { addFriendFromLink, CustomQuizContent, JuxtaQuestionJSON, loadJuxta, loadRetro, QuizDescriptor, QuizQuestion, RetroQuestionJSON } from '../quiz/quiz'
 import { defaultArticleUniverse, defaultComparisonUniverse } from '../universe'
 import { Article, IDataList } from '../utils/protos'
 import { followSymlink, followSymlinks } from '../utils/symlinks'
@@ -82,11 +82,25 @@ const randomSchemaForParams = z.object({
     us_only: z.union([z.literal('true').transform(() => true), z.literal('false').transform(() => false), z.undefined().transform(() => false)]),
 })
 
-const quizSchema = z.object({
-    mode: z.union([z.undefined(), z.literal('retro'), z.literal('custom')]),
-    date: z.optional(z.coerce.number().int()),
-    quizContent: z.optional(z.string()),
-})
+// Should either have all or none friends parameters
+const quizSchema = z.intersection(
+    z.union([
+        z.object({
+            mode: z.union([z.undefined(), z.literal('retro')]),
+            date: z.optional(z.coerce.number().int()),
+            quizContent: z.optional(z.undefined()),
+        }),
+        z.object({
+            mode: z.literal('custom'),
+            date: z.optional(z.undefined()),
+            quizContent: z.string(),
+        }),
+    ]),
+    z.object({
+        name: z.optional(z.string()),
+        id: z.optional(z.string()),
+    }),
+)
 
 const mapperSchema = z.object({
     settings: z.optional(z.string()),
@@ -247,6 +261,8 @@ export function urlFromPageDescriptor(pageDescriptor: ExceptionalPageDescriptor)
                 mode: pageDescriptor.mode,
                 date: pageDescriptor.date?.toString(),
                 quizContent: pageDescriptor.quizContent,
+                name: pageDescriptor.name,
+                id: pageDescriptor.id,
             }).flatMap(([key, value]) => value !== undefined ? [[key, value]] : []))
             if (hashParams.size > 0) {
                 quizResult.hash = `#${hashParams.toString()}`
@@ -416,7 +432,7 @@ async function loadPageDescriptor(newDescriptor: PageDescriptor, settings: Setti
             let todayName: string
             switch (newDescriptor.mode) {
                 case 'custom':
-                    const custom = JSON.parse(base64Gunzip(newDescriptor.quizContent ?? '')) as CustomQuizContent
+                    const custom = JSON.parse(base64Gunzip(newDescriptor.quizContent)) as CustomQuizContent
                     quizDescriptor = {
                         kind: 'custom',
                         name: custom.name,
@@ -447,8 +463,17 @@ async function loadPageDescriptor(newDescriptor: PageDescriptor, settings: Setti
                     parameters: urlFromPageDescriptor(newDescriptor).searchParams.toString(),
                     todayName,
                 },
-                newPageDescriptor: newDescriptor,
-                effects: () => undefined,
+                newPageDescriptor: {
+                    ...newDescriptor,
+                    // Remove friend stuff so it doesn't get triggered again
+                    id: undefined,
+                    name: undefined,
+                },
+                effects: () => {
+                    if (newDescriptor.id !== undefined && newDescriptor.name !== undefined) {
+                        void addFriendFromLink(newDescriptor.id, newDescriptor.name.trim())
+                    }
+                },
             }
         case 'mapper':
             return {

@@ -2,6 +2,7 @@ import React, { CSSProperties, ReactNode, useEffect, useState } from 'react'
 import { GridLoader, MoonLoader } from 'react-spinners'
 
 import { EditableString } from '../components/table'
+import { urlFromPageDescriptor } from '../navigation/navigator'
 import { useColors, useJuxtastatColors } from '../page_template/colors'
 import { mixWithBackground } from '../utils/color'
 
@@ -64,12 +65,7 @@ export function QuizFriendsPanel(props: {
                 <div className="quiz_summary">Friends</div>
             </div>
             <>
-                <FriendScore
-                    friendScore={{ name: 'You', corrects: props.myCorrects, friends: true }}
-                    index={-1}
-                    quizFriends={props.quizFriends}
-                    setQuizFriends={props.setQuizFriends}
-                />
+                <PlayerScore correctPattern={props.myCorrects} />
 
                 {
                     friendScores.map((friendScore, idx) => (
@@ -96,7 +92,7 @@ export function QuizFriendsPanel(props: {
                 }
             </>
             <div style={{ height: '1em' }} />
-            <AddFriend quizFriends={props.quizFriends} setQuizFriends={props.setQuizFriends} />
+            <AddFriend />
         </div>
     )
 
@@ -120,10 +116,50 @@ export function QuizFriendsPanel(props: {
 const scoreCorrectHeight = '2em'
 const addFriendHeight = '1.5em'
 
+function PlayerScore(props: { correctPattern: CorrectPattern }): ReactNode {
+    const copyFriendLink = async (): Promise<void> => {
+        const playerName = prompt('Enter your name:')
+
+        if (playerName === null) {
+            return
+        }
+
+        const hash = urlFromPageDescriptor({ kind: 'quiz', id: QuizLocalStorage.shared.uniquePersistentId.value, name: playerName }).hash
+        const url = `https://juxtastat.org/${hash}`
+
+        await navigator.clipboard.writeText(url)
+
+        alert('Link copied to clipboard!')
+    }
+
+    return (
+        <div
+            style={{ display: 'flex', flexDirection: 'row', height: scoreCorrectHeight, alignItems: 'center' }}
+            className="testing-friends-section"
+        >
+            <div style={{ width: '25%' }}>
+                You
+            </div>
+            <div style={{ width: '50%' }}>
+                <FriendScoreCorrects corrects={props.correctPattern} friends={true} />
+            </div>
+            <div style={{ width: '25%', display: 'flex', height: addFriendHeight }}>
+                <button
+                    onClick={copyFriendLink}
+                    style={{ marginLeft: '1em' }}
+                    data-test-id="friend-link-button"
+                >
+                    Copy Link
+                </button>
+            </div>
+        </div>
+    )
+}
+
 function FriendScore(props: {
     index: number
     friendScore: FriendScore
-    removeFriend?: () => Promise<void>
+    removeFriend: () => Promise<void>
     quizFriends: QuizFriends
     setQuizFriends: (x: QuizFriends) => void
 }): ReactNode {
@@ -132,37 +168,33 @@ function FriendScore(props: {
     const [error, setError] = useState<string | undefined>(undefined)
     const [loading, setLoading] = useState(false)
 
-    const renameFriend = props.removeFriend === undefined
-        ? undefined
-        : (name: string): void => {
-                if (name === '') {
-                    setError('Friend name cannot be empty')
-                    return
-                }
-                if (props.quizFriends.map(x => x[0]).includes(name)) {
-                    setError('Friend name already exists')
-                    return
-                }
-                const newQuizFriends = [...props.quizFriends]
-                newQuizFriends[props.index] = [name, props.quizFriends[props.index][1]]
-                props.setQuizFriends(newQuizFriends)
-                setError(undefined)
-            }
-
-    const removeFriend = props.removeFriend === undefined
-        ? undefined
-        : async (): Promise<void> => {
-            setLoading(true)
-            try {
-                await props.removeFriend!()
-            }
-            catch {
-                setError('Network Error')
-            }
-            finally {
-                setLoading(false)
-            }
+    const renameFriend = (name: string): void => {
+        if (name === '') {
+            setError('Friend name cannot be empty')
+            return
         }
+        if (props.quizFriends.map(x => x[0]).includes(name)) {
+            setError('Friend name already exists')
+            return
+        }
+        const newQuizFriends = [...props.quizFriends]
+        newQuizFriends[props.index] = [name, props.quizFriends[props.index][1]]
+        props.setQuizFriends(newQuizFriends)
+        setError(undefined)
+    }
+
+    const removeFriend = async (): Promise<void> => {
+        setLoading(true)
+        try {
+            await props.removeFriend()
+        }
+        catch {
+            setError('Network Error')
+        }
+        finally {
+            setLoading(false)
+        }
+    }
 
     const row = (
         <div
@@ -170,44 +202,30 @@ function FriendScore(props: {
             className="testing-friends-section"
         >
             <div style={{ width: '25%' }}>
-                <FriendScoreName name={props.friendScore.name} renameFriend={renameFriend} />
+                <EditableString
+                    content={props.friendScore.name ?? 'Unknown'}
+                    onNewContent={renameFriend}
+                    style={{ width: '100%', height: '100%' }}
+                    inputMode="text"
+                />
             </div>
             <div style={{ width: '50%' }}>
                 <FriendScoreCorrects {...props.friendScore} />
             </div>
             <div style={{ width: '25%', display: 'flex', height: addFriendHeight }}>
-                {props.removeFriend !== undefined
-                && (
-                    <>
-                        <button
-                            onClick={removeFriend}
-                            style={{ marginLeft: '1em' }}
-                            disabled={loading}
-                        >
-                            Remove
-                        </button>
-                        {loading ? <GridLoader color={colors.textMain} size="4px" cssOverride={{ marginLeft: '10px' }} /> : null}
-                    </>
-                )}
+                <button
+                    onClick={removeFriend}
+                    style={{ marginLeft: '1em' }}
+                    disabled={loading}
+                >
+                    Remove
+                </button>
+                {loading ? <GridLoader color={colors.textMain} size="4px" cssOverride={{ marginLeft: '10px' }} /> : null}
+
             </div>
         </div>
     )
     return <WithError error={error} content={row} />
-}
-
-function FriendScoreName(props: { name?: string, renameFriend?: (name: string) => void }): ReactNode {
-    const name = props.name ?? 'Unknown'
-    if (props.renameFriend === undefined) {
-        return <div>{name}</div>
-    }
-    return (
-        <EditableString
-            content={name}
-            onNewContent={props.renameFriend}
-            style={{ width: '100%', height: '100%' }}
-            inputMode="text"
-        />
-    )
 }
 
 function FriendScoreCorrects(props: FriendScore): ReactNode {
@@ -271,10 +289,7 @@ function FriendScoreCorrects(props: FriendScore): ReactNode {
     )
 }
 
-function AddFriend(props: {
-    quizFriends: QuizFriends
-    setQuizFriends: (x: QuizFriends) => void
-}): ReactNode {
+function AddFriend(): ReactNode {
     const colors = useColors()
 
     const [friendNameField, setFriendNameField] = useState('')
@@ -285,48 +300,16 @@ function AddFriend(props: {
     const addFriend = async (): Promise<void> => {
         const friendID = friendIDField.trim()
         const friendName = friendNameField.trim()
-        const user = QuizLocalStorage.shared.uniquePersistentId.value
-        const secureID = QuizLocalStorage.shared.uniqueSecureId.value
-        if (friendName === '') {
-            setError('Friend name cannot be empty')
-            return
+        setLoading(true)
+        const result = await QuizLocalStorage.shared.addFriend(friendID, friendName)
+        setLoading(false)
+        if (result !== undefined) {
+            setError(result.errorMessage)
         }
-        if (friendID === '') {
-            setError('Friend ID cannot be empty')
-            return
-        }
-        if (friendID === user) {
-            setError('Friend ID cannot be your own ID')
-            return
-        }
-        if (props.quizFriends.map(x => x[0]).includes(friendName)) {
-            setError('Friend name already exists')
-            return
-        }
-        if (props.quizFriends.map(x => x[1]).includes(friendID)) {
-            const friendNameDup = props.quizFriends.find(x => x[1] === friendID)![0]
-            setError(`Friend ID ${friendID} already exists as ${friendNameDup}`)
-            return
-        }
-        try {
-            setLoading(true)
-            await fetch(`${endpoint}/juxtastat/friend_request`, {
-                method: 'POST',
-                body: JSON.stringify({ user, secureID, requestee: friendID }),
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-            })
-            props.setQuizFriends([...props.quizFriends, [friendName, friendID]])
+        else {
             setError(undefined)
             setFriendNameField('')
             setFriendIDField('')
-        }
-        catch {
-            setError('Network error')
-        }
-        finally {
-            setLoading(false)
         }
     }
 
