@@ -1,8 +1,10 @@
-import os
+import sqlite3
+import subprocess
+import tempfile
 
+from matplotlib import pyplot as plt
 import numpy as np
 import pandas as pd
-import requests
 
 from urbanstats.games.quiz import quiz_is_guaranteed_past
 
@@ -26,15 +28,27 @@ named_users = dict(
 )
 
 
-def get_full_statistics(*, after_problem, debug=False):
-    with open(os.path.expanduser("~/.juxtastat-persistent-token")) as f:
-        token = f.read().strip()
-    response = requests.post(
-        "https://persistent.urbanstats.org/juxtastat/get_full_database",
-        data=dict(token=token),
-        timeout=1000,
+def get_full_statistics_table():
+    tf = tempfile.mktemp(suffix=".sqlite3")
+    subprocess.check_call(
+        [
+            "scp",
+            "root@persistent.urbanstats.org:/root/urbanstats-persistent-data/db.sqlite3",
+            tf,
+        ]
     )
-    result = response.json()
+    conn = sqlite3.connect(tf)
+    c = conn.cursor()
+    c = c.execute(
+        """SELECT JuxtaStatUserDomain.user, domain, day, corrects, time
+            FROM JuxtaStatUserDomain, JuxtaStatIndividualStats
+            WHERE JuxtaStatUserDomain.user = JuxtaStatIndividualStats.user"""
+    )
+    return c.fetchall()
+
+
+def get_full_statistics(*, after_problem, debug=False):
+    result = get_full_statistics_table()
     result = pd.DataFrame(
         result, columns=["user_id", "host", "problem", "pattern", "time"]
     )
