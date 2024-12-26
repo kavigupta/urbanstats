@@ -96,7 +96,7 @@ export function QuizFriendsPanel(props: {
                 }
             </>
             <div style={{ height: '1em' }} />
-            <AddFriend quizFriends={props.quizFriends} setQuizFriends={props.setQuizFriends} />
+            <AddFriend />
         </div>
     )
 
@@ -271,10 +271,7 @@ function FriendScoreCorrects(props: FriendScore): ReactNode {
     )
 }
 
-function AddFriend(props: {
-    quizFriends: QuizFriends
-    setQuizFriends: (x: QuizFriends) => void
-}): ReactNode {
+function AddFriend(): ReactNode {
     const colors = useColors()
 
     const [friendNameField, setFriendNameField] = useState('')
@@ -285,48 +282,16 @@ function AddFriend(props: {
     const addFriend = async (): Promise<void> => {
         const friendID = friendIDField.trim()
         const friendName = friendNameField.trim()
-        const user = QuizLocalStorage.shared.uniquePersistentId.value
-        const secureID = QuizLocalStorage.shared.uniqueSecureId.value
-        if (friendName === '') {
-            setError('Friend name cannot be empty')
-            return
+        setLoading(true)
+        const result = await QuizLocalStorage.shared.addFriend(friendID, friendName)
+        setLoading(false)
+        if (result !== undefined) {
+            setError(result.errorMessage)
         }
-        if (friendID === '') {
-            setError('Friend ID cannot be empty')
-            return
-        }
-        if (friendID === user) {
-            setError('Friend ID cannot be your own ID')
-            return
-        }
-        if (props.quizFriends.map(x => x[0]).includes(friendName)) {
-            setError('Friend name already exists')
-            return
-        }
-        if (props.quizFriends.map(x => x[1]).includes(friendID)) {
-            const friendNameDup = props.quizFriends.find(x => x[1] === friendID)![0]
-            setError(`Friend ID ${friendID} already exists as ${friendNameDup}`)
-            return
-        }
-        try {
-            setLoading(true)
-            await fetch(`${endpoint}/juxtastat/friend_request`, {
-                method: 'POST',
-                body: JSON.stringify({ user, secureID, requestee: friendID }),
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-            })
-            props.setQuizFriends([...props.quizFriends, [friendName, friendID]])
+        else {
             setError(undefined)
             setFriendNameField('')
             setFriendIDField('')
-        }
-        catch {
-            setError('Network error')
-        }
-        finally {
-            setLoading(false)
         }
     }
 
