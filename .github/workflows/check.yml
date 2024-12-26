@@ -63,11 +63,11 @@ jobs:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/python_environment
       - name: Lint with pylint
-        run: python -m pylint --prefer-stubs=true urbanstats
+        run: python -m pylint --prefer-stubs=true urbanstats tests
       - name: Check black
         run: |
-          python -m isort urbanstats
-          python -m black urbanstats
+          python -m isort urbanstats tests
+          python -m black urbanstats tests
            # allow all directories. This is needed because git complains about git repositories outside the user directory
           git config --global --add safe.directory '*'
           # check if there are any changes
@@ -75,6 +75,12 @@ jobs:
           # this is needed because isort and black disagree on the formatting of some files, so we run both and check
           # if there's a difference
           bash -c '[ $(git status --porcelain --untracked-files=no | wc -c) -eq 0 ]  || (git status; git diff; exit 1)'
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/python_environment
+      - name: Test python code
+        run: python -m pytest tests
 
   build-frontend:
     runs-on: ubuntu-22.04
