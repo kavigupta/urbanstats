@@ -3,7 +3,7 @@ import { writeFileSync } from 'fs'
 import { promisify } from 'util'
 
 import { execa, execaSync } from 'execa'
-import { Selector } from 'testcafe'
+import { ClientFunction, Selector } from 'testcafe'
 
 import { safeReload, screencap, urbanstatsFixture } from './test_utils'
 
@@ -153,14 +153,12 @@ export async function withMockedClipboard(t: TestController, runner: () => Promi
     return calls
 }
 
-export async function friendsText(t: TestController): Promise<string[]> {
-    return await t.eval(() => {
-        const elements = document.getElementsByClassName('testing-friends-section')
-        const results: string[] = []
-        // eslint-disable-next-line @typescript-eslint/prefer-for-of -- No need to convert to array
-        for (let i = 0; i < elements.length; i++) {
-            results.push(elements[i].textContent!)
-        }
-        return results
-    }) as string[]
-}
+export const friendsText = ClientFunction<string[], []>(() => {
+    const elements = document.getElementsByClassName('testing-friends-section')
+    const results: string[] = []
+    // eslint-disable-next-line @typescript-eslint/prefer-for-of -- No need to convert to array
+    for (let i = 0; i < elements.length; i++) {
+        results.push(elements[i].textContent!)
+    }
+    return results
+})

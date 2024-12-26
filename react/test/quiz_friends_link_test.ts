@@ -44,7 +44,7 @@ test('paste friend link before doing quiz', async (t) => {
         },
     ])
     await clickButtons(t, ['a', 'a', 'a', 'a', 'a'])
-    const friends = await friendsText(t)
+    const friends = friendsText()
     await t.expect(friends.length).eql(2)
     await t.expect(friends[1]).eql('spudwaffleAsk\u00a0spudwaffle\u00a0to add youRemove')
 })
@@ -60,7 +60,7 @@ test('paste friend link after doing quiz', async (t) => {
             url: 'http://localhost:8000/quiz.html',
         },
     ])
-    const friends = await friendsText(t)
+    const friends = friendsText()
     await t.expect(friends.length).eql(2)
     await t.expect(friends[1]).eql('spudwaffleAsk\u00a0spudwaffle\u00a0to add youRemove')
 })
