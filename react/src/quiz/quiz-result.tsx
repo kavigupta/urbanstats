@@ -10,7 +10,7 @@ import { getVector, VectorSettingsDictionary } from '../page_template/settings-v
 import { allGroups, allYears, statParents, StatPath } from '../page_template/statistic-tree'
 
 import { renderTimeRemaining } from './dates'
-import { JuxtaQuestion, QuizDescriptor, QuizDescriptorWithStats, QuizHistory, QuizQuestion, RetroQuestion, aCorrect, QuizFriends, loadQuizFriends, nameOfQuizKind, QuizKind, endpoint } from './quiz'
+import { JuxtaQuestion, QuizDescriptor, QuizDescriptorWithStats, QuizHistory, QuizQuestion, RetroQuestion, aCorrect, QuizFriends, nameOfQuizKind, QuizKind, endpoint, QuizLocalStorage } from './quiz'
 import { ExportImport, Header, UserId } from './quiz-components'
 import { QuizFriendsPanel } from './quiz-friends'
 import { renderQuestion } from './quiz-question'
@@ -39,11 +39,10 @@ export function QuizResult(props: QuizResultProps): ReactNode {
             : getCachedPerQuestionStats(props.quizDescriptor)
     ) ?? { total: 0, per_question: [0, 0, 0, 0, 0] })
     const [authError, setAuthError] = useState(false)
-    const [quizFriends, setQuizFriendsDirect] = useState(loadQuizFriends())
+    const quizFriends = QuizLocalStorage.shared.friends.use()
 
     const setQuizFriends = (qf: QuizFriends): void => {
-        setQuizFriendsDirect(qf)
-        localStorage.setItem('quiz_friends', JSON.stringify(qf))
+        QuizLocalStorage.shared.friends.value = qf
     }
 
     useEffect(() => {
