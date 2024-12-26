@@ -1,9 +1,10 @@
 import unittest
+from collections import Counter
 
 import numpy as np
 from parameterized import parameterized
 
-from urbanstats.utils import compute_bins, compute_bins_slow
+from urbanstats.utils import DiscreteDistribution, compute_bins, compute_bins_slow
 
 
 class TestComputeBinsSlowWorksAsIntended(unittest.TestCase):
@@ -95,3 +96,24 @@ class TestComputeBinsSameAsSlow(unittest.TestCase):
 
         result2 = compute_bins(data, weight, bin_size=bin_size)
         self.assertTrue(np.allclose(result, result2))
+
+
+class TestDsicreteDistribution(unittest.TestCase):
+    @parameterized.expand([(seed,) for seed in range(10)])
+    def test_even_distribution(self, seed):
+        distro = DiscreteDistribution.of([1, 1, 1])
+        n = 10**5
+        samples = Counter(distro.sample(np.random.RandomState(seed), n))
+        self.assertEqual(len(samples), 3)
+        for i in range(3):
+            self.assertAlmostEqual(samples[i] / n, 1 / 3, places=2)
+
+    @parameterized.expand([(seed,) for seed in range(10)])
+    def test_uneven_distribution(self, seed):
+        distro = DiscreteDistribution.of([1, 100, 99])
+        n = 10**6
+        samples = Counter(distro.sample(np.random.RandomState(seed), n))
+        self.assertEqual(len(samples), 3)
+        self.assertAlmostEqual(samples[0] / n, 1 / 200, places=3)
+        self.assertAlmostEqual(samples[1] / n, 100 / 200, places=2)
+        self.assertAlmostEqual(samples[2] / n, 99 / 200, places=2)
