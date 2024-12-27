@@ -173,6 +173,7 @@ renamed = {
     "higher % of days with high temp under 40°F (population weighted)": "days_below_40_4",
     "higher % of people who were born in the us and born outside their state of residence": "birthplace_us_not_state",
     "!FULL Which has less exposure to EPA superfund sites (higher population-weighted mean distance)?": "mean_dist_Active Superfund Site_updated",
+    # pylint: disable=line-too-long
     "higher % of workers employed as health diagnosing and treating practitioners and other technical occupations": "occupation_health_diagnosing_and_treating_practitioners_and_other_technical_occupations",
     "higher % of workers employed as legal occupations": "occupation_legal_occupations",
     "higher % of workers employed as management occupations": "occupation_management_occupations",

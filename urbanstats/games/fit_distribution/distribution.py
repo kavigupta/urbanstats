@@ -88,7 +88,7 @@ class QuizQuestionPossibilities:
 
 
 @permacache(
-    "urbanstats/games/fit_distribution/compute_quiz_question_possibilities",
+    "urbanstats/games/fit_distribution/compute_quiz_question_possibilities_2",
     key_function=dict(
         tables_by_type=stable_hash,
     ),
@@ -160,7 +160,7 @@ def train_quiz_question_weights(
 
 
 @permacache(
-    "urbanstats/games/fit_distribution/distribution/_train_quiz_question_weights_cached",
+    "urbanstats/games/fit_distribution/distribution/_train_quiz_question_weights_cached_2",
     key_function=dict(
         tables_by_type=stable_hash, geo_target=stable_hash, stat_target=stable_hash
     ),

@@ -15,7 +15,9 @@ class QuizQuestionDescriptor:
     difficulty_multiplier_val: float | None = None
 
     @classmethod
-    def several(cls, collection, key_to_name, difficulty_multipliers={}):
+    def several(cls, collection, key_to_name, difficulty_multipliers=None):
+        if difficulty_multipliers is None:
+            difficulty_multipliers = {}
         return {
             key: cls(name, collection, difficulty_multipliers.get(key, None))
             for key, name in key_to_name.items()

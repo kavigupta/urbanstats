@@ -122,7 +122,7 @@ def plot_bias_for_statistic(x, y, names):
         if i % 10 not in {0, 3, 7}:
             continue
         loc = i / 10
-        if not (mi <= loc <= ma):
+        if not mi <= loc <= ma:
             continue
         locs.append(loc)
         labels.append(f"1/{rounded_power(-i/10):.0f}")

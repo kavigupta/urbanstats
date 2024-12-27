@@ -48,6 +48,8 @@ def universe_overlap_mask(qt, excluded_universes):
 def _compute_difficulty_multipliers(
     qt, col_to_difficulty, intl_difficulty, excluded_universes
 ):
+    # pylint: disable=unsupported-assignment-operation
+    # diffmults is a numpy array
     diffmults = np.array(
         [col_to_difficulty[stat_col] for stat_col in list(qt.data.columns)]
     )[:, None, None]
@@ -63,7 +65,7 @@ def _compute_difficulty_multipliers(
 def _compute_adjusted_difficulties(
     qt, col_to_difficulty, intl_difficulty, diff_ranges, excluded_universes
 ):
-    max_pct_diff = max([max(x) for x in diff_ranges])
+    max_pct_diff = max(max(x) for x in diff_ranges)
     values = np.array(qt.data).T
     vals_a, vals_b = values[:, None], values[:, :, None]
     raw_pct_diff = (
@@ -74,6 +76,17 @@ def _compute_adjusted_difficulties(
         qt, col_to_difficulty, intl_difficulty, excluded_universes
     )
     return adj_pct_diff
+
+
+def _compute_adjusted_difficulty_masks(
+    qt, col_to_difficulty, intl_difficulty, diff_ranges, excluded_universes
+):
+    adj_difficulties = _compute_adjusted_difficulties(
+        qt, col_to_difficulty, intl_difficulty, diff_ranges, excluded_universes
+    )
+    return [
+        (lo <= adj_difficulties) & (adj_difficulties < hi) for lo, hi in diff_ranges
+    ]
 
 
 def classify_questions(
@@ -88,12 +101,10 @@ def classify_questions(
 ):
     remap_stats = np.array([stat_to_index[stat] for stat in qt.data])
     remap_geos = np.array([geo_to_index[geo] for geo in qt.data.index])
-    adj_difficulties = _compute_adjusted_difficulties(
-        qt, col_to_difficulty, intl_difficulty, diff_ranges, excluded_universes
-    )
     results = []
-    for lo, hi in diff_ranges:
-        mask = (adj_difficulties >= lo) & (adj_difficulties < hi)
+    for mask in _compute_adjusted_difficulty_masks(
+        qt, col_to_difficulty, intl_difficulty, diff_ranges, excluded_universes
+    ):
         stat_indices, a_indices, b_indices = np.where(mask)
         a_lt_b_mask = a_indices < b_indices
         stat_indices = stat_indices[a_lt_b_mask]
