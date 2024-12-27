@@ -107,7 +107,7 @@ export async function createScreenshot(config: ScreencapElements, universe: stri
     const banner = new Image()
     await new Promise<void>((resolve) => {
         banner.onload = () => { resolve() }
-        banner.src = '/screenshot_footer.svg'
+        banner.src = colors.screenshotFooterUrl
     })
 
     const bannerScale = overallWidth / banner.width
