@@ -477,6 +477,12 @@ class ComparisonMap extends MapGeneric<MapGenericProps & { longnames: string[], 
 
 export function ComparisonMapButtons(props: { map: ComparisonMap }): ReactNode {
     const colors = useColors()
+    const isScreenshot = useScreenshotMode()
+
+    if (isScreenshot) {
+        return null
+    }
+
     return (
         <div style={{
             display: 'flex', backgroundColor: colors.background, padding: '0.5em', borderRadius: '0.5em',
