@@ -38,8 +38,8 @@ def difference_minimal(act, ref, bgc):
     ).sum()
     frac_distinct = number_distinct_pixels / number_non_border
     frac_filled = number_non_bg_non_border / number_non_border
-    frac_filled = max(frac_filled, 0.1)
-    return frac_distinct / frac_filled < 0.1
+    frac_filled = max(frac_filled, 0.0)
+    return frac_distinct / frac_filled < 0.0
 
 
 def handle_normalized_map(ref, act):
