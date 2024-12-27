@@ -7,7 +7,7 @@ from urbanstats.games.quiz_question_distribution import MIN_POP, MIN_POP_INTERNA
 from urbanstats.utils import DiscreteDistribution
 from urbanstats.website_data.table import shapefile_without_ordinals
 
-from .quiz_question_distribution import collections_index, produce_quiz_question_weights
+from .quiz_question_distribution import collections_index, quiz_question_weights
 from .quiz_regions import region_map
 
 
@@ -15,7 +15,7 @@ from .quiz_regions import region_map
 def compute_quiz_question_distribution():
     geographies_by_type = compute_geographies_by_type()
     lookup_table = pd.concat([x.data for x in geographies_by_type.values()])
-    prob_res = produce_quiz_question_weights(geographies_by_type)
+    prob_res = quiz_question_weights(geographies_by_type)
     qqp = prob_res["qqp"]
     sorted_index = lookup_table.loc[qqp.all_geographies]
     data = np.array([sorted_index[c] for c in qqp.all_stats]).T
@@ -55,16 +55,12 @@ def sample_quiz(rng):
     quiz = []
     for qs, idx in zip(qqp.questions_by_number, indices):
         q = qs[idx]
-        a, b = (
-            qqp.all_geographies[q.geography_index_a],
-            qqp.all_geographies[q.geography_index_b],
-        )
+        ia, ib = q.geography_index_a, q.geography_index_b
         if rng.random() < 0.5:
-            a, b = b, a
+            ia, ib = ib, ia
+        a, b = qqp.all_geographies[ia], qqp.all_geographies[ib]
         s = qqp.all_stats[q.stat_indices]
-        stat_a, stat_b = data[
-            [q.geography_index_a, q.geography_index_b], q.stat_indices
-        ]
+        stat_a, stat_b = data[[ia, ib], q.stat_indices]
         quiz.append(
             dict(
                 stat_column_original=s,
