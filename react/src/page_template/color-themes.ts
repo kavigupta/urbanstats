@@ -32,6 +32,7 @@ export interface Colors {
     bannerURL: string
     mixPct: number
     hueColors: HueColors
+    screenshotFooterUrl: string
 }
 
 export interface JuxtastatColors {
@@ -78,6 +79,7 @@ export const colorThemes: Record<Theme, Colors> = {
         bannerURL: '/banner.png',
         mixPct: 70,
         hueColors: defaultHueColors,
+        screenshotFooterUrl: 'screenshot_footer.svg',
     },
     'Dark Mode': {
         background: '#00060f',
@@ -99,5 +101,6 @@ export const colorThemes: Record<Theme, Colors> = {
         bannerURL: '/banner-dark.png',
         mixPct: 50,
         hueColors: defaultHueColors,
+        screenshotFooterUrl: 'screenshot_footer_dark.svg',
     },
 }
