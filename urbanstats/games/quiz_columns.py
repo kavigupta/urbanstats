@@ -41,5 +41,6 @@ def get_quiz_stats():
 def stat_to_quiz_name():
     return {k: d.name for k, d, _ in get_quiz_stats()}
 
+
 def stat_to_difficulty():
     return {k: d.difficulty_multiplier() for k, d, _ in get_quiz_stats()}

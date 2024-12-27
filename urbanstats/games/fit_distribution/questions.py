@@ -1,8 +1,6 @@
-import numpy as np
-
-
 from dataclasses import dataclass
 
+import numpy as np
 
 
 @dataclass
@@ -47,7 +45,9 @@ def universe_overlap_mask(qt, excluded_universes):
     )
 
 
-def _compute_difficulty_multipliers(qt, col_to_difficulty, intl_difficulty, excluded_universes):
+def _compute_difficulty_multipliers(
+    qt, col_to_difficulty, intl_difficulty, excluded_universes
+):
     diffmults = np.array(
         [col_to_difficulty[stat_col] for stat_col in list(qt.data.columns)]
     )[:, None, None]
@@ -60,7 +60,9 @@ def _compute_difficulty_multipliers(qt, col_to_difficulty, intl_difficulty, excl
     return diffmults
 
 
-def _compute_adjusted_difficulties(qt, col_to_difficulty, intl_difficulty, diff_ranges, excluded_universes):
+def _compute_adjusted_difficulties(
+    qt, col_to_difficulty, intl_difficulty, diff_ranges, excluded_universes
+):
     max_pct_diff = max([max(x) for x in diff_ranges])
     values = np.array(qt.data).T
     vals_a, vals_b = values[:, None], values[:, :, None]
@@ -75,7 +77,14 @@ def _compute_adjusted_difficulties(qt, col_to_difficulty, intl_difficulty, diff_
 
 
 def classify_questions(
-    qt, stat_to_index, geo_to_index, *, col_to_difficulty, intl_difficulty, diff_ranges, excluded_universes
+    qt,
+    stat_to_index,
+    geo_to_index,
+    *,
+    col_to_difficulty,
+    intl_difficulty,
+    diff_ranges,
+    excluded_universes
 ):
     remap_stats = np.array([stat_to_index[stat] for stat in qt.data])
     remap_geos = np.array([geo_to_index[geo] for geo in qt.data.index])

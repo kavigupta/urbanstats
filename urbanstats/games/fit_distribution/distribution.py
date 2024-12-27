@@ -1,16 +1,13 @@
-from .questions import ValidQuizQuestions, classify_questions
-
-
-import torch
-import numpy as np
-import tqdm.auto as tqdm
-
-from permacache import permacache, stable_hash
-
-
 from dataclasses import dataclass
 from functools import cached_property
 from typing import List
+
+import numpy as np
+import torch
+import tqdm.auto as tqdm
+from permacache import permacache, stable_hash
+
+from .questions import ValidQuizQuestions, classify_questions
 
 
 @dataclass
@@ -97,7 +94,12 @@ class QuizQuestionPossibilities:
     ),
 )
 def _compute_quiz_question_possibilities(
-    tables_by_type, *, col_to_difficulty, intl_difficulty, diff_ranges, excluded_universes
+    tables_by_type,
+    *,
+    col_to_difficulty,
+    intl_difficulty,
+    diff_ranges,
+    excluded_universes,
 ):
     all_stats = sorted({s for qt in tables_by_type.values() for s in qt.data}, key=str)
     all_geographies = sorted(

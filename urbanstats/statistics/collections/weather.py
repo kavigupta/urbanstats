@@ -50,9 +50,13 @@ class USWeatherStatistics(USAStatistics):
             **QuizQuestionDescriptor.several(
                 WEATHER,
                 {k: v + POPULATION_WEIGHTED_EXPLANATION for k, v in shortnames.items()},
-                {"mean_high_temp_4": 0.075, "mean_high_temp_winter_4": 0.075,
-                 "mean_high_temp_spring_4": 0.075, "mean_high_temp_summer_4": 0.075,
-                    "mean_high_temp_fall_4": 0.075} 
+                {
+                    "mean_high_temp_4": 0.075,
+                    "mean_high_temp_winter_4": 0.075,
+                    "mean_high_temp_spring_4": 0.075,
+                    "mean_high_temp_summer_4": 0.075,
+                    "mean_high_temp_fall_4": 0.075,
+                },
             ),
             **QuizQuestionSkip.several(
                 # middle / obscure
