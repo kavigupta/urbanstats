@@ -34,6 +34,7 @@ Install Python requirements (This has been tested on Python 3.10):
 
 ```
 pip install -r requirements.txt
+pip install -r requirements_torch.txt
 ```
 
 You will want to clone the site repository to some location, using a shallow clone

@@ -4,7 +4,7 @@ runs:
   using: "composite"
   steps:
     - name: Hash requirements.txt
-      run: echo "cache_key=requirements_txt_2_$(shasum -a 256 requirements.txt | cut -d ' ' -f 1)" >> $GITHUB_OUTPUT
+      run: echo "cache_key=requirements_txt_2_$(shasum -a 256 requirements.txt requirements_torch.txt | shasum -a 256 | cut -d ' ' -f 1)" >> $GITHUB_OUTPUT
       shell: bash
       id: hash
 
@@ -28,6 +28,8 @@ runs:
       shell: bash
 
     - name: Install requirements
-      run: pip3 install -r requirements.txt
+      run: |
+        pip3 install -r requirements.txt
+        pip3 install -r requirements_torch.txt
       shell: bash
       if: steps.cache-venv.outputs.cache-hit != 'true'
