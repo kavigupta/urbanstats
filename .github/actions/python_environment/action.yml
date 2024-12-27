@@ -4,7 +4,7 @@ runs:
   using: "composite"
   steps:
     - name: Hash requirements.txt
-      run: echo "cache_key=requirements_txt_2_$(shasum -a 256 requirements.txt requirements_torch.txt | cut -d ' ' -f 1)" >> $GITHUB_OUTPUT
+      run: echo "cache_key=requirements_txt_2_$(shasum -a 256 requirements.txt requirements_torch.txt | shasum -a 256 | cut -d ' ' -f 1)" >> $GITHUB_OUTPUT
       shell: bash
       id: hash
 
