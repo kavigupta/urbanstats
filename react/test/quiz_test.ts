@@ -670,6 +670,17 @@ test('share link current juxta', async (t) => {
     await t.expect(copies[0]).match(/^Juxtastat [0-9]+ [012345]\/5\n\n[🟩🟥]{10}\n\nhttps:\/\/juxtastat\.org$/)
 })
 
+quizFixture('current juxta ending in 10s', `${target}/quiz.html`, {
+    debug_quiz_transition: '10000',
+}, '')
+
+test('next quiz button when quiz ends', async (t) => {
+    await clickButtons(t, ['a', 'a', 'a', 'a', 'a'])
+    await t.expect(Selector('a').withText('Next Quiz').exists).notOk()
+    await t.click(Selector('a').withText('Next Quiz'))
+    await t.expect(Selector('a').withText('Next Quiz').exists).notOk()
+})
+
 quizFixture('current retro', `${target}/quiz.html#mode=retro`, {}, '')
 
 test('share link current retro', async (t) => {

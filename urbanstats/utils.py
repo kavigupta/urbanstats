@@ -70,5 +70,5 @@ class DiscreteDistribution:
         return cls(pcumu)
 
     def sample(self, rng, *args):
-        r = rng.rand(*args)
+        r = rng.random(*args)
         return np.searchsorted(self.cumulative_dist, r, side="left")
