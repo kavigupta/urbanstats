@@ -4,6 +4,7 @@ import tempfile
 
 import numpy as np
 import pandas as pd
+from matplotlib import pyplot as plt
 
 from urbanstats.games.quiz import quiz_is_guaranteed_past
 
@@ -96,3 +97,55 @@ def get_dau(after_problem=49, radius=14):
     xs, ys = num_users_by_problem.index[mask], num_users_by_problem[mask]
     ys_rolling = [ys[(x - radius <= xs) & (xs <= x + radius)].median() for x in xs]
     return xs, ys, ys_rolling
+
+
+def plot_bias_for_statistic(x, y, names):
+    plt.figure(dpi=200)
+    idxs = np.argsort(y - x)
+    plt.scatter(x, y, alpha=0.1, marker=".")
+    rot = 0
+    for i in [*idxs[:5], *idxs[-5:]]:
+        plt.text(s=names[i], x=x[i], y=y[i], rotation=rot, size=5)
+        rot += 40
+        rot %= 90
+    plt.xlabel("Real prob")
+    plt.ylabel("Target prob")
+    xlo, xhi = plt.xlim()
+    ylo, yhi = plt.ylim()
+    mi, ma = min(xlo, ylo), max(xhi, yhi)
+    plt.plot([mi, ma], [mi, ma], color="black", lw=0.5)
+    plt.xlim(mi, ma)
+    plt.ylim(mi, ma)
+    locs = []
+    labels = []
+    for i in range(int(np.floor(mi * 10)), int(np.ceil(ma * 10)) + 1):
+        if i % 10 not in {0, 3, 7}:
+            continue
+        loc = i / 10
+        if not mi <= loc <= ma:
+            continue
+        locs.append(loc)
+        labels.append(f"1/{rounded_power(-i/10):.0f}")
+    plt.xticks(locs, labels)
+    plt.yticks(locs, labels)
+    plt.grid()
+
+
+def rounded_power(x):
+    assert x > 0
+    fl = int(np.floor(x))
+    x -= fl
+    return 10**fl * {0: 1, 3: 2, 7: 5}[round(x * 10)]
+
+
+def plot_sampling_bias(prob_res):
+    qqp = prob_res["qqp"]
+    geo_target = prob_res["geo_target"]
+    stat_target = prob_res["stat_target"]
+    ga, sa = qqp.aggregate(prob_res["ps"])
+    plot_bias_for_statistic(np.log10(ga), np.log10(geo_target), qqp.all_geographies)
+    plt.title("Geography")
+    plt.show()
+    plot_bias_for_statistic(np.log10(sa), np.log10(stat_target), qqp.all_stats)
+    plt.title("Statistics")
+    plt.show()
