@@ -130,6 +130,11 @@ test('download-article', async (t) => {
     await downloadImage(t)
 })
 
+test('download-article-dark', async (t) => {
+    await t.click(Selector('.theme-setting').find('select')).click(Selector('option').withText('Dark Mode'))
+    await downloadImage(t)
+})
+
 test('create-comparison-from-article', async (t) => {
     const otherRegion = Selector('input').withAttribute('placeholder', 'Other region...')
     await t

@@ -718,6 +718,10 @@ export class Navigator {
         return result
     }
 
+    get currentDescriptor(): ExceptionalPageDescriptor {
+        return this.pageState.current.descriptor
+    }
+
     get universe(): string | undefined {
         const data = this.pageState.current.data
         switch (data.kind) {

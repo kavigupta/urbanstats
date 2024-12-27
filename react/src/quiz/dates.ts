@@ -2,10 +2,19 @@ import { QuizDescriptorWithStats } from './quiz'
 
 const reference = new Date(2023, 8, 2) // 2023-09-02. 8 is September, since months are 0-indexed for some fucking reason
 
+let offsetForTesting = 0
+const debugMillis = parseInt(localStorage.getItem('debug_quiz_transition') ?? '0')
+if (debugMillis > 0) {
+    // Simulates the quiz being 10 seconds from ending
+    const startOfDay = new Date()
+    startOfDay.setHours(0, 0, 0, 0)
+    offsetForTesting = (startOfDay.valueOf() + (24 * 60 * 60 * 1000) - debugMillis) - Date.now()
+}
+
 export function getDailyOffsetNumber(): number {
     // fractional days since reference
     // today's date without the time
-    const today = new Date()
+    const today = new Date(Date.now() + offsetForTesting)
     today.setHours(0, 0, 0, 0)
     let offset = (today.valueOf() - reference.valueOf()) / (1000 * 60 * 60 * 24)
     // round to nearest day. this handles daylight savings time, since it's always a midnight-to-midnight comparison.
@@ -51,7 +60,7 @@ function weekEnd(weekId: string): number {
 }
 
 function timeToEndOfDay(offset: number): number {
-    return dayEnd(offset) - Date.now()
+    return dayEnd(offset) - Date.now() - offsetForTesting
 }
 
 function timeToEndOfWeek(weekId: string): number {
@@ -82,6 +91,15 @@ function renderTimeWithinWeek(ms: number): string {
     const timeString = renderTimeWithinDay(withoutDays)
     // const s_if_plural = days === 1 ? '' : 's';
     return `${days}d ${timeString}`
+}
+
+export function msRemaining({ kind, name }: QuizDescriptorWithStats): number {
+    switch (kind) {
+        case 'juxtastat':
+            return timeToEndOfDay(name)
+        case 'retrostat':
+            return timeToEndOfWeek(name)
+    }
 }
 
 export function renderTimeRemaining({ kind, name }: QuizDescriptorWithStats): string {
