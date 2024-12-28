@@ -559,8 +559,20 @@ export class Navigator {
                 location.reload()
             }
         })
+
+        // Must rate limit history updates scrolling, as browsers will do everything from introduce artifical delays, to throwing errors on history update which disrupts other functionality
+        // We want scrolling to be LWW even if rate limited
+        const minScrollEventInterval = 100
+
         window.addEventListener('scroll', () => {
-            history.replaceState({ ...history.state, scrollPosition: window.scrollY }, '')
+            const sinceLastEvent = Date.now() - this.lastScrollHistoryWrite
+            if (sinceLastEvent > minScrollEventInterval) {
+                this.writeScrollToHistoryState()
+            }
+            else {
+                clearTimeout(this.deferredScrollTimer)
+                this.deferredScrollTimer = setTimeout(() => { this.writeScrollToHistoryState() }, minScrollEventInterval - sinceLastEvent)
+            }
         })
 
         /*
@@ -575,8 +587,19 @@ export class Navigator {
         })
     }
 
+    deferredScrollTimer: NodeJS.Timeout | undefined
+    lastScrollHistoryWrite = Number.MIN_SAFE_INTEGER
+    private writeScrollToHistoryState(): void {
+        clearTimeout(this.deferredScrollTimer)
+        this.lastScrollHistoryWrite = Date.now()
+        history.replaceState({ ...history.state, scrollPosition: window.scrollY }, '')
+    }
+
     async navigate(newDescriptor: PageDescriptor, options: NavigationOptions): Promise<void> {
         this.effects = [] // If we're starting another navigation, don't use previous effects
+
+        // Be sure to save scroll state before modifying the history, as maybe there's still a deferred scroll write in flight
+        this.writeScrollToHistoryState()
 
         switch (options.history) {
             case 'push':
