@@ -4,7 +4,7 @@ import './article.css'
 import React, { ReactNode, useContext, useEffect, useRef } from 'react'
 
 import { sanitize } from '../navigation/links'
-import { Navigator } from '../navigation/navigator'
+import { Navigator } from '../navigation/Navigator'
 import { HueColors } from '../page_template/color-themes'
 import { useColors } from '../page_template/colors'
 import { rowExpandedKey, useSetting, useSettings } from '../page_template/settings'

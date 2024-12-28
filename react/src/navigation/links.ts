@@ -1,6 +1,6 @@
 import { StatName } from '../page_template/statistic-tree'
 
-import { PageDescriptor } from './navigator'
+import { PageDescriptor } from './PageDescriptor'
 
 function shardBytes(longname: string): [string, string] {
     // as bytes, in utf-8

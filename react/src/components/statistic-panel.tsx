@@ -2,7 +2,7 @@ import React, { ChangeEvent, CSSProperties, ReactNode, useContext, useEffect, us
 
 import universes_ordered from '../data/universes_ordered'
 import { sanitize, statisticDescriptor } from '../navigation/links'
-import { Navigator } from '../navigation/navigator'
+import { Navigator } from '../navigation/Navigator'
 import { useColors } from '../page_template/colors'
 import { useSetting } from '../page_template/settings'
 import { StatName } from '../page_template/statistic-tree'

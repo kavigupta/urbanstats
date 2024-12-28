@@ -2,7 +2,7 @@ import React, { ReactNode, useContext } from 'react'
 import '../style.css'
 import '../common.css'
 
-import { Navigator } from '../navigation/navigator'
+import { Navigator } from '../navigation/Navigator'
 import { useColors } from '../page_template/colors'
 import { PageTemplate } from '../page_template/template'
 
