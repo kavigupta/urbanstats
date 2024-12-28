@@ -658,51 +658,7 @@ export class Navigator {
             }
             else if (url.hash !== '') {
                 this.effects.push(() => {
-                    let nextScrollEventIsSeek = false
-
-                    const scrollObserver = (): void => {
-                        if (!nextScrollEventIsSeek) {
-                            destroyObservers()
-                        }
-                        else {
-                            nextScrollEventIsSeek = false
-                        }
-                    }
-
-                    // Keep track of the state where we're seeking so we don't keep trying to seek on another page
-                    const seekedState = this.pageState
-
-                    const resizeObserver = new ResizeObserver(() => {
-                        if (this.pageState === seekedState) {
-                            seekToHash()
-                        }
-                        else {
-                            destroyObservers()
-                        }
-                    })
-
-                    const destroyObservers = (): void => {
-                        resizeObserver.unobserve(document.body)
-                        window.removeEventListener('scroll', scrollObserver)
-                    }
-
-                    const seekToHash = (): void => {
-                        const element = document.getElementById(url.hash.substring(1))
-                        if (element !== null) {
-                            const position = element.getBoundingClientRect().top + window.scrollY
-                            if (Math.round(position) !== Math.round(window.scrollY)) {
-                                nextScrollEventIsSeek = true
-                                window.scrollTo(0, position)
-                            }
-                        }
-                    }
-
-                    // If the body height changes, and the user hasn't scrolled yet, this means something (e.g. fonts) have loaded and our hash seek isn't correct.
-                    resizeObserver.observe(document.body)
-                    // Scrolling from the user should cancel the hash lock, but not scrolling because we've seeked to the hash
-                    window.addEventListener('scroll', scrollObserver)
-
-                    seekToHash()
+                    this.scrollToHash(url)
                 })
             }
         }
@@ -716,9 +672,58 @@ export class Navigator {
                 current: {
                     descriptor: { kind: 'error', url: urlFromPageDescriptor(newDescriptor) },
                     data: { kind: 'error', error, descriptor: newDescriptor, url: urlFromPageDescriptor(newDescriptor) },
-                } }
+                },
+            }
             this.pageStateObservers.forEach((observer) => { observer() })
         }
+    }
+
+    private scrollToHash(url: URL): void {
+        let nextScrollEventIsSeek = false
+
+        const scrollObserver = (): void => {
+            if (!nextScrollEventIsSeek) {
+                destroyObservers()
+            }
+            else {
+                nextScrollEventIsSeek = false
+            }
+        }
+
+        // Keep track of the state where we're seeking so we don't keep trying to seek on another page
+        const seekedState = this.pageState
+
+        const resizeObserver = new ResizeObserver(() => {
+            if (this.pageState === seekedState) {
+                seekToHash()
+            }
+            else {
+                destroyObservers()
+            }
+        })
+
+        const destroyObservers = (): void => {
+            resizeObserver.unobserve(document.body)
+            window.removeEventListener('scroll', scrollObserver)
+        }
+
+        const seekToHash = (): void => {
+            const element = document.getElementById(url.hash.substring(1))
+            if (element !== null) {
+                const position = element.getBoundingClientRect().top + window.scrollY
+                if (Math.round(position) !== Math.round(window.scrollY)) {
+                    nextScrollEventIsSeek = true
+                    window.scrollTo(0, position)
+                }
+            }
+        }
+
+        // If the body height changes, and the user hasn't scrolled yet, this means something (e.g. fonts) have loaded and our hash seek isn't correct.
+        resizeObserver.observe(document.body)
+        // Scrolling from the user should cancel the hash lock, but not scrolling because we've seeked to the hash
+        window.addEventListener('scroll', scrollObserver)
+
+        seekToHash()
     }
 
     link(pageDescriptor: PageDescriptor, options: {
