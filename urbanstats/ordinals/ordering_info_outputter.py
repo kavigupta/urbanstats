@@ -143,6 +143,7 @@ def reorganize_counts_for_universe(ordinal_info, counts, universe):
     return list(counts_reorganized.items())
 
 
+# TODO: Maybe cache this?
 def reorganize_counts(ordinal_info, counts):
     return {
         u: reorganize_counts_for_universe(ordinal_info, counts, u)
