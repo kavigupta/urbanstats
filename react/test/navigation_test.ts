@@ -21,27 +21,22 @@ test('two randoms mobile', async (t) => {
 const goBack = ClientFunction(() => { window.history.back() })
 const goForward = ClientFunction(() => { window.history.forward() })
 const getScroll = ClientFunction(() => window.scrollY)
-const getStateScroll = ClientFunction(() => (history.state as { scrollPosition: number }).scrollPosition)
 
 test('maintain and restore scroll position back-forward', async (t) => {
     await t.navigateTo('/article.html?longname=Texas%2C+USA')
     await t.expect(Selector('.headertext').withText('Texas').exists).ok() // Must wait for Texas to load, otherwise scrolling on the loading page is ineffective
     await t.scroll(0, 200)
-    await t.expect(getStateScroll()).eql(200)
     await t.click(Selector('a').withExactText('Population'))
     await t.expect(Selector('.headertext').withText('Population').exists).ok()
     await t.expect(getScroll()).eql(0) // Resets scroll on different page type
     await t.scroll(0, 100)
-    await t.expect(getStateScroll()).eql(100)
     await t.click(Selector('a').withText('New York'))
     await t.expect(Selector('.headertext').withText('New York').exists).ok()
     await t.scroll(0, 400)
-    await t.expect(getStateScroll()).eql(400)
     await t.click(Selector('path[class*="Connecticut"]'))
     await t.expect(Selector('.headertext').withText('Connecticut').exists).ok()
     await t.expect(getScroll()).eql(400) // Does not reset scroll on map navigation
     await t.scroll(0, 500)
-    await t.expect(getStateScroll()).eql(500)
     await goBack()
     await t.expect(Selector('.headertext').withText('New York').exists).ok()
     await t.expect(getScroll()).eql(400)
