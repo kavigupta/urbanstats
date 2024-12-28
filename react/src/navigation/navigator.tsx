@@ -688,7 +688,7 @@ export class Navigator {
     }): { href: string, onClick: (e?: React.MouseEvent) => Promise<void> } {
         const url = urlFromPageDescriptor(pageDescriptor)
         return {
-            href: url.pathname + url.search,
+            href: url.pathname + url.search + url.hash,
             onClick: async (e?: React.MouseEvent) => {
                 if (e?.altKey || e?.ctrlKey || e?.metaKey || e?.shiftKey) {
                     // Some sort of shortcut to open in new tab, etc.
