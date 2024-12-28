@@ -592,7 +592,7 @@ export class Navigator {
     private writeScrollToHistoryState(): void {
         clearTimeout(this.deferredScrollTimer)
         this.lastScrollHistoryWrite = Date.now()
-        console.log(JSON.stringify(`save ${window.scrollY} -> ${JSON.stringify(history.state.pageDescriptor)}`))
+        console.log(JSON.stringify(`save ${window.scrollY} -> ${urlFromPageDescriptor(history.state.pageDescriptor)}`))
         history.replaceState({ ...history.state, scrollPosition: window.scrollY }, '')
     }
 
