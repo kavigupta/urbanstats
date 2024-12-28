@@ -645,6 +645,7 @@ export class Navigator {
                 this.effects.push(() => {
                     console.log(`restore ${options.scroll} <- ${url}`)
                     window.scrollTo({ top: options.scroll! })
+                    this.writeScrollToHistoryState()
                 })
             }
             else if (url.hash !== '') {
