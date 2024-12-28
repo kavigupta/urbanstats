@@ -138,7 +138,7 @@ window.history.scrollRestoration = 'manual'
 const history = window.history as {
     replaceState: (data: HistoryState, unused: string, url?: string | URL | null) => void
     pushState: (data: HistoryState, unused: string, url?: string | URL | null) => void
-    state: HistoryState
+    state: HistoryState | null
     forward: () => void
     back: () => void
 }
@@ -591,6 +591,9 @@ export class Navigator {
     lastScrollHistoryWrite = Number.MIN_SAFE_INTEGER
     private writeScrollToHistoryState(): void {
         clearTimeout(this.deferredScrollTimer)
+        if (history.state === null) {
+            return // No first navigation
+        }
         this.lastScrollHistoryWrite = Date.now()
         console.log(JSON.stringify(`save ${window.scrollY} -> ${urlFromPageDescriptor(history.state.pageDescriptor)}`))
         history.replaceState({ ...history.state, scrollPosition: window.scrollY }, '')
