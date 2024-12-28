@@ -2,7 +2,7 @@ import React, { CSSProperties, ReactNode, useEffect, useState } from 'react'
 import { GridLoader, MoonLoader } from 'react-spinners'
 
 import { EditableString } from '../components/table'
-import { urlFromPageDescriptor } from '../navigation/navigator'
+import { urlFromPageDescriptor } from '../navigation/PageDescriptor'
 import { useColors, useJuxtastatColors } from '../page_template/colors'
 import { mixWithBackground } from '../utils/color'
 

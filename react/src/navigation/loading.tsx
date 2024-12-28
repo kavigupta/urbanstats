@@ -3,7 +3,7 @@ import { BarLoader, MoonLoader } from 'react-spinners'
 
 import { useColors } from '../page_template/colors'
 
-import { Navigator } from './navigator'
+import { Navigator } from './Navigator'
 
 export function InitialLoad(): ReactNode {
     const containerStyle: CSSProperties = {

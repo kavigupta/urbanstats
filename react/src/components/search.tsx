@@ -1,7 +1,7 @@
 import React, { CSSProperties, ReactNode, useEffect, useMemo, useRef, useState } from 'react'
 
 import { loadProtobuf } from '../load_json'
-import { Navigator } from '../navigation/navigator'
+import { Navigator } from '../navigation/Navigator'
 import { useColors } from '../page_template/colors'
 import { useSetting } from '../page_template/settings'
 import { isHistoricalCD } from '../utils/is_historical'
