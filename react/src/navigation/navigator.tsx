@@ -627,7 +627,11 @@ export class Navigator {
                 return
             }
             const url = urlFromPageDescriptor(newPageDescriptor)
-            history.replaceState({ pageDescriptor: newPageDescriptor, scrollPosition: options.scroll ?? window.scrollY }, '', url)
+            history.replaceState({
+                pageDescriptor: newPageDescriptor,
+                // The scroll position here will be overwritten by the effect below if `options.scroll !== null`
+                scrollPosition: options.scroll ?? window.scrollY,
+            }, '', url)
             this.pageState = { kind: 'loaded', current: { data: pageData, descriptor: newPageDescriptor } }
             this.pageStateObservers.forEach((observer) => { observer() })
 
@@ -647,6 +651,8 @@ export class Navigator {
                     // Helpful debugging statement, keep in
                     // console.log(`restore ${options.scroll} <- ${url}`)
                     window.scrollTo({ top: options.scroll! })
+                    // As the `scrollTo` method doesn't trigger a scroll event, we need to save the new scroll position manually.
+                    // Although it's saved above in `history.replaceState`, we save the scroll position again when the user navigates away from the page, so it's important that we save this scrolled position, otherwise we'll get the previous position
                     this.writeScrollToHistoryState()
                 })
             }
