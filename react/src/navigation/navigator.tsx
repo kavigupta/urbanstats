@@ -596,7 +596,7 @@ export class Navigator {
         }
         this.lastScrollHistoryWrite = Date.now()
         // Helpful debugging statement, keep in
-        console.log(`save ${window.scrollY} -> ${urlFromPageDescriptor(history.state.pageDescriptor)}`)
+        // console.log(`save ${window.scrollY} -> ${urlFromPageDescriptor(history.state.pageDescriptor)}`)
         history.replaceState({ ...history.state, scrollPosition: window.scrollY }, '')
     }
 
@@ -645,7 +645,7 @@ export class Navigator {
                 // higher priority than hash because we're going back to a page that might have a hash, and we don't want the hash to override the saved scroll position
                 this.effects.push(() => {
                     // Helpful debugging statement, keep in
-                    console.log(`restore ${options.scroll} <- ${url}`)
+                    // console.log(`restore ${options.scroll} <- ${url}`)
                     window.scrollTo({ top: options.scroll! })
                     this.writeScrollToHistoryState()
                 })
