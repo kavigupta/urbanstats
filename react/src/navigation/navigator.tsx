@@ -592,6 +592,7 @@ export class Navigator {
     private writeScrollToHistoryState(): void {
         clearTimeout(this.deferredScrollTimer)
         this.lastScrollHistoryWrite = Date.now()
+        console.log({ save: window.scrollY })
         history.replaceState({ ...history.state, scrollPosition: window.scrollY }, '')
     }
 
@@ -638,7 +639,10 @@ export class Navigator {
             // Jump to
             if (options.scroll !== null) {
                 // higher priority than hash because we're going back to a page that might have a hash, and we don't want the hash to override the saved scroll position
-                this.effects.push(() => { window.scrollTo({ top: options.scroll! }) })
+                this.effects.push(() => {
+                    console.log({ restore: options.scroll })
+                    window.scrollTo({ top: options.scroll! })
+                })
             }
             else if (url.hash !== '') {
                 this.effects.push(() => {
