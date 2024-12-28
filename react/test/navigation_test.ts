@@ -62,6 +62,10 @@ test('control click new tab', async (t) => {
     await t.expect(getLocation()).eql(`${target}/`)
 })
 
+test('retro link', async (t) => {
+    await t.expect(Selector(`a[href="/quiz.html#mode=retro"]`).exists).ok()
+})
+
 test('navigates to hash', async (t) => {
     await t.navigateTo('data-credit.html#explanation_population')
     await t.expect(getLocation()).eql(`${target}/data-credit.html#explanation_population`)
