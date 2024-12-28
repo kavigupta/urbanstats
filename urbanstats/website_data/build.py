@@ -205,7 +205,7 @@ def build_urbanstats(
 
         full_consolidated_data(site_folder)
 
-        output_sitemap(shapefile_without_ordinals(), site_folder)
+        output_sitemap(site_folder, shapefile_without_ordinals(), all_ordinals())
 
     for entrypoint in [
         "index",

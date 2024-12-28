@@ -1,42 +1,15 @@
 from urllib.parse import quote_plus
+
+from urbanstats.ordinals.ordering_info_outputter import reorganize_counts
 from urbanstats.statistics.output_statistics_metadata import (
     statistic_internal_to_display_name,
 )
-from urbanstats.ordinals.ordering_info_outputter import reorganize_counts
-from urbanstats.statistics.output_statistics_metadata import internal_statistic_names
 
 
 def output_sitemap(site_folder, articles, ordinal_info):
-    top_level_pages = [
-        "https://urbanstats.org",
-        "https://urbanstats.org/about.html",
-        "https://urbanstats.org/data-credit.html",
-        "https://urbanstats.org/mapper.html",
-        "https://urbanstats.org/random.html?sampleby=uniform",
-        "https://urbanstats.org/random.html?sampleby=population",
-        "https://urbanstats.org/random.html?sampleby=population&us_only=true",
-        "https://urbanstats.org/quiz.html",
-        "https://urbanstats.org/quiz.html#mode=retro",
-    ]
-
-    article_urls = [
-        f"https://urbanstats.org/article.html?longname={quote_plus(longname)}"
-        for longname in list(articles.longname)
-    ]
-
-    statistic_urls = []
-    # We want the same counts that are output to the site
-    counts = reorganize_counts(ordinal_info, ordinal_info.counts_by_type_universe_col())
-    stat_names = list(statistic_internal_to_display_name.values())
-    for universe, article_types in counts.items():
-        for article_type, stat_counts in article_types.items():
-            for stat_index, stat_count in enumerate(stat_counts):
-                if stat_count > 0:
-                    statistic_urls.append(
-                        f"https://urbanstats.org/statistic.html?statname={quote_plus(stat_names[stat_index])}&article_type={quote_plus(article_type)}&universe={universe}"
-                    )
-
-    all_sitemap_urls = top_level_pages + article_urls + statistic_urls
+    all_sitemap_urls = (
+        top_level_pages() + article_urls(articles) + statistic_urls(ordinal_info)
+    )
 
     # 50k is max number of entries in a sitemap
     max_entries = 50000
@@ -57,3 +30,39 @@ def output_sitemap(site_folder, articles, ordinal_info):
                 ]
             )
         )
+
+
+def top_level_pages():
+    return [
+        "https://urbanstats.org",
+        "https://urbanstats.org/about.html",
+        "https://urbanstats.org/data-credit.html",
+        "https://urbanstats.org/mapper.html",
+        "https://urbanstats.org/random.html?sampleby=uniform",
+        "https://urbanstats.org/random.html?sampleby=population",
+        "https://urbanstats.org/random.html?sampleby=population&us_only=true",
+        "https://urbanstats.org/quiz.html",
+        "https://urbanstats.org/quiz.html#mode=retro",
+    ]
+
+
+def article_urls(articles):
+    return [
+        f"https://urbanstats.org/article.html?longname={quote_plus(longname)}"
+        for longname in list(articles.longname)
+    ]
+
+
+def statistic_urls(ordinal_info):
+    result = []
+    # We want the same counts that are output to the site
+    counts = reorganize_counts(ordinal_info, ordinal_info.counts_by_type_universe_col())
+    stat_names = list(statistic_internal_to_display_name.values())
+    for universe, article_types in counts.items():
+        for article_type, stat_counts in article_types.items():
+            for stat_index, stat_count in enumerate(stat_counts):
+                if stat_count > 0:
+                    result.append(
+                        f"https://urbanstats.org/statistic.html?statname={quote_plus(stat_names[stat_index])}&article_type={quote_plus(article_type)}&universe={quote_plus(universe)}"
+                    )
+    return result
