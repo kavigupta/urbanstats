@@ -138,7 +138,7 @@ window.history.scrollRestoration = 'manual'
 const history = window.history as {
     replaceState: (data: HistoryState, unused: string, url?: string | URL | null) => void
     pushState: (data: HistoryState, unused: string, url?: string | URL | null) => void
-    state: HistoryState
+    state: HistoryState | null
     forward: () => void
     back: () => void
 }
@@ -559,8 +559,20 @@ export class Navigator {
                 location.reload()
             }
         })
+
+        // Must rate limit history updates scrolling, as browsers will do everything from introduce artifical delays, to throwing errors on history update which disrupts other functionality
+        // We want scrolling to be LWW even if rate limited
+        const minScrollEventInterval = 100
+
         window.addEventListener('scroll', () => {
-            history.replaceState({ ...history.state, scrollPosition: window.scrollY }, '')
+            const sinceLastEvent = Date.now() - this.lastScrollHistoryWrite
+            if (sinceLastEvent > minScrollEventInterval) {
+                this.writeScrollToHistoryState()
+            }
+            else {
+                clearTimeout(this.deferredScrollTimer)
+                this.deferredScrollTimer = setTimeout(() => { this.writeScrollToHistoryState() }, minScrollEventInterval - sinceLastEvent)
+            }
         })
 
         /*
@@ -575,8 +587,24 @@ export class Navigator {
         })
     }
 
+    deferredScrollTimer: NodeJS.Timeout | undefined
+    lastScrollHistoryWrite = Number.MIN_SAFE_INTEGER
+    private writeScrollToHistoryState(): void {
+        clearTimeout(this.deferredScrollTimer)
+        if (history.state === null) {
+            return // No first navigation
+        }
+        this.lastScrollHistoryWrite = Date.now()
+        // Helpful debugging statement, keep in
+        // console.log(`save ${window.scrollY} -> ${urlFromPageDescriptor(history.state.pageDescriptor)}`)
+        history.replaceState({ ...history.state, scrollPosition: window.scrollY }, '')
+    }
+
     async navigate(newDescriptor: PageDescriptor, options: NavigationOptions): Promise<void> {
         this.effects = [] // If we're starting another navigation, don't use previous effects
+
+        // Be sure to save scroll state before modifying the history, as maybe there's still a deferred scroll write in flight
+        this.writeScrollToHistoryState()
 
         switch (options.history) {
             case 'push':
@@ -599,7 +627,11 @@ export class Navigator {
                 return
             }
             const url = urlFromPageDescriptor(newPageDescriptor)
-            history.replaceState({ pageDescriptor: newPageDescriptor, scrollPosition: options.scroll ?? window.scrollY }, '', url)
+            history.replaceState({
+                pageDescriptor: newPageDescriptor,
+                // The scroll position here will be overwritten by the effect below if `options.scroll !== null`
+                scrollPosition: options.scroll ?? window.scrollY,
+            }, '', url)
             this.pageState = { kind: 'loaded', current: { data: pageData, descriptor: newPageDescriptor } }
             this.pageStateObservers.forEach((observer) => { observer() })
 
@@ -615,7 +647,14 @@ export class Navigator {
             // Jump to
             if (options.scroll !== null) {
                 // higher priority than hash because we're going back to a page that might have a hash, and we don't want the hash to override the saved scroll position
-                this.effects.push(() => { window.scrollTo({ top: options.scroll! }) })
+                this.effects.push(() => {
+                    // Helpful debugging statement, keep in
+                    // console.log(`restore ${options.scroll} <- ${url}`)
+                    window.scrollTo({ top: options.scroll! })
+                    // As the `scrollTo` method doesn't trigger a scroll event, we need to save the new scroll position manually.
+                    // Although it's saved above in `history.replaceState`, we save the scroll position again when the user navigates away from the page, so it's important that we save this scrolled position, otherwise we'll get the previous position
+                    this.writeScrollToHistoryState()
+                })
             }
             else if (url.hash !== '') {
                 this.effects.push(() => {
