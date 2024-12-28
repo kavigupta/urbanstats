@@ -1,8 +1,8 @@
 import React, { ChangeEvent, CSSProperties, ReactNode, useContext, useEffect, useMemo, useRef, useState } from 'react'
 
 import universes_ordered from '../data/universes_ordered'
-import { sanitize, statisticDescriptor } from '../navigation/links'
 import { Navigator } from '../navigation/Navigator'
+import { sanitize, statisticDescriptor } from '../navigation/links'
 import { useColors } from '../page_template/colors'
 import { useSetting } from '../page_template/settings'
 import { StatName } from '../page_template/statistic-tree'
