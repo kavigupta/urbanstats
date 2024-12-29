@@ -181,6 +181,7 @@ def build_urbanstats(
         "order",
         "quiz",
         "retrostat",
+        "sitemaps",
     ]:
         try:
             os.makedirs(f"{site_folder}/{sub}")
