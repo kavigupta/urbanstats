@@ -53,7 +53,7 @@ async function waitForServerToBeAvailable(): Promise<void> {
     }
 }
 
-export function quizFixture(fixName: string, url: string, newLocalstorage: Record<string, string>, sqlStatements: string): void {
+export function quizFixture(fixName: string, url: string, newLocalstorage: Record<string, string>, sqlStatements: string, platform: 'desktop' | 'mobile'): void {
     urbanstatsFixture(fixName, url, async (t) => {
         await interceptRequests(t)
         const tempfile = `${tempfileName()}.sql`
@@ -77,6 +77,14 @@ ${sqlStatements}`)
         })
         // Must reload after setting localstorage so page picks it up
         await safeReload(t)
+        switch (platform) {
+            case 'mobile':
+                await t.resizeWindow(400, 800)
+                break
+            case 'desktop':
+                await t.resizeWindow(1400, 800)
+                break
+        }
     })
 }
 

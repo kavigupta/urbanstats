@@ -4,8 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "rspack --mode=development",
-    "prod": "export NODE_ENV=production && rspack --mode=production",
+    "dev": "NODE_ENV=development rspack --mode=development",
+    "prod": "NODE_ENV=production rspack --mode=production",
     "watch": "./watch.sh",
     "lint": "npx eslint . --fix",
     "test:e2e": "tsx test/scripts/run-e2e-tests.ts"
