@@ -12,8 +12,9 @@ import { DataCreditPanel } from '../data-credit'
 import { useColors } from '../page_template/colors'
 import { PageTemplate } from '../page_template/template'
 
+import { Navigator } from './Navigator'
+import { PageData, urlFromPageDescriptor } from './PageDescriptor'
 import { InitialLoad, SubsequentLoad } from './loading'
-import { Navigator, PageData, urlFromPageDescriptor } from './navigator'
 
 export function Router(): ReactNode {
     const navigator = useContext(Navigator.Context)

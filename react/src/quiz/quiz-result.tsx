@@ -2,7 +2,7 @@ import React, { CSSProperties, ReactNode, useContext, useEffect, useRef, useStat
 import { isFirefox, isMobile } from 'react-device-detect'
 
 import { Statistic } from '../components/table'
-import { Navigator } from '../navigation/navigator'
+import { Navigator } from '../navigation/Navigator'
 import { JuxtastatColors } from '../page_template/color-themes'
 import { useColors, useJuxtastatColors } from '../page_template/colors'
 import { Settings } from '../page_template/settings'

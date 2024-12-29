@@ -2,7 +2,7 @@ import { useContext, useEffect } from 'react'
 
 import extra_stats from '../data/extra_stats'
 import stat_path_list from '../data/statistic_path_list'
-import { Navigator } from '../navigation/navigator'
+import { Navigator } from '../navigation/Navigator'
 import { Settings, SettingsDictionary, sourceEnabledKey, statPathsWithExtra } from '../page_template/settings'
 import { fromVector, useVector, VectorSettingKey } from '../page_template/settings-vector'
 import { getAvailableGroups, getAvailableYears, getDataSourceCheckboxes, groupYearKeys, statIsEnabled, useStatPathsAll } from '../page_template/statistic-settings'

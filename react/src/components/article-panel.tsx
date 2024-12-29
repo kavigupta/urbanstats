@@ -3,8 +3,8 @@ import './article.css'
 
 import React, { ReactNode, useContext, useEffect, useRef } from 'react'
 
+import { Navigator } from '../navigation/Navigator'
 import { sanitize } from '../navigation/links'
-import { Navigator } from '../navigation/navigator'
 import { useColors } from '../page_template/colors'
 import { rowExpandedKey, useSetting, useSettings } from '../page_template/settings'
 import { groupYearKeys, StatGroupSettings } from '../page_template/statistic-settings'

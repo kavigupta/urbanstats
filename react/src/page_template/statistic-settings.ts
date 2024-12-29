@@ -1,7 +1,7 @@
 import { useContext } from 'react'
 
 import { dataSources } from '../data/statistics_tree'
-import { Navigator } from '../navigation/navigator'
+import { Navigator } from '../navigation/Navigator'
 
 import { Settings, sourceEnabledKey, StatGroupKey, StatYearKey, StatSourceKey, useSettings } from './settings'
 import { allGroups, allYears, AmbiguousSources, Category, DataSource, DataSourceCheckboxes, findAmbiguousSourcesAll, Group, sourceDisambiguation, statParents, StatPath, statsTree, Year, yearStatPaths } from './statistic-tree'

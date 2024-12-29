@@ -1,6 +1,5 @@
 import { gunzipSync } from 'zlib'
 
-import React, { createContext, useEffect, useState } from 'react'
 import { z } from 'zod'
 
 import { applySettingsParam, settingsConnectionConfig } from '../components/QuerySettingsConnection'
@@ -10,7 +9,6 @@ import explanation_pages from '../data/explanation_page'
 import stats from '../data/statistic_list'
 import names from '../data/statistic_name_list' // TODO: Maybe dynamically import these
 import paths from '../data/statistic_path_list'
-import { discordFix } from '../discord-fix'
 import { loadOrdering, loadOrderingProtobuf, loadJSON, loadProtobuf } from '../load_json'
 import { defaultSettings, MapSettings } from '../mapper/settings'
 import { Settings } from '../page_template/settings'
@@ -112,7 +110,7 @@ const mapperSchemaForParams = z.object({
     view: z.union([z.undefined().transform(() => false), z.literal('true').transform(() => true), z.literal('false').transform(() => false)]),
 })
 
-const pageDescriptorSchema = z.union([
+export const pageDescriptorSchema = z.union([
     z.object({ kind: z.literal('article') }).and(articleSchema),
     z.object({ kind: z.literal('comparison') }).and(comparisonSchema),
     z.object({ kind: z.literal('statistic') }).and(statisticSchema),
@@ -124,27 +122,8 @@ const pageDescriptorSchema = z.union([
     z.object({ kind: z.literal('mapper') }).and(mapperSchema),
 ])
 
-const historyStateSchema = z.object({
-    pageDescriptor: pageDescriptorSchema,
-    scrollPosition: z.number(),
-});
-
-// eslint-disable-next-line @typescript-eslint/no-unused-vars -- Ensures that history does not have effects. (aka that stored history state will be able to be parsed)
-((typeCheck: z.ZodType<HistoryState, z.ZodTypeDef, HistoryState>): void => undefined)(historyStateSchema)
-
-type HistoryState = z.infer<typeof historyStateSchema>
-
-window.history.scrollRestoration = 'manual'
-const history = window.history as {
-    replaceState: (data: HistoryState, unused: string, url?: string | URL | null) => void
-    pushState: (data: HistoryState, unused: string, url?: string | URL | null) => void
-    state: HistoryState
-    forward: () => void
-    back: () => void
-}
-
 export type PageDescriptor = z.infer<typeof pageDescriptorSchema>
-type ExceptionalPageDescriptor = PageDescriptor
+export type ExceptionalPageDescriptor = PageDescriptor
     | { kind: 'initialLoad', url: URL }
     | { kind: 'error', url: URL }
 
@@ -165,7 +144,7 @@ export type PageData =
     }
     | { kind: 'initialLoad' }
 
-function pageDescriptorFromURL(url: URL): PageDescriptor {
+export function pageDescriptorFromURL(url: URL): PageDescriptor {
     /**
      * Remember: When adding a new entrypoint here, you'll also need to add the actual file in `build.py` in order to support initial navigation.
      */
@@ -292,7 +271,7 @@ export function urlFromPageDescriptor(pageDescriptor: ExceptionalPageDescriptor)
 }
 
 // Should not do side-effects in this function, since it can race with other calls of itself. Instead, return effects in the effects result value
-async function loadPageDescriptor(newDescriptor: PageDescriptor, settings: Settings): Promise<{ pageData: PageData, newPageDescriptor: PageDescriptor, effects: () => void }> {
+export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings: Settings): Promise<{ pageData: PageData, newPageDescriptor: PageDescriptor, effects: () => void }> {
     switch (newDescriptor.kind) {
         case 'article':
             const article = await loadProtobuf(dataLink(newDescriptor.longname), 'Article')
@@ -486,359 +465,6 @@ async function loadPageDescriptor(newDescriptor: PageDescriptor, settings: Setti
                 effects: () => undefined,
             }
     }
-}
-
-type PageState = { kind: 'loading', loading: { descriptor: PageDescriptor }, current: { data: PageData, descriptor: ExceptionalPageDescriptor }, loadStartTime: number }
-    | { kind: 'loaded', current: { data: PageData, descriptor: ExceptionalPageDescriptor } }
-
-type SubsequentLoadingState = { kind: 'notLoading', updateAt: undefined } | { kind: 'quickLoad', updateAt: number } | { kind: 'longLoad', updateAt: undefined }
-
-function loadingStateFromPageState(pageState: PageState): SubsequentLoadingState {
-    if (pageState.kind === 'loaded' || pageState.current.data.kind === 'initialLoad') {
-        return { kind: 'notLoading', updateAt: undefined }
-    }
-
-    const quickThresholdDuration = (window as { testQuickNavigationDuration?: number }).testQuickNavigationDuration ?? 2000
-    return Date.now() - pageState.loadStartTime >= quickThresholdDuration ? { kind: 'longLoad', updateAt: undefined } : { kind: 'quickLoad', updateAt: pageState.loadStartTime + quickThresholdDuration }
-}
-
-export interface NavigationOptions {
-    history: 'push' | 'replace' | null // What should we do with this browser history? `null` means nothing, usually you want 'push' or 'replace'
-    scroll: number | null // Where should we scroll to after the navigation? `null` maintains the current scroll position, a number scrolls to that position (0 for top of page). If you're navigating to a hash, passing `null` means we'll scroll to the hash anchor
-}
-
-export class Navigator {
-    /* eslint-disable react-hooks/rules-of-hooks, no-restricted-syntax -- This is a logic class with custom hooks and core navigation functions */
-    static Context = createContext(new Navigator())
-
-    private pageState: PageState
-    private pageStateObservers = new Set<() => void>()
-
-    // Read by the router to apply React effects on rerender
-    // Using this wierd communication with react allows for smooth rendering, as opposed to setting a timeout sometime after the react render
-    effects: (() => void)[] = []
-
-    constructor() {
-        try {
-            const url = new URL(discordFix(window.location.href))
-            this.pageState = {
-                kind: 'loading',
-                loading: { descriptor: pageDescriptorFromURL(url) },
-                current: { descriptor: { kind: 'initialLoad', url }, data: { kind: 'initialLoad' } },
-                loadStartTime: Date.now(),
-            }
-            void this.navigate(this.pageState.loading.descriptor, { history: 'replace', scroll: null })
-        }
-        catch (error) {
-            const url = new URL(window.location.href)
-            this.pageState = {
-                kind: 'loaded',
-                current: {
-                    descriptor: { kind: 'error', url },
-                    data: { kind: 'error', url, error },
-                },
-            }
-        }
-        window.addEventListener('hashchange', () => {
-            void this.navigate(pageDescriptorFromURL(new URL(discordFix(window.location.href))), { history: 'replace', scroll: null })
-        })
-        window.addEventListener('popstate', (popStateEvent: PopStateEvent): void => {
-            if (popStateEvent.state === null) {
-                // When we use window.location.replace for hashes
-                return
-            }
-            const parseResult = historyStateSchema.safeParse(popStateEvent.state)
-            if (parseResult.success) {
-                void this.navigate(parseResult.data.pageDescriptor, {
-                    history: null,
-                    scroll: parseResult.data.scrollPosition,
-                })
-            }
-            else {
-                console.warn(`Failed to parse history state! ${parseResult.error}`)
-                location.reload()
-            }
-        })
-        window.addEventListener('scroll', () => {
-            history.replaceState({ ...history.state, scrollPosition: window.scrollY }, '')
-        })
-
-        /*
-         * Don't have the patience to debug #728 https://github.com/kavigupta/urbanstats/issues/728
-         * So let's try a hack.
-         */
-        window.addEventListener('visibilitychange', () => {
-            if (document.visibilityState === 'visible' && this.pageState.kind === 'loading') {
-                console.warn('focused during loading, navigating again')
-                void this.navigate(this.pageState.loading.descriptor, { history: null, scroll: null })
-            }
-        })
-    }
-
-    async navigate(newDescriptor: PageDescriptor, options: NavigationOptions): Promise<void> {
-        this.effects = [] // If we're starting another navigation, don't use previous effects
-
-        switch (options.history) {
-            case 'push':
-                history.pushState({ pageDescriptor: newDescriptor, scrollPosition: options.scroll ?? window.scrollY }, '', urlFromPageDescriptor(newDescriptor))
-                break
-            case 'replace':
-                history.replaceState({ pageDescriptor: newDescriptor, scrollPosition: options.scroll ?? window.scrollY }, '', urlFromPageDescriptor(newDescriptor))
-                break
-            case null:
-                break
-        }
-
-        this.pageState = { kind: 'loading', loading: { descriptor: newDescriptor }, current: this.pageState.current, loadStartTime: Date.now() }
-        this.pageStateObservers.forEach((observer) => { observer() })
-        try {
-            const { pageData, newPageDescriptor, effects } = await loadPageDescriptor(newDescriptor, Settings.shared)
-            // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- Async function, pageState can change during await
-            if (this.pageState.kind !== 'loading' || this.pageState.loading.descriptor !== newDescriptor) {
-                // Another load has started, don't race it
-                return
-            }
-            const url = urlFromPageDescriptor(newPageDescriptor)
-            history.replaceState({ pageDescriptor: newPageDescriptor, scrollPosition: options.scroll ?? window.scrollY }, '', url)
-            this.pageState = { kind: 'loaded', current: { data: pageData, descriptor: newPageDescriptor } }
-            this.pageStateObservers.forEach((observer) => { observer() })
-
-            this.effects.push(effects)
-
-            // On successful navigate
-
-            // If we're going to a page that doesn't use a settings param, exit staging mode if we're in it
-            if (!['article', 'comparison'].includes(this.pageState.current.descriptor.kind) && Settings.shared.getStagedKeys() !== undefined) {
-                Settings.shared.exitStagedMode('discard')
-            }
-
-            // Jump to
-            if (options.scroll !== null) {
-                // higher priority than hash because we're going back to a page that might have a hash, and we don't want the hash to override the saved scroll position
-                this.effects.push(() => { window.scrollTo({ top: options.scroll! }) })
-            }
-            else if (url.hash !== '') {
-                this.effects.push(() => {
-                    let nextScrollEventIsSeek = false
-
-                    const scrollObserver = (): void => {
-                        if (!nextScrollEventIsSeek) {
-                            destroyObservers()
-                        }
-                        else {
-                            nextScrollEventIsSeek = false
-                        }
-                    }
-
-                    // Keep track of the state where we're seeking so we don't keep trying to seek on another page
-                    const seekedState = this.pageState
-
-                    const resizeObserver = new ResizeObserver(() => {
-                        if (this.pageState === seekedState) {
-                            seekToHash()
-                        }
-                        else {
-                            destroyObservers()
-                        }
-                    })
-
-                    const destroyObservers = (): void => {
-                        resizeObserver.unobserve(document.body)
-                        window.removeEventListener('scroll', scrollObserver)
-                    }
-
-                    const seekToHash = (): void => {
-                        const element = document.getElementById(url.hash.substring(1))
-                        if (element !== null) {
-                            const position = element.getBoundingClientRect().top + window.scrollY
-                            if (Math.round(position) !== Math.round(window.scrollY)) {
-                                nextScrollEventIsSeek = true
-                                window.scrollTo(0, position)
-                            }
-                        }
-                    }
-
-                    // If the body height changes, and the user hasn't scrolled yet, this means something (e.g. fonts) have loaded and our hash seek isn't correct.
-                    resizeObserver.observe(document.body)
-                    // Scrolling from the user should cancel the hash lock, but not scrolling because we've seeked to the hash
-                    window.addEventListener('scroll', scrollObserver)
-
-                    seekToHash()
-                })
-            }
-        }
-        catch (error) {
-            if (this.pageState.kind !== 'loading' || this.pageState.loading.descriptor !== newDescriptor) {
-                // Another load has started, don't race it
-                return
-            }
-            this.pageState = {
-                kind: 'loaded',
-                current: {
-                    descriptor: { kind: 'error', url: urlFromPageDescriptor(newDescriptor) },
-                    data: { kind: 'error', error, descriptor: newDescriptor, url: urlFromPageDescriptor(newDescriptor) },
-                } }
-            this.pageStateObservers.forEach((observer) => { observer() })
-        }
-    }
-
-    link(pageDescriptor: PageDescriptor, options: {
-        scroll: NavigationOptions['scroll']
-        postNavigationCallback?: () => void
-    }): { href: string, onClick: (e?: React.MouseEvent) => Promise<void> } {
-        const url = urlFromPageDescriptor(pageDescriptor)
-        return {
-            href: url.pathname + url.search + url.hash,
-            onClick: async (e?: React.MouseEvent) => {
-                if (e?.altKey || e?.ctrlKey || e?.metaKey || e?.shiftKey) {
-                    // Some sort of shortcut to open in new tab, etc.
-                    return
-                }
-                e?.preventDefault()
-                await this.navigate(pageDescriptor, {
-                    history: 'push',
-                    scroll: options.scroll,
-                })
-                options.postNavigationCallback?.()
-            },
-        }
-    }
-
-    usePageState(): PageState {
-        const [result, setResult] = useState(this.pageState)
-
-        useEffect(() => {
-            const observer = (): void => {
-                setResult(this.pageState)
-            }
-            this.pageStateObservers.add(observer)
-            return () => { this.pageStateObservers.delete(observer) }
-        }, [])
-
-        return result
-    }
-
-    get currentDescriptor(): ExceptionalPageDescriptor {
-        return this.pageState.current.descriptor
-    }
-
-    get universe(): string | undefined {
-        const data = this.pageState.current.data
-        switch (data.kind) {
-            case 'article':
-            case 'comparison':
-            case 'statistic':
-                return data.universe
-            default:
-                return undefined
-        }
-    }
-
-    useUniverse(): string | undefined {
-        const [universe, setUniverse] = useState(this.universe)
-
-        useEffect(() => {
-            const observer = (): void => {
-                setUniverse(this.universe)
-            }
-            this.pageStateObservers.add(observer)
-            return () => { this.pageStateObservers.delete(observer) }
-        }, [])
-
-        return universe
-    }
-
-    setUniverse(newUniverse: string): void {
-        switch (this.pageState.current.descriptor.kind) {
-            case 'article':
-            case 'comparison':
-            case 'statistic':
-                void this.navigate({
-                    ...this.pageState.current.descriptor,
-                    universe: newUniverse,
-                }, {
-                    history: 'push',
-                    scroll: null,
-                })
-                break
-            default:
-                throw new Error(`Page descriptor kind ${this.pageState.current.descriptor.kind} does not have a universe`)
-        }
-    }
-
-    private get statPaths(): StatPath[][] | undefined {
-        switch (this.pageState.current.data.kind) {
-            case 'article':
-            case 'comparison':
-                return this.pageState.current.data.statPaths
-            default:
-                return undefined
-        }
-    }
-
-    useStatPathsAll(): StatPath[][] | undefined {
-        const [statPaths, setStatPaths] = useState(this.statPaths)
-
-        useEffect(() => {
-            const observer = (): void => {
-                setStatPaths(this.statPaths)
-            }
-            this.pageStateObservers.add(observer)
-            return () => { this.pageStateObservers.delete(observer) }
-        }, [])
-
-        return statPaths
-    }
-
-    setSettingsVector(newVector: string): void {
-        switch (this.pageState.current.descriptor.kind) {
-            case 'article':
-            case 'comparison':
-                this.pageState.current.descriptor.s = newVector
-                history.replaceState({ pageDescriptor: this.pageState.current.descriptor, scrollPosition: window.scrollY }, '', urlFromPageDescriptor(this.pageState.current.descriptor))
-                break
-            default:
-                throw new Error(`Page descriptor kind ${this.pageState.current.descriptor.kind} does not have a settings vector`)
-        }
-    }
-
-    setMapperSettings(newSettings: string): void {
-        switch (this.pageState.current.descriptor.kind) {
-            case 'mapper':
-                this.pageState.current.descriptor.settings = newSettings
-                history.replaceState({ pageDescriptor: this.pageState.current.descriptor, scrollPosition: window.scrollY }, '', urlFromPageDescriptor(this.pageState.current.descriptor))
-                break
-            default:
-                throw new Error(`Page descriptor kind ${this.pageState.current.descriptor.kind} does not have mapper settings`)
-        }
-    }
-
-    useSubsequentLoading(): SubsequentLoadingState['kind'] {
-        const [loading, setLoading] = useState(loadingStateFromPageState(this.pageState))
-
-        useEffect(() => {
-            const observer = (): void => {
-                setLoading(loadingStateFromPageState(this.pageState))
-            }
-            this.pageStateObservers.add(observer)
-            return () => { this.pageStateObservers.delete(observer) }
-        }, [])
-
-        useEffect(() => {
-            if (loading.updateAt !== undefined) {
-                const timeout = setTimeout(() => {
-                    setLoading(loadingStateFromPageState(this.pageState))
-                }, loading.updateAt - Date.now())
-                return () => { clearTimeout(timeout) }
-            }
-            else {
-                return undefined
-            }
-        }, [loading.updateAt])
-
-        return loading.kind
-    }
-    /* eslint-enable react-hooks/rules-of-hooks, no-restricted-syntax */
 }
 
 function mapSettingsFromURLParam(encodedSettings: string | undefined): MapSettings {
