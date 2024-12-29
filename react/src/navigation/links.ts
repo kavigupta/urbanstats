@@ -29,31 +29,31 @@ export function shardedName(longname: string): string {
 }
 
 export function shapeLink(longname: string): string {
-    return `/shape/${shardedName(longname)}.gz`
+    return `/shape/${encodeURIComponent(shardedName(longname))}.gz`
 }
 
 export function dataLink(longname: string): string {
-    return `/data/${shardedName(longname)}.gz`
+    return `/data/${encodeURIComponent(shardedName(longname))}.gz`
 }
 
 export function indexLink(universe: string, typ: string): string {
-    return `/index/${universe}/${sanitize(typ, false)}.gz`
+    return `/index/${universe}/${encodeURIComponent(sanitize(typ, false))}.gz`
 }
 
 export function orderingLink(universe: string, type: string, idx: number): string {
-    return `/order/${universe}/${sanitize(type, false)}_${idx}.gz`
+    return `/order/${universe}/${encodeURIComponent(sanitize(type, false))}_${idx}.gz`
 }
 
 export function orderingDataLink(universe: string, type: string, idx: number): string {
-    return `/order/${universe}/${sanitize(type, false)}_${idx}_data.gz`
+    return `/order/${universe}/${encodeURIComponent(sanitize(type, false))}_${idx}_data.gz`
 }
 
 export function consolidatedShapeLink(typ: string): string {
-    return `/consolidated/shapes__${sanitize(typ)}.gz`
+    return `/consolidated/shapes__${encodeURIComponent(sanitize(typ))}.gz`
 }
 
 export function consolidatedStatsLink(typ: string): string {
-    return `/consolidated/stats__${sanitize(typ)}.gz`
+    return `/consolidated/stats__${encodeURIComponent(sanitize(typ))}.gz`
 }
 
 export function statisticDescriptor(props: {
@@ -97,5 +97,5 @@ export function sanitize(longname: string, spaces_around_slash = true): string {
 }
 
 export function universePath(universe: string): string {
-    return `/icons/flags/${universe}.png`
+    return `/icons/flags/${encodeURIComponent(universe)}.png`
 }
