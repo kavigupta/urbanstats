@@ -1,3 +1,4 @@
+import os
 from urllib.parse import urlencode
 
 from urbanstats.ordinals.ordering_info_outputter import reorganize_counts
@@ -12,13 +13,15 @@ def output_sitemap(site_folder, articles, ordinal_info):
     max_entries = 50000
     paths = []
     for i, start in enumerate(range(0, len(all_sitemap_urls), max_entries)):
-        path = f"{site_folder}/sitemaps/sitemap{i}.txt"
+        path = f"sitemaps/sitemap{i}.txt"
         paths.append(path)
-        with open(path, "w") as f:
+        with open(os.path.join(site_folder, path), "w") as f:
             f.write("\n".join(all_sitemap_urls[start : start + max_entries]))
 
     with open(f"{site_folder}/robots.txt", "w") as f:
-        f.write("\n".join(paths))
+        f.write(
+            "\n".join([f"Sitemap: https://urbanstats.org/{path}" for path in paths])
+        )
 
 
 def top_level_pages():
