@@ -38,8 +38,9 @@ test('can visit sitemap links', async (t) => {
     }
 
     const visitUrls: string[] = []
+    const numToSample = 100
     for (const urls of byBase.values()) {
-        for (let sampled = 0; sampled < 10 && urls.length > 0; sampled++) {
+        for (let sampled = 0; sampled < numToSample && urls.length > 0; sampled++) {
             const index = Math.floor(Math.random() * urls.length)
             visitUrls.push(urls[index])
             urls.splice(index, 1)
