@@ -1,3 +1,4 @@
+import glob
 import os
 from urllib.parse import urlencode
 
@@ -8,6 +9,10 @@ def output_sitemap(site_folder, articles, ordinal_info):
     all_sitemap_urls = (
         top_level_pages() + article_urls(articles) + statistic_urls(ordinal_info)
     )
+
+    # Delete existing sitemaps in sitemaps folder
+    for f in glob.glob("sitemaps/*"):
+        os.remove(f)
 
     # 50k is max number of entries in a sitemap
     max_entries = 50000
