@@ -200,8 +200,8 @@ export async function arrayFromSelector(selector: Selector): Promise<Selector[]>
     return Array.from({ length: await selector.count }, (_, n) => selector.nth(n))
 }
 
-export function waitForPageLoaded(t: TestController): Promise<void> {
-    return t.expect(Selector('#pageState_kind').value).eql('loaded') // Wait for initial loading to finish
+export async function waitForPageLoaded(t: TestController): Promise<void> {
+    await t.expect(Selector('#pageState_kind').value).eql('loaded') // Wait for initial loading to finish
 }
 
 export function pageDescriptorKind(): Promise<string | undefined> {
