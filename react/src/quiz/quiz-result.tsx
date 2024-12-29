@@ -129,7 +129,7 @@ export function QuizResult(props: QuizResultProps): ReactNode {
                 props.quizDescriptor.kind === 'custom'
                     ? undefined
                     : (
-                            <div style={{ margin: 'auto', width: '50%' }}>
+                            <div style={{ margin: 'auto', width: '100%', maxWidth: '500px' }}>
                                 <QuizFriendsPanel
                                     quizFriends={quizFriends}
                                     date={parseTimeIdentifier(props.quizDescriptor.kind, props.quizDescriptor.name.toString())}
