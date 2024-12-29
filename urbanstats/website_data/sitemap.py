@@ -3,6 +3,9 @@ import os
 from urllib.parse import urlencode
 
 from urbanstats.ordinals.ordering_info_outputter import reorganize_counts
+from urbanstats.statistics.output_statistics_metadata import (
+    statistic_internal_to_display_name,
+)
 
 
 def output_sitemap(site_folder, articles, ordinal_info):
@@ -56,10 +59,13 @@ def statistic_urls(ordinal_info):
     # We want the same counts that are output to the site
     counts = reorganize_counts(ordinal_info, ordinal_info.counts_by_type_universe_col())
     for universe, article_types in counts.items():
-        for (stat_name, article_type), stat_count in article_types:
+        for (stat_internal_name, article_type), stat_count in article_types:
             if article_type != "overall" and stat_count > 0:
+                statname = statistic_internal_to_display_name()[
+                    stat_internal_name
+                ].replace("%", "__PCT__")
                 params = {
-                    "statname": stat_name.replace("%", "__PCT__"),
+                    "statname": statname,
                     "article_type": article_type,
                     "universe": universe,
                 }
