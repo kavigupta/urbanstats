@@ -47,6 +47,8 @@ test('can visit sitemap links', async (t) => {
     }
 
     for (const url of visitUrls) {
+        // eslint-disable-next-line no-console -- So we can see where it fails
+        console.log(url)
         await t.navigateTo(url)
         await waitForPageLoaded(t)
         await t.expect(pageDescriptorKind()).notEql('error')
