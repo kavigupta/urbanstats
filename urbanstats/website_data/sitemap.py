@@ -2,6 +2,7 @@ import os
 from urllib.parse import urlencode
 
 from urbanstats.ordinals.ordering_info_outputter import reorganize_counts
+from urbanstats.statistics.stat_path import get_statistic_column_path
 
 
 def output_sitemap(site_folder, articles, ordinal_info):
@@ -54,7 +55,7 @@ def statistic_urls(ordinal_info):
         for (stat_name, article_type), stat_count in article_types:
             if article_type != "overall" and stat_count > 0:
                 params = {
-                    "statname": stat_name.replace("%", "__PCT__"),
+                    "statname": get_statistic_column_path(stat_name).replace("%", "__PCT__"),
                     "article_type": article_type,
                     "universe": universe,
                 }
