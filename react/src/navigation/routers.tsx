@@ -29,6 +29,7 @@ export function Router(): ReactNode {
     return (
         <>
             <input type="hidden" id="pageState_kind" value={pageState.kind} />
+            <input type="hidden" id="pageState_current_descriptor_kind" value={pageState.current.descriptor.kind} />
             <PageRouter pageData={pageState.current.data} />
             <SubsequentLoad />
             <HighlightHash />
