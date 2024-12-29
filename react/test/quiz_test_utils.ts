@@ -53,7 +53,7 @@ async function waitForServerToBeAvailable(): Promise<void> {
     }
 }
 
-export function quizFixture(fixName: string, url: string, newLocalstorage: Record<string, string>, sqlStatements: string): void {
+export function quizFixture(fixName: string, url: string, newLocalstorage: Record<string, string>, sqlStatements: string, beforeEach?: (t: TestController) => Promise<void>): void {
     urbanstatsFixture(fixName, url, async (t) => {
         await interceptRequests(t)
         const tempfile = `${tempfileName()}.sql`
@@ -77,6 +77,7 @@ ${sqlStatements}`)
         })
         // Must reload after setting localstorage so page picks it up
         await safeReload(t)
+        await beforeEach?.(t)
     })
 }
 
