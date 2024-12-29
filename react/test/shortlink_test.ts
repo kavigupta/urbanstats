@@ -6,6 +6,7 @@ quizFixture(
     `${target}/quiz.html#date=99`,
     { persistent_id: '000000000000007' },
     '',
+    'desktop',
 )
 
 test('shortlink-found', async (t) => {

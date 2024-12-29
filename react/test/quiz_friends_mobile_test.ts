@@ -18,7 +18,7 @@ quizFriendsTest(
         today: juxta99,
         yesterday: juxta98,
         other: retro11,
-        platform: 'desktop',
+        platform: 'mobile',
     },
 )
 
@@ -31,6 +31,6 @@ quizFriendsTest(
         today: retro11,
         yesterday: retro10,
         other: juxta99,
-        platform: 'desktop',
+        platform: 'mobile',
     },
 )
