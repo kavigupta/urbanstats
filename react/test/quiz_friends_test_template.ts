@@ -114,16 +114,7 @@ export function quizFriendsTest(
         `${target}/${today}`,
         { },
         '',
-        async (t) => {
-            switch (props.platform) {
-                case 'mobile':
-                    await t.resizeWindow(400, 800)
-                    break
-                case 'desktop':
-                    await t.resizeWindow(1400, 800)
-                    break
-            }
-        },
+        props.platform,
     )
 
     async function aliceBobFriends(t: TestController, screenshots: boolean): Promise<JuxtastatUserState> {

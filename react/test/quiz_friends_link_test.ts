@@ -3,7 +3,7 @@ import { target } from './test_utils'
 
 quizFixture('current juxta', `${target}/quiz.html`, {
     persistent_id: 'f00f',
-}, '')
+}, '', 'desktop')
 
 const friendLinkHash = '#name=spudwaffle&id=f00f'
 const friendLink = `https://juxtastat.org/${friendLinkHash}`
@@ -31,7 +31,7 @@ test('copy friend link', async (t) => {
 
 quizFixture('current juxta', `${target}/quiz.html`, {
     persistent_id: 'eeee',
-}, '')
+}, '', 'desktop')
 
 test('paste friend link before doing quiz', async (t) => {
     await t.setNativeDialogHandler(() => true)

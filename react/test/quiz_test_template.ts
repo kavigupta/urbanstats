@@ -61,16 +61,7 @@ export function quizTest({ platform }: { platform: 'desktop' | 'mobile' }): void
         `${target}/quiz.html#date=99`,
         { persistent_id: '000000000000007' },
         '',
-        async (t) => {
-            switch (platform) {
-                case 'mobile':
-                    await t.resizeWindow(400, 800)
-                    break
-                case 'desktop':
-                    await t.resizeWindow(1400, 800)
-                    break
-            }
-        },
+        platform,
     )
 
     test('quiz-clickthrough-test', async (t) => {
@@ -103,6 +94,7 @@ export function quizTest({ platform }: { platform: 'desktop' | 'mobile' }): void
         `${target}/quiz.html#date=99`,
         { persistent_id: '000000000000007', secure_id: '00000003', quiz_history: JSON.stringify(exampleQuizHistory(87, 90)) },
         '',
+        platform,
     )
 
     test('quiz-report-old-results', async (t) => {
@@ -131,6 +123,7 @@ export function quizTest({ platform }: { platform: 'desktop' | 'mobile' }): void
         (user integer, day integer, corrects integer, time integer, PRIMARY KEY (user, day));
     INSERT INTO JuxtaStatIndividualStats VALUES (7, 30, 0, 0);
     `,
+        platform,
     )
 
     test('quiz-trust-on-first-use', async (t) => {
@@ -151,6 +144,7 @@ export function quizTest({ platform }: { platform: 'desktop' | 'mobile' }): void
     CREATE TABLE IF NOT EXISTS JuxtaStatUserSecureID (user integer PRIMARY KEY, secure_id int);
     INSERT INTO JuxtaStatUserSecureID VALUES (7, 4);
     `,
+        platform,
     )
 
     test('quiz-auth-failure', async (t) => {
@@ -174,6 +168,7 @@ export function quizTest({ platform }: { platform: 'desktop' | 'mobile' }): void
     INSERT INTO JuxtaStatIndividualStats VALUES (7, 89, 0, 0);
     INSERT INTO JuxtaStatIndividualStats VALUES (7, 90, 0, 0);
     `,
+        platform,
     )
 
     test('quiz-do-not-report-stale-results', async (t) => {
@@ -206,6 +201,7 @@ export function quizTest({ platform }: { platform: 'desktop' | 'mobile' }): void
     ${Array.from(Array(30).keys()).map(
         i => `INSERT INTO JuxtaStatIndividualStats VALUES(${i + 30}, 99, 101, 0); INSERT INTO JuxtaStatUserDomain VALUES(${i + 30}, 'urbanstats.org');`,
     ).join('\n')}`,
+        platform,
     )
 
     test('quiz-percentage-correct', async (t) => {
@@ -240,6 +236,7 @@ export function quizTest({ platform }: { platform: 'desktop' | 'mobile' }): void
         `${target}/quiz.html#date=99`,
         {},
         '',
+        platform,
     )
 
     function hexToDec(hex: string): string {
@@ -282,6 +279,7 @@ export function quizTest({ platform }: { platform: 'desktop' | 'mobile' }): void
     INSERT INTO JuxtaStatIndividualStats VALUES (7, 90, 0, 0);
     INSERT INTO JuxtaStatIndividualStatsRetrostat VALUES (7, 30, 0, 0);
     `,
+        platform,
     )
 
     test('quiz-retrostat-regular-quiz-reporting', async (t) => {
@@ -323,6 +321,7 @@ export function quizTest({ platform }: { platform: 'desktop' | 'mobile' }): void
         `${target}/quiz.html#date=100`,
         { quiz_history: JSON.stringify(exampleQuizHistory(2, 100)) },
         '',
+        platform,
     )
 
     async function checkText(t: TestController, words: string, emoji: string): Promise<void> {
@@ -375,6 +374,7 @@ export function quizTest({ platform }: { platform: 'desktop' | 'mobile' }): void
             }),
         },
         '',
+        platform,
     )
 
     test('several-quiz-results-test', async (t) => {
@@ -411,6 +411,7 @@ export function quizTest({ platform }: { platform: 'desktop' | 'mobile' }): void
             secure_id: 'baddecaf',
         },
         '',
+        platform,
     )
 
     const expectedExportWithoutDate = {
@@ -487,6 +488,7 @@ export function quizTest({ platform }: { platform: 'desktop' | 'mobile' }): void
             quiz_friends: '[]',
         },
         '',
+        platform,
     )
 
     test('import quiz progress', async (t) => {
@@ -632,6 +634,7 @@ export function quizTest({ platform }: { platform: 'desktop' | 'mobile' }): void
     quizFixture('import quiz progress with numbers', `${target}/quiz.html#date=90`,
         {},
         '',
+        platform,
     )
 
     test('import quiz progress with numbers', async (t) => {
@@ -657,6 +660,7 @@ export function quizTest({ platform }: { platform: 'desktop' | 'mobile' }): void
             secure_id: 'baddecaf',
         },
         '',
+        platform,
     )
 
     test('quiz results go to compare pages', async (t) => {
@@ -668,7 +672,7 @@ export function quizTest({ platform }: { platform: 'desktop' | 'mobile' }): void
         await screencap(t)
     })
 
-    quizFixture('current juxta', `${target}/quiz.html`, {}, '')
+    quizFixture('current juxta', `${target}/quiz.html`, {}, '', platform)
 
     test('share link current juxta', async (t) => {
         await clickButtons(t, ['a', 'a', 'a', 'a', 'a'])
@@ -682,7 +686,7 @@ export function quizTest({ platform }: { platform: 'desktop' | 'mobile' }): void
 
     quizFixture('current juxta ending in 10s', `${target}/quiz.html`, {
         debug_quiz_transition: '10000',
-    }, '')
+    }, '', platform)
 
     test('next quiz button when quiz ends', async (t) => {
         await clickButtons(t, ['a', 'a', 'a', 'a', 'a'])
@@ -691,7 +695,7 @@ export function quizTest({ platform }: { platform: 'desktop' | 'mobile' }): void
         await t.expect(Selector('a').withText('Next Quiz').exists).notOk()
     })
 
-    quizFixture('current retro', `${target}/quiz.html#mode=retro`, {}, '')
+    quizFixture('current retro', `${target}/quiz.html#mode=retro`, {}, '', platform)
 
     test('share link current retro', async (t) => {
         await clickButtons(t, ['a', 'a', 'a', 'a', 'a'])
@@ -776,7 +780,7 @@ export function quizTest({ platform }: { platform: 'desktop' | 'mobile' }): void
 
     CREATE TABLE IF NOT EXISTS JuxtaStatIndividualStatsRetrostat
         (user integer, week integer, corrects integer, time integer, PRIMARY KEY (user, week));
-`)
+`, platform)
 
     test('custom-quiz', async (t) => {
         const checkFirstQuestionPage = async (): Promise<void> => {
