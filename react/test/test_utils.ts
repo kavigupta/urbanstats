@@ -204,8 +204,8 @@ export async function waitForPageLoaded(t: TestController): Promise<void> {
     await t.expect(Selector('#pageState_kind').value).eql('loaded') // Wait for initial loading to finish
 }
 
-export async function pageDescriptorKind(): Promise<string | undefined> {
-    return await Selector('#pageState_current_descriptor_kind').value
+export function pageDescriptorKind(): Promise<string | undefined> {
+    return Selector('#pageState_current_descriptor_kind').value
 }
 
 export async function safeReload(t: TestController): Promise<void> {
