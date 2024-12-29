@@ -10,23 +10,15 @@ def output_sitemap(site_folder, articles, ordinal_info):
 
     # 50k is max number of entries in a sitemap
     max_entries = 50000
-    q, r = divmod(len(all_sitemap_urls), max_entries)
-    num_sitemap_fragments = q + bool(r)
-    for i in range(0, num_sitemap_fragments):
-        with open(f"{site_folder}/sitemaps/sitemap{i}.txt", "w") as f:
-            f.write(
-                "\n".join(all_sitemap_urls[i * max_entries : (i + 1) * max_entries])
-            )
+    paths = []
+    for i, start in enumerate(range(0, len(all_sitemap_urls), max_entries)):
+        path = f"{site_folder}/sitemaps/sitemap{i}.txt"
+        paths.append(path)
+        with open(path, "w") as f:
+            f.write("\n".join(all_sitemap_urls[start : start + max_entries]))
 
     with open(f"{site_folder}/robots.txt", "w") as f:
-        f.write(
-            "\n".join(
-                [
-                    f"Sitemap: https://urbanstats.org/sitemaps/sitemap{i}.txt"
-                    for i in range(0, num_sitemap_fragments)
-                ]
-            )
-        )
+        f.write("\n".join(paths))
 
 
 def top_level_pages():
