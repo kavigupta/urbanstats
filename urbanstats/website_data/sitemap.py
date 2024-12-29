@@ -56,7 +56,7 @@ def statistic_urls(ordinal_info):
     # We want the same counts that are output to the site
     counts = reorganize_counts(ordinal_info, ordinal_info.counts_by_type_universe_col())
     for universe, article_types in counts.items():
-        for ((stat_name, article_type), stat_count) in article_types:
+        for (stat_name, article_type), stat_count in article_types:
             if stat_count > 0:
                 params = {
                     "statname": stat_name,
