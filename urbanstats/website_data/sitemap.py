@@ -52,9 +52,9 @@ def statistic_urls(ordinal_info):
     counts = reorganize_counts(ordinal_info, ordinal_info.counts_by_type_universe_col())
     for universe, article_types in counts.items():
         for (stat_name, article_type), stat_count in article_types:
-            if stat_count > 0:
+            if article_type != "overall" and stat_count > 0:
                 params = {
-                    "statname": stat_name,
+                    "statname": stat_name.replace("%", "__PCT__"),
                     "article_type": article_type,
                     "universe": universe,
                 }
