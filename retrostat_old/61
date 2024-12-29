@@ -1,0 +1,117 @@
+[
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "% units built pre-1970",
+      "stat_path": "year_built_1969_or_earlier",
+      "question": "higher % units built pre-1970",
+      "longname_a": "Anchorage municipality, Alaska, USA",
+      "longname_b": "Sacramento city, California, USA",
+      "stat_a": 0.17779320429935852,
+      "stat_b": 0.4234733212530906
+    },
+    "b": {
+      "stat_column": "Divorced %",
+      "stat_path": "marriage_divorced",
+      "question": "higher % of people who are divorced",
+      "longname_a": "New York County, New York, USA",
+      "longname_b": "Naugatuck Valley Planning Region, Connecticut, USA",
+      "stat_a": 0.08721973921853064,
+      "stat_b": 0.12018956165470622
+    },
+    "a_ease": 0.733453670276775,
+    "b_ease": 0.32982021078735274
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Public administration %",
+      "stat_path": "industry_public_administration",
+      "question": "higher % of workers employed in public administration!TOOLTIP executive offices, legislative bodies, public finance activities, public order and safety activities, etc.",
+      "longname_a": "Charlotte-Concord-Gastonia MSA, NC-SC, USA",
+      "longname_b": "Huntsville MSA, AL, USA",
+      "stat_a": 0.02488979960801573,
+      "stat_b": 0.0844052106230285
+    },
+    "b": {
+      "stat_column": "Management of companies and enterprises % [StatCan]",
+      "stat_path": "industry_management_of_companies_and_enterprises_canada",
+      "question": "higher % of workers employed in the management industry!TOOLTIP management of companies and enterprises",
+      "longname_a": "Hamilton CMA, ON, Canada",
+      "longname_b": "Edmonton CMA, AB, Canada",
+      "stat_a": 0.0012162233620644073,
+      "stat_b": 0.00033392001224373356
+    },
+    "a_ease": 0.2827838827838828,
+    "b_ease": 0.7053291536050157
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Mean high temp",
+      "stat_path": "mean_high_temp_4",
+      "question": "higher mean daily high temperature (population weighted)!TOOLTIP Population weighted weather statistics are calculated by computing the weather statistic for each person in the region and then averaging the results.",
+      "longname_a": "Riverside-San Bernardino-Ontario MSA, CA, USA",
+      "longname_b": "El Paso MSA, TX, USA",
+      "stat_a": 75.05197441244331,
+      "stat_b": 78.47095734338254
+    },
+    "b": {
+      "stat_column": "2016-2020 Swing",
+      "stat_path": "2016-2020 Swing-margin",
+      "question": "!FULL Which swung towards Democrats more from 2016 to 2020?",
+      "longname_a": "Savannah [Urban Area], GA, USA",
+      "longname_b": "McKinney-Frisco [Urban Area], TX, USA",
+      "stat_a": 0.02872237710206449,
+      "stat_b": 0.14176427244571926
+    },
+    "a_ease": 0.7956112852664576,
+    "b_ease": 0.3502789832610043
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Racial Homogeneity %",
+      "stat_path": "homogeneity_250_2020",
+      "question": "higher racial homogeneity!TOOLTIP We define racial homogeneity as the average probability a person selecing a random person in a 250m radius will select someone of the same race",
+      "longname_a": "Clark County, Nevada, USA",
+      "longname_b": "San Juan Municipio, Puerto Rico, USA",
+      "stat_a": 0.37755789685738417,
+      "stat_b": 0.9580973861750892
+    },
+    "b": {
+      "stat_column": "% units built pre-1970",
+      "stat_path": "year_built_1969_or_earlier",
+      "question": "higher % units built pre-1970",
+      "longname_a": "SC-01, USA",
+      "longname_b": "CA-08, USA",
+      "stat_a": 0.0994976106145227,
+      "stat_b": 0.40780731363034123
+    },
+    "a_ease": 0.8164861612515042,
+    "b_ease": 0.4041720990873533
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Fair or poor self-rated health status %",
+      "stat_path": "GHLTH_cdc_2",
+      "question": "higher % of adults with a fair or poor self-rated health status",
+      "longname_a": "NY-13, USA",
+      "longname_b": "MI-02, USA",
+      "stat_a": 0.21779765371624826,
+      "stat_b": 0.1711909542488148
+    },
+    "b": {
+      "stat_column": "Commute Walk %",
+      "stat_path": "transportation_means_walk",
+      "question": "higher % of people who commute by walking",
+      "longname_a": "Santa Barbara County, California, USA",
+      "longname_b": "Osceola County, Florida, USA",
+      "stat_a": 0.04003990496064932,
+      "stat_b": 0.0066799663175979435
+    },
+    "a_ease": 0.33477991320520767,
+    "b_ease": 0.7958361316319678
+  }
+]

@@ -1,12 +1,16 @@
-import path, { resolve } from 'path'
+// @ts-check
+import path from 'path'
 
-import NodePolyfillPlugin from 'node-polyfill-webpack-plugin'
 import ForkTsCheckerWebpackPlugin from 'fork-ts-checker-webpack-plugin'
+import NodePolyfillPlugin from 'node-polyfill-webpack-plugin'
 
+const isProduction = process.env.NODE_ENV === 'production'
+
+/** @type {(env: Record<string, string>) => import('@rspack/cli').Configuration} */
 export default env => ({
     entry: {
-        'index': ['./src/index.tsx'],
-        'loading': ['./src/loading.ts']
+        index: ['./src/index.tsx'],
+        loading: ['./src/loading.ts'],
     },
     output: {
         filename: '[name].js',
@@ -18,7 +22,7 @@ export default env => ({
         extensions: ['', '.webpack.js', '.web.js', '.ts', '.tsx', '.js'],
         extensionAlias: {
             '.js': ['.ts', '.js'],
-            '.mjs': ['.mts', '.mjs']
+            '.mjs': ['.mts', '.mjs'],
         },
     },
     module: {
@@ -35,7 +39,7 @@ export default env => ({
     // devtool: 'inline-source-map',
     plugins: [
         new NodePolyfillPlugin(),
-        new ForkTsCheckerWebpackPlugin()
+        new ForkTsCheckerWebpackPlugin(),
     ],
     devServer: {
         static: {
@@ -47,4 +51,9 @@ export default env => ({
             writeToDisk: true,
         },
     },
+    performance: {
+        hints: isProduction ? 'error': false,
+        maxAssetSize: Number.MAX_SAFE_INTEGER,
+        maxEntrypointSize: 3.5 * Math.pow(2, 20)
+    }
 })
