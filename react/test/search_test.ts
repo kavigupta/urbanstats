@@ -75,7 +75,7 @@ test('control click search result to open in new tab', async (t) => {
     await t.expect(getLocation()).match(/article\.html\?longname=San\+Marino\+city%2C\+California%2C\+USA/)
 })
 
-test.only('can visit Umm Siado', async (t) => {
+test('can visit Umm Siado', async (t) => {
     await t
         .click(searchField)
         .typeText(searchField, 'Umm Siado')
