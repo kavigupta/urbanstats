@@ -27,7 +27,7 @@ def output_sitemap(site_folder, articles, ordinal_info):
     for i, start in enumerate(range(0, len(all_sitemap_urls), max_entries)):
         path = f"sitemaps/sitemap{i}.txt.gz"
         paths.append(path)
-        with gzip.open(os.path.join(site_folder, path), "w") as f:
+        with gzip.open(os.path.join(site_folder, path), "w", mtime=0) as f:
             f.write(
                 "\n".join(all_sitemap_urls[start : start + max_entries]).encode("utf-8")
             )
