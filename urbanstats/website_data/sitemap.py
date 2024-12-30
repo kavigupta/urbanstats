@@ -3,13 +3,14 @@ import gzip
 import os
 from urllib.parse import urlencode
 
+import numpy as np
+import tqdm.auto as tqdm
+
 from urbanstats.ordinals.ordering_info_outputter import reorganize_counts
 from urbanstats.statistics.output_statistics_metadata import (
-    internal_statistic_names,
     statistic_internal_to_display_name,
 )
 from urbanstats.statistics.statistics_tree import statistics_tree
-from urbanstats.website_data.create_article_gzips import isnan
 
 
 def output_sitemap(site_folder, articles, ordinal_info):
@@ -27,7 +28,7 @@ def output_sitemap(site_folder, articles, ordinal_info):
     for i, start in enumerate(range(0, len(all_sitemap_urls), max_entries)):
         path = f"sitemaps/sitemap{i}.txt.gz"
         paths.append(path)
-        with gzip.open(os.path.join(site_folder, path), "w", mtime=0) as f:
+        with gzip.GzipFile(os.path.join(site_folder, path), "wb", mtime=0) as f:
             f.write(
                 "\n".join(all_sitemap_urls[start : start + max_entries]).encode("utf-8")
             )
@@ -53,15 +54,16 @@ def top_level_pages():
 
 
 def article_urls(articles):
+    category_masks = {}
+    for category_id, category in statistics_tree.categories.items():
+        stats = [articles[stat] for stat in category.internal_statistics()]
+        category_masks[category_id] = ~np.isnan(stats).all(0)
     result = []
-    for _, article in articles.iterrows():
+    for idx, longname in enumerate(tqdm.tqdm(articles.longname, desc="sitemap: articles")):
         for category_id, category in statistics_tree.categories.items():
-            if any(
-                not isnan(article[internal_statistic_names().index(statistic_name)])
-                for statistic_name in category.internal_statistics()
-            ):
+            if category_masks[category_id][idx]:
                 params = {
-                    "longname": article.longname,
+                    "longname": longname,
                     "category": category_id,
                 }
                 result.append(
