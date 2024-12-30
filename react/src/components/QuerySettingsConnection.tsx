@@ -4,7 +4,7 @@ import extra_stats from '../data/extra_stats'
 import stat_path_list from '../data/statistic_path_list'
 import { Navigator } from '../navigation/Navigator'
 import { Settings, SettingsDictionary, sourceEnabledKey, statPathsWithExtra } from '../page_template/settings'
-import { fromVector, useVector, VectorSettingKey } from '../page_template/settings-vector'
+import { useVector, VectorSettingKey, VectorSettingsDictionary } from '../page_template/settings-vector'
 import { getAvailableGroups, getAvailableYears, getDataSourceCheckboxes, groupYearKeys, statIsEnabled, useStatPathsAll } from '../page_template/statistic-settings'
 import { findAmbiguousSourcesAll, StatPath } from '../page_template/statistic-tree'
 
@@ -98,8 +98,7 @@ export function settingsConnectionConfig({ pageKind, statPaths, settings }: { pa
     return { stagedSettingsKeys, applySettingsKeys }
 }
 
-export function applySettingsParam(settingsVector: string, settings: Settings, availableStatPaths: StatPath[][], { stagedSettingsKeys, applySettingsKeys }: SettingsConnectionConfig): void {
-    const settingsFromQueryParams = fromVector(settingsVector, settings)
+export function applySettingsParamSettings(settingsFromQueryParams: VectorSettingsDictionary, settings: Settings, availableStatPaths: StatPath[][], { stagedSettingsKeys, applySettingsKeys }: SettingsConnectionConfig): void {
     if (stagedSettingsKeys.some(key => JSON.stringify(settingsFromQueryParams[key]) !== JSON.stringify(settings.get(key)))) {
         settings.enterStagedMode(Object.fromEntries(stagedSettingsKeys.map(key => [key, settingsFromQueryParams[key]])) as unknown as Partial<SettingsDictionary>)
         // If we haven't saved any previous settings, just save these staged settings
