@@ -449,6 +449,7 @@ function StatisticName(props: {
                     highlight: props.longname,
                 }), { scroll: 0 })
             }
+            data-test-id="statistic-link"
         >
             {props.row.renderedStatname}
         </a>

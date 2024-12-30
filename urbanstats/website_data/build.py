@@ -35,6 +35,7 @@ from urbanstats.website_data.create_article_gzips import (
 from urbanstats.website_data.index import export_index
 from urbanstats.website_data.ordinals import all_ordinals
 from urbanstats.website_data.output_geometry import produce_all_geometry_json
+from urbanstats.website_data.sitemap import output_sitemap
 from urbanstats.website_data.table import shapefile_without_ordinals
 
 from ..utils import output_typescript
@@ -180,6 +181,7 @@ def build_urbanstats(
         "order",
         "quiz",
         "retrostat",
+        "sitemaps",
     ]:
         try:
             os.makedirs(f"{site_folder}/{sub}")
@@ -203,6 +205,8 @@ def build_urbanstats(
         output_ordering(site_folder, all_ordinals())
 
         full_consolidated_data(site_folder)
+
+        output_sitemap(site_folder, shapefile_without_ordinals(), all_ordinals())
 
     for entrypoint in [
         "index",

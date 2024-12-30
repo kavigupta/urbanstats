@@ -118,10 +118,6 @@ export function StatisticPanel(props: StatisticPanelProps): ReactNode {
         universe => forType(universe, props.statcol, props.articleType) > 0,
     )
 
-    useEffect(() => {
-        document.title = props.statname
-    }, [props.statname])
-
     return (
         <PageTemplate
             screencapElements={() => ({
