@@ -5892,4 +5892,824 @@ export const ConsolidatedStatistics = $root.ConsolidatedStatistics = (() => {
     return ConsolidatedStatistics;
 })();
 
+export const QuizDataForStat = $root.QuizDataForStat = (() => {
+
+    /**
+     * Properties of a QuizDataForStat.
+     * @exports IQuizDataForStat
+     * @interface IQuizDataForStat
+     * @property {Array.<number>|null} [stats] QuizDataForStat stats
+     */
+
+    /**
+     * Constructs a new QuizDataForStat.
+     * @exports QuizDataForStat
+     * @classdesc Represents a QuizDataForStat.
+     * @implements IQuizDataForStat
+     * @constructor
+     * @param {IQuizDataForStat=} [properties] Properties to set
+     */
+    function QuizDataForStat(properties) {
+        this.stats = [];
+        if (properties)
+            for (let keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                if (properties[keys[i]] != null)
+                    this[keys[i]] = properties[keys[i]];
+    }
+
+    /**
+     * QuizDataForStat stats.
+     * @member {Array.<number>} stats
+     * @memberof QuizDataForStat
+     * @instance
+     */
+    QuizDataForStat.prototype.stats = $util.emptyArray;
+
+    /**
+     * Creates a new QuizDataForStat instance using the specified properties.
+     * @function create
+     * @memberof QuizDataForStat
+     * @static
+     * @param {IQuizDataForStat=} [properties] Properties to set
+     * @returns {QuizDataForStat} QuizDataForStat instance
+     */
+    QuizDataForStat.create = function create(properties) {
+        return new QuizDataForStat(properties);
+    };
+
+    /**
+     * Encodes the specified QuizDataForStat message. Does not implicitly {@link QuizDataForStat.verify|verify} messages.
+     * @function encode
+     * @memberof QuizDataForStat
+     * @static
+     * @param {IQuizDataForStat} message QuizDataForStat message or plain object to encode
+     * @param {$protobuf.Writer} [writer] Writer to encode to
+     * @returns {$protobuf.Writer} Writer
+     */
+    QuizDataForStat.encode = function encode(message, writer) {
+        if (!writer)
+            writer = $Writer.create();
+        if (message.stats != null && message.stats.length) {
+            writer.uint32(/* id 1, wireType 2 =*/10).fork();
+            for (let i = 0; i < message.stats.length; ++i)
+                writer.float(message.stats[i]);
+            writer.ldelim();
+        }
+        return writer;
+    };
+
+    /**
+     * Encodes the specified QuizDataForStat message, length delimited. Does not implicitly {@link QuizDataForStat.verify|verify} messages.
+     * @function encodeDelimited
+     * @memberof QuizDataForStat
+     * @static
+     * @param {IQuizDataForStat} message QuizDataForStat message or plain object to encode
+     * @param {$protobuf.Writer} [writer] Writer to encode to
+     * @returns {$protobuf.Writer} Writer
+     */
+    QuizDataForStat.encodeDelimited = function encodeDelimited(message, writer) {
+        return this.encode(message, writer).ldelim();
+    };
+
+    /**
+     * Decodes a QuizDataForStat message from the specified reader or buffer.
+     * @function decode
+     * @memberof QuizDataForStat
+     * @static
+     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+     * @param {number} [length] Message length if known beforehand
+     * @returns {QuizDataForStat} QuizDataForStat
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    QuizDataForStat.decode = function decode(reader, length) {
+        if (!(reader instanceof $Reader))
+            reader = $Reader.create(reader);
+        let end = length === undefined ? reader.len : reader.pos + length, message = new $root.QuizDataForStat();
+        while (reader.pos < end) {
+            let tag = reader.uint32();
+            switch (tag >>> 3) {
+            case 1: {
+                    if (!(message.stats && message.stats.length))
+                        message.stats = [];
+                    if ((tag & 7) === 2) {
+                        let end2 = reader.uint32() + reader.pos;
+                        while (reader.pos < end2)
+                            message.stats.push(reader.float());
+                    } else
+                        message.stats.push(reader.float());
+                    break;
+                }
+            default:
+                reader.skipType(tag & 7);
+                break;
+            }
+        }
+        return message;
+    };
+
+    /**
+     * Decodes a QuizDataForStat message from the specified reader or buffer, length delimited.
+     * @function decodeDelimited
+     * @memberof QuizDataForStat
+     * @static
+     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+     * @returns {QuizDataForStat} QuizDataForStat
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    QuizDataForStat.decodeDelimited = function decodeDelimited(reader) {
+        if (!(reader instanceof $Reader))
+            reader = new $Reader(reader);
+        return this.decode(reader, reader.uint32());
+    };
+
+    /**
+     * Verifies a QuizDataForStat message.
+     * @function verify
+     * @memberof QuizDataForStat
+     * @static
+     * @param {Object.<string,*>} message Plain object to verify
+     * @returns {string|null} `null` if valid, otherwise the reason why it is not
+     */
+    QuizDataForStat.verify = function verify(message) {
+        if (typeof message !== "object" || message === null)
+            return "object expected";
+        if (message.stats != null && message.hasOwnProperty("stats")) {
+            if (!Array.isArray(message.stats))
+                return "stats: array expected";
+            for (let i = 0; i < message.stats.length; ++i)
+                if (typeof message.stats[i] !== "number")
+                    return "stats: number[] expected";
+        }
+        return null;
+    };
+
+    /**
+     * Creates a QuizDataForStat message from a plain object. Also converts values to their respective internal types.
+     * @function fromObject
+     * @memberof QuizDataForStat
+     * @static
+     * @param {Object.<string,*>} object Plain object
+     * @returns {QuizDataForStat} QuizDataForStat
+     */
+    QuizDataForStat.fromObject = function fromObject(object) {
+        if (object instanceof $root.QuizDataForStat)
+            return object;
+        let message = new $root.QuizDataForStat();
+        if (object.stats) {
+            if (!Array.isArray(object.stats))
+                throw TypeError(".QuizDataForStat.stats: array expected");
+            message.stats = [];
+            for (let i = 0; i < object.stats.length; ++i)
+                message.stats[i] = Number(object.stats[i]);
+        }
+        return message;
+    };
+
+    /**
+     * Creates a plain object from a QuizDataForStat message. Also converts values to other types if specified.
+     * @function toObject
+     * @memberof QuizDataForStat
+     * @static
+     * @param {QuizDataForStat} message QuizDataForStat
+     * @param {$protobuf.IConversionOptions} [options] Conversion options
+     * @returns {Object.<string,*>} Plain object
+     */
+    QuizDataForStat.toObject = function toObject(message, options) {
+        if (!options)
+            options = {};
+        let object = {};
+        if (options.arrays || options.defaults)
+            object.stats = [];
+        if (message.stats && message.stats.length) {
+            object.stats = [];
+            for (let j = 0; j < message.stats.length; ++j)
+                object.stats[j] = options.json && !isFinite(message.stats[j]) ? String(message.stats[j]) : message.stats[j];
+        }
+        return object;
+    };
+
+    /**
+     * Converts this QuizDataForStat to JSON.
+     * @function toJSON
+     * @memberof QuizDataForStat
+     * @instance
+     * @returns {Object.<string,*>} JSON object
+     */
+    QuizDataForStat.prototype.toJSON = function toJSON() {
+        return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+    };
+
+    /**
+     * Gets the default type url for QuizDataForStat
+     * @function getTypeUrl
+     * @memberof QuizDataForStat
+     * @static
+     * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns {string} The default type url
+     */
+    QuizDataForStat.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+        if (typeUrlPrefix === undefined) {
+            typeUrlPrefix = "type.googleapis.com";
+        }
+        return typeUrlPrefix + "/QuizDataForStat";
+    };
+
+    return QuizDataForStat;
+})();
+
+export const QuizFullData = $root.QuizFullData = (() => {
+
+    /**
+     * Properties of a QuizFullData.
+     * @exports IQuizFullData
+     * @interface IQuizFullData
+     * @property {Array.<IQuizDataForStat>|null} [stats] QuizFullData stats
+     */
+
+    /**
+     * Constructs a new QuizFullData.
+     * @exports QuizFullData
+     * @classdesc Represents a QuizFullData.
+     * @implements IQuizFullData
+     * @constructor
+     * @param {IQuizFullData=} [properties] Properties to set
+     */
+    function QuizFullData(properties) {
+        this.stats = [];
+        if (properties)
+            for (let keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                if (properties[keys[i]] != null)
+                    this[keys[i]] = properties[keys[i]];
+    }
+
+    /**
+     * QuizFullData stats.
+     * @member {Array.<IQuizDataForStat>} stats
+     * @memberof QuizFullData
+     * @instance
+     */
+    QuizFullData.prototype.stats = $util.emptyArray;
+
+    /**
+     * Creates a new QuizFullData instance using the specified properties.
+     * @function create
+     * @memberof QuizFullData
+     * @static
+     * @param {IQuizFullData=} [properties] Properties to set
+     * @returns {QuizFullData} QuizFullData instance
+     */
+    QuizFullData.create = function create(properties) {
+        return new QuizFullData(properties);
+    };
+
+    /**
+     * Encodes the specified QuizFullData message. Does not implicitly {@link QuizFullData.verify|verify} messages.
+     * @function encode
+     * @memberof QuizFullData
+     * @static
+     * @param {IQuizFullData} message QuizFullData message or plain object to encode
+     * @param {$protobuf.Writer} [writer] Writer to encode to
+     * @returns {$protobuf.Writer} Writer
+     */
+    QuizFullData.encode = function encode(message, writer) {
+        if (!writer)
+            writer = $Writer.create();
+        if (message.stats != null && message.stats.length)
+            for (let i = 0; i < message.stats.length; ++i)
+                $root.QuizDataForStat.encode(message.stats[i], writer.uint32(/* id 1, wireType 2 =*/10).fork()).ldelim();
+        return writer;
+    };
+
+    /**
+     * Encodes the specified QuizFullData message, length delimited. Does not implicitly {@link QuizFullData.verify|verify} messages.
+     * @function encodeDelimited
+     * @memberof QuizFullData
+     * @static
+     * @param {IQuizFullData} message QuizFullData message or plain object to encode
+     * @param {$protobuf.Writer} [writer] Writer to encode to
+     * @returns {$protobuf.Writer} Writer
+     */
+    QuizFullData.encodeDelimited = function encodeDelimited(message, writer) {
+        return this.encode(message, writer).ldelim();
+    };
+
+    /**
+     * Decodes a QuizFullData message from the specified reader or buffer.
+     * @function decode
+     * @memberof QuizFullData
+     * @static
+     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+     * @param {number} [length] Message length if known beforehand
+     * @returns {QuizFullData} QuizFullData
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    QuizFullData.decode = function decode(reader, length) {
+        if (!(reader instanceof $Reader))
+            reader = $Reader.create(reader);
+        let end = length === undefined ? reader.len : reader.pos + length, message = new $root.QuizFullData();
+        while (reader.pos < end) {
+            let tag = reader.uint32();
+            switch (tag >>> 3) {
+            case 1: {
+                    if (!(message.stats && message.stats.length))
+                        message.stats = [];
+                    message.stats.push($root.QuizDataForStat.decode(reader, reader.uint32()));
+                    break;
+                }
+            default:
+                reader.skipType(tag & 7);
+                break;
+            }
+        }
+        return message;
+    };
+
+    /**
+     * Decodes a QuizFullData message from the specified reader or buffer, length delimited.
+     * @function decodeDelimited
+     * @memberof QuizFullData
+     * @static
+     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+     * @returns {QuizFullData} QuizFullData
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    QuizFullData.decodeDelimited = function decodeDelimited(reader) {
+        if (!(reader instanceof $Reader))
+            reader = new $Reader(reader);
+        return this.decode(reader, reader.uint32());
+    };
+
+    /**
+     * Verifies a QuizFullData message.
+     * @function verify
+     * @memberof QuizFullData
+     * @static
+     * @param {Object.<string,*>} message Plain object to verify
+     * @returns {string|null} `null` if valid, otherwise the reason why it is not
+     */
+    QuizFullData.verify = function verify(message) {
+        if (typeof message !== "object" || message === null)
+            return "object expected";
+        if (message.stats != null && message.hasOwnProperty("stats")) {
+            if (!Array.isArray(message.stats))
+                return "stats: array expected";
+            for (let i = 0; i < message.stats.length; ++i) {
+                let error = $root.QuizDataForStat.verify(message.stats[i]);
+                if (error)
+                    return "stats." + error;
+            }
+        }
+        return null;
+    };
+
+    /**
+     * Creates a QuizFullData message from a plain object. Also converts values to their respective internal types.
+     * @function fromObject
+     * @memberof QuizFullData
+     * @static
+     * @param {Object.<string,*>} object Plain object
+     * @returns {QuizFullData} QuizFullData
+     */
+    QuizFullData.fromObject = function fromObject(object) {
+        if (object instanceof $root.QuizFullData)
+            return object;
+        let message = new $root.QuizFullData();
+        if (object.stats) {
+            if (!Array.isArray(object.stats))
+                throw TypeError(".QuizFullData.stats: array expected");
+            message.stats = [];
+            for (let i = 0; i < object.stats.length; ++i) {
+                if (typeof object.stats[i] !== "object")
+                    throw TypeError(".QuizFullData.stats: object expected");
+                message.stats[i] = $root.QuizDataForStat.fromObject(object.stats[i]);
+            }
+        }
+        return message;
+    };
+
+    /**
+     * Creates a plain object from a QuizFullData message. Also converts values to other types if specified.
+     * @function toObject
+     * @memberof QuizFullData
+     * @static
+     * @param {QuizFullData} message QuizFullData
+     * @param {$protobuf.IConversionOptions} [options] Conversion options
+     * @returns {Object.<string,*>} Plain object
+     */
+    QuizFullData.toObject = function toObject(message, options) {
+        if (!options)
+            options = {};
+        let object = {};
+        if (options.arrays || options.defaults)
+            object.stats = [];
+        if (message.stats && message.stats.length) {
+            object.stats = [];
+            for (let j = 0; j < message.stats.length; ++j)
+                object.stats[j] = $root.QuizDataForStat.toObject(message.stats[j], options);
+        }
+        return object;
+    };
+
+    /**
+     * Converts this QuizFullData to JSON.
+     * @function toJSON
+     * @memberof QuizFullData
+     * @instance
+     * @returns {Object.<string,*>} JSON object
+     */
+    QuizFullData.prototype.toJSON = function toJSON() {
+        return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+    };
+
+    /**
+     * Gets the default type url for QuizFullData
+     * @function getTypeUrl
+     * @memberof QuizFullData
+     * @static
+     * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns {string} The default type url
+     */
+    QuizFullData.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+        if (typeUrlPrefix === undefined) {
+            typeUrlPrefix = "type.googleapis.com";
+        }
+        return typeUrlPrefix + "/QuizFullData";
+    };
+
+    return QuizFullData;
+})();
+
+export const QuizQuestionTronche = $root.QuizQuestionTronche = (() => {
+
+    /**
+     * Properties of a QuizQuestionTronche.
+     * @exports IQuizQuestionTronche
+     * @interface IQuizQuestionTronche
+     * @property {Array.<number>|null} [geographyA] QuizQuestionTronche geographyA
+     * @property {Array.<number>|null} [geographyB] QuizQuestionTronche geographyB
+     * @property {Array.<number>|null} [stat] QuizQuestionTronche stat
+     * @property {Array.<number>|null} [negLogProbX100] QuizQuestionTronche negLogProbX100
+     */
+
+    /**
+     * Constructs a new QuizQuestionTronche.
+     * @exports QuizQuestionTronche
+     * @classdesc Represents a QuizQuestionTronche.
+     * @implements IQuizQuestionTronche
+     * @constructor
+     * @param {IQuizQuestionTronche=} [properties] Properties to set
+     */
+    function QuizQuestionTronche(properties) {
+        this.geographyA = [];
+        this.geographyB = [];
+        this.stat = [];
+        this.negLogProbX100 = [];
+        if (properties)
+            for (let keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                if (properties[keys[i]] != null)
+                    this[keys[i]] = properties[keys[i]];
+    }
+
+    /**
+     * QuizQuestionTronche geographyA.
+     * @member {Array.<number>} geographyA
+     * @memberof QuizQuestionTronche
+     * @instance
+     */
+    QuizQuestionTronche.prototype.geographyA = $util.emptyArray;
+
+    /**
+     * QuizQuestionTronche geographyB.
+     * @member {Array.<number>} geographyB
+     * @memberof QuizQuestionTronche
+     * @instance
+     */
+    QuizQuestionTronche.prototype.geographyB = $util.emptyArray;
+
+    /**
+     * QuizQuestionTronche stat.
+     * @member {Array.<number>} stat
+     * @memberof QuizQuestionTronche
+     * @instance
+     */
+    QuizQuestionTronche.prototype.stat = $util.emptyArray;
+
+    /**
+     * QuizQuestionTronche negLogProbX100.
+     * @member {Array.<number>} negLogProbX100
+     * @memberof QuizQuestionTronche
+     * @instance
+     */
+    QuizQuestionTronche.prototype.negLogProbX100 = $util.emptyArray;
+
+    /**
+     * Creates a new QuizQuestionTronche instance using the specified properties.
+     * @function create
+     * @memberof QuizQuestionTronche
+     * @static
+     * @param {IQuizQuestionTronche=} [properties] Properties to set
+     * @returns {QuizQuestionTronche} QuizQuestionTronche instance
+     */
+    QuizQuestionTronche.create = function create(properties) {
+        return new QuizQuestionTronche(properties);
+    };
+
+    /**
+     * Encodes the specified QuizQuestionTronche message. Does not implicitly {@link QuizQuestionTronche.verify|verify} messages.
+     * @function encode
+     * @memberof QuizQuestionTronche
+     * @static
+     * @param {IQuizQuestionTronche} message QuizQuestionTronche message or plain object to encode
+     * @param {$protobuf.Writer} [writer] Writer to encode to
+     * @returns {$protobuf.Writer} Writer
+     */
+    QuizQuestionTronche.encode = function encode(message, writer) {
+        if (!writer)
+            writer = $Writer.create();
+        if (message.geographyA != null && message.geographyA.length) {
+            writer.uint32(/* id 1, wireType 2 =*/10).fork();
+            for (let i = 0; i < message.geographyA.length; ++i)
+                writer.int32(message.geographyA[i]);
+            writer.ldelim();
+        }
+        if (message.geographyB != null && message.geographyB.length) {
+            writer.uint32(/* id 2, wireType 2 =*/18).fork();
+            for (let i = 0; i < message.geographyB.length; ++i)
+                writer.int32(message.geographyB[i]);
+            writer.ldelim();
+        }
+        if (message.stat != null && message.stat.length) {
+            writer.uint32(/* id 3, wireType 2 =*/26).fork();
+            for (let i = 0; i < message.stat.length; ++i)
+                writer.int32(message.stat[i]);
+            writer.ldelim();
+        }
+        if (message.negLogProbX100 != null && message.negLogProbX100.length) {
+            writer.uint32(/* id 4, wireType 2 =*/34).fork();
+            for (let i = 0; i < message.negLogProbX100.length; ++i)
+                writer.int32(message.negLogProbX100[i]);
+            writer.ldelim();
+        }
+        return writer;
+    };
+
+    /**
+     * Encodes the specified QuizQuestionTronche message, length delimited. Does not implicitly {@link QuizQuestionTronche.verify|verify} messages.
+     * @function encodeDelimited
+     * @memberof QuizQuestionTronche
+     * @static
+     * @param {IQuizQuestionTronche} message QuizQuestionTronche message or plain object to encode
+     * @param {$protobuf.Writer} [writer] Writer to encode to
+     * @returns {$protobuf.Writer} Writer
+     */
+    QuizQuestionTronche.encodeDelimited = function encodeDelimited(message, writer) {
+        return this.encode(message, writer).ldelim();
+    };
+
+    /**
+     * Decodes a QuizQuestionTronche message from the specified reader or buffer.
+     * @function decode
+     * @memberof QuizQuestionTronche
+     * @static
+     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+     * @param {number} [length] Message length if known beforehand
+     * @returns {QuizQuestionTronche} QuizQuestionTronche
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    QuizQuestionTronche.decode = function decode(reader, length) {
+        if (!(reader instanceof $Reader))
+            reader = $Reader.create(reader);
+        let end = length === undefined ? reader.len : reader.pos + length, message = new $root.QuizQuestionTronche();
+        while (reader.pos < end) {
+            let tag = reader.uint32();
+            switch (tag >>> 3) {
+            case 1: {
+                    if (!(message.geographyA && message.geographyA.length))
+                        message.geographyA = [];
+                    if ((tag & 7) === 2) {
+                        let end2 = reader.uint32() + reader.pos;
+                        while (reader.pos < end2)
+                            message.geographyA.push(reader.int32());
+                    } else
+                        message.geographyA.push(reader.int32());
+                    break;
+                }
+            case 2: {
+                    if (!(message.geographyB && message.geographyB.length))
+                        message.geographyB = [];
+                    if ((tag & 7) === 2) {
+                        let end2 = reader.uint32() + reader.pos;
+                        while (reader.pos < end2)
+                            message.geographyB.push(reader.int32());
+                    } else
+                        message.geographyB.push(reader.int32());
+                    break;
+                }
+            case 3: {
+                    if (!(message.stat && message.stat.length))
+                        message.stat = [];
+                    if ((tag & 7) === 2) {
+                        let end2 = reader.uint32() + reader.pos;
+                        while (reader.pos < end2)
+                            message.stat.push(reader.int32());
+                    } else
+                        message.stat.push(reader.int32());
+                    break;
+                }
+            case 4: {
+                    if (!(message.negLogProbX100 && message.negLogProbX100.length))
+                        message.negLogProbX100 = [];
+                    if ((tag & 7) === 2) {
+                        let end2 = reader.uint32() + reader.pos;
+                        while (reader.pos < end2)
+                            message.negLogProbX100.push(reader.int32());
+                    } else
+                        message.negLogProbX100.push(reader.int32());
+                    break;
+                }
+            default:
+                reader.skipType(tag & 7);
+                break;
+            }
+        }
+        return message;
+    };
+
+    /**
+     * Decodes a QuizQuestionTronche message from the specified reader or buffer, length delimited.
+     * @function decodeDelimited
+     * @memberof QuizQuestionTronche
+     * @static
+     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+     * @returns {QuizQuestionTronche} QuizQuestionTronche
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    QuizQuestionTronche.decodeDelimited = function decodeDelimited(reader) {
+        if (!(reader instanceof $Reader))
+            reader = new $Reader(reader);
+        return this.decode(reader, reader.uint32());
+    };
+
+    /**
+     * Verifies a QuizQuestionTronche message.
+     * @function verify
+     * @memberof QuizQuestionTronche
+     * @static
+     * @param {Object.<string,*>} message Plain object to verify
+     * @returns {string|null} `null` if valid, otherwise the reason why it is not
+     */
+    QuizQuestionTronche.verify = function verify(message) {
+        if (typeof message !== "object" || message === null)
+            return "object expected";
+        if (message.geographyA != null && message.hasOwnProperty("geographyA")) {
+            if (!Array.isArray(message.geographyA))
+                return "geographyA: array expected";
+            for (let i = 0; i < message.geographyA.length; ++i)
+                if (!$util.isInteger(message.geographyA[i]))
+                    return "geographyA: integer[] expected";
+        }
+        if (message.geographyB != null && message.hasOwnProperty("geographyB")) {
+            if (!Array.isArray(message.geographyB))
+                return "geographyB: array expected";
+            for (let i = 0; i < message.geographyB.length; ++i)
+                if (!$util.isInteger(message.geographyB[i]))
+                    return "geographyB: integer[] expected";
+        }
+        if (message.stat != null && message.hasOwnProperty("stat")) {
+            if (!Array.isArray(message.stat))
+                return "stat: array expected";
+            for (let i = 0; i < message.stat.length; ++i)
+                if (!$util.isInteger(message.stat[i]))
+                    return "stat: integer[] expected";
+        }
+        if (message.negLogProbX100 != null && message.hasOwnProperty("negLogProbX100")) {
+            if (!Array.isArray(message.negLogProbX100))
+                return "negLogProbX100: array expected";
+            for (let i = 0; i < message.negLogProbX100.length; ++i)
+                if (!$util.isInteger(message.negLogProbX100[i]))
+                    return "negLogProbX100: integer[] expected";
+        }
+        return null;
+    };
+
+    /**
+     * Creates a QuizQuestionTronche message from a plain object. Also converts values to their respective internal types.
+     * @function fromObject
+     * @memberof QuizQuestionTronche
+     * @static
+     * @param {Object.<string,*>} object Plain object
+     * @returns {QuizQuestionTronche} QuizQuestionTronche
+     */
+    QuizQuestionTronche.fromObject = function fromObject(object) {
+        if (object instanceof $root.QuizQuestionTronche)
+            return object;
+        let message = new $root.QuizQuestionTronche();
+        if (object.geographyA) {
+            if (!Array.isArray(object.geographyA))
+                throw TypeError(".QuizQuestionTronche.geographyA: array expected");
+            message.geographyA = [];
+            for (let i = 0; i < object.geographyA.length; ++i)
+                message.geographyA[i] = object.geographyA[i] | 0;
+        }
+        if (object.geographyB) {
+            if (!Array.isArray(object.geographyB))
+                throw TypeError(".QuizQuestionTronche.geographyB: array expected");
+            message.geographyB = [];
+            for (let i = 0; i < object.geographyB.length; ++i)
+                message.geographyB[i] = object.geographyB[i] | 0;
+        }
+        if (object.stat) {
+            if (!Array.isArray(object.stat))
+                throw TypeError(".QuizQuestionTronche.stat: array expected");
+            message.stat = [];
+            for (let i = 0; i < object.stat.length; ++i)
+                message.stat[i] = object.stat[i] | 0;
+        }
+        if (object.negLogProbX100) {
+            if (!Array.isArray(object.negLogProbX100))
+                throw TypeError(".QuizQuestionTronche.negLogProbX100: array expected");
+            message.negLogProbX100 = [];
+            for (let i = 0; i < object.negLogProbX100.length; ++i)
+                message.negLogProbX100[i] = object.negLogProbX100[i] | 0;
+        }
+        return message;
+    };
+
+    /**
+     * Creates a plain object from a QuizQuestionTronche message. Also converts values to other types if specified.
+     * @function toObject
+     * @memberof QuizQuestionTronche
+     * @static
+     * @param {QuizQuestionTronche} message QuizQuestionTronche
+     * @param {$protobuf.IConversionOptions} [options] Conversion options
+     * @returns {Object.<string,*>} Plain object
+     */
+    QuizQuestionTronche.toObject = function toObject(message, options) {
+        if (!options)
+            options = {};
+        let object = {};
+        if (options.arrays || options.defaults) {
+            object.geographyA = [];
+            object.geographyB = [];
+            object.stat = [];
+            object.negLogProbX100 = [];
+        }
+        if (message.geographyA && message.geographyA.length) {
+            object.geographyA = [];
+            for (let j = 0; j < message.geographyA.length; ++j)
+                object.geographyA[j] = message.geographyA[j];
+        }
+        if (message.geographyB && message.geographyB.length) {
+            object.geographyB = [];
+            for (let j = 0; j < message.geographyB.length; ++j)
+                object.geographyB[j] = message.geographyB[j];
+        }
+        if (message.stat && message.stat.length) {
+            object.stat = [];
+            for (let j = 0; j < message.stat.length; ++j)
+                object.stat[j] = message.stat[j];
+        }
+        if (message.negLogProbX100 && message.negLogProbX100.length) {
+            object.negLogProbX100 = [];
+            for (let j = 0; j < message.negLogProbX100.length; ++j)
+                object.negLogProbX100[j] = message.negLogProbX100[j];
+        }
+        return object;
+    };
+
+    /**
+     * Converts this QuizQuestionTronche to JSON.
+     * @function toJSON
+     * @memberof QuizQuestionTronche
+     * @instance
+     * @returns {Object.<string,*>} JSON object
+     */
+    QuizQuestionTronche.prototype.toJSON = function toJSON() {
+        return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+    };
+
+    /**
+     * Gets the default type url for QuizQuestionTronche
+     * @function getTypeUrl
+     * @memberof QuizQuestionTronche
+     * @static
+     * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns {string} The default type url
+     */
+    QuizQuestionTronche.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+        if (typeUrlPrefix === undefined) {
+            typeUrlPrefix = "type.googleapis.com";
+        }
+        return typeUrlPrefix + "/QuizQuestionTronche";
+    };
+
+    return QuizQuestionTronche;
+})();
+
 export { $root as default };
