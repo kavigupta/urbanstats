@@ -1,6 +1,6 @@
 import { gunzipSync } from 'zlib'
 
-import { ClientFunction } from 'testcafe'
+import { ClientFunction, Selector } from 'testcafe'
 
 import { DefaultMap } from '../src/utils/DefaultMap'
 
@@ -58,5 +58,6 @@ test('can visit sitemap links', async (t) => {
         await t.navigateTo(url)
         await waitForPageLoaded(t)
         await t.expect(pageDescriptorKind()).notEql('error')
+        await t.expect(Selector('[data-test-id=article-warnings]').exists).notOk()
     }
 })
