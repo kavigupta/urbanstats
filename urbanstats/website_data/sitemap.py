@@ -59,7 +59,9 @@ def article_urls(articles):
         stats = [articles[stat] for stat in category.internal_statistics()]
         category_masks[category_id] = ~np.isnan(stats).all(0)
     result = []
-    for idx, longname in enumerate(tqdm.tqdm(articles.longname, desc="sitemap: articles")):
+    for idx, longname in enumerate(
+        tqdm.tqdm(articles.longname, desc="sitemap: articles")
+    ):
         for category_id, category in statistics_tree.categories.items():
             if category_masks[category_id][idx]:
                 params = {
