@@ -15,7 +15,7 @@ def output_sitemap(site_folder, articles, ordinal_info):
     )
 
     # Delete existing sitemaps in sitemaps folder
-    for f in glob.glob("sitemaps/*"):
+    for f in glob.glob(f"{site_folder}/sitemaps/*"):
         os.remove(f)
 
     # 50k is max number of entries in a sitemap
@@ -25,7 +25,9 @@ def output_sitemap(site_folder, articles, ordinal_info):
         path = f"sitemaps/sitemap{i}.txt.gz"
         paths.append(path)
         with gzip.open(os.path.join(site_folder, path), "w") as f:
-            f.write("\n".join(all_sitemap_urls[start : start + max_entries]).encode("utf-8"))
+            f.write(
+                "\n".join(all_sitemap_urls[start : start + max_entries]).encode("utf-8")
+            )
 
     with open(f"{site_folder}/robots.txt", "w") as f:
         f.write(
