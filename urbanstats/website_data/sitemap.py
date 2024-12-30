@@ -57,10 +57,8 @@ def article_urls(articles):
     for _, article in articles.iterrows():
         for category_id, category in statistics_tree.categories.items():
             if any(
-                [
-                    not isnan(article[internal_statistic_names().index(statistic_name)])
-                    for statistic_name in category.internal_statistics()
-                ]
+                not isnan(article[internal_statistic_names().index(statistic_name)])
+                for statistic_name in category.internal_statistics()
             ):
                 params = {
                     "longname": article.longname,
