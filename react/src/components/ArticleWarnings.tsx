@@ -61,10 +61,12 @@ function WarningBox({ warnings }: { warnings: ReactNode[] }): ReactNode {
     const colors = useColors()
 
     return (
-        <div style={{
-            backgroundColor: colors.slightlyDifferentBackgroundFocused,
-            borderRadius: '5px',
-        }}
+        <div
+            style={{
+                backgroundColor: colors.slightlyDifferentBackgroundFocused,
+                borderRadius: '5px',
+            }}
+            data-test-id="article-warnings"
         >
             <ul style={{
                 paddingTop: '1em',

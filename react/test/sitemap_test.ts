@@ -1,6 +1,6 @@
 import { gunzipSync } from 'zlib'
 
-import { ClientFunction } from 'testcafe'
+import { ClientFunction, Selector } from 'testcafe'
 
 import { DefaultMap } from '../src/utils/DefaultMap'
 
@@ -19,6 +19,7 @@ async function loadSitemap(t: TestController): Promise<string[]> {
     const sitemapContents = sitemapsContents.flatMap((text) => {
         return text.replaceAll('https://urbanstats.org', target).split('\n')
     })
+    console.warn(`Sitemap has ${sitemapContents.length} entries`)
     return sitemapContents
 }
 
@@ -53,10 +54,10 @@ test('can visit sitemap links', async (t) => {
     }
 
     for (const url of visitUrls) {
-        // eslint-disable-next-line no-console -- So we can see where it fails
-        console.log(url)
+        console.warn(url)
         await t.navigateTo(url)
         await waitForPageLoaded(t)
         await t.expect(pageDescriptorKind()).notEql('error')
+        await t.expect(Selector('[data-test-id=article-warnings]').exists).notOk()
     }
 })
