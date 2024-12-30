@@ -1,4 +1,5 @@
 import glob
+import gzip
 import os
 from urllib.parse import urlencode
 
@@ -21,10 +22,10 @@ def output_sitemap(site_folder, articles, ordinal_info):
     max_entries = 50000
     paths = []
     for i, start in enumerate(range(0, len(all_sitemap_urls), max_entries)):
-        path = f"sitemaps/sitemap{i}.txt"
+        path = f"sitemaps/sitemap{i}.txt.gz"
         paths.append(path)
-        with open(os.path.join(site_folder, path), "w") as f:
-            f.write("\n".join(all_sitemap_urls[start : start + max_entries]))
+        with gzip.open(os.path.join(site_folder, path), "w") as f:
+            f.write("\n".join(all_sitemap_urls[start : start + max_entries]).encode("utf-8"))
 
     with open(f"{site_folder}/robots.txt", "w") as f:
         f.write(
