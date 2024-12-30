@@ -391,7 +391,7 @@ type NotIncludedInSettingsVector = (
 )
 
 // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- No deprecations yet
-const activeVectorKeys = settingsVector.flatMap(setting => setting.deprecated ? [] : [setting.key])
+export const activeVectorKeys = settingsVector.flatMap(setting => setting.deprecated ? [] : [setting.key])
 
 export type VectorSettingKey = typeof activeVectorKeys[number]
 

@@ -2,7 +2,7 @@ import { gunzipSync } from 'zlib'
 
 import { z } from 'zod'
 
-import { applySettingsParam, settingsConnectionConfig } from '../components/QuerySettingsConnection'
+import { applySettingsParamSettings, settingsConnectionConfig } from '../components/QuerySettingsConnection'
 import { ArticleRow, forType, loadArticles } from '../components/load-article'
 import type { StatisticPanelProps } from '../components/statistic-panel'
 import explanation_pages from '../data/explanation_page'
@@ -12,9 +12,9 @@ import paths from '../data/statistic_path_list'
 import { loadOrdering, loadOrderingProtobuf, loadJSON, loadProtobuf } from '../load_json'
 import { defaultSettings, MapSettings } from '../mapper/settings'
 import { Settings } from '../page_template/settings'
-import { getVector } from '../page_template/settings-vector'
+import { activeVectorKeys, fromVector, getVector } from '../page_template/settings-vector'
 import { StatGroupSettings } from '../page_template/statistic-settings'
-import { StatName, StatPath } from '../page_template/statistic-tree'
+import { allGroups, CategoryIdentifier, StatName, StatPath, statsTree } from '../page_template/statistic-tree'
 import { getDailyOffsetNumber, getRetrostatOffsetNumber } from '../quiz/dates'
 import { addFriendFromLink, CustomQuizContent, JuxtaQuestionJSON, loadJuxta, loadRetro, QuizDescriptor, QuizQuestion, RetroQuestionJSON } from '../quiz/quiz'
 import { defaultArticleUniverse, defaultComparisonUniverse } from '../universe'
@@ -30,12 +30,19 @@ const articleSchema = z.object({
     longname: z.string().transform(followSymlink),
     universe: z.optional(z.string()),
     s: z.optional(z.string()),
+    category: z.optional(z.string()) as z.ZodOptional<z.ZodType<CategoryIdentifier, z.ZodTypeDef, CategoryIdentifier>>,
 })
 
 const articleSchemaFromParams = z.object({
     longname: z.string().transform(followSymlink),
     universe: z.optional(z.string()),
     s: z.optional(z.string()),
+    category: z.optional(z.string().transform((s) => {
+        if (!statsTree.some(category => category.id === s)) {
+            throw new Error(`${s} is not a valid category identifier`)
+        }
+        return s as CategoryIdentifier
+    })),
 })
 
 const comparisonSchema = z.object({
@@ -298,9 +305,14 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
                     s: getVector(settings),
                 },
                 effects() {
-                    if (newDescriptor.s !== undefined) {
+                    if (newDescriptor.s !== undefined || newDescriptor.category !== undefined) {
                         const config = settingsConnectionConfig({ pageKind: 'article', statPaths: articleStatPaths, settings })
-                        applySettingsParam(newDescriptor.s, settings, articleStatPaths, config)
+                        applySettingsParamSettings({
+                            ...(newDescriptor.s === undefined ? settings.getMultiple(activeVectorKeys) : fromVector(newDescriptor.s, settings)),
+                            ...(newDescriptor.category === undefined
+                                ? undefined
+                                : Object.fromEntries(allGroups.map(group => [`show_stat_group_${group.id}`, group.parent.id === newDescriptor.category] as const))),
+                        }, settings, articleStatPaths, config)
                     }
                 },
             }
@@ -335,7 +347,7 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
                 effects() {
                     if (newDescriptor.s !== undefined) {
                         const config = settingsConnectionConfig({ pageKind: 'comparison', statPaths: comparisonStatPaths, settings })
-                        applySettingsParam(newDescriptor.s, settings, comparisonStatPaths, config)
+                        applySettingsParamSettings(fromVector(newDescriptor.s, settings), settings, comparisonStatPaths, config)
                     }
                 },
             }
