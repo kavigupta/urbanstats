@@ -5,8 +5,11 @@ from urllib.parse import urlencode
 
 from urbanstats.ordinals.ordering_info_outputter import reorganize_counts
 from urbanstats.statistics.output_statistics_metadata import (
+    internal_statistic_names,
     statistic_internal_to_display_name,
 )
+from urbanstats.statistics.statistics_tree import statistics_tree
+from urbanstats.website_data.create_article_gzips import isnan
 
 
 def output_sitemap(site_folder, articles, ordinal_info):
@@ -51,9 +54,21 @@ def top_level_pages():
 
 def article_urls(articles):
     result = []
-    for longname in list(articles.longname):
-        params = {"longname": longname}
-        result.append(f"https://urbanstats.org/article.html?{urlencode(params)}")
+    for _, article in articles.iterrows():
+        for category_id, category in statistics_tree.categories.items():
+            if any(
+                [
+                    not isnan(article[internal_statistic_names().index(statistic_name)])
+                    for statistic_name in category.internal_statistics()
+                ]
+            ):
+                params = {
+                    "longname": article.longname,
+                    "category": category_id,
+                }
+                result.append(
+                    f"https://urbanstats.org/article.html?{urlencode(params)}"
+                )
     return result
 
 
