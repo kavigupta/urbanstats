@@ -1,3 +1,5 @@
+import { gunzipSync } from 'zlib'
+
 import { ClientFunction } from 'testcafe'
 
 import { DefaultMap } from '../src/utils/DefaultMap'
@@ -9,9 +11,12 @@ urbanstatsFixture('home page', target)
 async function loadSitemap(t: TestController): Promise<string[]> {
     const robots = (await t.request(`${target}/robots.txt`)).body.valueOf() as string
     const sitemapUrls = Array.from(robots.matchAll(/Sitemap: (.+)/g)).map(matches => matches[1])
-    const sitemapResponses = await Promise.all(sitemapUrls.map(sitemapUrl => t.request(sitemapUrl.replaceAll('https://urbanstats.org', target))))
-    const sitemapContents = sitemapResponses.flatMap((response) => {
-        const text = response.body.valueOf() as string
+    const sitemapsContents = await Promise.all(sitemapUrls.map(async (sitemapUrl) => {
+        const response = await t.request(sitemapUrl.replaceAll('https://urbanstats.org', target))
+        const body = await response.body as Buffer
+        return gunzipSync(body).toString()
+    }))
+    const sitemapContents = sitemapsContents.flatMap((text) => {
         return text.replaceAll('https://urbanstats.org', target).split('\n')
     })
     return sitemapContents
