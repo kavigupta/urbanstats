@@ -1,7 +1,7 @@
 import '../common.css'
 import './article.css'
 
-import React, { ReactNode, useContext, useEffect, useRef } from 'react'
+import React, { ReactNode, useContext, useRef } from 'react'
 
 import { Navigator } from '../navigation/Navigator'
 import { sanitize } from '../navigation/links'
@@ -120,10 +120,6 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
     const searchComparisonStyle = useComparisonHeadStyle()
 
     const currentUniverse = useUniverse()
-
-    useEffect(() => {
-        document.title = joinedString
-    }, [joinedString])
 
     const navContext = useContext(Navigator.Context)
 

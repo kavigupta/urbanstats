@@ -487,3 +487,34 @@ function mapSettingsFromURLParam(encodedSettings: string | undefined): MapSettin
     }
     return defaultSettings(settings)
 }
+
+export function pageTitle(pageData: PageData): string {
+    switch (pageData.kind) {
+        case 'initialLoad':
+        case 'index':
+            return 'Urban Stats'
+        case 'about':
+            return 'About Urban Stats'
+        case 'dataCredit':
+            return 'Urban Stats Credits'
+        case 'mapper':
+            return 'Urban Stats Mapper'
+        case 'quiz':
+            switch (pageData.quizDescriptor.kind) {
+                case 'juxtastat':
+                    return 'Juxtastat'
+                case 'retrostat':
+                    return 'Retrostat'
+                case 'custom':
+                    return 'Custom Quiz'
+            }
+        case 'article':
+            return pageData.article.shortname
+        case 'statistic':
+            return pageData.statname
+        case 'comparison':
+            return pageData.articles.map(x => x.shortname).join(' vs ')
+        case 'error':
+            return 'Error'
+    }
+}

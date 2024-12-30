@@ -1,7 +1,7 @@
 import '../common.css'
 import './article.css'
 
-import React, { ReactNode, useContext, useEffect, useRef } from 'react'
+import React, { ReactNode, useContext, useRef } from 'react'
 
 import { Navigator } from '../navigation/Navigator'
 import { sanitize } from '../navigation/links'
@@ -41,10 +41,6 @@ export function ArticlePanel({ article, rows }: { article: Article, rows: (setti
 
     const settings = useSettings(groupYearKeys())
     const filteredRows = rows(settings)[0]
-
-    useEffect(() => {
-        document.title = article.shortname
-    }, [article.shortname])
 
     return (
         <>

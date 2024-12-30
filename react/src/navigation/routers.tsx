@@ -13,7 +13,7 @@ import { useColors } from '../page_template/colors'
 import { PageTemplate } from '../page_template/template'
 
 import { Navigator } from './Navigator'
-import { PageData, urlFromPageDescriptor } from './PageDescriptor'
+import { PageData, pageTitle, urlFromPageDescriptor } from './PageDescriptor'
 import { InitialLoad, SubsequentLoad } from './loading'
 
 export function Router(): ReactNode {
@@ -24,6 +24,9 @@ export function Router(): ReactNode {
         // Execute the navigator's effects
         navigator.effects.forEach((effect) => { effect() })
         navigator.effects = []
+
+        // eslint-disable-next-line no-restricted-syntax -- This is the one place in the app where we set the doc title
+        document.title = pageTitle(pageState.current.data)
     })
 
     return (

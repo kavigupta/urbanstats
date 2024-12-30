@@ -124,6 +124,7 @@ export default tseslint.config(
                 'TSFunctionType > Identifier.params[name=/^[^a-z]|[^A-Za-z0-9]/]',
                 //
                 'CallExpression[arguments.1][callee.property.name=replace]:not([arguments.0.regex.flags=g])', // Prevent accidentally using `replace` without a global regex, which just replaces the first instance
+                'MemberExpression[object.name=document][property.name=title]'
             ],
             'react/prop-types': 'off',
             'no-shadow': 'error',
