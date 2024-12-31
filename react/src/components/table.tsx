@@ -996,7 +996,7 @@ function PointerButtonIndex(props: {
                     kind: 'article',
                     longname: name,
                     universe,
-                }, { history: 'push', scroll: { kind: 'none' } })
+                }, { history: 'push', scroll: { kind: 'element', element: buttonRef.current! } })
                 return
             }
         }
