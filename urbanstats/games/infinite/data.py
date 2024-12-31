@@ -10,6 +10,7 @@ from urbanstats.games.quiz_sampling import (
 )
 from urbanstats.protobuf import data_files_pb2
 from urbanstats.protobuf.utils import write_gzip
+from urbanstats.utils import output_typescript
 
 tronche_size = 100_000
 
@@ -32,33 +33,50 @@ def output_tronche(tronche_vqq, tronche_p, tronche_path):
     return tronche_total_p
 
 
-def output_quiz_question(q, p, question_folder):
+def output_quiz_question(q, p, site_folder, question_folder):
     idxs = np.argsort(-p)
     tronche_descriptors = []
     for idx, start in tqdm.tqdm(
         list(enumerate(range(0, p.shape[0], tronche_size))),
-        desc=f"Generating {os.path.basename(question_folder)}",
+        desc=f"Generating {question_folder}",
     ):
-        path = f"{idx}.gz"
+        path = os.path.join(question_folder, f"{idx}.gz")
         i = idxs[start : start + tronche_size]
         tronche, tronche_p = q[i], p[i]
-        total_p = output_tronche(
-            tronche, tronche_p, os.path.join(question_folder, path)
-        )
+        total_p = output_tronche(tronche, tronche_p, os.path.join(site_folder, path))
         tronche_descriptors.append({"path": path, "total_p": float(total_p)})
     return tronche_descriptors
 
 
-def output_quiz_sampling_info(folder):
-    qqw = quiz_question_weights(compute_geographies_by_type())
+def output_quiz_sampling_info(site_folder, subfolder):
+    output_quiz_sampling_data(site_folder, subfolder)
+    sampling_info = output_quiz_sampling_probabilities(site_folder, subfolder)
+    with open("react/src/data/quiz_infinite.ts", "w") as f:
+        output_typescript(sampling_info, f)
+
+
+def output_quiz_sampling_data(site_folder, subfolder):
     data, *_ = compute_quiz_question_distribution()
+    data = data.T
+    qfd = data_files_pb2.QuizFullData()
+    for row in data:
+        q = qfd.stats.add()
+        q.stats.extend(row)
+    write_gzip(qfd, os.path.join(site_folder, subfolder, f"data.gz"))
+
+
+def output_quiz_sampling_probabilities(site_folder, subfolder):
+    qqw = quiz_question_weights(compute_geographies_by_type())
     ps = qqw["ps"]
     qqp = qqw["qqp"]
     descriptors = []
     for i, (q, p) in enumerate(zip(qqp.questions_by_number, ps), start=1):
-        descriptors.append(output_quiz_question(q, p, os.path.join(folder, f"q{i}")))
+        descriptors.append(
+            output_quiz_question(q, p, site_folder, os.path.join(subfolder, f"q{i}"))
+        )
 
-    qfd = data_files_pb2.QuizFullData()
-    qfd.stats.extend(data.flatten())
-    write_gzip(qfd, os.path.join(folder, "data.gz"))
-    return descriptors
+    return dict(
+        allGeographies=qqp.all_geographies,
+        allStats=qqp.all_stats,
+        questionDistribution=descriptors,
+    )
