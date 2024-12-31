@@ -1,4 +1,3 @@
-// @ts-check
 import path from 'path'
 
 import ForkTsCheckerWebpackPlugin from 'fork-ts-checker-webpack-plugin'
@@ -6,7 +5,6 @@ import NodePolyfillPlugin from 'node-polyfill-webpack-plugin'
 
 const isProduction = process.env.NODE_ENV === 'production'
 
-/** @type {(env: Record<string, string>) => import('@rspack/cli').Configuration} */
 export default env => ({
     entry: {
         index: ['./src/index.tsx'],
