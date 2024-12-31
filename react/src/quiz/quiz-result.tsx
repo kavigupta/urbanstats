@@ -250,7 +250,7 @@ function TimeToNextQuiz({ quiz }: { quiz: QuizDescriptorWithStats }): ReactNode 
                     kind: 'quiz',
                     mode: quiz.kind === 'retrostat' ? 'retro' : undefined,
                     date: navigator.currentDescriptor.date !== undefined ? navigator.currentDescriptor.date + 1 : undefined,
-                }, { scroll: 0 })}
+                }, { scroll: { kind: 'position', top: 0 } })}
                 style={{ textDecoration: 'none' }}
             >
                 <div
@@ -527,7 +527,7 @@ function ComparisonLink({ question, children }: { question: JuxtaQuestion, child
                 kind: 'comparison',
                 longnames: [question.longname_a, question.longname_b],
                 s: getVector(settings, settingsOverrides(question.stat_path)),
-            }, { scroll: 0 })}
+            }, { scroll: { kind: 'position', top: 0 } })}
             style={{ textDecoration: 'none', color: colors.textMain }}
         >
             {children}
