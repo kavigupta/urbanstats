@@ -860,12 +860,96 @@ export function quizTest({ platform }: { platform: 'desktop' | 'mobile' }): void
 
     quizFixture('custom quiz 3q', customQuizURL(quiz3Q), {}, '', platform)
 
-    test.only('custom-quiz-3q', async (t) => {
+    test('custom-quiz-3q', async (t) => {
         await screencap(t)
         await clickButtons(t, ['a', 'b'])
         await screencap(t)
         await clickButtons(t, ['a'])
+        await screencap(t)
         await t.expect(Selector('#quiz-result-summary-words').innerText).eql('Better luck next time! 🫤 2/3')
         await t.expect(Selector('#quiz-result-summary-emoji').innerText).eql('🟥🟩🟩')
+    })
+
+    const quiz11Q = {
+        name: 'this is a testing quiz with 11 questions',
+        questions: [
+            { stat_column_original: 'rent_2br_over_1500',
+                longname_a: 'Virginia, USA',
+                longname_b: 'Missouri, USA',
+                stat_a: 0.34365168810951086,
+                stat_b: 0.06674887687083034,
+                kind: 'juxtastat',
+            },
+            { stat_column_original: 'transportation_means_bike',
+                longname_a: 'Irving city, Texas, USA',
+                longname_b: 'Miami city, Florida, USA',
+                stat_a: 0.0024765410219707816,
+                stat_b: 0.011945152260238718, kind: 'juxtastat',
+            },
+            { stat_column_original: 'language_english_only',
+                longname_a: 'MN-08, USA',
+                longname_b: 'IL-04, USA',
+                stat_a: 0.9656228774355485,
+                stat_b: 0.3671012457210519, kind: 'juxtastat',
+            },
+            { stat_column_original: 'occupation_construction_and_extraction_occupations',
+                longname_a: 'Temecula-Murrieta-Menifee [Urban Area], CA, USA',
+                longname_b: 'Madison [Urban Area], WI, USA',
+                stat_a: 0.05538546153911615,
+                stat_b: 0.02416786800827398, kind: 'juxtastat',
+            },
+            { stat_column_original: 'vehicle_ownership_at_least_1',
+                longname_a: 'IL-07, USA',
+                longname_b: 'SC-04, USA',
+                stat_a: 0.7043450575070687,
+                stat_b: 0.9426030370758118, kind: 'juxtastat',
+            }, { stat_column_original: 'rainfall_4',
+                longname_a: 'NE-03, USA',
+                longname_b: 'NY-18, USA',
+                stat_a: 0.5965941745589529,
+                stat_b: 1.0248497701658743, kind: 'juxtastat',
+            },
+            { stat_column_original: 'ad_1',
+                longname_a: 'Orlando [Urban Area], FL, USA',
+                longname_b: 'Riverside-San Bernardino [Urban Area], CA, USA',
+                stat_a: 1475.5398974456702,
+                stat_b: 2188.900981716385, kind: 'juxtastat',
+            },
+            { stat_column_original: 'transportation_means_walk',
+                longname_a: 'Utica-Rome MSA, NY, USA',
+                longname_b: 'Hickory-Lenoir-Morganton MSA, NC, USA',
+                stat_a: 0.034382860747467006,
+                stat_b: 0.007638361306216416, kind: 'juxtastat',
+            },
+            { stat_column_original: 'internet_no_access',
+                longname_a: 'St. Tammany Parish, Louisiana, USA',
+                longname_b: 'Johnson County, Kansas, USA',
+                stat_a: 0.07769933429345471,
+                stat_b: 0.038020752346090786, kind: 'juxtastat',
+            },
+            { stat_column_original: 'industry_health_care_and_social_assistance',
+                longname_a: 'Winnebago County, Illinois, USA',
+                longname_b: 'Webb County, Texas, USA',
+                stat_a: 0.1490548355390977,
+                stat_b: 0.10756307119794238, kind: 'juxtastat',
+            }, { stat_column_original: 'wind_speed_over_10mph_4',
+                longname_a: 'Ingham County, Michigan, USA',
+                longname_b: 'Suffolk County, New York, USA',
+                stat_a: 0.2211855797275063,
+                stat_b: 0.5032869434167736, kind: 'juxtastat',
+            },
+        ],
+    }
+
+    quizFixture('custom quiz 11q', customQuizURL(quiz11Q), {}, '', platform)
+
+    test('custom-quiz-11q', async (t) => {
+        await screencap(t)
+        await clickButtons(t, ['a', 'b', 'a', 'b', 'a', 'b', 'a', 'b', 'a', 'b'])
+        await screencap(t)
+        await clickButtons(t, ['a'])
+        await screencap(t)
+        await t.expect(Selector('#quiz-result-summary-words').innerText).eql('Better luck next time! 🫤 5/11')
+        await t.expect(Selector('#quiz-result-summary-emoji').innerText).eql('🟥🟩🟥🟩🟥🟩🟥🟩🟥🟩🟥')
     })
 }
