@@ -1,6 +1,5 @@
 import os
 import numpy as np
-from permacache import permacache, stable_hash
 import tqdm.auto as tqdm
 
 from urbanstats.games.quiz_question_distribution import quiz_question_weights
@@ -15,11 +14,6 @@ from urbanstats.utils import output_typescript
 tronche_size = 100_000
 
 
-@permacache(
-    "urbanstats/games/infinite/data/output_tronche_6",
-    key_function=dict(tronche_vqq=stable_hash, tronche_p=stable_hash),
-    out_file=["tronche_path"],
-)
 def output_tronche(tronche_vqq, tronche_p, tronche_path):
     tronche_total_p = tronche_p.sum()
     tronche_p = tronche_p / tronche_total_p
