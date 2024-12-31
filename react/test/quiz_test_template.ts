@@ -821,4 +821,51 @@ export function quizTest({ platform }: { platform: 'desktop' | 'mobile' }): void
         await t.navigateTo(lines[4])
         await t.expect(getLocation()).eql(customQuizURL(quiz5Q))
     })
+
+    const quiz3Q = {
+        name: 'this is a testing quiz with 3 questions',
+        questions: [
+            {
+                stat_column: 'PW Density (r=1km) Change (2010-2020)',
+                stat_path: 'ad_1_change_2010',
+                question: 'higher % increase in population-weighted density (r=1km) from 2010 to 2020!TOOLTIP Population-weighted density is computed by computing the density within the given radius for each person in the region and then averaging the results. This is a better measure of the density that people actually experience.',
+                longname_a: 'Wichita-Hutchinson KS Media Market, USA',
+                longname_b: 'Colorado Springs-Pueblo CO Media Market, USA',
+                stat_a: -0.013566195644550461,
+                stat_b: 0.052631086846664205,
+                kind: 'juxtastat',
+            },
+            {
+                stat_column: '2BR Rent < $750 %',
+                stat_path: 'rent_2br_under_750',
+                question: 'higher % of units with 2br rent under $750',
+                longname_a: 'Urban Honolulu MSA, HI, USA',
+                longname_b: 'Springfield MSA, MA, USA',
+                stat_a: 0.05628738569130583,
+                stat_b: 0.19354157872520084,
+                kind: 'juxtastat',
+            },
+            {
+                stat_column: 'Within 1mi of a grocery store %',
+                stat_path: 'lapop1share_usda_fra_1',
+                question: '!FULL Which has more access to grocery stores (higher % of people within 1mi of a grocery store)?!TOOLTIP The USDA defines a grocery store as a \'supermarket, supercenter, or large grocery store.\'',
+                longname_a: 'TX-09, USA',
+                longname_b: 'WI-07, USA',
+                stat_a: 0.786293727440369,
+                stat_b: 0.300920896509278,
+                kind: 'juxtastat',
+            },
+        ],
+    }
+
+    quizFixture('custom quiz 3q', customQuizURL(quiz3Q), {}, '', platform)
+
+    test.only('custom-quiz-3q', async (t) => {
+        await screencap(t)
+        await clickButtons(t, ['a', 'b'])
+        await screencap(t)
+        await clickButtons(t, ['a'])
+        await t.expect(Selector('#quiz-result-summary-words').innerText).eql('Better luck next time! 🫤 2/3')
+        await t.expect(Selector('#quiz-result-summary-emoji').innerText).eql('🟥🟩🟩')
+    })
 }
