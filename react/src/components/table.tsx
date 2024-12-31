@@ -447,7 +447,7 @@ function StatisticName(props: {
                     amount: 20,
                     order: 'descending',
                     highlight: props.longname,
-                }), { scroll: 0 })
+                }), { scroll: { kind: 'position', top: 0 } })
             }
             data-test-id="statistic-link"
         >
@@ -996,7 +996,7 @@ function PointerButtonIndex(props: {
                     kind: 'article',
                     longname: name,
                     universe,
-                }, { history: 'push', scroll: null })
+                }, { history: 'push', scroll: { kind: 'element', element: buttonRef.current! } })
                 return
             }
         }

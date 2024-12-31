@@ -65,7 +65,7 @@ export function Header(props: {
                                     kind: 'article',
                                     universe: currentUniverse,
                                     longname: newLocation,
-                                }, { scroll: 0 })
+                                }, { scroll: { kind: 'position', top: 0 } })
                             }
                             placeholder="Search Urban Stats"
                             style={{
@@ -122,7 +122,7 @@ function HeaderImage(): ReactNode {
     const navContext = useContext(Navigator.Context)
     return (
         <a
-            {...navContext.link({ kind: 'index' }, { scroll: 0 })}
+            {...navContext.link({ kind: 'index' }, { scroll: { kind: 'position', top: 0 } })}
         >
             <img
                 src={path}
