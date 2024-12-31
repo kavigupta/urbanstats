@@ -42,7 +42,9 @@ function loadingStateFromPageState(pageState: PageState): SubsequentLoadingState
 
 export interface NavigationOptions {
     history: 'push' | 'replace' | null // What should we do with this browser history? `null` means nothing, usually you want 'push' or 'replace'
-    scroll: number | null // Where should we scroll to after the navigation? `null` maintains the current scroll position, a number scrolls to that position (0 for top of page). If you're navigating to a hash, passing `null` means we'll scroll to the hash anchor
+    scroll: { kind: 'none' } // Does not perform any scrolling when navigating, just re-render the page in place (will scroll to anchor if hash is present)
+    | { kind: 'position', top: number } // Scroll to a specific position
+    | { kind: 'element', element: HTMLElement } // Scroll keeping a specific element in the same place
 }
 
 export class Navigator {
@@ -65,7 +67,7 @@ export class Navigator {
                 current: { descriptor: { kind: 'initialLoad', url }, data: { kind: 'initialLoad' } },
                 loadStartTime: Date.now(),
             }
-            void this.navigate(this.pageState.loading.descriptor, { history: 'replace', scroll: null })
+            void this.navigate(this.pageState.loading.descriptor, { history: 'replace', scroll: { kind: 'none' } })
         }
         catch (error) {
             const url = new URL(window.location.href)
@@ -78,7 +80,7 @@ export class Navigator {
             }
         }
         window.addEventListener('hashchange', () => {
-            void this.navigate(pageDescriptorFromURL(new URL(discordFix(window.location.href))), { history: 'replace', scroll: null })
+            void this.navigate(pageDescriptorFromURL(new URL(discordFix(window.location.href))), { history: 'replace', scroll: { kind: 'none' } })
         })
         window.addEventListener('popstate', (popStateEvent: PopStateEvent): void => {
             if (popStateEvent.state === null) {
@@ -89,7 +91,7 @@ export class Navigator {
             if (parseResult.success) {
                 void this.navigate(parseResult.data.pageDescriptor, {
                     history: null,
-                    scroll: parseResult.data.scrollPosition,
+                    scroll: { kind: 'position', top: parseResult.data.scrollPosition },
                 })
             }
             else {
@@ -120,7 +122,7 @@ export class Navigator {
         window.addEventListener('visibilitychange', () => {
             if (document.visibilityState === 'visible' && this.pageState.kind === 'loading') {
                 console.warn('focused during loading, navigating again')
-                void this.navigate(this.pageState.loading.descriptor, { history: null, scroll: null })
+                void this.navigate(this.pageState.loading.descriptor, { history: null, scroll: { kind: 'none' } })
             }
         })
     }
@@ -146,12 +148,33 @@ export class Navigator {
 
         switch (options.history) {
             case 'push':
-                history.pushState({ pageDescriptor: newDescriptor, scrollPosition: options.scroll ?? window.scrollY }, '', urlFromPageDescriptor(newDescriptor))
+                // scrollPosition gets overwritten later
+                history.pushState({ pageDescriptor: newDescriptor, scrollPosition: window.scrollY }, '', urlFromPageDescriptor(newDescriptor))
                 break
             case 'replace':
-                history.replaceState({ pageDescriptor: newDescriptor, scrollPosition: options.scroll ?? window.scrollY }, '', urlFromPageDescriptor(newDescriptor))
+                // scrollPosition gets overwritten later
+                history.replaceState({ pageDescriptor: newDescriptor, scrollPosition: window.scrollY }, '', urlFromPageDescriptor(newDescriptor))
                 break
             case null:
+                break
+        }
+
+        const scroll = options.scroll
+        let scrollAfterNavigate: (() => void) | null
+        switch (scroll.kind) {
+            case 'none':
+                scrollAfterNavigate = null
+                break
+            case 'position':
+                scrollAfterNavigate = () => { window.scrollTo({ top: scroll.top, behavior: 'instant' }) }
+                break
+            case 'element':
+                const preNavigateElementDistanceFromTop = scroll.element.getBoundingClientRect().top
+                scrollAfterNavigate = () => {
+                    const postNavigateElementDistanceFromTop = scroll.element.getBoundingClientRect().top
+                    const adjustScroll = postNavigateElementDistanceFromTop - preNavigateElementDistanceFromTop
+                    window.scrollBy({ top: adjustScroll, behavior: 'instant' })
+                }
                 break
         }
 
@@ -168,7 +191,7 @@ export class Navigator {
             history.replaceState({
                 pageDescriptor: newPageDescriptor,
                 // The scroll position here will be overwritten by the effect below if `options.scroll !== null`
-                scrollPosition: options.scroll ?? window.scrollY,
+                scrollPosition: window.scrollY,
             }, '', url)
             this.pageState = { kind: 'loaded', current: { data: pageData, descriptor: newPageDescriptor } }
             this.pageStateObservers.forEach((observer) => { observer() })
@@ -183,14 +206,11 @@ export class Navigator {
             }
 
             // Jump to
-            if (options.scroll !== null) {
+            if (scrollAfterNavigate !== null) {
                 // higher priority than hash because we're going back to a page that might have a hash, and we don't want the hash to override the saved scroll position
                 this.effects.push(() => {
-                    // Helpful debugging statement, keep in
-                    // console.log(`restore ${options.scroll} <- ${url}`)
-                    window.scrollTo({ top: options.scroll! })
+                    scrollAfterNavigate()
                     // As the `scrollTo` method doesn't trigger a scroll event, we need to save the new scroll position manually.
-                    // Although it's saved above in `history.replaceState`, we save the scroll position again when the user navigates away from the page, so it's important that we save this scrolled position, otherwise we'll get the previous position
                     this.writeScrollToHistoryState()
                 })
             }
@@ -340,7 +360,7 @@ export class Navigator {
                     universe: newUniverse,
                 }, {
                     history: 'push',
-                    scroll: null,
+                    scroll: { kind: 'none' },
                 })
                 break
             default:

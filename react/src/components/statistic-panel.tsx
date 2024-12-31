@@ -82,7 +82,7 @@ export function StatisticPanel(props: StatisticPanelProps): ReactNode {
             order: newOrder,
         }), {
             history: 'push',
-            scroll: null,
+            scroll: { kind: 'none' },
         })
     }
 
@@ -222,7 +222,7 @@ function Pagination(props: {
             start: newStart,
         }), {
             history: 'push',
-            scroll: null,
+            scroll: { kind: 'none' },
         })
     }
 
@@ -251,7 +251,7 @@ function Pagination(props: {
             order: props.order,
         }), {
             history: 'push',
-            scroll: null,
+            scroll: { kind: 'none' },
         })
     }
 
@@ -275,7 +275,7 @@ function Pagination(props: {
                 start: (newPage - 1) * perPage + 1,
             }), {
                 history: 'replace',
-                scroll: null,
+                scroll: { kind: 'none' },
             })
         }
 
@@ -313,7 +313,7 @@ function Pagination(props: {
                     <a
                         {...navContext.link(
                             { kind: 'dataCredit', hash: `#explanation_${sanitize(props.explanationPage)}` },
-                            { scroll: null },
+                            { scroll: { kind: 'none' } },
                         )}
                     >
                         Data Explanation and Credit
@@ -468,7 +468,7 @@ function ArticleLink(props: { longname: string }): ReactNode {
                 kind: 'article',
                 longname: props.longname,
                 universe: currentUniverse,
-            }, { scroll: 0 })}
+            }, { scroll: { kind: 'position', top: 0 } })}
             style={{ fontWeight: 500, color: colors.textMain, textDecoration: 'none' }}
         >
             {props.longname}

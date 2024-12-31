@@ -24,7 +24,7 @@ export function IndexPanel(): ReactNode {
                         interested in these topics. The data is collected from a variety of sources, including the US Census,
                         the GHSL dataset, VEST, and several US government agencies. See
                         {' '}
-                        <a {...navContext.link({ kind: 'dataCredit', hash: '' }, { scroll: 0 })}>Data Credit</a>
+                        <a {...navContext.link({ kind: 'dataCredit', hash: '' }, { scroll: { kind: 'position', top: 0 } })}>Data Credit</a>
                         {' '}
                         for more information.
                     </p>

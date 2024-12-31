@@ -1,4 +1,4 @@
-import { Selector } from 'testcafe'
+import { ClientFunction, Selector } from 'testcafe'
 
 import {
     target, checkAllCategoryBoxes, checkTextboxes, comparisonPage, downloadImage,
@@ -267,4 +267,29 @@ test('loads successfully', async (t) => {
 
 test('has the correct URL after loading', async (t) => {
     await t.expect(getLocation()).match(/article\.html\?longname=Victory\+Manor%2FEast\+Hill%2FDonwood\+Neighborhood%2C\+Savannah\+City%2C\+Georgia%2C\+USA/)
+})
+
+urbanstatsFixture('article with neighbor whose title is two lines', '/article.html?longname=Charlotte+NC+Media+Market%2C+USA')
+
+test('when navigating to next media market that is two lines, maintains relative position of pointer', async (t) => {
+    const scrollPosition = ClientFunction(() => window.scrollY)
+    const pointerPosition = ClientFunction(() => document.querySelector('button[data-test-id="1"]')!.getBoundingClientRect().top)
+
+    const before = {
+        pointerPosition: await pointerPosition(),
+        scrollPosition: await scrollPosition(),
+    }
+
+    await t.click(Selector('button[data-test-id="1"]').nth(0))
+    await t.expect(Selector('div').withExactText('Raleigh-Durham (Fayetteville) NC Media Market').exists).ok()
+
+    const after = {
+        pointerPosition: await pointerPosition(),
+        scrollPosition: await scrollPosition(),
+    }
+
+    // Page has scrolled to maintain pointer position
+    await t.expect(after.scrollPosition).notEql(before.scrollPosition)
+
+    await t.expect(after.pointerPosition).eql(before.pointerPosition)
 })

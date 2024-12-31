@@ -146,7 +146,7 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
                                         kind: 'comparison',
                                         universe: currentUniverse,
                                         longnames: [...names, x],
-                                    }, { scroll: null })}
+                                    }, { scroll: { kind: 'none' } })}
                                 autoFocus={false}
                             />
                         </div>
@@ -170,14 +170,14 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
                                                         kind: 'comparison',
                                                         universe: currentUniverse,
                                                         longnames: names.filter((_, index) => index !== i),
-                                                    }, { history: 'push', scroll: null })
+                                                    }, { history: 'push', scroll: { kind: 'none' } })
                                                 }}
                                                 onReplace={x =>
                                                     navContext.link({
                                                         kind: 'comparison',
                                                         universe: currentUniverse,
                                                         longnames: names.map((value, index) => index === i ? x : value),
-                                                    }, { scroll: null })}
+                                                    }, { scroll: { kind: 'none' } })}
                                             />
                                         </div>,
                                     ),
@@ -307,7 +307,7 @@ function ComparisonCells({ names, rows, onlyColumns, blankColumns }: {
                         kind: 'comparison',
                         universe: navContext.universe,
                         longnames: names.map((value, index) => index === i ? x : value),
-                    }, { history: 'push', scroll: null })
+                    }, { history: 'push', scroll: { kind: 'none' } })
                 }}
                 totalWidth={each(rows)}
             />
@@ -406,7 +406,7 @@ function HeadingDisplay({ longname, includeDelete, onDelete, onReplace }: { long
                         kind: 'article',
                         longname,
                         universe: currentUniverse,
-                    }, { scroll: 0 })
+                    }, { scroll: { kind: 'position', top: 0 } })
                 }
                 style={{ textDecoration: 'none' }}
             >

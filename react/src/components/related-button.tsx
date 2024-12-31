@@ -45,7 +45,7 @@ function RelatedButton(props: { region: Region }): ReactNode {
             <a
                 className={classes}
                 style={{ color: colors.textMain, backgroundColor: mixWithBackground(color, colors.mixPct / 100, colors.background) }}
-                {...navContext.link({ kind: 'article', longname: props.region.longname, universe: currentUniverse }, { scroll: 0 })}
+                {...navContext.link({ kind: 'article', longname: props.region.longname, universe: currentUniverse }, { scroll: { kind: 'position', top: 0 } })}
             >
                 {props.region.shortname}
             </a>
