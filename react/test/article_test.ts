@@ -319,3 +319,10 @@ test('when navigating to next media market that is two lines vai map click, main
 
     await t.expect(after.mapPosition).eql(before.mapPosition)
 })
+
+test('can navigate back to original navigated shape in map', async (t) => {
+    await t.click(Selector('path').withAttribute('class', /tag-Raleigh-Durham_\(Fayetteville\)_NC_Media_Market/))
+    await t.expect(Selector('div').withExactText('Raleigh-Durham (Fayetteville) NC Media Market').exists).ok()
+    await t.click(Selector('path').withAttribute('class', /Charlotte_NC_Media_Market,_USA/))
+    await t.expect(Selector('div').withExactText('Charlotte NC Media Market').exists).ok()
+})
