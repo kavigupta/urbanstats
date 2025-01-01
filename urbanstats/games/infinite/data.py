@@ -56,7 +56,7 @@ def output_quiz_sampling_data(site_folder, subfolder):
     for row in data:
         q = qfd.stats.add()
         q.stats.extend(row)
-    write_gzip(qfd, os.path.join(site_folder, subfolder, f"data.gz"))
+    write_gzip(qfd, os.path.join(site_folder, subfolder, "data.gz"))
 
 
 def output_quiz_sampling_probabilities(site_folder, subfolder):
