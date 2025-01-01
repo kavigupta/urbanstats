@@ -821,4 +821,180 @@ export function quizTest({ platform }: { platform: 'desktop' | 'mobile' }): void
         await t.navigateTo(lines[4])
         await t.expect(getLocation()).eql(customQuizURL(quiz5Q))
     })
+
+    const quiz3Q = {
+        name: 'this is a testing quiz with 3 questions',
+        questions: [
+            {
+                stat_column: 'PW Density (r=1km) Change (2010-2020)',
+                stat_path: 'ad_1_change_2010',
+                question: 'higher % increase in population-weighted density (r=1km) from 2010 to 2020!TOOLTIP Population-weighted density is computed by computing the density within the given radius for each person in the region and then averaging the results. This is a better measure of the density that people actually experience.',
+                longname_a: 'Wichita-Hutchinson KS Media Market, USA',
+                longname_b: 'Colorado Springs-Pueblo CO Media Market, USA',
+                stat_a: -0.013566195644550461,
+                stat_b: 0.052631086846664205,
+                kind: 'juxtastat',
+            },
+            {
+                stat_column: '2BR Rent < $750 %',
+                stat_path: 'rent_2br_under_750',
+                question: 'higher % of units with 2br rent under $750',
+                longname_a: 'Urban Honolulu MSA, HI, USA',
+                longname_b: 'Springfield MSA, MA, USA',
+                stat_a: 0.05628738569130583,
+                stat_b: 0.19354157872520084,
+                kind: 'juxtastat',
+            },
+            {
+                stat_column: 'Within 1mi of a grocery store %',
+                stat_path: 'lapop1share_usda_fra_1',
+                question: '!FULL Which has more access to grocery stores (higher % of people within 1mi of a grocery store)?!TOOLTIP The USDA defines a grocery store as a \'supermarket, supercenter, or large grocery store.\'',
+                longname_a: 'TX-09, USA',
+                longname_b: 'WI-07, USA',
+                stat_a: 0.786293727440369,
+                stat_b: 0.300920896509278,
+                kind: 'juxtastat',
+            },
+        ],
+    }
+
+    quizFixture('custom quiz 3q', customQuizURL(quiz3Q), {}, '', platform)
+
+    test('custom-quiz-3q', async (t) => {
+        await screencap(t)
+        await clickButtons(t, ['a', 'b'])
+        await screencap(t)
+        await clickButtons(t, ['a'])
+        await screencap(t)
+        await t.expect(Selector('#quiz-result-summary-words').innerText).eql('Excellent! 😊 2/3')
+        await t.expect(Selector('#quiz-result-summary-emoji').innerText).eql('🟥🟩🟩')
+    })
+
+    const quiz11Q = {
+        name: 'this is a testing quiz with 11 questions',
+        questions: [
+            {
+                stat_column: 'Spanish at Home %',
+                stat_path: 'language_spanish',
+                question: 'higher % of people who speak spanish at home',
+                longname_a: 'New Orleans Urban Center, USA',
+                longname_b: 'Miami Urban Center, USA',
+                stat_a: 0.08249346084500632,
+                stat_b: 0.426731964114955,
+                kind: 'juxtastat',
+            },
+            {
+                stat_column: 'Manufacturing %',
+                stat_path: 'industry_manufacturing',
+                question: 'higher % of workers employed in the manufacturing industry!TOOLTIP metal manufacturing, machinery manufacturing, cement and concrete product manufacturing, sawmills, wood product manufacturing, food and beverage manufacturing, textile mills, apparel manufacturing, paper manufacturing, printing, chemical manufacturing, plastics and rubber products manufacturing, etc.',
+                longname_a: 'Hamilton City, Hamilton CDR, Ontario, Canada',
+                longname_b: 'San Juan zona urbana, Puerto Rico, USA',
+                stat_a: 0.11584687291342102,
+                stat_b: 0.031900753259022634,
+                kind: 'juxtastat',
+            },
+            {
+                stat_column: 'PW Mean % of parkland within 1km',
+                stat_path: 'park_percent_1km_v2',
+                question: '!FULL Which has more access to parks (higher % of area within 1km of a park, population weighted)?',
+                longname_a: 'Winston-Salem MSA, NC, USA',
+                longname_b: 'Urban Honolulu MSA, HI, USA',
+                stat_a: 0.009619555985026298,
+                stat_b: 0.02761836938665365,
+                kind: 'juxtastat',
+            },
+            {
+                stat_column: 'Transportation occupations %',
+                stat_path: 'occupation_transportation_occupations',
+                question: 'higher % of workers employed in transportation occupations!TOOLTIP truck drivers, bus drivers, taxi drivers, pilots, flight attendants, sailors, etc.',
+                longname_a: 'Ottawa County, Michigan, USA',
+                longname_b: 'Howard County, Maryland, USA',
+                stat_a: 0.037622607635908606,
+                stat_b: 0.017356676805907068,
+                kind: 'juxtastat',
+            },
+            {
+                stat_column: 'Smoking %',
+                stat_path: 'CSMOKING_cdc_2',
+                question: 'higher % of adults who smoke',
+                longname_a: 'Bergen County, New Jersey, USA',
+                longname_b: 'Kent County, Michigan, USA',
+                stat_a: 0.11535737384866114,
+                stat_b: 0.15343243012184765,
+                kind: 'juxtastat',
+            },
+            {
+                stat_column: '% units built pre-1970',
+                stat_path: 'year_built_1969_or_earlier',
+                question: 'higher % units built pre-1970',
+                longname_a: 'MA-04, USA',
+                longname_b: 'NC-02, USA',
+                stat_a: 0.5536152460351866,
+                stat_b: 0.12210186690953195,
+                kind: 'juxtastat',
+            },
+            {
+                stat_column: '2020 Presidential Election',
+                stat_path: '2020 Presidential Election-margin',
+                question: '!FULL Which voted more for Biden in the 2020 presidential election?',
+                longname_a: 'Lexington-Fayette MSA, KY, USA',
+                longname_b: 'Scranton--Wilkes-Barre--Hazleton MSA, PA, USA',
+                stat_a: 0.021793516915771013,
+                stat_b: -0.06216567621988598,
+                kind: 'juxtastat',
+            },
+            {
+                stat_column: 'Renter %',
+                stat_path: 'rent_or_own_rent',
+                question: 'higher % of people who are renters',
+                longname_a: 'TX-30, USA',
+                longname_b: 'MD-05, USA',
+                stat_a: 0.48848916779183443,
+                stat_b: 0.20997575115596062,
+                kind: 'juxtastat',
+            },
+            {
+                stat_column: 'Commute Walk %',
+                stat_path: 'transportation_means_walk',
+                question: 'higher % of people who commute by walking',
+                longname_a: 'Boston Urban Center, USA',
+                longname_b: 'Dayton Urban Center, USA',
+                stat_a: 0.0844202827410501,
+                stat_b: 0.03195903153111631,
+                kind: 'juxtastat',
+            },
+            {
+                stat_column: 'Citizen by Birth %',
+                stat_path: 'citizenship_citizen_by_birth',
+                question: 'higher % of residents who are citizens by birth',
+                longname_a: 'Texas, USA',
+                longname_b: 'South Dakota, USA',
+                stat_a: 0.8300810867944861,
+                stat_b: 0.9617763967407014,
+                kind: 'juxtastat',
+            },
+            {
+                stat_column: 'PW Mean % of parkland within 1km',
+                stat_path: 'park_percent_1km_v2',
+                question: '!FULL Which has more access to parks (higher % of area within 1km of a park, population weighted)?',
+                longname_a: 'Indio Urban Center, USA',
+                longname_b: 'Washington D.C. Urban Center, USA',
+                stat_a: 0.011169369218126281,
+                stat_b: 0.052825856965525185,
+                kind: 'juxtastat',
+            },
+        ],
+    }
+
+    quizFixture('custom quiz 11q', customQuizURL(quiz11Q), {}, '', platform)
+
+    test('custom-quiz-11q', async (t) => {
+        await screencap(t)
+        await clickButtons(t, ['a', 'b', 'a', 'b', 'a', 'b', 'a', 'b', 'a', 'b'])
+        await screencap(t)
+        await clickButtons(t, ['a'])
+        await screencap(t)
+        await t.expect(Selector('#quiz-result-summary-words').innerText).eql('Better luck next time! 🫤 3/11')
+        await t.expect(Selector('#quiz-result-summary-emoji').innerText).eql('🟥🟥🟥🟥🟥🟥🟩🟥🟩🟩🟥')
+    })
 }
