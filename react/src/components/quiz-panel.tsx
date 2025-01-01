@@ -7,7 +7,21 @@ import { QuizDescriptor, QuizHistory, QuizLocalStorage, QuizQuestion, aCorrect }
 import { QuizQuestionDispatch } from '../quiz/quiz-question'
 import { QuizResult } from '../quiz/quiz-result'
 
+// represents a quiz, which is a collection of questions. Designed so quizzes can be infinite
+interface QuizQuestionsModel {
+    questionByIndex: (index: number) => QuizQuestion
+    // undefined if the quiz is infinite
+    length: number | undefined
+    isDone: (choices: boolean[]) => boolean
+}
+
 export function QuizPanel(props: { quizDescriptor: QuizDescriptor, todayName: string, todaysQuiz: QuizQuestion[] }): ReactNode {
+    const todaysQuizModel: QuizQuestionsModel = {
+        questionByIndex: (index: number) => props.todaysQuiz[index],
+        length: props.todaysQuiz.length,
+        isDone: (choices: boolean[]) => choices.length === props.todaysQuiz.length,
+    }
+
     // We don't want to save certain quiz types, so bypass the persistent store for those
     const persistentQuizHistory = QuizLocalStorage.shared.history.use()
     const [transientQuizHistory, setTransientQuizHistory] = useState<QuizHistory>({})
@@ -42,7 +56,7 @@ export function QuizPanel(props: { quizDescriptor: QuizDescriptor, todayName: st
         }
         const history = todaysQuizHistory
         const idx = history.correct_pattern.length
-        const question = (props.todaysQuiz)[idx]
+        const question = todaysQuizModel.questionByIndex(idx)
         history.choices.push(selected)
         history.correct_pattern.push((selected === 'A') === aCorrect(question))
         setTodaysQuizHistory(history)
@@ -52,7 +66,7 @@ export function QuizPanel(props: { quizDescriptor: QuizDescriptor, todayName: st
     return (
         <PageTemplate>
             {(() => {
-                const quiz = props.todaysQuiz
+                const quiz = todaysQuizModel
                 const history = todaysQuizHistory
 
                 let index = history.choices.length
@@ -63,7 +77,7 @@ export function QuizPanel(props: { quizDescriptor: QuizDescriptor, todayName: st
                 if (index === quiz.length) {
                     return (
                         <QuizResult
-                            quiz={quiz}
+                            quiz={Array.from({ length: quiz.length }, (_, i) => quiz.questionByIndex(i))}
                             wholeHistory={quizHistory}
                             history={history}
                             todayName={props.todayName}
@@ -75,9 +89,9 @@ export function QuizPanel(props: { quizDescriptor: QuizDescriptor, todayName: st
                 return (
                     <QuizQuestionDispatch
                         quiz={props.quizDescriptor}
-                        question={quiz[index]}
+                        question={quiz.questionByIndex(index)}
                         history={history}
-                        length={quiz.length}
+                        length={quiz.length ?? history.choices.length}
                         onSelect={onSelect}
                         waiting={waiting}
                         nested={false}
