@@ -30,13 +30,14 @@ export function QuizPanel(props: { quizDescriptor: QuizDescriptor, todayName: st
     const [nextQuestion, setNextQuestion] = useState<QuizQuestion | null>(null)
     const [questions, setQuestions] = useState<QuizQuestion[]>([])
 
-    const waiting = waitingForTime || nextQuestion !== null
+    const waiting = waitingForTime || nextQuestion === null
 
     const todaysQuizHistory = quizHistory[props.quizDescriptor.name] ?? { choices: [], correct_pattern: [] }
 
     const setTodaysQuizHistory = (historyToday: QuizHistory[string]): void => {
         const newHistory = { ...quizHistory, [props.quizDescriptor.name]: historyToday }
         setWaitingForTime(true)
+        setNextQuestion(null)
         props.todaysQuiz.questionByIndex(questions.length).then((question) => {
             setNextQuestion(question)
             setQuestions([...questions, question])
