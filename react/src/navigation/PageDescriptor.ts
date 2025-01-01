@@ -4,6 +4,7 @@ import { z } from 'zod'
 
 import { applySettingsParamSettings, settingsConnectionConfig } from '../components/QuerySettingsConnection'
 import { ArticleRow, forType, loadArticles } from '../components/load-article'
+import { QuizQuestionsModel, wrapQuestionsModel } from '../components/quiz-panel'
 import type { StatisticPanelProps } from '../components/statistic-panel'
 import explanation_pages from '../data/explanation_page'
 import stats from '../data/statistic_list'
@@ -16,7 +17,7 @@ import { activeVectorKeys, fromVector, getVector } from '../page_template/settin
 import { StatGroupSettings } from '../page_template/statistic-settings'
 import { allGroups, CategoryIdentifier, StatName, StatPath, statsTree } from '../page_template/statistic-tree'
 import { getDailyOffsetNumber, getRetrostatOffsetNumber } from '../quiz/dates'
-import { addFriendFromLink, CustomQuizContent, JuxtaQuestionJSON, loadJuxta, loadRetro, QuizDescriptor, QuizQuestion, RetroQuestionJSON } from '../quiz/quiz'
+import { addFriendFromLink, CustomQuizContent, JuxtaQuestionJSON, loadJuxta, loadRetro, QuizDescriptor, RetroQuestionJSON } from '../quiz/quiz'
 import { defaultArticleUniverse, defaultComparisonUniverse } from '../universe'
 import { Article, IDataList } from '../utils/protos'
 import { followSymlink, followSymlinks } from '../utils/symlinks'
@@ -141,7 +142,7 @@ export type PageData =
     | { kind: 'index' }
     | { kind: 'about' }
     | { kind: 'dataCredit' }
-    | { kind: 'quiz', quizDescriptor: QuizDescriptor, quiz: QuizQuestion[], parameters: string, todayName: string }
+    | { kind: 'quiz', quizDescriptor: QuizDescriptor, quiz: QuizQuestionsModel, parameters: string, todayName: string }
     | { kind: 'mapper', settings: MapSettings, view: boolean }
     | {
         kind: 'error'
@@ -418,7 +419,7 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
         case 'dataCredit':
             return { pageData: newDescriptor, newPageDescriptor: newDescriptor, effects: () => undefined }
         case 'quiz':
-            let quiz: QuizQuestion[]
+            let quiz: QuizQuestionsModel
             let quizDescriptor: QuizDescriptor
             let todayName: string
             switch (newDescriptor.mode) {
@@ -428,7 +429,7 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
                         kind: 'custom',
                         name: custom.name,
                     }
-                    quiz = custom.questions
+                    quiz = wrapQuestionsModel(custom.questions)
                     todayName = custom.name
                     break
                 case 'retro':
@@ -437,13 +438,13 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
                         kind: 'retrostat',
                         name: `W${retro}`,
                     }
-                    quiz = (await loadJSON(`/retrostat/${retro}`) as RetroQuestionJSON[]).map(loadRetro)
+                    quiz = wrapQuestionsModel((await loadJSON(`/retrostat/${retro}`) as RetroQuestionJSON[]).map(loadRetro))
                     todayName = `Week ${retro}`
                     break
                 case undefined:
                     const today = newDescriptor.date ?? getDailyOffsetNumber()
                     quizDescriptor = { kind: 'juxtastat', name: today }
-                    quiz = (await loadJSON(`/quiz/${today}`) as JuxtaQuestionJSON[]).map(loadJuxta)
+                    quiz = wrapQuestionsModel((await loadJSON(`/quiz/${today}`) as JuxtaQuestionJSON[]).map(loadJuxta))
                     todayName = today.toString()
             }
             return {

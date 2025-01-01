@@ -8,19 +8,22 @@ import { QuizQuestionDispatch } from '../quiz/quiz-question'
 import { QuizResult } from '../quiz/quiz-result'
 
 // represents a quiz, which is a collection of questions. Designed so quizzes can be infinite
-interface QuizQuestionsModel {
+export interface QuizQuestionsModel {
     questionByIndex: (index: number) => QuizQuestion
     // undefined if the quiz is infinite
     length: number | undefined
     isDone: (choices: boolean[]) => boolean
 }
 
-export function QuizPanel(props: { quizDescriptor: QuizDescriptor, todayName: string, todaysQuiz: QuizQuestion[] }): ReactNode {
-    const todaysQuizModel: QuizQuestionsModel = {
-        questionByIndex: (index: number) => props.todaysQuiz[index],
-        length: props.todaysQuiz.length,
-        isDone: (choices: boolean[]) => choices.length === props.todaysQuiz.length,
+export function wrapQuestionsModel(questions: QuizQuestion[]): QuizQuestionsModel {
+    return {
+        questionByIndex: (index: number) => questions[index],
+        length: questions.length,
+        isDone: (choices: boolean[]) => choices.length === questions.length,
     }
+}
+
+export function QuizPanel(props: { quizDescriptor: QuizDescriptor, todayName: string, todaysQuiz: QuizQuestionsModel }): ReactNode {
 
     // We don't want to save certain quiz types, so bypass the persistent store for those
     const persistentQuizHistory = QuizLocalStorage.shared.history.use()
@@ -56,7 +59,7 @@ export function QuizPanel(props: { quizDescriptor: QuizDescriptor, todayName: st
         }
         const history = todaysQuizHistory
         const idx = history.correct_pattern.length
-        const question = todaysQuizModel.questionByIndex(idx)
+        const question = props.todaysQuiz.questionByIndex(idx)
         history.choices.push(selected)
         history.correct_pattern.push((selected === 'A') === aCorrect(question))
         setTodaysQuizHistory(history)
@@ -66,7 +69,7 @@ export function QuizPanel(props: { quizDescriptor: QuizDescriptor, todayName: st
     return (
         <PageTemplate>
             {(() => {
-                const quiz = todaysQuizModel
+                const quiz = props.todaysQuiz
                 const history = todaysQuizHistory
 
                 let index = history.choices.length
