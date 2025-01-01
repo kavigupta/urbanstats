@@ -52,7 +52,7 @@ class DisplayedMap extends MapGeneric<DisplayedMapProps> {
     }
 
     override async computePolygons(): Promise<Polygons> {
-    // reset index
+        // reset index
         this.name_to_index = undefined
         await this.guaranteeNameToIndex()
 
@@ -85,7 +85,15 @@ class DisplayedMap extends MapGeneric<DisplayedMapProps> {
             }),
         )
         const metas = statVals.map((x) => { return { statistic: x } })
-        return [names, styles, metas, -1] as const
+        // TODO: this is messy, but I don't want to rewrite the above
+        return {
+            polygons: names.map((name, i) => ({
+                name,
+                style: styles[i],
+                meta: metas[i],
+            })),
+            zoomIndex: -1,
+        }
     }
 
     override mapDidRender(): Promise<void> {

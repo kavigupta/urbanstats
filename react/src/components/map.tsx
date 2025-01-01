@@ -19,7 +19,15 @@ export interface MapGenericProps {
     basemap: Basemap
 }
 
-export type Polygons = Readonly<[string[], Record<string, unknown>[], Record<string, unknown>[], number]>
+export interface Polygon {
+    name: string
+    style: Record<string, unknown>
+    meta: Record<string, unknown>
+}
+export interface Polygons {
+    polygons: Polygon[]
+    zoomIndex: number
+}
 
 interface MapState {
     loading: boolean
@@ -92,7 +100,7 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
      * @returns string svg
      */
     async exportAsSvg(): Promise<string> {
-        const [names, styles] = await this.computePolygons()
+        const { polygons } = await this.computePolygons()
         const mapBounds = this.map!.getBounds()
         const bounds = {
             left: mapBounds.getWest(),
@@ -140,9 +148,9 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
 
         const overallSvg = []
 
-        for (let i = 0; i < names.length; i++) {
-            const geojson = await this.polygonGeojson(names[i])
-            const svg = converter.convert(geojson, { attributes: { style: toSvgStyle(styles[i]) } })
+        for (const polygon of polygons) {
+            const geojson = await this.polygonGeojson(polygon.name)
+            const svg = converter.convert(geojson, { attributes: { style: toSvgStyle(polygon.style) } })
             for (const elem of svg) {
                 overallSvg.push(elem)
             }
@@ -163,16 +171,16 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
     }
 
     async exportAsGeoJSON(): Promise<string> {
-        const [names, , metas] = await this.computePolygons()
+        const { polygons } = await this.computePolygons()
         const geojson: GeoJSON.FeatureCollection = {
             type: 'FeatureCollection',
             features: [],
         }
-        for (let i = 0; i < names.length; i++) {
-            let feature = await this.polygonGeojson(names[i])
+        for (const polygon of polygons) {
+            let feature = await this.polygonGeojson(polygon.name)
             feature = JSON.parse(JSON.stringify(feature)) as typeof feature
-            for (const key of Object.keys(metas[i])) {
-                feature.properties![key] = metas[i][key]
+            for (const [key, value] of Object.entries(polygon.meta)) {
+                feature.properties![key] = value
             }
             geojson.features.push(feature)
         }
@@ -210,9 +218,9 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
 
         this.attachBasemap()
 
-        const [names, styles, , zoomIndex] = await this.computePolygons()
+        const { polygons, zoomIndex } = await this.computePolygons()
 
-        await this.addPolygons(map, names, styles, zoomIndex)
+        await this.addPolygons(map, polygons, zoomIndex)
 
         await this.mapDidRender()
 
@@ -244,7 +252,7 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
         this.map!.addLayer(this.basemap_layer)
     }
 
-    async addPolygons(map: L.Map, names: string[], styles: Record<string, unknown>[], zoom_to: number): Promise<void> {
+    async addPolygons(map: L.Map, polygons: Polygon[], zoom_to: number): Promise<void> {
         /*
          * We want to parallelize polygon loading, but we also need to add the polygons in a deterministic order for testing purposes (as well as to show contained polygons atop their parent)
          * So, we start all the loads asynchronously, but actually add the polygons to the map only as they finish loading in order
@@ -259,8 +267,8 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
                 adderIndex++
             }
         }
-        await Promise.all(names.map(async (name, i) => {
-            const adder = await this.addPolygon(map, name, i === zoom_to, styles[i])
+        await Promise.all(polygons.map(async (polygon, i) => {
+            const adder = await this.addPolygon(map, polygon, i === zoom_to)
             adders.set(i, adder)
             addDone()
         }))
@@ -307,38 +315,36 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
      * Returns a function that adds the polygon.
      * The reason for this is so that we can add the polygons in a specific order independent of the order in which they end up loading
      */
-    async addPolygon(map: L.Map, name: string, fit_bounds: boolean, style: Record<string, unknown>, add_callback = true, add_to_bottom = false): Promise<() => void> {
-        this.exist_this_time.push(name)
-        if (this.polygon_by_name.has(name)) {
-            this.polygon_by_name.get(name)!.setStyle(style)
+    async addPolygon(map: L.Map, polygon: Polygon, fit_bounds: boolean): Promise<() => void> {
+        this.exist_this_time.push(polygon.name)
+        if (this.polygon_by_name.has(polygon.name)) {
+            this.polygon_by_name.get(polygon.name)!.setStyle(polygon.style)
             return () => undefined
         }
-        const geojson = await this.polygonGeojson(name)
+        const geojson = await this.polygonGeojson(polygon.name)
         return () => {
             const group = L.featureGroup()
-            let polygon = L.geoJson(geojson, {
-                style,
+            const leafletPolygon = L.geoJson(geojson, {
+                style: polygon.style,
                 // @ts-expect-error smoothFactor not included in library type definitions
                 smoothFactor: 0.1,
-                className: `tag-${name.replace(/ /g, '_')}`,
+                className: `tag-${polygon.name.replace(/ /g, '_')}`,
             })
-            if (add_callback) {
-                polygon = polygon.on('click', () => {
-                    void this.context.navigate({
-                        kind: 'article',
-                        universe: this.context.universe,
-                        longname: name,
-                    }, { history: 'push', scroll: { kind: 'element', element: this.map!.getContainer() } })
-                })
-            }
+            leafletPolygon.on('click', () => {
+                void this.context.navigate({
+                    kind: 'article',
+                    universe: this.context.universe,
+                    longname: polygon.name,
+                }, { history: 'push', scroll: { kind: 'element', element: this.map!.getContainer() } })
+            })
 
             // @ts-expect-error Second parameter not included in library type definitions
-            group.addLayer(polygon, add_to_bottom)
+            group.addLayer(leafletPolygon, false)
             if (fit_bounds) {
                 map.fitBounds(group.getBounds(), { animate: false })
             }
             map.addLayer(group)
-            this.polygon_by_name.set(name, group)
+            this.polygon_by_name.set(polygon.name, group)
         }
     }
 
@@ -420,28 +426,27 @@ class ArticleMap extends MapGeneric<ArticleMapProps> {
     private already_fit_bounds: string | undefined = undefined
 
     override computePolygons(): Promise<Polygons> {
-        const relateds = []
-        relateds.push(...this.getRelated('contained_by'))
-        relateds.push(...this.getRelated('intersects'))
-        relateds.push(...this.getRelated('borders'))
-        relateds.push(...this.getRelated('contains'))
-        relateds.push(...this.getRelated('same_geography'))
+        const relateds = [
+            ...this.getRelated('contained_by'),
+            ...this.getRelated('intersects'),
+            ...this.getRelated('borders'),
+            ...this.getRelated('contains'),
+            ...this.getRelated('same_geography'),
+        ]
 
-        const names = []
-        const styles = []
+        const relatedPolygons = this.relatedPolygons(relateds)
 
-        names.push(this.props.longname)
-        styles.push({ fillOpacity: 0.5, weight: 1, color: this.props.color, fillColor: this.props.color })
-
-        const [relatedNames, relatedStyles] = this.relatedPolygons(relateds)
-        names.push(...relatedNames)
-        styles.push(...relatedStyles)
-
-        const zoomIndex = this.already_fit_bounds !== this.props.longname ? 0 : -1
-
-        const metas = names.map(() => ({}))
-
-        return Promise.resolve([names, styles, metas, zoomIndex] as const)
+        return Promise.resolve({
+            polygons: [
+                {
+                    name: this.props.longname,
+                    style: { fillOpacity: 0.5, weight: 1, color: this.props.color, fillColor: this.props.color },
+                    meta: {},
+                },
+                ...relatedPolygons,
+            ],
+            zoomIndex: this.already_fit_bounds !== this.props.longname ? 0 : -1,
+        })
     }
 
     override mapDidRender(): Promise<void> {
@@ -456,9 +461,8 @@ class ArticleMap extends MapGeneric<ArticleMapProps> {
         return element
     }
 
-    relatedPolygons(related: NormalizeProto<IRelatedButton>[]): [Polygons[0], Polygons[1]] {
-        const names = []
-        const styles = []
+    relatedPolygons(related: NormalizeProto<IRelatedButton>[]): Polygon[] {
+        const result: Polygon[] = []
         for (let i = related.length - 1; i >= 0; i--) {
             if (!this.props.showHistoricalCDs && isHistoricalCD(related[i].rowType)) {
                 continue
@@ -470,9 +474,12 @@ class ArticleMap extends MapGeneric<ArticleMapProps> {
 
             const color = randomColor(related[i].longname)
             const style = { color, weight: 1, fillColor: color, fillOpacity: 0.1 }
-            names.push(related[i].longname)
-            styles.push(style)
+            result.push({
+                name: related[i].longname,
+                style,
+                meta: {},
+            })
         }
-        return [names, styles]
+        return result
     }
 }
