@@ -293,3 +293,29 @@ test('when navigating to next media market that is two lines, maintains relative
 
     await t.expect(after.pointerPosition).eql(before.pointerPosition)
 })
+
+test('when navigating to next media market that is two lines vai map click, maintains relative position of map', async (t) => {
+    const scrollPosition = ClientFunction(() => window.scrollY)
+    const mapPosition = ClientFunction(() => document.querySelector('.map-container-for-testing')!.getBoundingClientRect().top)
+    const neighbor = Selector('path').withAttribute('class', /tag-Raleigh-Durham_\(Fayetteville\)_NC_Media_Market/)
+
+    await t.scrollIntoView(neighbor)
+
+    const before = {
+        mapPosition: await mapPosition(),
+        scrollPosition: await scrollPosition(),
+    }
+
+    await t.click(neighbor)
+    await t.expect(Selector('div').withExactText('Raleigh-Durham (Fayetteville) NC Media Market').exists).ok()
+
+    const after = {
+        mapPosition: await mapPosition(),
+        scrollPosition: await scrollPosition(),
+    }
+
+    // Page has scrolled to maintain pointer position
+    await t.expect(after.scrollPosition).notEql(before.scrollPosition)
+
+    await t.expect(after.mapPosition).eql(before.mapPosition)
+})
