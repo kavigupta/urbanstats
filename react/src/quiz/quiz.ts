@@ -285,13 +285,13 @@ export interface QuizQuestionsModel {
     questionByIndex: (index: number) => QuizQuestion
     // undefined if the quiz is infinite
     length: number | undefined
-    isDone: (choices: boolean[]) => boolean
+    isDone: (correctPattern: boolean[]) => boolean
 }
 
 export function wrapQuestionsModel(questions: QuizQuestion[]): QuizQuestionsModel {
     return {
         questionByIndex: (index: number) => questions[index],
         length: questions.length,
-        isDone: (choices: boolean[]) => choices.length === questions.length,
+        isDone: (correctPattern: boolean[]) => correctPattern.length === questions.length,
     }
 }

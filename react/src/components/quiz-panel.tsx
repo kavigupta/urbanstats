@@ -60,7 +60,7 @@ export function QuizPanel(props: { quizDescriptor: QuizDescriptor, todayName: st
                     index -= 1
                 }
 
-                if (index === quiz.length) {
+                if (props.todaysQuiz.isDone(history.correct_pattern.map(correct => correct ? true : false))) {
                     return (
                         <QuizResult
                             // can only show results if the quiz is done
