@@ -77,7 +77,8 @@ export function QuizPanel(props: { quizDescriptor: QuizDescriptor, todayName: st
                 if (index === quiz.length) {
                     return (
                         <QuizResult
-                            quiz={Array.from({ length: quiz.length }, (_, i) => quiz.questionByIndex(i))}
+                            // can only show results if the quiz is done
+                            quiz={Array.from({ length: history.choices.length }, (_, i) => quiz.questionByIndex(i))}
                             wholeHistory={quizHistory}
                             history={history}
                             todayName={props.todayName}
