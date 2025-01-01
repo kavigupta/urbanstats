@@ -27,23 +27,40 @@ export function QuizPanel(props: { quizDescriptor: QuizDescriptor, todayName: st
     }
 
     const [waitingForTime, setWaitingForTime] = useState(false)
-    const [nextQuestion, setNextQuestion] = useState<QuizQuestion | null>(null)
+    const [waitingForNextQuestion, setWaitingForNextQuestion] = useState(false)
     const [questions, setQuestions] = useState<QuizQuestion[]>([])
 
-    const waiting = waitingForTime || nextQuestion === null
-
     const todaysQuizHistory = quizHistory[props.quizDescriptor.name] ?? { choices: [], correct_pattern: [] }
+
+    const waiting = waitingForTime || waitingForNextQuestion || questions.length < todaysQuizHistory.choices.length
+
+    function newQuestion(count: number): void {
+        if (count <= 0) {
+            return
+        }
+        if (waitingForNextQuestion) {
+            throw new Error('newQuestion called while waiting for next question')
+        }
+        setWaitingForNextQuestion(true)
+        props.todaysQuiz.questionByIndex(questions.length).then((question) => {
+            setWaitingForNextQuestion(false)
+            if (question !== undefined) {
+                setQuestions([...questions, question])
+                newQuestion(count - 1)
+            }
+        }).catch(() => {
+            setWaitingForNextQuestion(false)
+        })
+    }
+
+    if (!waitingForNextQuestion) {
+        newQuestion(todaysQuizHistory.choices.length - questions.length)
+    }
 
     const setTodaysQuizHistory = (historyToday: QuizHistory[string]): void => {
         const newHistory = { ...quizHistory, [props.quizDescriptor.name]: historyToday }
         setWaitingForTime(true)
-        setNextQuestion(null)
-        props.todaysQuiz.questionByIndex(questions.length).then((question) => {
-            setNextQuestion(question)
-            setQuestions([...questions, question])
-        }).catch(() => {
-            setNextQuestion(null)
-        })
+        newQuestion(1)
         setQuizHistory(newHistory)
     }
 
@@ -71,7 +88,14 @@ export function QuizPanel(props: { quizDescriptor: QuizDescriptor, todayName: st
                     index -= 1
                 }
 
-                if (props.todaysQuiz.isDone(history.correct_pattern.map(correct => correct ? true : false))) {
+                if (waiting && index >= questions.length) {
+                    return (
+                        <div>
+                        </div>
+                    )
+                }
+
+                if (!waiting && props.todaysQuiz.isDone(history.correct_pattern.map(correct => correct ? true : false))) {
                     return (
                         <QuizResult
                             // can only show results if the quiz is done
