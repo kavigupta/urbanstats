@@ -431,7 +431,7 @@ class ArticleMap extends MapGeneric<ArticleMapProps> {
         const styles = []
 
         names.push(this.props.longname)
-        styles.push({ interactive: false, fillOpacity: 0.5, weight: 1, color: this.props.color, fillColor: this.props.color })
+        styles.push({ fillOpacity: 0.5, weight: 1, color: this.props.color, fillColor: this.props.color })
 
         const [relatedNames, relatedStyles] = this.relatedPolygons(relateds)
         names.push(...relatedNames)
