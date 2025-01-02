@@ -286,6 +286,14 @@ export interface QuizQuestionsModel {
     // undefined if the quiz is infinite
     length: number | undefined
     isDone: (correctPattern: boolean[]) => boolean
+    uniqueKey: string
+}
+
+let numKeys = 0
+
+function uniqueKey(): string {
+    numKeys++
+    return `quiz-${numKeys}`
 }
 
 export function wrapQuestionsModel(questions: QuizQuestion[]): QuizQuestionsModel {
@@ -293,5 +301,6 @@ export function wrapQuestionsModel(questions: QuizQuestion[]): QuizQuestionsMode
         questionByIndex: (index: number) => Promise.resolve(questions[index]),
         length: questions.length,
         isDone: (correctPattern: boolean[]) => correctPattern.length === questions.length,
+        uniqueKey: uniqueKey(),
     }
 }

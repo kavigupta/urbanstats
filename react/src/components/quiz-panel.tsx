@@ -8,6 +8,17 @@ import { QuizQuestionDispatch } from '../quiz/quiz-question'
 import { QuizResult } from '../quiz/quiz-result'
 
 export function QuizPanel(props: { quizDescriptor: QuizDescriptor, todayName: string, todaysQuiz: QuizQuestionsModel }): ReactNode {
+    return (
+        <QuizPanelNoResets
+            key={props.todaysQuiz.uniqueKey}
+            quizDescriptor={props.quizDescriptor}
+            todayName={props.todayName}
+            todaysQuiz={props.todaysQuiz}
+        />
+    )
+}
+
+function QuizPanelNoResets(props: { quizDescriptor: QuizDescriptor, todayName: string, todaysQuiz: QuizQuestionsModel }): ReactNode {
     // We don't want to save certain quiz types, so bypass the persistent store for those
     const persistentQuizHistory = QuizLocalStorage.shared.history.use()
     const [transientQuizHistory, setTransientQuizHistory] = useState<QuizHistory>({})
