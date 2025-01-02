@@ -74,7 +74,6 @@ function QuizPanelNoResets(props: { quizDescriptor: QuizDescriptor, todayName: s
     const setTodaysQuizHistory = (historyToday: QuizHistory[string]): void => {
         const newHistory = { ...quizHistory, [props.quizDescriptor.name]: historyToday }
         setWaitingForTime(true)
-        newQuestion(1)
         setQuizHistory(newHistory)
     }
 
