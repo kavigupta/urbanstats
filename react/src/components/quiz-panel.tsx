@@ -8,6 +8,8 @@ import { QuizQuestionDispatch } from '../quiz/quiz-question'
 import { QuizResult } from '../quiz/quiz-result'
 
 export function QuizPanel(props: { quizDescriptor: QuizDescriptor, todayName: string, todaysQuiz: QuizQuestionsModel }): ReactNode {
+    // set a unique key for the quiz panel so that it will re-render when the quiz changes
+    // this is necessary because the quiz panel is a stateful component with all the questions cached.
     return (
         <QuizPanelNoResets
             key={props.todaysQuiz.uniqueKey}
