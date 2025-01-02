@@ -44,12 +44,11 @@ export function QuizPanel(props: { quizDescriptor: QuizDescriptor, todayName: st
             throw new Error('newQuestion called while waiting for next question')
         }
         setWaitingForNextQuestion(true)
-        props.todaysQuiz.questionByIndex(questions.length).then((question) => {
+        // array of questionsByIndex(questions.length) to questionsByIndex(questions.length + count)
+        const promises = Array.from({ length: count }, (_, i) => props.todaysQuiz.questionByIndex(questions.length + i))
+        Promise.all(promises).then((newQuestions) => {
             setWaitingForNextQuestion(false)
-            if (question !== undefined) {
-                setQuestions([...questions, question])
-                newQuestion(count - 1)
-            }
+            setQuestions([...questions, ...newQuestions.filter((question): question is QuizQuestion => question !== undefined)])
         }).catch(() => {
             setWaitingForNextQuestion(false)
         })
