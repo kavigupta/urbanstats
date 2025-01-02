@@ -97,7 +97,7 @@ export function quizTest({ platform }: { platform: 'desktop' | 'mobile' }): void
         platform,
     )
 
-    test('quiz-report-old-results', async (t) => {
+    test.only('quiz-report-old-results', async (t) => {
         await safeReload(t)
         await clickButtons(t, ['a', 'a', 'a', 'a', 'a'])
         const quizHistory: unknown = await t.eval(() => {

@@ -1,4 +1,4 @@
-import React, { ReactNode, useState } from 'react'
+import React, { ReactNode, useEffect, useState } from 'react'
 
 import { PageTemplate } from '../page_template/template'
 import '../common.css'
@@ -32,7 +32,9 @@ export function QuizPanel(props: { quizDescriptor: QuizDescriptor, todayName: st
 
     const todaysQuizHistory = quizHistory[props.quizDescriptor.name] ?? { choices: [], correct_pattern: [] }
 
-    const waiting = waitingForTime || waitingForNextQuestion || questions.length < todaysQuizHistory.choices.length
+    const quizDone = props.todaysQuiz.isDone(todaysQuizHistory.correct_pattern.map(correct => correct ? true : false))
+    const questionsExpected = quizDone ? todaysQuizHistory.choices.length : todaysQuizHistory.choices.length + 1
+    const waiting = waitingForTime || waitingForNextQuestion || questions.length < questionsExpected
 
     function newQuestion(count: number): void {
         if (count <= 0) {
@@ -54,7 +56,7 @@ export function QuizPanel(props: { quizDescriptor: QuizDescriptor, todayName: st
     }
 
     if (!waitingForNextQuestion) {
-        newQuestion(todaysQuizHistory.choices.length - questions.length)
+        newQuestion(questionsExpected - questions.length)
     }
 
     const setTodaysQuizHistory = (historyToday: QuizHistory[string]): void => {
@@ -88,14 +90,7 @@ export function QuizPanel(props: { quizDescriptor: QuizDescriptor, todayName: st
                     index -= 1
                 }
 
-                if (waiting && index >= questions.length) {
-                    return (
-                        <div>
-                        </div>
-                    )
-                }
-
-                if (!waiting && props.todaysQuiz.isDone(history.correct_pattern.map(correct => correct ? true : false))) {
+                if (!waiting && quizDone) {
                     return (
                         <QuizResult
                             // can only show results if the quiz is done
@@ -105,6 +100,13 @@ export function QuizPanel(props: { quizDescriptor: QuizDescriptor, todayName: st
                             todayName={props.todayName}
                             quizDescriptor={props.quizDescriptor}
                         />
+                    )
+                }
+
+                if (index < 0 || index >= questions.length) {
+                    return (
+                        <div>
+                        </div>
                     )
                 }
 
