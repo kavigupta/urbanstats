@@ -47,28 +47,18 @@ function QuizPanelNoResets(props: { quizDescriptor: QuizDescriptor, todayName: s
 
     const quizDone = props.todaysQuiz.isDone(todaysQuizHistory.correct_pattern.map(correct => correct ? true : false))
     const questionsExpected = quizDone ? todaysQuizHistory.choices.length : todaysQuizHistory.choices.length + 1
-    const waiting = waitingForTime || waitingForNextQuestion || questions.length < questionsExpected
+    const missing = questionsExpected - questions.length
+    const waiting = waitingForTime || waitingForNextQuestion || missing > 0
 
-    function newQuestion(count: number): void {
-        if (count <= 0) {
-            return
-        }
-        if (waitingForNextQuestion) {
-            throw new Error('newQuestion called while waiting for next question')
-        }
+    if (!waitingForNextQuestion && missing > 0) {
         setWaitingForNextQuestion(true)
-        // array of questionsByIndex(questions.length) to questionsByIndex(questions.length + count)
-        const promises = Array.from({ length: count }, (_, i) => props.todaysQuiz.questionByIndex(questions.length + i))
+        const promises = Array.from({ length: missing }, (_, i) => props.todaysQuiz.questionByIndex(questions.length + i))
         Promise.all(promises).then((newQuestions) => {
             setWaitingForNextQuestion(false)
             setQuestions([...questions, ...newQuestions.filter((question): question is QuizQuestion => question !== undefined)])
         }).catch(() => {
             setWaitingForNextQuestion(false)
         })
-    }
-
-    if (!waitingForNextQuestion) {
-        newQuestion(questionsExpected - questions.length)
     }
 
     const setTodaysQuizHistory = (historyToday: QuizHistory[string]): void => {
