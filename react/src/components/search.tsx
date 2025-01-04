@@ -192,7 +192,7 @@ function combineMatches(a: BitapMatch, b: BitapMatch): BitapMatch {
         normalizedElement: a.normalizedElement,
         errors: a.errors + b.errors,
         numMatches: a.numMatches + b.numMatches,
-        indexInElement: Math.min(a.indexInElement, b.indexInElement),
+        indexInElement: (a.indexInElement + b.indexInElement) / 2,
         whitespaceAroundPattern: a.whitespaceAroundPattern + b.whitespaceAroundPattern,
         distanceFromPatternLength: a.distanceFromPatternLength,
         patternLength: a.patternLength + b.patternLength,
@@ -227,7 +227,14 @@ function bitap(searchIndex: NormalizedSearchIndex, pattern: string): string[] {
     const numMatches = 100
     function addToMatches(newMatch: BitapMatch): void {
         // Maybe the new match is better when combined with previous matches
-        const orderedMatches = [newMatch, ...matches.filter(match => match.element === newMatch.element).flatMap(oldMatch => [oldMatch, ...(oldMatch.patternIteration < newMatch.patternIteration ? [combineMatches(oldMatch, newMatch)] : [])])].sort(compareBitapMatches)
+        const orderedMatches = [
+            newMatch,
+            ...matches.filter(match => match.element === newMatch.element).flatMap(oldMatch => [
+                oldMatch,
+                ...(oldMatch.patternIteration < newMatch.patternIteration ? [combineMatches(oldMatch, newMatch)] : []),
+                ...(oldMatch.patternIteration === newMatch.patternIteration && oldMatch.combinationOf.length > 0 ? [combineMatches(oldMatch.combinationOf[0], newMatch)] : []),
+            ]),
+        ].sort(compareBitapMatches)
         const bestMatch = orderedMatches[0]
 
         // To be maybe readded after
@@ -280,8 +287,8 @@ function bitap(searchIndex: NormalizedSearchIndex, pattern: string): string[] {
             const finish = normalizedElement.length + currentPattern.length
 
             for (let errors = 0; errors <= Math.min(currentPattern.length, 1); errors++) {
-            // If matches is full and everything has a lesser error level than this, we won't add any matches because they're sorted by error level
-                if (matches.length === numMatches && matches.every(match => match.errors < errors)) {
+                // If matches is full and everything has more matches and a lesser error level than this, we won't add any matches because they're sorted by error level
+                if (matches.length === numMatches && matches.every(match => match.numMatches >= patternIteration && match.errors < errors)) {
                     break
                 }
 
@@ -327,7 +334,7 @@ function bitap(searchIndex: NormalizedSearchIndex, pattern: string): string[] {
             }
         }
 
-        searchIndex = matches
+        // searchIndex = matches
     }
 
     console.log(matches)
@@ -336,3 +343,9 @@ function bitap(searchIndex: NormalizedSearchIndex, pattern: string): string[] {
 
     return matches.map(match => match.element)
 }
+
+function indexify(arr: string[]): NormalizedSearchIndex {
+    return arr.map(v => ({ element: v, normalizedElement: normalize(v) }))
+}
+
+console.log(bitap(indexify(['new york new york']), 'new york'))
