@@ -218,6 +218,11 @@ def build_urbanstats(
         if not no_sitemap:
             output_sitemap(site_folder, shapefile_without_ordinals(), all_ordinals())
 
+    if not no_juxta:
+        generate_quizzes(f"{site_folder}/quiz/")
+
+    generate_retrostats(f"{site_folder}/retrostat")
+
     for entrypoint in [
         "index",
         "article",
@@ -260,10 +265,6 @@ def build_urbanstats(
     build_react_site(site_folder, mode)
 
     place_icons_in_site_folder(site_folder)
-
-    if not no_juxta:
-        generate_quizzes(f"{site_folder}/quiz/")
-    generate_retrostats(f"{site_folder}/retrostat")
 
 
 def html_index(
