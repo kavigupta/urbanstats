@@ -57,14 +57,9 @@ export function quizFixture(fixName: string, url: string, newLocalstorage: Recor
     urbanstatsFixture(fixName, url, async (t) => {
         await interceptRequests(t)
         const tempfile = `${tempfileName()}.sql`
-        // Drop the database (https://stackoverflow.com/a/65743498/724702) then execute teh statements
-        writeFileSync(tempfile, `PRAGMA writable_schema = 1;
-DELETE FROM sqlite_master;
-PRAGMA writable_schema = 0;
-VACUUM;
-PRAGMA integrity_check;
-${sqlStatements}`)
-        await promisify(exec)(`cd ../urbanstats-persistent-data; cat ${tempfile} | sqlite3 db.sqlite3; cd -`)
+        // Delete the database and recreate it with the given SQL statements
+        writeFileSync(tempfile, sqlStatements)
+        await promisify(exec)(`cd ../urbanstats-persistent-data; rm db.sqlite3; cat ${tempfile} | sqlite3 db.sqlite3; cd -`)
         await runForTest()
         await t.eval(() => {
             localStorage.clear()
