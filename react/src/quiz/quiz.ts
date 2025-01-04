@@ -3,12 +3,13 @@ import { useEffect, useState } from 'react'
 import { z } from 'zod'
 
 import { StatPath } from '../page_template/statistic-tree'
+import { randomID } from '../utils/random'
 import { cancelled, uploadFile } from '../utils/upload'
 
-export type QuizDescriptor = { kind: 'juxtastat', name: number } | { kind: 'retrostat', name: string } | { kind: 'custom', name: string }
+export type QuizDescriptor = { kind: 'juxtastat', name: number } | { kind: 'retrostat', name: string } | { kind: 'custom', name: string } | { kind: 'infinite', seed: string, version: number }
 
 export type QuizKind = QuizDescriptor['kind']
-export type QuizKindWithStats = 'juxtastat' | 'retrostat'
+export type QuizKindWithStats = 'juxtastat' | 'retrostat' | 'infinite'
 
 export const endpoint = 'https://persistent.urbanstats.org'
 
@@ -38,6 +39,7 @@ export function nameOfQuizKind(quizKind: QuizKind): string {
         case 'juxtastat': return 'Juxtastat'
         case 'retrostat': return 'Retrostat'
         case 'custom': return 'Juxtastat Custom'
+        case 'infinite': return 'Infinite Quiz'
     }
 }
 
@@ -252,12 +254,8 @@ function createAndStoreId(key: string): string {
     // random 60 bit hex number
     // (15 hex digits)
     if (localStorage.getItem(key) === null) {
-        let randomHex = ''
-        for (let i = 0; i < 15; i++) {
-            randomHex += Math.floor(Math.random() * 16).toString(16)[0]
-        }
         // register
-        localStorage.setItem(key, randomHex)
+        localStorage.setItem(key, randomID())
     }
     return localStorage.getItem(key)!
 }
@@ -303,4 +301,9 @@ export function wrapQuestionsModel(questions: QuizQuestion[]): QuizQuestionsMode
         isDone: (correctPattern: boolean[]) => correctPattern.length === questions.length,
         uniqueKey: uniqueKey(),
     }
+}
+
+export function infiniteQuiz(seed: string): QuizQuestionsModel {
+    return wrapQuestionsModel([])
+    // throw new Error(`Infinite quiz not implemented for seed ${seed}`)
 }

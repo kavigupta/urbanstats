@@ -8,6 +8,7 @@ from urbanstats.games.quiz_sampling import (
     compute_geographies_by_type,
     compute_quiz_question_distribution,
 )
+from urbanstats.games.quiz import juxta_version
 from urbanstats.protobuf import data_files_pb2
 from urbanstats.protobuf.utils import write_gzip
 from urbanstats.utils import output_typescript
@@ -61,6 +62,7 @@ def output_quiz_sampling_data(site_folder, subfolder):
 
 
 def output_quiz_sampling_probabilities(site_folder, subfolder):
+    # TODO validate juxta_version
     qqw = quiz_question_weights(compute_geographies_by_type())
     ps = qqw["ps"]
     qqp = qqw["qqp"]
@@ -74,4 +76,5 @@ def output_quiz_sampling_probabilities(site_folder, subfolder):
         allGeographies=qqp.all_geographies,
         allStats=qqp.all_stats,
         questionDistribution=descriptors,
+        juxtaVersion=juxta_version,
     )
