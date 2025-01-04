@@ -534,6 +534,8 @@ export function pageTitle(pageData: PageData): string {
                     return 'Retrostat'
                 case 'custom':
                     return 'Custom Quiz'
+                case 'infinite':
+                    return 'Juxtastat Infinite'
             }
         case 'article':
             return pageData.article.shortname

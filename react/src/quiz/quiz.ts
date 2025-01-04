@@ -6,10 +6,10 @@ import { StatPath } from '../page_template/statistic-tree'
 import { randomID } from '../utils/random'
 import { cancelled, uploadFile } from '../utils/upload'
 
-export type QuizDescriptor = { kind: 'juxtastat', name: number } | { kind: 'retrostat', name: string } | { kind: 'custom', name: string } | { kind: 'infinite', seed: string, version: number }
+export type QuizDescriptor = { kind: 'juxtastat', name: number } | { kind: 'retrostat', name: string } | { kind: 'custom', name: string } | { kind: 'infinite', name: string, seed: string, version: number }
 
 export type QuizKind = QuizDescriptor['kind']
-export type QuizKindWithStats = 'juxtastat' | 'retrostat' | 'infinite'
+export type QuizKindWithStats = 'juxtastat' | 'retrostat'
 
 export const endpoint = 'https://persistent.urbanstats.org'
 

@@ -1,12 +1,14 @@
 import React, { ReactNode, useState } from 'react'
 
+import quiz_infinite from '../data/quiz_infinite'
 import { LongLoad } from '../navigation/loading'
+import { useColors } from '../page_template/colors'
 import { PageTemplate } from '../page_template/template'
 import '../common.css'
 import './quiz.css'
 import { QuizDescriptor, QuizHistory, QuizLocalStorage, QuizQuestion, QuizQuestionsModel, aCorrect } from '../quiz/quiz'
 import { QuizQuestionDispatch } from '../quiz/quiz-question'
-import { QuizResult } from '../quiz/quiz-result'
+import { buttonStyle, QuizResult } from '../quiz/quiz-result'
 import { useHeaderTextClass } from '../utils/responsive'
 
 export function QuizPanel(props: { quizDescriptor: QuizDescriptor, todayName: string, todaysQuiz: QuizQuestionsModel }): ReactNode {
@@ -23,8 +25,9 @@ export function QuizPanel(props: { quizDescriptor: QuizDescriptor, todayName: st
 }
 
 function QuizPanelNoResets(props: { quizDescriptor: QuizDescriptor, todayName: string, todaysQuiz: QuizQuestionsModel }): ReactNode {
-    // We don't want to save certain quiz types, so bypass the persistent store for those
     const headerClass = useHeaderTextClass()
+    const colors = useColors()
+    // We don't want to save certain quiz types, so bypass the persistent store for those
     const persistentQuizHistory = QuizLocalStorage.shared.history.use()
     const [transientQuizHistory, setTransientQuizHistory] = useState<QuizHistory>({})
 
@@ -37,6 +40,7 @@ function QuizPanelNoResets(props: { quizDescriptor: QuizDescriptor, todayName: s
             setQuizHistory = newHistory => QuizLocalStorage.shared.history.value = newHistory
             break
         case 'custom':
+        case 'infinite':
             quizHistory = transientQuizHistory
             setQuizHistory = (newHistory) => { setTransientQuizHistory(newHistory) }
             break
@@ -45,6 +49,20 @@ function QuizPanelNoResets(props: { quizDescriptor: QuizDescriptor, todayName: s
     const [waitingForTime, setWaitingForTime] = useState(false)
     const [waitingForNextQuestion, setWaitingForNextQuestion] = useState(false)
     const [questions, setQuestions] = useState<QuizQuestion[]>([])
+
+    if (props.quizDescriptor.kind === 'infinite' && props.quizDescriptor.version !== quiz_infinite.juxtaVersion) {
+        return (
+            <div>
+                <div className={headerClass}>Quiz version mismatch</div>
+                <div>
+                    Juxtastat generation has been updated, so infinite Juxtastat you are trying to access is no longer available.
+                </div>
+                <a style={buttonStyle(colors.hueColors.blue)} href="/quiz.html?mode=infinite">
+                    Juxtastat Infinite
+                </a>
+            </div>
+        )
+    }
 
     const todaysQuizHistory = quizHistory[props.quizDescriptor.name] ?? { choices: [], correct_pattern: [] }
 

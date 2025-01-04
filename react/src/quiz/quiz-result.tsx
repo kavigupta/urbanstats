@@ -34,7 +34,7 @@ interface QuizResultProps {
 export function QuizResult(props: QuizResultProps): ReactNode {
     const button = useRef<HTMLButtonElement>(null)
     const [stats, setStats] = useState<PerQuestionStats>((
-        props.quizDescriptor.kind === 'custom'
+        props.quizDescriptor.kind === 'custom' || props.quizDescriptor.kind === 'infinite'
             ? undefined
             : getCachedPerQuestionStats(props.quizDescriptor)
     ) ?? { total: 0, per_question: [0, 0, 0, 0, 0] })
@@ -46,7 +46,7 @@ export function QuizResult(props: QuizResultProps): ReactNode {
     }
 
     useEffect(() => {
-        if (props.quizDescriptor.kind === 'custom') {
+        if (props.quizDescriptor.kind === 'custom' || props.quizDescriptor.kind === 'infinite') {
             return
         }
         void reportToServer(props.wholeHistory, props.quizDescriptor.kind).then(setAuthError)
@@ -100,13 +100,13 @@ export function QuizResult(props: QuizResultProps): ReactNode {
                     )
                 : undefined}
             {
-                props.quizDescriptor.kind === 'custom'
+                props.quizDescriptor.kind === 'custom' || props.quizDescriptor.kind === 'infinite'
                     ? undefined
                     : <TimeToNextQuiz quiz={props.quizDescriptor} />
             }
             <div className="gap"></div>
             {
-                props.quizDescriptor.kind === 'custom'
+                props.quizDescriptor.kind === 'custom' || props.quizDescriptor.kind === 'infinite'
                     ? undefined
                     : <QuizStatistics wholeHistory={props.wholeHistory} quiz={props.quizDescriptor} />
             }
@@ -126,7 +126,7 @@ export function QuizResult(props: QuizResultProps): ReactNode {
             )}
             <div className="gap_small"></div>
             {
-                props.quizDescriptor.kind === 'custom'
+                props.quizDescriptor.kind === 'custom' || props.quizDescriptor.kind === 'infinite'
                     ? undefined
                     : (
                             <div style={{ margin: 'auto', width: '100%', maxWidth: '500px' }}>
@@ -157,6 +157,23 @@ interface ShareButtonProps {
     quizKind: QuizKind
 }
 
+export function buttonStyle(color: string): CSSProperties {
+    return {
+        textAlign: 'center',
+        fontSize: '2em',
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        flexDirection: 'row',
+        margin: '0 auto',
+        padding: '0.25em 1em',
+        backgroundColor: color,
+        borderRadius: '0.25em',
+        border: 'none',
+        color: '#fff',
+    }
+}
+
 function ShareButton({ buttonRef, todayName, correctPattern, totalCorrect, quizKind }: ShareButtonProps): ReactNode {
     const colors = useColors()
     const juxtaColors = useJuxtastatColors()
@@ -167,20 +184,7 @@ function ShareButton({ buttonRef, todayName, correctPattern, totalCorrect, quizK
     return (
         <button
             className="serif"
-            style={{
-                textAlign: 'center',
-                fontSize: '2em',
-                display: 'flex',
-                justifyContent: 'center',
-                alignItems: 'center',
-                flexDirection: 'row',
-                margin: '0 auto',
-                padding: '0.25em 1em',
-                backgroundColor: colors.hueColors.green,
-                borderRadius: '0.25em',
-                border: 'none',
-                color: '#fff',
-            }}
+            style={buttonStyle(colors.hueColors.green)}
             ref={buttonRef}
             onClick={async () => {
                 const [text, url] = await summary(juxtaColors, todayName, correctPattern, totalCorrect, quizKind)
