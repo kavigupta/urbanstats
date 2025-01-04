@@ -4,8 +4,10 @@ import { PageTemplate } from '../page_template/template'
 import '../common.css'
 import './quiz.css'
 import { QuizDescriptor, QuizHistory, QuizLocalStorage, QuizQuestion, QuizQuestionsModel, aCorrect } from '../quiz/quiz'
+import { LoadingSpinner } from '../quiz/quiz-friends'
 import { QuizQuestionDispatch } from '../quiz/quiz-question'
 import { QuizResult } from '../quiz/quiz-result'
+import { useHeaderTextClass } from '../utils/responsive'
 
 export function QuizPanel(props: { quizDescriptor: QuizDescriptor, todayName: string, todaysQuiz: QuizQuestionsModel }): ReactNode {
     // set a unique key for the quiz panel so that it will re-render when the quiz changes
@@ -22,6 +24,7 @@ export function QuizPanel(props: { quizDescriptor: QuizDescriptor, todayName: st
 
 function QuizPanelNoResets(props: { quizDescriptor: QuizDescriptor, todayName: string, todaysQuiz: QuizQuestionsModel }): ReactNode {
     // We don't want to save certain quiz types, so bypass the persistent store for those
+    const headerClass = useHeaderTextClass()
     const persistentQuizHistory = QuizLocalStorage.shared.history.use()
     const [transientQuizHistory, setTransientQuizHistory] = useState<QuizHistory>({})
 
@@ -107,6 +110,8 @@ function QuizPanelNoResets(props: { quizDescriptor: QuizDescriptor, todayName: s
                 if (index < 0 || index >= questions.length) {
                     return (
                         <div>
+                            <div className={headerClass}>Loading Results...</div>
+                            <LoadingSpinner />
                         </div>
                     )
                 }

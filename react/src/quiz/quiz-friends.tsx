@@ -96,21 +96,25 @@ export function QuizFriendsPanel(props: {
         </div>
     )
 
+    return (
+        <div style={{ position: 'relative' }}>
+            <div style={{ opacity: isLoading ? 0.5 : 1, pointerEvents: isLoading ? 'none' : undefined }}>
+                <WithError content={content} error={error} />
+            </div>
+            { isLoading ? <LoadingSpinner /> : null}
+        </div>
+    )
+}
+
+export function LoadingSpinner(): ReactNode {
+    const colors = useColors()
     const spinnerSize = '78px'
     const spinnerStyle: CSSProperties = {
         position: 'absolute',
         left: `calc(50% - ${spinnerSize} / 2)`,
         top: `calc(50% - ${spinnerSize} / 2)`,
     }
-
-    return (
-        <div style={{ position: 'relative' }}>
-            <div style={{ opacity: isLoading ? 0.5 : 1, pointerEvents: isLoading ? 'none' : undefined }}>
-                <WithError content={content} error={error} />
-            </div>
-            { isLoading ? <MoonLoader size={spinnerSize} color={colors.textMain} cssOverride={spinnerStyle} /> : null}
-        </div>
-    )
+    return <MoonLoader size={spinnerSize} color={colors.textMain} cssOverride={spinnerStyle} />
 }
 
 const scoreCorrectHeight = '2em'
