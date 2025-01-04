@@ -108,9 +108,10 @@ function QuizPanelNoResets(props: { quizDescriptor: QuizDescriptor, todayName: s
                 }
 
                 if (index < 0 || index >= questions.length) {
+                    const message = index < 0 ? 'Loading quiz...' : 'Loading results...'
                     return (
                         <div>
-                            <div className={headerClass}>Loading Results...</div>
+                            <div className={headerClass}>{message}</div>
                             <LongLoad />
                         </div>
                     )
