@@ -1,10 +1,10 @@
 import React, { ReactNode, useState } from 'react'
 
+import { LongLoad } from '../navigation/loading'
 import { PageTemplate } from '../page_template/template'
 import '../common.css'
 import './quiz.css'
 import { QuizDescriptor, QuizHistory, QuizLocalStorage, QuizQuestion, QuizQuestionsModel, aCorrect } from '../quiz/quiz'
-import { LoadingSpinner } from '../quiz/quiz-friends'
 import { QuizQuestionDispatch } from '../quiz/quiz-question'
 import { QuizResult } from '../quiz/quiz-result'
 import { useHeaderTextClass } from '../utils/responsive'
@@ -111,7 +111,7 @@ function QuizPanelNoResets(props: { quizDescriptor: QuizDescriptor, todayName: s
                     return (
                         <div>
                             <div className={headerClass}>Loading Results...</div>
-                            <LoadingSpinner />
+                            <LongLoad />
                         </div>
                     )
                 }
