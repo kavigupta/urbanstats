@@ -457,13 +457,13 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
                     todayName = `Week ${retro}`
                     break
                 case 'infinite':
-                    quizDescriptor = { kind: 'custom', name: 'Infinite' }
                     if (updatedDescriptor.seed === undefined) {
                         updatedDescriptor.seed = randomID()
                     }
                     if (updatedDescriptor.v === undefined) {
                         updatedDescriptor.v = quiz_infinite.juxtaVersion
                     }
+                    quizDescriptor = { kind: 'infinite', name: 'Infinite', seed: updatedDescriptor.seed, version: updatedDescriptor.v }
                     quiz = infiniteQuiz(updatedDescriptor.seed)
                     todayName = 'Infinite'
                     break

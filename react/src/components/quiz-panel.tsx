@@ -50,17 +50,28 @@ function QuizPanelNoResets(props: { quizDescriptor: QuizDescriptor, todayName: s
     const [waitingForNextQuestion, setWaitingForNextQuestion] = useState(false)
     const [questions, setQuestions] = useState<QuizQuestion[]>([])
 
+    console.log(props.quizDescriptor)
+
     if (props.quizDescriptor.kind === 'infinite' && props.quizDescriptor.version !== quiz_infinite.juxtaVersion) {
         return (
-            <div>
-                <div className={headerClass}>Quiz version mismatch</div>
+            <PageTemplate>
                 <div>
-                    Juxtastat generation has been updated, so infinite Juxtastat you are trying to access is no longer available.
+                    <div className={headerClass}>Quiz version mismatch</div>
+                    <div>
+                        Juxtastat generation has been updated, so infinite Juxtastat you are trying to access is no longer available.
+                    </div>
+                    <a
+                        style={{
+                            ...buttonStyle(colors.hueColors.blue),
+                            width: '30%',
+                            textDecoration: 'none',
+                        }}
+                        href="/quiz.html?mode=infinite"
+                    >
+                        Juxtastat Infinite
+                    </a>
                 </div>
-                <a style={buttonStyle(colors.hueColors.blue)} href="/quiz.html?mode=infinite">
-                    Juxtastat Infinite
-                </a>
-            </div>
+            </PageTemplate>
         )
     }
 
