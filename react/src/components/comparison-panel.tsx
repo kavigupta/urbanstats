@@ -450,19 +450,14 @@ class ComparisonMap extends MapGeneric<MapGenericProps & { longnames: string[], 
     }
 
     override computePolygons(): Promise<Polygons> {
-        const names = []
-        const styles = []
-
-        for (const i of this.props.longnames.keys()) {
-            names.push(this.props.longnames[i])
-            styles.push({ color: this.props.colors[i], fillColor: this.props.colors[i], fillOpacity: 0.5, weight: 1 })
-        }
-
-        const zoomIndex = -1
-
-        const metas = names.map(() => { return {} })
-
-        return Promise.resolve([names, styles, metas, zoomIndex])
+        return Promise.resolve({
+            polygons: this.props.longnames.map((longname, i) => ({
+                name: longname,
+                style: { color: this.props.colors[i], fillColor: this.props.colors[i], fillOpacity: 0.5, weight: 1 },
+                meta: {},
+            })),
+            zoomIndex: -1,
+        })
     }
 
     override mapDidRender(): Promise<void> {
