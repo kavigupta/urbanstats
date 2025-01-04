@@ -6,7 +6,6 @@ import { useColors } from '../page_template/colors'
 import { useSetting } from '../page_template/settings'
 import { isHistoricalCD } from '../utils/is_historical'
 import '../common.css'
-import { SearchIndex } from '../utils/protos'
 
 export function SearchBox(props: {
     onChange?: (inp: string) => void
@@ -28,7 +27,13 @@ export function SearchBox(props: {
 
     const searchQuery = normalizedQuery.current
 
-    const fullIndex = useMemo(() => loadProtobuf('/index/pages.gz', 'SearchIndex'), [])
+    const fullIndex = useMemo(async () => {
+        const searchIndex = await loadProtobuf('/index/pages.gz', 'SearchIndex')
+        return searchIndex.elements.map(element => ({
+            element,
+            normalizedElement: normalize(element),
+        }))
+    }, [])
 
     const reset = (): void => {
         setQuery('')
@@ -70,26 +75,17 @@ export function SearchBox(props: {
 
     // Do the search
     useEffect(() => {
-        if (searchQuery === '') {
-            // Occurs when query is empty
-            setMatches([])
-            setFocused(0)
-            return
-        }
-
-        const doSearch = (index: SearchIndex): void => {
-            // we can skip searching if the query has changed since we were waiting on the indexCache
+        void (async () => {
+            const full = await fullIndex
+            // we can skip searching if the query has changed since we were waiting on the index
             if (normalizedQuery.current !== searchQuery) {
                 return
             }
-
-            setMatches(bitap(index.elements, searchQuery))
-        }
-
-        void (async () => {
-            const full = await fullIndex
             const s2 = Date.now()
-            doSearch(full)
+
+            const result = bitap(full, searchQuery)
+            setMatches(result)
+            setFocused(f => Math.min(f, result.length - 1))
             console.log(`Took ${Date.now() - s2}ms to do full search`)
         })()
     }, [searchQuery, showHistoricalCDs, fullIndex])
@@ -167,12 +163,38 @@ function normalize(a: string): string {
     return a.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
 }
 
+type NormalizedSearchIndex = { element: string, normalizedElement: string }[]
+
 interface BitapMatch {
+    patternIteration: number
     element: string
+    normalizedElement: string
     errors: number
     indexInElement: number
-    whitespaceAfterPattern: boolean
+    whitespaceAroundPattern: number
     distanceFromPatternLength: number
+    patternLength: number
+    combinationOf: BitapMatch[] // For debugging
+}
+
+function combineMatches(a: BitapMatch, b: BitapMatch): BitapMatch {
+    if (a.element !== b.element) {
+        throw new Error('may only combine matches on the same element')
+    }
+    if (a.patternIteration === b.patternIteration) {
+        throw new Error('may not combine matches from the same pattern iteration')
+    }
+    return {
+        element: a.element,
+        normalizedElement: a.normalizedElement,
+        errors: a.errors + b.errors,
+        indexInElement: Math.min(a.indexInElement, b.indexInElement),
+        whitespaceAroundPattern: a.whitespaceAroundPattern + b.whitespaceAroundPattern,
+        distanceFromPatternLength: Math.abs((a.patternLength + b.patternLength) - a.normalizedElement.length),
+        patternLength: a.patternLength + b.patternLength,
+        patternIteration: Math.max(a.patternIteration, b.patternIteration),
+        combinationOf: [a, b],
+    }
 }
 
 function compareBitapMatches(a: BitapMatch, b: BitapMatch): number {
@@ -182,9 +204,9 @@ function compareBitapMatches(a: BitapMatch, b: BitapMatch): number {
     if (a.indexInElement !== b.indexInElement) {
         return a.indexInElement - b.indexInElement
     }
-    if (a.whitespaceAfterPattern !== b.whitespaceAfterPattern) {
+    if (a.whitespaceAroundPattern !== b.whitespaceAroundPattern) {
         // Note swapped order
-        return Number(b.whitespaceAfterPattern) - Number(a.whitespaceAfterPattern)
+        return b.whitespaceAroundPattern - a.whitespaceAroundPattern
     }
     if (a.distanceFromPatternLength !== b.distanceFromPatternLength) {
         return a.distanceFromPatternLength - b.distanceFromPatternLength
@@ -192,42 +214,22 @@ function compareBitapMatches(a: BitapMatch, b: BitapMatch): number {
     return 0
 }
 
-function bitap(elements: string[], pattern: string): string[] {
-    if (pattern.length > 53) {
-        throw new Error('pattern too large')
-    }
-
-    const maxErrors = Math.min(2, pattern.length)
-
-    const alphabet = new Array<number>(65535).fill(0)
-    for (let i = 0; i < pattern.length; i++) {
-        const char = pattern.charCodeAt(i)
-        alphabet[char] = alphabet[char] | (1 << (pattern.length - i - 1))
-    }
-
-    const matchMask = 1 << (pattern.length - 1)
-
+function bitap(searchIndex: NormalizedSearchIndex, pattern: string): string[] {
     const matches: BitapMatch[] = []
     const numMatches = 10
     function addToMatches(newMatch: BitapMatch): void {
+        // Maybe the new match is better when combined with previous matches
+        const bestMatch = [newMatch, ...matches.filter(match => match.element === newMatch.element && match.patternIteration < newMatch.patternIteration).flatMap(oldMatch => [oldMatch, combineMatches(oldMatch, newMatch)])].sort(compareBitapMatches)[0]
+
+        // To be maybe readded after
         const indexOfExistingMatchOnElement = matches.findIndex(match => match.element === newMatch.element)
-
-        // if (pattern.toLocaleLowerCase().startsWith('santa') && newMatch.element.toLowerCase().startsWith('santa') && matches.some(match => match.element.toLowerCase().startsWith('santa'))) {
-        //     console.log({ newMatch, matches })
-        // }
-
         if (indexOfExistingMatchOnElement !== -1) {
-            if (compareBitapMatches(newMatch, matches[indexOfExistingMatchOnElement]) < 0) {
-                matches.splice(indexOfExistingMatchOnElement, 1)
-            }
-            else {
-                return
-            }
+            matches.splice(indexOfExistingMatchOnElement, 1)
         }
 
         for (let i = 0; i < numMatches; i++) {
-            if (i >= matches.length || compareBitapMatches(newMatch, matches[i]) < 0) {
-                matches.splice(i, 0, newMatch)
+            if (i >= matches.length || compareBitapMatches(bestMatch, matches[i]) < 0) {
+                matches.splice(i, 0, bestMatch)
                 break
             }
         }
@@ -237,54 +239,86 @@ function bitap(elements: string[], pattern: string): string[] {
         }
     }
 
-    const lengthOfLongestElement = elements.reduce((length, element) => Math.max(length, element.length), 0)
+    const lengthOfLongestElement = searchIndex.reduce((length, element) => Math.max(length, element.normalizedElement.length), 0)
 
     const longestFinish = lengthOfLongestElement + pattern.length
 
     let rd = new Array<number>(longestFinish + 2)
     let lastRd = new Array<number>(longestFinish + 2)
 
-    for (const element of elements) {
-        const normalizedElement = normalize(element)
-        const finish = normalizedElement.length + pattern.length
+    let currentPattern: string
+    let nextPattern: string = pattern
+    let patternIteration = 0
+    while (true) {
+        [, currentPattern, nextPattern] = /^([^ ]{0,53}) ?(.*)$/.exec(nextPattern)!
+        console.log({ currentPattern, nextPattern })
+        patternIteration += 1
 
-        for (let errors = 0; errors <= maxErrors; errors++) {
-            rd.fill(0)
-            rd[finish + 1] = (1 << errors) - 1
+        if (currentPattern === '') {
+            break
+        }
 
-            for (let j = finish; j >= 1; j--) {
-                let charMatch: number
-                if (j - 1 < normalizedElement.length) {
-                    charMatch = alphabet[normalizedElement.charCodeAt(j - 1)]
+        const matchMask = 1 << (currentPattern.length - 1)
+
+        const alphabet = new Array<number>(65535).fill(0)
+        for (let i = 0; i < currentPattern.length; i++) {
+            const char = currentPattern.charCodeAt(i)
+            alphabet[char] = alphabet[char] | (1 << (currentPattern.length - i - 1))
+        }
+
+        for (const { element, normalizedElement } of searchIndex) {
+            const finish = normalizedElement.length + currentPattern.length
+
+            for (let errors = 0; errors <= Math.min(currentPattern.length, 1); errors++) {
+            // If matches is full and everything has a lesser error level than this, we won't add any matches because they're sorted by error level
+                if (matches.length === numMatches && matches.every(match => match.errors < errors)) {
+                    break
                 }
-                else {
-                    charMatch = 0
-                }
-                if (errors === 0) {
-                    rd[j] = ((rd[j + 1] << 1) | 1) & charMatch
-                }
-                else {
+
+                rd.fill(0)
+                rd[finish + 1] = (1 << errors) - 1
+
+                for (let j = finish; j >= 1; j--) {
+                    let charMatch: number
+                    if (j - 1 < normalizedElement.length) {
+                        charMatch = alphabet[normalizedElement.charCodeAt(j - 1)]
+                    }
+                    else {
+                        charMatch = 0
+                    }
+                    if (errors === 0) {
+                        rd[j] = ((rd[j + 1] << 1) | 1) & charMatch
+                    }
+                    else {
                     // Subsequent passes: fuzzy match.
-                    rd[j] = (((rd[j + 1] << 1) | 1) & charMatch) | (((lastRd[j + 1] | lastRd[j]) << 1) | 1) | lastRd[j + 1]
+                        rd[j] = (((rd[j + 1] << 1) | 1) & charMatch) | (((lastRd[j + 1] | lastRd[j]) << 1) | 1) | lastRd[j + 1]
+                    }
+                    if ((rd[j] & matchMask) !== 0) {
+                        const indexInElement = j - 1
+                        const whitespaceBefore = ['', ' '].includes(normalizedElement.charAt(indexInElement - 1)) ? 1 : 0
+                        const whitespaceAfter = ['', ' '].includes(normalizedElement.charAt(indexInElement + currentPattern.length)) ? 1 : 0
+                        addToMatches({
+                            element,
+                            normalizedElement,
+                            errors,
+                            indexInElement,
+                            whitespaceAroundPattern: whitespaceBefore + whitespaceAfter,
+                            distanceFromPatternLength: Math.abs(currentPattern.length - normalizedElement.length),
+                            patternLength: currentPattern.length,
+                            patternIteration,
+                            combinationOf: [],
+                        })
+                    }
                 }
-                if ((rd[j] & matchMask) !== 0) {
-                    const indexInElement = j - 1
-                    const indexAfterMatch = indexInElement + pattern.length
-                    addToMatches({
-                        element,
-                        errors,
-                        indexInElement,
-                        whitespaceAfterPattern: indexAfterMatch >= normalizedElement.length || normalizedElement.charAt(indexAfterMatch) === ' ',
-                        distanceFromPatternLength: Math.abs(pattern.length - normalizedElement.length),
-                    })
-                }
-            }
 
-            [lastRd, rd] = [rd, lastRd]
+                [lastRd, rd] = [rd, lastRd]
+            }
         }
     }
 
     console.log(matches)
+
+    // While there are more words or more than 53 characters in the search term, build a new index from the found elements, subtracting the found portion, then run a new search on that index
 
     return matches.map(match => match.element)
 }
