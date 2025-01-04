@@ -156,6 +156,7 @@ def build_urbanstats(
     no_juxta=False,
     no_data_jsons=False,
     no_index=False,
+    no_sitemap=False,
     no_ordering=False,
     mode=None,
 ):
@@ -168,6 +169,12 @@ def build_urbanstats(
         print("Producing geometry jsons")
     if not no_data_jsons and not no_data:
         print("Producing data for each article")
+    if not no_index and not no_data:
+        print("Producing index")
+    if not no_ordering and not no_data:
+        print("Producing ordering")
+    if not no_sitemap and not no_data:
+        print("Producing sitemap")
     if not no_data:
         print("Producing summary data")
     if not no_juxta:
@@ -208,7 +215,8 @@ def build_urbanstats(
 
         full_consolidated_data(site_folder)
 
-        output_sitemap(site_folder, shapefile_without_ordinals(), all_ordinals())
+        if not no_sitemap:
+            output_sitemap(site_folder, shapefile_without_ordinals(), all_ordinals())
 
     for entrypoint in [
         "index",

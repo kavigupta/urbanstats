@@ -28,7 +28,9 @@ def export_index(full, site_folder):
         normed = normalize(name[0])
         if not normed.isascii() or normed == "/":
             continue
-        by_first_letter[normed].append((name, priority))
+        entry = (name, priority)
+        by_first_letter[normed].append(entry)
+        by_first_letter["all"].append(entry)
 
     for letter, names in by_first_letter.items():
         save_search_index(names, f"{site_folder}/index/pages_{letter}.gz")
