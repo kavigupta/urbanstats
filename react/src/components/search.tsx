@@ -170,11 +170,14 @@ interface BitapMatch {
     element: string
     normalizedElement: string
     errors: number
+    numMatches: number
     indexInElement: number
     whitespaceAroundPattern: number
     distanceFromPatternLength: number
     patternLength: number
-    combinationOf: BitapMatch[] // For debugging
+    // For debugging
+    combinationOf: BitapMatch[]
+    pattern: string
 }
 
 function combineMatches(a: BitapMatch, b: BitapMatch): BitapMatch {
@@ -188,16 +191,21 @@ function combineMatches(a: BitapMatch, b: BitapMatch): BitapMatch {
         element: a.element,
         normalizedElement: a.normalizedElement,
         errors: a.errors + b.errors,
+        numMatches: a.numMatches + b.numMatches,
         indexInElement: Math.min(a.indexInElement, b.indexInElement),
         whitespaceAroundPattern: a.whitespaceAroundPattern + b.whitespaceAroundPattern,
-        distanceFromPatternLength: Math.abs((a.patternLength + b.patternLength) - a.normalizedElement.length),
+        distanceFromPatternLength: a.distanceFromPatternLength,
         patternLength: a.patternLength + b.patternLength,
         patternIteration: Math.max(a.patternIteration, b.patternIteration),
         combinationOf: [a, b],
+        pattern: `${a.pattern}|${b.pattern}`,
     }
 }
 
 function compareBitapMatches(a: BitapMatch, b: BitapMatch): number {
+    if (a.numMatches !== b.numMatches) {
+        return b.numMatches - a.numMatches
+    }
     if (a.errors !== b.errors) {
         return a.errors - b.errors
     }
@@ -216,10 +224,11 @@ function compareBitapMatches(a: BitapMatch, b: BitapMatch): number {
 
 function bitap(searchIndex: NormalizedSearchIndex, pattern: string): string[] {
     const matches: BitapMatch[] = []
-    const numMatches = 10
+    const numMatches = 100
     function addToMatches(newMatch: BitapMatch): void {
         // Maybe the new match is better when combined with previous matches
-        const bestMatch = [newMatch, ...matches.filter(match => match.element === newMatch.element && match.patternIteration < newMatch.patternIteration).flatMap(oldMatch => [oldMatch, combineMatches(oldMatch, newMatch)])].sort(compareBitapMatches)[0]
+        const orderedMatches = [newMatch, ...matches.filter(match => match.element === newMatch.element).flatMap(oldMatch => [oldMatch, ...(oldMatch.patternIteration < newMatch.patternIteration ? [combineMatches(oldMatch, newMatch)] : [])])].sort(compareBitapMatches)
+        const bestMatch = orderedMatches[0]
 
         // To be maybe readded after
         const indexOfExistingMatchOnElement = matches.findIndex(match => match.element === newMatch.element)
@@ -251,8 +260,9 @@ function bitap(searchIndex: NormalizedSearchIndex, pattern: string): string[] {
     let patternIteration = 0
     while (true) {
         [, currentPattern, nextPattern] = /^([^ ]{0,53}) ?(.*)$/.exec(nextPattern)!
-        console.log({ currentPattern, nextPattern })
         patternIteration += 1
+
+        console.log({ currentPattern, nextPattern })
 
         if (currentPattern === '') {
             break
@@ -301,12 +311,14 @@ function bitap(searchIndex: NormalizedSearchIndex, pattern: string): string[] {
                             element,
                             normalizedElement,
                             errors,
+                            numMatches: 1,
                             indexInElement,
                             whitespaceAroundPattern: whitespaceBefore + whitespaceAfter,
-                            distanceFromPatternLength: Math.abs(currentPattern.length - normalizedElement.length),
+                            distanceFromPatternLength: Math.abs(pattern.length - normalizedElement.length),
                             patternLength: currentPattern.length,
                             patternIteration,
                             combinationOf: [],
+                            pattern: currentPattern,
                         })
                     }
                 }
@@ -314,6 +326,8 @@ function bitap(searchIndex: NormalizedSearchIndex, pattern: string): string[] {
                 [lastRd, rd] = [rd, lastRd]
             }
         }
+
+        searchIndex = matches
     }
 
     console.log(matches)
