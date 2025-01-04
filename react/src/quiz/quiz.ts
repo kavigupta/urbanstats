@@ -279,3 +279,28 @@ export async function addFriendFromLink(friendID: string, friendName: string): P
         }
     }
 }
+
+// represents a quiz, which is a collection of questions. Designed so quizzes can be infinite
+export interface QuizQuestionsModel {
+    questionByIndex: (index: number) => Promise<QuizQuestion | undefined>
+    // undefined if the quiz is infinite
+    length: number | undefined
+    isDone: (correctPattern: boolean[]) => boolean
+    uniqueKey: string
+}
+
+let numKeys = 0
+
+function uniqueKey(): string {
+    numKeys++
+    return `quiz-${numKeys}`
+}
+
+export function wrapQuestionsModel(questions: QuizQuestion[]): QuizQuestionsModel {
+    return {
+        questionByIndex: (index: number) => Promise.resolve(questions[index]),
+        length: questions.length,
+        isDone: (correctPattern: boolean[]) => correctPattern.length === questions.length,
+        uniqueKey: uniqueKey(),
+    }
+}

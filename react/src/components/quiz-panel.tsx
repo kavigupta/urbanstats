@@ -1,14 +1,30 @@
 import React, { ReactNode, useState } from 'react'
 
+import { LongLoad } from '../navigation/loading'
 import { PageTemplate } from '../page_template/template'
 import '../common.css'
 import './quiz.css'
-import { QuizDescriptor, QuizHistory, QuizLocalStorage, QuizQuestion, aCorrect } from '../quiz/quiz'
+import { QuizDescriptor, QuizHistory, QuizLocalStorage, QuizQuestion, QuizQuestionsModel, aCorrect } from '../quiz/quiz'
 import { QuizQuestionDispatch } from '../quiz/quiz-question'
 import { QuizResult } from '../quiz/quiz-result'
+import { useHeaderTextClass } from '../utils/responsive'
 
-export function QuizPanel(props: { quizDescriptor: QuizDescriptor, todayName: string, todaysQuiz: QuizQuestion[] }): ReactNode {
+export function QuizPanel(props: { quizDescriptor: QuizDescriptor, todayName: string, todaysQuiz: QuizQuestionsModel }): ReactNode {
+    // set a unique key for the quiz panel so that it will re-render when the quiz changes
+    // this is necessary because the quiz panel is a stateful component with all the questions cached.
+    return (
+        <QuizPanelNoResets
+            key={props.todaysQuiz.uniqueKey}
+            quizDescriptor={props.quizDescriptor}
+            todayName={props.todayName}
+            todaysQuiz={props.todaysQuiz}
+        />
+    )
+}
+
+function QuizPanelNoResets(props: { quizDescriptor: QuizDescriptor, todayName: string, todaysQuiz: QuizQuestionsModel }): ReactNode {
     // We don't want to save certain quiz types, so bypass the persistent store for those
+    const headerClass = useHeaderTextClass()
     const persistentQuizHistory = QuizLocalStorage.shared.history.use()
     const [transientQuizHistory, setTransientQuizHistory] = useState<QuizHistory>({})
 
@@ -26,13 +42,31 @@ export function QuizPanel(props: { quizDescriptor: QuizDescriptor, todayName: st
             break
     }
 
-    const [waiting, setWaiting] = useState(false)
+    const [waitingForTime, setWaitingForTime] = useState(false)
+    const [waitingForNextQuestion, setWaitingForNextQuestion] = useState(false)
+    const [questions, setQuestions] = useState<QuizQuestion[]>([])
 
     const todaysQuizHistory = quizHistory[props.quizDescriptor.name] ?? { choices: [], correct_pattern: [] }
 
+    const quizDone = props.todaysQuiz.isDone(todaysQuizHistory.correct_pattern.map(correct => correct ? true : false))
+    const questionsExpected = quizDone ? todaysQuizHistory.choices.length : todaysQuizHistory.choices.length + 1
+    const missing = questionsExpected - questions.length
+    const waiting = waitingForTime || waitingForNextQuestion || missing > 0
+
+    if (!waitingForNextQuestion && missing > 0) {
+        setWaitingForNextQuestion(true)
+        const promises = Array.from({ length: missing }, (_, i) => props.todaysQuiz.questionByIndex(questions.length + i))
+        Promise.all(promises).then((newQuestions) => {
+            setWaitingForNextQuestion(false)
+            setQuestions([...questions, ...newQuestions.filter((question): question is QuizQuestion => question !== undefined)])
+        }).catch(() => {
+            setWaitingForNextQuestion(false)
+        })
+    }
+
     const setTodaysQuizHistory = (historyToday: QuizHistory[string]): void => {
         const newHistory = { ...quizHistory, [props.quizDescriptor.name]: historyToday }
-        setWaiting(true)
+        setWaitingForTime(true)
         setQuizHistory(newHistory)
     }
 
@@ -42,11 +76,11 @@ export function QuizPanel(props: { quizDescriptor: QuizDescriptor, todayName: st
         }
         const history = todaysQuizHistory
         const idx = history.correct_pattern.length
-        const question = (props.todaysQuiz)[idx]
+        const question = questions[idx]
         history.choices.push(selected)
         history.correct_pattern.push((selected === 'A') === aCorrect(question))
         setTodaysQuizHistory(history)
-        setTimeout(() => { setWaiting(false) }, 500)
+        setTimeout(() => { setWaitingForTime(false) }, 500)
     }
 
     return (
@@ -60,10 +94,11 @@ export function QuizPanel(props: { quizDescriptor: QuizDescriptor, todayName: st
                     index -= 1
                 }
 
-                if (index === quiz.length) {
+                if (!waiting && quizDone) {
                     return (
                         <QuizResult
-                            quiz={quiz}
+                            // can only show results if the quiz is done
+                            quiz={questions}
                             wholeHistory={quizHistory}
                             history={history}
                             todayName={props.todayName}
@@ -72,12 +107,22 @@ export function QuizPanel(props: { quizDescriptor: QuizDescriptor, todayName: st
                     )
                 }
 
+                if (index < 0 || index >= questions.length) {
+                    const message = index < 0 ? 'Loading quiz...' : 'Loading results...'
+                    return (
+                        <div>
+                            <div className={headerClass}>{message}</div>
+                            <LongLoad />
+                        </div>
+                    )
+                }
+
                 return (
                     <QuizQuestionDispatch
                         quiz={props.quizDescriptor}
-                        question={quiz[index]}
+                        question={questions[index]}
                         history={history}
-                        length={quiz.length}
+                        length={quiz.length ?? history.choices.length}
                         onSelect={onSelect}
                         waiting={waiting}
                         nested={false}
