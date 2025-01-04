@@ -59,9 +59,17 @@ function QuizPanelNoResets(props: { quizDescriptor: QuizDescriptor, todayName: s
             <PageTemplate>
                 <div>
                     <div className={headerClass}>Quiz version mismatch</div>
-                    <div>
+                    <div style={{
+                        width: '50%',
+                        margin: 'auto',
+                        backgroundColor: colors.slightlyDifferentBackgroundFocused,
+                        padding: '1em',
+                        fontWeight: 'bold',
+                    }}
+                    >
                         Juxtastat generation has been updated, so infinite Juxtastat you are trying to access is no longer available.
                     </div>
+                    <div style={{ height: '1.5em' }} />
                     <a
                         style={{
                             ...buttonStyle(colors.hueColors.blue),
