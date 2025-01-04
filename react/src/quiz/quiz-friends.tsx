@@ -113,7 +113,6 @@ export function QuizFriendsPanel(props: {
     )
 }
 
-
 const scoreCorrectHeight = '2em'
 const addFriendHeight = '1.5em'
 
