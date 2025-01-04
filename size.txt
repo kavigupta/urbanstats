@@ -339,3 +339,15 @@ use integers for percentiles and don't save overall ordinal
 1328    order
 1457    data
 4053    total
+
+add in a sitemap and a full page index
+
+5       quiz
+11      consolidated
+19      sitemaps
+27      scripts
+32      index
+1219    shape
+1328    order
+1457    data
+4100    total
