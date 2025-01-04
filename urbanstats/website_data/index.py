@@ -24,10 +24,10 @@ def export_index(full, site_folder):
     save_string_list(list(full.longname), f"{site_folder}/index/pages.gz")
     by_first_letter = defaultdict(list)
     for name, typ in zip(full.longname, full.type):
+        priority = type_category_to_priority[type_to_type_category[typ]]
         normed = normalize(name[0])
         if not normed.isascii() or normed == "/":
             continue
-        priority = type_category_to_priority[type_to_type_category[typ]]
         by_first_letter[normed].append((name, priority))
 
     for letter, names in by_first_letter.items():

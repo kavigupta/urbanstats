@@ -156,6 +156,7 @@ def build_urbanstats(
     no_juxta=False,
     no_data_jsons=False,
     no_index=False,
+    no_ordering=False,
     mode=None,
 ):
     if not mode:
@@ -202,7 +203,8 @@ def build_urbanstats(
         if not no_index:
             export_index(shapefile_without_ordinals(), site_folder)
 
-        output_ordering(site_folder, all_ordinals())
+        if not no_ordering:
+            output_ordering(site_folder, all_ordinals())
 
         full_consolidated_data(site_folder)
 
