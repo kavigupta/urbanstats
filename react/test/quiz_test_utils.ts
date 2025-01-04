@@ -56,8 +56,10 @@ async function waitForServerToBeAvailable(): Promise<void> {
 export function quizFixture(fixName: string, url: string, newLocalstorage: Record<string, string>, sqlStatements: string, platform: 'desktop' | 'mobile'): void {
     urbanstatsFixture(fixName, url, async (t) => {
         await interceptRequests(t)
-        // delete the database. it will be automatically recreated
-        await promisify(exec)(`cd ../urbanstats-persistent-data; rm db.sqlite3; cd -`)
+        const tempfile = `${tempfileName()}.sql`
+        // Delete the database and recreate it with the given SQL statements
+        writeFileSync(tempfile, sqlStatements)
+        await promisify(exec)(`cd ../urbanstats-persistent-data; rm db.sqlite3; cat ${tempfile} | sqlite3 db.sqlite3; cd -`)
         await runForTest()
         await t.eval(() => {
             localStorage.clear()
