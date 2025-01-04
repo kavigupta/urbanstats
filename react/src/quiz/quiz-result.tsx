@@ -34,6 +34,7 @@ interface QuizResultProps {
 export function QuizResult(props: QuizResultProps): ReactNode {
     const button = useRef<HTMLButtonElement>(null)
     const [stats, setStats] = useState<PerQuestionStats>((
+        // TODO stats for infinite quiz
         props.quizDescriptor.kind === 'custom' || props.quizDescriptor.kind === 'infinite'
             ? undefined
             : getCachedPerQuestionStats(props.quizDescriptor)
@@ -46,6 +47,7 @@ export function QuizResult(props: QuizResultProps): ReactNode {
     }
 
     useEffect(() => {
+        // TODO stats for infinite quiz
         if (props.quizDescriptor.kind === 'custom' || props.quizDescriptor.kind === 'infinite') {
             return
         }
@@ -106,6 +108,7 @@ export function QuizResult(props: QuizResultProps): ReactNode {
             }
             <div className="gap"></div>
             {
+                // TODO stats for infinite quiz
                 props.quizDescriptor.kind === 'custom' || props.quizDescriptor.kind === 'infinite'
                     ? undefined
                     : <QuizStatistics wholeHistory={props.wholeHistory} quiz={props.quizDescriptor} />
@@ -126,6 +129,7 @@ export function QuizResult(props: QuizResultProps): ReactNode {
             )}
             <div className="gap_small"></div>
             {
+                // TODO stats for infinite quiz
                 props.quizDescriptor.kind === 'custom' || props.quizDescriptor.kind === 'infinite'
                     ? undefined
                     : (

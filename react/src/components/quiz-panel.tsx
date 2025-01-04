@@ -40,6 +40,7 @@ function QuizPanelNoResets(props: { quizDescriptor: QuizDescriptor, todayName: s
             setQuizHistory = newHistory => QuizLocalStorage.shared.history.value = newHistory
             break
         case 'custom':
+        // TODO stats for infinite quiz
         case 'infinite':
             quizHistory = transientQuizHistory
             setQuizHistory = (newHistory) => { setTransientQuizHistory(newHistory) }
@@ -53,6 +54,7 @@ function QuizPanelNoResets(props: { quizDescriptor: QuizDescriptor, todayName: s
     console.log(props.quizDescriptor)
 
     if (props.quizDescriptor.kind === 'infinite' && props.quizDescriptor.version !== quiz_infinite.juxtaVersion) {
+        // TODO this should not come up if you've already done the quiz (only relevant once we add the stats)
         return (
             <PageTemplate>
                 <div>
@@ -68,7 +70,7 @@ function QuizPanelNoResets(props: { quizDescriptor: QuizDescriptor, todayName: s
                         }}
                         href="/quiz.html?mode=infinite"
                     >
-                        Juxtastat Infinite
+                        Random Juxtastat Infinite
                     </a>
                 </div>
             </PageTemplate>
