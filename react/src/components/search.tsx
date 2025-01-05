@@ -316,9 +316,3 @@ function bitap(searchIndex: NormalizedSearchIndex, pattern: string, options: { s
 
     return results.map(result => result.element)
 }
-
-// function indexify(arr: string[]): NormalizedSearchIndex {
-//     return arr.map(v => ({ element: v, normalizedElement: normalize(v), priority: 0 }))
-// }
-
-// console.log(bitap(indexify(['apple', 'orange', 'banana', 'lettuce', 'tomato', 'cucumber', 'melon', 'watermelon', 'cherry', 'radish', 'apricot', 'blueberry']), 'an'))
