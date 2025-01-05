@@ -166,143 +166,62 @@ function normalize(a: string): string {
 
 type NormalizedSearchIndex = { element: string, normalizedElement: string, priority: number }[]
 
-interface BitapMatch {
-    patternIteration: number
+interface SearchResult {
     element: string
-    normalizedElement: string
-    errors: number
-    numMatches: number
-    indexInElement: number
-    whitespaceAroundPattern: number
-    distanceFromPatternLength: number
-    patternLength: number
-    priority: number
-    // For debugging
-    combinationOf: BitapMatch[]
-    pattern: string
+    matchScore: number // Lower is better
+    populationRank: number // Lower is higher population
 }
 
-function combineMatches(a: BitapMatch, b: BitapMatch): BitapMatch {
-    if (a.element !== b.element) {
-        throw new Error('may only combine matches on the same element')
+function compareSearchResults(a: SearchResult, b: SearchResult): number {
+    if (a.matchScore !== b.matchScore) {
+        return a.matchScore - b.matchScore
     }
-    if (a.patternIteration === b.patternIteration) {
-        throw new Error('may not combine matches from the same pattern iteration')
-    }
-    return {
-        element: a.element,
-        normalizedElement: a.normalizedElement,
-        errors: a.errors + b.errors,
-        numMatches: a.numMatches + b.numMatches,
-        indexInElement: (a.indexInElement + b.indexInElement) / 2,
-        whitespaceAroundPattern: a.whitespaceAroundPattern + b.whitespaceAroundPattern,
-        distanceFromPatternLength: a.distanceFromPatternLength,
-        patternLength: a.patternLength + b.patternLength,
-        patternIteration: Math.max(a.patternIteration, b.patternIteration),
-        priority: a.priority,
-        combinationOf: [a, b],
-        pattern: `${a.pattern}|${b.pattern}`,
-    }
+    return a.populationRank - b.populationRank
 }
 
-function compareBitapMatches(a: BitapMatch, b: BitapMatch): number {
-    if (a.numMatches !== b.numMatches) {
-        return b.numMatches - a.numMatches
+function tokenize(pattern: string): string[] {
+    if (pattern === '') {
+        return []
     }
-    if (a.errors !== b.errors) {
-        return a.errors - b.errors
-    }
-    if (a.indexInElement !== b.indexInElement) {
-        return a.indexInElement - b.indexInElement
-    }
-    if (a.whitespaceAroundPattern !== b.whitespaceAroundPattern) {
-        // Note swapped order
-        return b.whitespaceAroundPattern - a.whitespaceAroundPattern
-    }
-    if (a.distanceFromPatternLength !== b.distanceFromPatternLength) {
-        return a.distanceFromPatternLength - b.distanceFromPatternLength
-    }
-    if (a.priority !== b.priority) {
-        return b.priority - a.priority
-    }
-    return 0
+    const [, currentPattern, nextPattern] = /^([^ ]{0,53}) ?(.*)$/.exec(pattern)!
+
+    return [currentPattern, ...tokenize(nextPattern)]
 }
 
-// New strat... find and cache token results... then, focus on putting the token results together
-// Given that this token is a good match, how likely is it that this other token will be a good match
+function makeAlphabet(token: string): number[] {
+    const result = new Array<number>(65535).fill(0)
+    for (let i = 0; i < token.length; i++) {
+        const char = token.charCodeAt(i)
+        result[char] = result[char] | (1 << (token.length - i - 1))
+    }
+    return result
+}
 
 function bitap(searchIndex: NormalizedSearchIndex, pattern: string): string[] {
-    const matches: BitapMatch[] = []
-    const numMatches = 10
-    function addToMatches(newMatch: BitapMatch): void {
-        // Maybe the new match is better when combined with previous matches
-        const orderedMatches = [
-            newMatch,
-            ...matches.filter(match => match.element === newMatch.element).flatMap(oldMatch => [
-                oldMatch,
-                ...(oldMatch.patternIteration < newMatch.patternIteration ? [combineMatches(oldMatch, newMatch)] : []),
-                ...(oldMatch.patternIteration === newMatch.patternIteration && oldMatch.combinationOf.length > 0 ? [combineMatches(oldMatch.combinationOf[0], newMatch)] : []),
-            ]),
-        ].sort(compareBitapMatches)
-        const bestMatch = orderedMatches[0]
-
-        // To be maybe readded after
-        const indexOfExistingMatchOnElement = matches.findIndex(match => match.element === newMatch.element)
-        if (indexOfExistingMatchOnElement !== -1) {
-            matches.splice(indexOfExistingMatchOnElement, 1)
-        }
-
-        for (let i = 0; i < numMatches; i++) {
-            if (i >= matches.length || compareBitapMatches(bestMatch, matches[i]) < 0) {
-                matches.splice(i, 0, bestMatch)
-                break
-            }
-        }
-
-        if (matches.length > numMatches) {
-            matches.pop()
-        }
+    if (pattern === '') {
+        return []
     }
 
-    const lengthOfLongestElement = searchIndex.reduce((length, element) => Math.max(length, element.normalizedElement.length), 0)
+    const tokens = tokenize(pattern).map(token => ({ token, alphabet: makeAlphabet(token) }))
 
-    const longestFinish = lengthOfLongestElement + pattern.length
+    const maxResults = 10
+    const results: SearchResult[] = []
 
-    let rd = new Array<number>(longestFinish + 2)
-    let lastRd = new Array<number>(longestFinish + 2)
+    const maxErrors = 2
 
-    let currentPattern: string
-    let nextPattern: string = pattern
-    let patternIteration = 0
-    while (true) {
-        [, currentPattern, nextPattern] = /^([^ ]{0,53}) ?(.*)$/.exec(nextPattern)!
-        patternIteration += 1
+    for (const [populationRank, { element, normalizedElement }] of searchIndex.entries()) {
+        let matchScore = 0
 
-        console.log({ currentPattern, nextPattern })
+        for (const { token, alphabet } of tokens) {
+            const matchMask = 1 << (token.length - 1)
+            const finish = normalizedElement.length + token.length
 
-        if (currentPattern === '') {
-            break
-        }
+            let rd = new Array<number>(finish + 2)
+            let lastRd = new Array<number>(finish + 2)
 
-        const matchMask = 1 << (currentPattern.length - 1)
+            let tokenScore = maxErrors + 1
 
-        const alphabet = new Array<number>(65535).fill(0)
-        for (let i = 0; i < currentPattern.length; i++) {
-            const char = currentPattern.charCodeAt(i)
-            alphabet[char] = alphabet[char] | (1 << (currentPattern.length - i - 1))
-        }
-
-        let totalMatches = 0
-
-        for (const { element, normalizedElement, priority } of searchIndex) {
-            const finish = normalizedElement.length + currentPattern.length
-
-            for (let errors = 0; errors <= Math.min(currentPattern.length, 1); errors++) {
-                // If matches is full and everything has more matches and a lesser error level than this, we won't add any matches because they're sorted by error level
-                if (matches.length === numMatches && matches.every(match => match.numMatches >= patternIteration && match.errors < errors)) {
-                    break
-                }
-
+            search: for (let errors = 0; errors <= maxErrors; errors++) {
                 rd.fill(0)
                 rd[finish + 1] = (1 << errors) - 1
 
@@ -318,69 +237,56 @@ function bitap(searchIndex: NormalizedSearchIndex, pattern: string): string[] {
                         rd[j] = ((rd[j + 1] << 1) | 1) & charMatch
                     }
                     else {
-                    // Subsequent passes: fuzzy match.
+                        // Subsequent passes: fuzzy match.
                         rd[j] = (((rd[j + 1] << 1) | 1) & charMatch) | (((lastRd[j + 1] | lastRd[j]) << 1) | 1) | lastRd[j + 1]
                     }
                     if ((rd[j] & matchMask) !== 0) {
-                        const indexInElement = j - 1
-                        const whitespaceBefore = ['', ' '].includes(normalizedElement.charAt(indexInElement - 1)) ? 1 : 0
-                        const whitespaceAfter = ['', ' '].includes(normalizedElement.charAt(indexInElement + currentPattern.length)) ? 1 : 0
-                        addToMatches({
-                            element,
-                            normalizedElement,
-                            errors,
-                            numMatches: 1,
-                            indexInElement,
-                            whitespaceAroundPattern: whitespaceBefore + whitespaceAfter,
-                            distanceFromPatternLength: Math.abs(pattern.length - normalizedElement.length),
-                            patternLength: currentPattern.length,
-                            patternIteration,
-                            combinationOf: [],
-                            pattern: currentPattern,
-                            priority,
-                        })
-                        totalMatches++
+                        tokenScore = errors
+                        break search
                     }
                 }
 
                 [lastRd, rd] = [rd, lastRd]
             }
+
+            matchScore += tokenScore
         }
 
-        console.log({ currentPattern, totalMatches })
+        if (matchScore === tokens.length * (maxErrors + 1)) {
+            // No match
+            continue
+        }
 
-        // searchIndex = matches
+        const result: SearchResult = {
+            element,
+            matchScore,
+            populationRank,
+        }
+
+        let spliceIndex: number | undefined
+        for (let resultsIndex = Math.min(results.length, maxResults); resultsIndex >= 0; resultsIndex--) {
+            if (results.length <= resultsIndex || compareSearchResults(result, results[resultsIndex]) < 0) {
+                spliceIndex = resultsIndex
+            }
+            else {
+                break
+            }
+        }
+        if (spliceIndex !== undefined) {
+            results.splice(spliceIndex, 0, result)
+        }
+        if (results.length > maxResults) {
+            results.pop()
+        }
     }
 
-    console.log(matches)
+    console.log(results)
 
-    // While there are more words or more than 53 characters in the search term, build a new index from the found elements, subtracting the found portion, then run a new search on that index
-
-    return matches.map(match => match.element)
+    return results.map(result => result.element)
 }
 
 function indexify(arr: string[]): NormalizedSearchIndex {
     return arr.map(v => ({ element: v, normalizedElement: normalize(v), priority: 0 }))
 }
 
-console.log(bitap(indexify(['new york new york']), 'new york'))
-
-/**
- * New Plan:
- *
- * Tokenize the query
- *
- * For each entry in the search index
- *  For each token # Cacheable
- *   For each error level
- *    Find the token in the search entry, record the best token match for that entry, if any (this data structure will contain 0 or 1 matches per token)
- *    If we find the token, we don't need to go to the next error level
- *    When we find a token, we know if this is one of the best search entries so far. If it is, add it to the list of search entries (can start from the bottom to make this faster)
- *
- * score(search entry) {
- *  how well tokens match, if at all
- *  positions of token matches
- *  how high up is the entry (its relative population)
- *  priority of the entry
- * }
- */
+console.log(bitap(indexify(['apple', 'orange', 'banana', 'lettuce', 'tomato', 'cucumber', 'melon', 'watermelon', 'cherry', 'radish', 'apricot', 'blueberry']), 'an'))
