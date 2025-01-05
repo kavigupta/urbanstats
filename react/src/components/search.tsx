@@ -42,7 +42,8 @@ export function SearchBox(props: {
                 priority: searchIndex.priorities[index],
             }
         })
-        return { entries, lengthOfLongestNormalizedElement }
+        return { entries, lengthOfLongestNormalizedElement, tokenMatchScoreCache: new DefaultMap<string, (number | undefined)[]>(() => new Array<number | undefined>(searchIndex.elements.length)),
+        }
     }, [])
 
     const reset = (): void => {
@@ -174,8 +175,13 @@ function normalize(a: string): string {
 }
 
 interface NormalizedSearchIndex {
-    entries: { element: string, normalizedElement: string, priority: number }[]
+    entries: {
+        element: string
+        normalizedElement: string
+        priority: number
+    }[]
     lengthOfLongestNormalizedElement: number
+    tokenMatchScoreCache: DefaultMap<string, (number | undefined)[]>
 }
 
 interface SearchResult {
@@ -195,13 +201,13 @@ function tokenize(pattern: string): string[] {
     if (pattern === '') {
         return []
     }
-    const [, currentPattern, nextPattern] = /^([^ ]{0,53}) ?(.*)$/.exec(pattern)!
+    const [, currentPattern, nextPattern] = /^([^ ]{0,32}) ?(.*)$/.exec(pattern)!
 
     return [currentPattern, ...tokenize(nextPattern)]
 }
 
-function makeAlphabet(token: string): number[] {
-    const result = new Array<number>(65535).fill(0)
+function makeAlphabet(token: string): Uint32Array {
+    const result = new Uint32Array(65535).fill(0)
     for (let i = 0; i < token.length; i++) {
         const char = token.charCodeAt(i)
         result[char] = result[char] | (1 << (token.length - i - 1))
@@ -251,24 +257,35 @@ function bitap(searchIndex: NormalizedSearchIndex, pattern: string): string[] {
     const longestFinish = searchIndex.lengthOfLongestNormalizedElement + pattern.length
 
     // Doing these allocations here saves performance
-    let rd = new Array<number>(longestFinish + 2)
-    let lastRd = new Array<number>(longestFinish + 2)
+    let rd = new Uint32Array(longestFinish + 2)
+    let lastRd = new Uint32Array(longestFinish + 2)
 
     const tokens = tokenize(pattern).map(token => ({ token, alphabet: makeAlphabet(token) }))
 
     const maxResults = 10
     const results: SearchResult[] = []
 
-    const maxErrors = 0
+    const maxErrors = 1
 
     perf.exit('prelude')
 
     perf.enter('body')
 
     for (const [populationRank, { element, normalizedElement }] of searchIndex.entries.entries()) {
+        perf.enter('tokens')
         let matchScore = 0
 
         for (const { token, alphabet } of tokens) {
+            perf.enter('token cache')
+            const cache = searchIndex.tokenMatchScoreCache.get(token)
+            const cached = cache[populationRank]
+            if (cached !== undefined) {
+                matchScore += cached
+                perf.exit('token cache')
+                continue
+            }
+            perf.exit('token cache')
+
             const matchMask = 1 << (token.length - 1)
             const finish = normalizedElement.length + token.length
 
@@ -305,7 +322,12 @@ function bitap(searchIndex: NormalizedSearchIndex, pattern: string): string[] {
             perf.exit('search core')
 
             matchScore += tokenScore
+
+            perf.enter('token cache')
+            cache[populationRank] = tokenScore
+            perf.exit('token cache')
         }
+        perf.exit('tokens')
 
         if (matchScore === tokens.length * (maxErrors + 1)) {
             // No match
