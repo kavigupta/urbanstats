@@ -157,13 +157,6 @@ export function QuizResult(props: QuizResultProps): ReactNode {
     )
 }
 
-interface ShareButtonProps {
-    buttonRef: React.RefObject<HTMLButtonElement>
-    todayName: string | undefined
-    correctPattern: CorrectPattern
-    quizKind: QuizKind
-}
-
 export function buttonStyle(color: string): CSSProperties {
     return {
         textAlign: 'center',
@@ -179,6 +172,13 @@ export function buttonStyle(color: string): CSSProperties {
         border: 'none',
         color: '#fff',
     }
+}
+
+interface ShareButtonProps {
+    buttonRef: React.RefObject<HTMLButtonElement>
+    todayName: string | undefined
+    correctPattern: CorrectPattern
+    quizKind: QuizKind
 }
 
 function ShareButton({ buttonRef, todayName, correctPattern, quizKind }: ShareButtonProps): ReactNode {

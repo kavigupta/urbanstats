@@ -89,8 +89,6 @@ export function ArticlePanel({ article, rows }: { article: Article, rows: (setti
                         </div>
                     </div>
 
-                    <script src="/scripts/map.js"></script>
-
                     <Related
                         related={article.related as NormalizeProto<IRelatedButtons>[]}
                         articleType={article.articleType}
