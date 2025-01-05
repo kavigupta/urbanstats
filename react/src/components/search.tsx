@@ -6,6 +6,7 @@ import { useColors } from '../page_template/colors'
 import { useSetting } from '../page_template/settings'
 import { isHistoricalCD } from '../utils/is_historical'
 import '../common.css'
+import { DefaultMap } from '../utils/DefaultMap'
 
 export function SearchBox(props: {
     onChange?: (inp: string) => void
@@ -29,11 +30,19 @@ export function SearchBox(props: {
 
     const fullIndex = useMemo(async () => {
         const searchIndex = await loadProtobuf('/index/pages_all.gz', 'SearchIndex')
-        return searchIndex.elements.map((element, index) => ({
-            element,
-            normalizedElement: normalize(element),
-            priority: searchIndex.priorities[index],
-        }))
+        let lengthOfLongestNormalizedElement = 0
+        const entries = searchIndex.elements.map((element, index) => {
+            const normalizedElement = normalize(element)
+            if (normalizedElement.length > lengthOfLongestNormalizedElement) {
+                lengthOfLongestNormalizedElement = normalizedElement.length
+            }
+            return {
+                element,
+                normalizedElement,
+                priority: searchIndex.priorities[index],
+            }
+        })
+        return { entries, lengthOfLongestNormalizedElement }
     }, [])
 
     const reset = (): void => {
@@ -164,7 +173,10 @@ function normalize(a: string): string {
     return a.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
 }
 
-type NormalizedSearchIndex = { element: string, normalizedElement: string, priority: number }[]
+interface NormalizedSearchIndex {
+    entries: { element: string, normalizedElement: string, priority: number }[]
+    lengthOfLongestNormalizedElement: number
+}
 
 interface SearchResult {
     element: string
@@ -197,30 +209,72 @@ function makeAlphabet(token: string): number[] {
     return result
 }
 
+class Perf {
+    startTime: number | undefined
+
+    start(): void {
+        this.startTime = Date.now()
+    }
+
+    stop(): void {
+        console.log(`Took ${Date.now() - this.startTime!}ms`)
+        for (const [key, value] of this.totals.entries()) {
+            console.log(`${key}=${value}ms`)
+        }
+    }
+
+    totals = new DefaultMap<string, number>(() => 0)
+
+    inflight = new Map<string, number>()
+
+    enter(name: string): void {
+        this.inflight.set(name, Date.now())
+    }
+
+    exit(name: string): void {
+        const started = this.inflight.get(name)!
+        this.totals.set(name, this.totals.get(name) + (Date.now() - started))
+        this.inflight.delete(name)
+    }
+}
+
 function bitap(searchIndex: NormalizedSearchIndex, pattern: string): string[] {
     if (pattern === '') {
         return []
     }
+
+    const perf = new Perf()
+    perf.start()
+
+    perf.enter('prelude')
+
+    const longestFinish = searchIndex.lengthOfLongestNormalizedElement + pattern.length
+
+    // Doing these allocations here saves performance
+    let rd = new Array<number>(longestFinish + 2)
+    let lastRd = new Array<number>(longestFinish + 2)
 
     const tokens = tokenize(pattern).map(token => ({ token, alphabet: makeAlphabet(token) }))
 
     const maxResults = 10
     const results: SearchResult[] = []
 
-    const maxErrors = 2
+    const maxErrors = 0
 
-    for (const [populationRank, { element, normalizedElement }] of searchIndex.entries()) {
+    perf.exit('prelude')
+
+    perf.enter('body')
+
+    for (const [populationRank, { element, normalizedElement }] of searchIndex.entries.entries()) {
         let matchScore = 0
 
         for (const { token, alphabet } of tokens) {
             const matchMask = 1 << (token.length - 1)
             const finish = normalizedElement.length + token.length
 
-            let rd = new Array<number>(finish + 2)
-            let lastRd = new Array<number>(finish + 2)
-
             let tokenScore = maxErrors + 1
 
+            perf.enter('search core')
             search: for (let errors = 0; errors <= maxErrors; errors++) {
                 rd.fill(0)
                 rd[finish + 1] = (1 << errors) - 1
@@ -248,6 +302,7 @@ function bitap(searchIndex: NormalizedSearchIndex, pattern: string): string[] {
 
                 [lastRd, rd] = [rd, lastRd]
             }
+            perf.exit('search core')
 
             matchScore += tokenScore
         }
@@ -280,13 +335,16 @@ function bitap(searchIndex: NormalizedSearchIndex, pattern: string): string[] {
         }
     }
 
+    perf.exit('body')
+    perf.stop()
+
     console.log(results)
 
     return results.map(result => result.element)
 }
 
-function indexify(arr: string[]): NormalizedSearchIndex {
-    return arr.map(v => ({ element: v, normalizedElement: normalize(v), priority: 0 }))
-}
+// function indexify(arr: string[]): NormalizedSearchIndex {
+//     return arr.map(v => ({ element: v, normalizedElement: normalize(v), priority: 0 }))
+// }
 
-console.log(bitap(indexify(['apple', 'orange', 'banana', 'lettuce', 'tomato', 'cucumber', 'melon', 'watermelon', 'cherry', 'radish', 'apricot', 'blueberry']), 'an'))
+// console.log(bitap(indexify(['apple', 'orange', 'banana', 'lettuce', 'tomato', 'cucumber', 'melon', 'watermelon', 'cherry', 'radish', 'apricot', 'blueberry']), 'an'))
