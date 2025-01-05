@@ -2569,899 +2569,899 @@ export default {
         [
             {
                 path: 'quiz_sampling_info/q1/0.gz',
-                total_p: 0.36763808131217957,
+                totalP: 0.36763808131217957,
             },
             {
                 path: 'quiz_sampling_info/q1/1.gz',
-                total_p: 0.14989237487316132,
+                totalP: 0.14989237487316132,
             },
             {
                 path: 'quiz_sampling_info/q1/2.gz',
-                total_p: 0.10560750216245651,
+                totalP: 0.10560750216245651,
             },
             {
                 path: 'quiz_sampling_info/q1/3.gz',
-                total_p: 0.08263063430786133,
+                totalP: 0.08263063430786133,
             },
             {
                 path: 'quiz_sampling_info/q1/4.gz',
-                total_p: 0.06859887391328812,
+                totalP: 0.06859887391328812,
             },
             {
                 path: 'quiz_sampling_info/q1/5.gz',
-                total_p: 0.057545579969882965,
+                totalP: 0.057545579969882965,
             },
             {
                 path: 'quiz_sampling_info/q1/6.gz',
-                total_p: 0.047207415103912354,
+                totalP: 0.047207415103912354,
             },
             {
                 path: 'quiz_sampling_info/q1/7.gz',
-                total_p: 0.03805355355143547,
+                totalP: 0.03805355355143547,
             },
             {
                 path: 'quiz_sampling_info/q1/8.gz',
-                total_p: 0.030540455132722855,
+                totalP: 0.030540455132722855,
             },
             {
                 path: 'quiz_sampling_info/q1/9.gz',
-                total_p: 0.02261381782591343,
+                totalP: 0.02261381782591343,
             },
             {
                 path: 'quiz_sampling_info/q1/10.gz',
-                total_p: 0.015053078532218933,
+                totalP: 0.015053078532218933,
             },
             {
                 path: 'quiz_sampling_info/q1/11.gz',
-                total_p: 0.009389333426952362,
+                totalP: 0.009389333426952362,
             },
             {
                 path: 'quiz_sampling_info/q1/12.gz',
-                total_p: 0.00476258946582675,
+                totalP: 0.00476258946582675,
             },
             {
                 path: 'quiz_sampling_info/q1/13.gz',
-                total_p: 0.0004650745540857315,
+                totalP: 0.0004650745540857315,
             },
             {
                 path: 'quiz_sampling_info/q1/14.gz',
-                total_p: 7.2928855843201745e-06,
+                totalP: 7.2928855843201745e-06,
             },
         ],
         [
             {
                 path: 'quiz_sampling_info/q2/0.gz',
-                total_p: 0.4221111834049225,
+                totalP: 0.4221111834049225,
             },
             {
                 path: 'quiz_sampling_info/q2/1.gz',
-                total_p: 0.144798144698143,
+                totalP: 0.144798144698143,
             },
             {
                 path: 'quiz_sampling_info/q2/2.gz',
-                total_p: 0.10500156879425049,
+                totalP: 0.10500156879425049,
             },
             {
                 path: 'quiz_sampling_info/q2/3.gz',
-                total_p: 0.08139652758836746,
+                totalP: 0.08139652758836746,
             },
             {
                 path: 'quiz_sampling_info/q2/4.gz',
-                total_p: 0.06533225625753403,
+                totalP: 0.06533225625753403,
             },
             {
                 path: 'quiz_sampling_info/q2/5.gz',
-                total_p: 0.05145053565502167,
+                totalP: 0.05145053565502167,
             },
             {
                 path: 'quiz_sampling_info/q2/6.gz',
-                total_p: 0.03889142721891403,
+                totalP: 0.03889142721891403,
             },
             {
                 path: 'quiz_sampling_info/q2/7.gz',
-                total_p: 0.029904885217547417,
+                totalP: 0.029904885217547417,
             },
             {
                 path: 'quiz_sampling_info/q2/8.gz',
-                total_p: 0.022507870569825172,
+                totalP: 0.022507870569825172,
             },
             {
                 path: 'quiz_sampling_info/q2/9.gz',
-                total_p: 0.01605394296348095,
+                totalP: 0.01605394296348095,
             },
             {
                 path: 'quiz_sampling_info/q2/10.gz',
-                total_p: 0.010748544707894325,
+                totalP: 0.010748544707894325,
             },
             {
                 path: 'quiz_sampling_info/q2/11.gz',
-                total_p: 0.006527494173496962,
+                totalP: 0.006527494173496962,
             },
             {
                 path: 'quiz_sampling_info/q2/12.gz',
-                total_p: 0.0034534395672380924,
+                totalP: 0.0034534395672380924,
             },
             {
                 path: 'quiz_sampling_info/q2/13.gz',
-                total_p: 0.0014064143178984523,
+                totalP: 0.0014064143178984523,
             },
             {
                 path: 'quiz_sampling_info/q2/14.gz',
-                total_p: 0.00043018540600314736,
+                totalP: 0.00043018540600314736,
             },
         ],
         [
             {
                 path: 'quiz_sampling_info/q3/0.gz',
-                total_p: 0.3903525173664093,
+                totalP: 0.3903525173664093,
             },
             {
                 path: 'quiz_sampling_info/q3/1.gz',
-                total_p: 0.1401928812265396,
+                totalP: 0.1401928812265396,
             },
             {
                 path: 'quiz_sampling_info/q3/2.gz',
-                total_p: 0.10026836395263672,
+                totalP: 0.10026836395263672,
             },
             {
                 path: 'quiz_sampling_info/q3/3.gz',
-                total_p: 0.07981663197278976,
+                totalP: 0.07981663197278976,
             },
             {
                 path: 'quiz_sampling_info/q3/4.gz',
-                total_p: 0.06511034071445465,
+                totalP: 0.06511034071445465,
             },
             {
                 path: 'quiz_sampling_info/q3/5.gz',
-                total_p: 0.05217471346259117,
+                totalP: 0.05217471346259117,
             },
             {
                 path: 'quiz_sampling_info/q3/6.gz',
-                total_p: 0.04064515233039856,
+                totalP: 0.04064515233039856,
             },
             {
                 path: 'quiz_sampling_info/q3/7.gz',
-                total_p: 0.03220118582248688,
+                totalP: 0.03220118582248688,
             },
             {
                 path: 'quiz_sampling_info/q3/8.gz',
-                total_p: 0.025197135284543037,
+                totalP: 0.025197135284543037,
             },
             {
                 path: 'quiz_sampling_info/q3/9.gz',
-                total_p: 0.019486891105771065,
+                totalP: 0.019486891105771065,
             },
             {
                 path: 'quiz_sampling_info/q3/10.gz',
-                total_p: 0.015053939074277878,
+                totalP: 0.015053939074277878,
             },
             {
                 path: 'quiz_sampling_info/q3/11.gz',
-                total_p: 0.011607799679040909,
+                totalP: 0.011607799679040909,
             },
             {
                 path: 'quiz_sampling_info/q3/12.gz',
-                total_p: 0.008898304775357246,
+                totalP: 0.008898304775357246,
             },
             {
                 path: 'quiz_sampling_info/q3/13.gz',
-                total_p: 0.006385310553014278,
+                totalP: 0.006385310553014278,
             },
             {
                 path: 'quiz_sampling_info/q3/14.gz',
-                total_p: 0.00415657926350832,
+                totalP: 0.00415657926350832,
             },
             {
                 path: 'quiz_sampling_info/q3/15.gz',
-                total_p: 0.0028153664898127317,
+                totalP: 0.0028153664898127317,
             },
             {
                 path: 'quiz_sampling_info/q3/16.gz',
-                total_p: 0.002071874449029565,
+                totalP: 0.002071874449029565,
             },
             {
                 path: 'quiz_sampling_info/q3/17.gz',
-                total_p: 0.001479493803344667,
+                totalP: 0.001479493803344667,
             },
             {
                 path: 'quiz_sampling_info/q3/18.gz',
-                total_p: 0.0010244218865409493,
+                totalP: 0.0010244218865409493,
             },
             {
                 path: 'quiz_sampling_info/q3/19.gz',
-                total_p: 0.0007064173696562648,
+                totalP: 0.0007064173696562648,
             },
             {
                 path: 'quiz_sampling_info/q3/20.gz',
-                total_p: 0.0004209323669783771,
+                totalP: 0.0004209323669783771,
             },
             {
                 path: 'quiz_sampling_info/q3/21.gz',
-                total_p: 8.05334002507152e-06,
+                totalP: 8.05334002507152e-06,
             },
         ],
         [
             {
                 path: 'quiz_sampling_info/q4/0.gz',
-                total_p: 0.38750115036964417,
+                totalP: 0.38750115036964417,
             },
             {
                 path: 'quiz_sampling_info/q4/1.gz',
-                total_p: 0.1254192590713501,
+                totalP: 0.1254192590713501,
             },
             {
                 path: 'quiz_sampling_info/q4/2.gz',
-                total_p: 0.09075488150119781,
+                totalP: 0.09075488150119781,
             },
             {
                 path: 'quiz_sampling_info/q4/3.gz',
-                total_p: 0.07341223955154419,
+                totalP: 0.07341223955154419,
             },
             {
                 path: 'quiz_sampling_info/q4/4.gz',
-                total_p: 0.06335493177175522,
+                totalP: 0.06335493177175522,
             },
             {
                 path: 'quiz_sampling_info/q4/5.gz',
-                total_p: 0.05458942428231239,
+                totalP: 0.05458942428231239,
             },
             {
                 path: 'quiz_sampling_info/q4/6.gz',
-                total_p: 0.04462672024965286,
+                totalP: 0.04462672024965286,
             },
             {
                 path: 'quiz_sampling_info/q4/7.gz',
-                total_p: 0.035467155277729034,
+                totalP: 0.035467155277729034,
             },
             {
                 path: 'quiz_sampling_info/q4/8.gz',
-                total_p: 0.028291698545217514,
+                totalP: 0.028291698545217514,
             },
             {
                 path: 'quiz_sampling_info/q4/9.gz',
-                total_p: 0.022018076851963997,
+                totalP: 0.022018076851963997,
             },
             {
                 path: 'quiz_sampling_info/q4/10.gz',
-                total_p: 0.016690203920006752,
+                totalP: 0.016690203920006752,
             },
             {
                 path: 'quiz_sampling_info/q4/11.gz',
-                total_p: 0.01217847689986229,
+                totalP: 0.01217847689986229,
             },
             {
                 path: 'quiz_sampling_info/q4/12.gz',
-                total_p: 0.008624359965324402,
+                totalP: 0.008624359965324402,
             },
             {
                 path: 'quiz_sampling_info/q4/13.gz',
-                total_p: 0.006238069850951433,
+                totalP: 0.006238069850951433,
             },
             {
                 path: 'quiz_sampling_info/q4/14.gz',
-                total_p: 0.0047327252104878426,
+                totalP: 0.0047327252104878426,
             },
             {
                 path: 'quiz_sampling_info/q4/15.gz',
-                total_p: 0.0038146318402141333,
+                totalP: 0.0038146318402141333,
             },
             {
                 path: 'quiz_sampling_info/q4/16.gz',
-                total_p: 0.003191667376086116,
+                totalP: 0.003191667376086116,
             },
             {
                 path: 'quiz_sampling_info/q4/17.gz',
-                total_p: 0.002712230198085308,
+                totalP: 0.002712230198085308,
             },
             {
                 path: 'quiz_sampling_info/q4/18.gz',
-                total_p: 0.0023088508751243353,
+                totalP: 0.0023088508751243353,
             },
             {
                 path: 'quiz_sampling_info/q4/19.gz',
-                total_p: 0.0020233767572790384,
+                totalP: 0.0020233767572790384,
             },
             {
                 path: 'quiz_sampling_info/q4/20.gz',
-                total_p: 0.0018026038305833936,
+                totalP: 0.0018026038305833936,
             },
             {
                 path: 'quiz_sampling_info/q4/21.gz',
-                total_p: 0.001603159704245627,
+                totalP: 0.001603159704245627,
             },
             {
                 path: 'quiz_sampling_info/q4/22.gz',
-                total_p: 0.0013904363149777055,
+                totalP: 0.0013904363149777055,
             },
             {
                 path: 'quiz_sampling_info/q4/23.gz',
-                total_p: 0.0011930236360058188,
+                totalP: 0.0011930236360058188,
             },
             {
                 path: 'quiz_sampling_info/q4/24.gz',
-                total_p: 0.0010382027830928564,
+                totalP: 0.0010382027830928564,
             },
             {
                 path: 'quiz_sampling_info/q4/25.gz',
-                total_p: 0.000894309428986162,
+                totalP: 0.000894309428986162,
             },
             {
                 path: 'quiz_sampling_info/q4/26.gz',
-                total_p: 0.0007795034325681627,
+                totalP: 0.0007795034325681627,
             },
             {
                 path: 'quiz_sampling_info/q4/27.gz',
-                total_p: 0.0006922086467966437,
+                totalP: 0.0006922086467966437,
             },
             {
                 path: 'quiz_sampling_info/q4/28.gz',
-                total_p: 0.0006188106490299106,
+                totalP: 0.0006188106490299106,
             },
             {
                 path: 'quiz_sampling_info/q4/29.gz',
-                total_p: 0.0005400435766205192,
+                totalP: 0.0005400435766205192,
             },
             {
                 path: 'quiz_sampling_info/q4/30.gz',
-                total_p: 0.00046228215796872973,
+                totalP: 0.00046228215796872973,
             },
             {
                 path: 'quiz_sampling_info/q4/31.gz',
-                total_p: 0.000387054547900334,
+                totalP: 0.000387054547900334,
             },
             {
                 path: 'quiz_sampling_info/q4/32.gz',
-                total_p: 0.00029496935894712806,
+                totalP: 0.00029496935894712806,
             },
             {
                 path: 'quiz_sampling_info/q4/33.gz',
-                total_p: 4.763996912515722e-05,
+                totalP: 4.763996912515722e-05,
             },
         ],
         [
             {
                 path: 'quiz_sampling_info/q5/0.gz',
-                total_p: 0.2279743105173111,
+                totalP: 0.2279743105173111,
             },
             {
                 path: 'quiz_sampling_info/q5/1.gz',
-                total_p: 0.06766337156295776,
+                totalP: 0.06766337156295776,
             },
             {
                 path: 'quiz_sampling_info/q5/2.gz',
-                total_p: 0.05435597896575928,
+                totalP: 0.05435597896575928,
             },
             {
                 path: 'quiz_sampling_info/q5/3.gz',
-                total_p: 0.046791866421699524,
+                totalP: 0.046791866421699524,
             },
             {
                 path: 'quiz_sampling_info/q5/4.gz',
-                total_p: 0.041232381016016006,
+                totalP: 0.041232381016016006,
             },
             {
                 path: 'quiz_sampling_info/q5/5.gz',
-                total_p: 0.03724168241024017,
+                totalP: 0.03724168241024017,
             },
             {
                 path: 'quiz_sampling_info/q5/6.gz',
-                total_p: 0.03378044068813324,
+                totalP: 0.03378044068813324,
             },
             {
                 path: 'quiz_sampling_info/q5/7.gz',
-                total_p: 0.030765725299715996,
+                totalP: 0.030765725299715996,
             },
             {
                 path: 'quiz_sampling_info/q5/8.gz',
-                total_p: 0.028227318078279495,
+                totalP: 0.028227318078279495,
             },
             {
                 path: 'quiz_sampling_info/q5/9.gz',
-                total_p: 0.026138845831155777,
+                totalP: 0.026138845831155777,
             },
             {
                 path: 'quiz_sampling_info/q5/10.gz',
-                total_p: 0.024363918229937553,
+                totalP: 0.024363918229937553,
             },
             {
                 path: 'quiz_sampling_info/q5/11.gz',
-                total_p: 0.02278042584657669,
+                totalP: 0.02278042584657669,
             },
             {
                 path: 'quiz_sampling_info/q5/12.gz',
-                total_p: 0.021333670243620872,
+                totalP: 0.021333670243620872,
             },
             {
                 path: 'quiz_sampling_info/q5/13.gz',
-                total_p: 0.019990617409348488,
+                totalP: 0.019990617409348488,
             },
             {
                 path: 'quiz_sampling_info/q5/14.gz',
-                total_p: 0.01880929432809353,
+                totalP: 0.01880929432809353,
             },
             {
                 path: 'quiz_sampling_info/q5/15.gz',
-                total_p: 0.017789116129279137,
+                totalP: 0.017789116129279137,
             },
             {
                 path: 'quiz_sampling_info/q5/16.gz',
-                total_p: 0.016873473301529884,
+                totalP: 0.016873473301529884,
             },
             {
                 path: 'quiz_sampling_info/q5/17.gz',
-                total_p: 0.01603289321064949,
+                totalP: 0.01603289321064949,
             },
             {
                 path: 'quiz_sampling_info/q5/18.gz',
-                total_p: 0.015240936540067196,
+                totalP: 0.015240936540067196,
             },
             {
                 path: 'quiz_sampling_info/q5/19.gz',
-                total_p: 0.014481969177722931,
+                totalP: 0.014481969177722931,
             },
             {
                 path: 'quiz_sampling_info/q5/20.gz',
-                total_p: 0.0137752341106534,
+                totalP: 0.0137752341106534,
             },
             {
                 path: 'quiz_sampling_info/q5/21.gz',
-                total_p: 0.01312382984906435,
+                totalP: 0.01312382984906435,
             },
             {
                 path: 'quiz_sampling_info/q5/22.gz',
-                total_p: 0.012488673441112041,
+                totalP: 0.012488673441112041,
             },
             {
                 path: 'quiz_sampling_info/q5/23.gz',
-                total_p: 0.011862924322485924,
+                totalP: 0.011862924322485924,
             },
             {
                 path: 'quiz_sampling_info/q5/24.gz',
-                total_p: 0.01125122420489788,
+                totalP: 0.01125122420489788,
             },
             {
                 path: 'quiz_sampling_info/q5/25.gz',
-                total_p: 0.01065963227301836,
+                totalP: 0.01065963227301836,
             },
             {
                 path: 'quiz_sampling_info/q5/26.gz',
-                total_p: 0.010091898031532764,
+                totalP: 0.010091898031532764,
             },
             {
                 path: 'quiz_sampling_info/q5/27.gz',
-                total_p: 0.009536824189126492,
+                totalP: 0.009536824189126492,
             },
             {
                 path: 'quiz_sampling_info/q5/28.gz',
-                total_p: 0.00899641402065754,
+                totalP: 0.00899641402065754,
             },
             {
                 path: 'quiz_sampling_info/q5/29.gz',
-                total_p: 0.008468342013657093,
+                totalP: 0.008468342013657093,
             },
             {
                 path: 'quiz_sampling_info/q5/30.gz',
-                total_p: 0.007972761988639832,
+                totalP: 0.007972761988639832,
             },
             {
                 path: 'quiz_sampling_info/q5/31.gz',
-                total_p: 0.007520751561969519,
+                totalP: 0.007520751561969519,
             },
             {
                 path: 'quiz_sampling_info/q5/32.gz',
-                total_p: 0.007069980259984732,
+                totalP: 0.007069980259984732,
             },
             {
                 path: 'quiz_sampling_info/q5/33.gz',
-                total_p: 0.006664663553237915,
+                totalP: 0.006664663553237915,
             },
             {
                 path: 'quiz_sampling_info/q5/34.gz',
-                total_p: 0.006281593814492226,
+                totalP: 0.006281593814492226,
             },
             {
                 path: 'quiz_sampling_info/q5/35.gz',
-                total_p: 0.005884514190256596,
+                totalP: 0.005884514190256596,
             },
             {
                 path: 'quiz_sampling_info/q5/36.gz',
-                total_p: 0.005494019947946072,
+                totalP: 0.005494019947946072,
             },
             {
                 path: 'quiz_sampling_info/q5/37.gz',
-                total_p: 0.005114319734275341,
+                totalP: 0.005114319734275341,
             },
             {
                 path: 'quiz_sampling_info/q5/38.gz',
-                total_p: 0.004744821693748236,
+                totalP: 0.004744821693748236,
             },
             {
                 path: 'quiz_sampling_info/q5/39.gz',
-                total_p: 0.00438907602801919,
+                totalP: 0.00438907602801919,
             },
             {
                 path: 'quiz_sampling_info/q5/40.gz',
-                total_p: 0.004052479285746813,
+                totalP: 0.004052479285746813,
             },
             {
                 path: 'quiz_sampling_info/q5/41.gz',
-                total_p: 0.0037338300608098507,
+                totalP: 0.0037338300608098507,
             },
             {
                 path: 'quiz_sampling_info/q5/42.gz',
-                total_p: 0.0034263816196471453,
+                totalP: 0.0034263816196471453,
             },
             {
                 path: 'quiz_sampling_info/q5/43.gz',
-                total_p: 0.0031237576622515917,
+                totalP: 0.0031237576622515917,
             },
             {
                 path: 'quiz_sampling_info/q5/44.gz',
-                total_p: 0.0028206282295286655,
+                totalP: 0.0028206282295286655,
             },
             {
                 path: 'quiz_sampling_info/q5/45.gz',
-                total_p: 0.0025311594363301992,
+                totalP: 0.0025311594363301992,
             },
             {
                 path: 'quiz_sampling_info/q5/46.gz',
-                total_p: 0.0022778050042688847,
+                totalP: 0.0022778050042688847,
             },
             {
                 path: 'quiz_sampling_info/q5/47.gz',
-                total_p: 0.002054124139249325,
+                totalP: 0.002054124139249325,
             },
             {
                 path: 'quiz_sampling_info/q5/48.gz',
-                total_p: 0.0018651338759809732,
+                totalP: 0.0018651338759809732,
             },
             {
                 path: 'quiz_sampling_info/q5/49.gz',
-                total_p: 0.00170260074082762,
+                totalP: 0.00170260074082762,
             },
             {
                 path: 'quiz_sampling_info/q5/50.gz',
-                total_p: 0.0015463801100850105,
+                totalP: 0.0015463801100850105,
             },
             {
                 path: 'quiz_sampling_info/q5/51.gz',
-                total_p: 0.0013832623371854424,
+                totalP: 0.0013832623371854424,
             },
             {
                 path: 'quiz_sampling_info/q5/52.gz',
-                total_p: 0.0012284719850867987,
+                totalP: 0.0012284719850867987,
             },
             {
                 path: 'quiz_sampling_info/q5/53.gz',
-                total_p: 0.0011031108442693949,
+                totalP: 0.0011031108442693949,
             },
             {
                 path: 'quiz_sampling_info/q5/54.gz',
-                total_p: 0.0010035482700914145,
+                totalP: 0.0010035482700914145,
             },
             {
                 path: 'quiz_sampling_info/q5/55.gz',
-                total_p: 0.0009316039504483342,
+                totalP: 0.0009316039504483342,
             },
             {
                 path: 'quiz_sampling_info/q5/56.gz',
-                total_p: 0.0008761294884607196,
+                totalP: 0.0008761294884607196,
             },
             {
                 path: 'quiz_sampling_info/q5/57.gz',
-                total_p: 0.0008280539768747985,
+                totalP: 0.0008280539768747985,
             },
             {
                 path: 'quiz_sampling_info/q5/58.gz',
-                total_p: 0.0007799062295816839,
+                totalP: 0.0007799062295816839,
             },
             {
                 path: 'quiz_sampling_info/q5/59.gz',
-                total_p: 0.0007298595737665892,
+                totalP: 0.0007298595737665892,
             },
             {
                 path: 'quiz_sampling_info/q5/60.gz',
-                total_p: 0.0006808063481003046,
+                totalP: 0.0006808063481003046,
             },
             {
                 path: 'quiz_sampling_info/q5/61.gz',
-                total_p: 0.0006303310510702431,
+                totalP: 0.0006303310510702431,
             },
             {
                 path: 'quiz_sampling_info/q5/62.gz',
-                total_p: 0.0005805731052532792,
+                totalP: 0.0005805731052532792,
             },
             {
                 path: 'quiz_sampling_info/q5/63.gz',
-                total_p: 0.0005423340480774641,
+                totalP: 0.0005423340480774641,
             },
             {
                 path: 'quiz_sampling_info/q5/64.gz',
-                total_p: 0.00051063799764961,
+                totalP: 0.00051063799764961,
             },
             {
                 path: 'quiz_sampling_info/q5/65.gz',
-                total_p: 0.00047875012387521565,
+                totalP: 0.00047875012387521565,
             },
             {
                 path: 'quiz_sampling_info/q5/66.gz',
-                total_p: 0.0004398627206683159,
+                totalP: 0.0004398627206683159,
             },
             {
                 path: 'quiz_sampling_info/q5/67.gz',
-                total_p: 0.00039760518120601773,
+                totalP: 0.00039760518120601773,
             },
             {
                 path: 'quiz_sampling_info/q5/68.gz',
-                total_p: 0.00037025389610789716,
+                totalP: 0.00037025389610789716,
             },
             {
                 path: 'quiz_sampling_info/q5/69.gz',
-                total_p: 0.0003520796890370548,
+                totalP: 0.0003520796890370548,
             },
             {
                 path: 'quiz_sampling_info/q5/70.gz',
-                total_p: 0.00033822303521446884,
+                totalP: 0.00033822303521446884,
             },
             {
                 path: 'quiz_sampling_info/q5/71.gz',
-                total_p: 0.00032498405198566616,
+                totalP: 0.00032498405198566616,
             },
             {
                 path: 'quiz_sampling_info/q5/72.gz',
-                total_p: 0.00031013425905257463,
+                totalP: 0.00031013425905257463,
             },
             {
                 path: 'quiz_sampling_info/q5/73.gz',
-                total_p: 0.0002927598834503442,
+                totalP: 0.0002927598834503442,
             },
             {
                 path: 'quiz_sampling_info/q5/74.gz',
-                total_p: 0.0002761373471003026,
+                totalP: 0.0002761373471003026,
             },
             {
                 path: 'quiz_sampling_info/q5/75.gz',
-                total_p: 0.0002608700597193092,
+                totalP: 0.0002608700597193092,
             },
             {
                 path: 'quiz_sampling_info/q5/76.gz',
-                total_p: 0.00024903888697735965,
+                totalP: 0.00024903888697735965,
             },
             {
                 path: 'quiz_sampling_info/q5/77.gz',
-                total_p: 0.00023906651767902076,
+                totalP: 0.00023906651767902076,
             },
             {
                 path: 'quiz_sampling_info/q5/78.gz',
-                total_p: 0.00023011832672636956,
+                totalP: 0.00023011832672636956,
             },
             {
                 path: 'quiz_sampling_info/q5/79.gz',
-                total_p: 0.00022226884902920574,
+                totalP: 0.00022226884902920574,
             },
             {
                 path: 'quiz_sampling_info/q5/80.gz',
-                total_p: 0.00021587393712252378,
+                totalP: 0.00021587393712252378,
             },
             {
                 path: 'quiz_sampling_info/q5/81.gz',
-                total_p: 0.00021003936126362532,
+                totalP: 0.00021003936126362532,
             },
             {
                 path: 'quiz_sampling_info/q5/82.gz',
-                total_p: 0.00020474276971071959,
+                totalP: 0.00020474276971071959,
             },
             {
                 path: 'quiz_sampling_info/q5/83.gz',
-                total_p: 0.00019960464851465076,
+                totalP: 0.00019960464851465076,
             },
             {
                 path: 'quiz_sampling_info/q5/84.gz',
-                total_p: 0.00019435521971900016,
+                totalP: 0.00019435521971900016,
             },
             {
                 path: 'quiz_sampling_info/q5/85.gz',
-                total_p: 0.00018915545661002398,
+                totalP: 0.00018915545661002398,
             },
             {
                 path: 'quiz_sampling_info/q5/86.gz',
-                total_p: 0.00018433544028084725,
+                totalP: 0.00018433544028084725,
             },
             {
                 path: 'quiz_sampling_info/q5/87.gz',
-                total_p: 0.00017981528071686625,
+                totalP: 0.00017981528071686625,
             },
             {
                 path: 'quiz_sampling_info/q5/88.gz',
-                total_p: 0.00017519299581181258,
+                totalP: 0.00017519299581181258,
             },
             {
                 path: 'quiz_sampling_info/q5/89.gz',
-                total_p: 0.00017079028475563973,
+                totalP: 0.00017079028475563973,
             },
             {
                 path: 'quiz_sampling_info/q5/90.gz',
-                total_p: 0.0001667415490373969,
+                totalP: 0.0001667415490373969,
             },
             {
                 path: 'quiz_sampling_info/q5/91.gz',
-                total_p: 0.00016284757293760777,
+                totalP: 0.00016284757293760777,
             },
             {
                 path: 'quiz_sampling_info/q5/92.gz',
-                total_p: 0.00015947746578603983,
+                totalP: 0.00015947746578603983,
             },
             {
                 path: 'quiz_sampling_info/q5/93.gz',
-                total_p: 0.00015633358270861208,
+                totalP: 0.00015633358270861208,
             },
             {
                 path: 'quiz_sampling_info/q5/94.gz',
-                total_p: 0.00015321407408919185,
+                totalP: 0.00015321407408919185,
             },
             {
                 path: 'quiz_sampling_info/q5/95.gz',
-                total_p: 0.0001501574442954734,
+                totalP: 0.0001501574442954734,
             },
             {
                 path: 'quiz_sampling_info/q5/96.gz',
-                total_p: 0.00014711373660247773,
+                totalP: 0.00014711373660247773,
             },
             {
                 path: 'quiz_sampling_info/q5/97.gz',
-                total_p: 0.00014415118494071066,
+                totalP: 0.00014415118494071066,
             },
             {
                 path: 'quiz_sampling_info/q5/98.gz',
-                total_p: 0.00014149573689792305,
+                totalP: 0.00014149573689792305,
             },
             {
                 path: 'quiz_sampling_info/q5/99.gz',
-                total_p: 0.00013916331226937473,
+                totalP: 0.00013916331226937473,
             },
             {
                 path: 'quiz_sampling_info/q5/100.gz',
-                total_p: 0.00013694640074390918,
+                totalP: 0.00013694640074390918,
             },
             {
                 path: 'quiz_sampling_info/q5/101.gz',
-                total_p: 0.00013464769290294498,
+                totalP: 0.00013464769290294498,
             },
             {
                 path: 'quiz_sampling_info/q5/102.gz',
-                total_p: 0.00013209524331614375,
+                totalP: 0.00013209524331614375,
             },
             {
                 path: 'quiz_sampling_info/q5/103.gz',
-                total_p: 0.0001292396045755595,
+                totalP: 0.0001292396045755595,
             },
             {
                 path: 'quiz_sampling_info/q5/104.gz',
-                total_p: 0.00012648937990888953,
+                totalP: 0.00012648937990888953,
             },
             {
                 path: 'quiz_sampling_info/q5/105.gz',
-                total_p: 0.00012409412011038512,
+                totalP: 0.00012409412011038512,
             },
             {
                 path: 'quiz_sampling_info/q5/106.gz',
-                total_p: 0.00012199542834423482,
+                totalP: 0.00012199542834423482,
             },
             {
                 path: 'quiz_sampling_info/q5/107.gz',
-                total_p: 0.00012005538155790418,
+                totalP: 0.00012005538155790418,
             },
             {
                 path: 'quiz_sampling_info/q5/108.gz',
-                total_p: 0.00011824323155451566,
+                totalP: 0.00011824323155451566,
             },
             {
                 path: 'quiz_sampling_info/q5/109.gz',
-                total_p: 0.00011667785292956978,
+                totalP: 0.00011667785292956978,
             },
             {
                 path: 'quiz_sampling_info/q5/110.gz',
-                total_p: 0.00011536679812707007,
+                totalP: 0.00011536679812707007,
             },
             {
                 path: 'quiz_sampling_info/q5/111.gz',
-                total_p: 0.00011419081420172006,
+                totalP: 0.00011419081420172006,
             },
             {
                 path: 'quiz_sampling_info/q5/112.gz',
-                total_p: 0.0001130150121753104,
+                totalP: 0.0001130150121753104,
             },
             {
                 path: 'quiz_sampling_info/q5/113.gz',
-                total_p: 0.00011176573752891272,
+                totalP: 0.00011176573752891272,
             },
             {
                 path: 'quiz_sampling_info/q5/114.gz',
-                total_p: 0.00011040732351830229,
+                totalP: 0.00011040732351830229,
             },
             {
                 path: 'quiz_sampling_info/q5/115.gz',
-                total_p: 0.0001089806028176099,
+                totalP: 0.0001089806028176099,
             },
             {
                 path: 'quiz_sampling_info/q5/116.gz',
-                total_p: 0.00010750948422355577,
+                totalP: 0.00010750948422355577,
             },
             {
                 path: 'quiz_sampling_info/q5/117.gz',
-                total_p: 0.0001059841233654879,
+                totalP: 0.0001059841233654879,
             },
             {
                 path: 'quiz_sampling_info/q5/118.gz',
-                total_p: 0.00010441015911055729,
+                totalP: 0.00010441015911055729,
             },
             {
                 path: 'quiz_sampling_info/q5/119.gz',
-                total_p: 0.0001028495462378487,
+                totalP: 0.0001028495462378487,
             },
             {
                 path: 'quiz_sampling_info/q5/120.gz',
-                total_p: 0.00010137914068764076,
+                totalP: 0.00010137914068764076,
             },
             {
                 path: 'quiz_sampling_info/q5/121.gz',
-                total_p: 9.997698361985385e-05,
+                totalP: 9.997698361985385e-05,
             },
             {
                 path: 'quiz_sampling_info/q5/122.gz',
-                total_p: 9.865064930636436e-05,
+                totalP: 9.865064930636436e-05,
             },
             {
                 path: 'quiz_sampling_info/q5/123.gz',
-                total_p: 9.741337271407247e-05,
+                totalP: 9.741337271407247e-05,
             },
             {
                 path: 'quiz_sampling_info/q5/124.gz',
-                total_p: 9.62299236562103e-05,
+                totalP: 9.62299236562103e-05,
             },
             {
                 path: 'quiz_sampling_info/q5/125.gz',
-                total_p: 9.50491230469197e-05,
+                totalP: 9.50491230469197e-05,
             },
             {
                 path: 'quiz_sampling_info/q5/126.gz',
-                total_p: 9.379146649735048e-05,
+                totalP: 9.379146649735048e-05,
             },
             {
                 path: 'quiz_sampling_info/q5/127.gz',
-                total_p: 9.23351472010836e-05,
+                totalP: 9.23351472010836e-05,
             },
             {
                 path: 'quiz_sampling_info/q5/128.gz',
-                total_p: 9.050010703504086e-05,
+                totalP: 9.050010703504086e-05,
             },
             {
                 path: 'quiz_sampling_info/q5/129.gz',
-                total_p: 8.813266322249547e-05,
+                totalP: 8.813266322249547e-05,
             },
             {
                 path: 'quiz_sampling_info/q5/130.gz',
-                total_p: 8.587531192461029e-05,
+                totalP: 8.587531192461029e-05,
             },
             {
                 path: 'quiz_sampling_info/q5/131.gz',
-                total_p: 8.346755930688232e-05,
+                totalP: 8.346755930688232e-05,
             },
             {
                 path: 'quiz_sampling_info/q5/132.gz',
-                total_p: 8.079258259385824e-05,
+                totalP: 8.079258259385824e-05,
             },
             {
                 path: 'quiz_sampling_info/q5/133.gz',
-                total_p: 7.504474342567846e-05,
+                totalP: 7.504474342567846e-05,
             },
             {
                 path: 'quiz_sampling_info/q5/134.gz',
-                total_p: 4.6936984290368855e-05,
+                totalP: 4.6936984290368855e-05,
             },
             {
                 path: 'quiz_sampling_info/q5/135.gz',
-                total_p: 9.601603778719436e-06,
+                totalP: 9.601603778719436e-06,
             },
         ],
     ],

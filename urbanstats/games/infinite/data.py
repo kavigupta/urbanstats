@@ -11,6 +11,7 @@ from urbanstats.games.quiz_sampling import (
 from urbanstats.games.quiz import juxta_version
 from urbanstats.protobuf import data_files_pb2
 from urbanstats.protobuf.utils import write_gzip
+from urbanstats.statistics.output_statistics_metadata import internal_statistic_names
 from urbanstats.utils import output_typescript
 
 tronche_size = 100_000
@@ -40,7 +41,7 @@ def output_quiz_question(q, p, site_folder, question_folder):
         i = idxs[start : start + tronche_size]
         tronche, tronche_p = q[i], p[i]
         total_p = output_tronche(tronche, tronche_p, os.path.join(site_folder, path))
-        tronche_descriptors.append({"path": path, "total_p": float(total_p)})
+        tronche_descriptors.append({"path": path, "totalP": float(total_p)})
     return tronche_descriptors
 
 
@@ -74,7 +75,7 @@ def output_quiz_sampling_probabilities(site_folder, subfolder):
 
     return dict(
         allGeographies=qqp.all_geographies,
-        allStats=qqp.all_stats,
+        allStats=[internal_statistic_names().index(s) for s in qqp.all_stats],
         questionDistribution=descriptors,
         juxtaVersion=juxta_version,
     )

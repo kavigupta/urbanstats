@@ -5,6 +5,7 @@ import { z } from 'zod'
 import { StatPath } from '../page_template/statistic-tree'
 import { randomID } from '../utils/random'
 import { cancelled, uploadFile } from '../utils/upload'
+import { infiniteQuizIsDone, sampleRandomQuestion } from './infinite'
 
 export type QuizDescriptor = { kind: 'juxtastat', name: number } | { kind: 'retrostat', name: string } | { kind: 'custom', name: string } | { kind: 'infinite', name: string, seed: string, version: number }
 
@@ -305,6 +306,10 @@ export function wrapQuestionsModel(questions: QuizQuestion[]): QuizQuestionsMode
 }
 
 export function infiniteQuiz(seed: string): QuizQuestionsModel {
-    return wrapQuestionsModel([])
-    // throw new Error(`Infinite quiz not implemented for seed ${seed}`)
+    return {
+        questionByIndex: (index: number) => sampleRandomQuestion(seed, index),
+        length: undefined,
+        isDone: (correctPattern: boolean[]) => infiniteQuizIsDone(correctPattern),
+        uniqueKey: uniqueKey(),
+    }
 }
