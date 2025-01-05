@@ -458,7 +458,7 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
                     break
                 case 'infinite':
                     if (updatedDescriptor.seed === undefined) {
-                        updatedDescriptor.seed = randomID()
+                        updatedDescriptor.seed = randomID(10)
                     }
                     if (updatedDescriptor.v === undefined) {
                         updatedDescriptor.v = quiz_infinite.juxtaVersion
