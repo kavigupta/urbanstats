@@ -147,7 +147,7 @@ def build_react_site(site_folder, mode):
     link_scripts_folder(site_folder, mode)
 
 
-# pylint: disable-next=too-many-branches
+# pylint: disable-next=too-many-branches,too-many-arguments,too-many-statements
 def build_urbanstats(
     site_folder,
     *,
@@ -156,6 +156,8 @@ def build_urbanstats(
     no_juxta=False,
     no_data_jsons=False,
     no_index=False,
+    no_sitemap=False,
+    no_ordering=False,
     mode=None,
 ):
     if not mode:
@@ -167,6 +169,12 @@ def build_urbanstats(
         print("Producing geometry jsons")
     if not no_data_jsons and not no_data:
         print("Producing data for each article")
+    if not no_index and not no_data:
+        print("Producing index")
+    if not no_ordering and not no_data:
+        print("Producing ordering")
+    if not no_sitemap and not no_data:
+        print("Producing sitemap")
     if not no_data:
         print("Producing summary data")
     if not no_juxta:
@@ -202,11 +210,18 @@ def build_urbanstats(
         if not no_index:
             export_index(shapefile_without_ordinals(), site_folder)
 
-        output_ordering(site_folder, all_ordinals())
+        if not no_ordering:
+            output_ordering(site_folder, all_ordinals())
 
         full_consolidated_data(site_folder)
 
-        output_sitemap(site_folder, shapefile_without_ordinals(), all_ordinals())
+        if not no_sitemap:
+            output_sitemap(site_folder, shapefile_without_ordinals(), all_ordinals())
+
+    if not no_juxta:
+        generate_quizzes(f"{site_folder}/quiz/")
+
+    generate_retrostats(f"{site_folder}/retrostat")
 
     for entrypoint in [
         "index",
@@ -250,10 +265,6 @@ def build_urbanstats(
     build_react_site(site_folder, mode)
 
     place_icons_in_site_folder(site_folder)
-
-    if not no_juxta:
-        generate_quizzes(f"{site_folder}/quiz/")
-    generate_retrostats(f"{site_folder}/retrostat")
 
 
 def html_index(
