@@ -179,6 +179,11 @@ interface NormalizedSearchIndex {
         element: string
         normalizedElement: string
         priority: number
+        cache?: {
+            // If the last token is a prefix of the current token (a common case when the user is typing out a search), and there were no matches, we can skip searching this entry again
+            lastToken: string
+            matches: boolean
+        }
     }[]
     lengthOfLongestNormalizedElement: number
     tokenMatchScoreCache: DefaultMap<string, (number | undefined)[]>
@@ -271,8 +276,8 @@ function bitap(searchIndex: NormalizedSearchIndex, pattern: string): string[] {
 
     perf.enter('body')
 
-    for (const [populationRank, { element, normalizedElement }] of searchIndex.entries.entries()) {
-        perf.enter('tokens')
+    entries: for (const [populationRank, entry] of searchIndex.entries.entries()) {
+        const { normalizedElement, element } = entry
         let matchScore = 0
 
         for (const { token, alphabet } of tokens) {
@@ -292,48 +297,62 @@ function bitap(searchIndex: NormalizedSearchIndex, pattern: string): string[] {
             let tokenScore = maxErrors + 1
 
             perf.enter('search core')
-            search: for (let errors = 0; errors <= maxErrors; errors++) {
-                rd.fill(0)
-                rd[finish + 1] = (1 << errors) - 1
-
-                for (let j = finish; j >= 1; j--) {
-                    let charMatch: number
-                    if (j - 1 < normalizedElement.length) {
-                        charMatch = alphabet[normalizedElement.charCodeAt(j - 1)]
-                    }
-                    else {
-                        charMatch = 0
-                    }
-                    if (errors === 0) {
-                        rd[j] = ((rd[j + 1] << 1) | 1) & charMatch
-                    }
-                    else {
-                        // Subsequent passes: fuzzy match.
-                        rd[j] = (((rd[j + 1] << 1) | 1) & charMatch) | (((lastRd[j + 1] | lastRd[j]) << 1) | 1) | lastRd[j + 1]
-                    }
-                    if ((rd[j] & matchMask) !== 0) {
-                        tokenScore = errors
-                        break search
-                    }
-                }
-
-                [lastRd, rd] = [rd, lastRd]
+            if (entry.cache !== undefined && token.startsWith(entry.cache.lastToken) && !entry.cache.matches) {
+                // Token score is no match
             }
+            else {
+                search: for (let errors = 0; errors <= maxErrors; errors++) {
+                    rd.fill(0)
+                    rd[finish + 1] = (1 << errors) - 1
+
+                    for (let j = finish; j >= 1; j--) {
+                        let charMatch: number
+                        if (j - 1 < normalizedElement.length) {
+                            charMatch = alphabet[normalizedElement.charCodeAt(j - 1)]
+                        }
+                        else {
+                            charMatch = 0
+                        }
+                        if (errors === 0) {
+                            rd[j] = ((rd[j + 1] << 1) | 1) & charMatch
+                        }
+                        else {
+                            // Subsequent passes: fuzzy match.
+                            rd[j] = (((rd[j + 1] << 1) | 1) & charMatch) | (((lastRd[j + 1] | lastRd[j]) << 1) | 1) | lastRd[j + 1]
+                        }
+                        if ((rd[j] & matchMask) !== 0) {
+                            tokenScore = errors
+                            break search
+                        }
+                    }
+
+                    [lastRd, rd] = [rd, lastRd]
+                }
+            }
+
             perf.exit('search core')
 
             matchScore += tokenScore
 
             perf.enter('token cache')
             cache[populationRank] = tokenScore
+            entry.cache = { lastToken: token, matches: tokenScore < maxErrors + 1 }
             perf.exit('token cache')
+
+            perf.enter('short circuit')
+            // If our match score is so high that we would not make it into the results, we can move on to the next entry
+            if (results.length === maxResults && compareSearchResults({ element, matchScore, populationRank }, results[results.length - 1]) > 0) {
+                continue entries
+            }
+            perf.exit('short circuit')
         }
-        perf.exit('tokens')
 
         if (matchScore === tokens.length * (maxErrors + 1)) {
             // No match
             continue
         }
 
+        perf.enter('results')
         const result: SearchResult = {
             element,
             matchScore,
@@ -355,6 +374,7 @@ function bitap(searchIndex: NormalizedSearchIndex, pattern: string): string[] {
         if (results.length > maxResults) {
             results.pop()
         }
+        perf.exit('results')
     }
 
     perf.exit('body')
