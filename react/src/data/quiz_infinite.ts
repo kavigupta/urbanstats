@@ -3456,5 +3456,5 @@ export default {
             },
         ],
     ],
-    juxtaVersion: 1,
+    juxtaVersion: 0,
 } as const
