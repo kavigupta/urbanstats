@@ -55,7 +55,6 @@ export function QuizResult(props: QuizResultProps): ReactNode {
 
     const colors = useColors()
     const correctPattern = props.history.correct_pattern
-    const totalCorrect = correctPattern.reduce((partialSum: number, a) => partialSum + (a ? 1 : 0), 0)
 
     return (
         <div>
@@ -79,13 +78,12 @@ export function QuizResult(props: QuizResultProps): ReactNode {
                         </div>
                     )
                 : undefined}
-            <Summary correctPattern={correctPattern} totalCorrect={totalCorrect} total={correctPattern.length} />
+            <Summary correctPattern={correctPattern} quizKind={props.quizDescriptor.kind} />
             <div className="gap_small"></div>
             <ShareButton
                 buttonRef={button}
                 todayName={props.todayName}
                 correctPattern={correctPattern}
-                totalCorrect={totalCorrect}
                 quizKind={props.quizDescriptor.kind}
             />
             <div className="gap" />
@@ -153,11 +151,10 @@ interface ShareButtonProps {
     buttonRef: React.RefObject<HTMLButtonElement>
     todayName: string
     correctPattern: CorrectPattern
-    totalCorrect: number
     quizKind: QuizKind
 }
 
-function ShareButton({ buttonRef, todayName, correctPattern, totalCorrect, quizKind }: ShareButtonProps): ReactNode {
+function ShareButton({ buttonRef, todayName, correctPattern, quizKind }: ShareButtonProps): ReactNode {
     const colors = useColors()
     const juxtaColors = useJuxtastatColors()
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- We need to check the condition for browser compatibility.
@@ -183,7 +180,7 @@ function ShareButton({ buttonRef, todayName, correctPattern, totalCorrect, quizK
             }}
             ref={buttonRef}
             onClick={async () => {
-                const [text, url] = await summary(juxtaColors, todayName, correctPattern, totalCorrect, quizKind)
+                const [text, url] = await summary(juxtaColors, todayName, correctPattern, quizKind)
 
                 async function copyToClipboard(): Promise<void> {
                     await navigator.clipboard.writeText(`${text}\n${url}`)
@@ -300,12 +297,11 @@ function TimeToNextQuiz({ quiz }: { quiz: QuizDescriptorWithStats }): ReactNode 
     )
 }
 
-export function Summary(props: { totalCorrect: number, total: number, correctPattern: CorrectPattern }): ReactNode {
-    const juxtaColors = useJuxtastatColors()
+function juxtaSummary(correctPattern: CorrectPattern): [string, string] {
     let show = 'error'
-    // let frac = this.props.total_correct / this.props.total_correct;
-    const correct = props.totalCorrect
-    const incorrect = props.total - props.totalCorrect
+    const total = correctPattern.length
+    const correct = correctPattern.reduce((partialSum: number, a) => partialSum + (a ? 1 : 0), 0)
+    const incorrect = total - correct
 
     if (correct === 0) {
         show = 'Impressively Bad Job! 🤷'
@@ -325,7 +321,22 @@ export function Summary(props: { totalCorrect: number, total: number, correctPat
     else {
         show = 'Better luck next time! 🫤'
     }
-    show = `${show} ${correct}/${props.total}`
+    return [show, `${correct}/${total}`]
+}
+
+function summaryTexts(correctPattern: CorrectPattern, quizKind: QuizKind): [string, string] {
+    switch (quizKind) {
+        case 'juxtastat':
+        case 'retrostat':
+        case 'custom':
+            return juxtaSummary(correctPattern)
+    }
+}
+
+export function Summary(props: { correctPattern: CorrectPattern, quizKind: QuizKind }): ReactNode {
+    const juxtaColors = useJuxtastatColors()
+    const [prefix, summaryText] = summaryTexts(props.correctPattern, props.quizKind)
+    const show = `${prefix} ${summaryText}`
     return (
         <div>
             <span className="serif quiz_summary" id="quiz-result-summary-words">{show}</span>
@@ -334,9 +345,10 @@ export function Summary(props: { totalCorrect: number, total: number, correctPat
     )
 }
 
-export async function summary(juxtaColors: JuxtastatColors, todayName: string, correctPattern: CorrectPattern, totalCorrect: number, quizKind: QuizKind): Promise<[string, string]> {
+export async function summary(juxtaColors: JuxtastatColors, todayName: string, correctPattern: CorrectPattern, quizKind: QuizKind): Promise<[string, string]> {
     // wordle-style summary
-    let text = `${nameOfQuizKind(quizKind)} ${todayName} ${totalCorrect}/${correctPattern.length}`
+    const [, summaryText] = summaryTexts(correctPattern, quizKind)
+    let text = `${nameOfQuizKind(quizKind)} ${todayName} ${summaryText}`
 
     text += '\n'
     text += '\n'
