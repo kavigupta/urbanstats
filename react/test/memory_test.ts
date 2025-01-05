@@ -1,7 +1,5 @@
 import { urbanstatsFixture } from './test_utils'
 
-urbanstatsFixture('home page', '/')
-
 async function getJSHeapSize(t: TestController): Promise<number> {
     await t.wait(1000) // Wait for page to load
     const cdpSession = await t.getCurrentCDPSession()
@@ -11,6 +9,8 @@ async function getJSHeapSize(t: TestController): Promise<number> {
     console.warn(`Bytes used: ${bytesUsed}`)
     return bytesUsed
 }
+
+urbanstatsFixture('home page', '/')
 
 test('under memory limit home page', async (t) => {
     await t.expect(await getJSHeapSize(t)).lt(35_000_000)
