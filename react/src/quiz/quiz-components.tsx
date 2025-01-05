@@ -6,6 +6,7 @@ import { useColors, useJuxtastatColors } from '../page_template/colors'
 import { useHeaderTextClass } from '../utils/responsive'
 
 import { nameOfQuizKind, QuizHistory, QuizKind, QuizLocalStorage } from './quiz'
+import { juxtaInfiniteCorrectForBonus } from './infinite'
 
 export function Header({ quiz }: { quiz: { kind: QuizKind, name: string | number } }): ReactNode {
     let text = nameOfQuizKind(quiz.kind)
@@ -47,7 +48,8 @@ export function Help(props: { quizKind: QuizKind }): ReactNode {
             case 'custom':
                 return 'Select the geographical region answering the question.'
             case 'infinite':
-                return 'Select the geographical region answering the question.'
+                return `Select the geographical region answering the question. You lose when you run out of lives.`
+                    + ` You gain lives by getting ${juxtaInfiniteCorrectForBonus} questions right in a row.`
         }
     }
     return (

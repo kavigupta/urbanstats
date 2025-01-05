@@ -12,7 +12,7 @@ import { QuizFullData } from '../utils/protos'
 import { QuizQuestion } from './quiz'
 
 const juxtaInfiniteInitialLives = 3
-const juxtaInfiniteCorrectForBonus = 5
+export const juxtaInfiniteCorrectForBonus = 5
 
 type QuizQuestionChunks = readonly { path: string, totalP: number }[]
 
