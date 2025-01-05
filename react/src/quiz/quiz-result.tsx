@@ -335,16 +335,16 @@ function juxtaSummary(correctPattern: CorrectPattern): [string, string] {
 function infiniteSummary(correctPattern: CorrectPattern): [string, string] {
     const correct = correctPattern.reduce((partialSum: number, a) => partialSum + (a ? 1 : 0), 0)
     const pattern = `${correct}/∞`
-    if (correct < 20) {
+    if (correct < 10) {
         return ['You can do better! 😠', pattern]
     }
-    if (correct < 30) {
+    if (correct < 20) {
         return ['Not bad! 🫤', pattern]
     }
-    if (correct < 40) {
+    if (correct < 30) {
         return ['Good job! 🙃', pattern]
     }
-    if (correct < 50) {
+    if (correct < 40) {
         return ['Great! 😊', pattern]
     }
     return ['Amazing! 🔥', pattern]
