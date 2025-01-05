@@ -5,8 +5,8 @@ import '../components/quiz.css'
 import { useColors, useJuxtastatColors } from '../page_template/colors'
 import { useHeaderTextClass } from '../utils/responsive'
 
-import { nameOfQuizKind, QuizHistory, QuizKind, QuizLocalStorage } from './quiz'
 import { juxtaInfiniteCorrectForBonus } from './infinite'
+import { nameOfQuizKind, QuizHistory, QuizKind, QuizLocalStorage } from './quiz'
 
 export function Header({ quiz }: { quiz: { kind: QuizKind, name: string | number } }): ReactNode {
     let text = nameOfQuizKind(quiz.kind)
