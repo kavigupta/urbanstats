@@ -50,7 +50,15 @@ async function main(): Promise<void> {
         await startProxy()
     }
 
-    const testcafe = await createTestCafe('localhost', 1337, 1338)
+    const testcafe = await createTestCafe(
+        'localhost',
+        1337,
+        1338,
+        undefined,
+        undefined,
+        undefined,
+        true, // Cache
+    )
 
     // Remove artifacts for tests
     const testsPattern = tests.length === 1 ? tests[0] : `{${tests.join(',')}}`
