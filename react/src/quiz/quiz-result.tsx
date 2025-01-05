@@ -57,7 +57,6 @@ export function QuizResult(props: QuizResultProps): ReactNode {
 
     const colors = useColors()
     const correctPattern = props.history.correct_pattern
-    const totalCorrect = correctPattern.reduce((partialSum: number, a) => partialSum + (a ? 1 : 0), 0)
 
     return (
         <div>
@@ -81,13 +80,12 @@ export function QuizResult(props: QuizResultProps): ReactNode {
                         </div>
                     )
                 : undefined}
-            <Summary correctPattern={correctPattern} />
+            <Summary correctPattern={correctPattern} quizKind={props.quizDescriptor.kind} />
             <div className="gap_small"></div>
             <ShareButton
                 buttonRef={button}
                 todayName={props.todayName}
                 correctPattern={correctPattern}
-                totalCorrect={totalCorrect}
                 quizKind={props.quizDescriptor.kind}
             />
             <div className="gap" />
@@ -157,7 +155,6 @@ interface ShareButtonProps {
     buttonRef: React.RefObject<HTMLButtonElement>
     todayName: string
     correctPattern: CorrectPattern
-    totalCorrect: number
     quizKind: QuizKind
 }
 
@@ -178,7 +175,7 @@ export function buttonStyle(color: string): CSSProperties {
     }
 }
 
-function ShareButton({ buttonRef, todayName, correctPattern, totalCorrect, quizKind }: ShareButtonProps): ReactNode {
+function ShareButton({ buttonRef, todayName, correctPattern, quizKind }: ShareButtonProps): ReactNode {
     const colors = useColors()
     const juxtaColors = useJuxtastatColors()
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- We need to check the condition for browser compatibility.
@@ -335,9 +332,18 @@ function juxtaSummary(correctPattern: CorrectPattern): [string, string] {
     return [show, `${correct}/${total}`]
 }
 
-export function Summary(props: { correctPattern: CorrectPattern }): ReactNode {
+function summaryTexts(correctPattern: CorrectPattern, quizKind: QuizKind): [string, string] {
+    switch (quizKind) {
+        case 'juxtastat':
+        case 'retrostat':
+        case 'custom':
+            return juxtaSummary(correctPattern)
+    }
+}
+
+export function Summary(props: { correctPattern: CorrectPattern, quizKind: QuizKind }): ReactNode {
     const juxtaColors = useJuxtastatColors()
-    const [prefix, summaryText] = juxtaSummary(props.correctPattern)
+    const [prefix, summaryText] = summaryTexts(props.correctPattern, props.quizKind)
     const show = `${prefix} ${summaryText}`
     return (
         <div>
@@ -349,7 +355,7 @@ export function Summary(props: { correctPattern: CorrectPattern }): ReactNode {
 
 export async function summary(juxtaColors: JuxtastatColors, todayName: string, correctPattern: CorrectPattern, quizKind: QuizKind): Promise<[string, string]> {
     // wordle-style summary
-    const [_, summaryText] = juxtaSummary(correctPattern)
+    const [, summaryText] = summaryTexts(correctPattern, quizKind)
     let text = `${nameOfQuizKind(quizKind)} ${todayName} ${summaryText}`
 
     text += '\n'
