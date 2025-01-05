@@ -1,6 +1,7 @@
 import React, { CSSProperties, ReactNode, useContext, useEffect, useRef, useState } from 'react'
 import { isFirefox, isMobile } from 'react-device-detect'
 
+import { JuxtastatInfiniteButton } from '../components/quiz-panel'
 import { Statistic } from '../components/table'
 import { Navigator } from '../navigation/Navigator'
 import { JuxtastatColors } from '../page_template/color-themes'
@@ -103,6 +104,11 @@ export function QuizResult(props: QuizResultProps): ReactNode {
                 props.quizDescriptor.kind === 'custom' || props.quizDescriptor.kind === 'infinite'
                     ? undefined
                     : <TimeToNextQuiz quiz={props.quizDescriptor} />
+            }
+            {
+                props.quizDescriptor.kind === 'infinite'
+                    ? <JuxtastatInfiniteButton />
+                    : undefined
             }
             <div className="gap"></div>
             {

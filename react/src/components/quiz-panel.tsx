@@ -70,16 +70,7 @@ function QuizPanelNoResets(props: { quizDescriptor: QuizDescriptor, todayName?: 
                         Juxtastat generation has been updated, so infinite Juxtastat you are trying to access is no longer available.
                     </div>
                     <div style={{ height: '1.5em' }} />
-                    <a
-                        style={{
-                            ...buttonStyle(colors.hueColors.blue),
-                            width: '30%',
-                            textDecoration: 'none',
-                        }}
-                        href="/quiz.html?mode=infinite"
-                    >
-                        Random Juxtastat Infinite
-                    </a>
+                    <JuxtastatInfiniteButton />
                 </div>
             </PageTemplate>
         )
@@ -172,5 +163,21 @@ function QuizPanelNoResets(props: { quizDescriptor: QuizDescriptor, todayName?: 
                 )
             })()}
         </PageTemplate>
+    )
+}
+
+export function JuxtastatInfiniteButton(): ReactNode {
+    const colors = useColors()
+    return (
+        <a
+            style={{
+                ...buttonStyle(colors.hueColors.blue),
+                width: '30%',
+                textDecoration: 'none',
+            }}
+            href="/quiz.html?mode=infinite"
+        >
+            Random Juxtastat Infinite
+        </a>
     )
 }
