@@ -336,7 +336,7 @@ function infiniteSummary(correctPattern: CorrectPattern): [string, string] {
     const correct = correctPattern.reduce((partialSum: number, a) => partialSum + (a ? 1 : 0), 0)
     const pattern = `${correct}/∞`
     if (correct < 10) {
-        return ['You can do better! 😠', pattern]
+        return ['You can do better! 🤷', pattern]
     }
     if (correct < 20) {
         return ['Not bad! 🫤', pattern]
