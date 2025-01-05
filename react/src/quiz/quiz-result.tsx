@@ -151,7 +151,6 @@ interface ShareButtonProps {
     buttonRef: React.RefObject<HTMLButtonElement>
     todayName: string
     correctPattern: CorrectPattern
-    totalCorrect: number
     quizKind: QuizKind
 }
 
