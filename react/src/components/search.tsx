@@ -6,7 +6,6 @@ import { useColors } from '../page_template/colors'
 import { useSetting } from '../page_template/settings'
 import { isHistoricalCD } from '../utils/is_historical'
 import '../common.css'
-import { DefaultMap } from '../utils/DefaultMap'
 
 export function SearchBox(props: {
     onChange?: (inp: string) => void
@@ -93,7 +92,7 @@ export function SearchBox(props: {
             }
             const s2 = Date.now()
 
-            const result = bitap(full, searchQuery)
+            const result = bitap(full, searchQuery, { showHistoricalCDs })
             setMatches(result)
             setFocused(f => Math.min(f, result.length - 1))
             console.log(`Took ${Date.now() - s2}ms to do full search`)
@@ -217,7 +216,7 @@ function makeAlphabet(token: string): Uint32Array {
     return result
 }
 
-function bitap(searchIndex: NormalizedSearchIndex, pattern: string): string[] {
+function bitap(searchIndex: NormalizedSearchIndex, pattern: string, options: { showHistoricalCDs: boolean }): string[] {
     if (pattern === '') {
         return []
     }
@@ -236,6 +235,10 @@ function bitap(searchIndex: NormalizedSearchIndex, pattern: string): string[] {
     const maxErrors = 1
 
     entries: for (const [populationRank, { normalizedElement, element, priority }] of searchIndex.entries.entries()) {
+        if (!options.showHistoricalCDs && isHistoricalCD(element)) {
+            continue
+        }
+
         let matchScore = 0
 
         for (const { token, alphabet } of tokens) {
