@@ -15,6 +15,7 @@ from urbanstats.statistics.output_statistics_metadata import (
     statistic_internal_to_display_name,
 )
 from urbanstats.statistics.stat_path import get_statistic_column_path
+from urbanstats.utils import output_typescript
 
 from .fixed import juxtastat as fixed_up_to
 from .quiz_custom import get_custom_quizzes
@@ -83,6 +84,15 @@ def check_quiz_is_guaranteed_past(number):
 
 
 def generate_quizzes(folder):
+    with open("react/src/data/quiz_names.ts", "w") as f:
+        output_typescript(
+            [
+                stat_to_quiz_name().get(k, None)
+                for k in statistic_internal_to_display_name()
+            ],
+            f,
+        )
+
     def path(day):
         return os.path.join(folder, f"{day}")
 
