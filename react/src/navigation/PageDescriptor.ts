@@ -154,7 +154,7 @@ export type PageData =
     | { kind: 'index' }
     | { kind: 'about' }
     | { kind: 'dataCredit' }
-    | { kind: 'quiz', quizDescriptor: QuizDescriptor, quiz: QuizQuestionsModel, parameters: string, todayName: string }
+    | { kind: 'quiz', quizDescriptor: QuizDescriptor, quiz: QuizQuestionsModel, parameters: string, todayName?: string }
     | { kind: 'mapper', settings: MapSettings, view: boolean }
     | {
         kind: 'error'
@@ -435,7 +435,7 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
         case 'quiz':
             let quiz: QuizQuestionsModel
             let quizDescriptor: QuizDescriptor
-            let todayName: string
+            let todayName: string | undefined
             const updatedDescriptor: PageDescriptor = { ...newDescriptor }
             switch (newDescriptor.mode) {
                 case 'custom':
@@ -463,9 +463,9 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
                     if (updatedDescriptor.v === undefined) {
                         updatedDescriptor.v = quiz_infinite.juxtaVersion
                     }
-                    quizDescriptor = { kind: 'infinite', name: 'Infinite', seed: updatedDescriptor.seed, version: updatedDescriptor.v }
+                    quizDescriptor = { kind: 'infinite', name: updatedDescriptor.seed, seed: updatedDescriptor.seed, version: updatedDescriptor.v }
                     quiz = infiniteQuiz(updatedDescriptor.seed)
-                    todayName = 'Infinite'
+                    todayName = undefined
                     break
                 case undefined:
                     const today = newDescriptor.date ?? getDailyOffsetNumber()

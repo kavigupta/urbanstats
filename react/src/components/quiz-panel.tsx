@@ -11,7 +11,7 @@ import { QuizQuestionDispatch } from '../quiz/quiz-question'
 import { buttonStyle, QuizResult } from '../quiz/quiz-result'
 import { useHeaderTextClass } from '../utils/responsive'
 
-export function QuizPanel(props: { quizDescriptor: QuizDescriptor, todayName: string, todaysQuiz: QuizQuestionsModel }): ReactNode {
+export function QuizPanel(props: { quizDescriptor: QuizDescriptor, todayName?: string, todaysQuiz: QuizQuestionsModel }): ReactNode {
     // set a unique key for the quiz panel so that it will re-render when the quiz changes
     // this is necessary because the quiz panel is a stateful component with all the questions cached.
     return (
@@ -24,7 +24,7 @@ export function QuizPanel(props: { quizDescriptor: QuizDescriptor, todayName: st
     )
 }
 
-function QuizPanelNoResets(props: { quizDescriptor: QuizDescriptor, todayName: string, todaysQuiz: QuizQuestionsModel }): ReactNode {
+function QuizPanelNoResets(props: { quizDescriptor: QuizDescriptor, todayName?: string, todaysQuiz: QuizQuestionsModel }): ReactNode {
     const headerClass = useHeaderTextClass()
     const colors = useColors()
     // We don't want to save certain quiz types, so bypass the persistent store for those

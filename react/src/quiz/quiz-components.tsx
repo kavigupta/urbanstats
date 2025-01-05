@@ -10,7 +10,7 @@ import { nameOfQuizKind, QuizHistory, QuizKind, QuizLocalStorage } from './quiz'
 
 export function Header({ quiz }: { quiz: { kind: QuizKind, name: string | number } }): ReactNode {
     let text = nameOfQuizKind(quiz.kind)
-    if (typeof quiz.name !== 'number') {
+    if (typeof quiz.name !== 'number' && quiz.kind !== 'infinite') {
         text += ` ${quiz.name}`
     }
     return (<div className={useHeaderTextClass()}>{text}</div>)

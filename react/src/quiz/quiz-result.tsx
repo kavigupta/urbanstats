@@ -21,7 +21,7 @@ export type CorrectPattern = (boolean | 0 | 1)[]
 
 interface QuizResultProps {
     quizDescriptor: QuizDescriptor
-    todayName: string
+    todayName?: string
     history: {
         // eslint-disable-next-line no-restricted-syntax -- Persistent data
         correct_pattern: CorrectPattern
@@ -153,7 +153,7 @@ export function QuizResult(props: QuizResultProps): ReactNode {
 
 interface ShareButtonProps {
     buttonRef: React.RefObject<HTMLButtonElement>
-    todayName: string
+    todayName: string | undefined
     correctPattern: CorrectPattern
     quizKind: QuizKind
 }
@@ -332,12 +332,32 @@ function juxtaSummary(correctPattern: CorrectPattern): [string, string] {
     return [show, `${correct}/${total}`]
 }
 
+function infiniteSummary(correctPattern: CorrectPattern): [string, string] {
+    const correct = correctPattern.reduce((partialSum: number, a) => partialSum + (a ? 1 : 0), 0)
+    const pattern = `${correct}/∞`
+    if (correct < 20) {
+        return ['You can do better! 😠', pattern]
+    }
+    if (correct < 30) {
+        return ['Not bad! 🫤', pattern]
+    }
+    if (correct < 40) {
+        return ['Good job! 🙃', pattern]
+    }
+    if (correct < 50) {
+        return ['Great! 😊', pattern]
+    }
+    return ['Amazing! 🔥', pattern]
+}
+
 function summaryTexts(correctPattern: CorrectPattern, quizKind: QuizKind): [string, string] {
     switch (quizKind) {
         case 'juxtastat':
         case 'retrostat':
         case 'custom':
             return juxtaSummary(correctPattern)
+        case 'infinite':
+            return infiniteSummary(correctPattern)
     }
 }
 
@@ -353,10 +373,14 @@ export function Summary(props: { correctPattern: CorrectPattern, quizKind: QuizK
     )
 }
 
-export async function summary(juxtaColors: JuxtastatColors, todayName: string, correctPattern: CorrectPattern, quizKind: QuizKind): Promise<[string, string]> {
+export async function summary(juxtaColors: JuxtastatColors, todayName: string | undefined, correctPattern: CorrectPattern, quizKind: QuizKind): Promise<[string, string]> {
     // wordle-style summary
     const [, summaryText] = summaryTexts(correctPattern, quizKind)
-    let text = `${nameOfQuizKind(quizKind)} ${todayName} ${summaryText}`
+    let text = nameOfQuizKind(quizKind)
+    if (todayName !== undefined) {
+        text += ` ${todayName}`
+    }
+    text += ` ${summaryText}`
 
     text += '\n'
     text += '\n'

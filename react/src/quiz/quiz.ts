@@ -5,6 +5,7 @@ import { z } from 'zod'
 import { StatPath } from '../page_template/statistic-tree'
 import { randomID } from '../utils/random'
 import { cancelled, uploadFile } from '../utils/upload'
+
 import { infiniteQuizIsDone, sampleRandomQuestion } from './infinite'
 
 export type QuizDescriptor = { kind: 'juxtastat', name: number } | { kind: 'retrostat', name: string } | { kind: 'custom', name: string } | { kind: 'infinite', name: string, seed: string, version: number }
@@ -41,7 +42,7 @@ export function nameOfQuizKind(quizKind: QuizKind): string {
         case 'juxtastat': return 'Juxtastat'
         case 'retrostat': return 'Retrostat'
         case 'custom': return 'Juxtastat Custom'
-        case 'infinite': return 'Infinite Quiz'
+        case 'infinite': return 'Juxtastat Infinite'
     }
 }
 
