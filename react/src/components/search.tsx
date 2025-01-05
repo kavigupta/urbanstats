@@ -28,10 +28,11 @@ export function SearchBox(props: {
     const searchQuery = normalizedQuery.current
 
     const fullIndex = useMemo(async () => {
-        const searchIndex = await loadProtobuf('/index/pages.gz', 'SearchIndex')
-        return searchIndex.elements.map(element => ({
+        const searchIndex = await loadProtobuf('/index/pages_all.gz', 'SearchIndex')
+        return searchIndex.elements.map((element, index) => ({
             element,
             normalizedElement: normalize(element),
+            priority: searchIndex.priorities[index],
         }))
     }, [])
 
@@ -163,7 +164,7 @@ function normalize(a: string): string {
     return a.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
 }
 
-type NormalizedSearchIndex = { element: string, normalizedElement: string }[]
+type NormalizedSearchIndex = { element: string, normalizedElement: string, priority: number }[]
 
 interface BitapMatch {
     patternIteration: number
@@ -175,6 +176,7 @@ interface BitapMatch {
     whitespaceAroundPattern: number
     distanceFromPatternLength: number
     patternLength: number
+    priority: number
     // For debugging
     combinationOf: BitapMatch[]
     pattern: string
@@ -197,6 +199,7 @@ function combineMatches(a: BitapMatch, b: BitapMatch): BitapMatch {
         distanceFromPatternLength: a.distanceFromPatternLength,
         patternLength: a.patternLength + b.patternLength,
         patternIteration: Math.max(a.patternIteration, b.patternIteration),
+        priority: a.priority,
         combinationOf: [a, b],
         pattern: `${a.pattern}|${b.pattern}`,
     }
@@ -219,12 +222,18 @@ function compareBitapMatches(a: BitapMatch, b: BitapMatch): number {
     if (a.distanceFromPatternLength !== b.distanceFromPatternLength) {
         return a.distanceFromPatternLength - b.distanceFromPatternLength
     }
+    if (a.priority !== b.priority) {
+        return b.priority - a.priority
+    }
     return 0
 }
 
+// New strat... find and cache token results... then, focus on putting the token results together
+// Given that this token is a good match, how likely is it that this other token will be a good match
+
 function bitap(searchIndex: NormalizedSearchIndex, pattern: string): string[] {
     const matches: BitapMatch[] = []
-    const numMatches = 100
+    const numMatches = 10
     function addToMatches(newMatch: BitapMatch): void {
         // Maybe the new match is better when combined with previous matches
         const orderedMatches = [
@@ -283,7 +292,9 @@ function bitap(searchIndex: NormalizedSearchIndex, pattern: string): string[] {
             alphabet[char] = alphabet[char] | (1 << (currentPattern.length - i - 1))
         }
 
-        for (const { element, normalizedElement } of searchIndex) {
+        let totalMatches = 0
+
+        for (const { element, normalizedElement, priority } of searchIndex) {
             const finish = normalizedElement.length + currentPattern.length
 
             for (let errors = 0; errors <= Math.min(currentPattern.length, 1); errors++) {
@@ -326,13 +337,17 @@ function bitap(searchIndex: NormalizedSearchIndex, pattern: string): string[] {
                             patternIteration,
                             combinationOf: [],
                             pattern: currentPattern,
+                            priority,
                         })
+                        totalMatches++
                     }
                 }
 
                 [lastRd, rd] = [rd, lastRd]
             }
         }
+
+        console.log({ currentPattern, totalMatches })
 
         // searchIndex = matches
     }
@@ -345,7 +360,27 @@ function bitap(searchIndex: NormalizedSearchIndex, pattern: string): string[] {
 }
 
 function indexify(arr: string[]): NormalizedSearchIndex {
-    return arr.map(v => ({ element: v, normalizedElement: normalize(v) }))
+    return arr.map(v => ({ element: v, normalizedElement: normalize(v), priority: 0 }))
 }
 
 console.log(bitap(indexify(['new york new york']), 'new york'))
+
+/**
+ * New Plan:
+ *
+ * Tokenize the query
+ *
+ * For each entry in the search index
+ *  For each token # Cacheable
+ *   For each error level
+ *    Find the token in the search entry, record the best token match for that entry, if any (this data structure will contain 0 or 1 matches per token)
+ *    If we find the token, we don't need to go to the next error level
+ *    When we find a token, we know if this is one of the best search entries so far. If it is, add it to the list of search entries (can start from the bottom to make this faster)
+ *
+ * score(search entry) {
+ *  how well tokens match, if at all
+ *  positions of token matches
+ *  how high up is the entry (its relative population)
+ *  priority of the entry
+ * }
+ */
