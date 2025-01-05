@@ -19,9 +19,6 @@ from urbanstats.statistics.stat_path import get_statistic_column_path
 from .fixed import juxtastat as fixed_up_to
 from .quiz_custom import get_custom_quizzes
 
-juxta_version = 1
-
-
 def generate_quiz(seed):
     if isinstance(seed, tuple) and seed[0] == "daily":
         check_quiz_is_guaranteed_future(seed[1])

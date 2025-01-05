@@ -1,6 +1,8 @@
+import json
 import os
 
 import numpy as np
+from permacache import stable_hash
 import tqdm.auto as tqdm
 
 from urbanstats.games.quiz_question_distribution import quiz_question_weights
@@ -8,13 +10,13 @@ from urbanstats.games.quiz_sampling import (
     compute_geographies_by_type,
     compute_quiz_question_distribution,
 )
-from urbanstats.games.quiz import juxta_version
 from urbanstats.protobuf import data_files_pb2
 from urbanstats.protobuf.utils import write_gzip
 from urbanstats.statistics.output_statistics_metadata import internal_statistic_names
 from urbanstats.utils import output_typescript
 
 tronche_size = 100_000
+version_info = "juxtastat_version.json"
 
 
 def output_tronche(tronche_vqq, tronche_p, tronche_path):
@@ -63,10 +65,14 @@ def output_quiz_sampling_data(site_folder, subfolder):
 
 
 def output_quiz_sampling_probabilities(site_folder, subfolder):
-    # TODO validate juxta_version
-    qqw = quiz_question_weights(compute_geographies_by_type())
-    ps = qqw["ps"]
-    qqp = qqw["qqp"]
+    ps, qqp = quiz_data()
+    hash_value = stable_hash((ps, qqp))
+    info = get_juxta_version_info()
+    if hash_value not in dict(get_juxta_version_info()):
+        info.append((hash_value, len(info)))
+        with open(version_info, "w") as f:
+            json.dump(info, f)
+    juxta_version = dict(info)[hash_value]
     descriptors = []
     for i, (q, p) in enumerate(zip(qqp.questions_by_number, ps), start=1):
         descriptors.append(
@@ -79,3 +85,16 @@ def output_quiz_sampling_probabilities(site_folder, subfolder):
         questionDistribution=descriptors,
         juxtaVersion=juxta_version,
     )
+
+def get_juxta_version_info():
+    if not os.path.exists(version_info):
+        return []
+    with open(version_info, "r") as f:
+        return json.load(f)
+
+
+def quiz_data():
+    qqw = quiz_question_weights(compute_geographies_by_type())
+    ps = qqw["ps"]
+    qqp = qqw["qqp"]
+    return ps, qqp
