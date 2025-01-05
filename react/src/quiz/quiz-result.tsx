@@ -55,7 +55,6 @@ export function QuizResult(props: QuizResultProps): ReactNode {
 
     const colors = useColors()
     const correctPattern = props.history.correct_pattern
-    const totalCorrect = correctPattern.reduce((partialSum: number, a) => partialSum + (a ? 1 : 0), 0)
 
     return (
         <div>
@@ -85,7 +84,6 @@ export function QuizResult(props: QuizResultProps): ReactNode {
                 buttonRef={button}
                 todayName={props.todayName}
                 correctPattern={correctPattern}
-                totalCorrect={totalCorrect}
                 quizKind={props.quizDescriptor.kind}
             />
             <div className="gap" />
@@ -157,7 +155,7 @@ interface ShareButtonProps {
     quizKind: QuizKind
 }
 
-function ShareButton({ buttonRef, todayName, correctPattern, totalCorrect, quizKind }: ShareButtonProps): ReactNode {
+function ShareButton({ buttonRef, todayName, correctPattern, quizKind }: ShareButtonProps): ReactNode {
     const colors = useColors()
     const juxtaColors = useJuxtastatColors()
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- We need to check the condition for browser compatibility.
@@ -341,7 +339,7 @@ export function Summary(props: { correctPattern: CorrectPattern }): ReactNode {
 
 export async function summary(juxtaColors: JuxtastatColors, todayName: string, correctPattern: CorrectPattern, quizKind: QuizKind): Promise<[string, string]> {
     // wordle-style summary
-    const [_, summaryText] = juxtaSummary(correctPattern)
+    const [, summaryText] = juxtaSummary(correctPattern)
     let text = `${nameOfQuizKind(quizKind)} ${todayName} ${summaryText}`
 
     text += '\n'
