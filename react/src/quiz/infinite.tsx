@@ -1,3 +1,4 @@
+import React from 'react'
 import seedrandom from 'seedrandom'
 
 import quiz_infinite from '../data/quiz_infinite'
@@ -5,12 +6,13 @@ import quiz_names from '../data/quiz_names'
 import statistic_name_list from '../data/statistic_name_list'
 import statistic_path_list from '../data/statistic_path_list'
 import { loadProtobuf } from '../load_json'
+import { useJuxtastatColors } from '../page_template/colors'
 import { QuizFullData } from '../utils/protos'
 
 import { QuizQuestion } from './quiz'
 
-const initialLives = 3
-const correctForBonus = 5
+const juxtaInfiniteInitialLives = 3
+const juxtaInfiniteCorrectForBonus = 5
 
 type QuizQuestionChunks = readonly { path: string, totalP: number }[]
 
@@ -84,12 +86,12 @@ export function infiniteQuizIsDone(correctPattern: boolean[]): boolean {
 }
 
 export function numLives(correctPattern: boolean[]): number {
-    let lives = initialLives
+    let lives = juxtaInfiniteInitialLives
     let correctRun = 0
     for (const i of correctPattern.keys()) {
         if (correctPattern[i]) {
             correctRun++
-            if (correctRun >= correctForBonus) {
+            if (correctRun >= juxtaInfiniteCorrectForBonus) {
                 lives++
                 correctRun = 0
             }
@@ -103,4 +105,31 @@ export function numLives(correctPattern: boolean[]): number {
         }
     }
     return lives
+}
+
+export function JuxtastatInfiniteLives(props: { correctPattern: boolean[] }): React.ReactNode {
+    const colors = useJuxtastatColors()
+    const lives = numLives(props.correctPattern)
+    const images = []
+    for (const i of Array(juxtaInfiniteInitialLives).keys()) {
+        images.push(i < lives ? colors.lifeEmoji : colors.lifeLostEmoji)
+    }
+    if (lives > juxtaInfiniteInitialLives) {
+        images.push(colors.lifeEmoji)
+    }
+    return (
+        <div
+            className="quiz_footer"
+            style={{
+                margin: 'auto',
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+                height: '3em',
+                gap: '0.25em',
+            }}
+        >
+            {images.map((src, i) => <img key={i} src={src} alt="" style={{ height: '2.5em' }} />)}
+        </div>
+    )
 }

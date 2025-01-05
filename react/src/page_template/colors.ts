@@ -30,5 +30,7 @@ export function useJuxtastatColors(): JuxtastatColors {
         incorrect: colorblindMode ? mixWithBackground(colors.hueColors.red, 0.3, '#000000') : colors.hueColors.red,
         correctEmoji: '🟩',
         incorrectEmoji: '🟥',
+        lifeEmoji: colorblindMode ? '/life-colorblind.png' : '/life.png',
+        lifeLostEmoji: '/life-lost.png',
     }
 }

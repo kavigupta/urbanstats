@@ -8,6 +8,7 @@ import { MapGeneric, MapGenericProps, Polygons } from '../components/map'
 import { useColors } from '../page_template/colors'
 import { useMobileLayout } from '../utils/responsive'
 
+import { JuxtastatInfiniteLives } from './infinite'
 import { JuxtaQuestion, QuizHistory, QuizKind, RetroQuestion, aCorrect } from './quiz'
 import { Footer, Header, Help } from './quiz-components'
 
@@ -132,6 +133,9 @@ function QuizQuestion(props: QuizQuestionProps & {
                 ? undefined
                 : (
                         <>
+                            {props.quiz.kind === 'infinite'
+                                ? <JuxtastatInfiniteLives correctPattern={props.history.correct_pattern.map(x => x ? true : false)} />
+                                : undefined}
                             <Footer history={props.history} length={props.length} />
                             <Help quizKind={props.quiz.kind} />
                         </>
