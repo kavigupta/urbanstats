@@ -59,7 +59,8 @@ function QuizPanelNoResets(props: { quizDescriptor: QuizDescriptor, todayName?: 
         Promise.all(promises).then((newQuestions) => {
             setWaitingForNextQuestion(false)
             setQuestions([...questions, ...newQuestions.filter((question): question is QuizQuestion => question !== undefined)])
-        }).catch(() => {
+        }).catch((err: unknown) => {
+            console.error('Error fetching questions', err)
             setWaitingForNextQuestion(false)
         })
     }
