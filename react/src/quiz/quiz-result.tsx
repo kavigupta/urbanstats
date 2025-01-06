@@ -21,7 +21,7 @@ export type CorrectPattern = (boolean | 0 | 1)[]
 
 interface QuizResultProps {
     quizDescriptor: QuizDescriptor
-    todayName: string
+    todayName?: string
     history: {
         // eslint-disable-next-line no-restricted-syntax -- Persistent data
         correct_pattern: CorrectPattern
@@ -147,9 +147,26 @@ export function QuizResult(props: QuizResultProps): ReactNode {
     )
 }
 
+export function buttonStyle(color: string): CSSProperties {
+    return {
+        textAlign: 'center',
+        fontSize: '2em',
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        flexDirection: 'row',
+        margin: '0 auto',
+        padding: '0.25em 1em',
+        backgroundColor: color,
+        borderRadius: '0.25em',
+        border: 'none',
+        color: '#fff',
+    }
+}
+
 interface ShareButtonProps {
     buttonRef: React.RefObject<HTMLButtonElement>
-    todayName: string
+    todayName: string | undefined
     correctPattern: CorrectPattern
     quizKind: QuizKind
 }
@@ -164,20 +181,7 @@ function ShareButton({ buttonRef, todayName, correctPattern, quizKind }: ShareBu
     return (
         <button
             className="serif"
-            style={{
-                textAlign: 'center',
-                fontSize: '2em',
-                display: 'flex',
-                justifyContent: 'center',
-                alignItems: 'center',
-                flexDirection: 'row',
-                margin: '0 auto',
-                padding: '0.25em 1em',
-                backgroundColor: colors.hueColors.green,
-                borderRadius: '0.25em',
-                border: 'none',
-                color: '#fff',
-            }}
+            style={buttonStyle(colors.hueColors.green)}
             ref={buttonRef}
             onClick={async () => {
                 const [text, url] = await summary(juxtaColors, todayName, correctPattern, quizKind)
@@ -345,10 +349,14 @@ export function Summary(props: { correctPattern: CorrectPattern, quizKind: QuizK
     )
 }
 
-export async function summary(juxtaColors: JuxtastatColors, todayName: string, correctPattern: CorrectPattern, quizKind: QuizKind): Promise<[string, string]> {
+export async function summary(juxtaColors: JuxtastatColors, todayName: string | undefined, correctPattern: CorrectPattern, quizKind: QuizKind): Promise<[string, string]> {
     // wordle-style summary
     const [, summaryText] = summaryTexts(correctPattern, quizKind)
-    let text = `${nameOfQuizKind(quizKind)} ${todayName} ${summaryText}`
+    let text = nameOfQuizKind(quizKind)
+    if (todayName !== undefined) {
+        text += ` ${todayName}`
+    }
+    text += ` ${summaryText}`
 
     text += '\n'
     text += '\n'
@@ -360,7 +368,7 @@ export async function summary(juxtaColors: JuxtastatColors, todayName: string, c
     // eslint-disable-next-line no-restricted-syntax -- Sharing
     const hash = window.location.hash
     let url = `https://juxtastat.org${hash === '' ? '' : `/${hash}`}`
-    if (hash.length > 20) {
+    if (hash.length > 40) {
         // current url is too long, shorten it. get the current url without the origin or slash
         // eslint-disable-next-line no-restricted-syntax -- Sharing
         const thisURL = window.location.href.substring(window.location.origin.length + 1)
