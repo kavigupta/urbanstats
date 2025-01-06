@@ -20,6 +20,7 @@ from urbanstats.utils import output_typescript
 from .fixed import juxtastat as fixed_up_to
 from .quiz_custom import get_custom_quizzes
 
+
 def generate_quiz(seed):
     if isinstance(seed, tuple) and seed[0] == "daily":
         check_quiz_is_guaranteed_future(seed[1])

@@ -2,8 +2,8 @@ import json
 import os
 
 import numpy as np
-from permacache import stable_hash
 import tqdm.auto as tqdm
+from permacache import stable_hash
 
 from urbanstats.games.quiz_question_distribution import quiz_question_weights
 from urbanstats.games.quiz_sampling import (
@@ -85,6 +85,7 @@ def output_quiz_sampling_probabilities(site_folder, subfolder):
         questionDistribution=descriptors,
         juxtaVersion=juxta_version,
     )
+
 
 def get_juxta_version_info():
     if not os.path.exists(version_info):
