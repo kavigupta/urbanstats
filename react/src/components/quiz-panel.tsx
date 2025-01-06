@@ -25,9 +25,9 @@ export function QuizPanel(props: { quizDescriptor: QuizDescriptor, todayName?: s
 }
 
 function QuizPanelNoResets(props: { quizDescriptor: QuizDescriptor, todayName?: string, todaysQuiz: QuizQuestionsModel }): ReactNode {
+    // We don't want to save certain quiz types, so bypass the persistent store for those
     const headerClass = useHeaderTextClass()
     const colors = useColors()
-    // We don't want to save certain quiz types, so bypass the persistent store for those
     const persistentQuizHistory = QuizLocalStorage.shared.history.use()
     const [transientQuizHistory, setTransientQuizHistory] = useState<QuizHistory>({})
 
@@ -87,7 +87,7 @@ function QuizPanelNoResets(props: { quizDescriptor: QuizDescriptor, todayName?: 
         Promise.all(promises).then((newQuestions) => {
             setWaitingForNextQuestion(false)
             setQuestions([...questions, ...newQuestions.filter((question): question is QuizQuestion => question !== undefined)])
-        }).catch((err) => {
+        }).catch((err: unknown) => {
             console.error('Error fetching questions', err)
             setWaitingForNextQuestion(false)
         })
