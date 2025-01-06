@@ -5,7 +5,7 @@ import { promisify } from 'util'
 import { execa, execaSync } from 'execa'
 import { ClientFunction, Selector } from 'testcafe'
 
-import { safeReload, screencap, urbanstatsFixture } from './test_utils'
+import { safeReload, screencap, urbanstatsFixture, waitForLoading } from './test_utils'
 
 export async function quizScreencap(t: TestController): Promise<void> {
     await t.eval(() => {
@@ -27,7 +27,8 @@ export async function clickButtons(t: TestController, whichs: string[]): Promise
 }
 // click the kth button with id quiz-answer-button-$which
 
-export function clickButton(t: TestController, which: string): TestControllerPromise {
+export async function clickButton(t: TestController, which: string): Promise<TestControllerPromise> {
+    await waitForLoading(t)
     return t.click(Selector('div').withAttribute('id', `quiz-answer-button-${which}`))
 }
 

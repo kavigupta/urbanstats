@@ -5,11 +5,16 @@ import {
     searchField, target, getLocationWithoutSettings, screencap,
     urbanstatsFixture,
     safeReload,
+    waitForLoading,
 } from './test_utils'
 
-const isQuestionPage = (): Promise<boolean> => Selector('.quiztext').exists
+async function isQuestionPage(t: TestController): Promise<boolean> {
+    await waitForLoading(t)
+    return await Selector('.quiztext').exists
+}
 
 async function correctIncorrect(): Promise<boolean[]> {
+    await waitForLoading(t)
     const text = await Selector('#quiz-result-summary-emoji').innerText
     const result: boolean[] = []
     for (const c of text) {
@@ -29,10 +34,11 @@ async function correctIncorrect(): Promise<boolean[]> {
 async function completeCorrectAnswerSequence(t: TestController, alreadyKnownAnswers: string[]): Promise<string[]> {
     await t.eval(() => { localStorage.clear() })
     await safeReload(t)
+    await waitForLoading(t)
     await clickButtons(t, alreadyKnownAnswers)
-    while (await isQuestionPage()) {
+    while (await isQuestionPage(t)) {
         await clickButton(t, 'a')
-        await t.wait(1000)
+        await t.wait(500)
     }
     await screencap(t)
     // check that the first n characters match the already known answers
