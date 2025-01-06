@@ -51,8 +51,6 @@ function QuizPanelNoResets(props: { quizDescriptor: QuizDescriptor, todayName?: 
     const [waitingForNextQuestion, setWaitingForNextQuestion] = useState(false)
     const [questions, setQuestions] = useState<QuizQuestion[]>([])
 
-    console.log(props.quizDescriptor)
-
     if (props.quizDescriptor.kind === 'infinite' && props.quizDescriptor.version !== quiz_infinite.juxtaVersion) {
         // TODO this should not come up if you've already done the quiz (only relevant once we add the stats)
         return (
