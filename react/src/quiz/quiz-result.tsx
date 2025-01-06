@@ -147,6 +147,23 @@ export function QuizResult(props: QuizResultProps): ReactNode {
     )
 }
 
+export function buttonStyle(color: string): CSSProperties {
+    return {
+        textAlign: 'center',
+        fontSize: '2em',
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        flexDirection: 'row',
+        margin: '0 auto',
+        padding: '0.25em 1em',
+        backgroundColor: color,
+        borderRadius: '0.25em',
+        border: 'none',
+        color: '#fff',
+    }
+}
+
 interface ShareButtonProps {
     buttonRef: React.RefObject<HTMLButtonElement>
     todayName: string
@@ -164,20 +181,7 @@ function ShareButton({ buttonRef, todayName, correctPattern, quizKind }: ShareBu
     return (
         <button
             className="serif"
-            style={{
-                textAlign: 'center',
-                fontSize: '2em',
-                display: 'flex',
-                justifyContent: 'center',
-                alignItems: 'center',
-                flexDirection: 'row',
-                margin: '0 auto',
-                padding: '0.25em 1em',
-                backgroundColor: colors.hueColors.green,
-                borderRadius: '0.25em',
-                border: 'none',
-                color: '#fff',
-            }}
+            style={buttonStyle(colors.hueColors.green)}
             ref={buttonRef}
             onClick={async () => {
                 const [text, url] = await summary(juxtaColors, todayName, correctPattern, quizKind)
