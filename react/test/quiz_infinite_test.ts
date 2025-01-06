@@ -13,7 +13,7 @@ async function isQuestionPage(t: TestController): Promise<boolean> {
     return await Selector('.quiztext').exists
 }
 
-async function correctIncorrect(): Promise<boolean[]> {
+async function correctIncorrect(t: TestController): Promise<boolean[]> {
     await waitForLoading(t)
     const text = await Selector('#quiz-result-summary-emoji').innerText
     const result: boolean[] = []
@@ -42,7 +42,7 @@ async function completeCorrectAnswerSequence(t: TestController, alreadyKnownAnsw
     }
     await screencap(t)
     // check that the first n characters match the already known answers
-    const text = await correctIncorrect()
+    const text = await correctIncorrect(t)
     for (let i = 0; i < alreadyKnownAnswers.length; i++) {
         if (!text[i]) {
             throw new Error('alreadyKnownAnswers is incorrect')
