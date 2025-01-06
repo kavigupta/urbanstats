@@ -10,7 +10,6 @@ from urbanstats.games.quiz_sampling import (
     compute_geographies_by_type,
     compute_quiz_question_distribution,
 )
-from urbanstats.games.quiz import juxta_version
 from urbanstats.protobuf import data_files_pb2
 from urbanstats.protobuf.utils import write_gzip
 from urbanstats.statistics.output_statistics_metadata import internal_statistic_names
