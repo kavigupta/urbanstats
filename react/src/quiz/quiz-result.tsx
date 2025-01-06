@@ -368,7 +368,7 @@ export async function summary(juxtaColors: JuxtastatColors, todayName: string | 
     // eslint-disable-next-line no-restricted-syntax -- Sharing
     const hash = window.location.hash
     let url = `https://juxtastat.org${hash === '' ? '' : `/${hash}`}`
-    if (hash.length > 20) {
+    if (hash.length > 40) {
         // current url is too long, shorten it. get the current url without the origin or slash
         // eslint-disable-next-line no-restricted-syntax -- Sharing
         const thisURL = window.location.href.substring(window.location.origin.length + 1)
