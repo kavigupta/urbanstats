@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react'
 import { z } from 'zod'
 
 import { StatPath } from '../page_template/statistic-tree'
+import { randomID } from '../utils/random'
 import { cancelled, uploadFile } from '../utils/upload'
 
 export type QuizDescriptor = { kind: 'juxtastat', name: number } | { kind: 'retrostat', name: string } | { kind: 'custom', name: string }
@@ -252,12 +253,8 @@ function createAndStoreId(key: string): string {
     // random 60 bit hex number
     // (15 hex digits)
     if (localStorage.getItem(key) === null) {
-        let randomHex = ''
-        for (let i = 0; i < 15; i++) {
-            randomHex += Math.floor(Math.random() * 16).toString(16)[0]
-        }
         // register
-        localStorage.setItem(key, randomHex)
+        localStorage.setItem(key, randomID())
     }
     return localStorage.getItem(key)!
 }
