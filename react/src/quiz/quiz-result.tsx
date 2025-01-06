@@ -21,7 +21,7 @@ export type CorrectPattern = (boolean | 0 | 1)[]
 
 interface QuizResultProps {
     quizDescriptor: QuizDescriptor
-    todayName: string
+    todayName?: string
     history: {
         // eslint-disable-next-line no-restricted-syntax -- Persistent data
         correct_pattern: CorrectPattern
@@ -166,7 +166,7 @@ export function buttonStyle(color: string): CSSProperties {
 
 interface ShareButtonProps {
     buttonRef: React.RefObject<HTMLButtonElement>
-    todayName: string
+    todayName: string | undefined
     correctPattern: CorrectPattern
     quizKind: QuizKind
 }
@@ -349,10 +349,14 @@ export function Summary(props: { correctPattern: CorrectPattern, quizKind: QuizK
     )
 }
 
-export async function summary(juxtaColors: JuxtastatColors, todayName: string, correctPattern: CorrectPattern, quizKind: QuizKind): Promise<[string, string]> {
+export async function summary(juxtaColors: JuxtastatColors, todayName: string | undefined, correctPattern: CorrectPattern, quizKind: QuizKind): Promise<[string, string]> {
     // wordle-style summary
     const [, summaryText] = summaryTexts(correctPattern, quizKind)
-    let text = `${nameOfQuizKind(quizKind)} ${todayName} ${summaryText}`
+    let text = nameOfQuizKind(quizKind)
+    if (todayName !== undefined) {
+        text += ` ${todayName}`
+    }
+    text += ` ${summaryText}`
 
     text += '\n'
     text += '\n'
