@@ -23,6 +23,8 @@ cd urbanstats
 virtualenv venv -p 3.10
 ```
 
+If you get an error like `RuntimeError: failed to find interpreter for Builtin discover of python_spec='3.10'`, you may need to [install python3.10 first](https://gist.github.com/rutcreate/c0041e842f858ceb455b748809763ddb). Don't link it over your system version of python, `virtualenv` will pick it up once your run `apt install python3.10...`.
+
 Create a `direnv` that uses the `virtualenv`
 
 ```
@@ -42,6 +44,8 @@ You will want to clone the site repository to some location, using a shallow clo
 ```
 git clone --depth 1 https://github.com/densitydb/densitydb.github.io.git
 ```
+
+Ensure that you have Node version 20 or greater installed. https://nodejs.org/en/download
 
 I assume you are placing the site repository in `~/densitydb.github.io` in the following commands:
 
