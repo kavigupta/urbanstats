@@ -11,4 +11,4 @@ export async function getJSHeapSize(t: TestController): Promise<number> {
 
 export const homePageThreshold = 35_000_000
 export const compressedSearchIndexSize = 3_000_000
-export const californiaArticleThreshold = 66_000_000
+export const californiaArticleThreshold = 57_000_000
