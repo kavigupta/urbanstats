@@ -27,22 +27,7 @@ export function SearchBox(props: {
 
     const searchQuery = normalizedQuery.current
 
-    const fullIndex = useMemo(async () => {
-        const searchIndex = await loadProtobuf('/index/pages_all.gz', 'SearchIndex')
-        let lengthOfLongestNormalizedElement = 0
-        const entries = searchIndex.elements.map((element, index) => {
-            const normalizedElement = normalize(element)
-            if (normalizedElement.length > lengthOfLongestNormalizedElement) {
-                lengthOfLongestNormalizedElement = normalizedElement.length
-            }
-            return {
-                element,
-                normalizedElement,
-                priority: searchIndex.priorities[index],
-            }
-        })
-        return { entries, lengthOfLongestNormalizedElement }
-    }, [])
+    const fullIndex = useRef<Promise<NormalizedSearchIndex> | undefined>()
 
     const reset = (): void => {
         setQuery('')
@@ -85,7 +70,15 @@ export function SearchBox(props: {
     // Do the search
     useEffect(() => {
         void (async () => {
-            const full = await fullIndex
+            if (searchQuery === '') {
+                setMatches([])
+                setFocused(0)
+                return
+            }
+            if (fullIndex.current === undefined) {
+                fullIndex.current = loadSearchIndex()
+            }
+            const full = await fullIndex.current
             // we can skip searching if the query has changed since we were waiting on the index
             if (normalizedQuery.current !== searchQuery) {
                 return
@@ -111,7 +104,8 @@ export function SearchBox(props: {
                 type="text"
                 className="serif"
                 style={{
-                    ...props.style }}
+                    ...props.style,
+                }}
                 placeholder={props.placeholder}
                 onKeyUp={onTextBoxKeyUp}
                 onChange={(e) => {
@@ -119,6 +113,14 @@ export function SearchBox(props: {
                     normalizedQuery.current = normalize(e.target.value)
                 }}
                 value={query}
+                onFocus={() => {
+                    if (fullIndex.current === undefined) {
+                        fullIndex.current = loadSearchIndex()
+                    }
+                }}
+                onBlur={() => {
+                    fullIndex.current = undefined
+                }}
             />
 
             <div
@@ -315,4 +317,21 @@ function bitap(searchIndex: NormalizedSearchIndex, pattern: string, options: { s
     console.log(results)
 
     return results.map(result => result.element)
+}
+
+async function loadSearchIndex(): Promise<NormalizedSearchIndex> {
+    const searchIndex = await loadProtobuf('/index/pages_all.gz', 'SearchIndex', { cacheCompressedBufferInRam: true })
+    let lengthOfLongestNormalizedElement = 0
+    const entries = searchIndex.elements.map((element, index) => {
+        const normalizedElement = normalize(element)
+        if (normalizedElement.length > lengthOfLongestNormalizedElement) {
+            lengthOfLongestNormalizedElement = normalizedElement.length
+        }
+        return {
+            element,
+            normalizedElement,
+            priority: searchIndex.priorities[index],
+        }
+    })
+    return { entries, lengthOfLongestNormalizedElement }
 }
