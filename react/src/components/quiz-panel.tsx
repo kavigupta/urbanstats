@@ -9,7 +9,7 @@ import { QuizQuestionDispatch } from '../quiz/quiz-question'
 import { QuizResult } from '../quiz/quiz-result'
 import { useHeaderTextClass } from '../utils/responsive'
 
-export function QuizPanel(props: { quizDescriptor: QuizDescriptor, todayName: string, todaysQuiz: QuizQuestionsModel }): ReactNode {
+export function QuizPanel(props: { quizDescriptor: QuizDescriptor, todayName?: string, todaysQuiz: QuizQuestionsModel }): ReactNode {
     // set a unique key for the quiz panel so that it will re-render when the quiz changes
     // this is necessary because the quiz panel is a stateful component with all the questions cached.
     return (
@@ -22,7 +22,7 @@ export function QuizPanel(props: { quizDescriptor: QuizDescriptor, todayName: st
     )
 }
 
-function QuizPanelNoResets(props: { quizDescriptor: QuizDescriptor, todayName: string, todaysQuiz: QuizQuestionsModel }): ReactNode {
+function QuizPanelNoResets(props: { quizDescriptor: QuizDescriptor, todayName?: string, todaysQuiz: QuizQuestionsModel }): ReactNode {
     // We don't want to save certain quiz types, so bypass the persistent store for those
     const headerClass = useHeaderTextClass()
     const persistentQuizHistory = QuizLocalStorage.shared.history.use()
@@ -59,7 +59,8 @@ function QuizPanelNoResets(props: { quizDescriptor: QuizDescriptor, todayName: s
         Promise.all(promises).then((newQuestions) => {
             setWaitingForNextQuestion(false)
             setQuestions([...questions, ...newQuestions.filter((question): question is QuizQuestion => question !== undefined)])
-        }).catch(() => {
+        }).catch((err: unknown) => {
+            console.error('Error fetching questions', err)
             setWaitingForNextQuestion(false)
         })
     }
