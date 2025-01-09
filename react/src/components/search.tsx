@@ -1,4 +1,4 @@
-import React, { CSSProperties, ReactNode, useEffect, useMemo, useRef, useState } from 'react'
+import React, { CSSProperties, ReactNode, useEffect, useRef, useState } from 'react'
 
 import { loadProtobuf } from '../load_json'
 import { Navigator } from '../navigation/Navigator'
@@ -83,12 +83,9 @@ export function SearchBox(props: {
             if (normalizedQuery.current !== searchQuery) {
                 return
             }
-            const s2 = Date.now()
-
             const result = bitap(full, searchQuery, { showHistoricalCDs })
             setMatches(result)
             setFocused(f => Math.min(f, result.length - 1))
-            console.log(`Took ${Date.now() - s2}ms to do full search`)
         })()
     }, [searchQuery, showHistoricalCDs, fullIndex])
 
@@ -313,9 +310,6 @@ function bitap(searchIndex: NormalizedSearchIndex, pattern: string, options: { s
             results.pop()
         }
     }
-
-    console.log(results)
-
     return results.map(result => result.element)
 }
 
