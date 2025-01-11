@@ -83,7 +83,9 @@ export function SearchBox(props: {
             if (normalizedQuery.current !== searchQuery) {
                 return
             }
+            const start = performance.now()
             const result = bitap(full, searchQuery, { showHistoricalCDs })
+            console.log(`Took ${performance.now() - start} ms to execute search`)
             setMatches(result)
             setFocused(f => Math.min(f, result.length - 1))
         })()
@@ -168,7 +170,7 @@ export function SearchBox(props: {
 }
 
 function normalize(a: string): string {
-    return ` ${a.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replaceAll(',', '')} `
+    return ` ${a.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f,\(\)]/g, '')} `
 }
 
 interface NormalizedSearchIndex {
@@ -233,7 +235,7 @@ function makeAlphabet(token: string): Uint32Array {
 
 // Expects `pattern` to be normalized
 function bitap(searchIndex: NormalizedSearchIndex, pattern: string, options: { showHistoricalCDs: boolean }): string[] {
-    if (pattern === '') {
+    if (pattern === '  ') {
         return []
     }
 
