@@ -336,6 +336,8 @@ function bitap(searchIndex: NormalizedSearchIndex, pattern: string, options: { s
         }
     }
 
+    console.log(results)
+
     return results.map(result => result.element)
 }
 
