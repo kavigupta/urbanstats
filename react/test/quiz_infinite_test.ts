@@ -2,7 +2,7 @@ import { Selector } from 'testcafe'
 
 import { clickButton, clickButtons } from './quiz_test_utils'
 import {
-    searchField, target, getLocationWithoutSettings, screencap,
+    target, screencap,
     urbanstatsFixture,
     safeReload,
     waitForLoading,
