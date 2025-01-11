@@ -1,8 +1,8 @@
 import { Selector } from 'testcafe'
 
-import { clickButton, clickButtons } from './quiz_test_utils'
+import { clickButton, clickButtons, withMockedClipboard } from './quiz_test_utils'
 import {
-    target, screencap,
+    target,
     urbanstatsFixture,
     safeReload,
     waitForQuizLoading,
@@ -61,7 +61,8 @@ async function completeCorrectAnswerSequence(t: TestController, alreadyKnownAnsw
     return correctAnswers
 }
 
-urbanstatsFixture('generate link', `${target}/quiz.html#mode=infinite&seed=deadbeef00&v=0`)
+const param = '#mode=infinite&seed=deadbeef00&v=0'
+urbanstatsFixture('generate link', `${target}/quiz.html${param}`)
 
 let correctAnswerSequence: string[]
 
@@ -138,4 +139,18 @@ test('19-correct', async (t) => {
     await t.expect(await getLives()).eql(['Y', 'Y', 'Y', 'Y', 'Y', 'Y', 'Y'])
     await provideAnswers(t, 20, Array<boolean>(7).fill(false))
     await t.expect(await correctIncorrect(t)).eql([...Array<boolean>(20).fill(true), ...Array<boolean>(7).fill(false)])
+
+    const copies = await withMockedClipboard(t, async () => {
+        await t.click(Selector('button').withText('Copy'))
+    })
+    await t.expect(copies.length).eql(1)
+    const copy = copies[0]
+    const lines = copy.split('\n')
+    await t.expect(lines).eql([
+        'Juxtastat Infinite 20/∞',
+        '',
+        '🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟥🟥🟥🟥🟥🟥🟥',
+        '',
+        `https://juxtastat.org/${param}`,
+    ])
 })
