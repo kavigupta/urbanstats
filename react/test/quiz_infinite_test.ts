@@ -5,16 +5,16 @@ import {
     target, screencap,
     urbanstatsFixture,
     safeReload,
-    waitForLoading,
+    waitForQuizLoading,
 } from './test_utils'
 
 async function isQuestionPage(t: TestController): Promise<boolean> {
-    await waitForLoading(t, '-quiz')
+    await waitForQuizLoading(t)
     return await Selector('.quiztext').exists
 }
 
 async function correctIncorrect(t: TestController): Promise<boolean[]> {
-    await waitForLoading(t, '-quiz')
+    await waitForQuizLoading(t)
     await screencap(t)
     const text = await Selector('#quiz-result-summary-emoji').innerText
     const result: boolean[] = []
@@ -35,7 +35,7 @@ async function correctIncorrect(t: TestController): Promise<boolean[]> {
 async function completeCorrectAnswerSequence(t: TestController, alreadyKnownAnswers: string[]): Promise<string[]> {
     await t.eval(() => { localStorage.clear() })
     await safeReload(t)
-    await waitForLoading(t, '-quiz')
+    await waitForQuizLoading(t)
     await clickButtons(t, alreadyKnownAnswers)
     while (await isQuestionPage(t)) {
         await clickButton(t, 'a')
