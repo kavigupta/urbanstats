@@ -107,19 +107,19 @@ export function numLives(correctPattern: boolean[]): number {
     return lives
 }
 
-export function JuxtastatInfiniteLives(props: { correctPattern: boolean[] }): React.ReactNode {
+export function JuxtastatLivesDisplay(props: { correctPattern: boolean[] }): React.ReactNode {
     const colors = useJuxtastatColors()
     const lives = numLives(props.correctPattern)
-    const images = []
+    const images: [string, string][] = []
     for (const i of Array(juxtaInfiniteInitialLives).keys()) {
-        images.push(i < lives ? colors.lifeEmoji : colors.lifeLostEmoji)
+        images.push(i < lives ? [colors.lifeEmoji, 'testing-life-emoji'] : [colors.lifeLostEmoji, 'testing-life-emoji-lost'])
     }
     if (lives > juxtaInfiniteInitialLives) {
-        images.push(colors.lifeEmoji)
+        images.push([colors.lifeEmoji, 'testing-life-emoji'])
     }
     return (
         <div
-            className="quiz_footer"
+            className="quiz_footer testing-life-display"
             style={{
                 margin: 'auto',
                 display: 'flex',
@@ -129,7 +129,7 @@ export function JuxtastatInfiniteLives(props: { correctPattern: boolean[] }): Re
                 gap: '0.25em',
             }}
         >
-            {images.map((src, i) => <img key={i} src={src} alt="" style={{ height: '2.5em' }} />)}
+            {images.map(([src, className], i) => <img key={i} className={className} src={src} alt="" style={{ height: '2.5em' }} />)}
         </div>
     )
 }
