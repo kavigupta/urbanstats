@@ -81,8 +81,8 @@ test('formulates correct sequence', async (t) => {
 async function provideAnswers(t: TestController, start: number, isCorrect: boolean[]): Promise<void> {
     for (let i = start; i < start + isCorrect.length; i++) {
         await clickButton(t, isCorrect[i - start] === (correctAnswerSequence[i] === 'a') ? 'a' : 'b')
+        await t.wait(500)
     }
-    await t.wait(500)
 }
 
 type Emoji = 'Y' | 'N'
