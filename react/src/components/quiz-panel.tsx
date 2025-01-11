@@ -1,6 +1,7 @@
-import React, { ReactNode, useState } from 'react'
+import React, { ReactNode, useContext, useState } from 'react'
 
 import quiz_infinite from '../data/quiz_infinite'
+import { Navigator } from '../navigation/Navigator'
 import { LongLoad } from '../navigation/loading'
 import { useColors } from '../page_template/colors'
 import { PageTemplate } from '../page_template/template'
@@ -167,6 +168,8 @@ function QuizPanelNoResets(props: { quizDescriptor: QuizDescriptor, todayName?: 
 
 export function JuxtastatInfiniteButton(): ReactNode {
     const colors = useColors()
+    const navContext = useContext(Navigator.Context)
+
     return (
         <a
             style={{
@@ -174,7 +177,7 @@ export function JuxtastatInfiniteButton(): ReactNode {
                 width: '30%',
                 textDecoration: 'none',
             }}
-            href="/quiz.html?mode=infinite"
+            {...navContext.link({ kind: 'quiz', mode: 'infinite' }, { scroll: { kind: 'position', top: 0 } })}
         >
             Random Juxtastat Infinite
         </a>
