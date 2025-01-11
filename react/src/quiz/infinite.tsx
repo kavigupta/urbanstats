@@ -109,13 +109,14 @@ export function numLives(correctPattern: boolean[]): number {
 
 export function JuxtastatLivesDisplay(props: { correctPattern: boolean[] }): React.ReactNode {
     const colors = useJuxtastatColors()
-    const lives = numLives(props.correctPattern)
+    let lives = numLives(props.correctPattern)
     const images: [string, string][] = []
     for (const i of Array(juxtaInfiniteInitialLives).keys()) {
         images.push(i < lives ? [colors.lifeEmoji, 'testing-life-emoji'] : [colors.lifeLostEmoji, 'testing-life-emoji-lost'])
     }
-    if (lives > juxtaInfiniteInitialLives) {
+    while (lives > juxtaInfiniteInitialLives) {
         images.push([colors.lifeEmoji, 'testing-life-emoji'])
+        lives--
     }
     return (
         <div
