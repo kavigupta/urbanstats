@@ -75,6 +75,14 @@ export async function waitForLoading(t: TestController): Promise<void> {
     await t.wait(1000) // Wait for map to finish rendering
 }
 
+export async function waitForQuizLoading(t: TestController): Promise<void> {
+    // Wait for various components that need to load
+    while (await Selector(`[data-test-loading-quiz=true]`).exists) {
+        // this really shouldn't take that long to load, a few extra checks should be fine
+        await t.wait(100)
+    }
+}
+
 async function prepForImage(t: TestController, options: { hover: boolean, wait: boolean }): Promise<void> {
     if (options.hover) {
         await t.hover('#searchbox') // Ensure the mouse pointer isn't hovering over any elements that change appearance when hovered over
