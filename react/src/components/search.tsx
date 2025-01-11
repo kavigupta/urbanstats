@@ -6,7 +6,6 @@ import { useColors } from '../page_template/colors'
 import { useSetting } from '../page_template/settings'
 import { isHistoricalCD } from '../utils/is_historical'
 import '../common.css'
-import { SearchIndex } from '../utils/protos'
 
 export function SearchBox(props: {
     onChange?: (inp: string) => void
@@ -169,7 +168,7 @@ export function SearchBox(props: {
 }
 
 function normalize(a: string): string {
-    return ` ${a.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')} `
+    return ` ${a.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replaceAll(',', '')} `
 }
 
 interface NormalizedSearchIndex {
@@ -186,6 +185,7 @@ interface SearchResult {
     matchScore: number // Lower is better
     populationRank: number // Lower is higher population (better)
     priority: number // Lower is better
+    positionScore: number // The absolute difference in position where tokens were found. Lower is better
 }
 
 function compareSearchResults(a: SearchResult, b: SearchResult): number {
@@ -195,20 +195,28 @@ function compareSearchResults(a: SearchResult, b: SearchResult): number {
     if (a.priority !== b.priority) {
         return a.priority - b.priority
     }
+    if (a.positionScore !== b.positionScore) {
+        return a.positionScore - b.positionScore
+    }
     return a.populationRank - b.populationRank
 }
 
-function tokenize(pattern: string): string[] {
-    const matchNoOverflow = /^( ?[^ ]{1,32})( |$)(.*)$/.exec(pattern)
-    if (matchNoOverflow !== null) {
-        const [, word, , rest] = matchNoOverflow
-        return [`${word} `, ...tokenize(rest)]
-    }
+interface Token {
+    token: string
+    alphabet: Uint32Array
+    position: number
+}
 
-    const matchOverflow = /^( ?[^ ]{1,32})(.*)$/.exec(pattern)
-    if (matchOverflow !== null) {
-        const [, part, rest] = matchOverflow
-        return [part, ...tokenize(rest)]
+function tokenize(pattern: string, position: number): Token[] {
+    const matchNoOverflow = /^ *?( ?)([^ ]{1,32})( ?)(.*)$/.exec(pattern)
+    if (matchNoOverflow !== null) {
+        const [, spaceBefore, word, spaceAfter, rest] = matchNoOverflow
+        const token = `${spaceBefore}${word}${spaceAfter}`
+        return [{
+            token,
+            alphabet: makeAlphabet(token),
+            position,
+        }, ...tokenize(`${spaceAfter}${rest}`, position + spaceBefore.length + word.length)]
     }
 
     return []
@@ -235,9 +243,7 @@ function bitap(searchIndex: NormalizedSearchIndex, pattern: string, options: { s
     let rd = new Uint32Array(longestFinish + 2)
     let lastRd = new Uint32Array(longestFinish + 2)
 
-    const tokens = tokenize(pattern).map(token => ({ token, alphabet: makeAlphabet(token) }))
-
-    console.log({ pattern, tokens })
+    const tokens = tokenize(pattern, 0)
 
     const maxResults = 10
     const results: SearchResult[] = []
@@ -250,12 +256,14 @@ function bitap(searchIndex: NormalizedSearchIndex, pattern: string, options: { s
         }
 
         let matchScore = 0
+        let positionScore = 0
 
-        for (const { token, alphabet } of tokens) {
+        for (const { token, alphabet, position } of tokens) {
             const matchMask = 1 << (token.length - 1)
             const finish = normalizedElement.length + token.length
 
-            let tokenScore = maxErrors + 1
+            let tokenMatchScore = maxErrors + 1
+            let tokenPositionScore = 0
 
             search: for (let errors = 0; errors <= maxErrors; errors++) {
                 rd.fill(0)
@@ -277,7 +285,9 @@ function bitap(searchIndex: NormalizedSearchIndex, pattern: string, options: { s
                         rd[j] = (((rd[j + 1] << 1) | 1) & charMatch) | (((lastRd[j + 1] | lastRd[j]) << 1) | 1) | lastRd[j + 1]
                     }
                     if ((rd[j] & matchMask) !== 0) {
-                        tokenScore = errors
+                        const matchPosition = j - 1
+                        tokenMatchScore = errors
+                        tokenPositionScore = Math.abs(matchPosition - position)
                         break search
                     }
                 }
@@ -285,10 +295,11 @@ function bitap(searchIndex: NormalizedSearchIndex, pattern: string, options: { s
                 [lastRd, rd] = [rd, lastRd]
             }
 
-            matchScore += tokenScore
+            matchScore += tokenMatchScore
+            positionScore += tokenPositionScore
 
             // If our match score is so high that we would not make it into the results, we can move on to the next entry
-            if (results.length === maxResults && compareSearchResults({ element, matchScore, priority, populationRank }, results[results.length - 1]) > 0) {
+            if (results.length === maxResults && compareSearchResults({ element, matchScore, positionScore, priority, populationRank }, results[results.length - 1]) > 0) {
                 continue entries
             }
         }
@@ -301,6 +312,7 @@ function bitap(searchIndex: NormalizedSearchIndex, pattern: string, options: { s
         const result: SearchResult = {
             element,
             matchScore,
+            positionScore,
             priority,
             populationRank,
         }
@@ -321,8 +333,6 @@ function bitap(searchIndex: NormalizedSearchIndex, pattern: string, options: { s
             results.pop()
         }
     }
-
-    console.log(results)
 
     return results.map(result => result.element)
 }
@@ -347,10 +357,3 @@ function processRawSearchIndex(searchIndex: { elements: string[], priorities: nu
     })
     return { entries, lengthOfLongestNormalizedElement }
 }
-
-const i = processRawSearchIndex({
-    elements: ['Toronto Population Center, ON, Canada', 'La Canada Flintridge city, California, USA'],
-    priorities: [0, 0],
-})
-
-console.log(bitap(i, normalize('la canada'), { showHistoricalCDs: false }))
