@@ -6,6 +6,7 @@ import { useColors } from '../page_template/colors'
 import { useSetting } from '../page_template/settings'
 import { isHistoricalCD } from '../utils/is_historical'
 import '../common.css'
+import { SearchIndex } from '../utils/protos'
 
 export function SearchBox(props: {
     onChange?: (inp: string) => void
@@ -168,7 +169,7 @@ export function SearchBox(props: {
 }
 
 function normalize(a: string): string {
-    return a.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    return ` ${a.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')} `
 }
 
 interface NormalizedSearchIndex {
@@ -198,12 +199,19 @@ function compareSearchResults(a: SearchResult, b: SearchResult): number {
 }
 
 function tokenize(pattern: string): string[] {
-    if (pattern === '') {
-        return []
+    const matchNoOverflow = /^( ?[^ ]{1,32})( |$)(.*)$/.exec(pattern)
+    if (matchNoOverflow !== null) {
+        const [, word, , rest] = matchNoOverflow
+        return [`${word} `, ...tokenize(rest)]
     }
-    const [, currentPattern, nextPattern] = /^([^ ]{0,32}) ?(.*)$/.exec(pattern)!
 
-    return [currentPattern, ...tokenize(nextPattern)]
+    const matchOverflow = /^( ?[^ ]{1,32})(.*)$/.exec(pattern)
+    if (matchOverflow !== null) {
+        const [, part, rest] = matchOverflow
+        return [part, ...tokenize(rest)]
+    }
+
+    return []
 }
 
 function makeAlphabet(token: string): Uint32Array {
@@ -215,6 +223,7 @@ function makeAlphabet(token: string): Uint32Array {
     return result
 }
 
+// Expects `pattern` to be normalized
 function bitap(searchIndex: NormalizedSearchIndex, pattern: string, options: { showHistoricalCDs: boolean }): string[] {
     if (pattern === '') {
         return []
@@ -227,6 +236,8 @@ function bitap(searchIndex: NormalizedSearchIndex, pattern: string, options: { s
     let lastRd = new Uint32Array(longestFinish + 2)
 
     const tokens = tokenize(pattern).map(token => ({ token, alphabet: makeAlphabet(token) }))
+
+    console.log({ pattern, tokens })
 
     const maxResults = 10
     const results: SearchResult[] = []
@@ -310,11 +321,18 @@ function bitap(searchIndex: NormalizedSearchIndex, pattern: string, options: { s
             results.pop()
         }
     }
+
+    console.log(results)
+
     return results.map(result => result.element)
 }
 
 async function loadSearchIndex(): Promise<NormalizedSearchIndex> {
     const searchIndex = await loadProtobuf('/index/pages_all.gz', 'SearchIndex', { cacheCompressedBufferInRam: true })
+    return processRawSearchIndex(searchIndex)
+}
+
+function processRawSearchIndex(searchIndex: { elements: string[], priorities: number[] }): NormalizedSearchIndex {
     let lengthOfLongestNormalizedElement = 0
     const entries = searchIndex.elements.map((element, index) => {
         const normalizedElement = normalize(element)
@@ -329,3 +347,10 @@ async function loadSearchIndex(): Promise<NormalizedSearchIndex> {
     })
     return { entries, lengthOfLongestNormalizedElement }
 }
+
+const i = processRawSearchIndex({
+    elements: ['Toronto Population Center, ON, Canada', 'La Canada Flintridge city, California, USA'],
+    priorities: [0, 0],
+})
+
+console.log(bitap(i, normalize('la canada'), { showHistoricalCDs: false }))
