@@ -140,6 +140,7 @@ function QuizPanelNoResets(props: { quizDescriptor: QuizDescriptor, todayName?: 
                     const message = index < 0 ? 'Loading quiz...' : 'Loading results...'
                     return (
                         <div>
+                            <input type="hidden" data-test-loading={true} />
                             <div className={headerClass}>{message}</div>
                             <LongLoad />
                         </div>
