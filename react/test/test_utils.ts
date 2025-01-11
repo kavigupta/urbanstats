@@ -67,9 +67,9 @@ export async function checkAllCategoryBoxes(t: TestController): Promise<void> {
     await safeReload(t)
 }
 
-export async function waitForLoading(t: TestController): Promise<void> {
+export async function waitForLoading(t: TestController, suffix = ''): Promise<void> {
     // Wait for various components that need to load
-    while (await Selector('[data-test-loading=true]').exists) {
+    while (await Selector(`[data-test-loading${suffix}=true]`).exists) {
         await t.wait(1000)
     }
     await t.wait(1000) // Wait for map to finish rendering

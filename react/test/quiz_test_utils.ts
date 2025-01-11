@@ -28,7 +28,7 @@ export async function clickButtons(t: TestController, whichs: string[]): Promise
 // click the kth button with id quiz-answer-button-$which
 
 export async function clickButton(t: TestController, which: string): Promise<TestControllerPromise> {
-    await waitForLoading(t)
+    await waitForLoading(t, '-quiz')
     return t.click(Selector('div').withAttribute('id', `quiz-answer-button-${which}`))
 }
 
