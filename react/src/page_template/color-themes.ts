@@ -40,6 +40,8 @@ export interface JuxtastatColors {
     incorrect: string
     correctEmoji: string
     incorrectEmoji: string
+    lifeEmoji: string
+    lifeLostEmoji: string
 }
 
 const defaultHueColors: HueColors = {

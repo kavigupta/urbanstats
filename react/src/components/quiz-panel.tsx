@@ -1,12 +1,15 @@
-import React, { ReactNode, useState } from 'react'
+import React, { ReactNode, useContext, useState } from 'react'
 
+import quiz_infinite from '../data/quiz_infinite'
+import { Navigator } from '../navigation/Navigator'
 import { LongLoad } from '../navigation/loading'
+import { useColors } from '../page_template/colors'
 import { PageTemplate } from '../page_template/template'
 import '../common.css'
 import './quiz.css'
 import { QuizDescriptor, QuizHistory, QuizLocalStorage, QuizQuestion, QuizQuestionsModel, aCorrect } from '../quiz/quiz'
 import { QuizQuestionDispatch } from '../quiz/quiz-question'
-import { QuizResult } from '../quiz/quiz-result'
+import { buttonStyle, QuizResult } from '../quiz/quiz-result'
 import { useHeaderTextClass } from '../utils/responsive'
 
 export function QuizPanel(props: { quizDescriptor: QuizDescriptor, todayName?: string, todaysQuiz: QuizQuestionsModel }): ReactNode {
@@ -25,6 +28,7 @@ export function QuizPanel(props: { quizDescriptor: QuizDescriptor, todayName?: s
 function QuizPanelNoResets(props: { quizDescriptor: QuizDescriptor, todayName?: string, todaysQuiz: QuizQuestionsModel }): ReactNode {
     // We don't want to save certain quiz types, so bypass the persistent store for those
     const headerClass = useHeaderTextClass()
+    const colors = useColors()
     const persistentQuizHistory = QuizLocalStorage.shared.history.use()
     const [transientQuizHistory, setTransientQuizHistory] = useState<QuizHistory>({})
 
@@ -37,6 +41,8 @@ function QuizPanelNoResets(props: { quizDescriptor: QuizDescriptor, todayName?: 
             setQuizHistory = newHistory => QuizLocalStorage.shared.history.value = newHistory
             break
         case 'custom':
+        // TODO stats for infinite quiz
+        case 'infinite':
             quizHistory = transientQuizHistory
             setQuizHistory = (newHistory) => { setTransientQuizHistory(newHistory) }
             break
@@ -45,6 +51,29 @@ function QuizPanelNoResets(props: { quizDescriptor: QuizDescriptor, todayName?: 
     const [waitingForTime, setWaitingForTime] = useState(false)
     const [waitingForNextQuestion, setWaitingForNextQuestion] = useState(false)
     const [questions, setQuestions] = useState<QuizQuestion[]>([])
+
+    if (props.quizDescriptor.kind === 'infinite' && props.quizDescriptor.version !== quiz_infinite.juxtaVersion) {
+        // TODO this should not come up if you've already done the quiz (only relevant once we add the stats)
+        return (
+            <PageTemplate>
+                <div>
+                    <div className={headerClass}>Quiz version mismatch</div>
+                    <div style={{
+                        width: '50%',
+                        margin: 'auto',
+                        backgroundColor: colors.slightlyDifferentBackgroundFocused,
+                        padding: '1em',
+                        fontWeight: 'bold',
+                    }}
+                    >
+                        Juxtastat generation has been updated, so infinite Juxtastat you are trying to access is no longer available.
+                    </div>
+                    <div style={{ height: '1.5em' }} />
+                    <JuxtastatInfiniteButton />
+                </div>
+            </PageTemplate>
+        )
+    }
 
     const todaysQuizHistory = quizHistory[props.quizDescriptor.name] ?? { choices: [], correct_pattern: [] }
 
@@ -134,5 +163,23 @@ function QuizPanelNoResets(props: { quizDescriptor: QuizDescriptor, todayName?: 
                 )
             })()}
         </PageTemplate>
+    )
+}
+
+export function JuxtastatInfiniteButton(): ReactNode {
+    const colors = useColors()
+    const navContext = useContext(Navigator.Context)
+
+    return (
+        <a
+            style={{
+                ...buttonStyle(colors.hueColors.blue),
+                width: '30%',
+                textDecoration: 'none',
+            }}
+            {...navContext.link({ kind: 'quiz', mode: 'infinite' }, { scroll: { kind: 'position', top: 0 } })}
+        >
+            Random Juxtastat Infinite
+        </a>
     )
 }

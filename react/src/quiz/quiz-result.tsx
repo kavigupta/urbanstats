@@ -1,6 +1,7 @@
 import React, { CSSProperties, ReactNode, useContext, useEffect, useRef, useState } from 'react'
 import { isFirefox, isMobile } from 'react-device-detect'
 
+import { JuxtastatInfiniteButton } from '../components/quiz-panel'
 import { Statistic } from '../components/table'
 import { Navigator } from '../navigation/Navigator'
 import { JuxtastatColors } from '../page_template/color-themes'
@@ -34,7 +35,8 @@ interface QuizResultProps {
 export function QuizResult(props: QuizResultProps): ReactNode {
     const button = useRef<HTMLButtonElement>(null)
     const [stats, setStats] = useState<PerQuestionStats>((
-        props.quizDescriptor.kind === 'custom'
+        // TODO stats for infinite quiz
+        props.quizDescriptor.kind === 'custom' || props.quizDescriptor.kind === 'infinite'
             ? undefined
             : getCachedPerQuestionStats(props.quizDescriptor)
     ) ?? { total: 0, per_question: [0, 0, 0, 0, 0] })
@@ -46,7 +48,8 @@ export function QuizResult(props: QuizResultProps): ReactNode {
     }
 
     useEffect(() => {
-        if (props.quizDescriptor.kind === 'custom') {
+        // TODO stats for infinite quiz
+        if (props.quizDescriptor.kind === 'custom' || props.quizDescriptor.kind === 'infinite') {
             return
         }
         void reportToServer(props.wholeHistory, props.quizDescriptor.kind).then(setAuthError)
@@ -98,13 +101,19 @@ export function QuizResult(props: QuizResultProps): ReactNode {
                     )
                 : undefined}
             {
-                props.quizDescriptor.kind === 'custom'
+                props.quizDescriptor.kind === 'custom' || props.quizDescriptor.kind === 'infinite'
                     ? undefined
                     : <TimeToNextQuiz quiz={props.quizDescriptor} />
             }
+            {
+                props.quizDescriptor.kind === 'infinite'
+                    ? <JuxtastatInfiniteButton />
+                    : undefined
+            }
             <div className="gap"></div>
             {
-                props.quizDescriptor.kind === 'custom'
+                // TODO stats for infinite quiz
+                props.quizDescriptor.kind === 'custom' || props.quizDescriptor.kind === 'infinite'
                     ? undefined
                     : <QuizStatistics wholeHistory={props.wholeHistory} quiz={props.quizDescriptor} />
             }
@@ -124,7 +133,8 @@ export function QuizResult(props: QuizResultProps): ReactNode {
             )}
             <div className="gap_small"></div>
             {
-                props.quizDescriptor.kind === 'custom'
+                // TODO stats for infinite quiz
+                props.quizDescriptor.kind === 'custom' || props.quizDescriptor.kind === 'infinite'
                     ? undefined
                     : (
                             <div style={{ margin: 'auto', width: '100%', maxWidth: '500px' }}>
@@ -328,12 +338,32 @@ function juxtaSummary(correctPattern: CorrectPattern): [string, string] {
     return [show, `${correct}/${total}`]
 }
 
+function infiniteSummary(correctPattern: CorrectPattern): [string, string] {
+    const correct = correctPattern.reduce((partialSum: number, a) => partialSum + (a ? 1 : 0), 0)
+    const pattern = `${correct}/∞`
+    if (correct < 10) {
+        return ['You can do better! 🤷', pattern]
+    }
+    if (correct < 20) {
+        return ['Not bad! 🫤', pattern]
+    }
+    if (correct < 30) {
+        return ['Good job! 🙃', pattern]
+    }
+    if (correct < 40) {
+        return ['Great! 😊', pattern]
+    }
+    return ['Amazing! 🔥', pattern]
+}
+
 function summaryTexts(correctPattern: CorrectPattern, quizKind: QuizKind): [string, string] {
     switch (quizKind) {
         case 'juxtastat':
         case 'retrostat':
         case 'custom':
             return juxtaSummary(correctPattern)
+        case 'infinite':
+            return infiniteSummary(correctPattern)
     }
 }
 

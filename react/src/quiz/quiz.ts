@@ -6,9 +6,12 @@ import { StatPath } from '../page_template/statistic-tree'
 import { randomID } from '../utils/random'
 import { cancelled, uploadFile } from '../utils/upload'
 
-export type QuizDescriptor = { kind: 'juxtastat', name: number } | { kind: 'retrostat', name: string } | { kind: 'custom', name: string }
+import { infiniteQuizIsDone, sampleRandomQuestion } from './infinite'
+
+export type QuizDescriptor = { kind: 'juxtastat', name: number } | { kind: 'retrostat', name: string } | { kind: 'custom', name: string } | { kind: 'infinite', name: string, seed: string, version: number }
 
 export type QuizKind = QuizDescriptor['kind']
+// TODO stats for infinite quiz
 export type QuizKindWithStats = 'juxtastat' | 'retrostat'
 
 export const endpoint = 'https://persistent.urbanstats.org'
@@ -39,6 +42,7 @@ export function nameOfQuizKind(quizKind: QuizKind): string {
         case 'juxtastat': return 'Juxtastat'
         case 'retrostat': return 'Retrostat'
         case 'custom': return 'Juxtastat Custom'
+        case 'infinite': return 'Juxtastat Infinite'
     }
 }
 
@@ -298,6 +302,15 @@ export function wrapQuestionsModel(questions: QuizQuestion[]): QuizQuestionsMode
         questionByIndex: (index: number) => Promise.resolve(questions[index]),
         length: questions.length,
         isDone: (correctPattern: boolean[]) => correctPattern.length === questions.length,
+        uniqueKey: uniqueKey(),
+    }
+}
+
+export function infiniteQuiz(seed: string): QuizQuestionsModel {
+    return {
+        questionByIndex: (index: number) => sampleRandomQuestion(seed, index),
+        length: undefined,
+        isDone: (correctPattern: boolean[]) => infiniteQuizIsDone(correctPattern),
         uniqueKey: uniqueKey(),
     }
 }
