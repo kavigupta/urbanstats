@@ -8,6 +8,8 @@ import {
     Article, ConsolidatedShapes, ConsolidatedStatistics, DataLists,
     Feature, IDataList, IOrderList, OrderList,
     OrderLists,
+    QuizFullData,
+    QuizQuestionTronche,
     SearchIndex,
     StringList,
 } from './utils/protos'
@@ -32,7 +34,9 @@ export async function loadProtobuf(filePath: string, name: 'DataLists'): Promise
 export async function loadProtobuf(filePath: string, name: 'ConsolidatedShapes'): Promise<ConsolidatedShapes>
 export async function loadProtobuf(filePath: string, name: 'ConsolidatedStatistics'): Promise<ConsolidatedStatistics>
 export async function loadProtobuf(filePath: string, name: 'SearchIndex'): Promise<SearchIndex>
-export async function loadProtobuf(filePath: string, name: string): Promise<Article | Feature | StringList | OrderLists | DataLists | ConsolidatedShapes | ConsolidatedStatistics | SearchIndex> {
+export async function loadProtobuf(filePath: string, name: 'QuizQuestionTronche'): Promise<QuizQuestionTronche>
+export async function loadProtobuf(filePath: string, name: 'QuizFullData'): Promise<QuizFullData>
+export async function loadProtobuf(filePath: string, name: string): Promise<Article | Feature | StringList | OrderLists | DataLists | ConsolidatedShapes | ConsolidatedStatistics | SearchIndex | QuizQuestionTronche | QuizFullData> {
     const response = await fetch(filePath)
     if (response.status < 200 || response.status > 299) {
         throw new Error(`Expected response status 2xx for ${filePath}, got ${response.status}: ${response.statusText}`)
@@ -63,6 +67,12 @@ export async function loadProtobuf(filePath: string, name: string): Promise<Arti
     }
     else if (name === 'SearchIndex') {
         return SearchIndex.decode(arr)
+    }
+    else if (name === 'QuizQuestionTronche') {
+        return QuizQuestionTronche.decode(arr)
+    }
+    else if (name === 'QuizFullData') {
+        return QuizFullData.decode(arr)
     }
     else {
         throw new Error('protobuf type not recognized (see load_json.ts)')

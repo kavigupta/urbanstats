@@ -2322,3 +2322,312 @@ export class ConsolidatedStatistics implements IConsolidatedStatistics {
      */
     public static getTypeUrl(typeUrlPrefix?: string): string;
 }
+
+/** Properties of a QuizDataForStat. */
+export interface IQuizDataForStat {
+
+    /** QuizDataForStat stats */
+    stats?: (number[]|null);
+}
+
+/** Represents a QuizDataForStat. */
+export class QuizDataForStat implements IQuizDataForStat {
+
+    /**
+     * Constructs a new QuizDataForStat.
+     * @param [properties] Properties to set
+     */
+    constructor(properties?: IQuizDataForStat);
+
+    /** QuizDataForStat stats. */
+    public stats: number[];
+
+    /**
+     * Creates a new QuizDataForStat instance using the specified properties.
+     * @param [properties] Properties to set
+     * @returns QuizDataForStat instance
+     */
+    public static create(properties?: IQuizDataForStat): QuizDataForStat;
+
+    /**
+     * Encodes the specified QuizDataForStat message. Does not implicitly {@link QuizDataForStat.verify|verify} messages.
+     * @param message QuizDataForStat message or plain object to encode
+     * @param [writer] Writer to encode to
+     * @returns Writer
+     */
+    public static encode(message: IQuizDataForStat, writer?: $protobuf.Writer): $protobuf.Writer;
+
+    /**
+     * Encodes the specified QuizDataForStat message, length delimited. Does not implicitly {@link QuizDataForStat.verify|verify} messages.
+     * @param message QuizDataForStat message or plain object to encode
+     * @param [writer] Writer to encode to
+     * @returns Writer
+     */
+    public static encodeDelimited(message: IQuizDataForStat, writer?: $protobuf.Writer): $protobuf.Writer;
+
+    /**
+     * Decodes a QuizDataForStat message from the specified reader or buffer.
+     * @param reader Reader or buffer to decode from
+     * @param [length] Message length if known beforehand
+     * @returns QuizDataForStat
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): QuizDataForStat;
+
+    /**
+     * Decodes a QuizDataForStat message from the specified reader or buffer, length delimited.
+     * @param reader Reader or buffer to decode from
+     * @returns QuizDataForStat
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): QuizDataForStat;
+
+    /**
+     * Verifies a QuizDataForStat message.
+     * @param message Plain object to verify
+     * @returns `null` if valid, otherwise the reason why it is not
+     */
+    public static verify(message: { [k: string]: any }): (string|null);
+
+    /**
+     * Creates a QuizDataForStat message from a plain object. Also converts values to their respective internal types.
+     * @param object Plain object
+     * @returns QuizDataForStat
+     */
+    public static fromObject(object: { [k: string]: any }): QuizDataForStat;
+
+    /**
+     * Creates a plain object from a QuizDataForStat message. Also converts values to other types if specified.
+     * @param message QuizDataForStat
+     * @param [options] Conversion options
+     * @returns Plain object
+     */
+    public static toObject(message: QuizDataForStat, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+    /**
+     * Converts this QuizDataForStat to JSON.
+     * @returns JSON object
+     */
+    public toJSON(): { [k: string]: any };
+
+    /**
+     * Gets the default type url for QuizDataForStat
+     * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns The default type url
+     */
+    public static getTypeUrl(typeUrlPrefix?: string): string;
+}
+
+/** Properties of a QuizFullData. */
+export interface IQuizFullData {
+
+    /** QuizFullData stats */
+    stats?: (IQuizDataForStat[]|null);
+}
+
+/** Represents a QuizFullData. */
+export class QuizFullData implements IQuizFullData {
+
+    /**
+     * Constructs a new QuizFullData.
+     * @param [properties] Properties to set
+     */
+    constructor(properties?: IQuizFullData);
+
+    /** QuizFullData stats. */
+    public stats: IQuizDataForStat[];
+
+    /**
+     * Creates a new QuizFullData instance using the specified properties.
+     * @param [properties] Properties to set
+     * @returns QuizFullData instance
+     */
+    public static create(properties?: IQuizFullData): QuizFullData;
+
+    /**
+     * Encodes the specified QuizFullData message. Does not implicitly {@link QuizFullData.verify|verify} messages.
+     * @param message QuizFullData message or plain object to encode
+     * @param [writer] Writer to encode to
+     * @returns Writer
+     */
+    public static encode(message: IQuizFullData, writer?: $protobuf.Writer): $protobuf.Writer;
+
+    /**
+     * Encodes the specified QuizFullData message, length delimited. Does not implicitly {@link QuizFullData.verify|verify} messages.
+     * @param message QuizFullData message or plain object to encode
+     * @param [writer] Writer to encode to
+     * @returns Writer
+     */
+    public static encodeDelimited(message: IQuizFullData, writer?: $protobuf.Writer): $protobuf.Writer;
+
+    /**
+     * Decodes a QuizFullData message from the specified reader or buffer.
+     * @param reader Reader or buffer to decode from
+     * @param [length] Message length if known beforehand
+     * @returns QuizFullData
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): QuizFullData;
+
+    /**
+     * Decodes a QuizFullData message from the specified reader or buffer, length delimited.
+     * @param reader Reader or buffer to decode from
+     * @returns QuizFullData
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): QuizFullData;
+
+    /**
+     * Verifies a QuizFullData message.
+     * @param message Plain object to verify
+     * @returns `null` if valid, otherwise the reason why it is not
+     */
+    public static verify(message: { [k: string]: any }): (string|null);
+
+    /**
+     * Creates a QuizFullData message from a plain object. Also converts values to their respective internal types.
+     * @param object Plain object
+     * @returns QuizFullData
+     */
+    public static fromObject(object: { [k: string]: any }): QuizFullData;
+
+    /**
+     * Creates a plain object from a QuizFullData message. Also converts values to other types if specified.
+     * @param message QuizFullData
+     * @param [options] Conversion options
+     * @returns Plain object
+     */
+    public static toObject(message: QuizFullData, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+    /**
+     * Converts this QuizFullData to JSON.
+     * @returns JSON object
+     */
+    public toJSON(): { [k: string]: any };
+
+    /**
+     * Gets the default type url for QuizFullData
+     * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns The default type url
+     */
+    public static getTypeUrl(typeUrlPrefix?: string): string;
+}
+
+/** Properties of a QuizQuestionTronche. */
+export interface IQuizQuestionTronche {
+
+    /** QuizQuestionTronche geographyA */
+    geographyA?: (number[]|null);
+
+    /** QuizQuestionTronche geographyB */
+    geographyB?: (number[]|null);
+
+    /** QuizQuestionTronche stat */
+    stat?: (number[]|null);
+
+    /** QuizQuestionTronche negLogProbX100 */
+    negLogProbX100?: (number[]|null);
+}
+
+/** Represents a QuizQuestionTronche. */
+export class QuizQuestionTronche implements IQuizQuestionTronche {
+
+    /**
+     * Constructs a new QuizQuestionTronche.
+     * @param [properties] Properties to set
+     */
+    constructor(properties?: IQuizQuestionTronche);
+
+    /** QuizQuestionTronche geographyA. */
+    public geographyA: number[];
+
+    /** QuizQuestionTronche geographyB. */
+    public geographyB: number[];
+
+    /** QuizQuestionTronche stat. */
+    public stat: number[];
+
+    /** QuizQuestionTronche negLogProbX100. */
+    public negLogProbX100: number[];
+
+    /**
+     * Creates a new QuizQuestionTronche instance using the specified properties.
+     * @param [properties] Properties to set
+     * @returns QuizQuestionTronche instance
+     */
+    public static create(properties?: IQuizQuestionTronche): QuizQuestionTronche;
+
+    /**
+     * Encodes the specified QuizQuestionTronche message. Does not implicitly {@link QuizQuestionTronche.verify|verify} messages.
+     * @param message QuizQuestionTronche message or plain object to encode
+     * @param [writer] Writer to encode to
+     * @returns Writer
+     */
+    public static encode(message: IQuizQuestionTronche, writer?: $protobuf.Writer): $protobuf.Writer;
+
+    /**
+     * Encodes the specified QuizQuestionTronche message, length delimited. Does not implicitly {@link QuizQuestionTronche.verify|verify} messages.
+     * @param message QuizQuestionTronche message or plain object to encode
+     * @param [writer] Writer to encode to
+     * @returns Writer
+     */
+    public static encodeDelimited(message: IQuizQuestionTronche, writer?: $protobuf.Writer): $protobuf.Writer;
+
+    /**
+     * Decodes a QuizQuestionTronche message from the specified reader or buffer.
+     * @param reader Reader or buffer to decode from
+     * @param [length] Message length if known beforehand
+     * @returns QuizQuestionTronche
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): QuizQuestionTronche;
+
+    /**
+     * Decodes a QuizQuestionTronche message from the specified reader or buffer, length delimited.
+     * @param reader Reader or buffer to decode from
+     * @returns QuizQuestionTronche
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): QuizQuestionTronche;
+
+    /**
+     * Verifies a QuizQuestionTronche message.
+     * @param message Plain object to verify
+     * @returns `null` if valid, otherwise the reason why it is not
+     */
+    public static verify(message: { [k: string]: any }): (string|null);
+
+    /**
+     * Creates a QuizQuestionTronche message from a plain object. Also converts values to their respective internal types.
+     * @param object Plain object
+     * @returns QuizQuestionTronche
+     */
+    public static fromObject(object: { [k: string]: any }): QuizQuestionTronche;
+
+    /**
+     * Creates a plain object from a QuizQuestionTronche message. Also converts values to other types if specified.
+     * @param message QuizQuestionTronche
+     * @param [options] Conversion options
+     * @returns Plain object
+     */
+    public static toObject(message: QuizQuestionTronche, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+    /**
+     * Converts this QuizQuestionTronche to JSON.
+     * @returns JSON object
+     */
+    public toJSON(): { [k: string]: any };
+
+    /**
+     * Gets the default type url for QuizQuestionTronche
+     * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns The default type url
+     */
+    public static getTypeUrl(typeUrlPrefix?: string): string;
+}

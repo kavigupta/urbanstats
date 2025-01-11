@@ -298,3 +298,35 @@ class ConsolidatedStatistics(_message.Message):
         shortnames: _Optional[_Iterable[str]] = ...,
         stats: _Optional[_Iterable[_Union[AllStats, _Mapping]]] = ...,
     ) -> None: ...
+
+class QuizDataForStat(_message.Message):
+    __slots__ = ("stats",)
+    STATS_FIELD_NUMBER: _ClassVar[int]
+    stats: _containers.RepeatedScalarFieldContainer[float]
+    def __init__(self, stats: _Optional[_Iterable[float]] = ...) -> None: ...
+
+class QuizFullData(_message.Message):
+    __slots__ = ("stats",)
+    STATS_FIELD_NUMBER: _ClassVar[int]
+    stats: _containers.RepeatedCompositeFieldContainer[QuizDataForStat]
+    def __init__(
+        self, stats: _Optional[_Iterable[_Union[QuizDataForStat, _Mapping]]] = ...
+    ) -> None: ...
+
+class QuizQuestionTronche(_message.Message):
+    __slots__ = ("geography_a", "geography_b", "stat", "neg_log_prob_x100")
+    GEOGRAPHY_A_FIELD_NUMBER: _ClassVar[int]
+    GEOGRAPHY_B_FIELD_NUMBER: _ClassVar[int]
+    STAT_FIELD_NUMBER: _ClassVar[int]
+    NEG_LOG_PROB_X100_FIELD_NUMBER: _ClassVar[int]
+    geography_a: _containers.RepeatedScalarFieldContainer[int]
+    geography_b: _containers.RepeatedScalarFieldContainer[int]
+    stat: _containers.RepeatedScalarFieldContainer[int]
+    neg_log_prob_x100: _containers.RepeatedScalarFieldContainer[int]
+    def __init__(
+        self,
+        geography_a: _Optional[_Iterable[int]] = ...,
+        geography_b: _Optional[_Iterable[int]] = ...,
+        stat: _Optional[_Iterable[int]] = ...,
+        neg_log_prob_x100: _Optional[_Iterable[int]] = ...,
+    ) -> None: ...
