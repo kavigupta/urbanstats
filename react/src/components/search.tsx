@@ -176,10 +176,10 @@ function normalize(a: string): string {
 interface NormalizedSearchIndex {
     entries: {
         element: string
-        normalizedElement: string
+        tokens: string[]
         priority: number
     }[]
-    lengthOfLongestNormalizedElement: number
+    lengthOfLongestToken: number
 }
 
 interface SearchResult {
@@ -203,22 +203,12 @@ function compareSearchResults(a: SearchResult, b: SearchResult): number {
     return a.populationRank - b.populationRank
 }
 
-interface Token {
-    token: string
-    alphabet: Uint32Array
-    position: number
-}
-
-function tokenize(pattern: string, position: number): Token[] {
+function tokenize(pattern: string): string[] {
     const matchNoOverflow = /^ *?( ?)([^ ]{1,32})( ?)(.*)$/.exec(pattern)
     if (matchNoOverflow !== null) {
         const [, spaceBefore, word, spaceAfter, rest] = matchNoOverflow
         const token = `${spaceBefore}${word}${spaceAfter}`
-        return [{
-            token,
-            alphabet: makeAlphabet(token),
-            position,
-        }, ...tokenize(`${spaceAfter}${rest}`, position + spaceBefore.length + word.length)]
+        return [token, ...tokenize(`${spaceAfter}${rest}`)]
     }
 
     return []
@@ -239,20 +229,20 @@ function bitap(searchIndex: NormalizedSearchIndex, pattern: string, options: { s
         return []
     }
 
-    const longestFinish = searchIndex.lengthOfLongestNormalizedElement + pattern.length
+    const longestFinish = searchIndex.lengthOfLongestToken + pattern.length
 
     // Doing these allocations here saves performance
     let rd = new Uint32Array(longestFinish + 2)
     let lastRd = new Uint32Array(longestFinish + 2)
 
-    const tokens = tokenize(pattern, 0)
+    const patternTokens = tokenize(pattern).map(token => ({ token, alphabet: makeAlphabet(token) }))
 
     const maxResults = 10
     const results: SearchResult[] = []
 
-    const maxErrors = 1
+    const maxErrors = 0
 
-    entries: for (const [populationRank, { normalizedElement, element, priority }] of searchIndex.entries.entries()) {
+    entries: for (const [populationRank, { tokens, element, priority }] of searchIndex.entries.entries()) {
         if (!options.showHistoricalCDs && isHistoricalCD(element)) {
             continue
         }
@@ -260,41 +250,42 @@ function bitap(searchIndex: NormalizedSearchIndex, pattern: string, options: { s
         let matchScore = 0
         let positionScore = 0
 
-        for (const { token, alphabet, position } of tokens) {
-            const matchMask = 1 << (token.length - 1)
-            const finish = normalizedElement.length + token.length
-
+        for (const [patternTokenIndex, { token, alphabet }] of patternTokens.entries()) {
             let tokenMatchScore = maxErrors + 1
             let tokenPositionScore = 0
 
-            search: for (let errors = 0; errors <= maxErrors; errors++) {
-                rd.fill(0)
-                rd[finish + 1] = (1 << errors) - 1
+            search: for (const [entryTokenIndex, entryToken] of tokens.entries()) {
+                for (let errors = 0; errors <= maxErrors; errors++) {
+                    const matchMask = 1 << (token.length - 1)
+                    const finish = entryToken.length + token.length
 
-                for (let j = finish; j >= 1; j--) {
-                    let charMatch: number
-                    if (j - 1 < normalizedElement.length) {
-                        charMatch = alphabet[normalizedElement.charCodeAt(j - 1)]
-                    }
-                    else {
-                        charMatch = 0
-                    }
-                    if (errors === 0) {
-                        rd[j] = ((rd[j + 1] << 1) | 1) & charMatch
-                    }
-                    else {
+                    rd.fill(0)
+                    rd[finish + 1] = (1 << errors) - 1
+
+                    for (let j = finish; j >= 1; j--) {
+                        let charMatch: number
+                        if (j - 1 < entryToken.length) {
+                            charMatch = alphabet[entryToken.charCodeAt(j - 1)]
+                        }
+                        else {
+                            charMatch = 0
+                        }
+                        if (errors === 0) {
+                            rd[j] = ((rd[j + 1] << 1) | 1) & charMatch
+                        }
+                        else {
                         // Subsequent passes: fuzzy match.
-                        rd[j] = (((rd[j + 1] << 1) | 1) & charMatch) | (((lastRd[j + 1] | lastRd[j]) << 1) | 1) | lastRd[j + 1]
+                            rd[j] = (((rd[j + 1] << 1) | 1) & charMatch) | (((lastRd[j + 1] | lastRd[j]) << 1) | 1) | lastRd[j + 1]
+                        }
+                        if ((rd[j] & matchMask) !== 0) {
+                            tokenMatchScore = errors
+                            tokenPositionScore = Math.abs(patternTokenIndex - entryTokenIndex)
+                            break search
+                        }
                     }
-                    if ((rd[j] & matchMask) !== 0) {
-                        const matchPosition = j - 1
-                        tokenMatchScore = errors
-                        tokenPositionScore = Math.abs(matchPosition - position)
-                        break search
-                    }
-                }
 
-                [lastRd, rd] = [rd, lastRd]
+                    [lastRd, rd] = [rd, lastRd]
+                }
             }
 
             matchScore += tokenMatchScore
@@ -347,17 +338,24 @@ async function loadSearchIndex(): Promise<NormalizedSearchIndex> {
 }
 
 function processRawSearchIndex(searchIndex: { elements: string[], priorities: number[] }): NormalizedSearchIndex {
-    let lengthOfLongestNormalizedElement = 0
+    let lengthOfLongestToken = 0
     const entries = searchIndex.elements.map((element, index) => {
         const normalizedElement = normalize(element)
-        if (normalizedElement.length > lengthOfLongestNormalizedElement) {
-            lengthOfLongestNormalizedElement = normalizedElement.length
-        }
+        const tokens = tokenize(normalizedElement)
+        tokens.forEach((token) => {
+            if (token.length > lengthOfLongestToken) {
+                lengthOfLongestToken = token.length
+            }
+        })
         return {
             element,
-            normalizedElement,
+            tokens,
             priority: searchIndex.priorities[index],
         }
     })
-    return { entries, lengthOfLongestNormalizedElement }
+    return { entries, lengthOfLongestToken }
 }
+
+const i = processRawSearchIndex({ elements: ['long urban center', 's urban center'], priorities: [0, 0] })
+
+console.log(bitap(i, 'urban center', { showHistoricalCDs: false }))
