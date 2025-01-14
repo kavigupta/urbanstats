@@ -170,7 +170,7 @@ export function SearchBox(props: {
 }
 
 function normalize(a: string): string {
-    return ` ${a.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f,\(\)]/g, '')} `
+    return a.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f,\(\)]/g, '')
 }
 
 interface NormalizedSearchIndex {
@@ -204,11 +204,10 @@ function compareSearchResults(a: SearchResult, b: SearchResult): number {
 }
 
 function tokenize(pattern: string): string[] {
-    const matchNoOverflow = /^ *?( ?)([^ ]{1,32})( ?)(.*)$/.exec(pattern)
+    const matchNoOverflow = /^ *([^ ]{1,32})(.*)$/.exec(pattern)
     if (matchNoOverflow !== null) {
-        const [, spaceBefore, word, spaceAfter, rest] = matchNoOverflow
-        const token = `${spaceBefore}${word}${spaceAfter}`
-        return [token, ...tokenize(`${spaceAfter}${rest}`)]
+        const [, token, rest] = matchNoOverflow
+        return [token, ...tokenize(rest)]
     }
 
     return []
@@ -232,15 +231,17 @@ function bitap(searchIndex: NormalizedSearchIndex, pattern: string, options: { s
     const longestFinish = searchIndex.lengthOfLongestToken + pattern.length
 
     // Doing these allocations here saves performance
-    let rd = new Uint32Array(longestFinish + 2)
-    let lastRd = new Uint32Array(longestFinish + 2)
+    const rd = new Uint32Array(longestFinish + 2)
+    const lastRd = new Uint32Array(longestFinish + 2)
 
     const patternTokens = tokenize(pattern).map(token => ({ token, alphabet: makeAlphabet(token) }))
 
     const maxResults = 10
     const results: SearchResult[] = []
 
-    const maxErrors = 0
+    const maxErrors = 1
+
+    const bitapBuffer = Array.from({ length: maxErrors + 1 }, () => new Uint32Array(longestFinish + 2))
 
     entries: for (const [populationRank, { tokens, element, priority }] of searchIndex.entries.entries()) {
         if (!options.showHistoricalCDs && isHistoricalCD(element)) {
@@ -255,37 +256,45 @@ function bitap(searchIndex: NormalizedSearchIndex, pattern: string, options: { s
             let tokenPositionScore = 0
 
             search: for (const [entryTokenIndex, entryToken] of tokens.entries()) {
-                for (let errors = 0; errors <= maxErrors; errors++) {
-                    const matchMask = 1 << (token.length - 1)
-                    const finish = entryToken.length + token.length
-
-                    rd.fill(0)
-                    rd[finish + 1] = (1 << errors) - 1
-
-                    for (let j = finish; j >= 1; j--) {
-                        let charMatch: number
-                        if (j - 1 < entryToken.length) {
-                            charMatch = alphabet[entryToken.charCodeAt(j - 1)]
-                        }
-                        else {
-                            charMatch = 0
-                        }
-                        if (errors === 0) {
-                            rd[j] = ((rd[j + 1] << 1) | 1) & charMatch
-                        }
-                        else {
-                        // Subsequent passes: fuzzy match.
-                            rd[j] = (((rd[j + 1] << 1) | 1) & charMatch) | (((lastRd[j + 1] | lastRd[j]) << 1) | 1) | lastRd[j + 1]
-                        }
-                        if ((rd[j] & matchMask) !== 0) {
-                            tokenMatchScore = errors
-                            tokenPositionScore = Math.abs(patternTokenIndex - entryTokenIndex)
-                            break search
-                        }
-                    }
-
-                    [lastRd, rd] = [rd, lastRd]
+                const resultIndex = entryToken.indexOf(token)
+                if (resultIndex !== -1) {
+                    tokenMatchScore = resultIndex
+                    tokenPositionScore = Math.abs(patternTokenIndex - entryTokenIndex)
+                    break search
                 }
+
+                bitapBuffer.
+                // for (let errors = 0; errors <= maxErrors; errors++) {
+                //     const matchMask = 1 << (token.length - 1)
+                //     const finish = entryToken.length + token.length
+
+                //     rd.fill(0)
+                //     rd[finish + 1] = (1 << errors) - 1
+
+                //     for (let j = finish; j >= 1; j--) {
+                //         let charMatch: number
+                //         if (j - 1 < entryToken.length) {
+                //             charMatch = alphabet[entryToken.charCodeAt(j - 1)]
+                //         }
+                //         else {
+                //             charMatch = 0
+                //         }
+                //         if (errors === 0) {
+                //             rd[j] = ((rd[j + 1] << 1) | 1) & charMatch
+                //         }
+                //         else {
+                //         // Subsequent passes: fuzzy match.
+                //             rd[j] = (((rd[j + 1] << 1) | 1) & charMatch) | (((lastRd[j + 1] | lastRd[j]) << 1) | 1) | lastRd[j + 1]
+                //         }
+                //         if ((rd[j] & matchMask) !== 0) {
+                //             tokenMatchScore = errors
+                //             tokenPositionScore = Math.abs(patternTokenIndex - entryTokenIndex)
+                //             break search
+                //         }
+                //     }
+
+                //     [lastRd, rd] = [rd, lastRd]
+                // }
             }
 
             matchScore += tokenMatchScore
