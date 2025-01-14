@@ -192,6 +192,7 @@ interface SearchResult {
 }
 
 function compareSearchResults(a: SearchResult, b: SearchResult): number {
+    // The order of these comparisons relates to various optimizations
     if (a.matchScore !== b.matchScore) {
         return a.matchScore - b.matchScore
     }
@@ -216,7 +217,7 @@ function tokenize(pattern: string): string[] {
 
 // Expects `pattern` to be normalized
 function search(searchIndex: NormalizedSearchIndex, pattern: string, options: { showHistoricalCDs: boolean }): string[] {
-    if (pattern === '  ') {
+    if (pattern === '') {
         return []
     }
 
@@ -232,6 +233,11 @@ function search(searchIndex: NormalizedSearchIndex, pattern: string, options: { 
     entries: for (const [populationRank, { tokens, element, priority }] of searchIndex.entries.entries()) {
         if (!options.showHistoricalCDs && isHistoricalCD(element)) {
             continue
+        }
+
+        // If this entry wouldn't make it into the results even with a perfect match because of priority or population, continue
+        if (results.length === maxResults && compareSearchResults({ element, matchScore: 0, positionScore: 0, priority, populationRank }, results[results.length - 1]) > 0) {
+            continue entries
         }
 
         let matchScore = 0
@@ -322,7 +328,7 @@ function processRawSearchIndex(searchIndex: { elements: string[], priorities: nu
     return { entries, lengthOfLongestToken }
 }
 
-const i = processRawSearchIndex({ elements: ['santa catarina, brazil'], priorities: [0, 0] })
+const i = processRawSearchIndex({ elements: ['santa catarina, brazil', 'other'], priorities: [0, 0] })
 
 console.log(search(i, 'ca', { showHistoricalCDs: false }))
 
