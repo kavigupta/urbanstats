@@ -179,7 +179,7 @@ interface NormalizedSearchIndex {
         element: string
         tokens: Haystack[]
         priority: number
-        signature: bigint
+        signature: number
     }[]
     lengthOfLongestToken: number
 }
@@ -271,12 +271,10 @@ function search(searchIndex: NormalizedSearchIndex, pattern: string, options: { 
 
             search: for (const [entryTokenIndex, entryToken] of tokens.entries()) {
                 const searchResult = bitap(entryToken, needle, maxErrors, bitapBuffers, patternTokenIndex === patternTokens.length - 1)
-                if (searchResult < maxErrors + 1) {
+                const positionResult = Math.abs(patternTokenIndex - entryTokenIndex)
+                if (searchResult < tokenMatchScore || (searchResult <= tokenMatchScore && positionResult < tokenPositionScore)) {
                     tokenMatchScore = searchResult
-                    tokenPositionScore = Math.abs(patternTokenIndex - entryTokenIndex)
-                    if (tokenMatchScore === 0) {
-                        break search // We're ignoring the possiblity that there's a better-positioned match somewhere else for simplicity and performance
-                    }
+                    tokenPositionScore = positionResult
                 }
             }
 
@@ -353,8 +351,8 @@ function processRawSearchIndex(searchIndex: { elements: string[], priorities: nu
     return { entries, lengthOfLongestToken }
 }
 
-const i = processRawSearchIndex({ elements: ['north america'], priorities: [0] })
+const i = processRawSearchIndex({ elements: ['francisco'], priorities: [0] })
 
-console.log(search(i, 'lone pine', { showHistoricalCDs: false }))
+console.log(search(i, 'an ancisco', { showHistoricalCDs: false }))
 
 // console.log(bitap('catarina', toNeedle('ca'), 0, [new Uint32Array(3)], true))

@@ -8,7 +8,7 @@
 export interface Needle {
     alphabet: Uint32Array
     length: number
-    signature: bigint
+    signature: number
 }
 
 export function toNeedle(token: string): Needle {
@@ -22,7 +22,7 @@ export function toNeedle(token: string): Needle {
 
 export interface Haystack {
     haystack: string
-    signature: bigint
+    signature: number
 }
 
 export function toHaystack(token: string): Haystack {
@@ -32,16 +32,17 @@ export function toHaystack(token: string): Haystack {
     }
 }
 
-export function toSignature(str: string): bigint {
-    const alphabetStart = BigInt('a'.charCodeAt(0))
-    const alphabetEnd = BigInt('z'.charCodeAt(0))
-    let result = 0n
+export function toSignature(str: string): number {
+    const alphabetStart = 'a'.charCodeAt(0)
+    const alphabetEnd = 'z'.charCodeAt(0)
+    // 0 < alphabetEnd - alphabetStart < 26   because of javascript integer size
+    let result = 0
     for (let i = 0; i < str.length; i++) {
-        const charCode = BigInt(str.charCodeAt(i))
+        const charCode = str.charCodeAt(i)
         if (charCode >= alphabetStart && charCode <= alphabetEnd) {
-            const firstOccurence = (1n << ((charCode - alphabetStart) * 2n))
-            if ((result & firstOccurence) !== 0n) {
-                result |= (firstOccurence << 1n) // second occurence
+            const firstOccurence = (1 << ((charCode - alphabetStart) * 2))
+            if ((result & firstOccurence) !== 0) {
+                result |= (firstOccurence << 1) // second occurence
             }
             else {
                 result |= firstOccurence
@@ -76,7 +77,11 @@ export function bitap(haystack: Haystack, needle: Needle, maxErrors: number, scr
     }
 
     bitapPerformance.numRuns++
-    if (bitCount(haystack.signature ^ needle.signature) > maxErrors) {
+    if (allowPartial && bitCount(needle.signature ^ (haystack.signature & needle.signature)) > maxErrors) {
+        bitapPerformance.numShortcuts++
+        return bestMatch // The letters in the haystack and needle are too different to possibly match
+    }
+    if (!allowPartial && bitCount(needle.signature ^ haystack.signature) > maxErrors) {
         bitapPerformance.numShortcuts++
         return bestMatch // The letters in the haystack and needle are too different to possibly match
     }
@@ -119,10 +124,15 @@ export function bitap(haystack: Haystack, needle: Needle, maxErrors: number, scr
     return bestMatch
 }
 
-// https://stackoverflow.com/a/2709523
-export function bitCount(i: bigint): number {
-    i = i - ((i >> 1n) & 0x5555555555555555n)
-    i = (i & 0x3333333333333333n) + ((i >> 2n) & 0x3333333333333333n)
-    i = (((i + (i >> 4n)) & 0xF0F0F0F0F0F0F0Fn) * 0x101010101010101n) >> 56n
-    return Number(i)
+export function bitCount(x: number): number {
+    return bitCount32(x) + bitCount32(Math.floor(x / 0x1_0000_0000))
+}
+
+// https://stackoverflow.com/a/109025
+function bitCount32(i: number): number {
+    i = i - ((i >> 1) & 0x55555555) // add pairs of bits
+    i = (i & 0x33333333) + ((i >> 2) & 0x33333333) // quads
+    i = (i + (i >> 4)) & 0x0F0F0F0F // groups of 8
+    i *= 0x01010101 // horizontal sum of bytes
+    return i >> 24
 }
