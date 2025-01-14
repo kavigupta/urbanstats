@@ -193,14 +193,14 @@ interface SearchResult {
 
 function compareSearchResults(a: SearchResult, b: SearchResult): number {
     // The order of these comparisons relates to various optimizations
+    if (a.positionScore !== b.positionScore) {
+        return a.positionScore - b.positionScore
+    }
     if (a.matchScore !== b.matchScore) {
         return a.matchScore - b.matchScore
     }
     if (a.priority !== b.priority) {
         return a.priority - b.priority
-    }
-    if (a.positionScore !== b.positionScore) {
-        return a.positionScore - b.positionScore
     }
     return a.populationRank - b.populationRank
 }
@@ -226,9 +226,9 @@ function search(searchIndex: NormalizedSearchIndex, pattern: string, options: { 
     const maxResults = 10
     const results: SearchResult[] = []
 
-    let maxErrorsInEntry = 1
+    const maxErrors = 2
 
-    const bitapBuffers = Array.from({ length: maxErrorsInEntry + 1 }, () => new Uint32Array(searchIndex.lengthOfLongestToken + 2))
+    const bitapBuffers = Array.from({ length: maxErrors + 1 }, () => new Uint32Array(searchIndex.lengthOfLongestToken + 2))
 
     entries: for (const [populationRank, { tokens, element, priority }] of searchIndex.entries.entries()) {
         if (!options.showHistoricalCDs && isHistoricalCD(element)) {
@@ -244,13 +244,12 @@ function search(searchIndex: NormalizedSearchIndex, pattern: string, options: { 
         let positionScore = 0
 
         for (const [patternTokenIndex, needle] of patternTokens.entries()) {
-            const maxErrorsInToken = maxErrorsInEntry - matchScore
-            let tokenMatchScore = maxErrorsInToken + 1
+            let tokenMatchScore = maxErrors + 1
             let tokenPositionScore = 0
 
             search: for (const [entryTokenIndex, entryToken] of tokens.entries()) {
-                const searchResult = bitap(entryToken, needle, maxErrorsInToken, bitapBuffers, patternTokenIndex === patternTokens.length - 1)
-                if (searchResult < maxErrorsInToken + 1) {
+                const searchResult = bitap(entryToken, needle, maxErrors, bitapBuffers, patternTokenIndex === patternTokens.length - 1)
+                if (searchResult < maxErrors + 1) {
                     tokenMatchScore = searchResult
                     tokenPositionScore = Math.abs(patternTokenIndex - entryTokenIndex)
                     if (tokenMatchScore === 0) {
@@ -268,7 +267,7 @@ function search(searchIndex: NormalizedSearchIndex, pattern: string, options: { 
             }
         }
 
-        if (matchScore >= maxErrorsInEntry + 1) {
+        if (matchScore >= patternTokens.length * (maxErrors + 1)) {
             // No match
             continue
         }
@@ -285,7 +284,6 @@ function search(searchIndex: NormalizedSearchIndex, pattern: string, options: { 
         for (let resultsIndex = Math.min(results.length, maxResults); resultsIndex >= 0; resultsIndex--) {
             if (results.length <= resultsIndex || compareSearchResults(result, results[resultsIndex]) < 0) {
                 spliceIndex = resultsIndex
-                maxErrorsInEntry = Math.min(maxErrorsInEntry, matchScore) // Since matchScore is the first thing we sort on
             }
             else {
                 break
@@ -328,8 +326,8 @@ function processRawSearchIndex(searchIndex: { elements: string[], priorities: nu
     return { entries, lengthOfLongestToken }
 }
 
-const i = processRawSearchIndex({ elements: ['santa catarina, brazil', 'other'], priorities: [0, 0] })
+const i = processRawSearchIndex({ elements: ['north america'], priorities: [0, 0] })
 
-console.log(search(i, 'ca', { showHistoricalCDs: false }))
+console.log(search(i, 'flintridge', { showHistoricalCDs: false }))
 
 // console.log(bitap('catarina', toNeedle('ca'), 0, [new Uint32Array(3)], true))
