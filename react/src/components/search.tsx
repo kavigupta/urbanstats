@@ -6,7 +6,7 @@ import { useColors } from '../page_template/colors'
 import { useSetting } from '../page_template/settings'
 import { isHistoricalCD } from '../utils/is_historical'
 import '../common.css'
-import { bitap, Haystack, toHaystack, toNeedle } from '../utils/bitap'
+import { bitap, bitapPerformance, bitCount, Haystack, toHaystack, toNeedle, toSignature } from '../utils/bitap'
 
 export function SearchBox(props: {
     onChange?: (inp: string) => void
@@ -179,6 +179,7 @@ interface NormalizedSearchIndex {
         element: string
         tokens: Haystack[]
         priority: number
+        signature: number
     }[]
     lengthOfLongestToken: number
 }
@@ -230,8 +231,28 @@ function search(searchIndex: NormalizedSearchIndex, pattern: string, options: { 
 
     const bitapBuffers = Array.from({ length: maxErrors + 1 }, () => new Uint32Array(searchIndex.lengthOfLongestToken + 2))
 
-    entries: for (const [populationRank, { tokens, element, priority }] of searchIndex.entries.entries()) {
+    bitapPerformance.numRuns = 0
+    bitapPerformance.numShortcuts = 0
+
+    const patternSignature = toSignature(pattern)
+
+    let skips = 0
+    let total = 0
+
+    entries: for (const [populationRank, { tokens, element, priority, signature }] of searchIndex.entries.entries()) {
         if (!options.showHistoricalCDs && isHistoricalCD(element)) {
+            continue
+        }
+
+        total++
+        // console.log({
+        //     pattern: patternSignature.toString(2),
+        //     entry: signature.toString(2),
+        //     and: (patternSignature & signature).toString(2),
+        //     diff: (patternSignature ^ (patternSignature & signature)).toString(2),
+        // })
+        if (bitCount(patternSignature ^ (patternSignature & signature)) > maxErrors) {
+            skips++
             continue
         }
 
@@ -297,6 +318,9 @@ function search(searchIndex: NormalizedSearchIndex, pattern: string, options: { 
         }
     }
 
+    console.log(bitapPerformance)
+    console.log({ total, skips })
+
     console.log(results)
 
     return results.map(result => result.element)
@@ -322,13 +346,14 @@ function processRawSearchIndex(searchIndex: { elements: string[], priorities: nu
             element,
             tokens: haystacks,
             priority: searchIndex.priorities[index],
+            signature: toSignature(normalizedElement),
         }
     })
     return { entries, lengthOfLongestToken }
 }
 
-const i = processRawSearchIndex({ elements: ['north america'], priorities: [0, 0] })
+const i = processRawSearchIndex({ elements: ['north america'], priorities: [0] })
 
-console.log(search(i, 'flintridge', { showHistoricalCDs: false }))
+console.log(search(i, 'lone pine', { showHistoricalCDs: false }))
 
 // console.log(bitap('catarina', toNeedle('ca'), 0, [new Uint32Array(3)], true))

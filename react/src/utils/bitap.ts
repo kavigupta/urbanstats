@@ -32,7 +32,7 @@ export function toHaystack(token: string): Haystack {
     }
 }
 
-function toSignature(str: string): number {
+export function toSignature(str: string): number {
     const alphabetStart = 'a'.charCodeAt(0)
     const alphabetEnd = 'z'.charCodeAt(0)
     let result = 0
@@ -43,6 +43,11 @@ function toSignature(str: string): number {
         }
     }
     return result
+}
+
+export const bitapPerformance = {
+    numRuns: 0,
+    numShortcuts: 0,
 }
 
 /**
@@ -64,7 +69,9 @@ export function bitap(haystack: Haystack, needle: Needle, maxErrors: number, scr
         return bestMatch
     }
 
+    bitapPerformance.numRuns++
     if (bitCount(haystack.signature ^ needle.signature) > maxErrors) {
+        bitapPerformance.numShortcuts++
         return bestMatch // The letters in the haystack and needle are too different to possibly match
     }
 
@@ -107,7 +114,7 @@ export function bitap(haystack: Haystack, needle: Needle, maxErrors: number, scr
 }
 
 // https://stackoverflow.com/a/14010273
-function bitCount(x: number): number {
+export function bitCount(x: number): number {
     x = (x & 0x55) + (x >> 1 & 0x55)
     x = (x & 0x33) + (x >> 2 & 0x33)
     x = (x & 0x0f) + (x >> 4 & 0x0f)
