@@ -231,20 +231,20 @@ function search(searchIndex: NormalizedSearchIndex, pattern: string, options: { 
 
     const bitapBuffers = Array.from({ length: maxErrors + 1 }, () => new Uint32Array(searchIndex.lengthOfLongestToken + 2))
 
-    bitapPerformance.numRuns = 0
-    bitapPerformance.numShortcuts = 0
+    bitapPerformance.numBitapSignatureChecks = 0
+    bitapPerformance.numBitapSignatureSkips = 0
 
     const patternSignature = toSignature(pattern)
 
-    let skips = 0
-    let total = 0
+    let entriesPatternSkips = 0
+    let entriesPatternChecks = 0
 
     entries: for (const [populationRank, { tokens, element, priority, signature }] of searchIndex.entries.entries()) {
         if (!options.showHistoricalCDs && isHistoricalCD(element)) {
             continue
         }
 
-        total++
+        entriesPatternChecks++
         // console.log({
         //     pattern: patternSignature.toString(2),
         //     entry: signature.toString(2),
@@ -253,7 +253,7 @@ function search(searchIndex: NormalizedSearchIndex, pattern: string, options: { 
         //     bitCount: bitCount(patternSignature ^ (patternSignature & signature)),
         // })
         if (bitCount(patternSignature ^ (patternSignature & signature)) > maxErrors) {
-            skips++
+            entriesPatternSkips++
             continue
         }
 
@@ -318,7 +318,7 @@ function search(searchIndex: NormalizedSearchIndex, pattern: string, options: { 
     }
 
     console.log(bitapPerformance)
-    console.log({ total, skips })
+    console.log({ total: entriesPatternChecks, skips: entriesPatternSkips })
 
     console.log(results)
 
@@ -331,6 +331,7 @@ async function loadSearchIndex(): Promise<NormalizedSearchIndex> {
 }
 
 function processRawSearchIndex(searchIndex: { elements: string[], priorities: number[] }): NormalizedSearchIndex {
+    const start = performance.now()
     let lengthOfLongestToken = 0
     const entries = searchIndex.elements.map((element, index) => {
         const normalizedElement = normalize(element)
@@ -348,6 +349,7 @@ function processRawSearchIndex(searchIndex: { elements: string[], priorities: nu
             signature: toSignature(normalizedElement),
         }
     })
+    console.log(`Took ${performance.now() - start}ms to process search index`)
     return { entries, lengthOfLongestToken }
 }
 

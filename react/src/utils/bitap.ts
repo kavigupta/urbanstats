@@ -53,8 +53,8 @@ export function toSignature(str: string): number {
 }
 
 export const bitapPerformance = {
-    numRuns: 0,
-    numShortcuts: 0,
+    numBitapSignatureChecks: 0,
+    numBitapSignatureSkips: 0,
 }
 
 /**
@@ -76,13 +76,13 @@ export function bitap(haystack: Haystack, needle: Needle, maxErrors: number, scr
         return bestMatch
     }
 
-    bitapPerformance.numRuns++
+    bitapPerformance.numBitapSignatureChecks++
     if (allowPartial && bitCount(needle.signature ^ (haystack.signature & needle.signature)) > maxErrors) {
-        bitapPerformance.numShortcuts++
+        bitapPerformance.numBitapSignatureSkips++
         return bestMatch // The letters in the haystack and needle are too different to possibly match
     }
     if (!allowPartial && bitCount(needle.signature ^ haystack.signature) > maxErrors) {
-        bitapPerformance.numShortcuts++
+        bitapPerformance.numBitapSignatureSkips++
         return bestMatch // The letters in the haystack and needle are too different to possibly match
     }
 
