@@ -6,6 +6,7 @@ import { useColors } from '../page_template/colors'
 import { useSetting } from '../page_template/settings'
 import { isHistoricalCD } from '../utils/is_historical'
 import '../common.css'
+import { bitap, toNeedle } from '../utils/bitap'
 
 export function SearchBox(props: {
     onChange?: (inp: string) => void
@@ -84,7 +85,7 @@ export function SearchBox(props: {
                 return
             }
             const start = performance.now()
-            const result = bitap(full, searchQuery, { showHistoricalCDs })
+            const result = search(full, searchQuery, { showHistoricalCDs })
             console.log(`Took ${performance.now() - start} ms to execute search`)
             setMatches(result)
             setFocused(f => Math.min(f, result.length - 1))
@@ -213,35 +214,20 @@ function tokenize(pattern: string): string[] {
     return []
 }
 
-function makeAlphabet(token: string): Uint32Array {
-    const result = new Uint32Array(65535).fill(0)
-    for (let i = 0; i < token.length; i++) {
-        const char = token.charCodeAt(i)
-        result[char] = result[char] | (1 << (token.length - i - 1))
-    }
-    return result
-}
-
 // Expects `pattern` to be normalized
-function bitap(searchIndex: NormalizedSearchIndex, pattern: string, options: { showHistoricalCDs: boolean }): string[] {
+function search(searchIndex: NormalizedSearchIndex, pattern: string, options: { showHistoricalCDs: boolean }): string[] {
     if (pattern === '  ') {
         return []
     }
 
-    const longestFinish = searchIndex.lengthOfLongestToken + pattern.length
-
-    // Doing these allocations here saves performance
-    const rd = new Uint32Array(longestFinish + 2)
-    const lastRd = new Uint32Array(longestFinish + 2)
-
-    const patternTokens = tokenize(pattern).map(token => ({ token, alphabet: makeAlphabet(token) }))
+    const patternTokens = tokenize(pattern).map(token => toNeedle(token))
 
     const maxResults = 10
     const results: SearchResult[] = []
 
     const maxErrors = 1
 
-    const bitapBuffer = Array.from({ length: maxErrors + 1 }, () => new Uint32Array(longestFinish + 2))
+    const bitapBuffers = Array.from({ length: maxErrors + 1 }, () => new Uint32Array(searchIndex.lengthOfLongestToken + 2))
 
     entries: for (const [populationRank, { tokens, element, priority }] of searchIndex.entries.entries()) {
         if (!options.showHistoricalCDs && isHistoricalCD(element)) {
@@ -251,50 +237,19 @@ function bitap(searchIndex: NormalizedSearchIndex, pattern: string, options: { s
         let matchScore = 0
         let positionScore = 0
 
-        for (const [patternTokenIndex, { token, alphabet }] of patternTokens.entries()) {
+        for (const [patternTokenIndex, needle] of patternTokens.entries()) {
             let tokenMatchScore = maxErrors + 1
             let tokenPositionScore = 0
 
             search: for (const [entryTokenIndex, entryToken] of tokens.entries()) {
-                const resultIndex = entryToken.indexOf(token)
-                if (resultIndex !== -1) {
-                    tokenMatchScore = resultIndex
+                const searchResult = bitap(entryToken, needle, maxErrors, bitapBuffers, patternTokenIndex === patternTokens.length - 1)
+                if (searchResult < maxErrors + 1) {
+                    tokenMatchScore = searchResult
                     tokenPositionScore = Math.abs(patternTokenIndex - entryTokenIndex)
-                    break search
+                    if (tokenMatchScore === 0) {
+                        break search // We're ignoring the possiblity that there's a better-positioned match somewhere else for simplicity and performance
+                    }
                 }
-
-                bitapBuffer.
-                // for (let errors = 0; errors <= maxErrors; errors++) {
-                //     const matchMask = 1 << (token.length - 1)
-                //     const finish = entryToken.length + token.length
-
-                //     rd.fill(0)
-                //     rd[finish + 1] = (1 << errors) - 1
-
-                //     for (let j = finish; j >= 1; j--) {
-                //         let charMatch: number
-                //         if (j - 1 < entryToken.length) {
-                //             charMatch = alphabet[entryToken.charCodeAt(j - 1)]
-                //         }
-                //         else {
-                //             charMatch = 0
-                //         }
-                //         if (errors === 0) {
-                //             rd[j] = ((rd[j + 1] << 1) | 1) & charMatch
-                //         }
-                //         else {
-                //         // Subsequent passes: fuzzy match.
-                //             rd[j] = (((rd[j + 1] << 1) | 1) & charMatch) | (((lastRd[j + 1] | lastRd[j]) << 1) | 1) | lastRd[j + 1]
-                //         }
-                //         if ((rd[j] & matchMask) !== 0) {
-                //             tokenMatchScore = errors
-                //             tokenPositionScore = Math.abs(patternTokenIndex - entryTokenIndex)
-                //             break search
-                //         }
-                //     }
-
-                //     [lastRd, rd] = [rd, lastRd]
-                // }
             }
 
             matchScore += tokenMatchScore
@@ -365,6 +320,8 @@ function processRawSearchIndex(searchIndex: { elements: string[], priorities: nu
     return { entries, lengthOfLongestToken }
 }
 
-const i = processRawSearchIndex({ elements: ['long urban center', 's urban center'], priorities: [0, 0] })
+const i = processRawSearchIndex({ elements: ['santa catarina, brazil'], priorities: [0, 0] })
 
-console.log(bitap(i, 'urban center', { showHistoricalCDs: false }))
+console.log(search(i, 'ca', { showHistoricalCDs: false }))
+
+// console.log(bitap('catarina', toNeedle('ca'), 0, [new Uint32Array(3)], true))
