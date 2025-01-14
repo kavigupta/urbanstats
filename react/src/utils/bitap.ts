@@ -5,9 +5,10 @@
  * This is useful for a search that operates on tokens.
  */
 
-interface Needle {
+export interface Needle {
     alphabet: Uint32Array
     length: number
+    signature: number
 }
 
 export function toNeedle(token: string): Needle {
@@ -16,7 +17,32 @@ export function toNeedle(token: string): Needle {
         const char = token.charCodeAt(i)
         alphabet[char] = alphabet[char] | (1 << i)
     }
-    return { alphabet, length: token.length }
+    return { alphabet, length: token.length, signature: toSignature(token) }
+}
+
+export interface Haystack {
+    haystack: string
+    signature: number
+}
+
+export function toHaystack(token: string): Haystack {
+    return {
+        haystack: token,
+        signature: toSignature(token),
+    }
+}
+
+function toSignature(str: string): number {
+    const alphabetStart = 'a'.charCodeAt(0)
+    const alphabetEnd = 'z'.charCodeAt(0)
+    let result = 0
+    for (let i = 0; i < str.length; i++) {
+        const charCode = str.charCodeAt(i)
+        if (charCode >= alphabetStart && charCode <= alphabetEnd) {
+            result |= (1 << (charCode - alphabetStart))
+        }
+    }
+    return result
 }
 
 /**
@@ -28,14 +54,18 @@ export function toNeedle(token: string): Needle {
  *
  * If allowPartial is false, and needle and haystack are different lengths, they may not possibly match, or the number of edit errors may be scaled down
  */
-export function bitap(haystack: string, needle: Needle, maxErrors: number, scratchBuffers: Uint32Array[], allowPartial: boolean): number {
+export function bitap(haystack: Haystack, needle: Needle, maxErrors: number, scratchBuffers: Uint32Array[], allowPartial: boolean): number {
     let bestMatch = maxErrors + 1
 
     if (!allowPartial) {
-        maxErrors -= Math.abs(haystack.length - needle.length)
+        maxErrors -= Math.abs(haystack.haystack.length - needle.length)
     }
     if (maxErrors < 0) {
         return bestMatch
+    }
+
+    if (bitCount(haystack.signature ^ needle.signature) > maxErrors) {
+        return bestMatch // The letters in the haystack and needle are too different to possibly match
     }
 
     for (let errors = 0; errors <= maxErrors; errors++) {
@@ -46,8 +76,8 @@ export function bitap(haystack: string, needle: Needle, maxErrors: number, scrat
     const matchMask = 1 << (needle.length - 1)
     for (let j = 1; j <= needle.length; j++) {
         let charMatch: number
-        if (j - 1 < haystack.length) {
-            charMatch = needle.alphabet[haystack.charCodeAt(j - 1)]
+        if (j - 1 < haystack.haystack.length) {
+            charMatch = needle.alphabet[haystack.haystack.charCodeAt(j - 1)]
         }
         else {
             charMatch = 0
@@ -74,4 +104,13 @@ export function bitap(haystack: string, needle: Needle, maxErrors: number, scrat
         }
     }
     return bestMatch
+}
+
+// https://stackoverflow.com/a/14010273
+function bitCount(x: number): number {
+    x = (x & 0x55) + (x >> 1 & 0x55)
+    x = (x & 0x33) + (x >> 2 & 0x33)
+    x = (x & 0x0f) + (x >> 4 & 0x0f)
+
+    return x
 }

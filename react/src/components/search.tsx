@@ -6,7 +6,7 @@ import { useColors } from '../page_template/colors'
 import { useSetting } from '../page_template/settings'
 import { isHistoricalCD } from '../utils/is_historical'
 import '../common.css'
-import { bitap, toNeedle } from '../utils/bitap'
+import { bitap, Haystack, toHaystack, toNeedle } from '../utils/bitap'
 
 export function SearchBox(props: {
     onChange?: (inp: string) => void
@@ -177,7 +177,7 @@ function normalize(a: string): string {
 interface NormalizedSearchIndex {
     entries: {
         element: string
-        tokens: string[]
+        tokens: Haystack[]
         priority: number
     }[]
     lengthOfLongestToken: number
@@ -312,14 +312,15 @@ function processRawSearchIndex(searchIndex: { elements: string[], priorities: nu
     const entries = searchIndex.elements.map((element, index) => {
         const normalizedElement = normalize(element)
         const tokens = tokenize(normalizedElement)
-        tokens.forEach((token) => {
+        const haystacks = tokens.map((token) => {
             if (token.length > lengthOfLongestToken) {
                 lengthOfLongestToken = token.length
             }
+            return toHaystack(token)
         })
         return {
             element,
-            tokens,
+            tokens: haystacks,
             priority: searchIndex.priorities[index],
         }
     })
