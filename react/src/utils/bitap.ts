@@ -8,7 +8,7 @@
 export interface Needle {
     alphabet: Uint32Array
     length: number
-    signature: number
+    signature: bigint
 }
 
 export function toNeedle(token: string): Needle {
@@ -22,7 +22,7 @@ export function toNeedle(token: string): Needle {
 
 export interface Haystack {
     haystack: string
-    signature: number
+    signature: bigint
 }
 
 export function toHaystack(token: string): Haystack {
@@ -32,14 +32,20 @@ export function toHaystack(token: string): Haystack {
     }
 }
 
-export function toSignature(str: string): number {
-    const alphabetStart = 'a'.charCodeAt(0)
-    const alphabetEnd = 'z'.charCodeAt(0)
-    let result = 0
+export function toSignature(str: string): bigint {
+    const alphabetStart = BigInt('a'.charCodeAt(0))
+    const alphabetEnd = BigInt('z'.charCodeAt(0))
+    let result = 0n
     for (let i = 0; i < str.length; i++) {
-        const charCode = str.charCodeAt(i)
+        const charCode = BigInt(str.charCodeAt(i))
         if (charCode >= alphabetStart && charCode <= alphabetEnd) {
-            result |= (1 << (charCode - alphabetStart))
+            const firstOccurence = (1n << ((charCode - alphabetStart) * 2n))
+            if ((result & firstOccurence) !== 0n) {
+                result |= (firstOccurence << 1n) // second occurence
+            }
+            else {
+                result |= firstOccurence
+            }
         }
     }
     return result
@@ -113,11 +119,10 @@ export function bitap(haystack: Haystack, needle: Needle, maxErrors: number, scr
     return bestMatch
 }
 
-// https://stackoverflow.com/a/14010273
-export function bitCount(x: number): number {
-    x = (x & 0x55) + (x >> 1 & 0x55)
-    x = (x & 0x33) + (x >> 2 & 0x33)
-    x = (x & 0x0f) + (x >> 4 & 0x0f)
-
-    return x
+// https://stackoverflow.com/a/2709523
+export function bitCount(i: bigint): number {
+    i = i - ((i >> 1n) & 0x5555555555555555n)
+    i = (i & 0x3333333333333333n) + ((i >> 2n) & 0x3333333333333333n)
+    i = (((i + (i >> 4n)) & 0xF0F0F0F0F0F0F0Fn) * 0x101010101010101n) >> 56n
+    return Number(i)
 }

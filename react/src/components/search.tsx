@@ -179,7 +179,7 @@ interface NormalizedSearchIndex {
         element: string
         tokens: Haystack[]
         priority: number
-        signature: number
+        signature: bigint
     }[]
     lengthOfLongestToken: number
 }
@@ -250,6 +250,7 @@ function search(searchIndex: NormalizedSearchIndex, pattern: string, options: { 
         //     entry: signature.toString(2),
         //     and: (patternSignature & signature).toString(2),
         //     diff: (patternSignature ^ (patternSignature & signature)).toString(2),
+        //     bitCount: bitCount(patternSignature ^ (patternSignature & signature)),
         // })
         if (bitCount(patternSignature ^ (patternSignature & signature)) > maxErrors) {
             skips++
