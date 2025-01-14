@@ -225,9 +225,9 @@ function search(searchIndex: NormalizedSearchIndex, pattern: string, options: { 
     const maxResults = 10
     const results: SearchResult[] = []
 
-    const maxErrors = 1
+    let maxErrorsInEntry = 1
 
-    const bitapBuffers = Array.from({ length: maxErrors + 1 }, () => new Uint32Array(searchIndex.lengthOfLongestToken + 2))
+    const bitapBuffers = Array.from({ length: maxErrorsInEntry + 1 }, () => new Uint32Array(searchIndex.lengthOfLongestToken + 2))
 
     entries: for (const [populationRank, { tokens, element, priority }] of searchIndex.entries.entries()) {
         if (!options.showHistoricalCDs && isHistoricalCD(element)) {
@@ -238,12 +238,13 @@ function search(searchIndex: NormalizedSearchIndex, pattern: string, options: { 
         let positionScore = 0
 
         for (const [patternTokenIndex, needle] of patternTokens.entries()) {
-            let tokenMatchScore = maxErrors + 1
+            const maxErrorsInToken = maxErrorsInEntry - matchScore
+            let tokenMatchScore = maxErrorsInToken + 1
             let tokenPositionScore = 0
 
             search: for (const [entryTokenIndex, entryToken] of tokens.entries()) {
-                const searchResult = bitap(entryToken, needle, maxErrors, bitapBuffers, patternTokenIndex === patternTokens.length - 1)
-                if (searchResult < maxErrors + 1) {
+                const searchResult = bitap(entryToken, needle, maxErrorsInToken, bitapBuffers, patternTokenIndex === patternTokens.length - 1)
+                if (searchResult < maxErrorsInToken + 1) {
                     tokenMatchScore = searchResult
                     tokenPositionScore = Math.abs(patternTokenIndex - entryTokenIndex)
                     if (tokenMatchScore === 0) {
@@ -261,7 +262,7 @@ function search(searchIndex: NormalizedSearchIndex, pattern: string, options: { 
             }
         }
 
-        if (matchScore === tokens.length * (maxErrors + 1)) {
+        if (matchScore >= maxErrorsInEntry + 1) {
             // No match
             continue
         }
@@ -278,6 +279,7 @@ function search(searchIndex: NormalizedSearchIndex, pattern: string, options: { 
         for (let resultsIndex = Math.min(results.length, maxResults); resultsIndex >= 0; resultsIndex--) {
             if (results.length <= resultsIndex || compareSearchResults(result, results[resultsIndex]) < 0) {
                 spliceIndex = resultsIndex
+                maxErrorsInEntry = Math.min(maxErrorsInEntry, matchScore) // Since matchScore is the first thing we sort on
             }
             else {
                 break
