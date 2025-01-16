@@ -6,6 +6,7 @@ import { applySettingsParamSettings, settingsConnectionConfig } from '../compone
 import { ArticleRow, forType, loadArticles } from '../components/load-article'
 import type { StatisticPanelProps } from '../components/statistic-panel'
 import explanation_pages from '../data/explanation_page'
+import quiz_infinite from '../data/quiz_infinite'
 import stats from '../data/statistic_list'
 import names from '../data/statistic_name_list' // TODO: Maybe dynamically import these
 import paths from '../data/statistic_path_list'
@@ -16,9 +17,10 @@ import { activeVectorKeys, fromVector, getVector } from '../page_template/settin
 import { StatGroupSettings } from '../page_template/statistic-settings'
 import { allGroups, CategoryIdentifier, StatName, StatPath, statsTree } from '../page_template/statistic-tree'
 import { getDailyOffsetNumber, getRetrostatOffsetNumber } from '../quiz/dates'
-import { QuizQuestionsModel, wrapQuestionsModel, addFriendFromLink, CustomQuizContent, JuxtaQuestionJSON, loadJuxta, loadRetro, QuizDescriptor, RetroQuestionJSON } from '../quiz/quiz'
+import { QuizQuestionsModel, wrapQuestionsModel, addFriendFromLink, CustomQuizContent, JuxtaQuestionJSON, loadJuxta, loadRetro, QuizDescriptor, RetroQuestionJSON, infiniteQuiz } from '../quiz/quiz'
 import { defaultArticleUniverse, defaultComparisonUniverse } from '../universe'
 import { Article, IDataList } from '../utils/protos'
+import { randomID } from '../utils/random'
 import { followSymlink, followSymlinks } from '../utils/symlinks'
 import { NormalizeProto } from '../utils/types'
 import { base64Gunzip } from '../utils/urlParamShort'
@@ -94,11 +96,22 @@ const quizSchema = z.intersection(
             mode: z.union([z.undefined(), z.literal('retro')]),
             date: z.optional(z.coerce.number().int()),
             quizContent: z.optional(z.undefined()),
+            seed: z.optional(z.undefined()),
+            v: z.optional(z.undefined()),
         }),
         z.object({
             mode: z.literal('custom'),
             date: z.optional(z.undefined()),
             quizContent: z.string(),
+            seed: z.optional(z.undefined()),
+            v: z.optional(z.undefined()),
+        }),
+        z.object({
+            mode: z.literal('infinite'),
+            date: z.optional(z.undefined()),
+            quizContent: z.optional(z.undefined()),
+            seed: z.union([z.undefined(), z.string()]),
+            v: z.union([z.undefined(), z.coerce.number().int()]),
         }),
     ]),
     z.object({
@@ -246,6 +259,8 @@ export function urlFromPageDescriptor(pageDescriptor: ExceptionalPageDescriptor)
             const hashParams = new URLSearchParams(Object.entries({
                 mode: pageDescriptor.mode,
                 date: pageDescriptor.date?.toString(),
+                seed: pageDescriptor.seed,
+                v: pageDescriptor.v?.toString(),
                 quizContent: pageDescriptor.quizContent,
                 name: pageDescriptor.name,
                 id: pageDescriptor.id,
@@ -420,7 +435,8 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
         case 'quiz':
             let quiz: QuizQuestionsModel
             let quizDescriptor: QuizDescriptor
-            let todayName: string
+            let todayName: string | undefined
+            const updatedDescriptor: PageDescriptor = { ...newDescriptor }
             switch (newDescriptor.mode) {
                 case 'custom':
                     const custom = JSON.parse(base64Gunzip(newDescriptor.quizContent)) as CustomQuizContent
@@ -440,6 +456,17 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
                     quiz = wrapQuestionsModel((await loadJSON(`/retrostat/${retro}`) as RetroQuestionJSON[]).map(loadRetro))
                     todayName = `Week ${retro}`
                     break
+                case 'infinite':
+                    if (updatedDescriptor.seed === undefined) {
+                        updatedDescriptor.seed = randomID(10)
+                    }
+                    if (updatedDescriptor.v === undefined) {
+                        updatedDescriptor.v = quiz_infinite.juxtaVersion
+                    }
+                    quizDescriptor = { kind: 'infinite', name: updatedDescriptor.seed, seed: updatedDescriptor.seed, version: updatedDescriptor.v }
+                    quiz = infiniteQuiz(updatedDescriptor.seed)
+                    todayName = undefined
+                    break
                 case undefined:
                     const today = newDescriptor.date ?? getDailyOffsetNumber()
                     quizDescriptor = { kind: 'juxtastat', name: today }
@@ -455,7 +482,7 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
                     todayName,
                 },
                 newPageDescriptor: {
-                    ...newDescriptor,
+                    ...updatedDescriptor,
                     // Remove friend stuff so it doesn't get triggered again
                     id: undefined,
                     name: undefined,
@@ -507,6 +534,8 @@ export function pageTitle(pageData: PageData): string {
                     return 'Retrostat'
                 case 'custom':
                     return 'Custom Quiz'
+                case 'infinite':
+                    return 'Juxtastat Infinite'
             }
         case 'article':
             return pageData.article.shortname

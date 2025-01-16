@@ -5,11 +5,12 @@ import '../components/quiz.css'
 import { useColors, useJuxtastatColors } from '../page_template/colors'
 import { useHeaderTextClass } from '../utils/responsive'
 
+import { juxtaInfiniteCorrectForBonus } from './infinite'
 import { nameOfQuizKind, QuizHistory, QuizKind, QuizLocalStorage } from './quiz'
 
 export function Header({ quiz }: { quiz: { kind: QuizKind, name: string | number } }): ReactNode {
     let text = nameOfQuizKind(quiz.kind)
-    if (typeof quiz.name !== 'number') {
+    if (typeof quiz.name !== 'number' && quiz.kind !== 'infinite') {
         text += ` ${quiz.name}`
     }
     return (<div className={useHeaderTextClass()}>{text}</div>)
@@ -46,6 +47,9 @@ export function Help(props: { quizKind: QuizKind }): ReactNode {
                 return 'Select the easier question. A question is considered easier if more people got it right.'
             case 'custom':
                 return 'Select the geographical region answering the question.'
+            case 'infinite':
+                return `Select the geographical region answering the question. You lose when you run out of lives.`
+                    + ` You gain lives by getting ${juxtaInfiniteCorrectForBonus} questions right in a row.`
         }
     }
     return (

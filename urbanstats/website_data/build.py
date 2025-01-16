@@ -7,6 +7,7 @@ from urbanstats.consolidated_data.produce_consolidated_data import (
     full_consolidated_data,
     output_names,
 )
+from urbanstats.games.infinite.data import output_quiz_sampling_info
 from urbanstats.games.quiz import generate_quizzes
 from urbanstats.games.retrostat import generate_retrostats
 from urbanstats.geometry.relationship import map_relationships_by_type
@@ -219,6 +220,7 @@ def build_urbanstats(
             output_sitemap(site_folder, shapefile_without_ordinals(), all_ordinals())
 
     if not no_juxta:
+        output_quiz_sampling_info(site_folder, "quiz_sampling_info")
         generate_quizzes(f"{site_folder}/quiz/")
 
     generate_retrostats(f"{site_folder}/retrostat")
@@ -255,6 +257,9 @@ def build_urbanstats(
     shutil.copy("icons/main/download.png", f"{site_folder}/")
     shutil.copy("icons/main/link-preview.png", f"{site_folder}/")
     shutil.copy("icons/main/juxtastat-link-preview.png", f"{site_folder}/")
+    shutil.copy("icons/main/life.png", f"{site_folder}/")
+    shutil.copy("icons/main/life-lost.png", f"{site_folder}/")
+    shutil.copy("icons/main/life-colorblind.png", f"{site_folder}/")
 
     with open(f"{site_folder}/CNAME", "w") as f:
         f.write("urbanstats.org")
