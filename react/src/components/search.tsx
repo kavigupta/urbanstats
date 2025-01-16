@@ -326,7 +326,7 @@ function search(searchIndex: NormalizedSearchIndex, pattern: string, options: { 
 }
 
 async function loadSearchIndex(): Promise<NormalizedSearchIndex> {
-    const searchIndex = await loadProtobuf('/index/pages_all.gz', 'SearchIndex', { cacheCompressedBufferInRam: true })
+    const searchIndex = await loadProtobuf('/index/pages_all.gz', 'SearchIndex')
     return processRawSearchIndex(searchIndex)
 }
 

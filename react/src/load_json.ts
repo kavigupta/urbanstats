@@ -23,35 +23,21 @@ export async function loadJSON(filePath: string): Promise<unknown> {
     return response.json()
 }
 
-interface LoadProtobufOptions {
-    cacheCompressedBufferInRam?: boolean
-}
-
-const protobufCompressedBufferCache = new Map<string, ArrayBuffer>()
-
 // Load a protobuf file from the server
-export async function loadProtobuf(filePath: string, name: 'Article', options?: LoadProtobufOptions): Promise<Article>
-export async function loadProtobuf(filePath: string, name: 'Feature', options?: LoadProtobufOptions): Promise<Feature>
-export async function loadProtobuf(filePath: string, name: 'StringList', options?: LoadProtobufOptions): Promise<StringList>
-export async function loadProtobuf(filePath: string, name: 'OrderLists', options?: LoadProtobufOptions): Promise<OrderLists>
-export async function loadProtobuf(filePath: string, name: 'DataLists', options?: LoadProtobufOptions): Promise<DataLists>
-export async function loadProtobuf(filePath: string, name: 'ConsolidatedShapes', options?: LoadProtobufOptions): Promise<ConsolidatedShapes>
-export async function loadProtobuf(filePath: string, name: 'ConsolidatedStatistics', options?: LoadProtobufOptions): Promise<ConsolidatedStatistics>
-export async function loadProtobuf(filePath: string, name: 'SearchIndex', options?: LoadProtobufOptions): Promise<SearchIndex>
-export async function loadProtobuf(filePath: string, name: string, { cacheCompressedBufferInRam = false }: LoadProtobufOptions = {}): Promise<Article | Feature | StringList | OrderLists | DataLists | ConsolidatedShapes | ConsolidatedStatistics | SearchIndex> {
-    let compressedBuffer: ArrayBuffer | undefined = cacheCompressedBufferInRam
-        ? protobufCompressedBufferCache.get(filePath)
-        : undefined
-    if (compressedBuffer === undefined) {
-        const response = await fetch(filePath)
-        if (response.status < 200 || response.status > 299) {
-            throw new Error(`Expected response status 2xx for ${filePath}, got ${response.status}: ${response.statusText}`)
-        }
-        compressedBuffer = await response.arrayBuffer()
-        if (cacheCompressedBufferInRam) {
-            protobufCompressedBufferCache.set(filePath, compressedBuffer)
-        }
+export async function loadProtobuf(filePath: string, name: 'Article'): Promise<Article>
+export async function loadProtobuf(filePath: string, name: 'Feature'): Promise<Feature>
+export async function loadProtobuf(filePath: string, name: 'StringList'): Promise<StringList>
+export async function loadProtobuf(filePath: string, name: 'OrderLists'): Promise<OrderLists>
+export async function loadProtobuf(filePath: string, name: 'DataLists'): Promise<DataLists>
+export async function loadProtobuf(filePath: string, name: 'ConsolidatedShapes'): Promise<ConsolidatedShapes>
+export async function loadProtobuf(filePath: string, name: 'ConsolidatedStatistics'): Promise<ConsolidatedStatistics>
+export async function loadProtobuf(filePath: string, name: 'SearchIndex'): Promise<SearchIndex>
+export async function loadProtobuf(filePath: string, name: string): Promise<Article | Feature | StringList | OrderLists | DataLists | ConsolidatedShapes | ConsolidatedStatistics | SearchIndex> {
+    const response = await fetch(filePath)
+    if (response.status < 200 || response.status > 299) {
+        throw new Error(`Expected response status 2xx for ${filePath}, got ${response.status}: ${response.statusText}`)
     }
+    const compressedBuffer = await response.arrayBuffer()
     const buffer = gunzipSync(Buffer.from(compressedBuffer))
     const arr = new Uint8Array(buffer)
     if (name === 'Article') {
