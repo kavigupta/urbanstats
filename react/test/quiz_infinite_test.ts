@@ -136,7 +136,7 @@ test('display-life-lost', async (t) => {
     await t.expect(await getLives()).eql(['Y', 'N', 'N'])
     await provideAnswers(t, 2, [false])
     await t.expect(await correctIncorrect(t)).eql([false, false, false])
-    await t.expect(await juxtastatInfiniteTable()).eql(`7|${seed}|00|0|3`)
+    await t.expect(await juxtastatInfiniteTable()).eql(`7|${seed}|00|0|3\n`)
 })
 
 test('display-life-gained', async (t) => {
@@ -146,8 +146,8 @@ test('display-life-gained', async (t) => {
     await t.expect(await getLives()).eql(['Y', 'Y', 'Y', 'Y'])
     await provideAnswers(t, 5, [false, false, false, false])
     await t.expect(await correctIncorrect(t)).eql([true, true, true, true, true, false, false, false, false])
-    // low bit order first: 11111000 0. This becomes 1F 00
-    await t.expect(await juxtastatInfiniteTable()).eql(`7|${seed}|1F00|4|9`)
+    // low bit order first: 1111,1000 0[000,0000]. This becomes 1F 00
+    await t.expect(await juxtastatInfiniteTable()).eql(`7|${seed}|1F00|4|9\n`)
 })
 
 test('display-life-regained', async (t) => {
@@ -155,6 +155,10 @@ test('display-life-regained', async (t) => {
     await t.expect(await getLives()).eql(['Y', 'Y', 'N'])
     await provideAnswers(t, 5, [true])
     await t.expect(await getLives()).eql(['Y', 'Y', 'Y'])
+    await provideAnswers(t, 6, [false, false, true, false])
+    await t.expect(await correctIncorrect(t)).eql([false, true, true, true, true, true, false, false, true, false])
+    // low bit order first: 0111,1100 10[00,0000] This becomes 3E 01
+    await t.expect(await juxtastatInfiniteTable()).eql(`7|${seed}|3E01|6|10\n`)
 })
 
 test('19-correct', async (t) => {
@@ -177,4 +181,6 @@ test('19-correct', async (t) => {
         '',
         `https://juxtastat.org/${param}`,
     ])
+    // low bit order first: 1111,1111 1111,1111 1111,0000 000[0,0000] This becomes FF FF 0F 00
+    await t.expect(await juxtastatInfiniteTable()).eql(`7|${seed}|FFFF0F00|20|27\n`)
 })
