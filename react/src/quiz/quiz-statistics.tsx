@@ -147,7 +147,15 @@ export function AudienceStatistics({ total, perQuestion }: { total: number, perQ
         </div>
     )
 }
-export function DisplayedStats({ statistics }: { statistics: { value: string, name: string, additionalClass?: string, color?: string }[] }): ReactNode {
+export function DisplayedStats({ statistics }: {
+    statistics: {
+        value: string
+        name: string
+        additionalClass?: string
+        color?: string
+        onClick?: () => void
+    }[]
+}): ReactNode {
     return (
         <div
             className="serif"
@@ -156,15 +164,33 @@ export function DisplayedStats({ statistics }: { statistics: { value: string, na
                 display: 'flex', flexWrap: 'wrap', justifyContent: 'center',
             }}
         >
-            {statistics.map((stat, i) => <DisplayedStat key={i} number={stat.value} name={stat.name} additionalClass={stat.additionalClass} color={stat.color} />,
+            {statistics.map((stat, i) => (
+                <DisplayedStat
+                    key={i}
+                    number={stat.value}
+                    name={stat.name}
+                    additionalClass={stat.additionalClass}
+                    color={stat.color}
+                    onClick={stat.onClick}
+                />
+            ),
             )}
         </div>
     )
 }
-export function DisplayedStat({ number, name, additionalClass, color }: { number: string, name: string, additionalClass?: string, color?: string }): ReactNode {
+export function DisplayedStat({ number, name, additionalClass, color, onClick }: {
+    number: string
+    name: string
+    additionalClass?: string
+    color?: string
+    onClick?: () => void
+}): ReactNode {
     // large font for numbers, small for names. Center-aligned using flexbox
     return (
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '0.3em' }}>
+        <div
+            style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '0.3em' }}
+            onClick={onClick}
+        >
             <div className={`serif ${additionalClass ?? ''}`} style={{ fontSize: '1.5em', color }}>{number}</div>
             <div className="serif" style={{ fontSize: '0.5em' }}>{name}</div>
         </div>
@@ -185,13 +211,20 @@ export function QuizStatisticsForInfinite(
     )
 
     // sort indices by numCorrects
-    let sortedIndices = Array.from(Array(numCorrects.length).keys())
-    sortedIndices.sort((a, b) => numCorrects[b] - numCorrects[a])
+    const sortedIndicesAll = Array.from(Array(numCorrects.length).keys())
+    sortedIndicesAll.sort((a, b) => numCorrects[b] - numCorrects[a])
     // take first 5
-    sortedIndices = sortedIndices.slice(0, 5)
-    if (sortedIndices.length === 0) {
-        return undefined
+    const sortedIndices = sortedIndicesAll.slice(0, 5)
+
+    const thisIndex = seedVersions.findIndex(([seed, version]) => seed === props.quiz.seed && version === props.quiz.version)
+    if (thisIndex !== -1 && !sortedIndices.includes(thisIndex)) {
+        sortedIndices.push(thisIndex)
     }
+
+    const ordinals = sortedIndices.map(x => sortedIndicesAll.indexOf(x) + 1)
+
+    console.log('seedVersions', sortedIndicesAll)
+    console.log('ordinals', ordinals)
 
     const sortedSeedVersions = sortedIndices.map(i => seedVersions[i])
     const sortedNumCorrects = sortedIndices.map(i => numCorrects[i])
@@ -199,7 +232,7 @@ export function QuizStatisticsForInfinite(
     return (
         <div>
             <div className="serif quiz_summary">Your Best Scores</div>
-            <table className="quiz_barchart">
+            {/* <table className="quiz_barchart">
                 <tbody>
                     {
                         sortedSeedVersions.map(([seed, version], i) => (
@@ -229,7 +262,27 @@ export function QuizStatisticsForInfinite(
                         ))
                     }
                 </tbody>
-            </table>
+            </table> */}
+            <DisplayedStats statistics={sortedNumCorrects.map((x, i) => {
+                return {
+                    name: `#${ordinals[i]}`,
+                    value: x.toString(),
+                    additionalClass: 'quiz-audience-statistics-displayed',
+                    color: sortedSeedVersions[i][0] === props.quiz.seed ? colors.hueColors.green : colors.hueColors.blue,
+                    onClick: () => {
+                        console.log('clicked', sortedSeedVersions[i])
+                        void navContext.navigate({
+                            kind: 'quiz',
+                            mode: 'infinite',
+                            seed: sortedSeedVersions[i][0],
+                            v: sortedSeedVersions[i][1],
+                        },
+                        { history: 'push', scroll: { kind: 'none' } })
+                    },
+                }
+            },
+            )}
+            />
         </div>
 
     )
