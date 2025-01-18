@@ -1,5 +1,6 @@
-import React, { ReactNode } from 'react'
+import React, { ReactNode, useContext } from 'react'
 
+import { Navigator } from '../navigation/Navigator'
 import { useColors, useJuxtastatColors } from '../page_template/colors'
 
 import { QuizDescriptor, QuizDescriptorWithTime, QuizHistory } from './quiz'
@@ -176,6 +177,8 @@ export function QuizStatisticsForInfinite(
         wholeHistory: QuizHistory
     },
 ): ReactNode | undefined {
+    const colors = useColors()
+    const navContext = useContext(Navigator.Context)
     const [seedVersions, keys] = getInfiniteQuizzes(props.wholeHistory)
     const numCorrects = keys.map(
         key => props.wholeHistory[key].correct_pattern.reduce((partialSum: number, a) => partialSum + (a ? 1 : 0), 0),
@@ -183,7 +186,7 @@ export function QuizStatisticsForInfinite(
 
     // sort indices by numCorrects
     let sortedIndices = Array.from(Array(numCorrects.length).keys())
-    sortedIndices.sort((a, b) => numCorrects[a] - numCorrects[b])
+    sortedIndices.sort((a, b) => numCorrects[b] - numCorrects[a])
     // take first 5
     sortedIndices = sortedIndices.slice(0, 5)
     if (sortedIndices.length === 0) {
@@ -193,7 +196,41 @@ export function QuizStatisticsForInfinite(
     const sortedSeedVersions = sortedIndices.map(i => seedVersions[i])
     const sortedNumCorrects = sortedIndices.map(i => numCorrects[i])
 
-    console.log(sortedSeedVersions)
-    console.log(sortedNumCorrects)
-    return undefined
+    return (
+        <div>
+            <div className="serif quiz_summary">Your Best Scores</div>
+            <table className="quiz_barchart">
+                <tbody>
+                    {
+                        sortedSeedVersions.map(([seed, version], i) => (
+                            <tr key={i}>
+                                <td className="quiz_bar_td serif" style={{ color: colors.textMain }}>
+                                    {sortedNumCorrects[i]}
+                                </td>
+                                <td className="quiz_bar_td serif">
+                                    <span
+                                        className="quiz_bar"
+                                        style={{
+                                            width: `${sortedNumCorrects[i] / sortedNumCorrects[0] * 20}em`,
+                                            backgroundColor: seed === props.quiz.seed ? colors.hueColors.green : colors.hueColors.blue,
+                                        }}
+                                        onClick={() => {
+                                            void navContext.navigate({
+                                                kind: 'quiz',
+                                                mode: 'infinite',
+                                                seed,
+                                                v: version,
+                                            },
+                                            { history: 'push', scroll: { kind: 'none' } })
+                                        }}
+                                    />
+                                </td>
+                            </tr>
+                        ))
+                    }
+                </tbody>
+            </table>
+        </div>
+
+    )
 }
