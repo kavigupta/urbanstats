@@ -1,3 +1,4 @@
+import { infiniteQuizIsDone } from './infinite'
 import { endpoint, QuizDescriptorWithTime, QuizHistory, QuizKindWithStats, QuizKindWithTime, QuizLocalStorage } from './quiz'
 
 async function registerUser(userId: string, secureID: string): Promise<boolean> {
@@ -55,10 +56,14 @@ export function getInfiniteQuizzes(wholeHistory: QuizHistory): [[string, number]
     const keys: string[] = []
     for (const day of Object.keys(wholeHistory)) {
         const parsed = parseInfiniteSeedVersion(day)
-        if (parsed !== undefined) {
-            seedVersions.push(parsed)
-            keys.push(day)
+        if (parsed === undefined) {
+            continue
         }
+        if (!infiniteQuizIsDone(wholeHistory[day].correct_pattern)) {
+            continue
+        }
+        seedVersions.push(parsed)
+        keys.push(day)
     }
     return [seedVersions, keys]
 }

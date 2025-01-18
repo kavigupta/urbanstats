@@ -81,11 +81,11 @@ export async function sampleRandomQuestion(seed: string, index: number): Promise
     } satisfies QuizQuestion
 }
 
-export function infiniteQuizIsDone(correctPattern: boolean[]): boolean {
+export function infiniteQuizIsDone(correctPattern: (boolean | 0 | 1)[]): boolean {
     return numLives(correctPattern) === 0
 }
 
-export function numLives(correctPattern: boolean[]): number {
+export function numLives(correctPattern: (boolean | 0 | 1)[]): number {
     let lives = juxtaInfiniteInitialLives
     let correctRun = 0
     for (const i of correctPattern.keys()) {
