@@ -10,11 +10,13 @@ from .juxtastat_stats import (
     friend_request,
     get_per_question_stats,
     get_per_question_stats_retrostat,
+    has_infinite_stats,
     latest_day,
     latest_week_retrostat,
     register_user,
     store_user_stats,
     get_full_database,
+    store_user_stats_infinite,
     store_user_stats_retrostat,
     todays_score_for,
     unfriend,
@@ -105,6 +107,7 @@ def authenticate(fields):
             if not success:
                 return error
             return fn()
+
         return wrapper
 
     return decorator
@@ -142,6 +145,25 @@ def retrostat_latest_week_request():
 def juxtastat_store_user_stats_request():
     form = flask_form()
     store_user_stats(form["user"], json.loads(form["day_stats"]))
+    return flask.jsonify(dict())
+
+
+@app.route("/juxtastat_infinite/has_infinite_stats", methods=["POST"])
+@authenticate(["seedsVersions"])
+def juxtastat_infinite_has_infinite_stats_request():
+    form = flask_form()
+    return flask.jsonify(
+        dict(has=has_infinite_stats(form["user"], form["seedsVersions"]))
+    )
+
+
+@app.route("/juxtastat_infinite/store_user_stats", methods=["POST"])
+@authenticate(["seed", "version", "corrects"])
+def juxtastat_infinite_store_user_stats_request():
+    form = flask_form()
+    store_user_stats_infinite(
+        form["user"], form["seed"], form["version"], form["corrects"]
+    )
     return flask.jsonify(dict())
 
 

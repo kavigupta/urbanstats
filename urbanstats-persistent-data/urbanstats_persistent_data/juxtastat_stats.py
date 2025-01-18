@@ -2,6 +2,8 @@ import sqlite3
 import time
 from typing import List, Tuple
 
+from .utils import corrects_to_bytes
+
 table_for_quiz_kind = {
     "juxtastat": "JuxtaStatIndividualStats",
     "retrostat": "JuxtaStatIndividualStatsRetrostat",
@@ -25,6 +27,12 @@ def table():
         """CREATE TABLE IF NOT EXISTS JuxtaStatIndividualStatsRetrostat
         (user integer, week integer, corrects integer, time integer, PRIMARY KEY (user, week))"""
     )
+    # juxtastat infinite
+    c.execute(
+        """CREATE TABLE IF NOT EXISTS JuxtaStatInfiniteStats
+        (user integer, seed integer, version integer, corrects varbinary(128), score integer, time integer, PRIMARY KEY (user, seed, version))"""
+    )
+
     # user to domain name
     c.execute(
         """
@@ -156,6 +164,33 @@ def store_user_stats(user, day_stats: List[Tuple[int, List[bool]]]):
 
 def store_user_stats_retrostat(user, week_stats: List[Tuple[int, List[bool]]]):
     store_user_stats_into_table(user, week_stats, "JuxtaStatIndividualStatsRetrostat")
+
+
+def has_infinite_stats(user, seeds_versions):
+    user = int(user, 16)
+    _, c = table()
+    c.execute(
+        "SELECT seed, version FROM JuxtaStatInfiniteStats WHERE user=?",
+        (user,),
+    )
+    results = c.fetchall()
+    results = set(results)
+    return [(int(seed, 16), version) in results for seed, version in seeds_versions]
+
+
+def store_user_stats_infinite(user, seed, version, corrects: List[bool]):
+    user = int(user, 16)
+    seed = int(seed, 16)
+    conn, c = table()
+    # ignore latest day here, it is up to the client to filter out old stats
+    # we want to be able to update stats for old days
+    corrects = corrects_to_bytes(corrects)
+    time_unix_millis = round(time.time() * 1000)
+    c.execute(
+        "INSERT OR REPLACE INTO JuxtaStatInfiniteStats VALUES (?, ?, ?, ?, ?, ?)",
+        (user, seed, version, corrects, sum(corrects), time_unix_millis),
+    )
+    conn.commit()
 
 
 def get_per_question_stats_from_table(day, table_name, column):

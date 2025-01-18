@@ -2,11 +2,12 @@ import React, { ReactNode } from 'react'
 
 import { useColors, useJuxtastatColors } from '../page_template/colors'
 
-import { QuizDescriptorWithStats, QuizHistory } from './quiz'
+import { QuizDescriptorWithTime, QuizHistory } from './quiz'
 import { parseTimeIdentifier } from './statistics'
 
 interface QuizStatisticsProps {
-    quiz: QuizDescriptorWithStats
+    // this kind of statistic only really applies to daily/weekly quizzes
+    quiz: QuizDescriptorWithTime
     wholeHistory: QuizHistory
 }
 

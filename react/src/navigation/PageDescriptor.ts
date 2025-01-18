@@ -463,7 +463,7 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
                     if (updatedDescriptor.v === undefined) {
                         updatedDescriptor.v = quiz_infinite.juxtaVersion
                     }
-                    quizDescriptor = { kind: 'infinite', name: updatedDescriptor.seed, seed: updatedDescriptor.seed, version: updatedDescriptor.v }
+                    quizDescriptor = { kind: 'infinite', name: `I_${updatedDescriptor.seed}_${updatedDescriptor.v}`, seed: updatedDescriptor.seed, version: updatedDescriptor.v }
                     quiz = infiniteQuiz(updatedDescriptor.seed)
                     todayName = undefined
                     break
