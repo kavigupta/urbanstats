@@ -50,7 +50,7 @@ async function reportToServerGeneric(wholeHistory: QuizHistory, endpointLatest: 
     return false
 }
 
-function getInfiniteQuizzes(wholeHistory: QuizHistory): [[string, number][], string[]] {
+export function getInfiniteQuizzes(wholeHistory: QuizHistory): [[string, number][], string[]] {
     const seedVersions: [string, number][] = []
     const keys: string[] = []
     for (const day of Object.keys(wholeHistory)) {

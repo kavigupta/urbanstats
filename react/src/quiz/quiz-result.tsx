@@ -113,12 +113,7 @@ export function QuizResult(props: QuizResultProps): ReactNode {
                     : undefined
             }
             <div className="gap"></div>
-            {
-                // TODO stats for infinite quiz
-                props.quizDescriptor.kind === 'custom' || props.quizDescriptor.kind === 'infinite'
-                    ? undefined
-                    : <QuizStatistics wholeHistory={props.wholeHistory} quiz={props.quizDescriptor} />
-            }
+            <QuizStatistics wholeHistory={props.wholeHistory} quiz={props.quizDescriptor} />
             <div className="gap"></div>
             <span className="serif quiz_summary">Details (spoilers, don&apos;t share!)</span>
             <div className="gap_small"></div>
@@ -477,7 +472,7 @@ export function GenericQuizResultRow(props: GenericQuizResultRowProps): ReactNod
                         <td style={{ fontWeight: 400 }} className="serif quiz_result_value_left">
                             {props.getStat('a')}
                         </td>
-                        <td className="serif quiz_result_symbol">
+                        <td className="serif quiz_result_symbol quiz_result_comparison_symbol">
                             {comparison}
                         </td>
                         <td style={{ fontWeight: 400 }} className="serif quiz_result_value_right">

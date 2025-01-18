@@ -33,44 +33,94 @@ async function correctIncorrect(t: TestController): Promise<boolean[]> {
 
 const localStorageDefault = { persistent_id: '000000000000007', secure_id: '00000003' }
 
-async function completeCorrectAnswerSequence(t: TestController, alreadyKnownAnswers: string[]): Promise<string[]> {
+const seedStr = 'deadbeef00'
+
+// async function completeCorrectAnswerSequence(t: TestController, alreadyKnownAnswers: string[]): Promise<string[]> {
+//     // console.log(await sampleRandomQuestion(seedStr, 0))
+//     await t.eval(() => {
+//         localStorage.clear()
+//         for (const key of Object.keys(localStorageDefault)) {
+//             localStorage.setItem(key, localStorageDefault[key])
+//         }
+//     }, { dependencies: { localStorageDefault } })
+//     await t.wait(100)
+//     await safeReload(t)
+//     await waitForQuizLoading(t)
+//     await clickButtons(t, alreadyKnownAnswers)
+//     while (await isQuestionPage(t)) {
+//         await clickButton(t, 'a')
+//         await t.wait(500)
+//     }
+//     // check that the first n characters match the already known answers
+//     const text = await correctIncorrect(t)
+//     for (let i = 0; i < alreadyKnownAnswers.length; i++) {
+//         if (!text[i]) {
+//             throw new Error('alreadyKnownAnswers is incorrect')
+//         }
+//     }
+//     const correctAnswers: string[] = [...alreadyKnownAnswers]
+//     for (let i = alreadyKnownAnswers.length; i < text.length; i++) {
+//         if (text[i]) {
+//             correctAnswers.push('a')
+//         }
+//         else {
+//             correctAnswers.push('b')
+//         }
+//     }
+//     // check that the prefixes match
+
+//     return correctAnswers
+// }
+
+const correctAnswerSequences = new Map<string, string[]>()
+
+quizFixture(
+    'collect correct answers',
+    `${target}/quiz.html`,
+    localStorageDefault,
+    ``,
+    'desktop',
+)
+
+const version = 0
+
+test('collect correct answers', async (t) => {
+    const seed = 'deadbeef00'
+    // set localStorage such that I_{seedStr}_{version} has had 30 questions answered
     await t.eval(() => {
-        localStorage.clear()
-        for (const key of Object.keys(localStorageDefault)) {
-            localStorage.setItem(key, localStorageDefault[key])
-        }
-    }, { dependencies: { localStorageDefault } })
-    await t.wait(100)
+        localStorage.quiz_history = JSON.stringify({
+            [`I_${seed}_${version}`]: {
+                // false so the quiz ends
+                correct_pattern: Array(30).fill(false),
+                choices: Array(30).fill('a'),
+            },
+        })
+    }, { dependencies: { seed, version } })
+    await t.navigateTo(`${target}/quiz.html#mode=infinite&seed=${seed}&v=${version}`)
     await safeReload(t)
-    await waitForQuizLoading(t)
-    await clickButtons(t, alreadyKnownAnswers)
-    while (await isQuestionPage(t)) {
-        await clickButton(t, 'a')
-        await t.wait(500)
-    }
-    // check that the first n characters match the already known answers
-    const text = await correctIncorrect(t)
-    for (let i = 0; i < alreadyKnownAnswers.length; i++) {
-        if (!text[i]) {
-            throw new Error('alreadyKnownAnswers is incorrect')
-        }
-    }
-    const correctAnswers: string[] = [...alreadyKnownAnswers]
-    for (let i = alreadyKnownAnswers.length; i < text.length; i++) {
-        if (text[i]) {
+    // Get all quiz_result_symbol elements and the text therein
+    const symbols = Selector('.quiz_result_comparison_symbol')
+    const symbolsCount = await symbols.count
+    const correctAnswers: string[] = []
+    for (let i = 0; i < symbolsCount; i++) {
+        const symbol = symbols.nth(i)
+        const text = await symbol.innerText
+        console.log(text)
+        if (text === '>') {
             correctAnswers.push('a')
         }
-        else {
+        else if (text === '<') {
             correctAnswers.push('b')
         }
+        else {
+            throw new Error(`unexpected text ${text} in ${await symbol.textContent}`)
+        }
     }
-    // check that the prefixes match
-
-    return correctAnswers
-}
+    correctAnswerSequences.set(seed, correctAnswers)
+})
 
 const seed = 0xdeadbeef00
-const param = '#mode=infinite&seed=deadbeef00&v=0'
+const param = `#mode=infinite&seed=${seedStr}&v=${version}`
 quizFixture(
     'generate link',
     `${target}/quiz.html${param}`,
@@ -79,21 +129,22 @@ quizFixture(
     'desktop',
 )
 
-let correctAnswerSequence: string[]
+// let correctAnswerSequence: string[]
 
-test('formulates correct sequence', async (t) => {
-    // returns if quiztext exists as a class
-    let alreadyKnownAnswers: string[] = []
-    while (true) {
-        alreadyKnownAnswers = await completeCorrectAnswerSequence(t, alreadyKnownAnswers)
-        if (alreadyKnownAnswers.length >= 30) {
-            break
-        }
-    }
-    correctAnswerSequence = alreadyKnownAnswers
-})
+// test('formulates correct sequence', async (t) => {
+//     // returns if quiztext exists as a class
+//     let alreadyKnownAnswers: string[] = []
+//     while (true) {
+//         alreadyKnownAnswers = await completeCorrectAnswerSequence(t, alreadyKnownAnswers)
+//         if (alreadyKnownAnswers.length >= 30) {
+//             break
+//         }
+//     }
+//     correctAnswerSequence = alreadyKnownAnswers
+// })
 
 async function provideAnswers(t: TestController, start: number, isCorrect: boolean[]): Promise<void> {
+    const correctAnswerSequence = correctAnswerSequences.get(seedStr)!
     for (let i = start; i < start + isCorrect.length; i++) {
         await clickButton(t, isCorrect[i - start] === (correctAnswerSequence[i] === 'a') ? 'a' : 'b')
         await t.wait(500)
@@ -184,3 +235,7 @@ test('19-correct', async (t) => {
     // low bit order first: 1111,1111 1111,1111 1111,0000 000[0,0000] This becomes FF FF 0F 00
     await t.expect(await juxtastatInfiniteTable()).eql(`7|${seed}|FFFF0F00|20|27\n`)
 })
+
+// test('do-not-report-partial', async (t) => {
+//     await provideAnswers(t, 0, [false, true, true, true, true])
+//     await t.navigateTo(`${target}/quiz.html#mode=infinite&seed=deadbeef01&v=0`)

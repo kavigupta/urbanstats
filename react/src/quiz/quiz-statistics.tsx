@@ -2,16 +2,32 @@ import React, { ReactNode } from 'react'
 
 import { useColors, useJuxtastatColors } from '../page_template/colors'
 
-import { QuizDescriptorWithTime, QuizHistory } from './quiz'
-import { parseTimeIdentifier } from './statistics'
+import { QuizDescriptor, QuizDescriptorWithTime, QuizHistory } from './quiz'
+import { getInfiniteQuizzes, parseTimeIdentifier } from './statistics'
 
-interface QuizStatisticsProps {
-    // this kind of statistic only really applies to daily/weekly quizzes
-    quiz: QuizDescriptorWithTime
-    wholeHistory: QuizHistory
+export function QuizStatistics(
+    props: {
+        quiz: QuizDescriptor
+        wholeHistory: QuizHistory
+    },
+): ReactNode | undefined {
+    switch (props.quiz.kind) {
+        case 'juxtastat':
+        case 'retrostat':
+            return <QuizStatisticsForTimedStatistics quiz={props.quiz} wholeHistory={props.wholeHistory} />
+        case 'infinite':
+            return <QuizStatisticsForInfinite quiz={props.quiz} wholeHistory={props.wholeHistory} />
+        case 'custom':
+            return undefined
+    }
 }
 
-export function QuizStatistics(props: QuizStatisticsProps): ReactNode {
+export function QuizStatisticsForTimedStatistics(
+    props: {
+        quiz: QuizDescriptorWithTime
+        wholeHistory: QuizHistory
+    },
+): ReactNode {
     const colors = useColors()
     const history = (i: number): QuizHistory[string] | undefined => {
         switch (props.quiz.kind) {
@@ -152,4 +168,32 @@ export function DisplayedStat({ number, name, additionalClass, color }: { number
             <div className="serif" style={{ fontSize: '0.5em' }}>{name}</div>
         </div>
     )
+}
+
+export function QuizStatisticsForInfinite(
+    props: {
+        quiz: QuizDescriptor & { kind: 'infinite' }
+        wholeHistory: QuizHistory
+    },
+): ReactNode | undefined {
+    const [seedVersions, keys] = getInfiniteQuizzes(props.wholeHistory)
+    const numCorrects = keys.map(
+        key => props.wholeHistory[key].correct_pattern.reduce((partialSum: number, a) => partialSum + (a ? 1 : 0), 0),
+    )
+
+    // sort indices by numCorrects
+    let sortedIndices = Array.from(Array(numCorrects.length).keys())
+    sortedIndices.sort((a, b) => numCorrects[a] - numCorrects[b])
+    // take first 5
+    sortedIndices = sortedIndices.slice(0, 5)
+    if (sortedIndices.length === 0) {
+        return undefined
+    }
+
+    const sortedSeedVersions = sortedIndices.map(i => seedVersions[i])
+    const sortedNumCorrects = sortedIndices.map(i => numCorrects[i])
+
+    console.log(sortedSeedVersions)
+    console.log(sortedNumCorrects)
+    return undefined
 }
