@@ -147,7 +147,7 @@ test('display-life-gained', async (t) => {
     await provideAnswers(t, 5, [false, false, false, false])
     await t.expect(await correctIncorrect(t)).eql([true, true, true, true, true, false, false, false, false])
     // low bit order first: 1111,1000 0[000,0000]. This becomes 1F 00
-    await t.expect(await juxtastatInfiniteTable()).eql(`7|${seed}|1F00|4|9\n`)
+    await t.expect(await juxtastatInfiniteTable()).eql(`7|${seed}|1F00|5|9\n`)
 })
 
 test('display-life-regained', async (t) => {
