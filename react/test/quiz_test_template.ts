@@ -8,7 +8,7 @@ import { ClientFunction, Selector } from 'testcafe'
 import { clickButton, clickButtons, quizFixture, quizScreencap, tempfileName, withMockedClipboard } from './quiz_test_utils'
 import { target, mostRecentDownloadPath, safeReload, screencap, getLocation } from './test_utils'
 
-async function runQuery(query: string): Promise<string> {
+export async function runQuery(query: string): Promise<string> {
     // dump given query to a string
     const commandLine = `sqlite3 ../urbanstats-persistent-data/db.sqlite3 "${query}"`
     const result = await promisify(exec)(commandLine)

@@ -72,7 +72,7 @@ async function getUnreportedSeedVersions(user: string, secureID: string, wholeHi
     }
     const response = await fetch(`${endpoint}/juxtastat_infinite/has_infinite_stats`, {
         method: 'POST',
-        body: JSON.stringify({ user, secureID, seed_versions: seedVersions }),
+        body: JSON.stringify({ user, secureID, seedVersions }),
         headers: {
             'Content-Type': 'application/json',
         },
@@ -96,7 +96,7 @@ async function reportToServerInfinite(wholeHistory: QuizHistory): Promise<boolea
         const dayStats = wholeHistory[key]
         await fetch(`${endpoint}/juxtastat_infinite/store_user_stats`, {
             method: 'POST',
-            body: JSON.stringify({ user, secureID, seed, version, day_stats: dayStats.correct_pattern }),
+            body: JSON.stringify({ user, secureID, seed, version, corrects: dayStats.correct_pattern }),
             headers: {
                 'Content-Type': 'application/json',
             },

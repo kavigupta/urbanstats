@@ -82,6 +82,7 @@ def get_authenticated_user(additional_required_params=()):
     required_params = ["user", "secureID"] + list(additional_required_params)
 
     if not all([param in form for param in required_params]):
+        print("NEEDS PARAMS", required_params, "GOT", form.keys())
         return False, (
             flask.jsonify(
                 {
@@ -103,8 +104,10 @@ def authenticate(fields):
     def decorator(fn):
         @functools.wraps(fn)
         def wrapper():
+            print("AUTHENTICATE", flask_form())
             success, error = get_authenticated_user(fields)
             if not success:
+                print("AUTHENTICATE ERROR", error)
                 return error
             return fn()
 
@@ -149,11 +152,14 @@ def juxtastat_store_user_stats_request():
 
 
 @app.route("/juxtastat_infinite/has_infinite_stats", methods=["POST"])
-@authenticate(["seedsVersions"])
+@authenticate(["seedVersions"])
 def juxtastat_infinite_has_infinite_stats_request():
     form = flask_form()
+    print("HAS INFINITE STATS", form)
+    res = dict(has=has_infinite_stats(form["user"], form["seedVersions"]))
+    print("HAS INFINITE STATS", res)
     return flask.jsonify(
-        dict(has=has_infinite_stats(form["user"], form["seedsVersions"]))
+        res
     )
 
 

@@ -1,9 +1,9 @@
 import { Selector } from 'testcafe'
 
-import { clickButton, clickButtons, withMockedClipboard } from './quiz_test_utils'
+import { runQuery } from './quiz_test_template'
+import { clickButton, clickButtons, quizFixture, withMockedClipboard } from './quiz_test_utils'
 import {
     target,
-    urbanstatsFixture,
     safeReload,
     waitForQuizLoading,
 } from './test_utils'
@@ -31,8 +31,16 @@ async function correctIncorrect(t: TestController): Promise<boolean[]> {
     return result
 }
 
+const localStorageDefault = { persistent_id: '000000000000007', secure_id: '00000003' }
+
 async function completeCorrectAnswerSequence(t: TestController, alreadyKnownAnswers: string[]): Promise<string[]> {
-    await t.eval(() => { localStorage.clear() })
+    await t.eval(() => {
+        localStorage.clear()
+        for (const key of Object.keys(localStorageDefault)) {
+            localStorage.setItem(key, localStorageDefault[key])
+        }
+    }, { dependencies: { localStorageDefault } })
+    await t.wait(100)
     await safeReload(t)
     await waitForQuizLoading(t)
     await clickButtons(t, alreadyKnownAnswers)
@@ -61,8 +69,15 @@ async function completeCorrectAnswerSequence(t: TestController, alreadyKnownAnsw
     return correctAnswers
 }
 
+const seed = 0xdeadbeef00
 const param = '#mode=infinite&seed=deadbeef00&v=0'
-urbanstatsFixture('generate link', `${target}/quiz.html${param}`)
+quizFixture(
+    'generate link',
+    `${target}/quiz.html${param}`,
+    localStorageDefault,
+    ``,
+    'desktop',
+)
 
 let correctAnswerSequence: string[]
 
@@ -109,6 +124,10 @@ async function getLives(): Promise<Emoji[]> {
     return result
 }
 
+function juxtastatInfiniteTable(): Promise<string> {
+    return runQuery('SELECT user, seed, hex(corrects), score, num_answers from JuxtaStatInfiniteStats')
+}
+
 test('display-life-lost', async (t) => {
     await t.expect(await getLives()).eql(['Y', 'Y', 'Y'])
     await provideAnswers(t, 0, [false])
@@ -117,6 +136,7 @@ test('display-life-lost', async (t) => {
     await t.expect(await getLives()).eql(['Y', 'N', 'N'])
     await provideAnswers(t, 2, [false])
     await t.expect(await correctIncorrect(t)).eql([false, false, false])
+    await t.expect(await juxtastatInfiniteTable()).eql(`7|${seed}|00|0|3`)
 })
 
 test('display-life-gained', async (t) => {
@@ -124,6 +144,10 @@ test('display-life-gained', async (t) => {
     await t.expect(await getLives()).eql(['Y', 'Y', 'Y'])
     await provideAnswers(t, 4, [true])
     await t.expect(await getLives()).eql(['Y', 'Y', 'Y', 'Y'])
+    await provideAnswers(t, 5, [false, false, false, false])
+    await t.expect(await correctIncorrect(t)).eql([true, true, true, true, true, false, false, false, false])
+    // low bit order first: 11111000 0. This becomes 1F 00
+    await t.expect(await juxtastatInfiniteTable()).eql(`7|${seed}|1F00|4|9`)
 })
 
 test('display-life-regained', async (t) => {

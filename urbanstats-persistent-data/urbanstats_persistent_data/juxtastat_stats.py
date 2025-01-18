@@ -30,7 +30,7 @@ def table():
     # juxtastat infinite
     c.execute(
         """CREATE TABLE IF NOT EXISTS JuxtaStatInfiniteStats
-        (user integer, seed integer, version integer, corrects varbinary(128), score integer, time integer, PRIMARY KEY (user, seed, version))"""
+        (user integer, seed integer, version integer, corrects varbinary(128), score integer, num_answers integer, time integer, PRIMARY KEY (user, seed, version))"""
     )
 
     # user to domain name
@@ -175,7 +175,7 @@ def has_infinite_stats(user, seeds_versions):
     )
     results = c.fetchall()
     results = set(results)
-    return [(int(seed, 16), version) in results for seed, version in seeds_versions]
+    return [(seed, version) in results for seed, version in seeds_versions]
 
 
 def store_user_stats_infinite(user, seed, version, corrects: List[bool]):
@@ -184,11 +184,19 @@ def store_user_stats_infinite(user, seed, version, corrects: List[bool]):
     conn, c = table()
     # ignore latest day here, it is up to the client to filter out old stats
     # we want to be able to update stats for old days
-    corrects = corrects_to_bytes(corrects)
+    correctBytes = corrects_to_bytes(corrects)
     time_unix_millis = round(time.time() * 1000)
     c.execute(
-        "INSERT OR REPLACE INTO JuxtaStatInfiniteStats VALUES (?, ?, ?, ?, ?, ?)",
-        (user, seed, version, corrects, sum(corrects), time_unix_millis),
+        "INSERT OR REPLACE INTO JuxtaStatInfiniteStats VALUES (?, ?, ?, ?, ?, ?, ?)",
+        (
+            user,
+            seed,
+            version,
+            correctBytes,
+            sum(corrects),
+            len(corrects),
+            time_unix_millis,
+        ),
     )
     conn.commit()
 
