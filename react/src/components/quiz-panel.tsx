@@ -1,6 +1,5 @@
 import React, { ReactNode, useContext, useState } from 'react'
 
-import quiz_infinite from '../data/quiz_infinite'
 import { Navigator } from '../navigation/Navigator'
 import { LongLoad } from '../navigation/loading'
 import { useColors } from '../page_template/colors'

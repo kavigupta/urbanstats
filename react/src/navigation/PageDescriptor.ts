@@ -6,7 +6,6 @@ import { applySettingsParamSettings, settingsConnectionConfig } from '../compone
 import { ArticleRow, forType, loadArticles } from '../components/load-article'
 import type { StatisticPanelProps } from '../components/statistic-panel'
 import explanation_pages from '../data/explanation_page'
-import quiz_infinite from '../data/quiz_infinite'
 import stats from '../data/statistic_list'
 import names from '../data/statistic_name_list' // TODO: Maybe dynamically import these
 import paths from '../data/statistic_path_list'

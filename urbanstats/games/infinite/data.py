@@ -55,7 +55,10 @@ def output_quiz_sampling_info(site_folder, subfolder):
     output_quiz_sampling_probabilities_locally()
     by_version = []
     for version in range(1, len(get_juxta_version_info())):
-        shutil.copytree(f"stored_quizzes/quiz_sampling_info/{version}", os.path.join(site_folder, subfolder, "quiz_sampling_info", str(version)))
+        shutil.copytree(
+            f"stored_quizzes/quiz_sampling_info/{version}",
+            os.path.join(site_folder, subfolder, "quiz_sampling_info", str(version)),
+        )
         with open(f"stored_quizzes/quiz_sampling_info/{version}.json", "r") as f:
             by_version.append(json.load(f))
     with open("react/src/data/quiz_infinite.ts", "w") as f:
