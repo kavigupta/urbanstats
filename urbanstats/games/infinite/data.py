@@ -76,7 +76,6 @@ def filter_for_prob_over_threshold(q, p, *, threshold):
     return q, p
 
 
-
 def compute_order(q):
     sort_keys = (
         q.stat_indices,
