@@ -11,7 +11,7 @@ from urbanstats.games.quiz_sampling import (
     compute_quiz_question_distribution,
 )
 from urbanstats.protobuf import data_files_pb2
-from urbanstats.protobuf.utils import write_brotli, write_gzip
+from urbanstats.protobuf.utils import write_gzip
 from urbanstats.statistics.output_statistics_metadata import internal_statistic_names
 from urbanstats.utils import output_typescript
 
@@ -29,7 +29,7 @@ def output_tronche(tronche_vqq, tronche_p, tronche_path):
     tronche_proto.stat.extend(tronche_vqq.stat_indices)
     tronche_proto.neg_log_prob_x10_basis = int(binned_probs.min())
     tronche_proto.neg_log_prob_x10_minus_basis.extend(binned_probs - binned_probs.min())
-    write_brotli(tronche_proto, tronche_path)
+    write_gzip(tronche_proto, tronche_path)
     return tronche_total_p
 
 

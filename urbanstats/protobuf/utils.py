@@ -1,4 +1,3 @@
-import brotli
 import gzip
 import os
 
@@ -39,9 +38,3 @@ def write_gzip(proto, path):
     ensure_writeable(path)
     with gzip.GzipFile(path, "wb", mtime=0) as f:
         f.write(proto.SerializeToString())
-
-
-def write_brotli(proto, path):
-    ensure_writeable(path)
-    with open(path, "wb") as f:
-        f.write(brotli.compress(proto.SerializeToString()))

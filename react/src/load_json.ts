@@ -1,4 +1,4 @@
-import { brotliDecompress, brotliDecompressSync, gunzipSync } from 'zlib'
+import { gunzipSync } from 'zlib'
 
 import data_links from './data/data_links'
 import order_links from './data/order_links'
@@ -41,8 +41,8 @@ export async function loadProtobuf(filePath: string, name: string): Promise<Arti
     if (response.status < 200 || response.status > 299) {
         throw new Error(`Expected response status 2xx for ${filePath}, got ${response.status}: ${response.statusText}`)
     }
-    const compressedBuffer = Buffer.from(await response.arrayBuffer())
-    const buffer = name === 'QuizQuestionTronche' ? brotliDecompressSync(compressedBuffer) : gunzipSync(compressedBuffer)
+    const compressedBuffer = await response.arrayBuffer()
+    const buffer = gunzipSync(Buffer.from(compressedBuffer))
     const arr = new Uint8Array(buffer)
     if (name === 'Article') {
         return Article.decode(arr)
