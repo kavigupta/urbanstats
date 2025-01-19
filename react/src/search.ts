@@ -14,28 +14,45 @@ export interface NormalizedSearchIndex {
         signature: number
     }[]
     lengthOfLongestToken: number
+    maxPriority: number
+    mostTokens: number
 }
 
 interface SearchResult {
     element: string
-    matchScore: number // Lower is better
-    populationRank: number // Lower is higher population (better)
-    priority: number // Lower is better
-    positionScore: number // The absolute difference in position where tokens were found. Lower is better
+    normalizedMatchScore: number // Lower is better ([0,1], where 0 is perfect match, and 1 is no matches)
+    normalizedPopulationRank: number // Lower is higher population (better) ([0,1], where 0 is highest population and 1 is lowest population)
+    normalizedPriority: number // Lower is better ([0,1] where 1 is least prioritized)
+    normalizedPositionScore: number // The absolute difference in position where tokens were found. Lower is better ([0, 1] where 0 is all tokens are in the right place, and 1 is all tokens are maximally distant in this result)
+}
+
+// Should sum to 1
+const weights = {
+    match: 0.4,
+    position: 0.3,
+    priority: 0.1,
+    population: 0.2,
+}
+
+function combinedScore(result: SearchResult): number {
+    return (result.normalizedMatchScore * weights.match) + (result.normalizedPositionScore * weights.position) + (result.normalizedPriority * weights.priority) + (result.normalizedPopulationRank * weights.population)
 }
 
 function compareSearchResults(a: SearchResult, b: SearchResult): number {
     // The order of these comparisons relates to various optimizations
-    if (a.positionScore !== b.positionScore) {
-        return a.positionScore - b.positionScore
-    }
-    if (a.matchScore !== b.matchScore) {
-        return a.matchScore - b.matchScore
-    }
-    if (a.priority !== b.priority) {
-        return a.priority - b.priority
-    }
-    return a.populationRank - b.populationRank
+    // if (combinedScore(a) !== combinedScore(b)) {
+    return combinedScore(a) - combinedScore(b)
+    // }
+    // if (a.matchScore !== b.matchScore) {
+    //     return a.matchScore - b.matchScore
+    // }
+    // if (a.positionScore !== b.positionScore) {
+    //     return a.positionScore - b.positionScore
+    // }
+    // if (a.priority !== b.priority) {
+    //     return a.priority - b.priority
+    // }
+    // return a.normalizedPopulationRank - b.normalizedPopulationRank
 }
 
 function tokenize(pattern: string): string[] {
@@ -49,7 +66,7 @@ function tokenize(pattern: string): string[] {
 }
 
 // Expects `pattern` to be normalized
-export function search(searchIndex: NormalizedSearchIndex, unnormalizedPattern: string, options: { showHistoricalCDs: boolean }): string[] {
+export function search(searchIndex: NormalizedSearchIndex, unnormalizedPattern: string, maxResults: number, options: { showHistoricalCDs: boolean }): string[] {
     const pattern = normalize(unnormalizedPattern)
 
     if (pattern === '') {
@@ -58,10 +75,11 @@ export function search(searchIndex: NormalizedSearchIndex, unnormalizedPattern: 
 
     const patternTokens = tokenize(pattern).map(token => toNeedle(token))
 
-    const maxResults = 10
     const results: SearchResult[] = []
 
     const maxErrors = 2
+    const maxMatchScore = patternTokens.length * (maxErrors + 1)
+    const maxPositionScore = patternTokens.length * Math.max(patternTokens.length, searchIndex.lengthOfLongestToken)
 
     const bitapBuffers = Array.from({ length: maxErrors + 1 }, () => new Uint32Array(searchIndex.lengthOfLongestToken + 2))
 
@@ -78,6 +96,8 @@ export function search(searchIndex: NormalizedSearchIndex, unnormalizedPattern: 
             continue
         }
 
+        const normalizedPopulationRank = (populationRank / searchIndex.entries.length)
+
         entriesPatternChecks++
         // console.log({
         //     pattern: patternSignature.toString(2),
@@ -92,7 +112,7 @@ export function search(searchIndex: NormalizedSearchIndex, unnormalizedPattern: 
         }
 
         // If this entry wouldn't make it into the results even with a perfect match because of priority or population, continue
-        if (results.length === maxResults && compareSearchResults({ element, matchScore: 0, positionScore: 0, priority, populationRank }, results[results.length - 1]) > 0) {
+        if (results.length === maxResults && compareSearchResults({ element, normalizedMatchScore: 0, normalizedPositionScore: 0, normalizedPriority: priority, normalizedPopulationRank }, results[results.length - 1]) > 0) {
             continue entries
         }
 
@@ -103,8 +123,8 @@ export function search(searchIndex: NormalizedSearchIndex, unnormalizedPattern: 
             let tokenMatchScore = maxErrors + 1
             let tokenPositionScore = 0
 
-            search: for (const [entryTokenIndex, entryToken] of tokens.entries()) {
-                const searchResult = bitap(entryToken, needle, maxErrors, bitapBuffers, patternTokenIndex === patternTokens.length - 1)
+            for (const [entryTokenIndex, entryToken] of tokens.entries()) {
+                const searchResult = bitap(entryToken, needle, maxErrors, bitapBuffers, true/* patternTokenIndex === patternTokens.length - 1 */)
                 const positionResult = Math.abs(patternTokenIndex - entryTokenIndex)
                 if (searchResult < tokenMatchScore || (searchResult <= tokenMatchScore && positionResult < tokenPositionScore)) {
                     tokenMatchScore = searchResult
@@ -116,7 +136,7 @@ export function search(searchIndex: NormalizedSearchIndex, unnormalizedPattern: 
             positionScore += tokenPositionScore
 
             // If our match score is so high that we would not make it into the results, we can move on to the next entry
-            if (results.length === maxResults && compareSearchResults({ element, matchScore, positionScore, priority, populationRank }, results[results.length - 1]) > 0) {
+            if (results.length === maxResults && compareSearchResults({ element, normalizedMatchScore: matchScore / maxMatchScore, normalizedPositionScore: positionScore / maxPositionScore, normalizedPriority: priority / searchIndex.maxPriority, normalizedPopulationRank }, results[results.length - 1]) > 0) {
                 continue entries
             }
         }
@@ -128,10 +148,10 @@ export function search(searchIndex: NormalizedSearchIndex, unnormalizedPattern: 
 
         const result: SearchResult = {
             element,
-            matchScore,
-            positionScore,
-            priority,
-            populationRank,
+            normalizedMatchScore: matchScore / maxMatchScore,
+            normalizedPositionScore: positionScore / maxPositionScore,
+            normalizedPriority: priority / searchIndex.maxPriority,
+            normalizedPopulationRank,
         }
 
         let spliceIndex: number | undefined
@@ -154,7 +174,10 @@ export function search(searchIndex: NormalizedSearchIndex, unnormalizedPattern: 
     console.log(bitapPerformance)
     console.log({ total: entriesPatternChecks, skips: entriesPatternSkips })
 
-    console.log(results)
+    console.log(results.map(result => ({
+        ...result,
+        combinedScore: combinedScore(result),
+    })))
 
     return results.map(result => result.element)
 }
@@ -167,6 +190,8 @@ export async function loadSearchIndex(): Promise<NormalizedSearchIndex> {
 function processRawSearchIndex(searchIndex: { elements: string[], priorities: number[] }): NormalizedSearchIndex {
     const start = performance.now()
     let lengthOfLongestToken = 0
+    let maxPriority = 0
+    let mostTokens = 0
     const entries = searchIndex.elements.map((element, index) => {
         const normalizedElement = normalize(element)
         const tokens = tokenize(normalizedElement)
@@ -176,6 +201,12 @@ function processRawSearchIndex(searchIndex: { elements: string[], priorities: nu
             }
             return toHaystack(token)
         })
+        if (searchIndex.priorities[index] > maxPriority) {
+            maxPriority = searchIndex.priorities[index]
+        }
+        if (haystacks.length > mostTokens) {
+            mostTokens = haystacks.length
+        }
         return {
             element,
             tokens: haystacks,
@@ -184,5 +215,5 @@ function processRawSearchIndex(searchIndex: { elements: string[], priorities: nu
         }
     })
     console.log(`Took ${performance.now() - start}ms to process search index`)
-    return { entries, lengthOfLongestToken }
+    return { entries, lengthOfLongestToken, maxPriority, mostTokens }
 }

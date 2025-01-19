@@ -83,7 +83,7 @@ export function SearchBox(props: {
                 return
             }
             const start = performance.now()
-            const result = search(full, searchQuery, { showHistoricalCDs })
+            const result = search(full, searchQuery, 10, { showHistoricalCDs })
             console.log(`Took ${performance.now() - start} ms to execute search`)
             setMatches(result)
             setFocused(f => Math.min(f, result.length - 1))

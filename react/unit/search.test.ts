@@ -6,29 +6,30 @@ import { loadSearchIndex, search } from '../src/search'
 
 const searchIndex = await loadSearchIndex()
 
-function firstResultTest(query: string, result: string): void {
-    test(`First result for '${query}' is '${result}'`, () => {
-        assert.is(search(searchIndex, query, { showHistoricalCDs: false })[0], result)
+// We curry based on testFn so we can use test.only, test.skip, etc
+const firstResult = (testFn: (name: string, testBlock: () => void) => void) => (query: string, result: string): void => {
+    testFn(`First result for '${query}' is '${result}'`, () => {
+        assert.is(search(searchIndex, query, 10, { showHistoricalCDs: false })[0], result)
     })
 }
 
-firstResultTest('china', 'China')
-firstResultTest('ontario california', 'Ontario city, California, USA')
-firstResultTest('la canada', 'La Cañada Flintridge city, California, USA')
-firstResultTest('east fiji', 'Eastern, Fiji')
-firstResultTest('london on', 'Canada')
-firstResultTest('baltimore city md', 'Baltimore city, Maryland, USA')
-firstResultTest('ca usa', 'California, USA')
-firstResultTest('nv usa', 'Nevada, USA or a NV-??')
-firstResultTest('usa', 'USA')
-firstResultTest('london', 'London·Urban·Center,·United·Kingdom')
-firstResultTest('berlin', 'Berlin, Germany')
-firstResultTest('los angeles urban area', 'Los Angeles-Long Beach-Anaheim [Urban Area], CA, USA')
-firstResultTest('san marino', 'San Marino') // Should not be "San Marino, San Marino"
-firstResultTest('queens', 'Queensland, Australia')
-firstResultTest('india', 'India')
-firstResultTest('urban center', 'some urban center') // Should be some Urban Center
-firstResultTest('urban area', 'some urban area') // Should be some Urban Area
-firstResultTest('msa', 'some msa') // Should be some MSA
+firstResult(test)('china', 'China')
+firstResult(test)('ontario california', 'Ontario city, California, USA')
+firstResult(test.only)('la canada', 'La Cañada Flintridge city, California, USA')
+firstResult(test)('east fiji', 'Eastern, Fiji')
+firstResult(test)('london on', 'London CMA, ON, Canada')
+firstResult(test)('baltimore city md', 'Baltimore city, Maryland, USA')
+firstResult(test)('ca usa', 'California, USA')
+firstResult(test)('nv usa', 'NV-04, USA')
+firstResult(test)('usa', 'USA')
+firstResult(test)('london', 'London Urban Center, United Kingdom')
+firstResult(test)('berlin', 'Berlin, Germany')
+firstResult(test)('los angeles urban area', 'Los Angeles-Long Beach-Anaheim [Urban Area], CA, USA')
+firstResult(test)('san marino', 'San Marino') // Should not be "San Marino, San Marino"
+firstResult(test)('queens', 'Queensland, Australia')
+firstResult(test)('india', 'India')
+firstResult(test)('urban center', 'Guangzhou Urban Center, China') // Should be some Urban Center
+firstResult(test)('urban area', 'Urbana [Urban Area], MD, USA') // Should be some Urban Area
+firstResult(test)('msa', 'Chicago-Naperville-Elgin MSA, IL-IN-WI, USA') // Should be some MSA
 
 test.run()
