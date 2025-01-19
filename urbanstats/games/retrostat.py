@@ -40,7 +40,7 @@ def get_quiz_data_for_retroweek(retrostat_week):
     for problem in means.index:
         if week_for_day(problem) != questions_week_for_retrostat(retrostat_week):
             continue
-        with open(f"quiz_old/{problem}") as f:
+        with open(f"stored_quizzes/juxtastat/{problem}") as f:
             quiz_qns = json.load(f)
         for qcol, q in zip(questions, quiz_qns):
             qdata.append(
@@ -101,7 +101,7 @@ def generate_retrostat(retrostat_week):
 
 def generate_retrostats(folder):
     for retrostat_week in range(0, fixed_up_to + 1):
-        with open(f"retrostat_old/{retrostat_week}", "r") as f:
+        with open(f"stored_quizzes/retrostat/{retrostat_week}", "r") as f:
             out = json.load(f)
         output_retrostat(folder, retrostat_week, out)
     for retrostat_week in range(fixed_up_to + 1, generate_until + 1):

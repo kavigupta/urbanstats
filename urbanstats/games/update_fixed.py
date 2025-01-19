@@ -40,8 +40,8 @@ def copy_up_to(key, new_up_to, folder=None):
         "retrostat": "retrostat",
     }[key]
     dest_folder = {
-        "juxtastat": "quiz_old",
-        "retrostat": "retrostat_old",
+        "juxtastat": "stored_quizzes/juxtastat",
+        "retrostat": "stored_quizzes/retrostat",
     }[key]
     fixed_py = load_fixed_py()
     for retrostat_week in range(fixed_py[key], new_up_to + 1):
