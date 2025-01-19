@@ -120,7 +120,7 @@ async function getLives(): Promise<Emoji[]> {
 }
 
 function juxtastatInfiniteTable(): Promise<string> {
-    return runQuery('SELECT user, seed, hex(corrects), score, num_answers from JuxtaStatInfiniteStats')
+    return runQuery('SELECT user, seed, hex(corrects), score, num_answers from JuxtaStatInfiniteStats ORDER BY seed')
 }
 
 test('display-life-lost', async (t) => {
@@ -180,11 +180,25 @@ test('19-correct', async (t) => {
     await t.expect(await juxtastatInfiniteTable()).eql(`7|${seedNumeric}|FFFF0F00|20|27\n`)
 })
 
-test('do-not-report-partial', async (t) => {
+async function doNotReportPartial(t: TestController): Promise<void> {
     await provideAnswers(t, 0, [false, true, true, true, true], seedStr)
     await t.navigateTo(`${target}/quiz.html#mode=infinite&seed=deadbeef01&v=${version}`)
     await safeReload(t)
     await provideAnswers(t, 0, [false, false, false], 'deadbeef01')
     await t.expect(await correctIncorrect(t)).eql([false, false, false])
     await t.expect(await juxtastatInfiniteTable()).eql(`7|${seedNumeric + 1}|00|0|3\n`)
+}
+
+test('do-not-report-partial', async (t) => {
+    await doNotReportPartial(t)
+})
+
+test('come-back-to-completed-quiz', async (t) => {
+    await doNotReportPartial(t)
+    await t.navigateTo(`${target}/quiz.html#mode=infinite&seed=${seedStr}&v=${version}`)
+    await safeReload(t)
+    await provideAnswers(t, 5, [false, false], seedStr)
+    await t.expect(await correctIncorrect(t)).eql([false, true, true, true, true, false, false])
+    // low bit order first: 0111,100[0] This becomes 3E 01
+    await t.expect(await juxtastatInfiniteTable()).eql(`7|${seedNumeric}|1E|4|7\n7|${seedNumeric + 1}|00|0|3\n`)
 })
