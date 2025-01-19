@@ -270,7 +270,6 @@ export function QuizStatisticsForInfinite(
                     additionalClass: 'quiz-audience-statistics-displayed',
                     color: sortedSeedVersions[i][0] === props.quiz.seed ? colors.hueColors.green : colors.hueColors.blue,
                     onClick: () => {
-                        console.log('clicked', sortedSeedVersions[i])
                         void navContext.navigate({
                             kind: 'quiz',
                             mode: 'infinite',
