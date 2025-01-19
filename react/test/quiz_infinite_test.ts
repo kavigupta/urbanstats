@@ -75,9 +75,9 @@ test('collect correct answers', async (t) => {
 
 const seedStr = 'deadbeef00'
 
-const version = 0
+const version = 1
 
-const seed = 0xdeadbeef00
+const seedNumeric = 0xdeadbeef00
 const param = `#mode=infinite&seed=${seedStr}&v=${version}`
 quizFixture(
     'generate link',
@@ -131,7 +131,7 @@ test('display-life-lost', async (t) => {
     await t.expect(await getLives()).eql(['Y', 'N', 'N'])
     await provideAnswers(t, 2, [false], seedStr)
     await t.expect(await correctIncorrect(t)).eql([false, false, false])
-    await t.expect(await juxtastatInfiniteTable()).eql(`7|${seed}|00|0|3\n`)
+    await t.expect(await juxtastatInfiniteTable()).eql(`7|${seedNumeric}|00|0|3\n`)
 })
 
 test('display-life-gained', async (t) => {
@@ -142,7 +142,7 @@ test('display-life-gained', async (t) => {
     await provideAnswers(t, 5, [false, false, false, false], seedStr)
     await t.expect(await correctIncorrect(t)).eql([true, true, true, true, true, false, false, false, false])
     // low bit order first: 1111,1000 0[000,0000]. This becomes 1F 00
-    await t.expect(await juxtastatInfiniteTable()).eql(`7|${seed}|1F00|5|9\n`)
+    await t.expect(await juxtastatInfiniteTable()).eql(`7|${seedNumeric}|1F00|5|9\n`)
 })
 
 test('display-life-regained', async (t) => {
@@ -153,7 +153,7 @@ test('display-life-regained', async (t) => {
     await provideAnswers(t, 6, [false, false, true, false], seedStr)
     await t.expect(await correctIncorrect(t)).eql([false, true, true, true, true, true, false, false, true, false])
     // low bit order first: 0111,1100 10[00,0000] This becomes 3E 01
-    await t.expect(await juxtastatInfiniteTable()).eql(`7|${seed}|3E01|6|10\n`)
+    await t.expect(await juxtastatInfiniteTable()).eql(`7|${seedNumeric}|3E01|6|10\n`)
 })
 
 test('19-correct', async (t) => {
@@ -177,7 +177,7 @@ test('19-correct', async (t) => {
         `https://juxtastat.org/${param}`,
     ])
     // low bit order first: 1111,1111 1111,1111 1111,0000 000[0,0000] This becomes FF FF 0F 00
-    await t.expect(await juxtastatInfiniteTable()).eql(`7|${seed}|FFFF0F00|20|27\n`)
+    await t.expect(await juxtastatInfiniteTable()).eql(`7|${seedNumeric}|FFFF0F00|20|27\n`)
 })
 
 test('do-not-report-partial', async (t) => {
@@ -186,5 +186,5 @@ test('do-not-report-partial', async (t) => {
     await safeReload(t)
     await provideAnswers(t, 0, [false, false, false], 'deadbeef01')
     await t.expect(await correctIncorrect(t)).eql([false, false, false])
-    await t.expect(await juxtastatInfiniteTable()).eql(`7|${seed + 1}|00|0|3\n`)
+    await t.expect(await juxtastatInfiniteTable()).eql(`7|${seedNumeric + 1}|00|0|3\n`)
 })

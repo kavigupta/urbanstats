@@ -1,5 +1,5 @@
 /*eslint-disable block-scoped-var, id-length, no-control-regex, no-magic-numbers, no-prototype-builtins, no-redeclare, no-shadow, no-var, sort-vars*/
-import * as $protobuf from "protobufjs/minimal";
+import $protobuf from "protobufjs/minimal";
 
 // Common aliases
 const $Reader = $protobuf.Reader, $Writer = $protobuf.Writer, $util = $protobuf.util;
@@ -6352,7 +6352,8 @@ export const QuizQuestionTronche = $root.QuizQuestionTronche = (() => {
      * @property {Array.<number>|null} [geographyA] QuizQuestionTronche geographyA
      * @property {Array.<number>|null} [geographyB] QuizQuestionTronche geographyB
      * @property {Array.<number>|null} [stat] QuizQuestionTronche stat
-     * @property {Array.<number>|null} [negLogProbX100] QuizQuestionTronche negLogProbX100
+     * @property {number|null} [negLogProbX10Basis] QuizQuestionTronche negLogProbX10Basis
+     * @property {Array.<number>|null} [negLogProbX10MinusBasis] QuizQuestionTronche negLogProbX10MinusBasis
      */
 
     /**
@@ -6367,7 +6368,7 @@ export const QuizQuestionTronche = $root.QuizQuestionTronche = (() => {
         this.geographyA = [];
         this.geographyB = [];
         this.stat = [];
-        this.negLogProbX100 = [];
+        this.negLogProbX10MinusBasis = [];
         if (properties)
             for (let keys = Object.keys(properties), i = 0; i < keys.length; ++i)
                 if (properties[keys[i]] != null)
@@ -6399,12 +6400,20 @@ export const QuizQuestionTronche = $root.QuizQuestionTronche = (() => {
     QuizQuestionTronche.prototype.stat = $util.emptyArray;
 
     /**
-     * QuizQuestionTronche negLogProbX100.
-     * @member {Array.<number>} negLogProbX100
+     * QuizQuestionTronche negLogProbX10Basis.
+     * @member {number} negLogProbX10Basis
      * @memberof QuizQuestionTronche
      * @instance
      */
-    QuizQuestionTronche.prototype.negLogProbX100 = $util.emptyArray;
+    QuizQuestionTronche.prototype.negLogProbX10Basis = 0;
+
+    /**
+     * QuizQuestionTronche negLogProbX10MinusBasis.
+     * @member {Array.<number>} negLogProbX10MinusBasis
+     * @memberof QuizQuestionTronche
+     * @instance
+     */
+    QuizQuestionTronche.prototype.negLogProbX10MinusBasis = $util.emptyArray;
 
     /**
      * Creates a new QuizQuestionTronche instance using the specified properties.
@@ -6448,10 +6457,12 @@ export const QuizQuestionTronche = $root.QuizQuestionTronche = (() => {
                 writer.int32(message.stat[i]);
             writer.ldelim();
         }
-        if (message.negLogProbX100 != null && message.negLogProbX100.length) {
-            writer.uint32(/* id 4, wireType 2 =*/34).fork();
-            for (let i = 0; i < message.negLogProbX100.length; ++i)
-                writer.int32(message.negLogProbX100[i]);
+        if (message.negLogProbX10Basis != null && Object.hasOwnProperty.call(message, "negLogProbX10Basis"))
+            writer.uint32(/* id 4, wireType 0 =*/32).int32(message.negLogProbX10Basis);
+        if (message.negLogProbX10MinusBasis != null && message.negLogProbX10MinusBasis.length) {
+            writer.uint32(/* id 5, wireType 2 =*/42).fork();
+            for (let i = 0; i < message.negLogProbX10MinusBasis.length; ++i)
+                writer.int32(message.negLogProbX10MinusBasis[i]);
             writer.ldelim();
         }
         return writer;
@@ -6522,14 +6533,18 @@ export const QuizQuestionTronche = $root.QuizQuestionTronche = (() => {
                     break;
                 }
             case 4: {
-                    if (!(message.negLogProbX100 && message.negLogProbX100.length))
-                        message.negLogProbX100 = [];
+                    message.negLogProbX10Basis = reader.int32();
+                    break;
+                }
+            case 5: {
+                    if (!(message.negLogProbX10MinusBasis && message.negLogProbX10MinusBasis.length))
+                        message.negLogProbX10MinusBasis = [];
                     if ((tag & 7) === 2) {
                         let end2 = reader.uint32() + reader.pos;
                         while (reader.pos < end2)
-                            message.negLogProbX100.push(reader.int32());
+                            message.negLogProbX10MinusBasis.push(reader.int32());
                     } else
-                        message.negLogProbX100.push(reader.int32());
+                        message.negLogProbX10MinusBasis.push(reader.int32());
                     break;
                 }
             default:
@@ -6588,12 +6603,15 @@ export const QuizQuestionTronche = $root.QuizQuestionTronche = (() => {
                 if (!$util.isInteger(message.stat[i]))
                     return "stat: integer[] expected";
         }
-        if (message.negLogProbX100 != null && message.hasOwnProperty("negLogProbX100")) {
-            if (!Array.isArray(message.negLogProbX100))
-                return "negLogProbX100: array expected";
-            for (let i = 0; i < message.negLogProbX100.length; ++i)
-                if (!$util.isInteger(message.negLogProbX100[i]))
-                    return "negLogProbX100: integer[] expected";
+        if (message.negLogProbX10Basis != null && message.hasOwnProperty("negLogProbX10Basis"))
+            if (!$util.isInteger(message.negLogProbX10Basis))
+                return "negLogProbX10Basis: integer expected";
+        if (message.negLogProbX10MinusBasis != null && message.hasOwnProperty("negLogProbX10MinusBasis")) {
+            if (!Array.isArray(message.negLogProbX10MinusBasis))
+                return "negLogProbX10MinusBasis: array expected";
+            for (let i = 0; i < message.negLogProbX10MinusBasis.length; ++i)
+                if (!$util.isInteger(message.negLogProbX10MinusBasis[i]))
+                    return "negLogProbX10MinusBasis: integer[] expected";
         }
         return null;
     };
@@ -6631,12 +6649,14 @@ export const QuizQuestionTronche = $root.QuizQuestionTronche = (() => {
             for (let i = 0; i < object.stat.length; ++i)
                 message.stat[i] = object.stat[i] | 0;
         }
-        if (object.negLogProbX100) {
-            if (!Array.isArray(object.negLogProbX100))
-                throw TypeError(".QuizQuestionTronche.negLogProbX100: array expected");
-            message.negLogProbX100 = [];
-            for (let i = 0; i < object.negLogProbX100.length; ++i)
-                message.negLogProbX100[i] = object.negLogProbX100[i] | 0;
+        if (object.negLogProbX10Basis != null)
+            message.negLogProbX10Basis = object.negLogProbX10Basis | 0;
+        if (object.negLogProbX10MinusBasis) {
+            if (!Array.isArray(object.negLogProbX10MinusBasis))
+                throw TypeError(".QuizQuestionTronche.negLogProbX10MinusBasis: array expected");
+            message.negLogProbX10MinusBasis = [];
+            for (let i = 0; i < object.negLogProbX10MinusBasis.length; ++i)
+                message.negLogProbX10MinusBasis[i] = object.negLogProbX10MinusBasis[i] | 0;
         }
         return message;
     };
@@ -6658,8 +6678,10 @@ export const QuizQuestionTronche = $root.QuizQuestionTronche = (() => {
             object.geographyA = [];
             object.geographyB = [];
             object.stat = [];
-            object.negLogProbX100 = [];
+            object.negLogProbX10MinusBasis = [];
         }
+        if (options.defaults)
+            object.negLogProbX10Basis = 0;
         if (message.geographyA && message.geographyA.length) {
             object.geographyA = [];
             for (let j = 0; j < message.geographyA.length; ++j)
@@ -6675,10 +6697,12 @@ export const QuizQuestionTronche = $root.QuizQuestionTronche = (() => {
             for (let j = 0; j < message.stat.length; ++j)
                 object.stat[j] = message.stat[j];
         }
-        if (message.negLogProbX100 && message.negLogProbX100.length) {
-            object.negLogProbX100 = [];
-            for (let j = 0; j < message.negLogProbX100.length; ++j)
-                object.negLogProbX100[j] = message.negLogProbX100[j];
+        if (message.negLogProbX10Basis != null && message.hasOwnProperty("negLogProbX10Basis"))
+            object.negLogProbX10Basis = message.negLogProbX10Basis;
+        if (message.negLogProbX10MinusBasis && message.negLogProbX10MinusBasis.length) {
+            object.negLogProbX10MinusBasis = [];
+            for (let j = 0; j < message.negLogProbX10MinusBasis.length; ++j)
+                object.negLogProbX10MinusBasis[j] = message.negLogProbX10MinusBasis[j];
         }
         return object;
     };

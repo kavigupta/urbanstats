@@ -11,6 +11,10 @@ import { QuizFullData } from '../utils/protos'
 
 import { QuizQuestion } from './quiz'
 
+type QuizInfiniteForVersion = typeof quiz_infinite[number]
+
+export const validQuizInfiniteVersions = quiz_infinite.map((x: QuizInfiniteForVersion) => x.juxtaVersion)
+
 const juxtaInfiniteInitialLives = 3
 export const juxtaInfiniteCorrectForBonus = 5
 
@@ -28,11 +32,11 @@ function sampleChunk(rng: seedrandom.PRNG, chunks: QuizQuestionChunks): string {
     throw new Error('Invalid chunk distribution')
 }
 
-function sampleTroncheIndex(rng: seedrandom.PRNG, negLogProbX100: number[]): number {
+function sampleTroncheIndex(rng: seedrandom.PRNG, negLogProbX10: number[]): number {
     const probeP = rng()
     let totalP = 0
-    for (let i = 0; i < negLogProbX100.length; i++) {
-        totalP += Math.exp(-negLogProbX100[i] / 100)
+    for (let i = 0; i < negLogProbX10.length; i++) {
+        totalP += Math.exp(-negLogProbX10[i] / 10)
         if (probeP < totalP) {
             return i
         }
@@ -40,41 +44,51 @@ function sampleTroncheIndex(rng: seedrandom.PRNG, negLogProbX100: number[]): num
     throw new Error('Invalid tronche distribution')
 }
 
+function quizForVersion(version: number): QuizInfiniteForVersion {
+    for (const quiz of quiz_infinite) {
+        if (quiz.juxtaVersion === version) {
+            return quiz
+        }
+    }
+    throw new Error('Invalid version')
+}
+
 let quizSamplingData: Promise<QuizFullData> | null = null
-function loadQuizSamplingData(): Promise<QuizFullData> {
+function loadQuizSamplingData(version: number): Promise<QuizFullData> {
     // cache the data
     if (quizSamplingData === null) {
-        quizSamplingData = loadProtobuf('/quiz_sampling_info/data.gz', 'QuizFullData')
+        quizSamplingData = loadProtobuf(`/quiz_sampling_info/${version}/data.gz`, 'QuizFullData')
     }
     return quizSamplingData
 }
 
-export async function sampleRandomQuestion(seed: string, index: number): Promise<QuizQuestion> {
+export async function sampleRandomQuestion(seed: string, version: number, index: number): Promise<QuizQuestion> {
     const seedFull = `${seed}-${index}`
     const rng = seedrandom(seedFull)
     const whichQ = Math.floor(rng() * 5)
-    const chunks = quiz_infinite.questionDistribution[whichQ]
+    const quizInfiniteV = quizForVersion(version)
+    const chunks = quizInfiniteV.questionDistribution[whichQ]
     const chunk = sampleChunk(rng, chunks satisfies QuizQuestionChunks)
     const tronche = await loadProtobuf(chunk, 'QuizQuestionTronche')
-    const data = await loadQuizSamplingData()
-    const troncheIdx = sampleTroncheIndex(rng, tronche.negLogProbX100)
+    const data = await loadQuizSamplingData(version)
+    const troncheIdx = sampleTroncheIndex(rng, tronche.negLogProbX10MinusBasis.map(x => x + tronche.negLogProbX10Basis))
     let geoA = tronche.geographyA[troncheIdx]
     let geoB = tronche.geographyB[troncheIdx]
     if (rng() < 0.5) {
         [geoA, geoB] = [geoB, geoA]
     }
     const stat = tronche.stat[troncheIdx]
-    const statName = statistic_name_list[quiz_infinite.allStats[stat]]
-    const statPath = statistic_path_list[quiz_infinite.allStats[stat]]
-    const question: string = quiz_names[quiz_infinite.allStats[stat]]
+    const statName = statistic_name_list[quizInfiniteV.allStats[stat]]
+    const statPath = statistic_path_list[quizInfiniteV.allStats[stat]]
+    const question: string = quiz_names[quizInfiniteV.allStats[stat]]
     const sA = data.stats[stat].stats![geoA]
     const sB = data.stats[stat].stats![geoB]
     return {
         stat_a: sA,
         stat_b: sB,
         question,
-        longname_a: quiz_infinite.allGeographies[geoA],
-        longname_b: quiz_infinite.allGeographies[geoB],
+        longname_a: quizInfiniteV.allGeographies[geoA],
+        longname_b: quizInfiniteV.allGeographies[geoB],
         kind: 'juxtastat',
         stat_column: statName,
         stat_path: statPath,

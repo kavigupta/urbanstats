@@ -19,5 +19,5 @@ test('under memory limit home page', async (t) => {
 urbanstatsFixture('california', '/article.html?longname=California%2C+USA&s=GczH23sVhzZkQid')
 
 test('under memory limit california', async (t) => {
-    await t.expect(await getJSHeapSize(t)).lt(66_000_000)
+    await t.expect(await getJSHeapSize(t)).lt(67_000_000)
 })

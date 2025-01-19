@@ -95,7 +95,7 @@ def generate_quizzes(folder):
         return os.path.join(folder, f"{day}")
 
     for i in range(fixed_up_to + 1):
-        shutil.copy(f"quiz_old/{i}", path(i))
+        shutil.copy(f"stored_quizzes/juxtastat/{i}", path(i))
     for i in tqdm.trange(fixed_up_to + 1, 365 * 3):
         outs = full_quiz(("daily", i))
         with open(path(i), "w") as f:
