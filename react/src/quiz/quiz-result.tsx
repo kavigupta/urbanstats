@@ -475,7 +475,7 @@ export function GenericQuizResultRow(props: GenericQuizResultRowProps): ReactNod
                         <td style={{ fontWeight: 400 }} className="serif quiz_result_value_left">
                             {props.getStat('a')}
                         </td>
-                        <td className="serif quiz_result_symbol">
+                        <td className="serif quiz_result_symbol quiz_result_comparison_symbol">
                             {comparison}
                         </td>
                         <td style={{ fontWeight: 400 }} className="serif quiz_result_value_right">
