@@ -79,7 +79,6 @@ const seedStr = 'deadbeef00'
 
 const version = 1
 
-const seedNumeric = 0xdeadbeef00
 const param = `#mode=infinite&seed=${seedStr}&v=${version}`
 quizFixture(
     'generate link',
@@ -133,7 +132,7 @@ test('display-life-lost', async (t) => {
     await t.expect(await getLives()).eql(['Y', 'N', 'N'])
     await provideAnswers(t, 2, [false], seedStr)
     await t.expect(await correctIncorrect(t)).eql([false, false, false])
-    await t.expect(await juxtastatInfiniteTable()).eql(`7|${seedNumeric}|00|0|3\n`)
+    await t.expect(await juxtastatInfiniteTable()).eql(`7|${seedStr}|00|0|3\n`)
 })
 
 test('display-life-gained', async (t) => {
@@ -144,7 +143,7 @@ test('display-life-gained', async (t) => {
     await provideAnswers(t, 5, [false, false, false, false], seedStr)
     await t.expect(await correctIncorrect(t)).eql([true, true, true, true, true, false, false, false, false])
     // low bit order first: 1111,1000 0[000,0000]. This becomes 1F 00
-    await t.expect(await juxtastatInfiniteTable()).eql(`7|${seedNumeric}|1F00|5|9\n`)
+    await t.expect(await juxtastatInfiniteTable()).eql(`7|${seedStr}|1F00|5|9\n`)
 })
 
 test('display-life-regained', async (t) => {
@@ -155,7 +154,7 @@ test('display-life-regained', async (t) => {
     await provideAnswers(t, 6, [false, false, true, false], seedStr)
     await t.expect(await correctIncorrect(t)).eql([false, true, true, true, true, true, false, false, true, false])
     // low bit order first: 0111,1100 10[00,0000] This becomes 3E 01
-    await t.expect(await juxtastatInfiniteTable()).eql(`7|${seedNumeric}|3E01|6|10\n`)
+    await t.expect(await juxtastatInfiniteTable()).eql(`7|${seedStr}|3E01|6|10\n`)
 })
 
 test('19-correct', async (t) => {
@@ -179,7 +178,7 @@ test('19-correct', async (t) => {
         `https://juxtastat.org/${param}`,
     ])
     // low bit order first: 1111,1111 1111,1111 1111,0000 000[0,0000] This becomes FF FF 0F 00
-    await t.expect(await juxtastatInfiniteTable()).eql(`7|${seedNumeric}|FFFF0F00|20|27\n`)
+    await t.expect(await juxtastatInfiniteTable()).eql(`7|${seedStr}|FFFF0F00|20|27\n`)
 })
 
 async function doNotReportPartial(t: TestController): Promise<void> {
@@ -188,7 +187,7 @@ async function doNotReportPartial(t: TestController): Promise<void> {
     await safeReload(t)
     await provideAnswers(t, 0, [false, false, false], 'deadbeef01')
     await t.expect(await correctIncorrect(t)).eql([false, false, false])
-    await t.expect(await juxtastatInfiniteTable()).eql(`7|${seedNumeric + 1}|00|0|3\n`)
+    await t.expect(await juxtastatInfiniteTable()).eql(`7|deadbeef01|00|0|3\n`)
 }
 
 test('do-not-report-partial', async (t) => {
@@ -201,7 +200,7 @@ test('come-back-to-partially-completed-quiz', async (t) => {
     await provideAnswers(t, 5, [false, false], seedStr)
     await t.expect(await correctIncorrect(t)).eql([false, true, true, true, true, false, false])
     // low bit order first: 0111,100[0] This becomes 3E 01
-    await t.expect(await juxtastatInfiniteTable()).eql(`7|${seedNumeric}|1E|4|7\n7|${seedNumeric + 1}|00|0|3\n`)
+    await t.expect(await juxtastatInfiniteTable()).eql(`7|deadbeef00|1E|4|7\n7|deadbeef01|00|0|3\n`)
     await t.navigateTo(`${target}/quiz.html#mode=infinite&seed=deadbeef01&v=${version}`)
     await t.expect(await correctIncorrect(t)).eql([false, false, false])
 })

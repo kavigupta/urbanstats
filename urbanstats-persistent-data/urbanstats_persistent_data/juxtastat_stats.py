@@ -30,7 +30,7 @@ def table():
     # juxtastat infinite
     c.execute(
         """CREATE TABLE IF NOT EXISTS JuxtaStatInfiniteStats
-        (user integer, seed integer, version integer, corrects varbinary(128), score integer, num_answers integer, time integer, PRIMARY KEY (user, seed, version))"""
+        (user integer, seed string, version integer, corrects varbinary(128), score integer, num_answers integer, time integer, PRIMARY KEY (user, seed, version))"""
     )
 
     # user to domain name
@@ -180,7 +180,6 @@ def has_infinite_stats(user, seeds_versions):
 
 def store_user_stats_infinite(user, seed, version, corrects: List[bool]):
     user = int(user, 16)
-    seed = int(seed, 16)
     conn, c = table()
     # ignore latest day here, it is up to the client to filter out old stats
     # we want to be able to update stats for old days
