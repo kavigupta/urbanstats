@@ -182,7 +182,7 @@ test('19-correct', async (t) => {
 
 test('do-not-report-partial', async (t) => {
     await provideAnswers(t, 0, [false, true, true, true, true], seedStr)
-    await t.navigateTo(`${target}/quiz.html#mode=infinite&seed=deadbeef01&v=0`)
+    await t.navigateTo(`${target}/quiz.html#mode=infinite&seed=deadbeef01&v=${version}`)
     await safeReload(t)
     await provideAnswers(t, 0, [false, false, false], 'deadbeef01')
     await t.expect(await correctIncorrect(t)).eql([false, false, false])
