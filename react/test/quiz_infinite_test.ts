@@ -54,6 +54,7 @@ test('collect correct answers', async (t) => {
         }, { dependencies: { seed, version } })
         await t.navigateTo(`${target}/quiz.html#mode=infinite&seed=${seed}&v=${version}`)
         await safeReload(t)
+        await waitForQuizLoading(t)
         // Get all quiz_result_symbol elements and the text therein
         const symbols = Selector('.quiz_result_comparison_symbol')
         const symbolsCount = await symbols.count
