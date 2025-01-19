@@ -51,7 +51,7 @@ def output_quiz_question(q, p, site_folder, question_folder):
 
 
 def output_quiz_sampling_info(site_folder, subfolder):
-    qfd = quiz_sampling_data(site_folder, subfolder)
+    qfd = quiz_sampling_data()
     juxta_version = output_quiz_sampling_probabilities_locally()
     write_gzip(qfd, f"stored_quizzes/quiz_sampling_info/{juxta_version}/data.gz")
     by_version = []
@@ -68,7 +68,7 @@ def output_quiz_sampling_info(site_folder, subfolder):
         output_typescript(by_version, f)
 
 
-def quiz_sampling_data(site_folder, subfolder):
+def quiz_sampling_data():
     data, *_ = compute_quiz_question_distribution()
     data = data.T
     qfd = data_files_pb2.QuizFullData()
