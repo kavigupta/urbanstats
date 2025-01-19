@@ -11,7 +11,7 @@ from urbanstats.games.quiz_sampling import (
     compute_quiz_question_distribution,
 )
 from urbanstats.protobuf import data_files_pb2
-from urbanstats.protobuf.utils import write_gzip
+from urbanstats.protobuf.utils import write_brotli, write_gzip
 from urbanstats.statistics.output_statistics_metadata import internal_statistic_names
 from urbanstats.utils import output_typescript
 
@@ -22,18 +22,20 @@ version_info = "juxtastat_version.json"
 def output_tronche(tronche_vqq, tronche_p, tronche_path):
     tronche_total_p = tronche_p.sum()
     tronche_p = tronche_p / tronche_total_p
-    binned_probs = -(np.log(tronche_p) / 0.01).round().astype(np.int64)
+    binned_probs = -(np.log(tronche_p) / 0.1).round().astype(np.int64)
     tronche_proto = data_files_pb2.QuizQuestionTronche()
     tronche_proto.geography_a.extend(tronche_vqq.geography_index_a)
     tronche_proto.geography_b.extend(tronche_vqq.geography_index_b)
     tronche_proto.stat.extend(tronche_vqq.stat_indices)
-    tronche_proto.neg_log_prob_x100.extend(binned_probs)
-    write_gzip(tronche_proto, tronche_path)
+    tronche_proto.neg_log_prob_x10_basis = int(binned_probs.min())
+    tronche_proto.neg_log_prob_x10_minus_basis.extend(binned_probs - binned_probs.min())
+    write_brotli(tronche_proto, tronche_path)
     return tronche_total_p
 
 
 def output_quiz_question(q, p, site_folder, question_folder):
-    idxs = np.argsort(-p)
+    idxs = compute_order(q)
+
     tronche_descriptors = []
     for idx, start in tqdm.tqdm(
         list(enumerate(range(0, p.shape[0], tronche_size))),
@@ -64,9 +66,32 @@ def output_quiz_sampling_data(site_folder, subfolder):
     write_gzip(qfd, os.path.join(site_folder, subfolder, "data.gz"))
 
 
+def filter_for_prob_over_threshold(q, p, *, threshold):
+    sorted_p = np.sort(p[:])
+    [[idx, *_]] = np.where(np.cumsum(sorted_p) > threshold)
+    thresh = sorted_p[idx]
+    mask = p >= thresh
+    return q[mask], p[mask]
+
+
+def compute_order(q):
+    sort_keys = (
+        q.stat_indices,
+        q.geography_index_a,
+        q.geography_index_b,
+    )
+    basis = 1
+    order_value = 0
+    for key in sort_keys[::-1]:
+        order_value += basis * key
+        basis *= key.max() + 1
+    idxs = np.argsort(order_value)
+    return idxs
+
+
 def output_quiz_sampling_probabilities(site_folder, subfolder):
     ps, qqp = quiz_data()
-    hash_value = stable_hash((ps, qqp))
+    hash_value = stable_hash((ps, qqp, "v1"))
     info = get_juxta_version_info()
     if hash_value not in dict(get_juxta_version_info()):
         info.append((hash_value, len(info)))
@@ -75,6 +100,7 @@ def output_quiz_sampling_probabilities(site_folder, subfolder):
     juxta_version = dict(info)[hash_value]
     descriptors = []
     for i, (q, p) in enumerate(zip(qqp.questions_by_number, ps), start=1):
+        q, p = filter_for_prob_over_threshold(q, p, threshold=0.05)
         descriptors.append(
             output_quiz_question(q, p, site_folder, os.path.join(subfolder, f"q{i}"))
         )

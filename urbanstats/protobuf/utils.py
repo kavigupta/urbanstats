@@ -1,3 +1,4 @@
+import brotli
 import gzip
 import os
 
@@ -26,11 +27,21 @@ def save_ordered_list(ordered_list, path):
     write_gzip(res, path)
 
 
-def write_gzip(proto, path):
+def ensure_writeable(path):
     folder = os.path.dirname(path)
     try:
         os.makedirs(folder)
     except FileExistsError:
         pass
+
+
+def write_gzip(proto, path):
+    ensure_writeable(path)
     with gzip.GzipFile(path, "wb", mtime=0) as f:
         f.write(proto.SerializeToString())
+
+
+def write_brotli(proto, path):
+    ensure_writeable(path)
+    with open(path, "wb") as f:
+        f.write(brotli.compress(proto.SerializeToString()))
