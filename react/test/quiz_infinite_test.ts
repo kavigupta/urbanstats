@@ -193,12 +193,15 @@ test('do-not-report-partial', async (t) => {
     await doNotReportPartial(t)
 })
 
-test('come-back-to-completed-quiz', async (t) => {
+test('come-back-to-partially-completed-quiz', async (t) => {
     await doNotReportPartial(t)
     await t.navigateTo(`${target}/quiz.html#mode=infinite&seed=${seedStr}&v=${version}`)
-    await safeReload(t)
+    // await safeReload(t)
     await provideAnswers(t, 5, [false, false], seedStr)
     await t.expect(await correctIncorrect(t)).eql([false, true, true, true, true, false, false])
     // low bit order first: 0111,100[0] This becomes 3E 01
     await t.expect(await juxtastatInfiniteTable()).eql(`7|${seedNumeric}|1E|4|7\n7|${seedNumeric + 1}|00|0|3\n`)
+    await t.navigateTo(`${target}/quiz.html#mode=infinite&seed=deadbeef01&v=${version}`)
+    // await safeReload(t)
+    await t.expect(await correctIncorrect(t)).eql([false, false, false])
 })
