@@ -24,7 +24,7 @@ import {
 import { getInfiniteQuizzes } from '../quiz/statistics'
 import { defaultArticleUniverse, defaultComparisonUniverse } from '../universe'
 import { Article, IDataList } from '../utils/protos'
-import { randomID } from '../utils/random'
+import { randomBase62ID } from '../utils/random'
 import { followSymlink, followSymlinks } from '../utils/symlinks'
 import { NormalizeProto } from '../utils/types'
 import { base64Gunzip } from '../utils/urlParamShort'
@@ -469,7 +469,7 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
                             updatedDescriptor.v = version
                         }
                         else {
-                            updatedDescriptor.seed = randomID(10)
+                            updatedDescriptor.seed = randomBase62ID(7)
                         }
                     }
                     if (updatedDescriptor.v === undefined) {
