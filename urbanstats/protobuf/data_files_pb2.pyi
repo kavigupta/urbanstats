@@ -314,19 +314,28 @@ class QuizFullData(_message.Message):
     ) -> None: ...
 
 class QuizQuestionTronche(_message.Message):
-    __slots__ = ("geography_a", "geography_b", "stat", "neg_log_prob_x100")
+    __slots__ = (
+        "geography_a",
+        "geography_b",
+        "stat",
+        "neg_log_prob_x10_basis",
+        "neg_log_prob_x10_minus_basis",
+    )
     GEOGRAPHY_A_FIELD_NUMBER: _ClassVar[int]
     GEOGRAPHY_B_FIELD_NUMBER: _ClassVar[int]
     STAT_FIELD_NUMBER: _ClassVar[int]
-    NEG_LOG_PROB_X100_FIELD_NUMBER: _ClassVar[int]
+    NEG_LOG_PROB_X10_BASIS_FIELD_NUMBER: _ClassVar[int]
+    NEG_LOG_PROB_X10_MINUS_BASIS_FIELD_NUMBER: _ClassVar[int]
     geography_a: _containers.RepeatedScalarFieldContainer[int]
     geography_b: _containers.RepeatedScalarFieldContainer[int]
     stat: _containers.RepeatedScalarFieldContainer[int]
-    neg_log_prob_x100: _containers.RepeatedScalarFieldContainer[int]
+    neg_log_prob_x10_basis: int
+    neg_log_prob_x10_minus_basis: _containers.RepeatedScalarFieldContainer[int]
     def __init__(
         self,
         geography_a: _Optional[_Iterable[int]] = ...,
         geography_b: _Optional[_Iterable[int]] = ...,
         stat: _Optional[_Iterable[int]] = ...,
-        neg_log_prob_x100: _Optional[_Iterable[int]] = ...,
+        neg_log_prob_x10_basis: _Optional[int] = ...,
+        neg_log_prob_x10_minus_basis: _Optional[_Iterable[int]] = ...,
     ) -> None: ...

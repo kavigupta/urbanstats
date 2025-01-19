@@ -2529,8 +2529,11 @@ export interface IQuizQuestionTronche {
     /** QuizQuestionTronche stat */
     stat?: (number[]|null);
 
-    /** QuizQuestionTronche negLogProbX100 */
-    negLogProbX100?: (number[]|null);
+    /** QuizQuestionTronche negLogProbX10Basis */
+    negLogProbX10Basis?: (number|null);
+
+    /** QuizQuestionTronche negLogProbX10MinusBasis */
+    negLogProbX10MinusBasis?: (number[]|null);
 }
 
 /** Represents a QuizQuestionTronche. */
@@ -2551,8 +2554,11 @@ export class QuizQuestionTronche implements IQuizQuestionTronche {
     /** QuizQuestionTronche stat. */
     public stat: number[];
 
-    /** QuizQuestionTronche negLogProbX100. */
-    public negLogProbX100: number[];
+    /** QuizQuestionTronche negLogProbX10Basis. */
+    public negLogProbX10Basis: number;
+
+    /** QuizQuestionTronche negLogProbX10MinusBasis. */
+    public negLogProbX10MinusBasis: number[];
 
     /**
      * Creates a new QuizQuestionTronche instance using the specified properties.

@@ -147,5 +147,6 @@ message QuizQuestionTronche {
     repeated int32 geography_b = 2;
     repeated int32 stat = 3;
     // probability within tronche
-    repeated int32 neg_log_prob_x100 = 4;
+    int32 neg_log_prob_x10_basis = 4;
+    repeated int32 neg_log_prob_x10_minus_basis = 5;
 }
