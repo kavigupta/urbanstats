@@ -1,5 +1,6 @@
 import json
 import os
+import shutil
 
 import numpy as np
 import tqdm.auto as tqdm
@@ -51,9 +52,14 @@ def output_quiz_question(q, p, site_folder, question_folder):
 
 def output_quiz_sampling_info(site_folder, subfolder):
     output_quiz_sampling_data(site_folder, subfolder)
-    sampling_info = output_quiz_sampling_probabilities(site_folder, subfolder)
+    output_quiz_sampling_probabilities_locally()
+    by_version = []
+    for version in range(1, len(get_juxta_version_info())):
+        shutil.copytree(f"stored_quizzes/quiz_sampling_info/{version}", os.path.join(site_folder, subfolder, "quiz_sampling_info", str(version)))
+        with open(f"stored_quizzes/quiz_sampling_info/{version}.json", "r") as f:
+            by_version.append(json.load(f))
     with open("react/src/data/quiz_infinite.ts", "w") as f:
-        output_typescript(sampling_info, f)
+        output_typescript(by_version, f)
 
 
 def output_quiz_sampling_data(site_folder, subfolder):
@@ -91,7 +97,7 @@ def compute_order(q):
     return idxs
 
 
-def output_quiz_sampling_probabilities(site_folder, subfolder):
+def output_quiz_sampling_probabilities_locally():
     ps, qqp = quiz_data()
     hash_value = stable_hash((ps, qqp, "v1"))
     info = get_juxta_version_info()
@@ -104,15 +110,21 @@ def output_quiz_sampling_probabilities(site_folder, subfolder):
     for i, (q, p) in enumerate(zip(qqp.questions_by_number, ps), start=1):
         q, p = filter_for_prob_over_threshold(q, p, threshold=0.05)
         descriptors.append(
-            output_quiz_question(q, p, site_folder, os.path.join(subfolder, f"q{i}"))
+            output_quiz_question(
+                q, p, "stored_quizzes", f"quiz_sampling_info/{juxta_version}/q{i}"
+            )
         )
 
-    return dict(
-        allGeographies=qqp.all_geographies,
-        allStats=[internal_statistic_names().index(s) for s in qqp.all_stats],
-        questionDistribution=descriptors,
-        juxtaVersion=juxta_version,
-    )
+    with open(f"stored_quizzes/quiz_sampling_info/{juxta_version}.json", "w") as f:
+        json.dump(
+            dict(
+                allGeographies=qqp.all_geographies,
+                allStats=[internal_statistic_names().index(s) for s in qqp.all_stats],
+                questionDistribution=descriptors,
+                juxtaVersion=juxta_version,
+            ),
+            f,
+        )
 
 
 def get_juxta_version_info():

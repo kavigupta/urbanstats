@@ -7,6 +7,7 @@ import { useColors } from '../page_template/colors'
 import { PageTemplate } from '../page_template/template'
 import '../common.css'
 import './quiz.css'
+import { validQuizInfiniteVersions } from '../quiz/infinite'
 import { QuizDescriptor, QuizHistory, QuizLocalStorage, QuizQuestion, QuizQuestionsModel, aCorrect } from '../quiz/quiz'
 import { QuizQuestionDispatch } from '../quiz/quiz-question'
 import { buttonStyle, QuizResult } from '../quiz/quiz-result'
@@ -52,7 +53,7 @@ function QuizPanelNoResets(props: { quizDescriptor: QuizDescriptor, todayName?: 
     const [waitingForNextQuestion, setWaitingForNextQuestion] = useState(false)
     const [questions, setQuestions] = useState<QuizQuestion[]>([])
 
-    if (props.quizDescriptor.kind === 'infinite' && props.quizDescriptor.version !== quiz_infinite.juxtaVersion) {
+    if (props.quizDescriptor.kind === 'infinite' && !(validQuizInfiniteVersions satisfies number[] as number[]).includes(props.quizDescriptor.version)) {
         // TODO this should not come up if you've already done the quiz (only relevant once we add the stats)
         return (
             <PageTemplate>

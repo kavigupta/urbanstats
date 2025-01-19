@@ -17,6 +17,7 @@ import { activeVectorKeys, fromVector, getVector } from '../page_template/settin
 import { StatGroupSettings } from '../page_template/statistic-settings'
 import { allGroups, CategoryIdentifier, StatName, StatPath, statsTree } from '../page_template/statistic-tree'
 import { getDailyOffsetNumber, getRetrostatOffsetNumber } from '../quiz/dates'
+import { validQuizInfiniteVersions } from '../quiz/infinite'
 import { QuizQuestionsModel, wrapQuestionsModel, addFriendFromLink, CustomQuizContent, JuxtaQuestionJSON, loadJuxta, loadRetro, QuizDescriptor, RetroQuestionJSON, infiniteQuiz } from '../quiz/quiz'
 import { defaultArticleUniverse, defaultComparisonUniverse } from '../universe'
 import { Article, IDataList } from '../utils/protos'
@@ -461,10 +462,10 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
                         updatedDescriptor.seed = randomID(10)
                     }
                     if (updatedDescriptor.v === undefined) {
-                        updatedDescriptor.v = quiz_infinite.juxtaVersion
+                        updatedDescriptor.v = Math.max(...validQuizInfiniteVersions)
                     }
                     quizDescriptor = { kind: 'infinite', name: updatedDescriptor.seed, seed: updatedDescriptor.seed, version: updatedDescriptor.v }
-                    quiz = infiniteQuiz(updatedDescriptor.seed)
+                    quiz = infiniteQuiz(updatedDescriptor.seed, updatedDescriptor.v)
                     todayName = undefined
                     break
                 case undefined:
