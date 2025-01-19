@@ -51,13 +51,16 @@ def output_quiz_question(q, p, site_folder, question_folder):
 
 
 def output_quiz_sampling_info(site_folder, subfolder):
-    output_quiz_sampling_data(site_folder, subfolder)
-    output_quiz_sampling_probabilities_locally()
+    qfd = quiz_sampling_data(site_folder, subfolder)
+    juxta_version = output_quiz_sampling_probabilities_locally()
+    write_gzip(qfd, f"stored_quizzes/quiz_sampling_info/{juxta_version}/data.gz")
     by_version = []
     for version in range(1, len(get_juxta_version_info())):
+        dest = os.path.join(site_folder, subfolder, str(version))
+        shutil.rmtree(dest, ignore_errors=True)
         shutil.copytree(
             f"stored_quizzes/quiz_sampling_info/{version}",
-            os.path.join(site_folder, subfolder, "quiz_sampling_info", str(version)),
+            dest,
         )
         with open(f"stored_quizzes/quiz_sampling_info/{version}.json", "r") as f:
             by_version.append(json.load(f))
@@ -65,14 +68,14 @@ def output_quiz_sampling_info(site_folder, subfolder):
         output_typescript(by_version, f)
 
 
-def output_quiz_sampling_data(site_folder, subfolder):
+def quiz_sampling_data(site_folder, subfolder):
     data, *_ = compute_quiz_question_distribution()
     data = data.T
     qfd = data_files_pb2.QuizFullData()
     for row in data:
         q = qfd.stats.add()
         q.stats.extend(row)
-    write_gzip(qfd, os.path.join(site_folder, subfolder, "data.gz"))
+    return qfd
 
 
 def filter_for_prob_over_threshold(q, p, *, threshold):
@@ -128,6 +131,7 @@ def output_quiz_sampling_probabilities_locally():
             ),
             f,
         )
+    return juxta_version
 
 
 def get_juxta_version_info():
