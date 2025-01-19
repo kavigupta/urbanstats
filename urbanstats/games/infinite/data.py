@@ -71,7 +71,10 @@ def filter_for_prob_over_threshold(q, p, *, threshold):
     [[idx, *_]] = np.where(np.cumsum(sorted_p) > threshold)
     thresh = sorted_p[idx]
     mask = p >= thresh
-    return q[mask], p[mask]
+    q, p = q[mask], p[mask].copy()
+    p /= p.sum()
+    return q, p
+
 
 
 def compute_order(q):
