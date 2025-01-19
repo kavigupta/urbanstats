@@ -176,3 +176,23 @@ jobs:
           pattern: "{delta,changed_screenshots}"
           separate-directories: true
         continue-on-error: true
+
+  run-unit-tests:
+    runs-on: ubuntu-22.04
+    needs: build-and-push-common-image
+    container:
+      image: ${{ needs.build-and-push-common-image.outputs.image }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/node_modules
+      - uses: actions/download-artifact@v4
+        with:
+          name: frontend-build
+          path: react/test/density-db
+      - name: Run tests
+        run: |
+          npm run test:unit -- \
+            --proxy=true
+        working-directory: react
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

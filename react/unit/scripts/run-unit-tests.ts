@@ -1,3 +1,5 @@
+import os from 'node:os'
+
 import { globSync } from 'glob'
 import { z } from 'zod'
 import { argumentParser } from 'zodcli'
@@ -22,7 +24,7 @@ async function main(): Promise<void> {
         options: z.object({
             proxy: booleanArgument({ defaultValue: false }),
             test: z.array(z.string()).default(['unit/*.test.ts']),
-            parallel: z.string().transform(string => parseInt(string)).default('1'),
+            parallel: z.string().transform(string => parseInt(string)).default(os.cpus().length.toString()),
         }).strict(),
     }).parse(process.argv.slice(2))
 
@@ -32,6 +34,8 @@ async function main(): Promise<void> {
         console.error(`No test files found for ${options.test}`)
         process.exit(1)
     }
+
+    console.warn(`Using --parallel=${options.parallel}`)
 
     const tests = testFiles.map(file => /unit\/(.+)\.ts/.exec(file)![1])
 
