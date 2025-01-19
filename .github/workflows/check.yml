@@ -179,7 +179,7 @@ jobs:
 
   run-unit-tests:
     runs-on: ubuntu-22.04
-    needs: build-and-push-common-image
+    needs: [build-and-push-common-image, build-frontend]
     container:
       image: ${{ needs.build-and-push-common-image.outputs.image }}
     steps:
