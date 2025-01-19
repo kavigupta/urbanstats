@@ -306,9 +306,9 @@ export function wrapQuestionsModel(questions: QuizQuestion[]): QuizQuestionsMode
     }
 }
 
-export function infiniteQuiz(seed: string): QuizQuestionsModel {
+export function infiniteQuiz(seed: string, version: number): QuizQuestionsModel {
     return {
-        questionByIndex: (index: number) => sampleRandomQuestion(seed, index),
+        questionByIndex: (index: number) => sampleRandomQuestion(seed, version, index),
         length: undefined,
         isDone: (correctPattern: boolean[]) => infiniteQuizIsDone(correctPattern),
         uniqueKey: uniqueKey(),
