@@ -71,6 +71,8 @@ test('collect correct answers', async (t) => {
                 throw new Error(`unexpected text ${text} in ${await symbol.textContent}`)
             }
         }
+        console.log(seed)
+        console.log(correctAnswers)
         correctAnswerSequences.set(seed, correctAnswers)
     }
 })
