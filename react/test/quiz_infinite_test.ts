@@ -61,7 +61,7 @@ async function completeCorrectAnswerSequence(t: TestController, alreadyKnownAnsw
     return correctAnswers
 }
 
-const param = '#mode=infinite&seed=deadbeef00&v=0'
+const param = '#mode=infinite&seed=deadbeef00&v=1'
 urbanstatsFixture('generate link', `${target}/quiz.html${param}`)
 
 let correctAnswerSequence: string[]

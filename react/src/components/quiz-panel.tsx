@@ -90,7 +90,7 @@ function QuizPanelNoResets(props: { quizDescriptor: QuizDescriptor, todayName?: 
             setQuestions([...questions, ...newQuestions.filter((question): question is QuizQuestion => question !== undefined)])
         }).catch((err: unknown) => {
             console.error('Error fetching questions', err)
-            setWaitingForNextQuestion(false)
+            // setWaitingForNextQuestion(false)
         })
     }
 

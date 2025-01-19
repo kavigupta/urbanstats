@@ -28,11 +28,11 @@ function sampleChunk(rng: seedrandom.PRNG, chunks: QuizQuestionChunks): string {
     throw new Error('Invalid chunk distribution')
 }
 
-function sampleTroncheIndex(rng: seedrandom.PRNG, negLogProbX100: number[]): number {
+function sampleTroncheIndex(rng: seedrandom.PRNG, negLogProbX10: number[]): number {
     const probeP = rng()
     let totalP = 0
-    for (let i = 0; i < negLogProbX100.length; i++) {
-        totalP += Math.exp(-negLogProbX100[i] / 100)
+    for (let i = 0; i < negLogProbX10.length; i++) {
+        totalP += Math.exp(-negLogProbX10[i] / 10)
         if (probeP < totalP) {
             return i
         }
@@ -57,7 +57,7 @@ export async function sampleRandomQuestion(seed: string, index: number): Promise
     const chunk = sampleChunk(rng, chunks satisfies QuizQuestionChunks)
     const tronche = await loadProtobuf(chunk, 'QuizQuestionTronche')
     const data = await loadQuizSamplingData()
-    const troncheIdx = sampleTroncheIndex(rng, tronche.negLogProbX100)
+    const troncheIdx = sampleTroncheIndex(rng, tronche.negLogProbX10MinusBasis.map(x => x + tronche.negLogProbX10Basis))
     let geoA = tronche.geographyA[troncheIdx]
     let geoB = tronche.geographyB[troncheIdx]
     if (rng() < 0.5) {
