@@ -11,8 +11,8 @@ import { infiniteQuizIsDone, sampleRandomQuestion } from './infinite'
 export type QuizDescriptor = { kind: 'juxtastat', name: number } | { kind: 'retrostat', name: string } | { kind: 'custom', name: string } | { kind: 'infinite', name: string, seed: string, version: number }
 
 export type QuizKind = QuizDescriptor['kind']
-// TODO stats for infinite quiz
-export type QuizKindWithStats = 'juxtastat' | 'retrostat'
+export type QuizKindWithStats = 'juxtastat' | 'retrostat' | 'infinite'
+export type QuizKindWithTime = 'juxtastat' | 'retrostat'
 
 export const endpoint = 'https://persistent.urbanstats.org'
 
@@ -25,6 +25,7 @@ export interface RetroQuestion { kind: 'retrostat', a_ease: number, b_ease: numb
 export type QuizQuestion = JuxtaQuestion | RetroQuestion
 export interface CustomQuizContent { name: string, questions: QuizQuestion[] }
 export type QuizDescriptorWithStats = QuizDescriptor & { kind: QuizKindWithStats }
+export type QuizDescriptorWithTime = QuizDescriptor & { kind: QuizKindWithTime }
 
 /* eslint-enable no-restricted-syntax */
 

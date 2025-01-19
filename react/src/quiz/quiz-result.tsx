@@ -11,7 +11,7 @@ import { getVector, VectorSettingsDictionary } from '../page_template/settings-v
 import { allGroups, allYears, statParents, StatPath } from '../page_template/statistic-tree'
 
 import { msRemaining, renderTimeRemaining } from './dates'
-import { JuxtaQuestion, QuizDescriptor, QuizDescriptorWithStats, QuizHistory, QuizQuestion, RetroQuestion, aCorrect, QuizFriends, nameOfQuizKind, QuizKind, endpoint, QuizLocalStorage } from './quiz'
+import { JuxtaQuestion, QuizDescriptor, QuizHistory, QuizQuestion, RetroQuestion, aCorrect, QuizFriends, nameOfQuizKind, QuizKind, endpoint, QuizLocalStorage, QuizDescriptorWithTime } from './quiz'
 import { ExportImport, Header, UserId } from './quiz-components'
 import { QuizFriendsPanel } from './quiz-friends'
 import { renderQuestion } from './quiz-question'
@@ -35,7 +35,6 @@ interface QuizResultProps {
 export function QuizResult(props: QuizResultProps): ReactNode {
     const button = useRef<HTMLButtonElement>(null)
     const [stats, setStats] = useState<PerQuestionStats>((
-        // TODO stats for infinite quiz
         props.quizDescriptor.kind === 'custom' || props.quizDescriptor.kind === 'infinite'
             ? undefined
             : getCachedPerQuestionStats(props.quizDescriptor)
@@ -49,10 +48,13 @@ export function QuizResult(props: QuizResultProps): ReactNode {
 
     useEffect(() => {
         // TODO stats for infinite quiz
-        if (props.quizDescriptor.kind === 'custom' || props.quizDescriptor.kind === 'infinite') {
+        if (props.quizDescriptor.kind === 'custom') {
             return
         }
         void reportToServer(props.wholeHistory, props.quizDescriptor.kind).then(setAuthError)
+        if (props.quizDescriptor.kind === 'infinite') {
+            return
+        }
         void getPerQuestionStats(props.quizDescriptor).then(setStats)
     }, [props.wholeHistory, props.quizDescriptor])
 
@@ -111,12 +113,7 @@ export function QuizResult(props: QuizResultProps): ReactNode {
                     : undefined
             }
             <div className="gap"></div>
-            {
-                // TODO stats for infinite quiz
-                props.quizDescriptor.kind === 'custom' || props.quizDescriptor.kind === 'infinite'
-                    ? undefined
-                    : <QuizStatistics wholeHistory={props.wholeHistory} quiz={props.quizDescriptor} />
-            }
+            <QuizStatistics wholeHistory={props.wholeHistory} quiz={props.quizDescriptor} />
             <div className="gap"></div>
             <span className="serif quiz_summary">Details (spoilers, don&apos;t share!)</span>
             <div className="gap_small"></div>
@@ -224,7 +221,7 @@ function ShareButton({ buttonRef, todayName, correctPattern, quizKind }: ShareBu
     )
 }
 
-function TimeToNextQuiz({ quiz }: { quiz: QuizDescriptorWithStats }): ReactNode {
+function TimeToNextQuiz({ quiz }: { quiz: QuizDescriptorWithTime }): ReactNode {
     const colors = useColors()
     const [, setTime] = useState(0)
     useEffect(() => {
@@ -475,7 +472,7 @@ export function GenericQuizResultRow(props: GenericQuizResultRowProps): ReactNod
                         <td style={{ fontWeight: 400 }} className="serif quiz_result_value_left">
                             {props.getStat('a')}
                         </td>
-                        <td className="serif quiz_result_symbol">
+                        <td className="serif quiz_result_symbol quiz_result_comparison_symbol">
                             {comparison}
                         </td>
                         <td style={{ fontWeight: 400 }} className="serif quiz_result_value_right">
