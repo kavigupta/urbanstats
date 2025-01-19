@@ -18,3 +18,5 @@ black urbanstats/protobuf/data_files_pb2*
 cd react
 npx -- pbjs -t static-module -w es6 -o src/utils/protos.js ../data_files.proto
 npx pbts -o src/utils/protos.d.ts src/utils/protos.js
+# Fix weird import generation
+sed -i -e 's/import \* as \$protobuf/import $protobuf/g' src/utils/protos.js
