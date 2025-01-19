@@ -7,7 +7,7 @@ import './util/fetch'
 
 test('search index', async () => {
     const index = await loadProtobuf('/index/pages_all.gz', 'SearchIndex')
-    assert.is(index.elements[0], 'Aia')
+    assert.is(index.elements[0], 'Asia')
 })
 
 test.run()
