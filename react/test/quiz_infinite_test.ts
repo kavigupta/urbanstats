@@ -6,10 +6,12 @@ import {
     target,
     safeReload,
     waitForQuizLoading,
+    screencap,
 } from './test_utils'
 
 async function correctIncorrect(t: TestController): Promise<boolean[]> {
     await waitForQuizLoading(t)
+    await screencap(t)
     const text = await Selector('#quiz-result-summary-emoji').innerText
     const result: boolean[] = []
     for (const c of text) {
