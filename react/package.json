@@ -8,7 +8,8 @@
     "prod": "NODE_ENV=production rspack --mode=production",
     "watch": "./watch.sh",
     "lint": "npx eslint . --fix --ignore-pattern=src/data --cache",
-    "test:e2e": "tsx test/scripts/run-e2e-tests.ts"
+    "test:e2e": "tsx test/scripts/run-e2e-tests.ts",
+    "test:unit": "tsx unit/scripts/run-unit-tests.ts"
   },
   "keywords": [],
   "author": "",
@@ -57,6 +58,7 @@
     "tsx": "^4.19.1",
     "typescript": "^5.5.4",
     "typescript-eslint": "^8.0.1",
+    "uvu": "^0.5.6",
     "zodcli": "^0.0.4"
   },
   "dependencies": {

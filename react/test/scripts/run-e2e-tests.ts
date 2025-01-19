@@ -7,14 +7,7 @@ import { z } from 'zod'
 import { argumentParser } from 'zodcli'
 
 import { startProxy } from './ci_proxy'
-
-function booleanArgument({ defaultValue }: { defaultValue: boolean }): z.ZodDefault<z.ZodUnion<[z.ZodEffects<z.ZodLiteral<'true'>, boolean, 'true'>, z.ZodEffects<z.ZodLiteral<'false'>, boolean, 'false'>, z.ZodEffects<z.ZodNull, boolean, null>]>> {
-    return z.union([
-        z.literal('true').transform(() => true),
-        z.literal('false').transform(() => false),
-        z.null().transform(() => defaultValue),
-    ]).default(null)
-}
+import { booleanArgument } from './util'
 
 async function main(): Promise<void> {
     const options = argumentParser({
