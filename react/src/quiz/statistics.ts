@@ -1,4 +1,4 @@
-import { infiniteQuizIsDone } from './infinite'
+import { infiniteQuizIsDone, validQuizInfiniteVersions } from './infinite'
 import { endpoint, QuizDescriptorWithTime, QuizHistory, QuizKindWithStats, QuizKindWithTime, QuizLocalStorage } from './quiz'
 
 async function registerUser(userId: string, secureID: string): Promise<boolean> {
@@ -51,7 +51,7 @@ async function reportToServerGeneric(wholeHistory: QuizHistory, endpointLatest: 
     return false
 }
 
-export function getInfiniteQuizzes(wholeHistory: QuizHistory): [[string, number][], string[]] {
+export function getInfiniteQuizzes(wholeHistory: QuizHistory, isDone: boolean): [[string, number][], string[]] {
     const seedVersions: [string, number][] = []
     const keys: string[] = []
     for (const day of Object.keys(wholeHistory)) {
@@ -59,7 +59,10 @@ export function getInfiniteQuizzes(wholeHistory: QuizHistory): [[string, number]
         if (parsed === undefined) {
             continue
         }
-        if (!infiniteQuizIsDone(wholeHistory[day].correct_pattern)) {
+        if (infiniteQuizIsDone(wholeHistory[day].correct_pattern) !== isDone) {
+            continue
+        }
+        if (!(validQuizInfiniteVersions as number[]).includes(parsed[1])) {
             continue
         }
         seedVersions.push(parsed)
@@ -69,7 +72,7 @@ export function getInfiniteQuizzes(wholeHistory: QuizHistory): [[string, number]
 }
 
 async function getUnreportedSeedVersions(user: string, secureID: string, wholeHistory: QuizHistory): Promise<[[string, number][], string[]] | undefined> {
-    const [seedVersions, keys] = getInfiniteQuizzes(wholeHistory)
+    const [seedVersions, keys] = getInfiniteQuizzes(wholeHistory, true)
     // post seedVersions to /juxtastat_infinite/has_infinite_stats
     const isError = await registerUser(user, secureID)
     if (isError) {

@@ -17,7 +17,11 @@ import { StatGroupSettings } from '../page_template/statistic-settings'
 import { allGroups, CategoryIdentifier, StatName, StatPath, statsTree } from '../page_template/statistic-tree'
 import { getDailyOffsetNumber, getRetrostatOffsetNumber } from '../quiz/dates'
 import { validQuizInfiniteVersions } from '../quiz/infinite'
-import { QuizQuestionsModel, wrapQuestionsModel, addFriendFromLink, CustomQuizContent, JuxtaQuestionJSON, loadJuxta, loadRetro, QuizDescriptor, RetroQuestionJSON, infiniteQuiz } from '../quiz/quiz'
+import {
+    QuizQuestionsModel, wrapQuestionsModel, addFriendFromLink, CustomQuizContent, JuxtaQuestionJSON,
+    loadJuxta, loadRetro, QuizDescriptor, RetroQuestionJSON, infiniteQuiz, QuizHistory,
+} from '../quiz/quiz'
+import { getInfiniteQuizzes } from '../quiz/statistics'
 import { defaultArticleUniverse, defaultComparisonUniverse } from '../universe'
 import { Article, IDataList } from '../utils/protos'
 import { randomID } from '../utils/random'
@@ -458,7 +462,15 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
                     break
                 case 'infinite':
                     if (updatedDescriptor.seed === undefined) {
-                        updatedDescriptor.seed = randomID(10)
+                        const [seedVersions] = getInfiniteQuizzes(JSON.parse(localStorage.quiz_history as string) as QuizHistory, false)
+                        if (seedVersions.length > 0) {
+                            const [seed, version] = seedVersions[0]
+                            updatedDescriptor.seed = seed
+                            updatedDescriptor.v = version
+                        }
+                        else {
+                            updatedDescriptor.seed = randomID(10)
+                        }
                     }
                     if (updatedDescriptor.v === undefined) {
                         updatedDescriptor.v = Math.max(...validQuizInfiniteVersions)

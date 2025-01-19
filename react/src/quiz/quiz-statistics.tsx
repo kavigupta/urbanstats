@@ -205,7 +205,7 @@ export function QuizStatisticsForInfinite(
 ): ReactNode | undefined {
     const colors = useColors()
     const navContext = useContext(Navigator.Context)
-    const [seedVersions, keys] = getInfiniteQuizzes(props.wholeHistory)
+    const [seedVersions, keys] = getInfiniteQuizzes(props.wholeHistory, true)
     const numCorrects = keys.map(
         key => props.wholeHistory[key].correct_pattern.reduce((partialSum: number, a) => partialSum + (a ? 1 : 0), 0),
     )
