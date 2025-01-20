@@ -30,12 +30,12 @@ interface SearchResult {
 
 // Should sum to 1
 const weights = {
-    match: 0.5,
-    position: 0.5,
-    priority: 0.1,
-    population: 0.2,
-    incompleteMatches: 0.1,
-    swapOverlap: 0.1,
+    match: 1 / 3,
+    position: 1 / 3,
+    priority: 1 / 15,
+    population: 2 / 15,
+    incompleteMatches: 1 / 15,
+    swapOverlap: 1 / 15,
 }
 
 function combinedScore(result: SearchResult): number {
