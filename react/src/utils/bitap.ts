@@ -66,22 +66,15 @@ export const bitapPerformance = {
  *
  * If allowPartial is false, and needle and haystack are different lengths, they may not possibly match, or the number of edit errors may be scaled down
  */
-export function bitap(haystack: Haystack, needle: Needle, maxErrors: number, scratchBuffers: Uint32Array[], allowPartial: boolean): number {
+export function bitap(haystack: Haystack, needle: Needle, maxErrors: number, scratchBuffers: Uint32Array[]): number {
     let bestMatch = maxErrors + 1
 
-    if (!allowPartial) {
-        maxErrors -= Math.abs(haystack.haystack.length - needle.length)
-    }
     if (maxErrors < 0) {
         return bestMatch
     }
 
     bitapPerformance.numBitapSignatureChecks++
-    if (allowPartial && bitCount(needle.signature ^ (haystack.signature & needle.signature)) > maxErrors) {
-        bitapPerformance.numBitapSignatureSkips++
-        return bestMatch // The letters in the haystack and needle are too different to possibly match
-    }
-    if (!allowPartial && bitCount(needle.signature ^ haystack.signature) > maxErrors) {
+    if (bitCount(needle.signature ^ (haystack.signature & needle.signature)) > maxErrors) {
         bitapPerformance.numBitapSignatureSkips++
         return bestMatch // The letters in the haystack and needle are too different to possibly match
     }

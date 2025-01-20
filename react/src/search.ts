@@ -147,7 +147,7 @@ export function search(searchIndex: NormalizedSearchIndex, unnormalizedPattern: 
             let tokenEntryTokenIndex: undefined | number
 
             for (const [entryTokenIndex, entryToken] of tokens.entries()) {
-                const searchResult = bitap(entryToken, needle, maxErrors, bitapBuffers, true/* patternTokenIndex === patternTokens.length - 1 */)
+                const searchResult = bitap(entryToken, needle, maxErrors, bitapBuffers)
                 const positionResult = Math.abs(patternTokenIndex - entryTokenIndex)
                 const incompleteMatchResult = Math.abs(entryToken.haystack.length - needle.length) - searchResult !== 0
                 if (searchResult < tokenMatchScore || (searchResult <= tokenMatchScore && positionResult < tokenPositionScore) || (searchResult <= tokenMatchScore && positionResult <= tokenPositionScore && incompleteMatchResult < tokenIncompleteMatch)) {
