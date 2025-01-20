@@ -3,7 +3,7 @@ import { bitap, bitapPerformance, bitCount, Haystack, toHaystack, toNeedle, toSi
 import { isHistoricalCD } from './utils/is_historical'
 
 function normalize(a: string): string {
-    return a.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f,\(\)]/g, '')
+    return a.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f,\(\)\[\]]/g, '').replaceAll('-', ' ')
 }
 
 export interface NormalizedSearchIndex {
@@ -24,18 +24,27 @@ interface SearchResult {
     normalizedPopulationRank: number // Lower is higher population (better) ([0,1], where 0 is highest population and 1 is lowest population)
     normalizedPriority: number // Lower is better ([0,1] where 1 is least prioritized)
     normalizedPositionScore: number // The absolute difference in position where tokens were found. Lower is better ([0, 1] where 0 is all tokens are in the right place, and 1 is all tokens are maximally distant in this result)
+    normalizedTokensWithIncompleteMatch: number // The number of tokens in the query that do NOT match "completely" (are the same length) with their tokens in the haystack. These matches may still have errors. ([0, 1], lower is better, where 0 means all tokens in the query match completely, and 1 means no tokens in the query match completely)
+    normalizedTokenSwapOrOverlap: number // The number of search tokens that are out-of-order or overlap with another token when they are matched against the haystack tokens ([0, 1], where 0 is no tokens are swapped or overlapped, and 1 is all tokens are swapped or overlapped)
 }
 
 // Should sum to 1
 const weights = {
-    match: 0.4,
-    position: 0.3,
+    match: 0.5,
+    position: 0.5,
     priority: 0.1,
     population: 0.2,
+    incompleteMatches: 0.1,
+    swapOverlap: 0.1,
 }
 
 function combinedScore(result: SearchResult): number {
-    return (result.normalizedMatchScore * weights.match) + (result.normalizedPositionScore * weights.position) + (result.normalizedPriority * weights.priority) + (result.normalizedPopulationRank * weights.population)
+    return (result.normalizedMatchScore * weights.match)
+        + (result.normalizedPositionScore * weights.position)
+        + (result.normalizedPriority * weights.priority)
+        + (result.normalizedPopulationRank * weights.population)
+        + (result.normalizedTokensWithIncompleteMatch * weights.incompleteMatches)
+        + (result.normalizedTokenSwapOrOverlap * weights.swapOverlap)
 }
 
 function compareSearchResults(a: SearchResult, b: SearchResult): number {
@@ -112,31 +121,61 @@ export function search(searchIndex: NormalizedSearchIndex, unnormalizedPattern: 
         }
 
         // If this entry wouldn't make it into the results even with a perfect match because of priority or population, continue
-        if (results.length === maxResults && compareSearchResults({ element, normalizedMatchScore: 0, normalizedPositionScore: 0, normalizedPriority: priority, normalizedPopulationRank }, results[results.length - 1]) > 0) {
+        if (results.length === maxResults && compareSearchResults({
+            element,
+            normalizedMatchScore: 0,
+            normalizedPositionScore: 0,
+            normalizedPriority: priority / searchIndex.maxPriority,
+            normalizedPopulationRank,
+            normalizedTokensWithIncompleteMatch: 0,
+            normalizedTokenSwapOrOverlap: 0,
+        }, results[results.length - 1]) > 0) {
             continue entries
         }
 
         let matchScore = 0
         let positionScore = 0
+        let incompleteMatches = 0
+
+        let prevEntryTokenIndex = -1
+        let numSwapsOverlaps = 0
 
         for (const [patternTokenIndex, needle] of patternTokens.entries()) {
             let tokenMatchScore = maxErrors + 1
-            let tokenPositionScore = 0
+            let tokenPositionScore = Math.max(patternTokens.length, searchIndex.lengthOfLongestToken)
+            let tokenIncompleteMatch = true
+            let tokenEntryTokenIndex: undefined | number
 
             for (const [entryTokenIndex, entryToken] of tokens.entries()) {
                 const searchResult = bitap(entryToken, needle, maxErrors, bitapBuffers, true/* patternTokenIndex === patternTokens.length - 1 */)
                 const positionResult = Math.abs(patternTokenIndex - entryTokenIndex)
-                if (searchResult < tokenMatchScore || (searchResult <= tokenMatchScore && positionResult < tokenPositionScore)) {
+                const incompleteMatchResult = Math.abs(entryToken.haystack.length - needle.length) - searchResult !== 0
+                if (searchResult < tokenMatchScore || (searchResult <= tokenMatchScore && positionResult < tokenPositionScore) || (searchResult <= tokenMatchScore && positionResult <= tokenPositionScore && incompleteMatchResult < tokenIncompleteMatch)) {
                     tokenMatchScore = searchResult
                     tokenPositionScore = positionResult
+                    tokenIncompleteMatch = incompleteMatchResult
+                    tokenEntryTokenIndex = entryTokenIndex
                 }
             }
 
             matchScore += tokenMatchScore
             positionScore += tokenPositionScore
+            incompleteMatches += tokenIncompleteMatch ? 1 : 0
+            if (tokenEntryTokenIndex !== undefined) {
+                numSwapsOverlaps += prevEntryTokenIndex >= tokenEntryTokenIndex ? 1 : 0
+                prevEntryTokenIndex = tokenEntryTokenIndex
+            }
 
             // If our match score is so high that we would not make it into the results, we can move on to the next entry
-            if (results.length === maxResults && compareSearchResults({ element, normalizedMatchScore: matchScore / maxMatchScore, normalizedPositionScore: positionScore / maxPositionScore, normalizedPriority: priority / searchIndex.maxPriority, normalizedPopulationRank }, results[results.length - 1]) > 0) {
+            if (results.length === maxResults && compareSearchResults({
+                element,
+                normalizedMatchScore: matchScore / maxMatchScore,
+                normalizedPositionScore: positionScore / maxPositionScore,
+                normalizedPriority: priority / searchIndex.maxPriority,
+                normalizedPopulationRank,
+                normalizedTokensWithIncompleteMatch: incompleteMatches / patternTokens.length,
+                normalizedTokenSwapOrOverlap: numSwapsOverlaps / patternTokens.length,
+            }, results[results.length - 1]) > 0) {
                 continue entries
             }
         }
@@ -152,6 +191,8 @@ export function search(searchIndex: NormalizedSearchIndex, unnormalizedPattern: 
             normalizedPositionScore: positionScore / maxPositionScore,
             normalizedPriority: priority / searchIndex.maxPriority,
             normalizedPopulationRank,
+            normalizedTokensWithIncompleteMatch: incompleteMatches / patternTokens.length,
+            normalizedTokenSwapOrOverlap: numSwapsOverlaps / patternTokens.length,
         }
 
         let spliceIndex: number | undefined
