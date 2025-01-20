@@ -17,7 +17,7 @@ firstResult(test)('china', 'China')
 firstResult(test)('ontario california', 'Ontario city, California, USA')
 firstResult(test)('la canada', 'La Cañada Flintridge city, California, USA')
 firstResult(test)('east fiji', 'Eastern, Fiji')
-firstResult(test)('london on', 'London CMA, ON, Canada') // Something in canada
+firstResult(test)('london on', 'London Population Center, ON, Canada') // Something in canada
 firstResult(test)('baltimore city md', 'Baltimore city, Maryland, USA')
 firstResult(test)('ca usa', 'California, USA')
 firstResult(test)('nv usa', 'NV-04, USA') // Nevada, USA or a NV-??
@@ -26,10 +26,10 @@ firstResult(test)('london', 'London Urban Center, United Kingdom')
 firstResult(test)('berlin', 'Berlin, Germany')
 firstResult(test)('los angeles urban area', 'Los Angeles-Long Beach-Anaheim [Urban Area], CA, USA')
 firstResult(test)('san marino', 'San Marino') // Should not be "San Marino, San Marino"
-firstResult(test)('queens', 'Queensland, Australia')
+firstResult(test)('queens', 'Queens County, New York, USA')
 firstResult(test)('india', 'India')
 firstResult(test)('urban center', 'Guangzhou Urban Center, China') // Should be some Urban Center
 firstResult(test)('urban area', 'Chicago [Urban Area], IL-IN, USA') // Should be some Urban Area
-firstResult(test)('msa', 'Chicago-Naperville-Elgin MSA, IL-IN-WI, USA') // Should be some MSA
+firstResult(test)('msa', 'Pittsburgh MSA, PA, USA') // Should be some MSA
 
 test.run()
