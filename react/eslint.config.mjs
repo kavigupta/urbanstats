@@ -132,6 +132,7 @@ export default tseslint.config(
                 ignore: ['eslint-enable']
             }],
             "@typescript-eslint/method-signature-style": ["error", "property"], // https://www.totaltypescript.com/method-shorthand-syntax-considered-harmful
+            '@typescript-eslint/no-inferrable-types': 'off',
         },
     },
     {

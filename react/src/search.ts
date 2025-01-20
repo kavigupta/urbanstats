@@ -2,6 +2,15 @@ import { loadProtobuf } from './load_json'
 import { bitap, bitapPerformance, bitCount, Haystack, toHaystack, toNeedle, toSignature } from './utils/bitap'
 import { isHistoricalCD } from './utils/is_historical'
 
+const debugSearch: boolean = true
+
+function debug(arg: unknown): void {
+    if (debugSearch) {
+        // eslint-disable-next-line no-console -- Debug logging
+        console.log(arg)
+    }
+}
+
 function normalize(a: string): string {
     return a.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f,\(\)\[\]]/g, '').replaceAll('-', ' ')
 }
@@ -76,6 +85,8 @@ function tokenize(pattern: string): string[] {
 
 // Expects `pattern` to be normalized
 export function search(searchIndex: NormalizedSearchIndex, unnormalizedPattern: string, maxResults: number, options: { showHistoricalCDs: boolean }): string[] {
+    const start = performance.now()
+
     const pattern = normalize(unnormalizedPattern)
 
     if (pattern === '') {
@@ -105,20 +116,13 @@ export function search(searchIndex: NormalizedSearchIndex, unnormalizedPattern: 
             continue
         }
 
-        const normalizedPopulationRank = (populationRank / searchIndex.entries.length)
-
         entriesPatternChecks++
-        // console.log({
-        //     pattern: patternSignature.toString(2),
-        //     entry: signature.toString(2),
-        //     and: (patternSignature & signature).toString(2),
-        //     diff: (patternSignature ^ (patternSignature & signature)).toString(2),
-        //     bitCount: bitCount(patternSignature ^ (patternSignature & signature)),
-        // })
         if (bitCount(patternSignature ^ (patternSignature & signature)) > maxErrors) {
             entriesPatternSkips++
             continue
         }
+
+        const normalizedPopulationRank = (populationRank / searchIndex.entries.length)
 
         // If this entry wouldn't make it into the results even with a perfect match because of priority or population, continue
         if (results.length === maxResults && compareSearchResults({
@@ -212,13 +216,15 @@ export function search(searchIndex: NormalizedSearchIndex, unnormalizedPattern: 
         }
     }
 
-    console.log(bitapPerformance)
-    console.log({ total: entriesPatternChecks, skips: entriesPatternSkips })
+    debug(bitapPerformance)
+    debug({ total: entriesPatternChecks, skips: entriesPatternSkips })
 
-    console.log(results.map(result => ({
+    debug(results.map(result => ({
         ...result,
         combinedScore: combinedScore(result),
     })))
+
+    debug(`Took ${performance.now() - start} ms to execute search`)
 
     return results.map(result => result.element)
 }
@@ -255,6 +261,6 @@ function processRawSearchIndex(searchIndex: { elements: string[], priorities: nu
             signature: toSignature(normalizedElement),
         }
     })
-    console.log(`Took ${performance.now() - start}ms to process search index`)
+    debug(`Took ${performance.now() - start}ms to process search index`)
     return { entries, lengthOfLongestToken, maxPriority, mostTokens }
 }
