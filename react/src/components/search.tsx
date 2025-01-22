@@ -4,7 +4,9 @@ import { Navigator } from '../navigation/Navigator'
 import { useColors } from '../page_template/colors'
 import { useSetting } from '../page_template/settings'
 import '../common.css'
-import { loadSearchIndex, NormalizedSearchIndex, search } from '../search'
+import { loadSearchIndex, search } from '../search'
+import { SearchIndex } from '../utils/protos'
+import { NormalizeProto } from '../utils/types'
 
 export function SearchBox(props: {
     onChange?: (inp: string) => void
@@ -26,7 +28,7 @@ export function SearchBox(props: {
 
     const searchQuery = queryRef.current
 
-    const fullIndex = useRef<Promise<NormalizedSearchIndex> | undefined>()
+    const fullIndex = useRef<Promise<NormalizeProto<SearchIndex>> | undefined>()
 
     const reset = (): void => {
         setQuery('')

@@ -1,6 +1,8 @@
 import { loadProtobuf } from './load_json'
-import { bitap, bitapPerformance, bitCount, Haystack, toNeedle, toSignature } from './utils/bitap'
+import { bitap, bitapPerformance, bitCount, toNeedle, toSignature } from './utils/bitap'
 import { isHistoricalCD } from './utils/is_historical'
+import { SearchIndex } from './utils/protos'
+import { NormalizeProto } from './utils/types'
 
 const debugSearch: boolean = true
 
@@ -13,18 +15,6 @@ function debug(arg: unknown): void {
 
 export function normalize(a: string): string {
     return a.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f,\(\)\[\]]/g, '').replaceAll('-', ' ')
-}
-
-export interface NormalizedSearchIndex {
-    entries: {
-        element: string
-        tokens: Haystack[]
-        priority: number
-        signature: number
-    }[]
-    lengthOfLongestToken: number
-    maxPriority: number
-    mostTokens: number
 }
 
 interface SearchResult {
@@ -84,7 +74,7 @@ export function tokenize(pattern: string): string[] {
 }
 
 // Expects `pattern` to be normalized
-export function search(searchIndex: NormalizedSearchIndex, unnormalizedPattern: string, maxResults: number, options: { showHistoricalCDs: boolean }): string[] {
+export function search(searchIndex: NormalizeProto<SearchIndex>, unnormalizedPattern: string, maxResults: number, options: { showHistoricalCDs: boolean }): string[] {
     const start = performance.now()
 
     const pattern = normalize(unnormalizedPattern)
@@ -229,6 +219,6 @@ export function search(searchIndex: NormalizedSearchIndex, unnormalizedPattern: 
     return results.map(result => result.element)
 }
 
-export async function loadSearchIndex(): Promise<NormalizedSearchIndex> {
-    return await loadProtobuf('/index/search.gz', 'SearchIndex') as NormalizedSearchIndex
+export async function loadSearchIndex(): Promise<NormalizeProto<SearchIndex>> {
+    return await loadProtobuf('/index/search.gz', 'SearchIndex') as NormalizeProto<SearchIndex>
 }
