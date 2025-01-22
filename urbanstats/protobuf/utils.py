@@ -1,6 +1,6 @@
 import gzip
-import os
 import json
+import os
 import subprocess
 
 from . import data_files_pb2
@@ -15,7 +15,7 @@ def save_string_list(slist, path):
 
 def save_search_index(elements_list, path):
     temp_file = f"{path}.temp.json"
-    with open(temp_file, "w"):
+    with open(temp_file, "w") as f:
         json.dump(elements_list, f)
     try:
         subprocess.run(
