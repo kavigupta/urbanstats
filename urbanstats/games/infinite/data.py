@@ -1,5 +1,6 @@
 import json
 import os
+import shutil
 
 import numpy as np
 import tqdm.auto as tqdm
@@ -50,20 +51,31 @@ def output_quiz_question(q, p, site_folder, question_folder):
 
 
 def output_quiz_sampling_info(site_folder, subfolder):
-    output_quiz_sampling_data(site_folder, subfolder)
-    sampling_info = output_quiz_sampling_probabilities(site_folder, subfolder)
+    qfd = quiz_sampling_data()
+    juxta_version = output_quiz_sampling_probabilities_locally()
+    write_gzip(qfd, f"stored_quizzes/quiz_sampling_info/{juxta_version}/data.gz")
+    by_version = []
+    for version in range(1, len(get_juxta_version_info())):
+        dest = os.path.join(site_folder, subfolder, str(version))
+        shutil.rmtree(dest, ignore_errors=True)
+        shutil.copytree(
+            f"stored_quizzes/quiz_sampling_info/{version}",
+            dest,
+        )
+        with open(f"stored_quizzes/quiz_sampling_info/{version}.json", "r") as f:
+            by_version.append(json.load(f))
     with open("react/src/data/quiz_infinite.ts", "w") as f:
-        output_typescript(sampling_info, f)
+        output_typescript(by_version, f)
 
 
-def output_quiz_sampling_data(site_folder, subfolder):
+def quiz_sampling_data():
     data, *_ = compute_quiz_question_distribution()
     data = data.T
     qfd = data_files_pb2.QuizFullData()
     for row in data:
         q = qfd.stats.add()
         q.stats.extend(row)
-    write_gzip(qfd, os.path.join(site_folder, subfolder, "data.gz"))
+    return qfd
 
 
 def filter_for_prob_over_threshold(q, p, *, threshold):
@@ -91,7 +103,7 @@ def compute_order(q):
     return idxs
 
 
-def output_quiz_sampling_probabilities(site_folder, subfolder):
+def output_quiz_sampling_probabilities_locally():
     ps, qqp = quiz_data()
     hash_value = stable_hash((ps, qqp, "v1"))
     info = get_juxta_version_info()
@@ -104,15 +116,22 @@ def output_quiz_sampling_probabilities(site_folder, subfolder):
     for i, (q, p) in enumerate(zip(qqp.questions_by_number, ps), start=1):
         q, p = filter_for_prob_over_threshold(q, p, threshold=0.05)
         descriptors.append(
-            output_quiz_question(q, p, site_folder, os.path.join(subfolder, f"q{i}"))
+            output_quiz_question(
+                q, p, "stored_quizzes", f"quiz_sampling_info/{juxta_version}/q{i}"
+            )
         )
 
-    return dict(
-        allGeographies=qqp.all_geographies,
-        allStats=[internal_statistic_names().index(s) for s in qqp.all_stats],
-        questionDistribution=descriptors,
-        juxtaVersion=juxta_version,
-    )
+    with open(f"stored_quizzes/quiz_sampling_info/{juxta_version}.json", "w") as f:
+        json.dump(
+            dict(
+                allGeographies=qqp.all_geographies,
+                allStats=[internal_statistic_names().index(s) for s in qqp.all_stats],
+                questionDistribution=descriptors,
+                juxtaVersion=juxta_version,
+            ),
+            f,
+        )
+    return juxta_version
 
 
 def get_juxta_version_info():
