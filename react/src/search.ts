@@ -1,5 +1,5 @@
 import { loadProtobuf } from './load_json'
-import { bitap, bitapPerformance, bitCount, Haystack, toHaystack, toNeedle, toSignature } from './utils/bitap'
+import { bitap, bitapPerformance, bitCount, Haystack, toNeedle, toSignature } from './utils/bitap'
 import { isHistoricalCD } from './utils/is_historical'
 
 const debugSearch: boolean = true
@@ -11,7 +11,7 @@ function debug(arg: unknown): void {
     }
 }
 
-function normalize(a: string): string {
+export function normalize(a: string): string {
     return a.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f,\(\)\[\]]/g, '').replaceAll('-', ' ')
 }
 
@@ -73,7 +73,7 @@ function compareSearchResults(a: SearchResult, b: SearchResult): number {
     // return a.normalizedPopulationRank - b.normalizedPopulationRank
 }
 
-function tokenize(pattern: string): string[] {
+export function tokenize(pattern: string): string[] {
     const matchNoOverflow = /^ *([^ ]{1,32})(.*)$/.exec(pattern)
     if (matchNoOverflow !== null) {
         const [, token, rest] = matchNoOverflow
@@ -230,37 +230,5 @@ export function search(searchIndex: NormalizedSearchIndex, unnormalizedPattern: 
 }
 
 export async function loadSearchIndex(): Promise<NormalizedSearchIndex> {
-    const searchIndex = await loadProtobuf('/index/pages_all.gz', 'SearchIndex')
-    return processRawSearchIndex(searchIndex)
-}
-
-function processRawSearchIndex(searchIndex: { elements: string[], priorities: number[] }): NormalizedSearchIndex {
-    const start = performance.now()
-    let lengthOfLongestToken = 0
-    let maxPriority = 0
-    let mostTokens = 0
-    const entries = searchIndex.elements.map((element, index) => {
-        const normalizedElement = normalize(element)
-        const tokens = tokenize(normalizedElement)
-        const haystacks = tokens.map((token) => {
-            if (token.length > lengthOfLongestToken) {
-                lengthOfLongestToken = token.length
-            }
-            return toHaystack(token)
-        })
-        if (searchIndex.priorities[index] > maxPriority) {
-            maxPriority = searchIndex.priorities[index]
-        }
-        if (haystacks.length > mostTokens) {
-            mostTokens = haystacks.length
-        }
-        return {
-            element,
-            tokens: haystacks,
-            priority: searchIndex.priorities[index],
-            signature: toSignature(normalizedElement),
-        }
-    })
-    debug(`Took ${performance.now() - start}ms to process search index`)
-    return { entries, lengthOfLongestToken, maxPriority, mostTokens }
+    return await loadProtobuf('/index/search.gz', 'SearchIndex') as NormalizedSearchIndex
 }

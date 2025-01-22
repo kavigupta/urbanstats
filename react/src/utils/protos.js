@@ -3807,8 +3807,10 @@ export const SearchIndex = $root.SearchIndex = (() => {
      * Properties of a SearchIndex.
      * @exports ISearchIndex
      * @interface ISearchIndex
-     * @property {Array.<string>|null} [elements] SearchIndex elements
-     * @property {Array.<number>|null} [priorities] SearchIndex priorities
+     * @property {Array.<SearchIndex.IEntry>|null} [entries] SearchIndex entries
+     * @property {number|null} [lengthOfLongestToken] SearchIndex lengthOfLongestToken
+     * @property {number|null} [maxPriority] SearchIndex maxPriority
+     * @property {number|null} [mostTokens] SearchIndex mostTokens
      */
 
     /**
@@ -3820,8 +3822,7 @@ export const SearchIndex = $root.SearchIndex = (() => {
      * @param {ISearchIndex=} [properties] Properties to set
      */
     function SearchIndex(properties) {
-        this.elements = [];
-        this.priorities = [];
+        this.entries = [];
         if (properties)
             for (let keys = Object.keys(properties), i = 0; i < keys.length; ++i)
                 if (properties[keys[i]] != null)
@@ -3829,20 +3830,36 @@ export const SearchIndex = $root.SearchIndex = (() => {
     }
 
     /**
-     * SearchIndex elements.
-     * @member {Array.<string>} elements
+     * SearchIndex entries.
+     * @member {Array.<SearchIndex.IEntry>} entries
      * @memberof SearchIndex
      * @instance
      */
-    SearchIndex.prototype.elements = $util.emptyArray;
+    SearchIndex.prototype.entries = $util.emptyArray;
 
     /**
-     * SearchIndex priorities.
-     * @member {Array.<number>} priorities
+     * SearchIndex lengthOfLongestToken.
+     * @member {number} lengthOfLongestToken
      * @memberof SearchIndex
      * @instance
      */
-    SearchIndex.prototype.priorities = $util.emptyArray;
+    SearchIndex.prototype.lengthOfLongestToken = 0;
+
+    /**
+     * SearchIndex maxPriority.
+     * @member {number} maxPriority
+     * @memberof SearchIndex
+     * @instance
+     */
+    SearchIndex.prototype.maxPriority = 0;
+
+    /**
+     * SearchIndex mostTokens.
+     * @member {number} mostTokens
+     * @memberof SearchIndex
+     * @instance
+     */
+    SearchIndex.prototype.mostTokens = 0;
 
     /**
      * Creates a new SearchIndex instance using the specified properties.
@@ -3868,15 +3885,15 @@ export const SearchIndex = $root.SearchIndex = (() => {
     SearchIndex.encode = function encode(message, writer) {
         if (!writer)
             writer = $Writer.create();
-        if (message.elements != null && message.elements.length)
-            for (let i = 0; i < message.elements.length; ++i)
-                writer.uint32(/* id 1, wireType 2 =*/10).string(message.elements[i]);
-        if (message.priorities != null && message.priorities.length) {
-            writer.uint32(/* id 2, wireType 2 =*/18).fork();
-            for (let i = 0; i < message.priorities.length; ++i)
-                writer.uint32(message.priorities[i]);
-            writer.ldelim();
-        }
+        if (message.entries != null && message.entries.length)
+            for (let i = 0; i < message.entries.length; ++i)
+                $root.SearchIndex.Entry.encode(message.entries[i], writer.uint32(/* id 1, wireType 2 =*/10).fork()).ldelim();
+        if (message.lengthOfLongestToken != null && Object.hasOwnProperty.call(message, "lengthOfLongestToken"))
+            writer.uint32(/* id 2, wireType 0 =*/16).int32(message.lengthOfLongestToken);
+        if (message.maxPriority != null && Object.hasOwnProperty.call(message, "maxPriority"))
+            writer.uint32(/* id 3, wireType 0 =*/24).uint32(message.maxPriority);
+        if (message.mostTokens != null && Object.hasOwnProperty.call(message, "mostTokens"))
+            writer.uint32(/* id 4, wireType 0 =*/32).int32(message.mostTokens);
         return writer;
     };
 
@@ -3912,20 +3929,21 @@ export const SearchIndex = $root.SearchIndex = (() => {
             let tag = reader.uint32();
             switch (tag >>> 3) {
             case 1: {
-                    if (!(message.elements && message.elements.length))
-                        message.elements = [];
-                    message.elements.push(reader.string());
+                    if (!(message.entries && message.entries.length))
+                        message.entries = [];
+                    message.entries.push($root.SearchIndex.Entry.decode(reader, reader.uint32()));
                     break;
                 }
             case 2: {
-                    if (!(message.priorities && message.priorities.length))
-                        message.priorities = [];
-                    if ((tag & 7) === 2) {
-                        let end2 = reader.uint32() + reader.pos;
-                        while (reader.pos < end2)
-                            message.priorities.push(reader.uint32());
-                    } else
-                        message.priorities.push(reader.uint32());
+                    message.lengthOfLongestToken = reader.int32();
+                    break;
+                }
+            case 3: {
+                    message.maxPriority = reader.uint32();
+                    break;
+                }
+            case 4: {
+                    message.mostTokens = reader.int32();
                     break;
                 }
             default:
@@ -3963,20 +3981,24 @@ export const SearchIndex = $root.SearchIndex = (() => {
     SearchIndex.verify = function verify(message) {
         if (typeof message !== "object" || message === null)
             return "object expected";
-        if (message.elements != null && message.hasOwnProperty("elements")) {
-            if (!Array.isArray(message.elements))
-                return "elements: array expected";
-            for (let i = 0; i < message.elements.length; ++i)
-                if (!$util.isString(message.elements[i]))
-                    return "elements: string[] expected";
+        if (message.entries != null && message.hasOwnProperty("entries")) {
+            if (!Array.isArray(message.entries))
+                return "entries: array expected";
+            for (let i = 0; i < message.entries.length; ++i) {
+                let error = $root.SearchIndex.Entry.verify(message.entries[i]);
+                if (error)
+                    return "entries." + error;
+            }
         }
-        if (message.priorities != null && message.hasOwnProperty("priorities")) {
-            if (!Array.isArray(message.priorities))
-                return "priorities: array expected";
-            for (let i = 0; i < message.priorities.length; ++i)
-                if (!$util.isInteger(message.priorities[i]))
-                    return "priorities: integer[] expected";
-        }
+        if (message.lengthOfLongestToken != null && message.hasOwnProperty("lengthOfLongestToken"))
+            if (!$util.isInteger(message.lengthOfLongestToken))
+                return "lengthOfLongestToken: integer expected";
+        if (message.maxPriority != null && message.hasOwnProperty("maxPriority"))
+            if (!$util.isInteger(message.maxPriority))
+                return "maxPriority: integer expected";
+        if (message.mostTokens != null && message.hasOwnProperty("mostTokens"))
+            if (!$util.isInteger(message.mostTokens))
+                return "mostTokens: integer expected";
         return null;
     };
 
@@ -3992,20 +4014,22 @@ export const SearchIndex = $root.SearchIndex = (() => {
         if (object instanceof $root.SearchIndex)
             return object;
         let message = new $root.SearchIndex();
-        if (object.elements) {
-            if (!Array.isArray(object.elements))
-                throw TypeError(".SearchIndex.elements: array expected");
-            message.elements = [];
-            for (let i = 0; i < object.elements.length; ++i)
-                message.elements[i] = String(object.elements[i]);
+        if (object.entries) {
+            if (!Array.isArray(object.entries))
+                throw TypeError(".SearchIndex.entries: array expected");
+            message.entries = [];
+            for (let i = 0; i < object.entries.length; ++i) {
+                if (typeof object.entries[i] !== "object")
+                    throw TypeError(".SearchIndex.entries: object expected");
+                message.entries[i] = $root.SearchIndex.Entry.fromObject(object.entries[i]);
+            }
         }
-        if (object.priorities) {
-            if (!Array.isArray(object.priorities))
-                throw TypeError(".SearchIndex.priorities: array expected");
-            message.priorities = [];
-            for (let i = 0; i < object.priorities.length; ++i)
-                message.priorities[i] = object.priorities[i] >>> 0;
-        }
+        if (object.lengthOfLongestToken != null)
+            message.lengthOfLongestToken = object.lengthOfLongestToken | 0;
+        if (object.maxPriority != null)
+            message.maxPriority = object.maxPriority >>> 0;
+        if (object.mostTokens != null)
+            message.mostTokens = object.mostTokens | 0;
         return message;
     };
 
@@ -4022,20 +4046,24 @@ export const SearchIndex = $root.SearchIndex = (() => {
         if (!options)
             options = {};
         let object = {};
-        if (options.arrays || options.defaults) {
-            object.elements = [];
-            object.priorities = [];
+        if (options.arrays || options.defaults)
+            object.entries = [];
+        if (options.defaults) {
+            object.lengthOfLongestToken = 0;
+            object.maxPriority = 0;
+            object.mostTokens = 0;
         }
-        if (message.elements && message.elements.length) {
-            object.elements = [];
-            for (let j = 0; j < message.elements.length; ++j)
-                object.elements[j] = message.elements[j];
+        if (message.entries && message.entries.length) {
+            object.entries = [];
+            for (let j = 0; j < message.entries.length; ++j)
+                object.entries[j] = $root.SearchIndex.Entry.toObject(message.entries[j], options);
         }
-        if (message.priorities && message.priorities.length) {
-            object.priorities = [];
-            for (let j = 0; j < message.priorities.length; ++j)
-                object.priorities[j] = message.priorities[j];
-        }
+        if (message.lengthOfLongestToken != null && message.hasOwnProperty("lengthOfLongestToken"))
+            object.lengthOfLongestToken = message.lengthOfLongestToken;
+        if (message.maxPriority != null && message.hasOwnProperty("maxPriority"))
+            object.maxPriority = message.maxPriority;
+        if (message.mostTokens != null && message.hasOwnProperty("mostTokens"))
+            object.mostTokens = message.mostTokens;
         return object;
     };
 
@@ -4064,6 +4092,556 @@ export const SearchIndex = $root.SearchIndex = (() => {
         }
         return typeUrlPrefix + "/SearchIndex";
     };
+
+    SearchIndex.Haystack = (function() {
+
+        /**
+         * Properties of a Haystack.
+         * @memberof SearchIndex
+         * @interface IHaystack
+         * @property {string|null} [haystack] Haystack haystack
+         * @property {number|Long|null} [signature] Haystack signature
+         */
+
+        /**
+         * Constructs a new Haystack.
+         * @memberof SearchIndex
+         * @classdesc Represents a Haystack.
+         * @implements IHaystack
+         * @constructor
+         * @param {SearchIndex.IHaystack=} [properties] Properties to set
+         */
+        function Haystack(properties) {
+            if (properties)
+                for (let keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                    if (properties[keys[i]] != null)
+                        this[keys[i]] = properties[keys[i]];
+        }
+
+        /**
+         * Haystack haystack.
+         * @member {string} haystack
+         * @memberof SearchIndex.Haystack
+         * @instance
+         */
+        Haystack.prototype.haystack = "";
+
+        /**
+         * Haystack signature.
+         * @member {number|Long} signature
+         * @memberof SearchIndex.Haystack
+         * @instance
+         */
+        Haystack.prototype.signature = $util.Long ? $util.Long.fromBits(0,0,true) : 0;
+
+        /**
+         * Creates a new Haystack instance using the specified properties.
+         * @function create
+         * @memberof SearchIndex.Haystack
+         * @static
+         * @param {SearchIndex.IHaystack=} [properties] Properties to set
+         * @returns {SearchIndex.Haystack} Haystack instance
+         */
+        Haystack.create = function create(properties) {
+            return new Haystack(properties);
+        };
+
+        /**
+         * Encodes the specified Haystack message. Does not implicitly {@link SearchIndex.Haystack.verify|verify} messages.
+         * @function encode
+         * @memberof SearchIndex.Haystack
+         * @static
+         * @param {SearchIndex.IHaystack} message Haystack message or plain object to encode
+         * @param {$protobuf.Writer} [writer] Writer to encode to
+         * @returns {$protobuf.Writer} Writer
+         */
+        Haystack.encode = function encode(message, writer) {
+            if (!writer)
+                writer = $Writer.create();
+            if (message.haystack != null && Object.hasOwnProperty.call(message, "haystack"))
+                writer.uint32(/* id 1, wireType 2 =*/10).string(message.haystack);
+            if (message.signature != null && Object.hasOwnProperty.call(message, "signature"))
+                writer.uint32(/* id 2, wireType 0 =*/16).uint64(message.signature);
+            return writer;
+        };
+
+        /**
+         * Encodes the specified Haystack message, length delimited. Does not implicitly {@link SearchIndex.Haystack.verify|verify} messages.
+         * @function encodeDelimited
+         * @memberof SearchIndex.Haystack
+         * @static
+         * @param {SearchIndex.IHaystack} message Haystack message or plain object to encode
+         * @param {$protobuf.Writer} [writer] Writer to encode to
+         * @returns {$protobuf.Writer} Writer
+         */
+        Haystack.encodeDelimited = function encodeDelimited(message, writer) {
+            return this.encode(message, writer).ldelim();
+        };
+
+        /**
+         * Decodes a Haystack message from the specified reader or buffer.
+         * @function decode
+         * @memberof SearchIndex.Haystack
+         * @static
+         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+         * @param {number} [length] Message length if known beforehand
+         * @returns {SearchIndex.Haystack} Haystack
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        Haystack.decode = function decode(reader, length) {
+            if (!(reader instanceof $Reader))
+                reader = $Reader.create(reader);
+            let end = length === undefined ? reader.len : reader.pos + length, message = new $root.SearchIndex.Haystack();
+            while (reader.pos < end) {
+                let tag = reader.uint32();
+                switch (tag >>> 3) {
+                case 1: {
+                        message.haystack = reader.string();
+                        break;
+                    }
+                case 2: {
+                        message.signature = reader.uint64();
+                        break;
+                    }
+                default:
+                    reader.skipType(tag & 7);
+                    break;
+                }
+            }
+            return message;
+        };
+
+        /**
+         * Decodes a Haystack message from the specified reader or buffer, length delimited.
+         * @function decodeDelimited
+         * @memberof SearchIndex.Haystack
+         * @static
+         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+         * @returns {SearchIndex.Haystack} Haystack
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        Haystack.decodeDelimited = function decodeDelimited(reader) {
+            if (!(reader instanceof $Reader))
+                reader = new $Reader(reader);
+            return this.decode(reader, reader.uint32());
+        };
+
+        /**
+         * Verifies a Haystack message.
+         * @function verify
+         * @memberof SearchIndex.Haystack
+         * @static
+         * @param {Object.<string,*>} message Plain object to verify
+         * @returns {string|null} `null` if valid, otherwise the reason why it is not
+         */
+        Haystack.verify = function verify(message) {
+            if (typeof message !== "object" || message === null)
+                return "object expected";
+            if (message.haystack != null && message.hasOwnProperty("haystack"))
+                if (!$util.isString(message.haystack))
+                    return "haystack: string expected";
+            if (message.signature != null && message.hasOwnProperty("signature"))
+                if (!$util.isInteger(message.signature) && !(message.signature && $util.isInteger(message.signature.low) && $util.isInteger(message.signature.high)))
+                    return "signature: integer|Long expected";
+            return null;
+        };
+
+        /**
+         * Creates a Haystack message from a plain object. Also converts values to their respective internal types.
+         * @function fromObject
+         * @memberof SearchIndex.Haystack
+         * @static
+         * @param {Object.<string,*>} object Plain object
+         * @returns {SearchIndex.Haystack} Haystack
+         */
+        Haystack.fromObject = function fromObject(object) {
+            if (object instanceof $root.SearchIndex.Haystack)
+                return object;
+            let message = new $root.SearchIndex.Haystack();
+            if (object.haystack != null)
+                message.haystack = String(object.haystack);
+            if (object.signature != null)
+                if ($util.Long)
+                    (message.signature = $util.Long.fromValue(object.signature)).unsigned = true;
+                else if (typeof object.signature === "string")
+                    message.signature = parseInt(object.signature, 10);
+                else if (typeof object.signature === "number")
+                    message.signature = object.signature;
+                else if (typeof object.signature === "object")
+                    message.signature = new $util.LongBits(object.signature.low >>> 0, object.signature.high >>> 0).toNumber(true);
+            return message;
+        };
+
+        /**
+         * Creates a plain object from a Haystack message. Also converts values to other types if specified.
+         * @function toObject
+         * @memberof SearchIndex.Haystack
+         * @static
+         * @param {SearchIndex.Haystack} message Haystack
+         * @param {$protobuf.IConversionOptions} [options] Conversion options
+         * @returns {Object.<string,*>} Plain object
+         */
+        Haystack.toObject = function toObject(message, options) {
+            if (!options)
+                options = {};
+            let object = {};
+            if (options.defaults) {
+                object.haystack = "";
+                if ($util.Long) {
+                    let long = new $util.Long(0, 0, true);
+                    object.signature = options.longs === String ? long.toString() : options.longs === Number ? long.toNumber() : long;
+                } else
+                    object.signature = options.longs === String ? "0" : 0;
+            }
+            if (message.haystack != null && message.hasOwnProperty("haystack"))
+                object.haystack = message.haystack;
+            if (message.signature != null && message.hasOwnProperty("signature"))
+                if (typeof message.signature === "number")
+                    object.signature = options.longs === String ? String(message.signature) : message.signature;
+                else
+                    object.signature = options.longs === String ? $util.Long.prototype.toString.call(message.signature) : options.longs === Number ? new $util.LongBits(message.signature.low >>> 0, message.signature.high >>> 0).toNumber(true) : message.signature;
+            return object;
+        };
+
+        /**
+         * Converts this Haystack to JSON.
+         * @function toJSON
+         * @memberof SearchIndex.Haystack
+         * @instance
+         * @returns {Object.<string,*>} JSON object
+         */
+        Haystack.prototype.toJSON = function toJSON() {
+            return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+        };
+
+        /**
+         * Gets the default type url for Haystack
+         * @function getTypeUrl
+         * @memberof SearchIndex.Haystack
+         * @static
+         * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+         * @returns {string} The default type url
+         */
+        Haystack.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+            if (typeUrlPrefix === undefined) {
+                typeUrlPrefix = "type.googleapis.com";
+            }
+            return typeUrlPrefix + "/SearchIndex.Haystack";
+        };
+
+        return Haystack;
+    })();
+
+    SearchIndex.Entry = (function() {
+
+        /**
+         * Properties of an Entry.
+         * @memberof SearchIndex
+         * @interface IEntry
+         * @property {string|null} [element] Entry element
+         * @property {Array.<SearchIndex.IHaystack>|null} [tokens] Entry tokens
+         * @property {number|null} [priority] Entry priority
+         * @property {number|Long|null} [signature] Entry signature
+         */
+
+        /**
+         * Constructs a new Entry.
+         * @memberof SearchIndex
+         * @classdesc Represents an Entry.
+         * @implements IEntry
+         * @constructor
+         * @param {SearchIndex.IEntry=} [properties] Properties to set
+         */
+        function Entry(properties) {
+            this.tokens = [];
+            if (properties)
+                for (let keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                    if (properties[keys[i]] != null)
+                        this[keys[i]] = properties[keys[i]];
+        }
+
+        /**
+         * Entry element.
+         * @member {string} element
+         * @memberof SearchIndex.Entry
+         * @instance
+         */
+        Entry.prototype.element = "";
+
+        /**
+         * Entry tokens.
+         * @member {Array.<SearchIndex.IHaystack>} tokens
+         * @memberof SearchIndex.Entry
+         * @instance
+         */
+        Entry.prototype.tokens = $util.emptyArray;
+
+        /**
+         * Entry priority.
+         * @member {number} priority
+         * @memberof SearchIndex.Entry
+         * @instance
+         */
+        Entry.prototype.priority = 0;
+
+        /**
+         * Entry signature.
+         * @member {number|Long} signature
+         * @memberof SearchIndex.Entry
+         * @instance
+         */
+        Entry.prototype.signature = $util.Long ? $util.Long.fromBits(0,0,true) : 0;
+
+        /**
+         * Creates a new Entry instance using the specified properties.
+         * @function create
+         * @memberof SearchIndex.Entry
+         * @static
+         * @param {SearchIndex.IEntry=} [properties] Properties to set
+         * @returns {SearchIndex.Entry} Entry instance
+         */
+        Entry.create = function create(properties) {
+            return new Entry(properties);
+        };
+
+        /**
+         * Encodes the specified Entry message. Does not implicitly {@link SearchIndex.Entry.verify|verify} messages.
+         * @function encode
+         * @memberof SearchIndex.Entry
+         * @static
+         * @param {SearchIndex.IEntry} message Entry message or plain object to encode
+         * @param {$protobuf.Writer} [writer] Writer to encode to
+         * @returns {$protobuf.Writer} Writer
+         */
+        Entry.encode = function encode(message, writer) {
+            if (!writer)
+                writer = $Writer.create();
+            if (message.element != null && Object.hasOwnProperty.call(message, "element"))
+                writer.uint32(/* id 1, wireType 2 =*/10).string(message.element);
+            if (message.tokens != null && message.tokens.length)
+                for (let i = 0; i < message.tokens.length; ++i)
+                    $root.SearchIndex.Haystack.encode(message.tokens[i], writer.uint32(/* id 2, wireType 2 =*/18).fork()).ldelim();
+            if (message.priority != null && Object.hasOwnProperty.call(message, "priority"))
+                writer.uint32(/* id 3, wireType 0 =*/24).uint32(message.priority);
+            if (message.signature != null && Object.hasOwnProperty.call(message, "signature"))
+                writer.uint32(/* id 4, wireType 0 =*/32).uint64(message.signature);
+            return writer;
+        };
+
+        /**
+         * Encodes the specified Entry message, length delimited. Does not implicitly {@link SearchIndex.Entry.verify|verify} messages.
+         * @function encodeDelimited
+         * @memberof SearchIndex.Entry
+         * @static
+         * @param {SearchIndex.IEntry} message Entry message or plain object to encode
+         * @param {$protobuf.Writer} [writer] Writer to encode to
+         * @returns {$protobuf.Writer} Writer
+         */
+        Entry.encodeDelimited = function encodeDelimited(message, writer) {
+            return this.encode(message, writer).ldelim();
+        };
+
+        /**
+         * Decodes an Entry message from the specified reader or buffer.
+         * @function decode
+         * @memberof SearchIndex.Entry
+         * @static
+         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+         * @param {number} [length] Message length if known beforehand
+         * @returns {SearchIndex.Entry} Entry
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        Entry.decode = function decode(reader, length) {
+            if (!(reader instanceof $Reader))
+                reader = $Reader.create(reader);
+            let end = length === undefined ? reader.len : reader.pos + length, message = new $root.SearchIndex.Entry();
+            while (reader.pos < end) {
+                let tag = reader.uint32();
+                switch (tag >>> 3) {
+                case 1: {
+                        message.element = reader.string();
+                        break;
+                    }
+                case 2: {
+                        if (!(message.tokens && message.tokens.length))
+                            message.tokens = [];
+                        message.tokens.push($root.SearchIndex.Haystack.decode(reader, reader.uint32()));
+                        break;
+                    }
+                case 3: {
+                        message.priority = reader.uint32();
+                        break;
+                    }
+                case 4: {
+                        message.signature = reader.uint64();
+                        break;
+                    }
+                default:
+                    reader.skipType(tag & 7);
+                    break;
+                }
+            }
+            return message;
+        };
+
+        /**
+         * Decodes an Entry message from the specified reader or buffer, length delimited.
+         * @function decodeDelimited
+         * @memberof SearchIndex.Entry
+         * @static
+         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+         * @returns {SearchIndex.Entry} Entry
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        Entry.decodeDelimited = function decodeDelimited(reader) {
+            if (!(reader instanceof $Reader))
+                reader = new $Reader(reader);
+            return this.decode(reader, reader.uint32());
+        };
+
+        /**
+         * Verifies an Entry message.
+         * @function verify
+         * @memberof SearchIndex.Entry
+         * @static
+         * @param {Object.<string,*>} message Plain object to verify
+         * @returns {string|null} `null` if valid, otherwise the reason why it is not
+         */
+        Entry.verify = function verify(message) {
+            if (typeof message !== "object" || message === null)
+                return "object expected";
+            if (message.element != null && message.hasOwnProperty("element"))
+                if (!$util.isString(message.element))
+                    return "element: string expected";
+            if (message.tokens != null && message.hasOwnProperty("tokens")) {
+                if (!Array.isArray(message.tokens))
+                    return "tokens: array expected";
+                for (let i = 0; i < message.tokens.length; ++i) {
+                    let error = $root.SearchIndex.Haystack.verify(message.tokens[i]);
+                    if (error)
+                        return "tokens." + error;
+                }
+            }
+            if (message.priority != null && message.hasOwnProperty("priority"))
+                if (!$util.isInteger(message.priority))
+                    return "priority: integer expected";
+            if (message.signature != null && message.hasOwnProperty("signature"))
+                if (!$util.isInteger(message.signature) && !(message.signature && $util.isInteger(message.signature.low) && $util.isInteger(message.signature.high)))
+                    return "signature: integer|Long expected";
+            return null;
+        };
+
+        /**
+         * Creates an Entry message from a plain object. Also converts values to their respective internal types.
+         * @function fromObject
+         * @memberof SearchIndex.Entry
+         * @static
+         * @param {Object.<string,*>} object Plain object
+         * @returns {SearchIndex.Entry} Entry
+         */
+        Entry.fromObject = function fromObject(object) {
+            if (object instanceof $root.SearchIndex.Entry)
+                return object;
+            let message = new $root.SearchIndex.Entry();
+            if (object.element != null)
+                message.element = String(object.element);
+            if (object.tokens) {
+                if (!Array.isArray(object.tokens))
+                    throw TypeError(".SearchIndex.Entry.tokens: array expected");
+                message.tokens = [];
+                for (let i = 0; i < object.tokens.length; ++i) {
+                    if (typeof object.tokens[i] !== "object")
+                        throw TypeError(".SearchIndex.Entry.tokens: object expected");
+                    message.tokens[i] = $root.SearchIndex.Haystack.fromObject(object.tokens[i]);
+                }
+            }
+            if (object.priority != null)
+                message.priority = object.priority >>> 0;
+            if (object.signature != null)
+                if ($util.Long)
+                    (message.signature = $util.Long.fromValue(object.signature)).unsigned = true;
+                else if (typeof object.signature === "string")
+                    message.signature = parseInt(object.signature, 10);
+                else if (typeof object.signature === "number")
+                    message.signature = object.signature;
+                else if (typeof object.signature === "object")
+                    message.signature = new $util.LongBits(object.signature.low >>> 0, object.signature.high >>> 0).toNumber(true);
+            return message;
+        };
+
+        /**
+         * Creates a plain object from an Entry message. Also converts values to other types if specified.
+         * @function toObject
+         * @memberof SearchIndex.Entry
+         * @static
+         * @param {SearchIndex.Entry} message Entry
+         * @param {$protobuf.IConversionOptions} [options] Conversion options
+         * @returns {Object.<string,*>} Plain object
+         */
+        Entry.toObject = function toObject(message, options) {
+            if (!options)
+                options = {};
+            let object = {};
+            if (options.arrays || options.defaults)
+                object.tokens = [];
+            if (options.defaults) {
+                object.element = "";
+                object.priority = 0;
+                if ($util.Long) {
+                    let long = new $util.Long(0, 0, true);
+                    object.signature = options.longs === String ? long.toString() : options.longs === Number ? long.toNumber() : long;
+                } else
+                    object.signature = options.longs === String ? "0" : 0;
+            }
+            if (message.element != null && message.hasOwnProperty("element"))
+                object.element = message.element;
+            if (message.tokens && message.tokens.length) {
+                object.tokens = [];
+                for (let j = 0; j < message.tokens.length; ++j)
+                    object.tokens[j] = $root.SearchIndex.Haystack.toObject(message.tokens[j], options);
+            }
+            if (message.priority != null && message.hasOwnProperty("priority"))
+                object.priority = message.priority;
+            if (message.signature != null && message.hasOwnProperty("signature"))
+                if (typeof message.signature === "number")
+                    object.signature = options.longs === String ? String(message.signature) : message.signature;
+                else
+                    object.signature = options.longs === String ? $util.Long.prototype.toString.call(message.signature) : options.longs === Number ? new $util.LongBits(message.signature.low >>> 0, message.signature.high >>> 0).toNumber(true) : message.signature;
+            return object;
+        };
+
+        /**
+         * Converts this Entry to JSON.
+         * @function toJSON
+         * @memberof SearchIndex.Entry
+         * @instance
+         * @returns {Object.<string,*>} JSON object
+         */
+        Entry.prototype.toJSON = function toJSON() {
+            return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+        };
+
+        /**
+         * Gets the default type url for Entry
+         * @function getTypeUrl
+         * @memberof SearchIndex.Entry
+         * @static
+         * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+         * @returns {string} The default type url
+         */
+        Entry.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+            if (typeUrlPrefix === undefined) {
+                typeUrlPrefix = "type.googleapis.com";
+            }
+            return typeUrlPrefix + "/SearchIndex.Entry";
+        };
+
+        return Entry;
+    })();
 
     return SearchIndex;
 })();

@@ -9,7 +9,8 @@
     "watch": "./watch.sh",
     "lint": "npx eslint . --fix --ignore-pattern=src/data --cache",
     "test:e2e": "tsx test/scripts/run-e2e-tests.ts",
-    "test:unit": "tsx unit/scripts/run-unit-tests.ts"
+    "test:unit": "tsx unit/scripts/run-unit-tests.ts",
+    "build-search-index": "tsx scripts/build-search-index.ts"
   },
   "keywords": [],
   "author": "",

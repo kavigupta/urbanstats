@@ -92,8 +92,22 @@ message StringList {
 }
 
 message SearchIndex {
-    repeated string elements = 1;
-    repeated uint32 priorities = 2;
+    message Haystack {
+        string haystack = 1;
+        uint64 signature = 2;
+    }
+
+    message Entry {
+        string element = 1;
+        repeated Haystack tokens = 2;
+        uint32 priority = 3;
+        uint64 signature = 4;
+    }
+
+    repeated Entry entries = 1;
+    int32 lengthOfLongestToken = 2;
+    uint32 maxPriority = 3;
+    int32 mostTokens = 4;
 }
 
 message OrderList {

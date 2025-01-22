@@ -1,5 +1,7 @@
 import gzip
 import os
+import json
+import subprocess
 
 from . import data_files_pb2
 
@@ -12,11 +14,18 @@ def save_string_list(slist, path):
 
 
 def save_search_index(elements_list, path):
-    res = data_files_pb2.SearchIndex()
-    for name, priority in elements_list:
-        res.elements.append(name)
-        res.priorities.append(priority)
-    write_gzip(res, path)
+    temp_file = f"{path}.temp.json"
+    with open(temp_file, "w"):
+        json.dump(elements_list, f)
+    try:
+        subprocess.run(
+            f"npm run build-search-index -- --input={os.path.abspath(temp_file)} --output={os.path.abspath(path)}",
+            check=True,
+            shell=True,
+            cwd="react",
+        )
+    finally:
+        os.remove(temp_file)
 
 
 def save_ordered_list(ordered_list, path):

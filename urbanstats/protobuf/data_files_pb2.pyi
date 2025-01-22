@@ -213,15 +213,49 @@ class StringList(_message.Message):
     def __init__(self, elements: _Optional[_Iterable[str]] = ...) -> None: ...
 
 class SearchIndex(_message.Message):
-    __slots__ = ("elements", "priorities")
-    ELEMENTS_FIELD_NUMBER: _ClassVar[int]
-    PRIORITIES_FIELD_NUMBER: _ClassVar[int]
-    elements: _containers.RepeatedScalarFieldContainer[str]
-    priorities: _containers.RepeatedScalarFieldContainer[int]
+    __slots__ = ("entries", "lengthOfLongestToken", "maxPriority", "mostTokens")
+
+    class Haystack(_message.Message):
+        __slots__ = ("haystack", "signature")
+        HAYSTACK_FIELD_NUMBER: _ClassVar[int]
+        SIGNATURE_FIELD_NUMBER: _ClassVar[int]
+        haystack: str
+        signature: int
+        def __init__(
+            self, haystack: _Optional[str] = ..., signature: _Optional[int] = ...
+        ) -> None: ...
+
+    class Entry(_message.Message):
+        __slots__ = ("element", "tokens", "priority", "signature")
+        ELEMENT_FIELD_NUMBER: _ClassVar[int]
+        TOKENS_FIELD_NUMBER: _ClassVar[int]
+        PRIORITY_FIELD_NUMBER: _ClassVar[int]
+        SIGNATURE_FIELD_NUMBER: _ClassVar[int]
+        element: str
+        tokens: _containers.RepeatedCompositeFieldContainer[SearchIndex.Haystack]
+        priority: int
+        signature: int
+        def __init__(
+            self,
+            element: _Optional[str] = ...,
+            tokens: _Optional[_Iterable[_Union[SearchIndex.Haystack, _Mapping]]] = ...,
+            priority: _Optional[int] = ...,
+            signature: _Optional[int] = ...,
+        ) -> None: ...
+    ENTRIES_FIELD_NUMBER: _ClassVar[int]
+    LENGTHOFLONGESTTOKEN_FIELD_NUMBER: _ClassVar[int]
+    MAXPRIORITY_FIELD_NUMBER: _ClassVar[int]
+    MOSTTOKENS_FIELD_NUMBER: _ClassVar[int]
+    entries: _containers.RepeatedCompositeFieldContainer[SearchIndex.Entry]
+    lengthOfLongestToken: int
+    maxPriority: int
+    mostTokens: int
     def __init__(
         self,
-        elements: _Optional[_Iterable[str]] = ...,
-        priorities: _Optional[_Iterable[int]] = ...,
+        entries: _Optional[_Iterable[_Union[SearchIndex.Entry, _Mapping]]] = ...,
+        lengthOfLongestToken: _Optional[int] = ...,
+        maxPriority: _Optional[int] = ...,
+        mostTokens: _Optional[int] = ...,
     ) -> None: ...
 
 class OrderList(_message.Message):

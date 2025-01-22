@@ -28,6 +28,7 @@ matplotlib==3.5.3
 disjoint_union==0.4.4
 openpyxl==3.1.3
 netCDF4==1.6.5
+grpcio-tools==1.69.0
 
 # only for linting/testing
 pylint==3.3.1
