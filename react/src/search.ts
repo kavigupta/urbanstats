@@ -220,5 +220,8 @@ export function search(searchIndex: NormalizeProto<SearchIndex>, unnormalizedPat
 }
 
 export async function loadSearchIndex(): Promise<NormalizeProto<SearchIndex>> {
-    return await loadProtobuf('/index/search.gz', 'SearchIndex') as NormalizeProto<SearchIndex>
+    const start = performance.now()
+    const result = await loadProtobuf('/index/search.gz', 'SearchIndex') as NormalizeProto<SearchIndex>
+    console.log(`Took ${performance.now() - start}ms to load search index`)
+    return result
 }
