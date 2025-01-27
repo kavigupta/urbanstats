@@ -1,0 +1,117 @@
+[
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Office and administrative support occupations %",
+      "stat_path": "occupation_office_and_administrative_support_occupations",
+      "question": "higher % of workers employed as office and administrative support workers!TOOLTIP secretaries, receptionists, data entry clerks, office clerks, mail carriers, shipping clerks, etc.",
+      "longname_a": "Santa Maria-Santa Barbara MSA, CA, USA",
+      "longname_b": "Albany-Schenectady-Troy MSA, NY, USA",
+      "stat_a": 0.09927614470338059,
+      "stat_b": 0.12439679946878751
+    },
+    "b": {
+      "stat_column": "PW Density (r=1km)",
+      "stat_path": "ad_1",
+      "question": "higher population-weighted density (r=1km)!TOOLTIP Population-weighted density is computed by computing the density within the given radius for each person in the region and then averaging the results. This is a better measure of the density that people actually experience.",
+      "longname_a": "Reno NV Media Market, USA",
+      "longname_b": "Peoria-Bloomington IL Media Market, USA",
+      "stat_a": 1246.6394572589898,
+      "stat_b": 843.5906211231538
+    },
+    "a_ease": 0.7376044568245126,
+    "b_ease": 0.33512682551883166
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Black %",
+      "stat_path": "black",
+      "question": "higher % of people who are Black",
+      "longname_a": "Arizona, USA",
+      "longname_b": "New Mexico, USA",
+      "stat_a": 0.04434886545511698,
+      "stat_b": 0.018101346762867163
+    },
+    "b": {
+      "stat_column": "Boomer %",
+      "stat_path": "generation_boomer",
+      "question": "higher % of people who are boomers!TOOLTIP born between 1946 and 1966",
+      "longname_a": "Indiana, USA",
+      "longname_b": "Pennsylvania, USA",
+      "stat_a": 0.22497711565407658,
+      "stat_b": 0.2478557772244015
+    },
+    "a_ease": 0.74189364461738,
+    "b_ease": 0.3339317773788151
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Undergrad STEM %",
+      "stat_path": "education_field_stem",
+      "question": "!FULL Which has more people with a STEM degree, as a percentage of the overall population?",
+      "longname_a": "McHenry County, Illinois, USA",
+      "longname_b": "Horry County, South Carolina, USA",
+      "stat_a": 0.13889933501490462,
+      "stat_b": 0.0898022155713048
+    },
+    "b": {
+      "stat_column": "Poverty %",
+      "stat_path": "poverty_below_line",
+      "question": "higher % of people who are in poverty",
+      "longname_a": "MO-03, USA",
+      "longname_b": "TX-35, USA",
+      "stat_a": 0.0964302658305701,
+      "stat_b": 0.16929387553658326
+    },
+    "a_ease": 0.7088197146562906,
+    "b_ease": 0.27534493101379726
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Population",
+      "stat_path": "population",
+      "question": "higher population",
+      "longname_a": "Wuhan Urban Center, China",
+      "longname_b": "Kozhikode Urban Center, India",
+      "stat_a": 7710934.0,
+      "stat_b": 3944724.0
+    },
+    "b": {
+      "stat_column": "Firefighting and prevention, and other protective service workers including supervisors %",
+      "stat_path": "occupation_firefighting_and_prevention,_and_other_protective_service_workers_including_supervisors",
+      "question": "higher % of workers employed as firefighting and prevention, and other protective service workers including supervisors!TOOLTIP firefighters, fire inspectors, correctional officers, bailiffs, etc. (effectively, all protective service workers except police officers)",
+      "longname_a": "New Orleans [Urban Area], LA, USA",
+      "longname_b": "Minneapolis-St. Paul [Urban Area], MN, USA",
+      "stat_a": 0.01575566771695675,
+      "stat_b": 0.006864560233694647
+    },
+    "a_ease": 0.8394528437724982,
+    "b_ease": 0.4335126825518832
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Mean distance to nearest Public School",
+      "stat_path": "mean_dist_Public School_updated",
+      "question": "!FULL Which has less access to public schools (higher population-weighted mean distance)?",
+      "longname_a": "New York NY Media Market, USA",
+      "longname_b": "Dothan AL Media Market, USA",
+      "stat_a": 0.7254991557331327,
+      "stat_b": 3.4940776756606966
+    },
+    "b": {
+      "stat_column": "PW Density (r=4km)",
+      "stat_path": "ad_4",
+      "question": "higher population-weighted density (r=4km)!TOOLTIP Population-weighted density is computed by computing the density within the given radius for each person in the region and then averaging the results. This is a better measure of the density that people actually experience.",
+      "longname_a": "San Luis Potos\u00ed, Mexico",
+      "longname_b": "Xizang Zizhiqu, China",
+      "stat_a": 2309.96875,
+      "stat_b": 386.0633850097656
+    },
+    "a_ease": 0.9157667386609071,
+    "b_ease": 0.5071335927367056
+  }
+]
