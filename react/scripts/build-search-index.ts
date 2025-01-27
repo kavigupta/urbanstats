@@ -5,7 +5,7 @@ import { z } from 'zod'
 import { argumentParser } from 'zodcli'
 
 import { normalize, tokenize } from '../src/search'
-import { toHaystack, toSignature } from '../src/utils/bitap'
+import { Haystack, toHaystack, toSignature } from '../src/utils/bitap'
 import { SearchIndex } from '../src/utils/protos'
 
 const options = argumentParser({
@@ -27,27 +27,39 @@ function processRawSearchIndex(rawIndex: [string, number][]): SearchIndex {
     let lengthOfLongestToken = 0
     let maxPriority = 0
     let mostTokens = 0
+    const tokens: Haystack[] = []
+    const tokenIndexMap = new Map<string, number>()
     const entries = rawIndex.map(([element, priority]) => {
         const normalizedElement = normalize(element)
-        const tokens = tokenize(normalizedElement)
-        const haystacks = tokens.map((token) => {
-            if (token.length > lengthOfLongestToken) {
-                lengthOfLongestToken = token.length
+        const entryTokens = tokenize(normalizedElement)
+        const tokenIndices = entryTokens.map((token) => {
+            const existingTokenIndex = tokenIndexMap.get(token)
+            if (existingTokenIndex !== undefined) {
+                return existingTokenIndex
             }
-            return toHaystack(token)
+            else {
+                if (token.length > lengthOfLongestToken) {
+                    lengthOfLongestToken = token.length
+                }
+                const haystack = toHaystack(token)
+                const newTokenIndex = tokens.length
+                tokenIndexMap.set(token, newTokenIndex)
+                tokens.push(haystack)
+                return newTokenIndex
+            }
         })
         if (priority > maxPriority) {
             maxPriority = priority
         }
-        if (haystacks.length > mostTokens) {
-            mostTokens = haystacks.length
+        if (tokenIndices.length > mostTokens) {
+            mostTokens = tokenIndices.length
         }
         return {
             element,
-            tokens: haystacks,
+            tokenIndices,
             priority,
             signature: toSignature(normalizedElement),
         }
     })
-    return new SearchIndex({ entries, lengthOfLongestToken, maxPriority, mostTokens })
+    return new SearchIndex({ entries, lengthOfLongestToken, maxPriority, mostTokens, tokens })
 }

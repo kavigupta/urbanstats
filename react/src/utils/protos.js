@@ -3811,6 +3811,7 @@ export const SearchIndex = $root.SearchIndex = (() => {
      * @property {number|null} [lengthOfLongestToken] SearchIndex lengthOfLongestToken
      * @property {number|null} [maxPriority] SearchIndex maxPriority
      * @property {number|null} [mostTokens] SearchIndex mostTokens
+     * @property {Array.<SearchIndex.IHaystack>|null} [tokens] SearchIndex tokens
      */
 
     /**
@@ -3823,6 +3824,7 @@ export const SearchIndex = $root.SearchIndex = (() => {
      */
     function SearchIndex(properties) {
         this.entries = [];
+        this.tokens = [];
         if (properties)
             for (let keys = Object.keys(properties), i = 0; i < keys.length; ++i)
                 if (properties[keys[i]] != null)
@@ -3862,6 +3864,14 @@ export const SearchIndex = $root.SearchIndex = (() => {
     SearchIndex.prototype.mostTokens = 0;
 
     /**
+     * SearchIndex tokens.
+     * @member {Array.<SearchIndex.IHaystack>} tokens
+     * @memberof SearchIndex
+     * @instance
+     */
+    SearchIndex.prototype.tokens = $util.emptyArray;
+
+    /**
      * Creates a new SearchIndex instance using the specified properties.
      * @function create
      * @memberof SearchIndex
@@ -3894,6 +3904,9 @@ export const SearchIndex = $root.SearchIndex = (() => {
             writer.uint32(/* id 3, wireType 0 =*/24).uint32(message.maxPriority);
         if (message.mostTokens != null && Object.hasOwnProperty.call(message, "mostTokens"))
             writer.uint32(/* id 4, wireType 0 =*/32).int32(message.mostTokens);
+        if (message.tokens != null && message.tokens.length)
+            for (let i = 0; i < message.tokens.length; ++i)
+                $root.SearchIndex.Haystack.encode(message.tokens[i], writer.uint32(/* id 5, wireType 2 =*/42).fork()).ldelim();
         return writer;
     };
 
@@ -3944,6 +3957,12 @@ export const SearchIndex = $root.SearchIndex = (() => {
                 }
             case 4: {
                     message.mostTokens = reader.int32();
+                    break;
+                }
+            case 5: {
+                    if (!(message.tokens && message.tokens.length))
+                        message.tokens = [];
+                    message.tokens.push($root.SearchIndex.Haystack.decode(reader, reader.uint32()));
                     break;
                 }
             default:
@@ -3999,6 +4018,15 @@ export const SearchIndex = $root.SearchIndex = (() => {
         if (message.mostTokens != null && message.hasOwnProperty("mostTokens"))
             if (!$util.isInteger(message.mostTokens))
                 return "mostTokens: integer expected";
+        if (message.tokens != null && message.hasOwnProperty("tokens")) {
+            if (!Array.isArray(message.tokens))
+                return "tokens: array expected";
+            for (let i = 0; i < message.tokens.length; ++i) {
+                let error = $root.SearchIndex.Haystack.verify(message.tokens[i]);
+                if (error)
+                    return "tokens." + error;
+            }
+        }
         return null;
     };
 
@@ -4030,6 +4058,16 @@ export const SearchIndex = $root.SearchIndex = (() => {
             message.maxPriority = object.maxPriority >>> 0;
         if (object.mostTokens != null)
             message.mostTokens = object.mostTokens | 0;
+        if (object.tokens) {
+            if (!Array.isArray(object.tokens))
+                throw TypeError(".SearchIndex.tokens: array expected");
+            message.tokens = [];
+            for (let i = 0; i < object.tokens.length; ++i) {
+                if (typeof object.tokens[i] !== "object")
+                    throw TypeError(".SearchIndex.tokens: object expected");
+                message.tokens[i] = $root.SearchIndex.Haystack.fromObject(object.tokens[i]);
+            }
+        }
         return message;
     };
 
@@ -4046,8 +4084,10 @@ export const SearchIndex = $root.SearchIndex = (() => {
         if (!options)
             options = {};
         let object = {};
-        if (options.arrays || options.defaults)
+        if (options.arrays || options.defaults) {
             object.entries = [];
+            object.tokens = [];
+        }
         if (options.defaults) {
             object.lengthOfLongestToken = 0;
             object.maxPriority = 0;
@@ -4064,6 +4104,11 @@ export const SearchIndex = $root.SearchIndex = (() => {
             object.maxPriority = message.maxPriority;
         if (message.mostTokens != null && message.hasOwnProperty("mostTokens"))
             object.mostTokens = message.mostTokens;
+        if (message.tokens && message.tokens.length) {
+            object.tokens = [];
+            for (let j = 0; j < message.tokens.length; ++j)
+                object.tokens[j] = $root.SearchIndex.Haystack.toObject(message.tokens[j], options);
+        }
         return object;
     };
 
@@ -4341,7 +4386,7 @@ export const SearchIndex = $root.SearchIndex = (() => {
          * @memberof SearchIndex
          * @interface IEntry
          * @property {string|null} [element] Entry element
-         * @property {Array.<SearchIndex.IHaystack>|null} [tokens] Entry tokens
+         * @property {Array.<number>|null} [tokenIndices] Entry tokenIndices
          * @property {number|null} [priority] Entry priority
          * @property {number|Long|null} [signature] Entry signature
          */
@@ -4355,7 +4400,7 @@ export const SearchIndex = $root.SearchIndex = (() => {
          * @param {SearchIndex.IEntry=} [properties] Properties to set
          */
         function Entry(properties) {
-            this.tokens = [];
+            this.tokenIndices = [];
             if (properties)
                 for (let keys = Object.keys(properties), i = 0; i < keys.length; ++i)
                     if (properties[keys[i]] != null)
@@ -4371,12 +4416,12 @@ export const SearchIndex = $root.SearchIndex = (() => {
         Entry.prototype.element = "";
 
         /**
-         * Entry tokens.
-         * @member {Array.<SearchIndex.IHaystack>} tokens
+         * Entry tokenIndices.
+         * @member {Array.<number>} tokenIndices
          * @memberof SearchIndex.Entry
          * @instance
          */
-        Entry.prototype.tokens = $util.emptyArray;
+        Entry.prototype.tokenIndices = $util.emptyArray;
 
         /**
          * Entry priority.
@@ -4420,9 +4465,12 @@ export const SearchIndex = $root.SearchIndex = (() => {
                 writer = $Writer.create();
             if (message.element != null && Object.hasOwnProperty.call(message, "element"))
                 writer.uint32(/* id 1, wireType 2 =*/10).string(message.element);
-            if (message.tokens != null && message.tokens.length)
-                for (let i = 0; i < message.tokens.length; ++i)
-                    $root.SearchIndex.Haystack.encode(message.tokens[i], writer.uint32(/* id 2, wireType 2 =*/18).fork()).ldelim();
+            if (message.tokenIndices != null && message.tokenIndices.length) {
+                writer.uint32(/* id 2, wireType 2 =*/18).fork();
+                for (let i = 0; i < message.tokenIndices.length; ++i)
+                    writer.int32(message.tokenIndices[i]);
+                writer.ldelim();
+            }
             if (message.priority != null && Object.hasOwnProperty.call(message, "priority"))
                 writer.uint32(/* id 3, wireType 0 =*/24).uint32(message.priority);
             if (message.signature != null && Object.hasOwnProperty.call(message, "signature"))
@@ -4466,9 +4514,14 @@ export const SearchIndex = $root.SearchIndex = (() => {
                         break;
                     }
                 case 2: {
-                        if (!(message.tokens && message.tokens.length))
-                            message.tokens = [];
-                        message.tokens.push($root.SearchIndex.Haystack.decode(reader, reader.uint32()));
+                        if (!(message.tokenIndices && message.tokenIndices.length))
+                            message.tokenIndices = [];
+                        if ((tag & 7) === 2) {
+                            let end2 = reader.uint32() + reader.pos;
+                            while (reader.pos < end2)
+                                message.tokenIndices.push(reader.int32());
+                        } else
+                            message.tokenIndices.push(reader.int32());
                         break;
                     }
                 case 3: {
@@ -4517,14 +4570,12 @@ export const SearchIndex = $root.SearchIndex = (() => {
             if (message.element != null && message.hasOwnProperty("element"))
                 if (!$util.isString(message.element))
                     return "element: string expected";
-            if (message.tokens != null && message.hasOwnProperty("tokens")) {
-                if (!Array.isArray(message.tokens))
-                    return "tokens: array expected";
-                for (let i = 0; i < message.tokens.length; ++i) {
-                    let error = $root.SearchIndex.Haystack.verify(message.tokens[i]);
-                    if (error)
-                        return "tokens." + error;
-                }
+            if (message.tokenIndices != null && message.hasOwnProperty("tokenIndices")) {
+                if (!Array.isArray(message.tokenIndices))
+                    return "tokenIndices: array expected";
+                for (let i = 0; i < message.tokenIndices.length; ++i)
+                    if (!$util.isInteger(message.tokenIndices[i]))
+                        return "tokenIndices: integer[] expected";
             }
             if (message.priority != null && message.hasOwnProperty("priority"))
                 if (!$util.isInteger(message.priority))
@@ -4549,15 +4600,12 @@ export const SearchIndex = $root.SearchIndex = (() => {
             let message = new $root.SearchIndex.Entry();
             if (object.element != null)
                 message.element = String(object.element);
-            if (object.tokens) {
-                if (!Array.isArray(object.tokens))
-                    throw TypeError(".SearchIndex.Entry.tokens: array expected");
-                message.tokens = [];
-                for (let i = 0; i < object.tokens.length; ++i) {
-                    if (typeof object.tokens[i] !== "object")
-                        throw TypeError(".SearchIndex.Entry.tokens: object expected");
-                    message.tokens[i] = $root.SearchIndex.Haystack.fromObject(object.tokens[i]);
-                }
+            if (object.tokenIndices) {
+                if (!Array.isArray(object.tokenIndices))
+                    throw TypeError(".SearchIndex.Entry.tokenIndices: array expected");
+                message.tokenIndices = [];
+                for (let i = 0; i < object.tokenIndices.length; ++i)
+                    message.tokenIndices[i] = object.tokenIndices[i] | 0;
             }
             if (object.priority != null)
                 message.priority = object.priority >>> 0;
@@ -4587,7 +4635,7 @@ export const SearchIndex = $root.SearchIndex = (() => {
                 options = {};
             let object = {};
             if (options.arrays || options.defaults)
-                object.tokens = [];
+                object.tokenIndices = [];
             if (options.defaults) {
                 object.element = "";
                 object.priority = 0;
@@ -4599,10 +4647,10 @@ export const SearchIndex = $root.SearchIndex = (() => {
             }
             if (message.element != null && message.hasOwnProperty("element"))
                 object.element = message.element;
-            if (message.tokens && message.tokens.length) {
-                object.tokens = [];
-                for (let j = 0; j < message.tokens.length; ++j)
-                    object.tokens[j] = $root.SearchIndex.Haystack.toObject(message.tokens[j], options);
+            if (message.tokenIndices && message.tokenIndices.length) {
+                object.tokenIndices = [];
+                for (let j = 0; j < message.tokenIndices.length; ++j)
+                    object.tokenIndices[j] = message.tokenIndices[j];
             }
             if (message.priority != null && message.hasOwnProperty("priority"))
                 object.priority = message.priority;

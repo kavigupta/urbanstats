@@ -99,7 +99,7 @@ message SearchIndex {
 
     message Entry {
         string element = 1;
-        repeated Haystack tokens = 2;
+        repeated int32 tokenIndices = 2;
         uint32 priority = 3;
         uint64 signature = 4;
     }
@@ -108,6 +108,7 @@ message SearchIndex {
     int32 lengthOfLongestToken = 2;
     uint32 maxPriority = 3;
     int32 mostTokens = 4;
+    repeated Haystack tokens = 5;
 }
 
 message OrderList {

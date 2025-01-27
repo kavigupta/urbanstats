@@ -101,7 +101,7 @@ export function search(searchIndex: NormalizeProto<SearchIndex>, unnormalizedPat
     let entriesPatternSkips = 0
     let entriesPatternChecks = 0
 
-    entries: for (const [populationRank, { tokens, element, priority, signature }] of searchIndex.entries.entries()) {
+    entries: for (const [populationRank, { tokenIndices, element, priority, signature }] of searchIndex.entries.entries()) {
         if (!options.showHistoricalCDs && isHistoricalCD(element)) {
             continue
         }
@@ -140,7 +140,8 @@ export function search(searchIndex: NormalizeProto<SearchIndex>, unnormalizedPat
             let tokenIncompleteMatch = true
             let tokenEntryTokenIndex: undefined | number
 
-            for (const [entryTokenIndex, entryToken] of tokens.entries()) {
+            for (const [entryTokenIndex, entryTokenIndexInSearchIndex] of tokenIndices.entries()) {
+                const entryToken = searchIndex.tokens[entryTokenIndexInSearchIndex]
                 const searchResult = bitap(entryToken, needle, maxErrors, bitapBuffers)
                 const positionResult = Math.abs(patternTokenIndex - entryTokenIndex)
                 const incompleteMatchResult = Math.abs(entryToken.haystack.length - needle.length) - searchResult !== 0

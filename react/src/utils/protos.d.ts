@@ -1519,6 +1519,9 @@ export interface ISearchIndex {
 
     /** SearchIndex mostTokens */
     mostTokens?: (number|null);
+
+    /** SearchIndex tokens */
+    tokens?: (SearchIndex.IHaystack[]|null);
 }
 
 /** Represents a SearchIndex. */
@@ -1541,6 +1544,9 @@ export class SearchIndex implements ISearchIndex {
 
     /** SearchIndex mostTokens. */
     public mostTokens: number;
+
+    /** SearchIndex tokens. */
+    public tokens: SearchIndex.IHaystack[];
 
     /**
      * Creates a new SearchIndex instance using the specified properties.
@@ -1731,8 +1737,8 @@ export namespace SearchIndex {
         /** Entry element */
         element?: (string|null);
 
-        /** Entry tokens */
-        tokens?: (SearchIndex.IHaystack[]|null);
+        /** Entry tokenIndices */
+        tokenIndices?: (number[]|null);
 
         /** Entry priority */
         priority?: (number|null);
@@ -1753,8 +1759,8 @@ export namespace SearchIndex {
         /** Entry element. */
         public element: string;
 
-        /** Entry tokens. */
-        public tokens: SearchIndex.IHaystack[];
+        /** Entry tokenIndices. */
+        public tokenIndices: number[];
 
         /** Entry priority. */
         public priority: number;
