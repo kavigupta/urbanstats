@@ -230,8 +230,11 @@ export function search(searchIndex: NormalizedSearchIndex, unnormalizedPattern: 
 }
 
 export async function loadSearchIndex(): Promise<NormalizedSearchIndex> {
+    const start = performance.now()
     const searchIndex = await loadProtobuf('/index/pages_all.gz', 'SearchIndex')
-    return processRawSearchIndex(searchIndex)
+    const result = processRawSearchIndex(searchIndex)
+    console.log(`Took ${performance.now() - start}ms to load search index`)
+    return result
 }
 
 function processRawSearchIndex(searchIndex: { elements: string[], priorities: number[] }): NormalizedSearchIndex {
