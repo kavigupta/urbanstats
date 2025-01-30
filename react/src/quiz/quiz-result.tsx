@@ -224,7 +224,7 @@ function ShareButton({ buttonRef, todayName, correctPattern, quizKind }: ShareBu
     )
 }
 
-function TimeToNextQuiz({ quiz }: { quiz: QuizDescriptorWithStats }): ReactNode {
+function TimeToNextQuiz({ quiz }: { quiz: QuizDescriptorWithTime }): ReactNode {
     const colors = useColors()
     const [, setTime] = useState(0)
     useEffect(() => {
