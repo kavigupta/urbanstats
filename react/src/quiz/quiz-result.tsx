@@ -20,6 +20,8 @@ import { getCachedPerQuestionStats, getPerQuestionStats, PerQuestionStats, parse
 
 export type CorrectPattern = (boolean | 0 | 1)[]
 
+const maxPerLine = 10
+
 interface QuizResultProps {
     quizDescriptor: QuizDescriptor
     todayName?: string
@@ -371,7 +373,7 @@ export function Summary(props: { correctPattern: CorrectPattern, quizKind: QuizK
     return (
         <div>
             <span className="serif quiz_summary" id="quiz-result-summary-words">{show}</span>
-            <span className="serif quiz_summary" id="quiz-result-summary-emoji">{redAndGreenSquares(juxtaColors, props.correctPattern)}</span>
+            <div className="serif quiz_summary" id="quiz-result-summary-emoji">{redAndGreenSquares(juxtaColors, props.correctPattern)}</div>
         </div>
     )
 }
@@ -603,6 +605,13 @@ function settingsOverrides(questionStatPath?: StatPath): Partial<VectorSettingsD
 }
 
 export function redAndGreenSquares(juxtaColors: JuxtastatColors, correctPattern: CorrectPattern): string {
+    if (correctPattern.length > maxPerLine) {
+        const lines = []
+        for (let i = 0; i < correctPattern.length; i += maxPerLine) {
+            lines.push(redAndGreenSquares(juxtaColors, correctPattern.slice(i, i + maxPerLine)))
+        }
+        return lines.join('\n')
+    }
     return correctPattern.map(function (x) {
         // red square emoji for wrong, green for right
         return x ? juxtaColors.correctEmoji : juxtaColors.incorrectEmoji
