@@ -11,7 +11,7 @@ import { getVector, VectorSettingsDictionary } from '../page_template/settings-v
 import { allGroups, allYears, statParents, StatPath } from '../page_template/statistic-tree'
 
 import { msRemaining, renderTimeRemaining } from './dates'
-import { JuxtaQuestion, QuizDescriptor, QuizDescriptorWithStats, QuizHistory, QuizQuestion, RetroQuestion, aCorrect, QuizFriends, nameOfQuizKind, QuizKind, endpoint, QuizLocalStorage } from './quiz'
+import { JuxtaQuestion, QuizDescriptor, QuizHistory, QuizQuestion, RetroQuestion, aCorrect, QuizFriends, nameOfQuizKind, QuizKind, endpoint, QuizLocalStorage, QuizDescriptorWithTime } from './quiz'
 import { ExportImport, Header, UserId } from './quiz-components'
 import { QuizFriendsPanel } from './quiz-friends'
 import { renderQuestion } from './quiz-question'
