@@ -180,7 +180,12 @@ interface ShareButtonProps {
     quizKind: QuizKind
 }
 
-function ShareButton({ buttonRef, todayName, correctPattern, quizKind }: ShareButtonProps): ReactNode {
+function ShareButton(props: ShareButtonProps): ReactNode {
+    // TODO compact representation for sharing
+    return <ActualShareButton {...props} compactRepr={false} />
+}
+
+function ActualShareButton({ buttonRef, todayName, correctPattern, quizKind, compactRepr }: (ShareButtonProps & { compactRepr: boolean })): ReactNode {
     const colors = useColors()
     const juxtaColors = useJuxtastatColors()
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- We need to check the condition for browser compatibility.
@@ -193,7 +198,7 @@ function ShareButton({ buttonRef, todayName, correctPattern, quizKind }: ShareBu
             style={buttonStyle(colors.hueColors.green)}
             ref={buttonRef}
             onClick={async () => {
-                const [text, url] = await summary(juxtaColors, todayName, correctPattern, quizKind)
+                const [text, url] = await summary(juxtaColors, todayName, correctPattern, quizKind, compactRepr)
 
                 async function copyToClipboard(): Promise<void> {
                     await navigator.clipboard.writeText(`${text}\n${url}`)
@@ -375,7 +380,7 @@ export function Summary(props: { correctPattern: CorrectPattern, quizKind: QuizK
             <span className="serif quiz_summary" id="quiz-result-summary-words">{show}</span>
             <div id="quiz-result-summary-emoji">
                 {
-                    redAndGreenSquares(juxtaColors, props.correctPattern).map((line, index) => (
+                    redAndGreenSquares(juxtaColors, props.correctPattern, false).map((line, index) => (
                         <div className="serif quiz_summary" key={index}>{line}</div>
                     ))
                 }
@@ -384,7 +389,7 @@ export function Summary(props: { correctPattern: CorrectPattern, quizKind: QuizK
     )
 }
 
-export async function summary(juxtaColors: JuxtastatColors, todayName: string | undefined, correctPattern: CorrectPattern, quizKind: QuizKind): Promise<[string, string]> {
+export async function summary(juxtaColors: JuxtastatColors, todayName: string | undefined, correctPattern: CorrectPattern, quizKind: QuizKind, compactRepr: boolean): Promise<[string, string]> {
     // wordle-style summary
     const [, summaryText] = summaryTexts(correctPattern, quizKind)
     let text = nameOfQuizKind(quizKind)
@@ -396,7 +401,7 @@ export async function summary(juxtaColors: JuxtastatColors, todayName: string | 
     text += '\n'
     text += '\n'
 
-    text += redAndGreenSquares(juxtaColors, correctPattern).join('\n')
+    text += redAndGreenSquares(juxtaColors, correctPattern, compactRepr).join('\n')
 
     text += '\n'
 
@@ -610,11 +615,63 @@ function settingsOverrides(questionStatPath?: StatPath): Partial<VectorSettingsD
     ])
 }
 
-export function redAndGreenSquares(juxtaColors: JuxtastatColors, correctPattern: CorrectPattern): string[] {
+function emojiForCount(count: number): string {
+    if (count > 10) {
+        return emojiForCount(count / 10) + emojiForCount(10)
+    }
+    switch (count) {
+        case 0:
+            return '0️⃣'
+        case 1:
+            return '1️⃣'
+        case 2:
+            return '2️⃣'
+        case 3:
+            return '3️⃣'
+        case 4:
+            return '4️⃣'
+        case 5:
+            return '5️⃣'
+        case 6:
+            return '6️⃣'
+        case 7:
+            return '7️⃣'
+        case 8:
+            return '8️⃣'
+        case 9:
+            return '9️⃣'
+    }
+    throw new Error(`unexpected count ${count}`)
+}
+
+export function redAndGreenSquares(juxtaColors: JuxtastatColors, correctPattern: CorrectPattern, compactRepr: boolean): string[] {
+    if (!compactRepr) {
+        // RRGGG -> R<emoji 2>G<emoji 3>
+        const result = []
+        let currentSymbol: boolean | undefined = undefined
+        let currentCount = 0
+        for (const x of correctPattern.map(t => t ? true : false)) {
+            if (x === currentSymbol) {
+                currentCount += 1
+            }
+            else {
+                if (currentSymbol !== undefined) {
+                    result.push(currentSymbol ? juxtaColors.correctEmoji : juxtaColors.incorrectEmoji)
+                    result.push(emojiForCount(currentCount))
+                }
+                currentSymbol = x
+                currentCount = 1
+            }
+        }
+        if (currentSymbol !== undefined) {
+            result.push(currentSymbol ? juxtaColors.correctEmoji : juxtaColors.incorrectEmoji)
+            result.push(emojiForCount(currentCount))
+        }
+    }
     if (correctPattern.length > maxPerLine) {
         const lines = []
         for (let i = 0; i < correctPattern.length; i += maxPerLine) {
-            lines.push(redAndGreenSquares(juxtaColors, correctPattern.slice(i, i + maxPerLine))[0])
+            lines.push(redAndGreenSquares(juxtaColors, correctPattern.slice(i, i + maxPerLine), compactRepr)[0])
         }
         return lines
     }
