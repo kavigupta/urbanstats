@@ -20,6 +20,10 @@ async function correctIncorrect(t: TestController): Promise<boolean[]> {
         else if (c === '🟥') {
             result.push(false)
         }
+        // ' ', '\n', etc are ignored
+        else if (/\s/.exec(c)) {
+            continue
+        }
         else {
             throw new Error(`unexpected character ${c} in ${text}`)
         }
