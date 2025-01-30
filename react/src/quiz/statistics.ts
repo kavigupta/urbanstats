@@ -1,4 +1,4 @@
-import { endpoint, QuizDescriptorWithStats, QuizHistory, QuizKindWithStats, QuizLocalStorage } from './quiz'
+import { endpoint, QuizDescriptorWithTime, QuizHistory, QuizKindWithStats, QuizKindWithTime, QuizLocalStorage } from './quiz'
 
 async function registerUser(userId: string, secureID: string): Promise<boolean> {
     // Idempotent
@@ -50,7 +50,7 @@ async function reportToServerGeneric(wholeHistory: QuizHistory, endpointLatest: 
     return false
 }
 
-export function parseTimeIdentifier(quizKind: QuizKindWithStats, today: string): number {
+export function parseTimeIdentifier(quizKind: QuizKindWithTime, today: string): number {
     switch (quizKind) {
         case 'juxtastat':
             return parseJuxtastatDay(today)
@@ -90,15 +90,15 @@ export interface PerQuestionStats { total: number, per_question: number[] }
 const questionStatsCache = new Map<string, PerQuestionStats>()
 
 // These are separate sync and async functions to eliminate flashing in the UI
-export function getCachedPerQuestionStats(descriptor: QuizDescriptorWithStats): PerQuestionStats | undefined {
+export function getCachedPerQuestionStats(descriptor: QuizDescriptorWithTime): PerQuestionStats | undefined {
     return questionStatsCache.get(JSON.stringify(descriptor))
 }
 
-export async function getPerQuestionStats(descriptor: QuizDescriptorWithStats): Promise<PerQuestionStats> {
+export async function getPerQuestionStats(descriptor: QuizDescriptorWithTime): Promise<PerQuestionStats> {
     return getCachedPerQuestionStats(descriptor) ?? await fetchPerQuestionStats(descriptor)
 }
 
-async function fetchPerQuestionStats(descriptor: QuizDescriptorWithStats): Promise<PerQuestionStats> {
+async function fetchPerQuestionStats(descriptor: QuizDescriptorWithTime): Promise<PerQuestionStats> {
     let response: Response
     switch (descriptor.kind) {
         case 'juxtastat':
