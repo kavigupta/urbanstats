@@ -223,9 +223,6 @@ export function QuizStatisticsForInfinite(
 
     const ordinals = sortedIndices.map(x => sortedIndicesAll.indexOf(x) + 1)
 
-    console.log('seedVersions', sortedIndicesAll)
-    console.log('ordinals', ordinals)
-
     const sortedSeedVersions = sortedIndices.map(i => seedVersions[i])
     const sortedNumCorrects = sortedIndices.map(i => numCorrects[i])
 
