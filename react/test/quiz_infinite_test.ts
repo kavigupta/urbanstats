@@ -144,6 +144,15 @@ async function copyLines(t: TestController): Promise<string[]> {
     return copy.split('\n')
 }
 
+async function yourBestScores(): Promise<string> {
+    // id=your-best-scores
+    return await Selector('#your-best-scores').innerText
+}
+
+async function clickAmount(t: TestController, amount: string, nth: number): Promise<void> {
+    await t.click(Selector('.quiz-audience-statistics-displayed').withText(amount).nth(nth))
+}
+
 test('display-life-lost', async (t) => {
     await t.expect(await getLives()).eql(['Y', 'Y', 'Y'])
     await provideAnswers(t, 0, [false], seedStr)
@@ -272,7 +281,7 @@ test('several-different-quizzes', async (t) => {
     ])
     await t.expect(await yourBestScores()).eql('Your Best Scores\n14\n#1\n12\n#2')
     // go to third, third score is 8
-    await t.navigateTo(`${target}/quiz.html#mode=infinite&s=deadbeef02&v=${version}`)
+    await t.navigateTo(`${target}/quiz.html#mode=infinite&seed=deadbeef02&v=${version}`)
     await provideAnswers(t, 0, '11110111100', 'deadbeef02')
     await screencap(t)
     await t.expect(await copyLines(t)).eql([
@@ -287,6 +296,27 @@ test('several-different-quizzes', async (t) => {
     ])
     await t.expect(await yourBestScores()).eql('Your Best Scores\n14\n#1\n12\n#2\n8\n#3')
     // click on the link for first
-    await t.click(Selector('a').withText('12'))
+    await clickAmount(t, '12', 0)
     await t.expect(getLocation()).eql(`${target}/quiz.html#mode=infinite&seed=${seedStr}&v=${version}`)
+    // fourth score ties with first entered
+    await t.navigateTo(`${target}/quiz.html#mode=infinite&seed=deadbeef03&v=${version}`)
+    await provideAnswers(t, 0, '11110' + '11110' + '11110', 'deadbeef03')
+    await screencap(t)
+    await t.expect(await copyLines(t)).eql([
+        'Juxtastat Infinite 12/∞',
+        '',
+        '🟩🟩🟩🟩🟥🟩🟩🟩🟩🟥',
+        '🟩🟩🟩🟩🟥',
+        '',
+        '🥈 Personal 2nd Best!',
+        '',
+        `https://juxtastat.org/#mode=infinite&seed=deadbeef03&v=${version}`,
+    ])
+    await t.expect(await yourBestScores()).eql('Your Best Scores\n14\n#1\n12\n#2\n12\n#2\n8\n#3')
+    await clickAmount(t, '12', 0)
+    await t.expect(getLocation()).eql(`${target}/quiz.html#mode=infinite&seed=deadbeef00&v=${version}`)
+    await clickAmount(t, '12', 1)
+    await t.expect(getLocation()).eql(`${target}/quiz.html#mode=infinite&seed=deadbeef03&v=${version}`)
+    await clickAmount(t, '12', 1)
+    await t.expect(getLocation()).eql(`${target}/quiz.html#mode=infinite&seed=deadbeef03&v=${version}`)
 })
