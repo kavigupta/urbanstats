@@ -266,7 +266,7 @@ test('several-different-quizzes', async (t) => {
         '🟩🟩🟩🟩🟥🟩🟩🟩🟩🟥',
         '🟩🟩🟩🟩🟥',
         '',
-        '🥈 Personal 2nd Best',
+        '🥈 Personal 2nd Best!',
         '',
         `https://juxtastat.org/${param}`,
     ])
