@@ -16,7 +16,7 @@ import { ExportImport, Header, UserId } from './quiz-components'
 import { QuizFriendsPanel } from './quiz-friends'
 import { renderQuestion } from './quiz-question'
 import { AudienceStatistics, QuizStatistics } from './quiz-statistics'
-import { getCachedPerQuestionStats, getPerQuestionStats, PerQuestionStats, parseTimeIdentifier, reportToServer } from './statistics'
+import { getCachedPerQuestionStats, getPerQuestionStats, PerQuestionStats, reportToServer } from './statistics'
 
 export type CorrectPattern = (boolean | 0 | 1)[]
 
