@@ -144,7 +144,7 @@ export function QuizResult(props: QuizResultProps): ReactNode {
                                     quizFriends={quizFriends}
                                     quizDescriptor={props.quizDescriptor}
                                     setQuizFriends={setQuizFriends}
-                                    myCorrects={correctPattern}
+                                    myResult={{ corrects: correctPattern }}
                                 />
                             </div>
                         )

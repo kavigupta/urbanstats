@@ -10,7 +10,9 @@ import { endpoint, QuizDescriptorWithTime, QuizFriends, QuizLocalStorage } from 
 import { CorrectPattern } from './quiz-result'
 import { parseTimeIdentifier } from './statistics'
 
-interface FriendResponse { corrects: CorrectPattern | null, friends: boolean, idError?: string }
+interface ResultToDisplayForFriends { corrects: CorrectPattern }
+
+interface FriendResponse { result: ResultToDisplayForFriends | null, friends: boolean, idError?: string }
 type FriendScore = { name?: string } & FriendResponse
 
 async function juxtaRetroResponse(
@@ -31,14 +33,17 @@ async function juxtaRetroResponse(
         // probably some kind of auth error. Handled elsewhere
         return undefined
     }
-    return friendScoresResponse.results
+    return friendScoresResponse.results.map(x => ({
+        result: x.corrects === null ? null : { corrects: x.corrects },
+        friends: x.friends, idError: x.idError,
+    }))
 }
 
 export function QuizFriendsPanel(props: {
     quizFriends: QuizFriends
     setQuizFriends: (quizFriends: QuizFriends) => void
     quizDescriptor: QuizDescriptorWithTime
-    myCorrects: CorrectPattern
+    myResult: ResultToDisplayForFriends
 }): ReactNode {
     const colors = useColors()
 
@@ -62,7 +67,7 @@ export function QuizFriendsPanel(props: {
                     return
                 }
                 setFriendScores(friendScoresResponse.map(
-                    (x, idx) => ({ name: quizIDtoName[requesters[idx]], corrects: x.corrects, friends: x.friends, idError: x.idError }),
+                    (x, idx) => ({ name: quizIDtoName[requesters[idx]], result: x.result, friends: x.friends, idError: x.idError }),
                 ))
             }
             catch {
@@ -80,7 +85,7 @@ export function QuizFriendsPanel(props: {
                 <div className="quiz_summary">Friends</div>
             </div>
             <>
-                <PlayerScore correctPattern={props.myCorrects} />
+                <PlayerScore result={props.myResult} />
 
                 {
                     friendScores.map((friendScore, idx) => (
@@ -131,7 +136,7 @@ export function QuizFriendsPanel(props: {
 const scoreCorrectHeight = '2em'
 const addFriendHeight = '1.5em'
 
-function PlayerScore(props: { correctPattern: CorrectPattern }): ReactNode {
+function PlayerScore(props: { result: ResultToDisplayForFriends }): ReactNode {
     const copyFriendLink = async (): Promise<void> => {
         const playerName = prompt('Enter your name:')
 
@@ -156,7 +161,7 @@ function PlayerScore(props: { correctPattern: CorrectPattern }): ReactNode {
                 You
             </div>
             <div style={{ width: '50%' }}>
-                <FriendScoreCorrects corrects={props.correctPattern} friends={true} />
+                <FriendScoreCorrects result={props.result} friends={true} />
             </div>
             <div style={{ width: '25%', display: 'flex', height: addFriendHeight }}>
                 <button
@@ -272,12 +277,12 @@ function FriendScoreCorrects(props: FriendScore): ReactNode {
             </div>
         )
     }
-    if (props.corrects === null) {
+    if (props.result === null) {
         return (
             <div style={greyedOut}>Not Done Yet</div>
         )
     }
-    const corrects = props.corrects
+    const corrects = props.result.corrects
     return (
         <div
             className="testing-friend-score"
