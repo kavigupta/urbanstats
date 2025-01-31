@@ -181,6 +181,8 @@ test('19-correct', async (t) => {
         '🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩',
         '🟥🟥🟥🟥🟥🟥🟥',
         '',
+        '🥇 Personal Best!',
+        '',
         `https://juxtastat.org/${param}`,
     ])
     // low bit order first: 1111,1111 1111,1111 1111,0000 000[0,0000] This becomes FF FF 0F 00

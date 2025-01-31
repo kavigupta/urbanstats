@@ -223,6 +223,41 @@ function computeOrdinalsAndIndices(numCorrects: number[], keepNumber: number, sa
     return [ordinalsFilt, sortedIndicesFilt]
 }
 
+interface InfiniteDisplay {
+    ordinals: number[]
+    sortedIndices: number[]
+    seedVersions: [string, number][]
+    numCorrects: number[]
+}
+
+function juxtastatInfiniteDisplay(quiz: QuizDescriptor & { kind: 'infinite' }, wholeHistory: QuizHistory): InfiniteDisplay {
+    const [seedVersions, keys] = getInfiniteQuizzes(wholeHistory, true)
+    const numCorrects = keys.map(
+        key => wholeHistory[key].correct_pattern.reduce((partialSum: number, a) => partialSum + (a ? 1 : 0), 0),
+    )
+    const thisIndex = seedVersions.findIndex(([seed, version]) => seed === quiz.seed && version === quiz.version)
+
+    const [ordinals, sortedIndices] = computeOrdinalsAndIndices(numCorrects, 3, thisIndex)
+
+    return { ordinals, sortedIndices, seedVersions, numCorrects }
+}
+
+export type Medal = 1 | 2 | 3
+
+export function ordinalThis(quiz: QuizDescriptor & { kind: 'infinite' }, wholeHistory: QuizHistory): Medal | undefined {
+    const { ordinals, sortedIndices, seedVersions } = juxtastatInfiniteDisplay(quiz, wholeHistory)
+    const thisIndex = seedVersions.findIndex(([seed, version]) => seed === quiz.seed && version === quiz.version)
+    const thisOrdinal = ordinals[sortedIndices.indexOf(thisIndex)]
+    switch (thisOrdinal) {
+        case 1:
+        case 2:
+        case 3:
+            return thisOrdinal
+        default:
+            return undefined
+    }
+}
+
 export function QuizStatisticsForInfinite(
     props: {
         quiz: QuizDescriptor & { kind: 'infinite' }
@@ -231,13 +266,8 @@ export function QuizStatisticsForInfinite(
 ): ReactNode | undefined {
     const colors = useColors()
     const navContext = useContext(Navigator.Context)
-    const [seedVersions, keys] = getInfiniteQuizzes(props.wholeHistory, true)
-    const numCorrects = keys.map(
-        key => props.wholeHistory[key].correct_pattern.reduce((partialSum: number, a) => partialSum + (a ? 1 : 0), 0),
-    )
-    const thisIndex = seedVersions.findIndex(([seed, version]) => seed === props.quiz.seed && version === props.quiz.version)
 
-    const [ordinals, sortedIndices] = computeOrdinalsAndIndices(numCorrects, 3, thisIndex)
+    const { ordinals, sortedIndices, seedVersions, numCorrects } = juxtastatInfiniteDisplay(props.quiz, props.wholeHistory)
 
     return (
         <div>

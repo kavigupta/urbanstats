@@ -15,7 +15,7 @@ import { JuxtaQuestion, QuizDescriptor, QuizHistory, QuizQuestion, RetroQuestion
 import { ExportImport, Header, UserId } from './quiz-components'
 import { QuizFriendsPanel } from './quiz-friends'
 import { renderQuestion } from './quiz-question'
-import { AudienceStatistics, QuizStatistics } from './quiz-statistics'
+import { AudienceStatistics, Medal, ordinalThis, QuizStatistics } from './quiz-statistics'
 import { getCachedPerQuestionStats, getPerQuestionStats, PerQuestionStats, parseTimeIdentifier, reportToServer } from './statistics'
 
 export type CorrectPattern = (boolean | 0 | 1)[]
@@ -92,6 +92,7 @@ export function QuizResult(props: QuizResultProps): ReactNode {
                 todayName={props.todayName}
                 correctPattern={correctPattern}
                 quizKind={props.quizDescriptor.kind}
+                medal={props.quizDescriptor.kind === 'infinite' ? ordinalThis(props.quizDescriptor, props.wholeHistory) : undefined}
             />
             <div className="gap" />
             <div className="gap"></div>
@@ -178,9 +179,10 @@ interface ShareButtonProps {
     todayName: string | undefined
     correctPattern: CorrectPattern
     quizKind: QuizKind
+    medal?: Medal
 }
 
-function ShareButton({ buttonRef, todayName, correctPattern, quizKind }: ShareButtonProps): ReactNode {
+function ShareButton({ buttonRef, todayName, correctPattern, quizKind, medal }: ShareButtonProps): ReactNode {
     const colors = useColors()
     const juxtaColors = useJuxtastatColors()
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- We need to check the condition for browser compatibility.
@@ -193,7 +195,7 @@ function ShareButton({ buttonRef, todayName, correctPattern, quizKind }: ShareBu
             style={buttonStyle(colors.hueColors.green)}
             ref={buttonRef}
             onClick={async () => {
-                const [text, url] = await summary(juxtaColors, todayName, correctPattern, quizKind)
+                const [text, url] = await summary(juxtaColors, todayName, correctPattern, quizKind, medal)
 
                 async function copyToClipboard(): Promise<void> {
                     await navigator.clipboard.writeText(`${text}\n${url}`)
@@ -384,7 +386,11 @@ export function Summary(props: { correctPattern: CorrectPattern, quizKind: QuizK
     )
 }
 
-export async function summary(juxtaColors: JuxtastatColors, todayName: string | undefined, correctPattern: CorrectPattern, quizKind: QuizKind): Promise<[string, string]> {
+function renderMedalAsString(medal: Medal): string {
+    return ['🥇 Personal Best!', '🥈 Personal 2nd Best!', '🥉 Personal 3rd Best!'][medal - 1]
+}
+
+export async function summary(juxtaColors: JuxtastatColors, todayName: string | undefined, correctPattern: CorrectPattern, quizKind: QuizKind, medal: Medal | undefined): Promise<[string, string]> {
     // wordle-style summary
     const [, summaryText] = summaryTexts(correctPattern, quizKind)
     let text = nameOfQuizKind(quizKind)
@@ -397,6 +403,12 @@ export async function summary(juxtaColors: JuxtastatColors, todayName: string | 
     text += '\n'
 
     text += redAndGreenSquares(juxtaColors, correctPattern).join('\n')
+
+    if (medal !== undefined) {
+        text += '\n'
+        text += '\n'
+        text += renderMedalAsString(medal)
+    }
 
     text += '\n'
 
