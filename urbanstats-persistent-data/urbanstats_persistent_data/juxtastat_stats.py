@@ -287,6 +287,14 @@ def todays_score_for(requestee, requesters, date, quiz_kind):
     )
 
 
+def infinite_results(requestee, requesters, seed, version):
+    """
+    For each `requseter` returns the pattern of correct answers if `(requester, requestee)` is a friend pair.
+    """
+
+    return _compute_friend_results(requestee, requesters, compute_fn=lambda c, for_user: _infinite_results(c, for_user, seed, version))
+
+
 def _compute_friend_results(requestee, requesters, compute_fn):
     requestee = int(requestee, 16)
 
@@ -329,3 +337,32 @@ def _compute_daily_score(date, quiz_kind, c, for_user):
         return dict(corrects=None)
     else:
         return dict(corrects=bitvector_to_corrects(res[0]))
+
+def _infinite_results(c, for_user, seed, version):
+    """
+    Returns the result for the given user for the given seed and version, as well
+    as the maximum score and corresponding seed and version.
+    """
+
+    c.execute(
+        "SELECT score FROM JuxtaStatInfiniteStats WHERE user=? AND seed=? AND version=?",
+        (for_user, seed, version),
+    )
+    res = c.fetchone()
+    for_this_seed = None if res is None else res[0]
+
+    c.execute(
+        "SELECT seed, version, score FROM JuxtaStatInfiniteStats WHERE user=? AND score=(SELECT MAX(score) FROM JuxtaStatInfiniteStats WHERE user=?)",
+        (for_user,),
+    )
+    res = c.fetchone()
+    max_score_seed = None if res is None else res[0]
+    max_score_version = None if res is None else res[1]
+    max_score = None if res is None else res[2]
+
+    return dict(
+        forThisSeed=for_this_seed,
+        maxScore=max_score,
+        maxScoreSeed=max_score_seed,
+        maxScoreVersion=max_score_version
+    )

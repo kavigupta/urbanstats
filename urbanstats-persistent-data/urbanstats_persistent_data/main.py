@@ -11,6 +11,7 @@ from .juxtastat_stats import (
     get_per_question_stats,
     get_per_question_stats_retrostat,
     has_infinite_stats,
+    infinite_results,
     latest_day,
     latest_week_retrostat,
     register_user,
@@ -241,6 +242,19 @@ def juxtastat_todays_score_for():
         )
     )
     print("TODAYS SCORE FOR", res)
+    return flask.jsonify(res)
+
+
+@app.route("/juxtastat/infinite_results", methods=["POST"])
+@authenticate(["requesters", "seed", "version"])
+def juxtastat_infinite_results():
+    form = flask_form()
+    res = dict(
+        results=infinite_results(
+            form["user"], form["requesters"], form["seed"], form["version"]
+        )
+    )
+    print("INFINITE RESULTS FOR", res)
     return flask.jsonify(res)
 
 
