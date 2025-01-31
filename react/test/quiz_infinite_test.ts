@@ -24,6 +24,10 @@ async function correctIncorrect(t: TestController): Promise<boolean[]> {
         else if (c === '🟥') {
             result.push(false)
         }
+        // ' ', '\n', etc are ignored
+        else if (/\s/.exec(c)) {
+            continue
+        }
         else {
             throw new Error(`unexpected character ${c} in ${text}`)
         }
@@ -149,7 +153,9 @@ test('19-correct', async (t) => {
     await t.expect(lines).eql([
         'Juxtastat Infinite 20/∞',
         '',
-        '🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟥🟥🟥🟥🟥🟥🟥',
+        '🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩',
+        '🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩',
+        '🟥🟥🟥🟥🟥🟥🟥',
         '',
         `https://juxtastat.org/${param}`,
     ])

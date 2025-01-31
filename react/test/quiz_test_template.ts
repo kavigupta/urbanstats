@@ -995,6 +995,6 @@ export function quizTest({ platform }: { platform: 'desktop' | 'mobile' }): void
         await clickButtons(t, ['a'])
         await screencap(t)
         await t.expect(Selector('#quiz-result-summary-words').innerText).eql('Better luck next time! 🫤 3/11')
-        await t.expect(Selector('#quiz-result-summary-emoji').innerText).eql('🟥🟥🟥🟥🟥🟥🟩🟥🟩🟩🟥')
+        await t.expect(Selector('#quiz-result-summary-emoji').innerText).eql('🟥🟥🟥🟥🟥🟥🟩🟥🟩🟩\n🟥')
     })
 }
