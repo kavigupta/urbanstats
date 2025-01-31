@@ -343,4 +343,7 @@ test('several-different-quizzes', async (t) => {
         `https://juxtastat.org/#mode=infinite&seed=deadbeef05&v=${version}`,
     ])
     await t.expect(await yourBestScores()).eql('Your Best Scores\n14\n#1\n12\n#2\n12\n#2\n8\n#3\n6\n#5')
+    await clickAmount(t, '12', 0)
+    await t.expect(getLocation()).eql(`${target}/quiz.html#mode=infinite&seed=deadbeef00&v=${version}`)
+    await t.expect(await yourBestScores()).eql('Your Best Scores\n14\n#1\n12\n#2\n12\n#2\n8\n#3')
 })
