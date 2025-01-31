@@ -6,11 +6,11 @@ import { urlFromPageDescriptor } from '../navigation/PageDescriptor'
 import { useColors, useJuxtastatColors } from '../page_template/colors'
 import { mixWithBackground } from '../utils/color'
 
-import { endpoint, QuizDescriptorWithTime, QuizFriends, QuizLocalStorage } from './quiz'
+import { endpoint, QuizDescriptorWithTime, QuizDescriptorWithStats, QuizFriends, QuizLocalStorage, QuizDescriptor } from './quiz'
 import { CorrectPattern } from './quiz-result'
 import { parseTimeIdentifier } from './statistics'
 
-interface ResultToDisplayForFriends { corrects: CorrectPattern }
+type ResultToDisplayForFriends = { corrects: CorrectPattern } | { forThisSeed: number, maxScore: number, maxScoreSeed: string, maxScoreVersion: number }
 
 interface FriendResponse { result: ResultToDisplayForFriends | null, friends: boolean, idError?: string }
 type FriendScore = { name?: string } & FriendResponse
@@ -39,10 +39,34 @@ async function juxtaRetroResponse(
     }))
 }
 
+async function infiniteResponse(
+    user: string,
+    secureID: string,
+    quizDescriptor: QuizDescriptor & { kind: 'infinite' },
+    requesters: string[],
+): Promise<FriendResponse[] | undefined> {
+    const friendScoresResponse = await fetch(`${endpoint}/juxtastat/infinite_results`, {
+        method: 'POST',
+        body: JSON.stringify({ user, secureID, requesters, seed: quizDescriptor.seed, version: quizDescriptor.version }),
+        headers: {
+            'Content-Type': 'application/json',
+        },
+    }).then(x => x.json()) as { results: { forThisSeed: number, maxScore: number, maxScoreSeed: string, maxScoreVersion: number, friends: boolean, idError?: string }[] } | { error: string }
+    if ('error' in friendScoresResponse) {
+        // probably some kind of auth error. Handled elsewhere
+        return undefined
+    }
+    return friendScoresResponse.results.map(x => ({
+        result: { forThisSeed: x.forThisSeed, maxScore: x.maxScore, maxScoreSeed: x.maxScoreSeed, maxScoreVersion: x.maxScoreVersion },
+        friends: x.friends,
+        idError: x.idError,
+    }))
+}
+
 export function QuizFriendsPanel(props: {
     quizFriends: QuizFriends
     setQuizFriends: (quizFriends: QuizFriends) => void
-    quizDescriptor: QuizDescriptorWithTime
+    quizDescriptor: QuizDescriptorWithStats
     myResult: ResultToDisplayForFriends
 }): ReactNode {
     const colors = useColors()
@@ -62,7 +86,10 @@ export function QuizFriendsPanel(props: {
                 // map name to id for quizFriends
                 const quizIDtoName = Object.fromEntries(props.quizFriends.map(x => [x[1], x[0]]))
                 const requesters = props.quizFriends.map(x => x[1])
-                const friendScoresResponse = await juxtaRetroResponse(user, secureID, props.quizDescriptor, requesters)
+                const friendScoresResponse
+                    = props.quizDescriptor.kind === 'infinite'
+                        ? await infiniteResponse(user, secureID, props.quizDescriptor, requesters)
+                        : await juxtaRetroResponse(user, secureID, props.quizDescriptor, requesters)
                 if (friendScoresResponse === undefined) {
                     return
                 }
@@ -280,6 +307,18 @@ function FriendScoreCorrects(props: FriendScore): ReactNode {
     if (props.result === null) {
         return (
             <div style={greyedOut}>Not Done Yet</div>
+        )
+    }
+    if ('forThisSeed' in props.result) {
+        return (
+            <div style={{ display: 'flex', flexDirection: 'row', height: scoreCorrectHeight }}>
+                <div style={{ width: '50%', border }}>
+                    {props.result.forThisSeed}
+                </div>
+                <div style={{ width: '50%', border }}>
+                    {props.result.maxScore}
+                </div>
+            </div>
         )
     }
     const corrects = props.result.corrects
