@@ -16,7 +16,7 @@ import { ExportImport, Header, UserId } from './quiz-components'
 import { QuizFriendsPanel } from './quiz-friends'
 import { renderQuestion } from './quiz-question'
 import { AudienceStatistics, QuizStatistics } from './quiz-statistics'
-import { getCachedPerQuestionStats, getPerQuestionStats, PerQuestionStats, parseTimeIdentifier, reportToServer } from './statistics'
+import { getCachedPerQuestionStats, getPerQuestionStats, PerQuestionStats, reportToServer } from './statistics'
 
 export type CorrectPattern = (boolean | 0 | 1)[]
 
@@ -142,10 +142,9 @@ export function QuizResult(props: QuizResultProps): ReactNode {
                             <div style={{ margin: 'auto', width: '100%', maxWidth: '500px' }}>
                                 <QuizFriendsPanel
                                     quizFriends={quizFriends}
-                                    date={parseTimeIdentifier(props.quizDescriptor.kind, props.quizDescriptor.name.toString())}
-                                    quizKind={props.quizDescriptor.kind}
+                                    quizDescriptor={props.quizDescriptor}
                                     setQuizFriends={setQuizFriends}
-                                    myCorrects={correctPattern}
+                                    myResult={{ corrects: correctPattern }}
                                 />
                             </div>
                         )
