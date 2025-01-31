@@ -270,4 +270,23 @@ test('several-different-quizzes', async (t) => {
         '',
         `https://juxtastat.org/${param}`,
     ])
+    await t.expect(await yourBestScores()).eql('Your Best Scores\n14\n#1\n12\n#2')
+    // go to third, third score is 8
+    await t.navigateTo(`${target}/quiz.html#mode=infinite&s=deadbeef02&v=${version}`)
+    await provideAnswers(t, 0, '11110111100', 'deadbeef02')
+    await screencap(t)
+    await t.expect(await copyLines(t)).eql([
+        'Juxtastat Infinite 8/∞',
+        '',
+        '🟩🟩🟩🟩🟥🟩🟩🟩🟩🟥',
+        '🟥',
+        '',
+        '🥉 Personal 3rd Best!',
+        '',
+        `https://juxtastat.org/#mode=infinite&seed=deadbeef02&v=${version}`,
+    ])
+    await t.expect(await yourBestScores()).eql('Your Best Scores\n14\n#1\n12\n#2\n8\n#3')
+    // click on the link for first
+    await t.click(Selector('a').withText('12'))
+    await t.expect(getLocation()).eql(`${target}/quiz.html#mode=infinite&seed=${seedStr}&v=${version}`)
 })

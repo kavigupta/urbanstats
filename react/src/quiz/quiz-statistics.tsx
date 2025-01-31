@@ -270,7 +270,7 @@ export function QuizStatisticsForInfinite(
     const { ordinals, sortedIndices, seedVersions, numCorrects } = juxtastatInfiniteDisplay(props.quiz, props.wholeHistory)
 
     return (
-        <div>
+        <div id="your-best-scores">
             <div className="serif quiz_summary">Your Best Scores</div>
             {/* <table className="quiz_barchart">
                 <tbody>
