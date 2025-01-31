@@ -142,8 +142,7 @@ export function QuizResult(props: QuizResultProps): ReactNode {
                             <div style={{ margin: 'auto', width: '100%', maxWidth: '500px' }}>
                                 <QuizFriendsPanel
                                     quizFriends={quizFriends}
-                                    date={parseTimeIdentifier(props.quizDescriptor.kind, props.quizDescriptor.name.toString())}
-                                    quizKind={props.quizDescriptor.kind}
+                                    quizDescriptor={props.quizDescriptor}
                                     setQuizFriends={setQuizFriends}
                                     myCorrects={correctPattern}
                                 />

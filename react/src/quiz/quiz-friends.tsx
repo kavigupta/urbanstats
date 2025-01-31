@@ -6,16 +6,38 @@ import { urlFromPageDescriptor } from '../navigation/PageDescriptor'
 import { useColors, useJuxtastatColors } from '../page_template/colors'
 import { mixWithBackground } from '../utils/color'
 
-import { endpoint, QuizFriends, QuizKindWithStats, QuizLocalStorage } from './quiz'
+import { endpoint, QuizDescriptorWithTime, QuizFriends, QuizLocalStorage } from './quiz'
 import { CorrectPattern } from './quiz-result'
+import { parseTimeIdentifier } from './statistics'
 
-interface FriendScore { name?: string, corrects: CorrectPattern | null, friends: boolean, idError?: string }
+interface FriendResponse { corrects: CorrectPattern | null, friends: boolean, idError?: string }
+type FriendScore = { name?: string } & FriendResponse
+
+async function juxtaRetroResponse(
+    user: string,
+    secureID: string,
+    quizDescriptor: QuizDescriptorWithTime,
+    requesters: string[],
+): Promise<FriendResponse[] | undefined> {
+    const date = parseTimeIdentifier(quizDescriptor.kind, quizDescriptor.name.toString())
+    const friendScoresResponse = await fetch(`${endpoint}/juxtastat/todays_score_for`, {
+        method: 'POST',
+        body: JSON.stringify({ user, secureID, date, requesters, quiz_kind: quizDescriptor.kind }),
+        headers: {
+            'Content-Type': 'application/json',
+        },
+    }).then(x => x.json()) as { results: { corrects: CorrectPattern | null, friends: boolean, idError?: string }[] } | { error: string }
+    if ('error' in friendScoresResponse) {
+        // probably some kind of auth error. Handled elsewhere
+        return undefined
+    }
+    return friendScoresResponse.results
+}
 
 export function QuizFriendsPanel(props: {
     quizFriends: QuizFriends
     setQuizFriends: (quizFriends: QuizFriends) => void
-    quizKind: QuizKindWithStats
-    date: number
+    quizDescriptor: QuizDescriptorWithTime
     myCorrects: CorrectPattern
 }): ReactNode {
     const colors = useColors()
@@ -35,18 +57,11 @@ export function QuizFriendsPanel(props: {
                 // map name to id for quizFriends
                 const quizIDtoName = Object.fromEntries(props.quizFriends.map(x => [x[1], x[0]]))
                 const requesters = props.quizFriends.map(x => x[1])
-                const friendScoresResponse = await fetch(`${endpoint}/juxtastat/todays_score_for`, {
-                    method: 'POST',
-                    body: JSON.stringify({ user, secureID, date: props.date, requesters, quiz_kind: props.quizKind }),
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                }).then(x => x.json()) as { results: { corrects: CorrectPattern | null, friends: boolean, idError?: string }[] } | { error: string }
-                if ('error' in friendScoresResponse) {
-                // probably some kind of auth error. Handled elsewhere
+                const friendScoresResponse = await juxtaRetroResponse(user, secureID, props.quizDescriptor, requesters)
+                if (friendScoresResponse === undefined) {
                     return
                 }
-                setFriendScores(friendScoresResponse.results.map(
+                setFriendScores(friendScoresResponse.map(
                     (x, idx) => ({ name: quizIDtoName[requesters[idx]], corrects: x.corrects, friends: x.friends, idError: x.idError }),
                 ))
             }
@@ -57,7 +72,7 @@ export function QuizFriendsPanel(props: {
                 setIsLoading(false)
             }
         })()
-    }, [props.date, props.quizFriends, props.quizKind, user, secureID])
+    }, [props.quizDescriptor, props.quizFriends, user, secureID])
 
     const content = (
         <div>
