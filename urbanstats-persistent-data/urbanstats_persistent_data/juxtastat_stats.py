@@ -236,6 +236,16 @@ def todays_score_for(requestee, requesters, date, quiz_kind):
     For each `requseter` returns the pattern of correct answers if `(requester, requestee)` is a friend pair.
     """
 
+    return _compute_friend_results(
+        requestee,
+        requesters,
+        compute_fn=lambda c, for_user: _compute_daily_score(
+            date, quiz_kind, c, for_user
+        ),
+    )
+
+
+def _compute_friend_results(requestee, requesters, compute_fn):
     requestee = int(requestee, 16)
 
     _, c = table()
@@ -256,17 +266,24 @@ def todays_score_for(requestee, requesters, date, quiz_kind):
             results.append(dict(friends=False, idError="Invalid User ID"))
             continue
         if requester in friends:
-            c.execute(
-                f"SELECT corrects FROM {table_for_quiz_kind[quiz_kind]} WHERE user=? AND {problem_id_for_quiz_kind[quiz_kind]}=?",
-                (requester, date),
-            )
-            res = c.fetchone()
-            if res is None:
-                results.append(dict(friends=True, corrects=None))
-            else:
-                results.append(
-                    dict(friends=True, corrects=bitvector_to_corrects(res[0]))
+            results.append(
+                dict(
+                    friends=True,
+                    **compute_fn(c, requester),
                 )
+            )
         else:
             results.append(dict(friends=False))
     return results
+
+
+def _compute_daily_score(date, quiz_kind, c, for_user):
+    c.execute(
+        f"SELECT corrects FROM {table_for_quiz_kind[quiz_kind]} WHERE user=? AND {problem_id_for_quiz_kind[quiz_kind]}=?",
+        (for_user, date),
+    )
+    res = c.fetchone()
+    if res is None:
+        return dict(corrects=None)
+    else:
+        return dict(corrects=bitvector_to_corrects(res[0]))
