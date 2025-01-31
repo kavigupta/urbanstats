@@ -7,6 +7,7 @@ import {
     safeReload,
     waitForQuizLoading,
     getLocation,
+    screencap,
 } from './test_utils'
 
 async function correctIncorrect(t: TestController): Promise<boolean[]> {
@@ -43,8 +44,10 @@ quizFixture(
     'desktop',
 )
 
+const seeds = ['deadbeef00', 'deadbeef01', 'deadbeef02', 'deadbeef03', 'deadbeef04', 'deadbeef05', 'deadbeef06']
+
 test('collect correct answers', async (t) => {
-    for (const seed of ['deadbeef00', 'deadbeef01', 'deadbeef02', 'deadbeef03', 'deadbeef04']) {
+    for (const seed of seeds) {
         // set localStorage such that I_{seedStr}_{version} has had 30 questions answered
         await t.eval(() => {
             localStorage.quiz_history = JSON.stringify({
@@ -92,7 +95,11 @@ quizFixture(
     'desktop',
 )
 
-async function provideAnswers(t: TestController, start: number, isCorrect: boolean[], seed: string): Promise<void> {
+async function provideAnswers(t: TestController, start: number, isCorrect: boolean[] | string, seed: string): Promise<void> {
+    // check if isCorrect is a string, then interpret as 0s and 1s
+    if (typeof isCorrect === 'string') {
+        isCorrect = isCorrect.split('').map(c => c === '1')
+    }
     const correctAnswerSequence = correctAnswerSequences.get(seed)!
     for (let i = start; i < start + isCorrect.length; i++) {
         await clickButton(t, isCorrect[i - start] === (correctAnswerSequence[i] === 'a') ? 'a' : 'b')
@@ -126,6 +133,15 @@ async function getLives(): Promise<Emoji[]> {
 
 function juxtastatInfiniteTable(): Promise<string> {
     return runQuery('SELECT user, seed, hex(corrects), score, num_answers from JuxtaStatInfiniteStats ORDER BY seed')
+}
+
+async function copyLines(t: TestController): Promise<string[]> {
+    const copies = await withMockedClipboard(t, async () => {
+        await t.click(Selector('button').withText('Copy'))
+    })
+    await t.expect(copies.length).eql(1)
+    const copy = copies[0]
+    return copy.split('\n')
 }
 
 test('display-life-lost', async (t) => {
@@ -168,13 +184,7 @@ test('19-correct', async (t) => {
     await provideAnswers(t, 20, Array<boolean>(7).fill(false), seedStr)
     await t.expect(await correctIncorrect(t)).eql([...Array<boolean>(20).fill(true), ...Array<boolean>(7).fill(false)])
 
-    const copies = await withMockedClipboard(t, async () => {
-        await t.click(Selector('button').withText('Copy'))
-    })
-    await t.expect(copies.length).eql(1)
-    const copy = copies[0]
-    const lines = copy.split('\n')
-    await t.expect(lines).eql([
+    await t.expect(await copyLines(t)).eql([
         'Juxtastat Infinite 20/∞',
         '',
         '🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩',
@@ -218,4 +228,46 @@ test('main-quiz-redirect', async (t) => {
     await t.navigateTo(`${target}/quiz.html#mode=infinite`)
     // should've redirected to unfinished quiz
     await t.expect(getLocation()).eql(`${target}/quiz.html#mode=infinite&seed=deadbeef00&v=${version}`)
+})
+
+test('several-different-quizzes', async (t) => {
+    // first score is 12
+    await provideAnswers(t, 0, '11110' + '11110' + '11110', seedStr)
+    await screencap(t)
+    await t.expect(await copyLines(t)).eql([
+        'Juxtastat Infinite 12/∞',
+        '',
+        '🟩🟩🟩🟩🟥🟩🟩🟩🟩🟥',
+        '🟩🟩🟩🟩🟥',
+        '',
+        '🥇 Personal Best!',
+        '',
+        `https://juxtastat.org/${param}`,
+    ])
+    // second score is 14
+    await t.navigateTo(`${target}/quiz.html#mode=infinite&seed=deadbeef01&v=${version}`)
+    await provideAnswers(t, 0, '11111' + '10' + '11110' + '111100', 'deadbeef01')
+    await screencap(t)
+    await t.expect(await copyLines(t)).eql([
+        'Juxtastat Infinite 14/∞',
+        '',
+        '🟩🟩🟩🟩🟩🟩🟥🟩🟩🟩',
+        '🟩🟥🟩🟩🟩🟩🟥🟥',
+        '',
+        '🥇 Personal Best!',
+        '',
+        `https://juxtastat.org/#mode=infinite&seed=deadbeef01&v=${version}`,
+    ])
+    // go back to first
+    await t.navigateTo(`${target}/quiz.html#mode=infinite&seed=${seedStr}&v=${version}`)
+    await t.expect(await copyLines(t)).eql([
+        'Juxtastat Infinite 12/∞',
+        '',
+        '🟩🟩🟩🟩🟥🟩🟩🟩🟩🟥',
+        '🟩🟩🟩🟩🟥',
+        '',
+        '🥈 Personal 2nd Best',
+        '',
+        `https://juxtastat.org/${param}`,
+    ])
 })
