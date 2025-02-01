@@ -1,7 +1,7 @@
 import { Selector } from 'testcafe'
 
 import { runQuery } from './quiz_test_template'
-import { clickButton, collectCorrectJuxtaInfiniteAnswersFixture, friendsText, provideAnswers, quizFixture, withMockedClipboard } from './quiz_test_utils'
+import { collectCorrectJuxtaInfiniteAnswersFixture, friendsText, provideAnswers, quizFixture, withMockedClipboard } from './quiz_test_utils'
 import {
     target,
     safeReload,

@@ -1,6 +1,6 @@
 import { addFriend, createUser, restoreUser, startingState } from './quiz_friends_test_utils'
 import { quizFixture, clickButtons, quizScreencap, friendsText, collectCorrectJuxtaInfiniteAnswersFixture, provideAnswers } from './quiz_test_utils'
-import { safeReload, target } from './test_utils'
+import { target } from './test_utils'
 
 const seeds = ['abc', 'def']
 const version = 1
