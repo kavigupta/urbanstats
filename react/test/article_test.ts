@@ -256,6 +256,7 @@ urbanstatsFixture('4 digit election swing', '/article.html?longname=Corpus+Chris
 
 test('overflows correctly on mobile', async (t) => {
     await t.resizeWindow(400, 800)
+    await safeReload(t) // Since the map loading is racing with the window size
     await screencap(t)
 })
 
