@@ -44,17 +44,17 @@ test('statistics-navigation-right', async (t) => {
 
 test('statistics-navigation-amount', async (t) => {
     // take the select field that currently says 20 and make it say 50
-    const amount = Selector('select').withExactText('20').nth(0)
+    const amount = Selector('select').withText(/20/).nth(0)
     await t
         .click(amount)
-        .click(Selector('option').withExactText('50'))
+        .click(Selector('option').withText(/50/))
     await t.expect(getLocation())
         .eql(`${target}/statistic.html?statname=Population&article_type=Hospital+Referral+Region&start=1&amount=50`)
     await screencap(t)
     // set to All
     await t
         .click(amount)
-        .click(Selector('option').withExactText('All'))
+        .click(Selector('option').withText(/All/))
     await t.expect(getLocation())
         .eql(`${target}/statistic.html?statname=Population&article_type=Hospital+Referral+Region&start=1&amount=All`)
     await screencap(t)
