@@ -124,6 +124,7 @@ function FormatNavigationError({ error }: { error: unknown }): ReactNode {
 }
 
 function PageLoadError({ url, error }: { url: URL, error: unknown }): ReactNode {
+    console.error('Error loading page', error)
     return (
         <>
             <h1>
