@@ -71,7 +71,7 @@ test('control click search result to open in new tab', async (t) => {
     await t
         .click(searchField)
         .typeText(searchField, 'Pasadena')
-    await t.click(Selector('a').withText('Pasadena'), { modifiers: openInNewTabModifiers })
+    await t.click(Selector('a').withExactText('Pasadena'), { modifiers: openInNewTabModifiers })
     await t.expect(getLocation()).match(/article\.html\?longname=San\+Marino\+city%2C\+California%2C\+USA/)
 })
 
@@ -79,7 +79,7 @@ test('can visit Umm Siado', async (t) => {
     await t
         .click(searchField)
         .typeText(searchField, 'Umm Siado')
-    await t.click(Selector('a').withText('Umm Siado'))
+    await t.click(Selector('a').withExactText('Umm Siado'))
     await t.expect(getLocation()).match(/article\.html\?longname=Umm\+Siado%3F%3F\+Urban\+Center%2C\+Sudan/)
     await waitForPageLoaded(t)
     await t.expect(pageDescriptorKind()).eql('article')
