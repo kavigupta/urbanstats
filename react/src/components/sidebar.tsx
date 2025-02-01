@@ -91,6 +91,9 @@ export function Sidebar({ onNavigate }: { onNavigate: () => void }): ReactNode {
                     <li>
                         <a style={linkStyle} {...navContext.link({ kind: 'quiz', mode: 'retro' }, { scroll: { kind: 'position', top: 0 }, postNavigationCallback: onNavigate })}>Retrostat</a>
                     </li>
+                    <li>
+                        <a style={linkStyle} {...navContext.link({ kind: 'quiz', mode: 'infinite' }, { scroll: { kind: 'position', top: 0 }, postNavigationCallback: onNavigate })}>Juxtastat Infinite</a>
+                    </li>
                 </ul>
             </div>
             {

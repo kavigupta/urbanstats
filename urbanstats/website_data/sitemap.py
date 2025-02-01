@@ -50,6 +50,7 @@ def top_level_pages():
         "https://urbanstats.org/random.html?sampleby=population&us_only=true",
         "https://urbanstats.org/quiz.html",
         "https://urbanstats.org/quiz.html#mode=retro",
+        "https://urbanstats.org/quiz.html#mode=infinite",
     ]
 
 
