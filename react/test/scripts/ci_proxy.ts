@@ -49,7 +49,9 @@ export async function startProxy(): Promise<void> {
             return {
                 ...filteredHeaders,
                 'content-type': mimeType ?? headers['content-type'],
-                ...(process.env.GITHUB_TOKEN !== undefined ? { authorization: `Bearer ${process.env.GITHUB_TOKEN}` } : {}),
+                // so we can use performance.measureUserAgentSpecificMemory()
+                'Cross-Origin-Opener-Policy': 'same-origin',
+                'Cross-Origin-Embedder-Policy': 'credentialless',
             }
         },
     }))

@@ -48,6 +48,11 @@ export default env => ({
         devMiddleware: {
             writeToDisk: true,
         },
+        headers: {
+            // so we can use performance.measureUserAgentSpecificMemory()
+            'Cross-Origin-Opener-Policy': 'same-origin',
+            'Cross-Origin-Embedder-Policy': 'credentialless',
+        }
     },
     performance: {
         hints: isProduction ? 'error': false,
