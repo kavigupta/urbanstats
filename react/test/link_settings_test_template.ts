@@ -197,7 +197,7 @@ export function linkSettingsTests(baseLink: string): void {
     test('open bar histogram', async (t) => {
         await t.click(Selector('.expand-toggle'))
         await t.click(histogramTypeSelect)
-            .click(histogramTypeSelect.find('option').withText('Bar'))
+            .click(histogramTypeSelect.find('option').withExactText('Bar'))
 
         histogramLinkWithBar = await getLocation()
     })

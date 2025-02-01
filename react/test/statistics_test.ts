@@ -44,17 +44,17 @@ test('statistics-navigation-right', async (t) => {
 
 test('statistics-navigation-amount', async (t) => {
     // take the select field that currently says 20 and make it say 50
-    const amount = Selector('select').withText('20').nth(0)
+    const amount = Selector('select').withText(/20/).nth(0)
     await t
         .click(amount)
-        .click(Selector('option').withText('50'))
+        .click(Selector('option').withText(/50/))
     await t.expect(getLocation())
         .eql(`${target}/statistic.html?statname=Population&article_type=Hospital+Referral+Region&start=1&amount=50`)
     await screencap(t)
     // set to All
     await t
         .click(amount)
-        .click(Selector('option').withText('All'))
+        .click(Selector('option').withText(/All/))
     await t.expect(getLocation())
         .eql(`${target}/statistic.html?statname=Population&article_type=Hospital+Referral+Region&start=1&amount=All`)
     await screencap(t)
@@ -188,7 +188,7 @@ test('statistic-ascending-descending-check-click', async (t) => {
     // check the url again
     await t.expect(getLocation())
         .eql(`${target}/statistic.html?statname=Population&article_type=Subnational+Region&start=1&amount=10`)
-    await t.expect(Selector('div').withText('▼').exists).ok()
+    await t.expect(Selector('#statistic-panel-order-swap').exists).ok()
 })
 
 urbanstatsFixture('statistic ascending', `${target}/statistic.html?statname=Households+With+no+Vehicle+%25&article_type=Subnational+Region&start=21&amount=20&order=ascending&universe=USA`)
@@ -196,7 +196,7 @@ urbanstatsFixture('statistic ascending', `${target}/statistic.html?statname=Hous
 test('statistic-ascending-page', async (t) => {
     // We should see the state with the least vehicles, which is DC
     await t.expect(Selector('div').withExactText('1').exists).ok()
-    await t.expect(Selector('div').withText('District of Columbia, USA').exists).ok()
+    await t.expect(Selector('div').withExactText('District of Columbia, USA').exists).ok()
 })
 
 urbanstatsFixture('stats page without enough geos to fill', `${target}/statistic.html?statname=Population&article_type=County&start=1&amount=20&universe=Arizona%2C+USA`)

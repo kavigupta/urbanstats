@@ -94,7 +94,7 @@ export function quizFriendsTest(
         // Alice unfriends Bob
         await removeFriend(t, 0)
         // wait until there's only one Remove button. up to 1 second
-        await t.expect(Selector('button').withText('Remove').count).eql(1, { timeout: 1000 })
+        await t.expect(Selector('button').withExactText('Remove').count).eql(1, { timeout: 1000 })
         await quizScreencap(t) // unfriended Bob
         await t.expect(friendsText()).eql([`You${alicePattern}Copy Link`, `Charlie${charliePattern}Remove`])
         // Bob no longer sees Alice's score
@@ -121,25 +121,25 @@ export function quizFriendsTest(
         // Bob2 not added
         await t.expect(friendsText()).eql([`You${alicePattern}Copy Link`, `Bob${bobPattern}Remove`])
         // check that the text 'Friend ID 000000b already exists as Bob' is displayed
-        await t.expect(Selector('div').withText('Friend ID 000000b already exists as Bob').exists).ok()
+        await t.expect(Selector('div').withExactText('Friend ID 000000b already exists as Bob').exists).ok()
         // should error because we are attempting to add a duplicate name
         await addFriend(t, 'Bob', 'abc')
         // Bob not added
         await t.expect(friendsText()).eql([`You${alicePattern}Copy Link`, `Bob${bobPattern}Remove`])
         // check that the text 'Friend Name Bob already exists' is displayed
-        await t.expect(Selector('div').withText('Friend name already exists').exists).ok()
+        await t.expect(Selector('div').withExactText('Friend name already exists').exists).ok()
         // should error because we are attempting to add an empty name
         await addFriend(t, '', 'abc')
         // empty name not added
         await t.expect(friendsText()).eql([`You${alicePattern}Copy Link`, `Bob${bobPattern}Remove`])
         // check that the text 'Friend name cannot be empty' is displayed
-        await t.expect(Selector('div').withText('Friend name cannot be empty').exists).ok()
+        await t.expect(Selector('div').withExactText('Friend name cannot be empty').exists).ok()
         // should error because we are attempting to add an empty ID
         await addFriend(t, 'Bob2', '')
         // empty ID not added
         await t.expect(friendsText()).eql([`You${alicePattern}Copy Link`, `Bob${bobPattern}Remove`])
         // check that the text 'Friend ID cannot be empty' is displayed
-        await t.expect(Selector('div').withText('Friend ID cannot be empty').exists).ok()
+        await t.expect(Selector('div').withExactText('Friend ID cannot be empty').exists).ok()
         // add an additional friend
         await addFriend(t, 'Charlie', '000000c')
         // Charlie added
@@ -153,7 +153,7 @@ export function quizFriendsTest(
         // Charlie not renamed
         await t.expect(friendsText()).eql([`You${alicePattern}Copy Link`, `Bob${bobPattern}Remove`, 'CharlieAsk\u00a0Charlie\u00a0to add youRemove'])
         // check that the text 'Friend name already exists' is displayed
-        await t.expect(Selector('div').withText('Friend name already exists').exists).ok()
+        await t.expect(Selector('div').withExactText('Friend name already exists').exists).ok()
     })
 
     test(`${props.name}-friends-invalid-id`, async (t) => {
@@ -169,7 +169,7 @@ export function quizFriendsTest(
         await addFriend(t, 'Bob3', '000000b   ')
         // duplicate error
         await t.expect(friendsText()).eql([`You${alicePattern}Copy Link`, `Bob${bobPattern}Remove`, 'Bob2Invalid User IDRemove'])
-        await t.expect(Selector('div').withText('Friend ID 000000b already exists as Bob').exists).ok()
+        await t.expect(Selector('div').withExactText('Friend ID 000000b already exists as Bob').exists).ok()
         // remove Bob
         await removeFriend(t, 0)
         await t.expect(friendsText()).eql([`You${alicePattern}Copy Link`, 'Bob2Invalid User IDRemove'])
