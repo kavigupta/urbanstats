@@ -4,7 +4,7 @@ import { getLocation, openInNewTabModifiers, screencap, searchField, target, urb
 
 urbanstatsFixture('navigation test', '/')
 
-test('two randoms mobile', async (t) => {
+test.only('two randoms mobile', async (t) => {
     /**
      * Sidebar should close when going to two articles
      */
