@@ -262,7 +262,7 @@ export function ordinalThis(quiz: QuizDescriptor & { kind: 'infinite' }, wholeHi
 export function ourResultToDisplayForFriends(quiz: QuizDescriptor & { kind: 'infinite' }, wholeHistory: QuizHistory): ResultToDisplayForFriends {
     const { sortedIndices, seedVersions, numCorrects } = juxtastatInfiniteDisplay(quiz, wholeHistory)
     const thisIndex = seedVersions.findIndex(([seed, version]) => seed === quiz.seed && version === quiz.version)
-    const thisNumCorrect = numCorrects[sortedIndices.indexOf(thisIndex)]
+    const thisNumCorrect = numCorrects[thisIndex]
     const bestIndex = sortedIndices[0]
 
     return {

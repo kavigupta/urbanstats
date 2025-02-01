@@ -1,7 +1,8 @@
-import React, { CSSProperties, ReactNode, useEffect, useState } from 'react'
+import React, { CSSProperties, ReactNode, useContext, useEffect, useState } from 'react'
 import { GridLoader, MoonLoader } from 'react-spinners'
 
 import { EditableString } from '../components/table'
+import { Navigator } from '../navigation/Navigator'
 import { urlFromPageDescriptor } from '../navigation/PageDescriptor'
 import { useColors, useJuxtastatColors } from '../page_template/colors'
 import { mixWithBackground } from '../utils/color'
@@ -106,13 +107,16 @@ export function QuizFriendsPanel(props: {
         })()
     }, [props.quizDescriptor, props.quizFriends, user, secureID])
 
+    const allResults = [props.myResult, ...friendScores.map(x => x.result)].filter(x => x !== null)
+
     const content = (
         <div>
             <div style={{ margin: 'auto', width: '100%' }}>
                 <div className="quiz_summary">Friends</div>
             </div>
             <>
-                <PlayerScore result={props.myResult} />
+                {props.quizDescriptor.kind === 'infinite' ? <InfiniteHeader /> : undefined}
+                <PlayerScore result={props.myResult} otherResults={allResults} />
 
                 {
                     friendScores.map((friendScore, idx) => (
@@ -133,6 +137,7 @@ export function QuizFriendsPanel(props: {
                             }}
                             quizFriends={props.quizFriends}
                             setQuizFriends={props.setQuizFriends}
+                            otherResults={allResults}
                         />
                     ),
                     )
@@ -160,10 +165,30 @@ export function QuizFriendsPanel(props: {
     )
 }
 
+function InfiniteHeader(): ReactNode {
+    return (
+        <div
+            style={{ display: 'flex', flexDirection: 'row', height: scoreCorrectHeight, alignItems: 'center' }}
+            className="testing-friends-section"
+        >
+            <div style={{ width: '25%' }} />
+            <div style={{ width: '50%', display: 'flex', flexDirection: 'row' }}>
+                <div style={{ width: '50%', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                    On This Seed
+                </div>
+                <div style={{ width: '50%', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                    Overall Best
+                </div>
+            </div>
+            <div style={{ width: '25%' }} />
+        </div>
+    )
+}
+
 const scoreCorrectHeight = '2em'
 const addFriendHeight = '1.5em'
 
-function PlayerScore(props: { result: ResultToDisplayForFriends }): ReactNode {
+function PlayerScore(props: { result: ResultToDisplayForFriends, otherResults: ResultToDisplayForFriends[] }): ReactNode {
     const copyFriendLink = async (): Promise<void> => {
         const playerName = prompt('Enter your name:')
 
@@ -188,7 +213,7 @@ function PlayerScore(props: { result: ResultToDisplayForFriends }): ReactNode {
                 You
             </div>
             <div style={{ width: '50%' }}>
-                <FriendScoreCorrects result={props.result} friends={true} />
+                <FriendScoreCorrects result={props.result} friends={true} otherResults={props.otherResults} />
             </div>
             <div style={{ width: '25%', display: 'flex', height: addFriendHeight }}>
                 <button
@@ -209,6 +234,7 @@ function FriendScore(props: {
     removeFriend: () => Promise<void>
     quizFriends: QuizFriends
     setQuizFriends: (x: QuizFriends) => void
+    otherResults: ResultToDisplayForFriends[]
 }): ReactNode {
     const colors = useColors()
 
@@ -257,7 +283,7 @@ function FriendScore(props: {
                 />
             </div>
             <div style={{ width: '50%' }}>
-                <FriendScoreCorrects {...props.friendScore} />
+                <FriendScoreCorrects {...props.friendScore} otherResults={props.otherResults} />
             </div>
             <div style={{ width: '25%', display: 'flex', height: addFriendHeight }}>
                 <button
@@ -275,9 +301,10 @@ function FriendScore(props: {
     return <WithError error={error} content={row} />
 }
 
-function FriendScoreCorrects(props: FriendScore): ReactNode {
+function FriendScoreCorrects(props: FriendScore & { otherResults: ResultToDisplayForFriends[] }): ReactNode {
     const colors = useColors()
     const juxtaColors = useJuxtastatColors()
+    const navContext = useContext(Navigator.Context)
     const border = `1px solid ${colors.background}`
     const greyedOut = {
         backgroundColor: mixWithBackground(colors.hueColors.orange, 0.5, colors.background),
@@ -310,13 +337,23 @@ function FriendScoreCorrects(props: FriendScore): ReactNode {
         )
     }
     if ('forThisSeed' in props.result) {
+        const link = navContext.link({
+            kind: 'quiz', mode: 'infinite', seed: props.result.maxScoreSeed, v: props.result.maxScoreVersion,
+        }, { scroll: { kind: 'position', top: 0 } })
+        const relevantOtherResults = props.otherResults.filter(x => 'forThisSeed' in x) as { forThisSeed: number, maxScore: number }[]
+        const baseStyle = { width: '50%', border, display: 'flex', justifyContent: 'center', alignItems: 'center', color: '#fff', fontWeight: 'bold' }
+        const maxMaxScore = Math.max(...relevantOtherResults.map(x => x.maxScore)) === props.result.maxScore
+        const maxForThisSeed = Math.max(...relevantOtherResults.map(x => x.forThisSeed)) === props.result.forThisSeed
         return (
             <div style={{ display: 'flex', flexDirection: 'row', height: scoreCorrectHeight }}>
-                <div style={{ width: '50%', border }}>
+                <div style={{ ...baseStyle, backgroundColor: maxForThisSeed ? colors.hueColors.green : colors.hueColors.blue }}>
                     {props.result.forThisSeed}
                 </div>
-                <div style={{ width: '50%', border }}>
-                    {props.result.maxScore}
+                <div
+                    style={{ ...baseStyle, backgroundColor: maxMaxScore ? colors.hueColors.green : colors.hueColors.blue }}
+                    onClick={link.onClick}
+                >
+                    <a style={{ textDecoration: 'none', color: '#fff' }} href={link.href}>{props.result.maxScore}</a>
                 </div>
             </div>
         )
