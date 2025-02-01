@@ -1,16 +1,35 @@
-import React, { ReactNode } from 'react'
+import React, { ReactNode, useContext } from 'react'
 
+import { Navigator } from '../navigation/Navigator'
 import { useColors, useJuxtastatColors } from '../page_template/colors'
 
-import { QuizDescriptorWithStats, QuizHistory } from './quiz'
-import { parseTimeIdentifier } from './statistics'
+import { QuizDescriptor, QuizDescriptorWithTime, QuizHistory } from './quiz'
+import { ResultToDisplayForFriends } from './quiz-friends'
+import { getInfiniteQuizzes, parseTimeIdentifier } from './statistics'
 
-interface QuizStatisticsProps {
-    quiz: QuizDescriptorWithStats
-    wholeHistory: QuizHistory
+export function QuizStatistics(
+    props: {
+        quiz: QuizDescriptor
+        wholeHistory: QuizHistory
+    },
+): ReactNode | undefined {
+    switch (props.quiz.kind) {
+        case 'juxtastat':
+        case 'retrostat':
+            return <QuizStatisticsForTimedStatistics quiz={props.quiz} wholeHistory={props.wholeHistory} />
+        case 'infinite':
+            return <QuizStatisticsForInfinite quiz={props.quiz} wholeHistory={props.wholeHistory} />
+        case 'custom':
+            return undefined
+    }
 }
 
-export function QuizStatistics(props: QuizStatisticsProps): ReactNode {
+export function QuizStatisticsForTimedStatistics(
+    props: {
+        quiz: QuizDescriptorWithTime
+        wholeHistory: QuizHistory
+    },
+): ReactNode {
     const colors = useColors()
     const history = (i: number): QuizHistory[string] | undefined => {
         switch (props.quiz.kind) {
@@ -129,7 +148,15 @@ export function AudienceStatistics({ total, perQuestion }: { total: number, perQ
         </div>
     )
 }
-export function DisplayedStats({ statistics }: { statistics: { value: string, name: string, additionalClass?: string, color?: string }[] }): ReactNode {
+export function DisplayedStats({ statistics }: {
+    statistics: {
+        value: string
+        name: string
+        additionalClass?: string
+        color?: string
+        onClick?: () => void
+    }[]
+}): ReactNode {
     return (
         <div
             className="serif"
@@ -138,17 +165,149 @@ export function DisplayedStats({ statistics }: { statistics: { value: string, na
                 display: 'flex', flexWrap: 'wrap', justifyContent: 'center',
             }}
         >
-            {statistics.map((stat, i) => <DisplayedStat key={i} number={stat.value} name={stat.name} additionalClass={stat.additionalClass} color={stat.color} />,
+            {statistics.map((stat, i) => (
+                <DisplayedStat
+                    key={i}
+                    number={stat.value}
+                    name={stat.name}
+                    additionalClass={stat.additionalClass}
+                    color={stat.color}
+                    onClick={stat.onClick}
+                />
+            ),
             )}
         </div>
     )
 }
-export function DisplayedStat({ number, name, additionalClass, color }: { number: string, name: string, additionalClass?: string, color?: string }): ReactNode {
+export function DisplayedStat({ number, name, additionalClass, color, onClick }: {
+    number: string
+    name: string
+    additionalClass?: string
+    color?: string
+    onClick?: () => void
+}): ReactNode {
     // large font for numbers, small for names. Center-aligned using flexbox
     return (
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '0.3em' }}>
+        <div
+            style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '0.3em' }}
+            onClick={onClick}
+        >
             <div className={`serif ${additionalClass ?? ''}`} style={{ fontSize: '1.5em', color }}>{number}</div>
             <div className="serif" style={{ fontSize: '0.5em' }}>{name}</div>
         </div>
+    )
+}
+
+function computeOrdinalsAndIndices(numCorrects: number[], keepNumber: number, saveIndex: number): [number[], number[]] {
+    /**
+     * Given an array of numbers, returns two arrays:
+     * 1. An array of ordinals, where the ith element is the rank of the ith element in the input array
+     *      Note that for duplicates, the ordinal is duplicated, and that the ordinals are 1-indexed
+     * 2. An array of indices, where the ith element is the index of the ith element in the input array
+     */
+    const sortedIndicesAll = Array.from(Array(numCorrects.length).keys())
+    sortedIndicesAll.sort((a, b) => numCorrects[b] - numCorrects[a])
+    let currentOrdinal = 1
+    let currentVal = numCorrects[sortedIndicesAll[0]]
+    const ordinals = sortedIndicesAll.map((index) => {
+        if (numCorrects[index] !== currentVal) {
+            currentVal = numCorrects[index]
+            currentOrdinal += 1
+        }
+        return currentOrdinal
+    })
+    const mask = ordinals.map((x, i) => x <= keepNumber || sortedIndicesAll[i] === saveIndex)
+
+    const sortedIndicesFilt = sortedIndicesAll.filter((_, i) => mask[i])
+    const ordinalsFilt = ordinals.filter((_, i) => mask[i])
+
+    return [ordinalsFilt, sortedIndicesFilt]
+}
+
+interface InfiniteDisplay {
+    ordinals: number[]
+    sortedIndices: number[]
+    seedVersions: [string, number][]
+    numCorrects: number[]
+}
+
+function juxtastatInfiniteDisplay(quiz: QuizDescriptor & { kind: 'infinite' }, wholeHistory: QuizHistory): InfiniteDisplay {
+    const [seedVersions, keys] = getInfiniteQuizzes(wholeHistory, true)
+    const numCorrects = keys.map(
+        key => wholeHistory[key].correct_pattern.reduce((partialSum: number, a) => partialSum + (a ? 1 : 0), 0),
+    )
+    const thisIndex = seedVersions.findIndex(([seed, version]) => seed === quiz.seed && version === quiz.version)
+
+    const [ordinals, sortedIndices] = computeOrdinalsAndIndices(numCorrects, 3, thisIndex)
+
+    return { ordinals, sortedIndices, seedVersions, numCorrects }
+}
+
+export type Medal = 1 | 2 | 3
+
+export function ordinalThis(quiz: QuizDescriptor & { kind: 'infinite' }, wholeHistory: QuizHistory): Medal | undefined {
+    const { ordinals, sortedIndices, seedVersions } = juxtastatInfiniteDisplay(quiz, wholeHistory)
+    const thisIndex = seedVersions.findIndex(([seed, version]) => seed === quiz.seed && version === quiz.version)
+    const thisOrdinal = ordinals[sortedIndices.indexOf(thisIndex)]
+    switch (thisOrdinal) {
+        case 1:
+        case 2:
+        case 3:
+            return thisOrdinal
+        default:
+            return undefined
+    }
+}
+
+export function ourResultToDisplayForFriends(quiz: QuizDescriptor & { kind: 'infinite' }, wholeHistory: QuizHistory): ResultToDisplayForFriends {
+    const { sortedIndices, seedVersions, numCorrects } = juxtastatInfiniteDisplay(quiz, wholeHistory)
+    const thisIndex = seedVersions.findIndex(([seed, version]) => seed === quiz.seed && version === quiz.version)
+    const thisNumCorrect = numCorrects[thisIndex]
+    const bestIndex = sortedIndices[0]
+
+    return {
+        forThisSeed: thisNumCorrect,
+        maxScore: numCorrects[bestIndex],
+        maxScoreSeed: seedVersions[bestIndex][0],
+        maxScoreVersion: seedVersions[bestIndex][1],
+    }
+}
+
+export function QuizStatisticsForInfinite(
+    props: {
+        quiz: QuizDescriptor & { kind: 'infinite' }
+        wholeHistory: QuizHistory
+    },
+): ReactNode | undefined {
+    const colors = useColors()
+    const navContext = useContext(Navigator.Context)
+
+    const { ordinals, sortedIndices, seedVersions, numCorrects } = juxtastatInfiniteDisplay(props.quiz, props.wholeHistory)
+
+    return (
+        <div id="your-best-scores">
+            <div className="serif quiz_summary">Your Best Scores</div>
+            <DisplayedStats
+                statistics={sortedIndices.map((idx, i) => {
+                    return {
+                        name: `#${ordinals[i]}`,
+                        value: numCorrects[idx].toString(),
+                        additionalClass: 'quiz-audience-statistics-displayed',
+                        color: seedVersions[idx][0] === props.quiz.seed ? colors.hueColors.green : colors.hueColors.blue,
+                        onClick: () => {
+                            void navContext.navigate({
+                                kind: 'quiz',
+                                mode: 'infinite',
+                                seed: seedVersions[idx][0],
+                                v: seedVersions[idx][1],
+                            },
+                            { history: 'push', scroll: { kind: 'none' } })
+                        },
+                    }
+                },
+                )}
+            />
+        </div>
+
     )
 }

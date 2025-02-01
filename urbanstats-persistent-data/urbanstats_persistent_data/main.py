@@ -10,11 +10,14 @@ from .juxtastat_stats import (
     friend_request,
     get_per_question_stats,
     get_per_question_stats_retrostat,
+    has_infinite_stats,
+    infinite_results,
     latest_day,
     latest_week_retrostat,
     register_user,
     store_user_stats,
     get_full_database,
+    store_user_stats_infinite,
     store_user_stats_retrostat,
     todays_score_for,
     unfriend,
@@ -80,6 +83,7 @@ def get_authenticated_user(additional_required_params=()):
     required_params = ["user", "secureID"] + list(additional_required_params)
 
     if not all([param in form for param in required_params]):
+        print("NEEDS PARAMS", required_params, "GOT", form.keys())
         return False, (
             flask.jsonify(
                 {
@@ -101,10 +105,13 @@ def authenticate(fields):
     def decorator(fn):
         @functools.wraps(fn)
         def wrapper():
+            print("AUTHENTICATE", flask_form())
             success, error = get_authenticated_user(fields)
             if not success:
+                print("AUTHENTICATE ERROR", error)
                 return error
             return fn()
+
         return wrapper
 
     return decorator
@@ -142,6 +149,28 @@ def retrostat_latest_week_request():
 def juxtastat_store_user_stats_request():
     form = flask_form()
     store_user_stats(form["user"], json.loads(form["day_stats"]))
+    return flask.jsonify(dict())
+
+
+@app.route("/juxtastat_infinite/has_infinite_stats", methods=["POST"])
+@authenticate(["seedVersions"])
+def juxtastat_infinite_has_infinite_stats_request():
+    form = flask_form()
+    print("HAS INFINITE STATS", form)
+    res = dict(has=has_infinite_stats(form["user"], form["seedVersions"]))
+    print("HAS INFINITE STATS", res)
+    return flask.jsonify(
+        res
+    )
+
+
+@app.route("/juxtastat_infinite/store_user_stats", methods=["POST"])
+@authenticate(["seed", "version", "corrects"])
+def juxtastat_infinite_store_user_stats_request():
+    form = flask_form()
+    store_user_stats_infinite(
+        form["user"], form["seed"], form["version"], form["corrects"]
+    )
     return flask.jsonify(dict())
 
 
@@ -213,6 +242,19 @@ def juxtastat_todays_score_for():
         )
     )
     print("TODAYS SCORE FOR", res)
+    return flask.jsonify(res)
+
+
+@app.route("/juxtastat/infinite_results", methods=["POST"])
+@authenticate(["requesters", "seed", "version"])
+def juxtastat_infinite_results():
+    form = flask_form()
+    res = dict(
+        results=infinite_results(
+            form["user"], form["requesters"], form["seed"], form["version"]
+        )
+    )
+    print("INFINITE RESULTS FOR", res)
     return flask.jsonify(res)
 
 

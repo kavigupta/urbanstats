@@ -2,6 +2,8 @@ import sqlite3
 import time
 from typing import List, Tuple
 
+from .utils import corrects_to_bytes
+
 table_for_quiz_kind = {
     "juxtastat": "JuxtaStatIndividualStats",
     "retrostat": "JuxtaStatIndividualStatsRetrostat",
@@ -25,6 +27,12 @@ def table():
         """CREATE TABLE IF NOT EXISTS JuxtaStatIndividualStatsRetrostat
         (user integer, week integer, corrects integer, time integer, PRIMARY KEY (user, week))"""
     )
+    # juxtastat infinite
+    c.execute(
+        """CREATE TABLE IF NOT EXISTS JuxtaStatInfiniteStats
+        (user integer, seed string, version integer, corrects BLOB, score integer, num_answers integer, time integer, PRIMARY KEY (user, seed, version))"""
+    )
+
     # user to domain name
     c.execute(
         """
@@ -158,6 +166,38 @@ def store_user_stats_retrostat(user, week_stats: List[Tuple[int, List[bool]]]):
     store_user_stats_into_table(user, week_stats, "JuxtaStatIndividualStatsRetrostat")
 
 
+def has_infinite_stats(user, seeds_versions):
+    user = int(user, 16)
+    _, c = table()
+    c.execute(
+        "SELECT seed, version FROM JuxtaStatInfiniteStats WHERE user=?",
+        (user,),
+    )
+    results = c.fetchall()
+    results = set(results)
+    return [(seed, version) in results for seed, version in seeds_versions]
+
+
+def store_user_stats_infinite(user, seed, version, corrects: List[bool]):
+    user = int(user, 16)
+    conn, c = table()
+    correctBytes = corrects_to_bytes(corrects)
+    time_unix_millis = round(time.time() * 1000)
+    c.execute(
+        "INSERT OR REPLACE INTO JuxtaStatInfiniteStats VALUES (?, ?, ?, ?, ?, ?, ?)",
+        (
+            user,
+            seed,
+            version,
+            correctBytes,
+            sum(corrects),
+            len(corrects),
+            time_unix_millis,
+        ),
+    )
+    conn.commit()
+
+
 def get_per_question_stats_from_table(day, table_name, column):
     day = int(day)
     _, c = table()
@@ -236,6 +276,24 @@ def todays_score_for(requestee, requesters, date, quiz_kind):
     For each `requseter` returns the pattern of correct answers if `(requester, requestee)` is a friend pair.
     """
 
+    return _compute_friend_results(
+        requestee,
+        requesters,
+        compute_fn=lambda c, for_user: _compute_daily_score(
+            date, quiz_kind, c, for_user
+        ),
+    )
+
+
+def infinite_results(requestee, requesters, seed, version):
+    """
+    For each `requseter` returns the pattern of correct answers if `(requester, requestee)` is a friend pair.
+    """
+
+    return _compute_friend_results(requestee, requesters, compute_fn=lambda c, for_user: _infinite_results(c, for_user, seed, version))
+
+
+def _compute_friend_results(requestee, requesters, compute_fn):
     requestee = int(requestee, 16)
 
     _, c = table()
@@ -256,17 +314,53 @@ def todays_score_for(requestee, requesters, date, quiz_kind):
             results.append(dict(friends=False, idError="Invalid User ID"))
             continue
         if requester in friends:
-            c.execute(
-                f"SELECT corrects FROM {table_for_quiz_kind[quiz_kind]} WHERE user=? AND {problem_id_for_quiz_kind[quiz_kind]}=?",
-                (requester, date),
-            )
-            res = c.fetchone()
-            if res is None:
-                results.append(dict(friends=True, corrects=None))
-            else:
-                results.append(
-                    dict(friends=True, corrects=bitvector_to_corrects(res[0]))
+            results.append(
+                dict(
+                    friends=True,
+                    **compute_fn(c, requester),
                 )
+            )
         else:
             results.append(dict(friends=False))
     return results
+
+
+def _compute_daily_score(date, quiz_kind, c, for_user):
+    c.execute(
+        f"SELECT corrects FROM {table_for_quiz_kind[quiz_kind]} WHERE user=? AND {problem_id_for_quiz_kind[quiz_kind]}=?",
+        (for_user, date),
+    )
+    res = c.fetchone()
+    if res is None:
+        return dict(corrects=None)
+    else:
+        return dict(corrects=bitvector_to_corrects(res[0]))
+
+def _infinite_results(c, for_user, seed, version):
+    """
+    Returns the result for the given user for the given seed and version, as well
+    as the maximum score and corresponding seed and version.
+    """
+
+    c.execute(
+        "SELECT score FROM JuxtaStatInfiniteStats WHERE user=? AND seed=? AND version=?",
+        (for_user, seed, version),
+    )
+    res = c.fetchone()
+    for_this_seed = None if res is None else res[0]
+
+    c.execute(
+        "SELECT seed, version, score FROM JuxtaStatInfiniteStats WHERE user=? AND score=(SELECT MAX(score) FROM JuxtaStatInfiniteStats WHERE user=?)",
+        (for_user, for_user),
+    )
+    res = c.fetchone()
+    max_score_seed = None if res is None else res[0]
+    max_score_version = None if res is None else res[1]
+    max_score = None if res is None else res[2]
+
+    return dict(
+        forThisSeed=for_this_seed,
+        maxScore=max_score,
+        maxScoreSeed=max_score_seed,
+        maxScoreVersion=max_score_version
+    )

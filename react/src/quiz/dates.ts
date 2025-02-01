@@ -1,4 +1,4 @@
-import { QuizDescriptorWithStats } from './quiz'
+import { QuizDescriptorWithTime } from './quiz'
 
 const reference = new Date(2023, 8, 2) // 2023-09-02. 8 is September, since months are 0-indexed for some fucking reason
 
@@ -93,7 +93,7 @@ function renderTimeWithinWeek(ms: number): string {
     return `${days}d ${timeString}`
 }
 
-export function msRemaining({ kind, name }: QuizDescriptorWithStats): number {
+export function msRemaining({ kind, name }: QuizDescriptorWithTime): number {
     switch (kind) {
         case 'juxtastat':
             return timeToEndOfDay(name)
@@ -102,7 +102,7 @@ export function msRemaining({ kind, name }: QuizDescriptorWithStats): number {
     }
 }
 
-export function renderTimeRemaining({ kind, name }: QuizDescriptorWithStats): string {
+export function renderTimeRemaining({ kind, name }: QuizDescriptorWithTime): string {
     switch (kind) {
         case 'juxtastat':
             return renderTimeWithinDay(timeToEndOfDay(name))
