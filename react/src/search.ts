@@ -1,3 +1,4 @@
+import { loadProtobuf } from './load_json'
 import { bitap, bitapPerformance, bitCount, Haystack, toHaystack, toNeedle, toSignature } from './utils/bitap'
 import { isHistoricalCD } from './utils/is_historical'
 
@@ -229,16 +230,14 @@ export function search(searchIndex: NormalizedSearchIndex, unnormalizedPattern: 
 }
 
 export async function loadSearchIndex(): Promise<NormalizedSearchIndex> {
-    return new Promise((resolve) => {
-        const worker = new Worker(new URL('searchWorker', import.meta.url))
-        worker.onmessage = (message) => {
-            resolve(message.data as NormalizedSearchIndex)
-            worker.terminate()
-        }
-    })
+    const start = performance.now()
+    const searchIndex = await loadProtobuf('/index/pages_all.gz', 'SearchIndex')
+    const result = processRawSearchIndex(searchIndex)
+    console.log(`Took ${performance.now() - start}ms to load search index`)
+    return result
 }
 
-export function processRawSearchIndex(searchIndex: { elements: string[], priorities: number[] }): NormalizedSearchIndex {
+function processRawSearchIndex(searchIndex: { elements: string[], priorities: number[] }): NormalizedSearchIndex {
     const start = performance.now()
     let lengthOfLongestToken = 0
     let maxPriority = 0
