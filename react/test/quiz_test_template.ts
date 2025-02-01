@@ -604,7 +604,7 @@ export function quizTest({ platform }: { platform: 'desktop' | 'mobile' }): void
 
     test('support old retro links', async (t) => {
         await t.navigateTo('/quiz.html?mode=retro')
-        await t.expect(Selector('[class*=headertext]').withExactText('Retrostat').exists).ok()
+        await t.expect(Selector('[class*=headertext]').withText(/Retrostat W\d*/).exists).ok()
     })
 
     const expectedExportWithoutDateNumbers = {
@@ -665,10 +665,10 @@ export function quizTest({ platform }: { platform: 'desktop' | 'mobile' }): void
 
     test('quiz results go to compare pages', async (t) => {
     // only using the image tests because the links are not stable across versions
-        await t.click(Selector('a').withExactText('Colorado, USA'))
+        await t.click(Selector('a').withText(/Colorado, USA/))
         await screencap(t)
         await ClientFunction(() => { history.back() })()
-        await t.click(Selector('a').withExactText('Toronto CDR, Ontario, Canada'))
+        await t.click(Selector('a').withText(/Toronto CDR, Ontario, Canada/))
         await screencap(t)
     })
 

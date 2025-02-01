@@ -39,7 +39,7 @@ test('check-settings-loaded-desktop', async (t) => {
 })
 
 test('check-settings-persistent', async (t) => {
-    await t.expect(Selector('span').withExactText('mi').exists).ok()
+    await t.expect(Selector('span').withText(/mi/).exists).ok()
     // navigate to Pasadena via search
     await t.typeText(searchField, 'Pasadena, CA, USA')
     await t.pressKey('enter')
@@ -47,10 +47,10 @@ test('check-settings-persistent', async (t) => {
     // check box "Imperial"
     await checkTextboxes(t, ['Use Imperial Units'])
     // assert mi not in page
-    await t.expect(Selector('span').withExactText('mi').exists).notOk()
+    await t.expect(Selector('span').withText(/mi/).exists).notOk()
     // go back to San Marino
     await safeReload(t)
-    await t.expect(Selector('span').withExactText('mi').exists).notOk()
+    await t.expect(Selector('span').withText(/mi/).exists).notOk()
 })
 
 test('check-related-button-checkboxes-page-specific', async (t) => {
@@ -59,7 +59,7 @@ test('check-related-button-checkboxes-page-specific', async (t) => {
     await t.pressKey('enter')
     await t.expect(getLocation()).match(/\/article\.html\?longname=91108%2C\+USA/)
     // this should not be page specific
-    await t.expect(Selector('span').withExactText('mi').exists).ok()
+    await t.expect(Selector('span').withText(/mi/).exists).ok()
     // San Marino should be present
     await t.expect(Selector('path').withAttribute('class', /tag-San_Marino_city/).exists).ok()
     // neighborhoods should not be present (Huntington Library)
@@ -70,7 +70,7 @@ test('checkboxes-can-be-checked', async (t) => {
     // check that Pasadena CCD is not present
     await t.expect(Selector('path').withAttribute('class', /tag-Pasadena_CCD/).exists).notOk()
     const pasadenaCCD = Selector('li').withAttribute('class', 'list_of_lists')
-        .withExactText('Pasadena CCD')
+        .withText(/Pasadena CCD/)
     // find a checkbox inside it
         .find('input')
     await t

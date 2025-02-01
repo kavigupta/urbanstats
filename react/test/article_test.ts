@@ -225,9 +225,9 @@ test('is F', async (t) => {
 const temperatureSelect = Selector('[data-test-id=temperature_select]')
 
 test('change to C and back to F', async (t) => {
-    await t.click(temperatureSelect).click(temperatureSelect.find('option').withExactText('C'))
+    await t.click(temperatureSelect).click(temperatureSelect.find('option').withText(/C/))
     await t.expect(Selector('span').withExactText('28.8').exists).ok()
-    await t.click(temperatureSelect).click(temperatureSelect.find('option').withExactText('F'))
+    await t.click(temperatureSelect).click(temperatureSelect.find('option').withText(/F/))
     await t.expect(Selector('span').withExactText('62.2').exists).ok()
 })
 

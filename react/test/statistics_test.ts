@@ -188,7 +188,7 @@ test('statistic-ascending-descending-check-click', async (t) => {
     // check the url again
     await t.expect(getLocation())
         .eql(`${target}/statistic.html?statname=Population&article_type=Subnational+Region&start=1&amount=10`)
-    await t.expect(Selector('div').withExactText('▼').exists).ok()
+    await t.expect(Selector('#statistic-panel-order-swap').exists).ok()
 })
 
 urbanstatsFixture('statistic ascending', `${target}/statistic.html?statname=Households+With+no+Vehicle+%25&article_type=Subnational+Region&start=21&amount=20&order=ascending&universe=USA`)
