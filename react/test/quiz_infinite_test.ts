@@ -152,6 +152,7 @@ test('19-correct', async (t) => {
     await quizScreencap(t)
     await t.click(Selector('[data-test-id=juxtastatCompactEmoji]'))
     await quizScreencap(t)
+    await safeReload(t) // Copied! -> Copy Link
     await t.expect(await Selector('#quiz-result-summary-emoji').innerText).eql(
         '🟩2️⃣0️⃣🟥7️⃣',
     )
