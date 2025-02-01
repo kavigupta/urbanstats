@@ -27,6 +27,7 @@ test('maintain and restore scroll position back-forward', async (t) => {
     await t.expect(Selector('.headertext').withText('Texas').exists).ok() // Must wait for Texas to load, otherwise scrolling on the loading page is ineffective
     await t.scroll(0, 200)
     await t.click(Selector('a').withExactText('Population'))
+    await screencap(t) // For debugging why the next step fails sometimes
     await t.expect(Selector('.headertext').withText('Population').exists).ok()
     await t.expect(getScroll()).eql(0) // Resets scroll on different page type
     await t.scroll(0, 100)
