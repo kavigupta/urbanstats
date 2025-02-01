@@ -462,7 +462,7 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
                     break
                 case 'infinite':
                     if (updatedDescriptor.seed === undefined) {
-                        const [seedVersions] = getInfiniteQuizzes(JSON.parse(localStorage.quiz_history as string) as QuizHistory, false)
+                        const [seedVersions] = getInfiniteQuizzes(JSON.parse((localStorage.quiz_history || '{}') as string) as QuizHistory, false)
                         if (seedVersions.length > 0) {
                             const [seed, version] = seedVersions[0]
                             updatedDescriptor.seed = seed
