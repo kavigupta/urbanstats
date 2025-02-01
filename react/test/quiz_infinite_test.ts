@@ -129,7 +129,6 @@ test('display-life-regained', async (t) => {
     await t.expect(await juxtastatInfiniteTable()).eql(`7|${seedStr}|3E01|6|10\n`)
 })
 
-
 test('19-correct', async (t) => {
     await provideAnswers(t, 0, Array<boolean>(20).fill(true), seedStr)
     // should have 7 lives
@@ -167,7 +166,6 @@ test('19-correct', async (t) => {
         `https://juxtastat.org/${param}`,
     ])
 })
-
 
 test('18-correct-emoji-compact', async (t) => {
     await provideAnswers(t, 0, Array<boolean>(18).fill(true), seedStr)
