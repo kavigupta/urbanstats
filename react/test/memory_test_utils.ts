@@ -14,10 +14,12 @@ export async function memoryMonitor(t: TestController): Promise<() => Promise<nu
         await t.wait(1000) // Wait for page to load
         // We do main garabage collection in a separate step because it may cause other targets to be destroyed
         await cdpSession.HeapProfiler.collectGarbage()
+        await t.wait(1000)
         let bytesUsed = (await cdpSession.Runtime.getHeapUsage()).usedSize // For default target
         for (const target of targetInfos) {
             await cdpSession.Target.activateTarget(target)
             await cdpSession.HeapProfiler.collectGarbage()
+            await t.wait(1000)
             bytesUsed += (await cdpSession.Runtime.getHeapUsage()).usedSize
         }
         await cdpSession.Target.activateTarget(defaultTarget)
