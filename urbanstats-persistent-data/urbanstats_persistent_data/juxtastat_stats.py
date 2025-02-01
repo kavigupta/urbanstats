@@ -30,7 +30,7 @@ def table():
     # juxtastat infinite
     c.execute(
         """CREATE TABLE IF NOT EXISTS JuxtaStatInfiniteStats
-        (user integer, seed string, version integer, corrects varbinary(128), score integer, num_answers integer, time integer, PRIMARY KEY (user, seed, version))"""
+        (user integer, seed string, version integer, corrects BLOB, score integer, num_answers integer, time integer, PRIMARY KEY (user, seed, version))"""
     )
 
     # user to domain name
