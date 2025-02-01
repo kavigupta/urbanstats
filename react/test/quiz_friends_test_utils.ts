@@ -67,9 +67,9 @@ export async function addFriend(t: TestController, friendName: string, friendID:
     if (friendID !== '') {
         await t.typeText(friendIDField, friendID)
     }
-    await t.click(Selector('button').withText('Add'))
+    await t.click(Selector('button').withExactText('Add'))
 }
 
 export async function removeFriend(t: TestController, nth: number): Promise<void> {
-    await t.click(Selector('button').withText('Remove').nth(nth))
+    await t.click(Selector('button').withExactText('Remove').nth(nth))
 }

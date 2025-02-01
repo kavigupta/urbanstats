@@ -71,7 +71,7 @@ test('article-universe-statistic-page', async (t) => {
 
 test('article-universe-related-button', async (t) => {
     await t
-        .click(Selector('a').withText('Los Angeles County'))
+        .click(Selector('a').withExactText('Los Angeles County'))
     await t.expect(getLocationWithoutSettings())
         .eql(`${target}/article.html?longname=Los+Angeles+County%2C+California%2C+USA&universe=California%2C+USA`)
 })

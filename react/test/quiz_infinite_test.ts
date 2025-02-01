@@ -80,7 +80,7 @@ function juxtastatInfiniteTable(): Promise<string> {
 
 async function copyLines(t: TestController): Promise<string[]> {
     const copies = await withMockedClipboard(t, async () => {
-        await t.click(Selector('button').withText('Copy'))
+        await t.click(Selector('button').withExactText('Copy'))
     })
     await t.expect(copies.length).eql(1)
     const copy = copies[0]

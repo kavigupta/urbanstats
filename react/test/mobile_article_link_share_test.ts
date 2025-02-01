@@ -16,7 +16,7 @@ test('with simple ordinals, does not apply pointer selection setting', async (t)
     await t.expect(Selector('select[data-test-id=tablePointerSelect]').exists).notOk()
     await screencap(t)
     await withHamburgerMenu(t, async () => {
-        await t.click(Selector('label').withText('Simple Ordinals'))
+        await t.click(Selector('label').withExactText('Simple Ordinals'))
     })
     await t.expect(Selector('select[data-test-id=tablePointerSelect]').value).eql('pointer_in_class')
 })
@@ -38,12 +38,12 @@ test('no simple ordinals, does apply pointer selection setting', async (t) => {
 
 test('navigate backwards', async (t) => {
     await t.click(Selector('button[data-test-id="-1"]'))
-    await t.expect(Selector('div').withText('Akron MSA').exists).ok()
+    await t.expect(Selector('div').withExactText('Akron MSA').exists).ok()
 })
 
 test('change select to pointer_in_class and navigate forwards', async (t) => {
     const select = Selector('select[data-test-id=tablePointerSelect]')
-    await t.click(select).click(select.find('option').withText('Within Type'))
+    await t.click(select).click(select.find('option').withExactText('Within Type'))
     await t.click(Selector('button[data-test-id="1"]'))
-    await t.expect(Selector('div').withText('Fresno Urban Center').exists).ok()
+    await t.expect(Selector('div').withExactText('Fresno Urban Center').exists).ok()
 })

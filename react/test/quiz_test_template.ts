@@ -339,7 +339,7 @@ export function quizTest({ platform }: { platform: 'desktop' | 'mobile' }): void
 
     test('share button copy', async (t) => {
         const copies = await withMockedClipboard(t, async () => {
-            await t.click(Selector('button').withText('Copy'))
+            await t.click(Selector('button').withExactText('Copy'))
         })
         await t.expect(copies).eql(['Juxtastat 100 4/5\n\n🟩🟩🟩🟩🟥\n\nhttps://juxtastat.org/#date=100'])
     })
@@ -455,7 +455,7 @@ export function quizTest({ platform }: { platform: 'desktop' | 'mobile' }): void
     }
 
     test('export quiz progress', async (t) => {
-        await t.click(Selector('button').withText('Export Quiz History'))
+        await t.click(Selector('button').withExactText('Export Quiz History'))
 
         // Give it a second to download...
         await t.wait(1000)
@@ -497,7 +497,7 @@ export function quizTest({ platform }: { platform: 'desktop' | 'mobile' }): void
         writeFileSync(tempfile, JSON.stringify(expectedExportWithoutDate, null, 2))
 
         await t.setNativeDialogHandler(() => 'merge')
-        await t.click(Selector('button').withText('Import Quiz History'))
+        await t.click(Selector('button').withExactText('Import Quiz History'))
         await t.setFilesToUpload('input[type=file]', [tempfile])
         await checkText(t, 'Excellent! 😊 4/5', '🟩🟩🟩🟩🟥')
 
@@ -506,7 +506,7 @@ export function quizTest({ platform }: { platform: 'desktop' | 'mobile' }): void
         await checkText(t, 'Good! 🙃 3/5', '🟩🟥🟩🟥🟩')
 
         // Should transfer over the user id
-        await t.expect(Selector('.juxtastat-user-id').withText('b0bacafe').exists).ok()
+        await t.expect(Selector('.juxtastat-user-id').withExactText('b0bacafe').exists).ok()
 
         // Should transfer over secure id
         await t.expect(await t.eval(() => localStorage.getItem('secure_id'))).eql('baddecaf')
@@ -566,7 +566,7 @@ export function quizTest({ platform }: { platform: 'desktop' | 'mobile' }): void
         }, null, 2))
 
         await t.setNativeDialogHandler(() => true)
-        await t.click(Selector('button').withText('Import Quiz History'))
+        await t.click(Selector('button').withExactText('Import Quiz History'))
         await t.setFilesToUpload('input[type=file]', [tempfile])
         await t.expect(await t.getNativeDialogHistory()).eql([
             {
@@ -596,7 +596,7 @@ export function quizTest({ platform }: { platform: 'desktop' | 'mobile' }): void
         await checkText(t, 'No! No!! 😠 1/5', '🟩🟥🟥🟥🟥')
 
         // Should transfer over the user id
-        await t.expect(Selector('.juxtastat-user-id').withText('b0bacafe').exists).ok()
+        await t.expect(Selector('.juxtastat-user-id').withExactText('b0bacafe').exists).ok()
 
         // Should transfer over secure id
         await t.expect(await t.eval(() => localStorage.getItem('secure_id'))).eql('baddecaf')
@@ -604,7 +604,7 @@ export function quizTest({ platform }: { platform: 'desktop' | 'mobile' }): void
 
     test('support old retro links', async (t) => {
         await t.navigateTo('/quiz.html?mode=retro')
-        await t.expect(Selector('[class*=headertext]').withText('Retrostat').exists).ok()
+        await t.expect(Selector('[class*=headertext]').withText(/Retrostat W\d*/).exists).ok()
     })
 
     const expectedExportWithoutDateNumbers = {
@@ -643,7 +643,7 @@ export function quizTest({ platform }: { platform: 'desktop' | 'mobile' }): void
         writeFileSync(tempfile, JSON.stringify(expectedExportWithoutDateNumbers, null, 2))
 
         await t.setNativeDialogHandler(() => 'merge')
-        await t.click(Selector('button').withText('Import Quiz History'))
+        await t.click(Selector('button').withExactText('Import Quiz History'))
         await t.setFilesToUpload('input[type=file]', [tempfile])
         await checkText(t, 'Excellent! 😊 4/5', '🟩🟩🟩🟩🟥')
     })
@@ -665,10 +665,10 @@ export function quizTest({ platform }: { platform: 'desktop' | 'mobile' }): void
 
     test('quiz results go to compare pages', async (t) => {
     // only using the image tests because the links are not stable across versions
-        await t.click(Selector('a').withText('Colorado, USA'))
+        await t.click(Selector('a').withText(/Colorado, USA/))
         await screencap(t)
         await ClientFunction(() => { history.back() })()
-        await t.click(Selector('a').withText('Toronto CDR, Ontario, Canada'))
+        await t.click(Selector('a').withText(/Toronto CDR, Ontario, Canada/))
         await screencap(t)
     })
 
@@ -677,7 +677,7 @@ export function quizTest({ platform }: { platform: 'desktop' | 'mobile' }): void
     test('share link current juxta', async (t) => {
         await clickButtons(t, ['a', 'a', 'a', 'a', 'a'])
         const copies = await withMockedClipboard(t, async () => {
-            await t.click(Selector('button').withText('Copy'))
+            await t.click(Selector('button').withExactText('Copy'))
         })
         await t.expect(copies.length).eql(1)
         // Emoji are double length
@@ -690,9 +690,9 @@ export function quizTest({ platform }: { platform: 'desktop' | 'mobile' }): void
 
     test('next quiz button when quiz ends', async (t) => {
         await clickButtons(t, ['a', 'a', 'a', 'a', 'a'])
-        await t.expect(Selector('a').withText('Next Quiz').exists).notOk()
-        await t.click(Selector('a').withText('Next Quiz'))
-        await t.expect(Selector('a').withText('Next Quiz').exists).notOk()
+        await t.expect(Selector('a').withExactText('Next Quiz').exists).notOk()
+        await t.click(Selector('a').withExactText('Next Quiz'))
+        await t.expect(Selector('a').withExactText('Next Quiz').exists).notOk()
     })
 
     quizFixture('current retro', `${target}/quiz.html#mode=retro`, {}, '', platform)
@@ -700,7 +700,7 @@ export function quizTest({ platform }: { platform: 'desktop' | 'mobile' }): void
     test('share link current retro', async (t) => {
         await clickButtons(t, ['a', 'a', 'a', 'a', 'a'])
         const copies = await withMockedClipboard(t, async () => {
-            await t.click(Selector('button').withText('Copy'))
+            await t.click(Selector('button').withExactText('Copy'))
         })
         await t.expect(copies.length).eql(1)
         // Emoji are double length
@@ -805,7 +805,7 @@ export function quizTest({ platform }: { platform: 'desktop' | 'mobile' }): void
     test('custom-quiz-sharelink', async (t) => {
         await clickButtons(t, ['a', 'b', 'a', 'b', 'a'])
         const copies = await withMockedClipboard(t, async () => {
-            await t.click(Selector('button').withText('Copy'))
+            await t.click(Selector('button').withExactText('Copy'))
         })
         await t.expect(copies.length).eql(1)
         const copy = copies[0]
