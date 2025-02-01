@@ -181,8 +181,6 @@ def has_infinite_stats(user, seeds_versions):
 def store_user_stats_infinite(user, seed, version, corrects: List[bool]):
     user = int(user, 16)
     conn, c = table()
-    # ignore latest day here, it is up to the client to filter out old stats
-    # we want to be able to update stats for old days
     correctBytes = corrects_to_bytes(corrects)
     time_unix_millis = round(time.time() * 1000)
     c.execute(
