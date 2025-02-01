@@ -70,6 +70,7 @@ export class Navigator {
             void this.navigate(this.pageState.loading.descriptor, { history: 'replace', scroll: { kind: 'none' } })
         }
         catch (error) {
+            console.error('Error loading page', error)
             const url = new URL(window.location.href)
             this.pageState = {
                 kind: 'loaded',
@@ -221,6 +222,7 @@ export class Navigator {
             }
         }
         catch (error) {
+            console.error('Error loading page', error)
             if (this.pageState.kind !== 'loading' || this.pageState.loading.descriptor !== newDescriptor) {
                 // Another load has started, don't race it
                 return

@@ -131,7 +131,7 @@ test('download-article', async (t) => {
 })
 
 test('download-article-dark', async (t) => {
-    await t.click(Selector('.theme-setting').find('select')).click(Selector('option').withText('Dark Mode'))
+    await t.click(Selector('.theme-setting').find('select')).click(Selector('option').withExactText('Dark Mode'))
     await downloadImage(t)
 })
 
@@ -219,23 +219,23 @@ test('charlotte-all-stats', async (t) => {
 urbanstatsFixture('weather F', '/article.html?longname=California%2C+USA&s=jV3GG2h8Vfb')
 
 test('is F', async (t) => {
-    await t.expect(Selector('span').withText('62.2').exists).ok()
+    await t.expect(Selector('span').withExactText('62.2').exists).ok()
 })
 
 const temperatureSelect = Selector('[data-test-id=temperature_select]')
 
 test('change to C and back to F', async (t) => {
-    await t.click(temperatureSelect).click(temperatureSelect.find('option').withText('C'))
-    await t.expect(Selector('span').withText('28.8').exists).ok()
-    await t.click(temperatureSelect).click(temperatureSelect.find('option').withText('F'))
-    await t.expect(Selector('span').withText('62.2').exists).ok()
+    await t.click(temperatureSelect).click(temperatureSelect.find('option').withText(/C/))
+    await t.expect(Selector('span').withExactText('28.8').exists).ok()
+    await t.click(temperatureSelect).click(temperatureSelect.find('option').withText(/F/))
+    await t.expect(Selector('span').withExactText('62.2').exists).ok()
 })
 
 test('paste C link', async (t) => {
     await checkTextboxes(t, ['Simple Ordinals']) // to save settings
     await t.navigateTo('/article.html?longname=California%2C+USA&s=jV3GG2h8Vfs')
     await t.expect(Selector('[data-test-id=staging_controls]').exists).ok()
-    await t.expect(Selector('span').withText('28.8').exists).ok()
+    await t.expect(Selector('span').withExactText('28.8').exists).ok()
     await screencap(t)
 })
 
@@ -256,13 +256,14 @@ urbanstatsFixture('4 digit election swing', '/article.html?longname=Corpus+Chris
 
 test('overflows correctly on mobile', async (t) => {
     await t.resizeWindow(400, 800)
+    await safeReload(t) // Since the map loading is racing with the window size
     await screencap(t)
 })
 
 urbanstatsFixture('article with many /', '/article.html?longname=Victory+Manor%2FEast+Hill%2FDonwood+Neighborhood%2C+Savannah+City%2C+Georgia%2C+USA')
 
 test('loads successfully', async (t) => {
-    await t.expect(Selector('div').withText('Victory Manor/East Hill/Donwood, Savannah').exists).ok()
+    await t.expect(Selector('div').withExactText('Victory Manor/East Hill/Donwood, Savannah').exists).ok()
 })
 
 test('has the correct URL after loading', async (t) => {

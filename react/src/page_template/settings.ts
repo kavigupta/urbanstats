@@ -41,6 +41,7 @@ export type SettingsDictionary = {
     clean_background: boolean
     temperature_unit: TemperatureUnit
     mobile_article_pointers: MobileArticlePointers
+    juxtastatCompactEmoji: boolean
 }
 /* eslint-enable no-restricted-syntax */
 & { [G in GroupIdentifier as StatGroupKey<G>]: boolean }
@@ -95,6 +96,7 @@ export const defaultSettingsList = [
     ...statPathsWithExtra.map(statPath => [`expanded__${statPath}`, false] as const),
     ['temperature_unit', 'fahrenheit'],
     ['mobile_article_pointers', 'pointer_in_class'],
+    ['juxtastatCompactEmoji', false],
 ] as const
 
 // Having a default settings object allows us to statically check that we have default values for all settings

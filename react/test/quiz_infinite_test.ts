@@ -1,7 +1,7 @@
 import { Selector } from 'testcafe'
 
 import { runQuery } from './quiz_test_template'
-import { collectCorrectJuxtaInfiniteAnswersFixture, friendsText, provideAnswers, quizFixture, withMockedClipboard } from './quiz_test_utils'
+import { collectCorrectJuxtaInfiniteAnswersFixture, friendsText, provideAnswers, quizFixture, quizScreencap, withMockedClipboard } from './quiz_test_utils'
 import {
     target,
     safeReload,
@@ -80,7 +80,7 @@ function juxtastatInfiniteTable(): Promise<string> {
 
 async function copyLines(t: TestController): Promise<string[]> {
     const copies = await withMockedClipboard(t, async () => {
-        await t.click(Selector('button').withText('Copy'))
+        await t.click(Selector('button').withExactText('Copy'))
     })
     await t.expect(copies.length).eql(1)
     const copy = copies[0]
@@ -149,6 +149,22 @@ test('19-correct', async (t) => {
     ])
     // low bit order first: 1111,1111 1111,1111 1111,0000 000[0,0000] This becomes FF FF 0F 00
     await t.expect(await juxtastatInfiniteTable()).eql(`7|${seedStr}|FFFF0F00|20|27\n`)
+    await quizScreencap(t)
+    await t.click(Selector('[data-test-id=juxtastatCompactEmoji]'))
+    await quizScreencap(t)
+    await safeReload(t) // Copied! -> Copy Link
+    await t.expect(await Selector('#quiz-result-summary-emoji').innerText).eql(
+        '🟩2️⃣0️⃣🟥7️⃣',
+    )
+    await t.expect(await copyLines(t)).eql([
+        'Juxtastat Infinite 20/∞',
+        '',
+        '🟩2️⃣0️⃣🟥7️⃣',
+        '',
+        '🥇 Personal Best!',
+        '',
+        `https://juxtastat.org/${param}`,
+    ])
 })
 
 async function doNotReportPartial(t: TestController): Promise<void> {
