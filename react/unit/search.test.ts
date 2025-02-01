@@ -2,14 +2,14 @@ import { test } from 'uvu'
 import * as assert from 'uvu/assert'
 
 import './util/fetch'
-import { loadSearchIndex, search } from '../src/search'
+import { createIndex } from '../src/search'
 
-const searchIndex = await loadSearchIndex()
+const search = await createIndex()
 
 // We curry based on testFn so we can use test.only, test.skip, etc
 const firstResult = (testFn: (name: string, testBlock: () => void) => void) => (query: string, result: string): void => {
     testFn(`First result for '${query}' is '${result}'`, () => {
-        assert.is(search(searchIndex, query, 10, { showHistoricalCDs: false })[0], result)
+        assert.is(search({ unnormalizedPattern: query, maxResults: 10, showHistoricalCDs: false })[0], result)
     })
 }
 

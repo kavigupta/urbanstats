@@ -15,7 +15,7 @@ function normalize(a: string): string {
     return a.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f,\(\)\[\]]/g, '').replaceAll('-', ' ')
 }
 
-export interface NormalizedSearchIndex {
+interface NormalizedSearchIndex {
     entries: {
         element: string
         tokens: Haystack[]
@@ -57,20 +57,7 @@ function combinedScore(result: SearchResult): number {
 }
 
 function compareSearchResults(a: SearchResult, b: SearchResult): number {
-    // The order of these comparisons relates to various optimizations
-    // if (combinedScore(a) !== combinedScore(b)) {
     return combinedScore(a) - combinedScore(b)
-    // }
-    // if (a.matchScore !== b.matchScore) {
-    //     return a.matchScore - b.matchScore
-    // }
-    // if (a.positionScore !== b.positionScore) {
-    //     return a.positionScore - b.positionScore
-    // }
-    // if (a.priority !== b.priority) {
-    //     return a.priority - b.priority
-    // }
-    // return a.normalizedPopulationRank - b.normalizedPopulationRank
 }
 
 function tokenize(pattern: string): string[] {
@@ -83,8 +70,13 @@ function tokenize(pattern: string): string[] {
     return []
 }
 
-// Expects `pattern` to be normalized
-export function search(searchIndex: NormalizedSearchIndex, unnormalizedPattern: string, maxResults: number, options: { showHistoricalCDs: boolean }): string[] {
+export interface SearchParams {
+    unnormalizedPattern: string
+    maxResults: number
+    showHistoricalCDs: boolean
+}
+
+function search(searchIndex: NormalizedSearchIndex, { unnormalizedPattern, maxResults, showHistoricalCDs }: SearchParams): string[] {
     const start = performance.now()
 
     const pattern = normalize(unnormalizedPattern)
@@ -112,7 +104,7 @@ export function search(searchIndex: NormalizedSearchIndex, unnormalizedPattern: 
     let entriesPatternChecks = 0
 
     entries: for (const [populationRank, { tokens, element, priority, signature }] of searchIndex.entries.entries()) {
-        if (!options.showHistoricalCDs && isHistoricalCD(element)) {
+        if (!showHistoricalCDs && isHistoricalCD(element)) {
             continue
         }
 
@@ -229,12 +221,12 @@ export function search(searchIndex: NormalizedSearchIndex, unnormalizedPattern: 
     return results.map(result => result.element)
 }
 
-export async function loadSearchIndex(): Promise<NormalizedSearchIndex> {
+export async function createIndex(): Promise<(params: SearchParams) => string[]> {
     const start = performance.now()
-    const searchIndex = await loadProtobuf('/index/pages_all.gz', 'SearchIndex')
-    const result = processRawSearchIndex(searchIndex)
-    console.log(`Took ${performance.now() - start}ms to load search index`)
-    return result
+    const rawIndex = await loadProtobuf('/index/pages_all.gz', 'SearchIndex')
+    const index = processRawSearchIndex(rawIndex)
+    debug(`Took ${performance.now() - start}ms to load search index`)
+    return params => search(index, params)
 }
 
 function processRawSearchIndex(searchIndex: { elements: string[], priorities: number[] }): NormalizedSearchIndex {

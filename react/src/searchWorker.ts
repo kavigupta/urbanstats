@@ -1,3 +1,7 @@
-import { loadSearchIndex } from './search'
+import { createIndex, SearchParams } from './search'
 
-postMessage(await loadSearchIndex())
+const search = await createIndex()
+
+onmessage = (message: MessageEvent<SearchParams>) => {
+    postMessage(search(message.data))
+}

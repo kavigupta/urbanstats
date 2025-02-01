@@ -4,7 +4,7 @@ import { Navigator } from '../navigation/Navigator'
 import { useColors } from '../page_template/colors'
 import { useSetting } from '../page_template/settings'
 import '../common.css'
-import { loadSearchIndex, NormalizedSearchIndex, search } from '../search'
+import { SearchParams } from '../search'
 
 export function SearchBox(props: {
     onChange?: (inp: string) => void
@@ -26,7 +26,7 @@ export function SearchBox(props: {
 
     const searchQuery = queryRef.current
 
-    const fullIndex = useRef<Promise<NormalizedSearchIndex> | undefined>()
+    const searchWorker = useRef<SearchWorker | undefined>()
 
     const reset = (): void => {
         setQuery('')
@@ -74,19 +74,18 @@ export function SearchBox(props: {
                 setFocused(0)
                 return
             }
-            if (fullIndex.current === undefined) {
-                fullIndex.current = loadSearchIndex()
+            if (searchWorker.current === undefined) {
+                searchWorker.current = createSearchWorker()
             }
-            const full = await fullIndex.current
-            // we can skip searching if the query has changed since we were waiting on the index
+            const result = await searchWorker.current({ unnormalizedPattern: searchQuery, maxResults: 10, showHistoricalCDs })
+            // we should throw away the result if the query has changed since we submitted the search
             if (queryRef.current !== searchQuery) {
                 return
             }
-            const result = search(full, searchQuery, 10, { showHistoricalCDs })
             setMatches(result)
             setFocused(f => Math.min(f, result.length - 1))
         })()
-    }, [searchQuery, showHistoricalCDs, fullIndex])
+    }, [searchQuery, showHistoricalCDs, searchWorker])
 
     return (
         <form
@@ -110,12 +109,12 @@ export function SearchBox(props: {
                 }}
                 value={query}
                 onFocus={() => {
-                    if (fullIndex.current === undefined) {
-                        fullIndex.current = loadSearchIndex()
+                    if (searchWorker.current === undefined) {
+                        searchWorker.current = createSearchWorker()
                     }
                 }}
                 onBlur={() => {
-                    fullIndex.current = undefined
+                    searchWorker.current = undefined
                 }}
             />
 
@@ -164,4 +163,22 @@ export function SearchBox(props: {
             </div>
         </form>
     )
+}
+
+const workerTerminatorRegistry = new FinalizationRegistry<Worker>((worker) => { worker.terminate() })
+
+type SearchWorker = (params: SearchParams) => Promise<string[]>
+
+function createSearchWorker(): SearchWorker {
+    const worker = new Worker(new URL('../searchWorker', import.meta.url))
+    const result: SearchWorker = (params) => {
+        worker.postMessage(params)
+        return new Promise((resolve) => {
+            worker.addEventListener('message', (message: MessageEvent<string[]>) => {
+                resolve(message.data)
+            }, { once: true })
+        })
+    }
+    workerTerminatorRegistry.register(result, worker)
+    return result
 }
