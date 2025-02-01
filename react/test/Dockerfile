@@ -12,7 +12,7 @@ RUN pip3 cache purge
 RUN dpkg --add-architecture i386
 RUN apt-get -y update
 
-RUN apt-get -y install chromium=130.*
+RUN apt-get -y install chromium=132.*
 RUN apt-get -y install xvfb
 
 RUN apt-get -y install sqlite3
