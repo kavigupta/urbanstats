@@ -1,6 +1,7 @@
 import { loadProtobuf } from './load_json'
 import { bitap, bitapPerformance, bitCount, Haystack, toHaystack, toNeedle, toSignature } from './utils/bitap'
 import { isHistoricalCD } from './utils/is_historical'
+import { SearchIndex } from './utils/protos'
 
 const debugSearch: boolean = true
 
@@ -225,9 +226,10 @@ function search(searchIndex: NormalizedSearchIndex, { unnormalizedPattern, maxRe
 
 export async function createIndex(): Promise<(params: SearchParams) => string[]> {
     const start = performance.now()
-    const rawIndex = await loadProtobuf('/index/pages_all.gz', 'SearchIndex')
+    let rawIndex: SearchIndex | undefined = await loadProtobuf('/index/pages_all.gz', 'SearchIndex')
     const index = processRawSearchIndex(rawIndex)
     debug(`Took ${performance.now() - start}ms to load search index`)
+    rawIndex = undefined // so it doesn't stay in memory
     return params => search(index, params)
 }
 
