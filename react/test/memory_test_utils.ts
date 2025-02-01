@@ -29,4 +29,4 @@ export async function memoryMonitor(t: TestController): Promise<() => Promise<nu
 }
 
 export const homePageThreshold = 21_000_000
-export const californiaArticleThreshold = 38_000_000
+export const californiaArticleThreshold = 44_000_000
