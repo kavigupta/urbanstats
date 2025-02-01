@@ -388,6 +388,7 @@ type NotIncludedInSettingsVector = (
     | StatCategorySavedIndeterminateKey
     | StatCategoryExpandedKey
     | 'theme' | 'colorblind_mode' | 'clean_background'
+    | 'juxtastatCompactEmoji'
 )
 
 // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- No deprecations yet
