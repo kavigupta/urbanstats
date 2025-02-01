@@ -1,0 +1,117 @@
+[
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Independent living disability %",
+      "stat_path": "INDEPLIVE_cdc_2",
+      "question": "higher % of adults with an independent living disability",
+      "longname_a": "Green Bay-Appleton WI Media Market, USA",
+      "longname_b": "Memphis TN Media Market, USA",
+      "stat_a": 0.0669765762337545,
+      "stat_b": 0.10755309200115368
+    },
+    "b": {
+      "stat_column": "Private Insurance %",
+      "stat_path": "insurance_coverage_private",
+      "question": "higher % of people who are on private insurance",
+      "longname_a": "NJ-09, USA",
+      "longname_b": "IA-01, USA",
+      "stat_a": 0.644703257496175,
+      "stat_b": 0.7612945661839059
+    },
+    "a_ease": 0.7199720670391061,
+    "b_ease": 0.30971512052593136
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "PW Density (r=1km) Change (2010-2020)",
+      "stat_path": "ad_1_change_2010",
+      "question": "higher % increase in population-weighted density (r=1km) from 2010 to 2020!TOOLTIP Population-weighted density is computed by computing the density within the given radius for each person in the region and then averaging the results. This is a better measure of the density that people actually experience.",
+      "longname_a": "Kansas City city, Missouri, USA",
+      "longname_b": "Wichita city, Kansas, USA",
+      "stat_a": 0.05816915939903259,
+      "stat_b": -0.023989701941555384
+    },
+    "b": {
+      "stat_column": "Vacancy %",
+      "stat_path": "vacancy",
+      "question": "higher % of units that are vacant",
+      "longname_a": "Ft. Myers-Naples FL Media Market, USA",
+      "longname_b": "Indianapolis IN Media Market, USA",
+      "stat_a": 0.2521288909229441,
+      "stat_b": 0.08377924764577356
+    },
+    "a_ease": 0.7549800796812749,
+    "b_ease": 0.34989043097151207
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Gen Z %",
+      "stat_path": "generation_genz",
+      "question": "higher % of people who are gen z!TOOLTIP born between 1997 and 2011",
+      "longname_a": "Hamilton Population Center, ON, Canada",
+      "longname_b": "Albany-Schenectady [Urban Area], NY, USA",
+      "stat_a": 0.17293184440260734,
+      "stat_b": 0.21135011133452067
+    },
+    "b": {
+      "stat_column": "Within 1mi of a grocery store %",
+      "stat_path": "lapop1share_usda_fra_1",
+      "question": "!FULL Which has more access to grocery stores (higher % of people within 1mi of a grocery store)?!TOOLTIP The USDA defines a grocery store as a 'supermarket, supercenter, or large grocery store.'",
+      "longname_a": "IN-09, USA",
+      "longname_b": "CA-26, USA",
+      "stat_a": 0.39213489723433914,
+      "stat_b": 0.7980581875178376
+    },
+    "a_ease": 0.3237359550561798,
+    "b_ease": 0.7465303140978816
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Within 1mi of a grocery store %",
+      "stat_path": "lapop1share_usda_fra_1",
+      "question": "!FULL Which has more access to grocery stores (higher % of people within 1mi of a grocery store)?!TOOLTIP The USDA defines a grocery store as a 'supermarket, supercenter, or large grocery store.'",
+      "longname_a": "OH-04, USA",
+      "longname_b": "NE-01, USA",
+      "stat_a": 0.38136308146256503,
+      "stat_b": 0.6262674106804984
+    },
+    "b": {
+      "stat_column": "Mean high temp",
+      "stat_path": "mean_high_temp_4",
+      "question": "higher mean daily high temperature (population weighted)!TOOLTIP Population weighted weather statistics are calculated by computing the weather statistic for each person in the region and then averaging the results.",
+      "longname_a": "Duluth MN-Superior WI Media Market, USA",
+      "longname_b": "Buffalo NY Media Market, USA",
+      "stat_a": 49.65672501994518,
+      "stat_b": 55.694389427887884
+    },
+    "a_ease": 0.32204515272244355,
+    "b_ease": 0.7675561797752809
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "2016-2020 Swing",
+      "stat_path": "2016-2020 Swing-margin",
+      "question": "!FULL Which swung towards Democrats more from 2016 to 2020?",
+      "longname_a": "IN-09, USA",
+      "longname_b": "OH-14, USA",
+      "stat_a": 0.008893683669450647,
+      "stat_b": -0.013036539719253448
+    },
+    "b": {
+      "stat_column": "Household income > C$100k %",
+      "stat_path": "household_income_above_100_cad",
+      "question": "higher % of households that have household income over C$100k",
+      "longname_a": "Newfoundland and Labrador, Canada",
+      "longname_b": "Ontario, Canada",
+      "stat_a": 0.34440424677860915,
+      "stat_b": 0.4585264645796994
+    },
+    "a_ease": 0.49231843575418993,
+    "b_ease": 0.9013062409288825
+  }
+]

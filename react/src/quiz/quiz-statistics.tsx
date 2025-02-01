@@ -4,6 +4,7 @@ import { Navigator } from '../navigation/Navigator'
 import { useColors, useJuxtastatColors } from '../page_template/colors'
 
 import { QuizDescriptor, QuizDescriptorWithTime, QuizHistory } from './quiz'
+import { ResultToDisplayForFriends } from './quiz-friends'
 import { getInfiniteQuizzes, parseTimeIdentifier } from './statistics'
 
 export function QuizStatistics(
@@ -197,6 +198,81 @@ export function DisplayedStat({ number, name, additionalClass, color, onClick }:
     )
 }
 
+function computeOrdinalsAndIndices(numCorrects: number[], keepNumber: number, saveIndex: number): [number[], number[]] {
+    /**
+     * Given an array of numbers, returns two arrays:
+     * 1. An array of ordinals, where the ith element is the rank of the ith element in the input array
+     *      Note that for duplicates, the ordinal is duplicated, and that the ordinals are 1-indexed
+     * 2. An array of indices, where the ith element is the index of the ith element in the input array
+     */
+    const sortedIndicesAll = Array.from(Array(numCorrects.length).keys())
+    sortedIndicesAll.sort((a, b) => numCorrects[b] - numCorrects[a])
+    let currentOrdinal = 1
+    let currentVal = numCorrects[sortedIndicesAll[0]]
+    const ordinals = sortedIndicesAll.map((index) => {
+        if (numCorrects[index] !== currentVal) {
+            currentVal = numCorrects[index]
+            currentOrdinal += 1
+        }
+        return currentOrdinal
+    })
+    const mask = ordinals.map((x, i) => x <= keepNumber || sortedIndicesAll[i] === saveIndex)
+
+    const sortedIndicesFilt = sortedIndicesAll.filter((_, i) => mask[i])
+    const ordinalsFilt = ordinals.filter((_, i) => mask[i])
+
+    return [ordinalsFilt, sortedIndicesFilt]
+}
+
+interface InfiniteDisplay {
+    ordinals: number[]
+    sortedIndices: number[]
+    seedVersions: [string, number][]
+    numCorrects: number[]
+}
+
+function juxtastatInfiniteDisplay(quiz: QuizDescriptor & { kind: 'infinite' }, wholeHistory: QuizHistory): InfiniteDisplay {
+    const [seedVersions, keys] = getInfiniteQuizzes(wholeHistory, true)
+    const numCorrects = keys.map(
+        key => wholeHistory[key].correct_pattern.reduce((partialSum: number, a) => partialSum + (a ? 1 : 0), 0),
+    )
+    const thisIndex = seedVersions.findIndex(([seed, version]) => seed === quiz.seed && version === quiz.version)
+
+    const [ordinals, sortedIndices] = computeOrdinalsAndIndices(numCorrects, 3, thisIndex)
+
+    return { ordinals, sortedIndices, seedVersions, numCorrects }
+}
+
+export type Medal = 1 | 2 | 3
+
+export function ordinalThis(quiz: QuizDescriptor & { kind: 'infinite' }, wholeHistory: QuizHistory): Medal | undefined {
+    const { ordinals, sortedIndices, seedVersions } = juxtastatInfiniteDisplay(quiz, wholeHistory)
+    const thisIndex = seedVersions.findIndex(([seed, version]) => seed === quiz.seed && version === quiz.version)
+    const thisOrdinal = ordinals[sortedIndices.indexOf(thisIndex)]
+    switch (thisOrdinal) {
+        case 1:
+        case 2:
+        case 3:
+            return thisOrdinal
+        default:
+            return undefined
+    }
+}
+
+export function ourResultToDisplayForFriends(quiz: QuizDescriptor & { kind: 'infinite' }, wholeHistory: QuizHistory): ResultToDisplayForFriends {
+    const { sortedIndices, seedVersions, numCorrects } = juxtastatInfiniteDisplay(quiz, wholeHistory)
+    const thisIndex = seedVersions.findIndex(([seed, version]) => seed === quiz.seed && version === quiz.version)
+    const thisNumCorrect = numCorrects[thisIndex]
+    const bestIndex = sortedIndices[0]
+
+    return {
+        forThisSeed: thisNumCorrect,
+        maxScore: numCorrects[bestIndex],
+        maxScoreSeed: seedVersions[bestIndex][0],
+        maxScoreVersion: seedVersions[bestIndex][1],
+    }
+}
+
 export function QuizStatisticsForInfinite(
     props: {
         quiz: QuizDescriptor & { kind: 'infinite' }
@@ -205,79 +281,31 @@ export function QuizStatisticsForInfinite(
 ): ReactNode | undefined {
     const colors = useColors()
     const navContext = useContext(Navigator.Context)
-    const [seedVersions, keys] = getInfiniteQuizzes(props.wholeHistory, true)
-    const numCorrects = keys.map(
-        key => props.wholeHistory[key].correct_pattern.reduce((partialSum: number, a) => partialSum + (a ? 1 : 0), 0),
-    )
 
-    // sort indices by numCorrects
-    const sortedIndicesAll = Array.from(Array(numCorrects.length).keys())
-    sortedIndicesAll.sort((a, b) => numCorrects[b] - numCorrects[a])
-    // take first 5
-    const sortedIndices = sortedIndicesAll.slice(0, 5)
-
-    const thisIndex = seedVersions.findIndex(([seed, version]) => seed === props.quiz.seed && version === props.quiz.version)
-    if (thisIndex !== -1 && !sortedIndices.includes(thisIndex)) {
-        sortedIndices.push(thisIndex)
-    }
-
-    const ordinals = sortedIndices.map(x => sortedIndicesAll.indexOf(x) + 1)
-
-    const sortedSeedVersions = sortedIndices.map(i => seedVersions[i])
-    const sortedNumCorrects = sortedIndices.map(i => numCorrects[i])
+    const { ordinals, sortedIndices, seedVersions, numCorrects } = juxtastatInfiniteDisplay(props.quiz, props.wholeHistory)
 
     return (
-        <div>
+        <div id="your-best-scores">
             <div className="serif quiz_summary">Your Best Scores</div>
-            {/* <table className="quiz_barchart">
-                <tbody>
-                    {
-                        sortedSeedVersions.map(([seed, version], i) => (
-                            <tr key={i}>
-                                <td className="quiz_bar_td serif" style={{ color: colors.textMain }}>
-                                    {sortedNumCorrects[i]}
-                                </td>
-                                <td className="quiz_bar_td serif">
-                                    <span
-                                        className="quiz_bar"
-                                        style={{
-                                            width: `${sortedNumCorrects[i] / sortedNumCorrects[0] * 20}em`,
-                                            backgroundColor: seed === props.quiz.seed ? colors.hueColors.green : colors.hueColors.blue,
-                                        }}
-                                        onClick={() => {
-                                            void navContext.navigate({
-                                                kind: 'quiz',
-                                                mode: 'infinite',
-                                                seed,
-                                                v: version,
-                                            },
-                                            { history: 'push', scroll: { kind: 'none' } })
-                                        }}
-                                    />
-                                </td>
-                            </tr>
-                        ))
-                    }
-                </tbody>
-            </table> */}
-            <DisplayedStats statistics={sortedNumCorrects.map((x, i) => {
-                return {
-                    name: `#${ordinals[i]}`,
-                    value: x.toString(),
-                    additionalClass: 'quiz-audience-statistics-displayed',
-                    color: sortedSeedVersions[i][0] === props.quiz.seed ? colors.hueColors.green : colors.hueColors.blue,
-                    onClick: () => {
-                        void navContext.navigate({
-                            kind: 'quiz',
-                            mode: 'infinite',
-                            seed: sortedSeedVersions[i][0],
-                            v: sortedSeedVersions[i][1],
+            <DisplayedStats
+                statistics={sortedIndices.map((idx, i) => {
+                    return {
+                        name: `#${ordinals[i]}`,
+                        value: numCorrects[idx].toString(),
+                        additionalClass: 'quiz-audience-statistics-displayed',
+                        color: seedVersions[idx][0] === props.quiz.seed ? colors.hueColors.green : colors.hueColors.blue,
+                        onClick: () => {
+                            void navContext.navigate({
+                                kind: 'quiz',
+                                mode: 'infinite',
+                                seed: seedVersions[idx][0],
+                                v: seedVersions[idx][1],
+                            },
+                            { history: 'push', scroll: { kind: 'none' } })
                         },
-                        { history: 'push', scroll: { kind: 'none' } })
-                    },
-                }
-            },
-            )}
+                    }
+                },
+                )}
             />
         </div>
 

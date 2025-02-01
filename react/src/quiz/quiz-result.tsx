@@ -15,8 +15,8 @@ import { JuxtaQuestion, QuizDescriptor, QuizHistory, QuizQuestion, RetroQuestion
 import { ExportImport, Header, UserId } from './quiz-components'
 import { QuizFriendsPanel } from './quiz-friends'
 import { renderQuestion } from './quiz-question'
-import { AudienceStatistics, QuizStatistics } from './quiz-statistics'
-import { getCachedPerQuestionStats, getPerQuestionStats, PerQuestionStats, parseTimeIdentifier, reportToServer } from './statistics'
+import { AudienceStatistics, Medal, ordinalThis, ourResultToDisplayForFriends, QuizStatistics } from './quiz-statistics'
+import { getCachedPerQuestionStats, getPerQuestionStats, PerQuestionStats, reportToServer } from './statistics'
 
 export type CorrectPattern = (boolean | 0 | 1)[]
 
@@ -92,6 +92,7 @@ export function QuizResult(props: QuizResultProps): ReactNode {
                 todayName={props.todayName}
                 correctPattern={correctPattern}
                 quizKind={props.quizDescriptor.kind}
+                medal={props.quizDescriptor.kind === 'infinite' ? ordinalThis(props.quizDescriptor, props.wholeHistory) : undefined}
             />
             <div className="gap" />
             <div className="gap"></div>
@@ -133,16 +134,19 @@ export function QuizResult(props: QuizResultProps): ReactNode {
             <div className="gap_small"></div>
             {
                 // TODO stats for infinite quiz
-                props.quizDescriptor.kind === 'custom' || props.quizDescriptor.kind === 'infinite'
+                props.quizDescriptor.kind === 'custom'
                     ? undefined
                     : (
                             <div style={{ margin: 'auto', width: '100%', maxWidth: '500px' }}>
                                 <QuizFriendsPanel
                                     quizFriends={quizFriends}
-                                    date={parseTimeIdentifier(props.quizDescriptor.kind, props.quizDescriptor.name.toString())}
-                                    quizKind={props.quizDescriptor.kind}
+                                    quizDescriptor={props.quizDescriptor}
                                     setQuizFriends={setQuizFriends}
-                                    myCorrects={correctPattern}
+                                    myResult={
+                                        props.quizDescriptor.kind === 'infinite'
+                                            ? ourResultToDisplayForFriends(props.quizDescriptor, props.wholeHistory)
+                                            : { corrects: correctPattern }
+                                    }
                                 />
                             </div>
                         )
@@ -178,6 +182,7 @@ interface ShareButtonProps {
     todayName: string | undefined
     correctPattern: CorrectPattern
     quizKind: QuizKind
+    medal?: Medal
 }
 
 function ShareButton(props: ShareButtonProps): ReactNode {
@@ -185,7 +190,7 @@ function ShareButton(props: ShareButtonProps): ReactNode {
     return <ActualShareButton {...props} compactRepr={false} />
 }
 
-function ActualShareButton({ buttonRef, todayName, correctPattern, quizKind, compactRepr }: (ShareButtonProps & { compactRepr: boolean })): ReactNode {
+function ActualShareButton({ buttonRef, todayName, correctPattern, quizKind, compactRepr, medal }: (ShareButtonProps & { compactRepr: boolean })): ReactNode {
     const colors = useColors()
     const juxtaColors = useJuxtastatColors()
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- We need to check the condition for browser compatibility.
@@ -389,7 +394,11 @@ export function Summary(props: { correctPattern: CorrectPattern, quizKind: QuizK
     )
 }
 
-export async function summary(juxtaColors: JuxtastatColors, todayName: string | undefined, correctPattern: CorrectPattern, quizKind: QuizKind, compactRepr: boolean): Promise<[string, string]> {
+function renderMedalAsString(medal: Medal): string {
+    return ['🥇 Personal Best!', '🥈 Personal 2nd Best!', '🥉 Personal 3rd Best!'][medal - 1]
+}
+
+export async function summary(juxtaColors: JuxtastatColors, todayName: string | undefined, correctPattern: CorrectPattern, quizKind: QuizKind, medal: Medal | undefined, compactRepr: boolean): Promise<[string, string]> {
     // wordle-style summary
     const [, summaryText] = summaryTexts(correctPattern, quizKind)
     let text = nameOfQuizKind(quizKind)
@@ -402,6 +411,12 @@ export async function summary(juxtaColors: JuxtastatColors, todayName: string | 
     text += '\n'
 
     text += redAndGreenSquares(juxtaColors, correctPattern, compactRepr).join('\n')
+
+    if (medal !== undefined) {
+        text += '\n'
+        text += '\n'
+        text += renderMedalAsString(medal)
+    }
 
     text += '\n'
 
@@ -644,8 +659,8 @@ function emojiForCount(count: number): string {
     throw new Error(`unexpected count ${count}`)
 }
 
-export function redAndGreenSquares(juxtaColors: JuxtastatColors, correctPattern: CorrectPattern, compactRepr: boolean): string[] {
-    if (!compactRepr) {
+export function redAndGreenSquares(juxtaColors: JuxtastatColors, correctPattern: CorrectPattern): string[] {
+    if (compactRepr) {
         // RRGGG -> R<emoji 2>G<emoji 3>
         const result = []
         let currentSymbol: boolean | undefined = undefined
@@ -667,11 +682,12 @@ export function redAndGreenSquares(juxtaColors: JuxtastatColors, correctPattern:
             result.push(currentSymbol ? juxtaColors.correctEmoji : juxtaColors.incorrectEmoji)
             result.push(emojiForCount(currentCount))
         }
+        return [result.join('')]
     }
     if (correctPattern.length > maxPerLine) {
         const lines = []
         for (let i = 0; i < correctPattern.length; i += maxPerLine) {
-            lines.push(redAndGreenSquares(juxtaColors, correctPattern.slice(i, i + maxPerLine), compactRepr)[0])
+            lines.push(redAndGreenSquares(juxtaColors, correctPattern.slice(i, i + maxPerLine))[0])
         }
         return lines
     }

@@ -139,7 +139,7 @@ function parseRetrostatWeek(day: string): number {
 }
 
 function parseInfiniteSeedVersion(day: string): [string, number] | undefined {
-    const pattern = /^I_([0-9a-f]+)_([0-9]+)$/
+    const pattern = /^I_([0-9a-zA-Z]+)_([0-9]+)$/
     const match = pattern.exec(day)
     if (match === null) {
         return undefined

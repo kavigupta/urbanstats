@@ -30,7 +30,7 @@ def table():
     # juxtastat infinite
     c.execute(
         """CREATE TABLE IF NOT EXISTS JuxtaStatInfiniteStats
-        (user integer, seed string, version integer, corrects varbinary(128), score integer, num_answers integer, time integer, PRIMARY KEY (user, seed, version))"""
+        (user integer, seed string, version integer, corrects BLOB, score integer, num_answers integer, time integer, PRIMARY KEY (user, seed, version))"""
     )
 
     # user to domain name
@@ -181,8 +181,6 @@ def has_infinite_stats(user, seeds_versions):
 def store_user_stats_infinite(user, seed, version, corrects: List[bool]):
     user = int(user, 16)
     conn, c = table()
-    # ignore latest day here, it is up to the client to filter out old stats
-    # we want to be able to update stats for old days
     correctBytes = corrects_to_bytes(corrects)
     time_unix_millis = round(time.time() * 1000)
     c.execute(
@@ -278,6 +276,24 @@ def todays_score_for(requestee, requesters, date, quiz_kind):
     For each `requseter` returns the pattern of correct answers if `(requester, requestee)` is a friend pair.
     """
 
+    return _compute_friend_results(
+        requestee,
+        requesters,
+        compute_fn=lambda c, for_user: _compute_daily_score(
+            date, quiz_kind, c, for_user
+        ),
+    )
+
+
+def infinite_results(requestee, requesters, seed, version):
+    """
+    For each `requseter` returns the pattern of correct answers if `(requester, requestee)` is a friend pair.
+    """
+
+    return _compute_friend_results(requestee, requesters, compute_fn=lambda c, for_user: _infinite_results(c, for_user, seed, version))
+
+
+def _compute_friend_results(requestee, requesters, compute_fn):
     requestee = int(requestee, 16)
 
     _, c = table()
@@ -298,17 +314,53 @@ def todays_score_for(requestee, requesters, date, quiz_kind):
             results.append(dict(friends=False, idError="Invalid User ID"))
             continue
         if requester in friends:
-            c.execute(
-                f"SELECT corrects FROM {table_for_quiz_kind[quiz_kind]} WHERE user=? AND {problem_id_for_quiz_kind[quiz_kind]}=?",
-                (requester, date),
-            )
-            res = c.fetchone()
-            if res is None:
-                results.append(dict(friends=True, corrects=None))
-            else:
-                results.append(
-                    dict(friends=True, corrects=bitvector_to_corrects(res[0]))
+            results.append(
+                dict(
+                    friends=True,
+                    **compute_fn(c, requester),
                 )
+            )
         else:
             results.append(dict(friends=False))
     return results
+
+
+def _compute_daily_score(date, quiz_kind, c, for_user):
+    c.execute(
+        f"SELECT corrects FROM {table_for_quiz_kind[quiz_kind]} WHERE user=? AND {problem_id_for_quiz_kind[quiz_kind]}=?",
+        (for_user, date),
+    )
+    res = c.fetchone()
+    if res is None:
+        return dict(corrects=None)
+    else:
+        return dict(corrects=bitvector_to_corrects(res[0]))
+
+def _infinite_results(c, for_user, seed, version):
+    """
+    Returns the result for the given user for the given seed and version, as well
+    as the maximum score and corresponding seed and version.
+    """
+
+    c.execute(
+        "SELECT score FROM JuxtaStatInfiniteStats WHERE user=? AND seed=? AND version=?",
+        (for_user, seed, version),
+    )
+    res = c.fetchone()
+    for_this_seed = None if res is None else res[0]
+
+    c.execute(
+        "SELECT seed, version, score FROM JuxtaStatInfiniteStats WHERE user=? AND score=(SELECT MAX(score) FROM JuxtaStatInfiniteStats WHERE user=?)",
+        (for_user, for_user),
+    )
+    res = c.fetchone()
+    max_score_seed = None if res is None else res[0]
+    max_score_version = None if res is None else res[1]
+    max_score = None if res is None else res[2]
+
+    return dict(
+        forThisSeed=for_this_seed,
+        maxScore=max_score,
+        maxScoreSeed=max_score_seed,
+        maxScoreVersion=max_score_version
+    )

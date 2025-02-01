@@ -1,12 +1,13 @@
 import { Selector } from 'testcafe'
 
 import { runQuery } from './quiz_test_template'
-import { clickButton, quizFixture, withMockedClipboard } from './quiz_test_utils'
+import { collectCorrectJuxtaInfiniteAnswersFixture, friendsText, provideAnswers, quizFixture, withMockedClipboard } from './quiz_test_utils'
 import {
     target,
     safeReload,
     waitForQuizLoading,
     getLocation,
+    screencap,
 } from './test_utils'
 
 async function correctIncorrect(t: TestController): Promise<boolean[]> {
@@ -33,55 +34,12 @@ async function correctIncorrect(t: TestController): Promise<boolean[]> {
 
 const localStorageDefault = { persistent_id: '000000000000007', secure_id: '00000003' }
 
-const correctAnswerSequences = new Map<string, string[]>()
+const seeds = ['deadbeef00', 'deadbeef01', 'deadbeef02', 'deadbeef03', 'deadbeef04', 'deadbeef05', 'deadbeef06']
+const version = 1
 
-quizFixture(
-    'collect correct answers',
-    `${target}/quiz.html`,
-    localStorageDefault,
-    ``,
-    'desktop',
-)
-
-test('collect correct answers', async (t) => {
-    for (const seed of ['deadbeef00', 'deadbeef01', 'deadbeef02', 'deadbeef03', 'deadbeef04']) {
-        // set localStorage such that I_{seedStr}_{version} has had 30 questions answered
-        await t.eval(() => {
-            localStorage.quiz_history = JSON.stringify({
-                [`I_${seed}_${version}`]: {
-                    // false so the quiz ends
-                    correct_pattern: Array(30).fill(false),
-                    choices: Array(30).fill('a'),
-                },
-            })
-        }, { dependencies: { seed, version } })
-        await t.navigateTo(`${target}/quiz.html#mode=infinite&seed=${seed}&v=${version}`)
-        await safeReload(t)
-        await waitForQuizLoading(t)
-        // Get all quiz_result_symbol elements and the text therein
-        const symbols = Selector('.quiz_result_comparison_symbol')
-        const symbolsCount = await symbols.count
-        const correctAnswers: string[] = []
-        for (let i = 0; i < symbolsCount; i++) {
-            const symbol = symbols.nth(i)
-            const text = await symbol.innerText
-            if (text === '>') {
-                correctAnswers.push('a')
-            }
-            else if (text === '<') {
-                correctAnswers.push('b')
-            }
-            else {
-                throw new Error(`unexpected text ${text} in ${await symbol.textContent}`)
-            }
-        }
-        correctAnswerSequences.set(seed, correctAnswers)
-    }
-})
+collectCorrectJuxtaInfiniteAnswersFixture(seeds, version)
 
 const seedStr = 'deadbeef00'
-
-const version = 1
 
 const param = `#mode=infinite&seed=${seedStr}&v=${version}`
 quizFixture(
@@ -91,14 +49,6 @@ quizFixture(
     ``,
     'desktop',
 )
-
-async function provideAnswers(t: TestController, start: number, isCorrect: boolean[], seed: string): Promise<void> {
-    const correctAnswerSequence = correctAnswerSequences.get(seed)!
-    for (let i = start; i < start + isCorrect.length; i++) {
-        await clickButton(t, isCorrect[i - start] === (correctAnswerSequence[i] === 'a') ? 'a' : 'b')
-        await t.wait(500)
-    }
-}
 
 type Emoji = 'Y' | 'N'
 
@@ -126,6 +76,24 @@ async function getLives(): Promise<Emoji[]> {
 
 function juxtastatInfiniteTable(): Promise<string> {
     return runQuery('SELECT user, seed, hex(corrects), score, num_answers from JuxtaStatInfiniteStats ORDER BY seed')
+}
+
+async function copyLines(t: TestController): Promise<string[]> {
+    const copies = await withMockedClipboard(t, async () => {
+        await t.click(Selector('button').withText('Copy'))
+    })
+    await t.expect(copies.length).eql(1)
+    const copy = copies[0]
+    return copy.split('\n')
+}
+
+async function yourBestScores(): Promise<string> {
+    // id=your-best-scores
+    return await Selector('#your-best-scores').innerText
+}
+
+async function clickAmount(t: TestController, amount: string, nth: number): Promise<void> {
+    await t.click(Selector('.quiz-audience-statistics-displayed').withText(amount).nth(nth))
 }
 
 test('display-life-lost', async (t) => {
@@ -168,18 +136,14 @@ test('19-correct', async (t) => {
     await provideAnswers(t, 20, Array<boolean>(7).fill(false), seedStr)
     await t.expect(await correctIncorrect(t)).eql([...Array<boolean>(20).fill(true), ...Array<boolean>(7).fill(false)])
 
-    const copies = await withMockedClipboard(t, async () => {
-        await t.click(Selector('button').withText('Copy'))
-    })
-    await t.expect(copies.length).eql(1)
-    const copy = copies[0]
-    const lines = copy.split('\n')
-    await t.expect(lines).eql([
+    await t.expect(await copyLines(t)).eql([
         'Juxtastat Infinite 20/∞',
         '',
         '🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩',
         '🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩',
         '🟥🟥🟥🟥🟥🟥🟥',
+        '',
+        '🥇 Personal Best!',
         '',
         `https://juxtastat.org/${param}`,
     ])
@@ -216,4 +180,120 @@ test('main-quiz-redirect', async (t) => {
     await t.navigateTo(`${target}/quiz.html#mode=infinite`)
     // should've redirected to unfinished quiz
     await t.expect(getLocation()).eql(`${target}/quiz.html#mode=infinite&seed=deadbeef00&v=${version}`)
+})
+
+test('several-different-quizzes', async (t) => {
+    // first score is 12
+    await provideAnswers(t, 0, '11110' + '11110' + '11110', seedStr)
+    await screencap(t)
+    await t.expect(await copyLines(t)).eql([
+        'Juxtastat Infinite 12/∞',
+        '',
+        '🟩🟩🟩🟩🟥🟩🟩🟩🟩🟥',
+        '🟩🟩🟩🟩🟥',
+        '',
+        '🥇 Personal Best!',
+        '',
+        `https://juxtastat.org/${param}`,
+    ])
+    await t.expect(await friendsText()).eql(['On This SeedOverall Best', 'You1212Copy Link'])
+    // second score is 14
+    await t.navigateTo(`${target}/quiz.html#mode=infinite&seed=deadbeef01&v=${version}`)
+    await provideAnswers(t, 0, '11111' + '10' + '11110' + '111100', 'deadbeef01')
+    await screencap(t)
+    await t.expect(await copyLines(t)).eql([
+        'Juxtastat Infinite 14/∞',
+        '',
+        '🟩🟩🟩🟩🟩🟩🟥🟩🟩🟩',
+        '🟩🟥🟩🟩🟩🟩🟥🟥',
+        '',
+        '🥇 Personal Best!',
+        '',
+        `https://juxtastat.org/#mode=infinite&seed=deadbeef01&v=${version}`,
+    ])
+    await t.expect(await friendsText()).eql(['On This SeedOverall Best', 'You1414Copy Link'])
+    // go back to first
+    await t.navigateTo(`${target}/quiz.html#mode=infinite&seed=${seedStr}&v=${version}`)
+    await t.expect(await copyLines(t)).eql([
+        'Juxtastat Infinite 12/∞',
+        '',
+        '🟩🟩🟩🟩🟥🟩🟩🟩🟩🟥',
+        '🟩🟩🟩🟩🟥',
+        '',
+        '🥈 Personal 2nd Best!',
+        '',
+        `https://juxtastat.org/${param}`,
+    ])
+    await t.expect(await yourBestScores()).eql('Your Best Scores\n14\n#1\n12\n#2')
+    await t.expect(await friendsText()).eql(['On This SeedOverall Best', 'You1214Copy Link'])
+    // go to third, third score is 8
+    await t.navigateTo(`${target}/quiz.html#mode=infinite&seed=deadbeef02&v=${version}`)
+    await provideAnswers(t, 0, '11110111100', 'deadbeef02')
+    await screencap(t)
+    await t.expect(await copyLines(t)).eql([
+        'Juxtastat Infinite 8/∞',
+        '',
+        '🟩🟩🟩🟩🟥🟩🟩🟩🟩🟥',
+        '🟥',
+        '',
+        '🥉 Personal 3rd Best!',
+        '',
+        `https://juxtastat.org/#mode=infinite&seed=deadbeef02&v=${version}`,
+    ])
+    await t.expect(await yourBestScores()).eql('Your Best Scores\n14\n#1\n12\n#2\n8\n#3')
+    await t.expect(await friendsText()).eql(['On This SeedOverall Best', 'You814Copy Link'])
+    // click on the link for first
+    await clickAmount(t, '12', 0)
+    await t.expect(getLocation()).eql(`${target}/quiz.html#mode=infinite&seed=${seedStr}&v=${version}`)
+    // fourth score ties with first entered
+    await t.navigateTo(`${target}/quiz.html#mode=infinite&seed=deadbeef03&v=${version}`)
+    await provideAnswers(t, 0, '11110' + '11110' + '11110', 'deadbeef03')
+    await screencap(t)
+    await t.expect(await copyLines(t)).eql([
+        'Juxtastat Infinite 12/∞',
+        '',
+        '🟩🟩🟩🟩🟥🟩🟩🟩🟩🟥',
+        '🟩🟩🟩🟩🟥',
+        '',
+        '🥈 Personal 2nd Best!',
+        '',
+        `https://juxtastat.org/#mode=infinite&seed=deadbeef03&v=${version}`,
+    ])
+    await t.expect(await friendsText()).eql(['On This SeedOverall Best', 'You1214Copy Link'])
+    await t.expect(await yourBestScores()).eql('Your Best Scores\n14\n#1\n12\n#2\n12\n#2\n8\n#3')
+    await clickAmount(t, '12', 0)
+    await t.expect(getLocation()).eql(`${target}/quiz.html#mode=infinite&seed=deadbeef00&v=${version}`)
+    await clickAmount(t, '12', 1)
+    await t.expect(getLocation()).eql(`${target}/quiz.html#mode=infinite&seed=deadbeef03&v=${version}`)
+    await clickAmount(t, '12', 1)
+    await t.expect(getLocation()).eql(`${target}/quiz.html#mode=infinite&seed=deadbeef03&v=${version}`)
+    // fifth score is 7
+    await t.navigateTo(`${target}/quiz.html#mode=infinite&seed=deadbeef04&v=${version}`)
+    await provideAnswers(t, 0, '1111011100', 'deadbeef04')
+    await screencap(t)
+    await t.expect(await copyLines(t)).eql([
+        'Juxtastat Infinite 7/∞',
+        '',
+        '🟩🟩🟩🟩🟥🟩🟩🟩🟥🟥',
+        '',
+        `https://juxtastat.org/#mode=infinite&seed=deadbeef04&v=${version}`,
+    ])
+    await t.expect(await friendsText()).eql(['On This SeedOverall Best', 'You714Copy Link'])
+    await t.expect(await yourBestScores()).eql('Your Best Scores\n14\n#1\n12\n#2\n12\n#2\n8\n#3\n7\n#4')
+    // sixth score is 6
+    await t.navigateTo(`${target}/quiz.html#mode=infinite&seed=deadbeef05&v=${version}`)
+    await provideAnswers(t, 0, '111011100', 'deadbeef05')
+    await screencap(t)
+    await t.expect(await copyLines(t)).eql([
+        'Juxtastat Infinite 6/∞',
+        '',
+        '🟩🟩🟩🟥🟩🟩🟩🟥🟥',
+        '',
+        `https://juxtastat.org/#mode=infinite&seed=deadbeef05&v=${version}`,
+    ])
+    await t.expect(await friendsText()).eql(['On This SeedOverall Best', 'You614Copy Link'])
+    await t.expect(await yourBestScores()).eql('Your Best Scores\n14\n#1\n12\n#2\n12\n#2\n8\n#3\n6\n#5')
+    await clickAmount(t, '12', 0)
+    await t.expect(getLocation()).eql(`${target}/quiz.html#mode=infinite&seed=deadbeef00&v=${version}`)
+    await t.expect(await yourBestScores()).eql('Your Best Scores\n14\n#1\n12\n#2\n12\n#2\n8\n#3')
 })
