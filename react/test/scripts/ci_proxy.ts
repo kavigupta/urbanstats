@@ -49,9 +49,6 @@ export async function startProxy(): Promise<void> {
             return {
                 ...filteredHeaders,
                 'content-type': mimeType ?? headers['content-type'],
-                // so we can use performance.measureUserAgentSpecificMemory()
-                'Cross-Origin-Opener-Policy': 'same-origin',
-                'Cross-Origin-Embedder-Policy': 'credentialless',
             }
         },
     }))
