@@ -7,6 +7,7 @@ test('go to article and return to under memory limit', async (t) => {
     const memory = await memoryMonitor(t)
     await t.expect(await memory()).lt(homePageThreshold)
     await t.click('#searchbox')
+    await t.expect(await memory()).gt(californiaArticleThreshold)
     await t.expect(await memory()).lt(californiaArticleThreshold + searchSize)
     await t.typeText('#searchbox', 'California')
     await t.pressKey('enter')

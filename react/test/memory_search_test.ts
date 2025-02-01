@@ -7,6 +7,7 @@ test('click away from search box and return to memory limit', async (t) => {
     const memory = await memoryMonitor(t)
     await t.expect(await memory()).lt(homePageThreshold)
     await t.click('#searchbox')
+    await t.expect(await memory()).gt(homePageThreshold)
     await t.expect(await memory()).lt(homePageThreshold + searchSize)
     await t.click('body')
     await t.expect(await memory()).lt(homePageThreshold)
