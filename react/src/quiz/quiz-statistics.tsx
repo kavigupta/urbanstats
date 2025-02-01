@@ -287,55 +287,25 @@ export function QuizStatisticsForInfinite(
     return (
         <div id="your-best-scores">
             <div className="serif quiz_summary">Your Best Scores</div>
-            {/* <table className="quiz_barchart">
-                <tbody>
-                    {
-                        sortedSeedVersions.map(([seed, version], i) => (
-                            <tr key={i}>
-                                <td className="quiz_bar_td serif" style={{ color: colors.textMain }}>
-                                    {sortedNumCorrects[i]}
-                                </td>
-                                <td className="quiz_bar_td serif">
-                                    <span
-                                        className="quiz_bar"
-                                        style={{
-                                            width: `${sortedNumCorrects[i] / sortedNumCorrects[0] * 20}em`,
-                                            backgroundColor: seed === props.quiz.seed ? colors.hueColors.green : colors.hueColors.blue,
-                                        }}
-                                        onClick={() => {
-                                            void navContext.navigate({
-                                                kind: 'quiz',
-                                                mode: 'infinite',
-                                                seed,
-                                                v: version,
-                                            },
-                                            { history: 'push', scroll: { kind: 'none' } })
-                                        }}
-                                    />
-                                </td>
-                            </tr>
-                        ))
-                    }
-                </tbody>
-            </table> */}
-            <DisplayedStats statistics={sortedIndices.map((idx, i) => {
-                return {
-                    name: `#${ordinals[i]}`,
-                    value: numCorrects[idx].toString(),
-                    additionalClass: 'quiz-audience-statistics-displayed',
-                    color: seedVersions[idx][0] === props.quiz.seed ? colors.hueColors.green : colors.hueColors.blue,
-                    onClick: () => {
-                        void navContext.navigate({
-                            kind: 'quiz',
-                            mode: 'infinite',
-                            seed: seedVersions[idx][0],
-                            v: seedVersions[idx][1],
+            <DisplayedStats
+                statistics={sortedIndices.map((idx, i) => {
+                    return {
+                        name: `#${ordinals[i]}`,
+                        value: numCorrects[idx].toString(),
+                        additionalClass: 'quiz-audience-statistics-displayed',
+                        color: seedVersions[idx][0] === props.quiz.seed ? colors.hueColors.green : colors.hueColors.blue,
+                        onClick: () => {
+                            void navContext.navigate({
+                                kind: 'quiz',
+                                mode: 'infinite',
+                                seed: seedVersions[idx][0],
+                                v: seedVersions[idx][1],
+                            },
+                            { history: 'push', scroll: { kind: 'none' } })
                         },
-                        { history: 'push', scroll: { kind: 'none' } })
-                    },
-                }
-            },
-            )}
+                    }
+                },
+                )}
             />
         </div>
 
