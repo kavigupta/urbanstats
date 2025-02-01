@@ -190,7 +190,7 @@ function ShareButton(props: ShareButtonProps): ReactNode {
     return <ActualShareButton {...props} compactRepr={false} />
 }
 
-function ActualShareButton({ buttonRef, todayName, correctPattern, quizKind, compactRepr, medal }: (ShareButtonProps & { compactRepr: boolean })): ReactNode {
+function ActualShareButton({ buttonRef, todayName, correctPattern, quizKind, medal, compactRepr }: (ShareButtonProps & { compactRepr: boolean })): ReactNode {
     const colors = useColors()
     const juxtaColors = useJuxtastatColors()
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- We need to check the condition for browser compatibility.
@@ -203,7 +203,7 @@ function ActualShareButton({ buttonRef, todayName, correctPattern, quizKind, com
             style={buttonStyle(colors.hueColors.green)}
             ref={buttonRef}
             onClick={async () => {
-                const [text, url] = await summary(juxtaColors, todayName, correctPattern, quizKind, compactRepr)
+                const [text, url] = await summary(juxtaColors, todayName, correctPattern, quizKind, medal, compactRepr)
 
                 async function copyToClipboard(): Promise<void> {
                     await navigator.clipboard.writeText(`${text}\n${url}`)
@@ -659,7 +659,7 @@ function emojiForCount(count: number): string {
     throw new Error(`unexpected count ${count}`)
 }
 
-export function redAndGreenSquares(juxtaColors: JuxtastatColors, correctPattern: CorrectPattern): string[] {
+export function redAndGreenSquares(juxtaColors: JuxtastatColors, correctPattern: CorrectPattern, compactRepr: boolean): string[] {
     if (compactRepr) {
         // RRGGG -> R<emoji 2>G<emoji 3>
         const result = []
@@ -687,7 +687,7 @@ export function redAndGreenSquares(juxtaColors: JuxtastatColors, correctPattern:
     if (correctPattern.length > maxPerLine) {
         const lines = []
         for (let i = 0; i < correctPattern.length; i += maxPerLine) {
-            lines.push(redAndGreenSquares(juxtaColors, correctPattern.slice(i, i + maxPerLine))[0])
+            lines.push(redAndGreenSquares(juxtaColors, correctPattern.slice(i, i + maxPerLine), compactRepr)[0])
         }
         return lines
     }
