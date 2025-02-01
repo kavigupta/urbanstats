@@ -25,4 +25,7 @@ RUN apt-get -y install fluxbox
 # needed for downloads directory in TestCafe
 RUN apt-get -y install xdg-user-dirs
 
+# needed for emoji display in tests
+RUN apt-get -y install fonts-noto-color-emoji
+
 ENTRYPOINT [ "/bin/bash" ] 
