@@ -129,6 +129,7 @@ test('display-life-regained', async (t) => {
     await t.expect(await juxtastatInfiniteTable()).eql(`7|${seedStr}|3E01|6|10\n`)
 })
 
+
 test('19-correct', async (t) => {
     await provideAnswers(t, 0, Array<boolean>(20).fill(true), seedStr)
     // should have 7 lives
@@ -160,6 +161,27 @@ test('19-correct', async (t) => {
         'Juxtastat Infinite 20/∞',
         '',
         '🟩2️⃣0️⃣🟥7️⃣',
+        '',
+        '🥇 Personal Best!',
+        '',
+        `https://juxtastat.org/${param}`,
+    ])
+})
+
+
+test('18-correct-emoji-compact', async (t) => {
+    await provideAnswers(t, 0, Array<boolean>(18).fill(true), seedStr)
+    await provideAnswers(t, 18, Array<boolean>(6).fill(false), seedStr)
+    await t.click(Selector('[data-test-id=juxtastatCompactEmoji]'))
+    await quizScreencap(t)
+    await safeReload(t) // Copied! -> Copy Link
+    await t.expect(await Selector('#quiz-result-summary-emoji').innerText).eql(
+        '🟩1️⃣8️⃣🟥6️⃣',
+    )
+    await t.expect(await copyLines(t)).eql([
+        'Juxtastat Infinite 18/∞',
+        '',
+        '🟩1️⃣8️⃣🟥6️⃣',
         '',
         '🥇 Personal Best!',
         '',
