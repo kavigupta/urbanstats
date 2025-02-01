@@ -344,6 +344,15 @@ export function quizTest({ platform }: { platform: 'desktop' | 'mobile' }): void
         await t.expect(copies).eql(['Juxtastat 100 4/5\n\n🟩🟩🟩🟩🟥\n\nhttps://juxtastat.org/#date=100'])
     })
 
+    test('share button copy click twice', async (t) => {
+        const copies = await withMockedClipboard(t, async () => {
+            await t.click(Selector('button').withText('Copy'))
+            await t.click(Selector('button').withText('Copy'))
+        })
+        const text = 'Juxtastat 100 4/5\n\n🟩🟩🟩🟩🟥\n\nhttps://juxtastat.org/#date=100'
+        await t.expect(copies).eql([text, text])
+    })
+
     quizFixture('several quiz results', `${target}/quiz.html#date=90`,
         {
             quiz_history: JSON.stringify({
