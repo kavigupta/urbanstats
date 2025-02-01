@@ -10,7 +10,7 @@ import { endpoint, QuizDescriptorWithTime, QuizDescriptorWithStats, QuizFriends,
 import { CorrectPattern } from './quiz-result'
 import { parseTimeIdentifier } from './statistics'
 
-type ResultToDisplayForFriends = { corrects: CorrectPattern } | { forThisSeed: number, maxScore: number, maxScoreSeed: string, maxScoreVersion: number }
+export type ResultToDisplayForFriends = { corrects: CorrectPattern } | { forThisSeed: number, maxScore: number, maxScoreSeed: string, maxScoreVersion: number }
 
 interface FriendResponse { result: ResultToDisplayForFriends | null, friends: boolean, idError?: string }
 type FriendScore = { name?: string } & FriendResponse

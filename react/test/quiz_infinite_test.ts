@@ -1,7 +1,7 @@
 import { Selector } from 'testcafe'
 
 import { runQuery } from './quiz_test_template'
-import { clickButton, quizFixture, withMockedClipboard } from './quiz_test_utils'
+import { clickButton, collectCorrectJuxtaInfiniteAnswersFixture, provideAnswers, quizFixture, withMockedClipboard } from './quiz_test_utils'
 import {
     target,
     safeReload,
@@ -34,57 +34,12 @@ async function correctIncorrect(t: TestController): Promise<boolean[]> {
 
 const localStorageDefault = { persistent_id: '000000000000007', secure_id: '00000003' }
 
-const correctAnswerSequences = new Map<string, string[]>()
-
-quizFixture(
-    'collect correct answers',
-    `${target}/quiz.html`,
-    localStorageDefault,
-    ``,
-    'desktop',
-)
-
 const seeds = ['deadbeef00', 'deadbeef01', 'deadbeef02', 'deadbeef03', 'deadbeef04', 'deadbeef05', 'deadbeef06']
+const version = 1
 
-test('collect correct answers', async (t) => {
-    for (const seed of seeds) {
-        // set localStorage such that I_{seedStr}_{version} has had 30 questions answered
-        await t.eval(() => {
-            localStorage.quiz_history = JSON.stringify({
-                [`I_${seed}_${version}`]: {
-                    // false so the quiz ends
-                    correct_pattern: Array(30).fill(false),
-                    choices: Array(30).fill('a'),
-                },
-            })
-        }, { dependencies: { seed, version } })
-        await t.navigateTo(`${target}/quiz.html#mode=infinite&seed=${seed}&v=${version}`)
-        await safeReload(t)
-        await waitForQuizLoading(t)
-        // Get all quiz_result_symbol elements and the text therein
-        const symbols = Selector('.quiz_result_comparison_symbol')
-        const symbolsCount = await symbols.count
-        const correctAnswers: string[] = []
-        for (let i = 0; i < symbolsCount; i++) {
-            const symbol = symbols.nth(i)
-            const text = await symbol.innerText
-            if (text === '>') {
-                correctAnswers.push('a')
-            }
-            else if (text === '<') {
-                correctAnswers.push('b')
-            }
-            else {
-                throw new Error(`unexpected text ${text} in ${await symbol.textContent}`)
-            }
-        }
-        correctAnswerSequences.set(seed, correctAnswers)
-    }
-})
+collectCorrectJuxtaInfiniteAnswersFixture(seeds, version)
 
 const seedStr = 'deadbeef00'
-
-const version = 1
 
 const param = `#mode=infinite&seed=${seedStr}&v=${version}`
 quizFixture(
@@ -94,18 +49,6 @@ quizFixture(
     ``,
     'desktop',
 )
-
-async function provideAnswers(t: TestController, start: number, isCorrect: boolean[] | string, seed: string): Promise<void> {
-    // check if isCorrect is a string, then interpret as 0s and 1s
-    if (typeof isCorrect === 'string') {
-        isCorrect = isCorrect.split('').map(c => c === '1')
-    }
-    const correctAnswerSequence = correctAnswerSequences.get(seed)!
-    for (let i = start; i < start + isCorrect.length; i++) {
-        await clickButton(t, isCorrect[i - start] === (correctAnswerSequence[i] === 'a') ? 'a' : 'b')
-        await t.wait(500)
-    }
-}
 
 type Emoji = 'Y' | 'N'
 

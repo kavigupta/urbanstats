@@ -4,6 +4,7 @@ import { Navigator } from '../navigation/Navigator'
 import { useColors, useJuxtastatColors } from '../page_template/colors'
 
 import { QuizDescriptor, QuizDescriptorWithTime, QuizHistory } from './quiz'
+import { ResultToDisplayForFriends } from './quiz-friends'
 import { getInfiniteQuizzes, parseTimeIdentifier } from './statistics'
 
 export function QuizStatistics(
@@ -255,6 +256,20 @@ export function ordinalThis(quiz: QuizDescriptor & { kind: 'infinite' }, wholeHi
             return thisOrdinal
         default:
             return undefined
+    }
+}
+
+export function ourResultToDisplayForFriends(quiz: QuizDescriptor & { kind: 'infinite' }, wholeHistory: QuizHistory): ResultToDisplayForFriends {
+    const { sortedIndices, seedVersions, numCorrects } = juxtastatInfiniteDisplay(quiz, wholeHistory)
+    const thisIndex = seedVersions.findIndex(([seed, version]) => seed === quiz.seed && version === quiz.version)
+    const thisNumCorrect = numCorrects[sortedIndices.indexOf(thisIndex)]
+    const bestIndex = sortedIndices[0]
+
+    return {
+        forThisSeed: thisNumCorrect,
+        maxScore: numCorrects[bestIndex],
+        maxScoreSeed: seedVersions[bestIndex][0],
+        maxScoreVersion: seedVersions[bestIndex][1],
     }
 }
 

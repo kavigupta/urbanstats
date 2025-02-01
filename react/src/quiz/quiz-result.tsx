@@ -15,7 +15,7 @@ import { JuxtaQuestion, QuizDescriptor, QuizHistory, QuizQuestion, RetroQuestion
 import { ExportImport, Header, UserId } from './quiz-components'
 import { QuizFriendsPanel } from './quiz-friends'
 import { renderQuestion } from './quiz-question'
-import { AudienceStatistics, Medal, ordinalThis, QuizStatistics } from './quiz-statistics'
+import { AudienceStatistics, Medal, ordinalThis, ourResultToDisplayForFriends, QuizStatistics } from './quiz-statistics'
 import { getCachedPerQuestionStats, getPerQuestionStats, PerQuestionStats, reportToServer } from './statistics'
 
 export type CorrectPattern = (boolean | 0 | 1)[]
@@ -134,7 +134,7 @@ export function QuizResult(props: QuizResultProps): ReactNode {
             <div className="gap_small"></div>
             {
                 // TODO stats for infinite quiz
-                props.quizDescriptor.kind === 'custom' || props.quizDescriptor.kind === 'infinite'
+                props.quizDescriptor.kind === 'custom'
                     ? undefined
                     : (
                             <div style={{ margin: 'auto', width: '100%', maxWidth: '500px' }}>
@@ -142,7 +142,11 @@ export function QuizResult(props: QuizResultProps): ReactNode {
                                     quizFriends={quizFriends}
                                     quizDescriptor={props.quizDescriptor}
                                     setQuizFriends={setQuizFriends}
-                                    myResult={{ corrects: correctPattern }}
+                                    myResult={
+                                        props.quizDescriptor.kind === 'infinite'
+                                            ? ourResultToDisplayForFriends(props.quizDescriptor, props.wholeHistory)
+                                            : { corrects: correctPattern }
+                                    }
                                 />
                             </div>
                         )

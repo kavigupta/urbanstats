@@ -353,7 +353,7 @@ def _infinite_results(c, for_user, seed, version):
 
     c.execute(
         "SELECT seed, version, score FROM JuxtaStatInfiniteStats WHERE user=? AND score=(SELECT MAX(score) FROM JuxtaStatInfiniteStats WHERE user=?)",
-        (for_user,),
+        (for_user, for_user),
     )
     res = c.fetchone()
     max_score_seed = None if res is None else res[0]
