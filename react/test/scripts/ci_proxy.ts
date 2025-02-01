@@ -49,6 +49,7 @@ export async function startProxy(): Promise<void> {
             return {
                 ...filteredHeaders,
                 'content-type': mimeType ?? headers['content-type'],
+                ...(process.env.GITHUB_TOKEN !== undefined ? { authorization: `Bearer ${process.env.GITHUB_TOKEN}` } : {}),
             }
         },
     }))
