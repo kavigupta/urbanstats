@@ -11,7 +11,7 @@ import { endpoint, QuizDescriptorWithTime, QuizDescriptorWithStats, QuizFriends,
 import { CorrectPattern } from './quiz-result'
 import { parseTimeIdentifier } from './statistics'
 
-export type ResultToDisplayForFriends = { corrects: CorrectPattern } | { forThisSeed: number, maxScore: number, maxScoreSeed: string, maxScoreVersion: number }
+export type ResultToDisplayForFriends = { corrects: CorrectPattern } | { forThisSeed: number | null, maxScore: number | null, maxScoreSeed: string | null, maxScoreVersion: number | null }
 
 interface FriendResponse { result: ResultToDisplayForFriends | null, friends: boolean, idError?: string }
 type FriendScore = { name?: string } & FriendResponse
@@ -52,7 +52,7 @@ async function infiniteResponse(
         headers: {
             'Content-Type': 'application/json',
         },
-    }).then(x => x.json()) as { results: { forThisSeed: number, maxScore: number, maxScoreSeed: string, maxScoreVersion: number, friends: boolean, idError?: string }[] } | { error: string }
+    }).then(x => x.json()) as { results: { forThisSeed: number | null, maxScore: number | null, maxScoreSeed: string | null, maxScoreVersion: number | null, friends: boolean, idError?: string }[] } | { error: string }
     if ('error' in friendScoresResponse) {
         // probably some kind of auth error. Handled elsewhere
         return undefined
@@ -160,7 +160,7 @@ export function QuizFriendsPanel(props: {
             <div style={{ opacity: isLoading ? 0.5 : 1, pointerEvents: isLoading ? 'none' : undefined }}>
                 <WithError content={content} error={error} />
             </div>
-            { isLoading ? <MoonLoader size={spinnerSize} color={colors.textMain} cssOverride={spinnerStyle} /> : null}
+            {isLoading ? <MoonLoader size={spinnerSize} color={colors.textMain} cssOverride={spinnerStyle} /> : null}
         </div>
     )
 }
@@ -337,23 +337,29 @@ function FriendScoreCorrects(props: FriendScore & { otherResults: ResultToDispla
         )
     }
     if ('forThisSeed' in props.result) {
-        const link = navContext.link({
-            kind: 'quiz', mode: 'infinite', seed: props.result.maxScoreSeed, v: props.result.maxScoreVersion,
-        }, { scroll: { kind: 'position', top: 0 } })
-        const relevantOtherResults = props.otherResults.filter(x => 'forThisSeed' in x) as { forThisSeed: number, maxScore: number }[]
+        const link
+            = props.result.maxScoreSeed === null || props.result.maxScoreVersion === null
+                // eslint-disable-next-line @typescript-eslint/no-empty-function -- this is a dummy onClick function for when there is no link
+                ? { href: undefined, onClick: () => { } }
+                : navContext.link({
+                    kind: 'quiz', mode: 'infinite', seed: props.result.maxScoreSeed, v: props.result.maxScoreVersion,
+                }, { scroll: { kind: 'position', top: 0 } })
+        const relevantOtherResults = props.otherResults.filter(
+            x => 'forThisSeed' in x,
+        )
         const baseStyle = { width: '50%', border, display: 'flex', justifyContent: 'center', alignItems: 'center', color: '#fff', fontWeight: 'bold' }
-        const maxMaxScore = Math.max(...relevantOtherResults.map(x => x.maxScore)) === props.result.maxScore
-        const maxForThisSeed = Math.max(...relevantOtherResults.map(x => x.forThisSeed)) === props.result.forThisSeed
+        const maxMaxScore = Math.max(...relevantOtherResults.map(x => x.maxScore ?? 0)) === props.result.maxScore
+        const maxForThisSeed = Math.max(...relevantOtherResults.map(x => x.forThisSeed ?? 0)) === props.result.forThisSeed
         return (
             <div style={{ display: 'flex', flexDirection: 'row', height: scoreCorrectHeight }}>
                 <div style={{ ...baseStyle, backgroundColor: maxForThisSeed ? colors.hueColors.green : colors.hueColors.blue }}>
-                    {props.result.forThisSeed}
+                    {props.result.forThisSeed ?? '-'}
                 </div>
                 <div
                     style={{ ...baseStyle, backgroundColor: maxMaxScore ? colors.hueColors.green : colors.hueColors.blue }}
                     onClick={link.onClick}
                 >
-                    <a style={{ textDecoration: 'none', color: '#fff' }} href={link.href}>{props.result.maxScore}</a>
+                    <a style={{ textDecoration: 'none', color: '#fff' }} href={link.href}>{props.result.maxScore ?? '-'}</a>
                 </div>
             </div>
         )

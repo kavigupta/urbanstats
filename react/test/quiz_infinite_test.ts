@@ -1,7 +1,7 @@
 import { Selector } from 'testcafe'
 
 import { runQuery } from './quiz_test_template'
-import { clickButton, collectCorrectJuxtaInfiniteAnswersFixture, provideAnswers, quizFixture, withMockedClipboard } from './quiz_test_utils'
+import { clickButton, collectCorrectJuxtaInfiniteAnswersFixture, friendsText, provideAnswers, quizFixture, withMockedClipboard } from './quiz_test_utils'
 import {
     target,
     safeReload,
@@ -196,6 +196,7 @@ test('several-different-quizzes', async (t) => {
         '',
         `https://juxtastat.org/${param}`,
     ])
+    await t.expect(await friendsText()).eql(['On This SeedOverall Best', 'You1212Copy Link'])
     // second score is 14
     await t.navigateTo(`${target}/quiz.html#mode=infinite&seed=deadbeef01&v=${version}`)
     await provideAnswers(t, 0, '11111' + '10' + '11110' + '111100', 'deadbeef01')
@@ -210,6 +211,7 @@ test('several-different-quizzes', async (t) => {
         '',
         `https://juxtastat.org/#mode=infinite&seed=deadbeef01&v=${version}`,
     ])
+    await t.expect(await friendsText()).eql(['On This SeedOverall Best', 'You1414Copy Link'])
     // go back to first
     await t.navigateTo(`${target}/quiz.html#mode=infinite&seed=${seedStr}&v=${version}`)
     await t.expect(await copyLines(t)).eql([
@@ -223,6 +225,7 @@ test('several-different-quizzes', async (t) => {
         `https://juxtastat.org/${param}`,
     ])
     await t.expect(await yourBestScores()).eql('Your Best Scores\n14\n#1\n12\n#2')
+    await t.expect(await friendsText()).eql(['On This SeedOverall Best', 'You1214Copy Link'])
     // go to third, third score is 8
     await t.navigateTo(`${target}/quiz.html#mode=infinite&seed=deadbeef02&v=${version}`)
     await provideAnswers(t, 0, '11110111100', 'deadbeef02')
@@ -238,6 +241,7 @@ test('several-different-quizzes', async (t) => {
         `https://juxtastat.org/#mode=infinite&seed=deadbeef02&v=${version}`,
     ])
     await t.expect(await yourBestScores()).eql('Your Best Scores\n14\n#1\n12\n#2\n8\n#3')
+    await t.expect(await friendsText()).eql(['On This SeedOverall Best', 'You814Copy Link'])
     // click on the link for first
     await clickAmount(t, '12', 0)
     await t.expect(getLocation()).eql(`${target}/quiz.html#mode=infinite&seed=${seedStr}&v=${version}`)
@@ -255,6 +259,7 @@ test('several-different-quizzes', async (t) => {
         '',
         `https://juxtastat.org/#mode=infinite&seed=deadbeef03&v=${version}`,
     ])
+    await t.expect(await friendsText()).eql(['On This SeedOverall Best', 'You1214Copy Link'])
     await t.expect(await yourBestScores()).eql('Your Best Scores\n14\n#1\n12\n#2\n12\n#2\n8\n#3')
     await clickAmount(t, '12', 0)
     await t.expect(getLocation()).eql(`${target}/quiz.html#mode=infinite&seed=deadbeef00&v=${version}`)
@@ -273,6 +278,7 @@ test('several-different-quizzes', async (t) => {
         '',
         `https://juxtastat.org/#mode=infinite&seed=deadbeef04&v=${version}`,
     ])
+    await t.expect(await friendsText()).eql(['On This SeedOverall Best', 'You714Copy Link'])
     await t.expect(await yourBestScores()).eql('Your Best Scores\n14\n#1\n12\n#2\n12\n#2\n8\n#3\n7\n#4')
     // sixth score is 6
     await t.navigateTo(`${target}/quiz.html#mode=infinite&seed=deadbeef05&v=${version}`)
@@ -285,6 +291,7 @@ test('several-different-quizzes', async (t) => {
         '',
         `https://juxtastat.org/#mode=infinite&seed=deadbeef05&v=${version}`,
     ])
+    await t.expect(await friendsText()).eql(['On This SeedOverall Best', 'You614Copy Link'])
     await t.expect(await yourBestScores()).eql('Your Best Scores\n14\n#1\n12\n#2\n12\n#2\n8\n#3\n6\n#5')
     await clickAmount(t, '12', 0)
     await t.expect(getLocation()).eql(`${target}/quiz.html#mode=infinite&seed=deadbeef00&v=${version}`)
