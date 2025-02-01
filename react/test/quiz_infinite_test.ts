@@ -167,6 +167,26 @@ test('19-correct', async (t) => {
     ])
 })
 
+test('18-correct-emoji-compact', async (t) => {
+    await provideAnswers(t, 0, Array<boolean>(18).fill(true), seedStr)
+    await provideAnswers(t, 18, Array<boolean>(6).fill(false), seedStr)
+    await t.click(Selector('[data-test-id=juxtastatCompactEmoji]'))
+    await quizScreencap(t)
+    await safeReload(t) // Copied! -> Copy Link
+    await t.expect(await Selector('#quiz-result-summary-emoji').innerText).eql(
+        '🟩1️⃣8️⃣🟥6️⃣',
+    )
+    await t.expect(await copyLines(t)).eql([
+        'Juxtastat Infinite 18/∞',
+        '',
+        '🟩1️⃣8️⃣🟥6️⃣',
+        '',
+        '🥇 Personal Best!',
+        '',
+        `https://juxtastat.org/${param}`,
+    ])
+})
+
 async function doNotReportPartial(t: TestController): Promise<void> {
     await provideAnswers(t, 0, [false, true, true, true, true], seedStr)
     await t.navigateTo(`${target}/quiz.html#mode=infinite&seed=deadbeef01&v=${version}`)
