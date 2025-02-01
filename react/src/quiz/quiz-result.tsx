@@ -2,11 +2,12 @@ import React, { CSSProperties, ReactNode, useContext, useEffect, useRef, useStat
 import { isFirefox, isMobile } from 'react-device-detect'
 
 import { JuxtastatInfiniteButton } from '../components/quiz-panel'
+import { CheckboxSetting } from '../components/sidebar'
 import { Statistic } from '../components/table'
 import { Navigator } from '../navigation/Navigator'
 import { JuxtastatColors } from '../page_template/color-themes'
 import { useColors, useJuxtastatColors } from '../page_template/colors'
-import { Settings } from '../page_template/settings'
+import { Settings, useSetting } from '../page_template/settings'
 import { getVector, VectorSettingsDictionary } from '../page_template/settings-vector'
 import { allGroups, allYears, statParents, StatPath } from '../page_template/statistic-tree'
 
@@ -185,7 +186,28 @@ interface ShareButtonProps {
     medal?: Medal
 }
 
-function ShareButton({ buttonRef, todayName, correctPattern, quizKind, medal }: ShareButtonProps): ReactNode {
+function ShareButton(props: ShareButtonProps): ReactNode {
+    const [compactRepr] = useSetting('juxtastatCompactEmoji')
+    const asb = <ActualShareButton {...props} compactRepr={compactRepr} />
+    if (props.correctPattern.length <= maxPerLine) {
+        return asb
+    }
+    return (
+        <div>
+            <div style={{ display: 'flex', justifyContent: 'center' }}>
+                <CheckboxSetting
+                    name="Compact emoji representation"
+                    settingKey="juxtastatCompactEmoji"
+                    testId="juxtastatCompactEmoji"
+                />
+            </div>
+            <div className="gap_small"></div>
+            {asb}
+        </div>
+    )
+}
+
+function ActualShareButton({ buttonRef, todayName, correctPattern, quizKind, medal, compactRepr }: (ShareButtonProps & { compactRepr: boolean })): ReactNode {
     const colors = useColors()
     const juxtaColors = useJuxtastatColors()
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- We need to check the condition for browser compatibility.
@@ -198,7 +220,7 @@ function ShareButton({ buttonRef, todayName, correctPattern, quizKind, medal }: 
             style={buttonStyle(colors.hueColors.green)}
             ref={buttonRef}
             onClick={async () => {
-                const [text, url] = await summary(juxtaColors, todayName, correctPattern, quizKind, medal)
+                const [text, url] = await summary(juxtaColors, todayName, correctPattern, quizKind, medal, compactRepr)
 
                 async function copyToClipboard(): Promise<void> {
                     await navigator.clipboard.writeText(`${text}\n${url}`)
@@ -372,6 +394,7 @@ function summaryTexts(correctPattern: CorrectPattern, quizKind: QuizKind): [stri
 }
 
 export function Summary(props: { correctPattern: CorrectPattern, quizKind: QuizKind }): ReactNode {
+    const [compactRepr] = useSetting('juxtastatCompactEmoji')
     const juxtaColors = useJuxtastatColors()
     const [prefix, summaryText] = summaryTexts(props.correctPattern, props.quizKind)
     const show = `${prefix} ${summaryText}`
@@ -380,7 +403,7 @@ export function Summary(props: { correctPattern: CorrectPattern, quizKind: QuizK
             <span className="serif quiz_summary" id="quiz-result-summary-words">{show}</span>
             <div id="quiz-result-summary-emoji">
                 {
-                    redAndGreenSquares(juxtaColors, props.correctPattern).map((line, index) => (
+                    redAndGreenSquares(juxtaColors, props.correctPattern, compactRepr).map((line, index) => (
                         <div className="serif quiz_summary" key={index}>{line}</div>
                     ))
                 }
@@ -393,7 +416,7 @@ function renderMedalAsString(medal: Medal): string {
     return ['🥇 Personal Best!', '🥈 Personal 2nd Best!', '🥉 Personal 3rd Best!'][medal - 1]
 }
 
-export async function summary(juxtaColors: JuxtastatColors, todayName: string | undefined, correctPattern: CorrectPattern, quizKind: QuizKind, medal: Medal | undefined): Promise<[string, string]> {
+export async function summary(juxtaColors: JuxtastatColors, todayName: string | undefined, correctPattern: CorrectPattern, quizKind: QuizKind, medal: Medal | undefined, compactRepr: boolean): Promise<[string, string]> {
     // wordle-style summary
     const [, summaryText] = summaryTexts(correctPattern, quizKind)
     let text = nameOfQuizKind(quizKind)
@@ -405,7 +428,7 @@ export async function summary(juxtaColors: JuxtastatColors, todayName: string | 
     text += '\n'
     text += '\n'
 
-    text += redAndGreenSquares(juxtaColors, correctPattern).join('\n')
+    text += redAndGreenSquares(juxtaColors, correctPattern, compactRepr).join('\n')
 
     if (medal !== undefined) {
         text += '\n'
@@ -625,11 +648,77 @@ function settingsOverrides(questionStatPath?: StatPath): Partial<VectorSettingsD
     ])
 }
 
-export function redAndGreenSquares(juxtaColors: JuxtastatColors, correctPattern: CorrectPattern): string[] {
+function emojiForCount(count: number): string[] {
+    if (count >= 10) {
+        return [...emojiForCount(count / 10), ...emojiForCount(count % 10)]
+    }
+    switch (count) {
+        case 0:
+            return ['0️⃣']
+        case 1:
+            return ['1️⃣']
+        case 2:
+            return ['2️⃣']
+        case 3:
+            return ['3️⃣']
+        case 4:
+            return ['4️⃣']
+        case 5:
+            return ['5️⃣']
+        case 6:
+            return ['6️⃣']
+        case 7:
+            return ['7️⃣']
+        case 8:
+            return ['8️⃣']
+        case 9:
+            return ['9️⃣']
+    }
+    throw new Error(`unexpected count ${count}`)
+}
+
+function toCompactRepresentation(correctPattern: CorrectPattern, correct: string, incorrect: string): string[] {
+    // RRGGG -> R<emoji 2>G<emoji 3>
+    const result: string[][] = [[]]
+    let currentSymbol: boolean | undefined = undefined
+    let currentCount = 0
+
+    const add = (symbol: boolean | undefined, count: number): void => {
+        if (symbol === undefined) {
+            return
+        }
+        const last = result[result.length - 1]
+        last.push(symbol ? correct : incorrect)
+        if (count > 1) {
+            last.push(...emojiForCount(count))
+        }
+        if (last.length >= maxPerLine) {
+            result.push([])
+        }
+    }
+
+    for (const x of correctPattern.map(t => t ? true : false)) {
+        if (x === currentSymbol) {
+            currentCount += 1
+        }
+        else {
+            add(currentSymbol, currentCount)
+            currentSymbol = x
+            currentCount = 1
+        }
+    }
+    add(currentSymbol, currentCount)
+    return result.map(line => line.join(''))
+}
+
+export function redAndGreenSquares(juxtaColors: JuxtastatColors, correctPattern: CorrectPattern, compactRepr: boolean): string[] {
+    if (compactRepr) {
+        return toCompactRepresentation(correctPattern, juxtaColors.correctEmoji, juxtaColors.incorrectEmoji)
+    }
     if (correctPattern.length > maxPerLine) {
         const lines = []
         for (let i = 0; i < correctPattern.length; i += maxPerLine) {
-            lines.push(redAndGreenSquares(juxtaColors, correctPattern.slice(i, i + maxPerLine))[0])
+            lines.push(redAndGreenSquares(juxtaColors, correctPattern.slice(i, i + maxPerLine), compactRepr)[0])
         }
         return lines
     }
