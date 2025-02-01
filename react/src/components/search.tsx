@@ -171,12 +171,14 @@ type SearchWorker = (params: SearchParams) => Promise<string[]>
 
 function createSearchWorker(): SearchWorker {
     const worker = new Worker(new URL('../searchWorker', import.meta.url))
+    const messageQueue: ((results: string[]) => void)[] = []
+    worker.addEventListener('message', (message: MessageEvent<string[]>) => {
+        messageQueue.shift()!(message.data)
+    })
     const result: SearchWorker = (params) => {
         worker.postMessage(params)
         return new Promise((resolve) => {
-            worker.addEventListener('message', (message: MessageEvent<string[]>) => {
-                resolve(message.data)
-            }, { once: true })
+            messageQueue.push(resolve)
         })
     }
     workerTerminatorRegistry.register(result, worker)
