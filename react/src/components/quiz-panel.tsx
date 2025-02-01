@@ -37,12 +37,11 @@ function QuizPanelNoResets(props: { quizDescriptor: QuizDescriptor, todayName?: 
     switch (props.quizDescriptor.kind) {
         case 'juxtastat':
         case 'retrostat':
+        case 'infinite':
             quizHistory = persistentQuizHistory
             setQuizHistory = newHistory => QuizLocalStorage.shared.history.value = newHistory
             break
         case 'custom':
-        // TODO stats for infinite quiz
-        case 'infinite':
             quizHistory = transientQuizHistory
             setQuizHistory = (newHistory) => { setTransientQuizHistory(newHistory) }
             break

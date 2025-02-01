@@ -1,16 +1,17 @@
-import React, { CSSProperties, ReactNode, useEffect, useState } from 'react'
+import React, { CSSProperties, ReactNode, useContext, useEffect, useState } from 'react'
 import { GridLoader, MoonLoader } from 'react-spinners'
 
 import { EditableString } from '../components/table'
+import { Navigator } from '../navigation/Navigator'
 import { urlFromPageDescriptor } from '../navigation/PageDescriptor'
 import { useColors, useJuxtastatColors } from '../page_template/colors'
 import { mixWithBackground } from '../utils/color'
 
-import { endpoint, QuizDescriptorWithTime, QuizFriends, QuizLocalStorage } from './quiz'
+import { endpoint, QuizDescriptorWithTime, QuizDescriptorWithStats, QuizFriends, QuizLocalStorage, QuizDescriptor } from './quiz'
 import { CorrectPattern } from './quiz-result'
 import { parseTimeIdentifier } from './statistics'
 
-interface ResultToDisplayForFriends { corrects: CorrectPattern }
+export type ResultToDisplayForFriends = { corrects: CorrectPattern } | { forThisSeed: number | null, maxScore: number | null, maxScoreSeed: string | null, maxScoreVersion: number | null }
 
 interface FriendResponse { result: ResultToDisplayForFriends | null, friends: boolean, idError?: string }
 type FriendScore = { name?: string } & FriendResponse
@@ -39,10 +40,34 @@ async function juxtaRetroResponse(
     }))
 }
 
+async function infiniteResponse(
+    user: string,
+    secureID: string,
+    quizDescriptor: QuizDescriptor & { kind: 'infinite' },
+    requesters: string[],
+): Promise<FriendResponse[] | undefined> {
+    const friendScoresResponse = await fetch(`${endpoint}/juxtastat/infinite_results`, {
+        method: 'POST',
+        body: JSON.stringify({ user, secureID, requesters, seed: quizDescriptor.seed, version: quizDescriptor.version }),
+        headers: {
+            'Content-Type': 'application/json',
+        },
+    }).then(x => x.json()) as { results: { forThisSeed: number | null, maxScore: number | null, maxScoreSeed: string | null, maxScoreVersion: number | null, friends: boolean, idError?: string }[] } | { error: string }
+    if ('error' in friendScoresResponse) {
+        // probably some kind of auth error. Handled elsewhere
+        return undefined
+    }
+    return friendScoresResponse.results.map(x => ({
+        result: { forThisSeed: x.forThisSeed, maxScore: x.maxScore, maxScoreSeed: x.maxScoreSeed, maxScoreVersion: x.maxScoreVersion },
+        friends: x.friends,
+        idError: x.idError,
+    }))
+}
+
 export function QuizFriendsPanel(props: {
     quizFriends: QuizFriends
     setQuizFriends: (quizFriends: QuizFriends) => void
-    quizDescriptor: QuizDescriptorWithTime
+    quizDescriptor: QuizDescriptorWithStats
     myResult: ResultToDisplayForFriends
 }): ReactNode {
     const colors = useColors()
@@ -62,7 +87,10 @@ export function QuizFriendsPanel(props: {
                 // map name to id for quizFriends
                 const quizIDtoName = Object.fromEntries(props.quizFriends.map(x => [x[1], x[0]]))
                 const requesters = props.quizFriends.map(x => x[1])
-                const friendScoresResponse = await juxtaRetroResponse(user, secureID, props.quizDescriptor, requesters)
+                const friendScoresResponse
+                    = props.quizDescriptor.kind === 'infinite'
+                        ? await infiniteResponse(user, secureID, props.quizDescriptor, requesters)
+                        : await juxtaRetroResponse(user, secureID, props.quizDescriptor, requesters)
                 if (friendScoresResponse === undefined) {
                     return
                 }
@@ -79,13 +107,16 @@ export function QuizFriendsPanel(props: {
         })()
     }, [props.quizDescriptor, props.quizFriends, user, secureID])
 
+    const allResults = [props.myResult, ...friendScores.map(x => x.result)].filter(x => x !== null)
+
     const content = (
         <div>
             <div style={{ margin: 'auto', width: '100%' }}>
                 <div className="quiz_summary">Friends</div>
             </div>
             <>
-                <PlayerScore result={props.myResult} />
+                {props.quizDescriptor.kind === 'infinite' ? <InfiniteHeader /> : undefined}
+                <PlayerScore result={props.myResult} otherResults={allResults} />
 
                 {
                     friendScores.map((friendScore, idx) => (
@@ -106,6 +137,7 @@ export function QuizFriendsPanel(props: {
                             }}
                             quizFriends={props.quizFriends}
                             setQuizFriends={props.setQuizFriends}
+                            otherResults={allResults}
                         />
                     ),
                     )
@@ -128,7 +160,27 @@ export function QuizFriendsPanel(props: {
             <div style={{ opacity: isLoading ? 0.5 : 1, pointerEvents: isLoading ? 'none' : undefined }}>
                 <WithError content={content} error={error} />
             </div>
-            { isLoading ? <MoonLoader size={spinnerSize} color={colors.textMain} cssOverride={spinnerStyle} /> : null}
+            {isLoading ? <MoonLoader size={spinnerSize} color={colors.textMain} cssOverride={spinnerStyle} /> : null}
+        </div>
+    )
+}
+
+function InfiniteHeader(): ReactNode {
+    return (
+        <div
+            style={{ display: 'flex', flexDirection: 'row', height: scoreCorrectHeight, alignItems: 'center' }}
+            className="testing-friends-section"
+        >
+            <div style={{ width: '25%' }} />
+            <div style={{ width: '50%', display: 'flex', flexDirection: 'row' }}>
+                <div style={{ width: '50%', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                    On This Seed
+                </div>
+                <div style={{ width: '50%', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                    Overall Best
+                </div>
+            </div>
+            <div style={{ width: '25%' }} />
         </div>
     )
 }
@@ -136,7 +188,7 @@ export function QuizFriendsPanel(props: {
 const scoreCorrectHeight = '2em'
 const addFriendHeight = '1.5em'
 
-function PlayerScore(props: { result: ResultToDisplayForFriends }): ReactNode {
+function PlayerScore(props: { result: ResultToDisplayForFriends, otherResults: ResultToDisplayForFriends[] }): ReactNode {
     const copyFriendLink = async (): Promise<void> => {
         const playerName = prompt('Enter your name:')
 
@@ -161,7 +213,7 @@ function PlayerScore(props: { result: ResultToDisplayForFriends }): ReactNode {
                 You
             </div>
             <div style={{ width: '50%' }}>
-                <FriendScoreCorrects result={props.result} friends={true} />
+                <FriendScoreCorrects result={props.result} friends={true} otherResults={props.otherResults} />
             </div>
             <div style={{ width: '25%', display: 'flex', height: addFriendHeight }}>
                 <button
@@ -182,6 +234,7 @@ function FriendScore(props: {
     removeFriend: () => Promise<void>
     quizFriends: QuizFriends
     setQuizFriends: (x: QuizFriends) => void
+    otherResults: ResultToDisplayForFriends[]
 }): ReactNode {
     const colors = useColors()
 
@@ -230,7 +283,7 @@ function FriendScore(props: {
                 />
             </div>
             <div style={{ width: '50%' }}>
-                <FriendScoreCorrects {...props.friendScore} />
+                <FriendScoreCorrects {...props.friendScore} otherResults={props.otherResults} />
             </div>
             <div style={{ width: '25%', display: 'flex', height: addFriendHeight }}>
                 <button
@@ -248,9 +301,10 @@ function FriendScore(props: {
     return <WithError error={error} content={row} />
 }
 
-function FriendScoreCorrects(props: FriendScore): ReactNode {
+function FriendScoreCorrects(props: FriendScore & { otherResults: ResultToDisplayForFriends[] }): ReactNode {
     const colors = useColors()
     const juxtaColors = useJuxtastatColors()
+    const navContext = useContext(Navigator.Context)
     const border = `1px solid ${colors.background}`
     const greyedOut = {
         backgroundColor: mixWithBackground(colors.hueColors.orange, 0.5, colors.background),
@@ -280,6 +334,34 @@ function FriendScoreCorrects(props: FriendScore): ReactNode {
     if (props.result === null) {
         return (
             <div style={greyedOut}>Not Done Yet</div>
+        )
+    }
+    if ('forThisSeed' in props.result) {
+        const link
+            = props.result.maxScoreSeed === null || props.result.maxScoreVersion === null
+                // eslint-disable-next-line @typescript-eslint/no-empty-function -- this is a dummy onClick function for when there is no link
+                ? { href: undefined, onClick: () => { } }
+                : navContext.link({
+                    kind: 'quiz', mode: 'infinite', seed: props.result.maxScoreSeed, v: props.result.maxScoreVersion,
+                }, { scroll: { kind: 'position', top: 0 } })
+        const relevantOtherResults = props.otherResults.filter(
+            x => 'forThisSeed' in x,
+        )
+        const baseStyle = { width: '50%', border, display: 'flex', justifyContent: 'center', alignItems: 'center', color: '#fff', fontWeight: 'bold' }
+        const maxMaxScore = Math.max(...relevantOtherResults.map(x => x.maxScore ?? 0)) === props.result.maxScore
+        const maxForThisSeed = Math.max(...relevantOtherResults.map(x => x.forThisSeed ?? 0)) === props.result.forThisSeed
+        return (
+            <div style={{ display: 'flex', flexDirection: 'row', height: scoreCorrectHeight }}>
+                <div style={{ ...baseStyle, backgroundColor: maxForThisSeed ? colors.hueColors.green : colors.hueColors.blue }}>
+                    {props.result.forThisSeed ?? '-'}
+                </div>
+                <div
+                    style={{ ...baseStyle, backgroundColor: maxMaxScore ? colors.hueColors.green : colors.hueColors.blue }}
+                    onClick={link.onClick}
+                >
+                    <a style={{ textDecoration: 'none', color: '#fff' }} href={link.href}>{props.result.maxScore ?? '-'}</a>
+                </div>
+            </div>
         )
     }
     const corrects = props.result.corrects

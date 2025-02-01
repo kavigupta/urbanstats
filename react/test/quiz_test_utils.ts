@@ -5,7 +5,7 @@ import { promisify } from 'util'
 import { execa, execaSync } from 'execa'
 import { ClientFunction, Selector } from 'testcafe'
 
-import { safeReload, screencap, urbanstatsFixture, waitForQuizLoading } from './test_utils'
+import { safeReload, screencap, target, urbanstatsFixture, waitForQuizLoading } from './test_utils'
 
 export async function quizScreencap(t: TestController): Promise<void> {
     await t.eval(() => {
@@ -166,3 +166,67 @@ export const friendsText = ClientFunction<string[], []>(() => {
     }
     return results
 })
+
+const correctAnswerSequences = new Map<string, string[]>()
+
+async function collectCorrectJuxtaInfiniteAnswers(t: TestController, seeds: string[], version: number): Promise<void> {
+    for (const seed of seeds) {
+        // set localStorage such that I_{seedStr}_{version} has had 30 questions answered
+        await t.eval(() => {
+            localStorage.quiz_history = JSON.stringify({
+                [`I_${seed}_${version}`]: {
+                    // false so the quiz ends
+                    correct_pattern: Array(30).fill(false),
+                    choices: Array(30).fill('a'),
+                },
+            })
+        }, { dependencies: { seed, version } })
+        await t.navigateTo(`${target}/quiz.html#mode=infinite&seed=${seed}&v=${version}`)
+        await safeReload(t)
+        await waitForQuizLoading(t)
+        // Get all quiz_result_symbol elements and the text therein
+        const symbols = Selector('.quiz_result_comparison_symbol')
+        const symbolsCount = await symbols.count
+        const correctAnswers: string[] = []
+        for (let i = 0; i < symbolsCount; i++) {
+            const symbol = symbols.nth(i)
+            const text = await symbol.innerText
+            if (text === '>') {
+                correctAnswers.push('a')
+            }
+            else if (text === '<') {
+                correctAnswers.push('b')
+            }
+            else {
+                throw new Error(`unexpected text ${text} in ${await symbol.textContent}`)
+            }
+        }
+        correctAnswerSequences.set(seed, correctAnswers)
+    }
+}
+
+export function collectCorrectJuxtaInfiniteAnswersFixture(seeds: string[], version: number): void {
+    quizFixture(
+        'collect correct answers',
+        `${target}/quiz.html`,
+        {},
+        ``,
+        'desktop',
+    )
+
+    test('collect correct answers', async (t) => {
+        await collectCorrectJuxtaInfiniteAnswers(t, seeds, version)
+    })
+}
+
+export async function provideAnswers(t: TestController, start: number, isCorrect: boolean[] | string, seed: string): Promise<void> {
+    // check if isCorrect is a string, then interpret as 0s and 1s
+    if (typeof isCorrect === 'string') {
+        isCorrect = isCorrect.split('').map(c => c === '1')
+    }
+    const correctAnswerSequence = correctAnswerSequences.get(seed)!
+    for (let i = start; i < start + isCorrect.length; i++) {
+        await clickButton(t, isCorrect[i - start] === (correctAnswerSequence[i] === 'a') ? 'a' : 'b')
+        await t.wait(500)
+    }
+}

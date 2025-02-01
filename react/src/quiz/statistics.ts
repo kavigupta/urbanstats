@@ -1,3 +1,4 @@
+import { infiniteQuizIsDone, validQuizInfiniteVersions } from './infinite'
 import { endpoint, QuizDescriptorWithTime, QuizHistory, QuizKindWithStats, QuizKindWithTime, QuizLocalStorage } from './quiz'
 
 async function registerUser(userId: string, secureID: string): Promise<boolean> {
@@ -50,6 +51,68 @@ async function reportToServerGeneric(wholeHistory: QuizHistory, endpointLatest: 
     return false
 }
 
+export function getInfiniteQuizzes(wholeHistory: QuizHistory, isDone: boolean): [[string, number][], string[]] {
+    const seedVersions: [string, number][] = []
+    const keys: string[] = []
+    for (const day of Object.keys(wholeHistory)) {
+        const parsed = parseInfiniteSeedVersion(day)
+        if (parsed === undefined) {
+            continue
+        }
+        if (infiniteQuizIsDone(wholeHistory[day].correct_pattern) !== isDone) {
+            continue
+        }
+        if (!(validQuizInfiniteVersions as number[]).includes(parsed[1])) {
+            continue
+        }
+        seedVersions.push(parsed)
+        keys.push(day)
+    }
+    return [seedVersions, keys]
+}
+
+async function getUnreportedSeedVersions(user: string, secureID: string, wholeHistory: QuizHistory): Promise<[[string, number][], string[]] | undefined> {
+    const [seedVersions, keys] = getInfiniteQuizzes(wholeHistory, true)
+    // post seedVersions to /juxtastat_infinite/has_infinite_stats
+    const isError = await registerUser(user, secureID)
+    if (isError) {
+        return undefined
+    }
+    const response = await fetch(`${endpoint}/juxtastat_infinite/has_infinite_stats`, {
+        method: 'POST',
+        body: JSON.stringify({ user, secureID, seedVersions }),
+        headers: {
+            'Content-Type': 'application/json',
+        },
+    })
+    const json = await response.json() as { has: boolean[] }
+    const has = json.has
+    return [seedVersions.filter((_, index) => !has[index]), keys.filter((_, index) => !has[index])]
+}
+
+async function reportToServerInfinite(wholeHistory: QuizHistory): Promise<boolean> {
+    const user = QuizLocalStorage.shared.uniquePersistentId.value
+    const secureID = QuizLocalStorage.shared.uniqueSecureId.value
+    const res = await getUnreportedSeedVersions(user, secureID, wholeHistory)
+    if (res === undefined) {
+        return true
+    }
+    const [seedVersions, keys] = res
+    for (let i = 0; i < seedVersions.length; i++) {
+        const [seed, version] = seedVersions[i]
+        const key = keys[i]
+        const dayStats = wholeHistory[key]
+        await fetch(`${endpoint}/juxtastat_infinite/store_user_stats`, {
+            method: 'POST',
+            body: JSON.stringify({ user, secureID, seed, version, corrects: dayStats.correct_pattern }),
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        })
+    }
+    return false
+}
+
 export function parseTimeIdentifier(quizKind: QuizKindWithTime, today: string): number {
     switch (quizKind) {
         case 'juxtastat':
@@ -75,12 +138,23 @@ function parseRetrostatWeek(day: string): number {
     return parseInt(day.substring(1))
 }
 
+function parseInfiniteSeedVersion(day: string): [string, number] | undefined {
+    const pattern = /^I_([0-9a-zA-Z]+)_([0-9]+)$/
+    const match = pattern.exec(day)
+    if (match === null) {
+        return undefined
+    }
+    return [match[1], parseInt(match[2])]
+}
+
 export async function reportToServer(wholeHistory: QuizHistory, kind: QuizKindWithStats): Promise<boolean> {
     switch (kind) {
         case 'juxtastat':
             return await reportToServerGeneric(wholeHistory, '/juxtastat/latest_day', '/juxtastat/store_user_stats', parseJuxtastatDay)
         case 'retrostat':
             return await reportToServerGeneric(wholeHistory, '/retrostat/latest_week', '/retrostat/store_user_stats', parseRetrostatWeek)
+        case 'infinite':
+            return await reportToServerInfinite(wholeHistory)
     }
 }
 

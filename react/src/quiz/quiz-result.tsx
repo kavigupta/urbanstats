@@ -15,7 +15,7 @@ import { JuxtaQuestion, QuizDescriptor, QuizHistory, QuizQuestion, RetroQuestion
 import { ExportImport, Header, UserId } from './quiz-components'
 import { QuizFriendsPanel } from './quiz-friends'
 import { renderQuestion } from './quiz-question'
-import { AudienceStatistics, QuizStatistics } from './quiz-statistics'
+import { AudienceStatistics, Medal, ordinalThis, ourResultToDisplayForFriends, QuizStatistics } from './quiz-statistics'
 import { getCachedPerQuestionStats, getPerQuestionStats, PerQuestionStats, reportToServer } from './statistics'
 
 export type CorrectPattern = (boolean | 0 | 1)[]
@@ -37,7 +37,6 @@ interface QuizResultProps {
 export function QuizResult(props: QuizResultProps): ReactNode {
     const button = useRef<HTMLButtonElement>(null)
     const [stats, setStats] = useState<PerQuestionStats>((
-        // TODO stats for infinite quiz
         props.quizDescriptor.kind === 'custom' || props.quizDescriptor.kind === 'infinite'
             ? undefined
             : getCachedPerQuestionStats(props.quizDescriptor)
@@ -51,10 +50,13 @@ export function QuizResult(props: QuizResultProps): ReactNode {
 
     useEffect(() => {
         // TODO stats for infinite quiz
-        if (props.quizDescriptor.kind === 'custom' || props.quizDescriptor.kind === 'infinite') {
+        if (props.quizDescriptor.kind === 'custom') {
             return
         }
         void reportToServer(props.wholeHistory, props.quizDescriptor.kind).then(setAuthError)
+        if (props.quizDescriptor.kind === 'infinite') {
+            return
+        }
         void getPerQuestionStats(props.quizDescriptor).then(setStats)
     }, [props.wholeHistory, props.quizDescriptor])
 
@@ -90,6 +92,7 @@ export function QuizResult(props: QuizResultProps): ReactNode {
                 todayName={props.todayName}
                 correctPattern={correctPattern}
                 quizKind={props.quizDescriptor.kind}
+                medal={props.quizDescriptor.kind === 'infinite' ? ordinalThis(props.quizDescriptor, props.wholeHistory) : undefined}
             />
             <div className="gap" />
             <div className="gap"></div>
@@ -113,12 +116,7 @@ export function QuizResult(props: QuizResultProps): ReactNode {
                     : undefined
             }
             <div className="gap"></div>
-            {
-                // TODO stats for infinite quiz
-                props.quizDescriptor.kind === 'custom' || props.quizDescriptor.kind === 'infinite'
-                    ? undefined
-                    : <QuizStatistics wholeHistory={props.wholeHistory} quiz={props.quizDescriptor} />
-            }
+            <QuizStatistics wholeHistory={props.wholeHistory} quiz={props.quizDescriptor} />
             <div className="gap"></div>
             <span className="serif quiz_summary">Details (spoilers, don&apos;t share!)</span>
             <div className="gap_small"></div>
@@ -136,7 +134,7 @@ export function QuizResult(props: QuizResultProps): ReactNode {
             <div className="gap_small"></div>
             {
                 // TODO stats for infinite quiz
-                props.quizDescriptor.kind === 'custom' || props.quizDescriptor.kind === 'infinite'
+                props.quizDescriptor.kind === 'custom'
                     ? undefined
                     : (
                             <div style={{ margin: 'auto', width: '100%', maxWidth: '500px' }}>
@@ -144,7 +142,11 @@ export function QuizResult(props: QuizResultProps): ReactNode {
                                     quizFriends={quizFriends}
                                     quizDescriptor={props.quizDescriptor}
                                     setQuizFriends={setQuizFriends}
-                                    myResult={{ corrects: correctPattern }}
+                                    myResult={
+                                        props.quizDescriptor.kind === 'infinite'
+                                            ? ourResultToDisplayForFriends(props.quizDescriptor, props.wholeHistory)
+                                            : { corrects: correctPattern }
+                                    }
                                 />
                             </div>
                         )
@@ -180,9 +182,10 @@ interface ShareButtonProps {
     todayName: string | undefined
     correctPattern: CorrectPattern
     quizKind: QuizKind
+    medal?: Medal
 }
 
-function ShareButton({ buttonRef, todayName, correctPattern, quizKind }: ShareButtonProps): ReactNode {
+function ShareButton({ buttonRef, todayName, correctPattern, quizKind, medal }: ShareButtonProps): ReactNode {
     const colors = useColors()
     const juxtaColors = useJuxtastatColors()
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- We need to check the condition for browser compatibility.
@@ -195,7 +198,7 @@ function ShareButton({ buttonRef, todayName, correctPattern, quizKind }: ShareBu
             style={buttonStyle(colors.hueColors.green)}
             ref={buttonRef}
             onClick={async () => {
-                const [text, url] = await summary(juxtaColors, todayName, correctPattern, quizKind)
+                const [text, url] = await summary(juxtaColors, todayName, correctPattern, quizKind, medal)
 
                 async function copyToClipboard(): Promise<void> {
                     await navigator.clipboard.writeText(`${text}\n${url}`)
@@ -386,7 +389,11 @@ export function Summary(props: { correctPattern: CorrectPattern, quizKind: QuizK
     )
 }
 
-export async function summary(juxtaColors: JuxtastatColors, todayName: string | undefined, correctPattern: CorrectPattern, quizKind: QuizKind): Promise<[string, string]> {
+function renderMedalAsString(medal: Medal): string {
+    return ['🥇 Personal Best!', '🥈 Personal 2nd Best!', '🥉 Personal 3rd Best!'][medal - 1]
+}
+
+export async function summary(juxtaColors: JuxtastatColors, todayName: string | undefined, correctPattern: CorrectPattern, quizKind: QuizKind, medal: Medal | undefined): Promise<[string, string]> {
     // wordle-style summary
     const [, summaryText] = summaryTexts(correctPattern, quizKind)
     let text = nameOfQuizKind(quizKind)
@@ -399,6 +406,12 @@ export async function summary(juxtaColors: JuxtastatColors, todayName: string | 
     text += '\n'
 
     text += redAndGreenSquares(juxtaColors, correctPattern).join('\n')
+
+    if (medal !== undefined) {
+        text += '\n'
+        text += '\n'
+        text += renderMedalAsString(medal)
+    }
 
     text += '\n'
 
@@ -482,7 +495,7 @@ export function GenericQuizResultRow(props: GenericQuizResultRowProps): ReactNod
                         <td style={{ fontWeight: 400 }} className="serif quiz_result_value_left">
                             {props.getStat('a')}
                         </td>
-                        <td className="serif quiz_result_symbol">
+                        <td className="serif quiz_result_symbol quiz_result_comparison_symbol">
                             {comparison}
                         </td>
                         <td style={{ fontWeight: 400 }} className="serif quiz_result_value_right">
