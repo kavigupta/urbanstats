@@ -1,18 +1,8 @@
 import { createIndex, SearchParams } from './search'
 
-const workQueue: SearchParams[] = []
+const searchIndex = createIndex()
 
-const search = createIndex()
-
-async function flushWorkQueue(): Promise<void> {
-    while (workQueue.length > 0) {
-        postMessage((await search)(workQueue.shift()!))
-    }
+onmessage = async (message: MessageEvent<SearchParams>) => {
+    const search = await searchIndex // This maintains message ordering https://stackoverflow.com/questions/63427239/order-of-resolution-for-multiple-awaits-on-one-promise#comment138162017_63427370
+    postMessage(search(message.data))
 }
-
-onmessage = (message: MessageEvent<SearchParams>) => {
-    workQueue.push(message.data)
-    void flushWorkQueue()
-}
-
-void search.then(() => flushWorkQueue())
