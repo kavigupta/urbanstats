@@ -83,7 +83,7 @@ export function SearchBox(props: {
                 return
             }
             setMatches(result)
-            setFocused(f => Math.min(f, result.length - 1))
+            setFocused(f => Math.max(0, Math.min(f, result.length - 1)))
         })()
     }, [searchQuery, showHistoricalCDs, searchWorker])
 
