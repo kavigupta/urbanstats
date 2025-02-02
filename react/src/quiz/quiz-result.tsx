@@ -650,7 +650,7 @@ function settingsOverrides(questionStatPath?: StatPath): Partial<VectorSettingsD
 
 function emojiForCount(count: number): string[] {
     if (count >= 10) {
-        return [...emojiForCount(count / 10), ...emojiForCount(count % 10)]
+        return [...emojiForCount(Math.floor(count / 10)), ...emojiForCount(count % 10)]
     }
     switch (count) {
         case 0:

@@ -141,6 +141,7 @@ export function SearchBox(props: {
                                     textDecoration: 'none',
                                     color: colors.textMain,
                                 }}
+                                data-test-id={idx === focused ? 'selected-search-result' : undefined}
                             >
                                 <div
                                     className="serif searchbox-dropdown-item"

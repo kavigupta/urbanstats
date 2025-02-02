@@ -5,6 +5,7 @@ import {
     getLocationWithoutSettings, safeReload, screencap,
     urbanstatsFixture,
     getLocation,
+    createComparison,
 } from './test_utils'
 
 urbanstatsFixture('longer article test', '/article.html?longname=California%2C+USA')
@@ -136,11 +137,7 @@ test('download-article-dark', async (t) => {
 })
 
 test('create-comparison-from-article', async (t) => {
-    const otherRegion = Selector('input').withAttribute('placeholder', 'Other region...')
-    await t
-        .click(otherRegion)
-        .typeText(otherRegion, 'pasadena city california')
-        .pressKey('enter')
+    await createComparison(t, 'pasadena city california')
     await t.expect(getLocationWithoutSettings())
         .eql(comparisonPage(['San Marino city, California, USA', 'Pasadena city, California, USA']))
 })
