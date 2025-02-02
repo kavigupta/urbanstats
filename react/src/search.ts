@@ -3,7 +3,7 @@ import { bitap, bitapPerformance, bitCount, Haystack, toHaystack, toNeedle, toSi
 import { isHistoricalCD } from './utils/is_historical'
 import { SearchIndex } from './utils/protos'
 
-const debugSearch: boolean = true
+const debugSearch: boolean = false
 
 function debug(arg: unknown): void {
     if (debugSearch) {
@@ -112,6 +112,7 @@ function search(searchIndex: NormalizedSearchIndex, { unnormalizedPattern, maxRe
 
         entriesPatternChecks++
         if (bitCount(patternSignature ^ (patternSignature & signature)) > maxErrors) {
+            // This element doesn't have the correct letters to match this pattern
             entriesPatternSkips++
             continue
         }
@@ -128,7 +129,7 @@ function search(searchIndex: NormalizedSearchIndex, { unnormalizedPattern, maxRe
             normalizedTokensWithIncompleteMatch: 0,
             normalizedTokenSwapOrOverlap: 0,
         }, results[results.length - 1]) > 0) {
-            continue entries
+            continue
         }
 
         let matchScore = 0
