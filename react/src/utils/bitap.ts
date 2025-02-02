@@ -1,8 +1,8 @@
 /**
  * Algorithm for fuzzy string matching and associated utilities.
  *
- * This a modified bitap algorith. Rather than trying to find a needle _in_ a haystack, this algorithm attempts to match the needle to the haystack, assuming that they both start in the same place, rather than that the needle is somewhere in the haystack.
- * This is useful for a search that operates on tokens.
+ * This a modified bitap algorithm that's optimized for matching short strings to short strings.
+ * It uses a signature that's based on the count of letters in the needle and haystack to quickly skip combinations that can't match.
  */
 
 export interface Needle {
@@ -64,7 +64,6 @@ export const bitapPerformance = {
  *
  * Takes scratch buffers, which must be an array of at least length maxErrors + 1 length, filled with Uint32Arrays of at least needle.length + 1 length
  *
- * If allowPartial is false, and needle and haystack are different lengths, they may not possibly match, or the number of edit errors may be scaled down
  */
 export function bitap(haystack: Haystack, needle: Needle, maxErrors: number, scratchBuffers: Uint32Array[]): number {
     let bestMatch = maxErrors + 1
