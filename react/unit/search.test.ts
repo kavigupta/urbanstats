@@ -31,5 +31,6 @@ firstResult(test)('india', 'India')
 firstResult(test)('urban center', 'Guangzhou Urban Center, China') // Should be some Urban Center
 firstResult(test)('urban area', 'Chicago [Urban Area], IL-IN, USA') // Should be some Urban Area
 firstResult(test)('msa', 'Pittsburgh MSA, PA, USA') // Should be some MSA
+firstResult(test)('dalas', 'Dallas Urban Center, USA') // Correct for misspelling
 
 test.run()

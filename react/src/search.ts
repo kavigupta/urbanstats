@@ -63,7 +63,7 @@ function compareSearchResults(a: SearchResult, b: SearchResult): number {
 }
 
 function tokenize(pattern: string): string[] {
-    const matchNoOverflow = /^ *([^ ]{1,32})(.*)$/.exec(pattern)
+    const matchNoOverflow = /^ *([^ ]{1,31})(.*)$/.exec(pattern)
     if (matchNoOverflow !== null) {
         const [, token, rest] = matchNoOverflow
         return [token, ...tokenize(rest)]
@@ -87,15 +87,19 @@ function search(searchIndex: NormalizedSearchIndex, { unnormalizedPattern, maxRe
         return []
     }
 
-    const patternTokens = tokenize(pattern).map(token => toNeedle(token))
+    let longestPatternToken = 0
+    const patternTokens = tokenize(pattern).map((token) => {
+        longestPatternToken = Math.max(longestPatternToken, token.length)
+        return toNeedle(token)
+    })
 
     const results: SearchResult[] = []
 
-    const maxErrors = 2
+    const maxErrors = 1
     const maxMatchScore = patternTokens.length * (maxErrors + 1)
     const maxPositionScore = patternTokens.length * Math.max(patternTokens.length, searchIndex.lengthOfLongestToken)
 
-    const bitapBuffers = Array.from({ length: maxErrors + 1 }, () => new Uint32Array(searchIndex.lengthOfLongestToken + 2))
+    const bitapBuffers = Array.from({ length: maxErrors + 1 }, () => new Uint32Array(longestPatternToken + maxErrors + 1))
 
     bitapPerformance.numBitapSignatureChecks = 0
     bitapPerformance.numBitapSignatureSkips = 0

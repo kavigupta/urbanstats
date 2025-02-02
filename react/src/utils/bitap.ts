@@ -62,7 +62,7 @@ export const bitapPerformance = {
  *
  * Returns [0, maxErrors + 1], where maxErrors + 1 means a match was not found with lte maxErrors errors
  *
- * Takes scratch buffers, which must be an array of at least length maxErrors + 1 length, filled with Uint32Arrays of at least needle.length + 1 length
+ * Takes scratch buffers, which must be an array of at least length maxErrors + 1 length, filled with Uint32Arrays of at least (needle.length + maxErrors + 1) length
  *
  */
 export function bitap(haystack: Haystack, needle: Needle, maxErrors: number, scratchBuffers: Uint32Array[]): number {
@@ -84,7 +84,8 @@ export function bitap(haystack: Haystack, needle: Needle, maxErrors: number, scr
     }
 
     const matchMask = 1 << (needle.length - 1)
-    for (let j = 1; j <= needle.length; j++) {
+
+    for (let j = 1; j <= (needle.length + maxErrors); j++) {
         let charMatch: number
         if (j - 1 < haystack.haystack.length) {
             charMatch = needle.alphabet[haystack.haystack.charCodeAt(j - 1)]
@@ -102,14 +103,11 @@ export function bitap(haystack: Haystack, needle: Needle, maxErrors: number, scr
             }
 
             if ((scratchBuffers[errors][j] & matchMask) !== 0) {
-                bestMatch = Math.min(bestMatch, Math.abs(j - needle.length) + errors)
+                bestMatch = Math.min(bestMatch, Math.max(Math.abs(j - needle.length), errors))
                 maxErrors = Math.min(maxErrors, errors)
                 if (bestMatch === 0) {
                     return bestMatch // We've found the best match we possibly can
                 }
-            }
-            if (errors === maxErrors && j - 1 >= errors && (scratchBuffers[errors][j] & (1 << (j - 1))) === 0) {
-                return bestMatch // There's no sense continuing, as it's impossible we'll get a better match
             }
         }
     }
