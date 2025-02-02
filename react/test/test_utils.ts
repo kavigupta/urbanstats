@@ -223,3 +223,22 @@ export async function safeReload(t: TestController): Promise<void> {
 }
 
 export const openInNewTabModifiers = process.platform === 'darwin' ? { meta: true } : { ctrl: true }
+
+export async function waitForSelectedSearchResult(t: TestController): Promise<void> {
+    await t.expect(Selector('[data-test-id=selected-search-result]').exists).ok()
+}
+
+export async function doSearch(t: TestController, searchTerm: string): Promise<void> {
+    await t.typeText(searchField, searchTerm)
+    await waitForSelectedSearchResult(t)
+    await t.pressKey('enter')
+}
+
+export async function createComparison(t: TestController, searchTerm: string): Promise<void> {
+    const otherRegion = Selector('input').withAttribute('placeholder', 'Other region...')
+    await t
+        .click(otherRegion)
+        .typeText(otherRegion, searchTerm)
+    await waitForSelectedSearchResult(t)
+    await t.pressKey('enter')
+}
