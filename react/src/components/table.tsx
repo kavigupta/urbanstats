@@ -970,7 +970,7 @@ function PointerButtonsIndex(props: { ordinal?: number, statpath: string, type: 
 
 function PointerButtonIndex(props: {
     getData: () => Promise<string[]>
-    originalPos?: number
+    originalPos?: number // 1-indexed
     direction: -1 | 1
     total: number
     longname: string
@@ -980,26 +980,28 @@ function PointerButtonIndex(props: {
     const colors = useColors()
     const navigation = useContext(Navigator.Context)
     const [showHistoricalCDs] = useSetting('show_historical_cds')
-    const outOfBounds = (pos: number): boolean => pos < 0 || pos >= props.total
-    const newPos = (oldPos: number): number => oldPos - 1 + props.direction
     const onClick = async (): Promise<void> => {
-        {
-            const data = await props.getData()
-            let pos = newPos(data.indexOf(props.longname) + 1)
-            while (!outOfBounds(pos)) {
-                const name = data[pos]
-                if (!showHistoricalCDs && isHistoricalCD(name)) {
-                    pos += props.direction
-                    continue
-                }
-                void navigation.navigate({
-                    kind: 'article',
-                    longname: name,
-                    universe,
-                }, { history: 'push', scroll: { kind: 'element', element: buttonRef.current! } })
-                return
+        /* eslint-disable no-console -- Debugging test failure */
+        console.log(`Click on pointer button! props=${JSON.stringify(props)}`)
+        const data = await props.getData()
+        let pos = data.indexOf(props.longname) + props.direction
+        console.log(`Starting position=${pos}`)
+        while (pos >= 0 && pos < props.total) {
+            const name = data[pos]
+            console.log(`name=${name}`)
+            if (!showHistoricalCDs && isHistoricalCD(name)) {
+                pos += props.direction
+                continue
             }
+            console.log(`navigate to ${name}`)
+            void navigation.navigate({
+                kind: 'article',
+                longname: name,
+                universe,
+            }, { history: 'push', scroll: { kind: 'element', element: buttonRef.current! } })
+            return
         }
+        /* eslint-enable no-console */
     }
 
     const buttonStyle: React.CSSProperties = {
@@ -1019,7 +1021,7 @@ function PointerButtonIndex(props: {
 
     let disabled: boolean = props.disable ?? false
     if (props.originalPos !== undefined) {
-        disabled = outOfBounds(newPos(props.originalPos)) || props.originalPos > props.total
+        disabled = props.originalPos + props.direction < 1 || props.originalPos + props.direction > props.total
     }
 
     const buttonRef = useRef<HTMLButtonElement>(null) // Need the ref otherwise the mouse enter and leave events can be sent to the wrong elem
