@@ -95,7 +95,7 @@ function search(searchIndex: NormalizedSearchIndex, { unnormalizedPattern, maxRe
 
     const results: SearchResult[] = []
 
-    const maxErrors = 1
+    const maxErrors = 2
     const maxMatchScore = patternTokens.length * (maxErrors + 1)
     const maxPositionScore = patternTokens.length * Math.max(patternTokens.length, searchIndex.lengthOfLongestToken)
 

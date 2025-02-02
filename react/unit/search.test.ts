@@ -15,6 +15,7 @@ const firstResult = (testFn: (name: string, testBlock: () => void) => void) => (
 
 firstResult(test)('china', 'China')
 firstResult(test)('ontario california', 'Ontario city, California, USA')
+firstResult(test)('onatrio california', 'Ontario city, California, USA') // Letter flip
 firstResult(test)('la canada', 'La Cañada Flintridge city, California, USA')
 firstResult(test)('east fiji', 'Eastern, Fiji')
 firstResult(test)('london on', 'London Population Center, ON, Canada') // Something in canada
