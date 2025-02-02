@@ -3,10 +3,11 @@ import fs from 'fs'
 import { Selector } from 'testcafe'
 
 import {
-    searchField, target, checkTextboxes, getLocation,
+    target, checkTextboxes, getLocation,
     safeReload,
     screencap,
     urbanstatsFixture,
+    doSearch,
 } from './test_utils'
 
 const testLocation = `${target}/article.html?longname=San+Marino+city%2C+California%2C+USA`
@@ -41,8 +42,7 @@ test('check-settings-loaded-desktop', async (t) => {
 test('check-settings-persistent', async (t) => {
     await t.expect(Selector('span').withText(/mi/).exists).ok()
     // navigate to Pasadena via search
-    await t.typeText(searchField, 'Pasadena, CA, USA')
-    await t.pressKey('enter')
+    await doSearch(t, 'Pasadena, CA, USA')
     await t.expect(getLocation()).match(/\/article\.html\?longname=Pasadena\+city%2C\+California%2C\+USA/)
     // check box "Imperial"
     await checkTextboxes(t, ['Use Imperial Units'])
@@ -55,8 +55,7 @@ test('check-settings-persistent', async (t) => {
 
 test('check-related-button-checkboxes-page-specific', async (t) => {
     // navigate to 91108
-    await t.typeText(searchField, '91108')
-    await t.pressKey('enter')
+    await doSearch(t, '91108')
     await t.expect(getLocation()).match(/\/article\.html\?longname=91108%2C\+USA/)
     // this should not be page specific
     await t.expect(Selector('span').withText(/mi/).exists).ok()
@@ -78,8 +77,7 @@ test('checkboxes-can-be-checked', async (t) => {
     // check that Pasadena CCD is now present
     await t.expect(Selector('path').withAttribute('class', /tag-Pasadena_CCD/).exists).ok()
     // check that this is persistent by going to Berkeley and checking that Briones CCD is present
-    await t.typeText(searchField, 'Berkeley, CA, USA')
-    await t.pressKey('enter')
+    await doSearch(t, 'Berkeley, CA, USA')
     await t.expect(getLocation()).match(/\/article\.html\?longname=Berkeley\+city%2C\+California%2C\+USA/)
     await t.expect(Selector('path').withAttribute('class', /tag-Briones_CCD/).exists).ok()
 })

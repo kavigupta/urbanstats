@@ -1,6 +1,6 @@
 import { ClientFunction, RequestHook, Selector } from 'testcafe'
 
-import { getLocation, openInNewTabModifiers, screencap, searchField, target, urbanstatsFixture, waitForPageLoaded } from './test_utils'
+import { getLocation, openInNewTabModifiers, screencap, searchField, target, urbanstatsFixture, waitForPageLoaded, waitForSelectedSearchResult } from './test_utils'
 
 urbanstatsFixture('navigation test', '/')
 
@@ -175,6 +175,7 @@ test('quick load', async (t) => {
     await t
         .click(searchField)
         .typeText(searchField, 'Kalamazoo city')
+    await waitForSelectedSearchResult(t)
     delayRequests.setFilter(dataFilter)
     await t.pressKey('enter')
     await t.expect(Selector('[data-test-id=quickLoad]').exists).ok()
@@ -187,6 +188,7 @@ test('long load', async (t) => {
     await t
         .click(searchField)
         .typeText(searchField, 'Kalamazoo city')
+    await waitForSelectedSearchResult(t)
     delayRequests.setFilter(dataFilter)
     await t.pressKey('enter')
     await t.wait(3000)

@@ -1,6 +1,6 @@
 import { Selector } from 'testcafe'
 
-import { target, checkTextboxes, comparisonPage, downloadImage, getLocation, getLocationWithoutSettings, screencap, urbanstatsFixture } from './test_utils'
+import { target, checkTextboxes, comparisonPage, downloadImage, getLocation, getLocationWithoutSettings, screencap, urbanstatsFixture, waitForSelectedSearchResult } from './test_utils'
 
 export const upperSGV = 'Upper San Gabriel Valley CCD [CCD], Los Angeles County, California, USA'
 export const pasadena = 'Pasadena CCD [CCD], Los Angeles County, California, USA'
@@ -49,7 +49,8 @@ test('comparison-3-add', async (t) => {
     await t
         .click(otherRegion)
         .typeText(otherRegion, 'san marino city california')
-        .pressKey('enter')
+    await waitForSelectedSearchResult(t)
+    await t.pressKey('enter')
     await t.expect(getLocationWithoutSettings())
         .eql(comparisonPage([upperSGV, pasadena, swSGV, 'San Marino city, California, USA']))
 })
@@ -78,7 +79,8 @@ test('comparison-3-replace-second', async (t) => {
     const otherRegion = Selector('input').withAttribute('placeholder', 'Replacement')
     await t
         .typeText(otherRegion, 'East San Gabriel Valley')
-        .pressKey('enter')
+    await waitForSelectedSearchResult(t)
+    await t.pressKey('enter')
     await t.expect(getLocationWithoutSettings())
         .eql(comparisonPage([upperSGV, eastSGV, swSGV]))
 })

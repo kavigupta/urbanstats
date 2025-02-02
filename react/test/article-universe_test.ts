@@ -1,9 +1,11 @@
 import { Selector } from 'testcafe'
 
 import {
-    searchField, target,
+    target,
     getLocationWithoutSettings, screencap,
     urbanstatsFixture,
+    doSearch,
+    createComparison,
 } from './test_utils'
 
 urbanstatsFixture('article universe selector test', `/article.html?longname=San+Marino+city%2C+California%2C+USA`)
@@ -77,21 +79,14 @@ test('article-universe-related-button', async (t) => {
 })
 
 test('article-universe-search', async (t) => {
-    await t
-        .click(searchField)
-        .typeText(searchField, 'Chino')
-    await t
-        .pressKey('enter')
+    await doSearch(t, 'Chino')
     await t.expect(getLocationWithoutSettings())
         .eql(`${target}/article.html?longname=Chino+city%2C+California%2C+USA&universe=California%2C+USA`)
 })
 
 test('article-universe-compare', async (t) => {
     // compare to San Francisco
-    await t
-        .click(Selector('input').withAttribute('placeholder', 'Other region...'))
-        .typeText(Selector('input').withAttribute('placeholder', 'Other region...'), 'San Francisco city california')
-        .pressKey('enter')
+    await createComparison(t, 'San Francisco city california')
     await t.expect(getLocationWithoutSettings())
         .eql(
             `${target}/comparison.html?longnames=%5B%22San+Marino+city%2C+California%2C+USA%22%2C%22San+Francisco+city%2C+California%2C+USA%22%5D&universe=California%2C+USA`,
@@ -101,10 +96,7 @@ test('article-universe-compare', async (t) => {
 
 test('article-universe-compare-different', async (t) => {
     // compare to Chicago
-    await t
-        .click(Selector('input').withAttribute('placeholder', 'Other region...'))
-        .typeText(Selector('input').withAttribute('placeholder', 'Other region...'), 'Chicago city illinois')
-        .pressKey('enter')
+    await createComparison(t, 'Chicago city illinois')
     await t.expect(getLocationWithoutSettings())
         .eql(
             `${target}/comparison.html?longnames=%5B%22San+Marino+city%2C+California%2C+USA%22%2C%22Chicago+city%2C+Illinois%2C+USA%22%5D`,
