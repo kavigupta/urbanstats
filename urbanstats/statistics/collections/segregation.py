@@ -6,9 +6,9 @@ from urbanstats.games.quiz_question_metadata import (
 from urbanstats.geometry.segregation import compute_homogenity_statistics
 from urbanstats.statistics.statistic_collection import USAStatistics
 
-homogeneity_explanation = (
-    "!TOOLTIP We define racial homogeneity as the average probability a person selecting "
-    "a random person in a 250m radius will select someone of the same race"
+diversity_explanation = (
+    "!TOOLTIP We define racial diversity as the average probability a person selecting "
+    "a random person in a 250m radius will select someone of a different race"
 )
 
 
@@ -39,12 +39,12 @@ class SegregationStatistics(USAStatistics):
             **QuizQuestionDescriptor.several(
                 SEGREGATION,
                 {
-                    "homogeneity_250_2020": "higher racial homogeneity"
-                    + homogeneity_explanation,
-                    "homogeneity_250_diff_2010": "higher increase (or smaller decrease) in racial homogeneity from 2010 to 2020"
-                    + homogeneity_explanation,
-                    "homogeneity_250_diff_2000": "higher increase (or smaller decrease) in racial homogeneity from 2000 to 2020"
-                    + homogeneity_explanation,
+                    "homogeneity_250_2020": "lower racial diversity"
+                    + diversity_explanation,
+                    "homogeneity_250_diff_2010": "smaller increase in racial diversity from 2010 to 2020"
+                    + diversity_explanation,
+                    "homogeneity_250_diff_2000": "smaller increase in racial diversity from 2000 to 2020"
+                    + diversity_explanation,
                 },
             ),
             **QuizQuestionSkip.several(
