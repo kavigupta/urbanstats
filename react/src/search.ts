@@ -1,4 +1,5 @@
 import { loadProtobuf } from './load_json'
+import { DefaultMap } from './utils/DefaultMap'
 import { bitap, bitapPerformance, bitCount, Haystack, toHaystack, toNeedle, toSignature } from './utils/bitap'
 import { isHistoricalCD } from './utils/is_historical'
 import { SearchIndex } from './utils/protos'
@@ -19,14 +20,13 @@ function normalize(a: string): string {
 interface NormalizedSearchIndex {
     entries: {
         element: string
-        tokenIndices: number[]
+        tokens: Haystack[]
         priority: number
         signature: number
     }[]
     lengthOfLongestToken: number
     maxPriority: number
     mostTokens: number
-    tokens: Haystack[]
 }
 
 interface SearchResult {
@@ -109,7 +109,7 @@ function search(searchIndex: NormalizedSearchIndex, { unnormalizedPattern, maxRe
     let entriesPatternSkips = 0
     let entriesPatternChecks = 0
 
-    entries: for (const [populationRank, { tokenIndices, element, priority, signature }] of searchIndex.entries.entries()) {
+    entries: for (const [populationRank, { tokens, element, priority, signature }] of searchIndex.entries.entries()) {
         if (!showHistoricalCDs && isHistoricalCD(element)) {
             continue
         }
@@ -149,8 +149,7 @@ function search(searchIndex: NormalizedSearchIndex, { unnormalizedPattern, maxRe
             let tokenIncompleteMatch = true
             let tokenEntryTokenIndex: undefined | number
 
-            for (const [entryTokenIndex, entryTokenIndexInSearchIndex] of tokenIndices.entries()) {
-                const entryToken = searchIndex.tokens[entryTokenIndexInSearchIndex]
+            for (const [entryTokenIndex, entryToken] of tokens.entries()) {
                 const searchResult = bitap(entryToken, needle, maxErrors, bitapBuffers)
                 const positionResult = Math.abs(patternTokenIndex - entryTokenIndex)
                 const incompleteMatchResult = Math.abs(entryToken.haystack.length - needle.length) - searchResult !== 0
@@ -243,40 +242,29 @@ function processRawSearchIndex(searchIndex: { elements: string[], priorities: nu
     let lengthOfLongestToken = 0
     let maxPriority = 0
     let mostTokens = 0
-    const tokens: Haystack[] = []
-    const tokenIndexMap = new Map<string, number>()
+    const haystackCache = new DefaultMap<string, Haystack>((token) => {
+        if (token.length > lengthOfLongestToken) {
+            lengthOfLongestToken = token.length
+        }
+        return toHaystack(token)
+    })
     const entries = searchIndex.elements.map((element, index) => {
         const normalizedElement = normalize(element)
         const entryTokens = tokenize(normalizedElement)
-        const tokenIndices = entryTokens.map((token) => {
-            const existingTokenIndex = tokenIndexMap.get(token)
-            if (existingTokenIndex !== undefined) {
-                return existingTokenIndex
-            }
-            else {
-                if (token.length > lengthOfLongestToken) {
-                    lengthOfLongestToken = token.length
-                }
-                const haystack = toHaystack(token)
-                const newTokenIndex = tokens.length
-                tokenIndexMap.set(token, newTokenIndex)
-                tokens.push(haystack)
-                return newTokenIndex
-            }
-        })
+        const tokens = entryTokens.map(token => haystackCache.get(token))
         if (searchIndex.priorities[index] > maxPriority) {
             maxPriority = searchIndex.priorities[index]
         }
-        if (tokenIndices.length > mostTokens) {
-            mostTokens = tokenIndices.length
+        if (tokens.length > mostTokens) {
+            mostTokens = tokens.length
         }
         return {
             element,
-            tokenIndices,
+            tokens,
             priority: searchIndex.priorities[index],
             signature: toSignature(normalizedElement),
         }
     })
     debug(`Took ${performance.now() - start}ms to process search index`)
-    return { entries, lengthOfLongestToken, maxPriority, mostTokens, tokens }
+    return { entries, lengthOfLongestToken, maxPriority, mostTokens }
 }
