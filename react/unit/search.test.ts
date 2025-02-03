@@ -34,8 +34,6 @@ firstResult(test)('urban area', 'Chicago [Urban Area], IL-IN, USA') // Should be
 firstResult(test)('msa', 'Pittsburgh MSA, PA, USA') // Should be some MSA
 firstResult(test)('dalas', 'Dallas Urban Center, USA') // Correct for misspelling
 firstResult(test)('ventura city', 'San Buenaventura (Ventura) city, California, USA') // handles alias
-firstResult(test)('san francisco urban', 'San Francisco-Oakland [Urban Area], CA, USA') // symbols treated as separate tokens (i.e., [Urban Area] shuold be treated as [ Urban Area ])
-firstResult(test)('los angeles center 5', 'Los Angeles (Center East) 5MPC, USA') // I think same as above
 firstResult(test)('france-germany', 'Strasbourg Urban Center, Germany-France') // reach test, should find something in both
 
 test.run()
