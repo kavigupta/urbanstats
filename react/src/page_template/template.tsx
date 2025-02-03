@@ -142,7 +142,7 @@ function Version(): ReactNode {
 }
 
 function LastUpdated(): ReactNode {
-    return <span id="last-updated">2025-02-01</span>
+    return <span id="last-updated">2025-02-02</span>
 }
 
 function MainCredits(): ReactNode {
