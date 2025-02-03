@@ -138,11 +138,11 @@ function TemplateFooter(): ReactNode {
 }
 
 function Version(): ReactNode {
-    return <span id="current-version">23.6.2</span>
+    return <span id="current-version">23.6.3</span>
 }
 
 function LastUpdated(): ReactNode {
-    return <span id="last-updated">2025-02-01</span>
+    return <span id="last-updated">2025-02-02</span>
 }
 
 function MainCredits(): ReactNode {
