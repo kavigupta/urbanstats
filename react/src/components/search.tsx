@@ -1,11 +1,10 @@
-import React, { CSSProperties, ReactNode, useEffect, useMemo, useRef, useState } from 'react'
+import React, { CSSProperties, ReactNode, useEffect, useRef, useState } from 'react'
 
-import { loadProtobuf } from '../load_json'
 import { Navigator } from '../navigation/Navigator'
 import { useColors } from '../page_template/colors'
 import { useSetting } from '../page_template/settings'
-import { isHistoricalCD } from '../utils/is_historical'
 import '../common.css'
+import { SearchParams } from '../search'
 
 export function SearchBox(props: {
     onChange?: (inp: string) => void
@@ -21,18 +20,17 @@ export function SearchBox(props: {
 
     // Keep these in sync
     const [query, setQuery] = useState('')
-    const normalizedQuery = useRef('')
+    const queryRef = useRef('')
 
     const [focused, setFocused] = React.useState(0)
 
-    const searchQuery = normalizedQuery.current
-    const firstCharacter = searchQuery.length === 0 ? undefined : searchQuery[0]
+    const searchQuery = queryRef.current
 
-    const indexCache = useMemo(() => firstCharacter === undefined ? undefined : loadProtobuf(`/index/pages_${firstCharacter}.gz`, 'SearchIndex'), [firstCharacter])
+    const searchWorker = useRef<SearchWorker | undefined>()
 
     const reset = (): void => {
         setQuery('')
-        normalizedQuery.current = ''
+        queryRef.current = ''
         setMatches([])
         setFocused(0)
     }
@@ -70,36 +68,24 @@ export function SearchBox(props: {
 
     // Do the search
     useEffect(() => {
-        if (indexCache === undefined) {
-            // Occurs when query is empty
-            setMatches([])
-            setFocused(0)
-            return
-        }
-        void indexCache.then(({ elements, priorities }) => {
-            // we can skip searching if the query has changed since we were waiting on the indexCache
-            if (normalizedQuery.current !== searchQuery) {
+        void (async () => {
+            if (searchQuery === '') {
+                setMatches([])
+                setFocused(0)
                 return
             }
-
-            let matchesNew = []
-            for (let i = 0; i < elements.length; i++) {
-                const matchCount = isAMatch(searchQuery, normalize(elements[i]))
-                if (matchCount === 0) {
-                    continue
-                }
-                if (!showHistoricalCDs) {
-                    if (isHistoricalCD(elements[i])) {
-                        continue
-                    }
-                }
-                matchesNew.push([matchCount, i, matchCount - priorities[i] / 10])
+            if (searchWorker.current === undefined) {
+                searchWorker.current = createSearchWorker()
             }
-            matchesNew = top10(matchesNew)
-            matchesNew = matchesNew.map(idx => elements[idx])
-            setMatches(matchesNew)
-        })
-    }, [searchQuery, indexCache, showHistoricalCDs])
+            const result = await searchWorker.current({ unnormalizedPattern: searchQuery, maxResults: 10, showHistoricalCDs })
+            // we should throw away the result if the query has changed since we submitted the search
+            if (queryRef.current !== searchQuery) {
+                return
+            }
+            setMatches(result)
+            setFocused(f => Math.max(0, Math.min(f, result.length - 1)))
+        })()
+    }, [searchQuery, showHistoricalCDs, searchWorker])
 
     return (
         <form
@@ -113,14 +99,23 @@ export function SearchBox(props: {
                 type="text"
                 className="serif"
                 style={{
-                    ...props.style }}
+                    ...props.style,
+                }}
                 placeholder={props.placeholder}
                 onKeyUp={onTextBoxKeyUp}
                 onChange={(e) => {
                     setQuery(e.target.value)
-                    normalizedQuery.current = normalize(e.target.value)
+                    queryRef.current = e.target.value
                 }}
                 value={query}
+                onFocus={() => {
+                    if (searchWorker.current === undefined) {
+                        searchWorker.current = createSearchWorker()
+                    }
+                }}
+                onBlur={() => {
+                    searchWorker.current = undefined
+                }}
             />
 
             <div
@@ -171,59 +166,22 @@ export function SearchBox(props: {
     )
 }
 
-function top10(matches: number[][]): number[] {
-    const numPrioritized = 3
-    const sortKey = (idx: number) => {
-        return (a: number[], b: number[]) => {
-            if (a[idx] !== b[idx]) {
-                return b[idx] - a[idx]
-            }
-            return a[1] - b[1]
-        }
-    }
-    matches.sort(sortKey(2))
-    const overallMatches = []
-    for (let i = 0; i < Math.min(numPrioritized, matches.length); i++) {
-        overallMatches.push(matches[i][1])
-        matches[i][0] = -100
-    }
-    matches.sort(sortKey(0))
-    for (let i = 0; i < Math.min(10 - numPrioritized, matches.length); i++) {
-        if (matches[i][0] === -100) {
-            break
-        }
-        overallMatches.push(matches[i][1])
-    }
-    return overallMatches
-}
+const workerTerminatorRegistry = new FinalizationRegistry<Worker>((worker) => { worker.terminate() })
 
-/*
-    Check whether a is a substring of b (does not have to be contiguous)
+type SearchWorker = (params: SearchParams) => Promise<string[]>
 
-*/
-function isAMatch(a: string, b: string): number {
-    let i = 0
-    let matchCount = 0
-    let prevMatch = true
-    // eslint-disable-next-line @typescript-eslint/prefer-for-of -- b is a string
-    for (let j = 0; j < b.length; j++) {
-        if (a[i] === b[j]) {
-            i++
-            if (prevMatch) {
-                matchCount++
-            }
-            prevMatch = true
-        }
-        else {
-            prevMatch = false
-        }
-        if (i === a.length) {
-            return matchCount + 1
-        }
+function createSearchWorker(): SearchWorker {
+    const worker = new Worker(new URL('../searchWorker', import.meta.url))
+    const messageQueue: ((results: string[]) => void)[] = []
+    worker.addEventListener('message', (message: MessageEvent<string[]>) => {
+        messageQueue.shift()!(message.data)
+    })
+    const result: SearchWorker = (params) => {
+        worker.postMessage(params)
+        return new Promise((resolve) => {
+            messageQueue.push(resolve)
+        })
     }
-    return 0
-}
-
-function normalize(a: string): string {
-    return a.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    workerTerminatorRegistry.register(result, worker)
+    return result
 }
