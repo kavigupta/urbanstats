@@ -138,7 +138,7 @@ function TemplateFooter(): ReactNode {
 }
 
 function Version(): ReactNode {
-    return <span id="current-version">23.6.2</span>
+    return <span id="current-version">23.7.0</span>
 }
 
 function LastUpdated(): ReactNode {
