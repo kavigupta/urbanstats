@@ -41,9 +41,9 @@ class SegregationStatistics(USAStatistics):
                 {
                     "homogeneity_250_2020": "lower racial diversity"
                     + diversity_explanation,
-                    "homogeneity_250_diff_2010": "smaller increase in racial diversity from 2010 to 2020"
+                    "homogeneity_250_diff_2010": "!FULL Which diversified less between 2010 and 2020?"
                     + diversity_explanation,
-                    "homogeneity_250_diff_2000": "smaller increase in racial diversity from 2000 to 2020"
+                    "homogeneity_250_diff_2000": "!FULL Which diversified less between 2000 and 2020?"
                     + diversity_explanation,
                 },
             ),
