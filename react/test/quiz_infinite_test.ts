@@ -1,7 +1,7 @@
 import { Selector } from 'testcafe'
 
 import { runQuery } from './quiz_test_template'
-import { collectCorrectJuxtaInfiniteAnswersFixture, friendsText, provideAnswers, quizFixture, quizScreencap, withMockedClipboard } from './quiz_test_utils'
+import { clickButtons, collectCorrectJuxtaInfiniteAnswersFixture, friendsText, provideAnswers, quizFixture, quizScreencap, withMockedClipboard } from './quiz_test_utils'
 import {
     target,
     safeReload,
@@ -184,6 +184,18 @@ test('18-correct-emoji-compact', async (t) => {
         '🥇 Personal Best!',
         '',
         `https://juxtastat.org/${param}`,
+    ])
+    await t.navigateTo(`${target}/quiz.html#date=99`)
+    await clickButtons(t, ['a', 'a', 'a', 'a', 'a'])
+    await t.expect(await Selector('#quiz-result-summary-emoji').innerText).eql(
+        '🟩🟩🟩🟩🟥',
+    )
+    await t.expect(await copyLines(t)).eql([
+        'Juxtastat 99 4/5',
+        '',
+        '🟩🟩🟩🟩🟥',
+        '',
+        `https://juxtastat.org/#date=99`,
     ])
 })
 
