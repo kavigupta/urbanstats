@@ -712,7 +712,7 @@ function toCompactRepresentation(correctPattern: CorrectPattern, correct: string
 }
 
 export function redAndGreenSquares(juxtaColors: JuxtastatColors, correctPattern: CorrectPattern, compactRepr: boolean): string[] {
-    if (compactRepr) {
+    if (compactRepr && correctPattern.length > maxPerLine) {
         return toCompactRepresentation(correctPattern, juxtaColors.correctEmoji, juxtaColors.incorrectEmoji)
     }
     if (correctPattern.length > maxPerLine) {
